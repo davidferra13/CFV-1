@@ -41,29 +41,19 @@ export default async function InsuranceClaimsPage() {
             documents in one place.
           </p>
         </div>
-        <div className="flex gap-2">
-          <Link href="/safety/claims/documents">
-            <Button variant="secondary" size="sm">
-              Documents
-            </Button>
-          </Link>
-          <Link href="/safety/claims/new">
-            <Button variant="primary" size="sm">
-              New Claim
-            </Button>
-          </Link>
-        </div>
+        <Link href="/safety/claims/documents">
+          <Button variant="secondary" size="sm">
+            Documents
+          </Button>
+        </Link>
       </div>
 
       {claimList.length === 0 ? (
         <div className="text-center py-20 bg-stone-800 rounded-xl border border-dashed border-stone-600">
           <h3 className="text-lg font-semibold text-stone-200 mb-1">No claims filed</h3>
-          <p className="text-sm text-stone-500 mb-4 max-w-sm mx-auto">
-            If you need to file an insurance claim, use the button above to document the details.
+          <p className="text-sm text-stone-500 max-w-sm mx-auto">
+            Insurance claims you file will appear here. In-app claim filing is coming soon.
           </p>
-          <Link href="/safety/claims/new">
-            <Button variant="primary">File a Claim</Button>
-          </Link>
         </div>
       ) : (
         <div className="space-y-3">

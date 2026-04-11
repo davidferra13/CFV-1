@@ -98,9 +98,9 @@ const sections = [
       },
       {
         href: '/finance/cash-flow',
-        label: 'Cash Flow Forecast',
-        description: 'Projected income and expenses forward',
-        icon: '🔮',
+        label: 'Cash Flow',
+        description: 'Monthly view of income, expenses, and upcoming installments',
+        icon: '📅',
       },
     ],
   },

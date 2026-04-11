@@ -128,14 +128,8 @@ const SECTIONS = [
   {
     href: '/finance/bank-feed',
     label: 'Bank Feed',
-    description: 'Connect bank accounts, reconcile transactions automatically',
+    description: 'Log and reconcile bank transactions manually',
     icon: '🏦',
-  },
-  {
-    href: '/finance/cash-flow',
-    label: 'Cash Flow Forecast',
-    description: '30/60/90 day projected income and expenses',
-    icon: '📈',
   },
   {
     href: '/finance/recurring',

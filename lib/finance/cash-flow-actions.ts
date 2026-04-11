@@ -58,7 +58,7 @@ export async function getCashFlowForecast(days: 30 | 60 | 90 = 30): Promise<Cash
   const { data: events } = await db
     .from('events')
     .select('id, event_date, status, total_amount_cents')
-    .eq('chef_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!)
     .gte('event_date', today)
     .lte('event_date', endDate)
 
@@ -82,7 +82,7 @@ export async function getCashFlowForecast(days: 30 | 60 | 90 = 30): Promise<Cash
   const { data: expenses } = await db
     .from('expenses')
     .select('amount_cents, expense_date')
-    .eq('chef_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!)
     .gte('expense_date', today)
     .lte('expense_date', endDate)
 
@@ -164,7 +164,7 @@ export async function getWhatIfScenario(params: {
     const { data: cancelled } = await db
       .from('events')
       .select('total_amount_cents')
-      .eq('chef_id', user.tenantId!)
+      .eq('tenant_id', user.tenantId!)
       .in('id', params.cancelledEventIds)
 
     const cancelledAmount = (cancelled || []).reduce(
