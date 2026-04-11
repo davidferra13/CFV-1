@@ -472,6 +472,9 @@ async function FullIngredientPage({ id, detail }: { id: string; detail: CatalogD
             </div>
           )}
 
+          {/* Chef CTA */}
+          <ChefCta category={categorySlug} />
+
           {/* Share */}
           <div className="px-6 py-5 bg-stone-900/50">
             <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">
@@ -605,6 +608,9 @@ function KnowledgeOnlyPage({
               </div>
             </div>
           )}
+
+          {/* Chef CTA */}
+          <ChefCta category={category} />
 
           {/* Share */}
           <div className="px-6 py-5 bg-stone-900/50">
@@ -779,5 +785,80 @@ function InStockDot({ inStock }: { inStock: boolean }) {
       className={`h-2 w-2 rounded-full shrink-0 ${inStock ? 'bg-emerald-500' : 'bg-red-500/60'}`}
       title={inStock ? 'In stock' : 'Out of stock'}
     />
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Booking CTA - connects ingredient discovery to the chef marketplace
+// ---------------------------------------------------------------------------
+
+const CATEGORY_CTA: Record<string, { headline: string; sub: string }> = {
+  produce: {
+    headline: 'Plan an event around seasonal produce',
+    sub: 'Private chefs on ChefFlow source fresh, seasonal ingredients and build menus around what is at peak quality.',
+  },
+  protein: {
+    headline: 'Source and cook proteins the right way',
+    sub: 'ChefFlow chefs handle everything from sourcing to prep. Browse chefs who specialize in meat and seafood.',
+  },
+  fresh_herb: {
+    headline: 'Bring fresh herbs to your table',
+    sub: 'Private chefs who work with fresh herbs can elevate any meal. Find one near you on ChefFlow.',
+  },
+  spice: {
+    headline: 'Explore global spice-driven cuisine',
+    sub: 'Book a private chef who knows how to build depth with spices, from aromatic rubs to complex sauces.',
+  },
+  dairy: {
+    headline: 'From farm to table with quality dairy',
+    sub: 'Chefs on ChefFlow know how to work with fine dairy - fresh cheeses, cultured butters, and more.',
+  },
+  baking: {
+    headline: 'Artisan baking for your next event',
+    sub: 'Looking for a pastry chef or baker? Browse ChefFlow chefs who specialize in baked goods and desserts.',
+  },
+  specialty: {
+    headline: 'Specialty ingredients deserve an expert hand',
+    sub: 'Rare and specialty ingredients are best cooked by chefs who know how to use them. Find one on ChefFlow.',
+  },
+  alcohol: {
+    headline: 'Elevate your event with culinary pairings',
+    sub: 'A private chef can build a menu designed to complement your drinks. Book a pairing dinner on ChefFlow.',
+  },
+  pantry: {
+    headline: 'Quality pantry staples, expert technique',
+    sub: 'ChefFlow chefs know how to transform pantry ingredients into exceptional meals.',
+  },
+}
+
+const DEFAULT_CTA = {
+  headline: 'Planning an event around quality ingredients?',
+  sub: 'Private chefs on ChefFlow source ingredients you choose and cook them exactly how you want.',
+}
+
+function ChefCta({ category }: { category: string | null }) {
+  const cta = (category && CATEGORY_CTA[category]) || DEFAULT_CTA
+  return (
+    <div className="px-6 py-5 border-b border-stone-800 bg-stone-950/40">
+      <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">
+        Hire a Private Chef
+      </p>
+      <p className="text-sm font-semibold text-stone-100 mb-1">{cta.headline}</p>
+      <p className="text-xs text-stone-400 leading-relaxed mb-4">{cta.sub}</p>
+      <div className="flex flex-wrap gap-2">
+        <Link
+          href="/book"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-stone-100 px-4 py-2 text-xs font-semibold text-stone-900 hover:bg-white transition-colors"
+        >
+          Book a Chef
+        </Link>
+        <Link
+          href="/chefs"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-stone-700 px-4 py-2 text-xs font-medium text-stone-300 hover:border-stone-500 hover:text-stone-100 transition-colors"
+        >
+          Browse Chefs
+        </Link>
+      </div>
+    </div>
   )
 }

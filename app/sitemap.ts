@@ -181,12 +181,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly' as const,
       priority: 0.65,
     }))
-    const categoryRoutes: MetadataRoute.Sitemap = ingredientCats.map(({ category }) => ({
-      url: `${BASE_URL}/ingredients/${category}`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 0.72,
-    }))
+    const PAGE_SIZE = 96
+    const categoryRoutes: MetadataRoute.Sitemap = ingredientCats.flatMap(({ category, count }) => {
+      const totalPages = Math.ceil(count / PAGE_SIZE)
+      const routes: MetadataRoute.Sitemap = [
+        {
+          url: `${BASE_URL}/ingredients/${category}`,
+          lastModified: new Date(),
+          changeFrequency: 'weekly' as const,
+          priority: 0.72,
+        },
+      ]
+      for (let p = 2; p <= totalPages; p++) {
+        routes.push({
+          url: `${BASE_URL}/ingredients/${category}?page=${p}`,
+          lastModified: new Date(),
+          changeFrequency: 'weekly' as const,
+          priority: 0.65,
+        })
+      }
+      return routes
+    })
 
     return [
       ...STATIC_ROUTES,

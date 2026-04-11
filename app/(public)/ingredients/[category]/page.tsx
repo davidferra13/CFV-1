@@ -18,11 +18,15 @@ import {
 } from '@/lib/openclaw/ingredient-knowledge-queries'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+const PAGE_SIZE = 96
 
-type Params = { params: Promise<{ category: string }> }
+type Params = {
+  params: Promise<{ category: string }>
+  searchParams: Promise<{ page?: string }>
+}
 
 // ---------------------------------------------------------------------------
-// Static params - pre-render all known categories
+// Static params - pre-render all known categories (page 1)
 // ---------------------------------------------------------------------------
 
 export async function generateStaticParams() {
@@ -60,21 +64,31 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 // Page
 // ---------------------------------------------------------------------------
 
-export default async function CategoryPage({ params }: Params) {
+export default async function CategoryPage({ params, searchParams }: Params) {
   const { category } = await params
+  const { page = '1' } = await searchParams
   const label = INGREDIENT_CATEGORIES[category]
   if (!label) notFound()
 
+  const pageNum = Math.max(1, parseInt(page) || 1)
+  const offset = (pageNum - 1) * PAGE_SIZE
+
   const [{ items, total }, allCategories] = await Promise.all([
-    getIngredientsByCategory(category, 0, 96).catch(() => ({ items: [], total: 0 })),
+    getIngredientsByCategory(category, offset, PAGE_SIZE).catch(() => ({ items: [], total: 0 })),
     getIngredientCategories().catch(() => []),
   ])
+  const totalPages = Math.ceil(total / PAGE_SIZE)
+
+  const canonicalUrl =
+    pageNum === 1
+      ? `${BASE_URL}/ingredients/${category}`
+      : `${BASE_URL}/ingredients/${category}?page=${pageNum}`
 
   const collectionLd = {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
-    name: `${label} Ingredients`,
-    url: `${BASE_URL}/ingredients/${category}`,
+    name: pageNum === 1 ? `${label} Ingredients` : `${label} Ingredients - Page ${pageNum}`,
+    url: canonicalUrl,
     description: `Browse ${label.toLowerCase()} ingredients with culinary knowledge, dietary info, and pricing.`,
     numberOfItems: total,
     isPartOf: {
@@ -155,12 +169,33 @@ export default async function CategoryPage({ params }: Params) {
           </div>
         )}
 
-        {/* More pages if total > 96 */}
-        {total > 96 && (
-          <p className="mt-6 text-center text-xs text-stone-600">
-            Showing 96 of {total.toLocaleString()} {label.toLowerCase()} ingredients. More are added
-            as enrichment continues.
-          </p>
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-4 mt-10">
+            {pageNum > 1 && (
+              <Link
+                href={
+                  pageNum === 2
+                    ? `/ingredients/${category}`
+                    : `/ingredients/${category}?page=${pageNum - 1}`
+                }
+                className="px-4 py-2 text-sm rounded-lg border border-stone-700 text-stone-300 hover:bg-stone-800 transition-colors"
+              >
+                Previous
+              </Link>
+            )}
+            <span className="text-xs text-stone-500">
+              Page {pageNum} of {totalPages} ({total.toLocaleString()} total)
+            </span>
+            {pageNum < totalPages && (
+              <Link
+                href={`/ingredients/${category}?page=${pageNum + 1}`}
+                className="px-4 py-2 text-sm rounded-lg border border-stone-700 text-stone-300 hover:bg-stone-800 transition-colors"
+              >
+                Next
+              </Link>
+            )}
+          </div>
         )}
       </div>
     </>
