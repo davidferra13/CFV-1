@@ -1,6 +1,7 @@
-# ChefFlow - Weekly System Ingredient Price Sync
-# Bridges OpenClaw store prices to system_ingredients via FTS matching.
-# Grows the 22% -> higher price coverage for costing features.
+# ChefFlow - Daily System Ingredient Price Sync
+# Bridges OpenClaw store prices to system_ingredients via FTS matching,
+# then propagates those market prices to chef ingredient_price_history.
+# This is the fully local pipeline - no Pi API call required.
 # Logs to logs/ingredient-price-sync.log with 2 MB rotation.
 
 $logFile = "C:\Users\david\Documents\CFv1\logs\ingredient-price-sync.log"
@@ -57,3 +58,23 @@ try {
 } catch {
     Add-Content $logFile "[$timestamp] EXCEPTION (propagate-ingredient-density): $_"
 }
+
+# Step 4: propagate system_ingredient market prices to ingredient_price_history.
+# This closes the pipeline loop: OpenClaw -> system prices -> chef ingredient prices.
+# Purely local - no Pi API required.
+try {
+    $result4 = & "node" "scripts/propagate-market-prices-to-ingredients.mjs" 2>&1
+    $exitCode4 = $LASTEXITCODE
+    Add-Content $logFile ($result4 | Out-String)
+    if ($exitCode4 -eq 0) {
+        Add-Content $logFile "[$timestamp] propagate-market-prices-to-ingredients OK"
+    } else {
+        Add-Content $logFile "[$timestamp] ERROR: propagate-market-prices-to-ingredients exit $exitCode4"
+    }
+} catch {
+    Add-Content $logFile "[$timestamp] EXCEPTION (propagate-market-prices-to-ingredients): $_"
+}
+
+$endTime = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+Add-Content $logFile "[$endTime] === Ingredient Price Sync complete ==="
+Add-Content $logFile ""
