@@ -53,7 +53,7 @@ async function main() {
       1,
       sip.price_unit,
       ${today}::date,
-      'Market Average (' || sip.state_count || ' states)',
+      'OpenClaw Market Average',
       'openclaw_market',
       'Market avg: ' || sip.store_count || ' stores, ' || sip.state_count || ' states, confidence ' || sip.confidence
     FROM ingredient_aliases ia
