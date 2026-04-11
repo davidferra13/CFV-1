@@ -295,15 +295,29 @@ async function handleVendorAvailability(
 
     // If still no callId, create a new supplier_calls record for this inbound callback
     if (!callId && aiCall) {
+      // Look up vendor name and phone for the NOT NULL constraints
+      let vendorName = 'Inbound caller'
+      let vendorPhone = aiCall.contact_phone || ''
+      if (aiCall.vendor_id) {
+        const { data: vendor } = await db
+          .from('vendors')
+          .select('name, phone')
+          .eq('id', aiCall.vendor_id)
+          .maybeSingle()
+        if (vendor) {
+          vendorName = vendor.name || vendorName
+          vendorPhone = vendor.phone || vendorPhone
+        }
+      }
       const { data: newCall } = await db
         .from('supplier_calls')
         .insert({
           chef_id: aiCall.chef_id,
           vendor_id: aiCall.vendor_id ?? null,
-          vendor_name: null,
+          vendor_name: vendorName,
+          vendor_phone: vendorPhone,
           ingredient_name: 'Inbound callback',
           status: 'in_progress',
-          triggered_by: 'inbound_callback',
           ai_call_id: aiCallId,
         })
         .select('id')
@@ -666,9 +680,7 @@ async function handleInboundUnknown(
         .from('chef_quick_notes')
         .insert({
           chef_id: aiCall.chef_id,
-          content: `Inbound call from ${callerLabel}: "${speech}"`,
-          source: 'ai_call',
-          source_id: aiCallId,
+          text: `Inbound call from ${callerLabel}: "${speech}"`,
         })
         .catch(() => {})
 
