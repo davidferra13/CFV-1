@@ -181,7 +181,7 @@ function twiml(xml: string) {
 
 function closingTwiml(message: string) {
   const escaped = message.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-  return twiml(`<Response><Say voice="Polly.Ruth-Generative">${escaped}</Say><Hangup/></Response>`)
+  return twiml(`<Response><Say voice="Polly.Matthew">${escaped}</Say><Hangup/></Response>`)
 }
 
 // ---------------------------------------------------------------------------
@@ -261,8 +261,8 @@ export async function POST(req: NextRequest) {
 
     const hasPriceInfo = priceQuoted || quantityAvailable
     const closing = hasPriceInfo
-      ? 'Perfect, I have all the information. Thank you so much, and have a wonderful day!'
-      : "Got it, I'll pass that along. Thanks so much for your time, have a great day!"
+      ? 'Perfect, got it. Thanks a lot, have a good one!'
+      : 'Got it, appreciate it. Have a good one!'
 
     return closingTwiml(closing)
   }
@@ -286,10 +286,12 @@ export async function POST(req: NextRequest) {
     const gatherAction = `${process.env.NEXTAUTH_URL || 'https://app.cheflowhq.com'}/api/calling/gather?callId=${encodeURIComponent(callId)}&step=2`
 
     return twiml(`<Response>
-  <Gather input="speech" timeout="8" speechTimeout="4" action="${gatherAction}" method="POST">
-    <Say voice="Polly.Ruth-Generative">Fantastic! Could you quickly tell me the current price and roughly how much you have available? For example, four fifty a pound or about three pounds.</Say>
+  <Say voice="Polly.Matthew">Awesome, thanks.</Say>
+  <Pause length="0.8"/>
+  <Gather input="speech" timeout="10" speechTimeout="5" action="${gatherAction}" method="POST">
+    <Say voice="Polly.Matthew">One more thing - what's the price on that, and roughly how much do you have available?</Say>
   </Gather>
-  <Say voice="Polly.Ruth-Generative">No worries, I'll just note that it's in stock. Thank you so much, have a great day!</Say>
+  <Say voice="Polly.Matthew">Got it, I'll just note it's in stock. Thanks a lot!</Say>
   <Hangup/>
 </Response>`)
   }
@@ -321,9 +323,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return closingTwiml(
-      'Got it, no worries at all. Thanks for your time, and have a great rest of your day!'
-    )
+    return closingTwiml('Got it, no problem at all. Thanks for your time!')
   }
 
   // Unclear response - close without a result
@@ -332,5 +332,5 @@ export async function POST(req: NextRequest) {
     .update({ status: 'completed', updated_at: new Date().toISOString() })
     .eq('id', callId)
 
-  return closingTwiml('Sorry about that! Thanks so much for picking up. Have a great day!')
+  return closingTwiml("Sorry about that, couldn't quite catch that. Thanks for picking up!")
 }

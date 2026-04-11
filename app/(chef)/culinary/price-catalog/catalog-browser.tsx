@@ -54,7 +54,11 @@ import {
 } from 'lucide-react'
 import type { PriceHistoryPoint } from '@/lib/openclaw/price-intelligence-actions'
 import { getVendorCallQueue, type VendorCallCandidate } from '@/lib/vendors/sourcing-actions'
-import { initiateSupplierCall, getCallStatus } from '@/lib/calling/twilio-actions'
+import {
+  initiateSupplierCall,
+  initiateAdHocCall,
+  getCallStatus,
+} from '@/lib/calling/twilio-actions'
 
 type ViewMode = 'table' | 'grid' | 'store-aisle'
 type CatalogView = 'store-picker' | 'browsing'
@@ -139,6 +143,7 @@ function VendorCallQueuePanel({ query }: { query: string }) {
   const [loading, setLoading] = useState(true)
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [callStates, setCallStates] = useState<Record<string, CallState>>({})
+  const [callingAll, setCallingAll] = useState(false)
 
   useEffect(() => {
     if (!query || query.length < 2) {
@@ -186,7 +191,10 @@ function VendorCallQueuePanel({ query }: { query: string }) {
   async function placeCall(vendor: VendorCallCandidate) {
     setCallStates((prev) => ({ ...prev, [vendor.id]: { phase: 'calling' } }))
     try {
-      const result = await initiateSupplierCall(vendor.id, query)
+      const result =
+        vendor.source === 'national'
+          ? await initiateAdHocCall(vendor.phone, vendor.name, query, vendor.id)
+          : await initiateSupplierCall(vendor.id, query)
       if (!result.success) {
         setCallStates((prev) => ({
           ...prev,
@@ -225,19 +233,51 @@ function VendorCallQueuePanel({ query }: { query: string }) {
     }
   }
 
+  async function callAll() {
+    const callable = vendors.filter((v) => !callStates[v.id] || callStates[v.id].phase === 'idle')
+    if (callable.length === 0) return
+    setCallingAll(true)
+    // Fire all calls simultaneously - each result streams back independently via SSE poll
+    await Promise.allSettled(callable.map((v) => placeCall(v)))
+    setCallingAll(false)
+  }
+
   // Don't render if still loading or no vendors have phone numbers
   if (loading || vendors.length === 0) return null
 
   return (
     <div className="bg-stone-900 rounded-lg border border-stone-700 overflow-hidden">
-      <div className="px-5 py-3 border-b border-stone-700 flex items-center gap-2.5">
-        <Phone className="w-4 h-4 text-stone-400 flex-shrink-0" />
-        <div>
-          <p className="text-sm font-medium text-stone-200">Call Sheet</p>
-          <p className="text-xs text-stone-500 mt-0.5">
-            Not in the catalog or online. These vendors may have it.
-          </p>
+      <div className="px-5 py-3 border-b border-stone-700 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <Phone className="w-4 h-4 text-stone-400 flex-shrink-0" />
+          <div>
+            <p className="text-sm font-medium text-stone-200">Call Sheet</p>
+            <p className="text-xs text-stone-500 mt-0.5">
+              {vendors.length} vendor{vendors.length !== 1 ? 's' : ''} with phones
+            </p>
+          </div>
         </div>
+        {callingEnabled && (
+          <button
+            type="button"
+            onClick={callAll}
+            disabled={callingAll || vendors.every((v) => callStates[v.id]?.phase === 'calling')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors
+              bg-violet-600 hover:bg-violet-500 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {callingAll ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                Calling all...
+              </>
+            ) : (
+              <>
+                <Phone className="w-3.5 h-3.5" />
+                Call All ({vendors.length})
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       <ul className="divide-y divide-stone-800">
@@ -352,26 +392,13 @@ function VendorCallQueuePanel({ query }: { query: string }) {
 
       <div className="px-5 py-2.5 border-t border-stone-800 bg-stone-950/50">
         <p className="text-xs text-stone-600">
-          Manage contacts in{' '}
           <a
-            href="/culinary/vendors"
+            href="/culinary/call-sheet"
             className="text-stone-500 hover:text-stone-400 underline underline-offset-2"
           >
-            Vendors
+            Open Call Sheet
           </a>
-          {callingEnabled ? (
-            <>
-              {'. '}
-              <a
-                href="/culinary/call-sheet"
-                className="text-stone-500 hover:text-stone-400 underline underline-offset-2"
-              >
-                View call sheet
-              </a>
-            </>
-          ) : (
-            '.'
-          )}
+          {' for full calling controls and call history.'}
         </p>
       </div>
     </div>

@@ -26,6 +26,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false }, { status: 400 })
   }
 
+  const { searchParams } = new URL(req.url)
+  const callId = searchParams.get('callId')
+
   const db: any = createAdminClient()
 
   const statusMap: Record<string, string> = {
@@ -49,13 +52,31 @@ export async function POST(req: NextRequest) {
     updated_at: new Date().toISOString(),
   }
   if (callDuration) update.duration_seconds = parseInt(callDuration, 10)
+  // Always stamp the call_sid so future lookups work
+  update.call_sid = callSid
 
-  const { data: callRecord } = await db
-    .from('supplier_calls')
-    .update(update)
-    .eq('call_sid', callSid)
-    .select('id, chef_id, vendor_name, ingredient_name, result')
-    .single()
+  // Look up by callId (query param) first - avoids race condition where call_sid
+  // hasn't been written yet when the first status callback fires.
+  // Fall back to call_sid lookup for backwards compatibility.
+  let callRecord: any = null
+  if (callId) {
+    const { data } = await db
+      .from('supplier_calls')
+      .update(update)
+      .eq('id', callId)
+      .select('id, chef_id, vendor_name, ingredient_name, result')
+      .single()
+    callRecord = data
+  }
+  if (!callRecord) {
+    const { data } = await db
+      .from('supplier_calls')
+      .update(update)
+      .eq('call_sid', callSid)
+      .select('id, chef_id, vendor_name, ingredient_name, result')
+      .single()
+    callRecord = data
+  }
 
   if (!callRecord) return NextResponse.json({ ok: true })
 
