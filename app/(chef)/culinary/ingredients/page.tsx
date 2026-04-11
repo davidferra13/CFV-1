@@ -168,7 +168,12 @@ export default async function IngredientsPage() {
                         compact
                       />
                     ) : (
-                      <span className="text-stone-500">Not set</span>
+                      <Link
+                        href={`/culinary/price-catalog?q=${encodeURIComponent(ing.name)}`}
+                        className="text-stone-500 hover:text-brand-600 text-xs underline underline-offset-2"
+                      >
+                        Find price
+                      </Link>
                     )}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">

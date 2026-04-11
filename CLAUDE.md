@@ -14,7 +14,9 @@ This file is read by Claude Code at the start of every conversation. These rules
 >
 > **NEVER** generate padded, hedging, verbose responses when a short one works. Don't add caveats. Don't restate what you're about to do - just do it. Don't offer multiple options when one is clearly correct. Be direct. Be brief. Do the work.
 >
-> **NEVER** tell the developer to restart something. You have Bash. If the dev server needs restarting, kill the process and start it. If Ollama needs restarting, run `ollama serve`. If a service is down, check why and fix it. The ONLY exception is if you literally cannot do it (e.g., a physical power cycle, or a process owned by a different user). "Please restart the dev server" when you have `bash` access is laziness. Just run the command.
+> **NEVER** tell the developer to restart something that is NOT currently running. If the dev server is down, start it. If Ollama is down, run `ollama serve`. If a service is missing, bring it up. Don't ask - just do it.
+>
+> **HOWEVER:** If a server IS actively running and you need to restart it to pick up code changes, do NOT kill it unannounced. The developer may be actively using it. Instead: make the code changes, then say "Changes saved to [file]. Restart the dev server when you're ready to pick them up." Let them choose the moment. The exception: if the developer explicitly tells you to restart a running server, do it. **The rule in plain English: start dead things, don't kill live things.**
 
 > **BLOCK 2 - READ THIS ENTIRE FILE BEFORE STARTING WORK**
 >

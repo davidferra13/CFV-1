@@ -424,7 +424,7 @@ function relativeTime(dateStr: string | null): string {
 // Component
 // ---------------------------------------------------------------------------
 
-export function CatalogBrowser() {
+export function CatalogBrowser({ initialSearch = '' }: { initialSearch?: string }) {
   // View state
   const [catalogView, setCatalogView] = useState<CatalogView>('store-picker')
   const [activeStoreName, setActiveStoreName] = useState<string | null>(null)
@@ -437,7 +437,7 @@ export function CatalogBrowser() {
   const [nextCursor, setNextCursor] = useState<string | undefined>(undefined)
 
   // Filters
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState(initialSearch)
   const [categories, setCategories] = useState<string[]>([])
   const [allStores, setAllStores] = useState<CatalogStore[]>([])
   const [preferredStoreNames, setPreferredStoreNames] = useState<string[]>([])

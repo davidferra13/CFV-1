@@ -174,6 +174,8 @@ Revenue comes from **voluntary supporter contributions** (Stripe checkout, cance
 4. **Do NOT add Pro badges, lock icons, or "upgrade to unlock" messaging anywhere in the UI.**
 5. Community features are always free and ungated. Community growth is the priority.
 
+**AGENT WARNING: If you see `requirePro()` in a server action, it is NOT gating anything.** It is a plain auth pass-through identical to `requireChef()`. The name is a historical artifact. There are 73 call sites - do not remove them (compilation would break with zero functional benefit). Do not add new ones either.
+
 **What still exists (for legacy compatibility):**
 
 - `requirePro()` in `lib/billing/require-pro.ts` - now just calls `requireChef()`, never blocks

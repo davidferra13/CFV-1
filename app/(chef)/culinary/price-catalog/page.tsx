@@ -46,7 +46,12 @@ function StatCard({
   )
 }
 
-export default async function FoodCatalogPage() {
+export default async function FoodCatalogPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>
+}) {
+  const { q } = await searchParams
   await requireChef()
 
   const defaultCatalogStats: CatalogStatsResult = { total: 0, priced: 0, categories: [] }
@@ -139,7 +144,7 @@ export default async function FoodCatalogPage() {
 
       <OpenClawRefreshStatus status={refreshStatus} variant="local-mirror" />
 
-      <CatalogBrowser />
+      <CatalogBrowser initialSearch={q ?? ''} />
     </div>
   )
 }

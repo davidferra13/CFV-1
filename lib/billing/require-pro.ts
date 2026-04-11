@@ -1,19 +1,24 @@
 'use server'
 
-// Server action wrapper - previously enforced Pro access.
-// Now a pass-through: all features are free. Retained so 83+ call sites
-// continue to compile without changes. The function still authenticates
-// the chef (requireChef) so auth is preserved.
+// ============================================================
+// NO PRO TIER. ALL FEATURES ARE FREE.
+// ============================================================
+// requirePro() is a PASS-THROUGH. It only authenticates the chef.
+// It does NOT gate any feature. It never will again.
 //
-// Monetization has moved to voluntary patronage. See docs/monetization-shift.md.
+// Why it still exists: 73 call sites across the codebase import it.
+// Removing it would break compilation. The name is misleading but the
+// behavior is plain auth — identical to calling requireChef() directly.
+//
+// If you are reading this because you saw requirePro() in a server action
+// and assumed the feature is Pro-gated: IT IS NOT. It is free for everyone.
+//
+// Monetization: voluntary supporter contributions via Stripe only.
+// See docs/monetization-shift.md and CLAUDE.md § Monetization Model.
+// ============================================================
 
 import { requireChef, type AuthUser } from '@/lib/auth/get-user'
 
-/**
- * Authenticate the current chef session.
- * Previously enforced Pro tier gating; now all features are accessible to everyone.
- * @param _featureSlug - retained for call-site compatibility (unused)
- */
 export async function requirePro(_featureSlug: string): Promise<AuthUser> {
   return await requireChef()
 }
