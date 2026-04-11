@@ -44,10 +44,18 @@ async function getStats(sql) {
     SELECT
       (SELECT COUNT(*) FROM system_ingredients
        WHERE is_active = true
-         AND usda_food_group IS NOT NULL
-         AND usda_food_group NOT IN ('Restaurant Foods', 'Fast Foods', 'Branded Food Products Database')
          AND name NOT LIKE '%''%'
-         AND name NOT LIKE '"%') AS targetable,
+         AND name NOT LIKE '"%'
+         AND (
+           (usda_food_group IS NOT NULL
+            AND usda_food_group NOT IN ('Restaurant Foods', 'Fast Foods', 'Branded Food Products Database'))
+           OR
+           (usda_food_group IS NULL
+            AND LENGTH(name) <= 50
+            AND name NOT LIKE '%®%'
+            AND name NOT LIKE '%™%'
+            AND name NOT SIMILAR TO '%(Inc\.|LLC|Corp\.|Brand|Mix|Kit|Bundle|Set|Pack|Box|Can|Jar|Combo)%')
+         )) AS targetable,
       (SELECT COUNT(*) FROM ingredient_knowledge
        WHERE wiki_summary IS NOT NULL AND needs_review = false) AS enriched,
       (SELECT COUNT(*) FROM ingredient_knowledge k

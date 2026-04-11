@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-16"?>
+<!--
+  Windows Task Scheduler: ChefFlow Nightly Ingredient Enrichment
+  Runs the OpenClaw wiki drain every night at 2:00 AM local time.
+
+  To install:
+    schtasks /create /xml scripts\nightly-enrichment-task.xml /tn "ChefFlow\NightlyEnrichment"
+
+  To check status:
+    schtasks /query /tn "ChefFlow\NightlyEnrichment" /fo LIST
+
+  To run immediately:
+    schtasks /run /tn "ChefFlow\NightlyEnrichment"
+
+  To delete:
+    schtasks /delete /tn "ChefFlow\NightlyEnrichment" /f
+
+  Log output goes to: C:\Users\david\Documents\CFv1\logs\enrichment.log
+  The script uses batch=200 and pause=10 to stay gentle on the local DB.
+  Requires: Docker (PostgreSQL) running, Node.js in PATH.
+-->
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo>
+    <Date>2026-04-10T00:00:00</Date>
+    <Author>ChefFlow</Author>
+    <Description>Nightly OpenClaw ingredient knowledge enrichment. Processes unenriched ingredients from Wikipedia and USDA FoodData Central.</Description>
+    <URI>\ChefFlow\NightlyEnrichment</URI>
+  </RegistrationInfo>
+  <Triggers>
+    <CalendarTrigger>
+      <StartBoundary>2026-04-11T02:00:00</StartBoundary>
+      <Enabled>true</Enabled>
+      <ScheduleByDay>
+        <DaysInterval>1</DaysInterval>
+      </ScheduleByDay>
+    </CalendarTrigger>
+  </Triggers>
+  <Principals>
+    <Principal id="Author">
+      <LogonType>InteractiveToken</LogonType>
+      <RunLevel>LeastPrivilege</RunLevel>
+    </Principal>
+  </Principals>
+  <Settings>
+    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+    <AllowHardTerminate>true</AllowHardTerminate>
+    <StartWhenAvailable>true</StartWhenAvailable>
+    <RunOnlyIfNetworkAvailable>true</RunOnlyIfNetworkAvailable>
+    <IdleSettings>
+      <StopOnIdleEnd>false</StopOnIdleEnd>
+      <RestartOnIdle>false</RestartOnIdle>
+    </IdleSettings>
+    <AllowStartOnDemand>true</AllowStartOnDemand>
+    <Enabled>true</Enabled>
+    <Hidden>false</Hidden>
+    <RunOnlyIfIdle>false</RunOnlyIfIdle>
+    <WakeToRun>false</WakeToRun>
+    <ExecutionTimeLimit>PT8H</ExecutionTimeLimit>
+    <Priority>7</Priority>
+  </Settings>
+  <Actions Context="Author">
+    <Exec>
+      <Command>cmd.exe</Command>
+      <Arguments>/c "cd /d C:\Users\david\Documents\CFv1 &amp;&amp; node scripts\openclaw-wiki-drain.mjs --batch 200 --pause 10 >> logs\enrichment.log 2>&amp;1"</Arguments>
+      <WorkingDirectory>C:\Users\david\Documents\CFv1</WorkingDirectory>
+    </Exec>
+  </Actions>
+</Task>

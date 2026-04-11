@@ -23,7 +23,7 @@ export function PublicFooter() {
 
   return (
     <footer className="border-t border-stone-700/50 bg-stone-950/60 backdrop-blur-sm">
-      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-10 px-4 py-12 sm:px-6 sm:grid-cols-2 lg:grid-cols-5 lg:px-8">
+      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-10 px-4 py-12 sm:px-6 sm:grid-cols-2 lg:grid-cols-6 lg:px-8">
         {/* Brand */}
         <div className="sm:col-span-2 lg:col-span-1">
           <Link href="/" className="inline-flex items-center gap-2.5">
@@ -31,8 +31,8 @@ export function PublicFooter() {
             <span className="text-base font-display tracking-tight text-stone-100">ChefFlow</span>
           </Link>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-stone-400">
-            Find a private chef or run your food business from one place. Built by a chef, free to
-            use, no commission.
+            Book a private chef, browse chef profiles, or explore the broader food directory.
+            ChefFlow also powers the operator back office.
           </p>
         </div>
 
@@ -80,6 +80,25 @@ export function PublicFooter() {
                 {isBeta ? 'Request operator access' : 'Operator sign up'}
               </Link>
             </li>
+          </ul>
+        </div>
+
+        {/* Resources */}
+        <div>
+          <p className="text-sm font-semibold text-stone-100">
+            {FOOTER_SECTIONS.resources.heading}
+          </p>
+          <ul className="mt-4 space-y-2">
+            {FOOTER_SECTIONS.resources.links.map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className="text-sm text-stone-400 transition-colors hover:text-stone-100"
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
 

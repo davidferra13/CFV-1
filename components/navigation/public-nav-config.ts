@@ -10,6 +10,14 @@
 // Types
 // ---------------------------------------------------------------------------
 
+import {
+  PUBLIC_DINNER_CIRCLES_ENTRY,
+  PUBLIC_OPERATOR_ENTRY,
+  PUBLIC_PRIMARY_CONSUMER_CTA,
+  PUBLIC_SECONDARY_CONSUMER_CTA,
+  PUBLIC_SUPPORTING_DIRECTORY_ENTRY,
+} from '@/lib/public/public-surface-config'
+
 export type PublicNavItem = {
   href: string
   label: string
@@ -39,16 +47,18 @@ export { isGroup }
 /** Desktop/mobile header nav items. Groups render as dropdown menus. */
 export const PUBLIC_NAV: PublicNavEntry[] = [
   {
-    label: 'Find a Chef',
+    label: 'Hire a Chef',
     items: [
-      { href: '/book', label: 'Book a Chef' },
-      { href: '/chefs', label: 'Browse Chefs' },
+      PUBLIC_PRIMARY_CONSUMER_CTA,
+      PUBLIC_SECONDARY_CONSUMER_CTA,
+      PUBLIC_DINNER_CIRCLES_ENTRY,
       { href: '/services', label: 'Services' },
+      { href: '/how-it-works', label: 'How It Works' },
+      PUBLIC_SUPPORTING_DIRECTORY_ENTRY,
     ],
   },
-  // { href: '/nearby', label: 'Nearby' }, // Hidden until data quality is production-ready
-  { href: '/how-it-works', label: 'How It Works' },
-  { href: '/for-operators', label: 'For Operators' },
+  PUBLIC_OPERATOR_ENTRY,
+  { href: '/ingredients', label: 'Ingredients' },
 ]
 
 // ---------------------------------------------------------------------------
@@ -57,30 +67,38 @@ export const PUBLIC_NAV: PublicNavEntry[] = [
 
 export const FOOTER_SECTIONS = {
   discover: {
-    heading: 'Find Food',
+    heading: 'Hire a Chef',
     links: [
-      { href: '/book', label: 'Book a Chef' },
-      { href: '/chefs', label: 'Browse Chefs' },
+      PUBLIC_PRIMARY_CONSUMER_CTA,
+      PUBLIC_SECONDARY_CONSUMER_CTA,
+      PUBLIC_DINNER_CIRCLES_ENTRY,
       { href: '/services', label: 'Services' },
-      // { href: '/nearby', label: 'Nearby' }, // Hidden until data quality is production-ready
-      { href: '/contact', label: 'Contact' },
+      { href: '/how-it-works', label: 'How It Works' },
+      PUBLIC_SUPPORTING_DIRECTORY_ENTRY,
     ],
   },
   forOperators: {
     heading: 'For Operators',
     links: [
-      { href: '/for-operators', label: 'Why ChefFlow' },
+      PUBLIC_OPERATOR_ENTRY,
       { href: '/marketplace-chefs', label: 'Marketplace Chefs' },
       { href: '/partner-signup', label: 'Become a Partner' },
+    ],
+  },
+  resources: {
+    heading: 'Resources',
+    links: [
+      { href: '/ingredients', label: 'Ingredient Guide' },
+      { href: '/faq', label: 'FAQ' },
+      { href: '/how-it-works', label: 'How It Works' },
     ],
   },
   company: {
     heading: 'Company',
     links: [
       { href: '/about', label: 'About' },
-      { href: '/how-it-works', label: 'How It Works' },
-      { href: '/faq', label: 'FAQ' },
       { href: '/trust', label: 'Trust Center' },
+      { href: '/contact', label: 'Contact' },
     ],
   },
   legal: {

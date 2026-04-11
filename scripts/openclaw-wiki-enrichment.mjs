@@ -577,15 +577,28 @@ async function main() {
     `
   } else {
     const resumeClause = RESUME ? sql`AND k.system_ingredient_id IS NULL` : sql``
+    // Expanded targetable set: USDA-classified culinary ingredients PLUS
+    // null-group ingredients that pass quality filters (short name, no brand signals).
+    // This grows coverage from ~4,500 to ~15,600+ real culinary ingredients.
     ingredients = await sql`
       SELECT si.id, si.name, si.category, si.usda_food_group, si.usda_fdc_id
       FROM system_ingredients si
       LEFT JOIN ingredient_knowledge k ON k.system_ingredient_id = si.id
       WHERE si.is_active = true
-        AND si.usda_food_group IS NOT NULL
-        AND si.usda_food_group NOT IN ('Restaurant Foods', 'Fast Foods', 'Branded Food Products Database')
         AND si.name NOT LIKE '%''%'
         AND si.name NOT LIKE '"%'
+        AND (
+          -- USDA-classified culinary ingredients (existing)
+          (si.usda_food_group IS NOT NULL
+           AND si.usda_food_group NOT IN ('Restaurant Foods', 'Fast Foods', 'Branded Food Products Database'))
+          OR
+          -- Null-group ingredients that look like real culinary items
+          (si.usda_food_group IS NULL
+           AND LENGTH(si.name) <= 50
+           AND si.name NOT LIKE '%®%'
+           AND si.name NOT LIKE '%™%'
+           AND si.name NOT SIMILAR TO '%(Inc\.|LLC|Corp\.|Brand|Mix|Kit|Bundle|Set|Pack|Box|Can|Jar|Combo)%')
+        )
         ${resumeClause}
       ORDER BY si.name ASC
       ${LIMIT ? sql`LIMIT ${LIMIT}` : sql``}
