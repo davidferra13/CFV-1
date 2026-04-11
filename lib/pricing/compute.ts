@@ -1196,16 +1196,26 @@ export function generateRateCardFromConfig(config?: PricingConfig): string {
 
   const centsToDisplay = (cents: number): string => `$${(cents / 100).toFixed(0)}`
 
-  const couplesLines = Object.entries(rc.couplesRates)
-    .map(
-      ([courses, cents]) =>
-        `${courses} courses: ${centsToDisplay(cents)}/person (${centsToDisplay(cents * 2)} total)`
-    )
-    .join('\n')
+  // Only include tiers that have been configured (non-zero). Showing $0 to clients is
+  // worse than showing nothing - it implies free service or a misconfigured rate.
+  const couplesEntries = Object.entries(rc.couplesRates).filter(([, cents]) => cents > 0)
+  const couplesLines =
+    couplesEntries.length > 0
+      ? couplesEntries
+          .map(
+            ([courses, cents]) =>
+              `${courses} courses: ${centsToDisplay(cents)}/person (${centsToDisplay(cents * 2)} total)`
+          )
+          .join('\n')
+      : 'Contact for custom quote'
 
-  const groupLines = Object.entries(rc.groupRates)
-    .map(([courses, cents]) => `${courses} courses: ${centsToDisplay(cents)}/person`)
-    .join('\n')
+  const groupEntries = Object.entries(rc.groupRates).filter(([, cents]) => cents > 0)
+  const groupLines =
+    groupEntries.length > 0
+      ? groupEntries
+          .map(([courses, cents]) => `${courses} courses: ${centsToDisplay(cents)}/person`)
+          .join('\n')
+      : 'Contact for custom quote'
 
   const multiNightLines = Object.entries(rc.multiNightPackages)
     .filter(([, cents]) => cents > 0)
@@ -1224,8 +1234,41 @@ export function generateRateCardFromConfig(config?: PricingConfig): string {
     })
     .join('\n')
 
-  return `RATE CARD (for reference - AI formats only, never calculates):
+  // Weekly rates: only show if configured
+  const weeklyStandardLine =
+    rc.weeklyRates.standard_day.min > 0 || rc.weeklyRates.standard_day.max > 0
+      ? `Standard cooking day: ${centsToDisplay(rc.weeklyRates.standard_day.min)}-${centsToDisplay(rc.weeklyRates.standard_day.max)}/day`
+      : 'Standard cooking day: Contact for pricing'
 
+  const weeklyCommitLine =
+    rc.weeklyRates.commitment_day.min > 0 || rc.weeklyRates.commitment_day.max > 0
+      ? `Commitment rate (${rc.weeklyCommitmentMinDays}+ consecutive days, same home): ${centsToDisplay(rc.weeklyRates.commitment_day.min)}-${centsToDisplay(rc.weeklyRates.commitment_day.max)}/day`
+      : `Commitment rate (${rc.weeklyCommitmentMinDays}+ consecutive days, same home): Contact for pricing`
+
+  const cookAndLeaveLine =
+    rc.weeklyRates.cook_and_leave > 0
+      ? `Cook & Leave (2 meals, no service): ${centsToDisplay(rc.weeklyRates.cook_and_leave)}/session`
+      : 'Cook & Leave (2 meals, no service): Contact for pricing'
+
+  const pizzaLine =
+    rc.pizzaRate > 0
+      ? `Summer Brick-Fired Pizza Experience: ${centsToDisplay(rc.pizzaRate)}/person`
+      : 'Summer Brick-Fired Pizza Experience: Contact for pricing'
+
+  const minimumLine =
+    rc.minimumBookingCents > 0
+      ? `Minimum booking: ${centsToDisplay(rc.minimumBookingCents)} (service fee floor)`
+      : 'Minimum booking: Contact for details'
+
+  // Warn Remy when most rates are unconfigured so it defers pricing to the chef
+  const allRatesZero = couplesEntries.length === 0 && groupEntries.length === 0
+  const pricingWarning = allRatesZero
+    ? '\nWARNING: Most rates are not yet configured. Do NOT quote specific dollar amounts. ' +
+      'Tell the client the chef will follow up with a custom quote for their event.\n'
+    : ''
+
+  return `RATE CARD (for reference - AI formats only, never calculates):
+${pricingWarning}
 COUPLES (1-2 guests):
 ${couplesLines}
 Large tasting (8-15+): Custom
@@ -1236,15 +1279,15 @@ Large group (${rc.largeGroupMin}-${rc.largeGroupMax}): Standard group rates appl
 Large tasting (${rc.largeGroupMax + 1}+): Custom / Buyout required
 
 WEEKLY/ONGOING:
-Standard cooking day: ${centsToDisplay(rc.weeklyRates.standard_day.min)}-${centsToDisplay(rc.weeklyRates.standard_day.max)}/day
-Commitment rate (${rc.weeklyCommitmentMinDays}+ consecutive days, same home): ${centsToDisplay(rc.weeklyRates.commitment_day.min)}-${centsToDisplay(rc.weeklyRates.commitment_day.max)}/day
-Cook & Leave (2 meals, no service): ${centsToDisplay(rc.weeklyRates.cook_and_leave)}/session
+${weeklyStandardLine}
+${weeklyCommitLine}
+${cookAndLeaveLine}
 
 MULTI-DAY PACKAGES:
 ${multiNightLines || '(none confirmed yet)'}
 
 SEASONAL:
-Summer Brick-Fired Pizza Experience: ${centsToDisplay(rc.pizzaRate)}/person
+${pizzaLine}
 
 WEEKEND PREMIUM (when enabled):
 Friday/Saturday events: +${Math.round(rc.weekendPremiumPercent * 100)}% on service fee
@@ -1258,5 +1301,5 @@ NOTES:
 - Table setting and beverages not included
 - Deposit: ${Math.round(rc.depositPercentage * 100)}% non-refundable to lock date
 - Balance due ${rc.balanceDueHours} hours before service
-- Minimum booking: ${centsToDisplay(rc.minimumBookingCents)} (service fee floor)`
+- ${minimumLine}`
 }
