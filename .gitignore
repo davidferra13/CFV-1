@@ -253,3 +253,13 @@ qa-screenshots/
 .qa-screenshots/
 tmp-screenshots/
 builds/
+
+# MemPalace (local AI memory, machine-specific)
+mempalace.yaml
+entities.json
+.mempalace/
+
+# Archive Digester - contains client PII, never commit
+scripts/archive-digester/extracted-threads.json
+scripts/archive-digester/parsed-emails.json
+scripts/archive-digester/*.mbox
