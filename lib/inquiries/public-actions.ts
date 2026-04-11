@@ -393,16 +393,21 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   }
 
   // SMS alert to chef (non-blocking) - hardwired so the chef actually knows
+  // Priority: routing rules chef_sms_number > chefs.phone > env var
   // This fires regardless of whether email was delivered.
   try {
     const { sendSms } = await import('@/lib/sms/send')
     const db2: any = createServerClient()
-    const { data: chefRecord } = await db2
-      .from('chefs')
-      .select('phone')
-      .eq('id', tenantId)
-      .maybeSingle()
-    const chefPhone = chefRecord?.phone || process.env.CHEF_ALERT_SMS_NUMBER
+    const [{ data: routingRule }, { data: chefRecord }] = await Promise.all([
+      db2
+        .from('ai_call_routing_rules')
+        .select('chef_sms_number')
+        .eq('chef_id', tenantId)
+        .maybeSingle(),
+      db2.from('chefs').select('phone').eq('id', tenantId).maybeSingle(),
+    ])
+    const chefPhone =
+      routingRule?.chef_sms_number || chefRecord?.phone || process.env.CHEF_ALERT_SMS_NUMBER
     if (chefPhone) {
       const guestCount = validated.guest_count
       const eventDate = validated.event_date ? ` on ${validated.event_date}` : ''

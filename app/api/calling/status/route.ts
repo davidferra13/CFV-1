@@ -15,6 +15,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
 import { broadcast } from '@/lib/realtime/broadcast'
+import { sendSms } from '@/lib/sms/send'
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData()
@@ -147,6 +148,43 @@ export async function POST(req: NextRequest) {
       })
     } catch (err) {
       console.error('[calling/status] broadcast error:', err)
+    }
+
+    // SMS alert to chef for hard-fail outcomes (no-answer, busy, failed)
+    // They need to know so they can follow up manually.
+    if (isHardFail) {
+      try {
+        const { data: routingRule } = await db
+          .from('ai_call_routing_rules')
+          .select('chef_sms_number')
+          .eq('chef_id', callRecord.chef_id)
+          .maybeSingle()
+        const { data: chef } = await db
+          .from('chefs')
+          .select('phone')
+          .eq('id', callRecord.chef_id)
+          .maybeSingle()
+        const chefPhone =
+          (routingRule as any)?.chef_sms_number ||
+          (chef as any)?.phone ||
+          process.env.CHEF_ALERT_SMS_NUMBER
+        if (chefPhone) {
+          const statusText =
+            mappedStatus === 'no_answer'
+              ? 'no answer'
+              : mappedStatus === 'busy'
+                ? 'line busy'
+                : 'call failed'
+          const vendor = callRecord.vendor_name || 'Vendor'
+          const ingredient = callRecord.ingredient_name ? ` re: ${callRecord.ingredient_name}` : ''
+          await sendSms(
+            chefPhone,
+            `ChefFlow: Call to ${vendor}${ingredient} - ${statusText}. May need manual follow-up.`
+          )
+        }
+      } catch (smsErr) {
+        console.error('[calling/status] chef SMS alert failed (non-blocking):', smsErr)
+      }
     }
   }
 

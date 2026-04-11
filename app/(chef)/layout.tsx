@@ -63,6 +63,10 @@ const RouteTracker = dynamic(
   () => import('@/components/session/route-tracker').then((m) => m.RouteTracker),
   { ssr: false }
 )
+const ChefLiveAlerts = dynamic(
+  () => import('@/components/calling/chef-live-alerts').then((m) => m.ChefLiveAlerts),
+  { ssr: false }
+)
 // RouteProgress: regular import (not dynamic) so the bar is available from first render
 import { RouteProgress } from '@/components/ui/route-progress'
 
@@ -232,6 +236,9 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
 
                     {/* Route tracker -- stores last active path for session recovery */}
                     <RouteTracker />
+
+                    {/* Live alerts - inbound calls, new inquiries, call completions, voicemails */}
+                    <ChefLiveAlerts tenantId={user.tenantId ?? user.entityId} />
                   </div>
                 </KeyboardShortcutsWrapper>
               </NotificationProvider>
