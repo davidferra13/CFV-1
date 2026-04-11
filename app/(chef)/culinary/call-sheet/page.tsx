@@ -1,11 +1,11 @@
 /**
- * Call Sheet
+ * Call Sheet - AI Admin Voice System
  *
- * The calling hub. Search for an ingredient, see every vendor that can
- * supply it (your saved contacts first, then nearby vendors from the
- * national directory), toggle who to call, and fire them all at once.
+ * The full AI calling hub. Handles all vendor/venue/equipment calls.
+ * Inbound voicemail. Full transcript log. Per-call audio playback.
  *
- * No "add vendor" step required. The system knows who to call.
+ * HARD RULE: This system never calls clients.
+ * Clients receive email and SMS. Voice is for vendors and businesses only.
  *
  * Gated behind the supplier_calling feature flag.
  */
@@ -15,13 +15,26 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import { getRecentCalls } from '@/lib/calling/twilio-actions'
+import { getRecentCalls, getRecentAiCalls, getRoutingRules } from '@/lib/calling/twilio-actions'
 import { listVendors } from '@/lib/vendors/actions'
-import { Phone, Check, X, Clock, AlertCircle, Mic, Users } from '@/components/ui/icons'
+import {
+  Phone,
+  Check,
+  X,
+  Clock,
+  AlertCircle,
+  Mic,
+  Users,
+  Settings,
+  Inbox,
+  ArrowDownRight,
+  ArrowUpRight,
+} from '@/components/ui/icons'
 import { formatDistanceToNow } from 'date-fns'
 import { CallHub } from '@/components/calling/call-hub'
 import { NationalVendorSearch } from '@/components/vendors/national-vendor-search'
 import { VendorDirectoryClient } from '@/app/(chef)/culinary/vendors/vendor-directory-client'
+import { CallSettingsForm } from '@/components/calling/call-settings-form'
 
 export const metadata: Metadata = { title: 'Call Sheet' }
 
@@ -47,21 +60,23 @@ async function getNationalVendorCount(state: string): Promise<number> {
   return count ?? 0
 }
 
-function StatusIcon({ status, result }: { status: string; result: 'yes' | 'no' | null }) {
+function StatusIcon({ status, result }: { status: string; result?: 'yes' | 'no' | null }) {
   if (status === 'completed' && result === 'yes')
     return <Check className="w-4 h-4 text-emerald-400" />
   if (status === 'completed' && result === 'no') return <X className="w-4 h-4 text-rose-400" />
-  if (status === 'completed') return <Phone className="w-4 h-4 text-stone-500" />
+  if (status === 'completed') return <Check className="w-4 h-4 text-stone-400" />
+  if (status === 'voicemail') return <Mic className="w-4 h-4 text-violet-400" />
   if (status === 'no_answer' || status === 'busy')
     return <Phone className="w-4 h-4 text-amber-400" />
   if (status === 'failed') return <AlertCircle className="w-4 h-4 text-rose-500" />
   return <Clock className="w-4 h-4 text-stone-500" />
 }
 
-function statusLabel(status: string, result: 'yes' | 'no' | null): string {
+function statusLabel(status: string, result?: 'yes' | 'no' | null): string {
   if (status === 'completed' && result === 'yes') return 'In stock'
   if (status === 'completed' && result === 'no') return 'Not available'
-  if (status === 'completed') return 'No response'
+  if (status === 'completed') return 'Completed'
+  if (status === 'voicemail') return 'Voicemail'
   if (status === 'no_answer') return 'No answer'
   if (status === 'busy') return 'Line busy'
   if (status === 'failed') return 'Call failed'
@@ -70,15 +85,36 @@ function statusLabel(status: string, result: 'yes' | 'no' | null): string {
   return 'Queued'
 }
 
-function statusColor(status: string, result: 'yes' | 'no' | null): string {
+function statusColor(status: string, result?: 'yes' | 'no' | null): string {
   if (status === 'completed' && result === 'yes') return 'text-emerald-400'
   if (status === 'completed' && result === 'no') return 'text-rose-400'
+  if (status === 'voicemail') return 'text-violet-400'
   if (status === 'failed') return 'text-rose-500'
   if (status === 'no_answer' || status === 'busy') return 'text-amber-400'
   return 'text-stone-400'
 }
 
-type Tab = 'call' | 'log' | 'vendors'
+const ROLE_LABELS: Record<string, string> = {
+  vendor_availability: 'Availability',
+  vendor_delivery: 'Delivery',
+  venue_confirmation: 'Venue',
+  equipment_rental: 'Equipment',
+  inbound_vendor_callback: 'Vendor CB',
+  inbound_voicemail: 'Voicemail',
+  inbound_unknown: 'Inbound',
+}
+
+const ROLE_COLORS: Record<string, string> = {
+  vendor_availability: 'bg-violet-950 text-violet-300',
+  vendor_delivery: 'bg-blue-950 text-blue-300',
+  venue_confirmation: 'bg-teal-950 text-teal-300',
+  equipment_rental: 'bg-orange-950 text-orange-300',
+  inbound_vendor_callback: 'bg-amber-950 text-amber-300',
+  inbound_voicemail: 'bg-purple-950 text-purple-300',
+  inbound_unknown: 'bg-stone-800 text-stone-400',
+}
+
+type Tab = 'call' | 'log' | 'inbox' | 'vendors' | 'settings'
 
 export default async function CallSheetPage({
   searchParams,
@@ -91,7 +127,16 @@ export default async function CallSheetPage({
 
   const params = await searchParams
   const rawTab = params.tab
-  const tab: Tab = rawTab === 'log' ? 'log' : rawTab === 'vendors' ? 'vendors' : 'call'
+  const tab: Tab =
+    rawTab === 'log'
+      ? 'log'
+      : rawTab === 'inbox'
+        ? 'inbox'
+        : rawTab === 'vendors'
+          ? 'vendors'
+          : rawTab === 'settings'
+            ? 'settings'
+            : 'call'
 
   const db: any = createServerClient()
   const { data: chef } = await db
@@ -101,83 +146,90 @@ export default async function CallSheetPage({
     .single()
   const chefState = chef?.home_state || 'MA'
 
-  const [calls, vendors, nationalCount] = await Promise.all([
+  const [calls, aiCalls, vendors, nationalCount, routingRules] = await Promise.all([
     getRecentCalls(100),
+    getRecentAiCalls(100),
     listVendors(),
     getNationalVendorCount(chefState),
+    getRoutingRules(),
   ])
 
   const savedWithPhone = (vendors as any[]).filter((v) => v.phone)
   const addedVendorIds = new Set(savedWithPhone.map((v: any) => v.id as string))
 
+  const inboxItems = aiCalls.filter(
+    (c) => c.direction === 'inbound' && ['inbound_voicemail', 'inbound_unknown'].includes(c.role)
+  )
+  const inboxCount = inboxItems.length
+
   return (
     <div className="space-y-6 max-w-5xl">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-violet-950 rounded-lg">
-            <Phone size={18} className="text-violet-400" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-stone-100">Call Sheet</h1>
-            <p className="text-sm text-stone-500">
-              {savedWithPhone.length > 0
-                ? `${savedWithPhone.length} saved vendor${savedWithPhone.length !== 1 ? 's' : ''}`
-                : 'No saved vendors'}
-              {nationalCount > 0 && ` + ${nationalCount.toLocaleString()} nearby in directory`}
-              {calls.length > 0 && ` · ${calls.length} call${calls.length !== 1 ? 's' : ''} logged`}
-            </p>
-          </div>
+      <div className="flex items-center gap-3">
+        <div className="p-2 bg-violet-950 rounded-lg">
+          <Phone size={18} className="text-violet-400" />
+        </div>
+        <div>
+          <h1 className="text-xl font-bold text-stone-100">Call Sheet</h1>
+          <p className="text-sm text-stone-500">
+            {savedWithPhone.length > 0
+              ? `${savedWithPhone.length} saved vendor${savedWithPhone.length !== 1 ? 's' : ''}`
+              : 'No saved vendors'}
+            {nationalCount > 0 && ` + ${nationalCount.toLocaleString()} in directory`}
+            {calls.length > 0 && ` · ${calls.length} call${calls.length !== 1 ? 's' : ''} logged`}
+          </p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-stone-800">
-        <Link
-          href="/culinary/call-sheet"
-          className={`px-4 py-2 text-sm font-medium transition-colors ${
-            tab === 'call'
-              ? 'text-stone-100 border-b-2 border-violet-400 -mb-px'
-              : 'text-stone-500 hover:text-stone-300'
-          }`}
-        >
-          Call
-        </Link>
-        <Link
-          href="/culinary/call-sheet?tab=log"
-          className={`px-4 py-2 text-sm font-medium transition-colors ${
-            tab === 'log'
-              ? 'text-stone-100 border-b-2 border-violet-400 -mb-px'
-              : 'text-stone-500 hover:text-stone-300'
-          }`}
-        >
-          Call Log
-          {calls.length > 0 && (
-            <span className="ml-1.5 text-xs px-1.5 py-0.5 rounded bg-stone-800 text-stone-400">
-              {calls.length}
-            </span>
-          )}
-        </Link>
-        <Link
-          href="/culinary/call-sheet?tab=vendors"
-          className={`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-1.5 ${
-            tab === 'vendors'
-              ? 'text-stone-100 border-b-2 border-violet-400 -mb-px'
-              : 'text-stone-500 hover:text-stone-300'
-          }`}
-        >
-          <Users className="w-3.5 h-3.5" />
-          My Vendors
-        </Link>
+      <div className="flex gap-1 border-b border-stone-800 overflow-x-auto">
+        {[
+          { key: 'call' as Tab, label: 'Call' },
+          {
+            key: 'log' as Tab,
+            label: 'Call Log',
+            badge: calls.length > 0 ? String(calls.length) : null,
+          },
+          {
+            key: 'inbox' as Tab,
+            label: 'Inbox',
+            badge: inboxCount > 0 ? String(inboxCount) : null,
+            alert: inboxCount > 0,
+          },
+          { key: 'vendors' as Tab, label: 'My Vendors', icon: 'users' as const },
+          { key: 'settings' as Tab, label: 'Settings', icon: 'settings' as const },
+        ].map(({ key, label, badge, alert, icon }) => (
+          <Link
+            key={key}
+            href={`/culinary/call-sheet${key !== 'call' ? `?tab=${key}` : ''}`}
+            className={`px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap flex items-center gap-1.5 ${
+              tab === key
+                ? 'text-stone-100 border-b-2 border-violet-400 -mb-px'
+                : 'text-stone-500 hover:text-stone-300'
+            }`}
+          >
+            {icon === 'users' && <Users className="w-3.5 h-3.5" />}
+            {icon === 'settings' && <Settings className="w-3.5 h-3.5" />}
+            {label}
+            {badge && (
+              <span
+                className={`text-xs px-1.5 py-0.5 rounded ${alert ? 'bg-amber-900 text-amber-300' : 'bg-stone-800 text-stone-400'}`}
+              >
+                {badge}
+              </span>
+            )}
+          </Link>
+        ))}
       </div>
 
-      {/* Tab: Call (primary) */}
+      {/* Tab: Call */}
       {tab === 'call' && <CallHub />}
 
       {/* Tab: Call Log */}
       {tab === 'log' && (
-        <>
-          {calls.length === 0 ? (
+        <div className="space-y-6">
+          {calls.length === 0 &&
+          aiCalls.filter((c) => c.role !== 'vendor_availability').length === 0 ? (
             <div className="bg-stone-900 rounded-xl border border-stone-700 px-6 py-12 text-center">
               <Phone className="w-8 h-8 text-stone-600 mx-auto mb-3" />
               <p className="text-stone-400 text-sm">No calls yet.</p>
@@ -189,96 +241,283 @@ export default async function CallSheetPage({
                 >
                   Call tab
                 </Link>{' '}
-                to search for an ingredient and call vendors.
+                to start calling vendors.
               </p>
             </div>
           ) : (
-            <div className="bg-stone-900 rounded-xl border border-stone-700 overflow-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-stone-800">
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wide">
-                      Vendor
-                    </th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wide">
-                      Ingredient
-                    </th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wide">
-                      Result
-                    </th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wide">
-                      Price Quoted
-                    </th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wide">
-                      Qty
-                    </th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wide">
-                      When
-                    </th>
-                    <th className="px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wide">
-                      Recording
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-stone-800">
-                  {calls.map((call) => (
-                    <tr key={call.id} className="hover:bg-stone-800/40 transition-colors">
-                      <td className="px-5 py-3.5">
-                        <div className="font-medium text-stone-200">{call.vendor_name}</div>
-                        <div className="text-xs text-stone-500">{call.vendor_phone}</div>
-                      </td>
-                      <td className="px-4 py-3.5 text-stone-300">{call.ingredient_name}</td>
-                      <td className="px-4 py-3.5">
-                        <div
-                          className={`flex items-center gap-1.5 ${statusColor(call.status, call.result)}`}
-                        >
-                          <StatusIcon status={call.status} result={call.result} />
-                          <span className="text-xs font-medium">
-                            {statusLabel(call.status, call.result)}
+            <>
+              {calls.length > 0 && (
+                <div className="bg-stone-900 rounded-xl border border-stone-700 overflow-hidden">
+                  <div className="px-5 py-3 border-b border-stone-800 flex items-center gap-2">
+                    <ArrowUpRight className="w-4 h-4 text-violet-400" />
+                    <span className="text-sm font-semibold text-stone-200">
+                      Availability Checks
+                    </span>
+                    <span className="text-xs text-stone-500 ml-1">{calls.length} calls</span>
+                  </div>
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-stone-800">
+                        <th className="text-left px-5 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                          Vendor
+                        </th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                          Ingredient
+                        </th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                          Result
+                        </th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                          Price
+                        </th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                          Qty
+                        </th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                          When
+                        </th>
+                        <th className="px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                          Recording
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-stone-800">
+                      {calls.map((call) => (
+                        <tr key={call.id} className="hover:bg-stone-800/40 transition-colors">
+                          <td className="px-5 py-3.5">
+                            <div className="font-medium text-stone-200">{call.vendor_name}</div>
+                            <div className="text-xs text-stone-500">{call.vendor_phone}</div>
+                          </td>
+                          <td className="px-4 py-3.5 text-stone-300">{call.ingredient_name}</td>
+                          <td className="px-4 py-3.5">
+                            <div
+                              className={`flex items-center gap-1.5 ${statusColor(call.status, call.result)}`}
+                            >
+                              <StatusIcon status={call.status} result={call.result} />
+                              <span className="text-xs font-medium">
+                                {statusLabel(call.status, call.result)}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3.5">
+                            {call.price_quoted ? (
+                              <span className="text-emerald-300 font-mono text-xs">
+                                {call.price_quoted}
+                              </span>
+                            ) : (
+                              <span className="text-stone-600 text-xs">-</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3.5">
+                            {call.quantity_available ? (
+                              <span className="text-stone-300 text-xs">
+                                {call.quantity_available}
+                              </span>
+                            ) : (
+                              <span className="text-stone-600 text-xs">-</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3.5 text-stone-500 text-xs whitespace-nowrap">
+                            {formatDistanceToNow(new Date(call.created_at), { addSuffix: true })}
+                          </td>
+                          <td className="px-4 py-3.5">
+                            {call.recording_url ? (
+                              <a
+                                href={call.recording_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1 text-violet-400 hover:text-violet-300 text-xs"
+                              >
+                                <Mic className="w-3 h-3" />
+                                Listen
+                              </a>
+                            ) : (
+                              <span className="text-stone-700 text-xs">-</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {aiCalls.filter((c) => c.role !== 'vendor_availability').length > 0 && (
+                <div className="bg-stone-900 rounded-xl border border-stone-700 overflow-hidden">
+                  <div className="px-5 py-3 border-b border-stone-800 flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-stone-400" />
+                    <span className="text-sm font-semibold text-stone-200">All Other Calls</span>
+                  </div>
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-stone-800">
+                        <th className="text-left px-5 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                          Contact
+                        </th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                          Role
+                        </th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                          Subject
+                        </th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                          Dir
+                        </th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                          Status
+                        </th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                          When
+                        </th>
+                        <th className="px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                          Recording
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-stone-800">
+                      {aiCalls
+                        .filter((c) => c.role !== 'vendor_availability')
+                        .map((call) => (
+                          <tr key={call.id} className="hover:bg-stone-800/40 transition-colors">
+                            <td className="px-5 py-3.5">
+                              <div className="font-medium text-stone-200">
+                                {call.contact_name || 'Unknown'}
+                              </div>
+                              <div className="text-xs text-stone-500">{call.contact_phone}</div>
+                            </td>
+                            <td className="px-4 py-3.5">
+                              <span
+                                className={`text-xs px-2 py-0.5 rounded font-medium ${ROLE_COLORS[call.role] || 'bg-stone-800 text-stone-400'}`}
+                              >
+                                {ROLE_LABELS[call.role] || call.role}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3.5 text-stone-300 text-xs max-w-[160px] truncate">
+                              {call.subject || '-'}
+                            </td>
+                            <td className="px-4 py-3.5">
+                              {call.direction === 'inbound' ? (
+                                <span className="flex items-center gap-1 text-xs text-amber-400">
+                                  <ArrowDownRight className="w-3 h-3" />
+                                  In
+                                </span>
+                              ) : (
+                                <span className="flex items-center gap-1 text-xs text-stone-400">
+                                  <ArrowUpRight className="w-3 h-3" />
+                                  Out
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-4 py-3.5">
+                              <div
+                                className={`flex items-center gap-1.5 ${statusColor(call.status)}`}
+                              >
+                                <StatusIcon status={call.status} />
+                                <span className="text-xs font-medium">
+                                  {statusLabel(call.status)}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3.5 text-stone-500 text-xs whitespace-nowrap">
+                              {formatDistanceToNow(new Date(call.created_at), { addSuffix: true })}
+                            </td>
+                            <td className="px-4 py-3.5">
+                              {call.recording_url ? (
+                                <a
+                                  href={call.recording_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-1 text-violet-400 hover:text-violet-300 text-xs"
+                                >
+                                  <Mic className="w-3 h-3" />
+                                  Listen
+                                </a>
+                              ) : (
+                                <span className="text-stone-700 text-xs">-</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Tab: Inbox */}
+      {tab === 'inbox' && (
+        <div className="space-y-4">
+          <p className="text-sm text-stone-500">
+            Inbound calls that left a voicemail or need a callback. Everything is transcribed and
+            logged.
+          </p>
+          {inboxItems.length === 0 ? (
+            <div className="bg-stone-900 rounded-xl border border-stone-700 px-6 py-12 text-center">
+              <Inbox className="w-8 h-8 text-stone-600 mx-auto mb-3" />
+              <p className="text-stone-400 text-sm">Nothing here yet.</p>
+              <p className="text-stone-600 text-xs mt-1">
+                Inbound calls and voicemails appear here when your AI number receives a call.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {inboxItems.map((call) => (
+                <div key={call.id} className="bg-stone-900 rounded-xl border border-stone-700 p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-stone-800 rounded-lg mt-0.5">
+                        {call.role === 'inbound_voicemail' ? (
+                          <Mic className="w-4 h-4 text-violet-400" />
+                        ) : (
+                          <Phone className="w-4 h-4 text-amber-400" />
+                        )}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className="text-sm font-semibold text-stone-100">
+                            {call.contact_name || call.contact_phone || 'Unknown caller'}
+                          </span>
+                          <span
+                            className={`text-xs px-2 py-0.5 rounded font-medium ${ROLE_COLORS[call.role] || 'bg-stone-800 text-stone-400'}`}
+                          >
+                            {ROLE_LABELS[call.role] || call.role}
                           </span>
                         </div>
-                      </td>
-                      <td className="px-4 py-3.5">
-                        {call.price_quoted ? (
-                          <span className="text-emerald-300 font-mono text-xs">
-                            {call.price_quoted}
-                          </span>
+                        {call.full_transcript ? (
+                          <p className="text-sm text-stone-300 leading-relaxed">
+                            &ldquo;{call.full_transcript}&rdquo;
+                          </p>
                         ) : (
-                          <span className="text-stone-600 text-xs">-</span>
+                          <p className="text-sm text-stone-500 italic">
+                            No transcription available.
+                          </p>
                         )}
-                      </td>
-                      <td className="px-4 py-3.5">
-                        {call.quantity_available ? (
-                          <span className="text-stone-300 text-xs">{call.quantity_available}</span>
-                        ) : (
-                          <span className="text-stone-600 text-xs">-</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3.5 text-stone-500 text-xs whitespace-nowrap">
-                        {formatDistanceToNow(new Date(call.created_at), { addSuffix: true })}
-                      </td>
-                      <td className="px-4 py-3.5">
-                        {call.recording_url ? (
-                          <a
-                            href={call.recording_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1 text-violet-400 hover:text-violet-300 text-xs"
-                          >
-                            <Mic className="w-3 h-3" />
-                            Listen
-                          </a>
-                        ) : (
-                          <span className="text-stone-700 text-xs">-</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        <p className="text-xs text-stone-600 mt-2">
+                          {formatDistanceToNow(new Date(call.created_at), { addSuffix: true })}
+                          {call.contact_phone && ` · ${call.contact_phone}`}
+                        </p>
+                      </div>
+                    </div>
+                    {call.recording_url && (
+                      <a
+                        href={call.recording_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="shrink-0 flex items-center gap-1 text-xs text-violet-400 hover:text-violet-300 border border-violet-800 rounded-lg px-3 py-1.5"
+                      >
+                        <Mic className="w-3 h-3" />
+                        Listen
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
-        </>
+        </div>
       )}
 
       {/* Tab: My Vendors */}
@@ -292,7 +531,6 @@ export default async function CallSheetPage({
             </p>
             <NationalVendorSearch addedVendorIds={addedVendorIds} />
           </div>
-
           <div>
             <h2 className="text-base font-semibold text-stone-200 mb-1">Saved Vendors</h2>
             <p className="text-sm text-stone-500 mb-4">
@@ -301,6 +539,19 @@ export default async function CallSheetPage({
             </p>
             <VendorDirectoryClient initialVendors={vendors as any} />
           </div>
+        </div>
+      )}
+
+      {/* Tab: Settings */}
+      {tab === 'settings' && (
+        <div className="max-w-xl">
+          <div className="mb-6">
+            <h2 className="text-base font-semibold text-stone-200 mb-1">Voice System Settings</h2>
+            <p className="text-sm text-stone-500">
+              Configure active hours, AI voice, SMS alerts, and which roles are enabled.
+            </p>
+          </div>
+          <CallSettingsForm initialRules={routingRules} />
         </div>
       )}
     </div>

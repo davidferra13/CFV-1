@@ -379,6 +379,56 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     }
   }
 
+  // SMS acknowledgment to client (non-blocking)
+  // Short, personal, direct. No AI formatting. Just a real-feeling text.
+  try {
+    const { sendSms } = await import('@/lib/sms/send')
+    const clientPhone = (validated as any).phone?.trim()
+    if (clientPhone) {
+      const clientSmsBody = `Hi ${validated.full_name.trim().split(' ')[0]}, ${chefName} received your inquiry for ${validated.occasion.trim()}. We'll be in touch shortly to chat details.`
+      await sendSms(clientPhone, clientSmsBody)
+    }
+  } catch (smsErr) {
+    console.error('[submitPublicInquiry] Client SMS failed (non-blocking):', smsErr)
+  }
+
+  // SMS alert to chef (non-blocking) - hardwired so the chef actually knows
+  // This fires regardless of whether email was delivered.
+  try {
+    const { sendSms } = await import('@/lib/sms/send')
+    const db2: any = createServerClient()
+    const { data: chefRecord } = await db2
+      .from('chefs')
+      .select('phone')
+      .eq('id', tenantId)
+      .maybeSingle()
+    const chefPhone = chefRecord?.phone || process.env.CHEF_ALERT_SMS_NUMBER
+    if (chefPhone) {
+      const guestCount = validated.guest_count
+      const eventDate = validated.event_date ? ` on ${validated.event_date}` : ''
+      const chefSmsBody = `New inquiry: ${validated.full_name.trim()} - ${validated.occasion.trim()}${eventDate}, ${guestCount} guests. Check ChefFlow now.`
+      await sendSms(chefPhone, chefSmsBody)
+    }
+  } catch (smsErr) {
+    console.error('[submitPublicInquiry] Chef SMS alert failed (non-blocking):', smsErr)
+  }
+
+  // SSE push to chef dashboard - hardwired real-time alert
+  try {
+    const { broadcast } = await import('@/lib/realtime/broadcast')
+    await broadcast(`chef-${tenantId}`, 'new_inquiry_received', {
+      inquiryId: inquiry.id,
+      clientName: validated.full_name.trim(),
+      occasion: validated.occasion.trim(),
+      eventDate: validated.event_date || null,
+      guestCount: validated.guest_count,
+      channel: 'portal',
+      urgent: true,
+    })
+  } catch (sseErr) {
+    console.error('[submitPublicInquiry] SSE broadcast failed (non-blocking):', sseErr)
+  }
+
   // 4. Create draft event with available info (TBD for missing required fields)
   const { data: event, error: eventError } = await db
     .from('events')

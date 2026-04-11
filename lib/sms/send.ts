@@ -14,7 +14,7 @@ export type SmsResult = 'sent' | 'failed' | 'not_configured'
 export async function sendSms(to: string, body: string): Promise<SmsResult> {
   const accountSid = process.env.TWILIO_ACCOUNT_SID
   const authToken = process.env.TWILIO_AUTH_TOKEN
-  const fromNumber = process.env.TWILIO_FROM_NUMBER
+  const fromNumber = process.env.TWILIO_FROM_NUMBER || process.env.TWILIO_PHONE_NUMBER
 
   if (!accountSid || !authToken || !fromNumber) {
     // Twilio not configured - silently degrade, log for ops awareness

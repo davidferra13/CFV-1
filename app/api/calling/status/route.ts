@@ -78,7 +78,56 @@ export async function POST(req: NextRequest) {
     callRecord = data
   }
 
-  if (!callRecord) return NextResponse.json({ ok: true })
+  if (!callRecord) {
+    // Also check ai_calls table for non-supplier-call roles (delivery, venue, etc.)
+    const aiCallId = searchParams.get('aiCallId')
+    if (aiCallId) {
+      const aiUpdate: Record<string, any> = {
+        status: mappedStatus,
+        updated_at: new Date().toISOString(),
+      }
+      if (callDuration) aiUpdate.duration_seconds = parseInt(callDuration, 10)
+      aiUpdate.call_sid = callSid
+
+      const { data: aiCallRecord } = await db
+        .from('ai_calls')
+        .update(aiUpdate)
+        .eq('id', aiCallId)
+        .select('id, chef_id, role, contact_name, subject')
+        .single()
+
+      if (aiCallRecord && isTerminal) {
+        try {
+          await broadcast(`chef-${aiCallRecord.chef_id}`, 'ai_call_result', {
+            aiCallId,
+            role: aiCallRecord.role,
+            contactName: aiCallRecord.contact_name,
+            subject: aiCallRecord.subject,
+            status: mappedStatus,
+          })
+        } catch (err) {
+          console.error('[calling/status] ai_calls broadcast error:', err)
+        }
+      }
+    }
+    return NextResponse.json({ ok: true })
+  }
+
+  // Also update ai_calls if linked
+  const aiCallId = searchParams.get('aiCallId')
+  if (aiCallId) {
+    const aiUpdate: Record<string, any> = {
+      status: mappedStatus,
+      updated_at: new Date().toISOString(),
+    }
+    if (callDuration) aiUpdate.duration_seconds = parseInt(callDuration, 10)
+    aiUpdate.call_sid = callSid
+    await db
+      .from('ai_calls')
+      .update(aiUpdate)
+      .eq('id', aiCallId)
+      .catch(() => {})
+  }
 
   // Broadcast for hard-fail cases (no-answer, busy, failed) - gather never ran.
   // Also broadcast if completed but gather never captured a result (call ended early).
@@ -88,6 +137,7 @@ export async function POST(req: NextRequest) {
     try {
       await broadcast(`chef-${callRecord.chef_id}`, 'supplier_call_result', {
         callId: callRecord.id,
+        aiCallId,
         vendorName: callRecord.vendor_name,
         ingredientName: callRecord.ingredient_name,
         result: callRecord.result,

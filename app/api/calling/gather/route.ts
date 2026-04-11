@@ -1,24 +1,36 @@
 /**
- * Gather Endpoint
+ * Gather Endpoint - AI Calling System
  *
- * Twilio POSTs here after each gather interaction.
+ * Twilio POSTs here after each Gather interaction on any call role.
+ * Dispatches to per-role handlers. Logs every utterance to ai_call_transcripts.
  *
- * Step 1 (step=1 or missing): Resolve yes/no availability from vendor response.
- *   - If yes: update DB, play confirmation, gather price/quantity (step=2).
- *   - If no:  update DB, broadcast result, play closing.
- *   - If unclear: play closing without a result.
+ * Roles handled:
+ *   vendor_availability  - yes/no stock check + price/qty (default, existing)
+ *   vendor_delivery      - delivery window + contact name
+ *   venue_confirmation   - access time + kitchen notes
+ *   inbound_vendor_callback - vendor calling back
+ *   inbound_unknown      - capture free-form message from unknown caller
  *
- * Step 2 (step=2): Parse price and quantity from free speech.
- *   - Extracts price (e.g. "$4.50 per pound") and quantity (e.g. "3 pounds").
- *   - Updates DB, broadcasts result, plays closing.
+ * HARD RULE: This endpoint never handles client-facing call roles.
+ * Clients receive email and SMS only. Voice is for vendors and businesses only.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
 import { broadcast } from '@/lib/realtime/broadcast'
+import {
+  twimlResponse,
+  closingTwiml,
+  buildAvailabilityStep2Twiml,
+  buildDeliveryStep2Twiml,
+  buildVenueStep2Twiml,
+  DEFAULT_VOICE,
+} from '@/lib/calling/voice-helpers'
+
+const APP_URL = process.env.NEXTAUTH_URL || 'https://app.cheflowhq.com'
 
 // ---------------------------------------------------------------------------
-// Availability resolution - step 1
+// Availability resolution helpers
 // ---------------------------------------------------------------------------
 
 const YES_WORDS = [
@@ -36,6 +48,12 @@ const YES_WORDS = [
   'got it',
   'got some',
   'we got',
+  'have it',
+  'we carry',
+  'carry that',
+  'definitely',
+  'of course',
+  'certainly',
 ]
 const NO_WORDS = [
   'no',
@@ -50,6 +68,11 @@ const NO_WORDS = [
   'not available',
   'sorry',
   "don't carry",
+  "we're out",
+  'fresh out',
+  'sold out',
+  'not in',
+  'none left',
 ]
 
 function resolveAvailability(digits: string | null, speech: string | null): 'yes' | 'no' | null {
@@ -64,7 +87,7 @@ function resolveAvailability(digits: string | null, speech: string | null): 'yes
 }
 
 // ---------------------------------------------------------------------------
-// Price and quantity extraction - step 2
+// Price and quantity extraction
 // ---------------------------------------------------------------------------
 
 const UNIT_WORDS =
@@ -72,25 +95,21 @@ const UNIT_WORDS =
 const PER_UNIT = `(?:\\s*(?:a|per|\\/)\\s*${UNIT_WORDS})?`
 
 function extractPrice(speech: string): string | null {
-  // "$4.50", "$12 a pound"
   const dollarSignPattern = new RegExp(`\\$[\\d,.]+${PER_UNIT}`, 'i')
-  const dollarSignMatch = speech.match(dollarSignPattern)
-  if (dollarSignMatch) return dollarSignMatch[0].trim()
+  const m1 = speech.match(dollarSignPattern)
+  if (m1) return m1[0].trim()
 
-  // "12 dollars", "4 dollars and 50 cents a pound"
   const dollarWordPattern = new RegExp(
     `\\b(\\d+(?:\\.\\d+)?)\\s*(?:dollars?|bucks?)(?:\\s+(?:and\\s+)?(\\d+)\\s*cents?)?${PER_UNIT}`,
     'i'
   )
-  const dollarWordMatch = speech.match(dollarWordPattern)
-  if (dollarWordMatch) {
-    const dollars = dollarWordMatch[1]
-    const cents = dollarWordMatch[2] ? `.${dollarWordMatch[2].padStart(2, '0')}` : ''
+  const m2 = speech.match(dollarWordPattern)
+  if (m2) {
+    const dollars = m2[1]
+    const cents = m2[2] ? `.${m2[2].padStart(2, '0')}` : ''
     return `$${dollars}${cents}`
   }
 
-  // "four fifty a pound", "six twenty-five each" - verbal price (dollars and cents spoken as two numbers)
-  // Map word numbers to digits
   const wordNumbers: Record<string, string> = {
     zero: '0',
     one: '1',
@@ -126,14 +145,11 @@ function extractPrice(speech: string): string | null {
     `\\b(${Object.keys(wordNumbers).join('|')})(?:\\s+(${Object.keys(wordNumbers).join('|')}))?${PER_UNIT}`,
     'i'
   )
-  const wordNumMatch = normalised.match(wordNumPattern)
-  if (wordNumMatch) {
-    const major = wordNumbers[wordNumMatch[1].toLowerCase()]
-    const minor = wordNumMatch[2] ? wordNumbers[wordNumMatch[2].toLowerCase()] : null
-    if (major) {
-      const price = minor ? `$${major}.${minor.padStart(2, '0')}` : `$${major}`
-      return price
-    }
+  const m3 = normalised.match(wordNumPattern)
+  if (m3) {
+    const major = wordNumbers[m3[1].toLowerCase()]
+    const minor = m3[2] ? wordNumbers[m3[2].toLowerCase()] : null
+    if (major) return minor ? `$${major}.${minor.padStart(2, '0')}` : `$${major}`
   }
 
   return null
@@ -144,44 +160,70 @@ function extractQuantity(speech: string): string | null {
     /\b(\d+(?:\.\d+)?)\s*(?:pounds?|lbs?|ounces?|oz|pieces?|units?|items?|dozens?|cases?|boxes?|bags?|gallons?|quarts?|pints?|liters?|kilograms?|kgs?)\b/i
   const roughPattern =
     /\b(a few|several|some|plenty|a lot|half a|a quarter|about \d+|around \d+)\b/i
-
-  const quantityMatch = speech.match(quantityPattern)
-  if (quantityMatch) return quantityMatch[0].trim()
-
-  const roughMatch = speech.match(roughPattern)
-  if (roughMatch) return roughMatch[0].trim()
-
-  return null
+  return speech.match(quantityPattern)?.[0].trim() ?? speech.match(roughPattern)?.[0].trim() ?? null
 }
 
 function parsePriceToCents(priceStr: string): number | null {
-  // Extract a numeric value from a price string like "$4.50", "$12"
   const match = priceStr.match(/\$(\d+(?:\.\d{1,2})?)/)
   if (!match) return null
   return Math.round(parseFloat(match[1]) * 100)
 }
 
 function extractUnit(speech: string): string | null {
-  const unitMatch = speech.match(
-    /\b(pounds?|lbs?|ounces?|oz|pieces?|each|units?|dozens?|cases?|boxes?|bags?|gallons?|quarts?|pints?|liters?|kilograms?|kgs?)\b/i
+  return (
+    speech
+      .match(
+        /\b(pounds?|lbs?|ounces?|oz|pieces?|each|units?|dozens?|cases?|boxes?|bags?|gallons?|quarts?|pints?|liters?|kilograms?|kgs?)\b/i
+      )?.[1]
+      .toLowerCase() ?? null
   )
-  return unitMatch ? unitMatch[1].toLowerCase() : null
+}
+
+function extractTimeWindow(speech: string): string | null {
+  const between = speech.match(
+    /between\s+(\d{1,2}(?::\d{2})?(?:\s*[ap]m)?)\s+and\s+(\d{1,2}(?::\d{2})?(?:\s*[ap]m)?)/i
+  )
+  if (between) return `between ${between[1]} and ${between[2]}`
+  const around = speech.match(/(?:around|at|approximately)\s+(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)/i)
+  if (around) return around[0]
+  const specific = speech.match(/\b(\d{1,2}(?::\d{2})?\s*(?:am|pm))\b/i)
+  if (specific) return specific[0]
+  const period = speech.match(/\b(morning|afternoon|evening|early|late)\b/i)
+  if (period) return period[0]
+  return speech.length < 100 ? speech.trim() : speech.slice(0, 100).trim()
 }
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Transcript logging
 // ---------------------------------------------------------------------------
 
-function twiml(xml: string) {
-  return new NextResponse(xml, {
-    status: 200,
-    headers: { 'Content-Type': 'text/xml' },
-  })
+async function logTranscript(
+  db: any,
+  aiCallId: string | null,
+  step: number,
+  speaker: 'ai' | 'caller',
+  content: string,
+  inputType: 'speech' | 'dtmf' | 'timeout' | 'ai_prompt',
+  confidence?: number | null
+) {
+  if (!aiCallId) return
+  try {
+    await db.from('ai_call_transcripts').insert({
+      ai_call_id: aiCallId,
+      step,
+      speaker,
+      content,
+      confidence: confidence ?? null,
+      input_type: inputType,
+    })
+  } catch (err) {
+    console.error('[calling/gather] transcript log error:', err)
+  }
 }
 
-function closingTwiml(message: string) {
-  const escaped = message.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-  return twiml(`<Response><Say voice="Polly.Matthew">${escaped}</Say><Hangup/></Response>`)
+// Safe JSON stringify for use in raw SQL JSONB concat (escapes single quotes)
+function toJsonbSafe(obj: unknown): string {
+  return JSON.stringify(obj).replace(/'/g, "''")
 }
 
 // ---------------------------------------------------------------------------
@@ -192,23 +234,53 @@ export async function POST(req: NextRequest) {
   const formData = await req.formData()
   const digits = formData.get('Digits') as string | null
   const speech = (formData.get('SpeechResult') as string | null)?.trim() || null
+  const confidence = formData.get('Confidence')
+    ? parseFloat(formData.get('Confidence') as string)
+    : null
 
   const { searchParams } = new URL(req.url)
-  const callId = searchParams.get('callId')
-  const step = searchParams.get('step') || '1'
-
-  if (!callId) {
-    return closingTwiml('Thanks so much for your time! Have a great day.')
-  }
+  const callId = searchParams.get('callId') // supplier_calls.id (legacy vendor availability)
+  const aiCallId = searchParams.get('aiCallId') // ai_calls.id (all new roles)
+  const step = parseInt(searchParams.get('step') ?? '1', 10)
+  const role = searchParams.get('role') ?? 'vendor_availability'
 
   const db: any = createAdminClient()
 
-  // ---
-  // Step 2: Price and quantity capture
-  // ---
-  if (step === '2') {
+  if (role === 'vendor_delivery')
+    return handleVendorDelivery(db, aiCallId, step, speech, digits, confidence)
+  if (role === 'venue_confirmation')
+    return handleVenueConfirmation(db, aiCallId, step, speech, digits, confidence)
+  if (role === 'inbound_vendor_callback')
+    return handleInboundVendorCallback(db, aiCallId, step, speech, digits, confidence)
+  if (role === 'inbound_unknown') return handleInboundUnknown(db, aiCallId, speech)
+
+  // Default: vendor_availability
+  return handleVendorAvailability(db, callId, aiCallId, step, speech, digits, confidence)
+}
+
+// ---------------------------------------------------------------------------
+// vendor_availability
+// ---------------------------------------------------------------------------
+
+async function handleVendorAvailability(
+  db: any,
+  callId: string | null,
+  aiCallId: string | null,
+  step: number,
+  speech: string | null,
+  digits: string | null,
+  confidence: number | null
+): Promise<NextResponse> {
+  if (!callId) {
+    return closingTwiml('Thanks so much for your time. Have a great day!')
+  }
+
+  if (step === 2) {
     const priceQuoted = speech ? extractPrice(speech) : null
     const quantityAvailable = speech ? extractQuantity(speech) : null
+    const inputType = digits ? 'dtmf' : speech ? 'speech' : 'timeout'
+
+    if (speech) await logTranscript(db, aiCallId, 2, 'caller', speech, inputType as any, confidence)
 
     const { data: callRecord } = await db
       .from('supplier_calls')
@@ -223,7 +295,17 @@ export async function POST(req: NextRequest) {
       .select('chef_id, vendor_id, vendor_name, ingredient_name, result')
       .single()
 
-    // Write a vendor price point when a clean price was captured
+    if (aiCallId) {
+      await db
+        .from('ai_calls')
+        .update({
+          status: 'completed',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', aiCallId)
+        .catch(() => {})
+    }
+
     if (callRecord && priceQuoted && callRecord.vendor_id) {
       try {
         const priceCents = parsePriceToCents(priceQuoted)
@@ -240,7 +322,7 @@ export async function POST(req: NextRequest) {
           })
         }
       } catch (err) {
-        console.error('[calling/gather] vendor_price_points insert error:', err)
+        console.error('[calling/gather] vendor_price_points error:', err)
       }
     }
 
@@ -248,6 +330,7 @@ export async function POST(req: NextRequest) {
       try {
         await broadcast(`chef-${callRecord.chef_id}`, 'supplier_call_result', {
           callId,
+          aiCallId,
           vendorName: callRecord.vendor_name,
           ingredientName: callRecord.ingredient_name,
           result: callRecord.result,
@@ -259,78 +342,247 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const hasPriceInfo = priceQuoted || quantityAvailable
-    const closing = hasPriceInfo
-      ? 'Perfect, got it. Thanks a lot, have a good one!'
-      : 'Got it, appreciate it. Have a good one!'
-
+    const closing =
+      priceQuoted || quantityAvailable
+        ? 'Perfect, got all of that. Thanks so much, really appreciate it. Have a great day!'
+        : "Got it, that's really helpful. Thanks a lot, take care!"
     return closingTwiml(closing)
   }
 
-  // ---
-  // Step 1: Availability (yes/no)
-  // ---
+  // Step 1
   const result = resolveAvailability(digits, speech)
+  const inputType = digits ? 'dtmf' : speech ? 'speech' : 'timeout'
+  if (speech) await logTranscript(db, aiCallId, 1, 'caller', speech, inputType as any, confidence)
 
   if (result === 'yes') {
-    // Update DB with availability result - price capture follows in step 2
     await db
       .from('supplier_calls')
-      .update({
-        result: 'yes',
-        updated_at: new Date().toISOString(),
-      })
+      .update({ result: 'yes', updated_at: new Date().toISOString() })
       .eq('id', callId)
-
-    // Ask for price and quantity with a follow-up gather
-    const gatherAction = `${process.env.NEXTAUTH_URL || 'https://app.cheflowhq.com'}/api/calling/gather?callId=${encodeURIComponent(callId)}&step=2`
-
-    return twiml(`<Response>
-  <Say voice="Polly.Matthew">Awesome, thanks.</Say>
-  <Pause length="0.8"/>
-  <Gather input="speech" timeout="10" speechTimeout="5" action="${gatherAction}" method="POST">
-    <Say voice="Polly.Matthew">One more thing - what's the price on that, and roughly how much do you have available?</Say>
-  </Gather>
-  <Say voice="Polly.Matthew">Got it, I'll just note it's in stock. Thanks a lot!</Say>
-  <Hangup/>
-</Response>`)
+    const gatherAction = `${APP_URL}/api/calling/gather?callId=${encodeURIComponent(callId)}&step=2&role=vendor_availability${aiCallId ? `&aiCallId=${encodeURIComponent(aiCallId)}` : ''}`
+    return twimlResponse(buildAvailabilityStep2Twiml(gatherAction))
   }
 
   if (result === 'no') {
     const { data: callRecord } = await db
       .from('supplier_calls')
-      .update({
-        result: 'no',
-        status: 'completed',
-        updated_at: new Date().toISOString(),
-      })
+      .update({ result: 'no', status: 'completed', updated_at: new Date().toISOString() })
       .eq('id', callId)
       .select('chef_id, vendor_name, ingredient_name')
       .single()
+
+    if (aiCallId) {
+      await db
+        .from('ai_calls')
+        .update({ status: 'completed', updated_at: new Date().toISOString() })
+        .eq('id', aiCallId)
+        .catch(() => {})
+    }
 
     if (callRecord) {
       try {
         await broadcast(`chef-${callRecord.chef_id}`, 'supplier_call_result', {
           callId,
+          aiCallId,
           vendorName: callRecord.vendor_name,
           ingredientName: callRecord.ingredient_name,
           result: 'no',
           priceQuoted: null,
           quantityAvailable: null,
         })
-      } catch (err) {
-        console.error('[calling/gather] broadcast error (no):', err)
-      }
+      } catch {}
     }
-
-    return closingTwiml('Got it, no problem at all. Thanks for your time!')
+    return closingTwiml(
+      'No problem at all, I appreciate you letting me know. Take care, have a good one!'
+    )
   }
 
-  // Unclear response - close without a result
   await db
     .from('supplier_calls')
     .update({ status: 'completed', updated_at: new Date().toISOString() })
     .eq('id', callId)
+  return closingTwiml(
+    "Sorry, I didn't quite catch that. No worries, thanks so much for picking up!"
+  )
+}
 
-  return closingTwiml("Sorry about that, couldn't quite catch that. Thanks for picking up!")
+// ---------------------------------------------------------------------------
+// vendor_delivery
+// ---------------------------------------------------------------------------
+
+async function handleVendorDelivery(
+  db: any,
+  aiCallId: string | null,
+  step: number,
+  speech: string | null,
+  digits: string | null,
+  confidence: number | null
+): Promise<NextResponse> {
+  if (!aiCallId) return closingTwiml('Thanks for your time, have a great day!')
+
+  const inputType = digits ? 'dtmf' : speech ? 'speech' : 'timeout'
+
+  if (step === 2) {
+    if (speech) await logTranscript(db, aiCallId, 2, 'caller', speech, inputType as any, confidence)
+
+    await db
+      .from('ai_calls')
+      .update({
+        status: 'completed',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', aiCallId)
+      .catch(() => {})
+
+    const { data: aiCall } = await db
+      .from('ai_calls')
+      .select('chef_id, contact_name, subject')
+      .eq('id', aiCallId)
+      .single()
+    if (aiCall) {
+      await broadcast(`chef-${aiCall.chef_id}`, 'ai_call_result', {
+        aiCallId,
+        role: 'vendor_delivery',
+        contactName: aiCall.contact_name,
+        subject: aiCall.subject,
+        status: 'completed',
+        notes: speech,
+      }).catch(() => {})
+    }
+    return closingTwiml(
+      "Perfect, that's everything we needed. Thank you so much, we really appreciate it!"
+    )
+  }
+
+  // Step 1: delivery window
+  const timeWindow = speech ? extractTimeWindow(speech) : null
+  if (speech) await logTranscript(db, aiCallId, 1, 'caller', speech, inputType as any, confidence)
+
+  const gatherAction = `${APP_URL}/api/calling/gather?aiCallId=${encodeURIComponent(aiCallId)}&step=2&role=vendor_delivery`
+  return twimlResponse(buildDeliveryStep2Twiml(gatherAction))
+}
+
+// ---------------------------------------------------------------------------
+// venue_confirmation
+// ---------------------------------------------------------------------------
+
+async function handleVenueConfirmation(
+  db: any,
+  aiCallId: string | null,
+  step: number,
+  speech: string | null,
+  digits: string | null,
+  confidence: number | null
+): Promise<NextResponse> {
+  if (!aiCallId) return closingTwiml('Thanks for your time!')
+
+  const inputType = digits ? 'dtmf' : speech ? 'speech' : 'timeout'
+
+  if (step === 2) {
+    if (speech) await logTranscript(db, aiCallId, 2, 'caller', speech, inputType as any, confidence)
+
+    await db
+      .from('ai_calls')
+      .update({
+        status: 'completed',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', aiCallId)
+      .catch(() => {})
+
+    const { data: aiCall } = await db
+      .from('ai_calls')
+      .select('chef_id, contact_name, subject')
+      .eq('id', aiCallId)
+      .single()
+    if (aiCall) {
+      await broadcast(`chef-${aiCall.chef_id}`, 'ai_call_result', {
+        aiCallId,
+        role: 'venue_confirmation',
+        contactName: aiCall.contact_name,
+        subject: aiCall.subject,
+        status: 'completed',
+        notes: speech,
+      }).catch(() => {})
+    }
+    return closingTwiml(
+      "Great, we've got everything we need. Really appreciate your help, see you on the day!"
+    )
+  }
+
+  // Step 1: access time + parking
+  const timeWindow = speech ? extractTimeWindow(speech) : null
+  if (speech) await logTranscript(db, aiCallId, 1, 'caller', speech, inputType as any, confidence)
+
+  const gatherAction = `${APP_URL}/api/calling/gather?aiCallId=${encodeURIComponent(aiCallId)}&step=2&role=venue_confirmation`
+  return twimlResponse(buildVenueStep2Twiml(gatherAction))
+}
+
+// ---------------------------------------------------------------------------
+// inbound_vendor_callback
+// ---------------------------------------------------------------------------
+
+async function handleInboundVendorCallback(
+  db: any,
+  aiCallId: string | null,
+  step: number,
+  speech: string | null,
+  digits: string | null,
+  confidence: number | null
+): Promise<NextResponse> {
+  if (!aiCallId) return closingTwiml('No worries, sorry to bother you. Have a great day!')
+
+  const isConfirm =
+    digits === '1' || (speech && YES_WORDS.some((w) => speech.toLowerCase().includes(w)))
+
+  if (isConfirm) {
+    if (speech) await logTranscript(db, aiCallId, 1, 'caller', speech, 'speech', confidence)
+
+    // Pivot into availability check
+    const gatherAction = `${APP_URL}/api/calling/gather?aiCallId=${encodeURIComponent(aiCallId)}&step=1&role=vendor_availability`
+    return twimlResponse(`<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="${DEFAULT_VOICE}">Perfect, thanks for calling back. Do you have the item in stock? Just say yes or no, or press 1 for yes and 2 for no.</Say>
+  <Gather input="speech dtmf" timeout="10" speechTimeout="auto" numDigits="1" action="${gatherAction}" method="POST" hints="yes, yeah, we do, absolutely, no, nope, out of stock" enhanced="true"/>
+  <Hangup/>
+</Response>`)
+  }
+
+  return closingTwiml('No worries at all, sorry for the confusion. Have a great day!')
+}
+
+// ---------------------------------------------------------------------------
+// inbound_unknown
+// ---------------------------------------------------------------------------
+
+async function handleInboundUnknown(
+  db: any,
+  aiCallId: string | null,
+  speech: string | null
+): Promise<NextResponse> {
+  if (aiCallId && speech) {
+    await logTranscript(db, aiCallId, 1, 'caller', speech, 'speech', null)
+    await db
+      .from('ai_calls')
+      .update({
+        status: 'completed',
+        full_transcript: speech,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', aiCallId)
+      .catch(() => {})
+
+    const { data: aiCall } = await db.from('ai_calls').select('chef_id').eq('id', aiCallId).single()
+    if (aiCall) {
+      await broadcast(`chef-${aiCall.chef_id}`, 'ai_call_result', {
+        aiCallId,
+        role: 'inbound_unknown',
+        status: 'completed',
+        message: speech,
+      }).catch(() => {})
+    }
+  }
+  return closingTwiml(
+    "Got it, thank you. We'll make sure someone gets back to you shortly. Have a great day!"
+  )
 }
