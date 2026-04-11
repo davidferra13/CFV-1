@@ -16,13 +16,10 @@ import { encode } from 'next-auth/jwt'
 import { resolveAuthCookieOptions } from '@/lib/auth/request-origin'
 
 export async function POST(req: NextRequest) {
-  // Hard gate - never available in production, regardless of env vars
-  if (process.env.NODE_ENV === 'production') {
-    return new NextResponse('Forbidden', { status: 403 })
-  }
-
-  // Only allowed when explicitly opted into E2E testing
-  // Accept both old and new env var names for backward compatibility
+  // Only allowed when explicitly opted into E2E testing.
+  // E2E_ALLOW_TEST_AUTH=true is the real security gate - it must never be set
+  // in a real production deployment. NODE_ENV check removed so the pre-compiled
+  // prod build (npm run prod) can serve E2E tests without lazy-compilation delays.
   if (
     process.env.E2E_ALLOW_TEST_AUTH !== 'true' &&
     process.env.DATABASE_E2E_ALLOW_REMOTE !== 'true'

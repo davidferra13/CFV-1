@@ -16,6 +16,7 @@ const PUBLIC_ONLY_PROJECTS = new Set([
   'coverage-public',
   'interactions-public',
   'launch-public',
+  'six-pillars', // authenticates via /api/e2e/auth directly, no seed needed
 ])
 const CHEF_ONLY_PROJECTS = new Set(['chef', 'coverage-chef', 'interactions-chef', 'journey-chef'])
 const CLIENT_ONLY_PROJECTS = new Set(['client', 'coverage-client', 'interactions-client'])

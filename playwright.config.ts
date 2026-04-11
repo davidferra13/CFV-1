@@ -296,6 +296,15 @@ export default defineConfig({
       timeout: 30_000, // Per-test timeout (will be overridden by individual test durations)
       workers: 1, // Sequential to avoid concurrent Ollama stress
     },
+    // ── Six Pillars Walkthrough ───────────────────────────────────────────────
+    // V1 exit criterion: all 6 pillars pass a happy-path walkthrough
+    // Runs against the PROD build (port 3000) - pre-compiled, no lazy-compilation delays.
+    // Run: npx playwright test tests/six-pillars-walkthrough.spec.ts --project=six-pillars
+    {
+      name: 'six-pillars',
+      testMatch: ['**/six-pillars-walkthrough.spec.ts'],
+      // No storageState - test authenticates via /api/e2e/auth directly
+    },
   ],
   webServer: {
     command: WEB_SERVER_COMMAND,

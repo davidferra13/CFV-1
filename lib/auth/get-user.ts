@@ -115,6 +115,17 @@ export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
   }
 })
 
+// Cached per-request suspension check to avoid N+1 DB queries
+// when requireChef() is called multiple times in one render (e.g. inquiry scoring)
+const _checkSuspension = cache(async (entityId: string): Promise<boolean> => {
+  const [chef] = await db
+    .select({ accountStatus: chefs.accountStatus })
+    .from(chefs)
+    .where(eq(chefs.id, entityId))
+    .limit(1)
+  return chef?.accountStatus === 'suspended'
+})
+
 /**
  * Require chef role - throws if not chef or if account is suspended.
  * Use in chef portal pages and server actions.
@@ -126,15 +137,10 @@ export async function requireChef(): Promise<AuthUser> {
     throw new Error('Unauthorized: Chef access required')
   }
 
-  // Check suspension status
+  // Check suspension status (cached per request - safe to call in loops)
   if (user.entityId) {
-    const [chef] = await db
-      .select({ accountStatus: chefs.accountStatus })
-      .from(chefs)
-      .where(eq(chefs.id, user.entityId))
-      .limit(1)
-
-    if (chef?.accountStatus === 'suspended') {
+    const suspended = await _checkSuspension(user.entityId)
+    if (suspended) {
       throw new Error('Account suspended: Contact support.')
     }
   }

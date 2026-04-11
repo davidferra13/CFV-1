@@ -8,7 +8,7 @@ import { listVendors } from '@/lib/vendors/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { VendorForm } from '@/components/vendors/vendor-form'
+import { VendorFormWrapper } from '@/components/vendors/vendor-form-wrapper'
 
 export const metadata: Metadata = { title: 'Vendors' }
 
@@ -159,7 +159,7 @@ export default async function VendorsPage({
           <CardTitle className="text-base">Add Vendor</CardTitle>
         </CardHeader>
         <CardContent>
-          <VendorForm {...({ onSaved: () => {}, onCancel: () => {} } as any)} />
+          <VendorFormWrapper />
         </CardContent>
       </Card>
     </div>

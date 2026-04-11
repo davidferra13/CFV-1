@@ -23,10 +23,12 @@ export interface BookingScore {
   clientName: string | null
 }
 
-// ─── Single scorer ────────────────────────────────────────────────────────────
+// ─── Internal scorer (accepts pre-validated user to avoid N+1 requireChef calls) ──
 
-export async function getBookingScoreForInquiry(inquiryId: string): Promise<BookingScore | null> {
-  const user = await requireChef()
+async function _computeBookingScore(
+  inquiryId: string,
+  user: Awaited<ReturnType<typeof requireChef>>
+): Promise<BookingScore | null> {
   const db: any = createServerClient()
 
   const { data: inquiry, error } = await db
@@ -158,7 +160,15 @@ export async function getBookingScoreForInquiry(inquiryId: string): Promise<Book
   }
 }
 
+// ─── Public single scorer (auth check included) ──────────────────────────────
+
+export async function getBookingScoreForInquiry(inquiryId: string): Promise<BookingScore | null> {
+  const user = await requireChef()
+  return _computeBookingScore(inquiryId, user)
+}
+
 // ─── Batch scorer for inquiry list ───────────────────────────────────────────
+// requireChef() is called ONCE here, not once per inquiry (avoids N+1 DB queries)
 
 export async function getBookingScoresForOpenInquiries(): Promise<BookingScore[]> {
   const user = await requireChef()
@@ -173,7 +183,7 @@ export async function getBookingScoresForOpenInquiries(): Promise<BookingScore[]
   if (!inquiries || inquiries.length === 0) return []
 
   const results = await Promise.allSettled(
-    inquiries.map((inq: any) => getBookingScoreForInquiry(inq.id))
+    inquiries.map((inq: any) => _computeBookingScore(inq.id, user))
   )
 
   return results

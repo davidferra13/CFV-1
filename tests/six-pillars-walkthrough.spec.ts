@@ -9,18 +9,26 @@ import * as path from 'path'
  *
  * Tests that every pillar's key pages load, render real content, and don't crash.
  * Uses the agent test account for authentication.
+ *
+ * NOTE ON TIMING: In Next.js dev mode, first request to any route triggers webpack
+ * compilation (60-120s). This is normal - routes are cached after first compile.
+ * The per-test timeout is set to 3 minutes (180s) to accommodate cold compilation.
+ * On second run, all routes are warm and each test completes in under 30 seconds.
  */
 
 const BASE = process.env.TEST_BASE_URL || 'http://127.0.0.1:3100'
 const CREDS = { email: 'agent@local.chefflow', password: 'CHEF.jdgyuegf9924092.FLOW' }
 const SSDIR = 'test-results/six-pillars'
 
-test.beforeAll(async () => {
-  fs.mkdirSync(SSDIR, { recursive: true })
-})
-
 test.describe('Six Pillars Happy-Path Walkthrough', () => {
+  // 3 minutes per test to handle cold webpack compilation in dev mode.
+  // On a warm dev server (second run), tests complete in < 30s each.
+  test.describe.configure({ timeout: 180_000 })
   test.use({ baseURL: BASE })
+
+  test.beforeAll(async () => {
+    fs.mkdirSync(SSDIR, { recursive: true })
+  })
 
   // Auth via page.request.post - lets Playwright handle cookies natively,
   // regardless of Secure/__Secure- prefix or NEXTAUTH_URL scheme.
@@ -39,9 +47,10 @@ test.describe('Six Pillars Happy-Path Walkthrough', () => {
   // Helper: navigate, wait, screenshot, assert not crashed/blank
   // ---------------------------------------------------------------------------
   async function verifyPage(page: import('@playwright/test').Page, route: string, label: string) {
-    await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 60000 })
-    await page.waitForTimeout(1500)
-    await page.waitForTimeout(500)
+    // 150s allows for cold webpack compilation in dev mode.
+    // commit fires as soon as first bytes arrive (not full RSC stream).
+    await page.goto(route, { waitUntil: 'commit', timeout: 150_000 })
+    await page.waitForTimeout(3000)
 
     const ssName = label.replace(/[^a-z0-9]+/gi, '-').toLowerCase()
     await page.screenshot({ path: path.join(SSDIR, `${ssName}.png`), fullPage: true })
