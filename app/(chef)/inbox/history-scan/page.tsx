@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getHistoricalFindings, getHistoricalScanStatus } from '@/lib/gmail/historical-scan-actions'
 import { HistoricalFindingsList } from '@/components/gmail/historical-findings-list'
+import { ScanStatusBar } from '@/components/gmail/scan-status-bar'
 
 export const metadata: Metadata = { title: 'Email History Scan' }
 
@@ -38,53 +39,9 @@ export default async function HistoryScanPage() {
         </p>
       </div>
 
-      {/* Scan status bar */}
+      {/* Scan status bar - auto-refreshes every 5s when scan is running */}
       {scanStatus && (
-        <div className="mb-6 rounded-lg border border-stone-700 bg-stone-800 px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="text-sm">
-              {scanStatus.status === 'idle' && (
-                <span className="text-stone-500">Scan starting soon&hellip;</span>
-              )}
-              {scanStatus.status === 'in_progress' && (
-                <span className="text-brand-400">
-                  Scanning your email history &mdash;{' '}
-                  <strong>{scanStatus.totalProcessed.toLocaleString()}</strong> emails processed so
-                  far
-                </span>
-              )}
-              {scanStatus.status === 'completed' && (
-                <span className="text-emerald-700">
-                  Scan complete &mdash;{' '}
-                  <strong>{scanStatus.totalProcessed.toLocaleString()}</strong> emails scanned
-                </span>
-              )}
-              {scanStatus.status === 'paused' && (
-                <span className="text-stone-500">
-                  Scan paused at {scanStatus.totalProcessed.toLocaleString()} emails. Re-enable in{' '}
-                  <Link href="/settings" className="underline">
-                    Settings
-                  </Link>{' '}
-                  to continue.
-                </span>
-              )}
-              {!scanStatus.enabled && scanStatus.status !== 'completed' && (
-                <span className="text-stone-500">
-                  Historical scan is off.{' '}
-                  <Link href="/settings" className="underline">
-                    Enable in Settings
-                  </Link>{' '}
-                  to scan your email history.
-                </span>
-              )}
-            </div>
-            <div className="text-xs text-stone-400">
-              {pendingFindings.length > 0 && (
-                <span className="font-medium text-brand-600">{pendingFindings.length} pending</span>
-              )}
-            </div>
-          </div>
-        </div>
+        <ScanStatusBar initialStatus={scanStatus} pendingCount={pendingFindings.length} />
       )}
 
       {/* Findings list */}

@@ -41,7 +41,91 @@ export async function getDailyPlan(): Promise<DailyPlan> {
   const db: any = createServerClient()
   const todayStr = new Date().toISOString().split('T')[0]
 
-  // Fetch all data sources in parallel
+  // 20-second deadline: if data fetching hangs (e.g. connection pool exhausted),
+  // throw to the error boundary so the page shows a real error instead of a permanent skeleton.
+  let timeoutHandle: ReturnType<typeof setTimeout>
+  const planDeadline = new Promise<never>((_, reject) => {
+    timeoutHandle = setTimeout(
+      () => reject(new Error('[DailyOps] Timeout: getDailyPlan took too long')),
+      20000
+    )
+  })
+
+  const results = await Promise.race([
+    Promise.all([
+      safe('queue', getPriorityQueue, {
+        items: [],
+        nextAction: null,
+        summary: {
+          totalItems: 0,
+          byDomain: {
+            inquiry: 0,
+            message: 0,
+            quote: 0,
+            event: 0,
+            financial: 0,
+            post_event: 0,
+            client: 0,
+            culinary: 0,
+          },
+          byUrgency: { critical: 0, high: 0, normal: 0, low: 0 },
+          allCaughtUp: true,
+        },
+        computedAt: new Date().toISOString(),
+      }),
+      safe('dopDigest', getDOPTaskDigest, {
+        tasks: [],
+        overdueCount: 0,
+        dueTodayCount: 0,
+        upcomingCount: 0,
+        totalIncomplete: 0,
+      }),
+      safe('nba', () => getNextBestActions(10), []),
+      safe('followUps', () => getOverdueFollowUps(10), []),
+      safe('todos', getTodos, []),
+      safe('recipeDebt', getRecipeDebt, {
+        total: 0,
+        last7Days: 0,
+        last30Days: 0,
+        older: 0,
+        totalRecipes: 0,
+      }),
+      safe('calls', () => getUpcomingCalls(10), []),
+      safe('protectedBlocks', listProtectedBlocks, []),
+      // Fetch today's dismissals
+      safe(
+        'dismissals',
+        async () => {
+          const { data } = await db
+            .from('daily_plan_dismissals')
+            .select('item_key')
+            .eq('chef_id', user.tenantId!)
+            .eq('dismissed_date', todayStr)
+          return data ?? []
+        },
+        []
+      ),
+      // Fetch today's events for context
+      safe(
+        'todayEvents',
+        async () => {
+          const { data } = await db
+            .from('events')
+            .select('id, occasion, serve_time, guest_count, client:clients(full_name)')
+            .eq('tenant_id', user.tenantId!)
+            .eq('event_date', todayStr)
+            .not('status', 'eq', 'cancelled')
+            .order('serve_time', { ascending: true })
+          return data ?? []
+        },
+        []
+      ),
+    ]),
+    planDeadline,
+  ])
+
+  clearTimeout(timeoutHandle!)
+
   const [
     queue,
     dopDigest,
@@ -53,75 +137,7 @@ export async function getDailyPlan(): Promise<DailyPlan> {
     protectedBlocks,
     dismissalRows,
     todayEventsRaw,
-  ] = await Promise.all([
-    safe('queue', getPriorityQueue, {
-      items: [],
-      nextAction: null,
-      summary: {
-        totalItems: 0,
-        byDomain: {
-          inquiry: 0,
-          message: 0,
-          quote: 0,
-          event: 0,
-          financial: 0,
-          post_event: 0,
-          client: 0,
-          culinary: 0,
-        },
-        byUrgency: { critical: 0, high: 0, normal: 0, low: 0 },
-        allCaughtUp: true,
-      },
-      computedAt: new Date().toISOString(),
-    }),
-    safe('dopDigest', getDOPTaskDigest, {
-      tasks: [],
-      overdueCount: 0,
-      dueTodayCount: 0,
-      upcomingCount: 0,
-      totalIncomplete: 0,
-    }),
-    safe('nba', () => getNextBestActions(10), []),
-    safe('followUps', () => getOverdueFollowUps(10), []),
-    safe('todos', getTodos, []),
-    safe('recipeDebt', getRecipeDebt, {
-      total: 0,
-      last7Days: 0,
-      last30Days: 0,
-      older: 0,
-      totalRecipes: 0,
-    }),
-    safe('calls', () => getUpcomingCalls(10), []),
-    safe('protectedBlocks', listProtectedBlocks, []),
-    // Fetch today's dismissals
-    safe(
-      'dismissals',
-      async () => {
-        const { data } = await db
-          .from('daily_plan_dismissals')
-          .select('item_key')
-          .eq('chef_id', user.tenantId!)
-          .eq('dismissed_date', todayStr)
-        return data ?? []
-      },
-      []
-    ),
-    // Fetch today's events for context
-    safe(
-      'todayEvents',
-      async () => {
-        const { data } = await db
-          .from('events')
-          .select('id, occasion, serve_time, guest_count, client:clients(full_name)')
-          .eq('tenant_id', user.tenantId!)
-          .eq('event_date', todayStr)
-          .not('status', 'eq', 'cancelled')
-          .order('serve_time', { ascending: true })
-        return data ?? []
-      },
-      []
-    ),
-  ])
+  ] = results
 
   // Build dismissed keys set
   const dismissedKeys = new Set<string>(dismissalRows.map((r: any) => r.item_key))

@@ -177,15 +177,17 @@ export default async function QuotesPage({
       </Card>
 
       {/* Quote List */}
-      <Suspense
-        fallback={
-          <Card className="p-8 text-center">
-            <p className="text-stone-500">Loading quotes...</p>
-          </Card>
-        }
-      >
-        <QuoteList filter={filter} />
-      </Suspense>
+      <WidgetErrorBoundary name="Quote List">
+        <Suspense
+          fallback={
+            <Card className="p-8 text-center">
+              <p className="text-stone-500">Loading quotes...</p>
+            </Card>
+          }
+        >
+          <QuoteList filter={filter} />
+        </Suspense>
+      </WidgetErrorBoundary>
     </div>
   )
 }
