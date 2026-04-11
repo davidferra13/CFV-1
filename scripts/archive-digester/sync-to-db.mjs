@@ -91,7 +91,15 @@ let inquiriesSkipped = 0
 for (const thread of successful) {
   const { extracted, dateRange, threadKey } = thread
   const email = normalizeEmail(extracted.client_email)
-  if (!email || email.includes('takeachef') || email === 'dfprivatechef@gmail.com') {
+  // Skip invalid/internal emails: takeachef platform, chef's own address, obviously malformed
+  const emailLocalPart = email ? email.split('@')[0] : ''
+  const isInvalidEmail = !email
+    || email.includes('takeachef')
+    || email === 'dfprivatechef@gmail.com'
+    || email === 'davidferra13@gmail.com'
+    || !email.includes('.')             // no TLD
+    || emailLocalPart.length < 3       // local part too short to be real (e.g. "3@gmail.com")
+  if (isInvalidEmail) {
     inquiriesSkipped++
     continue
   }
