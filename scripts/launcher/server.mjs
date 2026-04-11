@@ -28,6 +28,7 @@ const PROJECT_EXPENSES_FILE = join(PROJECT_ROOT, 'docs', 'project-expenses.json'
 const UPTIME_HISTORY_FILE = join(PROJECT_ROOT, 'docs', 'uptime-history.json')
 const ROLLBACK_HISTORY_FILE = join(PROJECT_ROOT, 'docs', 'rollback-history.json')
 const BUNDLE_SIZE_FILE = join(PROJECT_ROOT, 'docs', 'bundle-size-history.json')
+const LIVE_OPS_FILE = join(PROJECT_ROOT, 'docs', 'live-ops-testing.json')
 
 // Load .env.local for database credentials
 try {
@@ -7180,6 +7181,61 @@ function json(res, data, status = 200) {
   res.end(JSON.stringify(data))
 }
 
+// ── PIN Auth ─────────────────────────────────────────────────────
+const MC_PIN = process.env.MC_PIN || '7331'
+const mcSessions = new Set()
+
+function generateSessionToken() {
+  const bytes = new Uint8Array(32)
+  for (let i = 0; i < 32; i++) bytes[i] = Math.floor(Math.random() * 256)
+  return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('')
+}
+
+function getMcSession(req) {
+  const cookie = req.headers.cookie || ''
+  const match = cookie.match(/mc_session=([a-f0-9]+)/)
+  return match ? match[1] : null
+}
+
+function isLocalRequest(req) {
+  const addr = req.socket.remoteAddress || ''
+  return addr === '127.0.0.1' || addr === '::1' || addr === '::ffff:127.0.0.1'
+}
+
+const PIN_PAGE = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mission Control - PIN</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0e17;color:#f1f5f9;font-family:'Inter',system-ui,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh}
+.pin-box{background:#1a2234;border:1px solid #1e293b;border-radius:16px;padding:40px;width:320px;text-align:center}
+h1{font-size:18px;margin-bottom:8px;color:#e88f47}
+p{font-size:12px;color:#64748b;margin-bottom:24px}
+input{width:100%;padding:14px;background:#0f1420;border:1px solid #1e293b;border-radius:10px;color:#f1f5f9;font-size:24px;text-align:center;letter-spacing:12px;outline:none;font-family:monospace}
+input:focus{border-color:#e88f47}
+button{width:100%;padding:12px;background:#e88f47;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-top:16px}
+button:hover{opacity:0.9}
+.error{color:#ef4444;font-size:12px;margin-top:12px;display:none}
+</style></head><body>
+<div class="pin-box">
+<h1>Mission Control</h1>
+<p>Enter PIN to access</p>
+<form onsubmit="return login()">
+<input type="password" id="pin" maxlength="8" autofocus placeholder="****">
+<button type="submit">Unlock</button>
+</form>
+<div class="error" id="err">Wrong PIN</div>
+</div>
+<script>
+async function login(){
+  const pin=document.getElementById('pin').value
+  const res=await fetch('/api/mc-auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin})})
+  const data=await res.json()
+  if(data.ok){window.location.reload()}else{document.getElementById('err').style.display='block';document.getElementById('pin').value=''}
+  return false
+}
+</script></body></html>`
+
 async function handleRequest(req, res) {
   const url = new URL(req.url, `http://localhost:${PORT}`)
   const path = url.pathname
@@ -7193,6 +7249,42 @@ async function handleRequest(req, res) {
       'Access-Control-Allow-Headers': 'Content-Type',
     })
     return res.end()
+  }
+
+  // PIN auth endpoint (always accessible)
+  if (path === '/api/mc-auth' && method === 'POST') {
+    const body = await parseBody(req)
+    if (body.pin === MC_PIN) {
+      const token = generateSessionToken()
+      mcSessions.add(token)
+      res.writeHead(200, {
+        'Content-Type': 'application/json',
+        'Set-Cookie': `mc_session=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=604800`,
+      })
+      log('auth', 'PIN auth successful', 'success')
+      return res.end(JSON.stringify({ ok: true }))
+    } else {
+      log('auth', 'PIN auth failed - wrong PIN', 'warn')
+      return json(res, { ok: false, error: 'Wrong PIN' }, 401)
+    }
+  }
+
+  // PIN gate: require for ALL requests (local gets bypass via browser cookie too)
+  // Tunnel requests come from localhost, so we check the Host header instead
+  const host = req.headers.host || ''
+  const isTunnelRequest = host.includes('cheflowhq.com')
+  const isDirectLocal = !isTunnelRequest && isLocalRequest(req)
+
+  if (!isDirectLocal) {
+    const session = getMcSession(req)
+    if (!session || !mcSessions.has(session)) {
+      // Serve PIN page for HTML requests, 401 for API
+      if (path.startsWith('/api/')) {
+        return json(res, { error: 'Unauthorized' }, 401)
+      }
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
+      return res.end(PIN_PAGE)
+    }
   }
 
   // Static files
@@ -7565,6 +7657,191 @@ async function handleRequest(req, res) {
       return json(res, { ok: true, entry })
     } catch (err) {
       return json(res, { error: 'Failed to save expense: ' + err.message }, 500)
+    }
+  }
+
+  // ── Live Ops Testing endpoints ─────────────────────────────────
+  if (path === '/api/live-ops' && method === 'GET') {
+    try {
+      const raw = await readFile(LIVE_OPS_FILE, 'utf-8')
+      const data = JSON.parse(raw)
+      // Calculate stats
+      let totalItems = 0, checkedItems = 0, ratedItems = 0, totalRating = 0
+      for (const cat of data.categories) {
+        for (const item of cat.items) {
+          totalItems++
+          if (item.checked) checkedItems++
+          if (item.rating) { ratedItems++; totalRating += item.rating }
+        }
+      }
+      const startDate = new Date(data.meta.startDate)
+      const now = new Date()
+      data.meta.totalDays = Math.floor((now - startDate) / 86400000)
+      data.stats = {
+        totalItems,
+        checkedItems,
+        ratedItems,
+        avgRating: ratedItems > 0 ? (totalRating / ratedItems).toFixed(1) : null,
+        completionPct: totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0,
+        totalCategories: data.categories.length,
+        feedbackCount: data.feedback.length,
+        dailyLogCount: data.dailyLog.length
+      }
+      return json(res, data)
+    } catch (err) {
+      return json(res, { error: 'Failed to read live ops file: ' + err.message }, 500)
+    }
+  }
+
+  if (path === '/api/live-ops/item' && method === 'POST') {
+    try {
+      const body = await parseBody(req)
+      const { itemId, checked, rating, notes } = body
+      const raw = await readFile(LIVE_OPS_FILE, 'utf-8')
+      const data = JSON.parse(raw)
+      let found = false
+      for (const cat of data.categories) {
+        for (const item of cat.items) {
+          if (item.id === itemId) {
+            if (checked !== undefined) item.checked = checked
+            if (rating !== undefined) item.rating = rating
+            if (notes !== undefined) item.notes = notes
+            found = true
+            break
+          }
+        }
+        if (found) break
+      }
+      if (!found) return json(res, { error: 'Item not found: ' + itemId }, 404)
+      data.meta.lastUpdated = new Date().toISOString()
+      await writeFile(LIVE_OPS_FILE, JSON.stringify(data, null, 2) + '\n')
+      return json(res, { ok: true })
+    } catch (err) {
+      return json(res, { error: 'Failed to update item: ' + err.message }, 500)
+    }
+  }
+
+  if (path === '/api/live-ops/category' && method === 'POST') {
+    try {
+      const body = await parseBody(req)
+      const { categoryId, collapsed } = body
+      const raw = await readFile(LIVE_OPS_FILE, 'utf-8')
+      const data = JSON.parse(raw)
+      const cat = data.categories.find(c => c.id === categoryId)
+      if (!cat) return json(res, { error: 'Category not found' }, 404)
+      if (collapsed !== undefined) cat.collapsed = collapsed
+      await writeFile(LIVE_OPS_FILE, JSON.stringify(data, null, 2) + '\n')
+      return json(res, { ok: true })
+    } catch (err) {
+      return json(res, { error: 'Failed to update category: ' + err.message }, 500)
+    }
+  }
+
+  if (path === '/api/live-ops/add-item' && method === 'POST') {
+    try {
+      const body = await parseBody(req)
+      const { categoryId, text } = body
+      if (!categoryId || !text) return json(res, { error: 'categoryId and text required' }, 400)
+      const raw = await readFile(LIVE_OPS_FILE, 'utf-8')
+      const data = JSON.parse(raw)
+      const cat = data.categories.find(c => c.id === categoryId)
+      if (!cat) return json(res, { error: 'Category not found' }, 404)
+      const id = categoryId.slice(0, 3) + '-custom-' + Date.now()
+      cat.items.push({ id, text, checked: false, rating: null, notes: '' })
+      data.meta.lastUpdated = new Date().toISOString()
+      await writeFile(LIVE_OPS_FILE, JSON.stringify(data, null, 2) + '\n')
+      return json(res, { ok: true, id })
+    } catch (err) {
+      return json(res, { error: 'Failed to add item: ' + err.message }, 500)
+    }
+  }
+
+  if (path === '/api/live-ops/delete-item' && method === 'POST') {
+    try {
+      const body = await parseBody(req)
+      const { itemId } = body
+      const raw = await readFile(LIVE_OPS_FILE, 'utf-8')
+      const data = JSON.parse(raw)
+      for (const cat of data.categories) {
+        const idx = cat.items.findIndex(i => i.id === itemId)
+        if (idx !== -1) { cat.items.splice(idx, 1); break }
+      }
+      data.meta.lastUpdated = new Date().toISOString()
+      await writeFile(LIVE_OPS_FILE, JSON.stringify(data, null, 2) + '\n')
+      return json(res, { ok: true })
+    } catch (err) {
+      return json(res, { error: 'Failed to delete item: ' + err.message }, 500)
+    }
+  }
+
+  if (path === '/api/live-ops/feedback' && method === 'POST') {
+    try {
+      const body = await parseBody(req)
+      const { type, area, message } = body
+      if (!message) return json(res, { error: 'message required' }, 400)
+      const raw = await readFile(LIVE_OPS_FILE, 'utf-8')
+      const data = JSON.parse(raw)
+      const entry = {
+        id: 'fb-' + Date.now(),
+        timestamp: new Date().toISOString(),
+        type: type || 'note',
+        area: area || 'general',
+        message,
+        resolved: false
+      }
+      data.feedback.push(entry)
+      data.meta.lastUpdated = new Date().toISOString()
+      await writeFile(LIVE_OPS_FILE, JSON.stringify(data, null, 2) + '\n')
+      return json(res, { ok: true, entry })
+    } catch (err) {
+      return json(res, { error: 'Failed to add feedback: ' + err.message }, 500)
+    }
+  }
+
+  if (path === '/api/live-ops/feedback/resolve' && method === 'POST') {
+    try {
+      const body = await parseBody(req)
+      const { feedbackId, resolved } = body
+      const raw = await readFile(LIVE_OPS_FILE, 'utf-8')
+      const data = JSON.parse(raw)
+      const fb = data.feedback.find(f => f.id === feedbackId)
+      if (!fb) return json(res, { error: 'Feedback not found' }, 404)
+      fb.resolved = resolved !== undefined ? resolved : true
+      data.meta.lastUpdated = new Date().toISOString()
+      await writeFile(LIVE_OPS_FILE, JSON.stringify(data, null, 2) + '\n')
+      return json(res, { ok: true })
+    } catch (err) {
+      return json(res, { error: 'Failed to resolve feedback: ' + err.message }, 500)
+    }
+  }
+
+  if (path === '/api/live-ops/daily-log' && method === 'POST') {
+    try {
+      const body = await parseBody(req)
+      const { summary, rating, redFlags, workarounds } = body
+      const raw = await readFile(LIVE_OPS_FILE, 'utf-8')
+      const data = JSON.parse(raw)
+      const today = new Date().toISOString().slice(0, 10)
+      const existing = data.dailyLog.find(d => d.date === today)
+      if (existing) {
+        if (summary !== undefined) existing.summary = summary
+        if (rating !== undefined) existing.rating = rating
+        if (redFlags !== undefined) existing.redFlags = redFlags
+        if (workarounds !== undefined) existing.workarounds = workarounds
+      } else {
+        data.dailyLog.push({
+          date: today,
+          summary: summary || '',
+          rating: rating || null,
+          redFlags: redFlags || [],
+          workarounds: workarounds || []
+        })
+      }
+      data.meta.lastUpdated = new Date().toISOString()
+      await writeFile(LIVE_OPS_FILE, JSON.stringify(data, null, 2) + '\n')
+      return json(res, { ok: true })
+    } catch (err) {
+      return json(res, { error: 'Failed to update daily log: ' + err.message }, 500)
     }
   }
 
@@ -8364,17 +8641,18 @@ async function getGitInfoBatch() {
 
 const server = createServer(handleRequest)
 
-server.listen(PORT, '127.0.0.1', () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`
   ╔═══════════════════════════════════════════════╗
   ║                                               ║
   ║    🍳  ChefFlow Mission Control               ║
   ║                                               ║
-  ║    Dashboard: http://localhost:${PORT}           ║
+  ║    Local:   http://localhost:${PORT}             ║
+  ║    Network: http://10.0.0.153:${PORT}           ║
   ║                                               ║
   ╚═══════════════════════════════════════════════╝
   `)
-  log('system', `Mission Control started on port ${PORT}`, 'success')
+  log('system', `Mission Control started on port ${PORT} (all interfaces)`, 'success')
 
   // Start uptime monitoring (poll every 60s)
   loadUptimeHistory().then(() => {

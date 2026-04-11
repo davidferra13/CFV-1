@@ -11,6 +11,13 @@ import {
   SoftwareApplicationJsonLd,
   WebSiteJsonLd,
 } from '@/components/seo/json-ld'
+import {
+  PUBLIC_DINNER_CIRCLES_ENTRY,
+  PUBLIC_DIRECTORY_HELPER,
+  PUBLIC_PRIMARY_CONSUMER_CTA,
+  PUBLIC_SECONDARY_CONSUMER_CTA,
+  PUBLIC_SUPPORTING_DIRECTORY_ENTRY,
+} from '@/lib/public/public-surface-config'
 import { HomepageSearch } from './_components/homepage-search'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
@@ -305,19 +312,37 @@ export default async function Home() {
           {/* Dual CTAs */}
           <div className="mt-10 w-full max-w-2xl space-y-4">
             <Link
-              href="/book"
+              href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
               className="flex h-14 w-full items-center justify-center rounded-2xl gradient-accent text-base font-semibold text-white glow-hover shadow-lg transition-transform active:scale-[0.97] touch-manipulation"
             >
-              Describe Your Event
+              {PUBLIC_PRIMARY_CONSUMER_CTA.label}
             </Link>
             <div className="relative flex items-center gap-4">
               <div className="flex-1 border-t border-stone-700/60" />
               <span className="text-xs text-stone-500 uppercase tracking-wider">
-                or browse chefs
+                or browse chefs directly
               </span>
               <div className="flex-1 border-t border-stone-700/60" />
             </div>
             <HomepageSearch />
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+              <Link
+                href={PUBLIC_SECONDARY_CONSUMER_CTA.href}
+                className="inline-flex items-center justify-center rounded-xl border border-stone-800 bg-stone-950 px-5 py-3 text-sm font-medium text-stone-400 transition-colors hover:border-stone-700 hover:text-stone-200"
+              >
+                {PUBLIC_SECONDARY_CONSUMER_CTA.label}
+              </Link>
+            </div>
+            <p className="pt-1 text-xs leading-relaxed text-stone-500">
+              {PUBLIC_DIRECTORY_HELPER}{' '}
+              <Link
+                href={PUBLIC_SUPPORTING_DIRECTORY_ENTRY.href}
+                className="font-medium text-stone-300 underline decoration-stone-600 underline-offset-4 hover:text-white"
+              >
+                Explore the {PUBLIC_SUPPORTING_DIRECTORY_ENTRY.label.toLowerCase()}
+              </Link>
+              .
+            </p>
           </div>
 
           {/* Trust line */}
@@ -336,8 +361,8 @@ export default async function Home() {
           <div className="rounded-2xl border border-stone-800/60 bg-stone-900/40 p-5">
             <p className="text-sm font-semibold text-stone-200">$50 - $150+ per person</p>
             <p className="mt-1.5 text-xs leading-relaxed text-stone-500">
-              For private dinners. Weekly meal prep runs $200 - $800. Every chef sets their own
-              pricing.
+              For private dinners. Weekly meal prep runs $200 - $800+ per week. Every chef sets
+              their own pricing.
             </p>
           </div>
           <div className="rounded-2xl border border-stone-800/60 bg-stone-900/40 p-5">
@@ -353,6 +378,32 @@ export default async function Home() {
               Most chefs handle planning, shopping, cooking, plating, and cleanup. You host, they
               handle the rest.
             </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto w-full max-w-5xl px-4 pb-6 sm:px-6 lg:px-8">
+        <div className="rounded-[1.75rem] border border-brand-700/20 bg-brand-950/10 p-6 sm:p-8">
+          <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-2xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+                Dinner Circles
+              </p>
+              <h2 className="mt-3 font-display text-2xl font-bold tracking-tight text-stone-100 md:text-3xl">
+                Shared guest pages for the dinner itself.
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-stone-300 md:text-base">
+                Guests can use Dinner Circles to stay on top of event details, chat, coordinate, and
+                come back to the same page before dinner. They are public guest pages, not
+                chef-portal screens.
+              </p>
+            </div>
+            <Link
+              href={PUBLIC_DINNER_CIRCLES_ENTRY.href}
+              className="inline-flex items-center justify-center rounded-xl border border-stone-700 bg-stone-950 px-5 py-3 text-sm font-medium text-stone-200 transition-colors hover:border-stone-600 hover:bg-stone-900"
+            >
+              Learn about {PUBLIC_DINNER_CIRCLES_ENTRY.label}
+            </Link>
           </div>
         </div>
       </section>
@@ -373,7 +424,7 @@ export default async function Home() {
               href="/chefs"
               className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-stone-700 px-4 py-2.5 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800 hover:text-stone-100 hover:border-stone-600"
             >
-              View all chefs
+              {PUBLIC_SECONDARY_CONSUMER_CTA.label}
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
@@ -394,7 +445,7 @@ export default async function Home() {
               href="/chefs"
               className="inline-flex items-center gap-1.5 rounded-xl border border-stone-700 px-5 py-3 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800 hover:text-stone-100"
             >
-              View all chefs
+              {PUBLIC_SECONDARY_CONSUMER_CTA.label}
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"

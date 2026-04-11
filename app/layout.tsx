@@ -33,7 +33,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: 'ChefFlow - Discover Chefs, Restaurants, and Food Near You',
+    default: 'ChefFlow - Chefs, Restaurants, and Food Near You',
     template: '%s | ChefFlow',
   },
   description:
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     'mobile-web-app-capable': 'yes',
   },
   openGraph: {
-    title: 'ChefFlow - Discover Chefs, Restaurants, and Food Near You',
+    title: 'ChefFlow - Chefs, Restaurants, and Food Near You',
     description:
       'Find private chefs, caterers, restaurants, food trucks, and bakeries near you. Browse menus and connect directly.',
     siteName: 'ChefFlow',
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ChefFlow - Discover Chefs, Restaurants, and Food Near You',
+    title: 'ChefFlow - Chefs, Restaurants, and Food Near You',
     description: 'Find private chefs, caterers, restaurants, food trucks, and bakeries near you.',
   },
   robots: {

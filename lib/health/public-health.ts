@@ -9,6 +9,7 @@ export type PublicHealthScope = 'health' | 'readiness'
 type BackgroundJobSummary = {
   status: PublicHealthStatus
   summary: {
+    required: number
     observedCrons: number
     missing: number
     stale: number
@@ -38,24 +39,41 @@ export type PublicHealthSnapshot = {
 }
 
 async function getBackgroundJobSummary(): Promise<BackgroundJobSummary> {
-  if (!process.env.NEXT_PUBLIC_DB_URL || !process.env.DB_SERVICE_ROLE_KEY) {
+  const requiredDefinitions = getRequiredCronDefinitionsForPublicHealth()
+
+  if (requiredDefinitions.length === 0) {
+    return {
+      status: 'ok',
+      summary: {
+        required: 0,
+        observedCrons: 0,
+        missing: 0,
+        stale: 0,
+      },
+      reason: 'no_required_crons_configured',
+    }
+  }
+
+  if (!process.env.DATABASE_URL) {
     return {
       status: 'degraded',
       summary: {
+        required: requiredDefinitions.length,
         observedCrons: 0,
-        missing: CRON_MONITOR_DEFINITIONS.length,
+        missing: requiredDefinitions.length,
         stale: 0,
       },
-      reason: 'missing_db_admin_env',
+      reason: 'missing_database_url',
     }
   }
 
   try {
-    const report = await buildCronHealthReport()
+    const report = await buildCronHealthReport(requiredDefinitions)
 
     return {
       status: report.healthy ? 'ok' : 'degraded',
       summary: {
+        required: requiredDefinitions.length,
         observedCrons: report.crons.filter((entry) => entry.lastRunAt).length,
         missing: report.missingCrons.length,
         stale: report.staleCrons.length,
@@ -67,13 +85,31 @@ async function getBackgroundJobSummary(): Promise<BackgroundJobSummary> {
     return {
       status: 'degraded',
       summary: {
+        required: requiredDefinitions.length,
         observedCrons: 0,
-        missing: CRON_MONITOR_DEFINITIONS.length,
+        missing: requiredDefinitions.length,
         stale: 0,
       },
       reason: 'unexpected_error',
     }
   }
+}
+
+function getRequiredCronDefinitionsForPublicHealth() {
+  const raw =
+    process.env.PUBLIC_HEALTH_REQUIRED_CRONS?.trim() || process.env.READINESS_REQUIRED_CRONS?.trim()
+
+  if (!raw) return []
+  if (raw.toLowerCase() === 'all') return CRON_MONITOR_DEFINITIONS
+
+  const requested = new Set(
+    raw
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean)
+  )
+
+  return CRON_MONITOR_DEFINITIONS.filter((definition) => requested.has(definition.cronName))
 }
 
 export async function buildPublicHealthSnapshot(

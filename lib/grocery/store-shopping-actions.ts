@@ -83,6 +83,7 @@ export async function addPreferredStore(input: {
 }): Promise<PreferredStore> {
   const user = await requireChef()
   const db: any = createServerClient()
+  let sortOrder = input.sort_order
 
   // If setting as default, unset other defaults first
   if (input.is_default) {
@@ -91,6 +92,17 @@ export async function addPreferredStore(input: {
       .update({ is_default: false })
       .eq('chef_id', user.tenantId!)
       .eq('is_default', true)
+  }
+
+  if (sortOrder === undefined) {
+    const { data: existingStores } = await (db as any)
+      .from('chef_preferred_stores')
+      .select('sort_order')
+      .eq('chef_id', user.tenantId!)
+      .order('sort_order', { ascending: false })
+      .limit(1)
+
+    sortOrder = ((existingStores ?? [])[0]?.sort_order ?? -1) + 1
   }
 
   const { data, error } = await (db as any)
@@ -102,13 +114,14 @@ export async function addPreferredStore(input: {
       address: input.address?.trim() || null,
       notes: input.notes?.trim() || null,
       is_default: input.is_default ?? false,
-      sort_order: input.sort_order ?? 0,
+      sort_order: sortOrder,
     })
     .select()
     .single()
 
   if (error) throw new Error(error.message)
   revalidatePath('/culinary/grocery')
+  revalidatePath('/settings/store-preferences')
   return data
 }
 
@@ -153,6 +166,7 @@ export async function updatePreferredStore(
 
   if (error) throw new Error(error.message)
   revalidatePath('/culinary/grocery')
+  revalidatePath('/settings/store-preferences')
   return data
 }
 
@@ -168,6 +182,7 @@ export async function deletePreferredStore(id: string): Promise<void> {
 
   if (error) throw new Error(error.message)
   revalidatePath('/culinary/grocery')
+  revalidatePath('/settings/store-preferences')
 }
 
 // ============================================

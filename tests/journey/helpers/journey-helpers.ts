@@ -156,7 +156,6 @@ export const JOURNEY_ROUTES = {
   settingsContracts: '/settings/contracts',
   settingsEmbed: '/settings/embed',
   settingsAiPrivacy: '/settings/ai-privacy',
-  settingsApiKeys: '/settings/api-keys',
   settingsBilling: '/settings/billing',
   settingsProtection: '/settings/protection',
   settingsProtectionInsurance: '/settings/protection/insurance',

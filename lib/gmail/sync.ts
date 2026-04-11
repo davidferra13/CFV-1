@@ -104,7 +104,7 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
   // 1. Get valid access token (auto-refreshes if needed)
   let accessToken: string
   try {
-    accessToken = await getGoogleAccessToken(chefId)
+    accessToken = await getGoogleAccessToken(chefId, { skipSessionCheck: true })
   } catch (err) {
     const error = err as Error
     result.errors.push(`Token error: ${error.message}`)

@@ -59,12 +59,12 @@ export default async function AdminDirectoryListingsPage() {
         <p className="mt-1 text-sm text-stone-500">
           Manage food business listings on the public{' '}
           <a
-            href="/discover"
+            href="/nearby"
             target="_blank"
             rel="noopener noreferrer"
             className="font-medium text-brand-600 underline"
           >
-            /discover
+            /nearby
           </a>{' '}
           directory. These are external businesses (not ChefFlow platform users).
         </p>
@@ -74,7 +74,7 @@ export default async function AdminDirectoryListingsPage() {
       <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
         {[
           { label: 'Total', value: stats.total, color: 'text-stone-100' },
-          { label: 'Discovered', value: stats.discovered, color: 'text-stone-300' },
+          { label: 'Listed', value: stats.discovered, color: 'text-stone-300' },
           { label: 'Pending', value: stats.pendingSubmissions, color: 'text-amber-300' },
           { label: 'Claimed', value: stats.claimed, color: 'text-brand-300' },
           { label: 'Verified', value: stats.verified, color: 'text-emerald-300' },

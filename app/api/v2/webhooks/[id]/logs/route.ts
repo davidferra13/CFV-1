@@ -2,6 +2,7 @@
 // GET /api/v2/webhooks/:id/logs?limit=50
 
 import { withApiAuth, apiSuccess, apiNotFound, apiError } from '@/lib/api/v2'
+import { CHEF_FEATURE_FLAGS } from '@/lib/features/chef-feature-flags'
 
 export const GET = withApiAuth(
   async (req, ctx, params) => {
@@ -40,5 +41,5 @@ export const GET = withApiAuth(
 
     return apiSuccess(data ?? [], { count: (data ?? []).length })
   },
-  { scopes: ['webhooks:manage'] }
+  { scopes: ['webhooks:manage'], featureFlag: CHEF_FEATURE_FLAGS.developerTools }
 )

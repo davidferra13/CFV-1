@@ -4,6 +4,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { changePassword } from '@/lib/auth/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
 
 export function ChangePasswordForm() {
+  const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -52,6 +54,7 @@ export function ChangePasswordForm() {
         setCurrentPassword('')
         setNewPassword('')
         setConfirmPassword('')
+        router.refresh()
       } catch (err) {
         const error = err as Error
         setError(error.message)

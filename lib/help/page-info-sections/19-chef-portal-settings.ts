@@ -325,14 +325,24 @@ export const CHEF_PORTAL_SETTINGS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/settings/api-keys': {
     title: 'API Keys',
-    description: 'Manage integration API keys.',
-    features: ['Create and list keys', 'Scope management', 'Last-used tracking', 'Revocation'],
+    description: 'Advanced developer-only integration API keys.',
+    features: [
+      'Developer tools access required',
+      'Create and list keys',
+      'Scope management',
+      'Revocation',
+    ],
   },
 
   '/settings/webhooks': {
     title: 'Webhooks',
-    description: 'Real-time webhook endpoint configuration.',
-    features: ['Endpoint creation', 'Event subscriptions', 'Delivery history'],
+    description: 'Advanced developer-only webhook endpoint configuration.',
+    features: [
+      'Developer tools access required',
+      'Endpoint creation',
+      'Event subscriptions',
+      'Delivery history',
+    ],
   },
 
   '/settings/compliance': {

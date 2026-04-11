@@ -78,14 +78,14 @@ export interface RealtimeNotification {
  * })
  */
 export function useNotificationSubscription(
-  tenantId: string | null,
+  recipientId: string | null,
   onNotification: (notification: RealtimeNotification) => void
 ) {
   const callbackRef = useRef(onNotification)
   callbackRef.current = onNotification
 
-  useSSE(`notifications:${tenantId}`, {
-    enabled: !!tenantId,
+  useSSE(`notifications:${recipientId}`, {
+    enabled: !!recipientId,
     onMessage: (msg) => {
       if (msg.event === 'INSERT') {
         callbackRef.current(msg.data?.new as RealtimeNotification)

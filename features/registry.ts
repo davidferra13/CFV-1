@@ -586,7 +586,7 @@ export const FEATURE_REGISTRY: Feature[] = [
       'Public business discovery directory for operators, restaurants, trucks, bakeries, and local food listings.',
     category: 'clients',
     classification: 'chef_standard',
-    entryPoint: { type: 'route', value: '/discover' },
+    entryPoint: { type: 'route', value: '/nearby' },
     visibility: 'visible',
     status: 'complete',
   },

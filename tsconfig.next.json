@@ -28,7 +28,19 @@
     ".next/types/**/*.ts",
     ".next-dev/types/**/*.ts",
     ".next-test/types/**/*.ts",
-    ".next-perf-verify/types/**/*.ts"
+    ".next-perf-verify/types/**/*.ts",
+    ".next-dev-pw-35348-1775669284094/types/**/*.ts",
+    ".next-dev-pw-45196-1775669308323/types/**/*.ts",
+    ".next-dev-pw-49044-1775669783274/types/**/*.ts",
+    ".next-dev-pw-22060-1775670189228/types/**/*.ts",
+    ".next-dev-pw-53052-1775670857004/types/**/*.ts",
+    ".next-dev-pw-32564-1775670997688/types/**/*.ts",
+    ".next-dev-pw-59584-1775755713203/types/**/*.ts",
+    ".next-dev-pw-58824-1775756677759/types/**/*.ts",
+    ".next-dev-pw-31088-1775756857616/types/**/*.ts",
+    ".next-dev-pw-50648-1775756986011/types/**/*.ts",
+    ".next-dev-pw-61900-1775757021528/types/**/*.ts",
+    ".next-dev-proof-8dd97e76-73aa-4cf5-a08b-05a5adb79f51/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

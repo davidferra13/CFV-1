@@ -228,7 +228,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                     />
 
                     {/* Presence beacon -- authenticated user presence for live admin visibility */}
-                    <PresenceBeacon />
+                    <PresenceBeacon userId={user.id} email={user.email} />
 
                     {/* Route tracker -- stores last active path for session recovery */}
                     <RouteTracker />

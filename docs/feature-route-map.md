@@ -575,7 +575,7 @@ Summary:
 | /scheduling                                 | calendar-schedule               | Calendar And Schedule               | chef_standard   | visible    | complete |
 | /settings                                   | settings-control-plane          | Settings Control Plane              | chef_privileged | visible    | complete |
 | /settings/ai-privacy                        | remy-ai-platform                | Remy AI Platform                    | chef_privileged | visible    | complete |
-| /settings/api-keys                          | integrations-webhooks           | Integrations And Webhooks           | chef_privileged | visible    | complete |
+| /settings/api-keys                          | integrations-webhooks           | Integrations And Webhooks           | chef_privileged | gated      | complete |
 | /settings/appearance                        | settings-control-plane          | Settings Control Plane              | chef_privileged | visible    | complete |
 | /settings/automations                       | automations-touchpoints         | Automations And Touchpoints         | chef_privileged | visible    | complete |
 | /settings/billing                           | settings-control-plane          | Settings Control Plane              | chef_privileged | visible    | complete |
@@ -638,9 +638,9 @@ Summary:
 | /settings/taxonomy                          | settings-control-plane          | Settings Control Plane              | chef_privileged | visible    | complete |
 | /settings/templates                         | settings-control-plane          | Settings Control Plane              | chef_privileged | visible    | complete |
 | /settings/touchpoints                       | automations-touchpoints         | Automations And Touchpoints         | chef_privileged | visible    | complete |
-| /settings/webhooks                          | integrations-webhooks           | Integrations And Webhooks           | chef_privileged | visible    | complete |
+| /settings/webhooks                          | integrations-webhooks           | Integrations And Webhooks           | chef_privileged | gated      | complete |
 | /settings/yelp                              | integrations-webhooks           | Integrations And Webhooks           | chef_privileged | visible    | complete |
-| /settings/zapier                            | integrations-webhooks           | Integrations And Webhooks           | chef_privileged | visible    | complete |
+| /settings/zapier                            | integrations-webhooks           | Integrations And Webhooks           | chef_privileged | gated      | complete |
 | /share/[token]                              | tokenized-service-pages         | Tokenized Service Pages             | chef_standard   | gated      | complete |
 | /share/[token]/recap                        | tokenized-service-pages         | Tokenized Service Pages             | chef_standard   | gated      | complete |
 | /social                                     | social-publishing               | Social Publishing                   | chef_privileged | visible    | complete |

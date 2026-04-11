@@ -306,6 +306,8 @@ export type ChefActivityAction =
   | 'onboarding_step_completed'
   | 'api_key_created'
   | 'api_key_revoked'
+  | 'webhook_endpoint_created'
+  | 'zapier_subscription_created'
   // Prospecting
   | 'prospect_called'
   | 'prospect_converted'

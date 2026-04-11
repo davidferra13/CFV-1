@@ -13,6 +13,7 @@ _Every status change, every claim, every verification gets a row. This is the au
 | ------------- | -------------------- | ------------- | ------ |
 | Created       | 2026-04-09 19:45 EDT | Planner       |        |
 | Status: ready | 2026-04-09 19:45 EDT | Planner       |        |
+| Research pass | 2026-04-09 22:05 EDT | Codex         |        |
 
 ---
 
@@ -26,12 +27,14 @@ They explicitly want a real judgment about clarity, structure, intent, and end-t
 
 They also made the execution posture explicit earlier in this same thread: the system is no longer in a phase of discovery. It is in a phase of decision. The right move is the smallest set of changes that creates irreversible advantage without unnecessary churn. That means understanding the current system fully, sequencing work by dependency, and turning what is already known into something durable.
 
+They then required a stakeholder-by-stakeholder research pass grounded in real workflows rather than assumptions. The instruction was to study how primary users, business actors, operations, technical teams, compliance actors, and external systems handle this class of problem today, then apply only the highest-value findings back into the active work.
+
 ### Developer Intent
 
 - **Core goal:** convert the existing architecture model from documentation and intuition into enforced runtime boundaries, starting with the surface where leakage is most obvious: admin versus chef.
 - **Key constraints:** no rewrite; no fake microservice split; no route churn for its own sake; preserve valid multi-surface behavior such as admins still being able to operate inside chef context when they are explicitly on chef routes.
 - **Motivation:** the current codebase has a real surface model on paper, but runtime shell ownership, navigation ownership, and route semantics still leak together in ways that a best-in-class team would not leave implicit.
-- **Success from the developer's perspective:** a builder can implement a machine-readable runtime surface contract, give admin its own shell ownership, remove admin leakage from chef navigation, and leave behind tests that make future drift obvious.
+- **Success from the developer's perspective:** a builder can implement a machine-readable runtime surface contract, give admin its own shell ownership, remove admin leakage from chef navigation, and leave behind tests that make future drift obvious while keeping the operator, client, staff, and partner experiences aligned with how those actors actually work.
 
 ---
 
@@ -56,6 +59,19 @@ But the runtime does not fully honor that. The admin layout currently says it "u
 That mismatch is not cosmetic. The system-architecture doc says admin is an internal control plane and that normal tenant execution workflows do not belong there, while chef is the tenant operating workspace. `docs/system-architecture.md:71-98`, `docs/system-architecture.md:155-180` Yet the current runtime makes admin feel like a chef variant instead of its own surface. That is exactly the sort of structural drift that causes future builders to classify by convenience rather than ownership.
 
 Other structural debt still exists, including request-trust ambiguity, admin-style DB access, and build gates that ignore lint and type failures. `middleware.ts:55-70`, `lib/api/v2/middleware.ts:18-27`, `lib/db/server.ts:1-8`, `lib/db/admin.ts:1-7`, `next.config.js:71-82` Those are real issues, but this spec intentionally focuses on one architectural slice: runtime surface boundary enforcement.
+
+---
+
+## Research-Backed Constraints
+
+The multi-stakeholder workflow pass reinforces this spec rather than widening it. `docs/research/2026-04-09-multi-stakeholder-workflow-research-for-architecture-refinement.md:1-32`
+
+- Primary users need a light public entry and a dense operator workspace. Admin shortcuts inside chef navigation weaken that sequence instead of helping it. `docs/research/2026-04-09-multi-stakeholder-workflow-research-for-architecture-refinement.md:45-90`
+- Business, manager, and corporate actors need an explicit control lane for oversight and internal decision-making. That supports admin as a true control plane rather than a chef-nav appendix. `docs/research/2026-04-09-multi-stakeholder-workflow-research-for-architecture-refinement.md:92-132`
+- Operations, finance, and support work belong inside the operator system or the internal control plane, not inside public or client entry flows. `docs/research/2026-04-09-multi-stakeholder-workflow-research-for-architecture-refinement.md:134-173`
+- Technical, compliance, and integration actors all need clear ownership and predictable runtime semantics. Surface ambiguity is not just a UX smell; it creates governance and trust problems. `docs/research/2026-04-09-multi-stakeholder-workflow-research-for-architecture-refinement.md:175-309`
+
+This means the builder should treat admin-versus-chef shell ownership as a real product-boundary correction, not a cosmetic refactor.
 
 ---
 
@@ -206,6 +222,7 @@ Visual reuse is allowed, but semantic reuse is not. Shared layout primitives may
 - Start from the runtime contract, then wire layouts and nav configs to it. If you build the shell first without the contract, future drift will return immediately.
 - Preserve legitimate dual-context behavior. An admin can still act inside chef context when they are on chef routes. The mistake today is shell ownership, not the existence of support/admin power.
 - Keep staff mapped to chef in the contract. The repo already treats staff as a separate route family, but the canonical surface model is explicit that staff is a role inside chef operations. `docs/system-architecture.md:23-25`, `docs/system-architecture.md:37-39`, `docs/feature-classification-rules.md:35-37`, `docs/feature-classification-rules.md:61-66`
+- Preserve the research-backed surface sequence: public discovery and first contact, constrained external portals, dense chef operations, separate admin control plane. Do not optimize for internal convenience at the expense of that actor model. `docs/research/2026-04-09-multi-stakeholder-workflow-research-for-architecture-refinement.md:45-90`, `docs/research/2026-04-09-multi-stakeholder-workflow-research-for-architecture-refinement.md:311-335`
 - Do not widen into API, RLS, or build-gate work "while here". Those are separate architectural debts and separate execution slices.
 - If you need shared presentational primitives, extract them neutrally. Do not leave `ChefSidebar` as the runtime owner of `/admin`.
 

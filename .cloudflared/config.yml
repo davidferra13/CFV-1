@@ -13,12 +13,12 @@
 #   npm run beta:named
 # =============================================================================
 
-tunnel: f48ab139-b448-4fd9-a431-bcf6b09902f0
-credentials-file: C:\Users\david\.cloudflared\f48ab139-b448-4fd9-a431-bcf6b09902f0.json
+tunnel: 03fc407c-cfe6-4758-a239-299cfa615fcc
+credentials-file: C:\Users\david\.cloudflared\03fc407c-cfe6-4758-a239-299cfa615fcc.json
 
 ingress:
   - hostname: beta.cheflowhq.com
-    service: http://localhost:3100
+    service: http://127.0.0.1:3200
     originRequest:
       noTLSVerify: true
   # Catch-all rule (required by cloudflared)

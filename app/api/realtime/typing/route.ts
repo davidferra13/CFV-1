@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { broadcastTyping } from '@/lib/realtime/broadcast'
 import { auth } from '@/lib/auth'
+import { hasPersistedAdminAccessForAuthUser } from '@/lib/auth/admin-access'
+import { validateRealtimeChannelAccess } from '@/lib/realtime/channel-access'
 
 export async function POST(request: NextRequest) {
   // Require authentication - typing indicators are tenant-scoped
@@ -19,14 +21,13 @@ export async function POST(request: NextRequest) {
     // Use the authenticated user's ID (never trust client-supplied userId)
     const userId = session.user.id
 
-    // Verify the channel is tenant-scoped using structured parsing (not substring match)
-    const tenantId = session.user.tenantId
-    if (!tenantId) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-    const colonIdx = channel.indexOf(':')
-    const channelTenantId = colonIdx !== -1 ? channel.substring(colonIdx + 1) : null
-    if (channelTenantId !== tenantId) {
+    const allowed = await validateRealtimeChannelAccess(channel, {
+      isAdmin: await hasPersistedAdminAccessForAuthUser(userId),
+      tenantId: session.user.tenantId ?? null,
+      userId,
+    })
+
+    if (!allowed) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

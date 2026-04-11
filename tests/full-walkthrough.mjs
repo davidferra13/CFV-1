@@ -256,7 +256,6 @@ const pages = [
   { name: '325-settings-menu-engine', url: '/settings/menu-engine' },
   { name: '326-settings-health', url: '/settings/health' },
   { name: '327-settings-journal', url: '/settings/journal' },
-  { name: '328-settings-api-keys', url: '/settings/api-keys' },
   { name: '329-settings-devices', url: '/settings/devices' },
 ]
 

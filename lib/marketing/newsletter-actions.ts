@@ -3,6 +3,8 @@
 import { headers } from 'next/headers'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { createAdminClient } from '@/lib/db/admin'
+import { recordPlatformEvent } from '@/lib/platform-observability/events'
+import { extractRequestMetadata } from '@/lib/platform-observability/context'
 
 type NewsletterSubscribeInput = {
   email: string
@@ -35,14 +37,41 @@ export async function subscribeToNewsletter(
     await checkRateLimit(`newsletter:email:${email}`, 4, 60 * 60_000)
 
     const db: any = createAdminClient()
-
-    const { error } = await db
+    const { data: existingSubscriber } = await db
       .from('newsletter_subscribers')
-      .upsert({ email, subscribed_at: new Date().toISOString() }, { onConflict: 'email' })
+      .select('id, unsubscribed_at')
+      .eq('email', email)
+      .maybeSingle()
+
+    const { error } = await db.from('newsletter_subscribers').upsert(
+      {
+        email,
+        subscribed_at: new Date().toISOString(),
+        unsubscribed_at: null,
+      },
+      { onConflict: 'email' }
+    )
 
     if (error) {
       console.error('[newsletter] Subscribe failed:', error)
       return { success: false, error: 'Something went wrong. Please try again.' }
+    }
+
+    if (!existingSubscriber || existingSubscriber.unsubscribed_at) {
+      await recordPlatformEvent({
+        eventKey: 'subscription.stay_updated_subscribed',
+        source: 'public_marketing',
+        actorType: 'anonymous',
+        subjectType: 'newsletter_subscriber',
+        subjectId: email,
+        summary: `Stay Updated subscription captured for ${email}`,
+        metadata: {
+          ...extractRequestMetadata(hdrs),
+          email,
+          source: 'website_footer',
+        },
+        alertDedupeKey: `newsletter:${email}`,
+      })
     }
 
     return { success: true }

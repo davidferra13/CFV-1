@@ -174,11 +174,11 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              `script-src 'self' 'unsafe-inline'${devEval} https://challenges.cloudflare.com`,
+              `script-src 'self' 'unsafe-inline'${devEval} https://challenges.cloudflare.com https://static.cloudflareinsights.com`,
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: ",
               "font-src 'self'",
-              `connect-src 'self' https://challenges.cloudflare.com ${devConnectSrc.join(' ')}`.trim(),
+              `connect-src 'self' https://challenges.cloudflare.com https://cloudflareinsights.com ${devConnectSrc.join(' ')}`.trim(),
               "worker-src 'self'",
               'frame-src https://challenges.cloudflare.com',
               'frame-ancestors *',
@@ -221,11 +221,11 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              `script-src 'self' 'unsafe-inline'${devEval}`,
+              `script-src 'self' 'unsafe-inline'${devEval} https://static.cloudflareinsights.com`,
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://api.qrserver.com ",
               "font-src 'self'",
-              `connect-src 'self' ${devConnectSrc.join(' ')}`.trim(),
+              `connect-src 'self' https://cloudflareinsights.com ${devConnectSrc.join(' ')}`.trim(),
               "worker-src 'self'",
               "frame-ancestors 'none'",
               "object-src 'none'",
@@ -272,11 +272,11 @@ const nextConfig = {
               // NOTE: Do NOT add 'strict-dynamic' — it overrides 'self' and 'unsafe-inline'
               // in CSP3 browsers, requiring nonce-based script loading which Next.js 14
               // does not support. Adding it blocks ALL JS and kills hydration.
-              `script-src 'self' 'unsafe-inline'${devEval} https://js.stripe.com https://us-assets.i.posthog.com https://maps.googleapis.com https://challenges.cloudflare.com`,
+              `script-src 'self' 'unsafe-inline'${devEval} https://js.stripe.com https://us-assets.i.posthog.com https://maps.googleapis.com https://challenges.cloudflare.com https://static.cloudflareinsights.com`,
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com ",
               "font-src 'self' https://fonts.gstatic.com",
-              `connect-src 'self' https://api.stripe.com https://hooks.stripe.com https://accounts.google.com https://us.i.posthog.com https://us-assets.i.posthog.com https://maps.googleapis.com https://challenges.cloudflare.com ${devConnectSrc.join(' ')}`.trim(),
+              `connect-src 'self' https://api.stripe.com https://hooks.stripe.com https://accounts.google.com https://us.i.posthog.com https://us-assets.i.posthog.com https://maps.googleapis.com https://challenges.cloudflare.com https://cloudflareinsights.com ${devConnectSrc.join(' ')}`.trim(),
               "worker-src 'self'",
               'frame-src https://js.stripe.com https://www.openstreetmap.org https://challenges.cloudflare.com',
               "frame-ancestors 'none'",
@@ -292,6 +292,16 @@ const nextConfig = {
   async redirects() {
     return [
       // Common alternative URL patterns that should reach the correct page
+      {
+        source: '/discover',
+        destination: '/nearby',
+        permanent: true,
+      },
+      {
+        source: '/discover/:path*',
+        destination: '/nearby/:path*',
+        permanent: true,
+      },
       {
         source: '/admin/price-catalog',
         destination: '/culinary/price-catalog',

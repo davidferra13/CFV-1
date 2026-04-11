@@ -299,6 +299,44 @@ Each of these is a different entry point into the same data, with different UI, 
 
 ---
 
+Now invert the perspective.
+
+Before expanding outward, analyze what is already instantiated within the system.
+
+The current interface already defines an implicit taxonomy of "food operators":
+
+- Restaurants
+- Private chefs
+- Caterers
+- Food trucks
+- Bakeries
+- Meal prep services
+- Pop-ups
+- Supper clubs
+
+This is not just UI - it is a working classification model. Treat it as ground truth for how the system currently understands the space.
+
+Interrogate it:
+
+- Which of these categories map cleanly to NAICS definitions, and which exist outside formal classification (e.g., private chefs, supper clubs, pop-ups)?
+- Which categories are underrepresented in traditional datasets but overrepresented in real-world demand?
+- Where are we already hosting operators that would never appear in BLS or USDA counts?
+- Which segments here are fragmented, informal, or invisible at scale - and therefore represent the highest leverage opportunity?
+
+Then identify what's missing relative to this internal model:
+
+- Are there operator types already implied by user behavior but not explicitly categorized?
+- Are hybrid roles being forced into incorrect buckets due to limited taxonomy?
+- Does the current system reflect how operators actually self-identify, or how legacy data structures define them?
+
+The system is not empty - we are already hosting a version of the market.
+
+Map it precisely. Quantify it. Then reconcile it against external datasets.
+
+Do not expand the definition of "food operator" until the internal model is fully understood, stress-tested, and made complete.
+
+---
+
 ### What Would Make Each Persona Pay
 
 | Persona        | Free tier                           | Paid trigger                                                                                                            |

@@ -110,7 +110,6 @@ const SECTIONS: Record<string, string[]> = {
     '/settings/dashboard',
     '/settings/calendar',
     '/settings/embed',
-    '/settings/api-keys',
     '/settings/templates',
     '/settings/documents',
     '/settings/tax',

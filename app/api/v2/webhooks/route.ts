@@ -7,6 +7,8 @@ import { z } from 'zod'
 import { withApiAuth, apiSuccess, apiCreated, apiValidationError, apiError } from '@/lib/api/v2'
 import { randomBytes } from 'crypto'
 import { validateWebhookUrl } from '@/lib/security/url-validation'
+import { CHEF_FEATURE_FLAGS } from '@/lib/features/chef-feature-flags'
+import { logDeveloperToolsFirstUseIfNeeded } from '@/lib/features/developer-tools-observability'
 
 const CreateWebhookBody = z.object({
   url: z.string().url(),
@@ -27,7 +29,7 @@ export const GET = withApiAuth(
 
     return apiSuccess(data ?? [])
   },
-  { scopes: ['webhooks:manage'] }
+  { scopes: ['webhooks:manage'], featureFlag: CHEF_FEATURE_FLAGS.developerTools }
 )
 
 export const POST = withApiAuth(
@@ -70,7 +72,16 @@ export const POST = withApiAuth(
       return apiError('create_failed', 'Failed to create webhook subscription', 500)
     }
 
+    await logDeveloperToolsFirstUseIfNeeded({
+      tenantId: ctx.tenantId,
+      actorId: ctx.keyId,
+      kind: 'raw_webhook',
+      entityId: data.id,
+      context: { event_count: parsed.data.events.length, via: 'api_v2' },
+      db: ctx.db,
+    })
+
     return apiCreated(data)
   },
-  { scopes: ['webhooks:manage'] }
+  { scopes: ['webhooks:manage'], featureFlag: CHEF_FEATURE_FLAGS.developerTools }
 )

@@ -41,6 +41,7 @@ import {
 } from '@/lib/directory/location-search'
 import { resolvePublicLocationQuery } from '@/lib/geo/public-location'
 import { getOptimizedGalleryImage } from '@/lib/images/cloudinary'
+import { PUBLIC_PRIMARY_CONSUMER_CTA } from '@/lib/public/public-surface-config'
 import { ChefHero } from './_components/chef-hero'
 import { DirectoryFiltersForm } from './_components/directory-filters-form'
 import { DirectoryResultsTracker } from './_components/directory-results-tracker'
@@ -567,21 +568,21 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
             </h2>
             <p className="mt-2 text-stone-500 max-w-md mx-auto">
               {allChefs.length === 0
-                ? 'Tell us what you are planning and ChefFlow can help source the right chef while the public directory expands.'
-                : 'Try a broader occasion, reset the filters, or jump into a high-intent category below.'}
+                ? 'Tell us what you are planning and ChefFlow can route your request to matched chefs while the public directory expands.'
+                : 'Try a broader occasion, reset the filters, or book a chef and let matched chefs come to you.'}
             </p>
             <div className="mt-6 flex items-center justify-center gap-4">
               <Link
-                href="/chefs"
+                href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
                 className="rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
               >
-                Reset filters
+                {PUBLIC_PRIMARY_CONSUMER_CTA.label}
               </Link>
               <Link
-                href="/contact"
+                href="/chefs"
                 className="rounded-xl border border-stone-600 px-5 py-2.5 text-sm font-medium text-stone-300 transition-colors hover:border-stone-500 hover:text-stone-100"
               >
-                Contact ChefFlow
+                Reset filters
               </Link>
             </div>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">

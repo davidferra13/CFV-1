@@ -10,7 +10,9 @@ All v2 endpoints require an API key in the `Authorization` header:
 Authorization: Bearer cf_live_<your_key>
 ```
 
-API keys are managed at `/settings/api-keys`. Each key has scoped permissions.
+API keys are available only when the `developer_tools` feature flag is enabled for a chef
+account. When enabled, keys are managed at `/settings/api-keys`, and each key has scoped
+permissions.
 
 ## Rate Limiting
 

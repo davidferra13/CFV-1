@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -109,7 +110,10 @@ export default function ForOperatorsPage() {
 
           <div className="mt-12 flex flex-col items-center gap-4 sm:flex-row">
             <Link
-              href="/auth/signup"
+              href={buildMarketingSignupHref({
+                sourcePage: 'for_operators',
+                sourceCta: 'hero_operator_signup',
+              })}
               className="inline-flex h-14 items-center justify-center rounded-2xl gradient-accent px-10 text-base font-semibold text-white glow-hover shadow-lg"
             >
               Get Started Free
@@ -178,7 +182,10 @@ export default function ForOperatorsPage() {
             text threads, this is the one place that replaces all of them.
           </p>
           <Link
-            href="/auth/signup"
+            href={buildMarketingSignupHref({
+              sourcePage: 'for_operators',
+              sourceCta: 'final_operator_signup',
+            })}
             className="mt-8 inline-flex h-14 items-center justify-center rounded-2xl gradient-accent px-10 text-base font-semibold text-white glow-hover shadow-lg"
           >
             Start for Free

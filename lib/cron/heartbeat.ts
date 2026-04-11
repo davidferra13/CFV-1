@@ -68,6 +68,26 @@ export async function recordCronError(
     } catch {
       // Alert must never crash heartbeat recording
     }
+
+    try {
+      const { recordPlatformEvent } = await import('@/lib/platform-observability/events')
+      await recordPlatformEvent({
+        eventKey: 'system.cron_job_failed',
+        source: 'system_cron',
+        actorType: 'system',
+        subjectType: 'cron',
+        subjectId: cronName,
+        summary: `Cron job failed: ${cronName}`,
+        details: errorText,
+        metadata: {
+          cron_name: cronName,
+          duration_ms: durationMs ?? null,
+        },
+        alertDedupeKey: `cron-failure:${cronName}`,
+      })
+    } catch {
+      // Observability must never crash heartbeat recording
+    }
   } catch (err) {
     console.error(`[CronHeartbeat] Unexpected error recording error for "${cronName}":`, err)
   }

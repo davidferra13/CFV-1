@@ -562,6 +562,34 @@ export const OLLAMA_STREAM_TIMEOUT_MS = 180_000 // 3 min - 30b MoE model on 6GB 
 export const OLLAMA_STREAM_MAX_TOKENS = 2048
 
 /**
+ * Operator-mode response budgets by context scope.
+ * Keeps narrow questions tight while leaving enough headroom for true strategy work.
+ */
+export function getOperatorResponseTokenBudget(
+  scope: 'full' | 'minimal' | 'focused',
+  intent: 'question' | 'mixed' | 'command' = 'question'
+): number {
+  let budget = 220
+
+  if (scope === 'minimal') {
+    budget = intent === 'mixed' ? 160 : 120
+  } else if (scope === 'focused') {
+    budget = intent === 'mixed' ? 280 : 220
+  } else {
+    budget = intent === 'mixed' ? 520 : 420
+  }
+
+  return Math.min(budget, OLLAMA_STREAM_MAX_TOKENS)
+}
+
+export function buildGreetingFastPath(now = new Date()): string {
+  const hour = now.getHours()
+  const greeting = hour < 12 ? 'Morning' : hour < 17 ? 'Afternoon' : 'Evening'
+
+  return `${greeting}, chef!\n\nI'm here. Ask me about events, clients, menus, costs, drafts, or what needs attention today.`
+}
+
+/**
  * Filters out <think>...</think> blocks from qwen3 streaming output.
  * Accumulates partial tokens until a complete think block can be stripped.
  */

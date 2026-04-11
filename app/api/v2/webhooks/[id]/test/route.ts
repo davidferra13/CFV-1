@@ -3,6 +3,7 @@
 
 import { withApiAuth, apiSuccess, apiNotFound, apiError } from '@/lib/api/v2'
 import { createHmac } from 'crypto'
+import { CHEF_FEATURE_FLAGS } from '@/lib/features/chef-feature-flags'
 
 export const POST = withApiAuth(
   async (_req, ctx, params) => {
@@ -91,5 +92,5 @@ export const POST = withApiAuth(
       ...(errorMessage ? { error: errorMessage } : {}),
     })
   },
-  { scopes: ['webhooks:manage'] }
+  { scopes: ['webhooks:manage'], featureFlag: CHEF_FEATURE_FLAGS.developerTools }
 )

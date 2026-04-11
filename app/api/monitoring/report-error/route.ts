@@ -5,6 +5,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { reportError } from '@/lib/monitoring/sentry-reporter'
 import { checkRateLimit } from '@/lib/rateLimit'
+import { recordPlatformEvent } from '@/lib/platform-observability/events'
+import { extractRequestMetadata } from '@/lib/platform-observability/context'
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,6 +44,22 @@ export async function POST(request: NextRequest) {
     if (digest) mergedTags.digest = digest
 
     await reportError(error, { tags: mergedTags })
+
+    await recordPlatformEvent({
+      eventKey: 'system.client_error_reported',
+      source: 'system_monitoring',
+      actorType: 'system',
+      subjectType: 'client_error',
+      subjectId: digest ?? `${error.name}:${message}`.slice(0, 120),
+      summary: `${error.name}: ${message}`.slice(0, 180),
+      details: stack?.slice(0, 1200) ?? null,
+      metadata: {
+        ...extractRequestMetadata(request.headers),
+        digest,
+        tags: mergedTags,
+      },
+      alertDedupeKey: `client-error:${digest ?? `${error.name}:${message}`}`,
+    })
 
     return NextResponse.json({ ok: true })
   } catch {

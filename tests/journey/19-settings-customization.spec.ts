@@ -178,8 +178,10 @@ test.describe('Settings — Dashboard Widgets', () => {
 // ─── API Keys ───────────────────────────────────────────────────────────────────
 
 test.describe('Settings — API Keys', () => {
-  test('API keys page loads', async ({ page }) => {
-    await assertPageLoads(page, JOURNEY_ROUTES.settingsApiKeys)
+  test('developer tools routes redirect to settings by default', async ({ page }) => {
+    await page.goto('/settings/api-keys')
+    await page.waitForURL(/\/settings$/, { timeout: 30_000 })
+    expect(page.url()).toMatch(/\/settings$/)
   })
 })
 

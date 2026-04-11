@@ -12,10 +12,13 @@ import type { NextAuthConfig } from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
 import Google from 'next-auth/providers/google'
 import bcrypt from 'bcryptjs'
+import { headers } from 'next/headers'
 import { db } from '@/lib/db'
 import { authUsers } from '@/lib/db/schema/auth'
-import { userRoles, clients } from '@/lib/db/schema/schema'
+import { userRoles, clients, staffMembers, referralPartners } from '@/lib/db/schema/schema'
 import { eq } from 'drizzle-orm'
+import { getSessionControlRow, recordSuccessfulAccountAccess } from './account-access'
+import { shouldInvalidateJwtSession } from './account-access-core'
 
 // Extend the Auth.js types to include our custom JWT/session fields
 declare module 'next-auth' {
@@ -35,14 +38,15 @@ declare module 'next-auth' {
   }
 }
 
-declare module 'next-auth/jwt' {
-  interface JWT {
-    userId: string
-    email: string
-    role: string
-    entityId: string
-    tenantId: string | null
-  }
+type AuthJwtToken = {
+  userId?: string
+  email?: string
+  role?: string
+  entityId?: string
+  tenantId?: string | null
+  sessionVersion?: number
+  sessionAuthenticatedAt?: number
+  iat?: number
 }
 
 /**
@@ -69,6 +73,20 @@ async function resolveRoleAndTenant(authUserId: string) {
       .where(eq(clients.id, roleRow.entityId))
       .limit(1)
     tenantId = clientRow?.tenantId ?? null
+  } else if (roleRow.role === 'staff') {
+    const [staffRow] = await db
+      .select({ tenantId: staffMembers.chefId })
+      .from(staffMembers)
+      .where(eq(staffMembers.id, roleRow.entityId))
+      .limit(1)
+    tenantId = staffRow?.tenantId ?? null
+  } else if (roleRow.role === 'partner') {
+    const [partnerRow] = await db
+      .select({ tenantId: referralPartners.tenantId })
+      .from(referralPartners)
+      .where(eq(referralPartners.id, roleRow.entityId))
+      .limit(1)
+    tenantId = partnerRow?.tenantId ?? null
   }
 
   return {
@@ -153,6 +171,9 @@ export const authConfig: NextAuthConfig = {
      * For Google OAuth: find or create the auth.users record.
      */
     async signIn({ user, account }) {
+      let trackedAuthUserId: string | null = null
+      let trackedTenantId: string | null = null
+
       if (account?.provider === 'google') {
         const email = user.email?.trim().toLowerCase()
         if (!email) return false
@@ -167,15 +188,33 @@ export const authConfig: NextAuthConfig = {
         if (existing) {
           // Link to existing auth user - use their ID
           user.id = existing.id
+          trackedAuthUserId = existing.id
           const roleInfo = await resolveRoleAndTenant(existing.id)
           if (roleInfo) {
             user.role = roleInfo.role
             user.entityId = roleInfo.entityId
             user.tenantId = roleInfo.tenantId
+            trackedTenantId = roleInfo.tenantId
           }
         }
         // If no existing user, they'll go to role-selection page
         // The role-selection page will create auth.users + profile records
+      } else if (user.id) {
+        trackedAuthUserId = user.id
+        trackedTenantId = user.tenantId ?? null
+      }
+
+      if (trackedAuthUserId) {
+        try {
+          await recordSuccessfulAccountAccess({
+            authUserId: trackedAuthUserId,
+            tenantId: trackedTenantId,
+            authProvider: account?.provider ?? null,
+            requestHeaders: headers(),
+          })
+        } catch (error) {
+          console.error('[auth] Failed to record successful account access:', error)
+        }
       }
 
       return true
@@ -185,37 +224,60 @@ export const authConfig: NextAuthConfig = {
      * JWT callback - enrich the token with role/tenant info.
      */
     async jwt({ token, user, trigger }) {
+      const authToken = token as typeof token & AuthJwtToken
+
       // On initial sign in, copy user fields into token
       if (user) {
-        token.userId = user.id!
-        token.email = user.email!
-        token.role = user.role ?? ''
-        token.entityId = user.entityId ?? ''
-        token.tenantId = user.tenantId ?? null
+        authToken.userId = user.id ?? undefined
+        authToken.email = user.email ?? undefined
+        authToken.role = user.role ?? ''
+        authToken.entityId = user.entityId ?? ''
+        authToken.tenantId = user.tenantId ?? null
       }
 
       // On session update, re-resolve role (for role changes after OAuth signup)
-      if (trigger === 'update' && token.userId) {
-        const roleInfo = await resolveRoleAndTenant(token.userId)
+      if (trigger === 'update' && authToken.userId) {
+        const roleInfo = await resolveRoleAndTenant(authToken.userId)
         if (roleInfo) {
-          token.role = roleInfo.role
-          token.entityId = roleInfo.entityId
-          token.tenantId = roleInfo.tenantId
+          authToken.role = roleInfo.role
+          authToken.entityId = roleInfo.entityId
+          authToken.tenantId = roleInfo.tenantId
         }
       }
 
-      return token
+      if (!authToken.userId) {
+        return authToken
+      }
+
+      let sessionControl = null
+      try {
+        sessionControl = await getSessionControlRow(authToken.userId)
+      } catch (error) {
+        console.error('[auth] Failed to load session control state:', error)
+      }
+
+      if (user) {
+        authToken.sessionVersion = sessionControl?.sessionVersion ?? 0
+        authToken.sessionAuthenticatedAt = Date.now()
+      }
+
+      if (sessionControl && shouldInvalidateJwtSession(authToken, sessionControl)) {
+        return null
+      }
+
+      return authToken
     },
 
     /**
      * Session callback - expose custom fields to the client.
      */
     async session({ session, token }) {
-      session.user.id = token.userId
-      session.user.email = token.email
-      session.user.role = token.role
-      session.user.entityId = token.entityId
-      session.user.tenantId = token.tenantId
+      const authToken = token as typeof token & AuthJwtToken
+      session.user.id = authToken.userId ?? ''
+      session.user.email = authToken.email ?? ''
+      session.user.role = authToken.role ?? ''
+      session.user.entityId = authToken.entityId ?? ''
+      session.user.tenantId = authToken.tenantId ?? null
       return session
     },
   },

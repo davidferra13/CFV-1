@@ -218,6 +218,62 @@ body {
   margin-top: 4px;
 }
 .nav-item.active .nav-label { color: var(--text-secondary); }
+
+/* ── Nav Groups (collapsible) ─────────────────────────────────── */
+.nav-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.nav-group-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 0 2px;
+  cursor: pointer;
+  user-select: none;
+  width: 100%;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+.nav-group-header:hover { opacity: 1; }
+.nav-group-icon { font-size: 14px; line-height: 1; }
+.nav-group-label {
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.nav-group-arrow {
+  font-size: 6px;
+  color: var(--text-muted);
+  transition: transform 0.2s;
+  margin-top: 1px;
+}
+.nav-group.collapsed .nav-group-arrow { transform: rotate(-90deg); }
+.nav-group-items {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+  transition: max-height 0.25s ease;
+  max-height: 500px;
+}
+.nav-group.collapsed .nav-group-items {
+  max-height: 0;
+}
+.nav-group + .nav-group,
+.nav-item + .nav-group,
+.nav-group + .nav-item {
+  margin-top: 2px;
+  padding-top: 2px;
+  border-top: 1px solid rgba(30,41,59,0.4);
+}
+
 .nav-dot {
   position: absolute;
   top: 8px;
@@ -1882,6 +1938,9 @@ body {
 @media (max-width: 700px) {
   .sidebar { width: 56px; }
   .nav-label { display: none; }
+  .nav-group-label { display: none; }
+  .nav-group-arrow { display: none; }
+  .nav-group-header { padding: 4px 0; }
   .panel { padding: 16px; }
   .info-grid { grid-template-columns: 1fr 1fr; }
 }
@@ -1912,111 +1971,183 @@ body {
   <div class="layout">
     <!-- Sidebar -->
     <nav class="sidebar">
-      <a class="nav-item active" data-section="live" title="Live Dashboard (passive)">
+      <!-- Top-level (always visible) -->
+      <a class="nav-item active" data-section="live" title="Live Dashboard">
         <span class="nav-dot online" id="nd-live"></span>
         <span class="nav-icon">&#x1F4FA;</span>
         <span class="nav-label">Live</span>
       </a>
-      <a class="nav-item" data-section="home" title="Home — Quick Actions">
+      <a class="nav-item" data-section="home" title="Quick Actions">
         <span class="nav-dot online" id="nd-home"></span>
         <span class="nav-icon">&#x1F3E0;</span>
         <span class="nav-label">Home</span>
       </a>
-      <a class="nav-item" data-section="dev" title="Dev Server">
-        <span class="nav-dot checking" id="nd-dev"></span>
-        <span class="nav-icon">&#x1F5A5;&#xFE0F;</span>
-        <span class="nav-label">Dev</span>
+      <a class="nav-item" data-section="live-ops" title="Live Ops Testing">
+        <span class="nav-dot online" id="nd-live-ops"></span>
+        <span class="nav-icon">&#x1F9EA;</span>
+        <span class="nav-label">Live Ops</span>
       </a>
-      <a class="nav-item" data-section="beta" title="Beta Server">
-        <span class="nav-dot checking" id="nd-beta"></span>
-        <span class="nav-icon">&#x1F310;</span>
-        <span class="nav-label">Beta</span>
-      </a>
-      <a class="nav-item" data-section="prod" title="Production (Vercel)">
-        <span class="nav-dot checking" id="nd-prod"></span>
-        <span class="nav-icon">&#x1F680;</span>
-        <span class="nav-label">Prod</span>
-      </a>
-      <a class="nav-item" data-section="ollama" title="Ollama AI">
-        <span class="nav-dot checking" id="nd-ollama"></span>
-        <span class="nav-icon">&#x1F916;</span>
-        <span class="nav-label">AI</span>
-      </a>
-      <a class="nav-item" data-section="remy" title="Remy — AI Concierge Roadmap">
-        <span class="nav-dot online" id="nd-remy"></span>
-        <span class="nav-icon">&#x1F9D1;&#x200D;&#x1F373;</span>
-        <span class="nav-label">Remy</span>
-      </a>
-      <a class="nav-item" data-section="git" title="Git">
-        <span class="nav-dot online" id="nd-git"></span>
-        <span class="nav-icon">&#x1F4E6;</span>
-        <span class="nav-label">Git</span>
-      </a>
-      <a class="nav-item" data-section="build" title="Build">
-        <span class="nav-dot online" id="nd-build"></span>
-        <span class="nav-icon">&#x1F528;</span>
-        <span class="nav-label">Build</span>
-      </a>
-      <a class="nav-item" data-section="log" title="Project History">
-        <span class="nav-dot online" id="nd-log"></span>
-        <span class="nav-icon">&#x1F4DC;</span>
-        <span class="nav-label">Log</span>
-      </a>
-      <a class="nav-item" data-section="timeline" title="Project Timeline">
-        <span class="nav-dot online" id="nd-timeline"></span>
-        <span class="nav-icon">&#x1F5D3;&#xFE0F;</span>
-        <span class="nav-label">Timeline</span>
-      </a>
-      <a class="nav-item" data-section="feedback" title="User Feedback">
-        <span class="nav-dot online" id="nd-feedback"></span>
-        <span class="nav-icon">&#x1F4AC;</span>
-        <span class="nav-label">Inbox</span>
-      </a>
-      <a class="nav-item" data-section="infra" title="Infrastructure">
-        <span class="nav-dot online" id="nd-infra"></span>
-        <span class="nav-icon">&#x2699;&#xFE0F;</span>
-        <span class="nav-label">Infra</span>
-      </a>
-      <a class="nav-item" data-section="blueprint" title="Launch Blueprint">
-        <span class="nav-dot online" id="nd-blueprint"></span>
-        <span class="nav-icon">&#x1F3AF;</span>
-        <span class="nav-label">Blueprint</span>
-      </a>
-      <a class="nav-item" data-section="observe" title="Observe — Live Feeds">
-        <span class="nav-dot online" id="nd-observe"></span>
-        <span class="nav-icon">&#x1F4E1;</span>
-        <span class="nav-label">Observe</span>
-      </a>
-      <a class="nav-item" data-section="sysref" title="System Reference">
-        <span class="nav-dot online" id="nd-sysref"></span>
-        <span class="nav-icon">&#x1F4D6;</span>
-        <span class="nav-label">Ref</span>
-      </a>
-      <a class="nav-item" data-section="expenses" title="Project Expenses">
-        <span class="nav-dot online" id="nd-expenses"></span>
-        <span class="nav-icon">&#x1F4B0;</span>
-        <span class="nav-label">Costs</span>
-      </a>
-      <a class="nav-item" data-section="logins" title="Test Logins">
-        <span class="nav-dot online" id="nd-logins"></span>
-        <span class="nav-icon">&#x1F511;</span>
-        <span class="nav-label">Logins</span>
-      </a>
-      <a class="nav-item" data-section="activity-log" title="Activity Log — Full History">
-        <span class="nav-dot online" id="nd-activity-log"></span>
-        <span class="nav-icon">&#x1F4CA;</span>
-        <span class="nav-label">Activity</span>
-      </a>
-      <a class="nav-item" data-section="manual" title="App Manual">
-        <span class="nav-dot online" id="nd-manual"></span>
-        <span class="nav-icon">&#x1F4D5;</span>
-        <span class="nav-label">Manual</span>
-      </a>
-      <a class="nav-item" data-section="marketing" title="Marketing — Demo Video Library">
-        <span class="nav-dot online" id="nd-marketing"></span>
-        <span class="nav-icon">&#x1F3AC;</span>
-        <span class="nav-label">Marketing</span>
-      </a>
+
+      <!-- Servers group -->
+      <div class="nav-group">
+        <div class="nav-group-header" onclick="toggleNavGroup(this)" title="Servers">
+          <span class="nav-group-icon">&#x1F5A5;&#xFE0F;</span>
+          <span class="nav-group-label">Servers</span>
+          <span class="nav-group-arrow">&#x25BC;</span>
+        </div>
+        <div class="nav-group-items">
+          <a class="nav-item" data-section="dev" title="Dev Server">
+            <span class="nav-dot checking" id="nd-dev"></span>
+            <span class="nav-icon">&#x1F5A5;&#xFE0F;</span>
+            <span class="nav-label">Dev</span>
+          </a>
+          <a class="nav-item" data-section="beta" title="Beta Server">
+            <span class="nav-dot checking" id="nd-beta"></span>
+            <span class="nav-icon">&#x1F310;</span>
+            <span class="nav-label">Beta</span>
+          </a>
+          <a class="nav-item" data-section="prod" title="Production">
+            <span class="nav-dot checking" id="nd-prod"></span>
+            <span class="nav-icon">&#x1F680;</span>
+            <span class="nav-label">Prod</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Dev Tools group -->
+      <div class="nav-group">
+        <div class="nav-group-header" onclick="toggleNavGroup(this)" title="Dev Tools">
+          <span class="nav-group-icon">&#x1F528;</span>
+          <span class="nav-group-label">Dev</span>
+          <span class="nav-group-arrow">&#x25BC;</span>
+        </div>
+        <div class="nav-group-items">
+          <a class="nav-item" data-section="git" title="Git">
+            <span class="nav-dot online" id="nd-git"></span>
+            <span class="nav-icon">&#x1F4E6;</span>
+            <span class="nav-label">Git</span>
+          </a>
+          <a class="nav-item" data-section="build" title="Build">
+            <span class="nav-dot online" id="nd-build"></span>
+            <span class="nav-icon">&#x1F528;</span>
+            <span class="nav-label">Build</span>
+          </a>
+          <a class="nav-item" data-section="logins" title="Test Logins">
+            <span class="nav-dot online" id="nd-logins"></span>
+            <span class="nav-icon">&#x1F511;</span>
+            <span class="nav-label">Logins</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- AI group -->
+      <div class="nav-group">
+        <div class="nav-group-header" onclick="toggleNavGroup(this)" title="AI">
+          <span class="nav-group-icon">&#x1F916;</span>
+          <span class="nav-group-label">AI</span>
+          <span class="nav-group-arrow">&#x25BC;</span>
+        </div>
+        <div class="nav-group-items">
+          <a class="nav-item" data-section="ollama" title="Ollama AI">
+            <span class="nav-dot checking" id="nd-ollama"></span>
+            <span class="nav-icon">&#x1F916;</span>
+            <span class="nav-label">Ollama</span>
+          </a>
+          <a class="nav-item" data-section="remy" title="Remy Roadmap">
+            <span class="nav-dot online" id="nd-remy"></span>
+            <span class="nav-icon">&#x1F9D1;&#x200D;&#x1F373;</span>
+            <span class="nav-label">Remy</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Monitor group -->
+      <div class="nav-group">
+        <div class="nav-group-header" onclick="toggleNavGroup(this)" title="Monitor">
+          <span class="nav-group-icon">&#x1F4E1;</span>
+          <span class="nav-group-label">Monitor</span>
+          <span class="nav-group-arrow">&#x25BC;</span>
+        </div>
+        <div class="nav-group-items">
+          <a class="nav-item" data-section="observe" title="Live Feeds">
+            <span class="nav-dot online" id="nd-observe"></span>
+            <span class="nav-icon">&#x1F4E1;</span>
+            <span class="nav-label">Observe</span>
+          </a>
+          <a class="nav-item" data-section="infra" title="Infrastructure">
+            <span class="nav-dot online" id="nd-infra"></span>
+            <span class="nav-icon">&#x2699;&#xFE0F;</span>
+            <span class="nav-label">Infra</span>
+          </a>
+          <a class="nav-item" data-section="activity-log" title="Activity Log">
+            <span class="nav-dot online" id="nd-activity-log"></span>
+            <span class="nav-icon">&#x1F4CA;</span>
+            <span class="nav-label">Activity</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Project group -->
+      <div class="nav-group">
+        <div class="nav-group-header" onclick="toggleNavGroup(this)" title="Project">
+          <span class="nav-group-icon">&#x1F4CB;</span>
+          <span class="nav-group-label">Project</span>
+          <span class="nav-group-arrow">&#x25BC;</span>
+        </div>
+        <div class="nav-group-items">
+          <a class="nav-item" data-section="blueprint" title="Launch Blueprint">
+            <span class="nav-dot online" id="nd-blueprint"></span>
+            <span class="nav-icon">&#x1F3AF;</span>
+            <span class="nav-label">Blueprint</span>
+          </a>
+          <a class="nav-item" data-section="log" title="Project History">
+            <span class="nav-dot online" id="nd-log"></span>
+            <span class="nav-icon">&#x1F4DC;</span>
+            <span class="nav-label">Log</span>
+          </a>
+          <a class="nav-item" data-section="timeline" title="Project Timeline">
+            <span class="nav-dot online" id="nd-timeline"></span>
+            <span class="nav-icon">&#x1F5D3;&#xFE0F;</span>
+            <span class="nav-label">Timeline</span>
+          </a>
+          <a class="nav-item" data-section="expenses" title="Project Expenses">
+            <span class="nav-dot online" id="nd-expenses"></span>
+            <span class="nav-icon">&#x1F4B0;</span>
+            <span class="nav-label">Costs</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Reference group -->
+      <div class="nav-group">
+        <div class="nav-group-header" onclick="toggleNavGroup(this)" title="Reference">
+          <span class="nav-group-icon">&#x1F4D6;</span>
+          <span class="nav-group-label">Docs</span>
+          <span class="nav-group-arrow">&#x25BC;</span>
+        </div>
+        <div class="nav-group-items">
+          <a class="nav-item" data-section="sysref" title="System Reference">
+            <span class="nav-dot online" id="nd-sysref"></span>
+            <span class="nav-icon">&#x1F4D6;</span>
+            <span class="nav-label">Ref</span>
+          </a>
+          <a class="nav-item" data-section="manual" title="App Manual">
+            <span class="nav-dot online" id="nd-manual"></span>
+            <span class="nav-icon">&#x1F4D5;</span>
+            <span class="nav-label">Manual</span>
+          </a>
+          <a class="nav-item" data-section="feedback" title="User Feedback">
+            <span class="nav-dot online" id="nd-feedback"></span>
+            <span class="nav-icon">&#x1F4AC;</span>
+            <span class="nav-label">Inbox</span>
+          </a>
+          <a class="nav-item" data-section="marketing" title="Marketing">
+            <span class="nav-dot online" id="nd-marketing"></span>
+            <span class="nav-icon">&#x1F3AC;</span>
+            <span class="nav-label">Marketing</span>
+          </a>
+        </div>
+      </div>
     </nav>
 
     <!-- Content -->
@@ -4894,6 +5025,48 @@ body {
         </div>
       </div>
 
+      <!-- ═══ Live Ops Testing Panel ═══ -->
+      <div class="panel" id="panel-live-ops">
+        <div class="panel-header">
+          <h2 class="panel-title">Live Ops Testing</h2>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span id="lops-day-counter" style="font-size:12px;color:var(--text-muted);">Day 0</span>
+            <span class="status-badge online" id="lops-badge" style="background:var(--brand-dim);color:var(--brand);border:1px solid rgba(232,143,71,0.25);">
+              <span class="dot online" style="background:var(--brand);"></span>
+              <span id="lops-status">Active</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Tab bar -->
+        <div id="lops-tabs" style="display:flex;gap:4px;padding:8px 24px 0;overflow-x:auto;border-bottom:1px solid var(--border);">
+          <button class="manual-tab active" onclick="switchLopsTab('dashboard')" style="white-space:nowrap;">Dashboard</button>
+          <button class="manual-tab" onclick="switchLopsTab('checklist')" style="white-space:nowrap;">Checklist</button>
+          <button class="manual-tab" onclick="switchLopsTab('daily-log')" style="white-space:nowrap;">Daily Log</button>
+          <button class="manual-tab" onclick="switchLopsTab('feedback')" style="white-space:nowrap;">Feedback</button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="lops-tab-dashboard" class="lops-tab-content" style="flex:1;overflow-y:auto;padding:20px 24px;">
+          <div style="color:var(--text-muted);text-align:center;padding:60px 0;">Loading...</div>
+        </div>
+
+        <!-- Checklist Tab -->
+        <div id="lops-tab-checklist" class="lops-tab-content" style="display:none;flex:1;overflow-y:auto;padding:20px 24px;">
+          <div style="color:var(--text-muted);text-align:center;padding:60px 0;">Loading...</div>
+        </div>
+
+        <!-- Daily Log Tab -->
+        <div id="lops-tab-daily-log" class="lops-tab-content" style="display:none;flex:1;overflow-y:auto;padding:20px 24px;">
+          <div style="color:var(--text-muted);text-align:center;padding:60px 0;">Loading...</div>
+        </div>
+
+        <!-- Feedback Tab -->
+        <div id="lops-tab-feedback" class="lops-tab-content" style="display:none;flex:1;overflow-y:auto;padding:20px 24px;">
+          <div style="color:var(--text-muted);text-align:center;padding:60px 0;">Loading...</div>
+        </div>
+      </div>
+
       <!-- ═══ Console ═══ -->
       <div class="console-wrapper" id="console-wrapper">
         <div class="console-resize-handle" id="console-resize-handle"></div>
@@ -5069,12 +5242,44 @@ body {
 // ChefFlow Mission Control — Frontend
 // ═══════════════════════════════════════════════════════════════════
 
-const API = 'http://localhost:41937'
+const API = `${window.location.protocol}//${window.location.host}`
 let currentSection = 'dev'
 let pendingAction = null
 let statusData = null
 
 // ── Navigation ────────────────────────────────────────────────────
+
+// Collapsible nav groups - start collapsed by default
+document.querySelectorAll('.nav-group').forEach(g => g.classList.add('collapsed'))
+
+function toggleNavGroup(header) {
+  const group = header.parentElement
+  group.classList.toggle('collapsed')
+  // Save state
+  const states = {}
+  document.querySelectorAll('.nav-group').forEach(g => {
+    const label = g.querySelector('.nav-group-label')
+    if (label) states[label.textContent] = g.classList.contains('collapsed')
+  })
+  localStorage.setItem('mc-nav-groups', JSON.stringify(states))
+}
+
+// Restore saved group states
+try {
+  const saved = JSON.parse(localStorage.getItem('mc-nav-groups') || '{}')
+  document.querySelectorAll('.nav-group').forEach(g => {
+    const label = g.querySelector('.nav-group-label')
+    if (label && saved[label.textContent] === false) g.classList.remove('collapsed')
+  })
+} catch(e) {}
+
+// Auto-expand group when its child is the active panel
+function expandGroupForSection(section) {
+  document.querySelectorAll('.nav-group').forEach(g => {
+    const match = g.querySelector(`[data-section="${section}"]`)
+    if (match) g.classList.remove('collapsed')
+  })
+}
 
 document.querySelectorAll('.nav-item').forEach(item => {
   item.addEventListener('click', () => {
@@ -5102,6 +5307,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
     if (section === 'manual') loadManual()
     if (section === 'marketing') loadMarketingPanel()
     if (section === 'remy') loadRemyPanel()
+    if (section === 'live-ops') loadLiveOps()
   })
 })
 
@@ -11350,6 +11556,560 @@ function connectLiveFeed() {
 
 // Auto-init on page load (Live is the default panel)
 initLiveDashboard()
+
+// ═══════════════════════════════════════════════════════════════════
+// LIVE OPS TESTING
+// ═══════════════════════════════════════════════════════════════════
+
+let lopsData = null
+
+function switchLopsTab(tab) {
+  document.querySelectorAll('#lops-tabs .manual-tab').forEach(t => t.classList.remove('active'))
+  document.querySelectorAll('.lops-tab-content').forEach(c => c.style.display = 'none')
+  const btn = [...document.querySelectorAll('#lops-tabs .manual-tab')].find(b => b.textContent.toLowerCase().includes(tab.replace('-', ' ').split(' ')[0]))
+  if (btn) btn.classList.add('active')
+  const panel = document.getElementById(`lops-tab-${tab}`)
+  if (panel) panel.style.display = 'block'
+}
+
+async function loadLiveOps() {
+  try {
+    const res = await fetch(`${API}/api/live-ops`)
+    lopsData = await res.json()
+    renderLopsDashboard()
+    renderLopsChecklist()
+    renderLopsDailyLog()
+    renderLopsFeedback()
+  } catch (err) {
+    document.getElementById('lops-tab-dashboard').innerHTML = `<div style="color:#f87171;padding:40px;text-align:center;">Failed to load: ${err.message}</div>`
+  }
+}
+
+function renderLopsDashboard() {
+  const d = lopsData
+  const s = d.stats
+  const el = document.getElementById('lops-tab-dashboard')
+  document.getElementById('lops-day-counter').textContent = `Day ${d.meta.totalDays}`
+
+  // Count red flags checked
+  const rfCat = d.categories.find(c => c.id === 'red-flags')
+  const rfCount = rfCat ? rfCat.items.filter(i => i.checked).length : 0
+
+  // Count categories with all items checked
+  const completedCats = d.categories.filter(c => c.items.length > 0 && c.items.every(i => i.checked)).length
+
+  // Unresolved feedback
+  const unresolvedFb = d.feedback.filter(f => !f.resolved).length
+  const bugCount = d.feedback.filter(f => f.type === 'bug' && !f.resolved).length
+
+  el.innerHTML = `
+    <!-- Progress bar -->
+    <div style="margin-bottom:24px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:14px;font-weight:600;color:var(--text-primary);">Overall Completion</span>
+        <span style="font-size:24px;font-weight:700;color:var(--brand);">${s.completionPct}%</span>
+      </div>
+      <div style="background:var(--bg-secondary);border-radius:8px;height:12px;overflow:hidden;">
+        <div style="background:linear-gradient(90deg,var(--brand),var(--success));height:100%;width:${s.completionPct}%;border-radius:8px;transition:width 0.5s ease;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--text-muted);">
+        <span>${s.checkedItems} of ${s.totalItems} items checked</span>
+        <span>${completedCats} of ${s.totalCategories} categories complete</span>
+      </div>
+    </div>
+
+    <!-- Stat cards -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:24px;">
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;">
+        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">Testing Day</div>
+        <div style="font-size:28px;font-weight:700;color:var(--brand);">${d.meta.totalDays}</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;">
+        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">Avg Rating</div>
+        <div style="font-size:28px;font-weight:700;color:${s.avgRating && s.avgRating >= 4 ? 'var(--success)' : s.avgRating && s.avgRating >= 3 ? 'var(--warning)' : s.avgRating ? 'var(--error)' : 'var(--text-muted)'};">${s.avgRating || '--'}<span style="font-size:14px;color:var(--text-muted);">/5</span></div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;">
+        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">Open Feedback</div>
+        <div style="font-size:28px;font-weight:700;color:${unresolvedFb > 0 ? 'var(--warning)' : 'var(--success)'};">${unresolvedFb}</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;">
+        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">Open Bugs</div>
+        <div style="font-size:28px;font-weight:700;color:${bugCount > 0 ? 'var(--error)' : 'var(--success)'};">${bugCount}</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;">
+        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">Red Flags</div>
+        <div style="font-size:28px;font-weight:700;color:${rfCount > 0 ? 'var(--error)' : 'var(--success)'};">${rfCount}</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;">
+        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">Daily Logs</div>
+        <div style="font-size:28px;font-weight:700;color:var(--text-primary);">${s.dailyLogCount}</div>
+      </div>
+    </div>
+
+    <!-- Category progress bars -->
+    <h3 style="font-size:13px;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;letter-spacing:0.5px;">Progress by Category</h3>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      ${d.categories.map(cat => {
+        const checked = cat.items.filter(i => i.checked).length
+        const total = cat.items.length
+        const pct = total > 0 ? Math.round((checked / total) * 100) : 0
+        const rated = cat.items.filter(i => i.rating).length
+        const avgR = rated > 0 ? (cat.items.filter(i => i.rating).reduce((s, i) => s + i.rating, 0) / rated).toFixed(1) : null
+        return `
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px 16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span style="font-size:13px;color:var(--text-primary);">${cat.icon} ${cat.name}</span>
+              <div style="display:flex;align-items:center;gap:12px;">
+                ${avgR ? `<span style="font-size:11px;color:var(--text-muted);">${avgR}/5</span>` : ''}
+                <span style="font-size:12px;font-weight:600;color:${pct === 100 ? 'var(--success)' : 'var(--text-secondary)'};">${checked}/${total}</span>
+              </div>
+            </div>
+            <div style="background:var(--bg-secondary);border-radius:4px;height:6px;overflow:hidden;">
+              <div style="background:${pct === 100 ? 'var(--success)' : 'var(--brand)'};height:100%;width:${pct}%;border-radius:4px;transition:width 0.3s ease;"></div>
+            </div>
+          </div>
+        `
+      }).join('')}
+    </div>
+
+    <!-- Recent feedback preview -->
+    ${d.feedback.length > 0 ? `
+      <h3 style="font-size:13px;text-transform:uppercase;color:var(--text-muted);margin:24px 0 12px;letter-spacing:0.5px;">Recent Feedback</h3>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        ${d.feedback.slice(-5).reverse().map(fb => `
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;align-items:flex-start;gap:10px;">
+            <span style="font-size:14px;">${fb.type === 'bug' ? '\u{1F41B}' : fb.type === 'friction' ? '\u{1F6A7}' : fb.type === 'praise' ? '\u2B50' : '\u{1F4DD}'}</span>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:12px;color:var(--text-primary);${fb.resolved ? 'text-decoration:line-through;opacity:0.5;' : ''}">${escapeHtml(fb.message)}</div>
+              <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${fb.area} - ${new Date(fb.timestamp).toLocaleDateString()}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    ` : ''}
+  `
+}
+
+function renderLopsChecklist() {
+  const el = document.getElementById('lops-tab-checklist')
+  const d = lopsData
+
+  el.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      ${d.categories.map(cat => {
+        const checked = cat.items.filter(i => i.checked).length
+        const total = cat.items.length
+        const pct = total > 0 ? Math.round((checked / total) * 100) : 0
+        return `
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+            <!-- Category header (collapsible) -->
+            <div onclick="toggleLopsCategory('${cat.id}')" style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;user-select:none;background:${pct === 100 ? 'rgba(34,197,94,0.05)' : 'transparent'};">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:10px;color:var(--text-muted);transition:transform 0.2s;" id="lops-arrow-${cat.id}">${cat.collapsed ? '\u25B6' : '\u25BC'}</span>
+                <span style="font-size:16px;">${cat.icon}</span>
+                <div>
+                  <div style="font-size:14px;font-weight:600;color:var(--text-primary);">${cat.name}</div>
+                  <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${cat.description}</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="background:var(--bg-secondary);border-radius:4px;height:6px;width:80px;overflow:hidden;">
+                  <div style="background:${pct === 100 ? 'var(--success)' : 'var(--brand)'};height:100%;width:${pct}%;border-radius:4px;"></div>
+                </div>
+                <span style="font-size:12px;font-weight:600;color:${pct === 100 ? 'var(--success)' : 'var(--text-secondary)'};">${checked}/${total}</span>
+              </div>
+            </div>
+
+            <!-- Items (collapsible body) -->
+            <div id="lops-body-${cat.id}" style="display:${cat.collapsed ? 'none' : 'block'};border-top:1px solid var(--border);padding:8px 0;">
+              ${cat.items.map(item => `
+                <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 18px;border-bottom:1px solid rgba(30,41,59,0.3);" id="lops-item-${item.id}">
+                  <!-- Checkbox -->
+                  <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="updateLopsItem('${item.id}', { checked: this.checked })" style="margin-top:3px;accent-color:var(--brand);cursor:pointer;width:16px;height:16px;flex-shrink:0;" />
+
+                  <div style="flex:1;min-width:0;">
+                    <!-- Item text -->
+                    <div style="font-size:13px;color:var(--text-primary);${item.checked ? 'text-decoration:line-through;opacity:0.5;' : ''}">${escapeHtml(item.text)}</div>
+
+                    <!-- Rating + Notes row -->
+                    <div style="display:flex;align-items:center;gap:12px;margin-top:6px;">
+                      <!-- Star rating -->
+                      <div style="display:flex;gap:2px;" title="Rate this feature">
+                        ${[1,2,3,4,5].map(star => `
+                          <span onclick="updateLopsItem('${item.id}', { rating: ${star} })" style="cursor:pointer;font-size:16px;color:${item.rating && item.rating >= star ? 'var(--brand)' : 'var(--border)'};transition:color 0.15s;">\u2605</span>
+                        `).join('')}
+                      </div>
+                      <!-- Notes toggle -->
+                      <button onclick="toggleLopsNotes('${item.id}')" style="font-size:10px;padding:2px 8px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:4px;color:var(--text-muted);cursor:pointer;">${item.notes ? '\u{1F4DD} Notes' : '+ Note'}</button>
+                      <!-- Delete (custom items only) -->
+                      ${item.id.includes('custom') ? `<button onclick="deleteLopsItem('${item.id}')" style="font-size:10px;padding:2px 8px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:4px;color:var(--error);cursor:pointer;">Delete</button>` : ''}
+                    </div>
+
+                    <!-- Notes textarea (hidden by default) -->
+                    <div id="lops-notes-${item.id}" style="display:${item.notes ? 'block' : 'none'};margin-top:6px;">
+                      <textarea onblur="updateLopsItem('${item.id}', { notes: this.value })" placeholder="Add notes, bugs, feedback..." style="width:100%;min-height:50px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;padding:8px;color:var(--text-primary);font-size:12px;resize:vertical;font-family:inherit;">${escapeHtml(item.notes || '')}</textarea>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+
+              <!-- Add custom item -->
+              <div style="padding:8px 18px;display:flex;gap:8px;">
+                <input type="text" id="lops-add-${cat.id}" placeholder="Add a test item..." style="flex:1;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text-primary);font-size:12px;" onkeydown="if(event.key==='Enter')addLopsItem('${cat.id}')" />
+                <button onclick="addLopsItem('${cat.id}')" style="padding:6px 12px;background:var(--brand);color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;">Add</button>
+              </div>
+            </div>
+          </div>
+        `
+      }).join('')}
+    </div>
+  `
+}
+
+function renderLopsDailyLog() {
+  const el = document.getElementById('lops-tab-daily-log')
+  const d = lopsData
+  const today = new Date().toISOString().slice(0, 10)
+  const todayLog = d.dailyLog.find(l => l.date === today) || { date: today, summary: '', rating: null, redFlags: [], workarounds: [] }
+
+  el.innerHTML = `
+    <!-- Today's entry form -->
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:24px;">
+      <h3 style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:12px;">Today - ${today}</h3>
+
+      <div style="margin-bottom:12px;">
+        <label style="font-size:11px;color:var(--text-muted);text-transform:uppercase;display:block;margin-bottom:4px;">How did the system perform today?</label>
+        <div style="display:flex;gap:4px;" id="lops-daily-rating">
+          ${[1,2,3,4,5].map(star => `
+            <span onclick="setDailyRating(${star})" style="cursor:pointer;font-size:24px;color:${todayLog.rating && todayLog.rating >= star ? 'var(--brand)' : 'var(--border)'};transition:color 0.15s;">\u2605</span>
+          `).join('')}
+          <span style="margin-left:8px;font-size:12px;color:var(--text-muted);align-self:center;" id="lops-daily-rating-label">${todayLog.rating ? ['', 'Terrible', 'Poor', 'OK', 'Good', 'Excellent'][todayLog.rating] : 'Not rated'}</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label style="font-size:11px;color:var(--text-muted);text-transform:uppercase;display:block;margin-bottom:4px;">Summary (what happened today?)</label>
+        <textarea id="lops-daily-summary" placeholder="What did you do in the app today? What worked? What didn't?" style="width:100%;min-height:80px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text-primary);font-size:13px;resize:vertical;font-family:inherit;">${escapeHtml(todayLog.summary)}</textarea>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label style="font-size:11px;color:var(--text-muted);text-transform:uppercase;display:block;margin-bottom:4px;">Red flags (anything you had to do outside the app?)</label>
+        <textarea id="lops-daily-redflags" placeholder="Copy/pasted data, used external notes, tracked something mentally..." style="width:100%;min-height:50px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text-primary);font-size:13px;resize:vertical;font-family:inherit;">${escapeHtml((todayLog.redFlags || []).join('\n'))}</textarea>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label style="font-size:11px;color:var(--text-muted);text-transform:uppercase;display:block;margin-bottom:4px;">Workarounds used</label>
+        <textarea id="lops-daily-workarounds" placeholder="Any hacks, workarounds, or manual steps you took..." style="width:100%;min-height:50px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text-primary);font-size:13px;resize:vertical;font-family:inherit;">${escapeHtml((todayLog.workarounds || []).join('\n'))}</textarea>
+      </div>
+
+      <button onclick="saveDailyLog()" style="padding:8px 20px;background:var(--brand);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Save Today's Log</button>
+    </div>
+
+    <!-- Previous logs -->
+    ${d.dailyLog.length > 0 ? `
+      <h3 style="font-size:13px;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;letter-spacing:0.5px;">Previous Logs</h3>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${d.dailyLog.slice().reverse().filter(l => l.date !== today || l.summary).map(log => `
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px 18px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span style="font-size:13px;font-weight:600;color:var(--text-primary);">${log.date}</span>
+              <div style="display:flex;gap:2px;">
+                ${[1,2,3,4,5].map(s => `<span style="font-size:14px;color:${log.rating && log.rating >= s ? 'var(--brand)' : 'var(--border)'};">\u2605</span>`).join('')}
+              </div>
+            </div>
+            ${log.summary ? `<div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;">${escapeHtml(log.summary)}</div>` : ''}
+            ${log.redFlags && log.redFlags.length > 0 ? `
+              <div style="margin-top:6px;">
+                <span style="font-size:10px;color:var(--error);text-transform:uppercase;font-weight:600;">Red Flags:</span>
+                ${log.redFlags.map(rf => `<div style="font-size:11px;color:var(--text-muted);padding-left:8px;">\u{1F6A9} ${escapeHtml(rf)}</div>`).join('')}
+              </div>
+            ` : ''}
+            ${log.workarounds && log.workarounds.length > 0 ? `
+              <div style="margin-top:6px;">
+                <span style="font-size:10px;color:var(--warning);text-transform:uppercase;font-weight:600;">Workarounds:</span>
+                ${log.workarounds.map(w => `<div style="font-size:11px;color:var(--text-muted);padding-left:8px;">\u{1F527} ${escapeHtml(w)}</div>`).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `).join('')}
+      </div>
+    ` : '<div style="color:var(--text-muted);text-align:center;padding:40px;font-size:13px;">No daily logs yet. Start by filling out today\'s log above.</div>'}
+  `
+}
+
+function renderLopsFeedback() {
+  const el = document.getElementById('lops-tab-feedback')
+  const d = lopsData
+  const categories = d.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('')
+
+  el.innerHTML = `
+    <!-- Add feedback form -->
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:24px;">
+      <h3 style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:12px;">Quick Capture</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <select id="lops-fb-type" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;padding:8px;color:var(--text-primary);font-size:13px;">
+          <option value="bug">\u{1F41B} Bug</option>
+          <option value="friction">\u{1F6A7} Friction</option>
+          <option value="praise">\u2B50 Praise</option>
+          <option value="idea">\u{1F4A1} Idea</option>
+          <option value="note">\u{1F4DD} Note</option>
+        </select>
+        <select id="lops-fb-area" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;padding:8px;color:var(--text-primary);font-size:13px;">
+          <option value="general">General</option>
+          ${categories}
+        </select>
+      </div>
+      <textarea id="lops-fb-message" placeholder="What happened? Be specific: what you did, what you expected, what actually happened..." style="width:100%;min-height:80px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text-primary);font-size:13px;resize:vertical;font-family:inherit;margin-bottom:12px;"></textarea>
+      <button onclick="submitLopsFeedback()" style="padding:8px 20px;background:var(--brand);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Submit Feedback</button>
+    </div>
+
+    <!-- Filter tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+      <button onclick="filterLopsFeedback('all')" class="lops-fb-filter active" style="padding:4px 12px;border-radius:6px;font-size:11px;border:1px solid var(--border);background:var(--bg-active);color:var(--text-primary);cursor:pointer;">All (${d.feedback.length})</button>
+      <button onclick="filterLopsFeedback('bug')" class="lops-fb-filter" style="padding:4px 12px;border-radius:6px;font-size:11px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-muted);cursor:pointer;">\u{1F41B} Bugs (${d.feedback.filter(f=>f.type==='bug').length})</button>
+      <button onclick="filterLopsFeedback('friction')" class="lops-fb-filter" style="padding:4px 12px;border-radius:6px;font-size:11px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-muted);cursor:pointer;">\u{1F6A7} Friction (${d.feedback.filter(f=>f.type==='friction').length})</button>
+      <button onclick="filterLopsFeedback('praise')" class="lops-fb-filter" style="padding:4px 12px;border-radius:6px;font-size:11px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-muted);cursor:pointer;">\u2B50 Praise (${d.feedback.filter(f=>f.type==='praise').length})</button>
+      <button onclick="filterLopsFeedback('unresolved')" class="lops-fb-filter" style="padding:4px 12px;border-radius:6px;font-size:11px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-muted);cursor:pointer;">Open (${d.feedback.filter(f=>!f.resolved).length})</button>
+    </div>
+
+    <!-- Feedback list -->
+    <div id="lops-fb-list">
+      ${renderLopsFeedbackList(d.feedback)}
+    </div>
+  `
+}
+
+function renderLopsFeedbackList(items) {
+  if (items.length === 0) return '<div style="color:var(--text-muted);text-align:center;padding:40px;font-size:13px;">No feedback yet. Use the form above to capture bugs, friction, praise, or ideas as you test.</div>'
+  return `<div style="display:flex;flex-direction:column;gap:6px;">
+    ${items.slice().reverse().map(fb => `
+      <div style="background:var(--bg-card);border:1px solid ${fb.type === 'bug' ? 'rgba(239,68,68,0.3)' : fb.type === 'friction' ? 'rgba(234,179,8,0.3)' : fb.type === 'praise' ? 'rgba(34,197,94,0.3)' : 'var(--border)'};border-radius:8px;padding:12px 16px;display:flex;align-items:flex-start;gap:12px;${fb.resolved ? 'opacity:0.5;' : ''}">
+        <span style="font-size:18px;flex-shrink:0;margin-top:2px;">${fb.type === 'bug' ? '\u{1F41B}' : fb.type === 'friction' ? '\u{1F6A7}' : fb.type === 'praise' ? '\u2B50' : fb.type === 'idea' ? '\u{1F4A1}' : '\u{1F4DD}'}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;color:var(--text-primary);${fb.resolved ? 'text-decoration:line-through;' : ''}">${escapeHtml(fb.message)}</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+            <span style="font-size:10px;color:var(--text-muted);">${fb.area}</span>
+            <span style="font-size:10px;color:var(--text-muted);">${new Date(fb.timestamp).toLocaleDateString()} ${new Date(fb.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span>
+          </div>
+        </div>
+        <button onclick="resolveLopsFeedback('${fb.id}', ${!fb.resolved})" style="padding:4px 10px;border-radius:6px;font-size:10px;border:1px solid var(--border);background:${fb.resolved ? 'var(--bg-secondary)' : 'rgba(34,197,94,0.1)'};color:${fb.resolved ? 'var(--text-muted)' : 'var(--success)'};cursor:pointer;flex-shrink:0;">${fb.resolved ? 'Reopen' : 'Resolve'}</button>
+      </div>
+    `).join('')}
+  </div>`
+}
+
+let lopsCurrentFilter = 'all'
+
+function filterLopsFeedback(filter) {
+  lopsCurrentFilter = filter
+  document.querySelectorAll('.lops-fb-filter').forEach(b => {
+    b.style.background = 'var(--bg-secondary)'
+    b.style.color = 'var(--text-muted)'
+    b.classList.remove('active')
+  })
+  const btns = document.querySelectorAll('.lops-fb-filter')
+  const idx = filter === 'all' ? 0 : filter === 'bug' ? 1 : filter === 'friction' ? 2 : filter === 'praise' ? 3 : 4
+  if (btns[idx]) { btns[idx].style.background = 'var(--bg-active)'; btns[idx].style.color = 'var(--text-primary)'; btns[idx].classList.add('active') }
+
+  let filtered = lopsData.feedback
+  if (filter === 'unresolved') filtered = filtered.filter(f => !f.resolved)
+  else if (filter !== 'all') filtered = filtered.filter(f => f.type === filter)
+  document.getElementById('lops-fb-list').innerHTML = renderLopsFeedbackList(filtered)
+}
+
+async function toggleLopsCategory(catId) {
+  const body = document.getElementById(`lops-body-${catId}`)
+  const arrow = document.getElementById(`lops-arrow-${catId}`)
+  const cat = lopsData.categories.find(c => c.id === catId)
+  if (!cat) return
+  cat.collapsed = !cat.collapsed
+  body.style.display = cat.collapsed ? 'none' : 'block'
+  arrow.textContent = cat.collapsed ? '\u25B6' : '\u25BC'
+  fetch(`${API}/api/live-ops/category`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ categoryId: catId, collapsed: cat.collapsed })
+  })
+}
+
+function toggleLopsNotes(itemId) {
+  const el = document.getElementById(`lops-notes-${itemId}`)
+  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none'
+}
+
+async function updateLopsItem(itemId, updates) {
+  try {
+    await fetch(`${API}/api/live-ops/item`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ itemId, ...updates })
+    })
+    // Update local data
+    for (const cat of lopsData.categories) {
+      const item = cat.items.find(i => i.id === itemId)
+      if (item) {
+        Object.assign(item, updates)
+        break
+      }
+    }
+    // Re-render dashboard (stats) but not the checklist (would lose focus)
+    renderLopsDashboard()
+    // Update the star colors in-place
+    if (updates.rating !== undefined) {
+      const itemEl = document.getElementById(`lops-item-${itemId}`)
+      if (itemEl) {
+        const stars = itemEl.querySelectorAll('[onclick*="rating"]')
+        stars.forEach((star, i) => {
+          star.style.color = updates.rating >= (i + 1) ? 'var(--brand)' : 'var(--border)'
+        })
+      }
+    }
+    // Update checked style
+    if (updates.checked !== undefined) {
+      const itemEl = document.getElementById(`lops-item-${itemId}`)
+      if (itemEl) {
+        const textEl = itemEl.querySelector('div[style*="font-size:13px"]')
+        if (textEl) {
+          textEl.style.textDecoration = updates.checked ? 'line-through' : 'none'
+          textEl.style.opacity = updates.checked ? '0.5' : '1'
+        }
+      }
+      // Update category progress bar in-place
+      for (const cat of lopsData.categories) {
+        if (cat.items.find(i => i.id === itemId)) {
+          const checked = cat.items.filter(i => i.checked).length
+          const total = cat.items.length
+          const headerEl = document.querySelector(`[onclick="toggleLopsCategory('${cat.id}')"]`)
+          if (headerEl) {
+            const countEl = headerEl.querySelector('span[style*="font-weight:600"]')
+            if (countEl) countEl.textContent = `${checked}/${total}`
+            const barEl = headerEl.querySelector('div[style*="width:"]')
+            if (barEl) barEl.style.width = `${Math.round((checked / total) * 100)}%`
+          }
+          break
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Failed to update item:', err)
+  }
+}
+
+async function addLopsItem(catId) {
+  const input = document.getElementById(`lops-add-${catId}`)
+  const text = input.value.trim()
+  if (!text) return
+  try {
+    const res = await fetch(`${API}/api/live-ops/add-item`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ categoryId: catId, text })
+    })
+    const data = await res.json()
+    if (data.ok) {
+      const cat = lopsData.categories.find(c => c.id === catId)
+      if (cat) cat.items.push({ id: data.id, text, checked: false, rating: null, notes: '' })
+      input.value = ''
+      renderLopsChecklist()
+      renderLopsDashboard()
+    }
+  } catch (err) {
+    console.error('Failed to add item:', err)
+  }
+}
+
+async function deleteLopsItem(itemId) {
+  try {
+    await fetch(`${API}/api/live-ops/delete-item`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ itemId })
+    })
+    for (const cat of lopsData.categories) {
+      const idx = cat.items.findIndex(i => i.id === itemId)
+      if (idx !== -1) { cat.items.splice(idx, 1); break }
+    }
+    renderLopsChecklist()
+    renderLopsDashboard()
+  } catch (err) {
+    console.error('Failed to delete item:', err)
+  }
+}
+
+let lopsDailyRating = null
+
+function setDailyRating(rating) {
+  lopsDailyRating = rating
+  const stars = document.querySelectorAll('#lops-daily-rating span[onclick]')
+  stars.forEach((star, i) => {
+    star.style.color = rating >= (i + 1) ? 'var(--brand)' : 'var(--border)'
+  })
+  const label = document.getElementById('lops-daily-rating-label')
+  if (label) label.textContent = ['', 'Terrible', 'Poor', 'OK', 'Good', 'Excellent'][rating]
+}
+
+async function saveDailyLog() {
+  const summary = document.getElementById('lops-daily-summary').value.trim()
+  const redFlagsRaw = document.getElementById('lops-daily-redflags').value.trim()
+  const workaroundsRaw = document.getElementById('lops-daily-workarounds').value.trim()
+  const redFlags = redFlagsRaw ? redFlagsRaw.split('\n').filter(l => l.trim()) : []
+  const workarounds = workaroundsRaw ? workaroundsRaw.split('\n').filter(l => l.trim()) : []
+
+  try {
+    await fetch(`${API}/api/live-ops/daily-log`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ summary, rating: lopsDailyRating, redFlags, workarounds })
+    })
+    // Reload all data to reflect changes
+    await loadLiveOps()
+    switchLopsTab('daily-log')
+    showToast('Daily log saved')
+  } catch (err) {
+    console.error('Failed to save daily log:', err)
+  }
+}
+
+async function submitLopsFeedback() {
+  const type = document.getElementById('lops-fb-type').value
+  const area = document.getElementById('lops-fb-area').value
+  const message = document.getElementById('lops-fb-message').value.trim()
+  if (!message) return
+
+  try {
+    const res = await fetch(`${API}/api/live-ops/feedback`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, area, message })
+    })
+    const data = await res.json()
+    if (data.ok) {
+      lopsData.feedback.push(data.entry)
+      document.getElementById('lops-fb-message').value = ''
+      renderLopsFeedback()
+      renderLopsDashboard()
+      showToast('Feedback captured')
+    }
+  } catch (err) {
+    console.error('Failed to submit feedback:', err)
+  }
+}
+
+async function resolveLopsFeedback(feedbackId, resolved) {
+  try {
+    await fetch(`${API}/api/live-ops/feedback/resolve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ feedbackId, resolved })
+    })
+    const fb = lopsData.feedback.find(f => f.id === feedbackId)
+    if (fb) fb.resolved = resolved
+    renderLopsFeedback()
+    renderLopsDashboard()
+  } catch (err) {
+    console.error('Failed to resolve feedback:', err)
+  }
+}
 
 </script>
 </body>

@@ -1,5 +1,5 @@
 // Directory Welcome Email
-// Sent when a business submits their listing via /discover/submit.
+// Sent when a business submits their listing via /nearby/submit.
 // Confirms receipt, explains next steps, includes profile link.
 
 import { Button, Text, Link } from '@react-email/components'
@@ -21,7 +21,7 @@ export function DirectoryWelcomeEmail({
   slug,
   optOutUrl,
 }: DirectoryWelcomeProps) {
-  const profileUrl = `${SITE_URL}/discover/${slug}`
+  const profileUrl = `${SITE_URL}/nearby/${slug}`
 
   return (
     <BaseLayout preview={`${businessName} has been submitted to the ChefFlow directory.`}>

@@ -15,6 +15,11 @@ import {
 } from '@/lib/ai/remy-public-personality'
 import { loadRemyPublicContext, formatPublicContext } from '@/lib/ai/remy-public-context'
 import { checkRateLimit } from '@/lib/rateLimit'
+import {
+  createSurfaceLatencyTracker,
+  getSurfaceRuntimeOptions,
+  trySurfaceInstantAnswer,
+} from '../surface-runtime-utils'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -50,7 +55,9 @@ function buildPublicSystemPrompt(contextBlock: string): string {
 
   parts.push(`\nRESPONSE FORMAT:
 Write your reply in natural language with markdown formatting (bold, bullets, etc.).
-Keep responses concise - 1-3 paragraphs max.
+Default to the shortest useful answer.
+Answer in the first line.
+Use 1 short paragraph or up to 3 bullets by default.
 When relevant, suggest the visitor submit an inquiry or visit the booking page.`)
 
   return parts.join('\n')
@@ -71,6 +78,7 @@ function formatHistory(history: Array<{ role: string; content: string }>): strin
 
 export async function POST(req: NextRequest) {
   try {
+    const routeStartedAt = Date.now()
     // Get client IP for rate limiting
     const ip =
       req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
@@ -135,6 +143,23 @@ export async function POST(req: NextRequest) {
 
     // Load public context for this chef
     const context = await loadRemyPublicContext(tenantId)
+    const { contextScope, tokenBudget } = getSurfaceRuntimeOptions(message)
+    const latency = createSurfaceLatencyTracker('public', contextScope)
+    const instant = trySurfaceInstantAnswer('public', message, {
+      businessName: context.businessName,
+      chefName: context.chefName,
+      serviceArea: context.serviceArea,
+      serviceTypes: context.serviceTypes,
+      dietaryCapabilities: context.dietaryCapabilities,
+    })
+    if (instant) {
+      latency.logFastPath('instant')
+      return new Response(
+        encodeSSE({ type: 'token', data: instant.text }) + encodeSSE({ type: 'done', data: null }),
+        { headers: sseHeaders() }
+      )
+    }
+
     const contextBlock = formatPublicContext(context)
     const systemPrompt = buildPublicSystemPrompt(contextBlock)
     const conversationHistory = formatHistory(history ?? [])
@@ -163,7 +188,7 @@ export async function POST(req: NextRequest) {
             stream: true,
             options: {
               temperature: 0.7,
-              num_predict: 512, // Shorter responses for public
+              num_predict: tokenBudget,
             },
             keep_alive: '30m',
             think: false,
@@ -172,15 +197,18 @@ export async function POST(req: NextRequest) {
           for await (const chunk of ollamaStream) {
             if (abortController.signal.aborted) break
             if (chunk.message?.content) {
+              latency.markFirstToken()
               controller.enqueue(
                 encoder.encode(encodeSSE({ type: 'token', data: chunk.message.content }))
               )
             }
           }
 
+          latency.logDone({ route_ms: Date.now() - routeStartedAt, token_budget: tokenBudget })
           controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
         } catch (err: any) {
           if (err?.name === 'AbortError') {
+            latency.logError(err)
             controller.enqueue(
               encoder.encode(
                 encodeSSE({
@@ -190,7 +218,7 @@ export async function POST(req: NextRequest) {
               )
             )
           } else {
-            console.error('[remy-public] Streaming error:', err?.message)
+            latency.logError(err)
             controller.enqueue(
               encoder.encode(
                 encodeSSE({

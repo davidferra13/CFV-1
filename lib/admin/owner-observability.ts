@@ -662,6 +662,7 @@ export async function getGlobalNotificationFeed(
     .select(
       'id, tenant_id, recipient_id, category, action, title, body, action_url, metadata, read_at, created_at'
     )
+    .neq('action', 'account_access_alert')
     .order('created_at', { ascending: false })
 
   if (input.tenantId) query = query.eq('tenant_id', input.tenantId)

@@ -16,7 +16,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-PORT="${PORT:-3100}"
+PORT="${PORT:-3200}"
 TUNNEL_NAME="chefflow-beta"
 
 cd "$PROJECT_DIR"

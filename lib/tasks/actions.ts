@@ -161,7 +161,7 @@ export async function createTask(input: CreateTaskInput) {
     throw new Error('Failed to create task')
   }
 
-  // Non-blocking notification - notify chef when a task is assigned to a staff member
+  // Non-blocking notification - alert the assigned staff member when they have a portal login
   if (data.assigned_to) {
     try {
       // Look up the staff member name for the notification
@@ -172,7 +172,13 @@ export async function createTask(input: CreateTaskInput) {
         .single()
       const staffName = staffRow?.name ?? 'Unknown'
       try {
-        await notifyTaskAssigned(user.tenantId!, staffName, validated.title, validated.due_date)
+        await notifyTaskAssigned(
+          user.tenantId!,
+          data.assigned_to,
+          staffName,
+          validated.title,
+          validated.due_date
+        )
       } catch {}
     } catch (err) {
       console.error('[createTask] Task notification failed (non-fatal):', err)
@@ -237,7 +243,7 @@ export async function createTaskFromEvent(
     return { success: false, error: 'Failed to create task' }
   }
 
-  // Non-blocking notification to chef about the task assignment
+  // Non-blocking notification to the assigned staff member when they have a portal login
   try {
     const { data: staffRow } = await db
       .from('staff_members')
@@ -246,7 +252,13 @@ export async function createTaskFromEvent(
       .single()
     const staffName = staffRow?.name ?? 'Unknown'
     try {
-      await notifyTaskAssigned(user.tenantId!, staffName, validated.title, validated.due_date)
+      await notifyTaskAssigned(
+        user.tenantId!,
+        validated.assigned_to,
+        staffName,
+        validated.title,
+        validated.due_date
+      )
     } catch {}
   } catch (err) {
     console.error('[createTaskFromEvent] Notification failed (non-fatal):', err)

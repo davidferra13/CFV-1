@@ -10,6 +10,11 @@ import { validateRemyInput } from '@/lib/ai/remy-guardrails'
 import { validateRemyRequestBody, validateHistory } from '@/lib/ai/remy-input-validation'
 import { buildLandingSystemPrompt } from '@/lib/ai/remy-landing-personality'
 import { checkRateLimit } from '@/lib/rateLimit'
+import {
+  createSurfaceLatencyTracker,
+  getSurfaceRuntimeOptions,
+  trySurfaceInstantAnswer,
+} from '../surface-runtime-utils'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -48,6 +53,7 @@ function formatHistory(history: Array<{ role: string; content: string }>): strin
 
 export async function POST(req: NextRequest) {
   try {
+    const routeStartedAt = Date.now()
     const ip =
       req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
       req.headers.get('x-real-ip') ||
@@ -105,6 +111,17 @@ export async function POST(req: NextRequest) {
     const systemPrompt = buildLandingSystemPrompt()
     const conversationHistory = formatHistory(history ?? [])
     const fullPrompt = `${conversationHistory}Visitor: ${message}`
+    const { contextScope, tokenBudget } = getSurfaceRuntimeOptions(message)
+    const latency = createSurfaceLatencyTracker('landing', contextScope)
+
+    const instant = trySurfaceInstantAnswer('landing', message)
+    if (instant) {
+      latency.logFastPath('instant')
+      return new Response(
+        encodeSSE({ type: 'token', data: instant.text }) + encodeSSE({ type: 'done', data: null }),
+        { headers: sseHeaders() }
+      )
+    }
 
     const config = getOllamaConfig()
     const model = getOllamaModel('fast')
@@ -126,7 +143,7 @@ export async function POST(req: NextRequest) {
             stream: true,
             options: {
               temperature: 0.7,
-              num_predict: 512,
+              num_predict: tokenBudget,
             },
             keep_alive: '30m',
             think: false,
@@ -135,15 +152,18 @@ export async function POST(req: NextRequest) {
           for await (const chunk of ollamaStream) {
             if (abortController.signal.aborted) break
             if (chunk.message?.content) {
+              latency.markFirstToken()
               controller.enqueue(
                 encoder.encode(encodeSSE({ type: 'token', data: chunk.message.content }))
               )
             }
           }
 
+          latency.logDone({ route_ms: Date.now() - routeStartedAt, token_budget: tokenBudget })
           controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
         } catch (err: any) {
           if (err?.name === 'AbortError') {
+            latency.logError(err)
             controller.enqueue(
               encoder.encode(
                 encodeSSE({
@@ -153,7 +173,7 @@ export async function POST(req: NextRequest) {
               )
             )
           } else {
-            console.error('[remy-landing] Streaming error:', err?.message)
+            latency.logError(err)
             controller.enqueue(
               encoder.encode(
                 encodeSSE({

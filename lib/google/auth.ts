@@ -6,7 +6,6 @@
 
 import { cookies } from 'next/headers'
 import { createServerClient } from '@/lib/db/server'
-import { requireChef } from '@/lib/auth/get-user'
 import { randomBytes } from 'crypto'
 import type { GoogleConnectionStatus } from './types'
 import {
@@ -35,6 +34,7 @@ export async function checkGoogleOAuthHealth(): Promise<{
 }> {
   const siteUrl = resolveGoogleConnectOrigin({
     siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
+    appUrl: process.env.NEXT_PUBLIC_APP_URL,
     requestOrigin: process.env.NODE_ENV !== 'production' ? 'http://localhost:3100' : undefined,
     nodeEnv: process.env.NODE_ENV,
   })
@@ -54,6 +54,7 @@ export async function initiateGoogleConnect(
   scopes: string[],
   options?: { returnTo?: string | null; requestOrigin?: string | null }
 ): Promise<{ redirectUrl: string }> {
+  const { requireChef } = await import('@/lib/auth/get-user')
   const user = await requireChef()
 
   const clientId = process.env.GOOGLE_CLIENT_ID
@@ -72,6 +73,7 @@ export async function initiateGoogleConnect(
 
   const callbackOrigin = resolveGoogleConnectOrigin({
     siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
+    appUrl: process.env.NEXT_PUBLIC_APP_URL,
     requestOrigin: options?.requestOrigin,
     nodeEnv: process.env.NODE_ENV,
   })
@@ -90,12 +92,17 @@ export async function initiateGoogleConnect(
 
 // ─── Get Valid Access Token (refresh if needed) ─────────────────────────────
 
-export async function getGoogleAccessToken(chefId: string): Promise<string> {
-  // Tenant isolation: verify chefId matches session when called from user context
-  const { getCurrentUser } = await import('@/lib/auth/get-user')
-  const sessionUser = await getCurrentUser()
-  if (sessionUser && chefId !== sessionUser.tenantId && chefId !== sessionUser.entityId) {
-    throw new Error('Unauthorized: tenant mismatch')
+export async function getGoogleAccessToken(
+  chefId: string,
+  options?: { skipSessionCheck?: boolean }
+): Promise<string> {
+  if (!options?.skipSessionCheck) {
+    // Tenant isolation: verify chefId matches session when called from user context
+    const { getCurrentUser } = await import('@/lib/auth/get-user')
+    const sessionUser = await getCurrentUser()
+    if (sessionUser && chefId !== sessionUser.tenantId && chefId !== sessionUser.entityId) {
+      throw new Error('Unauthorized: tenant mismatch')
+    }
   }
   const db = createServerClient({ admin: true })
 
@@ -165,6 +172,7 @@ export async function getGoogleAccessToken(chefId: string): Promise<string> {
 // ─── Get Connection Status ──────────────────────────────────────────────────
 
 export async function getGoogleConnection(): Promise<GoogleConnectionStatus> {
+  const { requireChef } = await import('@/lib/auth/get-user')
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -202,6 +210,7 @@ export async function getGoogleConnection(): Promise<GoogleConnectionStatus> {
 // ─── Disconnect Google Service ──────────────────────────────────────────────
 
 export async function disconnectGoogle(service: 'gmail' | 'calendar') {
+  const { requireChef } = await import('@/lib/auth/get-user')
   const user = await requireChef()
   const db: any = createServerClient()
 

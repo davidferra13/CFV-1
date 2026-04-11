@@ -1,5 +1,15 @@
 {
   "mcpServers": {
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp", "--browser", "chromium", "--headless"]
+    },
+    "github": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"]
+    },
     "postgres": {
       "type": "stdio",
       "command": "npx",
@@ -8,6 +18,15 @@
         "@modelcontextprotocol/server-postgres",
         "postgresql://postgres:CHEF.jdgyuegf9924092.FLOW@127.0.0.1:54322/postgres"
       ]
+    },
+    "mempalace": {
+      "type": "stdio",
+      "command": "py",
+      "args": ["-m", "mempalace.mcp_server"],
+      "env": {
+        "PYTHONIOENCODING": "utf-8",
+        "MEMPALACE_DIR": "c:/Users/david/Documents/CFv1"
+      }
     }
   }
 }

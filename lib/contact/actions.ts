@@ -12,6 +12,8 @@ import { isWithinBusinessHours } from '@/lib/communication/business-hours-utils'
 import { sendContactMessageReceivedEmail } from '@/lib/email/notifications'
 import { sendNotification } from '@/lib/notifications/send'
 import { resolveOwnerIdentity } from '@/lib/platform/owner-account'
+import { recordPlatformEvent } from '@/lib/platform-observability/events'
+import { extractRequestMetadata } from '@/lib/platform-observability/context'
 
 const SUPPORT_EMAIL = 'support@cheflowhq.com'
 const DEFAULT_RESPONSE_WINDOW_TEXT = 'within 1 business day'
@@ -128,6 +130,25 @@ export async function submitContactForm(data: ContactFormData) {
       })
     )
   }
+
+  sideEffects.push(
+    recordPlatformEvent({
+      eventKey: 'input.contact_form_submitted',
+      source: 'public_contact',
+      actorType: 'anonymous',
+      tenantId: ownerIdentity.ownerChefId,
+      subjectType: 'contact_submission',
+      subjectId: submission.id,
+      summary: `${name} submitted the public contact form`,
+      details: subject ? `Subject: ${subject}` : null,
+      metadata: {
+        ...extractRequestMetadata(hdrs),
+        email,
+        subject,
+        inquiry_id: inquiryId,
+      },
+    })
+  )
 
   const acknowledgmentPromise = sendContactMessageReceivedEmail({
     contactEmail: email,

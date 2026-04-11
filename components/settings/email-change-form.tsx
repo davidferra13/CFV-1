@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { requestEmailChange } from '@/lib/auth/actions'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -8,6 +9,7 @@ import { Alert } from '@/components/ui/alert'
 import { toast } from 'sonner'
 
 export function EmailChangeForm({ currentEmail }: { currentEmail: string }) {
+  const router = useRouter()
   const [editing, setEditing] = useState(false)
   const [newEmail, setNewEmail] = useState('')
   const [isPending, startTransition] = useTransition()
@@ -22,6 +24,7 @@ export function EmailChangeForm({ currentEmail }: { currentEmail: string }) {
         await requestEmailChange(newEmail.trim())
         setSent(true)
         toast.success('Verification email sent')
+        router.refresh()
       } catch (err: any) {
         toast.error(err?.message || 'Failed to send verification email')
       }

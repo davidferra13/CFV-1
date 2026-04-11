@@ -105,7 +105,9 @@ export async function runMonitoredCronJob<T>(cronName: string, job: () => Promis
   }
 }
 
-export async function buildCronHealthReport(): Promise<CronHealthReport> {
+export async function buildCronHealthReport(
+  definitions: readonly CronMonitorDefinition[] = CRON_MONITOR_DEFINITIONS
+): Promise<CronHealthReport> {
   const db: any = createAdminClient()
   const now = new Date()
   const since24h = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString()
@@ -128,7 +130,7 @@ export async function buildCronHealthReport(): Promise<CronHealthReport> {
     rowsByName.set(row.cron_name, bucket)
   }
 
-  const crons = CRON_MONITOR_DEFINITIONS.map((definition) =>
+  const crons = definitions.map((definition) =>
     buildCronHealthEntry(definition, rowsByName.get(definition.cronName) ?? [], now, since24h)
   )
 
@@ -201,7 +203,7 @@ function buildCronHealthEntry(
           Math.min(recentDurations.length - 1, Math.floor(recentDurations.length * 0.95))
         ]
       : null
-  const latestIssueCount = getCronIssueCount(latest.result)
+  const latestIssueCount = latest ? getCronIssueCount(latest.result) : 0
 
   if (!latest) {
     return {

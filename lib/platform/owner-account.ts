@@ -1,6 +1,7 @@
 // Platform owner account. This should remain stable even if env vars are misconfigured.
 export const FOUNDER_EMAIL = 'davidferra13@gmail.com'
 export const DEFAULT_ADMIN_NOTIFICATION_EMAIL = 'info@cheflowhq.com'
+export const DEFAULT_DEVELOPER_NOTIFICATION_EMAIL = 'DFPrivateChef@gmail.com'
 const OWNER_CACHE_TTL_MS = 60_000
 
 export type OwnerIdentity = {
@@ -51,6 +52,19 @@ export function getAdminNotificationRecipients(): string[] {
     ...parseEmailList(process.env.ADMIN_NOTIFICATION_EMAIL),
     ...getAdminEmails(),
     DEFAULT_ADMIN_NOTIFICATION_EMAIL,
+  ])
+}
+
+/**
+ * Developer-only notification recipients for operational alerts and digests.
+ * Keeps observability mail out of broader business/admin channels.
+ */
+export function getDeveloperNotificationRecipients(): string[] {
+  return uniqueStrings([
+    ...parseEmailList(process.env.DEVELOPER_NOTIFICATION_EMAILS),
+    ...parseEmailList(process.env.DEVELOPER_NOTIFICATION_EMAIL),
+    DEFAULT_DEVELOPER_NOTIFICATION_EMAIL,
+    FOUNDER_EMAIL,
   ])
 }
 

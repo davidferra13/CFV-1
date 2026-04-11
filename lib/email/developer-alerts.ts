@@ -14,6 +14,7 @@ import {
   type CronHealthEntry as MonitoredCronHealthEntry,
 } from '@/lib/cron/monitor'
 import { getCircuitBreakerHealth } from '@/lib/resilience/circuit-breaker'
+import { getDeveloperNotificationRecipients } from '@/lib/platform/owner-account'
 import { sendEmail } from './send'
 import { DeveloperAlertEmail } from './templates/developer-alert'
 import {
@@ -23,7 +24,7 @@ import {
   type RecentError,
 } from './templates/developer-digest'
 
-const DEV_EMAIL = 'DFPrivateChef@gmail.com'
+const DEV_EMAIL_RECIPIENTS = getDeveloperNotificationRecipients()
 
 // Rate limiting (in-memory, per serverless instance)
 const lastAlertTime = new Map<string, number>()
@@ -90,7 +91,7 @@ export async function sendDeveloperAlert(params: AlertParams): Promise<void> {
     })
 
     const sent = await sendEmail({
-      to: DEV_EMAIL,
+      to: DEV_EMAIL_RECIPIENTS,
       subject: `[${params.severity.toUpperCase()}] ${params.title}`,
       react,
     })
@@ -192,7 +193,7 @@ export async function sendDeveloperDigest(): Promise<{
       : `Daily Digest ${dateStr} - ${cronUnhealthy + openCircuits + recentErrors.length} issue(s)`
 
     const sent = await sendEmail({
-      to: DEV_EMAIL,
+      to: DEV_EMAIL_RECIPIENTS,
       subject,
       react,
     })

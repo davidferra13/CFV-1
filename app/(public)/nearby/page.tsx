@@ -7,6 +7,10 @@ import {
   type DiscoverFilters,
 } from '@/lib/discover/actions'
 import { getBusinessTypeLabel, getStateName } from '@/lib/discover/constants'
+import {
+  PUBLIC_PRIMARY_CONSUMER_CTA,
+  PUBLIC_SECONDARY_CONSUMER_CTA,
+} from '@/lib/public/public-surface-config'
 import { NearbyFilters } from './_components/nearby-filters'
 import { ListingCard } from './_components/listing-card'
 // import { NominationForm } from './_components/nomination-form' // Hidden until data quality is ready
@@ -17,7 +21,6 @@ export const metadata: Metadata = {
   title: 'Nearby - Find Food Near You',
   description:
     'Find restaurants, private chefs, caterers, food trucks, bakeries, and more near you.',
-  robots: { index: false, follow: false },
 }
 
 type PageProps = {
@@ -275,6 +278,31 @@ export default async function NearbyPage({ searchParams }: PageProps) {
             {heroTitle}
           </h1>
           <p className="mt-3 max-w-2xl text-base text-stone-400">{heroSubtitle}</p>
+          <div className="mt-5 flex flex-col items-start gap-3 rounded-2xl border border-stone-800/60 bg-stone-900/40 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-stone-200">
+                Looking specifically for a private chef?
+              </p>
+              <p className="mt-1 text-sm text-stone-400">
+                Use the chef-booking path for matched private-chef requests, or browse chef profiles
+                directly.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
+                className="inline-flex h-11 items-center justify-center rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+              >
+                {PUBLIC_PRIMARY_CONSUMER_CTA.label}
+              </Link>
+              <Link
+                href={PUBLIC_SECONDARY_CONSUMER_CTA.href}
+                className="inline-flex h-11 items-center justify-center rounded-xl border border-stone-700 px-4 text-sm font-medium text-stone-300 transition-colors hover:border-stone-600 hover:bg-stone-800 hover:text-stone-100"
+              >
+                {PUBLIC_SECONDARY_CONSUMER_CTA.label}
+              </Link>
+            </div>
+          </div>
           {/* Stats line removed - data quality not ready for public display */}
         </div>
       </section>

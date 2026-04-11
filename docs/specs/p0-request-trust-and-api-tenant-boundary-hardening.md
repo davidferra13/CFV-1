@@ -13,6 +13,7 @@ _Every status change, every claim, every verification gets a row. This is the au
 | ------------- | -------------------- | ------------- | ------ |
 | Created       | 2026-04-09 17:39 EDT | Planner       |        |
 | Status: ready | 2026-04-09 17:39 EDT | Planner       |        |
+| Research pass | 2026-04-09 22:05 EDT | Codex         |        |
 
 ---
 
@@ -26,12 +27,14 @@ They explicitly asked for an audit that is critical, technical, and unsentimenta
 
 They also set the execution standard clearly: fully understand the current system first, plan briefly, execute in dependency order, continuously verify alignment, prevent regressions, and leave the system in a clear and structured state. This spec has to preserve their words, not flatten them into generic product language.
 
+They then required stakeholder-by-stakeholder research grounded in real workflows, including technical users, finance and operations users, compliance actors, and external systems. The instruction was to use that research to refine the active work directly, but only where it changes what matters now.
+
 ### Developer Intent
 
 - **Core goal:** Convert the architecture audit into one high-leverage hardening slice that removes the most dangerous trust-boundary and tenant-routing ambiguity without broad churn.
 - **Key constraints:** No speculative rewrite. No destructive schema work. No accidental breakage of public chef profile routing. No more API handlers that secretly depend on browser-session helpers. Every claim must be evidence-backed.
 - **Motivation:** The current system is feature-rich, but the audit found that identity, tenant scoping, and API route coherence are still enforced too much by convention instead of by structure.
-- **Success from the developer's perspective:** A builder can implement this spec without guessing which identity fields mean what, which routes are public versus protected, or how API-key traffic is supposed to behave when no browser session exists.
+- **Success from the developer's perspective:** A builder can implement this spec without guessing which identity fields mean what, which routes are public versus protected, or how API-key traffic is supposed to behave when no browser session exists, while also matching the real needs of integrations, finance workflows, and compliance-sensitive actors.
 
 ---
 
@@ -58,6 +61,19 @@ The API-key surface is the other major problem. `withApiAuth()` gives handlers a
 Notifications are the sharpest concrete failure. `POST /api/v2/notifications` defaults `recipient_id` to `ctx.tenantId`, but the schema says `notifications.recipient_id` is a foreign key to `users.id`, while `notifications.tenant_id` is the foreign key to `chefs.id`. `app/api/v2/notifications/route.ts:11-31`, `app/api/v2/notifications/route.ts:47-69`, `lib/db/schema/schema.ts:1709-1754`. The preferences table has the same identity split: `tenant_id` points to `chefs.id`, `auth_user_id` points to `users.id`, and the uniqueness key is `(auth_user_id, category)`. `lib/db/schema/schema.ts:4080-4105`. The schema already gives the correct sources of truth for these lookups: `chefs.auth_user_id` is non-null, while `clients.auth_user_id` is nullable. `lib/db/schema/schema.ts:19666-19669`, `lib/db/schema/schema.ts:22482-22658`. That means the data model already knows the difference between tenant IDs, client IDs, and auth-user IDs. The current route code is the part that is confused.
 
 The codebase already contains the stronger pattern this spec should move toward. Realtime channel authorization is centralized, explicit, tenant-aware, user-aware, and fail-closed. `app/api/realtime/[channel]/route.ts:31-47`, `lib/realtime/channel-access.ts:11-70`, `tests/unit/realtime-channel-access.test.ts:5-50`. This spec applies that same discipline to request trust and API v2 tenant operations. Broader debt still exists, including in-memory rate limiting, non-transactional public write flows, and builds that ignore lint/type failures, but those are intentionally outside this slice. `app/api/book/route.ts:44-87`, `app/api/book/route.ts:167-280`, `lib/inquiries/public-actions.ts:71-80`, `lib/inquiries/public-actions.ts:186-390`, `lib/api/rate-limit.ts:1-26`, `lib/rateLimit.ts:1-32`, `next.config.js:71-82`.
+
+---
+
+## Research-Backed Constraints
+
+The multi-stakeholder workflow pass makes this spec more urgent and slightly sharper. `docs/research/2026-04-09-multi-stakeholder-workflow-research-for-architecture-refinement.md:1-32`
+
+- Technical users and integration builders expect explicit auth models, OAuth separation, sandbox-versus-production clarity, retry-safe webhooks, and sync fallbacks. API-key routes that secretly depend on browser-session helpers are below that bar. `docs/research/2026-04-09-multi-stakeholder-workflow-research-for-architecture-refinement.md:175-214`, `docs/research/2026-04-09-multi-stakeholder-workflow-research-for-architecture-refinement.md:259-309`
+- Operations, finance, and accounting actors need event-linked costs, trustworthy exports, and clean identity boundaries on linked records. Silent ID confusion is expensive here, not merely untidy. `docs/research/2026-04-09-multi-stakeholder-workflow-research-for-architecture-refinement.md:134-173`
+- Compliance actors care about who acted, under what authority, and with what audit trail. That strengthens the requirement to keep tenant IDs, auth-user IDs, and client IDs non-interchangeable. `docs/research/2026-04-09-multi-stakeholder-workflow-research-for-architecture-refinement.md:216-257`
+- External systems such as Stripe, Square, Gmail, Calendar, and QuickBooks all assume retry, refresh, or resync realities. This spec should preserve that posture by making request trust and tenant ownership explicit and testable before widening the integration surface further. `docs/research/2026-04-09-multi-stakeholder-workflow-research-for-architecture-refinement.md:259-309`
+
+This research does not widen the implementation set, but it does raise the bar on correctness: "mostly works" is not sufficient for integration or compliance-facing routes.
 
 ---
 
@@ -234,6 +250,7 @@ This slice does not add new pages or redesign existing screens. It is a trust-bo
 - Start with the identity model, not the route handlers. If the code still confuses `tenantId`, `clientId`, and `authUserId`, the route rewrites will still be wrong.
 - Use `chefs.auth_user_id` for the default chef recipient and owner notification-preference rows. Do not use `user_roles` for this default path. `lib/db/schema/schema.ts:19666-19669`, `lib/notifications/actions.ts:425-448`
 - Use `clients.auth_user_id` for client notification recipients. A nullable client auth user is a real product state, not an edge case to ignore. `lib/db/schema/schema.ts:22482-22658`, `lib/notifications/client-actions.ts:15-33`
+- Keep the external-integration mental model in mind while building. Stripe, Square, Google, and Intuit all assume clear callback semantics, explicit tokens, retries, and refresh behavior. Do not leave any touched route in a state where its real principal is ambiguous. `docs/research/2026-04-09-multi-stakeholder-workflow-research-for-architecture-refinement.md:259-309`
 - Do not "solve" the `/chef` overlap by removing `/chef` from the public list. That would break public chef profiles. The right fix is to narrow the protected path list and repair the coverage test. `app/(public)/chef/[slug]/page.tsx:1-4`, `tests/unit/route-policy.chef-coverage.test.ts:1-32`
 - Do not keep API handlers wired to `'use server'` modules. That is the architectural smell this spec is removing.
 - If a small pure helper makes middleware header sanitation easier to test, add it. Testability is part of the hardening, not incidental.

@@ -54,7 +54,7 @@ export default async function ClientLayout({ children }: { children: React.React
             role={user.role}
             traits={{ entity_id: user.entityId, tenant_id: user.tenantId || '' }}
           />
-          <PresenceBeacon />
+          <PresenceBeacon userId={user.id} email={user.email} />
           <PageInfoButton />
         </div>
       </NotificationProvider>

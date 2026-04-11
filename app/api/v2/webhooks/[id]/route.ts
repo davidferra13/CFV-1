@@ -13,6 +13,7 @@ import {
   apiNoContent,
 } from '@/lib/api/v2'
 import { validateWebhookUrl } from '@/lib/security/url-validation'
+import { CHEF_FEATURE_FLAGS } from '@/lib/features/chef-feature-flags'
 
 const UpdateWebhookBody = z
   .object({
@@ -89,7 +90,7 @@ export const PATCH = withApiAuth(
 
     return apiSuccess(data)
   },
-  { scopes: ['webhooks:manage'] }
+  { scopes: ['webhooks:manage'], featureFlag: CHEF_FEATURE_FLAGS.developerTools }
 )
 
 export const DELETE = withApiAuth(
@@ -120,5 +121,5 @@ export const DELETE = withApiAuth(
 
     return apiNoContent()
   },
-  { scopes: ['webhooks:manage'] }
+  { scopes: ['webhooks:manage'], featureFlag: CHEF_FEATURE_FLAGS.developerTools }
 )

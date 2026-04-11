@@ -223,10 +223,10 @@ export async function snapshotEventToHub(input: {
 }
 
 /**
- * Get or create a hub group for an event.
- * Used when a guest clicks "Join the Hub" on the share page.
+ * Ensure a Dinner Circle exists for an event.
+ * This is the canonical event-level guest coordination container.
  */
-export async function getOrCreateEventHubGroup(input: {
+export async function ensureEventDinnerCircle(input: {
   eventId: string
   tenantId: string
   eventTitle: string
@@ -309,6 +309,17 @@ export async function getOrCreateEventHubGroup(input: {
 }
 
 /**
+ * Backward-compatible wrapper used by existing public guest flows.
+ */
+export async function getOrCreateEventHubGroup(input: {
+  eventId: string
+  tenantId: string
+  eventTitle: string
+}): Promise<{ groupToken: string }> {
+  return ensureEventDinnerCircle(input)
+}
+
+/**
  * Get hub group info for an event (used by share page and event detail).
  */
 export async function getEventHubGroupToken(eventId: string): Promise<string | null> {
@@ -322,6 +333,87 @@ export async function getEventHubGroupToken(eventId: string): Promise<string | n
     .single()
 
   return data?.group_token ?? null
+}
+
+/**
+ * Report guest-visible events that still lack a Dinner Circle.
+ * Guest-visible currently means there is at least one active event share.
+ */
+export async function getGuestVisibleEventsMissingDinnerCircles(): Promise<{
+  totalGuestVisibleEvents: number
+  totalMissingDinnerCircles: number
+  events: {
+    eventId: string
+    tenantId: string
+    occasion: string | null
+    status: string | null
+    activeShareCount: number
+  }[]
+}> {
+  const db = createServerClient({ admin: true })
+
+  const { data: activeShares, error: sharesError } = await db
+    .from('event_shares')
+    .select('event_id, tenant_id')
+    .eq('is_active', true)
+
+  if (sharesError || !activeShares?.length) {
+    return {
+      totalGuestVisibleEvents: 0,
+      totalMissingDinnerCircles: 0,
+      events: [],
+    }
+  }
+
+  const shareCountsByEvent = new Map<string, { tenantId: string; activeShareCount: number }>()
+  for (const share of activeShares) {
+    const existing = shareCountsByEvent.get(share.event_id)
+    if (existing) {
+      existing.activeShareCount += 1
+    } else {
+      shareCountsByEvent.set(share.event_id, {
+        tenantId: share.tenant_id,
+        activeShareCount: 1,
+      })
+    }
+  }
+
+  const eventIds = Array.from(shareCountsByEvent.keys())
+  const { data: existingGroups } = await db
+    .from('hub_groups')
+    .select('event_id')
+    .in('event_id', eventIds)
+    .eq('is_active', true)
+
+  const eventIdsWithCircles = new Set((existingGroups ?? []).map((group) => group.event_id))
+  const missingEventIds = eventIds.filter((eventId) => !eventIdsWithCircles.has(eventId))
+
+  if (!missingEventIds.length) {
+    return {
+      totalGuestVisibleEvents: eventIds.length,
+      totalMissingDinnerCircles: 0,
+      events: [],
+    }
+  }
+
+  const { data: missingEvents } = await db
+    .from('events')
+    .select('id, tenant_id, occasion, status')
+    .in('id', missingEventIds)
+
+  const events = (missingEvents ?? []).map((event) => ({
+    eventId: event.id,
+    tenantId: event.tenant_id,
+    occasion: event.occasion ?? null,
+    status: event.status ?? null,
+    activeShareCount: shareCountsByEvent.get(event.id)?.activeShareCount ?? 0,
+  }))
+
+  return {
+    totalGuestVisibleEvents: eventIds.length,
+    totalMissingDinnerCircles: events.length,
+    events,
+  }
 }
 
 /**

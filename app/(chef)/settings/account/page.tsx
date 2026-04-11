@@ -2,7 +2,10 @@
 // Unified page for email, password, devices, and account management.
 
 import type { Metadata } from 'next'
+import { headers } from 'next/headers'
 import { requireChef } from '@/lib/auth/get-user'
+import { getAccountAccessOverview } from '@/lib/auth/account-access'
+import { AccountAccessMonitor } from '@/components/settings/account-access-monitor'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChangePasswordForm } from '@/components/settings/change-password-form'
 import { EmailChangeForm } from '@/components/settings/email-change-form'
@@ -14,8 +17,12 @@ export const metadata: Metadata = { title: 'Account & Security' }
 export default async function AccountSettingsPage() {
   const user = await requireChef()
   const db = createServerClient()
+  const requestHeaders = headers()
 
-  const { data: chef } = await db.from('chefs').select('email').eq('id', user.entityId).single()
+  const [{ data: chef }, accessOverview] = await Promise.all([
+    db.from('chefs').select('email').eq('id', user.entityId).single(),
+    getAccountAccessOverview(user.authUserId, requestHeaders),
+  ])
 
   const currentEmail = chef?.email || ''
 
@@ -27,6 +34,8 @@ export default async function AccountSettingsPage() {
           Manage your email, password, and account-level settings.
         </p>
       </div>
+
+      <AccountAccessMonitor overview={accessOverview} />
 
       {/* Email */}
       <Card>

@@ -1,36 +1,33 @@
-// Receipt Scanning Server Action - OCR.space Integration
-// Accepts an image file upload, runs OCR, parses receipt text,
+// Receipt Scanning Server Action - Ollama Vision
+// Accepts an image file upload, runs vision model extraction,
 // and returns structured data for chef review. Does NOT auto-save.
-//
-// Uses Formula > AI principle: regex-based receipt parsing, not LLM.
 
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { scanReceiptFromBuffer } from '@/lib/ocr/ocr-space'
-import { parseReceiptText, type ParsedReceipt } from '@/lib/ocr/receipt-parser'
+import { parseReceiptImage } from '@/lib/ai/receipt-ocr'
+import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
+import type { ParsedReceipt } from '@/lib/ocr/receipt-parser'
 
 // 'use server' files can only export async functions - no constants/types exported here.
 // Types for the result are co-located at lib/ocr/receipt-parser.ts (ParsedReceipt, ParsedLineItem).
 
 /**
- * Scan and parse a receipt image.
+ * Scan and parse a receipt image using Ollama vision model.
  *
  * Accepts a FormData with a single file field named 'receipt'.
  * Returns the parsed receipt data for chef review/confirmation.
  * Does NOT create an expense automatically - the chef reviews and confirms.
  *
  * Returns:
- * - { success: true, data: ParsedReceipt, rawText: string } on success
+ * - { success: true, data: ParsedReceipt } on success
  * - { success: false, error: string } on failure
  */
 export async function scanAndParseReceipt(formData: FormData): Promise<{
   success: boolean
   data?: ParsedReceipt
-  rawText?: string
   error?: string
 }> {
-  // Auth check - tenant ID from session, never from request
   await requireChef()
 
   const file = formData.get('receipt') as File | null
@@ -38,7 +35,6 @@ export async function scanAndParseReceipt(formData: FormData): Promise<{
     return { success: false, error: 'No file provided' }
   }
 
-  // Validate file type
   const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
   if (!allowedTypes.includes(file.type)) {
     return {
@@ -47,7 +43,6 @@ export async function scanAndParseReceipt(formData: FormData): Promise<{
     }
   }
 
-  // Validate file size (10 MB max)
   const maxSize = 10 * 1024 * 1024
   if (file.size > maxSize) {
     return {
@@ -56,51 +51,44 @@ export async function scanAndParseReceipt(formData: FormData): Promise<{
     }
   }
 
-  // Check if OCR.space API key is configured
-  if (!process.env.OCR_SPACE_API_KEY) {
-    return {
-      success: false,
-      error:
-        'OCR.space API key is not configured. Add OCR_SPACE_API_KEY to your environment variables.',
-    }
-  }
-
-  // Convert File to Buffer for OCR.space
-  let buffer: Buffer
+  let imageBase64: string
   try {
     const arrayBuffer = await file.arrayBuffer()
-    buffer = Buffer.from(arrayBuffer)
+    imageBase64 = Buffer.from(arrayBuffer).toString('base64')
   } catch (err) {
     console.error('[scanAndParseReceipt] File read error:', err)
     return { success: false, error: 'Failed to read uploaded file' }
   }
 
-  // Send to OCR.space for text extraction
-  let rawText: string | null
   try {
-    const ocrResult = await scanReceiptFromBuffer(buffer, file.name)
-    if (ocrResult.error) {
-      return { success: false, error: `OCR service unavailable: ${ocrResult.error}` }
+    const result = await parseReceiptImage(imageBase64, file.type)
+
+    if (!result.success || result.items.length === 0) {
+      return {
+        success: false,
+        error: result.error || 'Could not extract items from the image. Try a clearer photo.',
+      }
     }
-    rawText = ocrResult.text
+
+    // Map ReceiptParseResult to ParsedReceipt shape
+    const parsed: ParsedReceipt = {
+      storeName: result.storeName,
+      date: result.date,
+      totalCents: result.total,
+      subtotalCents: result.subtotal,
+      taxCents: result.tax,
+      items: result.items.map((item) => ({
+        name: item.productName,
+        priceCents: item.totalPrice,
+      })),
+    }
+
+    return { success: true, data: parsed }
   } catch (err) {
-    console.error('[scanAndParseReceipt] OCR.space error:', err)
-    return { success: false, error: 'OCR service error. Please try again.' }
-  }
-
-  if (!rawText) {
-    return {
-      success: false,
-      error: 'Could not extract text from the image. Try a clearer photo with better lighting.',
+    if (err instanceof OllamaOfflineError) {
+      return { success: false, error: 'AI service is currently unavailable. Please try again.' }
     }
-  }
-
-  // Parse the raw OCR text using deterministic regex parser (Formula > AI)
-  const parsed = parseReceiptText(rawText)
-
-  return {
-    success: true,
-    data: parsed,
-    rawText,
+    console.error('[scanAndParseReceipt] Vision model error:', err)
+    return { success: false, error: 'Receipt processing failed. Please try again.' }
   }
 }

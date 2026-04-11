@@ -12,6 +12,7 @@ import { createHash } from 'crypto'
 import { validateMemoryContent } from '@/lib/ai/remy-guardrails'
 import type { RemyMemory, MemoryCategory } from '@/lib/ai/remy-memory-types'
 import { listRuntimeFileMemories } from '@/lib/ai/remy-runtime-memory'
+import { searchMemPalace } from '@/lib/ai/mempalace-bridge'
 
 // ─── Extraction Schema ─────────────────────────────────────────────────────
 
@@ -337,6 +338,35 @@ export async function loadRelevantMemories(
     if (seenIds.has(memory.id)) return
     seenIds.add(memory.id)
     memories.push(memory)
+  }
+
+  // Layer 0: Semantic search via MemPalace (non-blocking enhancement)
+  // Finds contextually relevant memories that SQL filters would miss.
+  // If MemPalace is unavailable, this silently returns nothing.
+  try {
+    const palaceResults = await searchMemPalace(_currentMessage, {
+      limit: 5,
+      wing: 'chefflow-conversations',
+    })
+    for (const result of palaceResults) {
+      if (result.similarity > 0.3) {
+        pushMemory({
+          id: `palace:${result.source}:${result.similarity}`,
+          content: result.content,
+          category: 'chef_preference' as MemoryCategory,
+          importance: Math.round(result.similarity * 10),
+          source: 'palace',
+          createdAt: new Date().toISOString(),
+          lastAccessedAt: new Date().toISOString(),
+          accessCount: 0,
+          relatedClientId: null,
+          relatedClientName: null,
+          editable: false,
+        })
+      }
+    }
+  } catch {
+    // Non-blocking: MemPalace is optional
   }
 
   // Layer 1: Client-specific memories (if a client is mentioned)

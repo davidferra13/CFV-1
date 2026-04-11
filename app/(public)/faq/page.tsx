@@ -20,7 +20,7 @@ const FAQ_CATEGORIES: FaqCategory[] = [
       {
         question: 'How much does it cost to hire a private chef?',
         answer:
-          'Private chef pricing varies by event type, guest count, and menu complexity. Expect $50 to $150+ per person for a private dinner. Weekly meal prep typically runs $200 to $800 per week depending on household size and meal count. Most chefs offer a free initial consultation to scope the event and provide a quote. On ChefFlow, you can browse chefs, compare profiles, and send inquiries at no cost.',
+          'Private chef pricing varies by event type, guest count, and menu complexity. Expect $50 to $150+ per person for a private dinner. Weekly meal prep typically runs $200 to $800+ per week depending on household size and meal count. Most chefs offer a free initial consultation to scope the event and provide a quote. On ChefFlow, you can browse chefs, compare profiles, and send inquiries at no cost.',
       },
       {
         question: 'What should I include in my inquiry to a chef?',
@@ -86,7 +86,7 @@ const FAQ_CATEGORIES: FaqCategory[] = [
       {
         question: 'How do I manage seasonality and slow months?',
         answer:
-          'May through December generates 60% or more of annual revenue for most private chefs and caterers. January through March is the slowest period. Successful operators bridge the gap by converting event clients into weekly meal prep clients ($200 to $400 per week recurring), pursuing corporate contracts (which are less seasonal), and offering cooking classes or holiday pre-orders during off-peak months. Diversifying your service types smooths the revenue curve.',
+          'May through December generates 60% or more of annual revenue for most private chefs and caterers. January through March is the slowest period. Successful operators bridge the gap by converting event clients into weekly meal prep clients ($200+ per week recurring), pursuing corporate contracts (which are less seasonal), and offering cooking classes or holiday pre-orders during off-peak months. Diversifying your service types smooths the revenue curve.',
       },
       {
         question: 'What is actual vs. theoretical food cost?',
@@ -96,7 +96,7 @@ const FAQ_CATEGORIES: FaqCategory[] = [
       {
         question: 'How much is a single client actually worth?',
         answer:
-          'More than you think. A satisfied private chef client is conservatively worth $10,000 to $25,000 over 3 years. One dinner party ($700 to $1,200) leads to repeat bookings, then weekly meal prep, then referrals. Referred clients spend roughly twice as much as cold leads. A 5% increase in client retention can boost profits by 25% to 95%. Treat every client interaction as a long-term relationship, not a one-off transaction. ChefFlow tracks client lifetime value, repeat rate, and engagement automatically.',
+          'More than you think. A satisfied private chef client is conservatively worth $10,000 to $25,000 over 3 years. One dinner party ($700+) leads to repeat bookings, then weekly meal prep, then referrals. Referred clients spend roughly twice as much as cold leads. A 5% increase in client retention can boost profits by 25% to 95%. Treat every client interaction as a long-term relationship, not a one-off transaction. ChefFlow tracks client lifetime value, repeat rate, and engagement automatically.',
       },
     ],
   },

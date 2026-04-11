@@ -7,6 +7,8 @@ import { BetaWelcomeEmail } from '@/lib/email/templates/beta-welcome'
 import { BetaSignupAdminEmail } from '@/lib/email/templates/beta-signup-admin'
 import { getAdminNotificationRecipients, resolveOwnerIdentity } from '@/lib/platform/owner-account'
 import { createNotification } from '@/lib/notifications/actions'
+import { recordPlatformEvent } from '@/lib/platform-observability/events'
+import { extractRequestMetadata } from '@/lib/platform-observability/context'
 
 export interface BetaSignupInput {
   name: string
@@ -175,6 +177,28 @@ export async function submitBetaSignup(
         }
       } catch (err) {
         console.error('[beta-signup] Founder in-app alert failed:', err)
+      }
+
+      try {
+        await recordPlatformEvent({
+          eventKey: 'subscription.beta_waitlist_joined',
+          source: 'beta_waitlist',
+          actorType: 'anonymous',
+          subjectType: 'beta_signup',
+          subjectId: email,
+          summary: `${name} joined the beta waitlist`,
+          metadata: {
+            ...extractRequestMetadata(hdrs),
+            email,
+            name,
+            source_page: sourcePage,
+            source_cta: sourceCta,
+            referral_source: input.referralSource?.trim() || null,
+          },
+          alertDedupeKey: `beta-waitlist:${email}`,
+        })
+      } catch (err) {
+        console.error('[beta-signup] Observability event failed:', err)
       }
     }
 

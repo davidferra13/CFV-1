@@ -15,19 +15,24 @@ function loadRouteModule() {
   const requireProPath = require.resolve('../../lib/billing/require-pro.ts')
   const tierPath = require.resolve('../../lib/billing/tier.ts')
   const serverPath = require.resolve('../../lib/db/server.ts')
+  const featureFlagsPath = require.resolve('../../lib/features/chef-feature-flags.ts')
+  const observabilityPath = require.resolve('../../lib/features/developer-tools-observability.ts')
   const routePath = require.resolve('../../app/api/integrations/zapier/subscribe/route.ts')
 
   const originalAuth = require.cache[authPath]
   const originalRequirePro = require.cache[requireProPath]
   const originalTier = require.cache[tierPath]
   const originalServer = require.cache[serverPath]
+  const originalFeatureFlags = require.cache[featureFlagsPath]
+  const originalObservability = require.cache[observabilityPath]
 
   let fromCalls = 0
   let insertedPayload: InsertPayload | null = null
+  let firstUseCalls = 0
 
   require.cache[authPath] = {
     exports: {
-      requireChef: async () => ({ entityId: 'tenant-1' }),
+      requireChef: async () => ({ id: 'user-1', entityId: 'tenant-1' }),
     },
   } as NodeJS.Module
 
@@ -77,6 +82,22 @@ function loadRouteModule() {
     },
   } as NodeJS.Module
 
+  require.cache[featureFlagsPath] = {
+    exports: {
+      CHEF_FEATURE_FLAGS: { developerTools: 'developer_tools' },
+      hasChefFeatureFlag: async () => true,
+      hasChefFeatureFlagWithDb: async () => true,
+    },
+  } as NodeJS.Module
+
+  require.cache[observabilityPath] = {
+    exports: {
+      logDeveloperToolsFirstUseIfNeeded: async () => {
+        firstUseCalls += 1
+      },
+    },
+  } as NodeJS.Module
+
   delete require.cache[routePath]
   const mod = require(routePath)
 
@@ -105,6 +126,18 @@ function loadRouteModule() {
       delete require.cache[serverPath]
     }
 
+    if (originalFeatureFlags) {
+      require.cache[featureFlagsPath] = originalFeatureFlags
+    } else {
+      delete require.cache[featureFlagsPath]
+    }
+
+    if (originalObservability) {
+      require.cache[observabilityPath] = originalObservability
+    } else {
+      delete require.cache[observabilityPath]
+    }
+
     delete require.cache[routePath]
   }
 
@@ -113,6 +146,7 @@ function loadRouteModule() {
     restore,
     getFromCalls: () => fromCalls,
     getInsertedPayload: () => insertedPayload,
+    getFirstUseCalls: () => firstUseCalls,
   }
 }
 
@@ -140,7 +174,7 @@ test('zapier subscribe rejects localhost webhook targets before any database wri
 })
 
 test('zapier subscribe stores the normalized webhook URL for valid targets', async () => {
-  const { mod, restore, getInsertedPayload } = loadRouteModule()
+  const { mod, restore, getInsertedPayload, getFirstUseCalls } = loadRouteModule()
 
   try {
     const response = await mod.POST(
@@ -160,6 +194,7 @@ test('zapier subscribe stores the normalized webhook URL for valid targets', asy
       target_url: 'https://hooks.zapier.com/hooks/catch/123/abc',
       event_types: ['inquiry.created'],
     })
+    assert.equal(getFirstUseCalls(), 1)
   } finally {
     restore()
   }

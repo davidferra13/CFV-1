@@ -52,6 +52,8 @@ AVAILABLE PAGES (suggest these when relevant):
 /remy - Remy history (everything Remy has saved)
 `.trim()
 
+export type ContextScope = 'full' | 'minimal' | 'focused'
+
 // ─── Response Length Calibration (deterministic - word count analysis) ────────
 // Matches response length to the chef's message complexity. Short questions get
 // short answers. Detailed messages get detailed responses. No LLM needed.
@@ -67,29 +69,29 @@ function calibrateResponseLength(message: string): string {
 
   // Very short messages (1-5 words) - likely a quick question or command
   if (words <= 5) {
-    return '\nRESPONSE LENGTH: Very short question - keep your answer to 1-2 sentences max. Be crisp.'
+    return '\nRESPONSE LENGTH: Very short question - answer in 1 sentence when possible. Only add a second sentence if it changes the outcome.'
   }
 
   // Short messages (6-15 words) - standard question
   if (words <= 15) {
     if (isYesNo && hasQuestionMark) {
-      return '\nRESPONSE LENGTH: Yes/no question - lead with the answer, then add 1 sentence of context if needed.'
+      return '\nRESPONSE LENGTH: Yes/no question - lead with yes/no or the decision, then add 1 short sentence of context if needed.'
     }
-    return '\nRESPONSE LENGTH: Brief question - respond in 2-4 sentences. No padding.'
+    return '\nRESPONSE LENGTH: Brief question - respond in 1-2 sentences or up to 3 bullets. No padding.'
   }
 
   // Medium messages (16-40 words) - moderate detail expected
   if (words <= 40) {
-    return '' // Default length - no calibration needed
+    return '\nRESPONSE LENGTH: Standard question - answer in 1 short paragraph or up to 3 bullets. Solve the main point first.'
   }
 
   // Long messages (41-80 words) - chef is being detailed, match their energy
   if (words <= 80) {
-    return '\nRESPONSE LENGTH: The chef wrote a detailed message - give a thorough response with specifics. Use bullet points if listing multiple items.'
+    return '\nRESPONSE LENGTH: The chef wrote a detailed message - be specific, but stay tight. Prioritize the answer, then key supporting details.'
   }
 
   // Very long messages (80+ words) - chef is explaining something complex
-  return '\nRESPONSE LENGTH: The chef wrote a long, detailed message - they want a comprehensive response. Be thorough, use structure (bullets, sections), and address all their points.'
+  return '\nRESPONSE LENGTH: The chef wrote a long message - still keep the reply concise and structured. Address the core decision first, then only the most important supporting points.'
 }
 
 //  System Prompt Builder
@@ -119,6 +121,30 @@ function formatMemoriesForPrompt(memories: RemyMemory[]): string {
   return sections.join('\n')
 }
 
+function formatRelativeTime(timestamp: string): string {
+  const parsed = new Date(timestamp)
+  if (Number.isNaN(parsed.getTime())) return 'recently'
+
+  const hoursAgo = Math.round((Date.now() - parsed.getTime()) / (1000 * 60 * 60))
+  if (hoursAgo < 1) return 'just now'
+  if (hoursAgo < 24) return `${hoursAgo} hour${hoursAgo !== 1 ? 's' : ''} ago`
+
+  const daysAgo = Math.round(hoursAgo / 24)
+  return `${daysAgo} day${daysAgo !== 1 ? 's' : ''} ago`
+}
+
+function getContextModeInstruction(scope: ContextScope): string {
+  switch (scope) {
+    case 'minimal':
+      return '\nCONTEXT MODE: MINIMAL. This is a narrow operator question. Answer from the tightest relevant context only. Do not expand into strategy unless the chef explicitly asks for it.'
+    case 'focused':
+      return '\nCONTEXT MODE: FOCUSED. Use the specific page, entity, workflow, and recent session context that matters. Stay task-first.'
+    case 'full':
+    default:
+      return '\nCONTEXT MODE: FULL. This is a strategic or analytical question. Use broader business context where it materially improves the answer.'
+  }
+}
+
 export function buildRemySystemPrompt(
   context: Awaited<ReturnType<typeof loadRemyContext>>,
   memories: RemyMemory[] = [],
@@ -135,9 +161,12 @@ export function buildRemySystemPrompt(
   previousSessionTopics?: { title: string; topics: string[]; lastActiveAt: string } | null,
   userMessage?: string,
   _contextScope?: ContextScope,
-  _recentConversationSummaries?: Array<{ summary: string; generatedAt: string }> | null
+  recentConversationSummaries?: Array<{ summary: string; generatedAt: string }> | null
 ): string {
   const parts: string[] = []
+  const contextScope: ContextScope = _contextScope ?? 'focused'
+  const includeOperationalContext = contextScope !== 'minimal'
+  const includeAnalyticalContext = contextScope === 'full'
 
   parts.push(REMY_PERSONALITY)
 
@@ -152,6 +181,7 @@ export function buildRemySystemPrompt(
   parts.push(REMY_PRIVACY_NOTE)
   parts.push(REMY_TOPIC_GUARDRAILS)
   parts.push(REMY_ANTI_INJECTION)
+  parts.push(getContextModeInstruction(contextScope))
 
   // Inject culinary profile if available
   if (culinaryProfile) {
@@ -238,7 +268,7 @@ ${context.upcomingEvents
   }
 
   // Daily plan - what's on the chef's plate today
-  if (context.dailyPlan && context.dailyPlan.totalItems > 0) {
+  if (includeOperationalContext && context.dailyPlan && context.dailyPlan.totalItems > 0) {
     const dp = context.dailyPlan
     parts.push(`\nTODAY'S DAILY PLAN (${dp.totalItems} items, ~${dp.estimatedMinutes} min):
 - Quick Admin: ${dp.adminItems} items
@@ -249,7 +279,11 @@ The chef can see the full structured view at /daily.`)
   }
 
   // Email digest - proactive communication awareness
-  if (context.emailDigest && context.emailDigest.totalSinceYesterday > 0) {
+  if (
+    includeOperationalContext &&
+    context.emailDigest &&
+    context.emailDigest.totalSinceYesterday > 0
+  ) {
     const d = context.emailDigest
     const emailLines: string[] = [
       `\nEMAIL INBOX (last 24 hours):`,
@@ -298,7 +332,7 @@ The chef can see the full structured view at /daily.`)
   }
 
   // Yearly stats
-  if (context.yearlyStats) {
+  if (includeOperationalContext && context.yearlyStats) {
     const y = context.yearlyStats
     parts.push(`\nYEAR-TO-DATE STATS:
 - Revenue: $${(y.yearRevenueCents / 100).toFixed(2)}
@@ -309,7 +343,7 @@ The chef can see the full structured view at /daily.`)
   }
 
   // Staff roster with utilization
-  if (context.staffRoster && context.staffRoster.length > 0) {
+  if (includeOperationalContext && context.staffRoster && context.staffRoster.length > 0) {
     parts.push(`\nSTAFF ROSTER (${context.staffRoster.length}):
 ${context.staffRoster
   .map((s) => {
@@ -323,32 +357,37 @@ ${context.staffRoster
   }
 
   // Equipment
-  if (context.equipmentSummary && context.equipmentSummary.totalItems > 0) {
+  if (
+    includeOperationalContext &&
+    context.equipmentSummary &&
+    context.equipmentSummary.totalItems > 0
+  ) {
     parts.push(
       `\nEQUIPMENT: ${context.equipmentSummary.totalItems} items across ${context.equipmentSummary.categories.join(', ')}`
     )
   }
 
   // Goals
-  if (context.activeGoals && context.activeGoals.length > 0) {
+  if (includeOperationalContext && context.activeGoals && context.activeGoals.length > 0) {
     parts.push(`\nACTIVE GOALS (${context.activeGoals.length}):
 ${context.activeGoals.map((g) => `- ${g.title}${g.targetDate ? ` (due ${g.targetDate})` : ''}${g.progress !== null ? ` ${g.progress}%` : ''} [${g.status}]`).join('\n')}`)
   }
 
   // Todos
-  if (context.activeTodos && context.activeTodos.length > 0) {
+  if (includeOperationalContext && context.activeTodos && context.activeTodos.length > 0) {
     parts.push(`\nTODO LIST (${context.activeTodos.length}):
 ${context.activeTodos.map((t) => `- ${t.title}${t.dueDate ? ` (due ${t.dueDate})` : ''} [${t.priority}] ${t.status}`).join('\n')}`)
   }
 
   // Scheduled calls
-  if (context.upcomingCalls && context.upcomingCalls.length > 0) {
+  if (includeOperationalContext && context.upcomingCalls && context.upcomingCalls.length > 0) {
     parts.push(`\nUPCOMING CALLS (${context.upcomingCalls.length}):
 ${context.upcomingCalls.map((c) => `- ${c.clientName} at ${new Date(c.scheduledAt).toLocaleString()}${c.purpose ? ` - ${c.purpose}` : ''}`).join('\n')}`)
   }
 
   // Documents
   if (
+    includeOperationalContext &&
     context.documentSummary &&
     (context.documentSummary.totalDocuments > 0 || context.documentSummary.totalFolders > 0)
   ) {
@@ -358,7 +397,7 @@ ${context.upcomingCalls.map((c) => `- ${c.clientName} at ${new Date(c.scheduledA
   }
 
   // Recent Remy artifacts
-  if (context.recentArtifacts && context.recentArtifacts.length > 0) {
+  if (includeOperationalContext && context.recentArtifacts && context.recentArtifacts.length > 0) {
     parts.push(`\nRECENT REMY WORK (what you recently created):
 ${context.recentArtifacts.map((a) => `- ${a.type.replace(/_/g, ' ')}: ${a.title} (${new Date(a.createdAt).toLocaleDateString()})`).join('\n')}`)
   }
@@ -366,14 +405,14 @@ ${context.recentArtifacts.map((a) => `- ${a.type.replace(/_/g, ' ')}: ${a.title}
   //  Context enrichment sections (2026-02-28)
 
   // Recipe library stats
-  if (context.recipeStats && context.recipeStats.totalRecipes > 0) {
+  if (includeOperationalContext && context.recipeStats && context.recipeStats.totalRecipes > 0) {
     parts.push(
       `\nRECIPE LIBRARY: ${context.recipeStats.totalRecipes} recipes across ${context.recipeStats.categories.join(', ')}`
     )
   }
 
   // Client vibe notes + dietary/allergy data (safety-critical info first)
-  if (context.clientVibeNotes && context.clientVibeNotes.length > 0) {
+  if (includeOperationalContext && context.clientVibeNotes && context.clientVibeNotes.length > 0) {
     // Separate clients with allergies for prominent display
     const clientsWithAllergies = context.clientVibeNotes.filter(
       (c) => c.allergies.length > 0 || c.dietaryRestrictions.length > 0
@@ -417,7 +456,11 @@ Use these to personalize communication - draft emails and messages that match ea
   }
 
   // Recent after-action review insights
-  if (context.recentAARInsights && context.recentAARInsights.length > 0) {
+  if (
+    includeOperationalContext &&
+    context.recentAARInsights &&
+    context.recentAARInsights.length > 0
+  ) {
     const aars = context.recentAARInsights.filter(
       (a) => a.lessonsLearned || a.wentWell || a.toImprove
     )
@@ -437,14 +480,22 @@ Reference these when relevant - help the chef avoid past mistakes and repeat suc
   }
 
   // Pending menu approvals
-  if (context.pendingMenuApprovals && context.pendingMenuApprovals.length > 0) {
+  if (
+    includeOperationalContext &&
+    context.pendingMenuApprovals &&
+    context.pendingMenuApprovals.length > 0
+  ) {
     parts.push(
       `\n[CHECKLIST] PENDING MENU APPROVALS (${context.pendingMenuApprovals.length}): ${context.pendingMenuApprovals.map((m) => m.clientName).join(', ')} - waiting for client response`
     )
   }
 
   // Unread inquiry messages
-  if (context.unreadInquiryMessages && context.unreadInquiryMessages.length > 0) {
+  if (
+    includeOperationalContext &&
+    context.unreadInquiryMessages &&
+    context.unreadInquiryMessages.length > 0
+  ) {
     const unique = [...new Set(context.unreadInquiryMessages.map((m) => m.leadName))]
     parts.push(
       `\n[MAIL] UNREAD INQUIRY MESSAGES (${context.unreadInquiryMessages.length}): from ${unique.join(', ')} - need a response`
@@ -501,14 +552,14 @@ Reference these when relevant - help the chef avoid past mistakes and repeat suc
     }
   }
 
-  if (nudgeLines.length > 0) {
+  if (includeOperationalContext && nudgeLines.length > 0) {
     parts.push(`\n[ACTION NEEDED] PROACTIVE ALERTS (${nudgeLines.length}):
 ${nudgeLines.map((l) => `- ${l}`).join('\n')}
 Mention the most urgent items naturally when relevant - especially if the chef asks "what should I focus on?" or during a morning briefing. Don't dump all at once unless asked.`)
   }
 
   // Revenue pattern + seasonal awareness - busy/slow months with time-of-year context
-  if (context.revenuePattern) {
+  if (includeOperationalContext && context.revenuePattern) {
     const rp = context.revenuePattern
     const currentMonth = new Date().toLocaleString('en-US', { month: 'long' })
     const isBusyMonth = currentMonth.toLowerCase() === rp.busiestMonth.toLowerCase()
@@ -551,7 +602,7 @@ This shows the chef's workflow - what they've been looking at and in what order.
     })
     parts.push(`\nRECENT ACTIONS (what the chef just did in the app):
 ${actions.join('\n')}
-These are real actions the chef just took. Reference them when relevant - e.g. "I see you just created that event, want me to draft a confirmation?"`)
+These are real actions the chef just took. Use them to continue the workflow when relevant. Do not add chatter or unnecessary offers.`)
   }
 
   // Recent errors - help the chef if they hit problems
@@ -583,7 +634,7 @@ If the chef seems frustrated or asks about something failing, these errors are c
   }
 
   // Cross-chat awareness - what was discussed in the other chat channel
-  if (otherChannelDigest) {
+  if (includeOperationalContext && otherChannelDigest) {
     parts.push(`\nCONTEXT FROM OTHER CHAT CHANNEL:
 ${otherChannelDigest}
 You can reference this context naturally if relevant - don't force it or repeat what was already said.`)
@@ -608,7 +659,7 @@ You can reference this context naturally if relevant - don't force it or repeat 
     // surface the most relevant context fields prominently so Remy can be page-aware.
     if (!context.pageEntity) {
       const pageIntel = buildPageIntelligence(context)
-      if (pageIntel) {
+      if (includeOperationalContext && pageIntel) {
         parts.push(`\nPAGE-SPECIFIC INTELLIGENCE (for ${context.currentPage}):
 ${pageIntel}
 Use these insights to give informed, specific answers about what the chef sees on this page.`)
@@ -635,34 +686,37 @@ The chef mentioned these by name. Use this data to answer their question accurat
 
   // Previous session continuity - remind Remy what the chef was working on last time
   if (previousSessionTopics && previousSessionTopics.topics.length > 0) {
-    const timeSince = new Date(previousSessionTopics.lastActiveAt)
-    const hoursAgo = Math.round((Date.now() - timeSince.getTime()) / (1000 * 60 * 60))
-    const timeLabel =
-      hoursAgo < 1
-        ? 'just now'
-        : hoursAgo < 24
-          ? `${hoursAgo} hour${hoursAgo !== 1 ? 's' : ''} ago`
-          : `${Math.round(hoursAgo / 24)} day${Math.round(hoursAgo / 24) !== 1 ? 's' : ''} ago`
+    const timeLabel = formatRelativeTime(previousSessionTopics.lastActiveAt)
     parts.push(`\nLAST SESSION (${timeLabel} - "${previousSessionTopics.title}"):
 The chef previously discussed: ${previousSessionTopics.topics.join('; ')}
 If the chef's first message relates to these topics, pick up naturally - "Picking up where we left off..." or weave in the context. If they're asking about something new, don't force a reference to the old session.`)
   }
 
+  if (recentConversationSummaries && recentConversationSummaries.length > 0) {
+    const recentConversationLines = recentConversationSummaries
+      .filter((item) => item.summary.trim().length > 0)
+      .slice(0, 3)
+      .map((item) => `- ${formatRelativeTime(item.generatedAt)}: ${item.summary.trim()}`)
+
+    if (recentConversationLines.length > 0) {
+      parts.push(`\nRELEVANT PRIOR CONVERSATIONS:
+${recentConversationLines.join('\n')}
+Use these as background context when the current message clearly relates to past work. Do not force a callback if the chef is asking about something new.`)
+    }
+  }
+
   parts.push(`\n${NAV_ROUTE_MAP}`)
 
   parts.push(`\nGROUNDING RULE (CRITICAL):
-You may ONLY reference data that appears in the sections above. You have access to:
-ALWAYS AVAILABLE: Current time/date, business context, upcoming events, recent clients, today's daily plan, email inbox digest (24h), session navigation, recent actions, calendar & availability, year-to-date stats, staff roster (with utilization), equipment, goals, todos, calls, documents, artifacts, proactive alerts (deadlines, expiring quotes, stale inquiries, overdue payments, re-engagement), revenue patterns, conversion rate, expense breakdown, day-of-week patterns, service style mix, repeat client ratio, guest count trends, booking lead time, dietary intelligence, menu approval turnaround, referral sources, cash flow projection, profitability stats, quote comparison, pricing intelligence, inquiry velocity, workload capacity, and memories.
-PAGE-LEVEL INTELLIGENCE: When the chef is on a specific page, you get enriched context about what's on their screen - including intelligence bar data (capacity, seasonal forecast, pricing, triage, geographic, prep efficiency, untapped markets, ingredient consolidation, rebooking predictions, churn risk). Reference these when the chef asks questions related to what they see.
-ON EVENT PAGES: Ledger entries (payments), expenses, staff assignments, temp logs, quotes, status history, menu approval, grocery quotes, and after-action reviews.
-ON CLIENT PAGES: Full event history, client notes, and client reviews.
-ON INQUIRY PAGES: Full message thread.
-Use all available data when answering questions - never say "I don't have that info" if it's in one of these sections.
-If a section says "0" or is empty, that means there are NONE - do not invent any.
-NEVER fabricate names, dates, amounts, or details to sound helpful.`)
+You may ONLY reference data that actually appears in the sections above.
+Some context sections are intentionally omitted when the question is narrow. If a section is absent, treat it as unavailable rather than guessing.
+If a section is present with "0", an empty list, or no items, that means there are none.
+Use page-level or entity-level context when it is present. If it is not present, do not imply you can see it.
+NEVER fabricate names, dates, amounts, metrics, or details to sound helpful.`)
 
   // Cost-per-guest intelligence (deterministic - pure math from existing context)
   if (
+    includeAnalyticalContext &&
     context.yearlyStats &&
     context.yearlyStats.completedEventsThisYear > 0 &&
     context.upcomingEvents &&
@@ -683,7 +737,7 @@ NEVER fabricate names, dates, amounts, or details to sound helpful.`)
   }
 
   // Inquiry velocity (deterministic - week-over-week trend)
-  if (context.inquiryVelocity) {
+  if (includeAnalyticalContext && context.inquiryVelocity) {
     const iv = context.inquiryVelocity
     if (iv.thisWeek > iv.lastWeek && iv.lastWeek > 0) {
       const pctUp = Math.round(((iv.thisWeek - iv.lastWeek) / iv.lastWeek) * 100)
@@ -703,7 +757,11 @@ NEVER fabricate names, dates, amounts, or details to sound helpful.`)
   }
 
   // Weekly revenue pacing (deterministic - compare month revenue to monthly average)
-  if (context.monthRevenueCents !== undefined && context.revenuePattern) {
+  if (
+    includeAnalyticalContext &&
+    context.monthRevenueCents !== undefined &&
+    context.revenuePattern
+  ) {
     const dayOfMonth = new Date().getDate()
     const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()
     const monthProgress = dayOfMonth / daysInMonth
@@ -724,7 +782,7 @@ NEVER fabricate names, dates, amounts, or details to sound helpful.`)
   }
 
   // Workload capacity alerting (deterministic - event density analysis from existing context)
-  if (context.upcomingEvents && context.upcomingEvents.length > 0) {
+  if (includeAnalyticalContext && context.upcomingEvents && context.upcomingEvents.length > 0) {
     const now = Date.now()
     const next7Days = context.upcomingEvents.filter((e) => {
       if (!e.date) return false
@@ -752,7 +810,7 @@ NEVER fabricate names, dates, amounts, or details to sound helpful.`)
   }
 
   // Profitability intelligence (deterministic - aggregate margins from financial summary view)
-  if (context.profitabilityStats) {
+  if (includeAnalyticalContext && context.profitabilityStats) {
     const ps = context.profitabilityStats
     parts.push(`\nPROFITABILITY INTELLIGENCE (from ${ps.eventCount} events with financial data):
 - Avg profit margin: ${ps.avgMargin}% | Best: ${ps.bestMargin}% | Worst: ${ps.worstMargin}%
@@ -761,7 +819,7 @@ When the chef asks about profitability, margins, or "am I charging enough?", use
   }
 
   // Quote comparison intelligence (deterministic - percentile positioning from historical data)
-  if (context.quoteDistribution) {
+  if (includeAnalyticalContext && context.quoteDistribution) {
     const qd = context.quoteDistribution
     parts.push(`\nQUOTE COMPARISON INTELLIGENCE (from ${qd.count} historical quotes):
 - Range: $${(qd.minCents / 100).toFixed(0)} - $${(qd.maxCents / 100).toFixed(0)}
@@ -770,7 +828,7 @@ When the chef asks about a quote amount, compare it to this range: below 25th = 
   }
 
   // Conversion rate intelligence
-  if (context.conversionRate) {
+  if (includeAnalyticalContext && context.conversionRate) {
     const cr = context.conversionRate
     let channelNote = ''
     if (cr.byChannel.length > 0) {
@@ -783,7 +841,7 @@ When the chef asks about a quote amount, compare it to this range: below 25th = 
   }
 
   // Expense breakdown
-  if (context.expenseBreakdown && context.expenseBreakdown.length > 0) {
+  if (includeAnalyticalContext && context.expenseBreakdown && context.expenseBreakdown.length > 0) {
     const totalExpCents = context.expenseBreakdown.reduce((s, e) => s + e.totalCents, 0)
     const top3 = context.expenseBreakdown.slice(0, 3)
     parts.push(
@@ -792,7 +850,7 @@ When the chef asks about a quote amount, compare it to this range: below 25th = 
   }
 
   // Day-of-week patterns
-  if (context.dayOfWeekPattern) {
+  if (includeAnalyticalContext && context.dayOfWeekPattern) {
     const dp = context.dayOfWeekPattern
     parts.push(
       `\nEVENT DAY PATTERNS: Busiest day is ${dp.busiestDay}, slowest is ${dp.slowestDay}. Use for scheduling advice and availability planning.`
@@ -800,14 +858,14 @@ When the chef asks about a quote amount, compare it to this range: below 25th = 
   }
 
   // Service style distribution
-  if (context.serviceStyles && context.serviceStyles.length > 0) {
+  if (includeAnalyticalContext && context.serviceStyles && context.serviceStyles.length > 0) {
     parts.push(
       `\nSERVICE STYLE MIX: ${context.serviceStyles.map((s) => `${s.style} ${s.pct}%`).join(', ')}. Use when discussing business diversification or niche focus.`
     )
   }
 
   // Repeat client ratio
-  if (context.repeatClientRatio) {
+  if (includeAnalyticalContext && context.repeatClientRatio) {
     const rc = context.repeatClientRatio
     const health =
       rc.ratio >= 50
@@ -821,7 +879,7 @@ When the chef asks about a quote amount, compare it to this range: below 25th = 
   }
 
   // Guest count trend
-  if (context.guestCountTrend) {
+  if (includeAnalyticalContext && context.guestCountTrend) {
     const gc = context.guestCountTrend
     if (gc.direction !== 'stable') {
       parts.push(
@@ -831,7 +889,7 @@ When the chef asks about a quote amount, compare it to this range: below 25th = 
   }
 
   // Booking lead time
-  if (context.avgLeadTime) {
+  if (includeAnalyticalContext && context.avgLeadTime) {
     const lt = context.avgLeadTime
     parts.push(
       `\nBOOKING LEAD TIME: Clients book avg ${lt.avgDays} days ahead (median ${lt.medianDays}, range ${lt.shortestDays}-${lt.longestDays} days). Use for capacity planning and when to start marketing for slow periods.`
@@ -839,7 +897,7 @@ When the chef asks about a quote amount, compare it to this range: below 25th = 
   }
 
   // Dietary profile across events
-  if (context.dietaryProfile) {
+  if (includeAnalyticalContext && context.dietaryProfile) {
     const dp = context.dietaryProfile
     const dietLines: string[] = []
     if (dp.topDietary.length > 0) {
@@ -860,7 +918,7 @@ When the chef asks about a quote amount, compare it to this range: below 25th = 
   }
 
   // Menu approval turnaround
-  if (context.menuApprovalStats) {
+  if (includeAnalyticalContext && context.menuApprovalStats) {
     const ma = context.menuApprovalStats
     parts.push(
       `\nMENU APPROVAL TURNAROUND: Clients take avg ${ma.avgDays} days to approve menus (median ${ma.medianDays}, range ${ma.fastestDays}-${ma.slowestDays}). Factor this into timeline planning - send menus early enough to account for approval time.`
@@ -868,14 +926,14 @@ When the chef asks about a quote amount, compare it to this range: below 25th = 
   }
 
   // Referral sources
-  if (context.referralSources && context.referralSources.length > 0) {
+  if (includeAnalyticalContext && context.referralSources && context.referralSources.length > 0) {
     parts.push(
       `\nCLIENT ACQUISITION: Top referral sources: ${context.referralSources.map((r) => `${r.source} ${r.pct}% (${r.count})`).join(', ')}. Use when discussing marketing strategy or growth.`
     )
   }
 
   // Cash flow projection
-  if (context.cashFlowProjection) {
+  if (includeAnalyticalContext && context.cashFlowProjection) {
     const cf = context.cashFlowProjection
     parts.push(
       `\nCASH FLOW PROJECTION: $${(cf.expectedCents / 100).toFixed(0)} expected from ${cf.eventCount} upcoming events (based on quoted prices). This is pipeline revenue, not yet collected.`
@@ -883,7 +941,7 @@ When the chef asks about a quote amount, compare it to this range: below 25th = 
   }
 
   // Business intelligence summary (cross-engine synthesis from 30 analytics engines)
-  if (context.businessIntelligence) {
+  if (includeAnalyticalContext && context.businessIntelligence) {
     parts.push(`\nBUSINESS INTELLIGENCE (synthesized from 30 analytics engines - use when discussing business health, pricing, growth, or client retention):
 ${context.businessIntelligence}
 Reference these insights when the chef asks about their business, pricing strategy, client health, capacity, or growth.`)
@@ -898,6 +956,12 @@ Reference these insights when the chef asks about their business, pricing strate
   // Streaming mode: plain text with nav suggestions as JSON at the end
   parts.push(`\nRESPONSE FORMAT:
 Write your reply in natural language with markdown formatting (bold, bullets, etc.).
+Default to the shortest useful answer.
+Use one of these default shapes only: 1 line answer, 1-3 bullets, a short draft, or 1 concise clarifying question.
+Answer in the first line. Do not open with filler, praise, or process narration.
+Use up to 3 bullets by default when listing items.
+If the answer depends on missing information, ask one concise clarifying question instead of giving a long speculative response.
+Do not tack on extra offers or follow-up questions unless the next action is obvious and high-value.
 If you want to suggest page navigation links, end your response with a line containing only:
 NAV_SUGGESTIONS: [{"label":"Page Name","href":"/route"}]
 Only include nav suggestions when genuinely helpful.
@@ -1274,14 +1338,56 @@ function buildPageIntelligence(context: RemyContext): string | null {
   return lines.length > 0 ? lines.join('\n') : null
 }
 
-//  Context Scope (planned - currently returns 'full' for all requests)
+const FULL_SCOPE_PATTERNS: RegExp[] = [
+  /\b(overview|summary|report|forecast|trend|analysis|analyze|compare|break down|walk me through)\b/i,
+  /\b(revenue|profit|margin|pricing|charge|undercharg|cash flow|pipeline|conversion|retention|referral|marketing|acquisition|growth|business health)\b/i,
+  /\b(what should i do today|what should i focus on|what's on my plate|what is on my plate|what does my day look like|brief me|debrief me|how am i doing|am i charging enough)\b/i,
+]
 
-export type ContextScope = 'full' | 'minimal' | 'focused'
+const MINIMAL_SCOPE_PATTERNS: RegExp[] = [
+  /^(where|how)\s+do\s+i\s+(add|create|find|set up|log|import|edit|change|update|go|navigate|open)\b/i,
+  /^am i free\b/i,
+  /^(is|are)\b.*\b(free|available|open|blocked)\b/i,
+  /^what('?s| is)\s+(on )?(my )?(calendar|schedule|agenda)\b/i,
+  /^who('?s| is)\s+available\b/i,
+  /^what page\b/i,
+  /^which page\b/i,
+  /^where is\b/i,
+]
 
-export function determineContextScope(_message: string, _intent: string): ContextScope {
-  // Future: reduce prompt size for focused queries by scoping context.
-  // For now, always return full context.
-  return 'full'
+const FOCUSED_HINT_PATTERNS: RegExp[] = [
+  /\b(tell me about|show me|walk me through)\b/i,
+  /\b(client|event|quote|inquiry|menu|recipe|staff|invoice|payment|calendar|schedule|email|document|profile|page)\b/i,
+  /\b(today|tomorrow|saturday|sunday|monday|tuesday|wednesday|thursday|friday|weekend|next week)\b/i,
+]
+
+export function determineContextScope(message: string, intent: string): ContextScope {
+  const normalized = message.trim().toLowerCase()
+  if (!normalized) return 'focused'
+
+  if (FULL_SCOPE_PATTERNS.some((pattern) => pattern.test(normalized))) {
+    return 'full'
+  }
+
+  if (MINIMAL_SCOPE_PATTERNS.some((pattern) => pattern.test(normalized))) {
+    return 'minimal'
+  }
+
+  if (intent === 'mixed') {
+    return 'focused'
+  }
+
+  const words = normalized.split(/\s+/).filter(Boolean).length
+
+  if (intent === 'command' && words <= 8) {
+    return 'minimal'
+  }
+
+  if (words <= 6 && !FOCUSED_HINT_PATTERNS.some((pattern) => pattern.test(normalized))) {
+    return 'minimal'
+  }
+
+  return 'focused'
 }
 
 //  Conversation History Formatter

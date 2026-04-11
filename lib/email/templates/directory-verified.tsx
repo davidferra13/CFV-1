@@ -15,7 +15,7 @@ type DirectoryVerifiedProps = {
 }
 
 export function DirectoryVerifiedEmail({ businessName, slug, optOutUrl }: DirectoryVerifiedProps) {
-  const profileUrl = `${SITE_URL}/discover/${slug}`
+  const profileUrl = `${SITE_URL}/nearby/${slug}`
 
   return (
     <BaseLayout preview={`${businessName} is now verified on ChefFlow.`}>

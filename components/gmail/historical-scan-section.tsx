@@ -32,6 +32,10 @@ export function HistoricalScanSection({ initialStatus }: HistoricalScanSectionPr
   const enabled = status.enabled
   const isRunning = enabled && (status.status === 'in_progress' || status.status === 'idle')
   const isComplete = enabled && status.status === 'completed'
+  const idleMessage =
+    status.totalProcessed > 0 || status.lastRunAt
+      ? 'Scan enabled - waiting for the next background batch to continue.'
+      : 'Scan enabled - waiting for the background worker to start.'
 
   function handleStartClick() {
     setShowConfirm(true)
@@ -188,9 +192,7 @@ export function HistoricalScanSection({ initialStatus }: HistoricalScanSectionPr
         {/* Running / completed / paused states */}
         {enabled && (
           <div className="space-y-2">
-            {status.status === 'idle' && (
-              <p className="text-xs text-stone-400">Scan queued &mdash; starting soon&hellip;</p>
-            )}
+            {status.status === 'idle' && <p className="text-xs text-stone-400">{idleMessage}</p>}
             {status.status === 'in_progress' && (
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-brand-600 animate-pulse" />

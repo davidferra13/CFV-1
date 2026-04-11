@@ -190,6 +190,13 @@ export const CRON_MONITOR_DEFINITIONS: CronMonitorDefinition[] = [
     description: 'Send the developer system-health digest',
   },
   {
+    cronName: 'platform-observability-digest',
+    routePath: '/api/cron/platform-observability-digest',
+    maxExpectedMinutes: 2880,
+    cadence: 'daily',
+    description: 'Send the platform observability digest',
+  },
+  {
     cronName: 'lifecycle',
     routePath: '/api/scheduled/lifecycle',
     maxExpectedMinutes: 2880,

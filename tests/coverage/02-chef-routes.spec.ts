@@ -75,6 +75,27 @@ async function assertChefPageLoads(
   expect(bodyText.trim().length, `[chef] ${tag} rendered blank`).toBeGreaterThan(10)
 }
 
+async function assertChefPageRedirects(
+  page: Parameters<Parameters<typeof test>[1]>[0]['page'],
+  url: string,
+  expectedPath: string
+) {
+  const response = await gotoChefPage(page, url)
+  const escapedExpectedPath = expectedPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  await page.waitForURL(new RegExp(`${escapedExpectedPath}(?:\\?|$)`), {
+    timeout: 30_000,
+  })
+  const currentUrl = new URL(page.url())
+  const bodyText = await page.locator('body').innerText()
+
+  expect(
+    response?.status() ?? 0,
+    `[chef] ${url} returned HTTP ${response?.status() ?? 0}`
+  ).toBeLessThan(500)
+  expect(currentUrl.pathname, `[chef] ${url} should redirect to ${expectedPath}`).toBe(expectedPath)
+  expect(bodyText.trim().length, `[chef] ${url} redirected blank`).toBeGreaterThan(10)
+}
+
 // â”€â”€â”€ Dashboard & Quick Access â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 test.describe('Chef â€” Dashboard & Quick Access', () => {
@@ -1230,12 +1251,22 @@ test.describe('Chef â€” Settings', () => {
     await assertChefPageLoads(page, '/settings/stripe-connect')
   })
 
-  test('/settings/api-keys', async ({ page }) => {
-    await assertChefPageLoads(page, '/settings/api-keys')
+  test('/settings/api-keys redirects to /settings when developer tools are disabled', async ({
+    page,
+  }) => {
+    await assertChefPageRedirects(page, '/settings/api-keys', '/settings')
   })
 
-  test('/settings/webhooks', async ({ page }) => {
-    await assertChefPageLoads(page, '/settings/webhooks')
+  test('/settings/webhooks redirects to /settings when developer tools are disabled', async ({
+    page,
+  }) => {
+    await assertChefPageRedirects(page, '/settings/webhooks', '/settings')
+  })
+
+  test('/settings/zapier redirects to /settings when developer tools are disabled', async ({
+    page,
+  }) => {
+    await assertChefPageRedirects(page, '/settings/zapier', '/settings')
   })
 
   test('/settings/notifications', async ({ page }) => {

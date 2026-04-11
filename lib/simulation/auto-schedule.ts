@@ -67,7 +67,7 @@ async function warmupOllama(): Promise<void> {
 
 async function runCheck(): Promise<void> {
   const baseUrl =
-    process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+    process.env.CHEFFLOW_AUTH_ORIGIN ?? process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
   const secret = process.env.CRON_SECRET
 
   if (!secret) {

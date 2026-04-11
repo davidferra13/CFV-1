@@ -6,7 +6,7 @@
 // and cannot access per-request cookies.
 //
 // Cache tag -> revalidation map (verified 2026-04-03):
-//   cannabis-access-{authUserId} -> no server action; TTL-only (admin manual changes)
+//   cannabis-access-{authUserId} -> lib/cannabis/invitation-actions.ts:claimCannabisInvite(), lib/admin/cannabis-actions.ts
 //   chef-archetype-{chefId}      -> lib/archetypes/actions.ts:selectArchetype()
 //   deletion-status-{chefId}     -> lib/compliance/account-deletion-actions.ts
 //   is-admin-{authUserId}        -> no server action; TTL-only (manual DB changes)

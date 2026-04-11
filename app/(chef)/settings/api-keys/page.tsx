@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
+import { redirect } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import { ApiKeyManager } from '@/components/settings/api-key-manager'
+import { CHEF_FEATURE_FLAGS, hasChefFeatureFlagWithDb } from '@/lib/features/chef-feature-flags'
 
 export const metadata: Metadata = { title: 'API Keys' }
 
@@ -17,6 +18,11 @@ async function getApiKeys(tenantId: string) {
 
 export default async function ApiKeysPage() {
   const user = await requireChef()
+  const db = createServerClient()
+  if (!(await hasChefFeatureFlagWithDb(db, user.entityId, CHEF_FEATURE_FLAGS.developerTools))) {
+    redirect('/settings')
+  }
+  const { ApiKeyManager } = await import('@/components/settings/api-key-manager')
   const keys = await getApiKeys(user.entityId)
   return (
     <div className="space-y-6">

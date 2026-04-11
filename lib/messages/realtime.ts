@@ -41,10 +41,10 @@ export function subscribeToMessages(
  * Listens for new messages across all entities.
  */
 export function subscribeToChefNotifications(
-  tenantId: string,
+  recipientId: string,
   onNotification: (payload: { new: Record<string, unknown> }) => void
 ) {
-  const channel = `notifications:${tenantId}`
+  const channel = `notifications:${recipientId}`
   const es = new EventSource(`/api/realtime/${encodeURIComponent(channel)}`)
 
   es.onmessage = (e) => {

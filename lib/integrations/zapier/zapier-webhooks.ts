@@ -5,6 +5,8 @@ import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 import { ZAPIER_EVENT_TYPES, type ZapierEventType } from '@/lib/integrations/zapier/zapier-events'
 import { validateWebhookUrl } from '@/lib/security/url-validation'
+import { CHEF_FEATURE_FLAGS, requireChefFeatureFlag } from '@/lib/features/chef-feature-flags'
+import { logDeveloperToolsFirstUseIfNeeded } from '@/lib/features/developer-tools-observability'
 
 // Zapier/Make webhook automation layer.
 // Chefs subscribe to ChefFlow events and we POST to their webhook URLs.
@@ -16,6 +18,7 @@ export async function createWebhookSubscription(input: {
   eventTypes: string[]
   label?: string
 }) {
+  await requireChefFeatureFlag(CHEF_FEATURE_FLAGS.developerTools)
   await requirePro('integrations')
   const user = await requireChef()
   const db: any = createServerClient({ admin: true })
@@ -43,10 +46,20 @@ export async function createWebhookSubscription(input: {
 
   if (error) throw new Error(`Failed to create webhook subscription: ${error.message}`)
 
+  await logDeveloperToolsFirstUseIfNeeded({
+    tenantId: user.entityId,
+    actorId: user.id,
+    kind: 'zapier_subscription',
+    entityId: data.id,
+    context: { event_count: validTypes.length, via: 'settings' },
+    db,
+  })
+
   return data
 }
 
 export async function listWebhookSubscriptions() {
+  await requireChefFeatureFlag(CHEF_FEATURE_FLAGS.developerTools)
   await requirePro('integrations')
   const user = await requireChef()
   const db: any = createServerClient({ admin: true })
@@ -63,6 +76,7 @@ export async function listWebhookSubscriptions() {
 }
 
 export async function deleteWebhookSubscription(subscriptionId: string) {
+  await requireChefFeatureFlag(CHEF_FEATURE_FLAGS.developerTools)
   await requirePro('integrations')
   const user = await requireChef()
   const db: any = createServerClient({ admin: true })
@@ -79,6 +93,7 @@ export async function deleteWebhookSubscription(subscriptionId: string) {
 }
 
 export async function getRecentDeliveries(subscriptionId: string, limit = 20) {
+  await requireChefFeatureFlag(CHEF_FEATURE_FLAGS.developerTools)
   await requirePro('integrations')
   const user = await requireChef()
   const db: any = createServerClient({ admin: true })
@@ -184,6 +199,7 @@ export async function dispatchWebhookEvent(
 // Test webhook
 
 export async function testWebhookSubscription(subscriptionId: string) {
+  await requireChefFeatureFlag(CHEF_FEATURE_FLAGS.developerTools)
   await requirePro('integrations')
   const user = await requireChef()
   const db: any = createServerClient({ admin: true })

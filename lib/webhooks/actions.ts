@@ -1,16 +1,17 @@
 'use server'
 
-import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { randomBytes, createHmac } from 'crypto'
 import { validateWebhookUrl } from '@/lib/security/url-validation'
 import type { WebhookSubscription, DeliveryLogEntry } from './types'
+import { CHEF_FEATURE_FLAGS, requireChefFeatureFlag } from '@/lib/features/chef-feature-flags'
+import { logDeveloperToolsFirstUseIfNeeded } from '@/lib/features/developer-tools-observability'
 
 // ── List ──
 
 export async function listWebhookSubscriptions(): Promise<WebhookSubscription[]> {
-  const user = await requireChef()
+  const user = await requireChefFeatureFlag(CHEF_FEATURE_FLAGS.developerTools)
   const db: any = createServerClient()
 
   const { data, error } = await db
@@ -30,7 +31,7 @@ export async function createWebhookEndpoint(input: {
   description?: string
   events: string[]
 }): Promise<{ secret: string }> {
-  const user = await requireChef()
+  const user = await requireChefFeatureFlag(CHEF_FEATURE_FLAGS.developerTools)
 
   // SECURITY: Validate URL to prevent SSRF - blocks private IPs, requires HTTPS
   const targetUrl = validateWebhookUrl(input.url).toString()
@@ -47,6 +48,13 @@ export async function createWebhookEndpoint(input: {
   })
 
   if (error) throw new Error(error.message)
+  await logDeveloperToolsFirstUseIfNeeded({
+    tenantId: user.entityId,
+    actorId: user.id,
+    kind: 'raw_webhook',
+    context: { event_count: input.events.length, has_description: Boolean(input.description) },
+    db,
+  })
   revalidatePath('/settings/webhooks')
   return { secret }
 }
@@ -62,7 +70,7 @@ export async function updateWebhookEndpoint(
     description?: string
   }
 ): Promise<void> {
-  const user = await requireChef()
+  const user = await requireChefFeatureFlag(CHEF_FEATURE_FLAGS.developerTools)
   const db: any = createServerClient()
 
   const updateData: Record<string, unknown> = {}
@@ -97,7 +105,7 @@ export async function updateWebhookEndpoint(
 // ── Delete ──
 
 export async function deleteWebhookEndpoint(id: string): Promise<void> {
-  const user = await requireChef()
+  const user = await requireChefFeatureFlag(CHEF_FEATURE_FLAGS.developerTools)
   const db: any = createServerClient()
 
   const { error } = await db
@@ -118,7 +126,7 @@ export async function testWebhookEndpoint(id: string): Promise<{
   durationMs: number
   error?: string
 }> {
-  const user = await requireChef()
+  const user = await requireChefFeatureFlag(CHEF_FEATURE_FLAGS.developerTools)
   const db: any = createServerClient()
 
   const { data: endpoint, error: fetchError } = await db
@@ -201,7 +209,7 @@ export async function getWebhookDeliveryLog(
   subscriptionId: string,
   limit = 20
 ): Promise<DeliveryLogEntry[]> {
-  const user = await requireChef()
+  const user = await requireChefFeatureFlag(CHEF_FEATURE_FLAGS.developerTools)
   const db: any = createServerClient()
 
   // Verify the subscription belongs to this chef

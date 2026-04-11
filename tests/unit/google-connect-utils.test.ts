@@ -1,7 +1,10 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { buildGoogleConnectEntryUrl } from '@/lib/google/connect-entry'
-import { resolveGoogleConnectOrigin } from '@/lib/google/connect-server'
+import {
+  resolveGoogleConnectOrigin,
+  resolveGoogleConnectRequestOrigin,
+} from '@/lib/google/connect-server'
 import {
   buildGoogleConnectResultPath,
   sanitizeGoogleConnectReturnTo,
@@ -59,6 +62,39 @@ describe('resolveGoogleConnectOrigin', () => {
         nodeEnv: 'production',
       }),
       'https://app.cheflowhq.com'
+    )
+  })
+
+  it('falls back to NEXT_PUBLIC_APP_URL in production when site URL is unavailable', () => {
+    assert.equal(
+      resolveGoogleConnectOrigin({
+        appUrl: 'https://app.cheflowhq.com',
+        requestOrigin: 'https://0.0.0.0:3000',
+        nodeEnv: 'production',
+      }),
+      'https://app.cheflowhq.com'
+    )
+  })
+})
+
+describe('resolveGoogleConnectRequestOrigin', () => {
+  it('rebuilds the public origin from forwarded host headers', () => {
+    assert.equal(
+      resolveGoogleConnectRequestOrigin({
+        requestOrigin: 'https://0.0.0.0:3000',
+        forwardedProto: 'https',
+        forwardedHost: 'app.cheflowhq.com',
+      }),
+      'https://app.cheflowhq.com'
+    )
+  })
+
+  it('falls back to the request origin when forwarded host headers are missing', () => {
+    assert.equal(
+      resolveGoogleConnectRequestOrigin({
+        requestOrigin: 'http://localhost:3100',
+      }),
+      'http://localhost:3100'
     )
   })
 })

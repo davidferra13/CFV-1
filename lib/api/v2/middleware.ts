@@ -10,6 +10,7 @@ import { checkRateLimit } from '@/lib/api/rate-limit'
 import { createServerClient } from '@/lib/db/server'
 import { hasAllScopes, LEGACY_DEFAULT_SCOPES, type ApiScope } from './scopes'
 import { apiUnauthorized, apiForbidden, apiRateLimited, apiServerError } from './response'
+import { hasChefFeatureFlagWithDb, type ChefFeatureFlag } from '@/lib/features/chef-feature-flags'
 
 export interface ApiContext {
   /** The tenant (chef) ID from the API key */
@@ -31,6 +32,8 @@ export type ApiHandler = (
 export interface ApiAuthOptions {
   /** Required scopes for this endpoint. All must be present. */
   scopes?: ApiScope[]
+  /** Optional per-chef feature flag gate. */
+  featureFlag?: ChefFeatureFlag
 }
 
 /**
@@ -79,10 +82,18 @@ export function withApiAuth(handler: ApiHandler, options?: ApiAuthOptions) {
         db,
       }
 
-      // 6. Resolve dynamic route params if present
+      // 6. Check feature flag gate if required
+      if (options?.featureFlag) {
+        const enabled = await hasChefFeatureFlagWithDb(db, keyCtx.tenantId, options.featureFlag)
+        if (!enabled) {
+          return apiForbidden(`Feature not enabled for this account: ${options.featureFlag}`)
+        }
+      }
+
+      // 7. Resolve dynamic route params if present
       const params = routeContext?.params ? await routeContext.params : undefined
 
-      // 7. Execute handler
+      // 8. Execute handler
       return await handler(req, ctx, params)
     } catch (err) {
       console.error('[api/v2] Unhandled error:', err)

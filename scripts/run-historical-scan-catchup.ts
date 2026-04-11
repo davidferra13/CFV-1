@@ -1,7 +1,8 @@
 import dotenv from 'dotenv'
-import { createAdminClient } from '@/lib/db/admin'
+import adminModule from '@/lib/db/admin'
 import historicalScanModule from '../lib/gmail/historical-scan'
 
+const { createAdminClient } = adminModule
 const { runHistoricalScanBatch } = historicalScanModule
 
 dotenv.config({ path: '.env.local' })

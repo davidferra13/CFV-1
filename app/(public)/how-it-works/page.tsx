@@ -1,5 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import {
+  PUBLIC_OPERATOR_ENTRY,
+  PUBLIC_PRIMARY_CONSUMER_CTA,
+} from '@/lib/public/public-surface-config'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -121,16 +125,16 @@ export default function HowItWorksPage() {
         <div className="mx-auto flex w-full max-w-3xl flex-col items-center px-4 py-14 text-center sm:px-6 md:py-18 lg:px-8">
           <div className="flex flex-col items-center gap-3 sm:flex-row">
             <Link
-              href="/book"
+              href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
               className="inline-flex h-12 items-center justify-center rounded-xl gradient-accent px-6 text-sm font-semibold text-white glow-hover shadow-lg"
             >
-              Describe Your Event
+              {PUBLIC_PRIMARY_CONSUMER_CTA.label}
             </Link>
             <Link
-              href="/for-operators"
+              href={PUBLIC_OPERATOR_ENTRY.href}
               className="inline-flex h-12 items-center justify-center rounded-xl border border-stone-700 bg-stone-900/60 px-6 text-sm font-medium text-stone-300 transition-all hover:bg-stone-800 hover:border-stone-600 hover:text-stone-100"
             >
-              I Am a Chef
+              {PUBLIC_OPERATOR_ENTRY.label}
             </Link>
           </div>
         </div>

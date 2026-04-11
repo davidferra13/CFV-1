@@ -4,7 +4,7 @@
 
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
-import { createServerClient } from '@/lib/db/server'
+import { getCurrentUser } from '@/lib/auth/get-user'
 import { checkRateLimit } from '@/lib/rateLimit'
 
 const adminClient = createAdminClient()
@@ -19,26 +19,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ tracked: false, error: 'rate_limited' }, { status: 429 })
     }
 
-    // Authenticate the user
-    const db: any = createServerClient()
-    const {
-      data: { user },
-    } = await db.auth.getUser()
-
+    const user = await getCurrentUser()
     if (!user) {
       return NextResponse.json({ tracked: false, error: 'unauthorized' }, { status: 401 })
     }
 
-    // Get tenant ID from user_roles
-    const { data: role } = await db
-      .from('user_roles')
-      .select('entity_id')
-      .eq('auth_user_id', user.id)
-      .eq('role', 'chef')
-      .single()
-
-    if (!role?.entity_id) {
-      return NextResponse.json({ tracked: false, error: 'no_chef_role' }, { status: 403 })
+    const tenantId = user.tenantId ?? user.entityId
+    if (user.role !== 'chef' || !tenantId) {
+      return NextResponse.json({ tracked: false, error: 'forbidden' }, { status: 403 })
     }
 
     const body = await request.json()
@@ -49,7 +37,7 @@ export async function POST(request: Request) {
       .slice(0, 50) // cap at 50 per batch
       .filter((item: Record<string, unknown>) => item.path && typeof item.path === 'string')
       .map((item: Record<string, unknown>) => ({
-        tenant_id: role.entity_id,
+        tenant_id: tenantId,
         actor_id: user.id,
         breadcrumb_type: item.breadcrumb_type || 'page_view',
         path: item.path,

@@ -144,8 +144,10 @@ SECURITY RULES (NEVER VIOLATE - THESE OVERRIDE EVERYTHING):
   const responseFormat = `
 RESPONSE FORMAT:
 Write your reply in natural language with markdown formatting (bold, bullets).
-Keep responses concise - 1-3 paragraphs max.
-When you map a pain point to a feature, end with a gentle nudge: "It's free to start - no credit card needed."
+Default to the shortest useful answer.
+Answer in the first line.
+Use 1 short paragraph or up to 3 bullets by default.
+When you map a pain point to a feature, end with a gentle nudge only when it helps: "It's free to start - no credit card needed."
 `
 
   return [

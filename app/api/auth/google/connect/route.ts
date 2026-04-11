@@ -5,6 +5,7 @@ import {
   buildGoogleConnectAuthorizeUrl,
   GOOGLE_OAUTH_CSRF_COOKIE,
   resolveGoogleConnectOrigin,
+  resolveGoogleConnectRequestOrigin,
 } from '@/lib/google/connect-server'
 import {
   buildGoogleConnectResultPath,
@@ -13,7 +14,18 @@ import {
 
 export async function GET(request: NextRequest) {
   const returnTo = sanitizeGoogleConnectReturnTo(request.nextUrl.searchParams.get('returnTo'))
-  const redirectBase = request.nextUrl.origin
+  const requestOrigin = resolveGoogleConnectRequestOrigin({
+    requestOrigin: request.nextUrl.origin,
+    forwardedProto: request.headers.get('x-forwarded-proto'),
+    forwardedHost: request.headers.get('x-forwarded-host'),
+    host: request.headers.get('host'),
+  })
+  const redirectBase = resolveGoogleConnectOrigin({
+    siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
+    appUrl: process.env.NEXT_PUBLIC_APP_URL,
+    requestOrigin,
+    nodeEnv: process.env.NODE_ENV,
+  })
 
   try {
     const user = await requireChef()
@@ -49,7 +61,8 @@ export async function GET(request: NextRequest) {
     const csrfToken = randomBytes(32).toString('hex')
     const callbackOrigin = resolveGoogleConnectOrigin({
       siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
-      requestOrigin: request.nextUrl.origin,
+      appUrl: process.env.NEXT_PUBLIC_APP_URL,
+      requestOrigin,
       nodeEnv: process.env.NODE_ENV,
     })
 

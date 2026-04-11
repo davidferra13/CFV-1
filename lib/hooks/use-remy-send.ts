@@ -47,6 +47,7 @@ import type {
   NavigationSuggestion,
 } from '@/lib/ai/remy-types'
 import type { RemyConversation } from './use-conversation-management'
+import { persistConversationSummary } from '@/lib/ai/mempalace-persist'
 
 function generateId(): string {
   try {
@@ -570,6 +571,14 @@ export function useRemySend(config: UseRemySendConfig) {
           try {
             const summary = generateConversationSummary(updatedMessages)
             saveSummary(currentConversationId, summary)
+            // Persist to MemPalace for cross-conversation context (non-blocking)
+            persistConversationSummary({
+              conversationId: currentConversationId,
+              summary: summary.summary,
+              topics: summary.topics,
+              entities: summary.entities,
+              messageCount: summary.messageCount,
+            }).catch(() => {})
           } catch {
             // Non-blocking - summary generation is supplemental
           }

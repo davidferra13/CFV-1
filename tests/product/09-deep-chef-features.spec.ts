@@ -285,8 +285,6 @@ test.describe('Deep — Settings', () => {
       '/settings/integrations',
       '/settings/embed',
       '/settings/calendar-sync',
-      '/settings/api-keys',
-      '/settings/webhooks',
       '/settings/templates',
       '/settings/event-types',
       '/settings/emergency',

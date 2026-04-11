@@ -7,6 +7,17 @@ import { CatalogBrowser } from './catalog-browser'
 
 export const metadata = { title: 'Food Catalog' }
 
+type CatalogStatsResult = Awaited<ReturnType<typeof getCatalogStats>>
+type StoreStatsResult = Awaited<ReturnType<typeof getStoreCatalogStats>>
+type RefreshStatusResult = Awaited<ReturnType<typeof getOpenClawRefreshStatus>>
+
+async function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ])
+}
+
 function StatCard({
   label,
   value,
@@ -38,14 +49,51 @@ function StatCard({
 export default async function FoodCatalogPage() {
   await requireChef()
 
+  const defaultCatalogStats: CatalogStatsResult = { total: 0, priced: 0, categories: [] }
+  const defaultStoreStats: StoreStatsResult = {
+    chains: 0,
+    stores: 0,
+    products: 0,
+    foodProducts: 0,
+    prices: 0,
+    ingredients: 0,
+    normMappings: 0,
+    usdaBaselines: 0,
+    freshPrices: 0,
+    categories: 0,
+    lastSync: null,
+    chainsWithData: [],
+  }
+  const defaultRefreshStatus: RefreshStatusResult = {
+    localSyncStartedAt: null,
+    localSyncFinishedAt: null,
+    latestStoreCatalogedAt: null,
+    latestStorePriceSeenAt: null,
+    piLastScrapeAt: null,
+    piReachable: false,
+  }
+
   const [catalogStats, storeStats, refreshStatus] = await Promise.all([
-    getCatalogStats(),
-    getStoreCatalogStats(),
-    getOpenClawRefreshStatus(),
+    withTimeout(
+      getCatalogStats().catch(() => defaultCatalogStats),
+      30000,
+      defaultCatalogStats
+    ),
+    withTimeout(
+      getStoreCatalogStats().catch(() => defaultStoreStats),
+      30000,
+      defaultStoreStats
+    ),
+    withTimeout(
+      getOpenClawRefreshStatus().catch(() => defaultRefreshStatus),
+      15000,
+      defaultRefreshStatus
+    ),
   ])
 
   const freshPct =
     storeStats.prices > 0 ? Math.round((storeStats.freshPrices / storeStats.prices) * 100) : 0
+  const statsLoaded = catalogStats.total > 0 || storeStats.stores > 0
 
   return (
     <div className="space-y-6">
@@ -56,6 +104,13 @@ export default async function FoodCatalogPage() {
           reads stay on the machine running the site instead of reaching upstream at request time.
         </p>
       </div>
+
+      {!statsLoaded && (
+        <div className="rounded-lg border border-amber-800 bg-amber-950/40 px-4 py-3 text-sm text-amber-400">
+          Stats are still loading. Refresh in a moment to see totals. The catalog browser below is
+          fully functional.
+        </div>
+      )}
 
       <div className="flex flex-wrap gap-3">
         <StatCard

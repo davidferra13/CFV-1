@@ -28,7 +28,7 @@ async function isOptedOut(email: string): Promise<boolean> {
 
 function buildOptOutUrl(email: string): string {
   const token = Buffer.from(email.toLowerCase()).toString('base64url')
-  return `${SITE_URL}/discover/unsubscribe?t=${token}`
+  return `${SITE_URL}/nearby/unsubscribe?t=${token}`
 }
 
 // ─── Logging ──────────────────────────────────────────────────────────────────
@@ -125,7 +125,7 @@ export async function sendDirectoryClaimedEmail(params: {
 
   const subject = `You claimed ${businessName} on ChefFlow`
   const optOutUrl = buildOptOutUrl(recipientEmail)
-  const enhanceUrl = `${SITE_URL}/discover/${slug}/enhance`
+  const enhanceUrl = `${SITE_URL}/nearby/${slug}/enhance`
 
   try {
     const success = await sendEmail({

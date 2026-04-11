@@ -92,7 +92,7 @@ Rules:
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'llava',
+        model: 'qwen2.5vl',
         prompt,
         images: [imageBase64],
         stream: false,

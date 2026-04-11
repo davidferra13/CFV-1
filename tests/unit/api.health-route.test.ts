@@ -4,7 +4,7 @@ import { NextRequest } from 'next/server'
 import { breakers } from '../../lib/resilience/circuit-breaker'
 import { GET, HEAD } from '../../app/api/health/route'
 
-const REQUIRED_ENV_KEYS = ['NEXT_PUBLIC_DB_URL', 'NEXT_PUBLIC_DB_ANON_KEY'] as const
+const REQUIRED_ENV_KEYS = ['DATABASE_URL'] as const
 
 function withEnv(
   values: Partial<Record<(typeof REQUIRED_ENV_KEYS)[number], string>>,
@@ -40,8 +40,7 @@ function withEnv(
 test('GET /api/health returns checks and request id when required env is present', async () => {
   await withEnv(
     {
-      NEXT_PUBLIC_DB_URL: 'https://example.db.co',
-      NEXT_PUBLIC_DB_ANON_KEY: 'anon-key',
+      DATABASE_URL: 'postgresql://user:pass@example.com:5432/postgres',
     },
     async () => {
       const response = await GET(new NextRequest('http://localhost/api/health'))
@@ -62,8 +61,7 @@ test('GET /api/health returns checks and request id when required env is present
 test('GET /api/health?strict=1 returns 503 when required env is missing', async () => {
   await withEnv(
     {
-      NEXT_PUBLIC_DB_URL: undefined,
-      NEXT_PUBLIC_DB_ANON_KEY: undefined,
+      DATABASE_URL: undefined,
     },
     async () => {
       const response = await GET(new NextRequest('http://localhost/api/health?strict=1'))
@@ -80,8 +78,7 @@ test('GET /api/health?strict=1 returns 503 when required env is missing', async 
 test('HEAD /api/health mirrors strict degraded status and headers', async () => {
   await withEnv(
     {
-      NEXT_PUBLIC_DB_URL: undefined,
-      NEXT_PUBLIC_DB_ANON_KEY: undefined,
+      DATABASE_URL: undefined,
     },
     async () => {
       const response = await HEAD(new NextRequest('http://localhost/api/health?strict=1'))

@@ -664,28 +664,6 @@ export default async function ChefProfilePage({ params }: Props) {
                 </p>
               )}
           </div>
-
-          <div className="mt-6 flex items-center justify-center gap-4 text-sm">
-            <TrackedLink
-              href="/auth/client-signup"
-              analyticsName="public_profile_client_account"
-              analyticsProps={{ chef_slug: publicSlug }}
-              className="font-medium hover:opacity-80"
-              style={{ color: primaryColor }}
-            >
-              Client account
-            </TrackedLink>
-            <span className="text-stone-300">&middot;</span>
-            <TrackedLink
-              href={`/chef/${publicSlug}/partner-signup`}
-              analyticsName="public_profile_partner_signup"
-              analyticsProps={{ chef_slug: publicSlug }}
-              className="font-medium hover:opacity-80"
-              style={{ color: primaryColor }}
-            >
-              Partner signup
-            </TrackedLink>
-          </div>
         </div>
       </section>
     </div>

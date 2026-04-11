@@ -1,9 +1,8 @@
 import { NextRequest } from 'next/server'
 import { subscribe, getPresenceState } from '@/lib/realtime/sse-server'
 import { auth } from '@/lib/auth'
-import { db } from '@/lib/db'
-import { events, conversations } from '@/lib/db/schema/schema'
-import { eq, and } from 'drizzle-orm'
+import { hasPersistedAdminAccessForAuthUser } from '@/lib/auth/admin-access'
+import { validateRealtimeChannelAccess } from '@/lib/realtime/channel-access'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -12,59 +11,19 @@ export const runtime = 'nodejs'
  * Validate that the authenticated user owns or has access to the requested channel.
  *
  * Channel naming convention:
- *   notifications:{tenantId}  - chef's notification feed
- *   activity:{tenantId}       - chef's activity feed
- *   events:{eventId}          - event status updates (verified via tenant_id on events table)
- *   chat:{conversationId}     - chat messages (verified via tenant_id on conversations table)
- *   presence:{innerChannel}   - presence tracking (validates the inner channel recursively)
+ *   notifications:{userId}        - recipient-scoped notification feed
+ *   activity:{tenantId}           - tenant-scoped activity feed
+ *   activity_events:{tenantId}    - legacy tenant-scoped activity alias
+ *   conversations:{tenantId}      - tenant-scoped inbox ordering updates
+ *   events:{eventId}              - event status updates (verified by tenant ownership)
+ *   chat:{conversationId}         - conversation updates (verified by tenant ownership)
+ *   chat_messages:{conversationId}- legacy conversation alias
+ *   typing:{innerChannel}         - typing indicators (validates the inner channel recursively)
+ *   presence:{innerChannel}       - presence tracking (validates the inner channel recursively)
+ *   presence:site                 - admin-only sitewide presence stream
  *
  * Security: fails closed. Unknown prefixes are denied. substring matching is not used.
  */
-async function validateChannelAccess(channel: string, tenantId: string | null): Promise<boolean> {
-  const colonIdx = channel.indexOf(':')
-  if (colonIdx === -1) return false
-  const prefix = channel.substring(0, colonIdx)
-  const id = channel.substring(colonIdx + 1)
-  if (!id) return false
-
-  switch (prefix) {
-    case 'notifications':
-    case 'activity':
-      // Tenant-scoped channels: ID must exactly match the user's tenant
-      return !!tenantId && id === tenantId
-
-    case 'events': {
-      // Event channels: verify the event belongs to this tenant
-      if (!tenantId) return false
-      const [event] = await db
-        .select({ id: events.id })
-        .from(events)
-        .where(and(eq(events.id, id), eq(events.tenantId, tenantId)))
-        .limit(1)
-      return !!event
-    }
-
-    case 'chat': {
-      // Chat channels: verify the conversation belongs to this tenant
-      if (!tenantId) return false
-      const [convo] = await db
-        .select({ id: conversations.id })
-        .from(conversations)
-        .where(and(eq(conversations.id, id), eq(conversations.tenantId, tenantId)))
-        .limit(1)
-      return !!convo
-    }
-
-    case 'presence':
-      // Presence channels wrap another channel (e.g., presence:chat:abc)
-      return validateChannelAccess(id, tenantId)
-
-    default:
-      // Unknown channel prefix: deny by default (fail closed)
-      return false
-  }
-}
-
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ channel: string }> }
@@ -78,8 +37,11 @@ export async function GET(
   const { channel } = await params
 
   // Verify the user has access to this specific channel (not just any channel)
-  const tenantId = session.user.tenantId ?? null
-  const allowed = await validateChannelAccess(channel, tenantId)
+  const allowed = await validateRealtimeChannelAccess(channel, {
+    isAdmin: await hasPersistedAdminAccessForAuthUser(session.user.id),
+    tenantId: session.user.tenantId ?? null,
+    userId: session.user.id,
+  })
   if (!allowed) {
     return new Response('Forbidden', { status: 403 })
   }

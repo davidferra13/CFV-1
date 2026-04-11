@@ -14,6 +14,9 @@ export default function robots(): MetadataRoute.Robots {
           '/compare',
           '/compare/',
           '/faq',
+          '/how-it-works',
+          '/marketplace-chefs',
+          '/services',
           '/trust',
           '/trust/',
           '/contact',
@@ -22,8 +25,8 @@ export default function robots(): MetadataRoute.Robots {
           '/partner-signup',
           '/for-operators',
           '/about',
-          // '/nearby', // Hidden until data quality is production-ready
-          // '/nearby/',
+          '/nearby',
+          '/nearby/',
           '/book',
         ],
         disallow: [

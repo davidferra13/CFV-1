@@ -162,9 +162,9 @@ export async function handleDirectoryImagesSync(_data: unknown): Promise<Cartrid
     }
   }
 
-  // Step 3: Bust cache so /discover shows new images
+  // Step 3: Bust cache so /nearby shows new images
   try {
-    revalidatePath('/discover')
+    revalidatePath('/nearby')
   } catch {
     // Non-blocking
   }

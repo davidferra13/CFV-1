@@ -36,6 +36,7 @@ import { FeedbackForm } from '@/components/feedback/feedback-form'
 import { DesktopAppSettings } from '@/components/settings/desktop-app-settings'
 import Link from 'next/link'
 import { isAdmin } from '@/lib/auth/admin'
+import { CHEF_FEATURE_FLAGS, hasChefFeatureFlag } from '@/lib/features/chef-feature-flags'
 import { SettingsCategory } from '@/components/settings/settings-category'
 import { SettingsGuidedOverview } from '@/components/settings/settings-guided-overview'
 import { SettingsAdvancedDirectory } from '@/components/settings/settings-advanced-directory'
@@ -53,12 +54,12 @@ function SettingsGroupHeader({
   return (
     <div className={first ? '' : 'mt-10'}>
       <div className="flex items-center gap-3 mb-3">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-500 whitespace-nowrap">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-400 whitespace-nowrap">
           {label}
         </h3>
         <div className="flex-1 border-t border-stone-800" />
       </div>
-      {description && <p className="text-xs text-stone-600 -mt-1 mb-3">{description}</p>}
+      {description && <p className="text-xs text-stone-400 -mt-1 mb-3">{description}</p>}
     </div>
   )
 }
@@ -81,6 +82,7 @@ export default async function SettingsPage() {
     bookingSettings,
     demoDataExists,
     userIsAdmin,
+    developerToolsEnabled,
   ] = await Promise.all([
     getChefPreferences(),
     getGoogleConnection().catch((err) => {
@@ -103,13 +105,25 @@ export default async function SettingsPage() {
     getBookingSettings().catch(() => null),
     hasDemoData().catch(() => false),
     isAdmin().catch(() => false),
+    hasChefFeatureFlag(CHEF_FEATURE_FLAGS.developerTools).catch(() => false),
   ])
+  const systemAndAccountDescription = developerToolsEnabled
+    ? 'Developer tools, legal, and account management'
+    : 'Legal and account management'
 
   return (
     <div className="max-w-3xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-stone-100">Settings</h1>
-        <p className="text-stone-400 mt-1">Configure your defaults and account settings.</p>
+      <div className="mb-8 space-y-3">
+        <span className="inline-flex items-center rounded-full border border-brand-200/80 bg-brand-50/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-800 dark:border-brand-900/70 dark:bg-brand-950/60 dark:text-brand-200">
+          Settings control center
+        </span>
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold text-stone-100 sm:text-4xl">Settings</h1>
+          <p className="max-w-2xl text-sm text-stone-300 sm:text-base">
+            Common lanes are grouped up top. The full directory stays collapsed until you open it,
+            so repeat visits feel calmer and easier to scan.
+          </p>
+        </div>
       </div>
 
       {/* ═══════════════════════════════════════════════════════ */}
@@ -120,7 +134,11 @@ export default async function SettingsPage() {
       {/* ═══════════════════════════════════════════════════════ */}
       {/* ADVANCED SETTINGS DIRECTORY (collapsed by default)    */}
       {/* ═══════════════════════════════════════════════════════ */}
-      <SettingsAdvancedDirectory>
+      <SettingsAdvancedDirectory
+        title="Full settings directory"
+        description="Everything, grouped by business area, communication, AI, growth, and account management."
+        sectionCount={developerToolsEnabled ? 20 : 19}
+      >
         {/* ═══════════════════════════════════════════════════════ */}
         {/* GROUP A: YOUR BUSINESS                                 */}
         {/* ═══════════════════════════════════════════════════════ */}
@@ -136,7 +154,8 @@ export default async function SettingsPage() {
             description="Home base, stores, timing, operating procedures, revenue goals, and dashboard layout."
             icon="Building2"
             primary
-            defaultOpen
+            tone="brand"
+            summary={['Dashboard', 'Navigation', 'Store preferences']}
           >
             <div className="space-y-4">
               <BusinessModeToggle
@@ -201,6 +220,8 @@ export default async function SettingsPage() {
             description="Toggle what you offer, your policies, and how Remy communicates with clients on your behalf."
             icon="Settings2"
             primary
+            tone="brand"
+            summary={['Offerings', 'Policies', 'Remy guidance']}
           >
             <Link
               href="/settings/my-services"
@@ -221,6 +242,8 @@ export default async function SettingsPage() {
             description="Manage your core business profile, brand logo, public profile presentation, and portal background."
             icon="Palette"
             primary
+            tone="rose"
+            summary={['Logo', 'Public profile', 'Client preview']}
           >
             <div className="space-y-4">
               <BrandingCard
@@ -296,6 +319,8 @@ export default async function SettingsPage() {
             description="Set hard blocks, event limits, and buffer time so ChefFlow warns you before double-booking."
             icon="CalendarClock"
             primary
+            tone="sky"
+            summary={['Hard blocks', 'Buffers', 'Capacity']}
           >
             <SchedulingRulesForm initialRules={schedulingRules} />
           </SettingsCategory>
@@ -306,6 +331,8 @@ export default async function SettingsPage() {
             description="Share a link clients can use to check your availability and submit a booking request."
             icon="CalendarCheck"
             primary
+            tone="sky"
+            summary={['Booking link', 'Lead intake', 'Deposits']}
           >
             <BookingPageSettings
               initialSettings={
@@ -333,6 +360,7 @@ export default async function SettingsPage() {
             description="Customize event types, labels, and add extra fields to capture your business-specific data."
             icon="Settings2"
             primary
+            tone="brand"
           >
             <div className="space-y-3">
               <Link
@@ -362,6 +390,7 @@ export default async function SettingsPage() {
             title="Print & Documents"
             description="Control attribution, paper format, and footer text on all printed documents and PDFs."
             icon="Printer"
+            tone="slate"
           >
             <Link
               href="/settings/print"
@@ -381,6 +410,8 @@ export default async function SettingsPage() {
             description="Stripe payouts, support contributions, and feature module toggles."
             icon="CreditCard"
             primary
+            tone="emerald"
+            summary={['Stripe payouts', 'Modules', 'Wallets']}
           >
             <div className="space-y-3">
               <Link
@@ -440,6 +471,8 @@ export default async function SettingsPage() {
             description="Manage messaging templates, automations, and your creative planning systems."
             icon="MessageSquare"
             primary
+            tone="sky"
+            summary={['Templates', 'Automations', 'Journal']}
           >
             <div className="space-y-3">
               <Link
@@ -501,6 +534,8 @@ export default async function SettingsPage() {
             description="Control email, browser push, and SMS alerts by category."
             icon="Bell"
             primary
+            tone="amber"
+            summary={['Email', 'Browser push', 'SMS']}
           >
             <Link
               href="/settings/notifications"
@@ -528,6 +563,8 @@ export default async function SettingsPage() {
             title="Connected Accounts & Integrations"
             description="Connect inbox and website channels, then manage system integrations."
             icon="Plug"
+            tone="emerald"
+            summary={['Google + Wix', 'Calendar sync', 'Business tools']}
           >
             <div className="space-y-6">
               <div>
@@ -576,16 +613,18 @@ export default async function SettingsPage() {
                       Outlook, or Google Calendar.
                     </p>
                   </Link>
-                  <Link
-                    href="/settings/zapier"
-                    className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
-                  >
-                    <p className="font-medium text-stone-100">Zapier & Webhooks</p>
-                    <p className="text-sm text-stone-500 mt-1">
-                      Connect ChefFlow to 5,000+ apps via Zapier or Make. Manage webhook
-                      subscriptions and delivery logs.
-                    </p>
-                  </Link>
+                  {developerToolsEnabled && (
+                    <Link
+                      href="/settings/zapier"
+                      className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+                    >
+                      <p className="font-medium text-stone-100">Zapier & Webhooks</p>
+                      <p className="text-sm text-stone-500 mt-1">
+                        Connect ChefFlow to 5,000+ apps via Zapier or Make. Manage webhook
+                        subscriptions and delivery logs.
+                      </p>
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>
@@ -596,6 +635,8 @@ export default async function SettingsPage() {
             title="AI & Privacy"
             description="Control Remy, understand how your data is handled, and manage AI features."
             icon="Brain"
+            tone="emerald"
+            summary={['Trust center', 'Culinary profile', 'Remy controls']}
           >
             <div className="space-y-3">
               <Link
@@ -634,6 +675,7 @@ export default async function SettingsPage() {
             title="Client Reviews"
             description="Configure your review link and review collection flow."
             icon="Star"
+            tone="rose"
           >
             <div className="space-y-3">
               <GoogleReviewUrlForm currentUrl={googleReviewUrl} />
@@ -672,6 +714,7 @@ export default async function SettingsPage() {
             title="Appearance"
             description="Customize how ChefFlow looks - theme and color mode."
             icon="Sun"
+            tone="rose"
           >
             <Link
               href="/settings/appearance"
@@ -687,6 +730,8 @@ export default async function SettingsPage() {
             title="Professional Growth"
             description="Track achievements, skills, career momentum, portfolio, and profile highlights."
             icon="TrendingUp"
+            tone="rose"
+            summary={['Highlights', 'Portfolio', 'Credentials']}
           >
             <div className="space-y-3">
               <Link
@@ -753,6 +798,7 @@ export default async function SettingsPage() {
             title="Chef Network"
             description="Control network visibility and your chef directory profile."
             icon="Users"
+            tone="sky"
           >
             <div className="space-y-3">
               <DiscoverabilityToggle currentValue={networkDiscoverable} />
@@ -772,16 +818,15 @@ export default async function SettingsPage() {
         {/* ═══════════════════════════════════════════════════════ */}
         {/* GROUP E: SYSTEM & ACCOUNT                               */}
         {/* ═══════════════════════════════════════════════════════ */}
-        <SettingsGroupHeader
-          label="System & Account"
-          description="Developer tools, legal, and account management"
-        />
+        <SettingsGroupHeader label="System & Account" description={systemAndAccountDescription} />
         <div className="space-y-3">
           {/* ── 15. Legal & Protection ───────────────────────────── */}
           <SettingsCategory
             title="Legal & Protection"
             description="Insurance, certifications, contracts, compliance, emergency contacts, and crisis planning."
             icon="ShieldCheck"
+            tone="amber"
+            summary={['Protection hub', 'Contracts', 'Compliance']}
           >
             <div className="space-y-3">
               <Link
@@ -839,6 +884,7 @@ export default async function SettingsPage() {
             title="Sample Data & Tour"
             description="Load sample data to explore ChefFlow, or replay the guided product tour."
             icon="Database"
+            tone="slate"
           >
             <div className="space-y-4">
               <DemoDataManager hasDemoData={demoDataExists} />
@@ -849,38 +895,42 @@ export default async function SettingsPage() {
           </SettingsCategory>
 
           {/* ── 17. API & Developer ──────────────────────────────── */}
-          <SettingsCategory
-            title="API & Developer"
-            description="API keys and webhooks for integrating ChefFlow with external tools."
-            icon="Code"
-          >
-            <div className="space-y-3">
-              <Link
-                href="/settings/api-keys"
-                className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
-              >
-                <p className="font-medium text-stone-100">API Keys</p>
-                <p className="text-sm text-stone-500 mt-1">
-                  Create API keys to integrate ChefFlow with other tools and services.
-                </p>
-              </Link>
-              <Link
-                href="/settings/webhooks"
-                className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
-              >
-                <p className="font-medium text-stone-100">Webhooks</p>
-                <p className="text-sm text-stone-500 mt-1">
-                  Send real-time data to external services when events occur in ChefFlow.
-                </p>
-              </Link>
-            </div>
-          </SettingsCategory>
+          {developerToolsEnabled && (
+            <SettingsCategory
+              title="API & Developer"
+              description="API keys and webhooks for integrating ChefFlow with external tools."
+              icon="Code"
+              tone="slate"
+            >
+              <div className="space-y-3">
+                <Link
+                  href="/settings/api-keys"
+                  className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+                >
+                  <p className="font-medium text-stone-100">API Keys</p>
+                  <p className="text-sm text-stone-500 mt-1">
+                    Create API keys to integrate ChefFlow with other tools and services.
+                  </p>
+                </Link>
+                <Link
+                  href="/settings/webhooks"
+                  className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+                >
+                  <p className="font-medium text-stone-100">Webhooks</p>
+                  <p className="text-sm text-stone-500 mt-1">
+                    Send real-time data to external services when events occur in ChefFlow.
+                  </p>
+                </Link>
+              </div>
+            </SettingsCategory>
+          )}
 
           {/* ── 18. Desktop App ──────────────────────────────────── */}
           <SettingsCategory
             title="Desktop App"
             description="System tray, auto-start, and native desktop notifications for the ChefFlow desktop app."
             icon="Monitor"
+            tone="slate"
           >
             <DesktopAppSettings />
           </SettingsCategory>
@@ -890,6 +940,7 @@ export default async function SettingsPage() {
             title="Share Feedback"
             description="Tell us what you love, what frustrates you, or anything in between. We read every submission."
             icon="MessageCircle"
+            tone="brand"
           >
             <FeedbackForm pageContext="/settings" />
           </SettingsCategory>
@@ -899,6 +950,8 @@ export default async function SettingsPage() {
             title="Account & Security"
             description="Email, password, devices, and account management."
             icon="Lock"
+            tone="slate"
+            summary={['Account settings', 'System health', 'Incidents']}
           >
             <div className="space-y-3">
               <Link

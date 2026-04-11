@@ -20,6 +20,8 @@ export type AuditActionType =
   | 'admin_cleared_announcement'
   | 'admin_toggled_flag'
   | 'admin_bulk_flag'
+  | 'developer_tools_enabled'
+  | 'developer_tools_disabled'
   | 'cannabis_tier_granted'
   | 'cannabis_tier_revoked'
   | 'cannabis_invite_approved'

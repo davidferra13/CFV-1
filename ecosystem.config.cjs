@@ -6,7 +6,7 @@ module.exports = {
     name: 'chefflow-beta',
     cwd: '/home/davidferra/apps/chefflow-beta',
     script: 'node_modules/.bin/next',
-    args: 'start -p 3100',
+    args: 'start -p 3200',
 
     // Memory limits — Pi has 8GB total, need headroom for OS + cloudflared
     node_args: '--max-old-space-size=1536',   // 1.5GB heap max
@@ -31,7 +31,7 @@ module.exports = {
     // Environment
     env: {
       NODE_ENV: 'production',
-      PORT: 3100,
+      PORT: 3200,
       NODE_OPTIONS: '--max-old-space-size=1536',
     },
   }],

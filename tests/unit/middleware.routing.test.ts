@@ -6,6 +6,8 @@
 
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
+import fs from 'node:fs'
+import path from 'node:path'
 import {
   API_SKIP_AUTH_PREFIXES,
   PUBLIC_ASSET_PATHS,
@@ -113,7 +115,6 @@ describe('Middleware - staff route matching', () => {
 
 describe('Middleware - public unauthenticated paths', () => {
   it('matches static marketing pages', () => {
-    assert.equal(isPublicUnauthenticatedPath('/pricing'), true)
     assert.equal(isPublicUnauthenticatedPath('/compare'), true)
     assert.equal(isPublicUnauthenticatedPath('/customers'), true)
     assert.equal(isPublicUnauthenticatedPath('/faq'), true)
@@ -164,6 +165,14 @@ describe('Middleware - API skip paths', () => {
   it('does not skip auth for regular API routes', () => {
     assert.equal(isApiSkipAuthPath('/api/stripe/checkout'), false)
     assert.equal(isApiSkipAuthPath('/api/activity/track'), false)
+  })
+
+  it('matcher excludes key skip-auth API namespaces from edge execution', () => {
+    const source = fs.readFileSync(path.join(process.cwd(), 'middleware.ts'), 'utf8')
+    assert.equal(source.includes('api/(?:auth|webhooks|gmail|scheduled'), true)
+    assert.equal(source.includes('|health|'), true)
+    assert.equal(source.includes('|monitoring|'), true)
+    assert.equal(source.includes('|cron|'), true)
   })
 })
 

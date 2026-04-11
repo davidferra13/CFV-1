@@ -5,6 +5,7 @@
 // These run in the public route context - no auth required to VIEW the page,
 // but the user must sign in/have an account before claiming the invite.
 
+import { revalidateTag } from 'next/cache'
 import { createServerClient } from '@/lib/db/server'
 import { createAdminClient } from '@/lib/db/admin'
 
@@ -136,6 +137,9 @@ export async function claimCannabisInvite(token: string) {
   if (grantError) {
     return { success: false, error: 'Failed to activate cannabis tier. Please contact support.' }
   }
+
+  // Bust the layout cache so the user sees their new access immediately
+  revalidateTag(`cannabis-access-${user.id}`)
 
   return { success: true }
 }

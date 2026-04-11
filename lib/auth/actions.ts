@@ -13,7 +13,7 @@ import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
 import { nextAuthSignIn, nextAuthSignOut, auth } from '@/lib/auth'
 import { log } from '@/lib/logger'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -24,6 +24,11 @@ import { sendEmail } from '@/lib/email/send'
 import { BetaAccountReadyEmail } from '@/lib/email/templates/beta-account-ready'
 import { PasswordResetEmail } from '@/lib/email/templates/password-reset'
 import { seedDefaultBudgetQualificationAutomations } from '@/lib/automations/seed'
+import { resolveAuthCookieOptions } from '@/lib/auth/request-origin'
+import { recordPlatformEvent } from '@/lib/platform-observability/events'
+import { extractRequestMetadata } from '@/lib/platform-observability/context'
+import { appendAccountSecurityControlEvent } from './account-access'
+import { requireAccessSessionSubject } from './access-session'
 
 const ChefSignupSchema = z.object({
   email: z.string().email('Valid email required'),
@@ -121,6 +126,37 @@ async function sendBetaActivationEmail(email: string, name: string): Promise<voi
   }
 }
 
+async function recordAccountCreatedEvent(input: {
+  role: 'chef' | 'client'
+  entityId: string
+  authUserId: string
+  email: string
+  displayName: string
+  tenantId?: string | null
+  source: string
+  metadata?: Record<string, unknown>
+  requestHeaders?: { get(name: string): string | null } | null
+}): Promise<void> {
+  const eventKey = input.role === 'chef' ? 'account.chef_signed_up' : 'account.client_signed_up'
+
+  await recordPlatformEvent({
+    eventKey,
+    source: input.source,
+    actorType: input.role,
+    actorId: input.entityId,
+    authUserId: input.authUserId,
+    tenantId: input.tenantId ?? (input.role === 'chef' ? input.entityId : null),
+    subjectType: input.role,
+    subjectId: input.entityId,
+    summary: `${input.displayName} created a ${input.role} account`,
+    metadata: {
+      ...extractRequestMetadata(input.requestHeaders),
+      email: input.email,
+      ...input.metadata,
+    },
+  })
+}
+
 /**
  * Chef signup - Creates chef account with tenant.
  * Creates auth.users record directly via Drizzle + bcrypt hash.
@@ -128,6 +164,7 @@ async function sendBetaActivationEmail(email: string, name: string): Promise<voi
 export async function signUpChef(input: ChefSignupInput) {
   const validated = ChefSignupSchema.parse(input)
   const email = normalizeEmail(validated.email)
+  const requestHeaders = await headers()
   await checkRateLimit(email)
 
   // Check if email already exists in auth.users
@@ -232,6 +269,21 @@ export async function signUpChef(input: ChefSignupInput) {
       await sendBetaActivationEmail(email, businessName)
     }
 
+    await recordAccountCreatedEvent({
+      role: 'chef',
+      entityId: chef.id,
+      authUserId,
+      email,
+      displayName: businessName,
+      source: isBetaSignup ? 'beta_signup' : 'auth_credentials',
+      requestHeaders,
+      metadata: {
+        signup_ref: validated.signup_ref?.trim() || null,
+        is_beta_signup: isBetaSignup,
+        trial_days: trialDays,
+      },
+    })
+
     return { success: true, userId: authUserId }
   } catch (error) {
     // Ensure cleanup of auth user on any failure
@@ -251,6 +303,7 @@ export async function signUpChef(input: ChefSignupInput) {
 export async function signUpClient(input: ClientSignupInput) {
   const validated = ClientSignupSchema.parse(input)
   const email = normalizeEmail(validated.email)
+  const requestHeaders = await headers()
   await checkRateLimit(email)
 
   let tenantId: string | null = null
@@ -377,6 +430,21 @@ export async function signUpClient(input: ClientSignupInput) {
       }
     }
 
+    await recordAccountCreatedEvent({
+      role: 'client',
+      entityId: client.id,
+      authUserId,
+      email,
+      displayName: client.fullName,
+      tenantId,
+      source: invitationId ? 'client_invitation' : 'auth_credentials',
+      requestHeaders,
+      metadata: {
+        invitation_id: invitationId,
+        tenant_id: tenantId,
+      },
+    })
+
     return { success: true, userId: authUserId }
   } catch (error) {
     await db
@@ -395,6 +463,7 @@ export async function signUpClient(input: ClientSignupInput) {
 export async function signIn(input: SignInInput) {
   const validated = SignInSchema.parse(input)
   const email = validated.email.trim().toLowerCase()
+  const requestHeaders = headers()
   const isSyntheticTestAccount = email.endsWith('@chefflow.test')
   const bypassRateLimitForE2E =
     process.env.DISABLE_AUTH_RATE_LIMIT_FOR_E2E === 'true' && isSyntheticTestAccount
@@ -407,6 +476,19 @@ export async function signIn(input: SignInInput) {
     } catch (error) {
       const message = String((error as any)?.message || '').toLowerCase()
       if (message.includes('too many attempts')) {
+        await recordPlatformEvent({
+          eventKey: 'auth.sign_in_rate_limited',
+          source: 'auth',
+          actorType: 'anonymous',
+          subjectType: 'email',
+          subjectId: email,
+          summary: `Rate-limited sign-in attempt for ${email}`,
+          metadata: {
+            ...extractRequestMetadata(requestHeaders),
+            email,
+          },
+          alertDedupeKey: `signin-rate-limit:${email}`,
+        })
         throw error
       }
       log.auth.error('Rate limit check failed', { error, context: { email } })
@@ -436,6 +518,11 @@ export async function signIn(input: SignInInput) {
   }
 
   const cookieStore = cookies()
+  const { useSecureCookies } = resolveAuthCookieOptions({
+    forwardedProto: requestHeaders.get('x-forwarded-proto'),
+    forwardedHost: requestHeaders.get('x-forwarded-host'),
+    host: requestHeaders.get('host'),
+  })
 
   // Clear stale role cache so middleware regenerates it
   cookieStore.delete('chefflow-role-cache')
@@ -445,7 +532,7 @@ export async function signIn(input: SignInInput) {
       path: '/',
       httpOnly: true,
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      secure: useSecureCookies,
     })
   } else {
     cookieStore.delete('chefflow-session-only')
@@ -593,6 +680,7 @@ export async function signOut() {
 export async function changePassword(currentPassword: string, newPassword: string) {
   const session = await auth()
   if (!session?.user?.id) throw new Error('Not authenticated')
+  const accessSubject = await requireAccessSessionSubject()
 
   // Rate limit: 5 attempts per hour per user to prevent brute-forcing current password
   await checkRateLimit(`change-password:${session.user.id}`, 5, 60 * 60 * 1000)
@@ -625,6 +713,16 @@ export async function changePassword(currentPassword: string, newPassword: strin
     })
     .where(eq(authUsers.id, session.user.id))
 
+  await appendAccountSecurityControlEvent({
+    authUserId: accessSubject.authUserId,
+    tenantId: accessSubject.tenantId,
+    type: 'password_changed',
+    reason: 'Password changed from Account & Security.',
+  })
+
+  revalidatePath('/settings/account')
+  revalidatePath('/account-security')
+
   return { success: true }
 }
 
@@ -642,6 +740,7 @@ const EmailChangeSchema = z.object({
 export async function requestEmailChange(newEmail: string) {
   const session = await auth()
   if (!session?.user?.id) throw new Error('Not authenticated')
+  const accessSubject = await requireAccessSessionSubject()
 
   const validated = EmailChangeSchema.parse({ email: newEmail })
   const normalizedNew = normalizeEmail(validated.email)
@@ -684,6 +783,13 @@ export async function requestEmailChange(newEmail: string) {
     })
     .where(eq(authUsers.id, session.user.id))
 
+  await appendAccountSecurityControlEvent({
+    authUserId: accessSubject.authUserId,
+    tenantId: accessSubject.tenantId,
+    type: 'email_change_requested',
+    reason: `Email change requested to ${normalizedNew}.`,
+  })
+
   // Send verification to the NEW email
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://app.cheflowhq.com'
   const confirmUrl = `${siteUrl}/auth/confirm-email-change?token=${token}`
@@ -711,6 +817,7 @@ export async function requestEmailChange(newEmail: string) {
 export async function confirmEmailChange(token: string) {
   const session = await auth()
   if (!session?.user?.id) throw new Error('Not authenticated')
+  const accessSubject = await requireAccessSessionSubject()
 
   const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
 
@@ -766,7 +873,16 @@ export async function confirmEmailChange(token: string) {
   // Update chefs.email
   await db.update(chefs).set({ email: newEmail }).where(eq(chefs.authUserId, session.user.id))
 
+  await appendAccountSecurityControlEvent({
+    authUserId: accessSubject.authUserId,
+    tenantId: accessSubject.tenantId,
+    type: 'email_changed',
+    reason: `Email changed to ${newEmail}.`,
+  })
+
   revalidatePath('/', 'layout')
+  revalidatePath('/settings/account')
+  revalidatePath('/account-security')
   return { success: true, email: newEmail }
 }
 
@@ -786,6 +902,7 @@ export async function deleteAccount(password: string, reason?: string) {
  */
 export async function assignRole(role: 'chef' | 'client', context?: { signup_ref?: string }) {
   const session = await auth()
+  const requestHeaders = await headers()
 
   if (!session?.user) {
     throw new Error('Not authenticated. Please sign in again.')
@@ -859,6 +976,21 @@ export async function assignRole(role: 'chef' | 'client', context?: { signup_ref
       if (isBetaSignup) {
         await sendBetaActivationEmail(email, businessName)
       }
+
+      await recordAccountCreatedEvent({
+        role: 'chef',
+        entityId: chef.id,
+        authUserId: userId,
+        email,
+        displayName: businessName,
+        source: 'oauth_role_assignment',
+        requestHeaders,
+        metadata: {
+          signup_ref: context?.signup_ref?.trim() || null,
+          is_beta_signup: isBetaSignup,
+          trial_days: trialDays,
+        },
+      })
     } else if (role === 'client') {
       const fullName = 'New Client'
 
@@ -877,6 +1009,16 @@ export async function assignRole(role: 'chef' | 'client', context?: { signup_ref
         authUserId: userId,
         role: 'client',
         entityId: client.id,
+      })
+
+      await recordAccountCreatedEvent({
+        role: 'client',
+        entityId: client.id,
+        authUserId: userId,
+        email: userEmail,
+        displayName: fullName,
+        source: 'oauth_role_assignment',
+        requestHeaders,
       })
     }
   } catch (error) {

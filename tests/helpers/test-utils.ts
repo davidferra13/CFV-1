@@ -24,7 +24,14 @@ export function generateValidPassword(): string {
 export const ROUTES = {
   // Public
   home: '/',
-  pricing: '/pricing',
+  book: '/book',
+  nearby: '/nearby',
+  howItWorks: '/how-it-works',
+  services: '/services',
+  about: '/about',
+  trust: '/trust',
+  forOperators: '/for-operators',
+  marketplaceChefs: '/marketplace-chefs',
   contact: '/contact',
   privacy: '/privacy',
   terms: '/terms',

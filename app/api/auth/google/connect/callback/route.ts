@@ -10,6 +10,7 @@ import {
   buildGoogleConnectCallbackUrl,
   GOOGLE_OAUTH_CSRF_COOKIE,
   resolveGoogleConnectOrigin,
+  resolveGoogleConnectRequestOrigin,
 } from '@/lib/google/connect-server'
 import {
   buildGoogleConnectResultPath,
@@ -21,6 +22,18 @@ const GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v2/userinfo'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl
+  const requestOrigin = resolveGoogleConnectRequestOrigin({
+    requestOrigin: request.nextUrl.origin,
+    forwardedProto: request.headers.get('x-forwarded-proto'),
+    forwardedHost: request.headers.get('x-forwarded-host'),
+    host: request.headers.get('host'),
+  })
+  const redirectBase = resolveGoogleConnectOrigin({
+    siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
+    appUrl: process.env.NEXT_PUBLIC_APP_URL,
+    requestOrigin,
+    nodeEnv: process.env.NODE_ENV,
+  })
   const code = searchParams.get('code')
   const stateParam = searchParams.get('state')
   const errorParam = searchParams.get('error')
@@ -46,7 +59,7 @@ export async function GET(request: NextRequest) {
           key: 'error',
           value: 'Google authorization was denied',
         }),
-        request.nextUrl.origin
+        redirectBase
       )
     )
   }
@@ -58,7 +71,7 @@ export async function GET(request: NextRequest) {
           key: 'error',
           value: 'Missing authorization code',
         }),
-        request.nextUrl.origin
+        redirectBase
       )
     )
   }
@@ -74,7 +87,7 @@ export async function GET(request: NextRequest) {
           key: 'error',
           value: 'Invalid state parameter',
         }),
-        request.nextUrl.origin
+        redirectBase
       )
     )
   }
@@ -92,7 +105,7 @@ export async function GET(request: NextRequest) {
           key: 'error',
           value: 'CSRF validation failed',
         }),
-        request.nextUrl.origin
+        redirectBase
       )
     )
   }
@@ -107,7 +120,7 @@ export async function GET(request: NextRequest) {
           key: 'error',
           value: 'Unauthorized: Chef account mismatch',
         }),
-        request.nextUrl.origin
+        redirectBase
       )
     )
   }
@@ -117,7 +130,8 @@ export async function GET(request: NextRequest) {
   const redirectUri = buildGoogleConnectCallbackUrl({
     callbackOrigin: resolveGoogleConnectOrigin({
       siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
-      requestOrigin: request.nextUrl.origin,
+      appUrl: process.env.NEXT_PUBLIC_APP_URL,
+      requestOrigin,
       nodeEnv: process.env.NODE_ENV,
     }),
   })
@@ -166,7 +180,7 @@ export async function GET(request: NextRequest) {
           key: 'error',
           value: userMessage,
         }),
-        request.nextUrl.origin
+        redirectBase
       )
     )
   }
@@ -234,7 +248,7 @@ export async function GET(request: NextRequest) {
           key: 'error',
           value: 'Failed to save Google connection',
         }),
-        request.nextUrl.origin
+        redirectBase
       )
     )
   }
@@ -247,7 +261,7 @@ export async function GET(request: NextRequest) {
         key: 'connected',
         value: service,
       }),
-      request.nextUrl.origin
+      redirectBase
     )
   )
   // Clear the CSRF cookie now that OAuth is complete

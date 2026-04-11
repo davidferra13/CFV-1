@@ -39,7 +39,7 @@ export default async function PartnerLayout({ children }: { children: React.Reac
       </main>
 
       <PartnerMobileNav />
-      <PresenceBeacon />
+      <PresenceBeacon userId={user.id} email={user.email} />
     </div>
   )
 }

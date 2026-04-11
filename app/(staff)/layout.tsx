@@ -41,7 +41,7 @@ export default async function StaffLayout({ children }: { children: React.ReactN
       <main id="main-content" className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <StaffTourWrapper>{children}</StaffTourWrapper>
       </main>
-      <PresenceBeacon />
+      <PresenceBeacon userId={user.id} email={user.email} />
     </div>
   )
 }

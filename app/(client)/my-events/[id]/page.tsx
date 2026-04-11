@@ -106,10 +106,8 @@ export default async function EventDetailPage({ params }: { params: { id: string
   ])
   const activeShare = shares.find((s: any) => s.is_active) || null
 
-  // Fetch circle token for confirmed+ events
-  const circleToken = ['confirmed', 'paid', 'in_progress', 'completed'].includes(event.status)
-    ? await getCircleTokenForEvent(params.id)
-    : null
+  // Dinner Circle is the canonical guest coordination surface once the event is live.
+  const circleToken = event.status !== 'cancelled' ? await getCircleTokenForEvent(params.id) : null
 
   // Fetch review data and photos for completed events
   let existingReview = null
@@ -157,14 +155,15 @@ export default async function EventDetailPage({ params }: { params: { id: string
       </div>
 
       {/* Dinner Circle nudge */}
-      {circleToken && ['confirmed', 'paid', 'in_progress', 'completed'].includes(event.status) && (
+      {circleToken && event.status !== 'cancelled' && (
         <div className="rounded-xl border border-stone-700 bg-stone-800/60 p-4 mb-6">
           <div className="flex items-center gap-3">
             <span className="text-xl">💬</span>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-stone-200">Your dinner circle is live</p>
               <p className="text-xs text-stone-400">
-                Chat with your chef and guests, share dietary needs, and follow along with prep.
+                Chat with your chef and guests, share dietary needs, and keep event coordination in
+                one place.
               </p>
             </div>
             <a

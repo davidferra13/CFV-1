@@ -9,6 +9,9 @@ const client = postgres(connectionString, {
   max: 10,
   idle_timeout: 20,
   connect_timeout: 10,
+  connection: {
+    statement_timeout: 30000, // 30s hard kill - prevents runaway queries from saturating the pool
+  },
 })
 
 export const db = drizzle(client)

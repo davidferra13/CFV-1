@@ -73,6 +73,7 @@ interface ListMessagesPageOptions {
 interface ListMessagesPageResult {
   messages: GmailMessageRef[]
   nextPageToken?: string
+  resultSizeEstimate?: number
 }
 
 export async function listMessagesPage(
@@ -101,6 +102,8 @@ export async function listMessagesPage(
   return {
     messages: data.messages || [],
     nextPageToken: data.nextPageToken,
+    resultSizeEstimate:
+      typeof data.resultSizeEstimate === 'number' ? data.resultSizeEstimate : undefined,
   }
 }
 

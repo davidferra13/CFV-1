@@ -88,6 +88,8 @@ Call `opus-advisor` via `Agent` tool with `subagent_type: "opus-advisor"` only w
 
 **Rule of thumb:** if you can solve it in under 3 tool calls without guessing, do not call Opus. If you are stuck, going in circles, or the decision has lasting consequences, call Opus and get one clear recommendation back.
 
+**Extended Thinking on Opus (use it):** When calling `opus-advisor` for architectural decisions, explicitly tell it to use extended thinking. Add this to your prompt: `"Think deeply and use extended thinking to work through this."` Extended thinking makes Opus reason step-by-step through complex tradeoffs before answering. It costs 5-10x more tokens per response but produces significantly better decisions on hard problems. Only enable it for Opus, never Sonnet or Haiku.
+
 ---
 
 **Switching models mid-session:** Use `/model sonnet` or `/model opus` in Claude Code. The default-on-start comes from `.claude/settings.json`.
@@ -472,6 +474,87 @@ These workflows are now available as `/slash-commands`. Type the command name to
 - **`/hallucination-scan`** - Zero Hallucination audit (optimistic updates, silent failures, stale cache, etc.)
 
 **End every session:** run `/close-session` or `/ship`. Work must be on GitHub before signing off.
+
+---
+
+## POWER TOOLS (Use These - They Are Paid For)
+
+### LSP - Code Intelligence (Use Before Grep for Navigation)
+
+The **LSP** tool gives you IDE-grade code intelligence without reading files manually. Use it instead of Grep when navigating code relationships.
+
+**When to use LSP instead of Grep/Read:**
+
+- "Where is this function defined?" - use `LSP go_to_definition`
+- "What calls this function?" - use `LSP find_references`
+- "What type is this variable?" - use `LSP hover`
+- "What symbols are in this file?" - use `LSP document_symbols`
+
+**When to still use Grep/Glob:** finding text patterns across many files, searching for strings, finding files by name. LSP is for code structure; Grep is for text search.
+
+**Rule:** when you need to navigate TO something in the codebase, try LSP first. It's faster and more precise than recursive Grep.
+
+---
+
+### Worktrees - Parallel Isolated Sessions
+
+The **EnterWorktree** / **ExitWorktree** tools create a temporary git worktree - an isolated copy of the repo on a new branch. Use this when you need to work on two things simultaneously without one interfering with the other.
+
+**When to use worktrees:**
+
+- A subagent needs to experiment with risky changes while you keep the main session clean
+- You want to prototype an approach before committing to it
+- You are doing a large refactor and want the main branch to stay green
+
+**How it works:** `EnterWorktree` creates a new git worktree at a temp path on a new branch. The agent works there. `ExitWorktree` cleans it up if nothing was committed, or returns the branch path if changes were made (so you can review and merge).
+
+**Parallel builds are forbidden** (see ANTI-LOOP RULE), but **parallel research and planning worktrees are fine.** Use worktrees when a subagent is doing exploration, not when it's writing production code.
+
+---
+
+### Agent Teams - Multiple Agents in One Session
+
+Agent Teams (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` - already enabled in settings.json) allow multiple named agents to collaborate in a single session. This is distinct from spawning subagents with `Agent` - teams can communicate bidirectionally via `SendMessage`.
+
+**How to use:** when spawning agents for parallel research tasks, use `SendMessage` to pass results between them instead of waiting for each to finish sequentially.
+
+**Current status:** experimental. If it causes unexpected behavior, remove the env var from `.claude/settings.json`.
+
+---
+
+### CronCreate - Scheduled Prompts Within a Session
+
+`CronCreate` schedules a prompt to run on a recurring interval within the current session. Use this for long-running monitoring tasks.
+
+**When to use:**
+
+- Poll a build status every 2 minutes while working on something else
+- Check a log file for errors every 30 seconds during a deployment
+- Remind yourself to run tests after a certain interval
+
+**How to use:** call `CronCreate` with an interval (e.g., `"*/2 * * * *"` for every 2 minutes) and a prompt string. Call `CronList` to see active crons. `CronDelete` cancels one.
+
+**For scheduled agents that run between sessions** (nightly digests, build checks), use the `/schedule` skill instead - it creates remote triggers that persist across sessions.
+
+---
+
+### Playwright MCP - Direct Browser Control (Computer Use)
+
+The Playwright MCP server is now configured in `.claude/mcp.json`. This gives Claude Code direct browser control without spawning a qa-tester subagent. Use it for quick UI verification tasks.
+
+**Available via MCP after restarting Claude Code.** You will see Playwright tools in your tool list (navigate, click, type, screenshot, etc.).
+
+**When to use Playwright MCP (not qa-tester):** single-step verification (does this page load?), quick screenshot, filling a form. For full test suites or multi-step flows, still use the `qa-tester` agent.
+
+---
+
+### GitHub MCP - Repository Operations
+
+The GitHub MCP server is now configured in `.claude/mcp.json`. It requires `GITHUB_PERSONAL_ACCESS_TOKEN` to be set in your system environment.
+
+**To activate:** set `GITHUB_PERSONAL_ACCESS_TOKEN` in your Windows environment variables (System Properties > Environment Variables), then restart Claude Code. You will see GitHub tools in your tool list (create issue, list PRs, get file contents, etc.).
+
+**When to use:** creating issues directly from bugs found during development, checking PR status, reading files from other branches without switching.
 
 ---
 

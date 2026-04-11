@@ -137,8 +137,6 @@ test.describe('Settings — Other Pages', () => {
 
 test.describe('Settings — Advanced', () => {
   const routes = [
-    '/settings/api-keys',
-    '/settings/webhooks',
     '/settings/gdpr',
     '/settings/custom-fields',
     '/settings/event-type-labels',

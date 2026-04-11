@@ -6,6 +6,12 @@ import { hasProAccess } from '@/lib/billing/tier'
 import { ProFeatureRequiredError } from '@/lib/billing/errors'
 import { ZAPIER_EVENT_TYPES, type ZapierEventType } from '@/lib/integrations/zapier/zapier-events'
 import { validateWebhookUrl } from '@/lib/security/url-validation'
+import {
+  CHEF_FEATURE_FLAGS,
+  hasChefFeatureFlag,
+  hasChefFeatureFlagWithDb,
+} from '@/lib/features/chef-feature-flags'
+import { logDeveloperToolsFirstUseIfNeeded } from '@/lib/features/developer-tools-observability'
 
 // Zapier REST Hook subscription endpoints.
 // POST = subscribe (Zapier calls this when a Zap is turned on)
@@ -54,9 +60,13 @@ async function authorizeRequest(req: NextRequest, body?: Record<string, unknown>
   }
 
   if (user) {
+    const enabled = await hasChefFeatureFlag(CHEF_FEATURE_FLAGS.developerTools, user.entityId)
+    if (!enabled) {
+      throw new HttpError(403, 'Developer tools are not enabled for this account')
+    }
     try {
       await requirePro('integrations')
-      return { tenantId: user.entityId }
+      return { tenantId: user.entityId, actorId: user.id }
     } catch (err) {
       throw err
     }
@@ -74,9 +84,15 @@ async function authorizeRequest(req: NextRequest, body?: Record<string, unknown>
     throw new HttpError(400, 'Missing tenant_id for API key request')
   }
 
+  const db = createServerClient({ admin: true })
+  const enabled = await hasChefFeatureFlagWithDb(db, tenantId, CHEF_FEATURE_FLAGS.developerTools)
+  if (!enabled) {
+    throw new HttpError(403, 'Developer tools are not enabled for this account')
+  }
+
   // All features are free - no tier check needed
 
-  return { tenantId }
+  return { tenantId, actorId: tenantId }
 }
 
 function normalizeEventTypes(input: unknown): string[] {
@@ -106,7 +122,7 @@ async function readJsonBody(req: NextRequest): Promise<Record<string, unknown>> 
 export async function POST(req: NextRequest) {
   try {
     const body = await readJsonBody(req)
-    const { tenantId } = await authorizeRequest(req, body)
+    const { tenantId, actorId } = await authorizeRequest(req, body)
 
     const targetUrlCandidate = body.hookUrl ?? body.target_url ?? body.targetUrl
     if (typeof targetUrlCandidate !== 'string' || !targetUrlCandidate.trim()) {
@@ -139,6 +155,15 @@ export async function POST(req: NextRequest) {
       console.error('[zapier/subscribe] Insert failed:', error.message)
       throw new HttpError(400, 'Subscription failed')
     }
+
+    await logDeveloperToolsFirstUseIfNeeded({
+      tenantId,
+      actorId,
+      kind: 'zapier_subscription',
+      entityId: data.id,
+      context: { event_count: eventTypes.length, via: 'zapier_rest' },
+      db,
+    })
 
     return NextResponse.json(data, { status: 201 })
   } catch (err) {

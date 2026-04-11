@@ -13,6 +13,7 @@ import { userRoles, clients } from '@/lib/db/schema/schema'
 import { eq } from 'drizzle-orm'
 import bcrypt from 'bcryptjs'
 import { encode } from 'next-auth/jwt'
+import { resolveAuthCookieOptions } from '@/lib/auth/request-origin'
 
 export async function POST(req: NextRequest) {
   // Hard gate - never available in production, regardless of env vars
@@ -66,13 +67,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Auth secret not configured' }, { status: 500 })
     }
 
-    // Auth.js uses __Secure- prefix when NEXTAUTH_URL starts with https://
-    // (regardless of NODE_ENV). Match that logic so the cookie is recognized.
-    const useSecure =
-      (process.env.NODE_ENV as string) === 'production' ||
-      process.env.NEXTAUTH_URL?.startsWith('https') ||
-      process.env.AUTH_URL?.startsWith('https')
-    const cookieName = useSecure ? '__Secure-authjs.session-token' : 'authjs.session-token'
+    const { useSecureCookies: useSecure, sessionCookieName: cookieName } = resolveAuthCookieOptions(
+      {
+        requestOrigin: req.nextUrl.origin,
+        forwardedProto: req.headers.get('x-forwarded-proto'),
+        forwardedHost: req.headers.get('x-forwarded-host'),
+        host: req.headers.get('host'),
+      }
+    )
 
     // Resolve role and tenant for the user
     let role = ''

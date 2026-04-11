@@ -11,9 +11,11 @@ import type { NotificationCategory, NotificationAction, Notification } from './t
 import { routeNotification } from './channel-router'
 import { DEFAULT_TIER_MAP } from './tier-config'
 import { resolveOwnerAuthUserId } from '@/lib/platform/owner-account'
+import { broadcastInsert } from '@/lib/realtime/broadcast'
 
 let founderRecipientCache: { recipientId: string | null; expiresAt: number } | null = null
 const FOUNDER_CACHE_TTL_MS = 60_000
+const NON_MIRRORED_NOTIFICATION_ACTIONS = new Set<NotificationAction>(['account_access_alert'])
 
 async function getFounderNotificationRecipientId(db: any): Promise<string | null> {
   const now = Date.now()
@@ -96,7 +98,7 @@ export async function createNotification({
       client_id: clientId ?? null,
       metadata: metadata as unknown as Json,
     })
-    .select('id')
+    .select('*')
     .single()
 
   if (error || !notification) {
@@ -104,12 +106,18 @@ export async function createNotification({
     throw new Error('Failed to create notification')
   }
 
+  broadcastInsert('notifications', recipientId, notification)
+
   // Founder mirror feed (in-app only): copy notifications across tenants
   // so the owner account can monitor platform activity from one inbox.
   // Out-of-app channels (email/push/sms) are intentionally not mirrored here.
   try {
     const founderRecipientId = await getFounderNotificationRecipientId(db)
-    if (founderRecipientId && founderRecipientId !== recipientId) {
+    if (
+      founderRecipientId &&
+      founderRecipientId !== recipientId &&
+      !NON_MIRRORED_NOTIFICATION_ACTIONS.has(action)
+    ) {
       const mirrorMetadata = {
         ...metadata,
         _founder_mirror: true,
@@ -117,19 +125,27 @@ export async function createNotification({
         _original_tenant_id: tenantId,
       }
 
-      await db.from('notifications').insert({
-        tenant_id: tenantId,
-        recipient_id: founderRecipientId,
-        category,
-        action,
-        title: sanitizedTitle,
-        body: sanitizedBody,
-        action_url: resolvedActionUrl,
-        event_id: eventId ?? null,
-        inquiry_id: inquiryId ?? null,
-        client_id: clientId ?? null,
-        metadata: mirrorMetadata as unknown as Json,
-      })
+      const { data: mirroredNotification } = await db
+        .from('notifications')
+        .insert({
+          tenant_id: tenantId,
+          recipient_id: founderRecipientId,
+          category,
+          action,
+          title: sanitizedTitle,
+          body: sanitizedBody,
+          action_url: resolvedActionUrl,
+          event_id: eventId ?? null,
+          inquiry_id: inquiryId ?? null,
+          client_id: clientId ?? null,
+          metadata: mirrorMetadata as unknown as Json,
+        })
+        .select('*')
+        .single()
+
+      if (mirroredNotification) {
+        broadcastInsert('notifications', founderRecipientId, mirroredNotification)
+      }
     }
   } catch (mirrorErr) {
     console.error('[createNotification] Founder mirror failed (non-blocking):', mirrorErr)
@@ -182,6 +198,7 @@ function deriveNotificationActionUrl(input: {
  */
 export async function getNotifications(limit = 20, offset = 0): Promise<Notification[]> {
   const user = await requireAuth()
+  await purgeSensitiveMirroredNotificationsIfNeeded(user.id)
   const db: any = createServerClient()
 
   const { data, error } = await db
@@ -197,7 +214,13 @@ export async function getNotifications(limit = 20, offset = 0): Promise<Notifica
     return []
   }
 
-  return (data ?? []) as Notification[]
+  return ((data ?? []) as Notification[]).filter(
+    (notification) =>
+      !(
+        notification.action === 'account_access_alert' &&
+        isFounderMirrorNotification(notification.metadata)
+      )
+  )
 }
 
 /**
@@ -205,6 +228,7 @@ export async function getNotifications(limit = 20, offset = 0): Promise<Notifica
  */
 export async function getUnreadCount(): Promise<number> {
   const user = await requireAuth()
+  await purgeSensitiveMirroredNotificationsIfNeeded(user.id)
   const db: any = createServerClient()
 
   const { data, error } = await db.rpc('get_unread_notification_count', {
@@ -223,6 +247,43 @@ export async function getUnreadCount(): Promise<number> {
     return typeof val === 'number' ? val : Number(val) || 0
   }
   return typeof data === 'number' ? data : 0
+}
+
+async function purgeSensitiveMirroredNotificationsIfNeeded(recipientId: string): Promise<void> {
+  const adminDb: any = createServerClient({ admin: true })
+  const founderRecipientId = await getFounderNotificationRecipientId(adminDb)
+  if (!founderRecipientId || founderRecipientId !== recipientId) return
+
+  const { data, error } = await adminDb
+    .from('notifications')
+    .select('id, metadata')
+    .eq('recipient_id', recipientId)
+    .eq('action', 'account_access_alert')
+    .limit(200)
+
+  if (error) {
+    console.error('[notifications] Sensitive mirror cleanup query failed:', error)
+    return
+  }
+
+  const mirroredIds = (
+    (data ?? []) as Array<{ id: string; metadata?: Record<string, unknown> | null }>
+  )
+    .filter((row) => isFounderMirrorNotification(row.metadata))
+    .map((row) => row.id)
+
+  if (mirroredIds.length === 0) return
+
+  const { error: deleteError } = await adminDb.from('notifications').delete().in('id', mirroredIds)
+  if (deleteError) {
+    console.error('[notifications] Sensitive mirror cleanup delete failed:', deleteError)
+  }
+}
+
+function isFounderMirrorNotification(
+  metadata: Record<string, unknown> | null | undefined
+): boolean {
+  return Boolean(metadata && metadata._founder_mirror === true)
 }
 
 // ─── Update ─────────────────────────────────────────────────────────────
@@ -435,4 +496,34 @@ export async function getChefAuthUserId(tenantId: string): Promise<string | null
   }
 
   return data.auth_user_id
+}
+
+/**
+ * Get the auth_user_id for a staff member within a chef tenant.
+ * Returns null when the staff member does not have a portal login yet.
+ */
+export async function getStaffAuthUserId(
+  tenantId: string,
+  staffMemberId: string
+): Promise<string | null> {
+  const { getCurrentUser } = await import('@/lib/auth/get-user')
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && tenantId !== sessionUser.tenantId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
+  const db = createServerClient({ admin: true })
+
+  const { data, error } = await db
+    .from('staff_members')
+    .select('auth_user_id')
+    .eq('id', staffMemberId)
+    .eq('chef_id', tenantId)
+    .maybeSingle()
+
+  if (error) {
+    console.error('[getStaffAuthUserId] Lookup failed:', error)
+    return null
+  }
+
+  return data?.auth_user_id ?? null
 }

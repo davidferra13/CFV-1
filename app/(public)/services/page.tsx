@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { PUBLIC_PRIMARY_CONSUMER_CTA } from '@/lib/public/public-surface-config'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -38,14 +39,14 @@ const SERVICES = [
   {
     label: 'Meal Prep',
     value: 'meal_prep',
-    price: '$200 - $800 per week',
+    price: '$200 - $800+ per week',
     description:
       'Weekly or biweekly cooking sessions tailored to your household. The chef builds a menu around your dietary needs, shops, cooks, portions, and labels everything for the week. Common for families, athletes, and busy professionals.',
   },
   {
     label: 'Cooking Classes',
     value: 'cooking_class',
-    price: '$75 - $200 per person',
+    price: '$75 - $200+ per person',
     description:
       'Private or group sessions in your kitchen or a rented space. Learn specific techniques, cuisines, or recipes from a working chef. Popular for team-building, date nights, and birthday celebrations.',
   },
@@ -106,13 +107,13 @@ export default function ServicesPage() {
       <section className="border-t border-stone-800/40">
         <div className="mx-auto flex w-full max-w-3xl flex-col items-center px-4 py-14 text-center sm:px-6 md:py-18 lg:px-8">
           <p className="text-base text-stone-300">
-            Not sure what you need? Describe your event and let the chefs come to you.
+            Not sure what you need? Book a Chef and let matched chefs come to you.
           </p>
           <Link
-            href="/book"
+            href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
             className="mt-6 inline-flex h-12 items-center justify-center rounded-xl gradient-accent px-6 text-sm font-semibold text-white glow-hover shadow-lg"
           >
-            Describe Your Event
+            {PUBLIC_PRIMARY_CONSUMER_CTA.label}
           </Link>
         </div>
       </section>

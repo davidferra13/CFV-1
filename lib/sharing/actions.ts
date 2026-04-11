@@ -139,6 +139,26 @@ const ViewerIntentSchema = z.object({
   captcha_token: z.string().max(4096).optional().or(z.literal('')),
 })
 
+async function ensureDinnerCircleForEventNonBlocking(input: {
+  eventId: string
+  tenantId: string
+  eventTitle?: string | null
+  source: string
+}): Promise<string | null> {
+  try {
+    const { ensureEventDinnerCircle } = await import('@/lib/hub/integration-actions')
+    const ensured = await ensureEventDinnerCircle({
+      eventId: input.eventId,
+      tenantId: input.tenantId,
+      eventTitle: input.eventTitle || 'Dinner Circle',
+    })
+    return ensured.groupToken
+  } catch (circleError) {
+    console.error(`[${input.source}] Non-blocking Dinner Circle ensure failed:`, circleError)
+    return null
+  }
+}
+
 const ResolveJoinRequestSchema = z.object({
   requestId: z.string().uuid(),
   decision: z.enum(['approve', 'deny']),
@@ -457,7 +477,7 @@ export async function createEventShare(eventId: string) {
   // Verify client owns this event
   const { data: event, error: eventError } = await db
     .from('events')
-    .select('id, tenant_id, client_id')
+    .select('id, tenant_id, client_id, occasion')
     .eq('id', eventId)
     .eq('client_id', user.entityId)
     .single()
@@ -476,6 +496,13 @@ export async function createEventShare(eventId: string) {
     .single()
 
   if (existingShare) {
+    const circleToken = await ensureDinnerCircleForEventNonBlocking({
+      eventId,
+      tenantId: event.tenant_id,
+      eventTitle: event.occasion,
+      source: 'createEventShare',
+    })
+
     const fullShareUrl = `${process.env.NEXT_PUBLIC_APP_URL}/share/${existingShare.token}`
     // Shorten URL (non-blocking - fall back to full URL if shortening fails)
     let shareUrl = fullShareUrl
@@ -485,7 +512,7 @@ export async function createEventShare(eventId: string) {
     } catch {
       // Non-blocking: use the full URL
     }
-    return { success: true, share: existingShare, shareUrl }
+    return { success: true, share: existingShare, shareUrl, circleToken }
   }
 
   // Generate secure token
@@ -514,6 +541,13 @@ export async function createEventShare(eventId: string) {
     throw new Error('Failed to create share link')
   }
 
+  const circleToken = await ensureDinnerCircleForEventNonBlocking({
+    eventId,
+    tenantId: event.tenant_id,
+    eventTitle: event.occasion,
+    source: 'createEventShare',
+  })
+
   const fullShareUrl = `${process.env.NEXT_PUBLIC_APP_URL}/share/${token}`
   // Shorten URL (non-blocking - fall back to full URL if shortening fails)
   let shareUrl = fullShareUrl
@@ -525,7 +559,7 @@ export async function createEventShare(eventId: string) {
   }
 
   revalidatePath(`/my-events/${eventId}`)
-  return { success: true, share, shareUrl }
+  return { success: true, share, shareUrl, circleToken }
 }
 
 /**
@@ -563,7 +597,7 @@ export async function addGuestManually(input: z.infer<typeof AddGuestManuallySch
   // Verify client owns this event
   const { data: event } = await db
     .from('events')
-    .select('id, tenant_id')
+    .select('id, tenant_id, occasion')
     .eq('id', validated.eventId)
     .eq('client_id', user.entityId)
     .single()
@@ -571,6 +605,13 @@ export async function addGuestManually(input: z.infer<typeof AddGuestManuallySch
   if (!event) {
     throw new Error('Event not found or access denied')
   }
+
+  await ensureDinnerCircleForEventNonBlocking({
+    eventId: validated.eventId,
+    tenantId: event.tenant_id,
+    eventTitle: event.occasion,
+    source: 'addGuestManually',
+  })
 
   // Get or create active share for this event
   let { data: share } = await db
@@ -628,7 +669,7 @@ export async function createViewerInviteForEvent(
 
   const { data: event } = await db
     .from('events')
-    .select('id, tenant_id, event_date')
+    .select('id, tenant_id, event_date, occasion')
     .eq('id', validated.eventId)
     .eq('client_id', user.entityId)
     .single()
@@ -636,6 +677,13 @@ export async function createViewerInviteForEvent(
   if (!event) {
     throw new Error('Event not found or access denied')
   }
+
+  await ensureDinnerCircleForEventNonBlocking({
+    eventId: validated.eventId,
+    tenantId: event.tenant_id,
+    eventTitle: event.occasion,
+    source: 'createViewerInviteForEvent',
+  })
 
   const { data: shareData } = await db
     .from('event_shares')
@@ -983,12 +1031,19 @@ export async function resolveEventJoinRequest(input: z.infer<typeof ResolveJoinR
 
   const { data: event } = await db
     .from('events')
-    .select('id, tenant_id, client_id')
+    .select('id, tenant_id, client_id, occasion')
     .eq('id', request.event_id)
     .eq('client_id', user.entityId)
     .single()
 
   if (!event) throw new Error('Access denied')
+
+  await ensureDinnerCircleForEventNonBlocking({
+    eventId: request.event_id,
+    tenantId: event.tenant_id,
+    eventTitle: event.occasion,
+    source: 'resolveEventJoinRequest',
+  })
 
   if (validated.decision === 'deny') {
     await ((db as any)
@@ -1605,13 +1660,20 @@ export async function createViewerInviteFromGuest(
 
   const { data: event } = await db
     .from('events')
-    .select('event_date')
+    .select('event_date, occasion')
     .eq('id', share.event_id)
     .single()
 
   if (!event) {
     throw new Error('Event not found')
   }
+
+  await ensureDinnerCircleForEventNonBlocking({
+    eventId: share.event_id,
+    tenantId: share.tenant_id,
+    eventTitle: event.occasion,
+    source: 'createViewerInviteFromGuest',
+  })
 
   const viewerToken = crypto.randomBytes(32).toString('hex')
   const expiresAt = parseInviteExpiry(event.event_date, share.expires_at)
@@ -1744,11 +1806,18 @@ export async function createGuestInviteFromGuest(
   const inviteToken = crypto.randomBytes(32).toString('hex')
   const { data: event } = await db
     .from('events')
-    .select('event_date')
+    .select('event_date, occasion')
     .eq('id', share.event_id)
     .single()
 
   const expiresAt = event ? parseInviteExpiry(event.event_date, share.expires_at) : null
+
+  await ensureDinnerCircleForEventNonBlocking({
+    eventId: share.event_id,
+    tenantId: share.tenant_id,
+    eventTitle: event?.occasion,
+    source: 'createGuestInviteFromGuest',
+  })
 
   await (db.from('event_share_invites' as any).insert({
     tenant_id: share.tenant_id,
@@ -2498,7 +2567,7 @@ export async function submitRSVP(input: SubmitRSVPInput) {
 
   const { data: event } = await db
     .from('events')
-    .select('id, status, guest_count')
+    .select('id, status, guest_count, occasion')
     .eq('id', share.event_id)
     .single()
 
@@ -2508,6 +2577,13 @@ export async function submitRSVP(input: SubmitRSVPInput) {
   if (event.status === 'cancelled' || event.status === 'completed') {
     throw new Error('This event is no longer accepting RSVPs.')
   }
+
+  await ensureDinnerCircleForEventNonBlocking({
+    eventId: share.event_id,
+    tenantId: share.tenant_id,
+    eventTitle: event.occasion,
+    source: 'submitRSVP',
+  })
 
   // Check for duplicate email if provided
   if (normalizedEmail) {

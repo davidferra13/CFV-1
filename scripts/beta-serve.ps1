@@ -12,7 +12,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 $ProjectDir = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
-$Port = if ($env:PORT) { $env:PORT } else { "3100" }
+$Port = if ($env:PORT) { $env:PORT } else { "3200" }
 $TunnelName = "chefflow-beta"
 
 Set-Location $ProjectDir

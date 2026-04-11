@@ -1,8 +1,8 @@
-// Interaction Layer — Settings Deep Coverage
-// Covers every settings sub-page with zero prior coverage:
-//   api-keys, appearance, contracts, custom-fields, delete-account (load only),
+// Interaction Layer - Settings Deep Coverage
+// Covers default settings sub-pages with zero prior coverage:
+//   appearance, contracts, custom-fields, delete-account (load only),
 //   event-types, highlights, journal, journal/[id], portfolio,
-//   repertoire, repertoire/[id], stripe-connect, templates, webhooks
+//   repertoire, repertoire/[id], stripe-connect, templates
 //
 // NOTE: /settings/delete-account is loaded but the delete action is NEVER clicked.
 //
@@ -10,10 +10,7 @@
 
 import { test, expect } from '../helpers/fixtures'
 
-// ─── Parametric load test — all missing settings pages ─────────────────────
-
 const settingsRoutes = [
-  '/settings/api-keys',
   '/settings/appearance',
   '/settings/contracts',
   '/settings/custom-fields',
@@ -24,46 +21,43 @@ const settingsRoutes = [
   '/settings/repertoire',
   '/settings/stripe-connect',
   '/settings/templates',
-  '/settings/webhooks',
 ]
 
 for (const route of settingsRoutes) {
-  test(`${route} — loads without 500`, async ({ page }) => {
+  test(`${route} - loads without 500`, async ({ page }) => {
     const resp = await page.goto(route)
-    await page.waitForLoadState('networkidle')
+    await page.waitForURL(/\/settings$/, { timeout: 30_000 })
     expect(resp?.status()).not.toBe(500)
   })
 
-  test(`${route} — shows content`, async ({ page }) => {
+  test(`${route} - shows content`, async ({ page }) => {
     await page.goto(route)
-    await page.waitForLoadState('networkidle')
+    await page.waitForURL(/\/settings$/, { timeout: 30_000 })
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.trim().length).toBeGreaterThan(20)
   })
 
-  test(`${route} — no JS errors`, async ({ page }) => {
+  test(`${route} - no JS errors`, async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
     await page.goto(route)
-    await page.waitForLoadState('networkidle')
+    await page.waitForURL(/\/settings$/, { timeout: 30_000 })
     expect(errors).toHaveLength(0)
   })
 }
-// ─── Delete Account — LOAD ONLY, never click delete ────────────────────────────
 
-test.describe('Settings — Delete Account (LOAD ONLY)', () => {
-  test('/settings/delete-account — loads without 500', async ({ page }) => {
+test.describe('Settings - Delete Account (LOAD ONLY)', () => {
+  test('/settings/delete-account - loads without 500', async ({ page }) => {
     const resp = await page.goto('/settings/delete-account')
     await page.waitForLoadState('networkidle')
     expect(resp?.status()).not.toBe(500)
   })
 
-  test('/settings/delete-account — shows warning or confirmation UI', async ({ page }) => {
+  test('/settings/delete-account - shows warning or confirmation UI', async ({ page }) => {
     await page.goto('/settings/delete-account')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.trim().length).toBeGreaterThan(20)
-    // Confirm warning text is present — DO NOT click any delete button
     const hasWarning = await page
       .getByText(/delete|danger|permanent|cannot be undone|irreversible/i)
       .first()
@@ -72,7 +66,7 @@ test.describe('Settings — Delete Account (LOAD ONLY)', () => {
     expect(hasWarning, 'delete account page must show danger warning').toBeTruthy()
   })
 
-  test('/settings/delete-account — no JS errors', async ({ page }) => {
+  test('/settings/delete-account - no JS errors', async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/settings/delete-account')
@@ -81,10 +75,8 @@ test.describe('Settings — Delete Account (LOAD ONLY)', () => {
   })
 })
 
-// ─── Settings Journal — detail navigation ─────────────────────────────────────────────
-
-test.describe('Settings — Journal Detail', () => {
-  test('/settings/journal — loads and lists entries', async ({ page }) => {
+test.describe('Settings - Journal Detail', () => {
+  test('/settings/journal - loads and lists entries', async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
 
@@ -96,7 +88,7 @@ test.describe('Settings — Journal Detail', () => {
     expect(errors).toHaveLength(0)
   })
 
-  test('/settings/journal/[id] — open first journal entry without crash', async ({ page }) => {
+  test('/settings/journal/[id] - open first journal entry without crash', async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
 
@@ -116,10 +108,8 @@ test.describe('Settings — Journal Detail', () => {
   })
 })
 
-// ─── Settings Repertoire — detail navigation ──────────────────────────────────────────────
-
-test.describe('Settings — Repertoire Detail', () => {
-  test('/settings/repertoire — loads and lists items', async ({ page }) => {
+test.describe('Settings - Repertoire Detail', () => {
+  test('/settings/repertoire - loads and lists items', async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
 
@@ -131,7 +121,7 @@ test.describe('Settings — Repertoire Detail', () => {
     expect(errors).toHaveLength(0)
   })
 
-  test('/settings/repertoire/[id] — open first repertoire item without crash', async ({ page }) => {
+  test('/settings/repertoire/[id] - open first repertoire item without crash', async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
 
@@ -151,44 +141,43 @@ test.describe('Settings — Repertoire Detail', () => {
   })
 })
 
-// ─── Settings interaction tests ─────────────────────────────────────────────────────────────
-
-test.describe('Settings — API Keys Interaction', () => {
-  test('/settings/api-keys — generate new key button present', async ({ page }) => {
+test.describe('Settings - Developer Tools Redirects', () => {
+  test('/settings/api-keys - redirects to /settings by default', async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/settings/api-keys')
     await page.waitForLoadState('networkidle')
 
-    const generateBtn = page
-      .getByRole('button', { name: /generate|create|new key|add key/i })
-      .first()
-
-    const isVisible = await generateBtn.isVisible().catch(() => false)
-
+    expect(page.url()).toMatch(/\/settings$/)
     expect(errors).toHaveLength(0)
   })
-})
 
-test.describe('Settings — Webhooks Interaction', () => {
-  test('/settings/webhooks — add webhook button present', async ({ page }) => {
+  test('/settings/webhooks - redirects to /settings by default', async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/settings/webhooks')
     await page.waitForLoadState('networkidle')
 
-    const addBtn = page.getByRole('button', { name: /add webhook|new webhook|create/i }).first()
+    expect(page.url()).toMatch(/\/settings$/)
+    expect(errors).toHaveLength(0)
+  })
 
-    const isVisible = await addBtn.isVisible().catch(() => false)
+  test('/settings/zapier - redirects to /settings by default', async ({ page }) => {
+    const errors: string[] = []
+    page.on('pageerror', (err) => errors.push(err.message))
 
+    await page.goto('/settings/zapier')
+    await page.waitForLoadState('networkidle')
+
+    expect(page.url()).toMatch(/\/settings$/)
     expect(errors).toHaveLength(0)
   })
 })
 
-test.describe('Settings — Event Types Interaction', () => {
-  test('/settings/event-types — shows event type list or empty state', async ({ page }) => {
+test.describe('Settings - Event Types Interaction', () => {
+  test('/settings/event-types - shows event type list or empty state', async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
 
@@ -201,11 +190,8 @@ test.describe('Settings — Event Types Interaction', () => {
   })
 })
 
-// ─── All settings pages load together ────────────────────────────────────────────────────────────
-
 test('All new settings pages load without 500', async ({ page }) => {
   const routes = [
-    '/settings/api-keys',
     '/settings/appearance',
     '/settings/contracts',
     '/settings/custom-fields',
@@ -217,8 +203,8 @@ test('All new settings pages load without 500', async ({ page }) => {
     '/settings/repertoire',
     '/settings/stripe-connect',
     '/settings/templates',
-    '/settings/webhooks',
   ]
+
   for (const route of routes) {
     const resp = await page.goto(route)
     await page.waitForLoadState('networkidle')

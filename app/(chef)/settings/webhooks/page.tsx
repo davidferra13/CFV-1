@@ -1,12 +1,21 @@
 import type { Metadata } from 'next'
+import { redirect } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
-import { listWebhookSubscriptions } from '@/lib/webhooks/actions'
-import { WebhookSettings } from '@/components/settings/webhook-settings'
+import { createServerClient } from '@/lib/db/server'
+import { CHEF_FEATURE_FLAGS, hasChefFeatureFlagWithDb } from '@/lib/features/chef-feature-flags'
 
 export const metadata: Metadata = { title: 'Webhooks' }
 
 export default async function WebhooksPage() {
-  await requireChef()
+  const user = await requireChef()
+  const db = createServerClient()
+  if (!(await hasChefFeatureFlagWithDb(db, user.entityId, CHEF_FEATURE_FLAGS.developerTools))) {
+    redirect('/settings')
+  }
+  const [{ listWebhookSubscriptions }, { WebhookSettings }] = await Promise.all([
+    import('@/lib/webhooks/actions'),
+    import('@/components/settings/webhook-settings'),
+  ])
   const endpoints = await listWebhookSubscriptions()
 
   return (

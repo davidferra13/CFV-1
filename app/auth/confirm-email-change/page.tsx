@@ -58,10 +58,10 @@ function ConfirmEmailChangeContent() {
                 )}
               </Alert>
               <Link
-                href="/settings/account"
+                href="/account-security"
                 className="block text-center text-sm text-brand-400 hover:text-brand-300"
               >
-                Go to Account Settings
+                Go to Account Security
               </Link>
             </>
           )}
@@ -70,10 +70,10 @@ function ConfirmEmailChangeContent() {
             <>
               <Alert variant="error">{message}</Alert>
               <Link
-                href="/settings/account"
+                href="/account-security"
                 className="block text-center text-sm text-stone-400 hover:text-stone-200"
               >
-                Back to Account Settings
+                Back to Account Security
               </Link>
             </>
           )}

@@ -18,6 +18,7 @@ const CRON_PATHS = [
   '/api/cron/quarterly-checkin',
   '/api/cron/brand-monitor',
   '/api/scheduled/wellbeing-signals',
+  '/api/cron/platform-observability-digest',
 ]
 
 function loadEnvFile(relativePath) {

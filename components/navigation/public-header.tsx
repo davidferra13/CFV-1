@@ -7,6 +7,7 @@ import { ChevronDown, Menu, X } from '@/components/ui/icons'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import { AppLogo } from '@/components/branding/app-logo'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { PUBLIC_PRIMARY_CONSUMER_CTA } from '@/lib/public/public-surface-config'
 import {
   PUBLIC_NAV,
   isGroup,
@@ -163,12 +164,12 @@ export function PublicHeader() {
             Sign In
           </TrackedLink>
           <TrackedLink
-            href="/auth/signup"
-            analyticsName="header_signup"
+            href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
+            analyticsName="header_book_a_chef"
             analyticsProps={{ section: 'public_header' }}
             className="inline-flex h-10 items-center justify-center rounded-lg gradient-accent px-4 text-sm font-semibold text-white glow-hover"
           >
-            Get Started
+            {PUBLIC_PRIMARY_CONSUMER_CTA.label}
           </TrackedLink>
         </div>
 
@@ -176,12 +177,12 @@ export function PublicHeader() {
         <div className="flex items-center gap-2 md:hidden">
           <ThemeToggle className="h-11 w-11 min-h-0 rounded-lg border border-stone-600 bg-stone-900/80 p-0" />
           <TrackedLink
-            href="/auth/signin"
-            analyticsName="header_mobile_signin_quick"
+            href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
+            analyticsName="header_mobile_book_a_chef_quick"
             analyticsProps={{ section: 'public_header_mobile' }}
             className="inline-flex min-h-[44px] items-center justify-center rounded-lg border border-brand-700/50 bg-brand-950/50 px-3 text-xs-tight font-semibold uppercase tracking-[0.08em] text-brand-200 touch-manipulation"
           >
-            Sign In
+            Book
           </TrackedLink>
           <button
             type="button"
@@ -256,13 +257,13 @@ export function PublicHeader() {
               Sign In
             </TrackedLink>
             <TrackedLink
-              href="/auth/signup"
+              href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
               className="inline-flex h-10 flex-1 items-center justify-center rounded-lg gradient-accent px-3 text-sm font-semibold text-white"
-              analyticsName="header_mobile_signup"
+              analyticsName="header_mobile_book_a_chef"
               analyticsProps={{ section: 'public_header_mobile' }}
               onClick={() => setMobileMenuOpen(false)}
             >
-              Get Started
+              {PUBLIC_PRIMARY_CONSUMER_CTA.label}
             </TrackedLink>
           </div>
         </div>

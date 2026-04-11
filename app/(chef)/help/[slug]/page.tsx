@@ -94,11 +94,8 @@ Settings > Automations. Toggle built-in rules (e.g., "Send follow-up 48 hours af
 ## Stripe Connect
 Settings > Payments. Connect your Stripe account to accept deposits and final payments from clients. ChefFlow uses Stripe Connect - you keep your own Stripe account.
 
-## API Keys
-Settings > API Keys. Generate API keys to connect ChefFlow to external tools (spreadsheets, Zapier, custom scripts).
-
-## Webhooks
-Settings > Webhooks. Set up endpoints to receive real-time event notifications when event state changes, payments land, or reviews come in.
+## Developer Tools
+Advanced integrations such as API keys and raw webhooks are only shown when developer tools are enabled for your account. Most chefs can ignore these unless they are setting up a custom integration.
 
 ## Notification Preferences
 Settings > Notifications. Control which events trigger email and push notifications.

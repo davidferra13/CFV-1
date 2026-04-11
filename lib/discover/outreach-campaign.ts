@@ -119,8 +119,8 @@ export async function sendDirectoryInvitationEmail(listing: {
 
   const db = createServerClient({ admin: true })
   const ref = createOutreachRef(listing.id)
-  const joinUrl = `${SITE_URL}/discover/join?ref=${ref}`
-  const optOutUrl = `${SITE_URL}/discover/unsubscribe?t=${Buffer.from(listing.email.toLowerCase()).toString('base64url')}`
+  const joinUrl = `${SITE_URL}/nearby/join?ref=${ref}`
+  const optOutUrl = `${SITE_URL}/nearby/unsubscribe?t=${Buffer.from(listing.email.toLowerCase()).toString('base64url')}`
 
   const subject = `Want to be featured in ${listing.city}'s food directory?`
 

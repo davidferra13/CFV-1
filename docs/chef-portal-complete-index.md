@@ -685,12 +685,15 @@ All available shortcut options (Settings > Navigation to customize):
 ### Integrations
 
 - Integrations `/settings/integrations`
-- API Keys `/settings/api-keys`
 - Calendar Sync (iCal) `/settings/calendar-sync`
 - Embed Widget `/settings/embed`
 - Platform Connections `/settings/platform-connections`
-- Webhooks `/settings/webhooks`
 - Yelp Reviews `/settings/yelp`
+
+### Developer Tools (feature-flagged)
+
+- API Keys `/settings/api-keys`
+- Webhooks `/settings/webhooks`
 - Zapier `/settings/zapier`
 
 ### AI & Privacy

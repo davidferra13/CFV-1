@@ -1,5 +1,5 @@
 // External Directory Constants
-// Business types, cuisine categories, and filter options for the /discover directory.
+// Business types, cuisine categories, and filter options for the /nearby directory.
 
 export const BUSINESS_TYPES = [
   { value: 'restaurant', label: 'Restaurant' },
@@ -44,7 +44,7 @@ export const PRICE_RANGES = [
 ] as const
 
 export const LISTING_STATUSES = [
-  { value: 'discovered', label: 'Discovered' },
+  { value: 'discovered', label: 'Listed' },
   { value: 'pending_submission', label: 'Pending Review' },
   { value: 'claimed', label: 'Claimed' },
   { value: 'verified', label: 'Verified' },

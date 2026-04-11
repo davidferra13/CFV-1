@@ -35,15 +35,17 @@ import {
   addRemyMemoryManual,
 } from '@/lib/ai/remy-memory-actions'
 import { recordRemyMetric } from '@/lib/ai/remy-metrics'
+import { searchRemyConversationSummaries } from '@/lib/ai/mempalace-bridge'
 import type { RemyMessage, RemyTaskResult, RemyMemoryItem } from '@/lib/ai/remy-types'
 import type { MemoryCategory } from '@/lib/ai/remy-memory-types'
 import {
-  OLLAMA_STREAM_MAX_TOKENS,
+  buildGreetingFastPath,
   OLLAMA_STREAM_TIMEOUT_MS,
   detectMemoryIntent,
   encodeSSE,
   extractNavSuggestions,
   formatCategoryLabel,
+  getOperatorResponseTokenBudget,
   sseErrorResponse,
   sseHeaders,
   summarizeTaskResults,
@@ -117,8 +119,8 @@ export async function POST(req: NextRequest) {
             lastActiveAt: string
           })
         : null
-    // Recent conversation summaries - cross-conversation memory (Phase 3C)
-    const recentConversationSummaries = Array.isArray(rawRecord.recentConversationSummaries)
+    // Client-provided browser summaries are kept only as fallback when MemPalace is unavailable.
+    const fallbackRecentConversationSummaries = Array.isArray(rawRecord.recentConversationSummaries)
       ? (
           rawRecord.recentConversationSummaries as Array<{ summary: string; generatedAt: string }>
         ).slice(0, 5)
@@ -488,57 +490,9 @@ export async function POST(req: NextRequest) {
     const GREETING_REGEX =
       /^(?:good\s+morning|good\s+afternoon|good\s+evening|morning|afternoon|evening|hey|hi|hello|yo|sup|what'?s?\s+up)\s*[!.?]*$/i
     if (GREETING_REGEX.test(message.trim())) {
-      const ctx = await loadRemyContext(currentPage)
-      const hour = new Date().getHours()
-      const greetWord = hour < 12 ? 'Morning' : hour < 17 ? 'Afternoon' : 'Evening'
-      const lines: string[] = [`${greetWord}, chef! 👨‍🍳`]
-
-      const nuggets: string[] = []
-      if (ctx.upcomingEvents && ctx.upcomingEvents.length > 0) {
-        const today = ctx.upcomingEvents.filter((e) => {
-          if (!e.date) return false
-          return new Date(e.date).toDateString() === new Date().toDateString()
-        })
-        if (today.length > 0) {
-          nuggets.push(
-            `You've got **${today.length} event${today.length !== 1 ? 's' : ''} today** - game time 🔥`
-          )
-        } else {
-          const next = ctx.upcomingEvents[0]
-          if (next.date) {
-            const daysUntil = Math.ceil(
-              (new Date(next.date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-            )
-            if (daysUntil <= 3) {
-              nuggets.push(
-                `Next event in **${daysUntil} day${daysUntil !== 1 ? 's' : ''}**: ${next.occasion ?? 'Event'} for ${next.clientName}`
-              )
-            }
-          }
-        }
-      }
-      if (ctx.overduePayments && ctx.overduePayments.length > 0) {
-        nuggets.push(
-          `${ctx.overduePayments.length} overdue payment${ctx.overduePayments.length !== 1 ? 's' : ''} need attention`
-        )
-      }
-      if (ctx.staleInquiries && ctx.staleInquiries.length > 0) {
-        nuggets.push(
-          `${ctx.staleInquiries.length} inquir${ctx.staleInquiries.length !== 1 ? 'ies' : 'y'} waiting for a response`
-        )
-      }
-
-      if (nuggets.length > 0) {
-        lines.push('')
-        lines.push('Quick snapshot:')
-        for (const n of nuggets) lines.push(`- ${n}`)
-        lines.push('')
-        lines.push("What's on your mind?")
-      } else {
-        lines.push("What's cooking today?")
-      }
-
-      const greetingText = lines.join('\n')
+      // Keep greetings truly instant. Full context loading can stall on slow
+      // database or enrichment calls, which should never block a simple "hi".
+      const greetingText = buildGreetingFastPath()
       const body =
         encodeSSE({ type: 'intent', data: 'question' }) +
         encodeSSE({ type: 'token', data: greetingText }) +
@@ -566,10 +520,11 @@ export async function POST(req: NextRequest) {
     let favoriteChefsList: string | undefined
     let archetypeId: string | null = null
     let surveyState: SurveyState | null = null
+    let recentConversationSummaries = fallbackRecentConversationSummaries
 
     try {
-      const [ctx, cls, mems, profile, favChefs, mentioned, archetype, survey] = (await Promise.race(
-        [
+      const [ctx, cls, mems, profile, favChefs, mentioned, archetype, survey, palaceSummaries] =
+        (await Promise.race([
           Promise.all([
             loadRemyContext(currentPage),
             classifyIntent(message),
@@ -584,19 +539,22 @@ export async function POST(req: NextRequest) {
             activeForm === 'remy-survey'
               ? getSurveyState().catch(() => null)
               : Promise.resolve(null),
+            history.length === 0
+              ? searchRemyConversationSummaries(message, { limit: 3 }).catch(() => [])
+              : Promise.resolve([]),
           ]),
           setupTimeout,
+        ])) as [
+          Awaited<ReturnType<typeof loadRemyContext>>,
+          Awaited<ReturnType<typeof classifyIntent>>,
+          Awaited<ReturnType<typeof loadRelevantMemories>>,
+          string,
+          Awaited<ReturnType<typeof getFavoriteChefs>>,
+          Awaited<ReturnType<typeof resolveMessageEntities>>,
+          string | null,
+          SurveyState | null,
+          Awaited<ReturnType<typeof searchRemyConversationSummaries>>,
         ]
-      )) as [
-        Awaited<ReturnType<typeof loadRemyContext>>,
-        Awaited<ReturnType<typeof classifyIntent>>,
-        Awaited<ReturnType<typeof loadRelevantMemories>>,
-        string,
-        Awaited<ReturnType<typeof getFavoriteChefs>>,
-        Awaited<ReturnType<typeof resolveMessageEntities>>,
-        string | null,
-        SurveyState | null,
-      ]
       context = ctx
       if (mentioned.length > 0) context.mentionedEntities = mentioned
       classification = cls
@@ -604,6 +562,12 @@ export async function POST(req: NextRequest) {
       culinaryProfile = profile || undefined
       archetypeId = archetype
       surveyState = survey
+      if (palaceSummaries.length > 0) {
+        recentConversationSummaries = palaceSummaries.map((summary) => ({
+          summary: summary.summary,
+          generatedAt: summary.generatedAt,
+        }))
+      }
       if (favChefs.length > 0) {
         favoriteChefsList = favChefs
           .map((c) => `- ${c.chefName}${c.reason ? `: ${c.reason}` : ''}`)
@@ -813,6 +777,7 @@ export async function POST(req: NextRequest) {
 
       // Phase 5B: Intent-aware context scoping for mixed path
       const mixedScope = determineContextScope(message, classification.intent)
+      const mixedTokenBudget = getOperatorResponseTokenBudget(mixedScope, 'mixed')
 
       const systemPrompt = buildRemySystemPrompt(
         context,
@@ -873,7 +838,7 @@ export async function POST(req: NextRequest) {
                 ],
                 stream: true,
                 options: {
-                  num_predict: OLLAMA_STREAM_MAX_TOKENS,
+                  num_predict: mixedTokenBudget,
                 },
                 keep_alive: '30m',
                 think: false,
@@ -916,7 +881,7 @@ export async function POST(req: NextRequest) {
                 ],
                 stream: true,
                 options: {
-                  num_predict: OLLAMA_STREAM_MAX_TOKENS,
+                  num_predict: mixedTokenBudget,
                 },
                 keep_alive: '30m',
                 think: false,
@@ -992,6 +957,7 @@ export async function POST(req: NextRequest) {
 
     // Phase 5B: Intent-aware context scoping - reduce prompt size for focused queries
     const contextScope = determineContextScope(message, classification.intent)
+    const questionTokenBudget = getOperatorResponseTokenBudget(contextScope, 'question')
 
     const systemPrompt = buildRemySystemPrompt(
       context,
@@ -1042,7 +1008,7 @@ export async function POST(req: NextRequest) {
               ],
               stream: true,
               options: {
-                num_predict: OLLAMA_STREAM_MAX_TOKENS,
+                num_predict: questionTokenBudget,
               },
               keep_alive: '30m',
               think: false,
@@ -1086,7 +1052,7 @@ export async function POST(req: NextRequest) {
               ],
               stream: true,
               options: {
-                num_predict: OLLAMA_STREAM_MAX_TOKENS,
+                num_predict: questionTokenBudget,
               },
               keep_alive: '30m',
               think: false,

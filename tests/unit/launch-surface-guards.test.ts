@@ -9,14 +9,17 @@ function read(relativePath: string) {
 
 test('public launch surfaces use launch-mode-aware signup helpers instead of hardcoded auth signup', () => {
   const home = read('app/(public)/page.tsx')
-  const pricing = read('app/(public)/pricing/page.tsx')
+  const forOperators = read('app/(public)/for-operators/page.tsx')
+  const marketplaceChefs = read('app/(public)/marketplace-chefs/page.tsx')
   const workflow = read('components/public/workflow-steps.tsx')
   const remy = read('components/public/remy-concierge-section.tsx')
 
   // Homepage is now a search-first directory page with no signup links
   assert.doesNotMatch(home, /href="\/auth\/signup"/)
-  assert.match(pricing, /buildMarketingSignupHref/)
-  assert.doesNotMatch(pricing, /href="\/auth\/signup"/)
+  assert.match(forOperators, /buildMarketingSignupHref/)
+  assert.doesNotMatch(forOperators, /href="\/auth\/signup"/)
+  assert.match(marketplaceChefs, /buildMarketingSignupHref/)
+  assert.doesNotMatch(marketplaceChefs, /href="\/auth\/signup"/)
   assert.match(workflow, /buildMarketingSignupHref/)
   assert.match(remy, /buildMarketingSignupHref/)
 })

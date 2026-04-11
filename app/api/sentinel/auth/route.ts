@@ -16,6 +16,7 @@ import { userRoles, clients } from '@/lib/db/schema/schema'
 import { eq } from 'drizzle-orm'
 import bcrypt from 'bcryptjs'
 import { encode } from 'next-auth/jwt'
+import { resolveAuthCookieOptions } from '@/lib/auth/request-origin'
 
 export async function POST(req: NextRequest) {
   // Gate: require SENTINEL_SECRET
@@ -78,9 +79,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Auth secret not configured' }, { status: 500 })
     }
 
-    const useSecure =
-      process.env.NEXTAUTH_URL?.startsWith('https') || process.env.AUTH_URL?.startsWith('https')
-    const cookieName = useSecure ? '__Secure-authjs.session-token' : 'authjs.session-token'
+    const { useSecureCookies: useSecure, sessionCookieName: cookieName } = resolveAuthCookieOptions(
+      {
+        requestOrigin: req.nextUrl.origin,
+        forwardedProto: req.headers.get('x-forwarded-proto'),
+        forwardedHost: req.headers.get('x-forwarded-host'),
+        host: req.headers.get('host'),
+      }
+    )
 
     // Resolve role and tenant
     let role = ''
@@ -126,7 +132,7 @@ export async function POST(req: NextRequest) {
       httpOnly: true,
       sameSite: 'lax',
       path: '/',
-      secure: !!useSecure,
+      secure: useSecure,
       maxAge: 30 * 24 * 60 * 60, // 30 days
     })
 

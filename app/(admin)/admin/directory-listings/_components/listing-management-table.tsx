@@ -53,7 +53,7 @@ function ListingRow({ listing }: { listing: DirectoryListing }) {
       <td className="px-3 py-3">
         <div>
           <a
-            href={`/discover/${listing.slug}`}
+            href={`/nearby/${listing.slug}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm font-medium text-stone-200 hover:text-brand-400"

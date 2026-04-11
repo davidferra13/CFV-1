@@ -19,6 +19,13 @@ export async function toggleChefFlag(
 ): Promise<{ success: boolean; error?: string }> {
   const admin = await requireAdmin()
   const db: any = createAdminClient()
+  const { data: existing } = await db
+    .from('chef_feature_flags')
+    .select('enabled')
+    .eq('chef_id', chefId)
+    .eq('flag_name', flagName)
+    .maybeSingle()
+  const previousEnabled = existing?.enabled === true
 
   const { error } = await db
     .from('chef_feature_flags')
@@ -32,13 +39,24 @@ export async function toggleChefFlag(
     return { success: false, error: error.message }
   }
 
+  if (previousEnabled === enabled) {
+    return { success: true }
+  }
+
+  const actionType =
+    flagName === 'developer_tools'
+      ? enabled
+        ? 'developer_tools_enabled'
+        : 'developer_tools_disabled'
+      : 'admin_toggled_flag'
+
   await logAdminAction({
     actorEmail: admin.email,
     actorUserId: admin.id,
-    actionType: 'admin_toggled_flag',
+    actionType,
     targetId: chefId,
     targetType: 'chef',
-    details: { flag_name: flagName, enabled },
+    details: { flag_name: flagName, enabled, previous_enabled: previousEnabled },
   })
 
   return { success: true }

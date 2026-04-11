@@ -9,6 +9,25 @@ import { incrementMetric, logActivityEvent } from '@/lib/activity/observability'
 import { checkAndFireIntentNotifications } from '@/lib/activity/intent-notifications'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { verifyCsrfOrigin } from '@/lib/security/csrf'
+import { ACTIVITY_EVENT_TO_PLATFORM_EVENT } from '@/lib/platform-observability/taxonomy'
+import { recordPlatformEvent } from '@/lib/platform-observability/events'
+import { extractRequestMetadata } from '@/lib/platform-observability/context'
+
+function buildActivitySummary(
+  eventType: string,
+  surface: 'client portal' | 'chef portal',
+  entityType?: string,
+  metadata?: Record<string, unknown>
+): string {
+  const pathname =
+    typeof metadata?.pathname === 'string'
+      ? metadata.pathname
+      : typeof metadata?.path === 'string'
+        ? metadata.path
+        : null
+  const target = pathname ?? entityType ?? 'platform'
+  return `${eventType.replace(/_/g, ' ')} recorded on ${surface} (${target})`
+}
 
 export async function POST(request: NextRequest) {
   const csrfError = verifyCsrfOrigin(request)
@@ -86,6 +105,23 @@ export async function POST(request: NextRequest) {
         entityId: entity_id,
         metadata,
       })
+
+      const platformEventKey = ACTIVITY_EVENT_TO_PLATFORM_EVENT[event_type]
+      await recordPlatformEvent({
+        eventKey: platformEventKey,
+        source: 'private_client_portal',
+        actorType: 'client',
+        actorId: client.id,
+        authUserId: user.id,
+        tenantId: client.tenant_id,
+        subjectType: entity_type,
+        subjectId: entity_id,
+        summary: buildActivitySummary(event_type, 'client portal', entity_type, metadata),
+        metadata: {
+          ...extractRequestMetadata(request.headers),
+          ...(metadata ?? {}),
+        },
+      })
     } else if (role.role === 'chef') {
       await trackActivity({
         tenantId: role.entity_id,
@@ -95,6 +131,23 @@ export async function POST(request: NextRequest) {
         entityType: entity_type,
         entityId: entity_id,
         metadata,
+      })
+
+      const platformEventKey = ACTIVITY_EVENT_TO_PLATFORM_EVENT[event_type]
+      await recordPlatformEvent({
+        eventKey: platformEventKey,
+        source: 'private_chef_portal',
+        actorType: 'chef',
+        actorId: role.entity_id,
+        authUserId: user.id,
+        tenantId: role.entity_id,
+        subjectType: entity_type,
+        subjectId: entity_id,
+        summary: buildActivitySummary(event_type, 'chef portal', entity_type, metadata),
+        metadata: {
+          ...extractRequestMetadata(request.headers),
+          ...(metadata ?? {}),
+        },
       })
     }
 

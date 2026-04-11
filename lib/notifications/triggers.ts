@@ -3,14 +3,14 @@
 // All trigger functions are NON-BLOCKING - they use try/catch internally
 // and never throw. Safe to call as side effects after any operation.
 //
-// Notifications go to the chef (tenant owner) since staff members do not
-// have Auth.js accounts. The chef sees all operational notifications in
-// their bell panel and notifications page.
+// Operational notifications generally go to the chef (tenant owner).
+// Task-assignment notifications are the exception: when a staff member has
+// a portal login, send the alert directly to that staff user.
 
 'use server'
 
 import { sendNotification } from './send'
-import { getChefAuthUserId } from './actions'
+import { getChefAuthUserId, getStaffAuthUserId } from './actions'
 
 // ─── Staff Assignment ────────────────────────────────────────────────────
 
@@ -53,16 +53,17 @@ export async function notifyStaffAssignment(
 
 /**
  * Called after creating a task assigned to a specific staff member.
- * Notifies the chef that a task has been assigned.
+ * Notifies the assigned staff member when they have a portal login.
  */
 export async function notifyTaskAssigned(
   tenantId: string,
+  staffMemberId: string,
   staffMemberName: string,
   taskTitle: string,
   dueDate: string | null
 ): Promise<void> {
   try {
-    const recipientId = await getChefAuthUserId(tenantId)
+    const recipientId = await getStaffAuthUserId(tenantId, staffMemberId)
     if (!recipientId) return
 
     const dueDateText = dueDate ? ` - due ${dueDate}` : ''
@@ -75,6 +76,7 @@ export async function notifyTaskAssigned(
       message: `"${taskTitle}"${dueDateText}`,
       link: '/ops/tasks',
       metadata: {
+        staff_member_id: staffMemberId,
         staff_member_name: staffMemberName,
         task_title: taskTitle,
         due_date: dueDate,

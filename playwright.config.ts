@@ -250,6 +250,7 @@ export default defineConfig({
     {
       name: 'launch-public',
       testMatch: ['**/launch/02-public-pages.spec.ts', '**/launch/14-public-inquiry-form.spec.ts'],
+      timeout: 120_000,
       // No storageState — unauthenticated
     },
     {

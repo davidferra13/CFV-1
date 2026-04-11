@@ -40,7 +40,7 @@ const HELP_CATEGORIES = [
     icon: Settings,
     label: 'Settings & Integrations',
     slug: 'settings',
-    desc: 'Automations, API keys, webhooks',
+    desc: 'Automations, integrations, notifications',
   },
   {
     icon: BookOpen,

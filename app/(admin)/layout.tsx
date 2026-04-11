@@ -45,7 +45,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <ChefMainContent>{children}</ChefMainContent>
             {isFounderEmail(admin.email) && <RemyWrapper />}
             <AnalyticsIdentify userId={admin.id} email={admin.email} role="admin" />
-            <PresenceBeacon />
+            <PresenceBeacon userId={admin.id} email={admin.email} />
             <PageInfoButton />
           </div>
         </NotificationProvider>

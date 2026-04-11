@@ -1,14 +1,19 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { ArrowLeft } from '@/components/ui/icons'
-import { listWebhookSubscriptions } from '@/lib/integrations/zapier/zapier-webhooks'
-import { ZapierSettings } from '@/components/settings/zapier-settings'
 import { requireChef } from '@/lib/auth/get-user'
+import { createServerClient } from '@/lib/db/server'
 import { UpgradeGate } from '@/components/billing/upgrade-gate'
+import { CHEF_FEATURE_FLAGS, hasChefFeatureFlagWithDb } from '@/lib/features/chef-feature-flags'
 
 export const metadata: Metadata = { title: 'Zapier & Webhooks' }
 
 async function ZapierSettingsContent() {
+  const [{ listWebhookSubscriptions }, { ZapierSettings }] = await Promise.all([
+    import('@/lib/integrations/zapier/zapier-webhooks'),
+    import('@/components/settings/zapier-settings'),
+  ])
   const subscriptions = await listWebhookSubscriptions()
 
   return (
@@ -35,6 +40,10 @@ async function ZapierSettingsContent() {
 
 export default async function ZapierSettingsPage() {
   const user = await requireChef()
+  const db = createServerClient()
+  if (!(await hasChefFeatureFlagWithDb(db, user.entityId, CHEF_FEATURE_FLAGS.developerTools))) {
+    redirect('/settings')
+  }
 
   return (
     <UpgradeGate chefId={user.entityId} featureSlug="integrations">

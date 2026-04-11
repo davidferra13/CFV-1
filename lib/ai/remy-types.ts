@@ -95,7 +95,7 @@ export interface RemyMemoryItem {
   relatedClientId: string | null
   relatedClientName?: string | null
   createdAt: string
-  source?: 'database' | 'runtime_file'
+  source?: 'database' | 'runtime_file' | 'palace'
   editable?: boolean
 }
 

@@ -55,6 +55,7 @@ export type NotificationAction =
   | 'client_viewed_proposal'
   // System
   | 'system_alert'
+  | 'account_access_alert'
   // Client-facing notifications (recipient_role = 'client')
   | 'quote_sent_to_client'
   | 'event_proposed_to_client'
@@ -206,6 +207,7 @@ export const NOTIFICATION_CONFIG: Record<
 
   // System
   system_alert: { category: 'system', icon: 'Bell', toastByDefault: true },
+  account_access_alert: { category: 'system', icon: 'ShieldAlert', toastByDefault: true },
 
   // Client-facing notifications (recipient_role = 'client')
   quote_sent_to_client: { category: 'quote', icon: 'FileText', toastByDefault: true },
