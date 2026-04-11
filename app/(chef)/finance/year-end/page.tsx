@@ -106,6 +106,7 @@ export default async function YearEndPage({ searchParams }: { searchParams: { ye
             completedEventsCount={completedEvents.length}
             totalEventsCount={totalEvents}
             exportYear={validYear}
+            exportReady={cpaReadiness?.isReady ?? false}
           />
         </div>
       </div>

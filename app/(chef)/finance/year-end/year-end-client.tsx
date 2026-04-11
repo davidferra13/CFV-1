@@ -22,12 +22,14 @@ interface YearEndClientControlsProps {
   completedEventsCount: number
   totalEventsCount: number
   exportYear: number
+  exportReady?: boolean
 }
 
 export function YearEndClientControls({
   yearOptions,
   selectedYear,
   exportYear,
+  exportReady = false,
 }: YearEndClientControlsProps) {
   const router = useRouter()
 
@@ -49,12 +51,21 @@ export function YearEndClientControls({
           </option>
         ))}
       </select>
-      <a
-        href={`/finance/year-end/export?year=${exportYear}`}
-        className="text-sm px-4 py-2 rounded-md bg-stone-900 text-white hover:bg-stone-700 transition-colors border border-stone-600"
-      >
-        Download CPA Export
-      </a>
+      {exportReady ? (
+        <a
+          href={`/finance/year-end/export?year=${exportYear}`}
+          className="text-sm px-4 py-2 rounded-md bg-stone-900 text-white hover:bg-stone-700 transition-colors border border-stone-600"
+        >
+          Download CPA Export
+        </a>
+      ) : (
+        <span
+          title="Resolve issues in the CPA Readiness section before downloading"
+          className="text-sm px-4 py-2 rounded-md bg-stone-950 text-stone-600 border border-stone-800 cursor-not-allowed"
+        >
+          Download CPA Export
+        </span>
+      )}
     </div>
   )
 }
