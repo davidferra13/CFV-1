@@ -21,7 +21,10 @@ import {
 import {
   getIngredientKnowledgeByName,
   getIngredientKnowledgeBySlug,
+  getRelatedIngredients,
+  INGREDIENT_CATEGORIES,
   type IngredientKnowledge,
+  type CategoryIngredient,
 } from '@/lib/openclaw/ingredient-knowledge-queries'
 import { classifyFromCatalogDetail } from '@/lib/pricing/sourceability'
 import { AvailabilityDetail, AvailabilityBadge } from '@/components/pricing/availability-badge'
@@ -101,31 +104,26 @@ function buildIngredientJsonLd(
   return thing
 }
 
-function buildBreadcrumbJsonLd(name: string, slug: string): object {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: 'Home',
-        item: BASE_URL,
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: 'Ingredients',
-        item: `${BASE_URL}/ingredients`,
-      },
-      {
-        '@type': 'ListItem',
-        position: 3,
-        name,
-        item: `${BASE_URL}/ingredient/${slug}`,
-      },
-    ],
+function buildBreadcrumbJsonLd(name: string, slug: string, category?: string | null): object {
+  const items: object[] = [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: BASE_URL },
+    { '@type': 'ListItem', position: 2, name: 'Ingredients', item: `${BASE_URL}/ingredients` },
+  ]
+
+  if (category) {
+    const catLabel = INGREDIENT_CATEGORIES[category] ?? category
+    items.push({
+      '@type': 'ListItem',
+      position: 3,
+      name: catLabel,
+      item: `${BASE_URL}/ingredients/${category}`,
+    })
+    items.push({ '@type': 'ListItem', position: 4, name, item: `${BASE_URL}/ingredient/${slug}` })
+  } else {
+    items.push({ '@type': 'ListItem', position: 3, name, item: `${BASE_URL}/ingredient/${slug}` })
   }
+
+  return { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: items }
 }
 
 function JsonLd({ data }: { data: object }) {
@@ -216,12 +214,17 @@ export default async function IngredientPage({ params }: Params) {
   const slugResult = await getIngredientKnowledgeBySlug(id).catch(() => null)
   if (!slugResult) notFound()
 
+  const related = slugResult.category
+    ? await getRelatedIngredients(slugResult.category, id, 4).catch(() => [])
+    : []
+
   return (
     <KnowledgeOnlyPage
       id={id}
       name={slugResult.name}
       category={slugResult.category}
       knowledge={slugResult.knowledge}
+      related={related}
     />
   )
 }
@@ -233,11 +236,13 @@ export default async function IngredientPage({ params }: Params) {
 async function FullIngredientPage({ id, detail }: { id: string; detail: CatalogDetailResult }) {
   const sourceability = classifyFromCatalogDetail(detail)
 
-  const [knowledge, alternatives] = await Promise.all([
+  const categorySlug = detail.ingredient.category ?? null
+  const [knowledge, alternatives, related] = await Promise.all([
     getIngredientKnowledgeByName(detail.ingredient.name).catch(() => null),
     sourceability.classification !== 'readily_available'
       ? getPublicAlternatives(detail.ingredient.category, detail.ingredient.id, 4).catch(() => [])
       : Promise.resolve([]),
+    categorySlug ? getRelatedIngredients(categorySlug, id, 4).catch(() => []) : Promise.resolve([]),
   ])
 
   const representativePrice =
@@ -263,7 +268,7 @@ async function FullIngredientPage({ id, detail }: { id: string; detail: CatalogD
           standardUnit: detail.ingredient.standardUnit,
         })}
       />
-      <JsonLd data={buildBreadcrumbJsonLd(detail.ingredient.name, id)} />
+      <JsonLd data={buildBreadcrumbJsonLd(detail.ingredient.name, id, categorySlug)} />
       <div className="mx-auto max-w-2xl px-4 py-10">
         <div className="mb-6 flex items-center gap-3">
           <Link
@@ -394,6 +399,47 @@ async function FullIngredientPage({ id, detail }: { id: string; detail: CatalogD
           {/* Knowledge panel */}
           {knowledge && <KnowledgePanel knowledge={knowledge} />}
 
+          {/* More from this category */}
+          {related.length > 0 && categorySlug && (
+            <div className="px-6 py-5 border-b border-stone-800">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wide">
+                  More {INGREDIENT_CATEGORIES[categorySlug] ?? categorySlug}
+                </h2>
+                <Link
+                  href={`/ingredients/${categorySlug}`}
+                  className="text-xs text-stone-500 hover:text-stone-300 transition-colors"
+                >
+                  View all
+                </Link>
+              </div>
+              <div className="space-y-1.5">
+                {related.map((r) => (
+                  <Link
+                    key={r.slug}
+                    href={`/ingredient/${r.slug}`}
+                    className="flex items-center gap-3 rounded-lg px-2 py-1.5 hover:bg-stone-800/60 transition-colors group"
+                  >
+                    {r.imageUrl ? (
+                      <img
+                        src={r.imageUrl}
+                        alt={r.name}
+                        className="h-8 w-8 rounded object-cover shrink-0 bg-stone-800"
+                      />
+                    ) : (
+                      <div className="h-8 w-8 rounded bg-stone-800 shrink-0 flex items-center justify-center text-sm">
+                        🥬
+                      </div>
+                    )}
+                    <span className="text-sm text-stone-300 group-hover:text-stone-100">
+                      {r.name}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Alternatives */}
           {alternatives.length > 0 && (
             <div className="px-6 py-5 border-b border-stone-800">
@@ -457,16 +503,18 @@ function KnowledgeOnlyPage({
   name,
   category,
   knowledge,
+  related,
 }: {
   id: string
   name: string
   category: string | null
   knowledge: IngredientKnowledge
+  related: CategoryIngredient[]
 }) {
   return (
     <>
       <JsonLd data={buildIngredientJsonLd(name, id, knowledge)} />
-      <JsonLd data={buildBreadcrumbJsonLd(name, id)} />
+      <JsonLd data={buildBreadcrumbJsonLd(name, id, category)} />
       <div className="mx-auto max-w-2xl px-4 py-10">
         <div className="mb-6 flex items-center gap-3">
           <Link
@@ -516,6 +564,47 @@ function KnowledgeOnlyPage({
 
           {/* Knowledge panel */}
           <KnowledgePanel knowledge={knowledge} />
+
+          {/* More from this category */}
+          {related.length > 0 && category && (
+            <div className="px-6 py-5 border-b border-stone-800">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wide">
+                  More {INGREDIENT_CATEGORIES[category] ?? category}
+                </h2>
+                <Link
+                  href={`/ingredients/${category}`}
+                  className="text-xs text-stone-500 hover:text-stone-300 transition-colors"
+                >
+                  View all
+                </Link>
+              </div>
+              <div className="space-y-1.5">
+                {related.map((r) => (
+                  <Link
+                    key={r.slug}
+                    href={`/ingredient/${r.slug}`}
+                    className="flex items-center gap-3 rounded-lg px-2 py-1.5 hover:bg-stone-800/60 transition-colors group"
+                  >
+                    {r.imageUrl ? (
+                      <img
+                        src={r.imageUrl}
+                        alt={r.name}
+                        className="h-8 w-8 rounded object-cover shrink-0 bg-stone-800"
+                      />
+                    ) : (
+                      <div className="h-8 w-8 rounded bg-stone-800 shrink-0 flex items-center justify-center text-sm">
+                        🥬
+                      </div>
+                    )}
+                    <span className="text-sm text-stone-300 group-hover:text-stone-100">
+                      {r.name}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Share */}
           <div className="px-6 py-5 bg-stone-900/50">

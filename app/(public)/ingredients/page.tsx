@@ -8,6 +8,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { pgClient } from '@/lib/db'
+import { getIngredientCategories } from '@/lib/openclaw/ingredient-knowledge-queries'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -111,11 +112,10 @@ export default async function IngredientsPage({ searchParams }: Props) {
   const pageNum = Math.max(1, parseInt(page) || 1)
   const offset = (pageNum - 1) * 48
 
-  const { items, total, hasMore } = await getIngredients(q, offset).catch(() => ({
-    items: [],
-    total: 0,
-    hasMore: false,
-  }))
+  const [{ items, total, hasMore }, categories] = await Promise.all([
+    getIngredients(q, offset).catch(() => ({ items: [], total: 0, hasMore: false })),
+    getIngredientCategories().catch(() => []),
+  ])
 
   const collectionLd = {
     '@context': 'https://schema.org',
@@ -155,6 +155,22 @@ export default async function IngredientsPage({ searchParams }: Props) {
             info, and live pricing.
           </p>
         </div>
+
+        {/* Category tabs */}
+        {!q && categories.length > 0 && (
+          <div className="mb-6 flex flex-wrap gap-2">
+            {categories.map((c) => (
+              <Link
+                key={c.category}
+                href={`/ingredients/${c.category}`}
+                className="px-3 py-1.5 rounded-full text-xs border border-stone-700 text-stone-400 hover:border-stone-500 hover:text-stone-200 transition-colors"
+              >
+                {c.label}
+                <span className="ml-1 text-stone-600">({c.count})</span>
+              </Link>
+            ))}
+          </div>
+        )}
 
         {/* Search */}
         <form method="get" className="mb-8">

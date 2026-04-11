@@ -1,6 +1,9 @@
 import type { MetadataRoute } from 'next'
 import { createAdminClient } from '@/lib/db/admin'
-import { getEnrichedIngredientSlugs } from '@/lib/openclaw/ingredient-knowledge-queries'
+import {
+  getEnrichedIngredientSlugs,
+  getIngredientCategories,
+} from '@/lib/openclaw/ingredient-knowledge-queries'
 import { COMPARE_PAGES } from '@/lib/marketing/compare-pages'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
@@ -168,12 +171,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))
 
     // Enriched ingredient knowledge pages
-    const ingredientSlugs = await getEnrichedIngredientSlugs().catch(() => [])
+    const [ingredientSlugs, ingredientCats] = await Promise.all([
+      getEnrichedIngredientSlugs().catch(() => []),
+      getIngredientCategories().catch(() => []),
+    ])
     const ingredientRoutes: MetadataRoute.Sitemap = ingredientSlugs.map(({ slug, enrichedAt }) => ({
       url: `${BASE_URL}/ingredient/${slug}`,
       lastModified: new Date(enrichedAt),
       changeFrequency: 'monthly' as const,
       priority: 0.65,
+    }))
+    const categoryRoutes: MetadataRoute.Sitemap = ingredientCats.map(({ category }) => ({
+      url: `${BASE_URL}/ingredients/${category}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.72,
     }))
 
     return [
@@ -182,6 +194,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ...chefRoutes,
       ...giftCardRoutes,
       ...inquiryRoutes,
+      ...categoryRoutes,
       ...ingredientRoutes,
     ]
   } catch {

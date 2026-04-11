@@ -227,6 +227,118 @@ export async function getIngredientKnowledgeBatch(
 // List enriched ingredient slugs for sitemap generation
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Category helpers
+// ---------------------------------------------------------------------------
+
+export const INGREDIENT_CATEGORIES: Record<string, string> = {
+  produce: 'Produce',
+  protein: 'Proteins',
+  pantry: 'Pantry',
+  baking: 'Baking',
+  dairy: 'Dairy',
+  beverage: 'Beverages',
+  oil: 'Oils',
+  canned: 'Canned Goods',
+  specialty: 'Specialty',
+  frozen: 'Frozen',
+  alcohol: 'Alcohol',
+  condiment: 'Condiments',
+  spice: 'Spices',
+  fresh_herb: 'Fresh Herbs',
+  other: 'Other',
+}
+
+export async function getIngredientCategories(): Promise<
+  Array<{ category: string; label: string; count: number }>
+> {
+  const rows = await pgClient`
+    SELECT si.category, COUNT(*) AS cnt
+    FROM ingredient_knowledge_slugs iks
+    JOIN system_ingredients si ON si.id = iks.system_ingredient_id
+    JOIN ingredient_knowledge k ON k.system_ingredient_id = iks.system_ingredient_id
+    WHERE k.wiki_summary IS NOT NULL AND k.needs_review = false
+      AND si.category IS NOT NULL
+    GROUP BY si.category
+    ORDER BY cnt DESC
+  `
+
+  return (rows as any[]).map((r) => ({
+    category: r.category as string,
+    label: INGREDIENT_CATEGORIES[r.category] ?? r.category,
+    count: Number(r.cnt),
+  }))
+}
+
+export type CategoryIngredient = {
+  slug: string
+  name: string
+  wikiSummary: string | null
+  flavorProfile: string | null
+  dietaryFlags: string[]
+  imageUrl: string | null
+}
+
+export async function getIngredientsByCategory(
+  category: string,
+  offset = 0,
+  limit = 48
+): Promise<{ items: CategoryIngredient[]; total: number }> {
+  const rows = await pgClient`
+    SELECT
+      iks.slug, si.name,
+      k.wiki_summary, k.flavor_profile, k.dietary_flags, k.image_url,
+      COUNT(*) OVER() AS total_count
+    FROM ingredient_knowledge_slugs iks
+    JOIN system_ingredients si ON si.id = iks.system_ingredient_id
+    JOIN ingredient_knowledge k ON k.system_ingredient_id = iks.system_ingredient_id
+    WHERE k.wiki_summary IS NOT NULL AND k.needs_review = false
+      AND si.category = ${category}
+    ORDER BY si.name ASC
+    LIMIT ${limit} OFFSET ${offset}
+  `
+
+  const total = (rows as any[]).length > 0 ? Number((rows as any[])[0].total_count) : 0
+  return {
+    total,
+    items: (rows as any[]).map((r) => ({
+      slug: r.slug as string,
+      name: r.name as string,
+      wikiSummary: r.wiki_summary ?? null,
+      flavorProfile: r.flavor_profile ?? null,
+      dietaryFlags: (r.dietary_flags as string[]) ?? [],
+      imageUrl: r.image_url ?? null,
+    })),
+  }
+}
+
+export async function getRelatedIngredients(
+  category: string,
+  excludeSlug: string,
+  limit = 6
+): Promise<CategoryIngredient[]> {
+  const rows = await pgClient`
+    SELECT iks.slug, si.name, k.wiki_summary, k.flavor_profile, k.dietary_flags, k.image_url
+    FROM ingredient_knowledge_slugs iks
+    JOIN system_ingredients si ON si.id = iks.system_ingredient_id
+    JOIN ingredient_knowledge k ON k.system_ingredient_id = iks.system_ingredient_id
+    WHERE k.wiki_summary IS NOT NULL AND k.needs_review = false
+      AND si.category = ${category}
+      AND iks.slug != ${excludeSlug}
+    ORDER BY RANDOM()
+    LIMIT ${limit}
+  `
+
+  return (rows as any[]).map((r) => ({
+    slug: r.slug as string,
+    name: r.name as string,
+    wikiSummary: r.wiki_summary ?? null,
+    flavorProfile: r.flavor_profile ?? null,
+    dietaryFlags: (r.dietary_flags as string[]) ?? [],
+    imageUrl: r.image_url ?? null,
+  }))
+}
+
 export async function getEnrichedIngredientSlugs(): Promise<
   Array<{ slug: string; enrichedAt: string }>
 > {
