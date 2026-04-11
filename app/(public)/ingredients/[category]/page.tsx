@@ -38,15 +38,24 @@ export async function generateStaticParams() {
 // Metadata
 // ---------------------------------------------------------------------------
 
-export async function generateMetadata({ params }: Params): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Params): Promise<Metadata> {
   const { category } = await params
+  const { page = '1' } = await searchParams
   const label = INGREDIENT_CATEGORIES[category]
   if (!label) return { title: 'Ingredients | ChefFlow' }
 
+  const pageNum = Math.max(1, parseInt(page) || 1)
   const description = `Browse ${label.toLowerCase()} ingredients with flavor profiles, origin stories, dietary info, and live market pricing from local stores.`
+  const canonicalUrl =
+    pageNum === 1
+      ? `${BASE_URL}/ingredients/${category}`
+      : `${BASE_URL}/ingredients/${category}?page=${pageNum}`
 
   return {
-    title: `${label} Ingredients | ChefFlow`,
+    title:
+      pageNum === 1
+        ? `${label} Ingredients | ChefFlow`
+        : `${label} Ingredients - Page ${pageNum} | ChefFlow`,
     description,
     openGraph: {
       title: `${label} Ingredients | ChefFlow`,
@@ -55,7 +64,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       type: 'website',
     },
     alternates: {
-      canonical: `${BASE_URL}/ingredients/${category}`,
+      canonical: canonicalUrl,
     },
   }
 }

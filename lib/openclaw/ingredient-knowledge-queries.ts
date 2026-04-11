@@ -357,6 +357,30 @@ export async function getEnrichedIngredientSlugs(): Promise<
 }
 
 // ---------------------------------------------------------------------------
+// Recently enriched ingredients (for homepage fresh content)
+// ---------------------------------------------------------------------------
+
+export async function getRecentlyEnrichedIngredients(limit = 12): Promise<CategoryIngredient[]> {
+  const rows = await pgClient`
+    SELECT iks.slug, si.name, k.wiki_summary, k.flavor_profile, k.dietary_flags, k.image_url
+    FROM ingredient_knowledge_slugs iks
+    JOIN system_ingredients si ON si.id = iks.system_ingredient_id
+    JOIN ingredient_knowledge k ON k.system_ingredient_id = iks.system_ingredient_id
+    WHERE k.wiki_summary IS NOT NULL AND k.needs_review = false AND k.image_url IS NOT NULL
+    ORDER BY k.enriched_at DESC
+    LIMIT ${limit}
+  `
+  return (rows as any[]).map((r) => ({
+    slug: r.slug as string,
+    name: r.name as string,
+    wikiSummary: r.wiki_summary ?? null,
+    flavorProfile: r.flavor_profile ?? null,
+    dietaryFlags: (r.dietary_flags as string[]) ?? [],
+    imageUrl: r.image_url ?? null,
+  }))
+}
+
+// ---------------------------------------------------------------------------
 // Stats: how many ingredients have knowledge data
 // ---------------------------------------------------------------------------
 

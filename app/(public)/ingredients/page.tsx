@@ -8,7 +8,11 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { pgClient } from '@/lib/db'
-import { getIngredientCategories } from '@/lib/openclaw/ingredient-knowledge-queries'
+import {
+  getIngredientCategories,
+  getRecentlyEnrichedIngredients,
+  type CategoryIngredient,
+} from '@/lib/openclaw/ingredient-knowledge-queries'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -112,9 +116,10 @@ export default async function IngredientsPage({ searchParams }: Props) {
   const pageNum = Math.max(1, parseInt(page) || 1)
   const offset = (pageNum - 1) * 48
 
-  const [{ items, total, hasMore }, categories] = await Promise.all([
+  const [{ items, total, hasMore }, categories, recentlyAdded] = await Promise.all([
     getIngredients(q, offset).catch(() => ({ items: [], total: 0, hasMore: false })),
     getIngredientCategories().catch(() => []),
+    !q && pageNum === 1 ? getRecentlyEnrichedIngredients(8).catch(() => []) : Promise.resolve([]),
   ])
 
   const collectionLd = {
@@ -189,6 +194,41 @@ export default async function IngredientsPage({ searchParams }: Props) {
             </button>
           </div>
         </form>
+
+        {/* Recently added - only on page 1, no search */}
+        {recentlyAdded.length > 0 && (
+          <div className="mb-10">
+            <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-4">
+              Recently Added
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+              {recentlyAdded.map((item) => (
+                <Link
+                  key={item.slug}
+                  href={`/ingredient/${item.slug}`}
+                  className="group flex flex-col items-center text-center gap-1.5"
+                >
+                  {item.imageUrl ? (
+                    <div className="w-full aspect-square rounded-xl overflow-hidden bg-stone-800 border border-stone-800 group-hover:border-stone-600 transition-colors">
+                      <img
+                        src={item.imageUrl}
+                        alt={item.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-full aspect-square rounded-xl bg-stone-800 border border-stone-800 flex items-center justify-center text-2xl">
+                      🥬
+                    </div>
+                  )}
+                  <span className="text-xs text-stone-300 group-hover:text-white leading-tight line-clamp-2">
+                    {item.name}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Results */}
         {items.length === 0 ? (
