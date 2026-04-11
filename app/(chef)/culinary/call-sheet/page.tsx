@@ -19,6 +19,7 @@ import { listVendors } from '@/lib/vendors/actions'
 import { Phone, Check, X, Clock, AlertCircle, Play, Mic } from '@/components/ui/icons'
 import { formatDistanceToNow } from 'date-fns'
 import { VendorDirectoryClient } from '@/app/(chef)/culinary/vendors/vendor-directory-client'
+import { NationalVendorSearch } from '@/components/vendors/national-vendor-search'
 
 export const metadata: Metadata = { title: 'Call Sheet' }
 
@@ -246,12 +247,26 @@ export default async function CallSheetPage({
 
       {/* Tab: Vendors */}
       {tab === 'vendors' && (
-        <div className="max-w-3xl">
-          <p className="text-sm text-stone-500 mb-5">
-            Vendors with a phone number appear in the Auto-call panel when you search the Food
-            Catalog.
-          </p>
-          <VendorDirectoryClient initialVendors={vendors as any} />
+        <div className="max-w-3xl space-y-10">
+          {/* National directory search */}
+          <div>
+            <h2 className="text-base font-semibold text-stone-200 mb-1">Find Vendors</h2>
+            <p className="text-sm text-stone-500 mb-4">
+              Search hundreds of thousands of specialty food suppliers nationwide. Hit Add to put
+              them on your Call Sheet.
+            </p>
+            <NationalVendorSearch />
+          </div>
+
+          {/* Chef's personal vendor list */}
+          <div>
+            <h2 className="text-base font-semibold text-stone-200 mb-1">Your Vendors</h2>
+            <p className="text-sm text-stone-500 mb-4">
+              Vendors with a phone number appear in the Auto-call panel when you search the Food
+              Catalog.
+            </p>
+            <VendorDirectoryClient initialVendors={vendors as any} />
+          </div>
         </div>
       )}
     </div>
