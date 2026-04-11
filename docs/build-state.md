@@ -12,10 +12,10 @@ Last known state of the app. Updated after every successful type check and build
 
 ## Current State
 
-| Check                                 | Status | Last Verified | Commit         | Agent                     |
-| ------------------------------------- | ------ | ------------- | -------------- | ------------------------- |
-| `npx tsc --noEmit --skipLibCheck`     | green  | 2026-04-11    | 0ae281d51      | Builder (voice session)   |
-| `npx next build --no-lint` (8GB heap) | green  | 2026-04-10    | dirty checkout | Builder (pricing honesty) |
+| Check                                    | Status | Last Verified | Commit    | Agent                   |
+| ---------------------------------------- | ------ | ------------- | --------- | ----------------------- |
+| `npx tsc --noEmit --skipLibCheck`        | green  | 2026-04-11    | 0ae281d51 | Builder (voice session) |
+| `npm run build -- --no-lint` (12GB heap) | green  | 2026-04-11    | c74e7a4cd | Builder (voice session) |
 
 **Green note (2026-04-11):** Full `tsc --skipLibCheck` exits 0 with zero errors after the AI voice system build (neural TTS, inbound calls, voicemail, live alerts, SSE-driven CallHub). All files from this session typecheck clean.
 
