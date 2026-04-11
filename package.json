@@ -67,6 +67,7 @@
     "ingredients:backfill:dry": "node scripts/backfill-ingredient-aliases.mjs --dry-run --verbose",
     "catalog:backfill-normmap": "node scripts/backfill-normalization-map.mjs",
     "catalog:backfill-normmap:dry": "node scripts/backfill-normalization-map.mjs --dry-run",
+    "ingredients:propagate-density": "node scripts/propagate-ingredient-density.mjs",
     "demo:setup": "tsx scripts/setup-demo-accounts.ts",
     "demo:load": "tsx scripts/demo-data-load.ts",
     "demo:clear": "tsx scripts/demo-data-clear.ts",

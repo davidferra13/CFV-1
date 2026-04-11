@@ -43,3 +43,17 @@ try {
 } catch {
     Add-Content $logFile "[$timestamp] EXCEPTION (backfill-normalization-map): $_"
 }
+
+# Step 3: propagate density from system_ingredients to chef ingredients + refresh baselines
+try {
+    $result3 = & "node" "scripts/propagate-ingredient-density.mjs" 2>&1
+    $exitCode3 = $LASTEXITCODE
+    Add-Content $logFile ($result3 | Out-String)
+    if ($exitCode3 -eq 0) {
+        Add-Content $logFile "[$timestamp] propagate-ingredient-density OK"
+    } else {
+        Add-Content $logFile "[$timestamp] ERROR: propagate-ingredient-density exit $exitCode3"
+    }
+} catch {
+    Add-Content $logFile "[$timestamp] EXCEPTION (propagate-ingredient-density): $_"
+}
