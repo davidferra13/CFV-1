@@ -181,7 +181,7 @@ V1 is "done" and ready to ship when ALL of the following are true:
 - [x] SSE authentication implemented (already has auth + tenant channel validation; minor gaps in presence/typing endpoints)
 - [ ] At least 1 real chef has used it for 2+ weeks and provided feedback
 - [ ] Public booking page tested end-to-end by a non-developer
-- [ ] All 6 pillars pass a Playwright walkthrough (happy path)
+- [x] All 6 pillars pass a Playwright walkthrough (happy path) - 28/28 passed Apr 11
 - [x] No critical security gaps (2 security audit waves: 38 functions hardened, all critical/high fixed; 2 remaining items are Medium/Low design decisions)
 - [x] Database backup automation running (built April 4: encrypted, 14-day retention, alerting)
 
@@ -205,13 +205,13 @@ V1 is "done" and ready to ship when ALL of the following are true:
 
 ## What's Actively Being Worked On
 
-| Item                                   | Status   | Owner                                                                                                                                                                                                                              |
-| -------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 6-pillar Playwright walkthrough        | Ready    | Auth blocker resolved (Apr 6): e2e endpoint returns `authjs.session-token` without `__Secure-` prefix even with NEXTAUTH_URL=https. No server restart needed. Run: `npx playwright test --config=playwright.six-pillars.config.ts` |
-| Infrastructure system completion       | Complete | Merged to main                                                                                                                                                                                                                     |
-| Food costing pipeline (full E2E)       | Complete | Merged to main (Apr 6)                                                                                                                                                                                                             |
-| Analytics honesty (zero-hallucination) | Complete | Merged to main (Apr 6)                                                                                                                                                                                                             |
-| Mobile app + PWA activation            | 3/4 Done | Phases 1-3 complete (Apr 6): PWA live at app.cheflowhq.com, Tauri desktop installer built, Android APK signed. Phase 4 (iOS) blocked on macOS hardware. Commit f2f4e77dd                                                           |
+| Item                                   | Status   | Owner                                                                                                                                                                                      |
+| -------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 6-pillar Playwright walkthrough        | Complete | 28/28 passed Apr 11. Fixed: vendors page server->client callback crash, auth e2e endpoint NODE_ENV block, Edge Runtime postgres.js hang, N+1 requireChef, test.describe.configure timeout. |
+| Infrastructure system completion       | Complete | Merged to main                                                                                                                                                                             |
+| Food costing pipeline (full E2E)       | Complete | Merged to main (Apr 6)                                                                                                                                                                     |
+| Analytics honesty (zero-hallucination) | Complete | Merged to main (Apr 6)                                                                                                                                                                     |
+| Mobile app + PWA activation            | 3/4 Done | Phases 1-3 complete (Apr 6): PWA live at app.cheflowhq.com, Tauri desktop installer built, Android APK signed. Phase 4 (iOS) blocked on macOS hardware. Commit f2f4e77dd                   |
 
 _Last cleared: 2026-04-06. Completed items moved to queue or exit criteria._
 
