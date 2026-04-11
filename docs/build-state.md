@@ -14,10 +14,10 @@ Last known state of the app. Updated after every successful type check and build
 
 | Check                                 | Status | Last Verified | Commit         | Agent                     |
 | ------------------------------------- | ------ | ------------- | -------------- | ------------------------- |
-| `npx tsc --noEmit --skipLibCheck`     | yellow | 2026-04-10    | dirty checkout | Builder (pricing honesty) |
+| `npx tsc --noEmit --skipLibCheck`     | green  | 2026-04-11    | 0ae281d51      | Builder (voice session)   |
 | `npx next build --no-lint` (8GB heap) | green  | 2026-04-10    | dirty checkout | Builder (pricing honesty) |
 
-**Yellow note (2026-04-10):** Full project `tsc` returns exactly 2 errors, both in `lib/hub/integration-actions.ts` (implicit `any` on lines 388 and 404). These predate the current pricing-honesty session and come from an unrelated uncommitted working-tree change. The pricing files touched this session (`lib/pricing/resolve-price.ts`, `lib/pricing/universal-price-lookup.ts`, `components/pricing/price-badge.tsx`) typecheck clean, and `npx next build --no-lint` still exits 0 with a fresh BUILD_ID (`922b43351`). The hub file is a pre-existing debt item for whoever owns the guest-visible dinner circle work.
+**Green note (2026-04-11):** Full `tsc --skipLibCheck` exits 0 with zero errors after the AI voice system build (neural TTS, inbound calls, voicemail, live alerts, SSE-driven CallHub). All files from this session typecheck clean.
 
 **Last green build:** dirty checkout (2026-04-08) - Full production rebuild completed on the current Remy operator-mode / continuity / surface-reliability checkout. `:3000` was restarted onto the new build and `/api/remy/landing` returned `200` SSE for `hey` with the fast-path greeting.
 **Last commit on main:** d33bc2a4c
