@@ -723,9 +723,9 @@ export const navGroups: NavGroup[] = [
         icon: RefreshCw,
       },
       {
-        href: '/culinary/vendors',
-        label: 'Vendor Directory',
-        icon: Truck,
+        href: '/culinary/call-sheet',
+        label: 'Call Sheet',
+        icon: Phone,
       },
     ],
   },

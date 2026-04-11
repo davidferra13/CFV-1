@@ -233,7 +233,7 @@ function VendorCallQueuePanel({ query }: { query: string }) {
       <div className="px-5 py-3 border-b border-stone-700 flex items-center gap-2.5">
         <Phone className="w-4 h-4 text-stone-400 flex-shrink-0" />
         <div>
-          <p className="text-sm font-medium text-stone-200">Call your suppliers</p>
+          <p className="text-sm font-medium text-stone-200">Call Sheet</p>
           <p className="text-xs text-stone-500 mt-0.5">
             Not in the catalog or online. These vendors may have it.
           </p>
@@ -363,10 +363,10 @@ function VendorCallQueuePanel({ query }: { query: string }) {
             <>
               {'. '}
               <a
-                href="/culinary/supplier-calls"
+                href="/culinary/call-sheet"
                 className="text-stone-500 hover:text-stone-400 underline underline-offset-2"
               >
-                View call log
+                View call sheet
               </a>
             </>
           ) : (
