@@ -759,6 +759,107 @@ export async function getCatalogItemPrices(ingredientId: string): Promise<Catalo
   }))
 }
 
+/**
+ * Search system_ingredients as a fallback when the OpenClaw catalog returns
+ * zero results for a text query. Returns CatalogItemV2-shaped rows using
+ * pricing from openclaw.system_ingredient_prices.
+ *
+ * Only invoked on empty search results - never slows down the primary path.
+ */
+async function searchSystemIngredientsFallback(
+  search: string,
+  limit: number
+): Promise<CatalogItemV2[]> {
+  const q = search.trim().toLowerCase()
+  if (!q || q.length < 2) return []
+
+  // FTS first, then trigram, dedup by id
+  const rows = await pgClient`
+    WITH fts AS (
+      SELECT
+        si.id::text                                          AS id,
+        si.name,
+        si.category::text                                   AS category,
+        COALESCE(si.standard_unit, 'each')                  AS standard_unit,
+        sip.median_price_cents                              AS best_price_cents,
+        CASE WHEN sip.store_count IS NOT NULL
+             THEN sip.store_count || ' stores'
+             ELSE NULL
+        END                                                 AS best_price_store,
+        sip.price_unit                                      AS best_price_unit,
+        NULL::text                                          AS image_url,
+        NULL::text                                          AS brand,
+        COALESCE(sip.store_count, 0)                        AS price_count,
+        COALESCE(sip.store_count, 0)                        AS in_stock_count,
+        0                                                   AS out_of_stock_count,
+        false                                               AS has_source_url,
+        sip.last_refreshed_at                               AS last_updated,
+        1                                                   AS rank_source
+      FROM system_ingredients si
+      LEFT JOIN openclaw.system_ingredient_prices sip
+        ON sip.system_ingredient_id = si.id
+      WHERE si.is_active = true
+        AND to_tsvector('english', si.name) @@ plainto_tsquery('english', ${q})
+    ),
+    trigram AS (
+      SELECT
+        si.id::text                                          AS id,
+        si.name,
+        si.category::text                                   AS category,
+        COALESCE(si.standard_unit, 'each')                  AS standard_unit,
+        sip.median_price_cents                              AS best_price_cents,
+        CASE WHEN sip.store_count IS NOT NULL
+             THEN sip.store_count || ' stores'
+             ELSE NULL
+        END                                                 AS best_price_store,
+        sip.price_unit                                      AS best_price_unit,
+        NULL::text                                          AS image_url,
+        NULL::text                                          AS brand,
+        COALESCE(sip.store_count, 0)                        AS price_count,
+        COALESCE(sip.store_count, 0)                        AS in_stock_count,
+        0                                                   AS out_of_stock_count,
+        false                                               AS has_source_url,
+        sip.last_refreshed_at                               AS last_updated,
+        2                                                   AS rank_source
+      FROM system_ingredients si
+      LEFT JOIN openclaw.system_ingredient_prices sip
+        ON sip.system_ingredient_id = si.id
+      WHERE si.is_active = true
+        AND extensions.similarity(lower(si.name), ${q}) > 0.25
+    ),
+    combined AS (
+      SELECT * FROM fts
+      UNION
+      SELECT * FROM trigram
+    )
+    SELECT DISTINCT ON (id)
+      id, name, category, standard_unit, best_price_cents,
+      best_price_store, best_price_unit, image_url, brand,
+      price_count, in_stock_count, out_of_stock_count, has_source_url,
+      last_updated, rank_source
+    FROM combined
+    ORDER BY id, rank_source ASC
+    LIMIT ${limit}
+  `
+
+  return (rows as any[]).map((row) => ({
+    id: row.id,
+    name: row.name ?? '',
+    category: normalizeCategory(row.category),
+    standardUnit: normalizeUnit(row.standard_unit),
+    bestPriceCents: row.best_price_cents != null ? toNumber(row.best_price_cents) : null,
+    bestPriceStore: row.best_price_store ?? null,
+    bestPriceUnit: normalizeUnit(row.best_price_unit),
+    imageUrl: null,
+    brand: null,
+    priceCount: toNumber(row.price_count),
+    inStockCount: toNumber(row.in_stock_count),
+    outOfStockCount: 0,
+    hasSourceUrl: false,
+    lastUpdated: toIso(row.last_updated),
+  }))
+}
+
 export async function searchCatalogV2(params: {
   search?: string
   category?: string
@@ -769,10 +870,17 @@ export async function searchCatalogV2(params: {
   sort?: string
   limit?: number
   after?: string
-}): Promise<{ items: CatalogItemV2[]; total: number; hasMore: boolean; nextCursor?: string }> {
+}): Promise<{
+  items: CatalogItemV2[]
+  total: number
+  hasMore: boolean
+  nextCursor?: string
+  source?: 'openclaw' | 'system'
+}> {
   await requireChef()
 
   const offset = params.after ? Math.max(parseInt(params.after, 10) || 0, 0) : 0
+  const limit = params.limit ?? 50
   const result = await queryCatalogRows({
     search: params.search,
     category: params.category,
@@ -781,15 +889,46 @@ export async function searchCatalogV2(params: {
     inStockOnly: params.inStockOnly,
     tier: params.tier,
     sort: params.sort,
-    limit: params.limit,
+    limit,
     offset,
   })
 
+  // Primary path: OpenClaw catalog has results
+  if (result.total > 0) {
+    return {
+      items: result.rows.map(mapCatalogItemV2),
+      total: result.total,
+      hasMore: result.hasMore,
+      nextCursor: result.nextCursor,
+      source: 'openclaw',
+    }
+  }
+
+  // Fallback: no OpenClaw results for this search term - try system_ingredients.
+  // Only applies when there is a non-trivial search query and no category/store filters
+  // (those filters are meaningless against system_ingredients).
+  const search = params.search?.trim()
+  if (search && search.length >= 2 && !params.category && !params.store) {
+    try {
+      const fallbackItems = await searchSystemIngredientsFallback(search, limit)
+      if (fallbackItems.length > 0) {
+        return {
+          items: fallbackItems,
+          total: fallbackItems.length,
+          hasMore: false,
+          source: 'system',
+        }
+      }
+    } catch (err) {
+      console.error('[searchCatalogV2] System ingredients fallback failed:', err)
+    }
+  }
+
   return {
-    items: result.rows.map(mapCatalogItemV2),
-    total: result.total,
-    hasMore: result.hasMore,
-    nextCursor: result.nextCursor,
+    items: [],
+    total: 0,
+    hasMore: false,
+    source: 'openclaw',
   }
 }
 
@@ -1143,5 +1282,74 @@ export async function addSystemIngredientToLibrary(
       err instanceof Error ? err.message : err
     )
     return { success: false, error: 'Failed to add ingredient to library' }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Ingredient knowledge lookup (for catalog expanded detail panel)
+// ---------------------------------------------------------------------------
+
+export type CatalogIngredientKnowledge = {
+  wikiSummary: string | null
+  flavorProfile: string | null
+  culinaryUses: string | null
+  typicalPairings: string[]
+  dietaryFlags: string[]
+  originCountries: string[]
+  taxonName: string | null
+  imageUrl: string | null
+  wikipediaUrl: string | null
+}
+
+export async function getIngredientKnowledgeForCatalog(
+  name: string
+): Promise<CatalogIngredientKnowledge | null> {
+  if (!name?.trim()) return null
+
+  try {
+    const rows = await pgClient<
+      {
+        wiki_summary: string | null
+        flavor_profile: string | null
+        culinary_uses: string | null
+        typical_pairings: string[]
+        dietary_flags: string[]
+        origin_countries: string[]
+        taxon_name: string | null
+        image_url: string | null
+        wikipedia_url: string | null
+      }[]
+    >`
+      SELECT
+        k.wiki_summary, k.flavor_profile, k.culinary_uses,
+        k.typical_pairings, k.dietary_flags, k.origin_countries,
+        k.taxon_name, k.image_url, k.wikipedia_url,
+        extensions.similarity(si.name, ${name}) AS sim
+      FROM system_ingredients si
+      JOIN ingredient_knowledge k ON k.system_ingredient_id = si.id
+      WHERE si.is_active = true
+        AND k.needs_review = false
+        AND k.wiki_summary IS NOT NULL
+        AND extensions.similarity(si.name, ${name}) > 0.30
+      ORDER BY sim DESC
+      LIMIT 1
+    `
+
+    const row = rows[0]
+    if (!row) return null
+
+    return {
+      wikiSummary: row.wiki_summary ?? null,
+      flavorProfile: row.flavor_profile ?? null,
+      culinaryUses: row.culinary_uses ?? null,
+      typicalPairings: row.typical_pairings ?? [],
+      dietaryFlags: row.dietary_flags ?? [],
+      originCountries: row.origin_countries ?? [],
+      taxonName: row.taxon_name ?? null,
+      imageUrl: row.image_url ?? null,
+      wikipediaUrl: row.wikipedia_url ?? null,
+    }
+  } catch {
+    return null
   }
 }

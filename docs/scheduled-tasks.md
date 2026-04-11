@@ -1,6 +1,6 @@
 # ChefFlow Scheduled Tasks - Master Reference
 
-> Last updated: 2026-04-03
+> Last updated: 2026-04-09
 
 ## Architecture
 
@@ -20,14 +20,15 @@ Two machines, one scheduler (Windows Task Scheduler on PC), three cost tiers:
 
 ### Overnight Window (2:00 - 5:00 AM)
 
-| Time         | Task                            | Script                                       | Cost | What it does                                                           |
-| ------------ | ------------------------------- | -------------------------------------------- | ---- | ---------------------------------------------------------------------- |
-| 2:00 AM      | **ChefFlow-StaleCleanup**       | `scripts/scheduled/daily-stale-cleanup.ps1`  | Free | Cleans test artifacts, old screenshots, probe dirs                     |
-| 3:00 AM      | **ChefFlow-DailyBackup**        | `scripts/scheduled/daily-backup.ps1`         | Free | PostgreSQL dump via Docker, 7-day rotation                             |
-| 3:30 AM      | **ChefFlow-OffsiteBackup**      | `scripts/scheduled/offsite-backup-sync.ps1`  | Free | Sync latest 3 backups to Cloudflare R2 (graceful skip if unconfigured) |
-| 4:00 AM Sun  | **ChefFlow-WeeklyDBIntegrity**  | `scripts/scheduled/weekly-db-integrity.ps1`  | Free | Full DB audit against business rules                                   |
-| ~monthly Sun | **ChefFlow-MonthlyRestoreTest** | `scripts/scheduled/monthly-restore-test.ps1` | Free | Restore backup to temp DB, validate key tables, drop                   |
-| 5:00 AM Mon  | **ChefFlow-WeeklySecretScan**   | `scripts/scheduled/weekly-secret-scan.ps1`   | Free | Scan codebase for exposed credentials                                  |
+| Time         | Task                             | Script                                               | Cost | What it does                                                           |
+| ------------ | -------------------------------- | ---------------------------------------------------- | ---- | ---------------------------------------------------------------------- |
+| 2:00 AM      | **ChefFlow-StaleCleanup**        | `scripts/scheduled/daily-stale-cleanup.ps1`          | Free | Cleans test artifacts, old screenshots, probe dirs                     |
+| 3:00 AM      | **ChefFlow-DailyBackup**         | `scripts/scheduled/daily-backup.ps1`                 | Free | PostgreSQL dump via Docker, 7-day rotation                             |
+| 3:30 AM      | **ChefFlow-OffsiteBackup**       | `scripts/scheduled/offsite-backup-sync.ps1`          | Free | Sync latest 3 backups to Cloudflare R2 (graceful skip if unconfigured) |
+| 4:00 AM Sun  | **ChefFlow-WeeklyDBIntegrity**   | `scripts/scheduled/weekly-db-integrity.ps1`          | Free | Full DB audit against business rules                                   |
+| ~monthly Sun | **ChefFlow-MonthlyRestoreTest**  | `scripts/scheduled/monthly-restore-test.ps1`         | Free | Restore backup to temp DB, validate key tables, drop                   |
+| 5:00 AM Mon  | **ChefFlow-WeeklySecretScan**    | `scripts/scheduled/weekly-secret-scan.ps1`           | Free | Scan codebase for exposed credentials                                  |
+| 4:30 AM Sat  | **ChefFlow-IngredientPriceSync** | `scripts/scheduled/weekly-ingredient-price-sync.ps1` | Free | FTS bridge: system_ingredients to openclaw prices for costing          |
 
 ### Morning Window (6:00 - 7:00 AM)
 
@@ -40,18 +41,20 @@ Two machines, one scheduler (Windows Task Scheduler on PC), three cost tiers:
 
 ### All Day
 
-| Frequency     | Task                     | Script                                    | Cost | What it does                                                                                  |
-| ------------- | ------------------------ | ----------------------------------------- | ---- | --------------------------------------------------------------------------------------------- |
-| Every 15 min  | **ChefFlow-HealthCheck** | `scripts/scheduled/prod-health-check.ps1` | Free | Prod, dev, DB, Ollama, tunnel, disk, mem, CPU. Desktop alert on failure. Healthchecks.io ping |
-| Every 4 hours | **OpenClaw-Pull**        | `scripts/openclaw-pull/pull.mjs`          | Free | 6/10/14/18/22: price sync from Pi                                                             |
+| Frequency     | Task                         | Script                                    | Cost | What it does                                                                                                                           |
+| ------------- | ---------------------------- | ----------------------------------------- | ---- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Every 15 min  | **ChefFlow-HealthCheck**     | `scripts/scheduled/prod-health-check.ps1` | Free | Prod, dev, DB, Ollama, tunnel, disk, mem, CPU. Desktop alert on failure. Healthchecks.io ping                                          |
+| Every 1 hour  | **ChefFlow-LiveOpsGuardian** | `scripts/scheduled/live-ops-guardian.ps1` | Free | Health probes + unit canaries every sweep, then targeted Playwright verification when repo changes or the periodic sweep window is due |
+| Every 4 hours | **OpenClaw-Pull**            | `scripts/openclaw-pull/pull.mjs`          | Free | 6/10/14/18/22: price sync from Pi                                                                                                      |
 
-### On Logon
+### Startup / Logon
 
-| Task                  | Script                            | What it does                                       |
-| --------------------- | --------------------------------- | -------------------------------------------------- |
-| **ChefFlow-Watchdog** | `chefflow-watchdog.ps1` (via VBS) | Auto-restarts prod server, Ollama, Mission Control |
-| **ChefFlow-Ollama**   | `ollama.exe serve`                | Keeps AI runtime alive                             |
-| **PiTether**          | `pi-tether.ps1`                   | Keeps Pi network connection alive                  |
+| Task                            | Script                                | What it does                                                                                               |
+| ------------------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **ChefFlow-Watchdog**           | `chefflow-watchdog.ps1` (via VBS)     | Startup + logon supervisor for Docker, Postgres, prod, dev, beta, tunnels, Ollama, Mission Control backend |
+| **ChefFlow-MissionControlTray** | `scripts/launcher/tray.ps1` (via VBS) | Starts the Mission Control tray after login                                                                |
+| **ChefFlow-Ollama**             | `ollama.exe serve`                    | Legacy fallback; watchdog now covers Ollama as well                                                        |
+| **PiTether**                    | `pi-tether.ps1`                       | Keeps Pi network connection alive                                                                          |
 
 ---
 
@@ -62,6 +65,7 @@ All scheduled task logs write to `logs/` in the project root:
 | Log file                         | Written by                          |
 | -------------------------------- | ----------------------------------- |
 | `logs/health-check.log`          | HealthCheck (every 15 min)          |
+| `logs/live-ops-guardian.log`     | LiveOpsGuardian (hourly)            |
 | `logs/daily-backup.log`          | DailyBackup                         |
 | `logs/daily-sync-check.log`      | DailySyncCheck (Claude Haiku)       |
 | `logs/pipeline-audit.log`        | PipelineAudit                       |
@@ -91,6 +95,12 @@ All scheduled task logs write to `logs/` in the project root:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\scheduled\register-all-tasks.ps1
+```
+
+**Register startup tasks:**
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\scheduled\register-startup-stack.ps1
 ```
 
 **List all project tasks:**
@@ -128,6 +138,16 @@ Start-ScheduledTask -TaskName "ChefFlow-DailyBackup"
 4. Always log to `logs/` with timestamp prefix
 5. Include log rotation (1-2 MB max)
 6. Update this document
+
+### Live Ops Guardian Notes
+
+- Default behavior is safe and free: it probes local health, runs the health/readiness/cron-monitoring unit canaries, and runs the public launch suite against the first healthy local app (`:3100`, then `:3000`, then `:3200`).
+- It only runs heavier verification when either:
+  - the git worktree fingerprint changed since the last evaluation, or
+  - the periodic sweep window elapsed (default: 6 hours)
+- Authenticated sweeps are opt-in. Set `LIVE_OPS_ENABLE_AUTH_SWEEPS=true` and allow E2E seeding (`DATABASE_E2E_ALLOW_REMOTE=true` or `DATABASE_E2E_ALLOW_LOCAL=true`) if you want it to run chef/client launch suites for settings or portal changes.
+- Latest machine-readable summary: `logs/live-ops-guardian-latest.json`
+- Last alert marker (when checks fail): `logs/live-ops-guardian-alert.txt`
 
 ---
 

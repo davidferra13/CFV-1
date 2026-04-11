@@ -9,11 +9,13 @@ import {
   addCatalogIngredientToLibrary,
   searchSystemIngredients,
   addSystemIngredientToLibrary,
+  getIngredientKnowledgeForCatalog,
   type CatalogItemV2,
   type CatalogDetailResult,
   type CatalogDetailPrice,
   type CatalogStore,
   type SystemIngredientMatch,
+  type CatalogIngredientKnowledge,
 } from '@/lib/openclaw/catalog-actions'
 import { getPriceHistory } from '@/lib/openclaw/price-intelligence-actions'
 import { getPreferredStores } from '@/lib/grocery/store-shopping-actions'
@@ -421,6 +423,9 @@ export function CatalogBrowser() {
   // Expansion / detail
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [expandedDetail, setExpandedDetail] = useState<CatalogDetailResult | null>(null)
+  const [expandedKnowledge, setExpandedKnowledge] = useState<CatalogIngredientKnowledge | null>(
+    null
+  )
   const [priceHistory, setPriceHistory] = useState<PriceHistoryPoint[]>([])
 
   // UI state
@@ -445,6 +450,7 @@ export function CatalogBrowser() {
   const [systemMatches, setSystemMatches] = useState<SystemIngredientMatch[]>([])
   const [systemMatchAdded, setSystemMatchAdded] = useState<Set<string>>(new Set())
   const [systemMatchAdding, setSystemMatchAdding] = useState<string | null>(null)
+  const [resultSource, setResultSource] = useState<'openclaw' | 'system' | undefined>(undefined)
 
   // Dropdowns
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
@@ -506,6 +512,7 @@ export function CatalogBrowser() {
           setTotal(result.total)
           setHasMore(result.hasMore)
           setNextCursor(result.nextCursor)
+          setResultSource(result.source)
           setError(null)
         } catch (err) {
           if (controller.signal.aborted) return
@@ -530,6 +537,7 @@ export function CatalogBrowser() {
     debounceRef.current = setTimeout(() => {
       setExpandedId(null)
       setExpandedDetail(null)
+      setExpandedKnowledge(null)
       setPriceHistory([])
       doSearch(true)
     }, 400)
@@ -600,18 +608,27 @@ export function CatalogBrowser() {
       if (expandedId === id) {
         setExpandedId(null)
         setExpandedDetail(null)
+        setExpandedKnowledge(null)
         setPriceHistory([])
         return
       }
 
       setExpandedId(id)
       setExpandedDetail(null)
+      setExpandedKnowledge(null)
       setPriceHistory([])
 
       try {
-        const [detail, history] = await Promise.all([getCatalogDetail(id), getPriceHistory(id)])
+        // Find item name for knowledge lookup
+        const item = items.find((it) => it.id === id)
+        const [detail, history, knowledge] = await Promise.all([
+          getCatalogDetail(id),
+          getPriceHistory(id),
+          item ? getIngredientKnowledgeForCatalog(item.name) : Promise.resolve(null),
+        ])
         setExpandedDetail(detail)
         setPriceHistory(history.daily || [])
+        setExpandedKnowledge(knowledge)
       } catch {
         setExpandedDetail(null)
       }
@@ -1007,6 +1024,11 @@ export function CatalogBrowser() {
                   ? 'Searching...'
                   : `${total.toLocaleString()} ingredient${total !== 1 ? 's' : ''}`}
                 {items.length > 0 && items.length < total && ` (showing ${items.length})`}
+                {resultSource === 'system' && items.length > 0 && (
+                  <span className="ml-2 text-amber-500">
+                    (from ingredient database - store prices pending)
+                  </span>
+                )}
               </span>
               {hasActiveFilters && (
                 <button
@@ -1188,6 +1210,7 @@ export function CatalogBrowser() {
                         isExpanded={expandedId === item.id}
                         expandedDetail={expandedId === item.id ? expandedDetail : null}
                         priceHistory={expandedId === item.id ? priceHistory : []}
+                        knowledge={expandedId === item.id ? expandedKnowledge : null}
                         onToggle={() => toggleExpand(item.id)}
                         onAddToPantry={() => handleAddToPantry(item)}
                         onAddToCart={() => handleAddToCart(item)}
@@ -1209,6 +1232,7 @@ export function CatalogBrowser() {
                     isExpanded={expandedId === item.id}
                     expandedDetail={expandedId === item.id ? expandedDetail : null}
                     priceHistory={expandedId === item.id ? priceHistory : []}
+                    knowledge={expandedId === item.id ? expandedKnowledge : null}
                     onToggle={() => toggleExpand(item.id)}
                     onAddToPantry={() => handleAddToPantry(item)}
                     onAddToCart={() => handleAddToCart(item)}
@@ -1299,6 +1323,7 @@ function DesktopRow({
   isExpanded,
   expandedDetail,
   priceHistory,
+  knowledge,
   onToggle,
   onAddToPantry,
   onAddToCart,
@@ -1310,6 +1335,7 @@ function DesktopRow({
   isExpanded: boolean
   expandedDetail: CatalogDetailResult | null
   priceHistory: PriceHistoryPoint[]
+  knowledge: CatalogIngredientKnowledge | null
   onToggle: () => void
   onAddToPantry: () => void
   onAddToCart: () => void
@@ -1395,6 +1421,7 @@ function DesktopRow({
             <ExpandedDetail
               detail={expandedDetail}
               priceHistory={priceHistory}
+              knowledge={knowledge}
               item={item}
               onAddToPantry={onAddToPantry}
               onAddToCart={onAddToCart}
@@ -1418,6 +1445,7 @@ function MobileCard({
   isExpanded,
   expandedDetail,
   priceHistory,
+  knowledge,
   onToggle,
   onAddToPantry,
   onAddToCart,
@@ -1429,6 +1457,7 @@ function MobileCard({
   isExpanded: boolean
   expandedDetail: CatalogDetailResult | null
   priceHistory: PriceHistoryPoint[]
+  knowledge: CatalogIngredientKnowledge | null
   onToggle: () => void
   onAddToPantry: () => void
   onAddToCart: () => void
@@ -1502,6 +1531,7 @@ function MobileCard({
           <ExpandedDetail
             detail={expandedDetail}
             priceHistory={priceHistory}
+            knowledge={knowledge}
             item={item}
             onAddToPantry={onAddToPantry}
             onAddToCart={onAddToCart}
@@ -1522,6 +1552,7 @@ function MobileCard({
 function ExpandedDetail({
   detail,
   priceHistory,
+  knowledge,
   item,
   onAddToPantry,
   onAddToCart,
@@ -1531,6 +1562,7 @@ function ExpandedDetail({
 }: {
   detail: CatalogDetailResult | null
   priceHistory: PriceHistoryPoint[]
+  knowledge: CatalogIngredientKnowledge | null
   item: CatalogItemV2
   onAddToPantry: () => void
   onAddToCart: () => void
@@ -1673,6 +1705,78 @@ function ExpandedDetail({
       {prices.length === 0 && (
         <div className="text-xs text-stone-500 py-2">No per-store price data available</div>
       )}
+
+      {/* Ingredient knowledge panel */}
+      {knowledge &&
+        (knowledge.wikiSummary || knowledge.flavorProfile || knowledge.culinaryUses) && (
+          <div className="border border-stone-800 rounded-lg p-3 space-y-2 bg-stone-900/40">
+            {knowledge.wikiSummary && (
+              <p className="text-xs text-stone-300 leading-relaxed">{knowledge.wikiSummary}</p>
+            )}
+            <div className="flex flex-wrap gap-x-6 gap-y-1.5">
+              {knowledge.flavorProfile && (
+                <div className="text-xs">
+                  <span className="text-stone-500">Flavor: </span>
+                  <span className="text-stone-300">{knowledge.flavorProfile}</span>
+                </div>
+              )}
+              {knowledge.originCountries.length > 0 && (
+                <div className="text-xs">
+                  <span className="text-stone-500">Origin: </span>
+                  <span className="text-stone-300">
+                    {knowledge.originCountries.slice(0, 3).join(', ')}
+                  </span>
+                </div>
+              )}
+              {knowledge.taxonName && (
+                <div className="text-xs">
+                  <span className="text-stone-500">Species: </span>
+                  <span className="text-stone-400 italic">{knowledge.taxonName}</span>
+                </div>
+              )}
+            </div>
+            {knowledge.culinaryUses && (
+              <p className="text-xs text-stone-400 leading-relaxed">{knowledge.culinaryUses}</p>
+            )}
+            {knowledge.typicalPairings.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                <span className="text-xs text-stone-500 self-center">Pairs with:</span>
+                {knowledge.typicalPairings.slice(0, 6).map((p) => (
+                  <span
+                    key={p}
+                    className="text-xs bg-stone-800 text-stone-400 px-1.5 py-0.5 rounded"
+                  >
+                    {p}
+                  </span>
+                ))}
+              </div>
+            )}
+            {knowledge.dietaryFlags.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {knowledge.dietaryFlags.map((f) => (
+                  <span
+                    key={f}
+                    className="text-xs bg-emerald-950/60 text-emerald-400 border border-emerald-900/60 px-1.5 py-0.5 rounded"
+                  >
+                    {f}
+                  </span>
+                ))}
+              </div>
+            )}
+            {knowledge.wikipediaUrl && (
+              <a
+                href={knowledge.wikipediaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1 text-xs text-stone-500 hover:text-stone-300 transition-colors"
+              >
+                Wikipedia
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            )}
+          </div>
+        )}
 
       {/* Action buttons */}
       <div className="flex flex-wrap items-center gap-2 pt-1">

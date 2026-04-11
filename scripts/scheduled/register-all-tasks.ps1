@@ -36,7 +36,12 @@ $action  = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-Executi
 $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday -At "5:00AM"
 Register-ScheduledTask -TaskName "ChefFlow-WeeklySecretScan" -Action $action -Trigger $trigger -Settings $settings -Description "Monday 5 AM: scan codebase for exposed secrets (FREE)" -Force
 
-# 7. Monthly Restore Test - every 4th Sunday, 4:30 AM
+# 7. Weekly Ingredient Price Sync - Saturday 4:30 AM
+$action  = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-ExecutionPolicy Bypass -WindowStyle Hidden -File `"$base\weekly-ingredient-price-sync.ps1`"" -WorkingDirectory "C:\Users\david\Documents\CFv1"
+$trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Saturday -At "4:30AM"
+Register-ScheduledTask -TaskName "ChefFlow-IngredientPriceSync" -Action $action -Trigger $trigger -Settings $settings -Description "Saturday 4:30 AM: bridge OpenClaw prices to system_ingredients for costing (FREE)" -Force
+
+# 8. Monthly Restore Test - every 4th Sunday, 4:30 AM
 $action  = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-ExecutionPolicy Bypass -WindowStyle Hidden -File `"$base\monthly-restore-test.ps1`"" -WorkingDirectory "C:\Users\david\Documents\CFv1"
 $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -WeeksInterval 4 -At "4:30AM"
 Register-ScheduledTask -TaskName "ChefFlow-MonthlyRestoreTest" -Action $action -Trigger $trigger -Settings $settings -Description "Monthly: restore backup to temp DB, validate, drop (FREE)" -Force
@@ -45,6 +50,16 @@ Register-ScheduledTask -TaskName "ChefFlow-MonthlyRestoreTest" -Action $action -
 $action  = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-ExecutionPolicy Bypass -WindowStyle Hidden -File `"$base\offsite-backup-sync.ps1`"" -WorkingDirectory "C:\Users\david\Documents\CFv1"
 $trigger = New-ScheduledTaskTrigger -Daily -At "3:30AM"
 Register-ScheduledTask -TaskName "ChefFlow-OffsiteBackup" -Action $action -Trigger $trigger -Settings $settings -Description "Daily 3:30 AM: sync latest backup to Cloudflare R2 (FREE, skip if unconfigured)" -Force
+
+# 9. Live Ops Guardian - every hour
+$action  = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-ExecutionPolicy Bypass -WindowStyle Hidden -File `"$base\live-ops-guardian.ps1`"" -WorkingDirectory "C:\Users\david\Documents\CFv1"
+$trigger = New-ScheduledTaskTrigger -Once -At "12:15AM" -RepetitionInterval (New-TimeSpan -Hours 1)
+Register-ScheduledTask -TaskName "ChefFlow-LiveOpsGuardian" -Action $action -Trigger $trigger -Settings $settings -Description "Hourly: health probes + targeted public/auth sweeps when new changes are detected (FREE)" -Force
+
+# 10. Daily Platform Observability Digest - 7:10 AM
+$action  = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-ExecutionPolicy Bypass -WindowStyle Hidden -File `"$base\platform-observability-digest.ps1`"" -WorkingDirectory "C:\Users\david\Documents\CFv1"
+$trigger = New-ScheduledTaskTrigger -Daily -At "7:10AM"
+Register-ScheduledTask -TaskName "ChefFlow-PlatformObservabilityDigest" -Action $action -Trigger $trigger -Settings $settings -Description "Daily 7:10 AM: send developer platform observability digest email" -Force
 
 # ── Summary ──────────────────────────────────────────────────────────
 
@@ -57,10 +72,13 @@ Write-Host "FREE tier (deterministic, zero API cost):"
 Write-Host "  ChefFlow-HealthCheck         - every 15 min (prod, dev, DB, Ollama, tunnel, disk, mem, CPU)"
 Write-Host "  ChefFlow-DailyBackup         - daily 3:00 AM (pg_dump, 7-day rotation)"
 Write-Host "  ChefFlow-OffsiteBackup       - daily 3:30 AM (R2 sync, skip if unconfigured)"
+Write-Host "  ChefFlow-LiveOpsGuardian     - hourly (health probes + targeted verification on new changes)"
+Write-Host "  ChefFlow-PlatformObservabilityDigest - daily 7:10 AM"
 Write-Host "  ChefFlow-StaleCleanup        - daily 2:00 AM"
 Write-Host "  ChefFlow-PipelineAudit       - daily 7:00 AM"
 Write-Host "  ChefFlow-WeeklyDBIntegrity   - Sunday 4:00 AM"
 Write-Host "  ChefFlow-WeeklySecretScan    - Monday 5:00 AM"
+Write-Host "  ChefFlow-IngredientPriceSync - Saturday 4:30 AM"
 Write-Host "  ChefFlow-MonthlyRestoreTest  - every 4th Sunday 4:30 AM"
 Write-Host ""
 Write-Host "PAID tier (Claude Code Haiku, ~`$0.03/run):"
