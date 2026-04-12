@@ -981,12 +981,12 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
   if (thread.client_id) {
     const { data: client } = await db
       .from('clients' as any)
-      .select('name, email')
+      .select('full_name, email')
       .eq('id', thread.client_id)
-      .eq('chef_id', user.tenantId!)
+      .eq('tenant_id', user.tenantId!)
       .single()
     if (client) {
-      client_name = client.name ?? null
+      client_name = client.full_name ?? null
       client_email = client.email ?? null
     }
   }

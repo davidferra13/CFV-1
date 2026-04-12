@@ -201,7 +201,7 @@ export async function getClientDietaryProfile(
   if (eventIds.length > 0) {
     const { data: recentEventRows } = await db
       .from('events')
-      .select('id, event_date, title')
+      .select('id, event_date, occasion')
       .eq('client_id', clientId)
       .eq('tenant_id', user.tenantId!)
       .order('event_date', { ascending: false })
@@ -210,7 +210,7 @@ export async function getClientDietaryProfile(
     recentEvents = (recentEventRows ?? []).map((e: any) => ({
       id: e.id,
       date: e.event_date ?? '',
-      menuName: e.title ?? null,
+      menuName: e.occasion ?? null,
       // Conservative: mark as potential conflict if there are household allergens
       // A full cross-reference with menu ingredients would go here in the future
       hadAllergenConflict: false,
