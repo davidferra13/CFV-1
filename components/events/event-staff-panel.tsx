@@ -93,7 +93,16 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
   const assignedIds = new Set(assignments.map((a) => a.staff_member_id))
   const availableToAdd = roster.filter((s) => !assignedIds.has(s.id))
 
-  const totalLaborCents = assignments.reduce((sum, a) => sum + (a.pay_amount_cents ?? 0), 0)
+  // Use actual pay when recorded; fall back to scheduled_hours * rate for unrecorded assignments
+  const totalLaborCents = assignments.reduce((sum, a) => {
+    if (a.pay_amount_cents != null) return sum + a.pay_amount_cents
+    const hrs = a.scheduled_hours ?? 0
+    const rate = a.staff_members?.hourly_rate_cents ?? 0
+    return sum + Math.round(hrs * rate)
+  }, 0)
+  const laborIsEstimated = assignments.some(
+    (a) => a.pay_amount_cents == null && (a.scheduled_hours ?? 0) > 0
+  )
 
   async function handleAssign() {
     if (!selectedStaffId) return
@@ -337,6 +346,7 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
           {totalLaborCents > 0 && (
             <p className="text-xs text-stone-500 pt-1">
               Total labor: <strong>${(totalLaborCents / 100).toFixed(2)}</strong>
+              {laborIsEstimated && <span className="text-stone-600 font-normal"> (est.)</span>}
             </p>
           )}
         </div>
