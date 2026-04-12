@@ -30,7 +30,9 @@ export function twimlResponse(xml: string): NextResponse {
 // ---------------------------------------------------------------------------
 
 export function speak(parts: SpeakPart[]): string {
-  const inner = parts
+  // Note: Do NOT wrap in <speak>. Twilio adds that automatically for Polly voices.
+  // Double-wrapping causes TwiML parse errors and the caller hears "Application Error".
+  return parts
     .map((p) => {
       if (typeof p === 'string') return escapeXml(p)
       if (p.type === 'break') return `<break time="${p.ms}ms"/>`
@@ -40,7 +42,6 @@ export function speak(parts: SpeakPart[]): string {
       return ''
     })
     .join('')
-  return `<speak>${inner}</speak>`
 }
 
 export type SpeakPart =
@@ -90,6 +91,7 @@ export function buildVendorAvailabilityTwiml(
   gatherActionUrl: string,
   voice = DEFAULT_VOICE
 ): string {
+  gatherActionUrl = gatherActionUrl.replace(/&/g, '&amp;')
   const greeting = speak([
     'Hey there, ',
     { type: 'break', ms: 200 },
@@ -128,6 +130,7 @@ export function buildAvailabilityStep2Twiml(
   gatherActionUrl: string,
   voice = DEFAULT_VOICE
 ): string {
+  gatherActionUrl = gatherActionUrl.replace(/&/g, '&amp;')
   const question = speak([
     'Great, appreciate it. ',
     { type: 'break', ms: 400 },
@@ -160,6 +163,7 @@ export function buildVendorDeliveryTwiml(
   gatherActionUrl: string,
   voice = DEFAULT_VOICE
 ): string {
+  gatherActionUrl = gatherActionUrl.replace(/&/g, '&amp;')
   const greeting = speak([
     'Hi there, ',
     { type: 'break', ms: 200 },
@@ -191,6 +195,7 @@ export function buildVendorDeliveryTwiml(
 }
 
 export function buildDeliveryStep2Twiml(gatherActionUrl: string, voice = DEFAULT_VOICE): string {
+  gatherActionUrl = gatherActionUrl.replace(/&/g, '&amp;')
   const question = speak([
     'Perfect, got that noted. ',
     { type: 'break', ms: 400 },
@@ -223,6 +228,7 @@ export function buildVenueConfirmationTwiml(
   gatherActionUrl: string,
   voice = DEFAULT_VOICE
 ): string {
+  gatherActionUrl = gatherActionUrl.replace(/&/g, '&amp;')
   const greeting = speak([
     'Hi, ',
     { type: 'break', ms: 200 },
@@ -252,6 +258,7 @@ export function buildVenueConfirmationTwiml(
 }
 
 export function buildVenueStep2Twiml(gatherActionUrl: string, voice = DEFAULT_VOICE): string {
+  gatherActionUrl = gatherActionUrl.replace(/&/g, '&amp;')
   const question = speak([
     'Got it, thank you. ',
     { type: 'break', ms: 400 },
@@ -282,6 +289,8 @@ export function buildVoicemailTwiml(
   voicemailDoneUrl: string,
   voice = DEFAULT_VOICE
 ): string {
+  voicemailCallbackUrl = voicemailCallbackUrl.replace(/&/g, '&amp;')
+  voicemailDoneUrl = voicemailDoneUrl.replace(/&/g, '&amp;')
   const greeting = speak([
     "Hi, you've reached the voicemail for ",
     { type: 'emphasis', text: businessName },
@@ -311,6 +320,7 @@ export function buildVendorCallbackTwiml(
   gatherActionUrl: string,
   voice = DEFAULT_VOICE
 ): string {
+  gatherActionUrl = gatherActionUrl.replace(/&/g, '&amp;')
   const greeting = speak([
     'Hi, thanks for calling back. ',
     { type: 'break', ms: 300 },

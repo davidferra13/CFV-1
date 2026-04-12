@@ -242,6 +242,8 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
           favorite_ingredients_dislikes: formData.favorite_ingredients_dislikes.trim(),
           additional_notes: formData.additional_notes.trim(),
           website_url: formData.website_url, // honeypot
+          consent_at: new Date().toISOString(),
+          consent_version: '2026-04-11',
         }),
       })
 
@@ -731,7 +733,25 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
           </button>
 
           <p style={{ fontSize: '11px', color: textSecondary, textAlign: 'center', margin: 0 }}>
-            By submitting, you agree to be contacted about your inquiry.
+            By submitting, you agree to our{' '}
+            <a
+              href="https://cheflowhq.com/terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: textSecondary, textDecoration: 'underline' }}
+            >
+              Terms of Service
+            </a>{' '}
+            and{' '}
+            <a
+              href="https://cheflowhq.com/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: textSecondary, textDecoration: 'underline' }}
+            >
+              Privacy Policy
+            </a>
+            .
           </p>
 
           {/* Powered by ChefFlow */}

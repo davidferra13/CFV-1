@@ -13,6 +13,7 @@ import {
   resolveMobileTabs,
   actionBarItems,
   createDropdownItems,
+  CORE_GROUP_IDS,
 } from './nav-config'
 import type { NavGroup, NavCollapsibleItem, NavItem } from './nav-config'
 import { NotificationBell } from '@/components/notifications/notification-bell'
@@ -42,14 +43,12 @@ import {
   Search,
   Settings,
 } from '@/components/ui/icons'
-import { QUICK_CREATE_ITEMS, cannabisSectionItems, communitySectionItems } from './chef-nav-config'
 import { useNavigationPending } from './navigation-pending-provider'
 import type { SearchParamsLike } from './chef-nav-helpers'
 import {
   isItemActive,
   isGroupActive,
   isCollapsibleItemActive,
-  isSectionActive,
   partitionChildren,
   filterNavGroup,
 } from './chef-nav-helpers'
@@ -78,96 +77,6 @@ const NavFilterInput = memo(function NavFilterInput({
 })
 
 // ---- SectionAccordion (shared with desktop, duplicated to avoid circular imports) ----
-const SectionAccordion = memo(function SectionAccordion({
-  title,
-  items,
-  icon: Icon,
-  isOpen,
-  onToggle,
-  pathname,
-  searchParams,
-  headerActiveClass,
-  headerInactiveClass,
-  dividerClass,
-  itemActiveClass,
-  itemInactiveClass,
-  activeBgStyle,
-  iconActiveColor,
-  iconInactiveColor,
-  onNavigate,
-  locked,
-}: {
-  title: string
-  items: Array<{ href: string; label: string }>
-  icon: LucideIcon
-  isOpen: boolean
-  onToggle: () => void
-  pathname: string
-  searchParams?: SearchParamsLike | null
-  headerActiveClass: string
-  headerInactiveClass: string
-  dividerClass: string
-  itemActiveClass: string
-  itemInactiveClass: string
-  activeBgStyle?: React.CSSProperties
-  iconActiveColor: string
-  iconInactiveColor: string
-  onNavigate?: () => void
-  locked?: boolean
-}) {
-  const active = isSectionActive(pathname, items, searchParams)
-
-  return (
-    <>
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-expanded={isOpen}
-        className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg transition-colors ${
-          active ? headerActiveClass : headerInactiveClass
-        }`}
-      >
-        <div className={`flex-1 border-t ${dividerClass}`} />
-        <span className="text-2xs font-semibold uppercase tracking-widest">{title}</span>
-        <ChevronDown
-          className={`w-3.5 h-3.5 transition-transform duration-200 ${
-            isOpen ? 'rotate-0' : '-rotate-90'
-          }`}
-        />
-        <div className={`flex-1 border-t ${dividerClass}`} />
-      </button>
-      <div
-        className={`overflow-hidden transition-all duration-200 ${
-          isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
-        }`}
-      >
-        <div className="space-y-0.5">
-          {items.map((item) => {
-            const itemActive = isItemActive(pathname, item.href, searchParams)
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onNavigate}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                  itemActive ? itemActiveClass : itemInactiveClass
-                }`}
-                style={itemActive ? activeBgStyle : undefined}
-              >
-                <Icon
-                  className="w-[18px] h-[18px] flex-shrink-0"
-                  style={{ color: itemActive ? iconActiveColor : iconInactiveColor }}
-                />
-                {item.label}
-              </Link>
-            )
-          })}
-        </div>
-      </div>
-    </>
-  )
-})
-
 // ---- MobileGroupSection ----
 const MobileGroupSection = memo(function MobileGroupSection({
   group,
@@ -486,28 +395,9 @@ export function ChefMobileNav({
   const [menuOpen, setMenuOpen] = useState(false)
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set())
   const [openItems, setOpenItems] = useState<Set<string>>(new Set())
-  const [mobileShortcutsOpen, setMobileShortcutsOpen] = useState(true)
   const [mobileQuickCreateOpen, setMobileQuickCreateOpen] = useState(true)
-  const [cannabisSectionOpen, setCannabisSectionOpen] = useState(false)
-  const [communitySectionOpen, setCommunitySectionOpen] = useState(false)
   const [navFilter, setNavFilter] = useState('')
-  const primaryItems = useMemo(
-    () =>
-      resolveStandaloneTop(focusMode ? [...STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS] : primaryNavHrefs),
-    [focusMode, primaryNavHrefs]
-  )
   const { has: hasPermission } = usePermissions()
-  const visiblePrimaryItems = useMemo(() => {
-    const items = isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)
-    return items.filter((item) => {
-      if (item.hidden) return false
-      if (item.requiredPermission) {
-        const [domain, action] = item.requiredPermission.split(':')
-        if (!hasPermission(domain, action as any)) return false
-      }
-      return true
-    })
-  }, [isAdmin, primaryItems, hasPermission])
   const tabItems = useMemo(
     () =>
       focusMode
@@ -527,6 +417,7 @@ export function ChefMobileNav({
   )
   const accessibleGroups = useMemo(() => {
     const baseGroups = navGroups
+      .filter((group) => CORE_GROUP_IDS.has(group.id) || (isAdmin && group.id === 'admin'))
       .map((group) => ({
         ...group,
         items: (isAdmin ? group.items : group.items.filter((item) => !item.adminOnly))
@@ -572,28 +463,6 @@ export function ChefMobileNav({
         .filter((entry): entry is { group: NavGroup; isLocked: boolean } => Boolean(entry.group)),
     [groupEntries, navFilter]
   )
-  const filteredPrimaryItems = useMemo(() => {
-    const q = navFilter.trim().toLowerCase()
-    const items = visiblePrimaryItems
-    if (!q) return items
-    return items.filter((item) => item.label.toLowerCase().includes(q))
-  }, [navFilter, visiblePrimaryItems])
-  const filteredQuickCreateItems = useMemo(() => {
-    const q = navFilter.trim().toLowerCase()
-    if (!q) return QUICK_CREATE_ITEMS
-    return QUICK_CREATE_ITEMS.filter((item) => item.label.toLowerCase().includes(q))
-  }, [navFilter])
-  const filteredCannabisItems = useMemo(() => {
-    const q = navFilter.trim().toLowerCase()
-    if (!q) return cannabisSectionItems
-    return cannabisSectionItems.filter((item) => item.label.toLowerCase().includes(q))
-  }, [navFilter])
-  const filteredCommunityItems = useMemo(() => {
-    const q = navFilter.trim().toLowerCase()
-    if (!q) return communitySectionItems
-    return communitySectionItems.filter((item) => item.label.toLowerCase().includes(q))
-  }, [navFilter])
-
   // Auto-expand group containing active route in mobile menu
   useEffect(() => {
     if (!menuOpen) return
@@ -608,30 +477,6 @@ export function ChefMobileNav({
       }
     }
   }, [pathname, menuOpen, groupEntries, searchParams])
-
-  useEffect(() => {
-    if (!isAdmin) {
-      setCannabisSectionOpen(false)
-      return
-    }
-    if (isSectionActive(pathname, cannabisSectionItems, searchParams)) {
-      setCannabisSectionOpen(true)
-    }
-  }, [isAdmin, pathname, searchParams])
-
-  useEffect(() => {
-    if (isSectionActive(pathname, communitySectionItems, searchParams)) {
-      setCommunitySectionOpen(true)
-    }
-  }, [pathname, searchParams])
-
-  useEffect(() => {
-    if (!navFilter.trim()) return
-    setMobileShortcutsOpen(true)
-    setMobileQuickCreateOpen(true)
-    if (isAdmin) setCannabisSectionOpen(true)
-    setCommunitySectionOpen(true)
-  }, [isAdmin, navFilter])
 
   useEffect(() => {
     if (!menuOpen) return
@@ -668,10 +513,6 @@ export function ChefMobileNav({
   }
 
   const closeMenu = () => setMenuOpen(false)
-  const cannabisSectionActive = isAdmin
-    ? isSectionActive(pathname, cannabisSectionItems, searchParams)
-    : false
-  const communitySectionActive = isSectionActive(pathname, communitySectionItems, searchParams)
 
   return (
     <>
@@ -825,29 +666,6 @@ export function ChefMobileNav({
                 ))}
               </div>
 
-              <div className="border-t border-stone-800 my-2" />
-
-              {/* Cannabis section hidden - feature disabled */}
-
-              {!focusMode && (
-                <SectionAccordion
-                  title="Community"
-                  items={filteredCommunityItems}
-                  icon={Rss}
-                  isOpen={communitySectionOpen}
-                  onToggle={() => setCommunitySectionOpen((prev) => !prev)}
-                  pathname={pathname}
-                  searchParams={searchParams}
-                  headerActiveClass={communitySectionActive ? 'text-brand-400' : 'text-brand-400'}
-                  headerInactiveClass="text-brand-400 hover:bg-brand-950/20 hover:text-brand-300"
-                  dividerClass="border-brand-800/30"
-                  itemActiveClass="text-brand-400 bg-brand-950/50"
-                  itemInactiveClass="text-stone-500 hover:bg-stone-800"
-                  iconActiveColor="#818cf8"
-                  iconInactiveColor="rgba(99, 102, 241, 0.5)"
-                  onNavigate={closeMenu}
-                />
-              )}
               <div className="border-t border-stone-800 my-2" />
 
               {/* Settings */}

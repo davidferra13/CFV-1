@@ -42,6 +42,9 @@ const EmbedInquirySchema = z.object({
   utm_source: z.string().max(200).optional().or(z.literal('')),
   utm_medium: z.string().max(200).optional().or(z.literal('')),
   utm_campaign: z.string().max(200).optional().or(z.literal('')),
+  // Consent record (GDPR Article 9 - health/allergy data)
+  consent_at: z.string().datetime().optional(),
+  consent_version: z.string().max(50).optional(),
 })
 
 // ── CORS preflight ──
@@ -239,6 +242,8 @@ export async function POST(request: NextRequest) {
         utm_source: data.utm_source?.trim() || null,
         utm_medium: data.utm_medium?.trim() || null,
         utm_campaign: data.utm_campaign?.trim() || null,
+        consent_at: data.consent_at ?? null,
+        consent_version: data.consent_version ?? null,
       })
       .select('id')
       .single()

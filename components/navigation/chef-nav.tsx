@@ -15,10 +15,9 @@ import {
   memo,
 } from 'react'
 import type { LucideIcon } from '@/components/ui/icons'
-import { navGroups, standaloneBottom, resolveStandaloneTop } from './nav-config'
+import { navGroups, standaloneBottom, CORE_GROUP_IDS } from './nav-config'
 import type { NavGroup } from './nav-config'
 import { ActionBar } from './action-bar'
-import { AllFeaturesCollapse } from './all-features-collapse'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { GlobalSearch } from '@/components/search/global-search'
 import { OfflineNavIndicator } from '@/components/offline/offline-nav-indicator'
@@ -32,11 +31,7 @@ import { InboxUnreadBadge } from '@/components/communication/inbox-unread-badge'
 import { CirclesUnreadBadge } from '@/components/hub/circles-unread-badge'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { usePermissions } from '@/lib/context/permission-context'
-import {
-  getStrictFocusGroupRank,
-  isStrictFocusGroupVisible,
-  STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS,
-} from '@/lib/navigation/focus-mode-nav'
+import { getStrictFocusGroupRank, isStrictFocusGroupVisible } from '@/lib/navigation/focus-mode-nav'
 
 import {
   LogOut,
@@ -51,16 +46,15 @@ import {
   Lock,
   Sparkles,
   Settings,
+  Compass,
 } from '@/components/ui/icons'
 
 // Extracted config and helpers
-import { QUICK_CREATE_ITEMS, cannabisSectionItems, communitySectionItems } from './chef-nav-config'
 import type { SearchParamsLike } from './chef-nav-helpers'
 import {
   isItemActive,
   isGroupActive,
   isCollapsibleItemActive,
-  isSectionActive,
   partitionChildren,
   filterNavGroup,
 } from './chef-nav-helpers'
@@ -178,100 +172,6 @@ function PendingNavLink({
     </Link>
   )
 }
-
-// ---- SectionAccordion ----
-const SectionAccordion = memo(function SectionAccordion({
-  title,
-  items,
-  icon: Icon,
-  isOpen,
-  onToggle,
-  pathname,
-  searchParams,
-  headerActiveClass,
-  headerInactiveClass,
-  dividerClass,
-  itemActiveClass,
-  itemInactiveClass,
-  activeBgStyle,
-  iconActiveColor,
-  iconInactiveColor,
-  onNavigate,
-  locked,
-}: {
-  title: string
-  items: Array<{ href: string; label: string }>
-  icon: LucideIcon
-  isOpen: boolean
-  onToggle: () => void
-  pathname: string
-  searchParams?: SearchParamsLike | null
-  headerActiveClass: string
-  headerInactiveClass: string
-  dividerClass: string
-  itemActiveClass: string
-  itemInactiveClass: string
-  activeBgStyle?: React.CSSProperties
-  iconActiveColor: string
-  iconInactiveColor: string
-  onNavigate?: () => void
-  locked?: boolean
-}) {
-  const active = isSectionActive(pathname, items, searchParams)
-
-  return (
-    <>
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-expanded={isOpen}
-        className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg transition-colors ${
-          active ? headerActiveClass : headerInactiveClass
-        }`}
-      >
-        <div className={`flex-1 border-t ${dividerClass}`} />
-        <span className="text-2xs font-semibold uppercase tracking-widest">{title}</span>
-        <ChevronDown
-          className={`w-3.5 h-3.5 transition-transform duration-200 ${
-            isOpen ? 'rotate-0' : '-rotate-90'
-          }`}
-        />
-        <div className={`flex-1 border-t ${dividerClass}`} />
-      </button>
-      <div
-        className={`overflow-hidden transition-all duration-200 ${
-          isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
-        }`}
-      >
-        <div className="space-y-0.5">
-          {items.map((item) => {
-            const itemActive = isItemActive(pathname, item.href, searchParams)
-            return (
-              <PendingNavLink
-                key={item.href}
-                href={item.href}
-                onClick={onNavigate}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                  !itemActive ? itemInactiveClass : ''
-                }`}
-                activeClassName={itemActiveClass}
-                pendingClassName={itemActiveClass}
-                isActive={itemActive}
-                style={activeBgStyle}
-              >
-                <Icon
-                  className="w-[18px] h-[18px] flex-shrink-0"
-                  style={{ color: itemActive ? iconActiveColor : iconInactiveColor }}
-                />
-                {item.label}
-              </PendingNavLink>
-            )
-          })}
-        </div>
-      </div>
-    </>
-  )
-})
 
 // ---- Flyout for rail mode ----
 const RailFlyout = memo(function RailFlyout({
@@ -648,29 +548,8 @@ export function ChefSidebar({
   const { collapsed, setCollapsed } = useSidebar()
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set())
   const [openItems, setOpenItems] = useState<Set<string>>(new Set())
-  const [openSubMenus, setOpenSubMenus] = useState<Set<string>>(new Set())
-  const [shortcutsOpen, setShortcutsOpen] = useState(true)
-  const [quickCreateOpen, setQuickCreateOpen] = useState(true)
-  const [cannabisSectionOpen, setCannabisSectionOpen] = useState(false)
-  const [communitySectionOpen, setCommunitySectionOpen] = useState(false)
   const [navFilter, setNavFilter] = useState('')
-  const primaryItems = useMemo(
-    () =>
-      resolveStandaloneTop(focusMode ? [...STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS] : primaryNavHrefs),
-    [focusMode, primaryNavHrefs]
-  )
   const { has: hasPermission } = usePermissions()
-  const visiblePrimaryItems = useMemo(() => {
-    const items = isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)
-    return items.filter((item) => {
-      if (item.hidden) return false
-      if (item.requiredPermission) {
-        const [domain, action] = item.requiredPermission.split(':')
-        if (!hasPermission(domain, action as any)) return false
-      }
-      return true
-    })
-  }, [isAdmin, primaryItems, hasPermission])
 
   // Filter nav groups by role + focus mode.
   // Focus Mode should simplify nav for everyone, including admins.
@@ -680,6 +559,7 @@ export function ChefSidebar({
   )
   const accessibleGroups = useMemo(() => {
     const baseGroups = navGroups
+      .filter((group) => CORE_GROUP_IDS.has(group.id) || (isAdmin && group.id === 'admin'))
       .map((group) => ({
         ...group,
         items: (isAdmin ? group.items : group.items.filter((item) => !item.adminOnly))
@@ -725,32 +605,10 @@ export function ChefSidebar({
         .filter((entry): entry is { group: NavGroup; isLocked: boolean } => Boolean(entry.group)),
     [groupEntries, navFilter]
   )
-  const filteredPrimaryItems = useMemo(() => {
-    const q = navFilter.trim().toLowerCase()
-    const items = visiblePrimaryItems
-    if (!q) return items
-    return items.filter((item) => item.label.toLowerCase().includes(q))
-  }, [navFilter, visiblePrimaryItems])
-  const filteredQuickCreateItems = useMemo(() => {
-    const q = navFilter.trim().toLowerCase()
-    if (!q) return QUICK_CREATE_ITEMS
-    return QUICK_CREATE_ITEMS.filter((item) => item.label.toLowerCase().includes(q))
-  }, [navFilter])
   const visibleBottomItems = useMemo(
     () => (isAdmin ? standaloneBottom : standaloneBottom.filter((item) => !item.adminOnly)),
     [isAdmin]
   )
-  const filteredCannabisItems = useMemo(() => {
-    const q = navFilter.trim().toLowerCase()
-    if (!q) return cannabisSectionItems
-    return cannabisSectionItems.filter((item) => item.label.toLowerCase().includes(q))
-  }, [navFilter])
-  const filteredCommunityItems = useMemo(() => {
-    const q = navFilter.trim().toLowerCase()
-    if (!q) return communitySectionItems
-    return communitySectionItems.filter((item) => item.label.toLowerCase().includes(q))
-  }, [navFilter])
-
   // Auto-expand group containing active route
   useEffect(() => {
     for (const { group } of groupEntries) {
@@ -764,30 +622,6 @@ export function ChefSidebar({
       }
     }
   }, [pathname, groupEntries, searchParams])
-
-  useEffect(() => {
-    if (!isAdmin) {
-      setCannabisSectionOpen(false)
-      return
-    }
-    if (isSectionActive(pathname, cannabisSectionItems, searchParams)) {
-      setCannabisSectionOpen(true)
-    }
-  }, [isAdmin, pathname, searchParams])
-
-  useEffect(() => {
-    if (isSectionActive(pathname, communitySectionItems, searchParams)) {
-      setCommunitySectionOpen(true)
-    }
-  }, [pathname, searchParams])
-
-  useEffect(() => {
-    if (!navFilter.trim()) return
-    setShortcutsOpen(true)
-    setQuickCreateOpen(true)
-    if (isAdmin) setCannabisSectionOpen(true)
-    setCommunitySectionOpen(true)
-  }, [isAdmin, navFilter])
 
   useEffect(() => {
     for (const { group } of groupEntries) {
@@ -824,34 +658,6 @@ export function ChefSidebar({
       return next
     })
   }
-
-  const toggleSubMenu = (href: string) => {
-    setOpenSubMenus((prev) => {
-      const next = new Set(prev)
-      if (next.has(href)) next.delete(href)
-      else next.add(href)
-      return next
-    })
-  }
-
-  // Auto-open sub-menu for the hub that contains the current route
-  useEffect(() => {
-    for (const item of visiblePrimaryItems) {
-      if (item.subMenu && pathname.startsWith(item.href + '/')) {
-        setOpenSubMenus((prev) => {
-          if (prev.has(item.href)) return prev
-          const next = new Set(prev)
-          next.add(item.href)
-          return next
-        })
-      }
-    }
-  }, [pathname, visiblePrimaryItems])
-
-  const cannabisSectionActive = isAdmin
-    ? isSectionActive(pathname, cannabisSectionItems, searchParams)
-    : false
-  const communitySectionActive = isSectionActive(pathname, communitySectionItems, searchParams)
 
   return (
     <aside
@@ -979,25 +785,41 @@ export function ChefSidebar({
 
             <div className="w-6 border-t border-stone-800 my-1.5" />
 
-            {/* Settings */}
-            {visibleBottomItems.map((item) => {
-              const Icon = item.icon
-              const active = isItemActive(pathname, item.href, searchParams)
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  title={item.label}
-                  className={`flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
-                    active
-                      ? 'bg-brand-950 text-brand-600'
-                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-400'
-                  }`}
-                >
-                  <Icon className="w-[18px] h-[18px]" />
-                </Link>
-              )
-            })}
+            {/* All Features */}
+            <Link
+              href="/features"
+              title="All Features"
+              aria-label="All Features"
+              className={`flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
+                pathname.startsWith('/features')
+                  ? 'bg-brand-950 text-brand-600'
+                  : 'text-stone-500 hover:bg-stone-800 hover:text-stone-300'
+              }`}
+            >
+              <Compass className="w-[18px] h-[18px]" />
+            </Link>
+
+            {/* Settings (filter /features - rendered separately above) */}
+            {visibleBottomItems
+              .filter((item) => item.href !== '/features')
+              .map((item) => {
+                const Icon = item.icon
+                const active = isItemActive(pathname, item.href, searchParams)
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    title={item.label}
+                    className={`flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
+                      active
+                        ? 'bg-brand-950 text-brand-600'
+                        : 'text-stone-400 hover:bg-stone-800 hover:text-stone-400'
+                    }`}
+                  >
+                    <Icon className="w-[18px] h-[18px]" />
+                  </Link>
+                )
+              })}
 
             {/* Sign Out - inside nav so it's above the Remy mascot */}
             <button
@@ -1025,13 +847,11 @@ export function ChefSidebar({
             {/* ─── Action Bar (daily-driver shortcuts + Create) ─── */}
             <ActionBar navFilter={navFilter} />
 
-            {/* ─── All Features (collapsible full directory) ─── */}
-            <AllFeaturesCollapse
-              hidden={!!focusMode}
-              groups={filteredGroupEntries.map((e) => e.group)}
-            >
-              {filteredGroupEntries.length > 0 && (
-                <div className="space-y-0.5 px-0">
+            {/* ─── Nav Groups (always visible, collapse individually) ─── */}
+            {!focusMode && filteredGroupEntries.length > 0 && (
+              <>
+                <div className="mx-0 my-1 border-t border-stone-700/40" />
+                <div className="space-y-0.5">
                   {filteredGroupEntries.map(({ group, isLocked }) => (
                     <NavGroupSection
                       key={group.id}
@@ -1046,33 +866,33 @@ export function ChefSidebar({
                     />
                   ))}
                 </div>
-              )}
-
-              {/* Community section (inside All Features) */}
-              <SectionAccordion
-                title="Community"
-                items={filteredCommunityItems}
-                icon={Rss}
-                isOpen={communitySectionOpen}
-                onToggle={() => setCommunitySectionOpen((prev) => !prev)}
-                pathname={pathname}
-                searchParams={searchParams}
-                headerActiveClass={communitySectionActive ? 'text-brand-400' : 'text-brand-400'}
-                headerInactiveClass="text-brand-400 hover:bg-brand-950/20 hover:text-brand-300"
-                dividerClass="border-brand-800/30"
-                itemActiveClass="text-brand-400"
-                itemInactiveClass="text-stone-500 hover:text-stone-300"
-                activeBgStyle={{ background: 'rgba(79, 70, 229, 0.08)' }}
-                iconActiveColor="#818cf8"
-                iconInactiveColor="rgba(99, 102, 241, 0.5)"
-              />
-            </AllFeaturesCollapse>
+              </>
+            )}
 
             <RecentPagesSection />
 
             <div className="divider-brand h-px my-2 mx-3 opacity-40" />
 
             {/* Settings */}
+            {(() => {
+              const featuresActive = isItemActive(pathname, '/features', searchParams)
+              return (
+                <Link
+                  href="/features"
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                    featuresActive
+                      ? 'bg-brand-950 text-brand-400 nav-active-glow'
+                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-300'
+                  }`}
+                >
+                  <Compass
+                    className={`w-[18px] h-[18px] flex-shrink-0 ${featuresActive ? 'text-brand-600' : 'text-stone-500'}`}
+                  />
+                  All Features
+                </Link>
+              )
+            })()}
+
             {(() => {
               const settingsActive = isItemActive(pathname, '/settings', searchParams)
               return (

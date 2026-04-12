@@ -92,6 +92,18 @@ const nextConfig = {
       return `build-${Date.now()}`
     }
   },
+  webpack(config, { isServer }) {
+    if (!isServer) {
+      // async_hooks is Node.js-only (used by AsyncLocalStorage in lib/observability/request-id.ts).
+      // When it leaks into the client bundle via an import chain, webpack fails.
+      // Replace it with an empty module on the client side.
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        async_hooks: false,
+      }
+    }
+    return config
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 2678400,

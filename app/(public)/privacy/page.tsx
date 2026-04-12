@@ -16,7 +16,7 @@ export default function PrivacyPage() {
     <main className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 md:py-16 lg:px-8">
       <div className="mb-10 border-b border-stone-700/60 pb-8">
         <h1 className="text-4xl font-bold tracking-tight text-stone-100">Privacy Policy</h1>
-        <p className="mt-3 text-sm text-stone-500">Last updated: April 5, 2026</p>
+        <p className="mt-3 text-sm text-stone-500">Last updated: April 11, 2026</p>
       </div>
 
       <div className="space-y-10 text-stone-300">
@@ -62,10 +62,50 @@ export default function PrivacyPage() {
           </p>
 
           <h3 className="mb-2 text-base font-semibold text-stone-200">Inquiry submissions</h3>
+          <p className="mb-3 leading-relaxed">
+            When a prospective client submits an inquiry through a chef&apos;s booking form (either
+            on the chef&apos;s own website via our embeddable widget, or through a chef&apos;s
+            ChefFlow profile), we collect the information provided in the form. This includes name,
+            email address, phone number, event date, location, guest count, budget, dietary
+            preferences, allergy information, and any free-form notes.
+          </p>
+          <p className="mb-3 leading-relaxed">
+            Allergy and dietary restriction information is considered health-related data. We
+            collect it only with your explicit consent, which is requested at the point of form
+            submission. This data is used solely to help the chef prepare for your event safely.
+          </p>
+          <p className="mb-3 leading-relaxed">
+            After you submit an inquiry, the following actions occur automatically on our platform:
+          </p>
+          <ul className="mb-3 list-disc space-y-2 pl-5 leading-relaxed">
+            <li>
+              Your information is stored in our database and made available to the chef you are
+              inquiring with.
+            </li>
+            <li>
+              A confirmation email is sent to you via Resend (our email provider) acknowledging
+              receipt of your inquiry.
+            </li>
+            <li>
+              A private conversation thread is created between you and the chef to facilitate
+              communication.
+            </li>
+            <li>
+              An automated lead-scoring process runs on your inquiry details (event type, guest
+              count, budget) to help the chef prioritize responses. This process does not make any
+              decisions on your behalf.
+            </li>
+            <li>
+              Your IP address is logged at the time of submission for spam and fraud prevention.
+            </li>
+          </ul>
           <p className="leading-relaxed">
-            When a prospective client submits an inquiry through a chef&apos;s public profile, we
-            collect the information they provide in the form (name, email, event details). This is
-            shared directly with the chef they are inquiring with.
+            If you did not initiate this inquiry yourself and believe your information was submitted
+            without your knowledge, please contact us at{' '}
+            <a href="mailto:privacy@cheflowhq.com" className="text-brand-400 hover:underline">
+              privacy@cheflowhq.com
+            </a>{' '}
+            and we will remove your data promptly.
           </p>
         </section>
 

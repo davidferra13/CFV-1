@@ -1483,6 +1483,10 @@ export const navGroups: NavGroup[] = [
   },
 ]
 
+// Core groups shown in the sidebar by default.
+// Everything else is accessible via /features (All Features gateway).
+export const CORE_GROUP_IDS = new Set(['events', 'clients', 'culinary', 'finance', 'operations'])
+
 // Sort groups alphabetically so chefs can find features predictably.
 // Admin stays last since it's a special admin-only section.
 navGroups.sort((a, b) => {
