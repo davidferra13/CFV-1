@@ -5,6 +5,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useCallback, useState } from 'react'
+import Link from 'next/link'
 import { RefreshCw } from '@/components/ui/icons'
 import { PlanLane } from './plan-lane'
 import { RemySummary } from './remy-summary'
@@ -44,6 +45,49 @@ export function DailyPlanView({ plan }: Props) {
         todayEventCount={plan.todayEvents.length}
         estimatedMinutes={plan.stats.estimatedMinutes}
       />
+
+      {/* Today's event quick-links - one card per event */}
+      {plan.todayEvents.map((event) => (
+        <div
+          key={event.id}
+          className="rounded-lg border border-amber-800/40 bg-amber-950/30 px-4 py-3"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <p className="text-xs text-amber-600 font-medium uppercase tracking-wide mb-0.5">
+                Tonight
+              </p>
+              <p className="text-stone-100 font-semibold">
+                {event.occasion || 'Event'} at {event.serveTime}
+              </p>
+              <p className="text-stone-400 text-sm">
+                {event.clientName}
+                {event.guestCount > 0 ? ` · ${event.guestCount} guests` : ''}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href={`/events/${event.id}/pack`}
+                className="inline-flex items-center px-3 py-1.5 rounded-md bg-orange-600 hover:bg-orange-500 text-white text-xs font-medium transition-colors"
+              >
+                Pack List
+              </Link>
+              <Link
+                href={`/events/${event.id}/grocery-quote`}
+                className="inline-flex items-center px-3 py-1.5 rounded-md bg-stone-700 hover:bg-stone-600 text-stone-200 text-xs font-medium transition-colors"
+              >
+                Grocery List
+              </Link>
+              <Link
+                href={`/events/${event.id}`}
+                className="inline-flex items-center px-3 py-1.5 rounded-md bg-stone-800 hover:bg-stone-700 text-stone-400 text-xs font-medium transition-colors"
+              >
+                Full Event
+              </Link>
+            </div>
+          </div>
+        </div>
+      ))}
 
       {/* Protected time reminder */}
       {plan.protectedTime.length > 0 && (
