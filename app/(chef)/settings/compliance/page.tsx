@@ -34,6 +34,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { format } from 'date-fns'
 import { CertForm } from './cert-form'
+import { PermitForm, PermitList } from './permit-form'
+import { listPermits, getExpiringPermits } from '@/lib/compliance/permit-actions'
 
 export const metadata: Metadata = { title: 'Compliance' }
 
@@ -62,10 +64,12 @@ function ExpiryBadge({ expiryDate }: { expiryDate: string | null }) {
 export default async function CompliancePage() {
   await requireChef()
 
-  const [certs, expiring, archetype] = await Promise.all([
+  const [certs, expiring, archetype, permits, expiringPermits] = await Promise.all([
     listCertifications(),
     getExpiringCertifications(60),
     getChefArchetype(),
+    listPermits(),
+    getExpiringPermits(60),
   ])
 
   const activeCerts = certs.filter((c: any) => c.status === 'active')
@@ -99,7 +103,33 @@ export default async function CompliancePage() {
         </CardContent>
       </Card>
 
-      {/* Expiry alerts */}
+      {/* Permit expiry alerts */}
+      {expiringPermits.length > 0 && (
+        <div className="rounded-lg border border-amber-300 bg-amber-950 px-4 py-3">
+          <p className="text-sm font-medium text-amber-900">
+            {expiringPermits.length} permit{expiringPermits.length > 1 ? 's' : ''} expiring within
+            60 days
+          </p>
+          <ul className="mt-1 space-y-0.5">
+            {expiringPermits.map((p: any) => {
+              const today = new Date()
+              today.setHours(0, 0, 0, 0)
+              const expiry = new Date(p.expiry_date + 'T00:00:00')
+              const daysRemaining = Math.ceil(
+                (expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+              )
+              return (
+                <li key={p.id} className="text-sm text-amber-800">
+                  {p.name} - {daysRemaining}d remaining (
+                  {format(new Date(p.expiry_date + 'T00:00:00'), 'MMM d, yyyy')})
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      )}
+
+      {/* Certification expiry alerts */}
       {expiring.length > 0 && (
         <div className="rounded-lg border border-amber-300 bg-amber-950 px-4 py-3">
           <p className="text-sm font-medium text-amber-900">
@@ -205,6 +235,19 @@ export default async function CompliancePage() {
           <CertForm />
         </CardContent>
       </Card>
+
+      {/* Permits & Licenses */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-semibold text-stone-100">Permits &amp; Licenses</h2>
+        </div>
+        <p className="text-xs text-stone-500">
+          Health permits, business licenses, fire permits, mobile food unit permits, and other
+          government-issued documents with expiry dates.
+        </p>
+        <PermitList permits={permits} />
+        <PermitForm />
+      </div>
 
       {/* AI Permit Renewal Checklist */}
       <PermitChecklistPanel />
