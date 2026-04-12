@@ -923,9 +923,9 @@ export async function executeMorningBriefing(tenantId: string) {
     ? await db.from('event_staff').select('event_id, staff_id, role').in('event_id', eventIds)
     : { data: [] }
 
-  // Overdue todos
+  // Overdue tasks (from structured tasks table, not nonexistent 'todos')
   const { data: todos } = await db
-    .from('todos')
+    .from('tasks')
     .select('id, title, due_date, priority')
     .eq('tenant_id', tenantId)
     .eq('completed', false)

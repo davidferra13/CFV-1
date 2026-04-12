@@ -178,8 +178,8 @@ export const operationsAgentActions: AgentActionDefinition[] = [
     async commitAction(payload) {
       const db: any = createServerClient()
       const user = await (await import('@/lib/auth/get-user')).requireChef()
-      const { error } = await db.from('chef_todos').insert({
-        tenant_id: user.tenantId,
+      const { error } = await db.from('tasks').insert({
+        chef_id: user.tenantId,
         title: payload.title,
         due_date: payload.due_date ?? null,
         priority: payload.priority ?? 'medium',

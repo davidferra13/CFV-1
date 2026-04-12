@@ -53,11 +53,11 @@ export const briefingAgentActions: AgentActionDefinition[] = [
           .eq('event_date', tomorrow)
           .not('status', 'in', '("cancelled","completed")')
           .order('serve_time', { ascending: true }),
-        // Overdue todos
+        // Overdue tasks
         db
-          .from('chef_todos')
+          .from('tasks')
           .select('id, title, due_date, priority')
-          .eq('tenant_id', ctx.tenantId)
+          .eq('chef_id', ctx.tenantId)
           .eq('status', 'pending')
           .lte('due_date', today)
           .order('priority', { ascending: false })
