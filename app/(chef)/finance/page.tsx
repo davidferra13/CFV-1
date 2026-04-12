@@ -9,6 +9,7 @@ import { formatCurrency } from '@/lib/utils/currency'
 import { FinanceHealthBar } from '@/components/intelligence/finance-health-bar'
 import { PricingIntelligenceBar } from '@/components/intelligence/pricing-intelligence-bar'
 import { getProfitAndLossReport } from '@/lib/finance/profit-loss-report-actions'
+import { getFinanceSurfaceAvailability } from '@/lib/finance/surface-availability'
 import { format, startOfMonth, endOfMonth } from 'date-fns'
 
 /** Inline P&L snapshot for the current month */
@@ -165,10 +166,18 @@ const SECTIONS = [
 
 export default async function FinancePage() {
   await requireChef()
-  const [summary, carryForwardSavings] = await Promise.all([
+  const [summary, carryForwardSavings, surfaceAvailability] = await Promise.all([
     getTenantFinancialSummary().catch(() => null),
     getYtdCarryForwardSavings().catch(() => 0),
+    getFinanceSurfaceAvailability().catch(() => null),
   ])
+
+  // Filter tiles that are degraded and should not be primary-promoted
+  const VISIBLE_SECTIONS = SECTIONS.filter((s) => {
+    if (s.href === '/finance/bank-feed') return surfaceAvailability?.bankFeed.showAsPrimary ?? false
+    if (s.href === '/finance/cash-flow') return surfaceAvailability?.cashFlow.showAsPrimary ?? false
+    return true
+  })
 
   if (!summary) {
     return (
@@ -257,7 +266,7 @@ export default async function FinancePage() {
       </WidgetErrorBoundary>
 
       <div className="grid grid-cols-2 gap-4 stagger-grid">
-        {SECTIONS.map((section) => (
+        {VISIBLE_SECTIONS.map((section) => (
           <Link key={section.href} href={section.href}>
             <Card className="p-5 hover:shadow-md transition-shadow cursor-pointer h-full">
               <div className="flex items-start gap-3">
