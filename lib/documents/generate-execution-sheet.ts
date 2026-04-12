@@ -51,6 +51,12 @@ export type ExecutionSheetData = {
     make_ahead_window_hours: number | null
     courseName: string
   }>
+  /** Named guests with dietary restrictions/allergies from RSVP data - shown per-plate at service */
+  guestFlags: Array<{
+    name: string
+    dietary_restrictions: string[]
+    allergies: string[]
+  }>
 }
 
 /** Fetch all data needed for the execution sheet */
@@ -98,6 +104,33 @@ export async function fetchExecutionSheetData(eventId: string): Promise<Executio
     .order('sort_order', { ascending: true })
 
   if (!dishes || dishes.length === 0) return null
+
+  // Fetch per-guest dietary flags from RSVP data (non-blocking - missing guests is fine)
+  let guestFlags: Array<{ name: string; dietary_restrictions: string[]; allergies: string[] }> = []
+  try {
+    const { data: guests } = await db
+      .from('event_guests')
+      .select('full_name, dietary_restrictions, allergies')
+      .eq('event_id', eventId)
+      .eq('tenant_id', user.tenantId!)
+      .in('rsvp_status', ['attending', 'maybe'])
+
+    if (guests) {
+      guestFlags = guests
+        .filter(
+          (g: any) =>
+            (g.dietary_restrictions && g.dietary_restrictions.length > 0) ||
+            (g.allergies && g.allergies.length > 0)
+        )
+        .map((g: any) => ({
+          name: g.full_name,
+          dietary_restrictions: g.dietary_restrictions ?? [],
+          allergies: g.allergies ?? [],
+        }))
+    }
+  } catch {
+    // No RSVP data - sheet still works without it
+  }
 
   // Fetch components - include make_ahead_window_hours for arrival task ordering
   const dishIds = dishes.map((d: any) => d.id)
@@ -249,12 +282,13 @@ export async function fetchExecutionSheetData(eventId: string): Promise<Executio
     courses,
     totalComponentCount,
     arrivalTasks,
+    guestFlags,
   }
 }
 
 /** Render execution sheet onto a PDFLayout instance */
 export function renderExecutionSheet(pdf: PDFLayout, data: ExecutionSheetData) {
-  const { event, client, courses, totalComponentCount, arrivalTasks } = data
+  const { event, client, courses, totalComponentCount, arrivalTasks, guestFlags } = data
 
   // Scale down for dense menus - more aggressive because FOH + BOH + arrival tasks all on one page
   const hasArrivalTasks = arrivalTasks.length > 0
@@ -345,6 +379,24 @@ export function renderExecutionSheet(pdf: PDFLayout, data: ExecutionSheetData) {
       }
       pdf.text(parts.join(' '), 8, 'normal', 6)
     })
+    pdf.space(2)
+  }
+
+  // ===== PER-GUEST DIETARY FLAGS (from RSVP) =====
+  // Only shown when guests have submitted dietary info via RSVP.
+  // Lets the chef modify specific plates at plating time without relying on memory.
+  if (guestFlags.length > 0) {
+    pdf.sectionHeader('GUEST FLAGS \u2014 MODIFY PLATES ACCORDINGLY', 11, true)
+    for (const guest of guestFlags) {
+      const parts: string[] = [guest.name]
+      if (guest.allergies.length > 0) {
+        parts.push(`ALLERGIC: ${guest.allergies.map((a) => a.toUpperCase()).join(', ')}`)
+      }
+      if (guest.dietary_restrictions.length > 0) {
+        parts.push(guest.dietary_restrictions.join(', '))
+      }
+      pdf.text(parts.join('  |  '), 8, guest.allergies.length > 0 ? 'bold' : 'normal', 6)
+    }
     pdf.space(2)
   }
 

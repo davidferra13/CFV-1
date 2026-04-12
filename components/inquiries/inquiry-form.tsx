@@ -15,6 +15,7 @@ import { SaveStateBadge } from '@/components/ui/save-state-badge'
 import { DraftRestorePrompt } from '@/components/ui/draft-restore-prompt'
 import { UnsavedChangesDialog } from '@/components/ui/unsaved-changes-dialog'
 import { createInquiry, type CreateInquiryInput } from '@/lib/inquiries/actions'
+import { getClientLastEventPrefill } from '@/lib/clients/actions'
 import { parseCurrencyToCents, formatCentsToDisplay } from '@/lib/utils/currency'
 import { AddressAutocomplete, type AddressData } from '@/components/ui/address-autocomplete'
 import { SmartFillModal } from '@/components/import/smart-fill-modal'
@@ -277,7 +278,7 @@ export function InquiryForm({
     setReferralSource(data.referral_source)
   }
 
-  const handleClientSelect = (clientId: string) => {
+  const handleClientSelect = async (clientId: string) => {
     setSelectedClientId(clientId)
     if (clientId) {
       const client = clients.find((c) => c.id === clientId)
@@ -285,6 +286,21 @@ export function InquiryForm({
         setClientName(client.full_name)
         setClientEmail(client.email)
         setClientPhone(client.phone || '')
+
+        // Pre-fill from last event for returning clients (non-blocking)
+        try {
+          const prefill = await getClientLastEventPrefill(clientId)
+          if (prefill && prefill.event_count >= 1) {
+            if (prefill.occasion && !occasion) setOccasion(prefill.occasion)
+            if (prefill.guest_count && !guestCount) setGuestCount(String(prefill.guest_count))
+            if (prefill.dietary_restrictions.length > 0 && !dietaryRestrictions) {
+              setDietaryRestrictions(prefill.dietary_restrictions.join(', '))
+            }
+            if (prefill.location && !location) setLocation(prefill.location)
+          }
+        } catch {
+          // Pre-fill is best-effort - form still works without it
+        }
       }
     }
   }

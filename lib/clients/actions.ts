@@ -1560,3 +1560,41 @@ export async function searchClientsByName(
 
   return data ?? []
 }
+
+/** Pre-fill data pulled from a client's most recent completed or confirmed event.
+ *  Used on the New Inquiry form to reduce re-entry friction for returning clients.
+ */
+export async function getClientLastEventPrefill(clientId: string): Promise<{
+  occasion: string | null
+  guest_count: number | null
+  dietary_restrictions: string[]
+  location: string | null
+  event_count: number
+} | null> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data: events } = await db
+    .from('events')
+    .select(
+      'occasion, guest_count, dietary_restrictions, location_address, location_city, event_status'
+    )
+    .eq('client_id', clientId)
+    .eq('tenant_id', user.tenantId!)
+    .in('event_status', ['completed', 'confirmed', 'paid', 'in_progress'])
+    .order('event_date', { ascending: false })
+    .limit(5)
+
+  if (!events || events.length === 0) return null
+
+  const last = events[0]
+  const locationParts = [last.location_address, last.location_city].filter(Boolean)
+
+  return {
+    occasion: last.occasion ?? null,
+    guest_count: last.guest_count ?? null,
+    dietary_restrictions: last.dietary_restrictions ?? [],
+    location: locationParts.length > 0 ? locationParts.join(', ') : null,
+    event_count: events.length,
+  }
+}
