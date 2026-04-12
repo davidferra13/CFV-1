@@ -6,6 +6,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import type { Task } from './actions'
+import { dateToDateString } from '@/lib/utils/format'
 
 export type CarriedTask = Task & {
   originalDate: string
@@ -38,7 +39,7 @@ export async function getCarriedOverTasks(today: string): Promise<CarriedTask[]>
   const todayDate = new Date(today + 'T00:00:00')
 
   return ((data ?? []) as Task[]).map((task) => {
-    const taskDate = new Date(task.due_date + 'T00:00:00')
+    const taskDate = new Date(dateToDateString(task.due_date as Date | string) + 'T00:00:00')
     const diffDays = Math.floor((todayDate.getTime() - taskDate.getTime()) / (1000 * 60 * 60 * 24))
     return {
       ...task,

@@ -21,6 +21,7 @@ import { z } from 'zod'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { format } from 'date-fns'
+import { dateToDateString } from '@/lib/utils/format'
 
 const getGeminiClient = () => {
   const apiKey = process.env.GEMINI_API_KEY
@@ -183,7 +184,10 @@ export async function draftPersonalizedOutreach(recipientId: string): Promise<Pe
     : null
 
   const dateDisplay = campaign.proposed_date
-    ? format(new Date(campaign.proposed_date + 'T12:00:00'), 'EEEE, MMMM d')
+    ? format(
+        new Date(dateToDateString(campaign.proposed_date as Date | string) + 'T12:00:00'),
+        'EEEE, MMMM d'
+      )
     : null
 
   const systemPrompt = `You are a private chef writing a warm, personal dinner invitation to one of your long-term clients.

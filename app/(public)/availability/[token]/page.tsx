@@ -1,5 +1,6 @@
 import { createServerClient } from '@/lib/db/server'
 import { Card, CardContent } from '@/components/ui/card'
+import { dateToDateString } from '@/lib/utils/format'
 
 export default async function PublicAvailabilityPage({
   params,
@@ -88,7 +89,9 @@ export default async function PublicAvailabilityPage({
     .lte('event_date', _liso(sixtyDaysOut))
     .not('status', 'eq', 'cancelled')
 
-  const busyDates = new Set((events ?? []).map((e: any) => e.event_date))
+  const busyDates = new Set(
+    (events ?? []).map((e: any) => dateToDateString(e.event_date as Date | string))
+  )
 
   // Generate calendar grid for next 60 days
   const days: { date: string; dayOfWeek: number; busy: boolean }[] = []
