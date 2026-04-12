@@ -1,10 +1,10 @@
 // Kitchen Mode Page
-// Full-screen kitchen display for active service: tasks, timers, and station assignments.
-// The KitchenMode component is a full-screen overlay, so this page serves as the launcher.
+// Full-screen kitchen display for active service: steps derived from today's confirmed/in-progress event menu.
 
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { requireChef } from '@/lib/auth/get-user'
+import { getKitchenModeContext } from '@/lib/kitchen/kitchen-steps-actions'
 import { KitchenModeLauncher } from './kitchen-mode-launcher'
 
 export const metadata: Metadata = { title: 'Kitchen Mode' }
@@ -20,12 +20,21 @@ function KitchenLoading() {
   )
 }
 
-export default async function KitchenModePage() {
+async function KitchenContent({ eventId }: { eventId?: string }) {
+  const context = await getKitchenModeContext(eventId)
+  return <KitchenModeLauncher context={context} />
+}
+
+export default async function KitchenModePage({
+  searchParams,
+}: {
+  searchParams: { eventId?: string }
+}) {
   await requireChef()
 
   return (
     <Suspense fallback={<KitchenLoading />}>
-      <KitchenModeLauncher />
+      <KitchenContent eventId={searchParams.eventId} />
     </Suspense>
   )
 }
