@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/db/admin'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { runMonitoredCronJob } from '@/lib/cron/monitor'
 import { transitionEvent } from '@/lib/events/transitions'
+import { dateToDateString } from '@/lib/utils/format'
 
 // Event Time-Progression Cron
 // Advances events through the FSM based on wall-clock time:
@@ -66,7 +67,7 @@ export async function GET(request: Request) {
       for (const event of toComplete ?? []) {
         const isOver =
           (event.departure_time && event.departure_time <= now) ||
-          (!event.departure_time && event.event_date < today)
+          (!event.departure_time && dateToDateString(event.event_date as Date | string) < today)
 
         if (!isOver) continue
 
