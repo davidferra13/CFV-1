@@ -427,6 +427,18 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
     throw new Error('Missing required metadata on PaymentIntent')
   }
 
+  // Validate UUID formats before hitting DB to avoid PostgreSQL 22P02 errors
+  // (invalid UUID would cause the DB to throw, triggering infinite Stripe retries)
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  if (!UUID_RE.test(event_id) || !UUID_RE.test(tenant_id) || !UUID_RE.test(client_id)) {
+    console.error('[handlePaymentSucceeded] Invalid UUID in metadata - ignoring', {
+      event_id,
+      tenant_id,
+      client_id,
+    })
+    return // return silently so Stripe does not retry
+  }
+
   // Security: verify the metadata actually maps to a real event owned by that tenant.
   // This prevents crafted PaymentIntents (with arbitrary metadata) from writing
   // to the ledger for an event they don't own - even if RLS has a gap.
