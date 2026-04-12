@@ -4,6 +4,7 @@ import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ==========================================
 // TYPES
@@ -253,7 +254,7 @@ export async function createMilestonesForEvent(
             .split('T')[0]
           break
         case 'day_of_event':
-          dueDate = event.event_date
+          dueDate = dateToDateString(event.event_date as Date | string)
           break
         case 'days_after_event':
           dueDate = new Date(eventDate.getTime() + def.due_offset_days * 86400000)
