@@ -2,6 +2,7 @@
 
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
+import { dateToDateString } from '@/lib/utils/format'
 import { navGroups, standaloneBottom, standaloneTop } from '@/components/navigation/nav-config'
 
 export interface SearchResult {
@@ -127,8 +128,8 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
       results.push({
         id: makeId('event', event.id),
         type: 'event',
-        title: event.occasion || `Event ${event.event_date}`,
-        snippet: `${event.event_date} - ${event.status}`,
+        title: event.occasion || `Event ${dateToDateString(event.event_date as Date | string)}`,
+        snippet: `${dateToDateString(event.event_date as Date | string)} - ${event.status}`,
         url: `/events/${event.id}`,
         metadata: { badge: event.status },
       })

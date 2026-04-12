@@ -219,7 +219,7 @@ export async function getTopClientsByRevenue(limit = 10): Promise<TopClientByRev
         clientName,
         totalRevenueCents: revenue,
         totalEventCount: 1,
-        lastEventDate: e.event_date,
+        lastEventDate: dateToDateString(e.event_date as Date | string),
       })
     }
   }

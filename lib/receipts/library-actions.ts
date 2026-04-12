@@ -11,6 +11,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
+import { dateToDateString } from '@/lib/utils/format'
 import { processReceiptOCR } from './actions'
 
 const RECEIPTS_BUCKET = 'receipts'
@@ -314,7 +315,9 @@ export async function getEventOptionsForChef(): Promise<EventOption[]> {
 
   return (data ?? []).map((e: any) => ({
     id: e.id,
-    label: e.occasion ? `${e.occasion} (${e.event_date})` : `Event - ${e.event_date}`,
+    label: e.occasion
+      ? `${e.occasion} (${dateToDateString(e.event_date as Date | string)})`
+      : `Event - ${dateToDateString(e.event_date as Date | string)}`,
   }))
 }
 

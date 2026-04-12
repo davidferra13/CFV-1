@@ -8,6 +8,7 @@
 
 import { createAdminClient } from '@/lib/db/admin'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { dateToDateString } from '@/lib/utils/format'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { enqueueTask } from '@/lib/ai/queue/actions'
 import { AI_PRIORITY } from '@/lib/ai/queue/types'
@@ -88,7 +89,9 @@ export async function handleDailyBriefing(
         `${events.length} events in the next 3 days`,
         `${inquiries.length} open inquiries`,
       ],
-      upcomingEvents: events.map((e: any) => `${e.occasion ?? 'Event'} on ${e.event_date}`),
+      upcomingEvents: events.map(
+        (e: any) => `${e.occasion ?? 'Event'} on ${dateToDateString(e.event_date as Date | string)}`
+      ),
       actionItems: inquiries.length > 0 ? ['Review open inquiries'] : [],
       generatedAt: new Date().toISOString(),
       fallback: true,

@@ -4,6 +4,7 @@
 
 import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
 import type { AgentActionPreview } from '@/lib/ai/command-types'
+import { dateToDateString } from '@/lib/utils/format'
 import { createEmergencyContact } from '@/lib/contingency/actions'
 import { createFolder, searchDocuments } from '@/lib/ai/document-management-actions'
 
@@ -106,21 +107,23 @@ export const proactiveAgentActions: AgentActionDefinition[] = [
         const evt = upcomingEvents[0] as Record<string, unknown>
         const clientName = (evt.client as Record<string, unknown> | null)?.full_name ?? 'Client'
         suggestions.push(
-          `Prep for upcoming event: ${evt.occasion} on ${evt.event_date} (${evt.status})`
+          `Prep for upcoming event: ${evt.occasion} on ${dateToDateString(evt.event_date as Date | string)} (${evt.status})`
         )
         fields.push({
           label: 'Next Event',
-          value: `${evt.occasion} - ${evt.event_date} (${clientName})`,
+          value: `${evt.occasion} - ${dateToDateString(evt.event_date as Date | string)} (${clientName})`,
         })
       }
 
       // Priority 4: Completed events needing debrief
       if (recentCompleted?.length) {
         const evt = recentCompleted[0] as Record<string, unknown>
-        suggestions.push(`Debrief completed event: ${evt.occasion} (${evt.event_date})`)
+        suggestions.push(
+          `Debrief completed event: ${evt.occasion} (${dateToDateString(evt.event_date as Date | string)})`
+        )
         fields.push({
           label: 'Needs Debrief',
-          value: `${evt.occasion} - ${evt.event_date}`,
+          value: `${evt.occasion} - ${dateToDateString(evt.event_date as Date | string)}`,
         })
       }
 

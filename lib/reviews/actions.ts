@@ -6,6 +6,7 @@
 
 import { requireChef, requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { dateToDateString } from '@/lib/utils/format'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -411,10 +412,10 @@ function providerLabel(provider: string): string {
   return provider
 }
 
-function formatEventContext(event: { occasion: string | null; event_date: string } | null) {
+function formatEventContext(event: { occasion: string | null; event_date: Date | string } | null) {
   if (!event) return null
   const occasion = event.occasion?.trim() || 'Event'
-  return `${occasion} - ${event.event_date}`
+  return `${occasion} - ${dateToDateString(event.event_date as Date | string)}`
 }
 
 export async function getUnifiedChefReviewFeed(): Promise<UnifiedChefReviewItem[]> {
