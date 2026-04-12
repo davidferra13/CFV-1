@@ -8232,7 +8232,7 @@ async function loadProjectTimeline(force = false) {
   bindTimelineFilters()
   const dateInput = document.getElementById('timeline-add-date')
   if (dateInput && !dateInput.value) {
-    dateInput.value = new Date().toISOString().slice(0, 10)
+    const _tldd = new Date(); dateInput.value = `${_tldd.getFullYear()}-${String(_tldd.getMonth() + 1).padStart(2, '0')}-${String(_tldd.getDate()).padStart(2, '0')}`
   }
 
   try {
@@ -8442,7 +8442,7 @@ function renderFeedback(entries) {
 
   const grouped = {}
   for (const e of entries) {
-    const date = new Date(e.created_at).toISOString().slice(0, 10)
+    const _ecd = new Date(e.created_at); const date = `${_ecd.getFullYear()}-${String(_ecd.getMonth() + 1).padStart(2, '0')}-${String(_ecd.getDate()).padStart(2, '0')}`
     if (!grouped[date]) grouped[date] = []
     grouped[date].push(e)
   }
@@ -11769,7 +11769,7 @@ function renderLopsChecklist() {
 function renderLopsDailyLog() {
   const el = document.getElementById('lops-tab-daily-log')
   const d = lopsData
-  const today = new Date().toISOString().slice(0, 10)
+  const _lopsd = new Date(); const today = `${_lopsd.getFullYear()}-${String(_lopsd.getMonth() + 1).padStart(2, '0')}-${String(_lopsd.getDate()).padStart(2, '0')}`
   const todayLog = d.dailyLog.find(l => l.date === today) || { date: today, summary: '', rating: null, redFlags: [], workarounds: [] }
 
   el.innerHTML = `

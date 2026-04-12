@@ -460,7 +460,8 @@ async function runTests() {
   const path = await import('node:path')
   const reportPath = path.join(process.cwd(), 'docs', 'gustav-test-reports')
   try { await fs.mkdir(reportPath, { recursive: true }) } catch {}
-  const reportFile = path.join(reportPath, `run-${new Date().toISOString().slice(0, 10)}.json`)
+  const _tgsd = new Date()
+  const reportFile = path.join(reportPath, `run-${_tgsd.getFullYear()}-${String(_tgsd.getMonth() + 1).padStart(2, '0')}-${String(_tgsd.getDate()).padStart(2, '0')}.json`)
   await fs.writeFile(reportFile, JSON.stringify(report, null, 2))
   console.log(`\nReport saved to: ${reportFile}`)
 

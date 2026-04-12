@@ -46,10 +46,12 @@ function parseCliArgs() {
 
 // ---- Configuration ----
 
+const _ofrd = new Date()
+const _ofrDateStr = `${_ofrd.getFullYear()}-${String(_ofrd.getMonth() + 1).padStart(2, '0')}-${String(_ofrd.getDate()).padStart(2, '0')}`
 const RUN_DIR = path.join(
   ROOT,
   'reports',
-  `overnight-full-${new Date().toISOString().slice(0, 10)}`
+  `overnight-full-${_ofrDateStr}`
 )
 
 // TRACK 1: Remy suites (GPU-bound, run sequentially within track)
@@ -657,7 +659,7 @@ function buildMasterReport(results, totalStartMs) {
 
   const lines = []
   lines.push('# ChefFlow Beta - Full Overnight Test Report (Parallel)')
-  lines.push(`**Date:** ${new Date().toISOString().slice(0, 10)}`)
+  lines.push(`**Date:** ${_ofrDateStr}`)
   lines.push(`**Total Duration:** ${totalDuration}`)
   lines.push(`**Phases Run:** ${results.length}`)
   lines.push(`**Phases Passed:** ${passedPhases}`)
@@ -831,7 +833,7 @@ async function main() {
   const reportPath = path.join(RUN_DIR, 'master-report.md')
   fs.writeFileSync(reportPath, report, 'utf8')
 
-  const docsReportPath = path.join(ROOT, 'docs', `beta-test-marathon-${new Date().toISOString().slice(0, 10)}.md`)
+  const docsReportPath = path.join(ROOT, 'docs', `beta-test-marathon-${_ofrDateStr}.md`)
   fs.writeFileSync(docsReportPath, report, 'utf8')
 
   const passedCount = allResults.filter((r) => r.passed).length

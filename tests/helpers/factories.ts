@@ -31,15 +31,15 @@ function email(prefix = 'test') {
 }
 
 function futureDate(daysAhead = 30) {
-  const d = new Date()
-  d.setDate(d.getDate() + daysAhead)
-  return d.toISOString().slice(0, 10)
+  const _d = new Date()
+  const d = new Date(_d.getFullYear(), _d.getMonth(), _d.getDate() + daysAhead)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 function pastDate(daysAgo = 30) {
-  const d = new Date()
-  d.setDate(d.getDate() - daysAgo)
-  return d.toISOString().slice(0, 10)
+  const _d = new Date()
+  const d = new Date(_d.getFullYear(), _d.getMonth(), _d.getDate() - daysAgo)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

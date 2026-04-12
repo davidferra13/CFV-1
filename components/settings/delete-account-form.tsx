@@ -54,7 +54,7 @@ export function DeleteAccountForm({ chefId }: Props) {
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
-        a.download = `chefflow-data-${new Date().toISOString().split('T')[0]}.json`
+        a.download = `chefflow-data-${((_dafd) => `${_dafd.getFullYear()}-${String(_dafd.getMonth() + 1).padStart(2, '0')}-${String(_dafd.getDate()).padStart(2, '0')}`)(new Date())}.json`
         a.click()
         URL.revokeObjectURL(url)
         toast.success('Data export downloaded')

@@ -20,7 +20,8 @@ import postgres from 'postgres'
 
 const DB_URL = process.env.DATABASE_URL || 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
 const sql = postgres(DB_URL)
-const today = new Date().toISOString().split('T')[0]
+const _ptd = new Date()
+const today = `${_ptd.getFullYear()}-${String(_ptd.getMonth() + 1).padStart(2, '0')}-${String(_ptd.getDate()).padStart(2, '0')}`
 
 async function main() {
   console.log('=== Propagate Market Prices to Chef Ingredients ===')

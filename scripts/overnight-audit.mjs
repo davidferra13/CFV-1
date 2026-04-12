@@ -39,7 +39,8 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
-const DATE = new Date().toISOString().slice(0, 10);
+const _oad = new Date()
+const DATE = `${_oad.getFullYear()}-${String(_oad.getMonth() + 1).padStart(2, '0')}-${String(_oad.getDate()).padStart(2, '0')}`
 const REPORTS_DIR = path.join(ROOT, 'reports', `overnight-${DATE}`);
 const SCREENSHOTS_DIR = path.join(REPORTS_DIR, 'screenshots');
 const TEST_RESULTS_DIR = path.join(REPORTS_DIR, 'test-results');

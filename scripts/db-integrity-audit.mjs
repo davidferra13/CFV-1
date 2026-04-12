@@ -23,7 +23,8 @@ dotenv.config({ path: path.join(ROOT, '.env.local') });
 
 import { createAdminClient } from './lib/db.mjs';
 
-const DATE = new Date().toISOString().slice(0, 10);
+const _diad = new Date()
+const DATE = `${_diad.getFullYear()}-${String(_diad.getMonth() + 1).padStart(2, '0')}-${String(_diad.getDate()).padStart(2, '0')}`
 const REPORTS_DIR = path.join(ROOT, 'reports', `overnight-${DATE}`);
 const startTime = Date.now();
 
@@ -218,7 +219,7 @@ function defineChecks(data) {
       id: 'FSM-004', category: 'Event FSM', severity: 'medium',
       name: 'Completed events with future dates',
       run: () => {
-        const today = new Date().toISOString().slice(0, 10);
+        const _diat = new Date(); const today = `${_diat.getFullYear()}-${String(_diat.getMonth() + 1).padStart(2, '0')}-${String(_diat.getDate()).padStart(2, '0')}`;
         const bad = events.filter(e => e.status === 'completed' && e.event_date > today);
         return { pass: bad.length === 0, count: bad.length, details: bad.slice(0, 10).map(e => `Event ${e.id}: completed but date is ${e.event_date}`) };
       },

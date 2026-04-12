@@ -157,9 +157,9 @@ const RI = {
 // ─── Date Helpers ────────────────────────────────────────────────────────────
 
 function daysFromNow(days: number): string {
-  const d = new Date('2026-02-28')
-  d.setDate(d.getDate() + days)
-  return d.toISOString().slice(0, 10)
+  const [_ry, _rm, _rd] = [2026, 2, 28]
+  const d = new Date(_ry, _rm - 1, _rd + days)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 function daysAgo(days: number): string {

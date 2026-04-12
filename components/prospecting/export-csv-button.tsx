@@ -19,7 +19,7 @@ export function ExportCSVButton() {
         const url = URL.createObjectURL(blob)
         const link = document.createElement('a')
         link.href = url
-        link.download = `prospects-${new Date().toISOString().split('T')[0]}.csv`
+        link.download = `prospects-${((_prd) => `${_prd.getFullYear()}-${String(_prd.getMonth() + 1).padStart(2, '0')}-${String(_prd.getDate()).padStart(2, '0')}`)(new Date())}.csv`
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)

@@ -293,7 +293,7 @@ export function BetaSignupsTable({ signups }: { signups: BetaSignup[] }) {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `chefflow-beta-signups-${new Date().toISOString().slice(0, 10)}.csv`
+      a.download = `chefflow-beta-signups-${((_bsd) => `${_bsd.getFullYear()}-${String(_bsd.getMonth() + 1).padStart(2, '0')}-${String(_bsd.getDate()).padStart(2, '0')}`)(new Date())}.csv`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)

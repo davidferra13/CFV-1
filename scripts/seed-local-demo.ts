@@ -42,9 +42,9 @@ function ensureLocalDb(url: string) {
 }
 
 function daysFromNow(days: number): string {
-  const date = new Date()
-  date.setDate(date.getDate() + days)
-  return date.toISOString().slice(0, 10)
+  const _sn = new Date()
+  const d = new Date(_sn.getFullYear(), _sn.getMonth(), _sn.getDate() + days)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 async function ensureAuthUser(

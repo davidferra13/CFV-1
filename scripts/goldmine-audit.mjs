@@ -1628,7 +1628,8 @@ if (failed > 0) {
 
 // ─── Write Report ──────────────────────────────────────────────────────────
 
-const today = new Date().toISOString().slice(0, 10)
+const _gad = new Date()
+const today = `${_gad.getFullYear()}-${String(_gad.getMonth() + 1).padStart(2, '0')}-${String(_gad.getDate()).padStart(2, '0')}`
 const reportDir = path.join(process.cwd(), 'reports', `overnight-${today}`)
 fs.mkdirSync(reportDir, { recursive: true })
 

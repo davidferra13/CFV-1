@@ -109,14 +109,15 @@ export async function createTestEvent(
   clientId: string,
   overrides: Record<string, unknown> = {}
 ) {
-  const futureDate = new Date()
-  futureDate.setDate(futureDate.getDate() + 30)
+  const _tfd = new Date()
+  const futureDate = new Date(_tfd.getFullYear(), _tfd.getMonth(), _tfd.getDate() + 30)
+  const futureDateStr = `${futureDate.getFullYear()}-${String(futureDate.getMonth() + 1).padStart(2, '0')}-${String(futureDate.getDate()).padStart(2, '0')}`
 
   return insertTracked('events', {
     tenant_id: tenantId,
     client_id: clientId,
     occasion: 'Test Dinner',
-    event_date: futureDate.toISOString().slice(0, 10),
+    event_date: futureDateStr,
     guest_count: 8,
     status: 'draft',
     ...overrides,

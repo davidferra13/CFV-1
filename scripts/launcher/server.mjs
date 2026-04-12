@@ -778,7 +778,7 @@ function deployBeta() {
       } else {
         td.betaDeploysFailed = (td.betaDeploysFailed || 0) + 1
       }
-      td.lastUpdated = new Date().toISOString().slice(0, 10)
+      td.lastUpdated = ((_ltd) => `${_ltd.getFullYear()}-${String(_ltd.getMonth() + 1).padStart(2, '0')}-${String(_ltd.getDate()).padStart(2, '0')}`)(new Date())
       await writeProjectTimelineData(td)
     } catch {}
   })
@@ -872,7 +872,8 @@ async function gitCommit(message) {
 }
 
 async function dbBackup() {
-  const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+  const _dbb = new Date()
+  const timestamp = `${_dbb.getFullYear()}${String(_dbb.getMonth() + 1).padStart(2, '0')}${String(_dbb.getDate()).padStart(2, '0')}`
   const filename = `backup-${timestamp}.sql`
   log('db', `Creating database backup: ${filename}...`, 'info')
   try {
@@ -898,7 +899,7 @@ async function shipIt(message) {
 
   // Step 1: Commit
   const commitMsg =
-    message || `update: ${new Date().toISOString().slice(0, 10)} ship from Mission Control`
+    message || `update: ${((_shd) => `${_shd.getFullYear()}-${String(_shd.getMonth() + 1).padStart(2, '0')}-${String(_shd.getDate()).padStart(2, '0')}`)(new Date())} ship from Mission Control`
   log('ship', `Step 1/3: Committing - "${commitMsg}"`, 'info')
   try {
     await execAsync('git add -A', { cwd: PROJECT_ROOT })
@@ -1139,7 +1140,8 @@ async function closeOutFeature(message) {
   }
 
   // Step 3: Commit
-  const commitMsg = message || `feat: close-out ${new Date().toISOString().slice(0, 10)}`
+  const _cod = new Date()
+  const commitMsg = message || `feat: close-out ${_cod.getFullYear()}-${String(_cod.getMonth() + 1).padStart(2, '0')}-${String(_cod.getDate()).padStart(2, '0')}`
   log('close-out', `Step 3/4: Committing - "${commitMsg}"`, 'info')
   try {
     await execAsync('git add -A', { cwd: PROJECT_ROOT })
@@ -2363,7 +2365,8 @@ async function dbQuery(
 // ── Business Data Tools ─────────────────────────────────────────
 
 async function getUpcomingEvents() {
-  const now = new Date().toISOString().slice(0, 10)
+  const _gued = new Date()
+  const now = `${_gued.getFullYear()}-${String(_gued.getMonth() + 1).padStart(2, '0')}-${String(_gued.getDate()).padStart(2, '0')}`
   const result = await dbQuery('events', {
     select:
       'id,event_date,serve_time,status,guest_count,occasion,service_style,location_city,client:clients(full_name)',
@@ -3292,7 +3295,8 @@ async function compareEnvFiles() {
 let scheduledBackupTimer = null
 
 async function scheduledDbBackup() {
-  const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+  const _sdbb = new Date()
+  const timestamp = `${_sdbb.getFullYear()}${String(_sdbb.getMonth() + 1).padStart(2, '0')}${String(_sdbb.getDate()).padStart(2, '0')}`
   const backupDir = join(PROJECT_ROOT, 'backups')
   const filename = `backup-${timestamp}.sql`
 
@@ -3775,8 +3779,10 @@ async function getExpenseBreakdown(param) {
 }
 
 async function getCalendarOverview() {
-  const now = new Date().toISOString().slice(0, 10)
-  const twoWeeksOut = new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10)
+  const _gcod = new Date()
+  const now = `${_gcod.getFullYear()}-${String(_gcod.getMonth() + 1).padStart(2, '0')}-${String(_gcod.getDate()).padStart(2, '0')}`
+  const _gcow = new Date(_gcod.getFullYear(), _gcod.getMonth(), _gcod.getDate() + 14)
+  const twoWeeksOut = `${_gcow.getFullYear()}-${String(_gcow.getMonth() + 1).padStart(2, '0')}-${String(_gcow.getDate()).padStart(2, '0')}`
   const [eventsResult, protectedResult] = await Promise.all([
     dbQuery('events', {
       select: 'id,event_date,serve_time,status,occasion,guest_count,client:clients(full_name)',
@@ -3828,7 +3834,7 @@ async function getStaffRoster() {
     }),
     dbQuery('event_staff_assignments', {
       select: 'staff_member_id,event:events(event_date,occasion)',
-      filters: [`event.event_date=gte.${new Date().toISOString().slice(0, 10)}`],
+      filters: [`event.event_date=gte.${((_gsrd) => `${_gsrd.getFullYear()}-${String(_gsrd.getMonth() + 1).padStart(2, '0')}-${String(_gsrd.getDate()).padStart(2, '0')}`)(new Date())}`],
       order: 'event.event_date.asc',
       limit: 50,
     }).catch(() => ({ ok: false })),
@@ -4305,11 +4311,13 @@ async function getHubActivity() {
   const friends = friendsResult.ok ? friendsResult.data : []
 
   // Activity by day (last 7 days)
-  const now = Date.now()
-  const sevenDaysAgo = new Date(now - 7 * 86400000).toISOString().slice(0, 10)
+  const _cabd = new Date()
+  const _caby = _cabd.getFullYear(), _cabm = _cabd.getMonth(), _cabdd = _cabd.getDate()
+  const _liso7 = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const sevenDaysAgo = _liso7(new Date(_caby, _cabm, _cabdd - 7))
   const byDay = {}
   for (let i = 0; i < 7; i++) {
-    const day = new Date(now - i * 86400000).toISOString().slice(0, 10)
+    const day = _liso7(new Date(_caby, _cabm, _cabdd - i))
     byDay[day] = { messages: 0, polls: 0, joins: 0, friendRequests: 0 }
   }
 
@@ -7499,7 +7507,7 @@ async function handleRequest(req, res) {
       }
       milestones.push(milestone)
       timelineData.milestones = milestones
-      timelineData.lastUpdated = new Date().toISOString().slice(0, 10)
+      timelineData.lastUpdated = ((_tlud) => `${_tlud.getFullYear()}-${String(_tlud.getMonth() + 1).padStart(2, '0')}-${String(_tlud.getDate()).padStart(2, '0')}`)(new Date())
       await writeProjectTimelineData(timelineData)
       log('timeline', `Added milestone: ${title} (${date})`, 'info')
       return json(res, { ok: true, milestone })
@@ -7645,12 +7653,12 @@ async function handleRequest(req, res) {
         name,
         totalSpent: parseFloat(totalSpent) || 0,
         monthlyRate: parseFloat(monthlyRate) || 0,
-        date: new Date().toISOString().slice(0, 10),
+        date: ((_exd) => `${_exd.getFullYear()}-${String(_exd.getMonth() + 1).padStart(2, '0')}-${String(_exd.getDate()).padStart(2, '0')}`)(new Date()),
         notes: notes || '',
       }
 
       data.entries.push(entry)
-      data.lastUpdated = new Date().toISOString().slice(0, 10)
+      data.lastUpdated = ((_exlu) => `${_exlu.getFullYear()}-${String(_exlu.getMonth() + 1).padStart(2, '0')}-${String(_exlu.getDate()).padStart(2, '0')}`)(new Date())
 
       await writeFile(PROJECT_EXPENSES_FILE, JSON.stringify(data, null, 2) + '\n')
       log('expenses', `Added expense: ${name} ($${entry.totalSpent})`, 'info')
@@ -7821,7 +7829,8 @@ async function handleRequest(req, res) {
       const { summary, rating, redFlags, workarounds } = body
       const raw = await readFile(LIVE_OPS_FILE, 'utf-8')
       const data = JSON.parse(raw)
-      const today = new Date().toISOString().slice(0, 10)
+      const _dlod = new Date()
+      const today = `${_dlod.getFullYear()}-${String(_dlod.getMonth() + 1).padStart(2, '0')}-${String(_dlod.getDate()).padStart(2, '0')}`
       const existing = data.dailyLog.find(d => d.date === today)
       if (existing) {
         if (summary !== undefined) existing.summary = summary

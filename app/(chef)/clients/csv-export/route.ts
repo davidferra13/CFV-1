@@ -32,7 +32,7 @@ export async function GET() {
   return new NextResponse(csv, {
     headers: {
       'Content-Type': 'text/csv',
-      'Content-Disposition': `attachment; filename="clients-${new Date().toISOString().slice(0, 10)}.csv"`,
+      'Content-Disposition': `attachment; filename="clients-${((_cced) => `${_cced.getFullYear()}-${String(_cced.getMonth() + 1).padStart(2, '0')}-${String(_cced.getDate()).padStart(2, '0')}`)(new Date())}.csv"`,
     },
   })
 }

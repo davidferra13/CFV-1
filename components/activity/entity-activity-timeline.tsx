@@ -29,10 +29,10 @@ export function EntityActivityTimeline({
   entityId,
   entries,
 }: EntityActivityTimelineProps) {
-  const exportName = useMemo(
-    () => `${entityType}-${entityId}-activity-${new Date().toISOString().slice(0, 10)}.json`,
-    [entityId, entityType]
-  )
+  const exportName = useMemo(() => {
+    const _ead = new Date()
+    return `${entityType}-${entityId}-activity-${_ead.getFullYear()}-${String(_ead.getMonth() + 1).padStart(2, '0')}-${String(_ead.getDate()).padStart(2, '0')}.json`
+  }, [entityId, entityType])
 
   const handleExport = () => {
     const blob = new Blob([JSON.stringify(entries, null, 2)], { type: 'application/json' })

@@ -75,7 +75,7 @@ export function CharityHoursList({
     const url = URL.createObjectURL(blob)
     const anchor = document.createElement('a')
     anchor.href = url
-    anchor.download = `community-impact-hours-${new Date().toISOString().slice(0, 10)}.csv`
+    anchor.download = `community-impact-hours-${((_chd) => `${_chd.getFullYear()}-${String(_chd.getMonth() + 1).padStart(2, '0')}-${String(_chd.getDate()).padStart(2, '0')}`)(new Date())}.csv`
     anchor.click()
     URL.revokeObjectURL(url)
     toast.success('CSV exported.')

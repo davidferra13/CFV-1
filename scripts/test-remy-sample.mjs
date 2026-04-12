@@ -195,7 +195,8 @@ async function main() {
   console.log('='.repeat(60))
 
   // Save report
-  const timestamp = new Date().toISOString().split('T')[0]
+  const _trsd = new Date()
+  const timestamp = `${_trsd.getFullYear()}-${String(_trsd.getMonth() + 1).padStart(2, '0')}-${String(_trsd.getDate()).padStart(2, '0')}`
   const path = `docs/remy-daily-reports/sample-${timestamp}.json`
   fs.writeFileSync(
     path,

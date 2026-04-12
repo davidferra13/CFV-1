@@ -179,7 +179,7 @@ function writeReport(results, summary) {
   const lines = [
     '# Wiring Verification Report',
     '',
-    `**Date:** ${new Date().toISOString().split('T')[0]}`,
+    `**Date:** ${((_wvd) => `${_wvd.getFullYear()}-${String(_wvd.getMonth() + 1).padStart(2, '0')}-${String(_wvd.getDate()).padStart(2, '0')}`)(new Date())}`,
     `**Tested by:** Agent account (agent@local.chefflow)`,
     `**Summary:** ${summary.passed} PASS, ${summary.partial} PARTIAL, ${summary.failed} FAIL out of ${summary.total} routes`,
     '',

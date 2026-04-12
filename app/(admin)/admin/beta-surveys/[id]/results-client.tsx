@@ -58,7 +58,7 @@ export function SurveyResultsClient({
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
-        a.download = `beta-survey-results-${new Date().toISOString().split('T')[0]}.csv`
+        a.download = `beta-survey-results-${((_bsd) => `${_bsd.getFullYear()}-${String(_bsd.getMonth() + 1).padStart(2, '0')}-${String(_bsd.getDate()).padStart(2, '0')}`)(new Date())}.csv`
         a.click()
         URL.revokeObjectURL(url)
       }

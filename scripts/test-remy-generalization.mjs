@@ -171,7 +171,8 @@ async function main() {
   }
 
   // Save report
-  const timestamp = new Date().toISOString().split('T')[0]
+  const _trgd = new Date()
+  const timestamp = `${_trgd.getFullYear()}-${String(_trgd.getMonth() + 1).padStart(2, '0')}-${String(_trgd.getDate()).padStart(2, '0')}`
   const path = `docs/remy-daily-reports/generalization-${timestamp}.json`
   fs.writeFileSync(
     path,

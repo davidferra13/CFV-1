@@ -93,7 +93,10 @@ export function VendorPriceInsights({
       alert.changed_at,
     ])
     const csv = buildCsvSafe(headers, rows)
-    downloadCsv(csv, `vendor-price-alerts-${new Date().toISOString().slice(0, 10)}.csv`)
+    downloadCsv(
+      csv,
+      `vendor-price-alerts-${((_vpid) => `${_vpid.getFullYear()}-${String(_vpid.getMonth() + 1).padStart(2, '0')}-${String(_vpid.getDate()).padStart(2, '0')}`)(new Date())}.csv`
+    )
   }
 
   const exportTrendsCsv = () => {
@@ -125,7 +128,10 @@ export function VendorPriceInsights({
       }
     }
     const csv = buildCsvSafe(headers, rows)
-    downloadCsv(csv, `vendor-price-trends-${new Date().toISOString().slice(0, 10)}.csv`)
+    downloadCsv(
+      csv,
+      `vendor-price-trends-${((_vpid) => `${_vpid.getFullYear()}-${String(_vpid.getMonth() + 1).padStart(2, '0')}-${String(_vpid.getDate()).padStart(2, '0')}`)(new Date())}.csv`
+    )
   }
 
   return (

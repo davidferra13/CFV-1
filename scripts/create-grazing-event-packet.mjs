@@ -26,7 +26,8 @@ function slugify(value) {
 }
 
 function todayIsoDate() {
-  return new Date().toISOString().slice(0, 10);
+  const _td = new Date()
+  return `${_td.getFullYear()}-${String(_td.getMonth() + 1).padStart(2, '0')}-${String(_td.getDate()).padStart(2, '0')}`
 }
 
 function addDays(isoDate, days) {

@@ -612,7 +612,12 @@ function parseInvoiceDraftFromTabular(parsed: ParsedCsv): DraftInvoiceSummary {
   const firstRow = parsed.rows[0] ?? []
 
   const invoiceDateGuess =
-    dateIdx >= 0 ? parseDateGuess(firstRow[dateIdx] ?? '') : new Date().toISOString().slice(0, 10)
+    dateIdx >= 0
+      ? parseDateGuess(firstRow[dateIdx] ?? '')
+      : ((_diad) =>
+          `${_diad.getFullYear()}-${String(_diad.getMonth() + 1).padStart(2, '0')}-${String(_diad.getDate()).padStart(2, '0')}`)(
+          new Date()
+        )
   const invoiceNumberGuess =
     invoiceNumberIdx >= 0 ? cleanString(firstRow[invoiceNumberIdx] ?? '') : null
 

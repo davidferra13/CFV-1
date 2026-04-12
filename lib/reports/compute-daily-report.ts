@@ -32,24 +32,24 @@ export async function computeDailyReport(
 ): Promise<DailyReportContent> {
   const now = new Date()
 
-  // Date calculations
+  // Date calculations (UTC-consistent: reportDateObj is UTC midnight, all offsets use ms arithmetic)
   const reportDateObj = new Date(reportDate + 'T00:00:00Z')
-  const yesterdayStart = new Date(reportDateObj)
-  yesterdayStart.setDate(yesterdayStart.getDate() - 1)
-  const yesterdayStr = yesterdayStart.toISOString().split('T')[0]
-
-  const sevenDaysOut = new Date(reportDateObj)
-  sevenDaysOut.setDate(sevenDaysOut.getDate() + 7)
-  const sevenDaysOutStr = sevenDaysOut.toISOString().split('T')[0]
+  const yesterdayStr = new Date(reportDateObj.getTime() - 86400000).toISOString().split('T')[0]
+  const sevenDaysOutStr = new Date(reportDateObj.getTime() + 7 * 86400000)
+    .toISOString()
+    .split('T')[0]
+  const _liso = (d: Date) => d.toISOString().split('T')[0]
 
   // Current month boundaries
   const monthStart = `${reportDate.slice(0, 7)}-01`
-  const prevMonthDate = new Date(reportDateObj)
-  prevMonthDate.setMonth(prevMonthDate.getMonth() - 1)
-  const prevMonthStart = `${prevMonthDate.toISOString().slice(0, 7)}-01`
-  const prevMonthEnd = new Date(reportDateObj.getFullYear(), reportDateObj.getMonth(), 0)
-    .toISOString()
-    .split('T')[0]
+  const _prevMonthD = new Date(
+    Date.UTC(reportDateObj.getUTCFullYear(), reportDateObj.getUTCMonth() - 1, 1)
+  )
+  const prevMonthStart = `${_prevMonthD.getUTCFullYear()}-${String(_prevMonthD.getUTCMonth() + 1).padStart(2, '0')}-01`
+  const _prevMonthEnd = new Date(
+    Date.UTC(reportDateObj.getUTCFullYear(), reportDateObj.getUTCMonth(), 0)
+  )
+  const prevMonthEnd = _prevMonthEnd.toISOString().split('T')[0]
 
   // ─── Parallel fetches ─────────────────────────────────────────────────
 
@@ -465,14 +465,13 @@ export async function computeDailyReport(
     safe(
       'multiEventDays',
       async () => {
-        const thirtyDaysOut = new Date(reportDateObj)
-        thirtyDaysOut.setDate(thirtyDaysOut.getDate() + 30)
+        const thirtyDaysOut = new Date(reportDateObj.getTime() + 30 * 86400000)
         const { data } = await db
           .from('events')
           .select('event_date')
           .eq('tenant_id', tenantId)
           .gte('event_date', reportDate)
-          .lte('event_date', thirtyDaysOut.toISOString().split('T')[0])
+          .lte('event_date', _liso(thirtyDaysOut))
           .not('status', 'in', '("cancelled","completed")')
         if (!data) return []
         const counts: Record<string, number> = {}

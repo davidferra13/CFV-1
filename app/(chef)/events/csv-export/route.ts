@@ -47,7 +47,7 @@ export async function GET() {
   return new NextResponse(csv, {
     headers: {
       'Content-Type': 'text/csv',
-      'Content-Disposition': `attachment; filename="events-${new Date().toISOString().slice(0, 10)}.csv"`,
+      'Content-Disposition': `attachment; filename="events-${((_eced) => `${_eced.getFullYear()}-${String(_eced.getMonth() + 1).padStart(2, '0')}-${String(_eced.getDate()).padStart(2, '0')}`)(new Date())}.csv"`,
     },
   })
 }

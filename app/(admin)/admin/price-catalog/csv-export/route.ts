@@ -39,7 +39,8 @@ export async function GET(request: NextRequest) {
   )
 
   const csv = [header, ...body].join('\n')
-  const date = new Date().toISOString().slice(0, 10)
+  const _apcd = new Date()
+  const date = `${_apcd.getFullYear()}-${String(_apcd.getMonth() + 1).padStart(2, '0')}-${String(_apcd.getDate()).padStart(2, '0')}`
 
   return new NextResponse(csv, {
     headers: {

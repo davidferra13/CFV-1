@@ -113,7 +113,8 @@ async function main() {
   let notFound = 0
   let priceRows = 0
   const notFoundNames = []
-  const today = new Date().toISOString().split('T')[0]
+  const _osd = new Date()
+  const today = `${_osd.getFullYear()}-${String(_osd.getMonth() + 1).padStart(2, '0')}-${String(_osd.getDate()).padStart(2, '0')}`
 
   // 4. Process each result
   for (const [name, result] of Object.entries(data.results)) {

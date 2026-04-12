@@ -18,7 +18,7 @@ export function GdprTools() {
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
-        a.download = `chefflow-data-${new Date().toISOString().split('T')[0]}.json`
+        a.download = `chefflow-data-${((_gdpd) => `${_gdpd.getFullYear()}-${String(_gdpd.getMonth() + 1).padStart(2, '0')}-${String(_gdpd.getDate()).padStart(2, '0')}`)(new Date())}.json`
         a.click()
         URL.revokeObjectURL(url)
         toast.success('Data export downloaded')

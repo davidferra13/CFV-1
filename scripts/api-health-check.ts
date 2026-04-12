@@ -609,7 +609,8 @@ async function checkPostHog() {
 // ---- Main ----
 
 async function main() {
-  const date = new Date().toISOString().split('T')[0]
+  const _ahcd = new Date()
+  const date = `${_ahcd.getFullYear()}-${String(_ahcd.getMonth() + 1).padStart(2, '0')}-${String(_ahcd.getDate()).padStart(2, '0')}`
 
   // Run all checks (network checks in parallel where possible)
   const checks = [

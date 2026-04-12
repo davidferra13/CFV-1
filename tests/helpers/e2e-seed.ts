@@ -104,9 +104,9 @@ export function getIsolationSuffix(): string {
 }
 
 function daysFromNow(days: number): string {
-  const date = new Date()
-  date.setDate(date.getDate() + days)
-  return date.toISOString().slice(0, 10)
+  const _d = new Date()
+  const date = new Date(_d.getFullYear(), _d.getMonth(), _d.getDate() + days)
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
 
 function isMissingColumn(error: any, column: string): boolean {

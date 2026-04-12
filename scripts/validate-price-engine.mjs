@@ -178,7 +178,7 @@ async function validateIngredient({ ingredient, zip, label }) {
     result.confidence_reason = `match=${matchConf.toFixed(2)} x scope=${scopeMult} (${locationScope}) x data=${dataMult.toFixed(2)} (${final.length} pts)`
 
     const dates = products.map(p => p.last_seen_at).filter(Boolean).sort().reverse()
-    result.last_updated = dates[0] ? new Date(dates[0]).toISOString().split('T')[0] : null
+    result.last_updated = dates[0] ? ((_vpd) => `${_vpd.getFullYear()}-${String(_vpd.getMonth() + 1).padStart(2, '0')}-${String(_vpd.getDate()).padStart(2, '0')}`)(new Date(dates[0])) : null
 
     if (locationScope === 'national') {
       result.coverage_note = `No stores near ${zip}. Prices from NE US stores. ${region} region.`
