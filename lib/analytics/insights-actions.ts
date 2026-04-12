@@ -409,7 +409,7 @@ export async function getDayOfWeekDistribution(): Promise<DayOfWeekStat[]> {
   const counts = DAY_NAMES.map((day) => ({ day, count: 0 }))
 
   for (const e of events ?? []) {
-    const dow = parseDate(e.event_date as string).getDay()
+    const dow = new Date(e.event_date as Date | string).getDay()
     counts[dow].count++
   }
 
@@ -542,7 +542,7 @@ export async function getRetentionStats(): Promise<RetentionStats> {
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
   const dormant = all.filter((c: any) => {
     if (!c.last_event_date) return false
-    return parseDate(c.last_event_date as string) < sixMonthsAgo
+    return new Date(c.last_event_date as Date | string) < sixMonthsAgo
   }).length
 
   const totalEvents = all.reduce((s: any, c: any) => s + (c.total_events_count ?? 0), 0)
