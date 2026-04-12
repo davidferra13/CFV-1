@@ -3,6 +3,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from '@/lib/documents/pdf-layout'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -117,7 +118,7 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
   if (!event.menu_id) {
     return {
       eventId,
-      eventDate: event.event_date,
+      eventDate: dateToDateString(event.event_date as Date | string),
       serveTime: event.serve_time,
       guestCount: event.guest_count,
       occasion: event.occasion,
@@ -138,7 +139,7 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
   if (!dishes || dishes.length === 0) {
     return {
       eventId,
-      eventDate: event.event_date,
+      eventDate: dateToDateString(event.event_date as Date | string),
       serveTime: event.serve_time,
       guestCount: event.guest_count,
       occasion: event.occasion,
@@ -160,7 +161,7 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
   if (!components || components.length === 0) {
     return {
       eventId,
-      eventDate: event.event_date,
+      eventDate: dateToDateString(event.event_date as Date | string),
       serveTime: event.serve_time,
       guestCount: event.guest_count,
       occasion: event.occasion,

@@ -4,6 +4,7 @@ import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -81,12 +82,12 @@ export interface Certification {
 
 // ── Status Computation ───────────────────────────────────────────────────────
 
-function computeStatus(expiresAt: string | null): CertStatus {
+function computeStatus(expiresAt: Date | string | null): CertStatus {
   if (!expiresAt) return 'active'
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-  const expiry = new Date(expiresAt + 'T00:00:00')
+  const expiry = new Date(dateToDateString(expiresAt) + 'T00:00:00')
 
   const diffMs = expiry.getTime() - today.getTime()
   const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
@@ -222,7 +223,7 @@ export async function getExpiringCertifications(daysAhead: number = 60): Promise
 
   return certs.filter((cert) => {
     if (!cert.expires_at) return false
-    const expiry = new Date(cert.expires_at + 'T00:00:00')
+    const expiry = new Date(dateToDateString(cert.expires_at as Date | string) + 'T00:00:00')
     // Include expired and expiring within threshold
     return expiry <= threshold
   })

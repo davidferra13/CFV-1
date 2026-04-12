@@ -3,6 +3,7 @@
 
 import type { QueueItem, ScoreInputs } from '../types'
 import { computeScore, urgencyFromScore } from '../score'
+import { dateToDateString } from '@/lib/utils/format'
 
 export async function getQuoteQueueItems(db: any, tenantId: string): Promise<QueueItem[]> {
   const items: QueueItem[] = []
@@ -58,7 +59,9 @@ export async function getQuoteQueueItems(db: any, tenantId: string): Promise<Que
 
     // Sent quotes nearing expiration (within 7 days)
     if (quote.status === 'sent' && quote.valid_until) {
-      const validUntil = new Date(quote.valid_until + 'T23:59:59')
+      const validUntil = new Date(
+        dateToDateString(quote.valid_until as Date | string) + 'T23:59:59'
+      )
       const hoursUntilExpiry = (validUntil.getTime() - now.getTime()) / 3600000
       if (hoursUntilExpiry < 168) {
         const inputs: ScoreInputs = {

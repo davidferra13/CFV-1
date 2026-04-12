@@ -27,6 +27,7 @@ import {
 } from './constants'
 
 import type { PricingConfig } from './config-types'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ---- Resolved runtime config (built from DB config or constants) ----
 
@@ -194,7 +195,7 @@ export interface PricingInput {
   serviceType: ServiceType
   guestCount: number
   courseCount?: number // required for private_dinner; ignored for all other service types
-  eventDate?: string // ISO date string (YYYY-MM-DD)
+  eventDate?: Date | string // ISO date string (YYYY-MM-DD)
   distanceMiles?: number
   multiNightPackage?: string // key from MULTI_NIGHT_PACKAGES
   numberOfDays?: number // for weekly types; defaults to 1
@@ -606,7 +607,7 @@ export async function computePricing(
   let weekendPremiumCents = 0
 
   if (eventDate) {
-    const d = new Date(eventDate + 'T12:00:00')
+    const d = new Date(dateToDateString(eventDate) + 'T12:00:00')
     if (!isNaN(d.getTime())) {
       const dayOfWeek = d.getDay() // 0=Sun, 5=Fri, 6=Sat
       isWeekend = dayOfWeek === 5 || dayOfWeek === 6
@@ -642,7 +643,7 @@ export async function computePricing(
 
   if (eventDate) {
     // Warm the Nager.Date holiday cache (non-blocking - falls back to hardcoded if API fails)
-    const eventYear = new Date(eventDate + 'T12:00:00').getFullYear()
+    const eventYear = new Date(dateToDateString(eventDate) + 'T12:00:00').getFullYear()
     if (!isNaN(eventYear)) {
       try {
         await warmHolidayCache(eventYear)
@@ -651,7 +652,7 @@ export async function computePricing(
       }
     }
 
-    const holiday = detectHoliday(eventDate)
+    const holiday = detectHoliday(dateToDateString(eventDate))
 
     if (holiday) {
       // Exact holiday match
@@ -671,7 +672,7 @@ export async function computePricing(
       }
     } else {
       // No exact holiday - check proximity
-      const proximity = detectHolidayProximity(eventDate, rc.holidayProximityDays)
+      const proximity = detectHolidayProximity(dateToDateString(eventDate), rc.holidayProximityDays)
       if (proximity) {
         isNearHoliday = true
         nearHolidayName = proximity.name

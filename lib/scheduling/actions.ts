@@ -388,7 +388,7 @@ function computePhaseAndMilestone(
   currentPhase: EventPhase
   nextMilestone: { label: string; time: string; minutesUntil: number } | null
 } {
-  const eventDate = event.event_date
+  const eventDate = dateToDateString(event.event_date as Date | string)
   const items = timeline.timeline
 
   // Parse timeline items into absolute timestamps
