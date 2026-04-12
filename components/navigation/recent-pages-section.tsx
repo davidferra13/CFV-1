@@ -49,7 +49,7 @@ export function RecentPagesSection() {
     try {
       const stored = localStorage.getItem(COLLAPSED_KEY)
       // Default to collapsed unless user explicitly expanded
-      setCollapsed(stored === null ? true : stored === 'true')
+      setCollapsed(stored === null ? false : stored === 'true')
     } catch {
       // ignore
     }

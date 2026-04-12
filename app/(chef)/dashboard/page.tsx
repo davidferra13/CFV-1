@@ -379,31 +379,22 @@ export default async function ChefDashboard() {
       <OnboardingBanner />
 
       {/* ============================================ */}
-      {/* QUICK NOTES - raw capture pad, always visible*/}
+      {/* TODAY & THIS WEEK - first thing a chef needs */}
       {/* ============================================ */}
-      <WidgetErrorBoundary name="Quick Notes" compact>
-        <Suspense fallback={<WidgetCardSkeleton size="md" />}>
-          <QuickNotesLoader />
-        </Suspense>
-      </WidgetErrorBoundary>
+      <section>
+        <div className="section-label mb-4">Today &amp; This Week</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-grid">
+          <WidgetErrorBoundary name="Schedule" compact>
+            <Suspense fallback={<ScheduleCardsSkeleton />}>
+              <ScheduleCards />
+            </Suspense>
+          </WidgetErrorBoundary>
+        </div>
+      </section>
 
       {/* ============================================ */}
-      {/* HERO METRICS - Big numbers, no card wrapper  */}
+      {/* RESPOND NEXT - top inquiry needing action    */}
       {/* ============================================ */}
-      <WidgetErrorBoundary name="Hero Metrics" compact>
-        <Suspense fallback={<HeroMetricsSkeleton />}>
-          <HeroMetrics />
-        </Suspense>
-      </WidgetErrorBoundary>
-
-      {/* Command Center - every feature area, one click away */}
-      <WidgetErrorBoundary name="Command Center" compact>
-        <Suspense fallback={<CommandCenterSkeleton />}>
-          <CommandCenterSection />
-        </Suspense>
-      </WidgetErrorBoundary>
-
-      {/* Respond Next - highest priority inquiry needing chef action */}
       <WidgetErrorBoundary name="Respond Next" compact>
         <Suspense fallback={null}>
           <RespondNextCard />
@@ -461,25 +452,39 @@ export default async function ChefDashboard() {
       </section>
 
       {/* ============================================ */}
-      {/* SCHEDULE + OPERATIONS                        */}
+      {/* QUICK NOTES - capture pad, below the fold   */}
       {/* ============================================ */}
-      <section>
-        <div className="section-label mb-4">Today &amp; This Week</div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-grid">
-          <WidgetErrorBoundary name="Schedule" compact>
-            <Suspense fallback={<ScheduleCardsSkeleton />}>
-              <ScheduleCards />
-            </Suspense>
-          </WidgetErrorBoundary>
-        </div>
-      </section>
+      <WidgetErrorBoundary name="Quick Notes" compact>
+        <Suspense fallback={<WidgetCardSkeleton size="md" />}>
+          <QuickNotesLoader />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       {/* ============================================ */}
       {/* SECONDARY INSIGHTS (collapsed by default)   */}
       {/* ============================================ */}
       <DashboardSecondaryInsights>
-        {/* WEEKLY PRICE BRIEFING */}
+        {/* BUSINESS OVERVIEW - metrics moved here, not above-fold */}
         <section className="px-4 pt-4">
+          <div className="section-label mb-4">Business Overview</div>
+          <WidgetErrorBoundary name="Hero Metrics" compact>
+            <Suspense fallback={<HeroMetricsSkeleton />}>
+              <HeroMetrics />
+            </Suspense>
+          </WidgetErrorBoundary>
+        </section>
+
+        {/* COMMAND CENTER - feature directory, accessible but not daily-driver */}
+        <section className="px-4">
+          <WidgetErrorBoundary name="Command Center" compact>
+            <Suspense fallback={<CommandCenterSkeleton />}>
+              <CommandCenterSection />
+            </Suspense>
+          </WidgetErrorBoundary>
+        </section>
+
+        {/* WEEKLY PRICE BRIEFING */}
+        <section className="px-4">
           <WidgetErrorBoundary name="WeeklyBriefing" compact>
             <Suspense fallback={null}>
               <WeeklyBriefingSection />
