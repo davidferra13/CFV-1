@@ -1,5 +1,6 @@
 import { isCommTriageEnabled } from '@/lib/features'
 import type { loadBusinessSectionData } from './business-section-loader'
+import { dateToDateString } from '@/lib/utils/format'
 
 type BusinessSectionData = Awaited<ReturnType<typeof loadBusinessSectionData>>
 
@@ -204,7 +205,7 @@ export function buildBusinessSectionMetrics({ data, now }: BuildBusinessSectionM
   }).length
   const expiringInsurancePolicyCount = (insurancePolicies ?? []).filter((policy: any) => {
     if (!policy?.expiry_date) return false
-    const expiry = new Date(`${policy.expiry_date}T23:59:59`)
+    const expiry = new Date(`${dateToDateString(policy.expiry_date as Date | string)}T23:59:59`)
     const days = (expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
     return days >= 0 && days <= 45
   }).length

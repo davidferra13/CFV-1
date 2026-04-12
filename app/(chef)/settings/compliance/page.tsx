@@ -10,11 +10,11 @@ import { listCertifications, getExpiringCertifications } from '@/lib/compliance/
 import { getChefArchetype } from '@/lib/archetypes/actions'
 
 // Pure utility - keeps compliance/actions.ts free of sync exports under 'use server'
-function certExpiryStatus(expiryDate: string | null | undefined) {
+function certExpiryStatus(expiryDate: Date | string | null | undefined) {
   if (!expiryDate) return { daysRemaining: null, tier: 'none' as const }
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-  const expiry = new Date(expiryDate + 'T00:00:00')
+  const expiry = new Date(dateToDateString(expiryDate as Date | string) + 'T00:00:00')
   const daysRemaining = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
   const tier =
     daysRemaining < 0
@@ -36,6 +36,7 @@ import { format } from 'date-fns'
 import { CertForm } from './cert-form'
 import { PermitForm, PermitList } from './permit-form'
 import { listPermits, getExpiringPermits } from '@/lib/compliance/permit-actions'
+import { dateToDateString } from '@/lib/utils/format'
 
 export const metadata: Metadata = { title: 'Compliance' }
 
@@ -114,14 +115,20 @@ export default async function CompliancePage() {
             {expiringPermits.map((p: any) => {
               const today = new Date()
               today.setHours(0, 0, 0, 0)
-              const expiry = new Date(p.expiry_date + 'T00:00:00')
+              const expiry = new Date(
+                dateToDateString(p.expiry_date as Date | string) + 'T00:00:00'
+              )
               const daysRemaining = Math.ceil(
                 (expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
               )
               return (
                 <li key={p.id} className="text-sm text-amber-800">
                   {p.name} - {daysRemaining}d remaining (
-                  {format(new Date(p.expiry_date + 'T00:00:00'), 'MMM d, yyyy')})
+                  {format(
+                    new Date(dateToDateString(p.expiry_date as Date | string) + 'T00:00:00'),
+                    'MMM d, yyyy'
+                  )}
+                  )
                 </li>
               )
             })}
@@ -141,7 +148,11 @@ export default async function CompliancePage() {
               return (
                 <li key={c.id} className="text-sm text-amber-800">
                   {c.name} - {daysRemaining}d remaining (
-                  {format(new Date(c.expiry_date! + 'T00:00:00'), 'MMM d, yyyy')})
+                  {format(
+                    new Date(dateToDateString(c.expiry_date! as Date | string) + 'T00:00:00'),
+                    'MMM d, yyyy'
+                  )}
+                  )
                 </li>
               )
             })}
@@ -178,7 +189,13 @@ export default async function CompliancePage() {
                       )}
                       {cert.expiry_date && (
                         <span>
-                          Expires {format(new Date(cert.expiry_date + 'T00:00:00'), 'MMM d, yyyy')}
+                          Expires{' '}
+                          {format(
+                            new Date(
+                              dateToDateString(cert.expiry_date as Date | string) + 'T00:00:00'
+                            ),
+                            'MMM d, yyyy'
+                          )}
                         </span>
                       )}
                       {cert.cert_number && <span>#{cert.cert_number}</span>}
@@ -216,7 +233,10 @@ export default async function CompliancePage() {
                   </Badge>
                   {cert.expiry_date && (
                     <span className="text-xs text-stone-400">
-                      {format(new Date(cert.expiry_date + 'T00:00:00'), 'MMM d, yyyy')}
+                      {format(
+                        new Date(dateToDateString(cert.expiry_date as Date | string) + 'T00:00:00'),
+                        'MMM d, yyyy'
+                      )}
                     </span>
                   )}
                 </div>

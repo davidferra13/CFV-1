@@ -8,6 +8,7 @@ import { createServerClient } from '@/lib/db/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Shield, FileCheck, Award, FileText, Layers, AlertTriangle } from '@/components/ui/icons'
+import { dateToDateString } from '@/lib/utils/format'
 
 export const metadata: Metadata = { title: 'Protection Hub' }
 
@@ -46,7 +47,7 @@ export default async function ProtectionHubPage() {
 
   const expiringPolicies = activePolicies.filter((p: any) => {
     if (!p.expiry_date) return false
-    const exp = new Date(p.expiry_date + 'T00:00:00')
+    const exp = new Date(dateToDateString(p.expiry_date as Date | string) + 'T00:00:00')
     return exp <= in60Days && exp >= today
   })
 
@@ -56,7 +57,7 @@ export default async function ProtectionHubPage() {
   const activeCerts = safeCerts.filter((c: any) => c.status === 'active')
   const expiringCerts = activeCerts.filter((c: any) => {
     if (!c.expiry_date) return false
-    const exp = new Date(c.expiry_date + 'T00:00:00')
+    const exp = new Date(dateToDateString(c.expiry_date as Date | string) + 'T00:00:00')
     return exp <= in60Days && exp >= today
   })
 
