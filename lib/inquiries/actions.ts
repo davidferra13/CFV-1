@@ -125,7 +125,7 @@ const UpdateInquirySchema = z.object({
   follow_up_due_at: z.string().nullable().optional(),
   discussed_dishes: z.array(z.string()).nullable().optional(),
   selected_tier: z.string().nullable().optional(),
-  expected_updated_at: z.string().optional(),
+  expected_updated_at: z.union([z.string(), z.date().transform((d) => d.toISOString())]).optional(),
   idempotency_key: z.string().optional(),
 })
 
@@ -784,8 +784,12 @@ export async function updateInquiry(id: string, input: UpdateInquiryInput) {
     throw new ValidationError('Inquiry not found')
   }
 
-  if (expected_updated_at && current.updated_at !== expected_updated_at) {
-    throw createConflictError('This record changed elsewhere.', current.updated_at)
+  const _currentInqTs =
+    current.updated_at instanceof Date
+      ? current.updated_at.toISOString()
+      : String(current.updated_at)
+  if (expected_updated_at && _currentInqTs !== expected_updated_at) {
+    throw createConflictError('This record changed elsewhere.', _currentInqTs)
   }
 
   // Merge unknown_fields
@@ -856,8 +860,12 @@ export async function updateInquiry(id: string, input: UpdateInquiryInput) {
           }
           const latest = latestResponse.data
 
-          if (latest?.updated_at && latest.updated_at !== expected_updated_at) {
-            throw createConflictError('This record changed elsewhere.', latest.updated_at)
+          const _latestInqTs =
+            latest.updated_at instanceof Date
+              ? latest.updated_at.toISOString()
+              : String(latest.updated_at)
+          if (latest?.updated_at && _latestInqTs !== expected_updated_at) {
+            throw createConflictError('This record changed elsewhere.', _latestInqTs)
           }
         }
 

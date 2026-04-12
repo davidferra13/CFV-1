@@ -57,7 +57,7 @@ const UpdateMenuSchema = z.object({
   season: z.enum(['spring', 'summer', 'fall', 'winter']).nullable().optional(),
   client_id: z.string().uuid().nullable().optional(),
   target_date: z.string().nullable().optional(),
-  expected_updated_at: z.string().optional(),
+  expected_updated_at: z.union([z.string(), z.date().transform((d) => d.toISOString())]).optional(),
   idempotency_key: z.string().optional(),
 })
 
@@ -461,8 +461,12 @@ export async function updateMenu(menuId: string, input: UpdateMenuInput) {
     throw new UnknownAppError('Cannot edit a locked menu')
   }
 
-  if (expected_updated_at && currentMenu.updated_at !== expected_updated_at) {
-    throw createConflictError('This record changed elsewhere.', currentMenu.updated_at)
+  const _currentMenuTs =
+    currentMenu.updated_at instanceof Date
+      ? currentMenu.updated_at.toISOString()
+      : String(currentMenu.updated_at)
+  if (expected_updated_at && _currentMenuTs !== expected_updated_at) {
+    throw createConflictError('This record changed elsewhere.', _currentMenuTs)
   }
 
   const result = await executeWithIdempotency({
@@ -518,8 +522,12 @@ export async function updateMenu(menuId: string, input: UpdateMenuInput) {
           }
           const latest = latestResponse.data
 
-          if (latest?.updated_at && latest.updated_at !== expected_updated_at) {
-            throw createConflictError('This record changed elsewhere.', latest.updated_at)
+          const _latestMenuTs =
+            latest.updated_at instanceof Date
+              ? latest.updated_at.toISOString()
+              : String(latest.updated_at)
+          if (latest?.updated_at && _latestMenuTs !== expected_updated_at) {
+            throw createConflictError('This record changed elsewhere.', _latestMenuTs)
           }
         }
 

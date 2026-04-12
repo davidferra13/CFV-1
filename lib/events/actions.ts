@@ -89,7 +89,7 @@ const UpdateEventSchema = z.object({
   referral_partner_id: z.string().uuid().nullable().optional(),
   partner_location_id: z.string().uuid().nullable().optional(),
   event_timezone: z.string().optional(),
-  expected_updated_at: z.string().optional(),
+  expected_updated_at: z.union([z.string(), z.date().transform((d) => d.toISOString())]).optional(),
   idempotency_key: z.string().optional(),
 })
 
@@ -434,8 +434,12 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
     }
   }
 
-  if (expected_updated_at && currentEvent.updated_at !== expected_updated_at) {
-    throw createConflictError('This record changed elsewhere.', currentEvent.updated_at)
+  const _currentEventTs =
+    currentEvent.updated_at instanceof Date
+      ? currentEvent.updated_at.toISOString()
+      : String(currentEvent.updated_at)
+  if (expected_updated_at && _currentEventTs !== expected_updated_at) {
+    throw createConflictError('This record changed elsewhere.', _currentEventTs)
   }
 
   const result = await executeWithIdempotency({
@@ -491,8 +495,12 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
           }
           const latest = latestResponse.data
 
-          if (latest?.updated_at && latest.updated_at !== expected_updated_at) {
-            throw createConflictError('This record changed elsewhere.', latest.updated_at)
+          const _latestTs =
+            latest.updated_at instanceof Date
+              ? latest.updated_at.toISOString()
+              : String(latest.updated_at)
+          if (latest?.updated_at && _latestTs !== expected_updated_at) {
+            throw createConflictError('This record changed elsewhere.', _latestTs)
           }
         }
 

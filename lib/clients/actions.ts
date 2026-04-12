@@ -193,7 +193,7 @@ const UpdateClientSchema = z.object({
   acquisition_cost_cents: z.number().int().nullable().optional(),
   // Status
   status: z.enum(['active', 'dormant', 'repeat_ready', 'vip']).optional(),
-  expected_updated_at: z.string().optional(),
+  expected_updated_at: z.union([z.string(), z.date().transform((d) => d.toISOString())]).optional(),
   idempotency_key: z.string().optional(),
 })
 
@@ -679,8 +679,12 @@ export async function updateClient(clientId: string, input: UpdateClientInput) {
     throw new ValidationError('Client not found')
   }
 
-  if (expected_updated_at && currentClient.updated_at !== expected_updated_at) {
-    throw createConflictError('This record changed elsewhere.', currentClient.updated_at)
+  const _currentClientTs =
+    currentClient.updated_at instanceof Date
+      ? currentClient.updated_at.toISOString()
+      : String(currentClient.updated_at)
+  if (expected_updated_at && _currentClientTs !== expected_updated_at) {
+    throw createConflictError('This record changed elsewhere.', _currentClientTs)
   }
 
   const result = await executeWithIdempotency({
@@ -735,8 +739,12 @@ export async function updateClient(clientId: string, input: UpdateClientInput) {
           }
           const latest = latestResponse.data
 
-          if (latest?.updated_at && latest.updated_at !== expected_updated_at) {
-            throw createConflictError('This record changed elsewhere.', latest.updated_at)
+          const _latestClientTs =
+            latest.updated_at instanceof Date
+              ? latest.updated_at.toISOString()
+              : String(latest.updated_at)
+          if (latest?.updated_at && _latestClientTs !== expected_updated_at) {
+            throw createConflictError('This record changed elsewhere.', _latestClientTs)
           }
         }
 

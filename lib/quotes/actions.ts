@@ -85,7 +85,7 @@ const UpdateQuoteSchema = z.object({
   valid_until: z.string().nullable().optional(),
   pricing_notes: z.string().nullable().optional(),
   internal_notes: z.string().nullable().optional(),
-  expected_updated_at: z.string().optional(),
+  expected_updated_at: z.union([z.string(), z.date().transform((d) => d.toISOString())]).optional(),
   idempotency_key: z.string().optional(),
   pricingDecision: PricingDecisionSchema,
 })
@@ -360,8 +360,12 @@ export async function updateQuote(id: string, input: UpdateQuoteInput) {
     throw new ValidationError('Can only edit quotes in draft status')
   }
 
-  if (expected_updated_at && current.updated_at !== expected_updated_at) {
-    throw createConflictError('This record changed elsewhere.', current.updated_at)
+  const _currentQuoteTs =
+    current.updated_at instanceof Date
+      ? current.updated_at.toISOString()
+      : String(current.updated_at)
+  if (expected_updated_at && _currentQuoteTs !== expected_updated_at) {
+    throw createConflictError('This record changed elsewhere.', _currentQuoteTs)
   }
 
   const result = await executeWithIdempotency({
@@ -430,8 +434,12 @@ export async function updateQuote(id: string, input: UpdateQuoteInput) {
           }
           const latest = latestResponse.data
 
-          if (latest?.updated_at && latest.updated_at !== expected_updated_at) {
-            throw createConflictError('This record changed elsewhere.', latest.updated_at)
+          const _latestQuoteTs =
+            latest.updated_at instanceof Date
+              ? latest.updated_at.toISOString()
+              : String(latest.updated_at)
+          if (latest?.updated_at && _latestQuoteTs !== expected_updated_at) {
+            throw createConflictError('This record changed elsewhere.', _latestQuoteTs)
           }
         }
 
