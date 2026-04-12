@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.ci.json",
+  "include": [
+    "lib/platform-observability/**/*.ts",
+    "lib/email/templates/platform-observability-*.tsx",
+    "lib/platform/owner-account.ts",
+    "lib/email/developer-alerts.ts",
+    "lib/marketing/newsletter-actions.ts",
+    "lib/beta/actions.ts",
+    "lib/contact/actions.ts",
+    "lib/inquiries/public-actions.ts",
+    "lib/auth/actions.ts",
+    "lib/cron/heartbeat.ts",
+    "lib/cron/definitions.ts",
+    "app/api/activity/track/route.ts",
+    "app/api/monitoring/report-error/route.ts",
+    "app/api/cron/platform-observability-digest/route.ts",
+    "unit/developer-notification-recipients.test.ts",
+    "unit/platform-observability-context.test.ts",
+    "unit/platform-observability-*.test.ts"
+  ]
+}
