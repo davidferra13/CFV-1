@@ -992,6 +992,26 @@ export async function transitionEvent({
     }
   }
 
+  // Post-event AAR prompt: Remy alert asking chef to capture while fresh (non-blocking)
+  if (toStatus === 'completed' && fromStatus === 'in_progress') {
+    try {
+      const { createAdminClient: createAdmin } = await import('@/lib/db/admin')
+      const dbAdmin2 = createAdmin()
+      const aarUrl = `/events/${eventId}/aar`
+      await dbAdmin2.from('remy_alerts').insert({
+        tenant_id: event.tenant_id,
+        alert_type: 'post_event_aar_prompt',
+        entity_type: 'event',
+        entity_id: eventId,
+        title: `How did ${event.occasion || 'tonight'} go?`,
+        body: `Capture what worked, what to tweak, and any client notes while it's still fresh. Takes 2 minutes. [Open AAR](${aarUrl})`,
+        priority: 'high',
+      })
+    } catch (err) {
+      log.events.warn('Post-event AAR alert failed (non-blocking)', { error: err })
+    }
+  }
+
   // Zapier/Make webhook dispatch (non-blocking)
   try {
     const { dispatchWebhookEvent } = await import('@/lib/integrations/zapier/zapier-webhooks')

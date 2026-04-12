@@ -132,6 +132,47 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Mid-service alert: if chef has an in_progress event today, surface via Remy (non-blocking)
+    if (clientId && tenantId && !insertError) {
+      try {
+        const today = new Date().toISOString().split('T')[0]
+        const { data: activeEvent } = await (db as any)
+          .from('events')
+          .select('id, occasion')
+          .eq('tenant_id', tenantId)
+          .eq('status', 'in_progress')
+          .eq('event_date', today)
+          .limit(1)
+          .single()
+
+        if (activeEvent) {
+          const { data: clientRow } = await (db as any)
+            .from('clients')
+            .select('full_name')
+            .eq('id', clientId)
+            .single()
+
+          const clientName = clientRow?.full_name ?? 'A client'
+          const raw = (msg.body ?? '').trim()
+          const excerpt = raw.length > 120 ? raw.slice(0, 117) + '...' : raw
+
+          await (db as any).from('remy_alerts').insert({
+            tenant_id: tenantId,
+            alert_type: 'mid_service_message',
+            entity_type: 'event',
+            entity_id: activeEvent.id,
+            title: `Message from ${clientName} during service`,
+            body: excerpt
+              ? `"${excerpt}" - Queued for after service. Check /inbox when done.`
+              : 'New inbound message while you are in service. Review inbox after service.',
+            priority: 'high',
+          })
+        }
+      } catch {
+        // Non-blocking - do not interrupt the Twilio response
+      }
+    }
+
     // Twilio expects TwiML response
     return new NextResponse('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {
       headers: { 'Content-Type': 'text/xml' },
