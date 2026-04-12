@@ -3,7 +3,6 @@
 
 import { useState, useEffect, useRef, FormEvent, useCallback } from 'react'
 import { validateEmailLocal, suggestEmailCorrection } from '@/lib/email/email-validator'
-import { TurnstileWidget } from '@/components/security/turnstile-widget'
 import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 
 interface Props {
@@ -151,8 +150,6 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
   const [showSuccess, setShowSuccess] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [emailSuggestion, setEmailSuggestion] = useState<string | null>(null)
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
-
   const handleEmailBlur = useCallback(() => {
     const email = formData.email.trim()
     if (!email) {
@@ -245,7 +242,6 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
           favorite_ingredients_dislikes: formData.favorite_ingredients_dislikes.trim(),
           additional_notes: formData.additional_notes.trim(),
           website_url: formData.website_url, // honeypot
-          turnstile_token: turnstileToken || undefined, // Cloudflare Turnstile CAPTCHA
         }),
       })
 
@@ -728,14 +724,6 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
               placeholder="Anything else you'd like us to know?"
             />
           </div>
-
-          {/* Invisible Turnstile CAPTCHA - renders nothing visible */}
-          <TurnstileWidget
-            onVerify={(token) => setTurnstileToken(token)}
-            onExpire={() => setTurnstileToken(null)}
-            onError={() => setTurnstileToken(null)}
-            theme={isDark ? 'dark' : 'light'}
-          />
 
           {/* Submit */}
           <button type="submit" style={buttonStyle} disabled={isSubmitting}>

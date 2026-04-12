@@ -7,7 +7,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
 import { z } from 'zod'
 import { validateEmailLocal, suggestEmailCorrection } from '@/lib/email/email-validator'
-import { verifyTurnstileToken } from '@/lib/security/turnstile'
 import { checkRateLimit } from '@/lib/rateLimit'
 
 // ── CORS headers for cross-origin embeds ──
@@ -43,8 +42,6 @@ const EmbedInquirySchema = z.object({
   utm_source: z.string().max(200).optional().or(z.literal('')),
   utm_medium: z.string().max(200).optional().or(z.literal('')),
   utm_campaign: z.string().max(200).optional().or(z.literal('')),
-  // Cloudflare Turnstile CAPTCHA token (optional - graceful bypass when not configured)
-  turnstile_token: z.string().max(4096).optional().or(z.literal('')),
 })
 
 // ── CORS preflight ──
@@ -87,17 +84,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { success: true, message: 'Inquiry submitted successfully.' },
         { status: 200, headers: corsHeaders }
-      )
-    }
-
-    // Cloudflare Turnstile CAPTCHA verification
-    // Non-blocking if TURNSTILE_SECRET_KEY is not set (graceful bypass for dev/testing)
-    // Returns 403 only if Turnstile IS configured and the token is definitively invalid
-    const turnstileResult = await verifyTurnstileToken(data.turnstile_token || '', { ip, host })
-    if (!turnstileResult.success) {
-      return NextResponse.json(
-        { error: turnstileResult.error || 'CAPTCHA verification failed' },
-        { status: 403, headers: corsHeaders }
       )
     }
 

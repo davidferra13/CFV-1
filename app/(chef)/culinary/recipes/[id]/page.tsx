@@ -180,7 +180,7 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
                     {/* Inline knowledge: dietary flags + pairings hint */}
                     {know && (know.dietaryFlags.length > 0 || know.flavorProfile) && (
                       <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                        {know.dietaryFlags.slice(0, 3).map((f) => (
+                        {know.dietaryFlags.slice(0, 3).map((f: string) => (
                           <span
                             key={f}
                             className="text-xs bg-emerald-950/50 text-emerald-400 border border-emerald-900/50 px-1.5 py-0.5 rounded-full capitalize"

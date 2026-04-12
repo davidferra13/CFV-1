@@ -37,7 +37,6 @@ const BookingSchema = z.object({
   additional_notes: z.string().max(5000).optional().or(z.literal('')),
   // Anti-spam
   website_url: z.string().max(0, 'Bot detected').optional().or(z.literal('')),
-  turnstile_token: z.string().max(4096).optional().or(z.literal('')),
 })
 
 export async function POST(request: NextRequest) {
@@ -70,20 +69,6 @@ export async function POST(request: NextRequest) {
     // Honeypot
     if (data.website_url && data.website_url.length > 0) {
       return NextResponse.json({ success: true, message: 'Booking request submitted.' })
-    }
-
-    // Turnstile CAPTCHA (non-blocking if not configured)
-    try {
-      const { verifyTurnstileToken } = await import('@/lib/security/turnstile')
-      const result = await verifyTurnstileToken(data.turnstile_token || '', { ip, host })
-      if (!result.success) {
-        return NextResponse.json(
-          { error: result.error || 'CAPTCHA verification failed' },
-          { status: 403 }
-        )
-      }
-    } catch {
-      // Non-blocking
     }
 
     // Email validation

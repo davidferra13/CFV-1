@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { LocationAutocomplete, type LocationData } from '@/components/ui/location-autocomplete'
-import { TurnstileWidget } from '@/components/security/turnstile-widget'
 
 const DRAFT_KEY = 'cf-book-form-draft'
 
@@ -117,7 +116,6 @@ export function BookDinnerForm() {
   const [result, setResult] = useState<SubmitResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [emailSuggestion, setEmailSuggestion] = useState<string | null>(null)
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
 
   // Restore draft on mount
   useEffect(() => {
@@ -160,7 +158,7 @@ export function BookDinnerForm() {
       const res = await fetch('/api/book', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, turnstile_token: turnstileToken || '' }),
+        body: JSON.stringify({ ...form }),
       })
 
       const data = await res.json()
@@ -467,13 +465,6 @@ export function BookDinnerForm() {
           )}
         </div>
       )}
-
-      {/* Invisible Turnstile CAPTCHA */}
-      <TurnstileWidget
-        onVerify={(token) => setTurnstileToken(token)}
-        onExpire={() => setTurnstileToken(null)}
-        onError={() => setTurnstileToken(null)}
-      />
 
       {/* Submit */}
       <button
