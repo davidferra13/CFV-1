@@ -336,8 +336,8 @@ export async function getEffectiveHourlyRateByMonth(): Promise<EffectiveHourlyRa
   const chef = await requireChef()
   const db: any = createServerClient()
 
-  const oneYearAgo = new Date()
-  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
+  const _now = new Date()
+  const oneYearAgo = new Date(_now.getFullYear() - 1, _now.getMonth(), _now.getDate())
 
   const { data: events } = await db
     .from('events')

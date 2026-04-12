@@ -36,8 +36,10 @@ export async function getQuoteAcceptanceInsights(): Promise<QuoteAcceptanceInsig
   const db: any = createServerClient()
 
   const since90 = new Date(Date.now() - 90 * 86_400_000).toISOString()
-  const today = new Date().toISOString().slice(0, 10)
-  const in7Days = new Date(Date.now() + 7 * 86_400_000).toISOString().slice(0, 10)
+  const _tn = new Date()
+  const today = `${_tn.getFullYear()}-${String(_tn.getMonth() + 1).padStart(2, '0')}-${String(_tn.getDate()).padStart(2, '0')}`
+  const _t7 = new Date(_tn.getFullYear(), _tn.getMonth(), _tn.getDate() + 7)
+  const in7Days = `${_t7.getFullYear()}-${String(_t7.getMonth() + 1).padStart(2, '0')}-${String(_t7.getDate()).padStart(2, '0')}`
 
   const { data: quotes, error } = await db
     .from('quotes')

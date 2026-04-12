@@ -112,7 +112,13 @@ export async function endRecurringService(id: string) {
 
   const { data: ended, error } = await db
     .from('recurring_services')
-    .update({ status: 'ended', end_date: new Date().toISOString().slice(0, 10) })
+    .update({
+      status: 'ended',
+      end_date: (() => {
+        const _re = new Date()
+        return `${_re.getFullYear()}-${String(_re.getMonth() + 1).padStart(2, '0')}-${String(_re.getDate()).padStart(2, '0')}`
+      })(),
+    })
     .eq('id', id)
     .eq('chef_id', chef.id)
     .select('client_id')

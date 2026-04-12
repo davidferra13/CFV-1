@@ -60,7 +60,8 @@ export async function getFinancialAnalytics(
   const user = await requireChef()
   const db: any = createServerClient()
   const { start, end } = resolveDateRange(range)
-  const nowDate = new Date().toISOString().slice(0, 10)
+  const _ra = new Date()
+  const nowDate = `${_ra.getFullYear()}-${String(_ra.getMonth() + 1).padStart(2, '0')}-${String(_ra.getDate()).padStart(2, '0')}`
 
   const [ledgerResult, expensesResult, eventsResult, summaryResult] = await Promise.all([
     db

@@ -184,7 +184,8 @@ export async function getCoverageGapReport() {
 
   const db: any = createServerClient()
 
-  const today = new Date().toISOString().slice(0, 10)
+  const _ti = new Date()
+  const today = `${_ti.getFullYear()}-${String(_ti.getMonth() + 1).padStart(2, '0')}-${String(_ti.getDate()).padStart(2, '0')}`
 
   const { data, error } = await db
     .from('chef_insurance_policies')

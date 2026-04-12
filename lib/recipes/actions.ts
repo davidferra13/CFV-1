@@ -2059,8 +2059,14 @@ async function ensureIngredientHasPrice(
       cost_per_unit_cents: costPerUnit,
       last_price_cents: resolved.cents,
       last_price_date: resolved.confirmedAt
-        ? new Date(resolved.confirmedAt).toISOString().slice(0, 10)
-        : new Date().toISOString().slice(0, 10),
+        ? (() => {
+            const d = new Date(resolved.confirmedAt)
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+          })()
+        : (() => {
+            const _rp = new Date()
+            return `${_rp.getFullYear()}-${String(_rp.getMonth() + 1).padStart(2, '0')}-${String(_rp.getDate()).padStart(2, '0')}`
+          })(),
       last_price_source: resolved.source,
       last_price_store: resolved.store || null,
       last_price_confidence: resolved.confidence,

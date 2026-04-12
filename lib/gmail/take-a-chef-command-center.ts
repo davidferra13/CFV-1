@@ -94,7 +94,8 @@ export async function getTakeAChefCommandCenter(): Promise<TakeAChefCommandCente
   const tenantId = user.tenantId!
   const db: any = createServerClient()
   const now = Date.now()
-  const today = new Date().toISOString().slice(0, 10)
+  const _tc = new Date()
+  const today = `${_tc.getFullYear()}-${String(_tc.getMonth() + 1).padStart(2, '0')}-${String(_tc.getDate()).padStart(2, '0')}`
 
   const [{ data: inquiries }, { data: tenantSettings }] = await Promise.all([
     db

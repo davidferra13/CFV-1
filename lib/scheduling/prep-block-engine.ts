@@ -141,7 +141,8 @@ function suggestComponentBlocks(
   eventId: string
 ): PrepBlockSuggestion[] {
   const suggestions: PrepBlockSuggestion[] = []
-  const todayStr = new Date().toISOString().slice(0, 10)
+  const _pb = new Date()
+  const todayStr = `${_pb.getFullYear()}-${String(_pb.getMonth() + 1).padStart(2, '0')}-${String(_pb.getDate()).padStart(2, '0')}`
 
   // Build a set of component names already covered by existing blocks
   const coveredTitles = new Set(
