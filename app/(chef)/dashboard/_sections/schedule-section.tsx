@@ -24,6 +24,7 @@ import { CollapsibleWidget } from '@/components/dashboard/collapsible-widget'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { format } from 'date-fns'
+import { dateToDateString } from '@/lib/utils/format'
 import type { DashboardWidgetId } from '@/lib/scheduling/types'
 import { widgetGridClass } from '@/lib/scheduling/types'
 

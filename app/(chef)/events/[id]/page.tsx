@@ -55,6 +55,7 @@ import { getChefPreferences } from '@/lib/chef/actions'
 import { CostStaleBanner } from '@/components/pricing/cost-stale-banner'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
+import { dateToDateString } from '@/lib/utils/format'
 import { createServerClient } from '@/lib/db/server'
 import { getEventContingencyNotes, listEmergencyContacts } from '@/lib/contingency/actions'
 import { getEventTempLog } from '@/lib/compliance/actions'
@@ -154,23 +155,23 @@ async function getEventMenuCostSummary(eventId: string) {
   }
 }
 
-function isEventSoon(eventDate: string): boolean {
+function isEventSoon(eventDate: Date | string): boolean {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const tomorrow = new Date(today)
   tomorrow.setDate(tomorrow.getDate() + 1)
   const dayAfter = new Date(today)
   dayAfter.setDate(dayAfter.getDate() + 2)
-  const evDate = new Date(eventDate + 'T00:00:00')
+  const evDate = new Date(dateToDateString(eventDate) + 'T00:00:00')
   return evDate >= today && evDate < dayAfter
 }
 
-function isEventToday(eventDate: string): boolean {
+function isEventToday(eventDate: Date | string): boolean {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const tomorrow = new Date(today)
   tomorrow.setDate(tomorrow.getDate() + 1)
-  const evDate = new Date(eventDate + 'T00:00:00')
+  const evDate = new Date(dateToDateString(eventDate) + 'T00:00:00')
   return evDate >= today && evDate < tomorrow
 }
 

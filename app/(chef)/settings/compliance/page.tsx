@@ -184,7 +184,13 @@ export default async function CompliancePage() {
                     <div className="mt-0.5 flex gap-3 text-xs text-stone-400 flex-wrap">
                       {cert.issued_date && (
                         <span>
-                          Issued {format(new Date(cert.issued_date + 'T00:00:00'), 'MMM d, yyyy')}
+                          Issued{' '}
+                          {format(
+                            new Date(
+                              dateToDateString(cert.issued_date as Date | string) + 'T00:00:00'
+                            ),
+                            'MMM d, yyyy'
+                          )}
                         </span>
                       )}
                       {cert.expiry_date && (

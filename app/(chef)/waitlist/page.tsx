@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { format } from 'date-fns'
+import { dateToDateString } from '@/lib/utils/format'
 import { WaitlistAddForm } from './waitlist-add-form'
 
 export const metadata: Metadata = { title: 'Waitlist' }
@@ -65,9 +66,14 @@ export default async function WaitlistPage() {
                         <Badge variant={cfg.variant}>{cfg.label}</Badge>
                       </div>
                       <p className="mt-0.5 text-sm text-stone-400">
-                        {format(new Date(entry.requested_date + 'T00:00:00'), 'MMM d, yyyy')}
+                        {format(
+                          new Date(
+                            dateToDateString(entry.requested_date as Date | string) + 'T00:00:00'
+                          ),
+                          'MMM d, yyyy'
+                        )}
                         {entry.requested_date_end
-                          ? ` – ${format(new Date(entry.requested_date_end + 'T00:00:00'), 'MMM d')}`
+                          ? ` – ${format(new Date(dateToDateString(entry.requested_date_end as Date | string) + 'T00:00:00'), 'MMM d')}`
                           : ''}
                         {entry.occasion ? ` · ${entry.occasion}` : ''}
                         {entry.guest_count_estimate

@@ -420,7 +420,7 @@ export async function getNextUpcomingEvent() {
   return {
     id: data.id,
     occasion: data.occasion,
-    eventDate: data.event_date,
+    eventDate: dateToDateString(data.event_date as Date | string),
     serveTime: data.serve_time,
     guestCount: data.guest_count,
     clientName: (data.client as any)?.full_name ?? 'Unknown',
