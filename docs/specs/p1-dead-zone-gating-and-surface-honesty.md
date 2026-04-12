@@ -1,6 +1,6 @@
 # Spec: Dead-Zone Gating and Surface Honesty
 
-> **Status:** ready
+> **Status:** verified
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** medium (5-8 files)

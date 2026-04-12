@@ -199,7 +199,7 @@ V1 is "done" and ready to ship when ALL of the following are true:
 - [ ] User acquisition channel identified and tested
 - [ ] Monetization model validated ($12/month voluntary)
 - [ ] 179 forms with auto-save
-- [ ] Full observability/request correlation
+- [x] Full observability/request correlation - built Apr 12 (X-Request-ID propagation, AsyncLocalStorage, logger + Sentry auto-attach)
 - [ ] 48 ready specs built
 
 ---

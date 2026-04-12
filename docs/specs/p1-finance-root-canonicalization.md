@@ -1,6 +1,6 @@
 # Spec: Finance Root Canonicalization
 
-> **Status:** ready
+> **Status:** verified
 > **Priority:** P1
 > **Depends on:** `p1-dead-zone-gating-and-surface-honesty.md`
 > **Estimated complexity:** medium-large (9+ files)

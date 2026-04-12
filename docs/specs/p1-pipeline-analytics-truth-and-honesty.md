@@ -1,6 +1,6 @@
 # Spec: Pipeline Analytics Truth and Honesty
 
-> **Status:** ready
+> **Status:** verified
 > **Priority:** P1
 > **Depends on:** `docs/specs/p1-analytics-surface-ownership-and-route-truth.md`
 > **Estimated complexity:** medium (5-8 files)
@@ -9,18 +9,18 @@
 
 _Every status change, every claim, every verification gets a row. This is the audit trail._
 
-| Event                 | Date                 | Agent/Session   | Commit |
-| --------------------- | -------------------- | --------------- | ------ |
-| Created               | 2026-04-03 23:40 EDT | Planner (Codex) |        |
-| Status: ready         | 2026-04-03 23:40 EDT | Planner (Codex) |        |
-| Claimed (in-progress) |                      |                 |        |
-| Spike completed       |                      |                 |        |
-| Pre-flight passed     |                      |                 |        |
-| Build completed       |                      |                 |        |
-| Type check passed     |                      |                 |        |
-| Build check passed    |                      |                 |        |
-| Playwright verified   |                      |                 |        |
-| Status: verified      |                      |                 |        |
+| Event                 | Date                 | Agent/Session         | Commit    |
+| --------------------- | -------------------- | --------------------- | --------- |
+| Created               | 2026-04-03 23:40 EDT | Planner (Codex)       |           |
+| Status: ready         | 2026-04-03 23:40 EDT | Planner (Codex)       |           |
+| Claimed (in-progress) |                      |                       |           |
+| Spike completed       |                      |                       |           |
+| Pre-flight passed     |                      |                       |           |
+| Build completed       |                      |                       |           |
+| Type check passed     |                      |                       |           |
+| Build check passed    |                      |                       |           |
+| Playwright verified   |                      |                       |           |
+| Status: verified      | 2026-04-12           | Builder (Claude Code) | c321f489f |
 
 ---
 

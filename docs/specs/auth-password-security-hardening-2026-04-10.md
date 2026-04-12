@@ -1,6 +1,6 @@
 # Spec: Auth and Password Security Hardening
 
-> **Status:** ready
+> **Status:** verified
 > **Priority:** P0
 > **Depends on:** none
 > **Estimated complexity:** medium-large (8-12 files plus 1 migration)
