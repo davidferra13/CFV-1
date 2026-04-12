@@ -230,17 +230,18 @@ export async function getAllergenRiskSummary(eventId: string) {
     .eq('id', event.client_id)
     .single()
 
-  // Get menu dishes if menu is linked
+  // Get menu dishes if menu is linked (dishes table has allergen_flags)
   let dishes: Array<{ name: string; allergens: string[] }> = []
   if (event.menu_id) {
     const { data: menuDishes } = await db
-      .from('menu_items' as any)
-      .select('name, allergen_notes')
+      .from('dishes' as any)
+      .select('name, allergen_flags')
       .eq('menu_id', event.menu_id)
+      .not('name', 'is', null)
 
     dishes = (menuDishes ?? []).map((d: any) => ({
-      name: d.name,
-      allergens: d.allergen_notes ? [d.allergen_notes] : [],
+      name: d.name ?? 'Unnamed dish',
+      allergens: Array.isArray(d.allergen_flags) ? d.allergen_flags : [],
     }))
   }
 

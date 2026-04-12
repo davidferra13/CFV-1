@@ -87,19 +87,20 @@ export async function getKitchenModeContext(eventId?: string): Promise<KitchenEv
 
   if (eventMenus?.length) {
     const menuId = eventMenus[0].menu_id
-    const { data: menuItems } = await db
-      .from('menu_items')
-      .select('id, name, description, course')
+    const { data: dishes } = await db
+      .from('dishes')
+      .select('id, name, description, course_number, course_name')
       .eq('menu_id', menuId)
-      .order('course')
-      .order('sort_order')
+      .eq('tenant_id', tenantId)
+      .not('name', 'is', null)
+      .order('course_number', { ascending: true })
 
-    for (const item of menuItems ?? []) {
+    for (const item of (dishes ?? []) as any[]) {
       steps.push({
         id: `menu-${item.id}`,
         title: item.name,
-        description: item.course
-          ? `${item.course}${item.description ? ` - ${item.description}` : ''}`
+        description: item.course_name
+          ? `${item.course_name}${item.description ? ` - ${item.description}` : ''}`
           : (item.description ?? undefined),
         completed: false,
       })

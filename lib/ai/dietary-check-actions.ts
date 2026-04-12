@@ -300,12 +300,13 @@ export async function checkEventDietaryConflicts(
     }
   }
 
-  // Load menu items
+  // Load dishes with allergen data (dishes table has allergen_flags + dietary_tags)
   const { data: menuItems } = await (db
-    .from('menu_items' as any)
-    .select('name')
+    .from('dishes' as any)
+    .select('name, allergen_flags, dietary_tags')
     .eq('tenant_id', user.tenantId!)
-    .in('menu_id', menuIds) as any)
+    .in('menu_id', menuIds)
+    .not('name', 'is', null) as any)
 
   const itemNames = ((menuItems ?? []) as Array<{ name: string }>).map((mi) => mi.name)
 

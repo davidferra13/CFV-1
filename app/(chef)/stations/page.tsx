@@ -57,6 +57,12 @@ export default async function StationsPage() {
         >
           Order Sheet
         </Link>
+        <Link
+          href="/stations/menu-board"
+          className="inline-flex items-center gap-2 rounded-lg bg-stone-800 border border-stone-700 px-3 py-1.5 text-sm text-stone-300 hover:bg-stone-700 hover:text-stone-100 transition-colors"
+        >
+          Menu Board
+        </Link>
       </div>
 
       {/* 86'd banner - shows all currently 86'd items across all stations */}

@@ -561,11 +561,11 @@ export async function handleMenuEngineering(
 ): Promise<Record<string, unknown>> {
   const db: any = createAdminClient()
 
-  // Get most-used menu items across events
+  // Get most-used menu items across events (menu_items scoped by chef_id)
   const { data: menuItems } = await (db
     .from('menu_items' as any)
     .select('id, name, price_cents, recipe_id')
-    .eq('tenant_id', tenantId)
+    .eq('chef_id', tenantId)
     .limit(50) as any)
 
   if (!menuItems || menuItems.length === 0) {

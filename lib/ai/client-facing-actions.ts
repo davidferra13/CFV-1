@@ -56,11 +56,22 @@ export async function getEventRecap(eventName: string): Promise<EventRecapResult
   const event = events[0] as any
   const clientName = event.client?.full_name ?? 'Unknown'
 
-  // Load menu items
-  const { data: menuItems } = await (db
-    .from('menu_items' as any)
-    .select('name')
-    .eq('event_id', event.id) as any)
+  // Load menu items via event_menus -> dishes chain
+  const { data: eventMenus } = await db
+    .from('event_menus')
+    .select('menu_id')
+    .eq('event_id', event.id)
+    .limit(1)
+  let menuItems: Array<{ name: string | null }> = []
+  if (eventMenus?.length) {
+    const { data: dishes } = await (db
+      .from('dishes' as any)
+      .select('name')
+      .eq('menu_id', eventMenus[0].menu_id)
+      .eq('tenant_id', user.tenantId!)
+      .not('name', 'is', null) as any)
+    menuItems = dishes ?? []
+  }
 
   // Load payments
   const { data: payments } = await db
@@ -137,12 +148,14 @@ export async function explainMenu(menuName: string): Promise<MenuExplanationResu
     eventName = event?.occasion ?? null
   }
 
-  // Load menu items
+  // Load dishes from the structured menu editor (dishes table has course + dietary info)
   const { data: items } = await (db
-    .from('menu_items' as any)
-    .select('name, description, course, dietary_tags')
+    .from('dishes' as any)
+    .select('name, description, course_name, dietary_tags')
     .eq('menu_id', menu.id)
-    .order('sort_order', { ascending: true }) as any)
+    .eq('tenant_id', user.tenantId!)
+    .not('name', 'is', null)
+    .order('course_number', { ascending: true }) as any)
 
   const courses = (items ?? []).map((item: any) => ({
     name: item.name ?? 'Unnamed',

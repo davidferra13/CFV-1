@@ -337,11 +337,22 @@ export async function analyzeCrossContamination(
     }
   }
 
-  // Load menu items for this event's menus
-  const { data: menuItems } = await (db
-    .from('menu_items' as any)
-    .select('name, description')
-    .eq('tenant_id', user.tenantId!) as any)
+  // Load menu items for this event's menus via event_menus -> dishes chain
+  const { data: eventMenuLinks } = await db
+    .from('event_menus')
+    .select('menu_id')
+    .eq('event_id', event.id)
+    .limit(3)
+  const menuIds = (eventMenuLinks ?? []).map((em: any) => em.menu_id)
+  const { data: menuItems } =
+    menuIds.length > 0
+      ? await (db
+          .from('dishes' as any)
+          .select('name, description')
+          .eq('tenant_id', user.tenantId!)
+          .in('menu_id', menuIds)
+          .not('name', 'is', null) as any)
+      : { data: [] }
 
   const menuItemNames = (menuItems ?? []).map((m: any) =>
     `${m.name ?? ''} ${m.description ?? ''}`.toLowerCase()
