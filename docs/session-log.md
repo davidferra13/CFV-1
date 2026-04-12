@@ -500,6 +500,16 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Status: started
 - Build state on arrival: green (c2e1403ac, voice session build 2026-04-11)
 
+## 2026-04-11 (research - booking platform legal consent text)
+
+- Agent: Research (Sonnet 4.6)
+- Task: Research exact legal consent and privacy disclosure text used by top dinner/chef/restaurant booking platforms on their inquiry/booking forms
+- Status: completed (partial - OpenTable main site timed out, Resy is a JS SPA)
+- Files touched:
+  - docs/research/booking-platform-legal-consent-text.md (new)
+- Build state on departure: green (no code changes)
+- Notes: Report covers OpenTable, Resy, Tock, Take a Chef, SevenRooms, Yelp, Chefin. Industry standard confirmed: clickwrap text below submit button, no mandatory checkbox, formula is "By submitting, you agree to our Terms of Service and Privacy Policy." SMS marketing = separate optional unchecked checkbox. Recommended copy for ChefFlow inquiry form included in report.
+
 ## 2026-04-11 (MemPalace execution - features + TS cleanup)
 
 - Agent: Builder (Sonnet 4.6)
