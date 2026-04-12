@@ -70,7 +70,8 @@ const PLATFORMS = [
 
 async function getUpcomingBookedDates(tenantId: string) {
   const db: any = createServerClient()
-  const today = new Date().toISOString().slice(0, 10)
+  const _n = new Date()
+  const today = `${_n.getFullYear()}-${String(_n.getMonth() + 1).padStart(2, '0')}-${String(_n.getDate()).padStart(2, '0')}`
 
   const { data } = await db
     .from('events')

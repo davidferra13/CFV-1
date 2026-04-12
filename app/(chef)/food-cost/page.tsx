@@ -15,26 +15,27 @@ import { InvoiceCsvUpload } from '@/components/vendors/invoice-csv-upload'
 
 export const metadata: Metadata = { title: 'Food Cost Dashboard' }
 
+function liso(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 function getWeekRange(): { start: string; end: string } {
   const now = new Date()
   const dayOfWeek = now.getDay()
-  const startOfWeek = new Date(now)
-  startOfWeek.setDate(now.getDate() - dayOfWeek)
-  const endOfWeek = new Date(startOfWeek)
-  endOfWeek.setDate(startOfWeek.getDate() + 6)
-  return {
-    start: startOfWeek.toISOString().slice(0, 10),
-    end: endOfWeek.toISOString().slice(0, 10),
-  }
+  const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek)
+  const endOfWeek = new Date(
+    startOfWeek.getFullYear(),
+    startOfWeek.getMonth(),
+    startOfWeek.getDate() + 6
+  )
+  return { start: liso(startOfWeek), end: liso(endOfWeek) }
 }
 
 function getMonthRange(): { start: string; end: string } {
   const now = new Date()
-  const start = new Date(now.getFullYear(), now.getMonth(), 1)
-  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0)
   return {
-    start: start.toISOString().slice(0, 10),
-    end: end.toISOString().slice(0, 10),
+    start: liso(new Date(now.getFullYear(), now.getMonth(), 1)),
+    end: liso(new Date(now.getFullYear(), now.getMonth() + 1, 0)),
   }
 }
 

@@ -92,9 +92,9 @@ function HolidaySuggestionRow({ suggestion, isExpanded, onToggle }: HolidaySugge
   )
   const [promoDiscount, setPromoDiscount] = useState('10')
   const [promoExpiry, setPromoExpiry] = useState(() => {
-    const d = new Date(date)
-    d.setDate(d.getDate() + 1)
-    return d.toISOString().slice(0, 10)
+    const [y, m, day] = date.split('-').map(Number)
+    const d = new Date(y, m - 1, day + 1)
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   })
   const [promoResult, setPromoResult] = useState<string | null>(null)
   const [isPendingPromo, startPromoTransition] = useTransition()

@@ -14,14 +14,14 @@ const PERIOD_OPTIONS: { value: ReportPeriod; label: string }[] = [
   { value: 'yearly', label: 'Yearly' },
 ]
 
+function liso(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 function defaultDateRange() {
   const end = new Date()
-  const start = new Date()
-  start.setMonth(start.getMonth() - 12)
-  return {
-    start: start.toISOString().slice(0, 10),
-    end: end.toISOString().slice(0, 10),
-  }
+  const start = new Date(end.getFullYear(), end.getMonth() - 12, end.getDate())
+  return { start: liso(start), end: liso(end) }
 }
 
 export function ReportsContent() {

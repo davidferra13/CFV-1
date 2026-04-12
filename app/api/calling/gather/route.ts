@@ -373,7 +373,10 @@ async function handleVendorAvailability(
             price_cents: priceCents,
             unit,
             notes: `AI call: "${speech}"`,
-            recorded_at: new Date().toISOString().slice(0, 10),
+            recorded_at: (() => {
+              const _d = new Date()
+              return `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`
+            })(),
           })
         }
       } catch (err) {

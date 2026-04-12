@@ -11,15 +11,17 @@ import type { YearSummary, YearWeekSummary } from '@/lib/scheduling/types'
 
 // ---- Week cell ----
 
+function liso(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 function weekOffsetFromNow(weekStart: string): number {
   const today = new Date()
-  const todayStr = today.toISOString().slice(0, 10)
-  // Find Monday of current week
-  const dayOfWeek = today.getUTCDay()
+  // Find Monday of current week using local day
+  const dayOfWeek = today.getDay()
   const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
-  const thisMonday = new Date(today)
-  thisMonday.setUTCDate(today.getUTCDate() + mondayOffset)
-  const thisMondayStr = thisMonday.toISOString().slice(0, 10)
+  const thisMonday = new Date(today.getFullYear(), today.getMonth(), today.getDate() + mondayOffset)
+  const thisMondayStr = liso(thisMonday)
   const diffDays = differenceInCalendarDays(parseISO(weekStart), parseISO(thisMondayStr))
   return Math.round(diffDays / 7)
 }
@@ -98,11 +100,9 @@ export function YearViewClient({ summary, year, currentYear }: Props) {
 
   const todayMonday = (() => {
     const today = new Date()
-    const dayOfWeek = today.getUTCDay()
+    const dayOfWeek = today.getDay()
     const offset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
-    const m = new Date(today)
-    m.setUTCDate(today.getUTCDate() + offset)
-    return m.toISOString().slice(0, 10)
+    return liso(new Date(today.getFullYear(), today.getMonth(), today.getDate() + offset))
   })()
 
   const monthGroups = groupByMonth(summary.weeks)

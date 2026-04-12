@@ -34,7 +34,8 @@ type SchedulingPageProps = {
 
 function normalizeDate(date?: string) {
   if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) return date
-  return new Date().toISOString().slice(0, 10)
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 export default async function SchedulingPage({ searchParams }: SchedulingPageProps) {
@@ -47,8 +48,10 @@ export default async function SchedulingPage({ searchParams }: SchedulingPagePro
   start.setDate(start.getDate() - 7)
   end.setDate(end.getDate() + 7)
 
-  const rangeStart = start.toISOString().slice(0, 10)
-  const rangeEnd = end.toISOString().slice(0, 10)
+  const _liso = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const rangeStart = _liso(start)
+  const rangeEnd = _liso(end)
 
   const [calendarEvents, availability, dayBlocks] = await Promise.all([
     getCalendarEvents(rangeStart, rangeEnd),

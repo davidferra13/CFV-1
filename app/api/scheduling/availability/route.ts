@@ -3,7 +3,8 @@ import { getSchedulingAvailability } from '@/lib/scheduling/time-blocks'
 
 function normalizeDate(input: string | null): string {
   if (input && /^\d{4}-\d{2}-\d{2}$/.test(input)) return input
-  return new Date().toISOString().slice(0, 10)
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 export async function GET(request: NextRequest) {

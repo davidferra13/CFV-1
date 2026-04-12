@@ -423,7 +423,8 @@ export function WeekPlannerClient({
 
   const { weekStart, weekEnd, days } = weekSchedule
   const weekLabel = `${format(parseISO(weekStart), 'MMM d')} – ${format(parseISO(weekEnd), 'MMM d, yyyy')}`
-  const todayStr = new Date().toISOString().slice(0, 10)
+  const _td = new Date()
+  const todayStr = `${_td.getFullYear()}-${String(_td.getMonth() + 1).padStart(2, '0')}-${String(_td.getDate()).padStart(2, '0')}`
 
   const criticalGaps = weekGaps.filter((g) => g.severity === 'critical')
   const warningGaps = weekGaps.filter((g) => g.severity !== 'critical')

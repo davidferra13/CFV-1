@@ -92,10 +92,13 @@ export async function GET(request: NextRequest, { params }: { params: { chefSlug
     const manualBlocks = new Set((blocksResult.data ?? []).map((b: any) => b.block_date as string))
 
     // Build result map
-    const today = new Date()
-    today.setUTCHours(0, 0, 0, 0)
-    const cutoff = new Date(today)
-    cutoff.setUTCDate(today.getUTCDate() + minNoticeDays)
+    const _now = new Date()
+    const _cutoffDate = new Date(
+      _now.getFullYear(),
+      _now.getMonth(),
+      _now.getDate() + minNoticeDays
+    )
+    const cutoffStr = `${_cutoffDate.getFullYear()}-${String(_cutoffDate.getMonth() + 1).padStart(2, '0')}-${String(_cutoffDate.getDate()).padStart(2, '0')}`
 
     const availability: Record<string, 'available' | 'blocked' | 'unavailable'> = {}
     const conflictDetails: Record<string, string[]> = {}
@@ -103,9 +106,8 @@ export async function GET(request: NextRequest, { params }: { params: { chefSlug
     const cursor = new Date(startValue)
     while (cursor.getTime() <= endValue.getTime()) {
       const dateStr = cursor.toISOString().slice(0, 10)
-      const date = new Date(`${dateStr}T12:00:00Z`)
 
-      if (date < cutoff) {
+      if (dateStr < cutoffStr) {
         availability[dateStr] = 'unavailable'
         conflictDetails[dateStr] = [
           `Minimum notice is ${minNoticeDays} day${minNoticeDays === 1 ? '' : 's'}`,

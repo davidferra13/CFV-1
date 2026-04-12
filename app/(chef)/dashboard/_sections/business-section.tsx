@@ -54,8 +54,10 @@ export async function BusinessSection({ widgetEnabled, widgetOrder }: BusinessSe
   const user = await requireChef()
   const now = new Date()
   const currentMonthName = MONTH_NAMES[now.getMonth()]
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
-  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
+  const _liso = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const monthStart = _liso(new Date(now.getFullYear(), now.getMonth(), 1))
+  const monthEnd = _liso(new Date(now.getFullYear(), now.getMonth() + 1, 0))
 
   const isWidgetEnabled = (id: DashboardWidgetId) => widgetEnabled[id] ?? true
   const getWidgetOrder = (id: DashboardWidgetId) => widgetOrder[id] ?? Number.MAX_SAFE_INTEGER

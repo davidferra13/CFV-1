@@ -161,9 +161,9 @@ export function PricingCalculator() {
     const suggestedDepositCents = Math.round(
       numbers.recommendedQuote * (numbers.suggestedDepositRate / 100) * 100
     )
-    const validUntil = new Date()
-    validUntil.setDate(validUntil.getDate() + 7)
-    const validUntilIso = validUntil.toISOString().slice(0, 10)
+    const _vu = new Date()
+    const validUntil = new Date(_vu.getFullYear(), _vu.getMonth(), _vu.getDate() + 7)
+    const validUntilIso = `${validUntil.getFullYear()}-${String(validUntil.getMonth() + 1).padStart(2, '0')}-${String(validUntil.getDate()).padStart(2, '0')}`
 
     params.set('source', 'consulting')
     params.set('quote_name', quoteName)

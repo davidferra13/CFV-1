@@ -7,12 +7,14 @@ const dbAdmin = createAdminClient()
 
 const SYSTEM_KEY = 'relationship_cooling'
 
-function getUtcWeekStart(date: Date): string {
-  const day = date.getUTCDay()
+function liso(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+function getLocalWeekStart(date: Date): string {
+  const day = date.getDay()
   const offset = day === 0 ? 6 : day - 1 // Monday start
-  const monday = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()))
-  monday.setUTCDate(monday.getUTCDate() - offset)
-  return monday.toISOString().slice(0, 10)
+  return liso(new Date(date.getFullYear(), date.getMonth(), date.getDate() - offset))
 }
 
 export async function GET(request: Request) {
@@ -21,12 +23,11 @@ export async function GET(request: Request) {
 
   try {
     const result = await runMonitoredCronJob('cooling-alert', async () => {
-      const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split('T')[0]
-      const today = new Date().toISOString().split('T')[0]
+      const _now = new Date()
+      const ninetyDaysAgo = liso(new Date(_now.getFullYear(), _now.getMonth(), _now.getDate() - 90))
+      const today = liso(_now)
       const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
-      const cycleWeek = getUtcWeekStart(new Date())
+      const cycleWeek = getLocalWeekStart(_now)
       const recipientCache = new Map<string, string | null>()
       const coolingPairs = new Map<string, { tenant_id: string; client_id: string }>()
 

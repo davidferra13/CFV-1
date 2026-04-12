@@ -34,9 +34,11 @@ export function CharityHourForm({
     editEntry?.organizationWebsiteUrl ?? ''
   )
   const [isVerified, setIsVerified] = useState(editEntry?.isVerified501c ?? false)
-  const [serviceDate, setServiceDate] = useState(
-    editEntry?.serviceDate ?? new Date().toISOString().slice(0, 10)
-  )
+  const [serviceDate, setServiceDate] = useState(() => {
+    if (editEntry?.serviceDate) return editEntry.serviceDate
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  })
   const [hours, setHours] = useState(editEntry?.hours?.toString() ?? '')
   const [notes, setNotes] = useState(editEntry?.notes ?? '')
   const [manualMode, setManualMode] = useState(false)
@@ -61,7 +63,10 @@ export function CharityHourForm({
     setEin('')
     setOrganizationWebsiteUrl('')
     setIsVerified(false)
-    setServiceDate(new Date().toISOString().slice(0, 10))
+    const _d = new Date()
+    setServiceDate(
+      `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`
+    )
     setHours('')
     setNotes('')
     setManualMode(false)
@@ -325,7 +330,10 @@ export function CharityHourForm({
               type="date"
               value={serviceDate}
               onChange={(event) => setServiceDate(event.target.value)}
-              max={new Date().toISOString().slice(0, 10)}
+              max={(() => {
+                const _d = new Date()
+                return `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`
+              })()}
               required
             />
           </div>

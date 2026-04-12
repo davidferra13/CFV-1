@@ -58,7 +58,10 @@ export function ClientMealRequestsPanel({ requests }: ClientMealRequestsPanelPro
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [fulfillRequestId, setFulfillRequestId] = useState<string | null>(null)
-  const [servedDate, setServedDate] = useState(new Date().toISOString().slice(0, 10))
+  const [servedDate, setServedDate] = useState(() => {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  })
   const [reaction, setReaction] = useState('')
   const [notes, setNotes] = useState('')
 
@@ -260,7 +263,12 @@ export function ClientMealRequestsPanel({ requests }: ClientMealRequestsPanelPro
                       disabled={isPending}
                       onClick={() => {
                         setFulfillRequestId(request.id)
-                        setServedDate(new Date().toISOString().slice(0, 10))
+                        setServedDate(
+                          (() => {
+                            const d = new Date()
+                            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+                          })()
+                        )
                         setReaction('')
                         setNotes('')
                       }}

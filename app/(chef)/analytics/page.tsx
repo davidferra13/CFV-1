@@ -81,18 +81,19 @@ import {
 export const metadata: Metadata = { title: 'Analytics Hub' }
 
 // Date helpers
+function liso(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 function periodDates(monthsBack: number = 12): { start: string; end: string } {
   const end = new Date()
-  const start = new Date()
-  start.setMonth(start.getMonth() - monthsBack)
-  return {
-    start: start.toISOString().slice(0, 10),
-    end: end.toISOString().slice(0, 10),
-  }
+  const start = new Date(end.getFullYear(), end.getMonth() - monthsBack, end.getDate())
+  return { start: liso(start), end: liso(end) }
 }
 
 function currentMonth(): string {
-  return new Date().toISOString().slice(0, 7)
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
 }
 
 export default async function AnalyticsHubPage() {
