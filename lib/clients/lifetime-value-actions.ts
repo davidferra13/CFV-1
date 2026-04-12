@@ -8,6 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { differenceInMonths } from 'date-fns'
 import { getClientTier } from './lifetime-value-constants'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -122,7 +123,7 @@ export async function getClientLifetimeValue(clientId: string): Promise<ClientLi
   let projectedAnnualRevenueCents = 0
 
   if (firstEventDate) {
-    const firstDate = new Date(firstEventDate + 'T12:00:00')
+    const firstDate = new Date(dateToDateString(firstEventDate as Date | string) + 'T12:00:00')
     const now = new Date()
     monthsAsClient = Math.max(1, differenceInMonths(now, firstDate))
     avgEventsPerMonth = totalEventCount / monthsAsClient
@@ -309,14 +310,15 @@ export async function getClientRetentionMetrics(): Promise<ClientRetentionMetric
     const revenue = revenueMap.get(e.id) ?? 0
     const existing = clientEvents.get(clientId)
 
+    const eDateStr = dateToDateString(e.event_date as Date | string)
     if (existing) {
-      if (e.event_date < existing.firstDate) existing.firstDate = e.event_date
-      if (e.event_date > existing.lastDate) existing.lastDate = e.event_date
+      if (eDateStr < existing.firstDate) existing.firstDate = eDateStr
+      if (eDateStr > existing.lastDate) existing.lastDate = eDateStr
       existing.revenue += revenue
     } else {
       clientEvents.set(clientId, {
-        firstDate: e.event_date,
-        lastDate: e.event_date,
+        firstDate: eDateStr,
+        lastDate: eDateStr,
         revenue,
       })
     }

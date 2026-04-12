@@ -9,6 +9,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { getEventProfitSummary } from '@/lib/expenses/actions'
 import { revalidatePath } from 'next/cache'
+import { dateToDateString } from '@/lib/utils/format'
 
 // IRS standard mileage rate (cents per mile).
 // 2025 rate: $0.70/mile (67 cents in 2024). The 2026 rate is typically announced
@@ -301,7 +302,7 @@ export async function markFinancialClosed(eventId: string) {
   if (eventRow?.event_date) {
     try {
       const { recordClosureForStreak } = await import('@/lib/chefs/streaks')
-      await recordClosureForStreak(eventRow.event_date)
+      await recordClosureForStreak(dateToDateString(eventRow.event_date as Date | string))
     } catch (streakErr) {
       console.error('[markFinancialClosed] Streak update failed (non-critical):', streakErr)
     }
