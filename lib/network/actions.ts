@@ -1085,6 +1085,7 @@ export async function updateChefProfile(input: UpdateProfileInput) {
 
   revalidatePath('/network')
   revalidatePath('/settings')
+  revalidateTag(`chef-layout-${user.entityId}`)
   return { success: true }
 }
 

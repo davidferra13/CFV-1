@@ -474,7 +474,11 @@ export async function updateDishEditorContent(
     .eq('id', dishId)
     .eq('tenant_id', user.tenantId!)
     .single()
-  if (dish?.menu_id) void notifyClientOfMenuEdit(dish.menu_id, user.tenantId!)
+  if (dish?.menu_id) {
+    void notifyClientOfMenuEdit(dish.menu_id, user.tenantId!)
+    revalidatePath(`/menus/${dish.menu_id}`)
+    revalidatePath(`/menus/${dish.menu_id}/editor`)
+  }
 }
 
 // ─── addEditorCourse ──────────────────────────────────────────────────────────

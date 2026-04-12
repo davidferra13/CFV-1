@@ -8,6 +8,7 @@ import {
   type LogMaintenanceInput,
   type MaintenanceType,
 } from '@/lib/equipment/maintenance-actions'
+import { todayLocalDateString } from '@/lib/utils/format'
 
 const STATUS_COLORS: Record<EquipmentMaintenanceStatus['status'], string> = {
   overdue: 'bg-red-100 text-red-800 border-red-200',
@@ -44,7 +45,7 @@ export default function MaintenanceSchedule({ initialSchedule }: MaintenanceSche
   const [formType, setFormType] = useState<MaintenanceType>('routine')
   const [formNotes, setFormNotes] = useState('')
   const [formCost, setFormCost] = useState('')
-  const [formDate, setFormDate] = useState(new Date().toISOString().split('T')[0])
+  const [formDate, setFormDate] = useState(todayLocalDateString())
   const [formPerformedBy, setFormPerformedBy] = useState('')
 
   const resetForm = () => {
@@ -52,7 +53,7 @@ export default function MaintenanceSchedule({ initialSchedule }: MaintenanceSche
     setFormType('routine')
     setFormNotes('')
     setFormCost('')
-    setFormDate(new Date().toISOString().split('T')[0])
+    setFormDate(todayLocalDateString())
     setFormPerformedBy('')
   }
 

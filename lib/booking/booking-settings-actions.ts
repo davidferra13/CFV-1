@@ -125,6 +125,7 @@ export async function upsertBookingSettings(
 
   revalidatePath('/settings')
   revalidateTag('chef-booking-profile') // Bust public booking page cache
+  revalidateTag(`chef-layout-${user.entityId}`) // Bust chef nav/layout cache
   return { success: true }
 }
 
