@@ -502,6 +502,8 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
 
       revalidatePath('/events')
       revalidatePath(`/events/${eventId}`)
+      revalidatePath('/my-events')
+      revalidatePath(`/my-events/${eventId}`)
 
       // Log chef activity (non-blocking)
       try {

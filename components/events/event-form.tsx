@@ -368,8 +368,13 @@ export function EventForm({
       throw new ValidationError('Deposit cannot exceed total amount')
     }
 
-    // Validate date is in the future (compare date strings to avoid timezone shift)
-    const todayStr = new Date().toISOString().split('T')[0]
+    // Validate date is not in the past - use local date to avoid UTC shift
+    const _today = new Date()
+    const todayStr = [
+      _today.getFullYear(),
+      String(_today.getMonth() + 1).padStart(2, '0'),
+      String(_today.getDate()).padStart(2, '0'),
+    ].join('-')
     if (eventDate < todayStr) {
       throw new ValidationError('Event date must be in the future')
     }
@@ -576,8 +581,13 @@ export function EventForm({
         throw new ValidationError('Deposit cannot exceed total amount')
       }
 
-      // Validate date is in the future (compare date strings to avoid timezone shift)
-      const todayStr2 = new Date().toISOString().split('T')[0]
+      // Validate date is not in the past - use local date to avoid UTC shift
+      const _today2 = new Date()
+      const todayStr2 = [
+        _today2.getFullYear(),
+        String(_today2.getMonth() + 1).padStart(2, '0'),
+        String(_today2.getDate()).padStart(2, '0'),
+      ].join('-')
       if (eventDate < todayStr2) {
         throw new ValidationError('Event date must be in the future')
       }
