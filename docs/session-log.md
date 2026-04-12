@@ -713,3 +713,29 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: ff8593a80 (batch 6 test harnesses), 043e36d07 (batch 5 scripts/lib/components), d4024772b (analytics Date.slice crash fixes from prior session)
 - Build state on departure: green (tsc: 0 errors verified post-commit 5d429b82b; no structural changes in this session)
 - Notes: UTC date sweep complete. Zero remaining `new Date().toISOString().split('T')[0]` or `.slice(0,10)` instances in source. Compute-daily-report.ts used pure UTC ms arithmetic to avoid off-by-one at UTC midnight. MemPalace backlog: 3 stale items marked resolved (Feature Discovery already at /features, business-cards.tsx doesn't exist, v2/documents/generate fully implements all doc types).
+
+## 2026-04-12 (postgres.js Date crash sweep + billing activation)
+
+- Agent: Builder (Sonnet 4.6)
+- Task: Fix postgres.js Date object crashes + commit developer's freemium billing work
+- Status: completed
+- Files touched:
+  - lib/db/index.ts (root fix: postgres.js type parser to return DATE as YYYY-MM-DD strings)
+  - lib/utils/format.ts (added dateToDateString() helper)
+  - lib/availability/rules-actions.ts, lib/availability/actions.ts (Date.slice + String(Date) crashes)
+  - lib/dashboard/actions.ts (created_at.slice crash)
+  - lib/scheduling/multi-event-days.ts (event_date.slice crash)
+  - lib/booking/series-materialization.ts (compareDateTime helper + localeCompare crashes)
+  - lib/booking/instant-book-actions.ts (session_date.localeCompare crash)
+  - lib/documents/search-actions.ts (created_at.split crash x2)
+  - lib/ai/client-preference-profile.ts (created_at.split crashes)
+  - lib/ai/temp-log-anomaly.ts (logged_at.split crash)
+  - lib/travel/actions.ts (event_date.split crash)
+  - lib/analytics/insights-actions.ts (parseDate crash + Date|string safety)
+  - lib/billing/require-pro.ts (activated two-tier enforcement, redirects to /settings/billing)
+  - app/(chef)/settings/billing/billing-client.tsx, page.tsx (Free vs Paid tier comparison UI)
+  - components/billing/upgrade-gate.tsx (actual gate UI: block/blur/hide modes)
+  - docs/CLAUDE-ARCHITECTURE.md (monetization model updated for two-tier)
+- Commits: c661dafa2, 7ecb992f3, 252e77789, 6cd92bbf7, 1e55b71f5, 7a56d1bec, 58dd3a08d
+- Build state on departure: tsc green (0 errors, verified post-commit)
+- Notes: Root cause of all in-memory date comparison failures: postgres.js 3.x returns Date objects for DATE columns, not strings. `Date >= string` is always false (NaN comparison). Root fix in lib/db/index.ts configures type parser at connection level. Individual crash fixes (slices, splits, localeCompares) applied to 12 files. Developer's billing activation work committed: requirePro() now enforces paid-tier features via redirect rather than pass-through. tsc exits 0 throughout.
