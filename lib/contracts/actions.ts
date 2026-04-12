@@ -763,6 +763,69 @@ export async function getClientEventContract(eventId: string) {
 }
 
 // ============================================
+// DOCUSIGN SEND
+// Generates contract PDF and sends via DocuSign.
+// Requires DocuSign to be connected in settings/integrations.
+// ============================================
+
+export async function sendContractViaDocuSign(contractId: string) {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data: contract, error } = await db
+    .from('event_contracts')
+    .select(
+      `
+      id, event_id, status,
+      clients (full_name, email),
+      events (occasion, event_date)
+    `
+    )
+    .eq('id', contractId)
+    .eq('chef_id', user.tenantId!)
+    .single()
+
+  if (error || !contract) throw new Error('Contract not found')
+  if (contract.status === 'signed') throw new Error('Contract already signed')
+  if (contract.status === 'voided') throw new Error('Contract is voided')
+
+  const client = (contract as any).clients as { full_name: string | null; email: string | null }
+  if (!client?.email) throw new Error('Client has no email address on file')
+
+  // Generate contract PDF
+  const { generateContract } = await import('@/lib/documents/generate-contract')
+  const pdfBuffer = await generateContract(contractId, {
+    chefId: user.tenantId!,
+    clientEntityId: null,
+  })
+  const documentBase64 = pdfBuffer.toString('base64')
+
+  const event = (contract as any).events as { occasion: string | null; event_date: string | null }
+  const eventLabel = event?.occasion || 'your upcoming event'
+
+  const { sendContractForSignature } = await import('@/lib/integrations/docusign/docusign-client')
+  const result = await sendContractForSignature(user.tenantId!, {
+    contractId,
+    signerName: client.full_name || 'Client',
+    signerEmail: client.email,
+    documentBase64,
+    documentName: `Service Agreement - ${eventLabel}.pdf`,
+    emailSubject: `Please sign your service agreement`,
+    emailBody: `Your service agreement for ${eventLabel} is ready to review and sign.`,
+  })
+
+  // Mark as sent in our system
+  await db
+    .from('event_contracts')
+    .update({ status: 'sent', sent_at: new Date().toISOString() })
+    .eq('id', contractId)
+    .eq('chef_id', user.tenantId!)
+
+  revalidatePath(`/events/${contract.event_id}`)
+  return { success: true, envelopeId: result.envelopeId }
+}
+
+// ============================================
 // FALLBACK TEMPLATE
 // Used when no default template exists.
 // ============================================

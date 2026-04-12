@@ -8,7 +8,12 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { ContractStatusBadge } from './contract-status-badge'
-import { generateEventContract, sendContractToClient, voidContract } from '@/lib/contracts/actions'
+import {
+  generateEventContract,
+  sendContractToClient,
+  sendContractViaDocuSign,
+  voidContract,
+} from '@/lib/contracts/actions'
 
 type Template = { id: string; name: string; is_default: boolean }
 
@@ -26,9 +31,15 @@ type Props = {
   eventId: string
   templates: Template[]
   contract: ExistingContract | null
+  docusignConnected?: boolean
 }
 
-export function SendContractButton({ eventId, templates, contract }: Props) {
+export function SendContractButton({
+  eventId,
+  templates,
+  contract,
+  docusignConnected = false,
+}: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(
@@ -64,6 +75,20 @@ export function SendContractButton({ eventId, templates, contract }: Props) {
     }
   }
 
+  async function handleSendViaDocuSign() {
+    if (!contract) return
+    setLoading(true)
+    setError(null)
+    try {
+      await sendContractViaDocuSign(contract.id)
+      router.refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send via DocuSign')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   async function handleVoid() {
     if (!contract) return
     setLoading(true)
@@ -93,6 +118,7 @@ export function SendContractButton({ eventId, templates, contract }: Props) {
             <select
               value={selectedTemplateId}
               onChange={(e) => setSelectedTemplateId(e.target.value)}
+              title="Contract template"
               className="rounded-lg border border-stone-600 px-3 py-2 text-sm"
             >
               {templates.map((t) => (
@@ -111,26 +137,38 @@ export function SendContractButton({ eventId, templates, contract }: Props) {
 
       {/* Draft - ready to send */}
       {contract?.status === 'draft' && (
-        <div className="flex flex-wrap items-center gap-2">
-          <Button size="sm" onClick={handleSend} disabled={loading}>
-            {loading ? 'Sending…' : 'Send to Client'}
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setShowVoidConfirm(true)}
-            disabled={loading}
-          >
-            Discard
-          </Button>
-          <a
-            href={`/api/documents/contract/${contract.id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-stone-400 underline hover:text-stone-300"
-          >
-            Preview PDF ↗
-          </a>
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button size="sm" onClick={handleSend} disabled={loading}>
+              {loading ? 'Sending…' : 'Send to Client'}
+            </Button>
+            {docusignConnected && (
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={handleSendViaDocuSign}
+                disabled={loading}
+              >
+                {loading ? 'Sending…' : 'Send via DocuSign'}
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setShowVoidConfirm(true)}
+              disabled={loading}
+            >
+              Discard
+            </Button>
+            <a
+              href={`/api/documents/contract/${contract.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-stone-400 underline hover:text-stone-300"
+            >
+              Preview PDF ↗
+            </a>
+          </div>
         </div>
       )}
 

@@ -13,6 +13,80 @@ import { Button } from '@/components/ui/button'
 import { getIngredientKnowledgeBatch } from '@/lib/openclaw/ingredient-knowledge-queries'
 import { IngredientSourcingToggle } from '@/components/recipes/ingredient-sourcing-toggle'
 
+const VOLUME_UNITS = new Set([
+  'cup',
+  'cups',
+  'ml',
+  'l',
+  'liter',
+  'litre',
+  'tbsp',
+  'tsp',
+  'fl oz',
+  'floz',
+  'gallon',
+  'qt',
+  'quart',
+  'pint',
+  'pt',
+])
+const WEIGHT_UNITS = new Set([
+  'g',
+  'gram',
+  'grams',
+  'kg',
+  'kilogram',
+  'oz',
+  'ounce',
+  'ounces',
+  'lb',
+  'lbs',
+  'pound',
+  'pounds',
+])
+const COUNT_UNITS = new Set([
+  'ea',
+  'each',
+  'piece',
+  'pieces',
+  'pc',
+  'pcs',
+  'unit',
+  'units',
+  'whole',
+  'bunch',
+  'bunches',
+  'head',
+  'heads',
+  'clove',
+  'cloves',
+  'slice',
+  'slices',
+  'stalk',
+  'stalks',
+  'sprig',
+  'sprigs',
+])
+
+function unitCategory(unit: string | null | undefined): string | null {
+  if (!unit) return null
+  const u = unit.toLowerCase().trim()
+  if (VOLUME_UNITS.has(u)) return 'volume'
+  if (WEIGHT_UNITS.has(u)) return 'weight'
+  if (COUNT_UNITS.has(u)) return 'count'
+  return null
+}
+
+function unitMismatch(
+  recipeUnit: string | null | undefined,
+  priceUnit: string | null | undefined
+): boolean {
+  const rc = unitCategory(recipeUnit)
+  const pc = unitCategory(priceUnit)
+  if (!rc || !pc) return false
+  return rc !== pc
+}
+
 export default async function ChefRecipeDetailPage({ params }: { params: { id: string } }) {
   const recipe = await getRecipeById(params.id)
   if (!recipe) notFound()
@@ -156,6 +230,9 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
               {r.recipe_ingredients.map((ri: any) => {
                 const iName = ri.ingredient?.name
                 const know = iName ? ingredientKnowledge.get(iName) : undefined
+                const hasPriceUnit = ri.ingredient?.average_price_cents != null
+                const hasUnitMismatch =
+                  hasPriceUnit && unitMismatch(ri.unit, ri.ingredient?.default_unit)
                 return (
                   <li key={ri.id} className="py-2.5">
                     <div className="flex items-start justify-between gap-2">
@@ -170,8 +247,14 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
                         {ri.preparation_notes && (
                           <p className="text-xs text-stone-500 mt-0.5">{ri.preparation_notes}</p>
                         )}
+                        {hasUnitMismatch && (
+                          <p className="text-xs text-amber-400 mt-0.5">
+                            Unit mismatch: recipe uses {ri.unit}, price is per{' '}
+                            {ri.ingredient.default_unit}. Cost estimate may be inaccurate.
+                          </p>
+                        )}
                       </div>
-                      {ri.ingredient?.average_price_cents != null ? (
+                      {hasPriceUnit ? (
                         <span className="text-xs text-stone-400 whitespace-nowrap">
                           {formatCurrency(ri.ingredient.average_price_cents)}/
                           {ri.ingredient.default_unit ?? 'unit'}

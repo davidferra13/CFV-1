@@ -9,6 +9,8 @@ import { ContractStatusBadge } from '@/components/contracts/contract-status-badg
 import { SendContractButton } from '@/components/contracts/send-contract-button'
 import { Card } from '@/components/ui/card'
 import { format } from 'date-fns'
+import { requireChef } from '@/lib/auth/get-user'
+import { getDocuSignConnectionStatus } from '@/lib/integrations/docusign/docusign-client'
 
 type Props = {
   eventId: string
@@ -21,9 +23,12 @@ export async function ContractSection({ eventId, eventStatus }: Props) {
     return null
   }
 
-  const [contract, templates] = await Promise.all([
+  const user = await requireChef()
+
+  const [contract, templates, docusignStatus] = await Promise.all([
     getEventContract(eventId).catch(() => null),
     listContractTemplates().catch(() => []),
+    getDocuSignConnectionStatus(user.tenantId!).catch(() => ({ connected: false })),
   ])
 
   return (
@@ -80,6 +85,7 @@ export async function ContractSection({ eventId, eventStatus }: Props) {
       <SendContractButton
         eventId={eventId}
         templates={templates}
+        docusignConnected={docusignStatus.connected}
         contract={
           contract
             ? {

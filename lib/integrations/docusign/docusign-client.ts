@@ -295,14 +295,14 @@ export async function sendContractForSignature(
 
   // Update contract record with DocuSign envelope info
   await db
-    .from('contracts' as any)
+    .from('event_contracts' as any)
     .update({
       docusign_envelope_id: envelope.envelopeId,
       docusign_status: envelope.status,
       docusign_sent_at: new Date().toISOString(),
     })
     .eq('id', contractData.contractId)
-    .eq('tenant_id', tenantId)
+    .eq('chef_id', tenantId)
 
   return { envelopeId: envelope.envelopeId, status: envelope.status }
 }
