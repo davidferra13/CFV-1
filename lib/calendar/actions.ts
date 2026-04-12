@@ -144,7 +144,7 @@ export async function getUnifiedCalendar(
     db
       .from('inquiries')
       .select('id, occasion, preferred_date, status')
-      .eq('chef_id', chefId)
+      .eq('tenant_id', chefId)
       .not('preferred_date', 'is', null)
       .gte('preferred_date', startDate)
       .lte('preferred_date', endDate)

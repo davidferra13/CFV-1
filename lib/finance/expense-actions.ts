@@ -24,7 +24,7 @@ export type ExpenseCategory =
 
 export interface Expense {
   id: string
-  chef_id: string
+  tenant_id: string
   category: ExpenseCategory
   description: string
   amount_cents: number
@@ -85,7 +85,7 @@ export async function getExpenses(filters?: ExpenseFilters): Promise<Expense[]> 
   let query = db
     .from('expenses')
     .select('*')
-    .eq('chef_id', tenantId)
+    .eq('tenant_id', tenantId)
     .order('date', { ascending: false })
 
   if (filters?.category) {
@@ -119,7 +119,7 @@ export async function createExpense(input: CreateExpenseInput): Promise<Expense>
   const { data, error } = await db
     .from('expenses')
     .insert({
-      chef_id: tenantId,
+      tenant_id: tenantId,
       category: input.category,
       description: input.description,
       amount_cents: input.amount_cents,
@@ -180,7 +180,7 @@ export async function updateExpense(
     .from('expenses')
     .update(updateData)
     .eq('id', id)
-    .eq('chef_id', tenantId)
+    .eq('tenant_id', tenantId)
     .select()
     .single()
 
@@ -208,7 +208,7 @@ export async function deleteExpense(id: string): Promise<void> {
   const tenantId = user.tenantId!
   const db: any = await createServerClient()
 
-  const { error } = await db.from('expenses').delete().eq('id', id).eq('chef_id', tenantId)
+  const { error } = await db.from('expenses').delete().eq('id', id).eq('tenant_id', tenantId)
 
   if (error) {
     console.error('[expense-actions] deleteExpense failed:', error)
@@ -235,7 +235,7 @@ export async function getExpenseSummary(
   const tenantId = user.tenantId!
   const db: any = await createServerClient()
 
-  let query = db.from('expenses').select('category, amount_cents').eq('chef_id', tenantId)
+  let query = db.from('expenses').select('category, amount_cents').eq('tenant_id', tenantId)
 
   if (dateFrom) {
     query = query.gte('date', dateFrom)
@@ -287,7 +287,7 @@ export async function getMonthlyExpenseTrend(months: number = 12): Promise<Month
   const { data, error } = await db
     .from('expenses')
     .select('date, amount_cents')
-    .eq('chef_id', tenantId)
+    .eq('tenant_id', tenantId)
     .gte('date', dateFrom)
     .order('date', { ascending: true })
 
@@ -331,7 +331,7 @@ export async function getEventExpenses(eventId: string): Promise<Expense[]> {
   const { data, error } = await db
     .from('expenses')
     .select('*')
-    .eq('chef_id', tenantId)
+    .eq('tenant_id', tenantId)
     .eq('event_id', eventId)
     .order('date', { ascending: false })
 
@@ -354,7 +354,7 @@ export async function getDeductibleTotal(year: number): Promise<number> {
   const { data, error } = await db
     .from('expenses')
     .select('amount_cents')
-    .eq('chef_id', tenantId)
+    .eq('tenant_id', tenantId)
     .eq('tax_deductible', true)
     .gte('date', dateFrom)
     .lte('date', dateTo)
