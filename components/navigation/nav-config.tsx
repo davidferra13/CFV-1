@@ -1502,6 +1502,7 @@ for (const group of navGroups) {
 }
 
 export const standaloneBottom: NavItem[] = [
+  { href: '/features', label: 'All Features', icon: Compass },
   { href: '/settings', label: 'Settings', icon: Settings },
 ]
 
