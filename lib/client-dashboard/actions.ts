@@ -132,6 +132,7 @@ export async function getClientDashboardData(): Promise<{
     friendCount: number
     pendingFriendRequestCount: number
     totalUnreadCount: number
+    unreadLoadFailed?: boolean
   }
   rsvpSummary: {
     eventId: string
@@ -257,8 +258,12 @@ export async function getClientDashboardData(): Promise<{
     getMyFriends().catch(() => []),
     getPendingFriendRequests().catch(() => []),
   ])
+  let unreadLoadFailed = false
   const totalUnreadCount = profileToken
-    ? await getHubTotalUnreadCount(profileToken).catch(() => 0)
+    ? await getHubTotalUnreadCount(profileToken).catch(() => {
+        unreadLoadFailed = true
+        return 0
+      })
     : 0
 
   const profileChecks = [
@@ -340,6 +345,7 @@ export async function getClientDashboardData(): Promise<{
       friendCount: friends.length,
       pendingFriendRequestCount: pendingFriendRequests.length,
       totalUnreadCount,
+      unreadLoadFailed,
     },
     rsvpSummary,
     documentsSummary: {

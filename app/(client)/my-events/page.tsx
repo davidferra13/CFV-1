@@ -1099,11 +1099,15 @@ export default async function MyEventsPage() {
             </div>
 
             <p className="text-xs text-stone-500">
-              {hubSummary.pendingFriendRequestCount > 0
-                ? 'You have ' + hubSummary.pendingFriendRequestCount + ' pending friend request(s).'
-                : hubSummary.totalUnreadCount > 0
-                  ? hubSummary.totalUnreadCount + ' unread Dinner Circle notification(s).'
-                  : 'Dinner Circle is up to date.'}
+              {hubSummary.unreadLoadFailed
+                ? 'Unable to load notification count.'
+                : hubSummary.pendingFriendRequestCount > 0
+                  ? 'You have ' +
+                    hubSummary.pendingFriendRequestCount +
+                    ' pending friend request(s).'
+                  : hubSummary.totalUnreadCount > 0
+                    ? hubSummary.totalUnreadCount + ' unread Dinner Circle notification(s).'
+                    : 'Dinner Circle is up to date.'}
             </p>
 
             <div className="flex flex-wrap gap-2">
