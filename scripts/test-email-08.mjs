@@ -1,36 +1,23 @@
 // Test email-08 specifically: "Email thread with Garcia family"
 import dotenv from 'dotenv'
 dotenv.config({ path: '.env.local' })
-import { createAnonClient } from './lib/db.mjs'
+import { signInAgent } from './lib/db.mjs'
+
+const PORT = 3100
 
 async function main() {
-  const sb = createAnonClient()
-  const { data, error } = await sb.auth.signInWithPassword({
-    email: 'agent@chefflow.test',
-    password: 'AgentChefFlow!2026',
-  })
-  if (error) {
-    console.error('Auth failed:', error.message)
+  let cookieStr
+  try {
+    cookieStr = await signInAgent(PORT)
+    console.log('Signed in as agent. Auth OK.\n')
+  } catch (err) {
+    console.error('Auth failed:', err.message)
     return
   }
 
-  const session = data.session
-  const projectRef = 'luefkpakzvxcsqroxyhz'
-  const cookieBaseName = `sb-${projectRef}-auth-token`
-  const sessionPayload = JSON.stringify({
-    access_token: session.access_token,
-    refresh_token: session.refresh_token,
-    expires_in: session.expires_in,
-    expires_at: session.expires_at,
-    token_type: session.token_type,
-    user: session.user,
-  })
-  const encoded = 'base64-' + Buffer.from(sessionPayload).toString('base64url')
-  const cookieStr = `${cookieBaseName}=${encoded}`
-
   console.log('Testing email-08: "Email thread with Garcia family"\n')
 
-  const res = await fetch('http://localhost:3100/api/remy/stream', {
+  const res = await fetch(`http://localhost:${PORT}/api/remy/stream`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Cookie: cookieStr },
     body: JSON.stringify({
