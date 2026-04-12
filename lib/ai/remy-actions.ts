@@ -21,7 +21,15 @@ import {
   REMY_PRIVACY_NOTE,
   REMY_TOPIC_GUARDRAILS,
   REMY_ANTI_INJECTION,
+  REMY_KITCHEN_PHRASES,
 } from '@/lib/ai/remy-personality'
+import {
+  buildDynamicPersonalityBlock,
+  maybeGetOnboardingCloser,
+  trackFirstInteraction,
+  getOnboardingStage,
+  incrementMessageCount,
+} from '@/lib/ai/remy-personality-engine'
 import {
   validateRemyInput,
   validateMemoryContent,
@@ -412,12 +420,14 @@ function buildRemySystemPrompt(
   focusMode: boolean = false,
   userMessage?: string,
   isFirstMessage: boolean = false,
-  conversationHistory: RemyMessage[] = []
+  conversationHistory: RemyMessage[] = [],
+  dynamicPersonalityBlock: string = ''
 ): string {
   const parts: string[] = []
 
   // Full personality guide
   parts.push(REMY_PERSONALITY)
+  parts.push(REMY_KITCHEN_PHRASES)
   // Few-shot examples - show Remy how to respond, not just what to be
   parts.push(REMY_FEW_SHOT_EXAMPLES)
   parts.push(REMY_DRAFT_INSTRUCTIONS)
@@ -592,6 +602,11 @@ Reference these insights when the chef asks about their business, pricing strate
   const memoryBlock = formatMemoriesForPrompt(memories)
   if (memoryBlock) {
     parts.push(memoryBlock)
+  }
+
+  // Dynamic personality block (tenure tone, empty states, motivational context)
+  if (dynamicPersonalityBlock) {
+    parts.push(dynamicPersonalityBlock)
   }
 
   // Proactive nudge instructions - surface urgent items once per conversation
@@ -1068,6 +1083,27 @@ export async function sendRemyMessage(
       isFocusModeEnabled().catch(() => false),
     ])
 
+    // Dynamic personality block (tenure, empty states, motivational context)
+    const dynamicPersonalityBlock = await buildDynamicPersonalityBlock({
+      chefId: user.tenantId!,
+      clientCount: context.clientCount,
+      eventCount: context.upcomingEventCount,
+      recipeCount: context.recipeStats?.totalRecipes ?? 0,
+      revenueCents: context.monthRevenueCents ?? 0,
+      staleInquiryCount: context.staleInquiries?.length ?? 0,
+    }).catch(() => '')
+
+    // Onboarding stage tracking (non-blocking fire-and-forget)
+    getOnboardingStage(user.tenantId!)
+      .then((onboarding) => {
+        if (!onboarding) return
+        trackFirstInteraction(user.tenantId!, onboarding.stage)
+        if (onboarding.stage === 'first_interaction') {
+          incrementMessageCount(user.tenantId!).catch(() => {})
+        }
+      })
+      .catch(() => {})
+
     // ─── COMMAND path ─────────────────────────────────────────────────
     if (classification.intent === 'command') {
       const commandRun = await runCommand(userMessage)
@@ -1107,7 +1143,8 @@ export async function sendRemyMessage(
             focusMode,
             questionInput,
             conversationHistory.length === 0,
-            conversationHistory
+            conversationHistory,
+            dynamicPersonalityBlock
           )
           const history = formatConversationHistory(conversationHistory)
           return parseWithOllama(
@@ -1159,7 +1196,8 @@ export async function sendRemyMessage(
       focusMode,
       userMessage,
       conversationHistory.length === 0,
-      conversationHistory
+      conversationHistory,
+      dynamicPersonalityBlock
     )
     const history = formatConversationHistory(conversationHistory)
     const result = await parseWithOllama(
@@ -1168,8 +1206,11 @@ export async function sendRemyMessage(
       RemyConversationalSchema
     )
 
+    // Onboarding closer: append once when chef reaches 3+ post-tour exchanges
+    const closer = await maybeGetOnboardingCloser(user.tenantId!).catch(() => '')
+
     return {
-      text: result.response,
+      text: closer ? result.response + closer : result.response,
       intent: 'question',
       navSuggestions: result.navSuggestions ?? undefined,
     }

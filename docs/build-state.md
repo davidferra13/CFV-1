@@ -12,10 +12,10 @@ Last known state of the app. Updated after every successful type check and build
 
 ## Current State
 
-| Check                                    | Status | Last Verified | Commit    | Agent                       |
-| ---------------------------------------- | ------ | ------------- | --------- | --------------------------- |
-| `npx tsc --noEmit --skipLibCheck`        | green  | 2026-04-11    | 5db22eaed | Builder (MemPalace session) |
-| `npm run build -- --no-lint` (12GB heap) | green  | 2026-04-11    | c74e7a4cd | Builder (voice session)     |
+| Check                                    | Status  | Last Verified | Commit    | Agent                   |
+| ---------------------------------------- | ------- | ------------- | --------- | ----------------------- |
+| `npx tsc --noEmit --skipLibCheck`        | partial | 2026-04-12    | 93b62738e | Builder (nav reduction) |
+| `npm run build -- --no-lint` (12GB heap) | green   | 2026-04-11    | c74e7a4cd | Builder (voice session) |
 
 **Green note (2026-04-11):** tsc exits 0 with zero errors after fixing all 12 pre-existing type errors (async getPublicUrl, RowList access, implicit any, missing rawText return field, unknown cast). Session also delivered: finance canonicalization, vendor catalog personalization, ingredient sourcing fallback, quote price confidence warnings, dead-zone gating on finance hub, auth/password hardening (OWASP/NIST policy, bypass removal, post-change sign-out).
 

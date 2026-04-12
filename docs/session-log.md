@@ -598,3 +598,18 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: 7a9ce44f5, d07ae8daf, 0606b156a (and prior session commits already pushed)
 - Build state on departure: tsc green, prod build running
 - Notes: Consent checkbox was removed after competitive research confirmed no top booking platform (Take a Chef, OpenTable, Tock) uses one. Final pattern matches Take a Chef exactly: "By sending this form, you agree to our Terms and acknowledge our Privacy Policy." above the Send button. Migration confirmed applied to DB (consent_at + consent_version columns verified). Dev server async_hooks bug fixed via next.config.js webpack fallback.
+
+## 2026-04-12 (nav reduction session)
+
+- Agent: Builder (Sonnet 4.6)
+- Task: Reduce nav sidebar from 346 destinations / 34 screen heights to a focused daily-driver sidebar
+- Status: completed
+- Files touched:
+  - components/navigation/nav-config.tsx (added CORE_GROUP_IDS constant)
+  - components/navigation/chef-nav.tsx (filter to CORE_GROUP_IDS, add All Features link + Compass icon in rail mode, fix duplicate /features in rail)
+  - components/navigation/chef-mobile-nav.tsx (same CORE_GROUP_IDS filter)
+  - lib/navigation/focus-mode-nav.ts (remove dead pipeline/remy from STRICT_FOCUS; align with core groups)
+  - docs/USER_MANUAL.md (add Navigation section; fix 4 stale Sidebar paths for removed groups)
+- Commits: 7a9ce44f5 (CORE_GROUP_IDS in nav-config), 93b62738e (focus mode + manual)
+- Build state on departure: tsc has 2 pre-existing WIP errors in remy-personality-engine.ts (untracked) + remy-actions.ts (unstaged). Nav files are clean. Prior green build unaffected.
+- Notes: Sidebar reduced from 13 accordion groups (265+ items) to 5 core groups (Events, Clients, Culinary, Finance, Operations) + Admin for admins. 8 removed groups (Analytics, Commerce, Marketing, Network, Pipeline, Protection, Tools) accessible via new All Features (/features) gateway. Architecture: CORE_GROUP_IDS in nav-config.tsx is the single control point. Focus mode now correctly shows only Events + Clients. Universal search (Cmd+K) still indexes all groups. Screenshots verified.
