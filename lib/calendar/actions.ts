@@ -18,6 +18,14 @@ import { getCalendarColor, getCalendarBorderStyle } from './colors'
 import { DEFAULT_CALENDAR_FILTERS } from './constants'
 // CalendarFilters type is defined in and should be imported from './constants' directly.
 
+function localDateISO(d: Date): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
 // ============================================
 // TYPES
 // ============================================
@@ -393,9 +401,8 @@ export async function getYearDensity(year: number): Promise<WeekDensity[]> {
     while (current <= item.endDate) {
       if (!byDate[current]) byDate[current] = []
       byDate[current].push(item)
-      const d = new Date(current)
-      d.setDate(d.getDate() + 1)
-      current = d.toISOString().split('T')[0]
+      const [cy, cm, cd] = current.split('-').map(Number)
+      current = localDateISO(new Date(cy, cm - 1, cd + 1))
     }
   }
 
@@ -408,13 +415,12 @@ export async function getYearDensity(year: number): Promise<WeekDensity[]> {
   monday.setDate(jan1.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
 
   while (monday.getFullYear() <= year) {
-    const weekStart = monday.toISOString().split('T')[0]
+    const weekStart = localDateISO(monday)
     const weekItems: UnifiedCalendarItem[] = []
 
     for (let d = 0; d < 7; d++) {
-      const dayDate = new Date(monday)
-      dayDate.setDate(monday.getDate() + d)
-      const dateStr = dayDate.toISOString().split('T')[0]
+      const dayDate = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + d)
+      const dateStr = localDateISO(dayDate)
       if (byDate[dateStr]) weekItems.push(...byDate[dateStr])
     }
 

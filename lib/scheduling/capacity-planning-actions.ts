@@ -87,13 +87,16 @@ function timeToMinutes(timeStr: string): number {
 }
 
 function formatDate(d: Date): string {
-  return d.toISOString().slice(0, 10)
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
 }
 
 function addDays(dateStr: string, days: number): string {
-  const d = new Date(dateStr + 'T00:00:00')
-  d.setDate(d.getDate() + days)
-  return formatDate(d)
+  const [y, m, day] = dateStr.split('-').map(Number)
+  return formatDate(new Date(y, m - 1, day + days))
 }
 
 function getDayName(dateStr: string): string {

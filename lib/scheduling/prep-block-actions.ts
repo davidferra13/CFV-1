@@ -78,7 +78,12 @@ async function fetchUpcomingEvents(
   db: ReturnType<typeof createServerClient>,
   tenantId: string
 ): Promise<SchedulingEvent[]> {
-  const today = new Date().toISOString().slice(0, 10)
+  const _d = new Date()
+  const today = [
+    _d.getFullYear(),
+    String(_d.getMonth() + 1).padStart(2, '0'),
+    String(_d.getDate()).padStart(2, '0'),
+  ].join('-')
   const { data: events } = await db
     .from('events')
     .select(EVENT_SELECT)
@@ -119,18 +124,28 @@ async function fetchPrepBlocks(
   return (data ?? []) as PrepBlock[]
 }
 
+function _localDateISO(d: Date): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
 /** Calculate Monday of the week at weekOffset from current week. */
 function getWeekBounds(weekOffset: number): { start: string; end: string } {
   const today = new Date()
-  const dayOfWeek = today.getUTCDay() // 0 = Sunday, 1 = Mon, ...
+  const dayOfWeek = today.getDay() // 0 = Sunday, 1 = Mon, ...
   const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
-  const monday = new Date(today)
-  monday.setUTCDate(today.getUTCDate() + mondayOffset + weekOffset * 7)
-  const sunday = new Date(monday)
-  sunday.setUTCDate(monday.getUTCDate() + 6)
+  const monday = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate() + mondayOffset + weekOffset * 7
+  )
+  const sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6)
   return {
-    start: monday.toISOString().slice(0, 10),
-    end: sunday.toISOString().slice(0, 10),
+    start: _localDateISO(monday),
+    end: _localDateISO(sunday),
   }
 }
 
@@ -255,8 +270,8 @@ export async function getYearSummary(year: number): Promise<YearSummary> {
     const weekSunday = new Date(weekMonday)
     weekSunday.setUTCDate(weekMonday.getUTCDate() + 6)
 
-    const weekStart = weekMonday.toISOString().slice(0, 10)
-    const weekEnd = weekSunday.toISOString().slice(0, 10)
+    const weekStart = _localDateISO(weekMonday)
+    const weekEnd = _localDateISO(weekSunday)
 
     const weekEvents = allEvents.filter(
       (e: any) => e.event_date >= weekStart && e.event_date <= weekEnd

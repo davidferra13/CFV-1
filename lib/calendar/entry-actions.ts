@@ -413,7 +413,12 @@ export async function notifyClientsOfPublicSignal(calendarEntryId: string) {
 
 export async function getPublicAvailabilitySignals(chefId: string) {
   const db: any = createServerClient()
-  const today = new Date().toISOString().split('T')[0]
+  const _now = new Date()
+  const today = [
+    _now.getFullYear(),
+    String(_now.getMonth() + 1).padStart(2, '0'),
+    String(_now.getDate()).padStart(2, '0'),
+  ].join('-')
 
   const { data, error } = await db
     .from('chef_calendar_entries')

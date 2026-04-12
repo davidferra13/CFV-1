@@ -146,9 +146,14 @@ export async function getSharedAvailability(token: string): Promise<{
   const today = new Date()
   const dates: string[] = []
   for (let i = 0; i < 60; i++) {
-    const d = new Date(today)
-    d.setDate(today.getDate() + i)
-    dates.push(d.toISOString().slice(0, 10))
+    const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i)
+    dates.push(
+      [
+        d.getFullYear(),
+        String(d.getMonth() + 1).padStart(2, '0'),
+        String(d.getDate()).padStart(2, '0'),
+      ].join('-')
+    )
   }
 
   const windowStart = dates[0]

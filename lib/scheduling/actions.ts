@@ -25,6 +25,14 @@ import type {
   EventPhase,
 } from './types'
 
+function localDateISO(d: Date): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
 // ============================================
 // DATA FETCHING HELPERS
 // ============================================
@@ -205,7 +213,7 @@ export async function getTodaysSchedule(): Promise<{
   dop: DOPSchedule
 } | null> {
   const events = await fetchUpcomingSchedulingEvents()
-  const today = new Date().toISOString().split('T')[0]
+  const today = localDateISO(new Date())
 
   const todayEvent = events.find((e) => e.event_date === today)
   if (!todayEvent) return null
@@ -515,8 +523,8 @@ export async function getWeekSchedule(weekOffset: number = 0): Promise<WeekSched
   const sunday = new Date(monday)
   sunday.setDate(monday.getDate() + 6)
 
-  const weekStart = monday.toISOString().split('T')[0]
-  const weekEnd = sunday.toISOString().split('T')[0]
+  const weekStart = localDateISO(monday)
+  const weekEnd = localDateISO(sunday)
 
   const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
   const days: WeekDay[] = []
@@ -526,14 +534,13 @@ export async function getWeekSchedule(weekOffset: number = 0): Promise<WeekSched
   for (let i = 0; i < 7; i++) {
     const dayDate = new Date(monday)
     dayDate.setDate(monday.getDate() + i)
-    const dateStr = dayDate.toISOString().split('T')[0]
+    const dateStr = localDateISO(dayDate)
 
     const dayEvents = events.filter((e) => e.event_date === dateStr)
 
     // Check if this is a prep day (day before an event)
-    const nextDay = new Date(dayDate)
-    nextDay.setDate(dayDate.getDate() + 1)
-    const nextDateStr = nextDay.toISOString().split('T')[0]
+    const nextDay = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate() + 1)
+    const nextDateStr = localDateISO(nextDay)
     const tomorrowEvents = events.filter((e) => e.event_date === nextDateStr)
     const isPrepDay = tomorrowEvents.length > 0 && prefs.shop_day_before
 
@@ -781,7 +788,7 @@ export async function getCalendarEvents(
     if (prefs.shop_day_before) {
       const eventDate = new Date(event.event_date + 'T12:00:00')
       eventDate.setDate(eventDate.getDate() - 1)
-      const prepDate = eventDate.toISOString().split('T')[0]
+      const prepDate = localDateISO(eventDate)
 
       if (prepDate >= rangeStart && prepDate <= rangeEnd) {
         calendarEvents.push({

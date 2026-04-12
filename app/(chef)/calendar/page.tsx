@@ -36,11 +36,13 @@ export default async function CalendarPage() {
   const start = new Date(now.getFullYear(), now.getMonth(), 1)
   const end = new Date(now.getFullYear(), now.getMonth() + 1, 0)
   // Extend range to cover full calendar grid (prev/next month days)
-  start.setDate(start.getDate() - 7)
-  end.setDate(end.getDate() + 7)
+  const startExt = new Date(start.getFullYear(), start.getMonth(), start.getDate() - 7)
+  const endExt = new Date(end.getFullYear(), end.getMonth(), end.getDate() + 7)
 
-  const startDate = start.toISOString().split('T')[0]
-  const endDate = end.toISOString().split('T')[0]
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const toLocalISO = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+  const startDate = toLocalISO(startExt)
+  const endDate = toLocalISO(endExt)
 
   const initialItems = await getUnifiedCalendar(startDate, endDate)
 

@@ -23,9 +23,13 @@ function daysUntil(dateStr: string): number {
 }
 
 function dayBefore(dateStr: string): string {
-  const d = new Date(dateStr + 'T00:00:00')
-  d.setDate(d.getDate() - 1)
-  return d.toISOString().split('T')[0]
+  const [y, m, day] = dateStr.split('-').map(Number)
+  const d = new Date(y, m - 1, day - 1)
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
 }
 
 function task(
