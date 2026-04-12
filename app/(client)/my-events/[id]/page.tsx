@@ -445,18 +445,29 @@ export default async function EventDetailPage({
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Menu</CardTitle>
-              {(event as any).menu_approval_status === 'approved' && (
+              {(event as any).menu_modified_after_approval ? (
+                <Badge variant="warning">Updated</Badge>
+              ) : (event as any).menu_approval_status === 'approved' ? (
                 <Badge variant="success">Approved</Badge>
-              )}
-              {(event as any).menu_approval_status === 'sent' && (
+              ) : (event as any).menu_approval_status === 'sent' ? (
                 <Badge variant="warning">Review Needed</Badge>
-              )}
-              {(event as any).menu_approval_status === 'revision_requested' && (
+              ) : (event as any).menu_approval_status === 'revision_requested' ? (
                 <Badge variant="info">Changes Sent</Badge>
-              )}
+              ) : null}
             </div>
           </CardHeader>
           <CardContent>
+            {/* Menu updated after approval - show alert */}
+            {(event as any).menu_modified_after_approval &&
+              (event as any).menu_approval_status === 'approved' && (
+                <div className="mb-4 rounded-lg border border-amber-700 bg-amber-950/50 px-4 py-3">
+                  <p className="text-sm font-medium text-amber-300">Your chef updated the menu</p>
+                  <p className="mt-1 text-xs text-amber-400">
+                    Changes were made after you approved it. Review the updated menu below.
+                  </p>
+                </div>
+              )}
+
             {/* No menu attached yet - show CTA or preference status */}
             {(!event.menus || event.menus.length === 0) && !(event as any).menu_approval_status && (
               <div className="text-center py-6 space-y-3">

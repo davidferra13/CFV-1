@@ -206,6 +206,16 @@ export async function approveMenu(requestId: string) {
   revalidatePath(`/my-events/${request.event_id}`)
   revalidatePath(`/events/${request.event_id}`)
 
+  // Clear the "menu modified after approval" flag - client has now re-approved
+  try {
+    await db
+      .from('events')
+      .update({ menu_modified_after_approval: false })
+      .eq('id', request.event_id)
+  } catch {
+    // Non-fatal
+  }
+
   // Non-blocking: notify chef + email
   try {
     const chefAuthId = await getChefAuthUserId(request.chef_id)
