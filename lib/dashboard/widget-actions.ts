@@ -616,10 +616,12 @@ export async function getBookedDates(): Promise<{ booked: string[]; tentative: s
     .in('status', ['draft', 'proposed'])
 
   const booked: string[] = Array.from(
-    new Set((bookedEvents || []).map((e: any) => String(e.event_date)))
+    new Set((bookedEvents || []).map((e: any) => dateToDateString(e.event_date as Date | string)))
   )
   const tentative: string[] = Array.from(
-    new Set((tentativeEvents || []).map((e: any) => String(e.event_date)))
+    new Set(
+      (tentativeEvents || []).map((e: any) => dateToDateString(e.event_date as Date | string))
+    )
   )
 
   return { booked, tentative }
