@@ -110,9 +110,14 @@ export function KioskInquiryForm({ token, staffSession, onSubmitted }: KioskInqu
   }
 
   // Get today's date as minimum for date picker (memoized - only changes once per day)
+  // Use local date parts to avoid UTC offset shifting the date after ~7pm ET
   const minDate = useMemo(() => {
     const today = new Date()
-    return today.toISOString().split('T')[0]
+    return [
+      today.getFullYear(),
+      String(today.getMonth() + 1).padStart(2, '0'),
+      String(today.getDate()).padStart(2, '0'),
+    ].join('-')
   }, [])
 
   return (

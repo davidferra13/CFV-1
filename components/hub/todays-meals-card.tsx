@@ -73,7 +73,11 @@ export function TodaysMealsCard({
 }: TodaysMealsCardProps) {
   const todayStr = useMemo(() => {
     const now = new Date()
-    return now.toISOString().split('T')[0]
+    return [
+      now.getFullYear(),
+      String(now.getMonth() + 1).padStart(2, '0'),
+      String(now.getDate()).padStart(2, '0'),
+    ].join('-')
   }, [])
 
   const todaysMeals = useMemo(() => {

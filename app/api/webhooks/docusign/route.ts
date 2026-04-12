@@ -21,9 +21,13 @@ export async function POST(req: NextRequest) {
   try {
     const rawBody = await req.text()
 
-    // Verify HMAC signature if configured
+    // Require HMAC signature - fail closed if header is missing or invalid
     const signature = req.headers.get('x-docusign-signature-1')
-    if (signature && !verifyHmacSignature(rawBody, signature)) {
+    if (!signature) {
+      console.error('[docusign-webhook] Missing x-docusign-signature-1 header - rejecting')
+      return NextResponse.json({ error: 'Missing signature' }, { status: 401 })
+    }
+    if (!verifyHmacSignature(rawBody, signature)) {
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
     }
 
