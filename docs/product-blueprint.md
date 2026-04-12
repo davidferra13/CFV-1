@@ -127,7 +127,7 @@ Track every dollar in and out. Immutable, auditable, real.
 - [x] Revenue goals with progress tracking
 - [x] Stripe integration (payments + voluntary supporter contributions)
 - [x] Loyalty and rewards program (points, tiers, gift cards, redemption)
-- [ ] **CPA-ready tax export** - built, needs Playwright verification
+- [x] **CPA-ready tax export** - verified Apr 11 (6-pillar Playwright walkthrough)
 
 ### 6. GROW (Clients, Analytics, Public Presence) - 85% Complete
 
@@ -167,7 +167,7 @@ The systems that power everything.
 - [x] Mission Control (developer ops dashboard, Gustav AI, 90+ API endpoints)
 - [x] **SSE authentication** - fixed (session + validateRealtimeChannelAccess; stale gap entry)
 - [x] **Automated database backups** - built April 4, encrypted, 14-day retention
-- [ ] **Request correlation and observability** - spec ready, not built
+- [x] **Request correlation and observability** - built Apr 12: X-Request-ID header on all responses, logger fallback, Sentry tag auto-attach
 
 ---
 

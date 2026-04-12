@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto'
+import { getRequestId } from '@/lib/observability/request-id'
 import { CRON_MONITOR_DEFINITIONS } from '@/lib/cron/definitions'
 import { buildCronHealthReport } from '@/lib/cron/monitor'
 import { getCircuitBreakerHealth } from '@/lib/resilience/circuit-breaker'
@@ -115,7 +116,7 @@ function getRequiredCronDefinitionsForPublicHealth() {
 export async function buildPublicHealthSnapshot(
   options: BuildSnapshotOptions
 ): Promise<PublicHealthSnapshot> {
-  const requestId = randomUUID()
+  const requestId = getRequestId() ?? randomUUID()
   const timestamp = new Date().toISOString()
   const missingEnv = options.requiredEnvVars.filter((name) => !process.env[name])
   const circuitBreakers = getCircuitBreakerHealth()

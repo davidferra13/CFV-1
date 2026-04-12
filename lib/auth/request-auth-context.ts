@@ -5,6 +5,7 @@ export const EMAIL_HEADER = 'x-cf-email'
 export const ROLE_HEADER = 'x-cf-role'
 export const ENTITY_ID_HEADER = 'x-cf-entity-id'
 export const TENANT_ID_HEADER = 'x-cf-tenant-id'
+export const REQUEST_ID_HEADER = 'x-request-id'
 
 const INTERNAL_REQUEST_HEADERS = [
   AUTHENTICATED_HEADER,
@@ -13,6 +14,8 @@ const INTERNAL_REQUEST_HEADERS = [
   ROLE_HEADER,
   ENTITY_ID_HEADER,
   TENANT_ID_HEADER,
+  // Strip inbound x-request-id to prevent client spoofing; middleware re-sets it
+  REQUEST_ID_HEADER,
   // Defense-in-depth: strip Next.js internal header to prevent middleware bypass
   // (CVE-2025-29927 is patched in our version, but belt-and-suspenders)
   'x-middleware-subrequest',

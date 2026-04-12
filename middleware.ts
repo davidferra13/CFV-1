@@ -16,6 +16,12 @@ import {
 } from '@/lib/auth/request-auth-context'
 import { resolveAuthCookieOptions } from '@/lib/auth/request-origin'
 
+/** Attach correlation ID to a response. Used on every exit path except static assets. */
+function withRequestId(response: NextResponse, requestId: string): NextResponse {
+  response.headers.set('X-Request-ID', requestId)
+  return response
+}
+
 const roleCookieName = 'chefflow-role-cache'
 
 function getHomePathForRole(role: string | null | undefined): string {
@@ -51,6 +57,11 @@ function buildRedirectUrl(request: NextRequest, path: string): URL {
  * cached in the JWT from login time.
  */
 export default auth(async (request) => {
+  // Generate a unique correlation ID for this request. Set on request headers so
+  // server components/actions can read it via headers().get('x-request-id'), and
+  // set on response headers so it's visible in browser DevTools.
+  const requestId = crypto.randomUUID()
+
   const { pathname } = request.nextUrl
   const { useSecureCookies } = resolveAuthCookieOptions({
     requestOrigin: request.nextUrl.origin,
@@ -73,6 +84,7 @@ export default auth(async (request) => {
 
   const requestHeaders = new Headers(request.headers)
   stripInternalRequestHeaders(requestHeaders)
+  requestHeaders.set('x-request-id', requestId)
   setPathnameHeader(requestHeaders, pathname)
   setRequestAuthContext(requestHeaders, null)
 
@@ -81,16 +93,17 @@ export default auth(async (request) => {
 
   if (!session?.user) {
     if (pathname === '/') {
-      return NextResponse.next({ request: { headers: requestHeaders } })
+      return withRequestId(NextResponse.next({ request: { headers: requestHeaders } }), requestId)
     }
 
     if (pathname.startsWith('/api/')) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+      const r = NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+      return withRequestId(r, requestId)
     }
 
     const redirectUrl = buildRedirectUrl(request, '/auth/signin')
     redirectUrl.searchParams.set('redirect', pathname)
-    return NextResponse.redirect(redirectUrl)
+    return withRequestId(NextResponse.redirect(redirectUrl), requestId)
   }
 
   const { user } = session
@@ -101,9 +114,12 @@ export default auth(async (request) => {
   if (!role || !entityId) {
     // Authenticated but no role (new OAuth user) - send to role selection
     if (pathname !== '/auth/role-selection' && !pathname.startsWith('/api/auth')) {
-      return NextResponse.redirect(buildRedirectUrl(request, '/auth/role-selection'))
+      return withRequestId(
+        NextResponse.redirect(buildRedirectUrl(request, '/auth/role-selection')),
+        requestId
+      )
     }
-    return NextResponse.next({ request: { headers: requestHeaders } })
+    return withRequestId(NextResponse.next({ request: { headers: requestHeaders } }), requestId)
   }
 
   // Set auth context headers for downstream server components/actions
@@ -119,6 +135,7 @@ export default auth(async (request) => {
 
   // Build response with auth context headers
   const response = NextResponse.next({ request: { headers: requestHeaders } })
+  response.headers.set('X-Request-ID', requestId)
 
   // Set role cookie for client-side access
   const sessionOnly = request.cookies.get('chefflow-session-only')?.value === '1'
@@ -132,19 +149,31 @@ export default auth(async (request) => {
 
   // Route-level access control
   if (pathname === '/') {
-    return NextResponse.redirect(buildRedirectUrl(request, getHomePathForRole(role)))
+    return withRequestId(
+      NextResponse.redirect(buildRedirectUrl(request, getHomePathForRole(role))),
+      requestId
+    )
   }
 
   if (isChefRoutePath(pathname) && role !== 'chef') {
-    return NextResponse.redirect(buildRedirectUrl(request, getHomePathForRole(role)))
+    return withRequestId(
+      NextResponse.redirect(buildRedirectUrl(request, getHomePathForRole(role))),
+      requestId
+    )
   }
 
   if (isClientRoutePath(pathname) && role !== 'client') {
-    return NextResponse.redirect(buildRedirectUrl(request, getHomePathForRole(role)))
+    return withRequestId(
+      NextResponse.redirect(buildRedirectUrl(request, getHomePathForRole(role))),
+      requestId
+    )
   }
 
   if (isStaffRoutePath(pathname) && role !== 'staff') {
-    return NextResponse.redirect(buildRedirectUrl(request, getHomePathForRole(role)))
+    return withRequestId(
+      NextResponse.redirect(buildRedirectUrl(request, getHomePathForRole(role))),
+      requestId
+    )
   }
 
   return response

@@ -1,3 +1,5 @@
+import { getRequestId } from '@/lib/observability/request-id'
+
 // Lightweight Sentry error reporter - no SDK dependency
 // Sends errors to Sentry via the envelope REST API
 // Fire-and-forget, non-blocking - failures never affect the app
@@ -194,6 +196,10 @@ export function reportAppError(
   if (context?.tenantId) extra.tenantId = context.tenantId
   if (context?.chefId) extra.chefId = context.chefId
   if (context?.eventId) extra.eventId = context.eventId
+
+  // Attach correlation ID from AsyncLocalStorage if available
+  const requestId = getRequestId()
+  if (requestId) tags.request_id = requestId
 
   // Add AppError-specific fields if present
   const appErr = error as any

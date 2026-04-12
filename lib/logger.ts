@@ -1,3 +1,5 @@
+import { getRequestId } from '@/lib/observability/request-id'
+
 /**
  * Structured Logger - ChefFlow V1
  *
@@ -96,7 +98,7 @@ export function createLogger(scope: string, defaultCtx: LogContext = {}) {
       level,
       scope,
       message,
-      requestId: opts.requestId ?? defaultCtx.requestId,
+      requestId: opts.requestId ?? defaultCtx.requestId ?? getRequestId(),
       tenantId: opts.tenantId ?? defaultCtx.tenantId,
       userId: opts.userId ?? defaultCtx.userId,
     }
