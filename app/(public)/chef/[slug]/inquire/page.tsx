@@ -25,7 +25,7 @@ import { createServerClient } from '@/lib/db/server'
 import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
 import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 
-type Props = { params: { slug: string } }
+type Props = { params: { slug: string }; searchParams: { ref?: string } }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getPublicChefProfile(params.slug)
@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function InquirePage({ params }: Props) {
+export default async function InquirePage({ params, searchParams }: Props) {
   const data = await getPublicChefProfile(params.slug)
   if (!data) notFound()
 
@@ -123,6 +123,7 @@ export default async function InquirePage({ params }: Props) {
                 chefSlug={inquirySlug}
                 chefName={data.chef.display_name}
                 primaryColor={primaryColor}
+                referralPartnerId={searchParams.ref || null}
               />
             </div>
 

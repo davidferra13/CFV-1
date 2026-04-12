@@ -18,6 +18,7 @@ import { PartnerDetailClient } from '@/components/partners/partner-detail-client
 import { BulkAssignEvents } from '@/components/partners/bulk-assign-events'
 import { SharePartnerReportButton } from '@/components/partners/share-partner-report-button'
 import { PartnerInviteButton } from '@/components/partners/partner-invite-button'
+import { CopyReferralLinkButton } from '@/components/partners/copy-referral-link-button'
 import { Inbox, CalendarCheck, DollarSign, Users, TrendingUp, MapPin } from '@/components/ui/icons'
 import { EntityPhotoUpload } from '@/components/entities/entity-photo-upload'
 
@@ -35,7 +36,14 @@ function formatCents(cents: number): string {
 }
 
 export default async function PartnerDetailPage({ params }: { params: { id: string } }) {
-  await requireChef()
+  const chef = await requireChef()
+  const db = (await import('@/lib/db/server')).createServerClient()
+  const { data: chefRow } = await (db as any)
+    .from('chefs')
+    .select('public_slug, inquiry_slug')
+    .eq('id', chef.entityId)
+    .single()
+  const chefSlug = chefRow?.inquiry_slug || chefRow?.public_slug || ''
 
   const [partner, partnerEvents, unassignedEvents] = await Promise.all([
     getPartnerById(params.id),
@@ -93,6 +101,11 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
         </div>
         <div className="flex flex-col gap-3 flex-wrap items-end">
           <div className="flex gap-2 flex-wrap">
+            {chefSlug && (
+              <CopyReferralLinkButton
+                referralUrl={`${process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'}/chef/${chefSlug}/inquire?ref=${partner.id}`}
+              />
+            )}
             <SharePartnerReportButton partnerId={partner.id} />
             <Link href={`/partners/${partner.id}/report`}>
               <Button variant="secondary">Print Report</Button>

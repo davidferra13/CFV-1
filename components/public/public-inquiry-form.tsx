@@ -19,6 +19,7 @@ interface Props {
   chefSlug: string
   chefName: string
   primaryColor: string
+  referralPartnerId?: string | null
 }
 
 interface FormData {
@@ -106,7 +107,7 @@ function parseBudgetCents(text: string): number | null {
   return null
 }
 
-export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
+export function PublicInquiryForm({ chefSlug, chefName, primaryColor, referralPartnerId }: Props) {
   const [formData, setFormData] = useState<FormData>({
     full_name: '',
     address: '',
@@ -274,6 +275,7 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
         additional_notes: formData.additional_notes.trim(),
         referral_source: formData.referral_source.trim() || undefined,
         website_url: formData.website_url,
+        referral_partner_id: referralPartnerId || undefined,
       })
 
       trackEvent(ANALYTICS_EVENTS.INQUIRY_SUBMITTED, {

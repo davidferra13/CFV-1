@@ -17,6 +17,7 @@ import { SaveStateBadge } from '@/components/ui/save-state-badge'
 import { DraftRestorePrompt } from '@/components/ui/draft-restore-prompt'
 import { UnsavedChangesDialog } from '@/components/ui/unsaved-changes-dialog'
 import { MenuBreakdownPanel } from '@/components/menus/menu-breakdown-panel'
+import { MenuAISuggestionsPanel } from '@/components/menus/menu-ai-suggestions-panel'
 import { createMenuWithCourses } from '@/lib/menus/actions'
 import { useDurableDraft } from '@/lib/drafts/use-durable-draft'
 import { useUnsavedChangesGuard } from '@/lib/navigation/use-unsaved-changes-guard'
@@ -678,9 +679,9 @@ export function CreateMenuForm({ tenantId }: { tenantId: string }) {
             </Card>
           </div>
 
-          {/* Live preview - right */}
+          {/* Live preview + AI suggestions - right */}
           <div className="lg:col-span-2">
-            <div className="sticky top-6">
+            <div className="sticky top-6 space-y-4">
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">Menu Preview</CardTitle>
@@ -725,6 +726,18 @@ export function CreateMenuForm({ tenantId }: { tenantId: string }) {
                   </div>
                 </CardContent>
               </Card>
+
+              <MenuAISuggestionsPanel
+                context={{
+                  sceneType: sceneType || undefined,
+                  cuisineType: cuisineType || undefined,
+                  serviceStyle: serviceStyle || undefined,
+                  guestCount: guestCount ? parseInt(guestCount, 10) : undefined,
+                  season: season || undefined,
+                  notes: notes || undefined,
+                }}
+                onApply={(newCourses) => setCourses(newCourses)}
+              />
             </div>
           </div>
         </div>

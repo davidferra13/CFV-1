@@ -15,7 +15,7 @@ export async function getCoolingClients(): Promise<CoolingClient[]> {
   // Fetch all clients with tier info
   const { data: clients, error } = await db
     .from('clients')
-    .select('id, full_name, loyalty_tier')
+    .select('id, full_name, loyalty_tier, vibe_notes')
     .eq('tenant_id', tenantId)
 
   if (error) throw new Error(`Failed to fetch clients: ${error.message}`)
@@ -40,7 +40,8 @@ export async function getCoolingClients(): Promise<CoolingClient[]> {
     name: c.full_name ?? 'Unknown',
     last_event_date: lastEventMap.get(c.id) ?? null,
     tier: c.loyalty_tier ?? null,
-    intentionally_inactive: false, // TODO: add column when schema supports it
+    intentionally_inactive:
+      typeof c.vibe_notes === 'string' && c.vibe_notes.includes('[INTENTIONALLY_INACTIVE]'),
   }))
 
   return findCoolingClients(mapped)

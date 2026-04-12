@@ -3,6 +3,10 @@
 // Menu Suggestions Generator
 // PRIVACY: Sends dietary restrictions, allergies, client event data - must stay local.
 // Output is DRAFT ONLY - suggestions for the chef's consideration.
+//
+// Two entry points:
+//   getAIMenuSuggestions(eventId) - for event-linked menus (uses event DB context)
+//   getAIMenuSuggestionsFromContext(ctx) - for standalone menu creation (uses form data)
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
@@ -97,6 +101,58 @@ Chef's recipe book (use these when possible): ${recipes?.map((r: any) => r.name)
   } catch (err) {
     if (err instanceof OllamaOfflineError) throw err
     console.error('[menu-suggestions] Error:', err)
+    throw new Error('Could not generate menu suggestions. Please try again.')
+  }
+}
+
+export interface MenuSuggestionContext {
+  sceneType?: string
+  cuisineType?: string
+  serviceStyle?: string
+  guestCount?: number
+  season?: string
+  notes?: string
+}
+
+export async function getAIMenuSuggestionsFromContext(
+  ctx: MenuSuggestionContext
+): Promise<MenuSuggestion[]> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  // Fetch chef's recipes for context
+  const { data: recipes } = await db
+    .from('recipes')
+    .select('name, category, dietary_tags')
+    .eq('tenant_id', user.entityId)
+    .limit(30)
+
+  const contextLines = [
+    `Scene: ${ctx.sceneType || 'Private Dinner'}`,
+    `Guests: ${ctx.guestCount ?? 'TBD'}`,
+    ctx.cuisineType ? `Cuisine preference: ${ctx.cuisineType}` : null,
+    ctx.serviceStyle ? `Service style: ${ctx.serviceStyle}` : null,
+    ctx.season ? `Season: ${ctx.season}` : null,
+    ctx.notes ? `Chef notes: ${ctx.notes}` : null,
+  ]
+    .filter(Boolean)
+    .join('\n')
+
+  const userContent = `Suggest 3 menu options for this event:
+
+${contextLines}
+
+Chef's recipe book (use these when possible): ${recipes?.map((r: any) => r.name).join(', ') || 'No recipes on file yet'}`
+
+  try {
+    const suggestions = await parseWithOllama(SYSTEM_PROMPT, userContent, MenuSuggestionsSchema, {
+      modelTier: 'standard',
+      maxTokens: 1024,
+    })
+    return suggestions
+  } catch (err) {
+    if (err instanceof OllamaOfflineError) throw err
+    console.error('[menu-suggestions] Context Error:', err)
     throw new Error('Could not generate menu suggestions. Please try again.')
   }
 }

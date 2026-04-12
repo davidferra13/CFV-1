@@ -45,6 +45,7 @@ const PublicInquirySchema = z.object({
   allergies_food_restrictions: z.string().optional().or(z.literal('')),
   additional_notes: z.string().optional().or(z.literal('')),
   referral_source: z.string().max(200).optional().or(z.literal('')),
+  referral_partner_id: z.string().uuid().optional().nullable(),
   service_mode: BookingServiceModeSchema.optional(),
   recurring_frequency: z.enum(['weekly', 'biweekly', 'monthly']).optional(),
   recurring_duration_weeks: z.number().int().min(1).max(52).optional(),
@@ -245,6 +246,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       confirmed_dietary_restrictions: allergiesList,
       source_message: sourceMessage || null,
       referral_source: validated.referral_source?.trim() || null,
+      referral_partner_id: validated.referral_partner_id || null,
       service_mode: serviceMode,
       schedule_request_jsonb: validated.schedule_request_jsonb ?? null,
       unknown_fields: {
