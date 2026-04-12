@@ -120,7 +120,7 @@ export function ProfitAndLossReport({ initialData }: Props) {
                 tone="text-red-500"
               />
               <Row
-                label={`Net Profit/Loss (${report.totals.profitMarginPercent.toFixed(2)}%)`}
+                label={`Net Profit/Loss (${report.totals.profitMarginPercent.toFixed(1)}%)`}
                 value={report.totals.netProfitLossCents}
                 strong
                 tone={report.totals.netProfitLossCents >= 0 ? 'text-emerald-600' : 'text-red-600'}

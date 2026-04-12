@@ -54,7 +54,7 @@ async function MonthlyPLSnapshot() {
           <p
             className={`text-lg font-bold ${totals.profitMarginPercent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}
           >
-            {totals.profitMarginPercent.toFixed(0)}%
+            {totals.profitMarginPercent.toFixed(1)}%
           </p>
           <p className="text-xs text-stone-500">Margin</p>
         </div>

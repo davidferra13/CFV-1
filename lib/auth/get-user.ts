@@ -1,11 +1,14 @@
 import { cache } from 'react'
 import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { userRoles, clients, chefs, staffMembers, referralPartners } from '@/lib/db/schema/schema'
 import { eq } from 'drizzle-orm'
 import { isAdmin } from '@/lib/auth/admin'
 import { readRequestAuthContext } from '@/lib/auth/request-auth-context'
+
+const SESSION_EXPIRED_URL = '/auth/signin?message=Your+session+expired.+Please+sign+in+again.'
 
 export type AuthUser = {
   id: string
@@ -134,7 +137,7 @@ export async function requireChef(): Promise<AuthUser> {
   const user = await getCurrentUser()
 
   if (!user || user.role !== 'chef') {
-    throw new Error('Unauthorized: Chef access required')
+    redirect(SESSION_EXPIRED_URL)
   }
 
   // Check suspension status (cached per request - safe to call in loops)
@@ -156,7 +159,7 @@ export async function requireClient(): Promise<AuthUser> {
   const user = await getCurrentUser()
 
   if (!user || user.role !== 'client') {
-    throw new Error('Unauthorized: Client access required')
+    redirect(SESSION_EXPIRED_URL)
   }
 
   return user
@@ -169,7 +172,7 @@ export async function requireAuth(): Promise<AuthUser> {
   const user = await getCurrentUser()
 
   if (!user) {
-    throw new Error('Unauthorized: Authentication required')
+    redirect(SESSION_EXPIRED_URL)
   }
 
   return user
@@ -184,7 +187,7 @@ export async function requirePartner(): Promise<PartnerAuthUser> {
   const session = await auth()
 
   if (!session?.user) {
-    throw new Error('Unauthorized: Authentication required')
+    redirect(SESSION_EXPIRED_URL)
   }
 
   const { user } = session
@@ -197,7 +200,7 @@ export async function requirePartner(): Promise<PartnerAuthUser> {
     .limit(1)
 
   if (!roleData || roleData.role !== 'partner') {
-    throw new Error('Unauthorized: Partner access required')
+    redirect(SESSION_EXPIRED_URL)
   }
 
   // Look up tenant_id from the partner record (direct DB query, no RLS needed)
@@ -229,7 +232,7 @@ export async function requireStaff(): Promise<StaffAuthUser> {
   const session = await auth()
 
   if (!session?.user) {
-    throw new Error('Unauthorized: Authentication required')
+    redirect(SESSION_EXPIRED_URL)
   }
 
   const { user } = session
@@ -242,7 +245,7 @@ export async function requireStaff(): Promise<StaffAuthUser> {
     .limit(1)
 
   if (!roleData || roleData.role !== 'staff') {
-    throw new Error('Unauthorized: Staff access required')
+    redirect(SESSION_EXPIRED_URL)
   }
 
   // Look up chef_id (tenant) from the staff member record (direct DB query, no RLS needed)
@@ -275,7 +278,7 @@ export async function requireChefAdmin(): Promise<AuthUser> {
   const admin = await isAdmin().catch(() => false)
 
   if (!admin) {
-    throw new Error('Unauthorized: Admin access required')
+    redirect(SESSION_EXPIRED_URL)
   }
 
   return user

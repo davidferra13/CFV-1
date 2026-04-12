@@ -486,7 +486,9 @@ export function FinancialsClient({
                                     : 'text-stone-300'
                             }`}
                           >
-                            {evt.expensesCents > 0 ? `${Math.round(evt.profitMargin)}%` : '-'}
+                            {evt.expensesCents > 0
+                              ? `${Number(evt.profitMargin).toFixed(1)}%`
+                              : '-'}
                           </td>
                         </tr>
                       ))}

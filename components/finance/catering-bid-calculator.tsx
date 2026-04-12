@@ -109,7 +109,7 @@ export function CateringBidCalculator({
       const results = await searchRecipesForBid(query)
       setSearchResults(results)
     } catch {
-      setSearchResults([])
+      // preserve previous results so user doesn't lose context
     } finally {
       setIsSearching(false)
     }

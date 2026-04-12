@@ -103,7 +103,8 @@ export default async function ProfitByEventPage() {
             </TableHeader>
             <TableBody>
               {rows.map((row: any) => {
-                const margin = row.revenue > 0 ? Math.round((row.profit / row.revenue) * 100) : null
+                const margin =
+                  row.revenue > 0 ? ((row.profit / row.revenue) * 100).toFixed(1) : null
                 return (
                   <TableRow key={row.id}>
                     <TableCell className="text-stone-400 text-sm">
