@@ -228,7 +228,7 @@ export async function getMonthlyFixedCostEstimate(): Promise<FixedCostEstimate> 
     .from('expenses')
     .select('amount_cents, recurrence, category')
     .eq('tenant_id', tenantId)
-    .gte('date', sixtyDaysAgo.toISOString().split('T')[0])
+    .gte('expense_date', sixtyDaysAgo.toISOString().split('T')[0])
 
   if (error || !data || data.length === 0) return null
 

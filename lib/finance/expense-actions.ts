@@ -8,6 +8,13 @@ import { revalidatePath } from 'next/cache'
 // TYPES
 // ============================================
 
+// Map DB row (expense_date) to TS interface (date) for backwards compat
+function mapExpense(row: any): Expense {
+  if (!row) return row
+  const { expense_date, ...rest } = row
+  return { ...rest, date: expense_date ?? rest.date } as Expense
+}
+
 export type ExpenseCategory =
   | 'food'
   | 'equipment'
@@ -86,16 +93,16 @@ export async function getExpenses(filters?: ExpenseFilters): Promise<Expense[]> 
     .from('expenses')
     .select('*')
     .eq('tenant_id', tenantId)
-    .order('date', { ascending: false })
+    .order('expense_date', { ascending: false })
 
   if (filters?.category) {
     query = query.eq('category', filters.category)
   }
   if (filters?.dateFrom) {
-    query = query.gte('date', filters.dateFrom)
+    query = query.gte('expense_date', filters.dateFrom)
   }
   if (filters?.dateTo) {
-    query = query.lte('date', filters.dateTo)
+    query = query.lte('expense_date', filters.dateTo)
   }
   if (filters?.eventId) {
     query = query.eq('event_id', filters.eventId)
@@ -108,7 +115,7 @@ export async function getExpenses(filters?: ExpenseFilters): Promise<Expense[]> 
     throw new Error('Failed to load expenses')
   }
 
-  return (data ?? []) as Expense[]
+  return (data ?? []).map(mapExpense)
 }
 
 export async function createExpense(input: CreateExpenseInput): Promise<Expense> {
@@ -123,7 +130,7 @@ export async function createExpense(input: CreateExpenseInput): Promise<Expense>
       category: input.category,
       description: input.description,
       amount_cents: input.amount_cents,
-      date: input.date,
+      expense_date: input.date,
       event_id: input.event_id || null,
       vendor: input.vendor || null,
       is_recurring: input.is_recurring ?? false,
@@ -151,7 +158,7 @@ export async function createExpense(input: CreateExpenseInput): Promise<Expense>
     console.error('[non-blocking] expense.created webhook failed', err)
   }
 
-  return data as Expense
+  return mapExpense(data)
 }
 
 export async function updateExpense(
@@ -166,7 +173,7 @@ export async function updateExpense(
   if (input.category !== undefined) updateData.category = input.category
   if (input.description !== undefined) updateData.description = input.description
   if (input.amount_cents !== undefined) updateData.amount_cents = input.amount_cents
-  if (input.date !== undefined) updateData.date = input.date
+  if (input.date !== undefined) updateData.expense_date = input.date
   if (input.event_id !== undefined) updateData.event_id = input.event_id || null
   if (input.vendor !== undefined) updateData.vendor = input.vendor || null
   if (input.is_recurring !== undefined) updateData.is_recurring = input.is_recurring
@@ -200,7 +207,7 @@ export async function updateExpense(
     console.error('[non-blocking] expense.updated webhook failed', err)
   }
 
-  return data as Expense
+  return mapExpense(data)
 }
 
 export async function deleteExpense(id: string): Promise<void> {
@@ -238,10 +245,10 @@ export async function getExpenseSummary(
   let query = db.from('expenses').select('category, amount_cents').eq('tenant_id', tenantId)
 
   if (dateFrom) {
-    query = query.gte('date', dateFrom)
+    query = query.gte('expense_date', dateFrom)
   }
   if (dateTo) {
-    query = query.lte('date', dateTo)
+    query = query.lte('expense_date', dateTo)
   }
 
   const { data, error } = await query
@@ -286,10 +293,10 @@ export async function getMonthlyExpenseTrend(months: number = 12): Promise<Month
 
   const { data, error } = await db
     .from('expenses')
-    .select('date, amount_cents')
+    .select('expense_date, amount_cents')
     .eq('tenant_id', tenantId)
-    .gte('date', dateFrom)
-    .order('date', { ascending: true })
+    .gte('expense_date', dateFrom)
+    .order('expense_date', { ascending: true })
 
   if (error) {
     console.error('[expense-actions] getMonthlyExpenseTrend failed:', error)
@@ -307,7 +314,7 @@ export async function getMonthlyExpenseTrend(months: number = 12): Promise<Month
   }
 
   for (const row of data ?? []) {
-    const monthKey = row.date.slice(0, 7) // "YYYY-MM"
+    const monthKey = (row.expense_date ?? row.date ?? '').slice(0, 7) // "YYYY-MM"
     const existing = monthMap.get(monthKey) ?? { total_cents: 0, count: 0 }
     existing.total_cents += row.amount_cents
     existing.count += 1
@@ -333,14 +340,14 @@ export async function getEventExpenses(eventId: string): Promise<Expense[]> {
     .select('*')
     .eq('tenant_id', tenantId)
     .eq('event_id', eventId)
-    .order('date', { ascending: false })
+    .order('expense_date', { ascending: false })
 
   if (error) {
     console.error('[expense-actions] getEventExpenses failed:', error)
     throw new Error('Failed to load event expenses')
   }
 
-  return (data ?? []) as Expense[]
+  return (data ?? []).map(mapExpense)
 }
 
 export async function getDeductibleTotal(year: number): Promise<number> {
@@ -356,8 +363,8 @@ export async function getDeductibleTotal(year: number): Promise<number> {
     .select('amount_cents')
     .eq('tenant_id', tenantId)
     .eq('tax_deductible', true)
-    .gte('date', dateFrom)
-    .lte('date', dateTo)
+    .gte('expense_date', dateFrom)
+    .lte('expense_date', dateTo)
 
   if (error) {
     console.error('[expense-actions] getDeductibleTotal failed:', error)
