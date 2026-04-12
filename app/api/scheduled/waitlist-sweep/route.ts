@@ -121,6 +121,34 @@ async function handleWaitlistSweep(request: NextRequest): Promise<NextResponse> 
             actionUrl: `/my-events`,
           })
 
+          // Notify the chef that this waitlist client was contacted (non-blocking)
+          try {
+            const { data: chefRole } = await db
+              .from('user_roles')
+              .select('auth_user_id')
+              .eq('entity_id', entry.chef_id)
+              .eq('role', 'chef')
+              .maybeSingle()
+
+            if (chefRole?.auth_user_id) {
+              await createNotification({
+                tenantId: entry.chef_id,
+                recipientId: chefRole.auth_user_id,
+                category: 'client',
+                action: 'follow_up_due',
+                title: 'Waitlist client notified',
+                body: `${clientInfo.full_name} was notified that ${dateStr}${entry.occasion ? ` (${entry.occasion})` : ''} may be available. Consider reaching out.`,
+                actionUrl: `/schedule/waitlist`,
+                clientId: entry.client_id ?? undefined,
+              })
+            }
+          } catch (chefNotifyErr) {
+            console.error(
+              `[Waitlist Sweep] Chef notification failed for entry ${entry.id} (non-blocking):`,
+              chefNotifyErr
+            )
+          }
+
           // Mark entry as contacted to prevent immediate re-notification
           await db
             .from('waitlist_entries')
