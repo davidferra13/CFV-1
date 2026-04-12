@@ -258,6 +258,19 @@ export async function transitionEvent({
   revalidatePath('/my-events')
   revalidatePath('/dashboard')
 
+  // Broadcast event status change so clients viewing the event page get a live refresh (non-blocking)
+  try {
+    const { broadcast } = await import('@/lib/realtime/sse-server')
+    broadcast(`client-event:${eventId}`, 'status_changed', {
+      eventId,
+      fromStatus,
+      toStatus,
+      timestamp: new Date().toISOString(),
+    })
+  } catch (err) {
+    log.events.warn('SSE broadcast for client event status failed (non-blocking)', { error: err })
+  }
+
   // Post system message to linked chat conversation (non-blocking)
   try {
     const { postEventSystemMessage } = await import('@/lib/chat/system-messages')

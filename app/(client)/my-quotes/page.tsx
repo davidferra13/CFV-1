@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
 import { formatDistanceToNow } from 'date-fns'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
+import { QuoteExpiryCountdown } from '@/components/quotes/quote-expiry-countdown'
 
 const STATUS_DISPLAY: Record<
   string,
@@ -51,12 +52,20 @@ export default async function ClientQuotesPage() {
                       </span>
                       <Badge variant="info">Pending Review</Badge>
                     </div>
-                    <p className="text-sm text-stone-500 mt-1">
-                      Received{' '}
-                      {formatDistanceToNow(new Date(quote.sent_at || quote.created_at), {
-                        addSuffix: true,
-                      })}
-                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <p className="text-sm text-stone-500">
+                        Received{' '}
+                        {formatDistanceToNow(new Date(quote.sent_at || quote.created_at), {
+                          addSuffix: true,
+                        })}
+                      </p>
+                      {quote.valid_until && (
+                        <>
+                          <span className="text-stone-700">·</span>
+                          <QuoteExpiryCountdown validUntil={quote.valid_until} />
+                        </>
+                      )}
+                    </div>
                   </div>
                   <div className="text-right">
                     <p className="text-xl font-bold text-stone-100">

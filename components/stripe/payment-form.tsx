@@ -12,10 +12,11 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 
 interface CheckoutFormProps {
   amount: number
+  eventId: string
   onSuccess: () => void
 }
 
-function CheckoutForm({ amount, onSuccess }: CheckoutFormProps) {
+function CheckoutForm({ amount, eventId, onSuccess }: CheckoutFormProps) {
   const stripe = useStripe()
   const elements = useElements()
   const [error, setError] = useState<string | null>(null)
@@ -34,7 +35,7 @@ function CheckoutForm({ amount, onSuccess }: CheckoutFormProps) {
     const { error: submitError } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: `${window.location.origin}/my-events`,
+        return_url: `${window.location.origin}/my-events/${eventId}?payment=success`,
       },
     })
 
@@ -78,10 +79,11 @@ function CheckoutForm({ amount, onSuccess }: CheckoutFormProps) {
 interface PaymentFormProps {
   clientSecret: string
   amount: number
+  eventId: string
   onSuccess: () => void
 }
 
-export function PaymentForm({ clientSecret, amount, onSuccess }: PaymentFormProps) {
+export function PaymentForm({ clientSecret, amount, eventId, onSuccess }: PaymentFormProps) {
   const options = {
     clientSecret,
     appearance: {
@@ -94,7 +96,7 @@ export function PaymentForm({ clientSecret, amount, onSuccess }: PaymentFormProp
 
   return (
     <Elements stripe={stripePromise} options={options}>
-      <CheckoutForm amount={amount} onSuccess={onSuccess} />
+      <CheckoutForm amount={amount} eventId={eventId} onSuccess={onSuccess} />
     </Elements>
   )
 }

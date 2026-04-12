@@ -108,7 +108,12 @@ export default function PaymentSection({ eventId, amount }: { eventId: string; a
 
   return (
     <div>
-      <PaymentForm clientSecret={clientSecret} amount={amount} onSuccess={handleSuccess} />
+      <PaymentForm
+        clientSecret={clientSecret}
+        amount={amount}
+        eventId={eventId}
+        onSuccess={handleSuccess}
+      />
     </div>
   )
 }

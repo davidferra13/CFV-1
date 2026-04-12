@@ -41,6 +41,8 @@ import { PriceComparisonSummary } from '@/components/pricing/price-comparison-su
 import { rowToPriceComparison } from '@/lib/pricing/pricing-decision'
 import { buildJourneySteps } from '@/lib/events/journey-steps'
 import { getCircleTokenForEvent } from '@/lib/hub/client-hub-actions'
+import { PaymentSuccessRefresher } from '@/components/events/payment-success-refresher'
+import { EventStatusWatcher } from '@/components/events/event-status-watcher'
 import type { Database } from '@/types/database'
 
 type EventStatus = Database['public']['Enums']['event_status']
@@ -70,7 +72,13 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   return { title: event ? `${event.occasion || 'Event'} | ChefFlow` : 'Event' }
 }
 
-export default async function EventDetailPage({ params }: { params: { id: string } }) {
+export default async function EventDetailPage({
+  params,
+  searchParams,
+}: {
+  params: { id: string }
+  searchParams: { payment?: string; redirect_status?: string }
+}) {
   await requireClient()
 
   const event = await getClientEventById(params.id)
@@ -140,6 +148,38 @@ export default async function EventDetailPage({ params }: { params: { id: string
           Back to My Events
         </Link>
       </div>
+
+      {/* Payment success: banner + deferred refresh to catch async webhook ledger write */}
+      {(searchParams?.payment === 'success' || searchParams?.redirect_status === 'succeeded') && (
+        <PaymentSuccessRefresher />
+      )}
+      {(searchParams?.payment === 'success' || searchParams?.redirect_status === 'succeeded') && (
+        <div className="mb-6 rounded-xl border border-emerald-700 bg-emerald-950/60 p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-800 flex items-center justify-center mt-0.5">
+              <svg
+                className="w-4 h-4 text-emerald-300"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+            <div>
+              <p className="font-semibold text-emerald-200">Payment received</p>
+              <p className="text-sm text-emerald-400 mt-0.5">
+                Your payment was processed successfully. Your chef has been notified.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Event Header */}
       <div className="mb-8">
@@ -658,6 +698,9 @@ export default async function EventDetailPage({ params }: { params: { id: string
           )}
         </div>
       )}
+
+      {/* Live event status watcher - refreshes page when chef transitions the event */}
+      <EventStatusWatcher eventId={event.id} />
 
       {/* Activity tracking */}
       <ActivityTracker

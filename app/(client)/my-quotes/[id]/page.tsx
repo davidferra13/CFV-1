@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import QuoteResponseButtons from './quote-response-buttons'
+import { QuoteExpiryCountdown } from '@/components/quotes/quote-expiry-countdown'
 import { MessageChefButton } from '@/components/chat/message-chef-button'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { SessionHeartbeat } from '@/components/activity/session-heartbeat'
@@ -105,12 +106,16 @@ export default async function ClientQuoteDetailPage({ params }: { params: { id: 
           {quote.valid_until && (
             <div className="flex justify-between items-center text-sm">
               <span className="text-stone-400">Valid until</span>
-              <span className="font-medium text-stone-100">
+              <span className="font-medium text-stone-100 flex items-center gap-2">
                 {format(new Date(quote.valid_until), 'MMMM d, yyyy')}
-                {new Date(quote.valid_until) < new Date() && (
-                  <Badge variant="warning" className="ml-2">
-                    Expired
-                  </Badge>
+                {isPending ? (
+                  <QuoteExpiryCountdown validUntil={quote.valid_until} />
+                ) : (
+                  new Date(quote.valid_until) < new Date() && (
+                    <Badge variant="warning" className="ml-2">
+                      Expired
+                    </Badge>
+                  )
                 )}
               </span>
             </div>
