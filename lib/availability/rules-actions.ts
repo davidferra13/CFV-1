@@ -8,6 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -172,7 +173,7 @@ export async function validateDateAgainstRules(
     if (nearbyEvents && nearbyEvents.length > 0) {
       const nearest = nearbyEvents[0]
       warnings.push(
-        `Only ${r.min_buffer_days} day${r.min_buffer_days === 1 ? '' : 's'} buffer required between events - nearby event: "${nearest.occasion || 'Untitled'}" on ${nearest.event_date.slice(0, 10)}`
+        `Only ${r.min_buffer_days} day${r.min_buffer_days === 1 ? '' : 's'} buffer required between events - nearby event: "${nearest.occasion || 'Untitled'}" on ${dateToDateString(nearest.event_date as Date | string)}`
       )
     }
   }

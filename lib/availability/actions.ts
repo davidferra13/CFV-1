@@ -11,6 +11,7 @@ import {
   detectSessionEventConflicts,
   type PlannedSessionForConflict,
 } from '@/lib/availability/session-conflicts'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ============================================
 // SCHEMAS
@@ -420,7 +421,7 @@ export async function checkSeriesSessionConflicts(
     sessions,
     events: (events || []).map((event: any) => ({
       id: event.id,
-      event_date: String(event.event_date),
+      event_date: dateToDateString(event.event_date as Date | string),
       status: String(event.status),
       occasion: event.occasion ?? null,
       serve_time: event.serve_time ?? null,

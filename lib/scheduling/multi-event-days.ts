@@ -5,6 +5,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { dateToDateString } from '@/lib/utils/format'
 
 export interface MultiEventDay {
   date: string // ISO date string, e.g. '2026-03-15'
@@ -44,7 +45,7 @@ export async function getMultiEventDays(lookaheadDays = 90): Promise<MultiEventD
   // Group by calendar date (YYYY-MM-DD)
   const byDate = new Map<string, typeof events>()
   for (const ev of events) {
-    const key = ev.event_date.slice(0, 10)
+    const key = dateToDateString(ev.event_date as Date | string)
     if (!byDate.has(key)) byDate.set(key, [])
     byDate.get(key)!.push(ev)
   }

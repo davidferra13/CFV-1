@@ -9,6 +9,7 @@ import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { formatMinutesAsDuration } from '@/lib/events/time-tracking'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ============================================
 // 1. Outstanding Payments - events with money owed
@@ -790,7 +791,7 @@ export async function getDashboardHoursSnapshot(): Promise<DashboardHoursSnapsho
     const minutes = asPositiveMinutes(context?.minutes)
     if (!minutes) continue
 
-    const fallbackDate = row.created_at.slice(0, 10)
+    const fallbackDate = dateToDateString(row.created_at as Date | string)
     const loggedFor = coerceIsoDate(context?.logged_for, fallbackDate)
     const note =
       typeof context?.note === 'string' && context.note.trim().length > 0

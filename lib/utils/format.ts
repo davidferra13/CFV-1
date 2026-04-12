@@ -190,6 +190,16 @@ export function dateToMonthString(val: Date | string): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
 }
 
+/**
+ * Converts a Date object (or ISO string) to a YYYY-MM-DD date key.
+ * Use this instead of `value.slice(0, 10)` on postgres.js results: postgres.js 3.x
+ * returns TIMESTAMPTZ and DATE columns as JavaScript Date objects, not strings.
+ */
+export function dateToDateString(val: Date | string): string {
+  const d = val instanceof Date ? val : new Date(val)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 /** Get the current weekday name in a timezone */
 export function todayWeekday(
   opts: FormatOpts & { style?: 'long' | 'short' | 'narrow' } = {}
