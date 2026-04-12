@@ -7,6 +7,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -137,7 +138,8 @@ async function searchReceipts(
       }
 
       // Apply date filter
-      const dateStr = purchaseDate ?? row.created_at?.split('T')[0]
+      const dateStr =
+        purchaseDate ?? (row.created_at ? dateToDateString(row.created_at as Date | string) : null)
       if (filters.dateFrom && dateStr && dateStr < filters.dateFrom) return null
       if (filters.dateTo && dateStr && dateStr > filters.dateTo) return null
 
@@ -193,7 +195,7 @@ async function searchDocuments(
 
   return (data ?? [])
     .map((row: any) => {
-      const dateStr = row.created_at?.split('T')[0]
+      const dateStr = row.created_at ? dateToDateString(row.created_at as Date | string) : null
       if (filters.dateFrom && dateStr && dateStr < filters.dateFrom) return null
       if (filters.dateTo && dateStr && dateStr > filters.dateTo) return null
 

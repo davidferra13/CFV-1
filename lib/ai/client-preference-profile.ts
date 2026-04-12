@@ -9,6 +9,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from './parse-ollama'
 import { z } from 'zod'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ── Zod schema ──────────────────────────────────────────────────────────────
 
@@ -89,7 +90,7 @@ Dietary restrictions: ${client.dietary_restrictions?.join(', ') || 'None noted'}
 Allergies: ${client.allergies?.join(', ') || 'None noted'}
 What they care about: ${client.what_they_care_about ?? 'None'}
 Communication style notes: ${client.communication_style_notes ?? 'None'}
-Client since: ${client.created_at?.split('T')[0] ?? 'Unknown'}
+Client since: ${client.created_at ? dateToDateString(client.created_at as Date | string) : 'Unknown'}
 
 Event History (${events.length} events):
 ${events.map((e: any) => `- ${e.event_date ?? 'No date'}: ${e.occasion ?? 'Event'}, ${e.guest_count ?? '?'} guests, $${((e.quoted_price_cents ?? 0) / 100).toFixed(0)}, status: ${e.status}${e.special_requests ? ', requests: ' + e.special_requests : ''}${e.service_style ? ', style: ' + e.service_style : ''}`).join('\n') || '- No events yet'}
@@ -103,7 +104,7 @@ ${
 }
 
 Inquiry History (${inquiries.length} inquiries):
-${inquiries.map((i: any) => `- ${i.created_at?.split('T')[0] ?? ''}: status=${i.status}`).join('\n') || '- None'}
+${inquiries.map((i: any) => `- ${i.created_at ? dateToDateString(i.created_at as Date | string) : ''}: status=${i.status}`).join('\n') || '- None'}
 
 Return JSON with these exact fields:
 {
