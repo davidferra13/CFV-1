@@ -13,6 +13,7 @@ import { getRevenueGoalSnapshot } from '@/lib/revenue-goals/actions'
 import { getMarketIncomeSummary } from '@/lib/calendar/entry-actions'
 import { FinancialsClient } from './financials-client'
 import { Card, CardContent } from '@/components/ui/card'
+import { getFinanceSurfaceAvailability } from '@/lib/finance/surface-availability'
 
 export const metadata: Metadata = { title: 'Finance' }
 
@@ -133,6 +134,18 @@ async function FinancialsDashboard() {
 export default async function FinancialsPage() {
   await requireChef()
 
+  const surfaceAvailability = await getFinanceSurfaceAvailability().catch(() => null)
+
+  // Remove tiles that are degraded and should not be primary-promoted
+  const visibleSections = sections.map((section) => ({
+    ...section,
+    items: section.items.filter((tile) => {
+      if (tile.href === '/finance/cash-flow')
+        return surfaceAvailability?.cashFlow.showAsPrimary ?? false
+      return true
+    }),
+  }))
+
   return (
     <div className="space-y-10">
       {/* Compatibility notice */}
@@ -147,7 +160,7 @@ export default async function FinancialsPage() {
       </div>
 
       {/* Nav tiles render immediately */}
-      {sections.map((section) => (
+      {visibleSections.map((section) => (
         <div key={section.heading}>
           <h2 className="text-xs font-semibold uppercase tracking-widest text-stone-500 mb-3">
             {section.heading}

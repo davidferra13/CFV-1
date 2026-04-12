@@ -412,7 +412,7 @@ async function getCheckIn(chefId: string, onboarding: OnboardingRow): Promise<st
 
 // ─── Seasonal Opener ──────────────────────────────────────────────────────────
 
-export function getSeasonalOpener(): string {
+export async function getSeasonalOpener(): Promise<string> {
   const now = new Date()
   const month = now.getMonth() // 0-11
   const dow = now.getDay() // 0=Sun
@@ -444,7 +444,7 @@ export function getSeasonalOpener(): string {
 
 // ─── Relationship Tenure ──────────────────────────────────────────────────────
 
-export function getRelationshipTenure(createdAt: string): RelationshipTenure {
+export async function getRelationshipTenure(createdAt: string): Promise<RelationshipTenure> {
   const created = new Date(createdAt)
   const now = new Date()
   const daysOld = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24))
@@ -515,7 +515,7 @@ export async function getCuratedGreeting(
     }
 
     // 4. Seasonal opener (once per day per new conversation)
-    const seasonal = getSeasonalOpener()
+    const seasonal = await getSeasonalOpener()
     return { isCurated: true, text: seasonal, quickReplies: [] }
   } catch {
     return null
@@ -619,7 +619,7 @@ export async function buildDynamicPersonalityBlock(opts: PersonalityBlockOptions
     }
 
     // Tenure tone adjustment
-    const tenure = getRelationshipTenure(chefCreatedAt)
+    const tenure = await getRelationshipTenure(chefCreatedAt)
     parts.push(`\n${TENURE_ADJUSTMENTS[tenure]}`)
 
     // Empty state encouragement (injected as facts for the LLM)
@@ -661,7 +661,7 @@ export async function buildDynamicPersonalityBlock(opts: PersonalityBlockOptions
  * Advances stage from toured -> first_interaction.
  * Fire-and-forget, non-blocking.
  */
-export function trackFirstInteraction(chefId: string, stage: OnboardingStage): void {
+export async function trackFirstInteraction(chefId: string, stage: OnboardingStage): Promise<void> {
   if (stage !== 'toured') return
   advanceOnboarding(chefId, 'first_interaction').catch(() => {})
 }
