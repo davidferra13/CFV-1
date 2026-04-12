@@ -133,7 +133,7 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
       ].filter(Boolean)
       eventDetails = {
         occasion: event.occasion,
-        eventDate: event.event_date,
+        eventDate: event.event_date ? dateToDateString(event.event_date as Date | string) : null,
         guestCount: event.guest_count,
         location: locationParts.length > 0 ? locationParts.join(', ') : null,
         serviceStyle: event.service_style,
@@ -256,7 +256,7 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
       depositRequired: quote.deposit_required,
       depositAmountCents: quote.deposit_amount_cents,
       depositPercentage: quote.deposit_percentage,
-      validUntil: quote.valid_until,
+      validUntil: quote.valid_until ? dateToDateString(quote.valid_until as Date | string) : null,
       pricingNotes: quote.pricing_notes,
       sentAt: quote.sent_at,
     },
@@ -353,7 +353,7 @@ export async function fetchQuoteDocumentDataByTenant(
       ].filter(Boolean)
       eventDetails = {
         occasion: event.occasion,
-        eventDate: event.event_date,
+        eventDate: event.event_date ? dateToDateString(event.event_date as Date | string) : null,
         guestCount: event.guest_count,
         location: locationParts.length > 0 ? locationParts.join(', ') : null,
         serviceStyle: event.service_style,
@@ -470,7 +470,7 @@ export async function fetchQuoteDocumentDataByTenant(
       depositRequired: quote.deposit_required,
       depositAmountCents: quote.deposit_amount_cents,
       depositPercentage: quote.deposit_percentage,
-      validUntil: quote.valid_until,
+      validUntil: quote.valid_until ? dateToDateString(quote.valid_until as Date | string) : null,
       pricingNotes: quote.pricing_notes,
       sentAt: quote.sent_at,
     },
