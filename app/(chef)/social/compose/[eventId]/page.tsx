@@ -33,7 +33,7 @@ export default async function SocialComposePage({ params }: PageProps) {
       `
       id, occasion, event_date, guest_count, service_style,
       location_city, course_count, status,
-      clients!inner(first_name, last_name)
+      clients!inner(full_name)
     `
     )
     .eq('id', params.eventId)
@@ -48,9 +48,7 @@ export default async function SocialComposePage({ params }: PageProps) {
     getEventSocialPosts(params.eventId),
   ])
 
-  const clientName = event.clients
-    ? `${event.clients.first_name ?? ''} ${event.clients.last_name ?? ''}`.trim()
-    : ''
+  const clientName = event.clients?.full_name ?? ''
 
   const eventTitle = [
     event.occasion ?? 'Event',
