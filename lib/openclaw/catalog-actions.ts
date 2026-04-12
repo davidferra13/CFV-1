@@ -986,7 +986,12 @@ export async function addCatalogIngredientToLibrary(input: {
         defaultUnit: input.defaultUnit,
         lastPriceCents: input.priceCents ?? null,
         lastPriceStore: input.priceStore ?? null,
-        lastPriceDate: input.priceCents ? new Date().toISOString().split('T')[0] : null,
+        lastPriceDate: input.priceCents
+          ? ((_d) =>
+              `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+              new Date()
+            )
+          : null,
       })
       .returning({ id: ingredients.id })
 
@@ -1266,7 +1271,7 @@ export async function addSystemIngredientToLibrary(
         ${systemIngredientId}::uuid,
         ${overrides?.priceCents ?? null},
         ${overrides?.priceCents ?? null},
-        ${overrides?.priceCents ? new Date().toISOString().split('T')[0] : null},
+        ${overrides?.priceCents ? ((_d) => `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(new Date()) : null},
         ${overrides?.vendor ?? null}
       )
       RETURNING id::text

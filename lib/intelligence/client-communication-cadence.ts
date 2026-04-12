@@ -180,7 +180,12 @@ export async function getCommunicationCadence(): Promise<CommunicationCadenceRes
       inquiryCount: data.inquiryCount,
       quoteResponseAvgDays,
       lastContactDate:
-        data.lastActivity > 0 ? new Date(data.lastActivity).toISOString().split('T')[0] : null,
+        data.lastActivity > 0
+          ? ((_d) =>
+              `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+              new Date(data.lastActivity)
+            )
+          : null,
       silentDays,
       status,
       alerts,

@@ -410,7 +410,8 @@ async function syncCore(
       }
     }
 
-    const today = new Date().toISOString().split('T')[0]
+    const _td = new Date()
+    const today = `${_td.getFullYear()}-${String(_td.getMonth() + 1).padStart(2, '0')}-${String(_td.getDate()).padStart(2, '0')}`
     let matched = 0
     let updated = 0
     let skipped = 0

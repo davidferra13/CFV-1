@@ -60,8 +60,10 @@ export async function getUpcomingEventShoppingPlan(daysAhead = 14): Promise<Even
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const today = new Date().toISOString().split('T')[0]
-  const endDate = new Date(Date.now() + daysAhead * 86400000).toISOString().split('T')[0]
+  const _n = new Date()
+  const today = `${_n.getFullYear()}-${String(_n.getMonth() + 1).padStart(2, '0')}-${String(_n.getDate()).padStart(2, '0')}`
+  const _end = new Date(_n.getFullYear(), _n.getMonth(), _n.getDate() + daysAhead)
+  const endDate = `${_end.getFullYear()}-${String(_end.getMonth() + 1).padStart(2, '0')}-${String(_end.getDate()).padStart(2, '0')}`
 
   // Step 1: Get upcoming confirmed events
   const { data: events } = await db

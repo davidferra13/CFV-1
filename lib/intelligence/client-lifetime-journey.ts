@@ -184,8 +184,9 @@ export async function getClientLifetimeJourneys(): Promise<ClientLifetimeResult 
     // Next expected event
     let nextExpected: string | null = null
     if (avgDaysBetween && lastEventDate) {
-      const next = new Date(new Date(lastEventDate).getTime() + avgDaysBetween * 86400000)
-      nextExpected = next.toISOString().split('T')[0]
+      const [_ley, _lem, _led] = (lastEventDate as string).split('-').map(Number)
+      const next = new Date(_ley, _lem - 1, _led + Math.round(avgDaysBetween))
+      nextExpected = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}-${String(next.getDate()).padStart(2, '0')}`
     }
 
     // Growth rate (per-event revenue change)
@@ -206,7 +207,10 @@ export async function getClientLifetimeJourneys(): Promise<ClientLifetimeResult 
     journeys.push({
       clientId: client.id,
       clientName: client.full_name || 'Unknown',
-      firstContactDate: new Date(firstContact).toISOString().split('T')[0],
+      firstContactDate: ((_d) =>
+        `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+        new Date(firstContact)
+      ),
       firstEventDate,
       lastEventDate,
       totalEvents: evts.length,

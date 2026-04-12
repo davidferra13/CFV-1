@@ -164,10 +164,11 @@ export async function getRebookingPredictions(): Promise<RebookingInsights | nul
     // Predict next booking date
     let predictedNextBookingDate: string | null = null
     if (avgDaysBetween > 0 && lastEventDate) {
-      const predicted = new Date(new Date(lastEventDate).getTime() + avgDaysBetween * 86400000)
+      const [_rpy, _rpm, _rpd] = (lastEventDate as string).split('-').map(Number)
+      const predicted = new Date(_rpy, _rpm - 1, _rpd + Math.round(avgDaysBetween))
       if (predicted.getTime() > now - 30 * 86400000) {
         // only show if not too far in the past
-        predictedNextBookingDate = predicted.toISOString().split('T')[0]
+        predictedNextBookingDate = `${predicted.getFullYear()}-${String(predicted.getMonth() + 1).padStart(2, '0')}-${String(predicted.getDate()).padStart(2, '0')}`
       }
     }
 
