@@ -54,6 +54,7 @@ import { toast } from 'sonner'
 import type { RemyMessage, RemyMemoryItem } from '@/lib/ai/remy-types'
 import { trackPageVisit, initSessionTimer } from '@/lib/ai/remy-activity-tracker'
 import { NEW_USER_STARTERS } from '@/lib/ai/remy-welcome'
+import { getRemyCuratedGreeting, advanceRemyTour } from '@/lib/ai/remy-personality-engine'
 
 // ─── Extracted modules ───────────────────────────────────────────────────────
 import { getStartersForPage, getThinkingMessage } from '@/lib/ai/remy-starters'
@@ -99,6 +100,9 @@ export function RemyDrawer() {
   >('chat')
   const [showCapabilities, setShowCapabilities] = useState(false)
   const [hasDecayedThisSession, setHasDecayedThisSession] = useState(false)
+  const [curatedQuickReplies, setCuratedQuickReplies] = useState<string[]>([])
+  const [lastCuratedMsgId, setLastCuratedMsgId] = useState<string | null>(null)
+  const [curatedGreetingLoaded, setCuratedGreetingLoaded] = useState(false)
 
   const drawerResizingRef = useRef<{ startX: number; startW: number } | null>(null)
   const drawerDragCleanupRef = useRef<(() => void) | null>(null)
@@ -340,6 +344,44 @@ export function RemyDrawer() {
     }
   }, [open, conversationsLoaded, loadConversationList])
 
+  // Curated greeting: inject on new conversations (replaces generic welcome for onboarded users)
+  useEffect(() => {
+    if (!open || !conversationsLoaded || curatedGreetingLoaded) return
+    // Fire when starting a fresh conversation (no messages, or only generic welcome)
+    const isEmptyOrWelcome =
+      messages.length === 0 ||
+      (messages.length === 1 && (messages[0]?.id?.startsWith('remy-welcome') ?? false))
+    if (!isEmptyOrWelcome) return
+
+    setCuratedGreetingLoaded(true)
+    getRemyCuratedGreeting()
+      .then((greeting) => {
+        if (!greeting) return
+        const msgId = `remy-curated-${Date.now()}`
+        const curatedMsg: RemyMessage = {
+          id: msgId,
+          role: 'remy',
+          content: greeting.text,
+          timestamp: new Date().toISOString(),
+        }
+        setMessages([curatedMsg])
+        setLastCuratedMsgId(msgId)
+        if (greeting.quickReplies.length > 0) {
+          setCuratedQuickReplies(greeting.quickReplies)
+        }
+      })
+      .catch(() => {})
+  }, [open, conversationsLoaded, curatedGreetingLoaded, messages, setMessages])
+
+  // Reset curated greeting state when a new conversation starts
+  useEffect(() => {
+    if (messages.length === 0) {
+      setCuratedGreetingLoaded(false)
+      setCuratedQuickReplies([])
+      setLastCuratedMsgId(null)
+    }
+  }, [messages.length])
+
   // ─── Drawer resize ─────────────────────────────────────────────────────────
 
   const startDrawerResize = useCallback(
@@ -378,6 +420,52 @@ export function RemyDrawer() {
   )
 
   // ─── Handlers ──────────────────────────────────────────────────────────────
+
+  // Handle quick-reply chip clicks (onboarding tour navigation)
+  const handleQuickReply = useCallback(
+    async (label: string) => {
+      setCuratedQuickReplies([])
+      setLastCuratedMsgId(null)
+
+      // Tour navigation actions
+      const isTourStart = label === 'Give me the tour'
+      const isTourNext = label === 'Next'
+      const isTourSkip = label === "I'll figure it out" || label === 'Skip the rest'
+
+      if (isTourSkip) {
+        advanceRemyTour('skip').catch(() => {})
+        return
+      }
+
+      if (isTourStart || isTourNext) {
+        const action = isTourStart ? 'start' : 'next'
+        try {
+          const beat = await advanceRemyTour(action)
+          if (beat) {
+            const msgId = `remy-curated-${Date.now()}`
+            const beatMsg: RemyMessage = {
+              id: msgId,
+              role: 'remy',
+              content: beat.text,
+              timestamp: new Date().toISOString(),
+            }
+            setMessages((prev) => [...prev, beatMsg])
+            setLastCuratedMsgId(msgId)
+            if (beat.quickReplies.length > 0) {
+              setCuratedQuickReplies(beat.quickReplies)
+            }
+          }
+        } catch {
+          // Non-blocking
+        }
+        return
+      }
+
+      // Regular quick reply — send as user message to Ollama
+      handleSend(label)
+    },
+    [handleSend, setMessages]
+  )
 
   const handleExport = useCallback(async () => {
     if (!currentConversationId) return
@@ -1274,6 +1362,24 @@ export function RemyDrawer() {
                     </div>
                   </div>
                 ))}
+
+                {/* Curated onboarding quick-reply chips */}
+                {curatedQuickReplies.length > 0 &&
+                  lastCuratedMsgId !== null &&
+                  messages[messages.length - 1]?.id === lastCuratedMsgId &&
+                  !loading && (
+                    <div className="flex flex-wrap gap-2 mt-2 ml-10">
+                      {curatedQuickReplies.map((label) => (
+                        <button
+                          key={label}
+                          onClick={() => handleQuickReply(label)}
+                          className="text-sm bg-stone-800 border border-stone-600 rounded-full px-3 py-1.5 hover:bg-stone-700 hover:border-stone-500 transition-colors text-stone-200"
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
 
                 {/* New-user quick action starters */}
                 {messages.length === 1 &&
