@@ -6,6 +6,7 @@
 
 import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/db/server'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ============================================
 // TYPES
@@ -124,7 +125,7 @@ export async function generate1099Report(year: number): Promise<TaxReportResult>
     entry.eventCount += 1
     entry.assignments.push({
       eventId: a.event_id,
-      eventDate: event.event_date,
+      eventDate: dateToDateString(event.event_date as Date | string),
       occasion: event.occasion ?? null,
       hours,
       payCents,

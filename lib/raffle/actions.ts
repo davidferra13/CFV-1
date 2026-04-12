@@ -8,6 +8,7 @@ import { requireChef, requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { ALIAS_EMOJIS } from './constants'
+import { dateToDateString } from '@/lib/utils/format'
 import { createClientNotification } from '@/lib/notifications/client-actions'
 import crypto from 'crypto'
 
@@ -682,8 +683,12 @@ export async function drawRaffleWinner(roundId: string): Promise<{
   const sortedByScore = [...entries].sort((a, b) => {
     if ((b.game_score ?? 0) !== (a.game_score ?? 0))
       return (b.game_score ?? 0) - (a.game_score ?? 0)
-    if (a.entry_date !== b.entry_date) return a.entry_date.localeCompare(b.entry_date)
-    return a.created_at.localeCompare(b.created_at)
+    const aEntryDate = dateToDateString(a.entry_date as Date | string)
+    const bEntryDate = dateToDateString(b.entry_date as Date | string)
+    if (aEntryDate !== bEntryDate) return aEntryDate.localeCompare(bEntryDate)
+    return dateToDateString(a.created_at as Date | string).localeCompare(
+      dateToDateString(b.created_at as Date | string)
+    )
   })
   const topScorer = sortedByScore[0]
 

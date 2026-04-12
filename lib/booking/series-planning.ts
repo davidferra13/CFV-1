@@ -1,5 +1,6 @@
 import type { ScheduleRequest } from '@/lib/booking/schedule-schema'
 import type { Database } from '@/types/database'
+import { dateToDateString } from '@/lib/utils/format'
 
 type MealSlot = Database['public']['Enums']['event_session_meal_slot']
 type ExecutionType = Database['public']['Enums']['event_session_execution_type']
@@ -166,7 +167,9 @@ export function buildSeriesSchedulePlan({
   })
 
   const sorted = [...deduped].sort((a, b) => {
-    const dateCompare = a.session_date.localeCompare(b.session_date)
+    const dateCompare = dateToDateString(a.session_date as Date | string).localeCompare(
+      dateToDateString(b.session_date as Date | string)
+    )
     if (dateCompare !== 0) return dateCompare
 
     const mealCompare = MEAL_SLOT_ORDER[a.meal_slot] - MEAL_SLOT_ORDER[b.meal_slot]

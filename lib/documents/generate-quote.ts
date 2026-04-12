@@ -8,6 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from './pdf-layout'
 import { format, parseISO } from 'date-fns'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -227,7 +228,9 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
     if (inquiry) {
       eventDetails = {
         occasion: inquiry.confirmed_occasion,
-        eventDate: inquiry.confirmed_date ? inquiry.confirmed_date.split('T')[0] : null,
+        eventDate: inquiry.confirmed_date
+          ? dateToDateString(inquiry.confirmed_date as Date | string)
+          : null,
         guestCount: inquiry.confirmed_guest_count ?? quote.guest_count_estimated,
         location: inquiry.confirmed_location,
         serviceStyle: null,
@@ -440,7 +443,9 @@ export async function fetchQuoteDocumentDataByTenant(
     if (inquiry) {
       eventDetails = {
         occasion: inquiry.confirmed_occasion,
-        eventDate: inquiry.confirmed_date ? inquiry.confirmed_date.split('T')[0] : null,
+        eventDate: inquiry.confirmed_date
+          ? dateToDateString(inquiry.confirmed_date as Date | string)
+          : null,
         guestCount: inquiry.confirmed_guest_count ?? quote.guest_count_estimated,
         location: inquiry.confirmed_location,
         serviceStyle: null,

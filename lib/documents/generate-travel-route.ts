@@ -7,6 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from './pdf-layout'
 import { format, parseISO } from 'date-fns'
+import { dateToDateString } from '@/lib/utils/format'
 import {
   LEG_TYPE_LABELS,
   LEG_STATUS_LABELS,
@@ -76,6 +77,7 @@ export async function fetchTravelRouteData(eventId: string): Promise<TravelRoute
 
       legs.push({
         ...leg,
+        leg_date: dateToDateString(leg.leg_date as Date | string),
         stops: Array.isArray(leg.stops) ? leg.stops : [],
         linked_event_ids: Array.isArray(leg.linked_event_ids) ? leg.linked_event_ids : [],
         ingredients: (ings ?? []).map((i: any) => ({
@@ -94,7 +96,7 @@ export async function fetchTravelRouteData(eventId: string): Promise<TravelRoute
     event: {
       id: event.id,
       occasion: event.occasion,
-      event_date: event.event_date,
+      event_date: dateToDateString(event.event_date as Date | string),
       location_address: event.location_address,
       location_city: event.location_city,
     },

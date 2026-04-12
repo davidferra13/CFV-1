@@ -4,6 +4,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { HeroMetricsClient } from './hero-metrics-client'
+import { dateToDateString } from '@/lib/utils/format'
 
 type HeroMetric = {
   label: string
@@ -117,13 +118,17 @@ async function getHeroMetrics(): Promise<HeroMetric[]> {
   // Bucket inquiry dates into per-day counts
   const inquirySparkData = dayStrings.map(
     (day) =>
-      (recentInquiryDates as any[]).filter((r: any) => r.created_at?.split('T')[0] === day).length
+      (recentInquiryDates as any[]).filter(
+        (r: any) => (r.created_at ? dateToDateString(r.created_at as Date | string) : null) === day
+      ).length
   )
 
   // Bucket event dates into per-day counts
   const eventSparkData = weekFutureStrings.map(
     (day) =>
-      (upcomingEventDates as any[]).filter((r: any) => r.event_date?.split('T')[0] === day).length
+      (upcomingEventDates as any[]).filter(
+        (r: any) => (r.event_date ? dateToDateString(r.event_date as Date | string) : null) === day
+      ).length
   )
 
   const revenueCents = typeof revenueResult === 'number' ? revenueResult : 0

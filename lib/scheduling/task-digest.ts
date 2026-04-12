@@ -6,6 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { dateToDateString } from '@/lib/utils/format'
 import { getChefPreferences } from '@/lib/chef/actions'
 import { getDOPSchedule } from './dop'
 import type { DOPTaskCategory, SchedulingEvent, ChefPreferences } from './types'
@@ -173,7 +174,7 @@ export async function getDOPTaskDigest(): Promise<DOPTaskDigest> {
           phase: PHASE_LABELS[phaseName] ?? phaseName,
           eventId: event.id,
           eventOccasion: event.occasion,
-          eventDate: event.event_date,
+          eventDate: dateToDateString(event.event_date as Date | string),
           clientName,
           eventHref: `/events/${event.id}`,
           scheduleHref: `/events/${event.id}/schedule`,

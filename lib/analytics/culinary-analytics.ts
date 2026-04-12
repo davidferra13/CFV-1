@@ -2,6 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -182,7 +183,11 @@ export async function getIngredientCostStats(): Promise<IngredientCostStats> {
 
   const recentlyUpdated = [...withPricing]
     .filter((i) => i.last_price_date)
-    .sort((a, b) => (b.last_price_date ?? '').localeCompare(a.last_price_date ?? ''))
+    .sort((a, b) => {
+      const aDate = a.last_price_date ? dateToDateString(a.last_price_date as Date | string) : ''
+      const bDate = b.last_price_date ? dateToDateString(b.last_price_date as Date | string) : ''
+      return bDate.localeCompare(aDate)
+    })
     .slice(0, 5)
     .map((i) => ({
       name: i.name,

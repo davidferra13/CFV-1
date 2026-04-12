@@ -447,7 +447,9 @@ export async function checkSeriesSessionConflicts(
   return {
     hasConflicts: deduped.size > 0,
     conflicts: Array.from(deduped.values()).sort((a, b) => {
-      const dateCompare = a.session_date.localeCompare(b.session_date)
+      const dateCompare = dateToDateString(a.session_date as Date | string).localeCompare(
+        dateToDateString(b.session_date as Date | string)
+      )
       if (dateCompare !== 0) return dateCompare
       return a.meal_slot.localeCompare(b.meal_slot)
     }),
