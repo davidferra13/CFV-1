@@ -86,6 +86,11 @@ export function MessageLogForm({
     <form onSubmit={handleSubmit} className="space-y-3">
       {error && <Alert variant="error">{error}</Alert>}
 
+      <p className="text-xs text-stone-500">
+        Log any message that happened outside ChefFlow (text, email, phone call, DM). It will appear
+        in the communication timeline and can be edited or deleted after saving.
+      </p>
+
       {/* Direction Toggle */}
       <div className="flex gap-1 p-1 bg-stone-800 rounded-lg w-fit">
         <button
