@@ -16,7 +16,7 @@ export async function confirmPreEventChecklist(eventId: string) {
   // Verify ownership and status
   const { data: event } = await db
     .from('events')
-    .select('id, status, client_id, tenant_id')
+    .select('id, status, client_id, tenant_id, pre_event_checklist_confirmed_at')
     .eq('id', eventId)
     .eq('client_id', user.entityId)
     .single()
@@ -24,6 +24,11 @@ export async function confirmPreEventChecklist(eventId: string) {
   if (!event) throw new Error('Event not found')
   if (!['confirmed', 'paid', 'in_progress'].includes(event.status)) {
     throw new Error('Pre-event checklist is only available for confirmed events')
+  }
+
+  // Idempotent: if already confirmed, return success without overwriting the timestamp
+  if (event.pre_event_checklist_confirmed_at) {
+    return { success: true as const }
   }
 
   const { error } = await db
@@ -34,6 +39,7 @@ export async function confirmPreEventChecklist(eventId: string) {
     })
     .eq('id', eventId)
     .eq('client_id', user.entityId)
+    .is('pre_event_checklist_confirmed_at', null)
 
   if (error) throw new Error('Failed to confirm checklist')
 
