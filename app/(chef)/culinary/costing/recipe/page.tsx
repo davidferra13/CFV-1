@@ -59,7 +59,7 @@ export default async function RecipeCostPage() {
             {withCost.length > 0 ? `$${(maxCostCents / 100).toFixed(2)}` : '-'}
           </p>
           <p className="text-sm text-stone-500 mt-1 flex items-center justify-center gap-1">
-            Most expensive recipe
+            Most expensive (est.)
             <CostingHelpPopover topic="food_cost_pct" />
           </p>
         </Card>
@@ -68,7 +68,7 @@ export default async function RecipeCostPage() {
             {avgCostCents > 0 ? `$${(avgCostCents / 100).toFixed(2)}` : '-'}
           </p>
           <p className="text-sm text-stone-500 mt-1 flex items-center justify-center gap-1">
-            Average recipe cost
+            Average cost (est.)
             <CostingHelpPopover topic="per_person" />
           </p>
         </Card>
@@ -76,6 +76,13 @@ export default async function RecipeCostPage() {
           <p className="text-2xl font-bold text-stone-100">{noCost.length}</p>
           <p className="text-sm text-stone-500 mt-1">Recipes missing pricing</p>
         </Card>
+      </div>
+
+      {/* Unit mismatch warning - cost calculation assumes recipe unit == price unit */}
+      <div className="rounded-lg border border-amber-900/40 bg-amber-950/20 px-4 py-3 text-sm text-amber-400/90">
+        Costs are estimates. If a recipe uses cups or tablespoons but the ingredient is priced per
+        gram or ounce, the number will be wrong. Open a recipe to see per-ingredient accuracy
+        warnings.
       </div>
 
       {withCost.length === 0 ? (
@@ -99,7 +106,7 @@ export default async function RecipeCostPage() {
                 <TableHead>Recipe</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Ingredients</TableHead>
-                <TableHead>Cost</TableHead>
+                <TableHead>Est. Cost</TableHead>
                 <TableHead className="w-32">Relative cost</TableHead>
                 <TableHead>Priced?</TableHead>
               </TableRow>
