@@ -71,11 +71,14 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
   let menuItemNames: string[] = []
 
   if (menuIds.length > 0) {
+    const tenantId = user.tenantId!
     const { data: items } = await (db
-      .from('menu_items' as any)
+      .from('dishes' as any)
       .select('name')
-      .in('menu_id', menuIds) as any)
-    menuItemNames = ((items ?? []) as Array<{ name: string }>).map((i) => i.name)
+      .eq('tenant_id', tenantId)
+      .in('menu_id', menuIds)
+      .not('name', 'is', null) as any)
+    menuItemNames = ((items ?? []) as Array<{ name: string }>).map((i) => i.name).filter(Boolean)
   }
 
   const eventName = (event as any).occasion ?? 'Event'
