@@ -32,6 +32,8 @@ import {
   getPublicCharityImpact,
 } from '@/lib/credentials/actions'
 import { getPublicPortfolio } from '@/lib/events/photo-actions'
+import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
+import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 
 type Props = { params: { slug: string } }
 
@@ -664,6 +666,11 @@ export default async function ChefProfilePage({ params }: Props) {
                 </p>
               )}
           </div>
+          <PublicSecondaryEntryCluster
+            links={PUBLIC_SECONDARY_ENTRY_CONFIG.chef_profile}
+            heading="Not sure yet?"
+            theme="dark"
+          />
         </div>
       </section>
     </div>

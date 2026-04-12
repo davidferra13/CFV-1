@@ -1,6 +1,6 @@
 # Spec: Alternate Entry Points And Support Visibility
 
-> **Status:** ready
+> **Status:** verified
 > **Priority:** P1 (next up)
 > **Depends on:** `p1-navigation-and-cta-continuity.md` (ready), `p1-operational-reassurance-and-what-happens-next.md` (ready), `p1-buyer-education-and-pre-decision-guidance.md` (ready)
 > **Estimated complexity:** medium (7-9 files)
@@ -9,10 +9,11 @@
 
 _Every status change, every claim, every verification gets a row. This is the audit trail._
 
-| Event         | Date                 | Agent/Session | Commit |
-| ------------- | -------------------- | ------------- | ------ |
-| Created       | 2026-04-03 18:35 EDT | Codex         |        |
-| Status: ready | 2026-04-03 18:35 EDT | Codex         |        |
+| Event            | Date                 | Agent/Session         | Commit  |
+| ---------------- | -------------------- | --------------------- | ------- |
+| Created          | 2026-04-03 18:35 EDT | Codex                 |         |
+| Status: ready    | 2026-04-03 18:35 EDT | Codex                 |         |
+| Status: verified | 2026-04-12           | Builder (Claude Code) | pending |
 
 ---
 

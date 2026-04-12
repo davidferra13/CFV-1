@@ -572,7 +572,10 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
           </Button>
 
           <p className="text-xs text-stone-400 text-center">
-            By submitting, you agree to be contacted about your inquiry.
+            By submitting, you agree to be contacted about your inquiry.{' '}
+            <a href="/trust" className="underline hover:text-stone-300 transition-colors">
+              How ChefFlow protects your data.
+            </a>
           </p>
         </form>
       </CardContent>

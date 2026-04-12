@@ -3,6 +3,8 @@ import { PublicPageView } from '@/components/analytics/public-page-view'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import { LAUNCH_MODE, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
 import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
+import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
+import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -154,26 +156,33 @@ export default function TrustPage() {
       </section>
 
       <section className="border-y border-stone-700/50 bg-stone-900/40">
-        <div className="mx-auto w-full max-w-5xl px-4 py-14 text-center sm:px-6 md:py-20 lg:px-8">
-          <h2 className="fluid-display-lg font-display tracking-tight text-stone-100">
-            Want to test these workflows in your own operation?
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-stone-300">
-            {isBeta
-              ? 'Join the beta waitlist and work directly with product during setup.'
-              : 'Sign up free and validate inquiry, event, and payout workflows end-to-end.'}
-          </p>
-          <TrackedLink
-            href={buildMarketingSignupHref({
-              sourcePage: 'trust',
-              sourceCta: 'bottom_primary',
-            })}
-            analyticsName="trust_primary_cta"
-            analyticsProps={{ launch_mode: LAUNCH_MODE }}
-            className="mt-8 inline-flex items-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
-          >
-            {PRIMARY_SIGNUP_LABEL}
-          </TrackedLink>
+        <div className="mx-auto w-full max-w-5xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
+          <div className="text-center">
+            <h2 className="fluid-display-lg font-display tracking-tight text-stone-100">
+              Want to test these workflows in your own operation?
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-stone-300">
+              {isBeta
+                ? 'Join the beta waitlist and work directly with product during setup.'
+                : 'Sign up free and validate inquiry, event, and payout workflows end-to-end.'}
+            </p>
+            <TrackedLink
+              href={buildMarketingSignupHref({
+                sourcePage: 'trust',
+                sourceCta: 'bottom_primary',
+              })}
+              analyticsName="trust_primary_cta"
+              analyticsProps={{ launch_mode: LAUNCH_MODE }}
+              className="mt-8 inline-flex items-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+            >
+              {PRIMARY_SIGNUP_LABEL}
+            </TrackedLink>
+          </div>
+          <PublicSecondaryEntryCluster
+            links={PUBLIC_SECONDARY_ENTRY_CONFIG.trust}
+            heading="Looking to book a private chef?"
+            theme="dark"
+          />
         </div>
       </section>
     </div>

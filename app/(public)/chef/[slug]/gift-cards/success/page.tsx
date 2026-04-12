@@ -5,6 +5,8 @@
 import { getGiftCardPurchaseBySession } from '@/lib/loyalty/gift-card-purchase-actions'
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
+import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 
 export const metadata: Metadata = { title: 'Gift Card Sent' }
 
@@ -84,6 +86,11 @@ export default async function GiftCardSuccessPage({
               Buy another gift card
             </Link>
           </div>
+          <PublicSecondaryEntryCluster
+            links={PUBLIC_SECONDARY_ENTRY_CONFIG.gift_cards_success}
+            heading="What's next?"
+            theme="dark"
+          />
         </div>
       </div>
     </div>

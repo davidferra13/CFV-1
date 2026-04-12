@@ -7,6 +7,8 @@ import { getPublicChefProfile } from '@/lib/profile/actions'
 import { notFound } from 'next/navigation'
 import { GiftCardPurchaseForm } from './gift-card-form'
 import type { Metadata } from 'next'
+import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
+import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 
 type Props = { params: { slug: string } }
 
@@ -52,6 +54,11 @@ export default async function GiftCardStorePage({ params }: Props) {
           tenantId={chef.id}
           chefSlug={params.slug}
           chefName={chef.display_name}
+        />
+        <PublicSecondaryEntryCluster
+          links={PUBLIC_SECONDARY_ENTRY_CONFIG.gift_cards}
+          heading="Have questions?"
+          theme="dark"
         />
       </div>
     </div>

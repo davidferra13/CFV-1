@@ -22,6 +22,8 @@ import {
   getPublicWorkHistory,
 } from '@/lib/credentials/actions'
 import { createServerClient } from '@/lib/db/server'
+import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
+import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 
 type Props = { params: { slug: string } }
 
@@ -449,20 +451,19 @@ export default async function InquirePage({ params }: Props) {
                     })}.`
                   : ' Please check back soon for updated availability.'}
               </p>
-              <div className="mt-6 flex items-center justify-center gap-3">
+              <div className="mt-6">
                 <Link
                   href={`/chef/${publicSlug}`}
                   className="rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white"
                 >
                   Back to profile
                 </Link>
-                <Link
-                  href="/contact"
-                  className="rounded-lg border border-stone-600 px-4 py-2.5 text-sm font-medium text-stone-300"
-                >
-                  Contact ChefFlow
-                </Link>
               </div>
+              <PublicSecondaryEntryCluster
+                links={PUBLIC_SECONDARY_ENTRY_CONFIG.single_chef_inquiry}
+                heading="Other options"
+                theme="dark"
+              />
             </Card>
           </div>
         )}

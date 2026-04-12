@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import { BookDinnerForm } from './_components/book-dinner-form'
+import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
+import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -39,6 +41,10 @@ export default function BookPage() {
       {/* Form */}
       <section className="mx-auto max-w-2xl px-4 pb-20 sm:px-6 lg:px-8">
         <BookDinnerForm />
+        <PublicSecondaryEntryCluster
+          links={PUBLIC_SECONDARY_ENTRY_CONFIG.open_booking}
+          theme="dark"
+        />
       </section>
 
       {/* Trust footer */}

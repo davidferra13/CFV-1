@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
+import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
+import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 import { getBusinessHoursForChef } from '@/lib/communication/business-hours'
 import { buildContactSupportInfo } from '@/lib/contact/public-support'
 import { createServerClient } from '@/lib/db/server'
@@ -100,6 +102,11 @@ export default async function ContactPage() {
           <Suspense>
             <ContactForm supportInfo={supportInfo} />
           </Suspense>
+          <PublicSecondaryEntryCluster
+            links={PUBLIC_SECONDARY_ENTRY_CONFIG.contact}
+            heading="Ready to move forward?"
+            theme="dark"
+          />
         </div>
       </section>
     </main>
