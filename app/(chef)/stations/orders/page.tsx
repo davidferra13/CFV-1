@@ -21,9 +21,12 @@ export default async function OrdersPage({
   const pendingOrders = await listPendingOrders()
 
   // For history tab
-  const today = new Date().toISOString().split('T')[0]
+  const _ord = new Date()
+  const today = `${_ord.getFullYear()}-${String(_ord.getMonth() + 1).padStart(2, '0')}-${String(_ord.getDate()).padStart(2, '0')}`
+  const _orw = new Date(_ord.getFullYear(), _ord.getMonth(), _ord.getDate() - 7)
   const startDate =
-    searchParams.start ?? new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    searchParams.start ??
+    `${_orw.getFullYear()}-${String(_orw.getMonth() + 1).padStart(2, '0')}-${String(_orw.getDate()).padStart(2, '0')}`
   const endDate = searchParams.end ?? today
   const history = tab === 'history' ? await getOrderHistory(startDate, endDate) : []
 

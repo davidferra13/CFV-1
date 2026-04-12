@@ -21,7 +21,12 @@ export default async function PrintClipboardPage({
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const date = searchParams.date ?? new Date().toISOString().split('T')[0]
+  const date =
+    searchParams.date ??
+    ((_cpp) =>
+      `${_cpp.getFullYear()}-${String(_cpp.getMonth() + 1).padStart(2, '0')}-${String(_cpp.getDate()).padStart(2, '0')}`)(
+      new Date()
+    )
 
   // Resolve all print context - attribution, default mode, custom footer
   const { generatedBy, printMode: defaultMode, customFooter } = await getDocumentContext()

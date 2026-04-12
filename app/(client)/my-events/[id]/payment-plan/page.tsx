@@ -31,7 +31,12 @@ export default async function PaymentPlanPage({ params }: { params: { id: string
   }
 
   const eventTotalCents = eventResult?.quoted_price_cents ?? 0
-  const eventDate = eventResult?.event_date ?? new Date().toISOString().split('T')[0]
+  const eventDate =
+    eventResult?.event_date ??
+    ((_ppd) =>
+      `${_ppd.getFullYear()}-${String(_ppd.getMonth() + 1).padStart(2, '0')}-${String(_ppd.getDate()).padStart(2, '0')}`)(
+      new Date()
+    )
   const eventOccasion = eventResult?.occasion ?? 'Your Event'
 
   return (

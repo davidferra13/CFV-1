@@ -32,7 +32,12 @@ export default async function ClipboardPage({
     notFound()
   }
 
-  const date = searchParams.date ?? new Date().toISOString().split('T')[0]
+  const date =
+    searchParams.date ??
+    ((_cp) =>
+      `${_cp.getFullYear()}-${String(_cp.getMonth() + 1).padStart(2, '0')}-${String(_cp.getDate()).padStart(2, '0')}`)(
+      new Date()
+    )
   const isPrint = searchParams.print === 'true'
 
   const entries = await getClipboardForDate(params.id, date)

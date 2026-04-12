@@ -14,7 +14,8 @@ export default async function StaffSchedulePage() {
   const assignments = await getMyAssignments()
 
   // Separate past and upcoming
-  const today = new Date().toISOString().split('T')[0]
+  const _ssch = new Date()
+  const today = `${_ssch.getFullYear()}-${String(_ssch.getMonth() + 1).padStart(2, '0')}-${String(_ssch.getDate()).padStart(2, '0')}`
   const upcoming = assignments.filter((a) => {
     const eventDate = a.event?.event_date
     return eventDate && eventDate >= today

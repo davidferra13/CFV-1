@@ -135,7 +135,8 @@ export async function POST(request: NextRequest) {
     // Mid-service alert: if chef has an in_progress event today, surface via Remy (non-blocking)
     if (clientId && tenantId && !insertError) {
       try {
-        const today = new Date().toISOString().split('T')[0]
+        const _twt = new Date()
+        const today = `${_twt.getFullYear()}-${String(_twt.getMonth() + 1).padStart(2, '0')}-${String(_twt.getDate()).padStart(2, '0')}`
         const { data: activeEvent } = await (db as any)
           .from('events')
           .select('id, occasion')

@@ -6,7 +6,8 @@ export default async function GanttPage() {
   await requireChef()
 
   // Get today's date for default filter
-  const today = new Date().toISOString().split('T')[0]
+  const _tgp = new Date()
+  const today = `${_tgp.getFullYear()}-${String(_tgp.getMonth() + 1).padStart(2, '0')}-${String(_tgp.getDate()).padStart(2, '0')}`
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 p-4">

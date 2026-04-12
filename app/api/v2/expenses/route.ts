@@ -99,7 +99,12 @@ export const POST = withApiAuth(
         category: input.category,
         description: input.description,
         vendor: input.vendor,
-        expense_date: input.expense_date ?? new Date().toISOString().split('T')[0],
+        expense_date:
+          input.expense_date ??
+          ((_ed) =>
+            `${_ed.getFullYear()}-${String(_ed.getMonth() + 1).padStart(2, '0')}-${String(_ed.getDate()).padStart(2, '0')}`)(
+            new Date()
+          ),
         receipt_url: input.receipt_url,
         is_reimbursable: input.is_reimbursable ?? false,
         payment_method: input.payment_method,

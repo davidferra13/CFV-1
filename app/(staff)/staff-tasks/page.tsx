@@ -13,7 +13,8 @@ export const metadata: Metadata = { title: 'Tasks' }
 export default async function StaffTasksPage() {
   const user = await requireStaff()
   const groupedTasks = await getMyTasksGroupedByDate()
-  const today = new Date().toISOString().split('T')[0]
+  const _stk = new Date()
+  const today = `${_stk.getFullYear()}-${String(_stk.getMonth() + 1).padStart(2, '0')}-${String(_stk.getDate()).padStart(2, '0')}`
 
   const dateKeys = Object.keys(groupedTasks).sort()
 

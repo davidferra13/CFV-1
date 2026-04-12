@@ -26,11 +26,10 @@ export default async function StaffDashboardPage({
 
   const showTomorrow = searchParams.view === 'tomorrow'
   const now = new Date()
-  const tomorrow = new Date(now)
-  tomorrow.setDate(tomorrow.getDate() + 1)
+  const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
 
-  const today = now.toISOString().split('T')[0]
-  const tomorrowDate = tomorrow.toISOString().split('T')[0]
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  const tomorrowDate = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`
   const activeDate = showTomorrow ? tomorrowDate : today
 
   const todayFormatted = (showTomorrow ? tomorrow : now).toLocaleDateString('en-US', {

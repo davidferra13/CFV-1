@@ -43,7 +43,7 @@ function groupByWeek(
   for (const leg of legs) {
     const d = new Date(leg.leg_date)
     const monday = getWeekStart(d)
-    const key = monday.toISOString().split('T')[0]
+    const key = `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`
     if (!map.has(key)) {
       map.set(key, { label: formatWeekLabel(monday), monday, legs: [] })
     }
@@ -135,12 +135,11 @@ export default async function GlobalTravelPage() {
 
   // Load next 90 days of travel legs
   const today = new Date()
-  const future = new Date(today)
-  future.setDate(future.getDate() + 90)
+  const future = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 90)
 
   const legs = await getAllTravelLegs({
-    fromDate: today.toISOString().split('T')[0],
-    toDate: future.toISOString().split('T')[0],
+    fromDate: `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`,
+    toDate: `${future.getFullYear()}-${String(future.getMonth() + 1).padStart(2, '0')}-${String(future.getDate()).padStart(2, '0')}`,
   })
 
   const weekGroups = groupByWeek(legs)

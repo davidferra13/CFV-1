@@ -10,8 +10,8 @@ function getCurrentMonthWindow() {
   const now = new Date()
   const start = new Date(now.getFullYear(), now.getMonth(), 1)
   return {
-    startDate: start.toISOString().split('T')[0],
-    endDate: now.toISOString().split('T')[0],
+    startDate: `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`,
+    endDate: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`,
   }
 }
 

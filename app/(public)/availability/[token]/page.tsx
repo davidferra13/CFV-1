@@ -77,13 +77,15 @@ export default async function PublicAvailabilityPage({
 
   // Fetch events for next 60 days (only dates, no details)
   const now = new Date()
-  const sixtyDaysOut = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000)
+  const sixtyDaysOut = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 60)
+  const _liso = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   const { data: events } = await db
     .from('events')
     .select('event_date')
     .eq('tenant_id', shareToken.tenant_id)
-    .gte('event_date', now.toISOString().split('T')[0])
-    .lte('event_date', sixtyDaysOut.toISOString().split('T')[0])
+    .gte('event_date', _liso(now))
+    .lte('event_date', _liso(sixtyDaysOut))
     .not('status', 'eq', 'cancelled')
 
   const busyDates = new Set((events ?? []).map((e: any) => e.event_date))
@@ -91,8 +93,8 @@ export default async function PublicAvailabilityPage({
   // Generate calendar grid for next 60 days
   const days: { date: string; dayOfWeek: number; busy: boolean }[] = []
   for (let i = 0; i < 60; i++) {
-    const d = new Date(now.getTime() + i * 24 * 60 * 60 * 1000)
-    const dateStr = d.toISOString().split('T')[0]
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i)
+    const dateStr = _liso(d)
     days.push({
       date: dateStr,
       dayOfWeek: d.getDay(),

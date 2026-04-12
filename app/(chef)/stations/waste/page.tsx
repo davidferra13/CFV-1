@@ -32,10 +32,9 @@ export default async function WasteLogPage() {
 
   // Get last 7 days of waste
   const now = new Date()
-  const weekAgo = new Date(now)
-  weekAgo.setDate(now.getDate() - 7)
-  const startDate = weekAgo.toISOString().split('T')[0]
-  const endDate = now.toISOString().split('T')[0]
+  const weekAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7)
+  const startDate = `${weekAgo.getFullYear()}-${String(weekAgo.getMonth() + 1).padStart(2, '0')}-${String(weekAgo.getDate()).padStart(2, '0')}`
+  const endDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
   const [wasteEntries, summary]: [any, any] = await Promise.all([
     getWasteLog(startDate, endDate),

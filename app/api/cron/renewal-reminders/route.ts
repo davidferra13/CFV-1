@@ -50,10 +50,13 @@ export async function GET(request: Request) {
   try {
     const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
     const now = new Date()
-    const in7d = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-    const in30d = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-    const in90d = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-    const today = now.toISOString().split('T')[0]
+    const _rr7 = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7)
+    const in7d = `${_rr7.getFullYear()}-${String(_rr7.getMonth() + 1).padStart(2, '0')}-${String(_rr7.getDate()).padStart(2, '0')}`
+    const _rr30 = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 30)
+    const in30d = `${_rr30.getFullYear()}-${String(_rr30.getMonth() + 1).padStart(2, '0')}-${String(_rr30.getDate()).padStart(2, '0')}`
+    const _rr90 = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 90)
+    const in90d = `${_rr90.getFullYear()}-${String(_rr90.getMonth() + 1).padStart(2, '0')}-${String(_rr90.getDate()).padStart(2, '0')}`
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
     let notified = 0
     let skipped = 0

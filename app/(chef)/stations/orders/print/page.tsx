@@ -24,7 +24,8 @@ export default async function PrintOrderSheetPage({
   const printMode =
     searchParams.mode === 'thermal' ? ('thermal-80' as const) : (defaultMode ?? 'standard')
 
-  const today = new Date().toISOString().split('T')[0]
+  const _opp = new Date()
+  const today = `${_opp.getFullYear()}-${String(_opp.getMonth() + 1).padStart(2, '0')}-${String(_opp.getDate()).padStart(2, '0')}`
 
   // Load all pending order requests
   const { data: orders } = await db

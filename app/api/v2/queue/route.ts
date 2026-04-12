@@ -14,7 +14,9 @@ export const GET = withApiAuth(
       Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(Math.floor(rawLimit), 100) : 50
 
     const now = new Date().toISOString()
-    const in7days = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    const _q7 = new Date()
+    const _q7d = new Date(_q7.getFullYear(), _q7.getMonth(), _q7.getDate() + 7)
+    const in7days = `${_q7d.getFullYear()}-${String(_q7d.getMonth() + 1).padStart(2, '0')}-${String(_q7d.getDate()).padStart(2, '0')}`
 
     // Pending inquiries (new, no response)
     const { data: pendingInquiries } = await ctx.db

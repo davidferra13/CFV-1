@@ -11,13 +11,12 @@ export async function GET(request: Request) {
 
   try {
     const result = await runMonitoredCronJob('momentum-snapshot', async () => {
-      const today = new Date().toISOString().split('T')[0]
-      const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split('T')[0]
-      const oneYearAgo = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split('T')[0]
+      const _msn = new Date()
+      const today = `${_msn.getFullYear()}-${String(_msn.getMonth() + 1).padStart(2, '0')}-${String(_msn.getDate()).padStart(2, '0')}`
+      const _ms90 = new Date(_msn.getFullYear(), _msn.getMonth(), _msn.getDate() - 90)
+      const ninetyDaysAgo = `${_ms90.getFullYear()}-${String(_ms90.getMonth() + 1).padStart(2, '0')}-${String(_ms90.getDate()).padStart(2, '0')}`
+      const _ms365 = new Date(_msn.getFullYear() - 1, _msn.getMonth(), _msn.getDate())
+      const oneYearAgo = `${_ms365.getFullYear()}-${String(_ms365.getMonth() + 1).padStart(2, '0')}-${String(_ms365.getDate()).padStart(2, '0')}`
 
       const { data: chefs } = await dbAdmin.from('chefs').select('id').limit(10000)
       if (!chefs || chefs.length === 0) {

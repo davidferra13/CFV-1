@@ -27,7 +27,13 @@ export const POST = withApiAuth(
       .insert({
         tenant_id: ctx.tenantId,
         client_id: inq.client_id,
-        event_date: inq.preferred_date || inq.event_date || new Date().toISOString().split('T')[0],
+        event_date:
+          inq.preferred_date ||
+          inq.event_date ||
+          ((_cvd) =>
+            `${_cvd.getFullYear()}-${String(_cvd.getMonth() + 1).padStart(2, '0')}-${String(_cvd.getDate()).padStart(2, '0')}`)(
+            new Date()
+          ),
         serve_time: inq.preferred_time || inq.serve_time || '18:00',
         guest_count: inq.guest_count || inq.estimated_guest_count || 10,
         occasion: inq.confirmed_occasion || inq.occasion || 'Dinner',

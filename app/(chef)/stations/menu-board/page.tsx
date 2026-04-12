@@ -70,7 +70,8 @@ async function getTodayEventWithMenu(): Promise<EventWithMenu | null> {
   const user = await requireChef()
   const db: any = createServerClient()
   const tenantId = user.tenantId!
-  const today = new Date().toISOString().split('T')[0]
+  const _mbp = new Date()
+  const today = `${_mbp.getFullYear()}-${String(_mbp.getMonth() + 1).padStart(2, '0')}-${String(_mbp.getDate()).padStart(2, '0')}`
 
   // Find today's most relevant event (in_progress first, then confirmed)
   const { data: events } = await db

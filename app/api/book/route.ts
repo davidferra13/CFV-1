@@ -22,7 +22,8 @@ const BookingSchema = z.object({
     .min(1, 'Event date is required')
     .refine(
       (val) => {
-        const today = new Date().toISOString().split('T')[0]
+        const _bkd = new Date()
+        const today = `${_bkd.getFullYear()}-${String(_bkd.getMonth() + 1).padStart(2, '0')}-${String(_bkd.getDate()).padStart(2, '0')}`
         return val >= today
       },
       { message: 'Event date must be in the future' }

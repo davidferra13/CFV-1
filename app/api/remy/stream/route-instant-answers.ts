@@ -441,7 +441,8 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
           text: 'Your task list is clear - nothing pending. 🙌 Focus on what matters most today.',
         }
       }
-      const today = new Date().toISOString().split('T')[0]
+      const _ria = new Date()
+      const today = `${_ria.getFullYear()}-${String(_ria.getMonth() + 1).padStart(2, '0')}-${String(_ria.getDate()).padStart(2, '0')}`
       const overdue = ctx.activeTodos.filter((t) => t.dueDate && t.dueDate < today)
       const dueToday = ctx.activeTodos.filter((t) => t.dueDate === today)
       const upcoming = ctx.activeTodos.filter((t) => !t.dueDate || t.dueDate > today)

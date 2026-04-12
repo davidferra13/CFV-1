@@ -1661,7 +1661,10 @@ async function handlePayoutEvent(event: Stripe.Event) {
         payoutAmountCents: payout.amount,
         payoutStatus: event.type === 'payout.paid' ? 'paid' : 'failed',
         arrivalDate: payout.arrival_date
-          ? new Date(payout.arrival_date * 1000).toISOString().split('T')[0]
+          ? ((_pad) =>
+              `${_pad.getFullYear()}-${String(_pad.getMonth() + 1).padStart(2, '0')}-${String(_pad.getDate()).padStart(2, '0')}`)(
+              new Date(payout.arrival_date * 1000)
+            )
           : undefined,
       },
     })

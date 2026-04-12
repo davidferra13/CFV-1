@@ -32,7 +32,8 @@ export default async function StationDetailPage({ params }: { params: { id: stri
 
   const lastHandoff = await getLastShiftHandoff(params.id)
 
-  const today = new Date().toISOString().split('T')[0]
+  const _sip = new Date()
+  const today = `${_sip.getFullYear()}-${String(_sip.getMonth() + 1).padStart(2, '0')}-${String(_sip.getDate()).padStart(2, '0')}`
   const totalComponents = (station.station_menu_items ?? []).reduce(
     (sum: number, mi: any) => sum + (mi.station_components?.length ?? 0),
     0

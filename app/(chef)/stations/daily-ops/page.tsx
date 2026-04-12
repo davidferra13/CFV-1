@@ -140,7 +140,8 @@ function StationCard({ station }: { station: StationSnapshot }) {
 
 export default async function DailyOpsPage() {
   await requireChef()
-  const today = new Date().toISOString().split('T')[0]
+  const _dop = new Date()
+  const today = `${_dop.getFullYear()}-${String(_dop.getMonth() + 1).padStart(2, '0')}-${String(_dop.getDate()).padStart(2, '0')}`
   const [data, shiftNotes, activePrepTimers] = await Promise.all([
     getDailyOpsData(),
     getShiftNotes(today),

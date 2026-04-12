@@ -25,7 +25,8 @@ export default async function StaffStationPage({ searchParams }: Props) {
   const user = await requireStaff()
   const stations = await getMyStations()
 
-  const today = new Date().toISOString().split('T')[0]
+  const _ssp = new Date()
+  const today = `${_ssp.getFullYear()}-${String(_ssp.getMonth() + 1).padStart(2, '0')}-${String(_ssp.getDate()).padStart(2, '0')}`
   const selectedDate = searchParams.date ?? today
   const selectedStationId = searchParams.id ?? stations[0]?.id
 
@@ -138,13 +139,13 @@ export default async function StaffStationPage({ searchParams }: Props) {
 }
 
 function prevDate(dateStr: string): string {
-  const d = new Date(dateStr + 'T00:00:00')
-  d.setDate(d.getDate() - 1)
-  return d.toISOString().split('T')[0]
+  const [_py, _pm, _pd] = dateStr.split('-').map(Number)
+  const d = new Date(_py, _pm - 1, _pd - 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 function nextDate(dateStr: string): string {
-  const d = new Date(dateStr + 'T00:00:00')
-  d.setDate(d.getDate() + 1)
-  return d.toISOString().split('T')[0]
+  const [_ny, _nm, _nd] = dateStr.split('-').map(Number)
+  const d = new Date(_ny, _nm - 1, _nd + 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }

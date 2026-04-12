@@ -18,7 +18,8 @@ export default async function TasksPage({ searchParams }: { searchParams: { date
   const user = await requireChef()
   await requireFocusAccess()
 
-  const today = new Date().toISOString().split('T')[0]
+  const _tkp = new Date()
+  const today = `${_tkp.getFullYear()}-${String(_tkp.getMonth() + 1).padStart(2, '0')}-${String(_tkp.getDate()).padStart(2, '0')}`
   const selectedDate = searchParams.date ?? today
 
   // Generate any recurring tasks for this date (idempotent)
