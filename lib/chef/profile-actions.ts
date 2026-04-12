@@ -282,7 +282,7 @@ export async function uploadChefLogo(formData: FormData): Promise<{ success: tru
     throw new Error('Failed to upload logo')
   }
 
-  const { data: publicUrlData } = db.storage.from(CHEF_LOGOS_BUCKET).getPublicUrl(storagePath)
+  const { data: publicUrlData } = await db.storage.from(CHEF_LOGOS_BUCKET).getPublicUrl(storagePath)
 
   const publicUrl = publicUrlData.publicUrl
 

@@ -385,7 +385,9 @@ export async function getGuestVisibleEventsMissingDinnerCircles(): Promise<{
     .in('event_id', eventIds)
     .eq('is_active', true)
 
-  const eventIdsWithCircles = new Set((existingGroups ?? []).map((group) => group.event_id))
+  const eventIdsWithCircles = new Set(
+    (existingGroups ?? []).map((group: { event_id: string }) => group.event_id)
+  )
   const missingEventIds = eventIds.filter((eventId) => !eventIdsWithCircles.has(eventId))
 
   if (!missingEventIds.length) {
@@ -401,13 +403,15 @@ export async function getGuestVisibleEventsMissingDinnerCircles(): Promise<{
     .select('id, tenant_id, occasion, status')
     .in('id', missingEventIds)
 
-  const events = (missingEvents ?? []).map((event) => ({
-    eventId: event.id,
-    tenantId: event.tenant_id,
-    occasion: event.occasion ?? null,
-    status: event.status ?? null,
-    activeShareCount: shareCountsByEvent.get(event.id)?.activeShareCount ?? 0,
-  }))
+  const events = (missingEvents ?? []).map(
+    (event: { id: string; tenant_id: string; occasion: string | null; status: string | null }) => ({
+      eventId: event.id,
+      tenantId: event.tenant_id,
+      occasion: event.occasion ?? null,
+      status: event.status ?? null,
+      activeShareCount: shareCountsByEvent.get(event.id)?.activeShareCount ?? 0,
+    })
+  )
 
   return {
     totalGuestVisibleEvents: eventIds.length,

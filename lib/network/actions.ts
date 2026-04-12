@@ -1150,7 +1150,7 @@ export async function uploadChefProfileImage(
     throw new Error('Failed to upload profile image')
   }
 
-  const { data: publicUrlData } = db.storage
+  const { data: publicUrlData } = await db.storage
     .from(CHEF_PROFILE_IMAGES_BUCKET)
     .getPublicUrl(storagePath)
 

@@ -421,7 +421,9 @@ export async function uploadDiscoveryHeroImage(
     throw new Error('Failed to upload image')
   }
 
-  const { data: publicUrlData } = db.storage.from(CHEF_HERO_IMAGES_BUCKET).getPublicUrl(storagePath)
+  const { data: publicUrlData } = await db.storage
+    .from(CHEF_HERO_IMAGES_BUCKET)
+    .getPublicUrl(storagePath)
   const publicUrl = publicUrlData.publicUrl
 
   // Upsert only hero_image_url + updated_at to avoid wiping other fields

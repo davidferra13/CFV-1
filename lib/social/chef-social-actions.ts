@@ -816,7 +816,7 @@ export async function uploadPostMedia(
 
   if (error) throw new Error('Upload failed')
 
-  const { data: urlData } = db.storage.from(SOCIAL_MEDIA_BUCKET).getPublicUrl(path)
+  const { data: urlData } = await db.storage.from(SOCIAL_MEDIA_BUCKET).getPublicUrl(path)
   return { url: urlData.publicUrl, type: mimeToMediaType(file.type) }
 }
 

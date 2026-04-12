@@ -26,6 +26,7 @@ import type { ParsedReceipt } from '@/lib/ocr/receipt-parser'
 export async function scanAndParseReceipt(formData: FormData): Promise<{
   success: boolean
   data?: ParsedReceipt
+  rawText?: string
   error?: string
 }> {
   await requireChef()

@@ -1404,7 +1404,7 @@ export async function uploadChefJourneyPhoto(
     throw new Error('Failed to upload journal photo')
   }
 
-  const { data: publicUrlData } = db.storage
+  const { data: publicUrlData } = await db.storage
     .from(CHEF_JOURNAL_MEDIA_BUCKET)
     .getPublicUrl(storagePath)
 

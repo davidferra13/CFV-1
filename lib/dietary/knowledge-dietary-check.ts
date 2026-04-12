@@ -158,7 +158,7 @@ export async function getKnowledgeDietaryCheck(eventId: string): Promise<Knowled
     ORDER BY i.name
   `
 
-  const ingredientRows = rows as Array<{
+  const ingredientRows = rows as unknown as Array<{
     ingredient_name: string
     dietary_flags: string[]
     has_knowledge: boolean

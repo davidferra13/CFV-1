@@ -65,7 +65,7 @@ async function getChefLocation(chefId: string): Promise<string> {
     const rows = await db.execute(
       sql`SELECT home_city, home_state FROM chef_preferences WHERE chef_id = ${chefId} LIMIT 1`
     )
-    const row = rows.rows?.[0] as { home_city?: string; home_state?: string } | undefined
+    const row = (rows as any)[0] as { home_city?: string; home_state?: string } | undefined
     const parts = [row?.home_city, row?.home_state].filter(Boolean)
     return parts.join(', ')
   } catch {
