@@ -244,6 +244,9 @@ export default async function InquiriesPage({
         </div>
         <div className="flex items-center gap-2">
           <QuickLogButton />
+          <Link href="/import?mode=inquiries">
+            <Button variant="secondary">Paste from Email</Button>
+          </Link>
           <Link href="/inquiries/new">
             <Button>New Inquiry</Button>
           </Link>

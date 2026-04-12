@@ -17,7 +17,34 @@ export async function RespondNextCard() {
     return null
   }
 
-  if (queue.length === 0) return null
+  if (queue.length === 0) {
+    return (
+      <div className="rounded-lg border border-border bg-card p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">
+              Inquiries
+            </p>
+            <p className="text-sm text-muted-foreground">All caught up.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/import?mode=inquiries"
+              className="inline-block rounded-md border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-border/80 transition-colors"
+            >
+              Paste from Email
+            </Link>
+            <Link
+              href="/marketplace/capture"
+              className="inline-block rounded-md border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-border/80 transition-colors"
+            >
+              Capture Platform Inquiry
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const item = queue[0]
 
