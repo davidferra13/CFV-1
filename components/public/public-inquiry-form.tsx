@@ -327,9 +327,16 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
   }
 
   if (showSuccess) {
+    const steps = [
+      { n: '✓', label: 'Request received', sub: 'Your details are with the chef.' },
+      { n: '2', label: 'Chef reviews and responds', sub: 'Usually within 24 hours.' },
+      { n: '3', label: 'Menu and quote sent to you', sub: 'Review before committing.' },
+      { n: '4', label: 'Confirm and pay deposit', sub: 'Locks in your date.' },
+      { n: '5', label: 'Dinner', sub: 'Chef cooks, cleans up. You enjoy.' },
+    ]
     return (
       <Card className="bg-stone-900/90">
-        <CardContent className="py-12 text-center">
+        <CardContent className="py-10 text-center">
           <div className="w-16 h-16 bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg
               className="w-8 h-8 text-emerald-600"
@@ -349,11 +356,34 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
           <p className="text-stone-400 mb-6">
             {chefName} will review your details and reply within 24 hours.
           </p>
+          <div className="text-left bg-stone-800 border border-stone-700 rounded-xl px-4 py-4 mb-6">
+            <p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-3">
+              What happens next
+            </p>
+            <div className="space-y-3">
+              {steps.map((s) => (
+                <div key={s.n} className="flex items-start gap-3">
+                  <span
+                    className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5 ${s.n === '✓' ? 'bg-green-900 text-emerald-400' : 'bg-stone-700 text-stone-400'}`}
+                  >
+                    {s.n}
+                  </span>
+                  <div>
+                    <p
+                      className={`text-sm font-semibold leading-tight ${s.n === '✓' ? 'text-emerald-400' : 'text-stone-200'}`}
+                    >
+                      {s.label}
+                    </p>
+                    <p className="text-xs text-stone-500 mt-0.5">{s.sub}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
           <button
             type="button"
             onClick={() => setShowSuccess(false)}
-            className="font-medium hover:opacity-80"
-            style={{ color: primaryColor }}
+            className="text-sm font-medium text-stone-400 hover:text-stone-200"
           >
             Submit another inquiry
           </button>

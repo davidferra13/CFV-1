@@ -36,6 +36,7 @@ export async function getOutstandingPayments() {
     .from('events')
     .select('id, occasion, event_date, status, client:clients(id, full_name)')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .in('id', eventIds)
     .not('status', 'in', '("draft","cancelled")')
     .order('event_date', { ascending: true })
@@ -136,6 +137,7 @@ export async function getDashboardInquiryBudgetMix(windowDays = 90) {
     .from('inquiries')
     .select('confirmed_budget_cents, unknown_fields, created_at')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .gte('created_at', cutoff)
 
   if (error) {
@@ -221,6 +223,7 @@ export async function getDashboardEventCounts() {
     .from('events')
     .select('id, event_date, status, guest_count')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .gte('event_date', yearStart)
     .not('status', 'eq', 'cancelled')
 
@@ -285,6 +288,7 @@ export async function getMonthOverMonthRevenue() {
     .from('events')
     .select('id, event_date')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .gte('event_date', prevMonthStart)
     .lt('event_date', nextMonthStart)
     .not('status', 'eq', 'cancelled')
@@ -396,6 +400,7 @@ export async function getNextUpcomingEvent() {
     .from('events')
     .select('id, occasion, event_date, serve_time, guest_count, client:clients(full_name)')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .gt('event_date', today)
     .not('status', 'in', '("cancelled","completed")')
     .order('event_date', { ascending: true })
@@ -669,6 +674,7 @@ export async function getDashboardHoursSnapshot(): Promise<DashboardHoursSnapsho
             'event_date, time_shopping_minutes, time_prep_minutes, time_travel_minutes, time_service_minutes, time_reset_minutes'
           )
           .eq('tenant_id', user.tenantId!)
+          .eq('is_demo', false)
           .range(from, from + batchSize - 1)
 
         if (error) {
@@ -865,6 +871,7 @@ export async function getTopEventsByProfit(limit = 3): Promise<TopProfitEvent[]>
     .from('events')
     .select('id, occasion, event_date, client:clients(full_name)')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .eq('status', 'completed')
     .gte('event_date', monthStart)
     .order('event_date', { ascending: false })
@@ -914,6 +921,7 @@ export async function getMonthlyAvgHourlyRate(): Promise<number | null> {
       'id, time_shopping_minutes, time_prep_minutes, time_travel_minutes, time_service_minutes, time_reset_minutes'
     )
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .eq('status', 'completed')
     .gte('event_date', monthStart)
 
@@ -1023,6 +1031,7 @@ export async function getRevenueProjection(): Promise<RevenueProjection> {
     .from('events')
     .select('quoted_price_cents, status')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .gte('event_date', startOfMonth)
     .lte('event_date', endOfMonth)
     .neq('status', 'cancelled')
@@ -1046,6 +1055,7 @@ export async function getRevenueProjection(): Promise<RevenueProjection> {
     .from('events')
     .select('status')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .gte('created_at', sixMonthsAgo.toISOString())
 
   const totalHistorical = Math.max(historicalEvents?.length ?? 1, 1)
@@ -1165,6 +1175,7 @@ async function fetchMonthRevenue(
     .from('events')
     .select('quoted_price_cents, status')
     .eq('tenant_id', tenantId)
+    .eq('is_demo', false)
     .gte('event_date', start)
     .lte('event_date', end)
     .in('status', ['paid', 'confirmed', 'in_progress', 'completed'])
@@ -1215,6 +1226,7 @@ export async function getUnloggedEventHours(): Promise<UnloggedEvent[]> {
       'id, occasion, event_date, guest_count, service_hours, prep_hours, shopping_hours, travel_hours, client:clients(full_name)'
     )
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .in('status', ['completed', 'in_progress'])
     .gte('event_date', twoDaysAgo.toISOString().slice(0, 10))
     .lte('event_date', yesterday.toISOString().slice(0, 10))
@@ -1266,6 +1278,7 @@ export async function getEventsNeedingAAR(): Promise<EventNeedingAAR[]> {
     .from('events')
     .select('id, occasion, event_date, completed_at, client:clients(full_name)')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .eq('status', 'completed')
     .eq('aar_filed', false)
     .gte('event_date', twoDaysAgo.toISOString().slice(0, 10))
