@@ -1,12 +1,7 @@
-// DEFERRED: This file is inactive until the insurance_policies table migration
-// is applied. The 'use server' directive has been removed to prevent runtime
-// crashes from importing these functions. Re-enable once the schema exists.
-//
-// Original directive: 'use server'
+'use server'
 
-// Insurance Documentation Tracking - Server Actions (DEFERRED)
+// Insurance Documentation Tracking - Server Actions
 // CRUD for insurance_policies. All mutations are tenant-scoped via requireChef().
-// DO NOT import or call these functions until the table migration is complete.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
