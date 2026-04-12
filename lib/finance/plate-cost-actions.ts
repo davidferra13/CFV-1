@@ -150,7 +150,7 @@ export async function getPlateCostSummary(): Promise<PlateCostSummary> {
     db
       .from('expenses')
       .select('event_id, category, amount_cents')
-      .eq('chef_id', tenantId)
+      .eq('tenant_id', tenantId)
       .in('event_id', eventIds)
       .limit(50_000),
   ])
