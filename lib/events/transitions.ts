@@ -653,13 +653,49 @@ export async function transitionEvent({
       }
 
       if (toStatus === 'completed' && fromStatus === 'in_progress') {
+        // Fetch menu highlights for personalized thank-you email (non-blocking)
+        let menuHighlights: string[] = []
+        try {
+          const { data: eventMenu } = await dbAdmin
+            .from('menus')
+            .select('id')
+            .eq('event_id', eventId)
+            .eq('tenant_id', event.tenant_id)
+            .order('created_at', { ascending: true })
+            .limit(1)
+            .maybeSingle()
+
+          if (eventMenu?.id) {
+            const { data: dishes } = await dbAdmin
+              .from('dishes')
+              .select('course_name, description')
+              .eq('menu_id', eventMenu.id)
+              .eq('tenant_id', event.tenant_id)
+              .order('course_number', { ascending: true })
+              .order('sort_order', { ascending: true })
+
+            if (dishes && dishes.length > 0) {
+              menuHighlights = dishes
+                .map((d: any) => d.description || d.course_name)
+                .filter(Boolean)
+                .slice(0, 6) // Cap at 6 dishes - keep email concise
+            }
+          }
+        } catch {
+          // Menu fetch failing must never block the completion
+        }
+
         // Circle-first: post completion to circle
         try {
           const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
           const clientFirst = client.full_name?.split(' ')[0] || ''
           let thankYou = 'Thank you for a wonderful evening!'
           if (clientFirst) thankYou = `Thank you for a wonderful evening, ${clientFirst}!`
-          thankYou += " I hope everyone enjoyed the meal. I'll share photos here soon."
+          if (menuHighlights.length > 0) {
+            thankYou += ` We served ${menuHighlights.slice(0, 3).join(', ')}${menuHighlights.length > 3 ? ', and more' : ''}. I hope everyone loved it.`
+          } else {
+            thankYou += " I hope everyone enjoyed the meal. I'll share photos here soon."
+          }
 
           await circleFirstNotify({
             eventId,
@@ -679,6 +715,8 @@ export async function transitionEvent({
                       chefName,
                       occasion,
                       eventDate: event.event_date,
+                      guestCount: event.guest_count,
+                      menuHighlights,
                       receiptUrl: `/my-events/${eventId}`,
                       reviewUrl: `/my-events/${eventId}`,
                     } as any

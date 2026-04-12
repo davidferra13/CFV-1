@@ -63,7 +63,7 @@ export function ActionBar({ navFilter = '', collapsed = false }: ActionBarProps)
                   <NotificationsUnreadBadge />
                 </span>
               )}
-              {item.href === '/inquiries' && (
+              {item.href === '/events' && (
                 <span className="absolute -top-1 -right-1">
                   <InquiriesUnreadBadge />
                 </span>
@@ -105,7 +105,7 @@ export function ActionBar({ navFilter = '', collapsed = false }: ActionBarProps)
               <span className="truncate">{item.label}</span>
               {item.href === '/inbox' && <InboxUnreadBadge />}
               {item.href === '/notifications' && <NotificationsUnreadBadge />}
-              {item.href === '/inquiries' && <InquiriesUnreadBadge />}
+              {item.href === '/events' && <InquiriesUnreadBadge />}
             </Link>
           )
         })}

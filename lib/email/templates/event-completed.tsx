@@ -13,6 +13,9 @@ type EventCompletedProps = {
   eventDate: string
   receiptUrl: string
   reviewUrl: string
+  guestCount?: number | null
+  /** Dish/course names served at the event, pulled from the linked menu */
+  menuHighlights?: string[]
 }
 
 export function EventCompletedEmail({
@@ -22,17 +25,38 @@ export function EventCompletedEmail({
   eventDate,
   receiptUrl,
   reviewUrl,
+  guestCount,
+  menuHighlights,
 }: EventCompletedProps) {
+  const firstName = clientName?.split(' ')[0] || clientName
+  const guestLine =
+    guestCount && guestCount > 1
+      ? `you and your ${guestCount - 1} guest${guestCount - 1 === 1 ? '' : 's'}`
+      : 'you'
+
   return (
     <BaseLayout preview={`Thank you for dining with ${chefName}`}>
       <Text style={heading}>Thank you for a wonderful evening!</Text>
 
-      <Text style={paragraph}>Hi {clientName},</Text>
+      <Text style={paragraph}>Hi {firstName},</Text>
 
       <Text style={paragraph}>
-        Your <strong>{occasion}</strong> on {eventDate} with <strong>{chefName}</strong> is
-        complete. We hope it was an experience worth remembering.
+        {chefName} had a great time cooking for {guestLine} at your <strong>{occasion}</strong> on{' '}
+        {eventDate}. We hope it was an experience worth remembering.
       </Text>
+
+      {menuHighlights && menuHighlights.length > 0 && (
+        <>
+          <Text style={menuLabel}>What {guestLine} enjoyed:</Text>
+          <ul style={menuList}>
+            {menuHighlights.map((dish, i) => (
+              <li key={i} style={menuItem}>
+                {dish}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
 
       <Button style={primaryButton} href={receiptUrl}>
         View Your Receipt
@@ -49,7 +73,7 @@ export function EventCompletedEmail({
         Leave a Review
       </Button>
 
-      <Text style={muted}>It only takes a minute. Thank you for choosing ChefFlow!</Text>
+      <Text style={muted}>It only takes a minute. Thank you for choosing {chefName}!</Text>
     </BaseLayout>
   )
 }
@@ -97,6 +121,25 @@ const divider = {
   border: 'none',
   borderTop: '1px solid #e5e7eb',
   margin: '24px 0',
+}
+
+const menuLabel = {
+  fontSize: '14px',
+  fontWeight: '600' as const,
+  color: '#374151',
+  margin: '0 0 8px',
+}
+
+const menuList = {
+  margin: '0 0 20px',
+  paddingLeft: '20px',
+}
+
+const menuItem = {
+  fontSize: '14px',
+  lineHeight: '1.6',
+  color: '#4b5563',
+  marginBottom: '4px',
 }
 
 const muted = {
