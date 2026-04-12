@@ -6,6 +6,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
+import { dateToDateString } from '@/lib/utils/format'
 
 type SubcontractRole =
   | 'sous_chef'
@@ -417,6 +418,8 @@ export async function getExpiringCOIs(daysAhead: number = 30) {
 
   return (data ?? []).map((row: any) => ({
     ...row,
-    isExpired: row.coi_expiry_date ? row.coi_expiry_date < today : false,
+    isExpired: row.coi_expiry_date
+      ? dateToDateString(row.coi_expiry_date as Date | string) < today
+      : false,
   })) as (SubcontractAgreement & { isExpired: boolean })[]
 }
