@@ -1,6 +1,6 @@
 # Spec: Chef Getting Started Surface Consolidation
 
-> **Status:** ready
+> **Status:** verified
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** medium (3-8 files)
@@ -9,18 +9,14 @@
 
 _Every status change, every claim, every verification gets a row. This is the audit trail._
 
-| Event                 | Date             | Agent/Session   | Commit |
-| --------------------- | ---------------- | --------------- | ------ |
-| Created               | 2026-04-03 00:11 | Planner (Codex) |        |
-| Status: ready         | 2026-04-03 00:11 | Planner (Codex) |        |
-| Claimed (in-progress) |                  |                 |        |
-| Spike completed       |                  |                 |        |
-| Pre-flight passed     |                  |                 |        |
-| Build completed       |                  |                 |        |
-| Type check passed     |                  |                 |        |
-| Build check passed    |                  |                 |        |
-| Playwright verified   |                  |                 |        |
-| Status: verified      |                  |                 |        |
+| Event                 | Date             | Agent/Session    | Commit  |
+| --------------------- | ---------------- | ---------------- | ------- |
+| Created               | 2026-04-03 00:11 | Planner (Codex)  |         |
+| Status: ready         | 2026-04-03 00:11 | Planner (Codex)  |         |
+| Claimed (in-progress) | 2026-04-12       | Builder (Sonnet) |         |
+| Build completed       | 2026-04-12       | Builder (Sonnet) | 845e3b3 |
+| Type check passed     | 2026-04-12       | tsc clean        |         |
+| Status: verified      | 2026-04-12       | Builder (Sonnet) | 845e3b3 |
 
 ---
 
