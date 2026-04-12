@@ -221,6 +221,24 @@ const SECTIONS: Section[] = [
         description: 'Live board for managing event day from start to finish.',
         icon: Activity,
       },
+      {
+        label: 'Packing Checklist',
+        href: '/events',
+        description: 'Interactive pack-the-car checklist with weather and departure time.',
+        icon: Truck,
+      },
+      {
+        label: 'Briefing',
+        href: '/briefing',
+        description: "Daily run-of-show: timeline, client context, and tonight's events.",
+        icon: FileText,
+      },
+      {
+        label: 'Import from Email',
+        href: '/import?mode=inquiries',
+        description: 'Paste any inquiry email or platform message - AI parses it instantly.',
+        icon: Inbox,
+      },
     ],
   },
   {
