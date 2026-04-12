@@ -154,7 +154,7 @@ export async function getEmailSnapshot(inquiryId: string): Promise<EmailSnapshot
   }
 
   // Date
-  const confirmedDate = inquiry.confirmed_date || (event?.start_time as string | null) || null
+  const confirmedDate = inquiry.confirmed_date || (event?.serve_time as string | null) || null
   const dateInfo = formatDate(confirmedDate)
   lines.push({
     label: 'Date',
@@ -200,7 +200,7 @@ export async function getEmailSnapshot(inquiryId: string): Promise<EmailSnapshot
   }
 
   // Service time
-  const timeStr = formatTime(confirmedDate, event?.start_time || null)
+  const timeStr = formatTime(confirmedDate, event?.serve_time || null)
   lines.push({
     label: 'Service time',
     value: timeStr || 'TBD',

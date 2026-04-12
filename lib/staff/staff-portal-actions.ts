@@ -46,10 +46,10 @@ export type StaffAssignment = {
   notes: string | null
   event?: {
     id: string
-    title: string
-    date: string
-    start_time: string | null
-    end_time: string | null
+    occasion: string | null
+    event_date: string
+    serve_time: string | null
+    departure_time: string | null
     status: string
   } | null
 }
@@ -318,7 +318,7 @@ export async function getMyAssignments(): Promise<StaffAssignment[]> {
       `
       id, event_id, staff_member_id, role_override, scheduled_hours, actual_hours, status, notes,
       event:events!event_staff_assignments_event_id_fkey (
-        id, title, date, start_time, end_time, status
+        id, occasion, event_date, serve_time, departure_time, status
       )
     `
     )
@@ -350,7 +350,7 @@ export async function getMyUpcomingAssignments(): Promise<StaffAssignment[]> {
       `
       id, event_id, staff_member_id, role_override, scheduled_hours, actual_hours, status, notes,
       event:events!event_staff_assignments_event_id_fkey (
-        id, title, date, start_time, end_time, status
+        id, occasion, event_date, serve_time, departure_time, status
       )
     `
     )

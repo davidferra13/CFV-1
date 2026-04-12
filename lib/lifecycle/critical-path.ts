@@ -119,7 +119,7 @@ export async function getCriticalPath(input: {
   })
 
   // 3. Confirmed date
-  const confirmedDate = inquiry?.confirmed_date || event?.start_time || null
+  const confirmedDate = inquiry?.confirmed_date || event?.serve_time || null
   items.push({
     key: 'event_date',
     label: 'Confirmed date',
@@ -206,14 +206,14 @@ export async function getCriticalPath(input: {
   // 9. Service time
   const hasTime = !!(
     (inquiry?.confirmed_date && new Date(inquiry.confirmed_date).getHours() > 0) ||
-    event?.start_time
+    event?.serve_time
   )
   items.push({
     key: 'service_time',
     label: 'Dinner time / chef arrival',
     status: hasTime ? 'confirmed' : 'missing',
     value: hasTime
-      ? new Date(event?.start_time || inquiry?.confirmed_date).toLocaleTimeString([], {
+      ? new Date(event?.serve_time || inquiry?.confirmed_date).toLocaleTimeString([], {
           hour: '2-digit',
           minute: '2-digit',
         })
@@ -318,7 +318,7 @@ export async function getCriticalPathForGuest(
   const hasContact = !!(inquiry?.contact_email || inquiry?.contact_phone)
   addItem('Contact info', hasContact ? 'confirmed' : 'missing', hasContact ? 'On file' : null)
 
-  const confirmedDate = inquiry?.confirmed_date || event?.start_time || null
+  const confirmedDate = inquiry?.confirmed_date || event?.serve_time || null
   addItem(
     'Date',
     confirmedDate ? 'confirmed' : 'missing',
@@ -378,13 +378,13 @@ export async function getCriticalPathForGuest(
   // Service time
   const hasTime = !!(
     (inquiry?.confirmed_date && new Date(inquiry.confirmed_date).getHours() > 0) ||
-    event?.start_time
+    event?.serve_time
   )
   addItem(
     'Dinner time',
     hasTime ? 'confirmed' : 'missing',
     hasTime
-      ? new Date(event?.start_time || inquiry?.confirmed_date).toLocaleTimeString([], {
+      ? new Date(event?.serve_time || inquiry?.confirmed_date).toLocaleTimeString([], {
           hour: '2-digit',
           minute: '2-digit',
         })
