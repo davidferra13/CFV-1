@@ -70,9 +70,10 @@ export default function PrivacyPage() {
             preferences, allergy information, and any free-form notes.
           </p>
           <p className="mb-3 leading-relaxed">
-            Allergy and dietary restriction information is considered health-related data. We
-            collect it only with your explicit consent, which is requested at the point of form
-            submission. This data is used solely to help the chef prepare for your event safely.
+            Allergy and dietary restriction information is health-related data. By submitting the
+            inquiry form, you agree to our Terms and this Privacy Policy, which covers the
+            collection and use of this information. This data is used solely to help the chef
+            prepare for your event safely.
           </p>
           <p className="mb-3 leading-relaxed">
             After you submit an inquiry, the following actions occur automatically on our platform:

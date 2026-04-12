@@ -727,22 +727,17 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
             />
           </div>
 
-          {/* Submit */}
-          <button type="submit" style={buttonStyle} disabled={isSubmitting}>
-            {isSubmitting ? 'Sending...' : 'Send Inquiry'}
-          </button>
-
-          <p style={{ fontSize: '11px', color: textSecondary, textAlign: 'center', margin: 0 }}>
-            By submitting, you agree to our{' '}
+          <p style={{ fontSize: '12px', color: textSecondary, textAlign: 'center', margin: 0 }}>
+            By sending this form, you agree to our{' '}
             <a
               href="https://cheflowhq.com/terms"
               target="_blank"
               rel="noopener noreferrer"
               style={{ color: textSecondary, textDecoration: 'underline' }}
             >
-              Terms of Service
+              Terms
             </a>{' '}
-            and{' '}
+            and acknowledge our{' '}
             <a
               href="https://cheflowhq.com/privacy"
               target="_blank"
@@ -753,6 +748,11 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
             </a>
             .
           </p>
+
+          {/* Submit */}
+          <button type="submit" style={buttonStyle} disabled={isSubmitting}>
+            {isSubmitting ? 'Sending...' : 'Send'}
+          </button>
 
           {/* Powered by ChefFlow */}
           <div
