@@ -57,8 +57,7 @@ export type ClientPortalTokenState = {
 
 type ClientPortalLookupRow = {
   id: string
-  first_name: string | null
-  last_name: string | null
+  full_name: string | null
   portal_access_token: string | null
   portal_access_token_hash: string | null
   portal_token_created_at: string | null
@@ -155,7 +154,7 @@ export async function getClientPortalData(token: string): Promise<ClientPortalDa
 
   // Prefer hashed token lookup; fall back to legacy raw token rows during migration.
   const selectColumns =
-    'id, first_name, last_name, portal_access_token, portal_access_token_hash, portal_token_created_at, portal_token_expires_at, portal_token_revoked_at'
+    'id, full_name, portal_access_token, portal_access_token_hash, portal_token_created_at, portal_token_expires_at, portal_token_revoked_at'
 
   const { data: hashedClient } = await db
     .from('clients')
@@ -204,8 +203,7 @@ export async function getClientPortalData(token: string): Promise<ClientPortalDa
   }
 
   const clientId = client.id
-  const clientName =
-    [client.first_name, client.last_name].filter(Boolean).join(' ') || 'Valued Client'
+  const clientName = client.full_name || 'Valued Client'
 
   const now = new Date().toISOString()
 

@@ -6,6 +6,7 @@ import { createHash } from 'crypto'
 import { requireChef } from '@/lib/auth/get-user'
 import { verifyCsrfOrigin } from '@/lib/security/csrf'
 import { createServerClient } from '@/lib/db/server'
+import * as storage from '@/lib/storage'
 import { checkRateLimit } from '@/lib/rateLimit'
 import {
   createUploadJob,
@@ -141,23 +142,20 @@ export async function POST(request: NextRequest) {
     const db: any = createServerClient()
     const storagePath = `${tenantId}/${job.id}/${fileName}`
 
-    const { error: storageError } = await db.storage
-      .from(MENU_UPLOADS_BUCKET)
-      .upload(storagePath, file, {
+    try {
+      await storage.upload(MENU_UPLOADS_BUCKET, storagePath, buffer, {
         contentType: file.type || 'application/octet-stream',
         upsert: false,
       })
-
-    if (storageError) {
-      console.error('[menu-upload] Storage upload failed:', storageError)
-      // Non-blocking - processing can still work from the buffer
-    } else {
       // Save the storage path to the job record
       await db
         .from('menu_upload_jobs')
         .update({ file_storage_path: storagePath })
         .eq('id', job.id)
         .eq('tenant_id', tenantId)
+    } catch (storageErr) {
+      console.error('[menu-upload] Storage upload failed:', storageErr)
+      // Non-blocking - processing can still work from the buffer
     }
 
     // Process the file (extract text → parse → save)
