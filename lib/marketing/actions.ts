@@ -59,7 +59,7 @@ async function resolveAudience(
     db
       .from('clients')
       .select(baseSelect)
-      .eq('chef_id', chefEntityId)
+      .eq('tenant_id', chefEntityId)
       .eq('marketing_unsubscribed', false)
       .not('email', 'is', null)
 
@@ -74,7 +74,7 @@ async function resolveAudience(
       const { data: recentEvents } = await db
         .from('events')
         .select('client_id')
-        .eq('chef_id', chefEntityId)
+        .eq('tenant_id', chefEntityId)
         .gte('event_date', cutoff)
 
       const activeIds = new Set((recentEvents ?? []).map((r: any) => r.client_id))
@@ -117,7 +117,7 @@ async function resolveAudience(
       const { data: events } = await db
         .from('events')
         .select('client_id, event_date')
-        .eq('chef_id', chefEntityId)
+        .eq('tenant_id', chefEntityId)
         .gte('event_date', from)
         .lte('event_date', to)
 
@@ -147,7 +147,7 @@ async function resolveAudience(
       const { data: eventClients } = await db
         .from('events')
         .select('client_id')
-        .eq('chef_id', chefEntityId)
+        .eq('tenant_id', chefEntityId)
 
       const bookedIds = new Set((eventClients ?? []).map((r: any) => r.client_id))
       const { data: clients } = await base()
@@ -582,8 +582,8 @@ export async function getCampaignRevenueAttribution(campaignId: string) {
   // Events created in the 30-day window after send
   const { data: events } = await db
     .from('events')
-    .select('id, total_cents')
-    .eq('chef_id', chef.entityId)
+    .select('id, quoted_price_cents')
+    .eq('tenant_id', chef.tenantId!)
     .in('client_id', clientIds)
     .gte('created_at', campaign.sent_at)
     .lte('created_at', windowEnd)
@@ -592,7 +592,7 @@ export async function getCampaignRevenueAttribution(campaignId: string) {
   const evs = events ?? []
   return {
     bookings: evs.length,
-    revenue_cents: evs.reduce((sum: number, e: any) => sum + (e.total_cents ?? 0), 0),
+    revenue_cents: evs.reduce((sum: number, e: any) => sum + (e.quoted_price_cents ?? 0), 0),
   }
 }
 

@@ -151,11 +151,11 @@ export async function getLaborByMonth(year: number, month: number): Promise<Labo
   // Get all events in this month for the chef
   const { data: events, error: eventsError } = await db
     .from('events')
-    .select('id, title, date')
-    .eq('chef_id', user.tenantId!)
-    .gte('date', startDate)
-    .lt('date', endDate)
-    .order('date')
+    .select('id, occasion, event_date')
+    .eq('tenant_id', user.tenantId!)
+    .gte('event_date', startDate)
+    .lt('event_date', endDate)
+    .order('event_date')
 
   if (eventsError) throw new Error(`Failed to load events: ${eventsError.message}`)
 
@@ -202,8 +202,8 @@ export async function getLaborByMonth(year: number, month: number): Promise<Labo
 
     return {
       eventId: evt.id,
-      eventTitle: evt.title,
-      eventDate: evt.date,
+      eventTitle: evt.occasion,
+      eventDate: evt.event_date,
       staffCount: agg.staffCount,
       totalHours: agg.totalHours,
       totalLaborCostCents: agg.totalCents,

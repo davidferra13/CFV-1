@@ -218,7 +218,7 @@ export async function getAllergenRiskSummary(eventId: string) {
     .from('events')
     .select('id, client_id, menu_id')
     .eq('id', eventId)
-    .eq('chef_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .single()
 
   if (evErr || !event) throw new Error('Event not found')

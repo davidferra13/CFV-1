@@ -169,7 +169,7 @@ export async function draftPersonalizedOutreach(recipientId: string): Promise<Pe
   const { data: lastEvent } = await db
     .from('events')
     .select('occasion, event_date, service_style')
-    .eq('chef_id', chef.entityId)
+    .eq('tenant_id', chef.tenantId!)
     .eq('client_id', recipient.client_id)
     .not('status', 'in', '("cancelled","draft")')
     .order('event_date', { ascending: false })
