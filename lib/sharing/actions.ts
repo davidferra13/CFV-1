@@ -3515,6 +3515,63 @@ export async function createGuestFeedbackForEvent(eventId: string) {
   return { success: true, created, total: attendees.length }
 }
 
+/**
+ * Session-free variant for use in background jobs (Inngest).
+ * Creates guest_feedback rows for all attending guests with emails.
+ * Returns each record with its auto-generated token for email linking.
+ */
+export async function createGuestFeedbackForEventByTenant(
+  eventId: string,
+  tenantId: string
+): Promise<
+  { id: string; token: string; guestId: string; guestEmail: string; guestName: string }[]
+> {
+  const { createAdminClient } = await import('@/lib/db/admin')
+  const db: any = createAdminClient()
+
+  const { data: guests } = await db
+    .from('event_guests')
+    .select('id, full_name, email, rsvp_status')
+    .eq('event_id', eventId)
+    .eq('tenant_id', tenantId)
+    .in('rsvp_status', ['attending'])
+
+  const attendees = ((guests as any[]) || []).filter((g: any) => !!g.email)
+  const results: {
+    id: string
+    token: string
+    guestId: string
+    guestEmail: string
+    guestName: string
+  }[] = []
+
+  for (const guest of attendees) {
+    // ON CONFLICT DO NOTHING: unique constraint (event_id, guest_id) prevents duplicates
+    const { data: row } = await db
+      .from('guest_feedback')
+      .insert({
+        tenant_id: tenantId,
+        event_id: eventId,
+        guest_id: guest.id,
+        sent_at: new Date().toISOString(),
+      })
+      .select('id, token')
+      .single()
+
+    if (row) {
+      results.push({
+        id: row.id,
+        token: row.token,
+        guestId: guest.id,
+        guestEmail: guest.email,
+        guestName: guest.full_name || 'Guest',
+      })
+    }
+  }
+
+  return results
+}
+
 export async function getGuestFeedbackForEvent(eventId: string) {
   const user = await requireChef()
   const db = createServerClient({ admin: true })

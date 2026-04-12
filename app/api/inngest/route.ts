@@ -8,6 +8,7 @@ import {
   postEventThankYou,
   postEventReviewRequest,
   postEventReferralAsk,
+  postEventGuestFeedback,
 } from '@/lib/jobs/post-event-jobs'
 import {
   commerceDayCloseout,
@@ -18,6 +19,7 @@ import {
 export const { GET, POST, PUT } = serve({
   client: inngest,
   functions: [
+    postEventGuestFeedback,
     postEventThankYou,
     postEventReviewRequest,
     postEventReferralAsk,

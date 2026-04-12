@@ -1,6 +1,7 @@
 // Post-Event Follow-Up Jobs - Inngest Background Functions
 //
 // These jobs run on a delayed schedule after an event is marked as completed:
+//   - Guest feedback:    1 day after completion  (to event guests, not the host client)
 //   - Thank-you email:   3 days after completion
 //   - Review request:    7 days after completion
 //   - Referral ask:     14 days after completion
@@ -228,6 +229,101 @@ export const postEventReferralAsk = inngest.createFunction(
       })
 
       return { sent: true, to: ctx.client.email }
+    })
+
+    return result
+  }
+)
+
+// ─── Job 4: Guest Feedback Request (1 day after completion) ─────────────────
+//
+// Unlike jobs 1-3 which target the host client, this job targets the event
+// guests. It creates guest_feedback rows (with unique tokens) for all
+// attending guests who have email addresses, then emails each one a link
+// to the public /guest-feedback/[token] page.
+//
+// Guests are not subject to the marketing opt-out check - this is a direct
+// service follow-up, not marketing.
+
+export const postEventGuestFeedback = inngest.createFunction(
+  {
+    id: 'post-event-guest-feedback',
+    name: 'Post-Event Guest Feedback Request',
+    retries: 2,
+  },
+  { event: 'chefflow/event.completed' },
+  async ({ event, step }) => {
+    // Wait 1 day - give guests time to settle before asking for feedback
+    await step.sleep('wait-1-day', '1d')
+
+    const result = await step.run('send-guest-feedback-emails', async () => {
+      const db: any = (await import('@/lib/db/admin')).createAdminClient()
+
+      // Verify event is still completed
+      const { data: evt } = await db
+        .from('events')
+        .select('id, status, occasion, tenant_id')
+        .eq('id', event.data.eventId)
+        .single()
+
+      if (!evt || evt.status === 'cancelled') {
+        return { skipped: true, reason: 'event not found or cancelled' }
+      }
+
+      // Fetch chef name for the email
+      const { data: chef } = await db
+        .from('chefs')
+        .select('business_name')
+        .eq('id', event.data.tenantId)
+        .single()
+
+      const chefName: string = chef?.business_name || 'Your Chef'
+      const occasion: string = event.data.occasion || 'your event'
+
+      // Create feedback rows + get back tokens
+      const { createGuestFeedbackForEventByTenant } = await import('@/lib/sharing/actions')
+      const feedbackRows = await createGuestFeedbackForEventByTenant(
+        event.data.eventId,
+        event.data.tenantId
+      )
+
+      if (feedbackRows.length === 0) {
+        return { skipped: true, reason: 'no attending guests with email addresses' }
+      }
+
+      // Send each guest their unique feedback link
+      const { sendGuestFeedbackEmail } = await import('@/lib/email/notifications')
+      let sent = 0
+      const errors: string[] = []
+
+      for (const row of feedbackRows) {
+        try {
+          await sendGuestFeedbackEmail({
+            guestEmail: row.guestEmail,
+            guestName: row.guestName,
+            chefName,
+            occasion,
+            feedbackUrl: `${APP_URL}/guest-feedback/${row.token}`,
+          })
+          sent++
+        } catch (err) {
+          errors.push(`${row.guestEmail}: ${err instanceof Error ? err.message : String(err)}`)
+          log.warn('Guest feedback email failed (non-blocking)', {
+            context: { guestEmail: row.guestEmail, error: err },
+          })
+        }
+      }
+
+      log.info('Post-event guest feedback emails sent', {
+        context: {
+          eventId: event.data.eventId,
+          totalGuests: feedbackRows.length,
+          sent,
+          errors: errors.length,
+        },
+      })
+
+      return { sent, total: feedbackRows.length, errors }
     })
 
     return result

@@ -1261,6 +1261,27 @@ export async function sendPostEventReferralAskEmail(params: {
   })
 }
 
+// ─── Guest Feedback Request (1 day after completion) ────────────────────────
+
+export async function sendGuestFeedbackEmail(params: {
+  guestEmail: string
+  guestName: string
+  chefName: string
+  occasion: string
+  feedbackUrl: string
+}) {
+  await sendEmail({
+    to: params.guestEmail,
+    subject: `How was your ${params.occasion}?`,
+    react: createElement(PostEventSurveyEmail, {
+      clientName: params.guestName,
+      chefName: params.chefName,
+      occasion: params.occasion,
+      surveyUrl: params.feedbackUrl,
+    }),
+  })
+}
+
 // ─── Contract Signed - Chef Notification ────────────────────────────────────
 
 export async function sendContractSignedChefEmail(params: {
