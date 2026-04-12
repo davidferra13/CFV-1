@@ -26,6 +26,21 @@ function localDateISO(d: Date): string {
   ].join('-')
 }
 
+// postgres.js 3.x returns DATE/TIMESTAMPTZ columns as Date objects at runtime.
+// TypeScript types may say "string" but the runtime value is a Date.
+// This helper normalizes to YYYY-MM-DD regardless.
+function dateFieldToISO(val: Date | string | null | undefined): string | null {
+  if (!val) return null
+  return val instanceof Date ? localDateISO(val) : (val as string).slice(0, 10)
+}
+
+// Extract HH:MM time string from a TIMESTAMPTZ Date object (local time).
+function tsToLocalTime(val: Date | string | null | undefined): string | null {
+  if (!val) return null
+  const d = val instanceof Date ? val : new Date(val as string)
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
 // ============================================
 // TYPES
 // ============================================
@@ -168,8 +183,8 @@ export async function getUnifiedCalendar(
       type: 'event',
       category: isDraft ? 'draft' : 'events',
       title: event.occasion ?? 'Private Event',
-      startDate: event.event_date,
-      endDate: event.event_date,
+      startDate: dateFieldToISO(event.event_date as Date | string) ?? '',
+      endDate: dateFieldToISO(event.event_date as Date | string) ?? '',
       startTime: event.serve_time ?? undefined,
       allDay: !event.serve_time,
       color: getCalendarColor('event', subType, event.status),
@@ -189,8 +204,8 @@ export async function getUnifiedCalendar(
       type: 'prep_block',
       category: 'prep',
       title: block.title,
-      startDate: block.block_date,
-      endDate: block.block_date,
+      startDate: dateFieldToISO(block.block_date as Date | string) ?? '',
+      endDate: dateFieldToISO(block.block_date as Date | string) ?? '',
       startTime: block.start_time ?? undefined,
       endTime: block.end_time ?? undefined,
       allDay: !block.start_time,
@@ -205,11 +220,12 @@ export async function getUnifiedCalendar(
 
   // -- 3. Scheduled Calls --
   for (const call of callsResult.data ?? []) {
-    const callDate = call.scheduled_at.split('T')[0]
-    const callTime = call.scheduled_at.split('T')[1]?.substring(0, 5) // HH:MM
-    const endMinutes = call.duration_minutes
-      ? addMinutesToTime(callTime, call.duration_minutes)
-      : undefined
+    const callDate = dateFieldToISO(call.scheduled_at as Date | string) ?? ''
+    const callTime = tsToLocalTime(call.scheduled_at as Date | string) ?? undefined // HH:MM (local time)
+    const endMinutes =
+      call.duration_minutes && callTime
+        ? addMinutesToTime(callTime, call.duration_minutes)
+        : undefined
     items.push({
       id: call.id,
       type: 'call',
@@ -236,8 +252,8 @@ export async function getUnifiedCalendar(
       type: 'availability_block',
       category: 'blocked',
       title: block.reason ?? 'Blocked',
-      startDate: block.block_date,
-      endDate: block.block_date,
+      startDate: dateFieldToISO(block.block_date as Date | string) ?? '',
+      endDate: dateFieldToISO(block.block_date as Date | string) ?? '',
       allDay: true,
       color: getCalendarColor('availability_block'),
       borderStyle: 'solid',
@@ -248,19 +264,21 @@ export async function getUnifiedCalendar(
 
   // -- 5. Waitlist Entries --
   for (const entry of waitlistResult.data ?? []) {
+    const wStart = dateFieldToISO(entry.requested_date as Date | string) ?? ''
+    const wEnd = dateFieldToISO(entry.requested_date_end as Date | string | null) ?? wStart
     items.push({
       id: entry.id,
       type: 'waitlist',
       category: 'leads',
       title: entry.occasion ? `Waitlist: ${entry.occasion}` : 'Waitlist Request',
-      startDate: entry.requested_date,
-      endDate: entry.requested_date_end ?? entry.requested_date,
+      startDate: wStart,
+      endDate: wEnd,
       allDay: true,
       color: getCalendarColor('waitlist'),
       borderStyle: getCalendarBorderStyle('waitlist'),
       url: '/inquiries',
       isBlocking: false,
-      isMultiDay: !!(entry.requested_date_end && entry.requested_date_end !== entry.requested_date),
+      isMultiDay: !!(entry.requested_date_end && wEnd !== wStart),
     })
   }
 
@@ -273,15 +291,17 @@ export async function getUnifiedCalendar(
     if (PERSONAL_TYPES.has(entry.entry_type)) category = 'personal'
     else if (INTENTION_TYPES.has(entry.entry_type)) category = 'intentions'
 
-    const isMultiDay = entry.end_date !== entry.start_date
+    const eStart = dateFieldToISO(entry.start_date as Date | string) ?? ''
+    const eEnd = dateFieldToISO(entry.end_date as Date | string) ?? eStart
+    const isMultiDay = eEnd !== eStart
 
     items.push({
       id: entry.id,
       type: 'calendar_entry',
       category,
       title: entry.title,
-      startDate: entry.start_date,
-      endDate: entry.end_date,
+      startDate: eStart,
+      endDate: eEnd,
       startTime: entry.all_day ? undefined : (entry.start_time ?? undefined),
       endTime: entry.all_day ? undefined : (entry.end_time ?? undefined),
       allDay: entry.all_day,
@@ -297,13 +317,14 @@ export async function getUnifiedCalendar(
   // -- 7. Inquiries (date-targeted) --
   for (const inquiry of inquiriesResult.data ?? []) {
     if (!inquiry.preferred_date) continue
+    const iDate = dateFieldToISO(inquiry.preferred_date as Date | string) ?? ''
     items.push({
       id: inquiry.id,
       type: 'inquiry',
       category: 'leads',
       title: inquiry.occasion ? `Inquiry: ${inquiry.occasion}` : 'Inquiry',
-      startDate: inquiry.preferred_date,
-      endDate: inquiry.preferred_date,
+      startDate: iDate,
+      endDate: iDate,
       allDay: true,
       color: getCalendarColor('inquiry'),
       borderStyle: getCalendarBorderStyle('inquiry'),
