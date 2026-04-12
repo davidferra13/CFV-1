@@ -93,7 +93,8 @@ export async function generateDailyDrafts(): Promise<GeneratedDraft[]> {
   try {
     const user = await requireChef()
     const db: any = createServerClient()
-    const todayStr = new Date().toISOString().split('T')[0]
+    const _td0 = new Date()
+    const todayStr = `${_td0.getFullYear()}-${String(_td0.getMonth() + 1).padStart(2, '0')}-${String(_td0.getDate()).padStart(2, '0')}`
 
     // Check for existing drafts today - don't regenerate
     const { data: existing } = await db
@@ -280,8 +281,9 @@ async function generateFollowUpDrafts(db: any, tenantId: string): Promise<Genera
   const drafts: GeneratedDraft[] = []
 
   // Find completed events without follow-up (last 7 days)
-  const sevenDaysAgo = new Date()
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+  const _now1 = new Date()
+  const _sda7 = new Date(_now1.getFullYear(), _now1.getMonth(), _now1.getDate() - 7)
+  const sevenDaysAgo = `${_sda7.getFullYear()}-${String(_sda7.getMonth() + 1).padStart(2, '0')}-${String(_sda7.getDate()).padStart(2, '0')}`
 
   const { data: events } = await db
     .from('events')
@@ -289,7 +291,7 @@ async function generateFollowUpDrafts(db: any, tenantId: string): Promise<Genera
     .eq('tenant_id', tenantId)
     .eq('status', 'completed')
     .eq('follow_up_sent', false)
-    .gte('event_date', sevenDaysAgo.toISOString().split('T')[0])
+    .gte('event_date', sevenDaysAgo)
     .limit(3)
 
   for (const event of events ?? []) {
@@ -324,9 +326,11 @@ async function generateConfirmationDrafts(db: any, tenantId: string): Promise<Ge
   const drafts: GeneratedDraft[] = []
 
   // Find events happening in the next 3 days that are confirmed
-  const threeDaysOut = new Date()
-  threeDaysOut.setDate(threeDaysOut.getDate() + 3)
-  const todayStr = new Date().toISOString().split('T')[0]
+  const _now2 = new Date()
+  const _liso2 = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const todayStr = _liso2(_now2)
+  const threeDaysOut = _liso2(new Date(_now2.getFullYear(), _now2.getMonth(), _now2.getDate() + 3))
 
   const { data: events } = await db
     .from('events')
@@ -334,7 +338,7 @@ async function generateConfirmationDrafts(db: any, tenantId: string): Promise<Ge
     .eq('tenant_id', tenantId)
     .eq('status', 'confirmed')
     .gte('event_date', todayStr)
-    .lte('event_date', threeDaysOut.toISOString().split('T')[0])
+    .lte('event_date', threeDaysOut)
     .limit(3)
 
   for (const event of events ?? []) {

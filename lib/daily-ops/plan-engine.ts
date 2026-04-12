@@ -166,7 +166,7 @@ function nbaToLane(actionType: string): PlanLane {
 export function buildDailyPlan(input: PlanEngineInput): DailyPlan {
   const items: PlanItem[] = []
   const now = new Date()
-  const todayStr = now.toISOString().split('T')[0]
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
   // ---- 1. Queue items (highest priority, most diverse) ----
   for (const qi of input.queue.items) {
@@ -310,7 +310,9 @@ export function buildDailyPlan(input: PlanEngineInput): DailyPlan {
     if (input.dismissedKeys.has(key)) continue
 
     const callDate = new Date(call.scheduled_at)
-    const isToday = callDate.toISOString().split('T')[0] === todayStr
+    const isToday =
+      `${callDate.getFullYear()}-${String(callDate.getMonth() + 1).padStart(2, '0')}-${String(callDate.getDate()).padStart(2, '0')}` ===
+      todayStr
 
     if (!isToday) continue // Only show today's calls
 

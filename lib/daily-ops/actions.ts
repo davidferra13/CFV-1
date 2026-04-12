@@ -39,7 +39,8 @@ async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promis
 export async function getDailyPlan(): Promise<DailyPlan> {
   const user = await requireChef()
   const db: any = createServerClient()
-  const todayStr = new Date().toISOString().split('T')[0]
+  const _td = new Date()
+  const todayStr = `${_td.getFullYear()}-${String(_td.getMonth() + 1).padStart(2, '0')}-${String(_td.getDate()).padStart(2, '0')}`
 
   // 20-second deadline: if data fetching hangs (e.g. connection pool exhausted),
   // throw to the error boundary so the page shows a real error instead of a permanent skeleton.
@@ -243,7 +244,8 @@ export async function dismissDailyPlanItem(
   try {
     const user = await requireChef()
     const db: any = createServerClient()
-    const todayStr = new Date().toISOString().split('T')[0]
+    const _td = new Date()
+    const todayStr = `${_td.getFullYear()}-${String(_td.getMonth() + 1).padStart(2, '0')}-${String(_td.getDate()).padStart(2, '0')}`
 
     const { error } = await db.from('daily_plan_dismissals').upsert(
       {
