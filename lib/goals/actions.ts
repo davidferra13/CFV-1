@@ -35,6 +35,7 @@ import {
 import { getRevenueGoalSnapshotForTenantAdmin } from '@/lib/revenue-goals/actions'
 import { computeDinnersNeeded } from '@/lib/revenue-goals/engine'
 import { getManualGoalCurrentValue, getManualGoalRecentCheckIns } from './check-in-actions'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ── Validation ────────────────────────────────────────────────────────────────
 
@@ -100,8 +101,8 @@ function mapGoalRow(row: Record<string, unknown>): ChefGoal {
     label: row.label as string,
     status: row.status as ChefGoal['status'],
     targetValue: row.target_value as number,
-    periodStart: row.period_start as string,
-    periodEnd: row.period_end as string,
+    periodStart: dateToDateString(row.period_start as Date | string),
+    periodEnd: dateToDateString(row.period_end as Date | string),
     nudgeEnabled: row.nudge_enabled as boolean,
     nudgeLevel: row.nudge_level as ChefGoal['nudgeLevel'],
     trackingMethod:

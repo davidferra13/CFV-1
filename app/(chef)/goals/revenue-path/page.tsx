@@ -8,6 +8,7 @@ import { isRevenueGoal } from '@/lib/goals/engine'
 import { RevenuePathPanel } from '@/components/goals/revenue-path-panel'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { dateToMonthString } from '@/lib/utils/format'
 
 export const metadata: Metadata = { title: 'Revenue Path' }
 
@@ -56,7 +57,9 @@ export default async function RevenuePathPage() {
           alreadyBookedCents={pathData?.alreadyBookedCents ?? 0}
           alreadyBookedCount={pathData?.alreadyBookedCount ?? 0}
           gapCents={pathData?.gapCents ?? revenueGoal.targetValue}
-          targetMonth={pathData?.targetMonth ?? revenueGoal.periodStart.slice(0, 7)}
+          targetMonth={
+            pathData?.targetMonth ?? dateToMonthString(revenueGoal.periodStart as Date | string)
+          }
         />
       )}
     </div>
