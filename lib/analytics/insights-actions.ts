@@ -370,7 +370,7 @@ export async function getMonthlyEventVolume(): Promise<MonthlyVolume[]> {
   }))
 
   for (const e of events ?? []) {
-    const month = parseDate(e.event_date as string).getMonth()
+    const month = new Date(e.event_date as Date | string).getMonth()
     agg[month].count++
     agg[month].totalCents += e.quoted_price_cents ?? 0
     if (e.status === 'completed') agg[month].completedCount++

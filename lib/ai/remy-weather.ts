@@ -7,6 +7,7 @@
 // No client names, event details, or business data leaves the server.
 
 import { getCurrentUser } from '@/lib/auth/get-user'
+import { dateToDateString } from '@/lib/utils/format'
 
 interface GeoResult {
   latitude: number
@@ -242,7 +243,7 @@ export async function getWeatherAlerts(tenantId: string): Promise<WeatherAlertRe
 
   for (const event of events) {
     if (!event.location_address) continue
-    const eventDate = new Date(event.event_date).toISOString().split('T')[0]
+    const eventDate = dateToDateString(event.event_date as Date | string)
 
     // Geocode (with cache)
     const locKey = event.location_address.toLowerCase().trim()

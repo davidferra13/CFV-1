@@ -7,6 +7,7 @@
 // No client names, event details, or business data leaves the server.
 
 import { getCurrentUser } from '@/lib/auth/get-user'
+import { dateToDateString } from '@/lib/utils/format'
 
 interface GeoResult {
   latitude: number
@@ -125,7 +126,7 @@ export async function getTravelEstimates(tenantId: string): Promise<TravelEstima
   // Group events by date (YYYY-MM-DD)
   const byDate = new Map<string, typeof events>()
   for (const e of events) {
-    const d = new Date(e.event_date).toISOString().split('T')[0]
+    const d = dateToDateString(e.event_date as Date | string)
     if (!byDate.has(d)) byDate.set(d, [])
     byDate.get(d)!.push(e)
   }
