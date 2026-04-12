@@ -3,11 +3,19 @@
 // NOT a server action file - no 'use server'.
 //
 // Two independent concepts:
-//   1. Tier (Free vs Pro) - controls what you CAN access (monetization)
+//   1. Tier (Free vs Paid) - controls what you CAN access (monetization)
 //   2. Module toggle - controls what you SEE (UX personalization)
 //
-// A module can be toggled off even if the chef has Pro access (they just don't want to see it).
-// A Free user can toggle on a Pro module, but they'll see upgrade prompts on those pages.
+// A module can be toggled off even if the chef has paid access (they just don't want to see it).
+// A free user can toggle on a paid module, but they'll see upgrade prompts on those pages.
+//
+// Tier assignments follow lib/billing/feature-classification.ts:
+//   'free'  - module contains primarily free-tier features (core utility)
+//   'paid'  - module contains primarily paid features (leverage/automation/scale)
+//
+// Mixed modules (some free, some paid features inside) are marked 'free' at the module level
+// because the free entry points must always be reachable. Paid sub-features surface contextual
+// upgrade prompts inline rather than blocking the module entirely.
 
 import type { Tier } from '@/lib/billing/tier'
 
@@ -93,7 +101,7 @@ export const MODULES: ModuleDefinition[] = [
     slug: 'more',
     label: 'More Tools',
     description: 'Analytics, marketing, community, professional development, and more',
-    tier: 'free',
+    tier: 'free', // mixed: basic analytics free, advanced analytics paid (prompts inline)
     defaultEnabled: true,
     alwaysVisible: false,
     navGroupId: 'more',
@@ -102,8 +110,8 @@ export const MODULES: ModuleDefinition[] = [
     slug: 'commerce',
     label: 'Commerce',
     description: 'POS register, counter sales, product catalog, and payment processing',
-    tier: 'free',
-    defaultEnabled: true,
+    tier: 'paid', // full Commerce Engine is paid
+    defaultEnabled: false,
     alwaysVisible: false,
     navGroupId: 'commerce',
   },
@@ -111,15 +119,15 @@ export const MODULES: ModuleDefinition[] = [
     slug: 'social-hub',
     label: 'Social Event Hub',
     description: 'Group chat, themes, guest profiles, collaborative event planning, and polls',
-    tier: 'free',
-    defaultEnabled: true,
+    tier: 'paid', // Social Event Hub is paid
+    defaultEnabled: false,
     alwaysVisible: false,
   },
   {
     slug: 'station-ops',
     label: 'Operations',
     description: 'Kitchen day-to-day, staff, equipment, meal prep, and station clipboards',
-    tier: 'free',
+    tier: 'free', // mixed: basic ops free, staff management/payroll paid (prompts inline)
     defaultEnabled: true,
     alwaysVisible: false,
     navGroupId: 'operations',
@@ -128,7 +136,7 @@ export const MODULES: ModuleDefinition[] = [
     slug: 'operations',
     label: 'Supply Chain',
     description: 'Vendors, inventory, procurement, demand forecasting, and cost control',
-    tier: 'free',
+    tier: 'free', // mixed: vendor directory free, inventory/purchasing paid (prompts inline)
     defaultEnabled: true,
     alwaysVisible: false,
     navGroupId: 'supply-chain',
