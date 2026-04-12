@@ -115,7 +115,10 @@ export async function sendContainerToClient(
     .update({
       client_id: clientId,
       client_name: clientName,
-      sent_date: new Date().toISOString().slice(0, 10),
+      sent_date: ((_d) =>
+        `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+        new Date()
+      ),
       returned_date: null,
       status: 'with_client',
     })
@@ -148,7 +151,10 @@ export async function markContainerReturned(
   const { data, error } = await (db as any)
     .from('meal_prep_containers')
     .update({
-      returned_date: new Date().toISOString().slice(0, 10),
+      returned_date: ((_d) =>
+        `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+        new Date()
+      ),
       status: 'returned',
     })
     .eq('id', containerId)

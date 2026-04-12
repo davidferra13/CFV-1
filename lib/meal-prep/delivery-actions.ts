@@ -228,7 +228,8 @@ export async function getDeliveries(
  * Get today's deliveries for the dashboard.
  */
 export async function getTodaysDeliveries(): Promise<Delivery[] | { error: string }> {
-  const today = new Date().toISOString().slice(0, 10)
+  const _td = new Date()
+  const today = `${_td.getFullYear()}-${String(_td.getMonth() + 1).padStart(2, '0')}-${String(_td.getDate()).padStart(2, '0')}`
   return getDeliveries(today, today)
 }
 

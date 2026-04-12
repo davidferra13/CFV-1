@@ -19,8 +19,8 @@ export async function getHolidayOutreachSuggestions(): Promise<HolidayOutreachSu
 
   if (upcoming.length === 0) return []
 
-  const threeYearsAgo = new Date()
-  threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 3)
+  const _n3y = new Date()
+  const threeYearsAgo = new Date(_n3y.getFullYear() - 3, _n3y.getMonth(), _n3y.getDate())
 
   const { data: pastEvents, error } = await db
     .from('events')
@@ -33,7 +33,10 @@ export async function getHolidayOutreachSuggestions(): Promise<HolidayOutreachSu
     `
     )
     .eq('tenant_id', user.tenantId!)
-    .gte('event_date', threeYearsAgo.toISOString().slice(0, 10))
+    .gte(
+      'event_date',
+      `${threeYearsAgo.getFullYear()}-${String(threeYearsAgo.getMonth() + 1).padStart(2, '0')}-${String(threeYearsAgo.getDate()).padStart(2, '0')}`
+    )
     .in('status', ['completed', 'confirmed', 'in_progress', 'paid'])
     .order('event_date', { ascending: false })
 

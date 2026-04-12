@@ -37,7 +37,8 @@ export async function getMobileChefDashboardData(chefId: string): Promise<Mobile
   }
 
   const db: any = createServerClient()
-  const today = new Date().toISOString().slice(0, 10)
+  const _td = new Date()
+  const today = `${_td.getFullYear()}-${String(_td.getMonth() + 1).padStart(2, '0')}-${String(_td.getDate()).padStart(2, '0')}`
 
   const [eventsResult, unreadCount] = await Promise.all([
     db

@@ -70,7 +70,9 @@ async function resolveAudience(
     }
 
     case 'dormant_90_days': {
-      const cutoff = subDays(new Date(), 90).toISOString().slice(0, 10)
+      const _m90 = new Date()
+      const _c90 = new Date(_m90.getFullYear(), _m90.getMonth(), _m90.getDate() - 90)
+      const cutoff = `${_c90.getFullYear()}-${String(_c90.getMonth() + 1).padStart(2, '0')}-${String(_c90.getDate()).padStart(2, '0')}`
       const { data: recentEvents } = await db
         .from('events')
         .select('client_id')
@@ -112,8 +114,11 @@ async function resolveAudience(
     }
 
     case 'post_event_30_60': {
-      const from = subDays(new Date(), 60).toISOString().slice(0, 10)
-      const to = subDays(new Date(), 30).toISOString().slice(0, 10)
+      const _mn = new Date()
+      const _mf = new Date(_mn.getFullYear(), _mn.getMonth(), _mn.getDate() - 60)
+      const _mt = new Date(_mn.getFullYear(), _mn.getMonth(), _mn.getDate() - 30)
+      const from = `${_mf.getFullYear()}-${String(_mf.getMonth() + 1).padStart(2, '0')}-${String(_mf.getDate()).padStart(2, '0')}`
+      const to = `${_mt.getFullYear()}-${String(_mt.getMonth() + 1).padStart(2, '0')}-${String(_mt.getDate()).padStart(2, '0')}`
       const { data: events } = await db
         .from('events')
         .select('client_id, event_date')

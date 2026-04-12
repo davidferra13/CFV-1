@@ -93,7 +93,8 @@ export async function getMonthlyKitchenCosts(year: number, month: number) {
 
   // Build date range for the month
   const start = `${year}-${String(month).padStart(2, '0')}-01`
-  const end = new Date(year, month, 0).toISOString().slice(0, 10) // last day
+  const _eom = new Date(year, month, 0)
+  const end = `${_eom.getFullYear()}-${String(_eom.getMonth() + 1).padStart(2, '0')}-${String(_eom.getDate()).padStart(2, '0')}` // last day
 
   const { data, error } = await db
     .from('kitchen_rentals')

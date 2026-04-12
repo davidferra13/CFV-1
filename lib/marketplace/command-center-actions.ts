@@ -58,7 +58,8 @@ export async function getMarketplaceCommandCenter(): Promise<MarketplaceCommandC
   const tenantId = user.tenantId!
   const db: any = createServerClient()
   const now = Date.now()
-  const today = new Date().toISOString().slice(0, 10)
+  const _td = new Date()
+  const today = `${_td.getFullYear()}-${String(_td.getMonth() + 1).padStart(2, '0')}-${String(_td.getDate()).padStart(2, '0')}`
 
   // Fetch all marketplace inquiries that are active
   const { data: inquiries } = await db
