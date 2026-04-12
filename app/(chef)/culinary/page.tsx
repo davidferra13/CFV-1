@@ -51,6 +51,12 @@ const tiles = [
     description: 'Your go-to suppliers, farms, and specialty purveyors',
     icon: '🏪',
   },
+  {
+    href: '/recipes/import',
+    label: 'Import Recipes',
+    description: 'Bulk-import from CSV, URL, photo, or brain dump',
+    icon: '📥',
+  },
 ]
 
 async function CulinaryStats() {
