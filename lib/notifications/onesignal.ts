@@ -161,6 +161,21 @@ export async function notifyQuoteReady(
 }
 
 /**
+ * Notify chef that a client accepted their proposal.
+ */
+export async function notifyProposalAccepted(
+  chefUserId: string,
+  eventName: string,
+  eventId: string
+): Promise<boolean> {
+  return sendPushToUser(chefUserId, {
+    title: 'Proposal Accepted',
+    message: `${eventName} - client accepted your proposal`,
+    url: `/events/${eventId}`,
+  })
+}
+
+/**
  * Notify chef that an event has been confirmed.
  */
 export async function notifyEventConfirmed(

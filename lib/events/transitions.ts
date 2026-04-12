@@ -948,6 +948,20 @@ export async function transitionEvent({
     log.events.warn('Remy reactive enqueue failed (non-blocking)', { error: err })
   }
 
+  // Push notification to chef when proposal accepted (non-blocking)
+  if (toStatus === 'accepted' && fromStatus === 'proposed') {
+    try {
+      const { getChefAuthUserId } = await import('@/lib/notifications/actions')
+      const chefUserId = await getChefAuthUserId(event.tenant_id)
+      if (chefUserId) {
+        const { notifyProposalAccepted } = await import('@/lib/notifications/onesignal')
+        await notifyProposalAccepted(chefUserId, event.occasion || 'Untitled event', eventId)
+      }
+    } catch (err) {
+      log.events.warn('Push notification for accepted failed (non-blocking)', { error: err })
+    }
+  }
+
   // Push notification for confirmed / in_progress / completed events (non-blocking)
   if (toStatus === 'confirmed' || toStatus === 'in_progress' || toStatus === 'completed') {
     try {
