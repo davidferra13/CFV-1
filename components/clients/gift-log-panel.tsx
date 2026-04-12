@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { getGiftLog, addGiftEntry, deleteGiftEntry } from '@/lib/clients/gifting-actions'
 import type { GiftEntry, GiftType, DeliveryMethod } from '@/lib/clients/gifting-actions'
+import { todayLocalDateString } from '@/lib/utils/format'
 
 const GIFT_TYPE_CONFIG: Record<GiftType, { label: string; color: string }> = {
   thank_you: { label: 'Thank You', color: 'bg-green-100 text-green-800' },
@@ -51,7 +52,7 @@ export default function GiftLogPanel({
   const [occasion, setOccasion] = useState('')
   const [description, setDescription] = useState('')
   const [costDollars, setCostDollars] = useState('')
-  const [sentAt, setSentAt] = useState(new Date().toISOString().split('T')[0])
+  const [sentAt, setSentAt] = useState(todayLocalDateString())
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>('hand_delivered')
   const [notes, setNotes] = useState('')
 
@@ -62,7 +63,7 @@ export default function GiftLogPanel({
     setOccasion('')
     setDescription('')
     setCostDollars('')
-    setSentAt(new Date().toISOString().split('T')[0])
+    setSentAt(todayLocalDateString())
     setDeliveryMethod('hand_delivered')
     setNotes('')
     setShowForm(false)

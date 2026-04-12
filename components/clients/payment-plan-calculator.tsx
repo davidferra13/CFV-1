@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { DollarSign, Calendar } from '@/components/ui/icons'
+import { todayLocalDateString } from '@/lib/utils/format'
 
 type InstallmentPlan = {
   numberOfPayments: number
@@ -23,7 +24,11 @@ function formatCents(cents: number): string {
 function addDays(date: string, days: number): string {
   const d = new Date(date)
   d.setDate(d.getDate() + days)
-  return d.toISOString().split('T')[0]
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
 }
 
 function calculatePlan(
@@ -33,7 +38,7 @@ function calculatePlan(
 ): InstallmentPlan {
   const baseAmount = Math.floor(totalCents / numPayments)
   const remainder = totalCents - baseAmount * numPayments
-  const today = new Date().toISOString().split('T')[0]
+  const today = todayLocalDateString()
   const daysUntilEvent = Math.max(
     1,
     Math.floor((new Date(eventDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))

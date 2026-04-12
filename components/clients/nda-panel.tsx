@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { Lock, Plus, Trash2, Check, AlertTriangle } from 'lucide-react'
+import { todayLocalDateString } from '@/lib/utils/format'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { NdaBadge, getNdaBadgeStatus } from './nda-badge'
 import type {
@@ -114,7 +115,7 @@ export function NdaPanel({ clientId, initialNdas }: Props) {
           ? {
               ...n,
               status: 'signed' as NdaStatus,
-              signed_date: new Date().toISOString().split('T')[0],
+              signed_date: todayLocalDateString(),
             }
           : n
       )
