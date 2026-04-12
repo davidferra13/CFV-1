@@ -6,6 +6,7 @@ import { requireStaff } from '@/lib/auth/get-user'
 import { getMyAssignments } from '@/lib/staff/staff-portal-actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { dateToDateString } from '@/lib/utils/format'
 
 export const metadata: Metadata = { title: 'Schedule' }
 
@@ -84,7 +85,9 @@ export default async function StaffSchedulePage() {
 function AssignmentRow({ assignment, isPast = false }: { assignment: any; isPast?: boolean }) {
   const event = assignment.event
   const eventDate = event?.event_date
-    ? new Date(event.event_date + 'T00:00:00').toLocaleDateString('en-US', {
+    ? new Date(
+        dateToDateString(event.event_date as Date | string) + 'T00:00:00'
+      ).toLocaleDateString('en-US', {
         weekday: 'short',
         month: 'short',
         day: 'numeric',

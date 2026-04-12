@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import { StaffTaskCheckbox } from '@/components/staff/staff-task-checkbox'
+import { dateToDateString } from '@/lib/utils/format'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -220,7 +221,9 @@ export default async function StaffDashboardPage({
                         </div>
                         <div className="text-xs text-stone-500">
                           {event?.event_date
-                            ? new Date(event.event_date + 'T00:00:00').toLocaleDateString('en-US', {
+                            ? new Date(
+                                dateToDateString(event.event_date as Date | string) + 'T00:00:00'
+                              ).toLocaleDateString('en-US', {
                                 weekday: 'short',
                                 month: 'short',
                                 day: 'numeric',

@@ -7,6 +7,7 @@ import { getMyTasksGroupedByDate } from '@/lib/staff/staff-portal-actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { StaffTaskCheckbox } from '@/components/staff/staff-task-checkbox'
+import { dateToDateString } from '@/lib/utils/format'
 
 export const metadata: Metadata = { title: 'Tasks' }
 
@@ -85,7 +86,7 @@ export default async function StaffTasksPage() {
                                 <span className="text-xs bg-brand-500/15 text-brand-400 border border-brand-500/25 rounded px-1.5 py-0.5">
                                   {task.event_name}
                                   {task.event_date
-                                    ? ` \u00b7 ${new Date(task.event_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}`
+                                    ? ` \u00b7 ${new Date(dateToDateString(task.event_date as Date | string) + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}`
                                     : ''}
                                   {task.event_guest_count
                                     ? `, ${task.event_guest_count} guests`

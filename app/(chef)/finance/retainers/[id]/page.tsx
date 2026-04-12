@@ -8,6 +8,7 @@ import { RetainerBillingTimeline } from '@/components/retainers/retainer-billing
 import { RetainerDetailActions } from './detail-actions'
 import { formatCurrency } from '@/lib/utils/currency'
 import { BILLING_CYCLE_LABELS } from '@/lib/retainers/constants'
+import { dateToDateString } from '@/lib/utils/format'
 
 export const metadata: Metadata = { title: 'Retainer Detail' }
 
@@ -169,7 +170,9 @@ export default async function RetainerDetailPage({ params }: { params: { id: str
                       </td>
                       <td className="py-3 px-4 text-stone-400">
                         {event.event_date
-                          ? new Date(event.event_date + 'T00:00:00').toLocaleDateString('en-US', {
+                          ? new Date(
+                              dateToDateString(event.event_date as Date | string) + 'T00:00:00'
+                            ).toLocaleDateString('en-US', {
                               month: 'short',
                               day: 'numeric',
                               year: 'numeric',
