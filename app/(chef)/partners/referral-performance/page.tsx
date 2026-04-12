@@ -104,7 +104,7 @@ export default async function ReferralPerformancePage() {
                     {formatCurrency(partner.revenue_cents)}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">
-                    {(partner.conversion_rate * 100).toFixed(0)}%
+                    {partner.conversion_rate.toFixed(0)}%
                   </TableCell>
                 </TableRow>
               ))}
