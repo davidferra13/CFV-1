@@ -6,6 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { todayLocalDateString } from '@/lib/utils/format'
 import { z } from 'zod'
 
 // --- Types ---
@@ -47,7 +48,11 @@ const CalculateInstallmentsSchema = z.object({
 function addDays(dateStr: string, days: number): string {
   const d = new Date(dateStr + 'T12:00:00')
   d.setDate(d.getDate() + days)
-  return d.toISOString().split('T')[0]
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
 }
 
 function subtractDays(dateStr: string, days: number): string {
@@ -173,7 +178,7 @@ function generatePlan(
 
     if (i === 0) {
       // First payment: due at booking (today or upon acceptance)
-      dueDateIso = new Date().toISOString().split('T')[0]
+      dueDateIso = todayLocalDateString()
       label = `Payment ${i + 1} - Due at booking`
     } else if (i === count - 1) {
       // Final payment: due 7 days before event
@@ -181,7 +186,7 @@ function generatePlan(
       label = `Final payment - Due 7 days before event`
     } else {
       // Middle payments: evenly spaced between now and 7 days before
-      const today = new Date().toISOString().split('T')[0]
+      const today = todayLocalDateString()
       const finalDue = subtractDays(eventDate, 7)
       const totalDays = Math.max(
         1,
@@ -227,7 +232,7 @@ export async function calculateInstallments(
 
   const amounts = distributeCents(validated.totalCents, validated.numberOfPayments)
   const installments: Installment[] = []
-  const today = new Date().toISOString().split('T')[0]
+  const today = todayLocalDateString()
   const finalDue = subtractDays(validated.eventDate, 7)
 
   for (let i = 0; i < validated.numberOfPayments; i++) {
