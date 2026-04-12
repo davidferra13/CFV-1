@@ -518,6 +518,8 @@ const NavGroupSection = memo(function NavGroupSection({
                   className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-400'}`}
                 />
                 {item.label}
+                {item.href === '/inbox' && <InboxUnreadBadge />}
+                {item.href === '/circles' && <CirclesUnreadBadge />}
               </PendingNavLink>
             )
           })}

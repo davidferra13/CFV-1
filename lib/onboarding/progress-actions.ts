@@ -40,7 +40,11 @@ export async function getOnboardingProgress(): Promise<OnboardingProgress> {
       .eq('chef_id', user.tenantId!),
   ])
 
-  const profileDone = !!(chefRow.data?.business_name && chefRow.data?.display_name)
+  const profileDone = !!(
+    chefRow.data?.business_name &&
+    chefRow.data?.display_name &&
+    chefRow.data?.profile_image_url
+  )
   const clientsDone = (clients.count ?? 0) > 0
   const loyaltyDone = loyaltyConfig.data !== null
   const recipesDone = (recipes.count ?? 0) > 0

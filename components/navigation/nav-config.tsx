@@ -922,6 +922,7 @@ export const navGroups: NavGroup[] = [
           { href: '/finance/reporting/revenue-by-event', label: 'Revenue by Event' },
           { href: '/finance/reporting/revenue-by-month', label: 'Revenue by Month' },
           { href: '/finance/reporting/year-to-date-summary', label: 'Year-to-Date Summary' },
+          { href: '/finance/reporting/yoy-comparison', label: 'Year-over-Year Comparison' },
         ],
       },
       {
