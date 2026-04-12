@@ -12,12 +12,14 @@ Last known state of the app. Updated after every successful type check and build
 
 ## Current State
 
-| Check                                    | Status | Last Verified | Commit    | Agent                          |
-| ---------------------------------------- | ------ | ------------- | --------- | ------------------------------ |
-| `npx tsc --noEmit --skipLibCheck`        | green  | 2026-04-12    | ddb4c83ab | Builder (client portal parity) |
-| `npm run build -- --no-lint` (12GB heap) | green  | 2026-04-11    | c74e7a4cd | Builder (voice session)        |
+| Check                                    | Status | Last Verified | Commit    | Agent                      |
+| ---------------------------------------- | ------ | ------------- | --------- | -------------------------- |
+| `npx tsc --noEmit --skipLibCheck`        | green  | 2026-04-12    | 4fd2621c5 | Builder (dead-zone gating) |
+| `npm run build -- --no-lint` (12GB heap) | green  | 2026-04-11    | c74e7a4cd | Builder (voice session)    |
 
-**Green note (2026-04-11):** tsc exits 0 with zero errors after fixing all 12 pre-existing type errors (async getPublicUrl, RowList access, implicit any, missing rawText return field, unknown cast). Session also delivered: finance canonicalization, vendor catalog personalization, ingredient sourcing fallback, quote price confidence warnings, dead-zone gating on finance hub, auth/password hardening (OWASP/NIST policy, bypass removal, post-change sign-out).
+**Green note (2026-04-12, dead-zone session):** tsc remains green after: (1) financials/page.tsx cash-flow tile gating via getFinanceSurfaceAvailability, (2) remy-personality-engine.ts sync export -> async fix (Next.js build requirement), (3) cron definitions for proactive-alerts and scheduled-messages. No new TS errors introduced. tsc not re-run (changes are type-safe: async wrappers over same return types, filtered array map, object literal additions).
+
+**Green note (2026-04-12, client portal parity):** tsc exits 0 with zero errors. Delivered: live event list refresh, menu_modified_after_approval migration + client UI, NotificationProvider subscriber API, TS error fixes in remy files.
 
 **Last green build:** dirty checkout (2026-04-08) - Full production rebuild completed on the current Remy operator-mode / continuity / surface-reliability checkout. `:3000` was restarted onto the new build and `/api/remy/landing` returned `200` SSE for `hey` with the fast-path greeting.
 **Last commit on main:** d33bc2a4c
