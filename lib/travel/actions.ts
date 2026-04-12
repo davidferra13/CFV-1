@@ -6,6 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { dateToDateString } from '@/lib/utils/format'
 import type {
   TravelLeg,
   TravelLegType,
@@ -85,7 +86,9 @@ export async function getTravelPlan(eventId: string): Promise<TravelPlan> {
 
   let nearbyEvents: NearbyEvent[] = []
   if (primaryEvent?.event_date) {
-    const [_evy, _evm, _evd] = (primaryEvent.event_date as string).split('-').map(Number)
+    const [_evy, _evm, _evd] = dateToDateString(primaryEvent.event_date as Date | string)
+      .split('-')
+      .map(Number)
     const eventDate = new Date(_evy, _evm - 1, _evd)
     const lower = new Date(_evy, _evm - 1, _evd - 7)
     const upper = new Date(_evy, _evm - 1, _evd + 7)

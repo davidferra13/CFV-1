@@ -11,6 +11,15 @@ import { parseWithOllama } from './parse-ollama'
 import { withAiFallback } from './with-ai-fallback'
 import { analyzeTempLogFormula } from '@/lib/formulas/temp-anomaly'
 import { z } from 'zod'
+import { dateToDateString } from '@/lib/utils/format'
+
+/** Safe extraction of HH:MM from a TIMESTAMPTZ column (Date object or ISO string) */
+function loggedAtDisplay(val: unknown): string {
+  if (!val) return 'Time?'
+  const iso = val instanceof Date ? val.toISOString() : String(val)
+  const timePart = iso.split('T')[1]
+  return timePart ? timePart.slice(0, 5) : dateToDateString(val as Date | string)
+}
 
 // ── Zod schema ──────────────────────────────────────────────────────────────
 
@@ -71,7 +80,7 @@ Flag violations as:
 Return valid JSON only.`
 
   const userContent = `Temperature log for event (${tempLog.length} entries):
-${tempLog.map((t: any) => `- [${t.logged_at?.split('T')[1]?.slice(0, 5) ?? t.logged_at?.split('T')[0] ?? 'Time?'}] ${t.item_description}: ${t.temp_fahrenheit}°F | stage: ${t.phase ?? 'unknown'}${t.notes ? ' | notes: ' + t.notes : ''}`).join('\n')}
+${tempLog.map((t: any) => `- [${loggedAtDisplay(t.logged_at)}] ${t.item_description}: ${t.temp_fahrenheit}°F | stage: ${t.phase ?? 'unknown'}${t.notes ? ' | notes: ' + t.notes : ''}`).join('\n')}
 
 Return JSON: {
   "violations": [{ "item": "...", "loggedAt": "...", "tempF": number, "issue": "...", "regulatoryRef": "...", "severity": "critical|warning|info", "recommendation": "..." }],
