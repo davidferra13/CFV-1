@@ -1898,18 +1898,16 @@ export function getPrimaryShortcutOptions() {
   return PRIMARY_SHORTCUT_OPTIONS.map(({ href, label, context }) => ({ href, label, context }))
 }
 
-// ─── Action Bar: 7 daily-driver shortcuts ───
-// Calendar remains reachable under Events, while Notifications, Inquiries, Recipes,
-// Tasks, Food Catalog, Store Prices, and Rewards remain reachable via Browse
-// Everything, direct routes, and command palette.
+// ─── Action Bar: 6 primary domains (decision contract 2026-04-09) ───
+// Today, Inbox, Events, Clients, Culinary, Finance
+// All other surfaces reachable via the All Features collapse, command palette, or direct routes.
 export const actionBarItems: NavItem[] = [
+  { href: '/dashboard', label: 'Today', icon: LayoutDashboard },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
   { href: '/events', label: 'Events', icon: CalendarDays },
   { href: '/clients', label: 'Clients', icon: Users },
-  { href: '/menus', label: 'Menus', icon: UtensilsCrossed },
-  { href: '/financials', label: 'Money', icon: DollarSign },
-  { href: '/culinary/prep', label: 'Prep', icon: Timer },
-  { href: '/circles', label: 'Circles', icon: MessagesSquare },
+  { href: '/culinary', label: 'Culinary', icon: UtensilsCrossed },
+  { href: '/finance', label: 'Finance', icon: DollarSign },
 ]
 
 // ─── + Create dropdown: 15 direct navigation links ───

@@ -6,7 +6,6 @@ import { actionBarItems } from './nav-config'
 import { CreateMenuDropdown } from './create-menu-dropdown'
 import { isItemActive } from './chef-nav-helpers'
 import { InboxUnreadBadge } from '@/components/communication/inbox-unread-badge'
-import { CirclesUnreadBadge } from '@/components/hub/circles-unread-badge'
 import { NotificationsUnreadBadge } from '@/components/notifications/notifications-unread-badge'
 import { InquiriesUnreadBadge } from '@/components/inquiries/inquiries-unread-badge'
 import { useNavigationPending } from '@/components/navigation/navigation-pending-provider'
@@ -69,11 +68,6 @@ export function ActionBar({ navFilter = '', collapsed = false }: ActionBarProps)
                   <InquiriesUnreadBadge />
                 </span>
               )}
-              {item.href === '/circles' && (
-                <span className="absolute -top-1 -right-1">
-                  <CirclesUnreadBadge />
-                </span>
-              )}
             </Link>
           )
         })}
@@ -112,7 +106,6 @@ export function ActionBar({ navFilter = '', collapsed = false }: ActionBarProps)
               {item.href === '/inbox' && <InboxUnreadBadge />}
               {item.href === '/notifications' && <NotificationsUnreadBadge />}
               {item.href === '/inquiries' && <InquiriesUnreadBadge />}
-              {item.href === '/circles' && <CirclesUnreadBadge />}
             </Link>
           )
         })}
