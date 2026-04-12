@@ -20,6 +20,12 @@ const SubmitReviewSchema = z.object({
   what_they_loved: z.string().max(1000).optional().nullable(),
   what_could_improve: z.string().max(1000).optional().nullable(),
   display_consent: z.boolean().default(false),
+  food_quality_rating: z.number().int().min(1).max(5).optional().nullable(),
+  communication_rating: z.number().int().min(1).max(5).optional().nullable(),
+  presentation_rating: z.number().int().min(1).max(5).optional().nullable(),
+  punctuality_rating: z.number().int().min(1).max(5).optional().nullable(),
+  cleanup_rating: z.number().int().min(1).max(5).optional().nullable(),
+  would_book_again: z.boolean().optional().nullable(),
 })
 
 export type SubmitReviewInput = z.infer<typeof SubmitReviewSchema>
@@ -76,6 +82,12 @@ export async function submitClientReview(input: SubmitReviewInput) {
       what_they_loved: validated.what_they_loved || null,
       what_could_improve: validated.what_could_improve || null,
       display_consent: validated.display_consent,
+      food_quality_rating: validated.food_quality_rating ?? null,
+      communication_rating: validated.communication_rating ?? null,
+      presentation_rating: validated.presentation_rating ?? null,
+      punctuality_rating: validated.punctuality_rating ?? null,
+      cleanup_rating: validated.cleanup_rating ?? null,
+      would_book_again: validated.would_book_again ?? null,
     })
     .select('id')
     .single()

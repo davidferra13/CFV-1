@@ -77,7 +77,7 @@ export function GiftCardPurchaseForm({ tenantId, chefSlug, chefName }: Props) {
       {/* Amount picker */}
       <div>
         <label className="block text-sm font-medium text-stone-300 mb-3">Gift card amount</label>
-        <div className="grid grid-cols-4 gap-2 mb-3">
+        <div className="grid grid-cols-2 gap-2 mb-3 sm:grid-cols-4">
           {PRESET_AMOUNTS.map((cents) => (
             <button
               key={cents}

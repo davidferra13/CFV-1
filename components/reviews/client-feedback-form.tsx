@@ -58,6 +58,12 @@ export function ClientFeedbackForm({ eventId, googleReviewUrl }: ClientFeedbackF
   const [whatTheyLoved, setWhatTheyLoved] = useState('')
   const [whatCouldImprove, setWhatCouldImprove] = useState('')
   const [displayConsent, setDisplayConsent] = useState(false)
+  const [foodQuality, setFoodQuality] = useState(0)
+  const [communication, setCommunication] = useState(0)
+  const [presentation, setPresentation] = useState(0)
+  const [punctuality, setPunctuality] = useState(0)
+  const [cleanup, setCleanup] = useState(0)
+  const [wouldBookAgain, setWouldBookAgain] = useState<boolean | null>(null)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -76,6 +82,12 @@ export function ClientFeedbackForm({ eventId, googleReviewUrl }: ClientFeedbackF
           what_they_loved: whatTheyLoved || null,
           what_could_improve: whatCouldImprove || null,
           display_consent: displayConsent,
+          food_quality_rating: foodQuality || null,
+          communication_rating: communication || null,
+          presentation_rating: presentation || null,
+          punctuality_rating: punctuality || null,
+          cleanup_rating: cleanup || null,
+          would_book_again: wouldBookAgain,
         })
         setSubmitted(true)
       } catch (err) {
@@ -177,10 +189,53 @@ export function ClientFeedbackForm({ eventId, googleReviewUrl }: ClientFeedbackF
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Star Rating */}
+          {/* Overall Star Rating */}
           <div>
             <label className="block text-sm font-medium text-stone-300 mb-2">Overall Rating</label>
             <StarRating value={rating} onChange={setRating} />
+          </div>
+
+          {/* Dimension Ratings */}
+          <div className="grid grid-cols-2 gap-4 p-3 bg-stone-800 rounded-lg">
+            <div>
+              <label className="block text-xs text-stone-400 mb-1">Food Quality</label>
+              <StarRating value={foodQuality} onChange={setFoodQuality} />
+            </div>
+            <div>
+              <label className="block text-xs text-stone-400 mb-1">Communication</label>
+              <StarRating value={communication} onChange={setCommunication} />
+            </div>
+            <div>
+              <label className="block text-xs text-stone-400 mb-1">Presentation</label>
+              <StarRating value={presentation} onChange={setPresentation} />
+            </div>
+            <div>
+              <label className="block text-xs text-stone-400 mb-1">Punctuality</label>
+              <StarRating value={punctuality} onChange={setPunctuality} />
+            </div>
+            <div>
+              <label className="block text-xs text-stone-400 mb-1">Cleanup</label>
+              <StarRating value={cleanup} onChange={setCleanup} />
+            </div>
+            <div>
+              <label className="block text-xs text-stone-400 mb-1">Would book again?</label>
+              <div className="flex gap-3 mt-1">
+                <button
+                  type="button"
+                  onClick={() => setWouldBookAgain(true)}
+                  className={`text-sm px-3 py-1 rounded-md border transition-colors ${wouldBookAgain === true ? 'bg-emerald-700 border-emerald-500 text-white' : 'border-stone-600 text-stone-400 hover:border-stone-400'}`}
+                >
+                  Yes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setWouldBookAgain(false)}
+                  className={`text-sm px-3 py-1 rounded-md border transition-colors ${wouldBookAgain === false ? 'bg-red-800 border-red-600 text-white' : 'border-stone-600 text-stone-400 hover:border-stone-400'}`}
+                >
+                  Not sure
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Written Feedback */}

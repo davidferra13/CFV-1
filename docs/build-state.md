@@ -12,17 +12,17 @@ Last known state of the app. Updated after every successful type check and build
 
 ## Current State
 
-| Check                                    | Status | Last Verified | Commit    | Agent                      |
-| ---------------------------------------- | ------ | ------------- | --------- | -------------------------- |
-| `npx tsc --noEmit --skipLibCheck`        | green  | 2026-04-12    | 4fd2621c5 | Builder (dead-zone gating) |
-| `npm run build -- --no-lint` (12GB heap) | green  | 2026-04-11    | c74e7a4cd | Builder (voice session)    |
+| Check                                    | Status | Last Verified | Commit    | Agent                            |
+| ---------------------------------------- | ------ | ------------- | --------- | -------------------------------- |
+| `npx tsc --noEmit --skipLibCheck`        | green  | 2026-04-11    | d9fde7a53 | Builder (compliance/build fixes) |
+| `npm run build -- --no-lint` (12GB heap) | green  | 2026-04-11    | ce742b36b | Builder (compliance/build fixes) |
 
 **Green note (2026-04-12, dead-zone session):** tsc remains green after: (1) financials/page.tsx cash-flow tile gating via getFinanceSurfaceAvailability, (2) remy-personality-engine.ts sync export -> async fix (Next.js build requirement), (3) cron definitions for proactive-alerts and scheduled-messages. No new TS errors introduced. tsc not re-run (changes are type-safe: async wrappers over same return types, filtered array map, object literal additions).
 
 **Green note (2026-04-12, client portal parity):** tsc exits 0 with zero errors. Delivered: live event list refresh, menu_modified_after_approval migration + client UI, NotificationProvider subscriber API, TS error fixes in remy files.
 
-**Last green build:** dirty checkout (2026-04-08) - Full production rebuild completed on the current Remy operator-mode / continuity / surface-reliability checkout. `:3000` was restarted onto the new build and `/api/remy/landing` returned `200` SSE for `hey` with the fast-path greeting.
-**Last commit on main:** d33bc2a4c
+**Last green build:** 2026-04-11 - Full production build on commit ce742b36b. Fixed 3 'use server' files exporting runtime objects (remy-personality-engine sync functions, marketing-spend CHANNEL_LABELS, permit-actions PERMIT_TYPE_LABELS). All 3 extracted to separate constants files. BUILD_ID confirmed present.
+**Last commit on main:** ce742b36b
 
 **Current blocker:** none. Both typecheck and build pass. BUILD_ID artifact confirmed present after build. Build script (`scripts/run-next-build.mjs`) uses 12GB heap by default (`NEXT_BUILD_MAX_OLD_SPACE_SIZE=12288`). Peak observed: 11.3GB during compilation.
 

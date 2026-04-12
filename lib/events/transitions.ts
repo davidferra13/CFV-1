@@ -205,6 +205,29 @@ export async function transitionEvent({
     }
   }
 
+  // ── Same-date conflict check when confirming ────────────────────────────────
+  // Soft warning only (no hard block). Chefs may legitimately have multiple events.
+  // Returns a conflict notice as metadata for the UI to surface.
+  if (toStatus === 'confirmed' && !isSystemTransition) {
+    try {
+      const db: any = createServerClient()
+      const { data: conflicts } = await db
+        .from('events')
+        .select('id, occasion, event_date')
+        .eq('tenant_id', event.tenant_id)
+        .eq('event_date', event.event_date)
+        .in('status', ['confirmed', 'in_progress'])
+        .neq('id', eventId)
+
+      if (conflicts && conflicts.length > 0) {
+        const conflictNames = conflicts.map((c: any) => c.occasion || 'Untitled event').join(', ')
+        readinessWarnings.push(`Same-day conflict: ${conflictNames} is also confirmed on this date`)
+      }
+    } catch (err) {
+      log.events.warn('Conflict check failed (non-blocking)', { error: err })
+    }
+  }
+
   // Atomically update event status + insert transition audit log in one DB transaction.
   // transition_event_atomic() is a SECURITY DEFINER Postgres function that handles:
   //   - events.status, events.updated_by, events.cancelled_at, events.cancellation_reason,
@@ -887,8 +910,8 @@ export async function transitionEvent({
     log.events.warn('Remy reactive enqueue failed (non-blocking)', { error: err })
   }
 
-  // Push notification for confirmed / completed events (non-blocking)
-  if (toStatus === 'confirmed' || toStatus === 'completed') {
+  // Push notification for confirmed / in_progress / completed events (non-blocking)
+  if (toStatus === 'confirmed' || toStatus === 'in_progress' || toStatus === 'completed') {
     try {
       const { getChefAuthUserId } = await import('@/lib/notifications/actions')
       const chefUserId = await getChefAuthUserId(event.tenant_id)
@@ -897,6 +920,9 @@ export async function transitionEvent({
         if (toStatus === 'confirmed') {
           const { notifyEventConfirmed } = await import('@/lib/notifications/onesignal')
           await notifyEventConfirmed(chefUserId, eventTitle, eventId)
+        } else if (toStatus === 'in_progress') {
+          const { notifyEventInProgress } = await import('@/lib/notifications/onesignal')
+          await notifyEventInProgress(chefUserId, eventTitle, eventId)
         } else {
           const { notifyEventCompleted } = await import('@/lib/notifications/onesignal')
           await notifyEventCompleted(chefUserId, eventTitle, eventId)

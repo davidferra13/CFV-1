@@ -157,6 +157,7 @@ export async function getConversionRatesBySource(range?: DateRange): Promise<Con
     if (!data[label]) data[label] = { inquiries: 0, confirmed: 0, completed: 0 }
     data[label].inquiries++
     if (inq.status === 'confirmed') data[label].confirmed++
+    if (eventByInquiry[inq.id] === 'completed') data[label].completed++
   }
 
   return Object.entries(data)

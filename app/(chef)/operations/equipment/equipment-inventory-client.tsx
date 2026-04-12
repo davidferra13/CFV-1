@@ -8,16 +8,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
   createEquipmentItem,
-  logMaintenance,
   retireEquipmentItem,
   logRental,
   deleteRental,
   type CreateEquipmentInput,
   type RentalInput,
 } from '@/lib/equipment/actions'
+import {
+  logMaintenance,
+  type EquipmentMaintenanceStatus,
+} from '@/lib/equipment/maintenance-actions'
 import { EQUIPMENT_CATEGORIES } from '@/lib/equipment/constants'
 import MaintenanceSchedule from '@/components/equipment/maintenance-schedule'
-import type { EquipmentMaintenanceStatus } from '@/lib/equipment/maintenance-actions'
 import { EntityPhotoUpload } from '@/components/entities/entity-photo-upload'
 import { format, addDays, isBefore } from 'date-fns'
 
@@ -118,7 +120,7 @@ export function EquipmentInventoryClient({
   async function handleLogMaintenance(id: string) {
     setLoading(true)
     try {
-      await logMaintenance(id)
+      await logMaintenance(id, { maintenanceType: 'routine', costCents: 0 })
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed')

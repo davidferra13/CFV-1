@@ -3,6 +3,7 @@
 
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
+import Link from 'next/link'
 import {
   getWaitlistEntries,
   contactWaitlistEntry,
@@ -90,6 +91,18 @@ export default async function WaitlistPage() {
                           </Button>
                         </form>
                       )}
+                      <Link
+                        href={`/events/new?${new URLSearchParams({
+                          ...(entry.client_id ? { client_id: entry.client_id } : {}),
+                          ...(entry.requested_date ? { date: entry.requested_date } : {}),
+                          ...(entry.occasion ? { occasion: entry.occasion } : {}),
+                          waitlist_id: entry.id,
+                        }).toString()}`}
+                      >
+                        <Button type="button" size="sm" variant="primary">
+                          Create Event
+                        </Button>
+                      </Link>
                       <form
                         action={async () => {
                           'use server'

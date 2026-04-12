@@ -26,6 +26,7 @@ export function CampaignBuilderClient() {
   const [step, setStep] = useState<Step>('compose')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [sendWarning, setSendWarning] = useState<string | null>(null)
   const [campaignId, setCampaignId] = useState<string | null>(null)
   const [channelSplit, setChannelSplit] = useState<ChannelSplit | null>(null)
   const [templates, setTemplates] = useState<any[]>([])
@@ -115,7 +116,12 @@ export function CampaignBuilderClient() {
     setSaving(true)
     setError(null)
     try {
-      await sendCampaignNow(campaignId)
+      const result = await sendCampaignNow(campaignId)
+      if (result.skippedCount > 0) {
+        setSendWarning(
+          `${result.skippedCount} client${result.skippedCount === 1 ? '' : 's'} skipped (no email on file).`
+        )
+      }
       setStep('sent')
       router.refresh()
     } catch (err) {
@@ -145,6 +151,7 @@ export function CampaignBuilderClient() {
       <div className="text-center py-6">
         <p className="text-lg font-semibold text-stone-100">Campaign sent!</p>
         <p className="text-sm text-stone-500 mt-1">Your emails are on their way.</p>
+        {sendWarning && <p className="text-sm text-amber-500 mt-2">{sendWarning}</p>}
         <Button className="mt-4" variant="secondary" size="sm" onClick={reset}>
           Create another
         </Button>

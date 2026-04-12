@@ -1,0 +1,116 @@
+{
+  "results": [
+    {
+      "step": "1 Landing",
+      "pass": true,
+      "details": {
+        "h1": "Nearby",
+        "statsLine": "1,182 food businesses across 44 states",
+        "stateGridEl": 1,
+        "popularCitiesEl": 1
+      }
+    },
+    {
+      "step": "2 MA Filter",
+      "pass": true,
+      "details": {
+        "totEl": "77 listings matching Massachusetts",
+        "cards": 24
+      }
+    },
+    {
+      "step": "3 Image Check",
+      "pass": false,
+      "details": {
+        "total": 24,
+        "withImg": 24,
+        "noImg": 0,
+        "withDirPhotos": 24,
+        "imgLoaded": 3,
+        "imgBroken": 21,
+        "failure": "21 images broken",
+        "sample": [
+          {
+            "i": 0,
+            "name": "9Zaab Thai Street Food",
+            "hasImg": true,
+            "src": "/api/storage/public/directory-photos/9zaab-thai-street-food-cambridge/og.jpg",
+            "nw": 2265,
+            "hasSvg": false
+          },
+          {
+            "i": 1,
+            "name": "A2b Indian Veg Restaurant",
+            "hasImg": true,
+            "src": "/api/storage/public/directory-photos/a2b-indian-veg-restaurant-northborough/og.png",
+            "nw": 834,
+            "hasSvg": false
+          },
+          {
+            "i": 2,
+            "name": "All Seasons Table",
+            "hasImg": true,
+            "src": "/api/storage/public/directory-photos/all-seasons-table-malden/og.png",
+            "nw": 500,
+            "hasSvg": false
+          },
+          {
+            "i": 3,
+            "name": "Bambara",
+            "hasImg": true,
+            "src": "/api/storage/public/directory-photos/bambara-cambridge/og.jpg",
+            "nw": 0,
+            "hasSvg": false
+          },
+          {
+            "i": 4,
+            "name": "Bistro du Midi",
+            "hasImg": true,
+            "src": "/api/storage/public/directory-photos/bistro-du-midi-boston/og.png",
+            "nw": 0,
+            "hasSvg": false
+          },
+          {
+            "i": 5,
+            "name": "Buttercup",
+            "hasImg": true,
+            "src": "/api/storage/public/directory-photos/buttercup-natick/og.png",
+            "nw": 0,
+            "hasSvg": false
+          }
+        ]
+      }
+    },
+    {
+      "step": "4 Detail Page /nearby/9zaab-thai-street-food-cambridge",
+      "pass": true,
+      "details": {
+        "h1": "9Zaab Thai Street Food",
+        "d404": false,
+        "dErr": false,
+        "imgCount": 3,
+        "imgs": [
+          {
+            "src": "/_next/image?url=%2Flogo.jpg&w=96&q=75",
+            "nw": 48,
+            "nh": 47
+          },
+          {
+            "src": "/api/storage/public/directory-photos/9zaab-thai-street-food-cambridge/og.jpg",
+            "nw": 2265,
+            "nh": 1510
+          },
+          {
+            "src": "/_next/image?url=%2Flogo.jpg&w=64&q=75",
+            "nw": 32,
+            "nh": 32
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    "console: Warning: Extra attributes from the server: %s%s style \n    at input\n    at div\n    at form\n    at div\n    at NearbyFilters (webpack-internal:///(app-pages-browser)/./app/(public)/nearby/_components/nearby-filters.tsx:31:11)\n    at Suspense\n    at div\n    at section\n    at div\n    at NearbyPage (Server)\n    at InnerLayoutRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:243:11)\n    at RedirectErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:74:9)\n    at RedirectBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:82:11)\n    at NotFoundBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/not-found-boundary.js:84:11)\n    at LoadingBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:349:11)\n    at ErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/error-boundary.js:160:11)\n    at InnerScrollAndFocusHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:153:9)\n    at ScrollAndFocusHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:228:11)\n    at RenderFromTemplateContext (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/render-from-template-context.js:16:44)\n    at OuterLayoutRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:370:11)\n    at InnerLayoutRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:243:11)\n    at RedirectErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:74:9)\n    at RedirectBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:82:11)\n    at NotFoundErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/not-found-boundary.js:76:9)\n    at NotFoundBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/not-found-boundary.js:84:11)\n    at Suspense\n    at LoadingBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:349:11)\n    at ErrorBoundaryHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/error-boundary.js:113:9)\n    at ErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/error-boundary.js:160:11)\n    at InnerScrollAndFocusHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:153:9)\n    at ScrollAndFocusHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:228:11)\n    at RenderFromTemplateContext (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/render-from-template-context.js:16:44)\n    at OuterLayoutRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:370:11)\n    at main\n    at div\n    at PublicLayout (Server)\n    at InnerLayoutRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:243:11)\n    at RedirectErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:74:9)\n    at RedirectBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:82:11)\n    at NotFoundErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/not-found-boundary.js:76:9)\n    at NotFoundBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/not-found-boundary.js:84:11)\n    at LoadingBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:349:11)\n    at ErrorBoundaryHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/error-boundary.js:113:9)\n    at ErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/error-boundary.js:160:11)\n    at InnerScrollAndFocusHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:153:9)\n    at ScrollAndFocusHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:228:11)\n    at RenderFromTemplateContext (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/render-from-template-context.js:16:44)\n    at OuterLayoutRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:370:11)\n    at ColorPaletteProvider (webpack-internal:///(app-pages-browser)/./components/ui/color-palette-provider.tsx:45:11)\n    at IconProvider (webpack-internal:///(app-pages-browser)/./components/ui/icon-provider.tsx:10:11)\n    at V (webpack-internal:///(app-pages-browser)/./node_modules/next-themes/dist/index.mjs:54:24)\n    at J (webpack-internal:///(app-pages-browser)/./node_modules/next-themes/dist/index.mjs:47:47)\n    at ThemeProvider (webpack-internal:///(app-pages-browser)/./components/ui/theme-provider.tsx:10:11)\n    at AppThemeProvider (webpack-internal:///(app-pages-browser)/./components/ui/app-theme-provider.tsx:13:11)\n    at body\n    at html\n    at RootLayout (Server)\n    at RedirectErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:74:9)\n    at RedirectBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:82:11)\n    at NotFoundErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/not-found-boundary.js:76:9)\n    at NotFoundBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/not-found-boundary.js:84:11)\n    at DevRootNotFoundBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/dev-root-not-found-boundary.js:33:11)\n    at ReactDevOverlay (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/ReactDevOverlay.js:87:9)\n    at HotReload (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:321:11)\n    at Router (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/app-router.js:207:11)\n    at ErrorBoundaryHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/error-boundary.js:113:9)\n    at ErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/error-boundary.js:160:11)\n    at AppRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/app-router.js:585:13)\n    at ServerRoot (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:112:27)\n    at Root (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:117:11)",
+    "console: WebSocket connection to 'ws://127.0.0.1:3100/_next/webpack-hmr' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE"
+  ]
+}

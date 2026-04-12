@@ -176,6 +176,21 @@ export async function notifyEventConfirmed(
 }
 
 /**
+ * Notify chef that an event is now in progress.
+ */
+export async function notifyEventInProgress(
+  chefUserId: string,
+  eventName: string,
+  eventId: string
+): Promise<boolean> {
+  return sendPushToUser(chefUserId, {
+    title: 'Event In Progress',
+    message: `${eventName} is now in progress`,
+    url: `/events/${eventId}`,
+  })
+}
+
+/**
  * Notify chef that an event has been marked complete.
  */
 export async function notifyEventCompleted(

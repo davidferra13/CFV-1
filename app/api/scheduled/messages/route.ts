@@ -93,12 +93,12 @@ async function handleScheduledMessages(req: NextRequest): Promise<NextResponse> 
               }),
             })
           } else {
-            // SMS and app channels: mark as sent (not yet implemented)
-            // App channel just logs for now; SMS needs Twilio integration
+            // SMS and app channels: not yet implemented, leave as pending
             console.log(
-              `[scheduled-messages] Channel "${msg.channel}" not yet implemented for message ${msg.id}`
+              `[scheduled-messages] Channel "${msg.channel}" not yet implemented for message ${msg.id} - leaving pending`
             )
-            success = true
+            // Do not mark as sent - leave status as pending so chef can see the message was not delivered
+            continue
           }
 
           await db

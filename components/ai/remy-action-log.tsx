@@ -12,13 +12,15 @@ interface RemyActionLogProps {
 export function RemyActionLog({ onSelectConversation }: RemyActionLogProps) {
   const [entries, setEntries] = useState<ActionLogEntry[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
 
   const loadEntries = useCallback(async () => {
     try {
       const data = await getActionLog(200)
       setEntries(data)
+      setLoadError(false)
     } catch {
-      setEntries([])
+      setLoadError(true)
     } finally {
       setLoading(false)
     }
@@ -33,6 +35,14 @@ export function RemyActionLog({ onSelectConversation }: RemyActionLogProps) {
 
   if (loading) {
     return <div className="text-center py-8 text-gray-500 text-sm">Loading...</div>
+  }
+
+  if (loadError) {
+    return (
+      <div className="text-center py-8 text-red-400 text-sm">
+        Could not load action log. Check your connection and try again.
+      </div>
+    )
   }
 
   return (

@@ -182,60 +182,132 @@ async function EventsList({ status }: { status: EventStatus }) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {events.map((event: any) => (
-            <TableRow key={event.id}>
-              <TableCell className="w-14 p-1">
-                {eventPhotoMap[event.id] && (
-                  <Link href={`/events/${event.id}`}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={eventPhotoMap[event.id]}
-                      alt=""
-                      className="h-12 w-12 rounded object-cover"
-                    />
-                  </Link>
-                )}
-              </TableCell>
-              <TableCell className="font-medium">
-                <Link
-                  href={`/events/${event.id}`}
-                  className="text-brand-600 hover:text-brand-800 hover:underline"
-                >
-                  {event.occasion || 'Untitled Event'}
-                </Link>
-                {isDemoEvent(event) && (
-                  <Badge variant="info" className="ml-2 text-xxs px-1.5 py-0">
-                    Sample
-                  </Badge>
-                )}
-              </TableCell>
-              <TableCell>{format(new Date(event.event_date), 'MMM d, yyyy')}</TableCell>
-              <TableCell>{event.client?.full_name || 'Unknown'}</TableCell>
-              <TableCell>
-                <EventStatusBadge status={event.status} />
-              </TableCell>
-              <TableCell>{formatCurrency(event.quoted_price_cents ?? 0)}</TableCell>
-              <TableCell>
-                <div className="flex gap-2">
-                  <Link href={`/events/${event.id}`}>
-                    <Button size="sm" variant="secondary">
-                      View
-                    </Button>
-                  </Link>
-                  {event.status === 'draft' && (
-                    <Link href={`/events/${event.id}/edit`}>
-                      <Button size="sm" variant="secondary">
-                        Edit
-                      </Button>
+          {events.map((event: any) => {
+            const isToday = event.event_date === new Date().toISOString().split('T')[0]
+            return (
+              <TableRow
+                key={event.id}
+                className={isToday ? 'bg-amber-950/20 border-l-2 border-l-amber-600' : ''}
+              >
+                <TableCell className="w-14 p-1">
+                  {eventPhotoMap[event.id] && (
+                    <Link href={`/events/${event.id}`}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={eventPhotoMap[event.id]}
+                        alt=""
+                        className="h-12 w-12 rounded object-cover"
+                      />
                     </Link>
                   )}
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
+                </TableCell>
+                <TableCell className="font-medium">
+                  <Link
+                    href={`/events/${event.id}`}
+                    className="text-brand-600 hover:text-brand-800 hover:underline"
+                  >
+                    {event.occasion || 'Untitled Event'}
+                  </Link>
+                  {isToday && (
+                    <Badge variant="warning" className="ml-2 text-xxs px-1.5 py-0">
+                      Tonight
+                    </Badge>
+                  )}
+                  {isDemoEvent(event) && (
+                    <Badge variant="info" className="ml-2 text-xxs px-1.5 py-0">
+                      Sample
+                    </Badge>
+                  )}
+                </TableCell>
+                <TableCell>{format(new Date(event.event_date), 'MMM d, yyyy')}</TableCell>
+                <TableCell>{event.client?.full_name || 'Unknown'}</TableCell>
+                <TableCell>
+                  <EventStatusBadge status={event.status} />
+                </TableCell>
+                <TableCell>{formatCurrency(event.quoted_price_cents ?? 0)}</TableCell>
+                <TableCell>
+                  <div className="flex gap-2">
+                    <Link href={`/events/${event.id}`}>
+                      <Button size="sm" variant="secondary">
+                        View
+                      </Button>
+                    </Link>
+                    {isToday && !['draft', 'cancelled'].includes(event.status) && (
+                      <Link href={`/events/${event.id}/pack`}>
+                        <Button size="sm" variant="primary">
+                          Pack
+                        </Button>
+                      </Link>
+                    )}
+                    {event.status === 'draft' && (
+                      <Link href={`/events/${event.id}/edit`}>
+                        <Button size="sm" variant="secondary">
+                          Edit
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
+                </TableCell>
+              </TableRow>
+            )
+          })}
         </TableBody>
       </Table>
     </Card>
+  )
+}
+
+async function TodayEventsBanner() {
+  const today = new Date().toISOString().split('T')[0]
+  const events = await getEvents()
+  const todayEvents = events.filter(
+    (e: any) => e.event_date === today && !['draft', 'cancelled'].includes(e.status)
+  )
+  if (todayEvents.length === 0) return null
+
+  return (
+    <div className="space-y-2">
+      {todayEvents.map((event: any) => (
+        <div
+          key={event.id}
+          className="rounded-xl border border-amber-800/40 bg-amber-950/30 px-5 py-4"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <p className="text-xs text-amber-600 font-semibold uppercase tracking-wide mb-0.5">
+                Tonight
+              </p>
+              <p className="text-stone-100 font-semibold text-lg">{event.occasion || 'Event'}</p>
+              <p className="text-stone-400 text-sm">
+                {event.client?.full_name || 'Client'}
+                {event.serve_time ? ` at ${event.serve_time}` : ''}
+                {event.guest_count > 0 ? ` · ${event.guest_count} guests` : ''}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href={`/events/${event.id}/pack`}
+                className="inline-flex items-center px-3 py-1.5 rounded-md bg-orange-600 hover:bg-orange-500 text-white text-xs font-medium transition-colors"
+              >
+                Pack List
+              </Link>
+              <Link
+                href={`/events/${event.id}/grocery-quote`}
+                className="inline-flex items-center px-3 py-1.5 rounded-md bg-stone-700 hover:bg-stone-600 text-stone-200 text-xs font-medium transition-colors"
+              >
+                Grocery List
+              </Link>
+              <Link
+                href={`/events/${event.id}`}
+                className="inline-flex items-center px-3 py-1.5 rounded-md bg-stone-800 hover:bg-stone-700 text-stone-400 text-xs font-medium transition-colors"
+              >
+                Full Event
+              </Link>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
   )
 }
 
@@ -250,6 +322,11 @@ export default async function EventsPage({
 
   return (
     <div className="space-y-10">
+      {/* Today's events - shown when event is today */}
+      <Suspense fallback={null}>
+        <TodayEventsBanner />
+      </Suspense>
+
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>

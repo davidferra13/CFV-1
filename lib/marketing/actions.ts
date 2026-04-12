@@ -346,9 +346,13 @@ export async function sendCampaignNow(campaignId: string) {
   const chefName = await getChefDisplayName(chef.entityId)
 
   let sentCount = 0
+  let skippedCount = 0
 
   for (const client of audience) {
-    if (!client.email) continue
+    if (!client.email) {
+      skippedCount++
+      continue
+    }
 
     const { first, last } = splitName(client.full_name)
 
@@ -437,7 +441,7 @@ export async function sendCampaignNow(campaignId: string) {
     .eq('id', campaignId)
 
   revalidatePath('/marketing')
-  return { sentCount }
+  return { sentCount, skippedCount }
 }
 
 // ============================================
