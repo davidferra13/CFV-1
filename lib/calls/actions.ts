@@ -67,7 +67,7 @@ export interface ScheduledCall {
   // Joined fields (optional)
   client?: { id: string; full_name: string; email: string | null } | null
   inquiry?: { id: string; confirmed_occasion: string | null } | null
-  event?: { id: string; title: string; event_date: string | null } | null
+  event?: { id: string; occasion: string | null; event_date: string | null } | null
 }
 
 export interface CallsFilter {
@@ -338,7 +338,7 @@ export async function getCalls(filter?: CallsFilter): Promise<ScheduledCall[]> {
       *,
       client:clients(id, full_name, email),
       inquiry:inquiries(id, confirmed_occasion),
-      event:events(id, event_date)
+      event:events(id, occasion, event_date)
     `
     )
     .eq('tenant_id', user.tenantId!)

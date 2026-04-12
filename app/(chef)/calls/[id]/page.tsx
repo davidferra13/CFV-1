@@ -143,7 +143,7 @@ export default async function CallDetailPage({ params }: Props) {
                     href={`/events/${call.event.id}`}
                     className="text-brand-600 hover:underline text-sm"
                   >
-                    Event: {call.event.title}
+                    Event: {call.event.occasion ?? 'Private Event'}
                     {call.event.event_date &&
                       ` (${format(new Date(call.event.event_date), 'MMM d')})`}
                   </Link>

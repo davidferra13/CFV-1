@@ -16,11 +16,11 @@ export default async function StaffSchedulePage() {
   // Separate past and upcoming
   const today = new Date().toISOString().split('T')[0]
   const upcoming = assignments.filter((a) => {
-    const eventDate = (a.event as any)?.date
+    const eventDate = a.event?.event_date
     return eventDate && eventDate >= today
   })
   const past = assignments.filter((a) => {
-    const eventDate = (a.event as any)?.date
+    const eventDate = a.event?.event_date
     return eventDate && eventDate < today
   })
 
@@ -82,8 +82,8 @@ export default async function StaffSchedulePage() {
 
 function AssignmentRow({ assignment, isPast = false }: { assignment: any; isPast?: boolean }) {
   const event = assignment.event
-  const eventDate = event?.date
-    ? new Date(event.date + 'T00:00:00').toLocaleDateString('en-US', {
+  const eventDate = event?.event_date
+    ? new Date(event.event_date + 'T00:00:00').toLocaleDateString('en-US', {
         weekday: 'short',
         month: 'short',
         day: 'numeric',
@@ -106,14 +106,14 @@ function AssignmentRow({ assignment, isPast = false }: { assignment: any; isPast
     >
       <div className="flex-1">
         <div className={`text-sm font-medium ${isPast ? 'text-stone-400' : 'text-stone-200'}`}>
-          {event?.title ?? 'Unnamed Event'}
+          {event?.occasion ?? 'Unnamed Event'}
         </div>
         <div className="text-xs text-stone-500 flex flex-wrap items-center gap-2 mt-0.5">
           <span>{eventDate}</span>
-          {event?.start_time && (
+          {event?.serve_time && (
             <span>
-              {event.start_time}
-              {event.end_time ? ` - ${event.end_time}` : ''}
+              {event.serve_time}
+              {event.departure_time ? ` - ${event.departure_time}` : ''}
             </span>
           )}
           {assignment.role_override && (
