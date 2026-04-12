@@ -40,6 +40,12 @@ export type RepeatClientIntelligence = {
   } | null
   daysSinceLastEvent: number | null
   lastEventDate: string | null
+  lastVenueNotes: {
+    kitchen_notes: string | null
+    site_notes: string | null
+    location: string | null
+    event_date: string | null
+  } | null
 }
 
 // ==========================================
@@ -68,7 +74,9 @@ export async function getRepeatClientIntelligence(
       // Event history
       db
         .from('events')
-        .select('id, event_status, event_date, quoted_price_cents')
+        .select(
+          'id, event_status, event_date, quoted_price_cents, kitchen_notes, site_notes, location_city'
+        )
         .eq('client_id', clientId)
         .eq('tenant_id', user.entityId)
         .order('event_date', { ascending: false }),
@@ -203,5 +211,14 @@ export async function getRepeatClientIntelligence(
     lastFeedback: lastFeedbackData,
     daysSinceLastEvent,
     lastEventDate: lastEvent?.event_date ?? null,
+    lastVenueNotes:
+      lastEvent?.kitchen_notes || lastEvent?.site_notes
+        ? {
+            kitchen_notes: lastEvent.kitchen_notes ?? null,
+            site_notes: lastEvent.site_notes ?? null,
+            location: lastEvent.location_city ?? null,
+            event_date: lastEvent.event_date ?? null,
+          }
+        : null,
   }
 }

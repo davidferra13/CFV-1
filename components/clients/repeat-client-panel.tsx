@@ -151,6 +151,27 @@ export function RepeatClientPanel({ clientId }: Props) {
         </div>
       )}
 
+      {/* Last Venue Notes */}
+      {data.lastVenueNotes && (
+        <div className="bg-stone-800/60 border border-stone-700 rounded p-2 space-y-1">
+          <p className="text-xs font-medium text-stone-400">
+            Last venue{data.lastVenueNotes.location ? ` (${data.lastVenueNotes.location})` : ''}
+          </p>
+          {data.lastVenueNotes.kitchen_notes && (
+            <p className="text-xs text-stone-300">
+              <span className="text-stone-500">Kitchen: </span>
+              {data.lastVenueNotes.kitchen_notes}
+            </p>
+          )}
+          {data.lastVenueNotes.site_notes && (
+            <p className="text-xs text-stone-300">
+              <span className="text-stone-500">Site: </span>
+              {data.lastVenueNotes.site_notes}
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Tipping Pattern */}
       {data.client.tipping_pattern && (
         <p className="text-xs text-stone-500">Tipping: {data.client.tipping_pattern}</p>

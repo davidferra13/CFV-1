@@ -11,6 +11,7 @@ import { getIngredients } from '@/lib/recipes/actions'
 import { listVendors } from '@/lib/vendors/actions'
 import { Card, CardContent } from '@/components/ui/card'
 import { PriceAlertsWidget } from '@/components/culinary/price-alerts-widget'
+import { BatchOpportunitiesCard } from '@/components/grocery/batch-opportunities-card'
 
 export const metadata: Metadata = { title: 'Culinary' }
 
@@ -149,6 +150,9 @@ export default async function CulinaryHubPage() {
 
       {/* Price alerts */}
       <PriceAlertsWidget />
+
+      {/* Batch opportunities - shared ingredients across this week's events */}
+      <BatchOpportunitiesCard />
     </div>
   )
 }
