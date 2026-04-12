@@ -9,11 +9,11 @@
 
 _Every status change, every claim, every verification gets a row. This is the audit trail._
 
-| Event            | Date                 | Agent/Session         | Commit  |
-| ---------------- | -------------------- | --------------------- | ------- |
-| Created          | 2026-04-03 18:35 EDT | Codex                 |         |
-| Status: ready    | 2026-04-03 18:35 EDT | Codex                 |         |
-| Status: verified | 2026-04-12           | Builder (Claude Code) | pending |
+| Event            | Date                 | Agent/Session         | Commit    |
+| ---------------- | -------------------- | --------------------- | --------- |
+| Created          | 2026-04-03 18:35 EDT | Codex                 |           |
+| Status: ready    | 2026-04-03 18:35 EDT | Codex                 |           |
+| Status: verified | 2026-04-12           | Builder (Claude Code) | f21b07551 |
 
 ---
 
