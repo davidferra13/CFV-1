@@ -17,13 +17,20 @@
 // because the free entry points must always be reachable. Paid sub-features surface contextual
 // upgrade prompts inline rather than blocking the module entirely.
 
+// ModuleTier is independent of the Stripe subscription Tier ('free' | 'pro').
+// Modules use 'free' | 'paid' to align with feature-classification.ts terminology.
+// 'paid' modules are not locked - they surface contextual upgrade prompts inline.
+export type ModuleTier = 'free' | 'paid'
+
+// Re-export Tier for functions that need to check subscription status alongside module tier.
+export type { Tier } from '@/lib/billing/tier'
 import type { Tier } from '@/lib/billing/tier'
 
 export type ModuleDefinition = {
   slug: string
   label: string
   description: string
-  tier: Tier // 'free' = always available, 'pro' = requires Pro subscription
+  tier: ModuleTier // 'free' = always available, 'paid' = upgrade prompts surface inline
   defaultEnabled: boolean // ON by default for new signups?
   alwaysVisible: boolean // Cannot be toggled off (e.g., Dashboard)
   navGroupId?: string // Maps to navGroups[].id in nav-config.tsx

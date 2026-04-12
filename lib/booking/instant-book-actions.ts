@@ -7,6 +7,7 @@
 
 import { createServerClient } from '@/lib/db/server'
 import { createClientFromLead } from '@/lib/clients/actions'
+import { dateToDateString } from '@/lib/utils/format'
 import {
   BookingServiceModeSchema,
   ScheduleRequestSchema,
@@ -352,7 +353,9 @@ export async function createInstantBookingCheckout(
     }
 
     const sortedSessions = [...insertedSessions].sort((a: any, b: any) => {
-      const dateCompare = String(a.session_date).localeCompare(String(b.session_date))
+      const dateCompare = dateToDateString(a.session_date as Date | string).localeCompare(
+        dateToDateString(b.session_date as Date | string)
+      )
       if (dateCompare !== 0) return dateCompare
       return Number(a.sort_order ?? 0) - Number(b.sort_order ?? 0)
     })

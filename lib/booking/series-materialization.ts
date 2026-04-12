@@ -5,6 +5,12 @@ import {
 } from '@/lib/booking/series-planning'
 import type { Database } from '@/types/database'
 
+/** Safe comparator for Date | string values from postgres.js */
+function compareDateTime(a: unknown, b: unknown): number {
+  const toMs = (v: unknown) => (v instanceof Date ? v.getTime() : new Date(String(v)).getTime())
+  return toMs(a) - toMs(b)
+}
+
 type EventSeriesRow = {
   id: string
   service_mode: Database['public']['Enums']['booking_service_mode']
@@ -281,8 +287,8 @@ export async function materializeSeriesEvents(params: {
   }
 
   return [...((existingEvents || []) as EventRow[]), ...insertedEvents].sort((a, b) => {
-    const dateCompare = a.event_date.localeCompare(b.event_date)
+    const dateCompare = compareDateTime(a.event_date, b.event_date)
     if (dateCompare !== 0) return dateCompare
-    return a.created_at.localeCompare(b.created_at)
+    return compareDateTime(a.created_at, b.created_at)
   })
 }

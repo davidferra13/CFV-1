@@ -214,7 +214,7 @@ export function ModulesClient({
           <div className="grid gap-3 sm:grid-cols-2">
             {MODULES.map((mod) => {
               const isOn = enabled.has(mod.slug)
-              const isProModule = mod.tier === 'pro'
+              const isProModule = mod.tier === 'paid'
               const isLocked = isProModule && tier === 'free'
 
               return (
