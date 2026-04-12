@@ -44,7 +44,9 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
   // Load event details
   const { data: event } = await db
     .from('events')
-    .select('id, occasion, event_date, guest_count, serve_time, notes, client:clients(full_name)')
+    .select(
+      'id, occasion, event_date, guest_count, serve_time, site_notes, client:clients(full_name)'
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -109,7 +111,7 @@ Categories: shopping, prep, cooking, plating, service, cleanup, transport`
 - Date: ${eventDate ?? 'TBD'}
 - Service time: ${serviceTime ?? 'Evening (assume 7:00 PM)'}
 - Menu items: ${menuItemNames.length > 0 ? menuItemNames.join(', ') : 'No menu specified - generate a general timeline'}
-- Notes: ${(event as any).notes ?? 'None'}`
+- Notes: ${(event as any).site_notes ?? 'None'}`
 
   const { result, source } = await withAiFallback(
     // Formula: backward-from-service-time scheduling with guest scaling - deterministic
@@ -121,7 +123,7 @@ Categories: shopping, prep, cooking, plating, service, cleanup, transport`
         serviceTime,
         menuItems: menuItemNames,
         isOffsite: true, // default conservative - offsite adds transport buffer
-        notes: (event as any).notes ?? undefined,
+        notes: (event as any).site_notes ?? undefined,
       }),
     // AI: enhanced timeline with contextual tips (when Ollama is online)
     async () => {

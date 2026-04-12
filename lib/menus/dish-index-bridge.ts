@@ -42,14 +42,14 @@ export async function indexDishesFromMenu(menuId: string, tenantId: string, user
   if (menu.event_id) {
     const { data: event } = await db
       .from('events')
-      .select('date, event_type, client:clients(full_name)')
+      .select('event_date, occasion, client:clients(full_name)')
       .eq('id', menu.event_id)
       .eq('tenant_id', tenantId)
       .single()
 
     if (event) {
-      eventDate = (event as Record<string, unknown>).date as string | null
-      eventType = (event as Record<string, unknown>).event_type as string | null
+      eventDate = (event as Record<string, unknown>).event_date as string | null
+      eventType = (event as Record<string, unknown>).occasion as string | null
       const client = (event as Record<string, unknown>).client as Record<string, unknown> | null
       clientName = client?.full_name as string | null
     }

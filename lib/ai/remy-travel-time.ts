@@ -111,7 +111,7 @@ export async function getTravelEstimates(tenantId: string): Promise<TravelEstima
 
   const { data: events } = await db
     .from('events')
-    .select('id, event_date, location, occasion, client:clients(full_name)')
+    .select('id, event_date, location_address, occasion, client:clients(full_name)')
     .eq('tenant_id', tenantId)
     .not('status', 'in', '("cancelled","completed")')
     .gte('event_date', today)
@@ -141,16 +141,18 @@ export async function getTravelEstimates(tenantId: string): Promise<TravelEstima
     for (let i = 0; i < dayEvents.length - 1; i++) {
       const from = dayEvents[i]
       const to = dayEvents[i + 1]
-      if (!from.location || !to.location) continue
+      if (!from.location_address || !to.location_address) continue
 
       // Same location → no travel needed
-      if (from.location.toLowerCase().trim() === to.location.toLowerCase().trim()) continue
+      if (from.location_address.toLowerCase().trim() === to.location_address.toLowerCase().trim())
+        continue
 
       // Geocode both locations
-      const fromKey = from.location.toLowerCase().trim()
-      const toKey = to.location.toLowerCase().trim()
-      if (!geoCache.has(fromKey)) geoCache.set(fromKey, await geocodeLocation(from.location))
-      if (!geoCache.has(toKey)) geoCache.set(toKey, await geocodeLocation(to.location))
+      const fromKey = from.location_address.toLowerCase().trim()
+      const toKey = to.location_address.toLowerCase().trim()
+      if (!geoCache.has(fromKey))
+        geoCache.set(fromKey, await geocodeLocation(from.location_address))
+      if (!geoCache.has(toKey)) geoCache.set(toKey, await geocodeLocation(to.location_address))
 
       const fromGeo = geoCache.get(fromKey)
       const toGeo = geoCache.get(toKey)
@@ -188,8 +190,8 @@ export async function getTravelEstimates(tenantId: string): Promise<TravelEstima
       estimates.push({
         fromEventId: from.id,
         toEventId: to.id,
-        fromLocation: from.location,
-        toLocation: to.location,
+        fromLocation: from.location_address,
+        toLocation: to.location_address,
         fromOccasion: from.occasion ?? null,
         toOccasion: to.occasion ?? null,
         fromDate: new Date(from.event_date).toISOString(),

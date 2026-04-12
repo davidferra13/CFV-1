@@ -74,7 +74,7 @@ async function findClientByName(db: any, name: string, tenantId: string) {
 async function loadLastEvent(db: any, clientId: string, tenantId: string) {
   const { data } = await db
     .from('events')
-    .select('id, occasion, event_date, guest_count, status, location')
+    .select('id, occasion, event_date, guest_count, status, location_address')
     .eq('client_id', clientId)
     .eq('tenant_id', tenantId)
     .order('event_date', { ascending: false })
@@ -87,7 +87,7 @@ async function loadEvent(db: any, eventId: string, tenantId: string) {
   const { data } = await db
     .from('events')
     .select(
-      'id, occasion, event_date, guest_count, status, location, client_id, client:clients(full_name, email)'
+      'id, occasion, event_date, guest_count, status, location_address, client_id, client:clients(full_name, email)'
     )
     .eq('id', eventId)
     .eq('tenant_id', tenantId)
@@ -132,7 +132,7 @@ export async function generateThankYouDraft(
   if (eventHint) {
     const { data } = await db
       .from('events')
-      .select('id, occasion, event_date, guest_count, status, location')
+      .select('id, occasion, event_date, guest_count, status, location_address')
       .eq('client_id', client.id)
       .eq('tenant_id', tenantId)
       .ilike('occasion', `%${eventHint}%`)
@@ -165,7 +165,7 @@ export async function generateThankYouDraft(
     () =>
       parseWithOllama(
         `You are ${chefName}, a private chef writing a heartfelt thank-you note to a client after an event. First person singular "I". Warm, genuine, not generic. Reference specific details about their event. Keep it 3-4 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
-        `Write a thank-you note for:\nClient: ${client.full_name} (first name: ${firstName(client.full_name)})\nEvent: ${eventOccasion} on ${(event as any)?.event_date ?? 'N/A'}\nIMPORTANT: This is a "${eventOccasion}" - do NOT confuse with other event types.\nGuests: ${(event as any)?.guest_count ?? 'N/A'}\nLocation: ${(event as any)?.location ?? 'N/A'}`,
+        `Write a thank-you note for:\nClient: ${client.full_name} (first name: ${firstName(client.full_name)})\nEvent: ${eventOccasion} on ${(event as any)?.event_date ?? 'N/A'}\nIMPORTANT: This is a "${eventOccasion}" - do NOT confuse with other event types.\nGuests: ${(event as any)?.guest_count ?? 'N/A'}\nLocation: ${(event as any)?.location_address ?? 'N/A'}`,
         EmailDraftSchema,
         { modelTier: 'standard', maxTokens: 800 }
       )
@@ -284,7 +284,7 @@ export async function generateQuoteCoverLetterDraft(eventIdOrName: string): Prom
     const { data: events } = await db
       .from('events')
       .select(
-        'id, occasion, event_date, guest_count, status, location, client_id, client:clients(full_name, email)'
+        'id, occasion, event_date, guest_count, status, location_address, client_id, client:clients(full_name, email)'
       )
       .eq('tenant_id', tenantId)
       .ilike('occasion', `%${eventIdOrName}%`)
@@ -314,7 +314,7 @@ export async function generateQuoteCoverLetterDraft(eventIdOrName: string): Prom
 Client: ${clientName} (first name: ${firstName(clientName)})
 Event: ${(event as any).occasion ?? 'upcoming event'} on ${(event as any).event_date ?? 'TBD'}
 Guests: ${(event as any).guest_count ?? 'TBD'}
-Location: ${(event as any).location ?? 'TBD'}`,
+Location: ${(event as any).location_address ?? 'TBD'}`,
         EmailDraftSchema,
         { modelTier: 'standard', maxTokens: 800 }
       )
@@ -391,7 +391,7 @@ export async function generateCancellationResponseDraft(
     const { data: events } = await db
       .from('events')
       .select(
-        'id, occasion, event_date, guest_count, status, location, client_id, client:clients(full_name, email)'
+        'id, occasion, event_date, guest_count, status, location_address, client_id, client:clients(full_name, email)'
       )
       .eq('tenant_id', tenantId)
       .ilike('occasion', `%${eventIdOrName}%`)
