@@ -555,3 +555,21 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: 27b5c1370, 38a42c929, 68bd929f4
 - Build state on departure: green (tsc exits 0)
 - Notes: Most "unbuilt features" from MemPalace backlog were already built. Stale items updated in memory. Remaining genuine gaps: SMS channel (needs Twilio), Google Calendar sync (needs OAuth), multi-chef client view, quick-service menu board display.
+
+## 2026-04-12 (evening continuation)
+
+- Agent: Builder (Sonnet 4.6)
+- Task: MemPalace backlog execution continued - bug fixes from mining sweep + DocuSign UI completion + recipe unit warnings
+- Status: completed
+- Files touched:
+  - lib/client-portal/actions.ts (fix: select full_name not first_name/last_name - every portal visitor was 'Valued Client')
+  - app/api/menus/upload/route.ts (fix: replace db.storage.from() crash with lib/storage upload)
+  - database/migrations/20260412000002_docusign_event_contracts.sql (created: add DocuSign columns to event_contracts)
+  - lib/integrations/docusign/docusign-client.ts (fix: sendContractForSignature used 'contracts' table which doesn't exist, use 'event_contracts' + 'chef_id')
+  - lib/contracts/actions.ts (add sendContractViaDocuSign server action - generates PDF, base64 encodes, sends via DocuSign)
+  - components/contracts/contract-section.tsx (check DocuSign connection status, pass docusignConnected prop)
+  - components/contracts/send-contract-button.tsx (add 'Send via DocuSign' button when DocuSign connected, fix select a11y)
+  - app/(chef)/culinary/recipes/[id]/page.tsx (add unit mismatch detection - amber warning when recipe unit vs price unit incompatible)
+- Commits: cc4e188fe, 9b263b755
+- Build state on departure: green (tsc exits 0)
+- Notes: CPA export 422 and Stripe webhook bugs were stale - both already working. DocuSign now fully wired end-to-end. Recipe unit mismatch was silent before; now surfaces a visible warning per ingredient. Remaining backlog items: SMS channel, Google Calendar OAuth, multi-chef client view, dark mode coverage, calendar availability in booking flow.
