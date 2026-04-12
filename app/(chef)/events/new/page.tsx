@@ -7,7 +7,11 @@ import { getPartnersWithLocations } from '@/lib/partners/actions'
 import { getDepositDefaults } from '@/lib/automations/settings-actions'
 import { EventForm } from '@/components/events/event-form'
 
-export default async function NewEventPage() {
+export default async function NewEventPage({
+  searchParams,
+}: {
+  searchParams: { client_id?: string; date?: string; occasion?: string; waitlist_id?: string }
+}) {
   const user = await requireChef()
 
   const [clients, { partners, partnerLocations }, depositDefaults] = await Promise.all([
@@ -16,18 +20,35 @@ export default async function NewEventPage() {
     getDepositDefaults(),
   ])
 
+  const seed =
+    searchParams.client_id || searchParams.date || searchParams.occasion
+      ? {
+          client_id: searchParams.client_id,
+          occasion: searchParams.occasion,
+          event_date: searchParams.date,
+        }
+      : undefined
+
+  const fromWaitlist = searchParams.waitlist_id
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="flex items-center gap-6">
-        <p className="text-sm text-stone-500">
-          Prefer a shortcut?{' '}
-          <a
-            href="/events/new/from-text"
-            className="text-brand-500 hover:text-brand-400 font-medium"
-          >
-            Just describe it &rarr;
-          </a>
-        </p>
+        {fromWaitlist ? (
+          <p className="text-sm text-stone-400">
+            Creating event from waitlist entry. Fields have been pre-filled.
+          </p>
+        ) : (
+          <p className="text-sm text-stone-500">
+            Prefer a shortcut?{' '}
+            <a
+              href="/events/new/from-text"
+              className="text-brand-500 hover:text-brand-400 font-medium"
+            >
+              Just describe it &rarr;
+            </a>
+          </p>
+        )}
       </div>
 
       <div>
@@ -42,6 +63,7 @@ export default async function NewEventPage() {
         partners={partners}
         partnerLocations={partnerLocations}
         depositDefaults={depositDefaults}
+        seed={seed}
       />
     </div>
   )

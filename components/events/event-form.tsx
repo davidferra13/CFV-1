@@ -3,7 +3,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
@@ -17,7 +17,7 @@ import { UnsavedChangesDialog } from '@/components/ui/unsaved-changes-dialog'
 import { AddressAutocomplete, type AddressData } from '@/components/ui/address-autocomplete'
 import { PartnerSelect } from '@/components/partners/partner-select'
 import { createEvent, getEventById, updateEvent, type CreateEventInput } from '@/lib/events/actions'
-import { checkDateConflicts } from '@/lib/availability/actions'
+import { checkDateConflicts, convertWaitlistEntry } from '@/lib/availability/actions'
 import { parseCurrencyToCents } from '@/lib/utils/currency'
 import { useDurableDraft } from '@/lib/drafts/use-durable-draft'
 import { useUnsavedChangesGuard } from '@/lib/navigation/use-unsaved-changes-guard'
@@ -115,6 +115,12 @@ type EventFormProps = {
   partners?: Partner[]
   partnerLocations?: Record<string, PartnerLocation[]>
   depositDefaults?: DepositDefaults
+  /** Pre-fill values when creating from a waitlist entry or other source */
+  seed?: {
+    client_id?: string
+    occasion?: string
+    event_date?: string
+  }
 }
 
 export function EventForm({
@@ -125,8 +131,10 @@ export function EventForm({
   partners = [],
   partnerLocations = {},
   depositDefaults,
+  seed,
 }: EventFormProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [conflictError, setConflictError] = useState<ConflictErrorPayload | null>(null)
@@ -235,9 +243,13 @@ export function EventForm({
 
   const initialFormData = useMemo<EventFormData>(
     () => ({
-      client_id: event?.client_id || '',
-      occasion: event?.occasion || '',
-      event_date: event?.event_date ? event.event_date.substring(0, 16) : '',
+      client_id: event?.client_id || seed?.client_id || '',
+      occasion: event?.occasion || seed?.occasion || '',
+      event_date: event?.event_date
+        ? event.event_date.substring(0, 16)
+        : seed?.event_date
+          ? seed.event_date
+          : '',
       serve_time: event?.serve_time || '',
       guest_count: event?.guest_count?.toString() || '',
       location_address: event?.location_address || '',
@@ -602,6 +614,11 @@ export function EventForm({
         if (result.success && result.event) {
           setCommittedFormData(currentFormData)
           await durableDraft.clearDraft()
+          // If created from waitlist, mark the entry as converted (non-blocking)
+          const waitlistId = searchParams.get('waitlist_id')
+          if (waitlistId) {
+            convertWaitlistEntry(waitlistId, result.event.id).catch(() => {})
+          }
           router.push(`/events/${result.event.id}`)
         } else {
           throw new Error('Failed to create event')
