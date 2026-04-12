@@ -371,13 +371,82 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
               <path d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 style={{ fontSize: '24px', fontWeight: 700, margin: '0 0 8px' }}>
-            Inquiry Submitted!
-          </h2>
-          <p style={{ color: textSecondary, margin: '0 0 24px', lineHeight: 1.5 }}>
-            Thank you for your interest. {chefName} will review your inquiry and get back to you
-            within 24 hours.
+          <h2 style={{ fontSize: '24px', fontWeight: 700, margin: '0 0 8px' }}>Request sent!</h2>
+          <p style={{ color: textSecondary, margin: '0 0 16px', lineHeight: 1.5 }}>
+            {chefName} will review your request and follow up within 24 hours.
           </p>
+          <div
+            style={{
+              textAlign: 'left',
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              borderRadius: '10px',
+              padding: '14px 16px',
+              marginBottom: '20px',
+            }}
+          >
+            <p
+              style={{
+                fontSize: '11px',
+                fontWeight: 700,
+                color: '#94a3b8',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                margin: '0 0 10px',
+              }}
+            >
+              What happens next
+            </p>
+            {[
+              { n: '✓', label: 'Request received', sub: 'Your details are with the chef.' },
+              { n: '2', label: 'Chef reviews and responds', sub: 'Usually within 24 hours.' },
+              { n: '3', label: 'Menu and quote sent to you', sub: 'Review before committing.' },
+              { n: '4', label: 'Confirm and pay deposit', sub: 'Locks in your date.' },
+              { n: '5', label: 'Dinner', sub: 'Chef cooks, cleans up. You enjoy.' },
+            ].map((s) => (
+              <div
+                key={s.n}
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '10px',
+                  marginBottom: '8px',
+                }}
+              >
+                <span
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    background: s.n === '✓' ? '#dcfce7' : '#f1f5f9',
+                    color: s.n === '✓' ? '#16a34a' : '#64748b',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    flexShrink: 0,
+                    marginTop: '1px',
+                  }}
+                >
+                  {s.n}
+                </span>
+                <div>
+                  <p
+                    style={{
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      color: s.n === '✓' ? '#16a34a' : '#1e293b',
+                      margin: 0,
+                    }}
+                  >
+                    {s.label}
+                  </p>
+                  <p style={{ fontSize: '12px', color: '#94a3b8', margin: '1px 0 0' }}>{s.sub}</p>
+                </div>
+              </div>
+            ))}
+          </div>
           <button
             type="button"
             onClick={() => {

@@ -4,7 +4,7 @@
 // Shows food cost %, cost per guest, total cost, and margin alerts
 // Reads from server actions, no AI
 
-import { useEffect, useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { checkMenuMargins, getMenuVendorHints } from '@/lib/menus/menu-intelligence-actions'
 import type { MarginAlert, MenuVendorHint } from '@/lib/menus/menu-intelligence-actions'
@@ -51,7 +51,7 @@ export function MenuCostSidebar({
   const [vendorHints, setVendorHints] = useState<MenuVendorHint[]>([])
   const [loadError, setLoadError] = useState<string | null>(null)
 
-  useEffect(() => {
+  const fetchCost = () => {
     startTransition(async () => {
       try {
         const [result, hints] = await Promise.all([
@@ -67,7 +67,26 @@ export function MenuCostSidebar({
         setLoadError('Could not load cost data')
       }
     })
-  }, [menuId])
+  }
+
+  // Initial load
+  useEffect(() => {
+    fetchCost()
+  }, [menuId]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Live cost: re-fetch 600ms after any menu mutation (add/remove dish or component)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => {
+    const handler = () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      debounceRef.current = setTimeout(() => fetchCost(), 600)
+    }
+    window.addEventListener('menu:mutated', handler)
+    return () => {
+      window.removeEventListener('menu:mutated', handler)
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [menuId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loadError) {
     return (

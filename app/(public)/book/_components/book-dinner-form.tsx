@@ -182,34 +182,89 @@ export function BookDinnerForm() {
 
   // Success state
   if (result?.success) {
+    const hasMatches = (result.matched_count ?? 0) > 0
+    const steps = [
+      { label: 'Request received', note: 'Your details are with the chef.', done: true },
+      {
+        label: 'Chef reviews and responds',
+        note: 'Usually within 24 hours. You will get an email.',
+        done: false,
+      },
+      {
+        label: 'Menu and quote sent to you',
+        note: 'Review, ask questions, request changes.',
+        done: false,
+      },
+      { label: 'Confirm and pay deposit', note: 'Locks in your date.', done: false },
+      { label: 'Dinner', note: 'Chef arrives, cooks, cleans up. You enjoy.', done: false },
+    ]
+
     return (
-      <div className="rounded-2xl border border-stone-700 bg-stone-900/80 p-8 text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-900/50 border border-emerald-700/50">
-          <svg
-            className="h-8 w-8 text-emerald-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
+      <div className="rounded-2xl border border-stone-700 bg-stone-900/80 p-8">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-900/50 border border-emerald-700/50 shrink-0">
+            <svg
+              className="h-6 w-6 text-emerald-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold text-stone-100">Request sent</h2>
+            <p className="text-sm text-stone-400 mt-0.5">{result.message}</p>
+          </div>
         </div>
-        <h2 className="mt-5 text-xl font-semibold text-stone-100">Request submitted</h2>
-        <p className="mt-3 text-sm text-stone-300 leading-relaxed max-w-md mx-auto">
-          {result.message}
-        </p>
-        {result.matched_count === 0 && (
-          <p className="mt-4 text-sm text-stone-400">
-            In the meantime, you can{' '}
+
+        {/* What happens next */}
+        <div className="mb-6">
+          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">
+            What happens next
+          </p>
+          <ol className="space-y-3">
+            {steps.map((step, i) => (
+              <li key={i} className="flex items-start gap-3">
+                <span
+                  className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                    step.done
+                      ? 'bg-emerald-900/60 text-emerald-400 border border-emerald-700/50'
+                      : 'bg-stone-800 text-stone-500 border border-stone-700'
+                  }`}
+                >
+                  {step.done ? '✓' : i + 1}
+                </span>
+                <div>
+                  <p
+                    className={`text-sm font-medium ${step.done ? 'text-emerald-300' : 'text-stone-300'}`}
+                  >
+                    {step.label}
+                  </p>
+                  <p className="text-xs text-stone-500 mt-0.5">{step.note}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        {!hasMatches && (
+          <p className="text-sm text-stone-400">
+            No chefs matched your area yet. You can{' '}
             <a href="/chefs" className="text-brand-400 hover:text-brand-300 underline">
               browse our chef directory
             </a>{' '}
             to find chefs in other areas.
           </p>
         )}
-        {(result.matched_count ?? 0) > 0 && (
-          <p className="mt-4 text-sm text-stone-400">
-            Check your email for confirmation. You can also{' '}
+        {hasMatches && (
+          <p className="text-sm text-stone-400">
+            A confirmation email is on its way. You can{' '}
             <a href="/chefs" className="text-brand-400 hover:text-brand-300 underline">
               browse chef profiles
             </a>{' '}

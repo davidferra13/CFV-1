@@ -503,6 +503,7 @@ function ComponentRow({
     setShowDeleteComponentConfirm(false)
     startDelete(async () => {
       await deleteComponent(component.id)
+      window.dispatchEvent(new CustomEvent('menu:mutated'))
       onDeleted()
     })
   }
@@ -699,6 +700,7 @@ function DishCard({
     setShowDeleteCourseConfirm(false)
     startDelete(async () => {
       await deleteDish(dish.id)
+      window.dispatchEvent(new CustomEvent('menu:mutated'))
       onDeleted()
     })
   }
@@ -729,6 +731,7 @@ function DishCard({
     })
     setAddingComponent(false)
     forceRefresh((n) => n + 1)
+    window.dispatchEvent(new CustomEvent('menu:mutated'))
   }
 
   return (
@@ -915,6 +918,7 @@ export function MenuEditorClient({ menu }: { menu: MenuFull }) {
         setNewCourseName('')
         setAddingCourse(false)
         forceRefresh((n) => n + 1)
+        window.dispatchEvent(new CustomEvent('menu:mutated'))
       } catch (err: any) {
         setAddError(err.message || 'Failed to add course')
       }
