@@ -113,7 +113,7 @@ export async function checkVarianceAlerts(eventId: string): Promise<VarianceChec
   // Get event financial data
   const { data: event } = await db
     .from('events')
-    .select('id, title, tenant_id')
+    .select('id, occasion, tenant_id')
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -160,7 +160,7 @@ export async function checkVarianceAlerts(eventId: string): Promise<VarianceChec
         recipientId: user.id,
         category: 'ops',
         action: 'event_completed',
-        title: `Food cost alert: ${event.title}`,
+        title: `Food cost alert: ${event.occasion}`,
         body: `Actual spend exceeded estimate by ${variancePct}% ($${(actualCostCents / 100).toFixed(2)} vs $${(estimatedCostCents / 100).toFixed(2)}). That's ${overBy}% above your ${settings.thresholdPct}% threshold.`,
         eventId,
         actionUrl: `/events/${eventId}`,

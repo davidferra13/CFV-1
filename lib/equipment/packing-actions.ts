@@ -204,7 +204,7 @@ export async function generatePackingChecklist(
   // Get event details
   const { data: event, error: eventErr } = await db
     .from('events')
-    .select('id, title, client_id')
+    .select('id, occasion, client_id')
     .eq('id', eventId)
     .eq('tenant_id', tenantId)
     .single()
@@ -222,7 +222,7 @@ export async function generatePackingChecklist(
   const allEquipment = (equipment ?? []) as Equipment[]
 
   // Create checklist
-  const checklistName = `Packing list: ${event.title || 'Event'}`
+  const checklistName = `Packing list: ${event.occasion || 'Event'}`
 
   const { data: checklist, error: createErr } = await db
     .from('packing_checklists')

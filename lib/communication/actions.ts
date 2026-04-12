@@ -1031,13 +1031,13 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
   } else if (lastLinked?.linked_entity_type === 'event' && lastLinked.linked_entity_id) {
     const { data: event } = await db
       .from('events' as any)
-      .select('id, title, event_date')
+      .select('id, occasion, event_date')
       .eq('id', lastLinked.linked_entity_id)
-      .eq('chef_id', user.tenantId!)
+      .eq('tenant_id', user.tenantId!)
       .single()
     if (event) {
       const label = [
-        event.title,
+        event.occasion,
         event.event_date ? new Date(event.event_date).toLocaleDateString() : null,
       ]
         .filter(Boolean)

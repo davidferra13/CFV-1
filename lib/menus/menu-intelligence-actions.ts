@@ -846,7 +846,7 @@ export async function initializeMenuForEvent(eventId: string): Promise<{
   // Fetch event with client info
   const { data: event, error: eventErr } = await db
     .from('events')
-    .select('id, title, occasion, event_date, guest_count, service_style, client_id, menu_id')
+    .select('id, occasion, event_date, guest_count, service_style, client_id, menu_id')
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -894,7 +894,7 @@ export async function initializeMenuForEvent(eventId: string): Promise<{
   }
 
   // Build menu name
-  const occasionLabel = event.occasion || event.title || 'Event'
+  const occasionLabel = event.occasion || 'Event'
   const menuName = clientLastName
     ? `${occasionLabel} Menu - ${clientLastName}`
     : `${occasionLabel} Menu`

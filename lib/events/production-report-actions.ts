@@ -62,7 +62,7 @@ export async function generateProductionReport(eventId: string): Promise<Product
     .select(
       `
       id,
-      title,
+      occasion,
       event_date,
       guest_count,
       menu_id,
@@ -111,7 +111,7 @@ export async function generateProductionReport(eventId: string): Promise<Product
 
   if (!dishes || dishes.length === 0) {
     return {
-      eventName: event.title ?? 'Untitled Event',
+      eventName: event.occasion ?? 'Untitled Event',
       eventDate: event.event_date,
       guestCount: event.guest_count,
       clientName,
@@ -305,7 +305,7 @@ export async function generateProductionReport(eventId: string): Promise<Product
   )
 
   return {
-    eventName: event.title ?? 'Untitled Event',
+    eventName: event.occasion ?? 'Untitled Event',
     eventDate: event.event_date,
     guestCount: event.guest_count,
     clientName,

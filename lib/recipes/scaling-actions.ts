@@ -115,7 +115,7 @@ export async function getScaledMenuForEvent(eventId: string): Promise<ScaledMenu
   // Fetch event with guest count
   const { data: event, error: eventError } = await db
     .from('events')
-    .select('id, title, guest_count')
+    .select('id, occasion, guest_count')
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -152,7 +152,7 @@ export async function getScaledMenuForEvent(eventId: string): Promise<ScaledMenu
   if (dishesError || !dishes?.length) {
     return {
       eventId: event.id,
-      eventName: event.title,
+      eventName: event.occasion,
       guestCount: event.guest_count,
       menuId: menu.id,
       menuName: menu.name,
@@ -172,7 +172,7 @@ export async function getScaledMenuForEvent(eventId: string): Promise<ScaledMenu
   if (componentsError || !components?.length) {
     return {
       eventId: event.id,
-      eventName: event.title,
+      eventName: event.occasion,
       guestCount: event.guest_count,
       menuId: menu.id,
       menuName: menu.name,

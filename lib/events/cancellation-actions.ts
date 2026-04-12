@@ -321,7 +321,7 @@ export async function getEventCancellationPreview(eventId: string): Promise<{
     // Get event with details
     const { data: event, error: eventErr } = await db
       .from('events')
-      .select('id, title, event_date, created_at')
+      .select('id, occasion, event_date, created_at')
       .eq('id', eventId)
       .eq('tenant_id', tenantId)
       .single()
@@ -348,7 +348,7 @@ export async function getEventCancellationPreview(eventId: string): Promise<{
       data: {
         eventId: event.id,
         eventDate: event.event_date,
-        eventTitle: event.title,
+        eventTitle: event.occasion,
         daysUntilEvent: feeResult.data.daysUntilEvent,
         totalPaidCents: feeResult.data.totalPaidCents,
         applicableTier: feeResult.data.applicableTier,
@@ -424,7 +424,7 @@ export async function getCancellationHistory(): Promise<{
 
       history.push({
         eventId: event.id,
-        eventTitle: event.title,
+        eventTitle: event.occasion,
         eventDate: event.event_date,
         clientName,
         cancelledAt: event.updated_at,

@@ -242,7 +242,7 @@ export async function processPendingSend(sendId: string): Promise<boolean> {
   const [clientResult, chefResult, eventResult] = await Promise.all([
     db.from('clients').select('full_name, email').eq('id', typedSend.client_id).single(),
     db.from('chefs').select('full_name, business_name').eq('id', typedSend.tenant_id).single(),
-    db.from('events').select('title, event_date').eq('id', typedSend.event_id).single(),
+    db.from('events').select('occasion, event_date').eq('id', typedSend.event_id).single(),
   ])
 
   if (!clientResult.data || !chefResult.data || !eventResult.data) {
@@ -258,7 +258,7 @@ export async function processPendingSend(sendId: string): Promise<boolean> {
   const clientName = clientResult.data.full_name
   const clientEmail = clientResult.data.email
   const chefName = chefResult.data.business_name || chefResult.data.full_name
-  const eventTitle = eventResult.data.title || 'your event'
+  const eventTitle = eventResult.data.occasion || 'your event'
   const eventDate = eventResult.data.event_date
     ? new Date(eventResult.data.event_date).toLocaleDateString('en-US', {
         month: 'long',
