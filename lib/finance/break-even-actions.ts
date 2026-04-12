@@ -221,14 +221,15 @@ export async function getMonthlyFixedCostEstimate(): Promise<FixedCostEstimate> 
   const db: any = createServerClient()
 
   // Look for recurring/fixed expenses in the last 60 days
-  const sixtyDaysAgo = new Date()
-  sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60)
+  const _n = new Date()
+  const _s60 = new Date(_n.getFullYear(), _n.getMonth(), _n.getDate() - 60)
+  const sixtyDaysAgoStr = `${_s60.getFullYear()}-${String(_s60.getMonth() + 1).padStart(2, '0')}-${String(_s60.getDate()).padStart(2, '0')}`
 
   const { data, error } = await db
     .from('expenses')
     .select('amount_cents, is_recurring, recurrence_interval, category')
     .eq('tenant_id', tenantId)
-    .gte('expense_date', sixtyDaysAgo.toISOString().split('T')[0])
+    .gte('expense_date', sixtyDaysAgoStr)
 
   if (error || !data || data.length === 0) return null
 

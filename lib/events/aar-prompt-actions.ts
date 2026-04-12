@@ -32,7 +32,9 @@ export async function getEventsNeedingAAR(tenantId: string): Promise<EventNeedin
   const db: any = createServerClient()
 
   // Look back 7 days for completed events
-  const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0]
+  const _n = new Date()
+  const _s7 = new Date(_n.getFullYear(), _n.getMonth(), _n.getDate() - 7)
+  const sevenDaysAgo = `${_s7.getFullYear()}-${String(_s7.getMonth() + 1).padStart(2, '0')}-${String(_s7.getDate()).padStart(2, '0')}`
 
   const { data: events, error } = await db
     .from('events')

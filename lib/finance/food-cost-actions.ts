@@ -368,7 +368,7 @@ export async function getFoodCostDashboardSummary(): Promise<{
 
   // Get last 6 months of events with menus
   const sixMonthsAgo = new Date(year, month - 7, 1)
-  const startDate = sixMonthsAgo.toISOString().slice(0, 10)
+  const startDate = `${sixMonthsAgo.getFullYear()}-${String(sixMonthsAgo.getMonth() + 1).padStart(2, '0')}-01`
 
   const { data: events } = await db
     .from('events')

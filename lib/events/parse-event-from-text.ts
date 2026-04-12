@@ -54,11 +54,15 @@ export type ParsedEventDraft = z.infer<typeof ParsedEventDraftSchema>
 
 // ── System prompt ────────────────────────────────────────────────────────────
 
-const today = new Date().toISOString().slice(0, 10)
+function getTodayLocal(): string {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
 
-const SYSTEM_PROMPT = `You are an assistant helping a private chef quickly capture event details from a free-form description.
+function getSystemPrompt(): string {
+  return `You are an assistant helping a private chef quickly capture event details from a free-form description.
 
-Today's date is ${today}. Use this to resolve relative dates like "Saturday the 28th", "next Friday", "in two weeks".
+Today's date is ${getTodayLocal()}. Use this to resolve relative dates like "Saturday the 28th", "next Friday", "in two weeks".
 
 Extract structured data from the chef's input. Be liberal in interpretation - the goal is to pre-fill a form, not to be a gatekeeper.
 
@@ -71,6 +75,7 @@ Rules:
 - Return ONLY valid JSON matching the schema
 
 Output JSON with these keys: client_name, event_date, serve_time, guest_count, occasion, location_description, quoted_price_cents, deposit_amount_cents, dietary_notes, notes, confidence_notes, uncertain_fields`
+}
 
 // ── Action ───────────────────────────────────────────────────────────────────
 
@@ -82,7 +87,7 @@ export async function parseEventFromText(
   }
 
   try {
-    const draft = await parseWithOllama(SYSTEM_PROMPT, rawText, ParsedEventDraftSchema)
+    const draft = await parseWithOllama(getSystemPrompt(), rawText, ParsedEventDraftSchema)
     return { draft }
   } catch (err) {
     if (err instanceof OllamaOfflineError) throw err

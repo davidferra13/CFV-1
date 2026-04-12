@@ -289,7 +289,7 @@ export async function getMonthlyExpenseTrend(months: number = 12): Promise<Month
   // Calculate date range
   const now = new Date()
   const startDate = new Date(now.getFullYear(), now.getMonth() - months + 1, 1)
-  const dateFrom = startDate.toISOString().slice(0, 10)
+  const dateFrom = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-01`
 
   const { data, error } = await db
     .from('expenses')

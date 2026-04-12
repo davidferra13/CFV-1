@@ -135,7 +135,8 @@ export async function getUpcomingCountdowns(): Promise<EventCountdown[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const today = new Date().toISOString().split('T')[0]
+  const _t = new Date()
+  const today = `${_t.getFullYear()}-${String(_t.getMonth() + 1).padStart(2, '0')}-${String(_t.getDate()).padStart(2, '0')}`
 
   const { data: events, error } = await db
     .from('events')

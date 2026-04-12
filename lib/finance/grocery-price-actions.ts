@@ -66,7 +66,12 @@ export async function addPriceEntry(
       price_cents: data.price_cents,
       quantity: data.quantity ?? 1,
       store_name: data.store_name?.trim() || null,
-      receipt_date: data.receipt_date || new Date().toISOString().split('T')[0],
+      receipt_date:
+        data.receipt_date ||
+        ((_d) =>
+          `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+          new Date()
+        ),
       notes: data.notes?.trim() || null,
     })
     .select()
@@ -94,7 +99,12 @@ export async function bulkAddPrices(
     price_cents: e.price_cents,
     quantity: e.quantity ?? 1,
     store_name: e.store_name?.trim() || null,
-    receipt_date: e.receipt_date || new Date().toISOString().split('T')[0],
+    receipt_date:
+      e.receipt_date ||
+      ((_d) =>
+        `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+        new Date()
+      ),
     notes: e.notes?.trim() || null,
   }))
 

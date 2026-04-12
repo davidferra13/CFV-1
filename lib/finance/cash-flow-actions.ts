@@ -34,9 +34,9 @@ export type WhatIfScenario = {
 // ─── Helpers ─────────────────────────────────────────────────────
 
 function addDays(dateStr: string, days: number): string {
-  const d = new Date(dateStr)
-  d.setDate(d.getDate() + days)
-  return d.toISOString().split('T')[0]
+  const [y, m, d] = dateStr.split('-').map(Number)
+  const result = new Date(y, m - 1, d + days)
+  return `${result.getFullYear()}-${String(result.getMonth() + 1).padStart(2, '0')}-${String(result.getDate()).padStart(2, '0')}`
 }
 
 function periodLabel(start: string, end: string): string {
@@ -51,7 +51,8 @@ export async function getCashFlowForecast(days: 30 | 60 | 90 = 30): Promise<Cash
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const today = new Date().toISOString().split('T')[0]
+  const _t = new Date()
+  const today = `${_t.getFullYear()}-${String(_t.getMonth() + 1).padStart(2, '0')}-${String(_t.getDate()).padStart(2, '0')}`
   const endDate = addDays(today, days)
 
   // Get confirmed events (paid/confirmed status) with amounts

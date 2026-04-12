@@ -1016,7 +1016,10 @@ export async function logCharityHours(input: LogCharityHoursInput) {
   const user = await requireChef()
   const validated = LogCharityHoursSchema.parse(input)
 
-  const loggedFor = validated.logged_for ?? new Date().toISOString().slice(0, 10)
+  const _tnl = new Date()
+  const loggedFor =
+    validated.logged_for ??
+    `${_tnl.getFullYear()}-${String(_tnl.getMonth() + 1).padStart(2, '0')}-${String(_tnl.getDate()).padStart(2, '0')}`
   const note = validated.note?.trim() || null
 
   try {

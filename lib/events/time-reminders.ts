@@ -54,7 +54,8 @@ export async function runTimeTrackingReminderSweep(): Promise<ReminderRunResult>
   const db = createServerClient({ admin: true })
   const now = new Date()
   const nowIso = now.toISOString()
-  const lookbackDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const _lb7 = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7)
+  const lookbackDate = `${_lb7.getFullYear()}-${String(_lb7.getMonth() + 1).padStart(2, '0')}-${String(_lb7.getDate()).padStart(2, '0')}`
   const dayStart = new Date(now)
   dayStart.setUTCHours(0, 0, 0, 0)
   const dayStartIso = dayStart.toISOString()

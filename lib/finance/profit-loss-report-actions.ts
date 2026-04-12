@@ -178,8 +178,10 @@ export async function getDefaultProfitLossWindow() {
   const end = new Date()
   const start = new Date(end.getFullYear(), end.getMonth(), 1)
 
+  const _liso = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   return {
-    startDate: start.toISOString().split('T')[0],
-    endDate: end.toISOString().split('T')[0],
+    startDate: _liso(start),
+    endDate: _liso(end),
   }
 }

@@ -62,22 +62,25 @@ function mapRow(row: any): RecurringInvoice {
 }
 
 function nextDate(current: string, frequency: string): string {
-  const d = new Date(current)
+  const [y, m, day] = current.split('-').map(Number)
+  let result: Date
   switch (frequency) {
     case 'weekly':
-      d.setDate(d.getDate() + 7)
+      result = new Date(y, m - 1, day + 7)
       break
     case 'biweekly':
-      d.setDate(d.getDate() + 14)
+      result = new Date(y, m - 1, day + 14)
       break
     case 'monthly':
-      d.setMonth(d.getMonth() + 1)
+      result = new Date(y, m, day)
       break
     case 'quarterly':
-      d.setMonth(d.getMonth() + 3)
+      result = new Date(y, m + 2, day)
       break
+    default:
+      result = new Date(y, m - 1, day)
   }
-  return d.toISOString().split('T')[0]
+  return `${result.getFullYear()}-${String(result.getMonth() + 1).padStart(2, '0')}-${String(result.getDate()).padStart(2, '0')}`
 }
 
 // ─── Actions ─────────────────────────────────────────────────────
@@ -178,7 +181,8 @@ export async function processRecurringInvoices(): Promise<{
 }> {
   const user = await requireChef()
   const db: any = createServerClient()
-  const today = new Date().toISOString().split('T')[0]
+  const _t = new Date()
+  const today = `${_t.getFullYear()}-${String(_t.getMonth() + 1).padStart(2, '0')}-${String(_t.getDate()).padStart(2, '0')}`
 
   // Get all active recurring invoices due today or earlier
   const { data: due } = await db
