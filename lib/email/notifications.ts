@@ -62,8 +62,10 @@ function formatCents(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`
 }
 
-function formatDate(date: string): string {
-  return parseISO(date).toLocaleDateString('en-US', {
+function formatDate(date: Date | string): string {
+  return parseISO(
+    typeof date === 'string' ? date : date.toISOString().slice(0, 10)
+  ).toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',

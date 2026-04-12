@@ -48,11 +48,11 @@ export type InteractiveDocSpec = {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function fmtDate(dateStr: string): string {
+function fmtDate(dateStr: Date | string): string {
   try {
-    return format(parseISO(dateStr), 'EEE, MMM d, yyyy')
+    return format(parseISO(dateToDateString(dateStr)), 'EEE, MMM d, yyyy')
   } catch {
-    return dateStr
+    return typeof dateStr === 'string' ? dateStr : ''
   }
 }
 

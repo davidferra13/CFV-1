@@ -8,6 +8,7 @@ import { createServerClient } from '@/lib/db/server'
 import { log } from '@/lib/logger'
 import { revalidatePath } from 'next/cache'
 import { TransitionEventInputSchema, type TransitionActorContext } from '@/lib/validation/schemas'
+import { dateToDateString } from '@/lib/utils/format'
 
 export type EventStatus =
   | 'draft'
@@ -489,7 +490,7 @@ export async function transitionEvent({
           chefName,
           eventId,
           occasion,
-          eventDate: event.event_date,
+          eventDate: dateToDateString(event.event_date as Date | string),
           guestCount: event.guest_count,
           location,
         })
@@ -524,7 +525,7 @@ export async function transitionEvent({
                       clientName: client.full_name,
                       chefName,
                       occasion,
-                      eventDate: event.event_date,
+                      eventDate: dateToDateString(event.event_date as Date | string),
                       serveTime: event.serve_time,
                       location,
                       guestCount: event.guest_count,
@@ -542,7 +543,7 @@ export async function transitionEvent({
             clientName: client.full_name,
             chefName,
             occasion,
-            eventDate: event.event_date,
+            eventDate: dateToDateString(event.event_date as Date | string),
             serveTime: event.serve_time,
             location,
             guestCount: event.guest_count,
@@ -606,7 +607,7 @@ export async function transitionEvent({
               clientName: client.full_name,
               chefName,
               occasion,
-              eventDate: event.event_date,
+              eventDate: dateToDateString(event.event_date as Date | string),
               pdfFilename: `front-of-house-menu-${dateSuffix}.pdf`,
               pdfBuffer: fohPdf,
             })
@@ -629,7 +630,7 @@ export async function transitionEvent({
               clientName: client.full_name,
               chefName,
               occasion,
-              eventDate: event.event_date,
+              eventDate: dateToDateString(event.event_date as Date | string),
               pdfFilename: `prep-sheet-${dateSuffix}.pdf`,
               pdfBuffer: prepPdf,
             })
@@ -645,7 +646,7 @@ export async function transitionEvent({
           clientName: client.full_name,
           chefName,
           occasion,
-          eventDate: event.event_date,
+          eventDate: dateToDateString(event.event_date as Date | string),
           arrivalTime: event.arrival_time ?? null,
           serveTime: event.serve_time ?? null,
           location,
@@ -714,7 +715,7 @@ export async function transitionEvent({
                       clientName: client.full_name,
                       chefName,
                       occasion,
-                      eventDate: event.event_date,
+                      eventDate: dateToDateString(event.event_date as Date | string),
                       guestCount: event.guest_count,
                       menuHighlights,
                       receiptUrl: `/my-events/${eventId}`,
@@ -732,7 +733,7 @@ export async function transitionEvent({
             chefName,
             eventId,
             occasion,
-            eventDate: event.event_date,
+            eventDate: dateToDateString(event.event_date as Date | string),
           })
         }
       }
@@ -742,7 +743,7 @@ export async function transitionEvent({
           recipientEmail: client.email,
           recipientName: client.full_name,
           occasion,
-          eventDate: event.event_date,
+          eventDate: dateToDateString(event.event_date as Date | string),
           cancelledBy: actor?.role === 'chef' ? chefName : 'the client',
           reason: (metadata.reason as string) || null,
         })
@@ -754,7 +755,7 @@ export async function transitionEvent({
           recipientEmail: chef.email,
           recipientName: chef.business_name || 'Chef',
           occasion,
-          eventDate: event.event_date,
+          eventDate: dateToDateString(event.event_date as Date | string),
           cancelledBy: client.full_name || 'the client',
           reason: (metadata.reason as string) || null,
         })
@@ -997,7 +998,7 @@ export async function transitionEvent({
           tenantId: event.tenant_id,
           clientId: event.client_id,
           occasion: event.occasion || 'your event',
-          eventDate: event.event_date,
+          eventDate: dateToDateString(event.event_date as Date | string),
           completedAt: new Date().toISOString(),
         },
       })

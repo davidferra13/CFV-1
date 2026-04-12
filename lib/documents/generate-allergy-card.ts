@@ -12,6 +12,7 @@ import { createServerClient } from '@/lib/db/server'
 import { jsPDF } from 'jspdf'
 import { format, parseISO } from 'date-fns'
 import { FDA_BIG_9, COMMON_ALLERGENS, allergenShortName } from '@/lib/constants/allergens'
+import { dateToDateString } from '@/lib/utils/format'
 
 // Build lookup sets from the canonical allergen lists (case-insensitive matching)
 const FDA_BIG_9_LOWER = new Set(FDA_BIG_9.map((a) => a.toLowerCase()))
@@ -243,7 +244,7 @@ async function fetchAllergyCardData(eventId: string): Promise<AllergyCardData | 
 
   return {
     eventName: event.occasion ?? 'Event',
-    eventDate: event.event_date,
+    eventDate: dateToDateString(event.event_date as Date | string),
     clientName,
     guestCount: event.guest_count,
     criticalAllergies: criticalAllergies.sort(),
