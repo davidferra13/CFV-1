@@ -83,7 +83,15 @@ export function MessageThread({ messages, showEntityLinks = false }: MessageThre
                   : format(new Date(msg.created_at), 'MMM d, h:mm a')}
               </span>
               {msg.direction === 'outbound' && msg.channel !== 'internal_note' && (
-                <span className="text-xs text-stone-400">Sent</span>
+                <span className="text-xs text-stone-400">
+                  {(msg as any).client_read_at ? (
+                    <span className="text-green-500">
+                      Read {format(new Date((msg as any).client_read_at), 'MMM d')}
+                    </span>
+                  ) : (
+                    'Sent'
+                  )}
+                </span>
               )}
               {msg.direction === 'inbound' && (
                 <span className="text-xs text-stone-400">Received</span>
