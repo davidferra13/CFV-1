@@ -1,0 +1,16 @@
+[Unit]
+Description=OpenClaw Directory Images API (port 8085)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/bin/node /home/davidferra/openclaw-directory-images/server.mjs
+WorkingDirectory=/home/davidferra/openclaw-directory-images
+Restart=always
+RestartSec=5
+User=davidferra
+Environment=PORT=8085
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target
