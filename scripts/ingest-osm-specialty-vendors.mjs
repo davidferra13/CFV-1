@@ -74,7 +74,7 @@ function getOverpassURL() {
 }
 
 // Delay between state queries to be polite to the free Overpass API
-const DELAY_MS = 2000
+const DELAY_MS = 5000
 
 function buildQuery(state) {
   const shopTypes = Object.keys(SHOP_TYPE_MAP).join('|')
@@ -125,16 +125,23 @@ function extractVendor(element, state) {
 
 async function fetchState(state) {
   const query = buildQuery(state)
-  // Try each mirror once before giving up
-  for (let attempt = 0; attempt < OVERPASS_MIRRORS.length; attempt++) {
+  // Try each mirror with exponential backoff on rate-limit responses
+  for (let attempt = 0; attempt < OVERPASS_MIRRORS.length * 2; attempt++) {
     const url = OVERPASS_MIRRORS[(mirrorIdx + attempt) % OVERPASS_MIRRORS.length]
     try {
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: `data=${encodeURIComponent(query)}`,
-        signal: AbortSignal.timeout(100000),
+        signal: AbortSignal.timeout(120000),
       })
+      if (res.status === 429 || res.status === 403) {
+        // Rate limited - wait longer and try next mirror
+        const wait = 15000 + attempt * 10000
+        process.stdout.write(` [rate-limit, waiting ${wait/1000}s]`)
+        await new Promise((r) => setTimeout(r, wait))
+        continue
+      }
       if (!res.ok) {
         if (attempt < OVERPASS_MIRRORS.length - 1) continue
         throw new Error(`Overpass HTTP ${res.status}`)
@@ -143,14 +150,19 @@ async function fetchState(state) {
       mirrorIdx++ // rotate mirror for next state
       return data.elements || []
     } catch (err) {
+      if (err.name === 'AbortError') {
+        process.stdout.write(` [timeout, retrying]`)
+        await new Promise((r) => setTimeout(r, 5000))
+        continue
+      }
       if (attempt < OVERPASS_MIRRORS.length - 1) {
-        await new Promise((r) => setTimeout(r, 1000))
+        await new Promise((r) => setTimeout(r, 2000))
         continue
       }
       throw err
     }
   }
-  return []
+  throw new Error('All mirrors exhausted')
 }
 
 async function upsertBatch(vendors) {
@@ -216,7 +228,7 @@ for (const state of statesToRun) {
   } catch (err) {
     console.log(` ERROR: ${err.message}`)
     totalErrors++
-    if (totalErrors >= 5) {
+    if (totalErrors >= 10) {
       console.log('Too many errors, stopping.')
       break
     }

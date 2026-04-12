@@ -1,0 +1,1238 @@
+{
+  "meta": {
+    "startDate": "2026-04-06",
+    "endDate": null,
+    "status": "active",
+    "checkpointDate": "2026-04-13",
+    "totalDays": 0,
+    "lastUpdated": null
+  },
+  "categories": [
+    {
+      "id": "setup",
+      "name": "Setup & Integration",
+      "icon": "⚡",
+      "phase": 1,
+      "description": "Get everything connected before going live. Do these first.",
+      "collapsed": false,
+      "items": [
+        {
+          "id": "setup-1",
+          "text": "Gmail sync connected and pulling new emails",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "setup-2",
+          "text": "All marketplace sources configured (Private Chef Manager, Take a Chef, Thumbtack, Bark, etc.)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "setup-3",
+          "text": "Chef profile complete (name, bio, cuisine types, service areas)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "setup-4",
+          "text": "Stripe payment processing connected",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "setup-5",
+          "text": "Email templates configured (inquiry response, quote, confirmation)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "setup-6",
+          "text": "Rate card set up with current pricing",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "setup-7",
+          "text": "At least 3 recipes entered in recipe book",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "setup-8",
+          "text": "At least 1 menu template created",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "setup-9",
+          "text": "Notification preferences configured",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "setup-10",
+          "text": "Mobile/PWA installed and working on phone",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "inquiry-pipeline",
+      "name": "Inquiry Pipeline",
+      "icon": "📥",
+      "phase": 2,
+      "description": "Inquiries come in, get tracked, get responded to. Nothing falls through the cracks.",
+      "collapsed": true,
+      "items": [
+        {
+          "id": "inq-1",
+          "text": "Gmail ingestion: emails arrive and are parsed correctly",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "inq-2",
+          "text": "Private Chef Manager inquiries auto-detected and created",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "inq-3",
+          "text": "Take a Chef inquiries auto-detected and created",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "inq-4",
+          "text": "Direct email inquiries captured",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "inq-5",
+          "text": "Inquiry status tracking works (new, responded, awaiting reply, confirmed)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "inq-6",
+          "text": "Smart priority grouping: most urgent inquiries surface first",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "inq-7",
+          "text": "Response time SLA banner shows overdue inquiries",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "inq-8",
+          "text": "Can respond to an inquiry directly from the app",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "inq-9",
+          "text": "Inquiry converts to event cleanly",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "inq-10",
+          "text": "No inquiries lost or unaccounted for after a full day",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "inq-11",
+          "text": "Duplicate inquiry detection works (same client, multiple platforms)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "inq-12",
+          "text": "Inquiry funnel analytics show conversion rates",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "client-management",
+      "name": "Client Management",
+      "icon": "👥",
+      "phase": 3,
+      "description": "Clients are created, tracked, and never duplicated or fragmented.",
+      "collapsed": true,
+      "items": [
+        {
+          "id": "cli-1",
+          "text": "Clients auto-created from inquiries with correct info",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "cli-2",
+          "text": "Manual client creation works (quick add + full profile)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "cli-3",
+          "text": "No duplicate clients created from the same person",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "cli-4",
+          "text": "Client profile shows all relevant info (contact, dietary, allergies)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "cli-5",
+          "text": "Dietary restrictions and allergies tracked per client",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "cli-6",
+          "text": "Communication history visible on client profile",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "cli-7",
+          "text": "Client linked to correct events",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "cli-8",
+          "text": "Client search works (by name, email, phone)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "cli-9",
+          "text": "Client financial history visible (spending, LTV)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "cli-10",
+          "text": "Relationship status badges work (HOT/WARM/COLD)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "event-lifecycle",
+      "name": "Event Lifecycle (Inquiry to Completion)",
+      "icon": "🎯",
+      "phase": 4,
+      "description": "The full journey: inquiry arrives, becomes an event, gets executed, gets closed out.",
+      "collapsed": true,
+      "items": [
+        {
+          "id": "evt-1",
+          "text": "Create event from inquiry (all data carries over)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "evt-2",
+          "text": "Create event manually (full form)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "evt-3",
+          "text": "Event correctly linked to client",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "evt-4",
+          "text": "Event status transitions work (draft > proposed > accepted > paid > confirmed > in_progress > completed)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "evt-5",
+          "text": "Manage 4+ concurrent active events without confusion",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "evt-6",
+          "text": "Event detail: Overview tab shows all essential info",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "evt-7",
+          "text": "Event detail: Money tab (pricing, deposits, balance)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "evt-8",
+          "text": "Event detail: Ops tab (staff, prep docs, readiness gates)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "evt-9",
+          "text": "Event detail: Wrap-Up tab (AAR, closeout, invoice)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "evt-10",
+          "text": "Kanban board drag-and-drop between status columns",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "evt-11",
+          "text": "Event cancellation works correctly",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "evt-12",
+          "text": "Dinner Circle contains all comms, docs, and event context",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "evt-13",
+          "text": "Guest RSVP and dietary info collection works",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "evt-14",
+          "text": "Allergen conflict detection (FDA Big 9) fires correctly",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "evt-15",
+          "text": "Event closeout: data is clean, accurate, reusable",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "follow-up-tracking",
+      "name": "Follow-Up & Tracking (Revenue Protection)",
+      "icon": "🚨",
+      "phase": 5,
+      "description": "No inquiry forgotten. No client left hanging. If you have to remember it yourself, the system failed.",
+      "collapsed": true,
+      "items": [
+        {
+          "id": "fu-1",
+          "text": "Dashboard clearly shows who needs a response RIGHT NOW",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "fu-2",
+          "text": "Pending follow-ups card shows stale inquiries (3+ days quiet)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "fu-3",
+          "text": "Priority queue surfaces critical items first",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "fu-4",
+          "text": "Can snooze and un-snooze items without losing them",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "fu-5",
+          "text": "System tracks when action is required (not just status)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "fu-6",
+          "text": "No inquiry was lost or forgotten over a full work day",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "fu-7",
+          "text": "No inquiry was lost or forgotten over a full work week",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "fu-8",
+          "text": "If I manually remembered a follow-up, log it as a system failure",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "documents",
+      "name": "Document Generation",
+      "icon": "📄",
+      "phase": 6,
+      "description": "Prep lists, grocery lists, execution plans, quotes, invoices, contracts.",
+      "collapsed": true,
+      "items": [
+        {
+          "id": "doc-1",
+          "text": "Quote creation and sending to client",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "doc-2",
+          "text": "Quote tracking (sent, viewed, accepted, rejected)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "doc-3",
+          "text": "Prep list generation is accurate",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "doc-4",
+          "text": "Grocery list generation is accurate and consolidated",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "doc-5",
+          "text": "Execution plan generation is useful",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "doc-6",
+          "text": "Invoice generation from event",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "doc-7",
+          "text": "Contract generation and client signing",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "doc-8",
+          "text": "FOH menu PDF looks professional",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "doc-9",
+          "text": "Bulk document generation (all docs for one event)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "doc-10",
+          "text": "Documents are accessible after event completion",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "communication",
+      "name": "Communication & Messaging",
+      "icon": "💬",
+      "phase": 7,
+      "description": "Messages are threaded, linked to events, and never lost or misassigned.",
+      "collapsed": true,
+      "items": [
+        {
+          "id": "com-1",
+          "text": "Messages auto-attach to the correct inquiry/event",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "com-2",
+          "text": "Messages can be manually reassigned if auto-attach fails",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "com-3",
+          "text": "Conversation threading: full history visible per client",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "com-4",
+          "text": "Inbox shows unread count and priority",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "com-5",
+          "text": "Can compose and send messages from within the app",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "com-6",
+          "text": "Email notifications sent to clients when appropriate",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "com-7",
+          "text": "No conversations fragmented (one client split into multiple threads)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "menus-recipes",
+      "name": "Menus & Recipes",
+      "icon": "🍽️",
+      "phase": 8,
+      "description": "Create menus, manage recipes, assign to events. The culinary core.",
+      "collapsed": true,
+      "items": [
+        {
+          "id": "mr-1",
+          "text": "Create a new menu from scratch",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "mr-2",
+          "text": "Add dishes to a menu (drag and drop)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "mr-3",
+          "text": "Assign menu to an event",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "mr-4",
+          "text": "Create a new recipe (manual entry)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "mr-5",
+          "text": "Recipe search finds what you need quickly",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "mr-6",
+          "text": "Recipe costing calculates correctly",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "mr-7",
+          "text": "Menu pricing per-guest is accurate",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "mr-8",
+          "text": "Dietary flags show correctly on menus",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "mr-9",
+          "text": "Recipe sprint / brain dump capture works for quick entry",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "mr-10",
+          "text": "Menu templates are reusable across events",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "financials",
+      "name": "Financial Tracking",
+      "icon": "💰",
+      "phase": 9,
+      "description": "Revenue, expenses, payments, reporting. The money side.",
+      "collapsed": true,
+      "items": [
+        {
+          "id": "fin-1",
+          "text": "Expense capture: add expense with receipt photo",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "fin-2",
+          "text": "Revenue tracking: dashboard shows accurate numbers",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "fin-3",
+          "text": "Payment processing: collect deposit via Stripe",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "fin-4",
+          "text": "Ledger entries are accurate and immutable",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "fin-5",
+          "text": "Financial reports generate correctly (P&L, revenue by month)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "fin-6",
+          "text": "Per-event profit calculation is correct",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "fin-7",
+          "text": "Cash flow snapshot is useful",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "fin-8",
+          "text": "Mileage tracking works",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "execution-day",
+      "name": "Day-of-Event Execution",
+      "icon": "🔥",
+      "phase": 10,
+      "description": "The real test: using the app while cooking. Schedule, prep, kitchen display, guest cards.",
+      "collapsed": true,
+      "items": [
+        {
+          "id": "exec-1",
+          "text": "Day-of schedule view shows hour-by-hour timeline",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "exec-2",
+          "text": "DOP mobile view is usable during active service",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "exec-3",
+          "text": "Prep timeline with countdown/timers works",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "exec-4",
+          "text": "Guest cards show dietary info at a glance",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "exec-5",
+          "text": "Kitchen display (KDS) is usable",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "exec-6",
+          "text": "App is usable when busy, distracted, under time pressure",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "exec-7",
+          "text": "Temp logging works during service",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "exec-8",
+          "text": "Can access all needed info without leaving the app",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "dashboard-visibility",
+      "name": "Dashboard & Global Visibility",
+      "icon": "📊",
+      "phase": 11,
+      "description": "At a glance, you know everything. If this isn't obvious, the system is failing.",
+      "collapsed": true,
+      "items": [
+        {
+          "id": "dash-1",
+          "text": "Dashboard loads fast and shows real data",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "dash-2",
+          "text": "All active inquiries visible from dashboard",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "dash-3",
+          "text": "All active events visible with status",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "dash-4",
+          "text": "What needs action NOW is immediately obvious",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "dash-5",
+          "text": "What is at risk of being forgotten is surfaced",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "dash-6",
+          "text": "Daily ops banner shows accurate task counts",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "dash-7",
+          "text": "Command Center grid cards show correct counts",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "dash-8",
+          "text": "Today's schedule widget shows correct timeline",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "dash-9",
+          "text": "Week strip shows upcoming events correctly",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "dash-10",
+          "text": "Calendar view shows all events in correct slots",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "dash-11",
+          "text": "Cmd+K search finds clients, events, inquiries quickly",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "mundane-ui",
+      "name": "Mundane UI Checks",
+      "icon": "🔧",
+      "phase": 12,
+      "description": "The boring stuff. Buttons work, pages load, menus collapse, nothing is broken.",
+      "collapsed": true,
+      "items": [
+        {
+          "id": "ui-1",
+          "text": "Sidebar navigation: all links go where they should",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "ui-2",
+          "text": "Sidebar menus collapse and expand correctly",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "ui-3",
+          "text": "No blank screens on any page",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "ui-4",
+          "text": "Loading states show (spinners, skeletons) instead of blank",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "ui-5",
+          "text": "Error states are visible (not silent failures)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "ui-6",
+          "text": "Toast notifications appear for actions (save, delete, send)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "ui-7",
+          "text": "Forms validate input before submitting",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "ui-8",
+          "text": "Page load times are acceptable (under 3 seconds)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "ui-9",
+          "text": "Every button does what it says",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "ui-10",
+          "text": "No dead links or 404 pages in normal navigation",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "ui-11",
+          "text": "Responsive layout works on phone/tablet",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "ui-12",
+          "text": "Data tables sort and filter correctly",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "ui-13",
+          "text": "Modals open and close without issues",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "ui-14",
+          "text": "Tab navigation within pages works",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "automation-quality",
+      "name": "Automation & AI Quality",
+      "icon": "🤖",
+      "phase": 13,
+      "description": "How much does the system do automatically vs how much do you correct?",
+      "collapsed": true,
+      "items": [
+        {
+          "id": "ai-1",
+          "text": "Email parsing: % of emails correctly parsed and categorized",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "ai-2",
+          "text": "Auto client creation: % created correctly without manual fix",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "ai-3",
+          "text": "Auto event creation: % created correctly without manual fix",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "ai-4",
+          "text": "Remy AI assistance: helpful or gets in the way?",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "ai-5",
+          "text": "Inquiry parsing: event details extracted correctly from emails",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "ai-6",
+          "text": "Overall automation accuracy (track % over time)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "data-integrity",
+      "name": "Data Integrity",
+      "icon": "🛡️",
+      "phase": 14,
+      "description": "Data stays clean, consistent, and trustworthy over time.",
+      "collapsed": true,
+      "items": [
+        {
+          "id": "di-1",
+          "text": "Save + reload: data survives page refresh",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "di-2",
+          "text": "Data consistency after edits and updates",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "di-3",
+          "text": "No duplicate records created accidentally",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "di-4",
+          "text": "No fragmented conversations (one client split across threads)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "di-5",
+          "text": "No lost or un-ingested inquiries",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "di-6",
+          "text": "Event data is complete and accurate after closeout",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "di-7",
+          "text": "Closed events can be referenced and reused later",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "di-8",
+          "text": "Financial numbers match reality (no phantom amounts)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "red-flags",
+      "name": "Operational Red Flags (Daily Check)",
+      "icon": "🚩",
+      "phase": 15,
+      "description": "If ANY of these are true, the system is failing. Check daily.",
+      "collapsed": true,
+      "items": [
+        {
+          "id": "rf-1",
+          "text": "I copy/pasted data between systems",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "rf-2",
+          "text": "I re-entered information that should already be in the system",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "rf-3",
+          "text": "I tracked something mentally instead of in the app",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "rf-4",
+          "text": "I used external notes (paper, phone notes, other app)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "rf-5",
+          "text": "I compensated for the system instead of relying on it",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "rf-6",
+          "text": "I felt slower using the app than my old workflow",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "rf-7",
+          "text": "I did not trust the system's state (had to double-check)",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "rf-8",
+          "text": "I manually remembered a follow-up the system should have tracked",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "rf-9",
+          "text": "I stepped outside the app to protect a live service",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "end-to-end",
+      "name": "End-to-End Workflows (Full Loop)",
+      "icon": "🔄",
+      "phase": 16,
+      "description": "Complete journeys from start to finish. Each one proves the system works.",
+      "collapsed": true,
+      "items": [
+        {
+          "id": "e2e-1",
+          "text": "Full loop: inquiry > client > event > menu > quote > payment > execution > closeout",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "e2e-2",
+          "text": "Full loop: marketplace inquiry > auto-parse > respond > book",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "e2e-3",
+          "text": "Full loop: create menu > assign to event > generate grocery list > shop > prep > serve",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "e2e-4",
+          "text": "Full loop: client books > pays deposit > event confirmed > service > invoice > payment > done",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "e2e-5",
+          "text": "Full loop: multiple concurrent dinners managed without cross-contamination",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        },
+        {
+          "id": "e2e-6",
+          "text": "Full loop: event cancelled mid-flow, data cleaned up correctly",
+          "checked": false,
+          "rating": null,
+          "notes": ""
+        }
+      ]
+    }
+  ],
+  "dailyLog": [],
+  "feedback": []
+}
