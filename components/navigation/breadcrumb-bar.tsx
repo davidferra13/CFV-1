@@ -1,7 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { useCallback, useState } from 'react'
+import { RefreshCw } from '@/components/ui/icons'
 
 /**
  * Route label mapping for known paths.
@@ -126,6 +128,15 @@ function buildCrumbs(pathname: string): Crumb[] {
 
 export function BreadcrumbBar() {
   const pathname = usePathname()
+  const router = useRouter()
+  const [refreshing, setRefreshing] = useState(false)
+
+  const handleRefresh = useCallback(() => {
+    setRefreshing(true)
+    router.refresh()
+    setTimeout(() => setRefreshing(false), 1200)
+  }, [router])
+
   if (!pathname) return null
   const crumbs = buildCrumbs(pathname)
 
@@ -133,67 +144,85 @@ export function BreadcrumbBar() {
   if (crumbs.length === 0) return null
 
   return (
-    <nav aria-label="Breadcrumb" className="py-1.5 px-4 sm:px-6 lg:px-8">
-      {/* Desktop: show all crumbs */}
-      <ol className="hidden sm:flex items-center gap-1 text-xs">
-        {crumbs.map((crumb, i) => {
-          const isLast = i === crumbs.length - 1
-          return (
-            <li key={crumb.href} className="flex items-center gap-1">
-              {i > 0 && (
-                <span className="text-stone-500 select-none" aria-hidden="true">
-                  /
-                </span>
-              )}
-              {isLast ? (
-                <span className="text-stone-200 font-medium" aria-current="page">
-                  {crumb.label}
-                </span>
-              ) : (
-                <Link
-                  href={crumb.href}
-                  className="text-stone-400 hover:text-stone-200 transition-colors"
-                >
-                  {crumb.label}
-                </Link>
-              )}
-            </li>
-          )
-        })}
-      </ol>
+    <nav
+      aria-label="Breadcrumb"
+      className="py-1.5 px-4 sm:px-6 lg:px-8 flex items-center justify-between"
+    >
+      {/* Crumbs */}
+      <div className="min-w-0 flex-1">
+        {/* Desktop: show all crumbs */}
+        <ol className="hidden sm:flex items-center gap-1 text-xs">
+          {crumbs.map((crumb, i) => {
+            const isLast = i === crumbs.length - 1
+            return (
+              <li key={crumb.href} className="flex items-center gap-1">
+                {i > 0 && (
+                  <span className="text-stone-500 select-none" aria-hidden="true">
+                    /
+                  </span>
+                )}
+                {isLast ? (
+                  <span className="text-stone-200 font-medium" aria-current="page">
+                    {crumb.label}
+                  </span>
+                ) : (
+                  <Link
+                    href={crumb.href}
+                    className="text-stone-400 hover:text-stone-200 transition-colors"
+                  >
+                    {crumb.label}
+                  </Link>
+                )}
+              </li>
+            )
+          })}
+        </ol>
 
-      {/* Mobile: show ellipsis + last 2 segments */}
-      <ol className="flex sm:hidden items-center gap-1 text-xs min-h-[44px]">
-        {crumbs.length > 2 && (
-          <li className="text-stone-500 select-none" aria-hidden="true">
-            ...
-          </li>
-        )}
-        {crumbs.slice(-2).map((crumb, i, arr) => {
-          const isLast = i === arr.length - 1
-          return (
-            <li key={crumb.href} className="flex items-center gap-1">
-              {(i > 0 || crumbs.length > 2) && (
-                <span className="text-stone-500 select-none" aria-hidden="true">
-                  /
-                </span>
-              )}
-              {isLast ? (
-                <span className="text-stone-200 font-medium" aria-current="page">
-                  {crumb.label}
-                </span>
-              ) : (
-                <Link
-                  href={crumb.href}
-                  className="text-stone-400 hover:text-stone-200 transition-colors inline-flex items-center min-h-[44px] touch-manipulation"
-                >
-                  {crumb.label}
-                </Link>
-              )}
+        {/* Mobile: show ellipsis + last 2 segments */}
+        <ol className="flex sm:hidden items-center gap-1 text-xs min-h-[44px]">
+          {crumbs.length > 2 && (
+            <li className="text-stone-500 select-none" aria-hidden="true">
+              ...
             </li>
-          )
-        })}
-      </ol>
+          )}
+          {crumbs.slice(-2).map((crumb, i, arr) => {
+            const isLast = i === arr.length - 1
+            return (
+              <li key={crumb.href} className="flex items-center gap-1">
+                {(i > 0 || crumbs.length > 2) && (
+                  <span className="text-stone-500 select-none" aria-hidden="true">
+                    /
+                  </span>
+                )}
+                {isLast ? (
+                  <span className="text-stone-200 font-medium" aria-current="page">
+                    {crumb.label}
+                  </span>
+                ) : (
+                  <Link
+                    href={crumb.href}
+                    className="text-stone-400 hover:text-stone-200 transition-colors inline-flex items-center min-h-[44px] touch-manipulation"
+                  >
+                    {crumb.label}
+                  </Link>
+                )}
+              </li>
+            )
+          })}
+        </ol>
+      </div>
+
+      {/* Refresh button - always accessible on every page */}
+      <button
+        type="button"
+        onClick={handleRefresh}
+        disabled={refreshing}
+        title="Refresh page data"
+        aria-label="Refresh"
+        className="ml-3 flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-md text-stone-500 hover:text-stone-300 hover:bg-stone-800 transition-colors disabled:opacity-40"
+      >
+        <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+      </button>
     </nav>
   )
 }
