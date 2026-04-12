@@ -2267,3 +2267,25 @@ export async function getResponseQueue(limit = 10): Promise<ResponseQueueItem[]>
 
   return items.slice(0, limit)
 }
+
+/**
+ * Returns the count of inquiries that need chef attention (status: new or awaiting_chef).
+ * Lightweight - used only for the nav badge. Returns 0 on any error.
+ */
+export async function getPendingInquiryCount(): Promise<number> {
+  try {
+    const user = await requireChef()
+    const db: any = createServerClient()
+
+    const { data, error } = await db
+      .from('inquiries')
+      .select('id')
+      .eq('tenant_id', user.tenantId!)
+      .in('status', ['new', 'awaiting_chef'])
+
+    if (error) return 0
+    return (data ?? []).length
+  } catch {
+    return 0
+  }
+}

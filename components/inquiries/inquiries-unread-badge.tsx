@@ -1,12 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { getInquiryStats } from '@/lib/inquiries/actions'
+import { getPendingInquiryCount } from '@/lib/inquiries/actions'
 
 /**
  * Client component that shows count of inquiries needing chef attention
  * (status: new + awaiting_chef). Polls every 30 seconds.
- * Used in the nav sidebar next to the Inquiries label.
+ * Used in the nav sidebar next to the Events label.
  */
 export function InquiriesUnreadBadge() {
   const [count, setCount] = useState(0)
@@ -20,8 +20,7 @@ export function InquiriesUnreadBadge() {
       if (!isVisible()) return
 
       try {
-        const stats = await getInquiryStats()
-        const pending = (stats.new ?? 0) + (stats.awaiting_chef ?? 0)
+        const pending = await getPendingInquiryCount()
         if (mounted) setCount(pending)
       } catch {
         // Non-critical

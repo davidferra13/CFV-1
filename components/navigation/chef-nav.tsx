@@ -29,6 +29,7 @@ import { AppLogo } from '@/components/branding/app-logo'
 import { RecentPagesSection } from '@/components/navigation/recent-pages-section'
 import { InboxUnreadBadge } from '@/components/communication/inbox-unread-badge'
 import { CirclesUnreadBadge } from '@/components/hub/circles-unread-badge'
+import { InquiriesUnreadBadge } from '@/components/inquiries/inquiries-unread-badge'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { usePermissions } from '@/lib/context/permission-context'
 import { getStrictFocusGroupRank, isStrictFocusGroupVisible } from '@/lib/navigation/focus-mode-nav'
@@ -520,6 +521,7 @@ const NavGroupSection = memo(function NavGroupSection({
                 {item.label}
                 {item.href === '/inbox' && <InboxUnreadBadge />}
                 {item.href === '/circles' && <CirclesUnreadBadge />}
+                {item.href === '/events' && <InquiriesUnreadBadge />}
               </PendingNavLink>
             )
           })}
