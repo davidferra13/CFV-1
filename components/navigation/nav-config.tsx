@@ -1400,6 +1400,11 @@ export const navGroups: NavGroup[] = [
         icon: Invoice,
       },
       {
+        href: '/inventory/reorder',
+        label: 'Reorder Settings',
+        icon: RefreshCw,
+      },
+      {
         href: '/inventory/waste',
         label: 'Waste Tracking',
         icon: AlertTriangle,
