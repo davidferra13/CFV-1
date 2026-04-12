@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button'
 import { MessageChefButton } from '@/components/chat/message-chef-button'
 import { RemyClientChat } from '@/components/ai/remy-client-chat'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
+import { ClientEventsRefresher } from '@/components/client/client-events-refresher'
 import { TrackedActivityLink } from '@/components/activity/tracked-activity-link'
 import { PostEventBanner } from '@/components/client/post-event-banner'
 import { BetaOnboardingChecklist } from '@/components/beta/beta-onboarding-checklist'
@@ -1611,6 +1612,8 @@ export default async function MyEventsPage() {
           unread_messages: unreadMessages,
         }}
       />
+      {/* Live refresh: re-renders page when chef transitions an event or payment lands */}
+      <ClientEventsRefresher />
     </div>
   )
 }

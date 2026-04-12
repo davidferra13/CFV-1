@@ -8,6 +8,54 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
+// ─── Menu Edit Post-Approval Notification ────────────────────────────────────
+// When a chef edits a menu that is already approved on an event, the client
+// receives a notification so they can review the change.
+
+async function notifyClientOfMenuEdit(menuId: string, tenantId: string): Promise<void> {
+  try {
+    const db: any = createServerClient({ admin: true })
+
+    // Find events linked to this menu that the client has already approved
+    const { data: events } = await db
+      .from('events')
+      .select('id, occasion, client_id')
+      .eq('menu_id', menuId)
+      .eq('tenant_id', tenantId)
+      .eq('menu_approval_status', 'approved')
+
+    if (!events?.length) return
+
+    const { createClientNotification } = await import('@/lib/notifications/client-actions')
+
+    for (const event of events) {
+      if (!event.client_id) continue
+
+      // Mark the event so the client can see a "menu updated" indicator
+      await db
+        .from('events')
+        .update({ menu_modified_after_approval: true })
+        .eq('id', event.id)
+        .eq('tenant_id', tenantId)
+
+      await createClientNotification({
+        tenantId,
+        clientId: event.client_id,
+        category: 'event',
+        action: 'menu_updated_after_approval' as any,
+        title: 'Your menu was updated',
+        body: `Your chef made changes to the menu for ${event.occasion ?? 'your event'}. Review the updates.`,
+        actionUrl: `/my-events/${event.id}`,
+        eventId: event.id,
+      })
+
+      revalidatePath(`/my-events/${event.id}`)
+    }
+  } catch (err) {
+    console.error('[menu-editor] Post-approval notification failed (non-blocking):', err)
+  }
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type EditorDish = {
@@ -381,6 +429,9 @@ export async function updateMenuMeta(
 
   revalidatePath(`/menus/${menuId}`)
   revalidatePath(`/menus/${menuId}/editor`)
+
+  // Non-blocking: notify client if this menu is already approved on any linked event
+  void notifyClientOfMenuEdit(menuId, user.tenantId!)
 }
 
 // ─── updateDishEditorContent ──────────────────────────────────────────────────
@@ -415,6 +466,15 @@ export async function updateDishEditorContent(
     console.error('[updateDishEditorContent] Error:', error)
     throw new Error('Failed to save dish')
   }
+
+  // Non-blocking: notify client if the dish's menu is already approved on any linked event
+  const { data: dish } = await (createServerClient() as any)
+    .from('dishes')
+    .select('menu_id')
+    .eq('id', dishId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+  if (dish?.menu_id) void notifyClientOfMenuEdit(dish.menu_id, user.tenantId!)
 }
 
 // ─── addEditorCourse ──────────────────────────────────────────────────────────

@@ -16,11 +16,15 @@ import { NOTIFICATION_CONFIG } from '@/lib/notifications/types'
 import { DEFAULT_TIER_MAP } from '@/lib/notifications/tier-config'
 import type { Notification, NotificationAction } from '@/lib/notifications/types'
 
+type NotificationListener = (notification: Notification) => void
+
 type NotificationContextType = {
   unreadCount: number
   markAsRead: (notificationId: string) => Promise<void>
   markAllAsRead: () => Promise<void>
   refreshCount: () => Promise<void>
+  /** Subscribe to incoming live notifications. Returns an unsubscribe function. */
+  addNotificationListener: (fn: NotificationListener) => () => void
 }
 
 const NotificationContext = createContext<NotificationContextType>({
@@ -28,6 +32,7 @@ const NotificationContext = createContext<NotificationContextType>({
   markAsRead: async () => {},
   markAllAsRead: async () => {},
   refreshCount: async () => {},
+  addNotificationListener: () => () => {},
 })
 
 export function useNotifications() {
@@ -165,6 +170,7 @@ export function NotificationProvider({
   const digestBufferRef = useRef<Notification[]>([])
   const digestTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const dedupeRef = useRef<Map<string, number>>(new Map())
+  const listenersRef = useRef<Set<NotificationListener>>(new Set())
 
   const flushDigest = useCallback(() => {
     if (digestBufferRef.current.length === 0) return
@@ -271,6 +277,14 @@ export function NotificationProvider({
   useEffect(() => {
     const unsubscribe = subscribeToNotifications(userId, (notification) => {
       setUnreadCount((prev) => prev + 1)
+      // Dispatch to page-level listeners (e.g., live-refresh hooks)
+      for (const fn of listenersRef.current) {
+        try {
+          fn(notification)
+        } catch {
+          /* non-fatal */
+        }
+      }
 
       const config = NOTIFICATION_CONFIG[notification.action as NotificationAction]
       const categoryPref = preferencesRef.current.get(notification.category)
@@ -320,9 +334,16 @@ export function NotificationProvider({
     }
   }, [])
 
+  const addNotificationListener = useCallback((fn: NotificationListener) => {
+    listenersRef.current.add(fn)
+    return () => {
+      listenersRef.current.delete(fn)
+    }
+  }, [])
+
   const value = useMemo(
-    () => ({ unreadCount, markAsRead, markAllAsRead, refreshCount }),
-    [markAllAsRead, markAsRead, refreshCount, unreadCount]
+    () => ({ unreadCount, markAsRead, markAllAsRead, refreshCount, addNotificationListener }),
+    [markAllAsRead, markAsRead, refreshCount, unreadCount, addNotificationListener]
   )
 
   return <NotificationContext.Provider value={value}>{children}</NotificationContext.Provider>
