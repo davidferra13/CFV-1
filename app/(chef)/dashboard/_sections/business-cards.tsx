@@ -56,7 +56,7 @@ export async function BusinessCards() {
         subtitle={`Expenses: ${formatCurrency(monthExpenses.businessCents)}`}
         trend={
           revChange !== 0
-            ? `${revChange > 0 ? '+' : ''}${revChange.toFixed(0)}% vs last month`
+            ? `${revChange > 0 ? '+' : ''}${revChange.toFixed(1)}% vs last month`
             : 'Same as last month'
         }
         trendDirection={revDirection}
@@ -68,7 +68,7 @@ export async function BusinessCards() {
         <StatCard
           widgetId="revenue_goal"
           title="Revenue Goal"
-          value={`${Math.round(goalPercent)}%`}
+          value={`${goalPercent.toFixed(1)}%`}
           subtitle={`${formatCurrency(revenueGoal.monthly.realizedCents ?? 0)} / ${formatCurrency(revenueGoal.monthly.targetCents ?? 0)}`}
           trend={
             goalPercent >= 100
@@ -123,7 +123,7 @@ export async function BusinessCards() {
         <StatCard
           widgetId="invoice_pulse"
           title="Invoices"
-          value={`${Math.round(collectionRate)}%`}
+          value={`${collectionRate.toFixed(1)}%`}
           subtitle="collection rate this month"
           trend={`${formatCurrency(invoicePulse.monthlyStats.totalPaidCents)} collected`}
           trendDirection={collectionRate >= 80 ? 'up' : collectionRate >= 50 ? 'flat' : 'down'}
