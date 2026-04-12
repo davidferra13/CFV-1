@@ -532,6 +532,65 @@ async function main() {
   for (const c of pgChains) chainSlugToUuid.set(c.slug, c.id)
   log(`PG chains loaded: ${chainSlugToUuid.size}`)
 
+  // Pi uses hyphenated slugs (e.g. "stop-shop", "shaw-s").
+  // PostgreSQL uses underscored slugs (e.g. "stop_and_shop", "shaws").
+  // Normalize Pi slugs before lookup.
+  const CHAIN_SLUG_ALIASES = {
+    'shaw-s':              'shaws',
+    'trader-joe-s':        'trader_joes',
+    'whole-foods-market':  'whole_foods',
+    'stop-shop':           'stop_and_shop',
+    'market-basket':       'market_basket',
+    'dollar-tree':         'dollar_tree',
+    'dollar-general':      'dollar_general',
+    'family-dollar':       'family_dollar',
+    'cumberland-farms':    'cumberland_farms',
+    '7-eleven':            '7_eleven',
+    'ocean-state-job-lot': 'ocean_state',
+    'dave-s-fresh-marketplace': 'daves_fresh',
+    'five-below':          'five_below',
+    'sams-club':           'sams_club',
+    'whole-foods':         'whole_foods',
+    'bj-s-wholesale':      'bjs',
+    'big-y':               'big_y',
+    'price-chopper':       'price_chopper',
+    'star-market':         'star_market',
+    'roche-bros':          'roche_bros',
+    'stop-and-shop':       'stop_and_shop',
+    'price-rite':          'price_rite',
+    'restaurant-depot':    'restaurant_depot',
+  }
+
+  function normalizeChainSlug(raw) {
+    if (!raw) return null
+    // Check explicit alias map first
+    if (CHAIN_SLUG_ALIASES[raw]) return CHAIN_SLUG_ALIASES[raw]
+    // General: replace hyphens with underscores and try
+    const underscored = raw.replace(/-/g, '_')
+    if (chainSlugToUuid.has(underscored)) return underscored
+    // Try without trailing possessive (_s)
+    const dePossessive = underscored.replace(/_s$/, 's')
+    if (chainSlugToUuid.has(dePossessive)) return dePossessive
+    return underscored // best guess; will warn if still missing
+  }
+
+  // Auto-register unknown chains so they are never silently dropped again.
+  // New chains get inserted with is_active=false until reviewed.
+  async function ensureChain(rawSlug, name) {
+    const normalized = normalizeChainSlug(rawSlug)
+    if (chainSlugToUuid.has(normalized)) return chainSlugToUuid.get(normalized)
+    // Insert as unknown chain for review
+    const rows = await sql`
+      INSERT INTO openclaw.chains (slug, name, scraper_type, is_active)
+      VALUES (${normalized}, ${name || normalized}, 'unknown', false)
+      ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name
+      RETURNING id
+    `
+    chainSlugToUuid.set(normalized, rows[0].id)
+    log(`  AUTO-REGISTERED chain: "${normalized}" (${name}) - marked inactive for review`)
+    return rows[0].id
+  }
+
   // ── Step 5: Sync stores ────────────────────────────────────────────────
   if (tables.includes('catalog_stores')) {
     const stores = sqlite.prepare('SELECT * FROM catalog_stores WHERE is_active = 1').all()
@@ -539,9 +598,9 @@ async function main() {
 
     for (const store of stores) {
       try {
-        const chainId = chainSlugToUuid.get(store.chain_slug)
+        const chainId = await ensureChain(store.chain_slug, store.name)
         if (!chainId) {
-          log(`  WARN: Unknown chain "${store.chain_slug}", skipping "${store.name}"`)
+          log(`  WARN: Could not resolve chain "${store.chain_slug}", skipping "${store.name}"`)
           continue
         }
 

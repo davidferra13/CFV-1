@@ -106,8 +106,9 @@ function pullDocketDocs() {
 
   try {
     // List done (not yet pulled) files on Pi
+    const piHost = process.env.PI_HOST || 'davidferra@10.0.0.177'
     const fileList = execSync(
-      `ssh pi "ls ${piOutputDir}/ 2>/dev/null"`,
+      `ssh ${piHost} "ls ${piOutputDir}/ 2>/dev/null"`,
       { encoding: 'utf8', timeout: 15000 }
     ).trim()
 
@@ -127,7 +128,7 @@ function pullDocketDocs() {
     for (const file of files) {
       // Read the file to determine output type from frontmatter
       const content = execSync(
-        `ssh pi "cat ${piOutputDir}/${file}"`,
+        `ssh ${piHost} "cat ${piOutputDir}/${file}"`,
         { encoding: 'utf8', timeout: 15000 }
       )
 
@@ -148,7 +149,7 @@ function pullDocketDocs() {
       if (idMatch) {
         try {
           execSync(
-            `ssh pi "cd ~/openclaw-docket && node mark-pulled.mjs ${idMatch[1]}"`,
+            `ssh ${piHost} "cd ~/openclaw-docket && node mark-pulled.mjs ${idMatch[1]}"`,
             { timeout: 10000 }
           )
         } catch {}
@@ -156,7 +157,7 @@ function pullDocketDocs() {
 
       // Remove from Pi output dir (already pulled)
       try {
-        execSync(`ssh pi "rm ${piOutputDir}/${file}"`, { timeout: 5000 })
+        execSync(`ssh ${piHost} "rm ${piOutputDir}/${file}"`, { timeout: 5000 })
       } catch {}
     }
 
