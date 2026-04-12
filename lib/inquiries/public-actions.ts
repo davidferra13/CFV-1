@@ -546,5 +546,15 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     console.error('[submitPublicInquiry] Push notification failed (non-blocking):', err)
   }
 
+  // 9. Chef auto-response to client (non-blocking) - uses chef's configured template
+  // Fires only if chef has auto-response enabled. Built-in system default ensures
+  // something always sends if chef has no custom template configured.
+  try {
+    const { triggerAutoResponse } = await import('@/lib/communication/auto-response')
+    await triggerAutoResponse(inquiry.id, tenantId)
+  } catch (err) {
+    console.error('[submitPublicInquiry] Auto-response failed (non-blocking):', err)
+  }
+
   return { success: true, inquiryCreated: true, eventCreated: true }
 }

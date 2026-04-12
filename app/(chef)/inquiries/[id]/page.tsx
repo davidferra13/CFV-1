@@ -76,6 +76,7 @@ import { getLifecycleProgress } from '@/lib/lifecycle/actions'
 import { LifecycleProgressPanel } from '@/components/lifecycle/lifecycle-progress-panel'
 import { getNextActions } from '@/lib/lifecycle/next-action'
 import { NextActionBanner } from '@/components/lifecycle/next-action-banner'
+import { RepeatClientPanel } from '@/components/clients/repeat-client-panel'
 
 function getDisplayName(inquiry: {
   client: { id: string; full_name: string; email: string; phone: string | null } | null
@@ -751,6 +752,9 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
           </dl>
         </Card>
       </div>
+
+      {/* Repeat Client Intelligence - only renders for clients with 2+ prior events */}
+      {inquiry.client_id && <RepeatClientPanel clientId={inquiry.client_id} />}
 
       {/* Pipeline Management */}
       <Card className="p-6">
