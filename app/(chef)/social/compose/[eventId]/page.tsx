@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ChevronLeft } from '@/components/ui/icons'
 import { format, parseISO } from 'date-fns'
+import { dateToDateString } from '@/lib/utils/format'
 import type { Metadata } from 'next'
 
 type PageProps = {
@@ -53,7 +54,9 @@ export default async function SocialComposePage({ params }: PageProps) {
   const eventTitle = [
     event.occasion ?? 'Event',
     clientName ? `for ${clientName}` : null,
-    event.event_date ? format(parseISO(event.event_date), 'MMM d, yyyy') : null,
+    event.event_date
+      ? format(parseISO(dateToDateString(event.event_date as Date | string)), 'MMM d, yyyy')
+      : null,
   ]
     .filter(Boolean)
     .join(' - ')

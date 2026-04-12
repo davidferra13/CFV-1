@@ -8,6 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { PDFLayout, MARGIN_X, CONTENT_WIDTH, LETTER_WIDTH } from './pdf-layout'
 import { format, parseISO } from 'date-fns'
+import { dateToDateString } from '@/lib/utils/format'
 import type { jsPDF } from 'jspdf'
 
 // ─── Column Geometry ────────────────────────────────────────────────────────
@@ -507,7 +508,10 @@ export function renderEventSummary(pdf: PDFLayout, data: EventSummaryData) {
   doc.text('EVENT SUMMARY', MARGIN_X + 3, pdf.y + 6)
 
   // Right: date + lifecycle stage (stacked)
-  const dateStr = format(parseISO(event.event_date), 'EEEE, MMMM d, yyyy')
+  const dateStr = format(
+    parseISO(dateToDateString(event.event_date as Date | string)),
+    'EEEE, MMMM d, yyyy'
+  )
   const stageLabel = STATUS_LABELS[event.status] ?? event.status
 
   doc.setFontSize(7.5)
@@ -780,7 +784,10 @@ export function renderEventSummary(pdf: PDFLayout, data: EventSummaryData) {
 
   // ===== 6. FOOTER =====
   const footerClientName = client.preferred_name ?? client.full_name
-  const footerDate = format(parseISO(event.event_date), 'MMMM d, yyyy')
+  const footerDate = format(
+    parseISO(dateToDateString(event.event_date as Date | string)),
+    'MMMM d, yyyy'
+  )
   pdf.footer(`ChefFlow Event Summary - ${footerClientName} - ${footerDate}`)
 }
 

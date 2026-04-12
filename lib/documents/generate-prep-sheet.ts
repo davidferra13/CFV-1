@@ -7,6 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from './pdf-layout'
 import { format, parseISO } from 'date-fns'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -282,7 +283,10 @@ export function renderPrepSheet(pdf: PDFLayout, data: PrepSheetData) {
 
   pdf.title('PREP SHEET', 14)
 
-  const dateStr = format(parseISO(event.event_date), 'EEE, MMM d, yyyy')
+  const dateStr = format(
+    parseISO(dateToDateString(event.event_date as Date | string)),
+    'EEE, MMM d, yyyy'
+  )
   pdf.headerBar([
     ['Event', event.occasion || 'Dinner'],
     ['Date', dateStr],

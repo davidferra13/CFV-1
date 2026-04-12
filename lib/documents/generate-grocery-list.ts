@@ -8,6 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from './pdf-layout'
 import { format, parseISO } from 'date-fns'
+import { dateToDateString } from '@/lib/utils/format'
 import { convertQuantity } from '@/lib/units/conversion-engine'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -584,7 +585,10 @@ export function renderGroceryList(pdf: PDFLayout, data: GroceryListData) {
   pdf.title('GROCERY LIST', 13)
 
   // ── Event header bars ─────────────────────────────────────────────────────
-  const dateStr = format(parseISO(event.event_date), 'EEE, MMM d, yyyy')
+  const dateStr = format(
+    parseISO(dateToDateString(event.event_date as Date | string)),
+    'EEE, MMM d, yyyy'
+  )
   pdf.headerBar([
     ['Client', clientName],
     ['Guests', String(event.guest_count)],

@@ -12,6 +12,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { PDFLayout, CONTENT_WIDTH, MARGIN_X, LETTER_WIDTH } from './pdf-layout'
 import { format, parseISO } from 'date-fns'
+import { dateToDateString } from '@/lib/utils/format'
 import { formatCurrency } from '@/lib/utils/currency'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -110,7 +111,10 @@ export async function fetchResetChecklistData(eventId: string): Promise<ResetChe
 export function renderResetChecklist(pdf: PDFLayout, data: ResetChecklistData) {
   const { event, clientName, specialtyEquipment, paymentReceived, paymentAmountCents } = data
 
-  const dateStr = format(parseISO(event.event_date), 'EEE, MMMM d, yyyy')
+  const dateStr = format(
+    parseISO(dateToDateString(event.event_date as Date | string)),
+    'EEE, MMMM d, yyyy'
+  )
 
   // ─── Dark Header Bar ────────────────────────────────────────────────────────
   // Drawn manually so we can use dark background + white text

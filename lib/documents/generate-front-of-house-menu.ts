@@ -6,6 +6,7 @@ import { requireChef, requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { PDFLayout, LETTER_WIDTH, MARGIN_X, MAX_Y } from './pdf-layout'
 import { format, parseISO } from 'date-fns'
+import { dateToDateString } from '@/lib/utils/format'
 
 export type FrontOfHouseMenuData = {
   event: {
@@ -166,7 +167,10 @@ export function renderFrontOfHouseMenu(pdf: PDFLayout, data: FrontOfHouseMenuDat
   if (courses.length > 7) pdf.setFontScale(0.82)
 
   const title = event.occasion?.trim() ? `${event.occasion} Menu` : 'Seasonal Tasting Menu'
-  const dateLabel = format(parseISO(event.event_date), 'EEEE, MMMM d, yyyy')
+  const dateLabel = format(
+    parseISO(dateToDateString(event.event_date as Date | string)),
+    'EEEE, MMMM d, yyyy'
+  )
 
   // Title - serif for classic elegance
   drawCenteredText(pdf, title, 20, 'times', 'bold')

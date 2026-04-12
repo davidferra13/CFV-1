@@ -4,6 +4,7 @@ import {
   getGuestFrequencyStats,
   getDinnerGroups,
 } from '@/lib/guest-analytics/actions'
+import { dateToDateString } from '@/lib/utils/format'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
@@ -61,13 +62,19 @@ export default async function GuestAnalyticsPage() {
                   {guest.email && <p className="text-xs text-stone-500">{guest.email}</p>}
                   <div className="flex flex-wrap gap-1 mt-1">
                     {guest.events
-                      .sort((a, b) => (b.event_date || '').localeCompare(a.event_date || ''))
+                      .sort((a, b) =>
+                        dateToDateString(b.event_date as Date | string).localeCompare(
+                          dateToDateString(a.event_date as Date | string)
+                        )
+                      )
                       .map((evt) => (
                         <Link key={evt.id} href={`/events/${evt.id}`}>
                           <Badge variant="default">
                             {evt.occasion || 'Event'}{' '}
                             {evt.event_date
-                              ? new Date(evt.event_date + 'T00:00:00').toLocaleDateString('en-US', {
+                              ? new Date(
+                                  dateToDateString(evt.event_date as Date | string) + 'T00:00:00'
+                                ).toLocaleDateString('en-US', {
                                   month: 'short',
                                   day: 'numeric',
                                 })

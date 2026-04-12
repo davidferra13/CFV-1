@@ -9,6 +9,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { PDFLayout, CONTENT_WIDTH, MARGIN_X } from './pdf-layout'
 import { format, parseISO } from 'date-fns'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -44,7 +45,7 @@ export async function fetchContentShotListData(
 
   return {
     eventName: event.occasion || 'Dinner Event',
-    eventDate: event.event_date,
+    eventDate: dateToDateString(event.event_date as Date | string),
     clientName: clientData?.full_name ?? 'Client',
   }
 }

@@ -14,6 +14,7 @@ import { PackingListClient } from '@/components/events/packing-list-client'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { format, parseISO } from 'date-fns'
+import { dateToDateString } from '@/lib/utils/format'
 
 /**
  * Fetch weather for the event - non-blocking, returns null on any failure.
@@ -52,7 +53,10 @@ export default async function PackPage({ params }: { params: { id: string } }) {
   }
 
   const { event, clientName } = packingData
-  const dateStr = format(parseISO(event.event_date), 'EEEE, MMM d, yyyy')
+  const dateStr = format(
+    parseISO(dateToDateString(event.event_date as Date | string)),
+    'EEEE, MMM d, yyyy'
+  )
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">

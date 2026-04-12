@@ -8,6 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from './pdf-layout'
 import { format, parseISO } from 'date-fns'
+import { dateToDateString } from '@/lib/utils/format'
 
 export type ExecutionSheetData = {
   event: {
@@ -302,7 +303,10 @@ export function renderExecutionSheet(pdf: PDFLayout, data: ExecutionSheetData) {
   pdf.title(`MENU \u2014 ${client.full_name}`, 14)
 
   // Detail bar: "[N] Guests | Day of Week, Date | Address | Arrive [time] | Serve [time]"
-  const dateStr = format(parseISO(event.event_date), 'EEEE, MMMM d, yyyy')
+  const dateStr = format(
+    parseISO(dateToDateString(event.event_date as Date | string)),
+    'EEEE, MMMM d, yyyy'
+  )
   const addressParts = [event.location_address, event.location_city, event.location_state].filter(
     Boolean
   )

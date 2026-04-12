@@ -9,6 +9,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from './pdf-layout'
 import { format, parseISO } from 'date-fns'
+import { dateToDateString } from '@/lib/utils/format'
 import { convertQuantity } from '@/lib/units/conversion-engine'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -163,7 +164,7 @@ export async function fetchConsolidatedGroceryData(
   let totalIngredientCount = 0
 
   for (const event of events) {
-    const eventLabel = `${format(parseISO(event.event_date), 'M/d')} ${(event.occasion || '').slice(0, 15) || 'Event'}`
+    const eventLabel = `${format(parseISO(dateToDateString(event.event_date as Date | string)), 'M/d')} ${(event.occasion || '').slice(0, 15) || 'Event'}`
 
     // Menu for this event
     const { data: menus } = await db
@@ -408,7 +409,7 @@ export async function renderConsolidatedGroceryList(
 
   // ── Event summary bar ─────────────────────────────────────────────────────
   for (const ev of events) {
-    const dateStr = format(parseISO(ev.eventDate), 'EEE M/d')
+    const dateStr = format(parseISO(dateToDateString(ev.eventDate as Date | string)), 'EEE M/d')
     const label = `${dateStr}: ${ev.clientName} (${ev.guestCount} guests)${ev.occasion ? ' - ' + ev.occasion : ''}`
     pdf.bullet(label, 7, 2)
   }

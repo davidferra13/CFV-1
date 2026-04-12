@@ -10,6 +10,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { allergenShortName } from '@/lib/constants/allergens'
 import { format, parseISO } from 'date-fns'
+import { dateToDateString } from '@/lib/utils/format'
 
 // --- Types ---
 
@@ -148,7 +149,9 @@ async function fetchLabelData(
 
   if (!event || !event.menu_id) return null
 
-  const eventDate = event.event_date ? format(parseISO(event.event_date), 'MMM d, yyyy') : 'N/A'
+  const eventDate = event.event_date
+    ? format(parseISO(dateToDateString(event.event_date as Date | string)), 'MMM d, yyyy')
+    : 'N/A'
 
   const { data: dishes } = await db
     .from('dishes')

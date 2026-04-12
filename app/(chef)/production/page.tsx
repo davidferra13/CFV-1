@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getEvents } from '@/lib/events/actions'
 import { formatCurrency } from '@/lib/utils/currency'
+import { dateToDateString } from '@/lib/utils/format'
 import { Badge } from '@/components/ui/badge'
 import {
   startOfMonth,
@@ -70,12 +71,8 @@ export default async function ProductionCalendarPage({
   const allEvents = await getEvents()
   const monthEvents = allEvents.filter((e: any) => {
     if (!e.event_date) return false
-    try {
-      const d = parseISO(e.event_date)
-      return d >= monthStart && d <= monthEnd
-    } catch {
-      return false
-    }
+    const d = new Date(dateToDateString(e.event_date as Date | string) + 'T00:00:00')
+    return d >= monthStart && d <= monthEnd
   })
 
   // Build calendar grid
@@ -165,11 +162,10 @@ export default async function ProductionCalendarPage({
           {days.map((day) => {
             const dayEvents = monthEvents.filter((e: any) => {
               if (!e.event_date) return false
-              try {
-                return isSameDay(parseISO(e.event_date), day)
-              } catch {
-                return false
-              }
+              return isSameDay(
+                new Date(dateToDateString(e.event_date as Date | string) + 'T00:00:00'),
+                day
+              )
             })
             const isToday = isSameDay(day, today)
 
@@ -254,7 +250,11 @@ export default async function ProductionCalendarPage({
           </h2>
           <div className="space-y-2">
             {monthEvents
-              .sort((a: any, b: any) => (a.event_date ?? '').localeCompare(b.event_date ?? ''))
+              .sort((a: any, b: any) =>
+                dateToDateString(a.event_date as Date | string).localeCompare(
+                  dateToDateString(b.event_date as Date | string)
+                )
+              )
               .map((e: any) => (
                 <Link
                   key={e.id}
@@ -270,7 +270,14 @@ export default async function ProductionCalendarPage({
                         {e.occasion ?? 'Event'}
                       </p>
                       <p className="text-xs text-stone-500">
-                        {e.event_date ? format(parseISO(e.event_date), 'MMM d') : '-'}
+                        {e.event_date
+                          ? format(
+                              new Date(
+                                dateToDateString(e.event_date as Date | string) + 'T00:00:00'
+                              ),
+                              'MMM d'
+                            )
+                          : '-'}
                         {(e as any).client?.full_name ? ` · ${(e as any).client.full_name}` : ''}
                         {e.guest_count ? ` · ${e.guest_count} guests` : ''}
                       </p>
