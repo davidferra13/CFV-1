@@ -6,7 +6,10 @@
 
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
-import { subDays, addDays } from 'date-fns'
+
+function _liso(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
 
 export type TargetClient = {
   id: string
@@ -77,7 +80,8 @@ export async function getDormantClients(dayThreshold = 90): Promise<TargetClient
   const chef = await requireChef()
   const db: any = createServerClient()
 
-  const cutoff = subDays(new Date(), dayThreshold).toISOString().slice(0, 10)
+  const _c = new Date()
+  const cutoff = _liso(new Date(_c.getFullYear(), _c.getMonth(), _c.getDate() - dayThreshold))
 
   const { data: recentEvents } = await db
     .from('events')
@@ -200,8 +204,10 @@ export async function getOpenDateSuggestions(): Promise<OpenDateSlot[]> {
   const chef = await requireChef()
   const db: any = createServerClient()
 
-  const today = new Date()
-  const endDate = addDays(today, 90)
+  const _today = new Date()
+  const _end = new Date(_today.getFullYear(), _today.getMonth(), _today.getDate() + 90)
+  const todayStr = _liso(_today)
+  const endDateStr = _liso(_end)
 
   // Get all booked event dates in window
   const { data: events } = await db
@@ -209,20 +215,22 @@ export async function getOpenDateSuggestions(): Promise<OpenDateSlot[]> {
     .select('event_date')
     .eq('tenant_id', chef.entityId)
     .not('status', 'in', '("cancelled")')
-    .gte('event_date', today.toISOString().slice(0, 10))
-    .lte('event_date', endDate.toISOString().slice(0, 10))
+    .gte('event_date', todayStr)
+    .lte('event_date', endDateStr)
 
   const bookedDates = new Set((events ?? []).map((e: any) => e.event_date))
 
   // Walk the next 90 days, collect Fri/Sat/Sun that are free
   const slots: OpenDateSlot[] = []
-  const cursor = new Date(today)
-  cursor.setDate(cursor.getDate() + 1) // start tomorrow
+  let _curY = _today.getFullYear()
+  let _curM = _today.getMonth()
+  let _curD = _today.getDate() + 1 // start tomorrow
+  const cursor = new Date(_curY, _curM, _curD)
 
-  while (cursor <= endDate) {
+  while (_liso(cursor) <= endDateStr) {
     const dow = cursor.getDay() // 0=Sun, 5=Fri, 6=Sat
     if (dow === 0 || dow === 5 || dow === 6) {
-      const iso = cursor.toISOString().slice(0, 10)
+      const iso = _liso(cursor)
       if (!bookedDates.has(iso)) {
         slots.push({
           date: iso,

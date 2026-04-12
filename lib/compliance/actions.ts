@@ -110,8 +110,12 @@ export async function getExpiringCertifications(daysAhead = 60) {
   const db: any = createServerClient()
 
   const today = new Date()
-  const threshold = addDays(today, daysAhead).toISOString().slice(0, 10)
-  const todayStr = today.toISOString().slice(0, 10)
+  const _liso = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const threshold = _liso(
+    new Date(today.getFullYear(), today.getMonth(), today.getDate() + daysAhead)
+  )
+  const todayStr = _liso(today)
 
   const { data, error } = await db
     .from('chef_certifications')

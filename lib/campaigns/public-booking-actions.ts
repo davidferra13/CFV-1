@@ -231,7 +231,12 @@ export async function submitCampaignBooking(
     tenant_id: campaign.chef_id,
     client_id: clientId,
     inquiry_id: inquiry.id,
-    event_date: campaign.proposed_date ?? new Date().toISOString().slice(0, 10),
+    event_date:
+      campaign.proposed_date ??
+      ((_d) =>
+        `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+        new Date()
+      ),
     serve_time: campaign.proposed_time ?? '18:00',
     guest_count: input.guest_count,
     occasion: campaign.occasion ?? campaign.name,

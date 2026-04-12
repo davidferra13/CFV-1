@@ -393,9 +393,9 @@ export async function getExpiringCOIs(daysAhead: number = 30) {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const futureDate = new Date()
-  futureDate.setDate(futureDate.getDate() + daysAhead)
-  const futureDateStr = futureDate.toISOString().split('T')[0]
+  const _fn = new Date()
+  const _fd = new Date(_fn.getFullYear(), _fn.getMonth(), _fn.getDate() + daysAhead)
+  const futureDateStr = `${_fd.getFullYear()}-${String(_fd.getMonth() + 1).padStart(2, '0')}-${String(_fd.getDate()).padStart(2, '0')}`
 
   const { data, error } = await db
     .from('subcontract_agreements')
@@ -412,7 +412,8 @@ export async function getExpiringCOIs(daysAhead: number = 30) {
     throw new Error('Failed to fetch expiring COIs')
   }
 
-  const today = new Date().toISOString().split('T')[0]
+  const _tn = new Date()
+  const today = `${_tn.getFullYear()}-${String(_tn.getMonth() + 1).padStart(2, '0')}-${String(_tn.getDate()).padStart(2, '0')}`
 
   return (data ?? []).map((row: any) => ({
     ...row,

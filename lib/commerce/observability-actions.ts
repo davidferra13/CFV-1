@@ -58,7 +58,10 @@ export type PosMetricSnapshotRow = {
 
 function toIsoDayString(raw: string | undefined) {
   const date = String(raw ?? '').trim()
-  if (!date) return new Date().toISOString().slice(0, 10)
+  if (!date) {
+    const _d = new Date()
+    return `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`
+  }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     throw new Error('Date must be in YYYY-MM-DD format')
   }

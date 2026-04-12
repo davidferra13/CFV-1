@@ -363,7 +363,8 @@ export async function getCannabisRSVPDashboardData(selectedEventId?: string | nu
     }
   }
 
-  const today = new Date().toISOString().slice(0, 10)
+  const _t = new Date()
+  const today = `${_t.getFullYear()}-${String(_t.getMonth() + 1).padStart(2, '0')}-${String(_t.getDate()).padStart(2, '0')}`
   const upcoming = events.filter(
     (event) =>
       event.event_date >= today && !['completed', 'cancelled'].includes((event.status ?? '').trim())

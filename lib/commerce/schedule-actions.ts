@@ -127,7 +127,8 @@ export async function getOverdueInstallments() {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const today = new Date().toISOString().split('T')[0]
+  const _t = new Date()
+  const today = `${_t.getFullYear()}-${String(_t.getMonth() + 1).padStart(2, '0')}-${String(_t.getDate()).padStart(2, '0')}`
 
   const { data, error } = await db
     .from('commerce_payment_schedules')

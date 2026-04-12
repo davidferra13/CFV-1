@@ -85,16 +85,18 @@ export async function getExpiringPolicies(daysAhead: number = 30): Promise<Insur
   const user = await requireChef()
   const db = getDb()
 
-  const futureDate = new Date()
-  futureDate.setDate(futureDate.getDate() + daysAhead)
+  const _fn = new Date()
+  const _fd = new Date(_fn.getFullYear(), _fn.getMonth(), _fn.getDate() + daysAhead)
+  const _liso = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
   const { data, error } = await db
     .from('insurance_policies')
     .select('*')
     .eq('chef_id', user.tenantId!)
     .neq('status', 'cancelled')
-    .lte('end_date', futureDate.toISOString().split('T')[0])
-    .gte('end_date', new Date().toISOString().split('T')[0])
+    .lte('end_date', _liso(_fd))
+    .gte('end_date', _liso(_fn))
     .order('end_date', { ascending: true })
 
   if (error) throw new Error(`Failed to load expiring policies: ${error.message}`)

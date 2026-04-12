@@ -101,7 +101,7 @@ export async function recordClosureForStreak(eventDate: string): Promise<void> {
   }
 
   const newLongest = Math.max(longestStreak, newStreak)
-  const todayStr = today.toISOString().split('T')[0]
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
 
   await db
     .from('chefs')

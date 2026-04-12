@@ -170,10 +170,13 @@ export async function getExpiringNdaRecords(daysAhead: number = 30): Promise<Nda
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const today = new Date().toISOString().split('T')[0]
-  const futureDate = new Date()
-  futureDate.setDate(futureDate.getDate() + daysAhead)
-  const futureDateStr = futureDate.toISOString().split('T')[0]
+  const _tn = new Date()
+  const _liso = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const today = _liso(_tn)
+  const futureDateStr = _liso(
+    new Date(_tn.getFullYear(), _tn.getMonth(), _tn.getDate() + daysAhead)
+  )
 
   const { data, error } = await db
     .from('client_ndas' as any)
@@ -241,6 +244,11 @@ export async function getNdaDashboard(): Promise<NdaDashboardSummary> {
 export async function markNdaRecordSigned(id: string, signedDate?: string): Promise<NdaRow> {
   return updateNdaRecord(id, {
     status: 'signed',
-    signed_date: signedDate ?? new Date().toISOString().split('T')[0],
+    signed_date:
+      signedDate ??
+      ((_d) =>
+        `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+        new Date()
+      ),
   })
 }

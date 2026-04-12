@@ -61,15 +61,17 @@ export async function listPermits(): Promise<PermitRow[]> {
 export async function getExpiringPermits(withinDays = 60): Promise<PermitRow[]> {
   const user = await requireChef()
   const db: any = createServerClient({ admin: true })
-  const cutoff = new Date()
-  cutoff.setDate(cutoff.getDate() + withinDays)
+  const _pn = new Date()
+  const _pc = new Date(_pn.getFullYear(), _pn.getMonth(), _pn.getDate() + withinDays)
+  const _pliso = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   const { data, error } = await db
     .from('permits')
     .select('*')
     .eq('tenant_id', user.entityId)
     .in('status', ['active', 'pending_renewal'])
-    .lte('expiry_date', cutoff.toISOString().slice(0, 10))
-    .gte('expiry_date', new Date().toISOString().slice(0, 10))
+    .lte('expiry_date', _pliso(_pc))
+    .gte('expiry_date', _pliso(_pn))
     .order('expiry_date', { ascending: true })
   if (error) throw new Error(error.message)
   return data ?? []

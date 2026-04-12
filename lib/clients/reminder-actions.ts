@@ -156,7 +156,7 @@ export async function getUpcomingReminders(daysAhead: number = 30): Promise<Upco
           clientName: client.full_name,
           type: 'birthday',
           label: 'Birthday',
-          date: next.toISOString().split('T')[0],
+          date: `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}-${String(next.getDate()).padStart(2, '0')}`,
           daysUntil: days,
         })
       }
@@ -172,7 +172,7 @@ export async function getUpcomingReminders(daysAhead: number = 30): Promise<Upco
           clientName: client.full_name,
           type: 'anniversary',
           label: 'Anniversary',
-          date: next.toISOString().split('T')[0],
+          date: `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}-${String(next.getDate()).padStart(2, '0')}`,
           daysUntil: days,
         })
       }
@@ -191,7 +191,7 @@ export async function getUpcomingReminders(daysAhead: number = 30): Promise<Upco
             clientName: client.full_name,
             type: 'custom',
             label: id.label,
-            date: next.toISOString().split('T')[0],
+            date: `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}-${String(next.getDate()).padStart(2, '0')}`,
             daysUntil: days,
           })
         }
@@ -254,7 +254,7 @@ export async function detectAnniversaries(daysAhead: number = 30): Promise<Upcom
         clientName: name,
         type: 'booking_anniversary',
         label: `${yearsAgo}-year booking anniversary`,
-        date: next.toISOString().split('T')[0],
+        date: `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}-${String(next.getDate()).padStart(2, '0')}`,
         daysUntil: days,
       })
     }

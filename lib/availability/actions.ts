@@ -141,7 +141,8 @@ export async function getAvailabilityForMonth(
   const db: any = createServerClient()
 
   const startDate = `${year}-${String(month).padStart(2, '0')}-01`
-  const endDate = new Date(year, month, 0).toISOString().split('T')[0] // last day of month
+  const _eom = new Date(year, month, 0)
+  const endDate = `${_eom.getFullYear()}-${String(_eom.getMonth() + 1).padStart(2, '0')}-${String(_eom.getDate()).padStart(2, '0')}` // last day of month
 
   const { data: blocks } = await db
     .from('chef_availability_blocks')
