@@ -453,7 +453,7 @@ function generateMarkdownReport(results, startTime, endTime) {
 
   let md = `# Client Remy Quality Report
 
-**Date:** ${new Date().toISOString().split('T')[0]}
+**Date:** ${((_d) => `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(new Date())}
 **Endpoint:** \`${API_ENDPOINT}\`
 **Model:** qwen3:30b (conversation)
 **Prompts:** ${results.length}
@@ -689,7 +689,8 @@ async function main() {
   console.log(`Benchmark: ${benchmarkPath}`)
 
   // Write Markdown report
-  const date = new Date().toISOString().split('T')[0]
+  const _d = new Date()
+  const date = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`
   const reportPath = path.join(reportDir, `${date}-client-quality.md`)
   const report = generateMarkdownReport(results, startTime, endTime)
   fs.writeFileSync(reportPath, report)

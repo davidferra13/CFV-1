@@ -98,7 +98,7 @@ test.afterAll(() => {
   // Also write a markdown summary
   const lines = [
     '# Screenshot Crawl Summary',
-    `**Date:** ${new Date().toISOString().slice(0, 10)}`,
+    `**Date:** ${((_d) => `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(new Date())}`,
     `**Total pages crawled:** ${allResults.length}`,
     `**JS errors found:** ${allResults.filter((r) => r.jsErrors.length > 0).length}`,
     `**HTTP 500+ errors:** ${allResults.filter((r) => r.status >= 500).length}`,

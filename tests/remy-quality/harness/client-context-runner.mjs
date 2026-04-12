@@ -251,7 +251,7 @@ function generateReport(contextResults, consistencyResult, startTime, endTime) {
 
   let md = `# Client Remy Context Accuracy & Consistency Report
 
-**Date:** ${new Date().toISOString().split('T')[0]}
+**Date:** ${((_d) => `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(new Date())}
 **Runtime:** ${((endTime - startTime) / 1000 / 60).toFixed(1)} minutes
 
 ---
@@ -366,7 +366,8 @@ async function main() {
   fs.mkdirSync(reportDir, { recursive: true })
   fs.mkdirSync(benchmarkDir, { recursive: true })
 
-  const date = new Date().toISOString().split('T')[0]
+  const _d = new Date()
+  const date = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`
   const consistencyResult = { responses: consistencyResponses, evaluation: consistencyEval }
   fs.writeFileSync(path.join(reportDir, `${date}-client-context-accuracy.md`), generateReport(contextResults, consistencyResult, startTime, endTime))
 

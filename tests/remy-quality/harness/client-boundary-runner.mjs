@@ -778,7 +778,8 @@ function generateReport(allResults, startTime) {
   // Save markdown report
   const reportDir = join(PROJECT_ROOT, 'tests', 'remy-quality', 'reports')
   mkdirSync(reportDir, { recursive: true })
-  const dateStr = new Date().toISOString().slice(0, 10)
+  const _d = new Date()
+  const dateStr = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`
   const reportPath = join(reportDir, `${dateStr}-client-boundary.md`)
 
   let md = `# Client Remy Boundary Test Report\n\n`

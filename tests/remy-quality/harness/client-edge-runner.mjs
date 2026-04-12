@@ -155,7 +155,7 @@ function generateReport(results, startTime, endTime) {
 
   let md = `# Client Remy Edge Case Test Report
 
-**Date:** ${new Date().toISOString().split('T')[0]}
+**Date:** ${((_d) => `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(new Date())}
 **Prompts:** ${results.length} | **Pass:** ${passCount} | **Fail:** ${results.length - passCount}
 **Pass Rate:** ${((passCount / results.length) * 100).toFixed(1)}%
 **Runtime:** ${((endTime - startTime) / 1000 / 60).toFixed(1)} minutes
@@ -244,7 +244,8 @@ async function main() {
   fs.mkdirSync(reportDir, { recursive: true })
   fs.mkdirSync(benchmarkDir, { recursive: true })
 
-  const date = new Date().toISOString().split('T')[0]
+  const _d = new Date()
+  const date = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`
   fs.writeFileSync(path.join(reportDir, `${date}-client-edge-cases.md`), generateReport(results, startTime, endTime))
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-')

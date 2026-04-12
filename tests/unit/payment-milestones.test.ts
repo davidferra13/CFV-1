@@ -19,9 +19,11 @@ function calculateMilestoneDueDate(def: MilestoneDefinition, eventDate: string):
 
   switch (def.due_trigger) {
     case 'on_confirmation':
-      return new Date().toISOString().split('T')[0]
+      const _now = new Date()
+      return `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, '0')}-${String(_now.getDate()).padStart(2, '0')}`
     case 'days_before_event':
-      return new Date(event.getTime() - def.due_offset_days * 86400000).toISOString().split('T')[0]
+      const _due = new Date(event.getTime() - def.due_offset_days * 86400000)
+      return `${_due.getFullYear()}-${String(_due.getMonth() + 1).padStart(2, '0')}-${String(_due.getDate()).padStart(2, '0')}`
     case 'day_of_event':
       return eventDate
     case 'days_after_event':

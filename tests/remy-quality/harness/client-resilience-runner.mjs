@@ -694,7 +694,7 @@ function generateReport(testResults, startTime, endTime) {
 
   let md = `# Client Remy Resilience Test Report
 
-**Date:** ${new Date().toISOString().split('T')[0]}
+**Date:** ${((_d) => `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(new Date())}
 **Tests:** ${testResults.length} | **Pass:** ${passCount} | **Fail:** ${testResults.length - passCount}
 **Runtime:** ${((endTime - startTime) / 1000 / 60).toFixed(1)} minutes
 
@@ -765,7 +765,8 @@ async function main() {
   fs.mkdirSync(reportDir, { recursive: true })
   fs.mkdirSync(benchmarkDir, { recursive: true })
 
-  const date = new Date().toISOString().split('T')[0]
+  const _d = new Date()
+  const date = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`
   fs.writeFileSync(
     path.join(reportDir, `${date}-client-resilience.md`),
     generateReport(testResults, startTime, endTime)

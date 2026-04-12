@@ -107,7 +107,8 @@ test.describe('Public — Auth Pages', () => {
 test.describe('Public — Chef Profile', () => {
   test('chef public profile loads via slug', async ({ page }) => {
     // Use the seeded chef slug
-    const suffix = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+    const _d = new Date()
+    const suffix = `${_d.getFullYear()}${String(_d.getMonth() + 1).padStart(2, '0')}${String(_d.getDate()).padStart(2, '0')}`
     await page.goto(`/chef/e2e-chef-${suffix}`, { timeout: 45_000 })
     await page.waitForLoadState('domcontentloaded')
 

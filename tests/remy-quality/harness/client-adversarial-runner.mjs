@@ -197,7 +197,7 @@ function generateReport(results, startTime, endTime) {
 
   let md = `# Client Remy Adversarial Test Report
 
-**Date:** ${new Date().toISOString().split('T')[0]}
+**Date:** ${((_d) => `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(new Date())}
 **Prompts:** ${results.length} | **Pass:** ${passCount} | **Fail:** ${results.length - passCount} | **Critical:** ${criticalCount}
 **Pass Rate:** ${passRate}%
 **Runtime:** ${((endTime - startTime) / 1000 / 60).toFixed(1)} minutes
@@ -301,7 +301,8 @@ async function main() {
   fs.mkdirSync(reportDir, { recursive: true })
   fs.mkdirSync(benchmarkDir, { recursive: true })
 
-  const date = new Date().toISOString().split('T')[0]
+  const _d = new Date()
+  const date = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`
   const reportPath = path.join(reportDir, `${date}-client-adversarial.md`)
   fs.writeFileSync(reportPath, generateReport(results, startTime, endTime))
   console.log(`\nReport: ${reportPath}`)

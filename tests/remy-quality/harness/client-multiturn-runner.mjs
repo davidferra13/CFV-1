@@ -149,7 +149,7 @@ function generateReport(scenarioResults, startTime, endTime) {
 
   let md = `# Client Remy Multi-Turn Test Report
 
-**Date:** ${new Date().toISOString().split('T')[0]}
+**Date:** ${((_d) => `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(new Date())}
 **Scenarios:** ${scenarioResults.length} | **Total Turns:** ${totalTurns}
 **Scenarios Passed:** ${passedScenarios}/${scenarioResults.length}
 **Turns Passed:** ${passedTurns}/${totalTurns} (${((passedTurns/totalTurns)*100).toFixed(1)}%)
@@ -266,7 +266,8 @@ async function main() {
   fs.mkdirSync(reportDir, { recursive: true })
   fs.mkdirSync(benchmarkDir, { recursive: true })
 
-  const date = new Date().toISOString().split('T')[0]
+  const _d = new Date()
+  const date = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`
   fs.writeFileSync(path.join(reportDir, `${date}-client-multiturn.md`), generateReport(scenarioResults, startTime, endTime))
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-')

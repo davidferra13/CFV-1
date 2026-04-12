@@ -164,7 +164,8 @@ ${slowRoutes.map((r) => `| \`${r.route}\` | ${r.avg_load_time_ms?.toFixed(0) ?? 
   fs.writeFileSync(path.join(REPORT_DIR, 'summary-latest.md'), summary)
 
   // Daily report
-  const dateStr = new Date().toISOString().split('T')[0]
+  const _d = new Date()
+  const dateStr = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`
   fs.writeFileSync(path.join(REPORT_DIR, `report-${dateStr}.md`), summary)
 
   // Anomalies file
