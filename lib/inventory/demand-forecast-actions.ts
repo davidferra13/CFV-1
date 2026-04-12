@@ -84,11 +84,14 @@ async function aggregateIngredientDemand(
     eventsQuery = eventsQuery.in('id', eventFilter.ids)
   } else if (eventFilter.daysAhead != null) {
     const now = new Date()
-    const cutoff = new Date()
-    cutoff.setDate(cutoff.getDate() + eventFilter.daysAhead)
+    const _liso = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
     eventsQuery = eventsQuery
-      .gte('event_date', now.toISOString().split('T')[0])
-      .lte('event_date', cutoff.toISOString().split('T')[0])
+      .gte('event_date', _liso(now))
+      .lte(
+        'event_date',
+        _liso(new Date(now.getFullYear(), now.getMonth(), now.getDate() + eventFilter.daysAhead))
+      )
   }
 
   const { data: events, error: eventsError } = await eventsQuery

@@ -133,12 +133,12 @@ export async function getCapacityCeiling(): Promise<CapacityCeilingResult | null
   >()
 
   for (const event of events) {
-    const d = new Date(event.event_date)
+    const [_ey2, _em2, _ed2] = (event.event_date as string).split('-').map(Number)
+    const d = new Date(_ey2, _em2 - 1, _ed2)
     const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
     const day = d.getDay()
-    const monday = new Date(d)
-    monday.setDate(d.getDate() - ((day + 6) % 7))
-    const weekKey = monday.toISOString().split('T')[0]
+    const monday = new Date(_ey2, _em2 - 1, _ed2 - ((day + 6) % 7))
+    const weekKey = `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`
 
     if (!monthlyMap.has(monthKey))
       monthlyMap.set(monthKey, {
