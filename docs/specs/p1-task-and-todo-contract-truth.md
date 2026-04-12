@@ -1,6 +1,6 @@
 # Spec: Task and Todo Contract Truth
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P1
 > **Depends on:** none
 > **Estimated complexity:** medium-large (8-12 files)

@@ -625,3 +625,19 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: bf9ca6330
 - Build state on departure: tsc green (verified), all remy\_\* tables present in DB including remy_onboarding and remy_milestones from prior session
 - Notes: All 8 sections on /features page verified by QA tester. Dead-zone gating spec was already implemented (claims/new redirects, finance gating via showAsPrimary). Blueprint queue cleaned up.
+
+## 2026-04-12 (context compaction continuation)
+
+- Agent: Builder (Sonnet 4.6)
+- Task: MemPalace mining continuation - fix task/todo contract truth bugs found in prior session
+- Status: completed
+- Files touched:
+  - lib/ai/remy-context.ts (fixed chef_todos select from nonexistent title/due_date/priority/status to text/completed/sort_order; fixed mapping t.title -> t.text)
+  - lib/ai/remy-intelligence-actions.ts (fixed .from('todos') nonexistent table to .from('tasks'))
+  - components/dashboard/quick-create-strip.tsx (fixed dead /todos link to /tasks)
+  - lib/ai/agent-actions/briefing-actions.ts (fixed chef_todos query with wrong columns to tasks table with chef_id scope)
+  - lib/ai/agent-actions/operations-actions.ts (fixed chef_todos insert with wrong columns to tasks table with correct schema)
+  - docs/specs/p1-task-and-todo-contract-truth.md (status: ready -> built)
+- Commits: a7784a15d
+- Build state on departure: tsc clean (0 errors)
+- Notes: All 5 files from the task-todo-contract-truth spec's "Verified contract drift" section fixed. Remy will no longer silently get empty todo data or crash on nonexistent DB tables. spec status updated to built.
