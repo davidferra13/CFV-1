@@ -30,6 +30,7 @@ export function PlanItem({ item, onUpdate }: Props) {
         const result = await completeDailyPlanItem(item.id)
         if (result.success) {
           setCompleted(true)
+          toast.success('Done', { description: item.title, duration: 1800 })
           onUpdate?.()
         }
       } catch (err) {

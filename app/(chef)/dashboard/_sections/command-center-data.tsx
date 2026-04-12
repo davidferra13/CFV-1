@@ -8,14 +8,15 @@ async function safeCount(
   tenantCol: string,
   tenantId: string,
   extraFilters?: (q: any) => any
-): Promise<number> {
+): Promise<number | null> {
   try {
     let query = db.from(table).select('*', { count: 'exact', head: true }).eq(tenantCol, tenantId)
     if (extraFilters) query = extraFilters(query)
-    const { count } = await query
+    const { count, error } = await query
+    if (error) return null
     return count ?? 0
   } catch {
-    return 0
+    return null
   }
 }
 
@@ -38,30 +39,41 @@ export async function CommandCenterSection() {
     safeCount(db, 'conversations', 'tenant_id', tid, (q: any) => q.gt('unread_count', 0)),
   ])
 
+  const anyFailed = [events, inquiries, clients, menus, quotes, unreadMessages].some(
+    (v) => v === null
+  )
+
   return (
-    <CommandCenter
-      counts={{
-        events,
-        inquiries,
-        clients,
-        menus,
-        quotes,
-        unreadMessages,
-        // Unused by the condensed panel but kept for interface compatibility
-        recipes: 0,
-        expenses: 0,
-        invoices: 0,
-        staff: 0,
-        tasks: 0,
-        vendors: 0,
-        contracts: 0,
-        leads: 0,
-        inventoryAlerts: 0,
-        goals: 0,
-        campaigns: 0,
-        calls: 0,
-        circles: 0,
-      }}
-    />
+    <div>
+      {anyFailed && (
+        <p className="text-xs text-amber-500 mb-2">
+          Some counts could not be loaded. Counts may be incomplete.
+        </p>
+      )}
+      <CommandCenter
+        counts={{
+          events: events ?? 0,
+          inquiries: inquiries ?? 0,
+          clients: clients ?? 0,
+          menus: menus ?? 0,
+          quotes: quotes ?? 0,
+          unreadMessages: unreadMessages ?? 0,
+          // Unused by the condensed panel but kept for interface compatibility
+          recipes: 0,
+          expenses: 0,
+          invoices: 0,
+          staff: 0,
+          tasks: 0,
+          vendors: 0,
+          contracts: 0,
+          leads: 0,
+          inventoryAlerts: 0,
+          goals: 0,
+          campaigns: 0,
+          calls: 0,
+          circles: 0,
+        }}
+      />
+    </div>
   )
 }

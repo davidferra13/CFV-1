@@ -24,6 +24,8 @@ export const SHORTCUTS: ShortcutDef[] = [
   { keys: ['g', 'f'], href: '/finance', label: 'Finance', category: 'Go to' },
   { keys: ['g', 's'], href: '/settings', label: 'Settings', category: 'Go to' },
   { keys: ['g', 'm'], href: '/culinary/menus', label: 'Menus', category: 'Go to' },
+  { keys: ['g', 'b'], href: '/briefing', label: 'Morning Briefing', category: 'Go to' },
+  { keys: ['g', 'o'], href: '/daily', label: 'Daily Ops', category: 'Go to' },
 
   // Utility
   { keys: ['?'], action: 'show-help', label: 'Show shortcuts', category: 'Help' },
