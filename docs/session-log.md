@@ -583,3 +583,18 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: cc4e188fe, 9b263b755
 - Build state on departure: green (tsc exits 0)
 - Notes: CPA export 422 and Stripe webhook bugs were stale - both already working. DocuSign now fully wired end-to-end. Recipe unit mismatch was silent before; now surfaces a visible warning per ingredient. Remaining backlog items: SMS channel, Google Calendar OAuth, multi-chef client view, dark mode coverage, calendar availability in booking flow.
+
+## 2026-04-11 (compliance session)
+
+- Agent: Builder (Sonnet 4.6)
+- Task: Legal compliance - embed inquiry form consent pattern + dev server fix
+- Status: completed
+- Files touched:
+  - database/migrations/20260411000003_inquiry_consent.sql (created: consent_at + consent_version columns on inquiries)
+  - app/api/embed/inquiry/route.ts (accept + store consent_at, consent_version)
+  - components/embed/embed-inquiry-form.tsx (match Take a Chef consent pattern exactly: text above button, "Send" button, no checkbox)
+  - app/(public)/privacy/page.tsx (rewrite inquiry section: full downstream pipeline disclosure, updated date)
+  - next.config.js (fix: async_hooks webpack fallback - resolves dev server 500 on all pages)
+- Commits: 7a9ce44f5, d07ae8daf, 0606b156a (and prior session commits already pushed)
+- Build state on departure: tsc green, prod build running
+- Notes: Consent checkbox was removed after competitive research confirmed no top booking platform (Take a Chef, OpenTable, Tock) uses one. Final pattern matches Take a Chef exactly: "By sending this form, you agree to our Terms and acknowledge our Privacy Policy." above the Send button. Migration confirmed applied to DB (consent_at + consent_version columns verified). Dev server async_hooks bug fixed via next.config.js webpack fallback.
