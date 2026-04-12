@@ -117,7 +117,6 @@ async function sendToRemy(message, currentPage, history) {
         history: history || [],
       }),
       signal: controller.signal,
-      redirect: 'manual',
     });
   } catch (err) {
     clearTimeout(timer);

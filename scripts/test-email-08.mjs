@@ -30,7 +30,6 @@ async function main() {
       activeForm: null,
       history: [],
     }),
-    redirect: 'manual',
   }).catch((e) => {
     console.error('Fetch failed:', e.message)
     return { status: 0 }

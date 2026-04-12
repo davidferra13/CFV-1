@@ -87,7 +87,6 @@ async function main() {
         activeForm: null,
         history: [],
       }),
-      redirect: 'manual',
     }).catch(() => ({ status: 0 }))
 
     if (res.status !== 200) {

@@ -34,7 +34,6 @@ async function main() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Cookie: cookieStr },
       body: JSON.stringify({ message: 'ping', currentPage: '/dashboard', recentPages: [], recentActions: [], recentErrors: [], sessionMinutes: 1, activeForm: null, history: [] }),
-      redirect: 'manual',
     })
     const probeBody = await probeRes.text()
     if (probeBody.includes('Remy is currently disabled') || probeBody.includes('Complete AI onboarding')) {
@@ -213,7 +212,6 @@ async function main() {
           history: [],
         }),
         signal: controller.signal,
-        redirect: 'manual',
       })
 
       if (res.status !== 200) {

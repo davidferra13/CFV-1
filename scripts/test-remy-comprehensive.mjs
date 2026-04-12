@@ -499,7 +499,6 @@ async function runSingleTest(test, cookieStr) {
         history: [],
       }),
       signal: controller.signal,
-      redirect: 'manual',
     })
 
     if (res.status !== 200) {
@@ -592,7 +591,6 @@ async function main() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Cookie: cookieStr },
       body: JSON.stringify({ message: 'ping', currentPage: '/dashboard', recentPages: [], recentActions: [], recentErrors: [], sessionMinutes: 1, activeForm: null, history: [] }),
-      redirect: 'manual',
     })
     const probeBody = await probe.text()
     if (probeBody.includes('Remy is currently disabled')) {

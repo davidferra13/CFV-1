@@ -64,7 +64,6 @@ async function main() {
         activeForm: null,
         history: [],
       }),
-      redirect: 'manual',
     });
 
     if (res.status !== 200) {
