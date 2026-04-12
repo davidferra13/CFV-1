@@ -4,7 +4,7 @@ import { getLoyaltyConfig, getRewards } from '@/lib/loyalty/actions'
 import { getImportedClients } from '@/lib/clients/import-actions'
 import { LoyaltySetup } from '@/components/onboarding/loyalty-setup'
 
-export const metadata = { title: 'Loyalty Program Setup | ChefFlow Setup' }
+export const metadata = { title: 'Loyalty Program Setup' }
 
 export default async function OnboardingLoyaltyPage() {
   const [config, rewards, clients] = await Promise.all([

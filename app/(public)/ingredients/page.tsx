@@ -17,11 +17,11 @@ import {
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 export const metadata: Metadata = {
-  title: 'Ingredient Guide | ChefFlow',
+  title: 'Ingredient Guide',
   description:
     'Browse our culinary ingredient database: flavor profiles, origin, dietary info, and live pricing for thousands of ingredients used by professional chefs.',
   openGraph: {
-    title: 'Ingredient Guide | ChefFlow',
+    title: 'Ingredient Guide',
     description:
       'Browse flavor profiles, origin, dietary info, and live pricing for thousands of culinary ingredients.',
     url: `${BASE_URL}/ingredients`,

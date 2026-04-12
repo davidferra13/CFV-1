@@ -3,7 +3,7 @@ import { ArrowLeft } from '@/components/ui/icons'
 import { getRecipes } from '@/lib/recipes/actions'
 import { RecipeEntryForm } from '@/components/onboarding/recipe-entry-form'
 
-export const metadata = { title: 'Recipe Library | ChefFlow Setup' }
+export const metadata = { title: 'Recipe Library' }
 
 export default async function OnboardingRecipesPage() {
   const recipes = await getRecipes().catch(() => [])

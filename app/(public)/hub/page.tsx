@@ -4,14 +4,14 @@ import Link from 'next/link'
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 export const metadata: Metadata = {
-  title: 'Dinner Circles | ChefFlow',
+  title: 'Dinner Circles',
   description:
     'Dinner Circles are the shared guest pages for a dinner event. Guests can join from an invite link, chat, coordinate, and keep event details in one place.',
   alternates: {
     canonical: `${BASE_URL}/hub`,
   },
   openGraph: {
-    title: 'Dinner Circles | ChefFlow',
+    title: 'Dinner Circles',
     description:
       'Shared dinner pages for guest coordination, updates, and event details before the meal.',
     url: `${BASE_URL}/hub`,

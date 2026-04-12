@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!story) return { title: 'Story Not Found' }
 
   return {
-    title: `${story.chefName} Case Study | ChefFlow`,
+    title: `${story.chefName} Case Study`,
     description: story.summary,
     openGraph: {
       title: `${story.chefName} Case Study`,

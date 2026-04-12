@@ -12,7 +12,7 @@ import {
 } from '@/lib/simulation/simulation-actions'
 import { SimulateClient } from './simulate-client'
 
-export const metadata: Metadata = { title: 'Simulation Lab | ChefFlow Dev' }
+export const metadata: Metadata = { title: 'Simulation Lab' }
 
 export default async function SimulatePage() {
   await requireChefAdmin()

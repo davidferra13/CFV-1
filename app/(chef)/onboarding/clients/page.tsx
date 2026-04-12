@@ -3,7 +3,7 @@ import { ArrowLeft } from '@/components/ui/icons'
 import { getImportedClients } from '@/lib/clients/import-actions'
 import { ClientImportForm } from '@/components/onboarding/client-import-form'
 
-export const metadata = { title: 'Import Clients | ChefFlow Setup' }
+export const metadata = { title: 'Import Clients' }
 
 export default async function OnboardingClientsPage() {
   const clients = await getImportedClients()

@@ -3,7 +3,7 @@ import { ArrowLeft } from '@/components/ui/icons'
 import { listStaffMembers } from '@/lib/staff/actions'
 import { StaffEntryForm } from '@/components/onboarding/staff-entry-form'
 
-export const metadata = { title: 'Staff Setup | ChefFlow Setup' }
+export const metadata = { title: 'Staff Setup' }
 
 export default async function OnboardingStaffPage() {
   const staff = await listStaffMembers().catch(() => [])

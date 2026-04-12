@@ -133,7 +133,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const article = HELP_CONTENT[params.slug]
   return {
-    title: article ? `${article.title} | ChefFlow Help` : 'Help',
+    title: article ? article.title : 'Help',
   }
 }
 

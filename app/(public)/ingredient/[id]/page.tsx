@@ -155,10 +155,10 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       descParts.push(`Origin: ${know.originCountries.slice(0, 2).join(', ')}.`)
     const description = descParts.join(' ').slice(0, 160)
     return {
-      title: `${detail.ingredient.name} - Ingredient Guide | ChefFlow`,
+      title: `${detail.ingredient.name} - Ingredient Guide`,
       description,
       openGraph: {
-        title: `${detail.ingredient.name} | ChefFlow Ingredient Guide`,
+        title: `${detail.ingredient.name} - Ingredient Guide`,
         description,
         ...(know?.imageUrl
           ? { images: [{ url: know.imageUrl, alt: detail.ingredient.name }] }
@@ -166,7 +166,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       },
       twitter: {
         card: 'summary',
-        title: `${detail.ingredient.name} | ChefFlow`,
+        title: detail.ingredient.name,
         description,
         ...(know?.imageUrl ? { images: [know.imageUrl] } : {}),
       },
@@ -180,16 +180,16 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { name, knowledge: k } = slugResult
   const description = (k.wikiSummary ?? `${name} - culinary ingredient guide.`).slice(0, 160)
   return {
-    title: `${name} - Ingredient Guide | ChefFlow`,
+    title: `${name} - Ingredient Guide`,
     description,
     openGraph: {
-      title: `${name} | ChefFlow Ingredient Guide`,
+      title: `${name} - Ingredient Guide`,
       description,
       ...(k.imageUrl ? { images: [{ url: k.imageUrl, alt: name }] } : {}),
     },
     twitter: {
       card: 'summary',
-      title: `${name} | ChefFlow`,
+      title: name,
       description,
       ...(k.imageUrl ? { images: [k.imageUrl] } : {}),
     },
