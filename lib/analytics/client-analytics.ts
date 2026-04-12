@@ -345,23 +345,89 @@ export async function getReferralConversionStats(): Promise<ReferralConversionSt
   }
 }
 
-// DEFERRED: getNpsStats requires client_satisfaction_surveys table (not yet created).
-// Returns empty data with _deferred flag so UI shows honest "not available" state.
 export async function getNpsStats(): Promise<NpsStats> {
-  await requireChef() // still enforce auth
+  const chef = await requireChef()
+  const db: any = createServerClient()
+
+  const { data: surveys, error } = await db
+    .from('client_satisfaction_surveys')
+    .select(
+      'nps_score, overall_rating, food_quality_rating, food_rating, service_rating, value_rating, presentation_rating, would_rebook, sent_at, responded_at'
+    )
+    .eq('chef_id', chef.entityId)
+    .not('sent_at', 'is', null)
+
+  if (error) {
+    console.error('[getNpsStats]', error)
+    return {
+      npsScore: 0,
+      promoters: 0,
+      passives: 0,
+      detractors: 0,
+      totalResponses: 0,
+      avgOverallRating: 0,
+      avgFoodQualityRating: 0,
+      avgServiceRating: 0,
+      avgValueRating: 0,
+      avgPresentationRating: 0,
+      wouldRebookPercent: 0,
+      responseRate: 0,
+    }
+  }
+
+  const all = surveys ?? []
+  const responded = all.filter((s: any) => s.responded_at != null)
+
+  if (all.length === 0) {
+    return {
+      npsScore: 0,
+      promoters: 0,
+      passives: 0,
+      detractors: 0,
+      totalResponses: 0,
+      avgOverallRating: 0,
+      avgFoodQualityRating: 0,
+      avgServiceRating: 0,
+      avgValueRating: 0,
+      avgPresentationRating: 0,
+      wouldRebookPercent: 0,
+      responseRate: 0,
+    }
+  }
+
+  const withNps = responded.filter((s: any) => s.nps_score != null)
+  const promoters = withNps.filter((s: any) => s.nps_score >= 9).length
+  const detractors = withNps.filter((s: any) => s.nps_score <= 6).length
+  const passives = withNps.filter((s: any) => s.nps_score >= 7 && s.nps_score <= 8).length
+  const npsScore =
+    withNps.length > 0
+      ? Math.round((promoters / withNps.length - detractors / withNps.length) * 100)
+      : 0
+
+  function avgField(field: string): number {
+    const vals = responded
+      .map((s: any) => s[field])
+      .filter((v: any): v is number => typeof v === 'number' && v > 0)
+    return vals.length > 0
+      ? Math.round((vals.reduce((a: number, b: number) => a + b, 0) / vals.length) * 10) / 10
+      : 0
+  }
+
+  const wouldRebook = responded.filter((s: any) => s.would_rebook === true).length
+  const wouldRebookPercent = responded.length > 0 ? pct(wouldRebook, responded.length) : 0
+
   return {
-    npsScore: 0,
-    promoters: 0,
-    passives: 0,
-    detractors: 0,
-    totalResponses: 0,
-    avgOverallRating: 0,
-    avgFoodQualityRating: 0,
-    avgServiceRating: 0,
-    avgValueRating: 0,
-    avgPresentationRating: 0,
-    wouldRebookPercent: 0,
-    responseRate: 0,
-    _deferred: 'Client satisfaction surveys are not yet available',
+    npsScore,
+    promoters,
+    passives,
+    detractors,
+    totalResponses: responded.length,
+    avgOverallRating: avgField('overall_rating'),
+    avgFoodQualityRating: avgField('food_quality_rating') || avgField('food_rating'),
+    avgServiceRating: avgField('service_rating'),
+    avgValueRating: avgField('value_rating'),
+    avgPresentationRating: avgField('presentation_rating'),
+    wouldRebookPercent,
+    responseRate: pct(responded.length, all.length),
   }
 }
