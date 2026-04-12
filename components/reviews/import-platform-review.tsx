@@ -129,7 +129,12 @@ export function ImportPlatformReview() {
   const [feedbackText, setFeedbackText] = useState('')
   const [rating, setRating] = useState<number | null>(null)
   const [sourceUrl, setSourceUrl] = useState('')
-  const [feedbackDate, setFeedbackDate] = useState(new Date().toISOString().split('T')[0])
+  const [feedbackDate, setFeedbackDate] = useState(
+    ((_ipr) =>
+      `${_ipr.getFullYear()}-${String(_ipr.getMonth() + 1).padStart(2, '0')}-${String(_ipr.getDate()).padStart(2, '0')}`)(
+      new Date()
+    )
+  )
   const [publicDisplay, setPublicDisplay] = useState(true)
 
   const platformMeta = source ? PLATFORM_META[source] : null
@@ -141,7 +146,12 @@ export function ImportPlatformReview() {
     setFeedbackText('')
     setRating(null)
     setSourceUrl('')
-    setFeedbackDate(new Date().toISOString().split('T')[0])
+    setFeedbackDate(
+      ((_ipr) =>
+        `${_ipr.getFullYear()}-${String(_ipr.getMonth() + 1).padStart(2, '0')}-${String(_ipr.getDate()).padStart(2, '0')}`)(
+        new Date()
+      )
+    )
     setPublicDisplay(true)
     setError(null)
   }

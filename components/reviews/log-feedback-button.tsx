@@ -41,7 +41,12 @@ export function LogFeedbackButton() {
   const [rating, setRating] = useState<number | null>(null)
   const [clientId, setClientId] = useState('')
   const [sourceUrl, setSourceUrl] = useState('')
-  const [feedbackDate, setFeedbackDate] = useState(new Date().toISOString().split('T')[0])
+  const [feedbackDate, setFeedbackDate] = useState(
+    ((_lfb) =>
+      `${_lfb.getFullYear()}-${String(_lfb.getMonth() + 1).padStart(2, '0')}-${String(_lfb.getDate()).padStart(2, '0')}`)(
+      new Date()
+    )
+  )
   const [publicDisplay, setPublicDisplay] = useState(false)
 
   // Fetch clients when modal opens
@@ -63,7 +68,12 @@ export function LogFeedbackButton() {
     setRating(null)
     setClientId('')
     setSourceUrl('')
-    setFeedbackDate(new Date().toISOString().split('T')[0])
+    setFeedbackDate(
+      ((_lfb) =>
+        `${_lfb.getFullYear()}-${String(_lfb.getMonth() + 1).padStart(2, '0')}-${String(_lfb.getDate()).padStart(2, '0')}`)(
+        new Date()
+      )
+    )
     setPublicDisplay(false)
     setError(null)
   }

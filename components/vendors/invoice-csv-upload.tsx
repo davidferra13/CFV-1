@@ -35,7 +35,12 @@ export function InvoiceCsvUpload({ vendors }: InvoiceCsvUploadProps) {
 
   // Invoice meta
   const [vendorId, setVendorId] = useState('')
-  const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().slice(0, 10))
+  const [invoiceDate, setInvoiceDate] = useState(
+    ((_icu) =>
+      `${_icu.getFullYear()}-${String(_icu.getMonth() + 1).padStart(2, '0')}-${String(_icu.getDate()).padStart(2, '0')}`)(
+      new Date()
+    )
+  )
   const [invoiceNumber, setInvoiceNumber] = useState('')
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

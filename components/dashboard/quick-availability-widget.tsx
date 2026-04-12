@@ -41,13 +41,14 @@ export function QuickAvailabilityWidget({
 
   function getNextAvailableDates(fromDate: string, count: number): string[] {
     const results: string[] = []
-    const d = new Date(fromDate + 'T00:00:00')
+    const [_qay, _qam, _qad] = fromDate.split('-').map(Number)
     // Start from the day after the selected date
-    d.setDate(d.getDate() + 1)
+    let _qi = 1
 
     // Search up to 60 days ahead
-    for (let i = 0; i < 60 && results.length < count; i++) {
-      const iso = d.toISOString().split('T')[0]
+    for (let i = 0; i < 60 && results.length < count; i++, _qi++) {
+      const d = new Date(_qay, _qam - 1, _qad + _qi)
+      const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
       if (!bookedSet.has(iso) && !tentativeSet.has(iso)) {
         results.push(iso)
       }

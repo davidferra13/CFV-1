@@ -86,7 +86,8 @@ type SubmitResult = {
   error?: string
 }
 
-const todayStr = new Date().toISOString().split('T')[0]
+const _bdfN = new Date()
+const todayStr = `${_bdfN.getFullYear()}-${String(_bdfN.getMonth() + 1).padStart(2, '0')}-${String(_bdfN.getDate()).padStart(2, '0')}`
 
 const inputClass =
   'w-full rounded-xl border border-stone-600/80 bg-stone-900/80 px-4 py-3 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors'

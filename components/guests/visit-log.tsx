@@ -30,7 +30,12 @@ export function VisitLog({ guestId, visits, totalSpendCents }: VisitLogProps) {
   const [showForm, setShowForm] = useState(false)
 
   // Log visit form state
-  const [visitDate, setVisitDate] = useState(new Date().toISOString().slice(0, 10))
+  const [visitDate, setVisitDate] = useState(
+    ((_vl) =>
+      `${_vl.getFullYear()}-${String(_vl.getMonth() + 1).padStart(2, '0')}-${String(_vl.getDate()).padStart(2, '0')}`)(
+      new Date()
+    )
+  )
   const [partySize, setPartySize] = useState('')
   const [spend, setSpend] = useState('')
   const [serverId, setServerId] = useState('')

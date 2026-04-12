@@ -48,9 +48,9 @@ export function TaskPageClient({
   }
 
   function navigateDate(offset: number) {
-    const current = new Date(selectedDate + 'T00:00:00')
-    current.setDate(current.getDate() + offset)
-    const newDate = current.toISOString().split('T')[0]
+    const [_tpy, _tpm, _tpd] = selectedDate.split('-').map(Number)
+    const current = new Date(_tpy, _tpm - 1, _tpd + offset)
+    const newDate = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`
     router.push(`/tasks?date=${newDate}`)
   }
 

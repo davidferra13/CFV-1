@@ -36,8 +36,10 @@ const REASON_LABELS: Record<string, string> = {
 }
 
 export function WasteLog({ stationId, startDate, endDate }: Props) {
-  const today = new Date().toISOString().split('T')[0]
-  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const _wln = new Date()
+  const today = `${_wln.getFullYear()}-${String(_wln.getMonth() + 1).padStart(2, '0')}-${String(_wln.getDate()).padStart(2, '0')}`
+  const _wls = new Date(_wln.getFullYear(), _wln.getMonth(), _wln.getDate() - 7)
+  const sevenDaysAgo = `${_wls.getFullYear()}-${String(_wls.getMonth() + 1).padStart(2, '0')}-${String(_wls.getDate()).padStart(2, '0')}`
 
   const [from, setFrom] = useState(startDate ?? sevenDaysAgo)
   const [to, setTo] = useState(endDate ?? today)

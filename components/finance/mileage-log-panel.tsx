@@ -100,7 +100,10 @@ export function MileageLogPanel({ eventId, initialEntries }: Props) {
                 name="tripDate"
                 type="date"
                 required
-                defaultValue={new Date().toISOString().slice(0, 10)}
+                defaultValue={((_mlp) =>
+                  `${_mlp.getFullYear()}-${String(_mlp.getMonth() + 1).padStart(2, '0')}-${String(_mlp.getDate()).padStart(2, '0')}`)(
+                  new Date()
+                )}
                 className="w-full text-sm border border-stone-700 rounded px-2 py-1.5 mt-0.5"
               />
             </div>

@@ -97,7 +97,8 @@ export function CashFlowCalendar({ data }: Props) {
           }
           const day = dayMap.get(dateStr)
           const dayNum = parseInt(dateStr.slice(8), 10)
-          const today = new Date().toISOString().slice(0, 10)
+          const _cfc = new Date()
+          const today = `${_cfc.getFullYear()}-${String(_cfc.getMonth() + 1).padStart(2, '0')}-${String(_cfc.getDate()).padStart(2, '0')}`
           const isToday = dateStr === today
 
           return (

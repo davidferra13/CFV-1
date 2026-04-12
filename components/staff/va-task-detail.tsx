@@ -91,7 +91,11 @@ export function VaTaskDetail({
   const actions = NEXT_ACTIONS[task.status] ?? []
   const isOverdue =
     task.due_date &&
-    task.due_date < new Date().toISOString().split('T')[0] &&
+    task.due_date <
+      ((_vtd) =>
+        `${_vtd.getFullYear()}-${String(_vtd.getMonth() + 1).padStart(2, '0')}-${String(_vtd.getDate()).padStart(2, '0')}`)(
+        new Date()
+      ) &&
     task.status !== 'completed' &&
     task.status !== 'cancelled'
 

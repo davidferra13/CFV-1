@@ -24,7 +24,12 @@ export function DailyRevenueForm({ existingRevenue }: DailyRevenueFormProps) {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
+  const [date, setDate] = useState(
+    ((_drf) =>
+      `${_drf.getFullYear()}-${String(_drf.getMonth() + 1).padStart(2, '0')}-${String(_drf.getDate()).padStart(2, '0')}`)(
+      new Date()
+    )
+  )
   const [revenue, setRevenue] = useState(
     existingRevenue ? (existingRevenue.total_revenue_cents / 100).toFixed(2) : ''
   )

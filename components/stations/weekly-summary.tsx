@@ -37,8 +37,9 @@ export function WeeklySummary({ stationId, stationName }: Props) {
     // Default to Monday of current week
     const now = new Date()
     const day = now.getDay()
-    const diff = now.getDate() - day + (day === 0 ? -6 : 1)
-    return new Date(now.setDate(diff)).toISOString().split('T')[0]
+    const diff = day === 0 ? -6 : 1 - day
+    const mon = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diff)
+    return `${mon.getFullYear()}-${String(mon.getMonth() + 1).padStart(2, '0')}-${String(mon.getDate()).padStart(2, '0')}`
   })
   const [componentSummaries, setComponentSummaries] = useState<ComponentSummary[]>([])
   const [stationStats, setStationStats] = useState({
@@ -59,11 +60,12 @@ export function WeeklySummary({ stationId, stationName }: Props) {
     try {
       // Generate the 7 dates Mon-Sun
       const dates: string[] = []
-      const start = new Date(weekStart)
+      const [_wsy, _wsm, _wsd] = weekStart.split('-').map(Number)
       for (let i = 0; i < 7; i++) {
-        const d = new Date(start)
-        d.setDate(d.getDate() + i)
-        dates.push(d.toISOString().split('T')[0])
+        const d = new Date(_wsy, _wsm - 1, _wsd + i)
+        dates.push(
+          `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+        )
       }
       const weekEnd = dates[6]
 
@@ -159,15 +161,17 @@ export function WeeklySummary({ stationId, stationName }: Props) {
   }
 
   function shiftWeek(offset: number) {
-    const start = new Date(weekStart)
-    start.setDate(start.getDate() + offset * 7)
-    setWeekStart(start.toISOString().split('T')[0])
+    const [_swY, _swM, _swD] = weekStart.split('-').map(Number)
+    const start = new Date(_swY, _swM - 1, _swD + offset * 7)
+    setWeekStart(
+      `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`
+    )
   }
 
   const weekEndDate = (() => {
-    const d = new Date(weekStart)
-    d.setDate(d.getDate() + 6)
-    return d.toISOString().split('T')[0]
+    const [_weY, _weM, _weD] = weekStart.split('-').map(Number)
+    const d = new Date(_weY, _weM - 1, _weD + 6)
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   })()
 
   return (

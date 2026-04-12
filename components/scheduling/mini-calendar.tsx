@@ -23,7 +23,7 @@ export function MiniCalendar({
   const [viewYear, setViewYear] = useState(today.getFullYear())
   const [viewMonth, setViewMonth] = useState(today.getMonth())
 
-  const todayStr = today.toISOString().split('T')[0]
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
 
   // Dates that have events
   const eventDates = useMemo(() => {
@@ -49,7 +49,7 @@ export function MiniCalendar({
     for (let i = startOffset - 1; i >= 0; i--) {
       const d = new Date(viewYear, viewMonth, -i)
       days.push({
-        date: d.toISOString().split('T')[0],
+        date: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`,
         dayNum: d.getDate(),
         isCurrentMonth: false,
       })
@@ -59,7 +59,7 @@ export function MiniCalendar({
     for (let i = 1; i <= lastDay.getDate(); i++) {
       const d = new Date(viewYear, viewMonth, i)
       days.push({
-        date: d.toISOString().split('T')[0],
+        date: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`,
         dayNum: i,
         isCurrentMonth: true,
       })
@@ -71,7 +71,7 @@ export function MiniCalendar({
       for (let i = 1; i <= remaining; i++) {
         const d = new Date(viewYear, viewMonth + 1, i)
         days.push({
-          date: d.toISOString().split('T')[0],
+          date: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`,
           dayNum: i,
           isCurrentMonth: false,
         })

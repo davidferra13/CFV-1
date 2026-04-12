@@ -323,12 +323,17 @@ function AvailabilityCard({
   // Generate date range
   const dates: string[] = []
   if (poll.date_range_start && poll.date_range_end) {
-    const start = new Date(poll.date_range_start)
-    const end = new Date(poll.date_range_end)
-    const current = new Date(start)
-    while (current <= end && dates.length < 31) {
-      dates.push(current.toISOString().split('T')[0])
-      current.setDate(current.getDate() + 1)
+    const [_hsy, _hsm, _hsd] = (poll.date_range_start as string).split('-').map(Number)
+    const [_hey, _hem, _hed] = (poll.date_range_end as string).split('-').map(Number)
+    const endMs = new Date(_hey, _hem - 1, _hed).getTime()
+    let _hdi = 0
+    while (dates.length < 31) {
+      const cur = new Date(_hsy, _hsm - 1, _hsd + _hdi)
+      if (cur.getTime() > endMs) break
+      dates.push(
+        `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, '0')}-${String(cur.getDate()).padStart(2, '0')}`
+      )
+      _hdi++
     }
   }
 

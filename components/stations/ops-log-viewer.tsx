@@ -52,10 +52,13 @@ export function OpsLogViewer({ stations, initialStationId }: Props) {
   const [actionTypeFilter, setActionTypeFilter] = useState('')
   const [startDate, setStartDate] = useState(() => {
     const d = new Date()
-    d.setDate(d.getDate() - 7)
-    return d.toISOString().split('T')[0]
+    const w = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 7)
+    return `${w.getFullYear()}-${String(w.getMonth() + 1).padStart(2, '0')}-${String(w.getDate()).padStart(2, '0')}`
   })
-  const [endDate, setEndDate] = useState(() => new Date().toISOString().split('T')[0])
+  const [endDate, setEndDate] = useState(() => {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  })
   const [page, setPage] = useState(1)
 
   useEffect(() => {

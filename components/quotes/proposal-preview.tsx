@@ -64,8 +64,8 @@ export function ProposalPreview({ proposal, onQuoteCreated, onClose }: ProposalP
   // Valid until (default: 14 days from now)
   const [validUntil, setValidUntil] = useState(() => {
     const d = new Date()
-    d.setDate(d.getDate() + 14)
-    return d.toISOString().split('T')[0]
+    const fut = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 14)
+    return `${fut.getFullYear()}-${String(fut.getMonth() + 1).padStart(2, '0')}-${String(fut.getDate()).padStart(2, '0')}`
   })
 
   function handleCreateQuote() {

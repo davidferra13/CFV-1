@@ -37,7 +37,12 @@ export function MileageTracker({ initialEntries, initialSummary, events = [] }: 
   const [isPending, startTransition] = useTransition()
 
   // Form state
-  const [tripDate, setTripDate] = useState(new Date().toISOString().slice(0, 10))
+  const [tripDate, setTripDate] = useState(
+    ((_mt) =>
+      `${_mt.getFullYear()}-${String(_mt.getMonth() + 1).padStart(2, '0')}-${String(_mt.getDate()).padStart(2, '0')}`)(
+      new Date()
+    )
+  )
   const [purpose, setPurpose] = useState<MileagePurpose>('client_service')
   const [fromLocation, setFromLocation] = useState('')
   const [toLocation, setToLocation] = useState('')
@@ -46,7 +51,12 @@ export function MileageTracker({ initialEntries, initialSummary, events = [] }: 
   const [notes, setNotes] = useState('')
 
   function resetForm() {
-    setTripDate(new Date().toISOString().slice(0, 10))
+    setTripDate(
+      ((_mt) =>
+        `${_mt.getFullYear()}-${String(_mt.getMonth() + 1).padStart(2, '0')}-${String(_mt.getDate()).padStart(2, '0')}`)(
+        new Date()
+      )
+    )
     setPurpose('client_service')
     setFromLocation('')
     setToLocation('')

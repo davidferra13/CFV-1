@@ -38,7 +38,12 @@ export function InvoiceForm({ vendors, defaultVendorId, onSuccess }: InvoiceForm
 
   const [vendorId, setVendorId] = useState(defaultVendorId ?? '')
   const [invoiceNumber, setInvoiceNumber] = useState('')
-  const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().slice(0, 10))
+  const [invoiceDate, setInvoiceDate] = useState(
+    ((_inf) =>
+      `${_inf.getFullYear()}-${String(_inf.getMonth() + 1).padStart(2, '0')}-${String(_inf.getDate()).padStart(2, '0')}`)(
+      new Date()
+    )
+  )
   const [notes, setNotes] = useState('')
   const [lineItems, setLineItems] = useState<(InvoiceLineItemInput & { key: number })[]>([
     emptyLineItem(),

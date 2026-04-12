@@ -57,23 +57,30 @@ export function ShiftForm({ shift, prefillDate, prefillStaffId, onDone }: Props)
   const [form, setForm] = useState({
     staff_member_id: shift?.staff_member_id ?? prefillStaffId ?? '',
     event_id: shift?.event_id ?? '',
-    shift_date: shift?.shift_date ?? prefillDate ?? new Date().toISOString().split('T')[0],
+    shift_date:
+      shift?.shift_date ??
+      prefillDate ??
+      ((_sf) =>
+        `${_sf.getFullYear()}-${String(_sf.getMonth() + 1).padStart(2, '0')}-${String(_sf.getDate()).padStart(2, '0')}`)(
+        new Date()
+      ),
     start_time: shift?.start_time?.slice(0, 5) ?? '09:00',
     end_time: shift?.end_time?.slice(0, 5) ?? '17:00',
     role: shift?.role ?? 'assistant',
-    hourly_rate_dollars: shift?.hourly_rate_cents != null
-      ? (shift.hourly_rate_cents / 100).toFixed(2)
-      : '',
+    hourly_rate_dollars:
+      shift?.hourly_rate_cents != null ? (shift.hourly_rate_cents / 100).toFixed(2) : '',
     notes: shift?.notes ?? '',
   })
 
   useEffect(() => {
-    listStaffMembers().then((members) => {
-      setStaffMembers(members as StaffMember[])
-    }).catch(() => {
-      // Non-blocking, form still works if staff list fails to load
-      console.error('[ShiftForm] Failed to load staff members')
-    })
+    listStaffMembers()
+      .then((members) => {
+        setStaffMembers(members as StaffMember[])
+      })
+      .catch(() => {
+        // Non-blocking, form still works if staff list fails to load
+        console.error('[ShiftForm] Failed to load staff members')
+      })
   }, [])
 
   function update(field: string, value: string) {
@@ -120,9 +127,7 @@ export function ShiftForm({ shift, prefillDate, prefillStaffId, onDone }: Props)
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">
-            Staff Member
-          </label>
+          <label className="block text-sm font-medium text-stone-700 mb-1">Staff Member</label>
           <select
             value={form.staff_member_id}
             onChange={(e) => update('staff_member_id', e.target.value)}
@@ -139,9 +144,7 @@ export function ShiftForm({ shift, prefillDate, prefillStaffId, onDone }: Props)
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">
-            Event (optional)
-          </label>
+          <label className="block text-sm font-medium text-stone-700 mb-1">Event (optional)</label>
           <Input
             value={form.event_id}
             onChange={(e) => update('event_id', e.target.value)}
@@ -189,14 +192,14 @@ export function ShiftForm({ shift, prefillDate, prefillStaffId, onDone }: Props)
             className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
           >
             {SHIFT_ROLES.map((r) => (
-              <option key={r.value} value={r.value}>{r.label}</option>
+              <option key={r.value} value={r.value}>
+                {r.label}
+              </option>
             ))}
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">
-            Hourly Rate ($)
-          </label>
+          <label className="block text-sm font-medium text-stone-700 mb-1">Hourly Rate ($)</label>
           <Input
             type="number"
             value={form.hourly_rate_dollars}

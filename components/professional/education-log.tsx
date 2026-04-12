@@ -34,7 +34,12 @@ export function EducationLog({ entries }: { entries: Entry[] }) {
   const [entryType, setEntryType] = useState('online_course')
   const [title, setTitle] = useState('')
   const [learned, setLearned] = useState('')
-  const [entryDate, setEntryDate] = useState(new Date().toISOString().slice(0, 10))
+  const [entryDate, setEntryDate] = useState(
+    ((_el) =>
+      `${_el.getFullYear()}-${String(_el.getMonth() + 1).padStart(2, '0')}-${String(_el.getDate()).padStart(2, '0')}`)(
+      new Date()
+    )
+  )
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()

@@ -100,7 +100,8 @@ export function HoursLogWidget({
   const [dismissedUnlogged, setDismissedUnlogged] = useState<Set<string>>(new Set())
   const [loggingEventId, setLoggingEventId] = useState<string | null>(null)
 
-  const today = new Date().toISOString().slice(0, 10)
+  const _hlw = new Date()
+  const today = `${_hlw.getFullYear()}-${String(_hlw.getMonth() + 1).padStart(2, '0')}-${String(_hlw.getDate()).padStart(2, '0')}`
   const [loggedFor, setLoggedFor] = useState(() => today)
   const [hours, setHours] = useState('')
   const [category, setCategory] = useState<ManualLaborCategory>('planning')

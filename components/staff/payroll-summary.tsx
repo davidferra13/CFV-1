@@ -31,11 +31,10 @@ function formatHours(hours: number): string {
 function getDefaultDateRange(): { from: string; to: string } {
   const now = new Date()
   // Default to current pay period: last 2 weeks
-  const twoWeeksAgo = new Date(now)
-  twoWeeksAgo.setDate(now.getDate() - 14)
+  const twoWeeksAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 14)
   return {
-    from: twoWeeksAgo.toISOString().split('T')[0],
-    to: now.toISOString().split('T')[0],
+    from: `${twoWeeksAgo.getFullYear()}-${String(twoWeeksAgo.getMonth() + 1).padStart(2, '0')}-${String(twoWeeksAgo.getDate()).padStart(2, '0')}`,
+    to: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`,
   }
 }
 
@@ -124,38 +123,54 @@ export function PayrollSummary() {
           <table className="w-full">
             <thead>
               <tr className="bg-stone-50 border-b border-stone-200">
-                <th className="px-4 py-2 text-left text-xs font-medium text-stone-500">Staff Member</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-stone-500">
+                  Staff Member
+                </th>
                 <th className="px-4 py-2 text-left text-xs font-medium text-stone-500">Role</th>
                 <th className="px-4 py-2 text-right text-xs font-medium text-stone-500">Shifts</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-stone-500">Scheduled Hrs</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-stone-500">Actual Hrs</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-stone-500">Variance</th>
+                <th className="px-4 py-2 text-right text-xs font-medium text-stone-500">
+                  Scheduled Hrs
+                </th>
+                <th className="px-4 py-2 text-right text-xs font-medium text-stone-500">
+                  Actual Hrs
+                </th>
+                <th className="px-4 py-2 text-right text-xs font-medium text-stone-500">
+                  Variance
+                </th>
                 <th className="px-4 py-2 text-right text-xs font-medium text-stone-500">Rate</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-stone-500">Total Pay</th>
+                <th className="px-4 py-2 text-right text-xs font-medium text-stone-500">
+                  Total Pay
+                </th>
               </tr>
             </thead>
             <tbody>
               {rows.map((row) => {
                 const variance = row.actualHours - row.scheduledHours
-                const varianceColor = variance > 0
-                  ? 'text-amber-600'
-                  : variance < 0
-                    ? 'text-green-600'
-                    : 'text-stone-400'
+                const varianceColor =
+                  variance > 0
+                    ? 'text-amber-600'
+                    : variance < 0
+                      ? 'text-green-600'
+                      : 'text-stone-400'
                 return (
                   <tr key={row.staffId} className="border-t border-stone-100 hover:bg-stone-50">
                     <td className="px-4 py-2 text-sm font-medium text-stone-800">{row.name}</td>
-                    <td className="px-4 py-2 text-sm text-stone-500 capitalize">{row.role.replace(/_/g, ' ')}</td>
-                    <td className="px-4 py-2 text-sm text-stone-600 text-right">{row.shiftCount}</td>
-                    <td className="px-4 py-2 text-sm text-stone-600 text-right">{formatHours(row.scheduledHours)}</td>
+                    <td className="px-4 py-2 text-sm text-stone-500 capitalize">
+                      {row.role.replace(/_/g, ' ')}
+                    </td>
+                    <td className="px-4 py-2 text-sm text-stone-600 text-right">
+                      {row.shiftCount}
+                    </td>
+                    <td className="px-4 py-2 text-sm text-stone-600 text-right">
+                      {formatHours(row.scheduledHours)}
+                    </td>
                     <td className="px-4 py-2 text-sm text-stone-600 text-right">
                       {row.actualHours > 0 ? formatHours(row.actualHours) : '-'}
                     </td>
                     <td className={`px-4 py-2 text-sm text-right ${varianceColor}`}>
                       {row.actualHours > 0
                         ? `${variance > 0 ? '+' : ''}${formatHours(variance)}`
-                        : '-'
-                      }
+                        : '-'}
                     </td>
                     <td className="px-4 py-2 text-sm text-stone-600 text-right">
                       {formatCents(row.hourlyRateCents)}/hr
@@ -172,7 +187,9 @@ export function PayrollSummary() {
                 <td className="px-4 py-2 text-sm text-stone-800">Totals</td>
                 <td className="px-4 py-2"></td>
                 <td className="px-4 py-2 text-sm text-stone-800 text-right">{totalShifts}</td>
-                <td className="px-4 py-2 text-sm text-stone-800 text-right">{formatHours(totalScheduledHours)}</td>
+                <td className="px-4 py-2 text-sm text-stone-800 text-right">
+                  {formatHours(totalScheduledHours)}
+                </td>
                 <td className="px-4 py-2 text-sm text-stone-800 text-right">
                   {totalActualHours > 0 ? formatHours(totalActualHours) : '-'}
                 </td>

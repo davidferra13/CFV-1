@@ -24,7 +24,8 @@ export function DailyOpsActionsBar({ openingTemplateId }: Props) {
     setResult(null)
 
     try {
-      const today = new Date().toISOString().split('T')[0]
+      const _doab = new Date()
+      const today = `${_doab.getFullYear()}-${String(_doab.getMonth() + 1).padStart(2, '0')}-${String(_doab.getDate()).padStart(2, '0')}`
       const tasks = await generateTasksFromTemplate(openingTemplateId, today)
       setResult({ type: 'success', message: `Generated ${tasks.length} opening tasks` })
       router.refresh()

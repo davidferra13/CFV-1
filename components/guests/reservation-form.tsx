@@ -32,7 +32,12 @@ export function ReservationForm({ guestId, reservations }: ReservationFormProps)
   const [showForm, setShowForm] = useState(false)
   const [cancellingResId, setCancellingResId] = useState<string | null>(null)
 
-  const [resDate, setResDate] = useState(new Date().toISOString().slice(0, 10))
+  const [resDate, setResDate] = useState(
+    ((_rf) =>
+      `${_rf.getFullYear()}-${String(_rf.getMonth() + 1).padStart(2, '0')}-${String(_rf.getDate()).padStart(2, '0')}`)(
+      new Date()
+    )
+  )
   const [resTime, setResTime] = useState('')
   const [partySize, setPartySize] = useState('')
   const [tableNumber, setTableNumber] = useState('')

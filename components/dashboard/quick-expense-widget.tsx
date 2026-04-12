@@ -53,7 +53,8 @@ export function QuickExpenseWidget({
     if (!amountNum || amountNum <= 0 || !description.trim()) return
 
     const amountCents = Math.round(amountNum * 100)
-    const now = new Date().toISOString().slice(0, 10)
+    const _qew = new Date()
+    const now = `${_qew.getFullYear()}-${String(_qew.getMonth() + 1).padStart(2, '0')}-${String(_qew.getDate()).padStart(2, '0')}`
 
     // Optimistic addition
     const optimisticExpense = {

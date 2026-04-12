@@ -98,9 +98,11 @@ export function DailyReportView({ report: initialReport, history }: Props) {
   }
 
   function navigateDay(offset: number) {
-    const d = new Date(selectedDate + 'T00:00:00Z')
-    d.setDate(d.getDate() + offset)
-    loadDate(d.toISOString().split('T')[0])
+    const [_dry, _drm, _drd] = selectedDate.split('-').map(Number)
+    const d = new Date(_dry, _drm - 1, _drd + offset)
+    loadDate(
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    )
   }
 
   function regenerate() {

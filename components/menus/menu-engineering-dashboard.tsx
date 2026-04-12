@@ -301,8 +301,12 @@ export function MenuEngineeringDashboard() {
   // Default date range: last 12 months
   const now = new Date()
   const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate())
-  const [fromDate, setFromDate] = useState(oneYearAgo.toISOString().split('T')[0])
-  const [toDate, setToDate] = useState(now.toISOString().split('T')[0])
+  const [fromDate, setFromDate] = useState(
+    `${oneYearAgo.getFullYear()}-${String(oneYearAgo.getMonth() + 1).padStart(2, '0')}-${String(oneYearAgo.getDate()).padStart(2, '0')}`
+  )
+  const [toDate, setToDate] = useState(
+    `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  )
 
   function runAnalysis(from: string, to: string) {
     setError(null)

@@ -170,9 +170,9 @@ export function ClipboardGrid({ stationId, stationName, date, entries }: Props) 
   }
 
   function navigateDate(offset: number) {
-    const current = new Date(date)
-    current.setDate(current.getDate() + offset)
-    const newDate = current.toISOString().split('T')[0]
+    const [_cgy, _cgm, _cgd] = date.split('-').map(Number)
+    const current = new Date(_cgy, _cgm - 1, _cgd + offset)
+    const newDate = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`
     router.push(`/stations/${stationId}/clipboard?date=${newDate}`)
   }
 

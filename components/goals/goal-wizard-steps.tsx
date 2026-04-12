@@ -199,7 +199,8 @@ function StepGoalType({
 type PeriodPreset = 'this_month' | 'this_year' | 'custom'
 
 function todayStr() {
-  return new Date().toISOString().slice(0, 10)
+  const _gws = new Date()
+  return `${_gws.getFullYear()}-${String(_gws.getMonth() + 1).padStart(2, '0')}-${String(_gws.getDate()).padStart(2, '0')}`
 }
 
 function thisMonthStart() {
@@ -210,7 +211,7 @@ function thisMonthStart() {
 function thisMonthEnd() {
   const d = new Date()
   const last = new Date(d.getFullYear(), d.getMonth() + 1, 0)
-  return last.toISOString().slice(0, 10)
+  return `${last.getFullYear()}-${String(last.getMonth() + 1).padStart(2, '0')}-${String(last.getDate()).padStart(2, '0')}`
 }
 
 function thisYearStart() {

@@ -44,17 +44,18 @@ interface DragScheduleProps {
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 function addDays(dateStr: string, days: number): string {
-  const d = new Date(dateStr + 'T00:00:00')
-  d.setDate(d.getDate() + days)
-  return d.toISOString().split('T')[0]
+  const [_dy, _dm, _dd] = dateStr.split('-').map(Number)
+  const d = new Date(_dy, _dm - 1, _dd + days)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 function getMonday(dateStr: string): string {
-  const d = new Date(dateStr + 'T00:00:00')
+  const [_my, _mm, _md] = dateStr.split('-').map(Number)
+  const d = new Date(_my, _mm - 1, _md)
   const day = d.getDay()
   const diff = day === 0 ? -6 : 1 - day
-  d.setDate(d.getDate() + diff)
-  return d.toISOString().split('T')[0]
+  const m = new Date(_my, _mm - 1, _md + diff)
+  return `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, '0')}-${String(m.getDate()).padStart(2, '0')}`
 }
 
 function generateWeekDates(mondayStr: string): string[] {
@@ -94,7 +95,8 @@ export function DragSchedule({
   const [isPending, startTransition] = useTransition()
 
   const weekDates = generateWeekDates(currentMonday)
-  const todayStr = new Date().toISOString().split('T')[0]
+  const _dsn = new Date()
+  const todayStr = `${_dsn.getFullYear()}-${String(_dsn.getMonth() + 1).padStart(2, '0')}-${String(_dsn.getDate()).padStart(2, '0')}`
 
   // Build staff name lookup
   const staffNameMap = new Map(staffMembers.map((s) => [s.id, s.name]))

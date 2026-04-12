@@ -232,7 +232,13 @@ type AddBlockFormProps = {
 function AddBlockForm({ eventId, defaultDate, onSaved, onCancel }: AddBlockFormProps) {
   const [blockType, setBlockType] = useState<PrepBlockType>('grocery_run')
   const [title, setTitle] = useState('')
-  const [date, setDate] = useState(defaultDate ?? new Date().toISOString().slice(0, 10))
+  const [date, setDate] = useState(
+    defaultDate ??
+      ((_eps) =>
+        `${_eps.getFullYear()}-${String(_eps.getMonth() + 1).padStart(2, '0')}-${String(_eps.getDate()).padStart(2, '0')}`)(
+        new Date()
+      )
+  )
   const [startTime, setStartTime] = useState('')
   const [duration, setDuration] = useState('')
   const [notes, setNotes] = useState('')

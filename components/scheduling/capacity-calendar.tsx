@@ -175,7 +175,7 @@ export function CapacityCalendar() {
               {days.map((day) => {
                 const colors = STATUS_COLORS[day.status]
                 const isSelected = selectedDay?.date === day.date
-                const todayStr = today.toISOString().slice(0, 10)
+                const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
                 const isToday = day.date === todayStr
 
                 return (

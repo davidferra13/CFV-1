@@ -46,7 +46,13 @@ export function ExpenseForm({ expense, eventOptions, onSaved, onCancel }: Expens
   const [amountDollars, setAmountDollars] = useState(
     expense ? (expense.amount_cents / 100).toFixed(2) : ''
   )
-  const [date, setDate] = useState(expense?.date ?? new Date().toISOString().slice(0, 10))
+  const [date, setDate] = useState(
+    expense?.date ??
+      ((_ef) =>
+        `${_ef.getFullYear()}-${String(_ef.getMonth() + 1).padStart(2, '0')}-${String(_ef.getDate()).padStart(2, '0')}`)(
+        new Date()
+      )
+  )
   const [vendor, setVendor] = useState(expense?.vendor ?? '')
   const [eventId, setEventId] = useState(expense?.event_id ?? '')
   const [isRecurring, setIsRecurring] = useState(expense?.is_recurring ?? false)

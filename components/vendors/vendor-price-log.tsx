@@ -64,7 +64,12 @@ export function VendorPriceLog({
   const [itemName, setItemName] = useState('')
   const [priceDollars, setPriceDollars] = useState('')
   const [unit, setUnit] = useState('lb')
-  const [recordedAt, setRecordedAt] = useState(new Date().toISOString().split('T')[0])
+  const [recordedAt, setRecordedAt] = useState(
+    ((_vpl) =>
+      `${_vpl.getFullYear()}-${String(_vpl.getMonth() + 1).padStart(2, '0')}-${String(_vpl.getDate()).padStart(2, '0')}`)(
+      new Date()
+    )
+  )
   const [entryNotes, setEntryNotes] = useState('')
 
   const loadPrices = useCallback(async () => {

@@ -76,7 +76,8 @@ export default function SeasonalCalendar({ onPeriodClick }: Props) {
   }
 
   // Find current active period
-  const today = new Date().toISOString().split('T')[0]
+  const _scal = new Date()
+  const today = `${_scal.getFullYear()}-${String(_scal.getMonth() + 1).padStart(2, '0')}-${String(_scal.getDate()).padStart(2, '0')}`
   const activePeriod = periods.find((p) => today >= p.start_date && today <= p.end_date)
 
   if (loading || isPending) {

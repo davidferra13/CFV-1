@@ -79,7 +79,11 @@ function TaskCard({
 }) {
   const isOverdue =
     task.due_date &&
-    task.due_date < new Date().toISOString().split('T')[0] &&
+    task.due_date <
+      ((_vtb) =>
+        `${_vtb.getFullYear()}-${String(_vtb.getMonth() + 1).padStart(2, '0')}-${String(_vtb.getDate()).padStart(2, '0')}`)(
+        new Date()
+      ) &&
     task.status !== 'completed' &&
     task.status !== 'cancelled'
   const priority = PRIORITY_INDICATORS[task.priority]

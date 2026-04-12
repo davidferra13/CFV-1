@@ -45,7 +45,13 @@ export function TaskForm({ task, staff, stations, defaultDate, onDone }: Props) 
     description: task?.description ?? '',
     assigned_to: task?.assigned_to ?? '',
     station_id: task?.station_id ?? '',
-    due_date: task?.due_date ?? defaultDate ?? new Date().toISOString().split('T')[0],
+    due_date:
+      task?.due_date ??
+      defaultDate ??
+      ((_tf) =>
+        `${_tf.getFullYear()}-${String(_tf.getMonth() + 1).padStart(2, '0')}-${String(_tf.getDate()).padStart(2, '0')}`)(
+        new Date()
+      ),
     due_time: task?.due_time ?? '',
     priority: task?.priority ?? 'medium',
     notes: task?.notes ?? '',

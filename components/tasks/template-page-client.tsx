@@ -56,7 +56,12 @@ function GenerateTasksForm({
   onDone: () => void
 }) {
   const router = useRouter()
-  const [dueDate, setDueDate] = useState(new Date().toISOString().split('T')[0])
+  const [dueDate, setDueDate] = useState(
+    ((_tpc) =>
+      `${_tpc.getFullYear()}-${String(_tpc.getMonth() + 1).padStart(2, '0')}-${String(_tpc.getDate()).padStart(2, '0')}`)(
+      new Date()
+    )
+  )
   const [assignedTo, setAssignedTo] = useState('')
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)

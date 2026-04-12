@@ -221,7 +221,10 @@ export function FoodCostPanel({ eventId, initialData }: Props) {
               <input
                 name="date"
                 type="date"
-                defaultValue={new Date().toISOString().slice(0, 10)}
+                defaultValue={((_fcp) =>
+                  `${_fcp.getFullYear()}-${String(_fcp.getMonth() + 1).padStart(2, '0')}-${String(_fcp.getDate()).padStart(2, '0')}`)(
+                  new Date()
+                )}
                 required
                 className="bg-stone-900 border border-stone-700 rounded px-2 py-1.5 text-sm text-stone-200"
               />

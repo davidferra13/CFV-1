@@ -49,7 +49,8 @@ export function WeeklyScheduleView({ initialSchedule }: { initialSchedule: WeekS
     })
   }
 
-  const today = new Date().toISOString().split('T')[0]
+  const _wsv = new Date()
+  const today = `${_wsv.getFullYear()}-${String(_wsv.getMonth() + 1).padStart(2, '0')}-${String(_wsv.getDate()).padStart(2, '0')}`
 
   return (
     <div className="space-y-6">

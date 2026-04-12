@@ -34,9 +34,9 @@ interface AvailabilityGridProps {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function addDays(dateStr: string, days: number): string {
-  const d = new Date(dateStr + 'T00:00:00')
-  d.setDate(d.getDate() + days)
-  return d.toISOString().split('T')[0]
+  const [_y, _m, _d] = dateStr.split('-').map(Number)
+  const d = new Date(_y, _m - 1, _d + days)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 function formatShortDate(dateStr: string): string {
@@ -211,7 +211,10 @@ export function AvailabilityGrid({
                   </th>
                   {dates.map((date) => {
                     const d = new Date(date + 'T00:00:00')
-                    const isToday = date === new Date().toISOString().split('T')[0]
+                    const _agn = new Date()
+                    const isToday =
+                      date ===
+                      `${_agn.getFullYear()}-${String(_agn.getMonth() + 1).padStart(2, '0')}-${String(_agn.getDate()).padStart(2, '0')}`
                     const isWeekend = d.getDay() === 0 || d.getDay() === 6
                     return (
                       <th
