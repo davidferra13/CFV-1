@@ -37,6 +37,15 @@ const VIEW_LABELS: Record<ViewType, string> = {
 
 const RESCHEDULABLE_STATUSES = new Set(['draft', 'proposed', 'accepted'])
 
+// Local date as YYYY-MM-DD without UTC offset shift (safe after 7pm ET)
+function localDateISO(d: Date): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
 // Types that use dashed/dotted border styling in the calendar
 const DASHED_TYPES = new Set(Object.keys(CALENDAR_BORDER_STYLES))
 
@@ -373,7 +382,15 @@ export function UnifiedCalendarView({ initialItems, chefId }: Props) {
     }
     return Object.entries(byDate)
       .sort(([a], [b]) => a.localeCompare(b))
-      .filter(([date]) => date >= new Date().toISOString().split('T')[0])
+      .filter(([date]) => {
+        const n = new Date()
+        const todayLocal = [
+          n.getFullYear(),
+          String(n.getMonth() + 1).padStart(2, '0'),
+          String(n.getDate()).padStart(2, '0'),
+        ].join('-')
+        return date >= todayLocal
+      })
       .slice(0, 30)
   }, [filteredItems])
 
@@ -758,7 +775,11 @@ function MiniCalendarUnified({
   const [viewYear, setViewYear] = useState(today.getFullYear())
   const [viewMonth, setViewMonth] = useState(today.getMonth())
 
-  const todayStr = today.toISOString().split('T')[0]
+  const todayStr = [
+    today.getFullYear(),
+    String(today.getMonth() + 1).padStart(2, '0'),
+    String(today.getDate()).padStart(2, '0'),
+  ].join('-')
 
   const calendarDays = useMemo(() => {
     const firstDay = new Date(viewYear, viewMonth, 1)
@@ -772,7 +793,7 @@ function MiniCalendarUnified({
     for (let i = startOffset - 1; i >= 0; i--) {
       const d = new Date(viewYear, viewMonth, -i)
       days.push({
-        date: d.toISOString().split('T')[0],
+        date: localDateISO(d),
         dayNum: d.getDate(),
         isCurrentMonth: false,
       })
@@ -781,7 +802,7 @@ function MiniCalendarUnified({
     for (let i = 1; i <= lastDay.getDate(); i++) {
       const d = new Date(viewYear, viewMonth, i)
       days.push({
-        date: d.toISOString().split('T')[0],
+        date: localDateISO(d),
         dayNum: i,
         isCurrentMonth: true,
       })
@@ -792,7 +813,7 @@ function MiniCalendarUnified({
       for (let i = 1; i <= remaining; i++) {
         const d = new Date(viewYear, viewMonth + 1, i)
         days.push({
-          date: d.toISOString().split('T')[0],
+          date: localDateISO(d),
           dayNum: i,
           isCurrentMonth: false,
         })
