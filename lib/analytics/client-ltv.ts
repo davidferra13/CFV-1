@@ -244,7 +244,8 @@ export async function predictChurnRisk(clientId: string): Promise<ChurnPredictio
   const totalBookings = eventDates.length
   const lastEventDate = client.last_event_date
 
-  const now = new Date().toISOString().slice(0, 10)
+  const _nd = new Date()
+  const now = `${_nd.getFullYear()}-${String(_nd.getMonth() + 1).padStart(2, '0')}-${String(_nd.getDate()).padStart(2, '0')}`
   const daysSinceLastBooking = lastEventDate ? daysBetween(lastEventDate, now) : 999
 
   // Calculate average gap between bookings

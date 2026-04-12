@@ -29,7 +29,10 @@ export async function getRevenueForecast(): Promise<RevenueForecast> {
     .eq('tenant_id', user.entityId)
     .eq('is_demo', false)
     .eq('status', 'completed')
-    .gte('event_date', twelveMonthsAgo.toISOString().split('T')[0])
+    .gte(
+      'event_date',
+      `${twelveMonthsAgo.getFullYear()}-${String(twelveMonthsAgo.getMonth() + 1).padStart(2, '0')}-${String(twelveMonthsAgo.getDate()).padStart(2, '0')}`
+    )
     .order('event_date', { ascending: true })
 
   // Group by month

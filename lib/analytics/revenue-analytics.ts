@@ -462,22 +462,23 @@ export async function getBreakEvenStats(): Promise<BreakEvenStats> {
   const db: any = createServerClient()
 
   // Estimate fixed costs: last 3 months avg of non-event expenses
-  const threeMonthsAgo = new Date()
-  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3)
+  const _now3 = new Date()
+  const threeMonthsAgo = new Date(_now3.getFullYear(), _now3.getMonth() - 3, _now3.getDate())
+  const _liso3 = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
   const { data: nonEventExpenses } = await db
     .from('expenses')
     .select('amount_cents')
     .eq('tenant_id', chef.id)
     .is('event_id', null)
-    .gte('expense_date', threeMonthsAgo.toISOString().slice(0, 10))
+    .gte('expense_date', _liso3(threeMonthsAgo))
 
   const totalFixed = (nonEventExpenses ?? []).reduce((s: any, e: any) => s + e.amount_cents, 0)
   const avgMonthlyFixed = Math.round(totalFixed / 3)
 
   // Average events per month (last 12 months)
-  const oneYearAgo = new Date()
-  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
+  const oneYearAgo = new Date(_now3.getFullYear() - 1, _now3.getMonth(), _now3.getDate())
 
   const { count: eventsYtd } = await db
     .from('events')
@@ -485,7 +486,7 @@ export async function getBreakEvenStats(): Promise<BreakEvenStats> {
     .eq('tenant_id', chef.id)
     .eq('is_demo', false)
     .eq('status', 'completed')
-    .gte('event_date', oneYearAgo.toISOString().slice(0, 10))
+    .gte('event_date', _liso3(oneYearAgo))
 
   const avgEventsPerMonth = Math.round(((eventsYtd ?? 0) / 12) * 10) / 10
 
@@ -496,7 +497,7 @@ export async function getBreakEvenStats(): Promise<BreakEvenStats> {
     .eq('tenant_id', chef.id)
     .eq('is_demo', false)
     .eq('status', 'completed')
-    .gte('event_date', oneYearAgo.toISOString().slice(0, 10))
+    .gte('event_date', _liso3(oneYearAgo))
     .not('quoted_price_cents', 'is', null)
 
   const avgRevenue = revenueData?.length

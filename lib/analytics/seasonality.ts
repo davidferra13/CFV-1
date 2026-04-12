@@ -205,8 +205,7 @@ export async function getHolidayYearOverYear(): Promise<HolidayYoYRow[]> {
   const WINDOW_DAYS = 21
 
   // Fetch all events for the past ~3 years
-  const threeYearsAgo = new Date()
-  threeYearsAgo.setFullYear(currentYear - 3)
+  const threeYearsAgo = new Date(currentYear - 3, now.getMonth(), now.getDate())
 
   const { data: events } = await db
     .from('events')
@@ -214,7 +213,10 @@ export async function getHolidayYearOverYear(): Promise<HolidayYoYRow[]> {
     .eq('tenant_id', user.tenantId!)
     .eq('is_demo', false)
     .in('status', ['completed', 'confirmed', 'paid', 'in_progress'])
-    .gte('event_date', threeYearsAgo.toISOString().slice(0, 10))
+    .gte(
+      'event_date',
+      `${threeYearsAgo.getFullYear()}-${String(threeYearsAgo.getMonth() + 1).padStart(2, '0')}-${String(threeYearsAgo.getDate()).padStart(2, '0')}`
+    )
     .not('event_date', 'is', null)
 
   if (!events || events.length === 0) return []
@@ -231,13 +233,19 @@ export async function getHolidayYearOverYear(): Promise<HolidayYoYRow[]> {
       const hDate = getHolidayDate(holiday, year)
       if (!hDate) continue
 
-      const windowStart = new Date(hDate)
-      windowStart.setDate(windowStart.getDate() - WINDOW_DAYS)
-      const windowEnd = new Date(hDate)
-      windowEnd.setDate(windowEnd.getDate() + WINDOW_DAYS)
+      const windowStart = new Date(
+        hDate.getFullYear(),
+        hDate.getMonth(),
+        hDate.getDate() - WINDOW_DAYS
+      )
+      const windowEnd = new Date(
+        hDate.getFullYear(),
+        hDate.getMonth(),
+        hDate.getDate() + WINDOW_DAYS
+      )
 
-      const windowStartStr = windowStart.toISOString().slice(0, 10)
-      const windowEndStr = windowEnd.toISOString().slice(0, 10)
+      const windowStartStr = `${windowStart.getFullYear()}-${String(windowStart.getMonth() + 1).padStart(2, '0')}-${String(windowStart.getDate()).padStart(2, '0')}`
+      const windowEndStr = `${windowEnd.getFullYear()}-${String(windowEnd.getMonth() + 1).padStart(2, '0')}-${String(windowEnd.getDate()).padStart(2, '0')}`
 
       const matchingEvents = (events as any[]).filter((e: any) => {
         return e.event_date >= windowStartStr && e.event_date <= windowEndStr

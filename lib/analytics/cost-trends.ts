@@ -42,10 +42,9 @@ export async function getFoodCostTrend(months = 6): Promise<FoodCostTrend> {
   const db: any = createServerClient()
 
   // Compute the cutoff date: first day of the month N months ago
-  const cutoff = new Date()
-  cutoff.setMonth(cutoff.getMonth() - (months - 1))
-  cutoff.setDate(1)
-  const cutoffStr = cutoff.toISOString().split('T')[0]
+  const _now = new Date()
+  const cutoff = new Date(_now.getFullYear(), _now.getMonth() - (months - 1), 1)
+  const cutoffStr = `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, '0')}-01`
 
   // Fetch all completed events in the range
   const { data: events } = await db
