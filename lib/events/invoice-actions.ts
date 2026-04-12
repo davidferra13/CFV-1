@@ -142,14 +142,16 @@ export async function assignInvoiceNumber(eventId: string) {
 
   if (!event || event.invoice_number) return // already set, nothing to do
 
-  // Retry up to 5 times on collision (two payments at exact same moment → same count-based number).
-  // The update uses a conditional guard (.is('invoice_number', null)) so only one concurrent
-  // writer wins. The loser retries with a fresh count that accounts for the winner's write.
+  // Retry up to 5 times on collision. Two simultaneous payments to different events
+  // can generate the same count-based number. The uq_events_tenant_invoice_number
+  // partial unique index (migration 20260412000009) catches cross-event collisions at
+  // the DB level (23505). The .is('invoice_number', null) CAS guard catches same-event
+  // double-writes. Either way, the loser retries with a fresh count.
   const MAX_ATTEMPTS = 5
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     const invoiceNumber = await generateInvoiceNumber(event.tenant_id)
 
-    const { count: updated } = await db
+    const { count: updated, error: updateError } = await db
       .from('events')
       .update({
         invoice_number: invoiceNumber,
@@ -165,7 +167,11 @@ export async function assignInvoiceNumber(eventId: string) {
       break
     }
 
-    // Either someone else assigned a number first (check) or a collision: re-fetch and abort if now set
+    // 23505 = unique_violation: another event grabbed this number at the same instant.
+    // Retry with a fresh count that includes the winner's write.
+    if (updateError?.code === '23505') continue
+
+    // Otherwise re-fetch to check if this event was already assigned
     const { data: recheckEvent } = await db
       .from('events')
       .select('invoice_number')
