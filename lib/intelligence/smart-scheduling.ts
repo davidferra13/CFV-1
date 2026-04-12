@@ -130,13 +130,16 @@ export async function getSchedulingIntelligence(): Promise<SchedulingIntelligenc
   const optimalSpacingDays = avgPrepMinutes > 240 ? 3 : avgPrepMinutes > 120 ? 2 : 1
 
   // Upcoming event density (next 30 days)
+  const _ssn = new Date()
+  const _ssl = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   const { data: upcomingEvents } = await db
     .from('events')
     .select('event_date')
     .eq('tenant_id', tenantId)
     .in('status', ['confirmed', 'paid', 'accepted'])
-    .gte('event_date', new Date().toISOString().split('T')[0])
-    .lte('event_date', new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0])
+    .gte('event_date', _ssl(_ssn))
+    .lte('event_date', _ssl(new Date(_ssn.getFullYear(), _ssn.getMonth(), _ssn.getDate() + 30)))
 
   const densityMap = new Map<string, number>()
   for (const e of upcomingEvents || []) {

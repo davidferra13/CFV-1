@@ -304,7 +304,12 @@ export async function adoptEventStub(input: {
       tenant_id: input.tenantId,
       client_id: clientId,
       occasion: stub.occasion ?? stub.title,
-      event_date: stub.event_date ?? new Date().toISOString().slice(0, 10),
+      event_date:
+        stub.event_date ??
+        ((_d) =>
+          `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+          new Date()
+        ),
       serve_time: '18:00:00',
       guest_count: stub.guest_count ?? 2,
       location_address: stub.location_text ?? 'TBD',

@@ -36,6 +36,11 @@ export async function getProactiveAlerts(): Promise<ProactiveAlertsResult> {
   const db: any = createServerClient()
   const alerts: ProactiveAlert[] = []
   const now = new Date()
+  const _liso = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const _nowStr = _liso(now)
+  const _7dOut = _liso(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7))
+  const _90dAgo = _liso(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 90))
 
   // Run all checks in parallel
   const [overduePayments, unansweredInquiries, upcomingEvents, staleClients, unpaidEvents] =
@@ -46,7 +51,7 @@ export async function getProactiveAlerts(): Promise<ProactiveAlertsResult> {
         .select('id, due_date, total_cents, client:clients(full_name)')
         .eq('tenant_id', tenantId)
         .eq('status', 'sent')
-        .lt('due_date', now.toISOString().split('T')[0])
+        .lt('due_date', _nowStr)
         .order('due_date', { ascending: true })
         .limit(5)
         .then((r: any) => r.data || [])
@@ -70,8 +75,8 @@ export async function getProactiveAlerts(): Promise<ProactiveAlertsResult> {
         .select('id, occasion, event_date, guest_count, menu_id, location_address')
         .eq('tenant_id', tenantId)
         .in('status', ['confirmed', 'accepted', 'paid'])
-        .gte('event_date', now.toISOString().split('T')[0])
-        .lte('event_date', new Date(now.getTime() + 7 * 86400000).toISOString().split('T')[0])
+        .gte('event_date', _nowStr)
+        .lte('event_date', _7dOut)
         .order('event_date', { ascending: true })
         .limit(10)
         .then((r: any) => r.data || [])
@@ -82,7 +87,7 @@ export async function getProactiveAlerts(): Promise<ProactiveAlertsResult> {
         .from('clients')
         .select('id, full_name')
         .eq('tenant_id', tenantId)
-        .lt('last_event_date', new Date(now.getTime() - 90 * 86400000).toISOString().split('T')[0])
+        .lt('last_event_date', _90dAgo)
         .not('last_event_date', 'is', null)
         .order('lifetime_revenue_cents', { ascending: false })
         .limit(5)

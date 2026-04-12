@@ -68,7 +68,9 @@ export async function getGeographicIntelligence(): Promise<GeographicIntelligenc
     )
   }
 
-  const sixMonthsAgo = new Date(Date.now() - 180 * 86400000).toISOString().split('T')[0]
+  const _n = new Date()
+  const _6ma = new Date(_n.getFullYear(), _n.getMonth() - 6, _n.getDate())
+  const sixMonthsAgo = `${_6ma.getFullYear()}-${String(_6ma.getMonth() + 1).padStart(2, '0')}-${String(_6ma.getDate()).padStart(2, '0')}`
 
   // Normalize location text (trim, lowercase for grouping, preserve original for display)
   const normalizeLocation = (loc: string) => loc.trim().toLowerCase().replace(/\s+/g, ' ')

@@ -39,8 +39,11 @@ export async function getIngredientConsolidation(): Promise<IngredientConsolidat
   const db: any = createServerClient()
 
   // Fetch upcoming events (next 14 days) with menus
-  const today = new Date().toISOString().split('T')[0]
-  const twoWeeksOut = new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0]
+  const _n = new Date()
+  const _liso = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const today = _liso(_n)
+  const twoWeeksOut = _liso(new Date(_n.getFullYear(), _n.getMonth(), _n.getDate() + 14))
 
   const { data: events, error } = await db
     .from('events')

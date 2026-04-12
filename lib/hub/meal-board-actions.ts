@@ -8,6 +8,14 @@ import type { MealBoardEntry, MealComment, MealRequest, DefaultMealTimes } from 
 // Helpers
 // ---------------------------------------------------------------------------
 
+function _liso(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+function _parseDateLocal(dateStr: string): Date {
+  const [y, m, d] = dateStr.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
+
 async function resolveProfile(db: any, profileToken: string) {
   const { data: profile } = await db
     .from('hub_guest_profiles')
@@ -350,9 +358,8 @@ export async function cloneWeekMeals(
     await requireChefOrAdmin(db, validated.groupId, profile.id)
 
     // Get source week entries (Mon-Sun)
-    const sourceEnd = new Date(validated.sourceWeekStart)
-    sourceEnd.setDate(sourceEnd.getDate() + 6)
-    const sourceEndStr = sourceEnd.toISOString().split('T')[0]
+    const _sw = _parseDateLocal(validated.sourceWeekStart as string)
+    const sourceEndStr = _liso(new Date(_sw.getFullYear(), _sw.getMonth(), _sw.getDate() + 6))
 
     const { data: sourceEntries } = await db
       .from('hub_meal_board')
@@ -376,9 +383,10 @@ export async function cloneWeekMeals(
     // Remap entries to target dates (preserve per-meal serving times)
     let clonedCount = 0
     for (const e of sourceEntries) {
-      const sourceDate = new Date(e.meal_date)
-      sourceDate.setDate(sourceDate.getDate() + dayOffset)
-      const targetDate = sourceDate.toISOString().split('T')[0]
+      const _sd = _parseDateLocal(e.meal_date)
+      const targetDate = _liso(
+        new Date(_sd.getFullYear(), _sd.getMonth(), _sd.getDate() + dayOffset)
+      )
 
       const result = await upsertMealEntry({
         groupId: validated.groupId,
@@ -457,9 +465,8 @@ export async function saveWeekAsTemplate(
     await requireChefOrAdmin(db, validated.groupId, profile.id)
 
     // Get week entries
-    const weekEnd = new Date(validated.weekStart)
-    weekEnd.setDate(weekEnd.getDate() + 6)
-    const weekEndStr = weekEnd.toISOString().split('T')[0]
+    const _wk = _parseDateLocal(validated.weekStart as string)
+    const weekEndStr = _liso(new Date(_wk.getFullYear(), _wk.getMonth(), _wk.getDate() + 6))
 
     const { data: entries } = await db
       .from('hub_meal_board')
@@ -565,15 +572,15 @@ export async function loadTemplate(
     }
 
     // Map day offsets to actual dates and upsert individually (preserves all fields)
-    const targetMonday = new Date(validated.targetWeekStart)
+    const _tm = _parseDateLocal(validated.targetWeekStart as string)
     let loadedCount = 0
     for (const e of entries) {
-      const entryDate = new Date(targetMonday)
-      entryDate.setDate(entryDate.getDate() + (e.dayOffset ?? 0))
       const result = await upsertMealEntry({
         groupId: validated.groupId,
         profileToken: validated.profileToken,
-        mealDate: entryDate.toISOString().split('T')[0],
+        mealDate: _liso(
+          new Date(_tm.getFullYear(), _tm.getMonth(), _tm.getDate() + (e.dayOffset ?? 0))
+        ),
         mealType: e.mealType,
         title: e.title,
         description: e.description,
@@ -851,7 +858,7 @@ export async function createRecurringMeal(
         prep_notes: input.prepNotes ?? null,
         pattern: input.pattern,
         day_of_week: input.dayOfWeek ?? null,
-        active_from: input.activeFrom ?? new Date().toISOString().split('T')[0],
+        active_from: input.activeFrom ?? _liso(new Date()),
         active_until: input.activeUntil ?? null,
       })
       .select('*')
@@ -910,9 +917,8 @@ export async function applyRecurringMeals(input: {
     const recurrings = await getRecurringMeals(input.groupId)
     if (recurrings.length === 0) return { success: true, filled: 0 }
 
-    const weekEnd = new Date(input.weekStart)
-    weekEnd.setDate(weekEnd.getDate() + 6)
-    const weekEndStr = weekEnd.toISOString().split('T')[0]
+    const _rws = _parseDateLocal(input.weekStart)
+    const weekEndStr = _liso(new Date(_rws.getFullYear(), _rws.getMonth(), _rws.getDate() + 6))
 
     const existing = await getMealBoard({
       groupId: input.groupId,
@@ -923,12 +929,12 @@ export async function applyRecurringMeals(input: {
     const occupiedSlots = new Set(existing.map((e: any) => `${e.meal_date}:${e.meal_type}`))
 
     const toInsert: any[] = []
-    const monday = new Date(input.weekStart)
+    const _rmws = _parseDateLocal(input.weekStart)
 
     for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
-      const date = new Date(monday)
-      date.setDate(date.getDate() + dayOffset)
-      const dateStr = date.toISOString().split('T')[0]
+      const dateStr = _liso(
+        new Date(_rmws.getFullYear(), _rmws.getMonth(), _rmws.getDate() + dayOffset)
+      )
       const isWeekday = dayOffset < 5
       const dayOfWeek = dayOffset
 
@@ -995,9 +1001,8 @@ export async function getFeedbackInsights(input: {
   const db: any = createServerClient({ admin: true })
   const lookback = input.lookbackDays ?? 30
 
-  const cutoffDate = new Date()
-  cutoffDate.setDate(cutoffDate.getDate() - lookback)
-  const cutoffStr = cutoffDate.toISOString().split('T')[0]
+  const _cdn = new Date()
+  const cutoffStr = _liso(new Date(_cdn.getFullYear(), _cdn.getMonth(), _cdn.getDate() - lookback))
 
   const { data: meals } = await db
     .from('hub_meal_board')
@@ -1075,9 +1080,10 @@ export async function getFeedbackInsights(input: {
   }))
 
   // Trend: first half vs second half
-  const midDate = new Date()
-  midDate.setDate(midDate.getDate() - Math.floor(lookback / 2))
-  const midStr = midDate.toISOString().split('T')[0]
+  const _mdn = new Date()
+  const midStr = _liso(
+    new Date(_mdn.getFullYear(), _mdn.getMonth(), _mdn.getDate() - Math.floor(lookback / 2))
+  )
   let fTotal = 0,
     fCount = 0,
     sTotal = 0,

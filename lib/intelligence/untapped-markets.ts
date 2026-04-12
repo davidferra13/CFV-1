@@ -85,7 +85,9 @@ export async function getUntappedMarkets(): Promise<UntappedMarketsResult | null
     )
   }
 
-  const threeMonthsAgo = new Date(Date.now() - 90 * 86400000).toISOString().split('T')[0]
+  const _n = new Date()
+  const _3ma = new Date(_n.getFullYear(), _n.getMonth() - 3, _n.getDate())
+  const threeMonthsAgo = `${_3ma.getFullYear()}-${String(_3ma.getMonth() + 1).padStart(2, '0')}-${String(_3ma.getDate()).padStart(2, '0')}`
 
   // ─── Occasion Analysis ───
 

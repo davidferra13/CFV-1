@@ -60,8 +60,9 @@ export async function fetchTrailingProfitMarginBp(
   tenantId: string,
   trailingDays: number
 ): Promise<number> {
-  const cutoff = new Date(Date.now() - trailingDays * 24 * 60 * 60 * 1000)
-  const cutoffStr = cutoff.toISOString().slice(0, 10)
+  const _cn = new Date()
+  const _co = new Date(_cn.getFullYear(), _cn.getMonth(), _cn.getDate() - trailingDays)
+  const cutoffStr = `${_co.getFullYear()}-${String(_co.getMonth() + 1).padStart(2, '0')}-${String(_co.getDate()).padStart(2, '0')}`
 
   const { data: events } = await db
     .from('events')
@@ -97,8 +98,9 @@ export async function fetchTrailingExpenseRatioBp(
   tenantId: string,
   trailingDays: number
 ): Promise<number> {
-  const cutoff = new Date(Date.now() - trailingDays * 24 * 60 * 60 * 1000)
-  const cutoffStr = cutoff.toISOString().slice(0, 10)
+  const _cn = new Date()
+  const _co = new Date(_cn.getFullYear(), _cn.getMonth(), _cn.getDate() - trailingDays)
+  const cutoffStr = `${_co.getFullYear()}-${String(_co.getMonth() + 1).padStart(2, '0')}-${String(_co.getDate()).padStart(2, '0')}`
 
   const [{ data: expenses }, { data: events }] = await Promise.all([
     db

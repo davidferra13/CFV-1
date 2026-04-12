@@ -49,7 +49,12 @@ export async function createGroceryTrip(input: CreateTripInput) {
     .insert({
       chef_id: user.tenantId!,
       store_name: validated.store_name || null,
-      trip_date: validated.trip_date || new Date().toISOString().split('T')[0],
+      trip_date:
+        validated.trip_date ||
+        ((_d) =>
+          `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+          new Date()
+        ),
       notes: validated.notes || null,
     })
     .select()

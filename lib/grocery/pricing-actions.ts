@@ -463,7 +463,9 @@ export async function getLocalPriceComparison(
   if (ingredientIds.length === 0) return {}
 
   // Query recent OpenClaw prices (last 30 days)
-  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const _n = new Date()
+  const _30d = new Date(_n.getFullYear(), _n.getMonth(), _n.getDate() - 30)
+  const thirtyDaysAgo = `${_30d.getFullYear()}-${String(_30d.getMonth() + 1).padStart(2, '0')}-${String(_30d.getDate()).padStart(2, '0')}`
   const { data: rows } = await db
     .from('ingredient_price_history')
     .select('ingredient_id, store_name, price_cents, unit, source, purchase_date')

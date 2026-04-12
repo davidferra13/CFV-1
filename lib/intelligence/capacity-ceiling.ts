@@ -52,7 +52,9 @@ export async function getCapacityCeiling(): Promise<CapacityCeilingResult | null
   const tenantId = user.tenantId!
   const db: any = createServerClient()
 
-  const twelveMonthsAgo = new Date(Date.now() - 365 * 86400000).toISOString().split('T')[0]
+  const _n = new Date()
+  const _12ma = new Date(_n.getFullYear() - 1, _n.getMonth(), _n.getDate())
+  const twelveMonthsAgo = `${_12ma.getFullYear()}-${String(_12ma.getMonth() + 1).padStart(2, '0')}-${String(_12ma.getDate()).padStart(2, '0')}`
 
   const { data: events, error } = await db
     .from('events')
@@ -83,12 +85,12 @@ export async function getCapacityCeiling(): Promise<CapacityCeilingResult | null
   const weeklyMap = new Map<string, { events: number; minutes: number; revenue: number }>()
 
   for (const event of events) {
-    const d = new Date(event.event_date)
+    const [_ey, _em, _ed] = (event.event_date as string).split('-').map(Number)
+    const d = new Date(_ey, _em - 1, _ed)
     // ISO week start (Monday)
     const day = d.getDay()
-    const monday = new Date(d)
-    monday.setDate(d.getDate() - ((day + 6) % 7))
-    const weekKey = monday.toISOString().split('T')[0]
+    const monday = new Date(_ey, _em - 1, _ed - ((day + 6) % 7))
+    const weekKey = `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`
 
     if (!weeklyMap.has(weekKey)) weeklyMap.set(weekKey, { events: 0, minutes: 0, revenue: 0 })
     const w = weeklyMap.get(weekKey)!

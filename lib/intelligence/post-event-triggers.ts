@@ -76,7 +76,9 @@ export async function getPostEventTriggers(): Promise<PostEventTriggersResult | 
   const db: any = createServerClient()
 
   // Fetch recently completed events (last 30 days)
-  const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0]
+  const _n = new Date()
+  const _30d = new Date(_n.getFullYear(), _n.getMonth(), _n.getDate() - 30)
+  const thirtyDaysAgo = `${_30d.getFullYear()}-${String(_30d.getMonth() + 1).padStart(2, '0')}-${String(_30d.getDate()).padStart(2, '0')}`
 
   const { data: events, error } = await db
     .from('events')
