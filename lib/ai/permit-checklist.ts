@@ -93,9 +93,9 @@ export async function generatePermitRenewalChecklist(
   // Calculate renewal start date (60 days before expiry is typical)
   let renewalStartDate: string | null = null
   if (expiryDate) {
-    const expiry = new Date(expiryDate)
-    expiry.setDate(expiry.getDate() - 60)
-    renewalStartDate = expiry.toISOString().split('T')[0]
+    const [_ey, _em, _ed] = (expiryDate as string).split('-').map(Number)
+    const expiry = new Date(_ey, _em - 1, _ed - 60)
+    renewalStartDate = `${expiry.getFullYear()}-${String(expiry.getMonth() + 1).padStart(2, '0')}-${String(expiry.getDate()).padStart(2, '0')}`
   }
 
   const prompt = `You are a regulatory compliance consultant for a private chef business.

@@ -217,8 +217,9 @@ export async function getWeatherAlerts(tenantId: string): Promise<WeatherAlertRe
   const db = createAdminClient()
 
   const now = new Date()
-  const today = now.toISOString().split('T')[0]
-  const weekOut = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  const _wo = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7)
+  const weekOut = `${_wo.getFullYear()}-${String(_wo.getMonth() + 1).padStart(2, '0')}-${String(_wo.getDate()).padStart(2, '0')}`
 
   const { data: events } = await db
     .from('events')

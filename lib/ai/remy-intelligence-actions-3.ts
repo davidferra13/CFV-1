@@ -385,12 +385,12 @@ export async function executeOpsLog(inputs: Record<string, unknown>) {
 }
 
 export async function executeWasteLog() {
-  const today = new Date()
-  const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000)
+  const _now = new Date()
+  const _30ago = new Date(_now.getFullYear(), _now.getMonth(), _now.getDate() - 30)
   const { getWasteSummary } = await import('@/lib/stations/waste-actions')
   const summary = await getWasteSummary(
-    thirtyDaysAgo.toISOString().split('T')[0],
-    today.toISOString().split('T')[0]
+    `${_30ago.getFullYear()}-${String(_30ago.getMonth() + 1).padStart(2, '0')}-${String(_30ago.getDate()).padStart(2, '0')}`,
+    `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, '0')}-${String(_now.getDate()).padStart(2, '0')}`
   )
   return {
     period: '30 days',

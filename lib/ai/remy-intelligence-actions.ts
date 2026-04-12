@@ -556,7 +556,7 @@ export async function executeClientMilestones(tenantId: string) {
         milestones.push({
           clientName: client.full_name,
           type: 'birthday',
-          date: bday.toISOString().split('T')[0],
+          date: `${bday.getFullYear()}-${String(bday.getMonth() + 1).padStart(2, '0')}-${String(bday.getDate()).padStart(2, '0')}`,
           detail: `Birthday on ${bday.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}`,
           suggestedAction: 'Send a birthday greeting or surprise treat at next event',
         })
@@ -570,7 +570,7 @@ export async function executeClientMilestones(tenantId: string) {
         milestones.push({
           clientName: client.full_name,
           type: 'anniversary',
-          date: anniv.toISOString().split('T')[0],
+          date: `${anniv.getFullYear()}-${String(anniv.getMonth() + 1).padStart(2, '0')}-${String(anniv.getDate()).padStart(2, '0')}`,
           detail: `Anniversary on ${anniv.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}`,
           suggestedAction: 'Mention it at next event or send a card',
         })
@@ -587,7 +587,7 @@ export async function executeClientMilestones(tenantId: string) {
         milestones.push({
           clientName: client.full_name,
           type: 'client_anniversary',
-          date: clientAnniv.toISOString().split('T')[0],
+          date: `${clientAnniv.getFullYear()}-${String(clientAnniv.getMonth() + 1).padStart(2, '0')}-${String(clientAnniv.getDate()).padStart(2, '0')}`,
           detail: `${yearsAsClient}-year anniversary as your client`,
           suggestedAction: 'Send a milestone recognition or loyalty gesture',
         })

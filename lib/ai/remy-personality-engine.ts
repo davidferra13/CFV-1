@@ -365,8 +365,8 @@ async function getCheckIn(chefId: string, onboarding: OnboardingRow): Promise<st
   // Only once per day
   if (onboarding.last_checkin_at) {
     const lastCheckin = new Date(onboarding.last_checkin_at)
-    const today = now.toISOString().split('T')[0]
-    const lastDay = lastCheckin.toISOString().split('T')[0]
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+    const lastDay = `${lastCheckin.getFullYear()}-${String(lastCheckin.getMonth() + 1).padStart(2, '0')}-${String(lastCheckin.getDate()).padStart(2, '0')}`
     if (today === lastDay) return null
   }
 
