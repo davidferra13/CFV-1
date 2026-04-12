@@ -27,7 +27,8 @@ export type RevenueSummaryReport = {
 }
 
 function periodBucket(isoDate: string, period: ReportPeriod): string {
-  const d = new Date(isoDate)
+  const [_py, _pm, _pd] = isoDate.split('-').map(Number)
+  const d = new Date(_py, _pm - 1, _pd)
   const year = d.getFullYear()
   const month = d.getMonth()
 
@@ -36,9 +37,8 @@ function periodBucket(isoDate: string, period: ReportPeriod): string {
       // ISO week: use the Monday of the week as the bucket label
       const day = d.getDay()
       const diff = d.getDate() - day + (day === 0 ? -6 : 1)
-      const monday = new Date(d)
-      monday.setDate(diff)
-      return monday.toISOString().slice(0, 10)
+      const monday = new Date(_py, _pm - 1, diff)
+      return `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`
     }
     case 'monthly':
       return `${year}-${String(month + 1).padStart(2, '0')}`

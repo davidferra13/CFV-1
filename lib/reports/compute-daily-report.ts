@@ -408,7 +408,7 @@ export async function computeDailyReport(
                 clientName: c.full_name,
                 type,
                 label: `${type === 'birthday' ? 'Birthday' : 'Anniversary'} in ${daysUntil} day${daysUntil === 1 ? '' : 's'}`,
-                date: d.toISOString().split('T')[0],
+                date: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`,
                 daysUntil,
               })
             }

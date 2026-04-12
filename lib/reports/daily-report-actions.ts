@@ -16,7 +16,12 @@ export async function generateDailyReport(date?: string): Promise<DailyReport> {
   const user = await requireChef()
   const db = createServerClient({ admin: true })
 
-  const reportDate = date ?? new Date().toISOString().split('T')[0]
+  const reportDate =
+    date ??
+    ((_d) =>
+      `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+      new Date()
+    )
 
   // Compute the report
   const content = await computeDailyReport(db, user.tenantId!, reportDate)
@@ -59,7 +64,12 @@ export async function getDailyReport(date?: string): Promise<DailyReport | null>
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const reportDate = date ?? new Date().toISOString().split('T')[0]
+  const reportDate =
+    date ??
+    ((_d) =>
+      `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+      new Date()
+    )
 
   const { data, error } = await db
     .from('daily_reports')

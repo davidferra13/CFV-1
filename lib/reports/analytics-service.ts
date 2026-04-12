@@ -38,10 +38,9 @@ type DateRangeInput = {
 
 function resolveDateRange(input?: DateRangeInput): { start: string; end: string } {
   const now = new Date()
-  const defaultEnd = now.toISOString().slice(0, 10)
-  const start = new Date(now)
-  start.setMonth(start.getMonth() - 12)
-  const defaultStart = start.toISOString().slice(0, 10)
+  const defaultEnd = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  const _start = new Date(now.getFullYear(), now.getMonth() - 12, now.getDate())
+  const defaultStart = `${_start.getFullYear()}-${String(_start.getMonth() + 1).padStart(2, '0')}-${String(_start.getDate()).padStart(2, '0')}`
 
   const startDate =
     input?.start && !Number.isNaN(Date.parse(input.start)) ? input.start : defaultStart
