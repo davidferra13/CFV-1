@@ -46,6 +46,15 @@ import {
 import type { RemyMessage, RemyResponse, RemyTaskResult, RemyMemoryItem } from '@/lib/ai/remy-types'
 import type { RemyMemory, MemoryCategory } from '@/lib/ai/remy-memory-types'
 
+// Safe local-date ISO string - avoids UTC offset shifting after ~7pm ET
+function localDateISO(d: Date): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
 // ─── Response Schema ────────────────────────────────────────────────────────
 
 const RemyConversationalSchema = z.object({
@@ -292,7 +301,7 @@ function buildDailyBriefing(context: Awaited<ReturnType<typeof loadRemyContext>>
 
   // Today's events
   if (context.upcomingEvents && context.upcomingEvents.length > 0) {
-    const today = new Date().toISOString().split('T')[0]
+    const today = localDateISO(new Date())
     const todayEvents = context.upcomingEvents.filter((e) => e.date === today)
     if (todayEvents.length > 0) {
       items.push(
@@ -303,7 +312,7 @@ function buildDailyBriefing(context: Awaited<ReturnType<typeof loadRemyContext>>
     // Tomorrow's events
     const tmrw = new Date()
     tmrw.setDate(tmrw.getDate() + 1)
-    const tmrwStr = tmrw.toISOString().split('T')[0]
+    const tmrwStr = localDateISO(tmrw)
     const tomorrowEvents = context.upcomingEvents.filter((e) => e.date === tmrwStr)
     if (tomorrowEvents.length > 0) {
       items.push(
@@ -314,7 +323,7 @@ function buildDailyBriefing(context: Awaited<ReturnType<typeof loadRemyContext>>
 
   // Pending todos due today/overdue
   if (context.activeTodos && context.activeTodos.length > 0) {
-    const today = new Date().toISOString().split('T')[0]
+    const today = localDateISO(new Date())
     const overdue = context.activeTodos.filter((t) => t.dueDate && t.dueDate < today)
     const dueToday = context.activeTodos.filter((t) => t.dueDate === today)
     if (overdue.length > 0)
@@ -325,7 +334,7 @@ function buildDailyBriefing(context: Awaited<ReturnType<typeof loadRemyContext>>
 
   // Scheduled calls today
   if (context.upcomingCalls && context.upcomingCalls.length > 0) {
-    const today = new Date().toISOString().split('T')[0]
+    const today = localDateISO(new Date())
     const todayCalls = context.upcomingCalls.filter((c) => c.scheduledAt.startsWith(today))
     if (todayCalls.length > 0) {
       items.push(
@@ -357,8 +366,8 @@ function getWorkloadContext(context: Awaited<ReturnType<typeof loadRemyContext>>
   const now = new Date()
   const weekEnd = new Date(now)
   weekEnd.setDate(now.getDate() + 7)
-  const weekEndStr = weekEnd.toISOString().split('T')[0]
-  const todayStr = now.toISOString().split('T')[0]
+  const weekEndStr = localDateISO(weekEnd)
+  const todayStr = localDateISO(now)
 
   const thisWeekEvents = context.upcomingEvents.filter(
     (e) => e.date && e.date >= todayStr && e.date <= weekEndStr

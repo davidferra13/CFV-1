@@ -12,6 +12,14 @@ import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { insertDraftMessageInternal } from '@/lib/messages/internal'
 import { z } from 'zod'
 
+function localDateISO(d: Date): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
 // ============================================
 // SHARED HELPERS
 // ============================================
@@ -601,7 +609,7 @@ export async function handleFoodRecall(
 
   // Check upcoming events for the ingredient
   const db: any = createAdminClient()
-  const today = new Date().toISOString().split('T')[0]
+  const today = localDateISO(new Date())
 
   const { data: upcomingEvents } = await db
     .from('events')

@@ -7,7 +7,7 @@
 
 import type { ParsedEmail } from './types'
 
-// ─── Thumbtack Email Types ──────────────────────────────────────────────
+// --------- Thumbtack Email Types ------------------------------------------------------------------------------------------------------------------------------------------
 
 export type ThumbtackEmailType =
   | 'tt_new_lead'
@@ -64,7 +64,7 @@ export interface ThumbtackParseResult {
   parseWarnings: string[]
 }
 
-// ─── Sender Detection ───────────────────────────────────────────────────
+// --------- Sender Detection ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 const TT_SENDER_DOMAINS = ['thumbtack.com']
 
@@ -81,7 +81,7 @@ export function isThumbtackEmail(fromAddress: string): boolean {
   return domain ? TT_SENDER_DOMAINS.includes(domain) : false
 }
 
-// ─── Email Type Detection ───────────────────────────────────────────────
+// --------- Email Type Detection ---------------------------------------------------------------------------------------------------------------------------------------------
 
 const TYPE_PATTERNS: Array<{ pattern: RegExp; type: ThumbtackEmailType }> = [
   // New lead / request - aggressive matching
@@ -144,7 +144,7 @@ export function detectThumbtackEmailType(subject: string, body?: string): Thumbt
   return 'tt_administrative'
 }
 
-// ─── Field Extraction - New Lead ────────────────────────────────────────
+// --------- Field Extraction - New Lead ------------------------------------------------------------------------------------------------------------------------
 
 function parseLeadEmail(
   subject: string,
@@ -155,7 +155,7 @@ function parseLeadEmail(
   // Client name from subject: "New request from John Smith" or "[Name] is interested..."
   let clientName = 'Unknown'
   const nameFromSubject =
-    subject.match(/(?:from|request from)\s+(.+?)(?:\s*[-–—!.|]|$)/i) ||
+    subject.match(/(?:from|request from)\s+(.+?)(?:\s*[-------!.|]|$)/i) ||
     subject.match(/^(.+?)\s+(?:is interested|wants to hire|is looking)/i) ||
     subject.match(/^(.+?)\s+(?:needs|looking for)/i)
   if (nameFromSubject) {
@@ -209,7 +209,7 @@ function parseLeadEmail(
       guestCount = parseInt(singleNum[1], 10)
     }
     // If range like "10-20", take midpoint
-    const rangeMatch = guestCountText.match(/(\d+)\s*(?:to|-|–|—)\s*(\d+)/)
+    const rangeMatch = guestCountText.match(/(\d+)\s*(?:to|-|---|---)\s*(\d+)/)
     if (rangeMatch) {
       guestCount = Math.ceil((parseInt(rangeMatch[1], 10) + parseInt(rangeMatch[2], 10)) / 2)
     }
@@ -218,7 +218,7 @@ function parseLeadEmail(
   // Budget - budget range or amount
   const budgetMatch =
     body.match(/(?:Budget|Price range|Estimated budget|Willing to pay|Budget range)[:\s]+(.+)/i) ||
-    body.match(/\$[\d,]+(?:\s*[-–—to]+\s*\$[\d,]+)?/i)
+    body.match(/\$[\d,]+(?:\s*[-------to]+\s*\$[\d,]+)?/i)
   const budgetText = budgetMatch?.[1]?.trim() || budgetMatch?.[0]?.trim() || null
   let budgetMinCents: number | null = null
   let budgetMaxCents: number | null = null
@@ -256,7 +256,7 @@ function parseLeadEmail(
   }
 }
 
-// ─── Field Extraction - Booking Confirmed ───────────────────────────────
+// --------- Field Extraction - Booking Confirmed ---------------------------------------------------------------------------------------------
 
 function parseBookingEmail(
   subject: string,
@@ -268,7 +268,7 @@ function parseBookingEmail(
   let clientName: string | null = null
   const nameFromSubject =
     subject.match(/^(.+?)\s+(?:hired you|booked you)/i) ||
-    subject.match(/(?:from|with)\s+(.+?)(?:\s*[-–—!.|]|$)/i)
+    subject.match(/(?:from|with)\s+(.+?)(?:\s*[-------!.|]|$)/i)
   if (nameFromSubject) {
     clientName = nameFromSubject[1].trim()
   } else {
@@ -324,7 +324,7 @@ function parseBookingEmail(
   }
 }
 
-// ─── Field Extraction - Client Message ──────────────────────────────────
+// --------- Field Extraction - Client Message ------------------------------------------------------------------------------------------------------
 
 function parseMessageEmail(
   subject: string,
@@ -335,7 +335,7 @@ function parseMessageEmail(
   // Client name from subject: "New message from John Smith"
   let clientName: string | null = null
   const nameFromSubject =
-    subject.match(/(?:message from|from)\s+(.+?)(?:\s*[-–—!.|]|$)/i) ||
+    subject.match(/(?:message from|from)\s+(.+?)(?:\s*[-------!.|]|$)/i) ||
     subject.match(/^(.+?)\s+(?:sent you|replied)/i)
   if (nameFromSubject) {
     clientName = nameFromSubject[1].trim()
@@ -367,7 +367,7 @@ function parseMessageEmail(
   }
 }
 
-// ─── Field Extraction - Payment ─────────────────────────────────────────
+// --------- Field Extraction - Payment ---------------------------------------------------------------------------------------------------------------------------
 
 function parsePaymentEmail(
   subject: string,
@@ -417,7 +417,7 @@ function parsePaymentEmail(
   }
 }
 
-// ─── Main Parse Function ────────────────────────────────────────────────
+// --------- Main Parse Function ------------------------------------------------------------------------------------------------------------------------------------------------
 
 /**
  * Parse a Thumbtack email into structured data.

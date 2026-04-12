@@ -7,7 +7,7 @@
 
 import type { ParsedEmail } from './types'
 
-// ─── GigSalad Email Types ───────────────────────────────────────────────
+// --------- GigSalad Email Types ---------------------------------------------------------------------------------------------------------------------------------------------
 
 export type GigSaladEmailType =
   | 'gs_new_lead'
@@ -68,7 +68,7 @@ export interface GigSaladParseResult {
   parseWarnings: string[]
 }
 
-// ─── Sender Detection ───────────────────────────────────────────────────
+// --------- Sender Detection ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 const GS_SENDER_DOMAINS = ['gigsalad.com']
 
@@ -93,7 +93,7 @@ export function isGigSaladEmail(fromAddress: string): boolean {
   return domain ? GS_SENDER_DOMAINS.includes(domain) : false
 }
 
-// ─── Email Type Detection ───────────────────────────────────────────────
+// --------- Email Type Detection ---------------------------------------------------------------------------------------------------------------------------------------------
 
 const TYPE_PATTERNS: Array<{ pattern: RegExp; type: GigSaladEmailType }> = [
   // New lead / gig opportunity - AGGRESSIVE matching
@@ -171,7 +171,7 @@ export function detectGigSaladEmailType(subject: string, body?: string): GigSala
   return 'gs_administrative'
 }
 
-// ─── Field Extraction - New Lead ────────────────────────────────────────
+// --------- Field Extraction - New Lead ------------------------------------------------------------------------------------------------------------------------
 
 function parseLeadEmail(
   subject: string,
@@ -182,7 +182,7 @@ function parseLeadEmail(
   // Client name - try multiple patterns
   // "New lead from John Smith" or "John Smith is looking for" or "Client: John Smith"
   const nameFromSubject = subject.match(
-    /(?:lead|request|opportunity)\s+(?:from|by)\s+(.+?)(?:\s*[-–—!|]|$)/i
+    /(?:lead|request|opportunity)\s+(?:from|by)\s+(.+?)(?:\s*[-------!|]|$)/i
   )
   const nameFromBody =
     body.match(/(?:Client|Customer|Name|From|Contact)[\s:]+([A-Z][a-z]+ [A-Z][a-z]+)/i) ||
@@ -222,7 +222,7 @@ function parseLeadEmail(
       guestCount = parseInt(singleNum[1], 10)
     } else {
       // Try range "40-60" or "40 to 60" - take midpoint
-      const rangeMatch = guestCountText.match(/(\d+)\s*(?:to|-|–|—)\s*(\d+)/)
+      const rangeMatch = guestCountText.match(/(\d+)\s*(?:to|-|---|---)\s*(\d+)/)
       if (rangeMatch) {
         guestCount = Math.ceil((parseInt(rangeMatch[1], 10) + parseInt(rangeMatch[2], 10)) / 2)
       }
@@ -238,7 +238,7 @@ function parseLeadEmail(
   let budgetMaxCents: number | null = null
   if (budgetText) {
     // "$500-$1000" or "$500 - $1000" or "$500 to $1000"
-    const budgetRange = budgetText.match(/\$?([\d,]+)\s*(?:to|-|–|—)\s*\$?([\d,]+)/)
+    const budgetRange = budgetText.match(/\$?([\d,]+)\s*(?:to|-|---|---)\s*\$?([\d,]+)/)
     if (budgetRange) {
       budgetMinCents = Math.round(parseFloat(budgetRange[1].replace(',', '')) * 100)
       budgetMaxCents = Math.round(parseFloat(budgetRange[2].replace(',', '')) * 100)
@@ -290,7 +290,7 @@ function parseLeadEmail(
   }
 }
 
-// ─── Field Extraction - Client Message ──────────────────────────────────
+// --------- Field Extraction - Client Message ------------------------------------------------------------------------------------------------------
 
 function parseMessageEmail(
   subject: string,
@@ -300,7 +300,7 @@ function parseMessageEmail(
 
   // Client name - "Message from John Smith" or "John Smith sent a message"
   const nameFromSubject =
-    subject.match(/message\s+from\s+(.+?)(?:\s*[-–—!|]|$)/i) ||
+    subject.match(/message\s+from\s+(.+?)(?:\s*[-------!|]|$)/i) ||
     subject.match(/(.+?)\s+sent\s+(?:you\s+)?(?:a\s+)?message/i)
   const nameFromBody = body.match(/(?:From|Sender|Client|Customer)[\s:]+([A-Z][a-z]+ [A-Z][a-z]+)/i)
   const clientName = nameFromSubject?.[1]?.trim() || nameFromBody?.[1]?.trim() || null
@@ -329,7 +329,7 @@ function parseMessageEmail(
   }
 }
 
-// ─── Field Extraction - Booking Confirmed ───────────────────────────────
+// --------- Field Extraction - Booking Confirmed ---------------------------------------------------------------------------------------------
 
 function parseBookingEmail(
   subject: string,
@@ -339,7 +339,7 @@ function parseBookingEmail(
 
   // Client name - "Booking confirmed with John Smith" or body patterns
   const nameFromSubject = subject.match(
-    /(?:confirmed|booked)\s+(?:with|by|from)\s+(.+?)(?:\s*[-–—!|]|$)/i
+    /(?:confirmed|booked)\s+(?:with|by|from)\s+(.+?)(?:\s*[-------!|]|$)/i
   )
   const nameFromBody = body.match(
     /(?:Client|Customer|Booked\s+by|Name)[\s:]+([A-Z][a-z]+ [A-Z][a-z]+)/i
@@ -389,7 +389,7 @@ function parseBookingEmail(
   }
 }
 
-// ─── Field Extraction - Quote Requested ─────────────────────────────────
+// --------- Field Extraction - Quote Requested ---------------------------------------------------------------------------------------------------
 
 function parseQuoteEmail(
   subject: string,
@@ -399,7 +399,7 @@ function parseQuoteEmail(
 
   // Client name
   const nameFromSubject = subject.match(
-    /(?:quote\s+(?:request|needed)\s+(?:from|by))\s+(.+?)(?:\s*[-–—!|]|$)/i
+    /(?:quote\s+(?:request|needed)\s+(?:from|by))\s+(.+?)(?:\s*[-------!|]|$)/i
   )
   const nameFromBody = body.match(
     /(?:Client|Customer|Name|From|Contact)[\s:]+([A-Z][a-z]+ [A-Z][a-z]+)/i
@@ -454,7 +454,7 @@ function parseQuoteEmail(
   }
 }
 
-// ─── Main Parse Function ────────────────────────────────────────────────
+// --------- Main Parse Function ------------------------------------------------------------------------------------------------------------------------------------------------
 
 /**
  * Parse a GigSalad email into structured data.

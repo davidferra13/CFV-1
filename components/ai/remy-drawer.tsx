@@ -461,7 +461,7 @@ export function RemyDrawer() {
         return
       }
 
-      // Regular quick reply — send as user message to Ollama
+      // Regular quick reply  - send as user message to Ollama
       handleSend(label)
     },
     [handleSend, setMessages]

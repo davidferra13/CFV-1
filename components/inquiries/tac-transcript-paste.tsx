@@ -36,7 +36,7 @@ function parseTranscript(raw: string, clientName: string | null): ParsedMessage[
   // Try splitting by common TakeAChef chat patterns:
   // "Name - Date" or "Name:" at line start
   const messagePattern =
-    /^([A-Za-z][A-Za-z .'-]+?)\s*[-–—]\s*(\d{1,2}\s+\w+\s+\d{4}(?:\s+\d{1,2}:\d{2})?)\s*$/m
+    /^([A-Za-z][A-Za-z .'-]+?)\s*[-]\s*(\d{1,2}\s+\w+\s+\d{4}(?:\s+\d{1,2}:\d{2})?)\s*$/m
   const simpleNamePattern = /^([A-Za-z][A-Za-z .'-]+?):\s*$/m
 
   const lines = trimmed.split('\n')

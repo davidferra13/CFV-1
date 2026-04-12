@@ -9,6 +9,14 @@ import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { z } from 'zod'
 
+function localDateISO(d: Date): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
 // ─── Get Recent Emails ──────────────────────────────────────────────────────
 
 export async function getRecentEmails(limit = 10) {
@@ -147,7 +155,7 @@ export async function summarizeInbox() {
   const db: any = createServerClient()
 
   const now = new Date()
-  const today = now.toISOString().split('T')[0]
+  const today = localDateISO(now)
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()
 
   // Count by classification (last 7 days)

@@ -23,8 +23,19 @@ export const briefingAgentActions: AgentActionDefinition[] = [
 
     async executor(_inputs, ctx) {
       const db: any = createServerClient()
-      const today = new Date().toISOString().slice(0, 10)
-      const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10)
+      // Use local date parts to avoid UTC offset shifting dates after ~7pm ET
+      const _now = new Date()
+      const today = [
+        _now.getFullYear(),
+        String(_now.getMonth() + 1).padStart(2, '0'),
+        String(_now.getDate()).padStart(2, '0'),
+      ].join('-')
+      const _tmr = new Date(_now.getFullYear(), _now.getMonth(), _now.getDate() + 1)
+      const tomorrow = [
+        _tmr.getFullYear(),
+        String(_tmr.getMonth() + 1).padStart(2, '0'),
+        String(_tmr.getDate()).padStart(2, '0'),
+      ].join('-')
 
       const [
         { data: todayEvents },

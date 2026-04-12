@@ -8,6 +8,14 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 
+function localDateISO(d: Date): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
 // ─── Hub Circles Intelligence ────────────────────────────────────────────────
 
 export async function executeCirclesList() {
@@ -128,7 +136,7 @@ export async function executeTasksList(inputs: Record<string, unknown>) {
 }
 
 export async function executeTasksByDate(inputs: Record<string, unknown>) {
-  const date = String(inputs.date ?? new Date().toISOString().split('T')[0])
+  const date = String(inputs.date ?? localDateISO(new Date()))
   const { getTasksByDate } = await import('@/lib/tasks/actions')
   const result = await getTasksByDate(date)
   // getTasksByDate returns { grouped, unassigned } - flatten into a list
@@ -155,7 +163,7 @@ export async function executeTasksByDate(inputs: Record<string, unknown>) {
 export async function executeTasksOverdue() {
   const { listTasks } = await import('@/lib/tasks/actions')
   const allTasks = await listTasks({ status: 'pending' })
-  const today = new Date().toISOString().split('T')[0]
+  const today = localDateISO(new Date())
   const overdue = (allTasks ?? []).filter((t: any) => t.due_date && t.due_date < today)
   return {
     overdueTasks: overdue.slice(0, 15).map((t: any) => ({
@@ -182,7 +190,7 @@ export async function executeTravelPlan(inputs: Record<string, unknown>) {
 
 export async function executeTravelUpcoming() {
   const { getAllTravelLegs } = await import('@/lib/travel/actions')
-  const legs = await getAllTravelLegs({ fromDate: new Date().toISOString().split('T')[0] })
+  const legs = await getAllTravelLegs({ fromDate: localDateISO(new Date()) })
   return {
     upcomingLegs: (legs ?? []).slice(0, 15).map((l: any) => ({
       id: l.id,
@@ -237,7 +245,7 @@ export async function executeCommerceRecentSales() {
 }
 
 export async function executeCommerceDailyReport() {
-  const today = new Date().toISOString().split('T')[0]
+  const today = localDateISO(new Date())
   const { getDailySalesReport } = await import('@/lib/commerce/report-actions')
   const report = await getDailySalesReport(today, today)
   const day = report?.[0]
@@ -252,8 +260,11 @@ export async function executeCommerceDailyReport() {
 }
 
 export async function executeCommerceProductReport() {
-  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-  const today = new Date().toISOString().split('T')[0]
+  const _now = new Date()
+  const thirtyDaysAgo = localDateISO(
+    new Date(_now.getFullYear(), _now.getMonth(), _now.getDate() - 30)
+  )
+  const today = localDateISO(new Date())
   const { getProductReport } = await import('@/lib/commerce/report-actions')
   const report = await getProductReport(thirtyDaysAgo, today)
   return {

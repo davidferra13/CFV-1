@@ -47,10 +47,10 @@ export const DEFAULT_TIER_MAP: Record<NotificationAction, NotificationTier> = {
   event_completed: 'info',
   event_cancelled: 'alert',
   event_proposed_to_client: 'alert',
-  event_confirmed_to_client: 'alert',
+  event_confirmed_to_client: 'critical',
   event_reminder_7d: 'info',
-  event_reminder_2d: 'info',
-  event_reminder_1d: 'alert',
+  event_reminder_2d: 'alert',
+  event_reminder_1d: 'critical',
   photos_ready: 'info',
   menu_preferences_submitted: 'alert',
   meal_request_scheduled_to_client: 'alert',
@@ -68,7 +68,7 @@ export const DEFAULT_TIER_MAP: Record<NotificationAction, NotificationTier> = {
   inquiry_converted_to_client: 'alert',
   inquiry_declined_to_client: 'alert',
   inquiry_expired_to_client: 'info',
-  event_cancelled_to_client: 'alert',
+  event_cancelled_to_client: 'critical',
   event_completed_to_client: 'info',
   event_in_progress_to_client: 'alert',
   event_paid_to_client: 'alert',
@@ -177,6 +177,40 @@ export const TIER_DESCRIPTIONS: Record<NotificationTier, string> = {
   alert: 'Push + Email - quote responses, event changes, new messages',
   info: 'Email only - follow-ups, reviews, routine updates',
 }
+
+/**
+ * Actions where the notification recipient is a client (not the chef).
+ * When SMS is enabled for these actions, the client's own phone number
+ * is used instead of chef_preferences.sms_notify_phone.
+ */
+export const CLIENT_FACING_ACTIONS = new Set<NotificationAction>([
+  'quote_sent_to_client',
+  'quote_expiring_soon',
+  'event_proposed_to_client',
+  'event_confirmed_to_client',
+  'event_reminder_7d',
+  'event_reminder_2d',
+  'event_reminder_1d',
+  'event_cancelled_to_client',
+  'event_completed_to_client',
+  'event_in_progress_to_client',
+  'event_paid_to_client',
+  'inquiry_quoted_to_client',
+  'inquiry_converted_to_client',
+  'inquiry_declined_to_client',
+  'inquiry_expired_to_client',
+  'meal_request_scheduled_to_client',
+  'meal_request_declined_to_client',
+  'meal_request_fulfilled_to_client',
+  'meal_recommendation_sent_to_client',
+  'new_chat_message_to_client',
+  'refund_processed_to_client',
+  'dispute_funds_withdrawn',
+  'points_awarded',
+  'tier_upgraded',
+  'raffle_winner',
+  'photos_ready',
+])
 
 /**
  * Get the default channel set for a given action,

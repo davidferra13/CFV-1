@@ -15,6 +15,7 @@ import {
   DEFAULT_TIER_MAP,
   TIER_CHANNEL_DEFAULTS,
   EMAIL_SUPPRESSED_ACTIONS,
+  CLIENT_FACING_ACTIONS,
   getDefaultChannels,
   type ChannelSet,
 } from './tier-config'
@@ -35,8 +36,8 @@ export type ResolvedChannels = ChannelSet & {
  *
  * SMS will only be true if:
  *   - The tier/preference enables it, AND
- *   - chef_preferences.sms_opt_in = true, AND
- *   - chef_preferences.sms_notify_phone is set
+ *   - For chef-facing actions: chef_preferences.sms_opt_in = true AND sms_notify_phone set
+ *   - For client-facing actions: clients.phone is set (transactional consent implied)
  */
 export async function resolveChannels(
   tenantId: string,
@@ -105,19 +106,36 @@ export async function resolveChannels(
       resolved.email = false
     }
 
-    // 3. SMS gate - requires explicit opt-in and phone number
+    // 3. SMS gate - different paths for chef vs client recipients
     let smsPhone: string | null = null
     if (resolved.sms) {
-      const { data: prefs } = await db
-        .from('chef_preferences')
-        .select('sms_opt_in, sms_notify_phone')
-        .eq('tenant_id', tenantId)
-        .single()
+      if (CLIENT_FACING_ACTIONS.has(action)) {
+        // Client recipient: look up client phone by auth_user_id
+        // Phone presence is sufficient consent for transactional notifications
+        const { data: client } = await (db as any)
+          .from('clients')
+          .select('phone')
+          .eq('auth_user_id', authUserId)
+          .maybeSingle()
 
-      if (prefs?.sms_opt_in && prefs.sms_notify_phone) {
-        smsPhone = prefs.sms_notify_phone
+        if (client?.phone) {
+          smsPhone = client.phone
+        } else {
+          resolved.sms = false
+        }
       } else {
-        resolved.sms = false
+        // Chef recipient: requires explicit opt-in in chef_preferences
+        const { data: prefs } = await db
+          .from('chef_preferences')
+          .select('sms_opt_in, sms_notify_phone')
+          .eq('tenant_id', tenantId)
+          .single()
+
+        if (prefs?.sms_opt_in && prefs.sms_notify_phone) {
+          smsPhone = prefs.sms_notify_phone
+        } else {
+          resolved.sms = false
+        }
       }
     }
 

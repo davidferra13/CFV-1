@@ -7,6 +7,14 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 
+function localDateISO(d: Date): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
 // ─── Client Intelligence ─────────────────────────────────────────────────────
 
 export async function executeClientSpending() {
@@ -316,7 +324,7 @@ export async function executeEquipmentRentals(inputs: Record<string, unknown>) {
 // ─── Staff Intelligence ──────────────────────────────────────────────────────
 
 export async function executeStaffAvailability(inputs: Record<string, unknown>) {
-  const date = String(inputs.date ?? new Date().toISOString().split('T')[0])
+  const date = String(inputs.date ?? localDateISO(new Date()))
   const { getAvailableStaffForDate } = await import('@/lib/staff/availability-actions')
   return await getAvailableStaffForDate(date)
 }
@@ -548,7 +556,7 @@ export async function executeCommerceSalesSummary() {
   const user = await requireChef()
   const { createServerClient } = await import('@/lib/db/server')
   const db: any = createServerClient()
-  const today = new Date().toISOString().split('T')[0]
+  const today = localDateISO(new Date())
   const { data } = await db
     .from('commerce_sales')
     .select('id, total_cents, payment_method, status, created_at')

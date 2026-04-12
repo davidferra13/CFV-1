@@ -7,6 +7,14 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 
+function localDateISO(d: Date): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
 export interface RemyNudge {
   id: string
   type:
@@ -66,8 +74,8 @@ export async function getProactiveNudges(): Promise<RemyNudge[]> {
   }
 
   // 2. Upcoming events needing prep (within 3 days, no prep notes)
-  const threeDaysOut = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-  const today = now.toISOString().split('T')[0]
+  const threeDaysOut = localDateISO(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 3))
+  const today = localDateISO(now)
   const { data: upcomingEvents } = await db
     .from('events')
     .select('id, occasion, event_date, guest_count, client:clients(full_name)')

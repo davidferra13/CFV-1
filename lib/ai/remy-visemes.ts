@@ -248,7 +248,7 @@ export const VISEME_DURATION_MS = 80
 export const PAUSE_DURATION_MS = 200
 
 /** Characters that trigger a longer rest pause */
-export const PAUSE_CHARS = new Set(['.', ',', '!', '?', ';', ':', '\n', '—', '–'])
+export const PAUSE_CHARS = new Set(['.', ',', '!', '?', ';', ':', '\n', '', '–'])
 
 /**
  * Get the display duration for a viseme frame.

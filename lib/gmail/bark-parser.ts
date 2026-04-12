@@ -7,7 +7,7 @@
 
 import type { ParsedEmail } from './types'
 
-// ─── Bark Email Types ───────────────────────────────────────────────────
+// --------- Bark Email Types ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 export type BarkEmailType =
   | 'bark_new_lead'
@@ -48,7 +48,7 @@ export interface BarkParseResult {
   parseWarnings: string[]
 }
 
-// ─── Sender Detection ───────────────────────────────────────────────────
+// --------- Sender Detection ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 const BARK_SENDER_DOMAINS = ['bark.com']
 
@@ -71,7 +71,7 @@ export function isBarkEmail(fromAddress: string): boolean {
   return domain ? BARK_SENDER_DOMAINS.includes(domain) : false
 }
 
-// ─── Email Type Detection ───────────────────────────────────────────────
+// --------- Email Type Detection ---------------------------------------------------------------------------------------------------------------------------------------------
 
 const TYPE_PATTERNS: Array<{ pattern: RegExp; type: BarkEmailType }> = [
   // New lead patterns - AGGRESSIVE matching
@@ -128,7 +128,7 @@ export function detectBarkEmailType(subject: string, body?: string): BarkEmailTy
   return 'bark_administrative'
 }
 
-// ─── Field Extraction - New Lead ────────────────────────────────────────
+// --------- Field Extraction - New Lead ------------------------------------------------------------------------------------------------------------------------
 
 function parseLeadEmail(
   subject: string,
@@ -141,8 +141,8 @@ function parseLeadEmail(
   let clientName = 'Unknown'
   const nameFromSubject =
     subject.match(/^(.+?)\s+needs\s+a/i) ||
-    subject.match(/new lead[:\s]+(.+?)(?:\s*[-–—]|$)/i) ||
-    subject.match(/request from\s+(.+?)(?:\s*[-–—!]|$)/i)
+    subject.match(/new lead[:\s]+(.+?)(?:\s*[-–]|$)/i) ||
+    subject.match(/request from\s+(.+?)(?:\s*[-–!]|$)/i)
   if (nameFromSubject) {
     clientName = nameFromSubject[1].trim()
   } else {
@@ -197,7 +197,7 @@ function parseLeadEmail(
   // Budget
   const budgetMatch =
     body.match(/(?:Budget|Price range|Willing to spend|Estimated budget)[\s:]+(.+)/i) ||
-    body.match(/[£$€]\s*[\d,.]+(?:\s*[-–—to]+\s*[£$€]?\s*[\d,.]+)?/i)
+    body.match(/[£$€]\s*[\d,.]+(?:\s*[-–to]+\s*[£$€]?\s*[\d,.]+)?/i)
   const budgetText = budgetMatch?.[1]?.trim() || budgetMatch?.[0]?.trim() || null
 
   // CTA link - Bark URL to respond
@@ -222,7 +222,7 @@ function parseLeadEmail(
   }
 }
 
-// ─── Field Extraction - Client Message ──────────────────────────────────
+// --------- Field Extraction - Client Message ------------------------------------------------------------------------------------------------------
 
 function parseMessageEmail(
   subject: string,
@@ -232,7 +232,7 @@ function parseMessageEmail(
 
   // Client name from subject: "New message from [Name]" or "Reply from [Name]"
   const nameMatch =
-    subject.match(/(?:message|reply) from\s+(.+?)(?:\s*[-–—!]|$)/i) ||
+    subject.match(/(?:message|reply) from\s+(.+?)(?:\s*[-–!]|$)/i) ||
     subject.match(/^(.+?)\s+responded/i)
   const clientName = nameMatch?.[1]?.trim() || null
   if (!clientName) warnings.push('Could not extract client name from message notification')
@@ -259,7 +259,7 @@ function parseMessageEmail(
   }
 }
 
-// ─── Field Extraction - Lead Update ─────────────────────────────────────
+// --------- Field Extraction - Lead Update ---------------------------------------------------------------------------------------------------------------
 
 function parseUpdateEmail(
   subject: string,
@@ -269,7 +269,7 @@ function parseUpdateEmail(
 
   // Client name from subject: "More details from [Name]" or "[Name] updated their request"
   const nameMatch =
-    subject.match(/(?:details|update) from\s+(.+?)(?:\s*[-–—!]|$)/i) ||
+    subject.match(/(?:details|update) from\s+(.+?)(?:\s*[-–!]|$)/i) ||
     subject.match(/^(.+?)\s+updated/i)
   const clientName = nameMatch?.[1]?.trim() || null
   if (!clientName) warnings.push('Could not extract client name from lead update')
@@ -297,7 +297,7 @@ function parseUpdateEmail(
   }
 }
 
-// ─── Main Parse Function ────────────────────────────────────────────────
+// --------- Main Parse Function ------------------------------------------------------------------------------------------------------------------------------------------------
 
 /**
  * Parse a Bark.com email into structured data.

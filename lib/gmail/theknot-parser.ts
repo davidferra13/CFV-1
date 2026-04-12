@@ -9,7 +9,7 @@
 
 import type { ParsedEmail } from './types'
 
-// ─── TheKnot Email Types ────────────────────────────────────────────────
+// --------- TheKnot Email Types ------------------------------------------------------------------------------------------------------------------------------------------------
 
 export type TheKnotEmailType =
   | 'knot_new_inquiry'
@@ -50,7 +50,7 @@ export interface TheKnotParseResult {
   parseWarnings: string[]
 }
 
-// ─── Sender Detection ────────────────────────────────────────────────────
+// --------- Sender Detection ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 const THEKNOT_SENDER_DOMAINS = ['theknot.com', 'weddingwire.com', 'weddingpro.com', 'theknotww.com']
 
@@ -77,7 +77,7 @@ export function isTheKnotEmail(fromAddress: string): boolean {
   return domain ? THEKNOT_SENDER_DOMAINS.includes(domain) : false
 }
 
-// ─── Email Type Detection ────────────────────────────────────────────────
+// --------- Email Type Detection ------------------------------------------------------------------------------------------------------------------------------------------------
 
 const TYPE_PATTERNS: Array<{ pattern: RegExp; type: TheKnotEmailType }> = [
   // New inquiry - aggressive matching
@@ -137,7 +137,7 @@ export function detectTheKnotEmailType(subject: string, body?: string): TheKnotE
   return 'knot_administrative'
 }
 
-// ─── Field Extraction - New Inquiry ──────────────────────────────────────
+// --------- Field Extraction - New Inquiry ------------------------------------------------------------------------------------------------------------------
 
 function parseInquiryEmail(
   subject: string,
@@ -148,9 +148,9 @@ function parseInquiryEmail(
   // Client name from subject: "New inquiry from Jessica & Mark" or "Jessica is interested"
   let clientName = 'Unknown'
   const nameFromSubject =
-    subject.match(/inquiry\s+from\s+(.+?)(?:\s*[-–—!.|]|$)/i) ||
-    subject.match(/lead\s+from\s+(.+?)(?:\s*[-–—!.|]|$)/i) ||
-    subject.match(/request\s+from\s+(.+?)(?:\s*[-–—!.|]|$)/i) ||
+    subject.match(/inquiry\s+from\s+(.+?)(?:\s*[-------!.|]|$)/i) ||
+    subject.match(/lead\s+from\s+(.+?)(?:\s*[-------!.|]|$)/i) ||
+    subject.match(/request\s+from\s+(.+?)(?:\s*[-------!.|]|$)/i) ||
     subject.match(/^(.+?)\s+is\s+interested/i) ||
     subject.match(/^(.+?)\s+wants/i)
   if (nameFromSubject) {
@@ -194,7 +194,7 @@ function parseInquiryEmail(
       guestCountNumber = parseInt(singleNum[1], 10)
     }
     // Handle ranges like "100-150" or "100 to 150"
-    const rangeMatch = guestCount.match(/(\d+)\s*(?:to|-|–)\s*(\d+)/)
+    const rangeMatch = guestCount.match(/(\d+)\s*(?:to|-|---)\s*(\d+)/)
     if (rangeMatch) {
       guestCountNumber = Math.ceil((parseInt(rangeMatch[1], 10) + parseInt(rangeMatch[2], 10)) / 2)
     }
@@ -203,7 +203,7 @@ function parseInquiryEmail(
   // Budget
   const budgetMatch =
     body.match(/(?:Budget|Catering\s*Budget|Estimated\s*Budget|Price\s*Range):\s*(.+)/i) ||
-    body.match(/(\$[\d,]+(?:\s*[-–]\s*\$[\d,]+)?)/i)
+    body.match(/(\$[\d,]+(?:\s*[----]\s*\$[\d,]+)?)/i)
   const budgetText = budgetMatch?.[1]?.trim() || null
 
   // Service type - Catering, Wedding Cake, Bar Services, etc.
@@ -235,7 +235,7 @@ function parseInquiryEmail(
   }
 }
 
-// ─── Field Extraction - Client Message ───────────────────────────────────
+// --------- Field Extraction - Client Message ---------------------------------------------------------------------------------------------------------
 
 function parseMessageEmail(
   subject: string,
@@ -246,7 +246,7 @@ function parseMessageEmail(
   // Client name from subject: "New message from Jessica" or "Jessica sent you a message"
   let clientName: string | null = null
   const nameFromSubject =
-    subject.match(/message\s+from\s+(.+?)(?:\s*[-–—!.|]|$)/i) ||
+    subject.match(/message\s+from\s+(.+?)(?:\s*[-------!.|]|$)/i) ||
     subject.match(/^(.+?)\s+sent\s+you\s+a\s+message/i) ||
     subject.match(/^(.+?)\s+replied/i)
   if (nameFromSubject) {
@@ -277,7 +277,7 @@ function parseMessageEmail(
   }
 }
 
-// ─── Field Extraction - Booking Confirmed ────────────────────────────────
+// --------- Field Extraction - Booking Confirmed ------------------------------------------------------------------------------------------------
 
 function parseBookingEmail(
   subject: string,
@@ -287,7 +287,7 @@ function parseBookingEmail(
 
   // Client name
   let clientName: string | null = null
-  const nameFromSubject = subject.match(/booked\s+(?:by\s+)?(.+?)(?:\s*[-–—!.|]|$)/i)
+  const nameFromSubject = subject.match(/booked\s+(?:by\s+)?(.+?)(?:\s*[-------!.|]|$)/i)
   if (nameFromSubject) {
     clientName = nameFromSubject[1].trim()
   } else {
@@ -329,7 +329,7 @@ function parseBookingEmail(
   }
 }
 
-// ─── Main Parse Function ────────────────────────────────────────────────
+// --------- Main Parse Function ------------------------------------------------------------------------------------------------------------------------------------------------
 
 /**
  * Parse a The Knot / WeddingWire / WeddingPro email into structured data.

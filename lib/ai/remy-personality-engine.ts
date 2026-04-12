@@ -5,7 +5,7 @@
 // state machine, and dynamic system prompt blocks.
 //
 // All functions use requireChef() for tenant ID. Non-blocking side effects
-// (milestone inserts, stage updates) are fire-and-forget — they never block chat.
+// (milestone inserts, stage updates) are fire-and-forget - they never block chat.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
@@ -425,7 +425,7 @@ export async function getSeasonalOpener(): Promise<string> {
     const day = now.getDate()
     // 4th Thursday = day 22-28
     if (day >= 22 && day <= 28) {
-      return `Happy Thanksgiving, chef! 🦃 Whether you're cooking for clients or your own family today — enjoy the meal. You've earned it.`
+      return `Happy Thanksgiving, chef! 🦃 Whether you're cooking for clients or your own family today - enjoy the meal. You've earned it.`
     }
   }
 
@@ -491,7 +491,7 @@ export async function getCuratedGreeting(
 
     if (onboarding.stage === 'greeted' && !onboarding.skipped) {
       // Continue tour if mid-way; otherwise wait for quick-reply input
-      // Return null here — tour beats are delivered via advanceRemyTour()
+      // Return null here - tour beats are delivered via advanceRemyTour()
       return null
     }
 

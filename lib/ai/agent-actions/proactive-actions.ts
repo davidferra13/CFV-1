@@ -6,6 +6,14 @@ import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
 import type { AgentActionPreview } from '@/lib/ai/command-types'
 import { createEmergencyContact } from '@/lib/contingency/actions'
 import { createFolder, searchDocuments } from '@/lib/ai/document-management-actions'
+
+function localDateISO(d: Date): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
 import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { z } from 'zod'
@@ -26,7 +34,7 @@ export const proactiveAgentActions: AgentActionDefinition[] = [
 
     async executor(_inputs, ctx) {
       const db: any = createServerClient()
-      const now = new Date().toISOString().slice(0, 10)
+      const now = localDateISO(new Date())
 
       // Gather data in parallel
       const [

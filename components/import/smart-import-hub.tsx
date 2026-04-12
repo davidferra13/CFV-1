@@ -314,7 +314,7 @@ export function SmartImportHub({
         }
       } else if (mode === 'clients') {
         if (!rawText.trim()) return
-        const hasMultiple = rawText.includes('\n\n') || /^[\s]*[-—]/m.test(rawText)
+        const hasMultiple = rawText.includes('\n\n') || /^[\s]*[-]/m.test(rawText)
         if (hasMultiple) {
           const result = await parseClientsFromBulk(rawText)
           setParsedClients(result.parsed)

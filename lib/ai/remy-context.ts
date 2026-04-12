@@ -8,6 +8,18 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import type { RemyContext, PageEntityContext } from '@/lib/ai/remy-types'
 import { getDailyPlanStats } from '@/lib/daily-ops/actions'
+
+// Safe local-date ISO string - avoids UTC offset shifting after ~7pm ET
+function localDateISO(d: Date): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+function localDateOffset(d: Date, days: number): string {
+  return localDateISO(new Date(d.getFullYear(), d.getMonth(), d.getDate() + days))
+}
 import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
 import { archetypeToOperatorType, OPERATOR_TARGETS } from '@/lib/costing/knowledge'
 import { loadEmailDigest } from '@/lib/ai/remy-email-actions'
@@ -306,7 +318,7 @@ async function loadQuickCounts(db: any, tenantId: string) {
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .not('status', 'in', '("cancelled","completed")')
-      .gte('event_date', new Date().toISOString().split('T')[0]),
+      .gte('event_date', localDateISO(new Date())),
     db
       .from('inquiries')
       .select('id', { count: 'exact', head: true })
@@ -331,10 +343,10 @@ async function loadQuickCounts(db: any, tenantId: string) {
 
 async function loadDetailedContext(db: any, tenantId: string) {
   const now = new Date()
-  const today = now.toISOString().split('T')[0]
+  const today = localDateISO(now)
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
   const yearStart = new Date(now.getFullYear(), 0, 1).toISOString()
-  const next30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const next30 = localDateOffset(now, 30)
 
   const [
     eventsResult,
@@ -620,10 +632,7 @@ async function loadDetailedContext(db: any, tenantId: string) {
       .eq('tenant_id', tenantId)
       .gt('balance_due_cents', 0)
       .gte('payment_due_date', today)
-      .lte(
-        'payment_due_date',
-        new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-      )
+      .lte('payment_due_date', localDateOffset(now, 7))
       .not('status', 'eq', 'cancelled')
       .order('payment_due_date', { ascending: true })
       .limit(5),
@@ -635,10 +644,7 @@ async function loadDetailedContext(db: any, tenantId: string) {
       .eq('tenant_id', tenantId)
       .eq('status', 'sent')
       .gte('valid_until', today)
-      .lte(
-        'valid_until',
-        new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-      )
+      .lte('valid_until', localDateOffset(now, 7))
       .order('valid_until', { ascending: true })
       .limit(5),
 

@@ -15,7 +15,7 @@ const MOJIBAKE_REPLACEMENTS: Array<[RegExp, string]> = [
   [/“/g, '"'],
   [/\u00E2\u20AC\u009D/g, '"'],
   [/–/g, '-'],
-  [/—/g, '-'],
+  [/-/g, '-'],
   [/…/g, '...'],
   [/•/g, '-'],
   [/™/g, '(TM)'],

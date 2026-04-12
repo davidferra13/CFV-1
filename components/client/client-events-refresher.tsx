@@ -4,7 +4,7 @@
 // Listens to the notification SSE (via NotificationContext) and calls
 // router.refresh() when an event-related notification arrives.
 // Used on the /my-events list page so status badges update live when
-// the chef transitions any event — no second SSE connection needed.
+// the chef transitions any event - no second SSE connection needed.
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
