@@ -35,36 +35,41 @@ const UpdateRetainerSchema = z.object({
 // ─── Helpers ─────────────────────────────────────────────────────
 
 function computeNextBillingDate(fromDate: string, cycle: string): string {
-  const d = new Date(fromDate)
+  const [_fy, _fm, _fd] = fromDate.split('-').map(Number)
+  let result: Date
   switch (cycle) {
     case 'weekly':
-      d.setDate(d.getDate() + 7)
+      result = new Date(_fy, _fm - 1, _fd + 7)
       break
     case 'biweekly':
-      d.setDate(d.getDate() + 14)
+      result = new Date(_fy, _fm - 1, _fd + 14)
       break
     case 'monthly':
-      d.setMonth(d.getMonth() + 1)
+      result = new Date(_fy, _fm, _fd)
       break
+    default:
+      result = new Date(_fy, _fm - 1, _fd)
   }
-  return d.toISOString().split('T')[0]
+  return `${result.getFullYear()}-${String(result.getMonth() + 1).padStart(2, '0')}-${String(result.getDate()).padStart(2, '0')}`
 }
 
 function computePeriodEnd(periodStart: string, cycle: string): string {
-  const d = new Date(periodStart)
+  const [_py, _pm, _pd] = periodStart.split('-').map(Number)
+  let result: Date
   switch (cycle) {
     case 'weekly':
-      d.setDate(d.getDate() + 6)
+      result = new Date(_py, _pm - 1, _pd + 6)
       break
     case 'biweekly':
-      d.setDate(d.getDate() + 13)
+      result = new Date(_py, _pm - 1, _pd + 13)
       break
     case 'monthly':
-      d.setMonth(d.getMonth() + 1)
-      d.setDate(d.getDate() - 1)
+      result = new Date(_py, _pm, _pd - 1)
       break
+    default:
+      result = new Date(_py, _pm - 1, _pd)
   }
-  return d.toISOString().split('T')[0]
+  return `${result.getFullYear()}-${String(result.getMonth() + 1).padStart(2, '0')}-${String(result.getDate()).padStart(2, '0')}`
 }
 
 // ─── Actions ─────────────────────────────────────────────────────
@@ -277,7 +282,8 @@ export async function resumeRetainer(id: string) {
   }
 
   // Recalculate next billing date from today
-  const today = new Date().toISOString().split('T')[0]
+  const _rtt = new Date()
+  const today = `${_rtt.getFullYear()}-${String(_rtt.getMonth() + 1).padStart(2, '0')}-${String(_rtt.getDate()).padStart(2, '0')}`
   const nextBilling = computeNextBillingDate(today, retainer.billing_cycle)
 
   const { error } = await db
@@ -605,7 +611,8 @@ export async function linkEventToRetainer(eventId: string, retainerId: string) {
   if (linkError) throw new Error(`Failed to link event: ${linkError.message}`)
 
   // Find the current active period and increment events_used
-  const today = new Date().toISOString().split('T')[0]
+  const _rtt = new Date()
+  const today = `${_rtt.getFullYear()}-${String(_rtt.getMonth() + 1).padStart(2, '0')}-${String(_rtt.getDate()).padStart(2, '0')}`
   const { data: currentPeriod } = await db
     .from('retainer_periods')
     .select('id, events_used')

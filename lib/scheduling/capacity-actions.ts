@@ -137,21 +137,21 @@ export async function checkCapacityForDate(eventDate: string): Promise<CapacityC
   const maxWeekly: number | null = (chefData as any)?.max_events_per_week ?? null
   const maxMonthly: number | null = (chefData as any)?.max_events_per_month ?? null
 
-  const date = new Date(eventDate)
+  const [_cay, _cam, _cad] = (eventDate as string).split('-').map(Number)
+  const date = new Date(_cay, _cam - 1, _cad)
 
   // Week window: same calendar week (Mon–Sun)
   const dayOfWeek = date.getDay() // 0 = Sunday
   const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
-  const weekStart = new Date(date)
-  weekStart.setDate(date.getDate() + mondayOffset)
-  const weekEnd = new Date(weekStart)
-  weekEnd.setDate(weekStart.getDate() + 6)
+  const weekStart = new Date(_cay, _cam - 1, _cad + mondayOffset)
+  const weekEnd = new Date(_cay, _cam - 1, _cad + mondayOffset + 6)
 
   // Month window: same calendar month
-  const monthStart = new Date(date.getFullYear(), date.getMonth(), 1)
-  const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0)
+  const monthStart = new Date(_cay, _cam - 1, 1)
+  const monthEnd = new Date(_cay, _cam, 0)
 
-  const fmt = (d: Date) => d.toISOString().slice(0, 10)
+  const fmt = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
   const { count: weekCount } = await db
     .from('events')
