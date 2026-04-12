@@ -222,7 +222,7 @@ export async function getWeatherAlerts(tenantId: string): Promise<WeatherAlertRe
 
   const { data: events } = await db
     .from('events')
-    .select('id, event_date, location, occasion, client:clients(full_name)')
+    .select('id, event_date, location_address, occasion, client:clients(full_name)')
     .eq('tenant_id', tenantId)
     .not('status', 'in', '("cancelled","completed")')
     .gte('event_date', today)
@@ -240,13 +240,13 @@ export async function getWeatherAlerts(tenantId: string): Promise<WeatherAlertRe
   const geoCache = new Map<string, GeoResult | null>()
 
   for (const event of events) {
-    if (!event.location) continue
+    if (!event.location_address) continue
     const eventDate = new Date(event.event_date).toISOString().split('T')[0]
 
     // Geocode (with cache)
-    const locKey = event.location.toLowerCase().trim()
+    const locKey = event.location_address.toLowerCase().trim()
     if (!geoCache.has(locKey)) {
-      geoCache.set(locKey, await geocodeLocation(event.location))
+      geoCache.set(locKey, await geocodeLocation(event.location_address))
     }
     const geo = geoCache.get(locKey)
     if (!geo) {
@@ -269,7 +269,7 @@ export async function getWeatherAlerts(tenantId: string): Promise<WeatherAlertRe
     alerts.push({
       eventId: event.id,
       eventDate: eventDate,
-      location: event.location,
+      location: event.location_address,
       occasion: event.occasion ?? null,
       clientName: (event.client as any)?.full_name ?? null,
       forecast,

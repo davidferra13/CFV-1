@@ -150,13 +150,14 @@ export async function handleArchiveDigesterSync(_trigger: unknown): Promise<Cart
         // Create event
         const inserted = await sql`
           INSERT INTO events (
-            tenant_id, client_id, title, event_date,
-            guest_count, location, status, notes
+            tenant_id, client_id, occasion, event_date,
+            serve_time, guest_count, location_address, status, site_notes
           ) VALUES (
             ${tenantId},
             ${clientId},
             ${event.occasion || 'Archived Event'},
             ${event.event_date},
+            '18:00',
             ${event.guest_count},
             ${event.location},
             'completed',
