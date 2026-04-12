@@ -412,8 +412,8 @@ export default async function DailyOpsPage() {
                       <p className="text-sm text-stone-200">{timer.title}</p>
                       <p className="text-xs text-stone-500">
                         {timer.station?.name ?? ''}
-                        {timer.station?.name && timer.event?.title ? ' / ' : ''}
-                        {timer.event?.title ?? ''}
+                        {timer.station?.name && timer.event?.occasion ? ' / ' : ''}
+                        {timer.event?.occasion ?? ''}
                       </p>
                     </div>
                     <div className="text-right">

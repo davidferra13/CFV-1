@@ -4,6 +4,7 @@
 // what ChefFlow includes for free, and voluntary contribution options.
 // Replaces the old Pro tier comparison + hard upgrade paywall.
 
+import { useState, useTransition } from 'react'
 import { redirectToCheckout, redirectToBillingPortal } from './actions'
 import type { SubscriptionStatus } from '@/lib/stripe/subscription'
 import { Badge } from '@/components/ui/badge'
@@ -48,6 +49,26 @@ function SupporterBadge({ status }: { status: SubscriptionStatus }) {
 export function SupportClient({ status, thankYou }: Props) {
   const isSupporter = status.isGrandfathered || status.isActive
   const isPaymentFailed = status.status === 'past_due' || status.status === 'unpaid'
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  const [portalError, setPortalError] = useState<string | null>(null)
+  const [isPendingCheckout, startCheckout] = useTransition()
+  const [isPendingPortal, startPortal] = useTransition()
+
+  function handleCheckout() {
+    setCheckoutError(null)
+    startCheckout(async () => {
+      const result = await redirectToCheckout()
+      if (result?.error) setCheckoutError(result.error)
+    })
+  }
+
+  function handlePortal() {
+    setPortalError(null)
+    startPortal(async () => {
+      const result = await redirectToBillingPortal()
+      if (result?.error) setPortalError(result.error)
+    })
+  }
 
   return (
     <div className="space-y-6">
@@ -67,11 +88,15 @@ export function SupportClient({ status, thankYou }: Props) {
                   ? 'Your card was declined. Stripe will retry automatically. Update your payment method to resolve this now.'
                   : 'Stripe was unable to collect payment after multiple attempts. Update your payment method to resume your contribution.'}
               </p>
-              <form action={redirectToBillingPortal} className="mt-3">
-                <Button type="submit" variant="danger">
-                  Update Payment Method
-                </Button>
-              </form>
+              <Button
+                variant="danger"
+                className="mt-3"
+                onClick={handlePortal}
+                loading={isPendingPortal}
+              >
+                Update Payment Method
+              </Button>
+              {portalError && <p className="mt-2 text-xs text-red-400">{portalError}</p>}
             </div>
           </div>
         </div>
@@ -126,11 +151,9 @@ export function SupportClient({ status, thankYou }: Props) {
                 </span>
               </div>
               <div className="mt-3">
-                <form action={redirectToBillingPortal}>
-                  <Button type="submit" variant="secondary">
-                    Manage Contribution
-                  </Button>
-                </form>
+                <Button variant="secondary" onClick={handlePortal} loading={isPendingPortal}>
+                  Manage Contribution
+                </Button>
               </div>
             </div>
           )}
@@ -170,12 +193,16 @@ export function SupportClient({ status, thankYou }: Props) {
             server costs, development, and keeps the platform free for everyone. No pressure. No
             locked features. Just gratitude.
           </p>
-          <form action={redirectToCheckout} className="mt-5">
-            <Button type="submit" variant="primary">
-              <Heart size={15} className="mr-2" />
-              Become a Supporter
-            </Button>
-          </form>
+          <Button
+            variant="primary"
+            className="mt-5"
+            onClick={handleCheckout}
+            loading={isPendingCheckout}
+          >
+            <Heart size={15} className="mr-2" />
+            Become a Supporter
+          </Button>
+          {checkoutError && <p className="mt-2 text-xs text-red-400">{checkoutError}</p>}
           <p className="mt-3 text-xs text-stone-500">
             Cancel anytime. You keep every feature regardless.
           </p>

@@ -20,9 +20,11 @@ const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 function getStripe(): Stripe {
+  const key = process.env.STRIPE_SECRET_KEY
+  if (!key) throw new Error('STRIPE_SECRET_KEY is not configured')
   const StripeLib = require('stripe')
   const StripeCtor = StripeLib.default || StripeLib
-  return new StripeCtor(process.env.STRIPE_SECRET_KEY!, {
+  return new StripeCtor(key, {
     apiVersion: '2025-12-18.acacia' as Stripe.LatestApiVersion,
   })
 }
