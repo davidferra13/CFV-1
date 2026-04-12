@@ -340,10 +340,125 @@ Return JSON: { "score": N, "failures": ["list of specific issues found"] }`,
   }
 }
 
+function evaluateClientParseDeterministic(
+  scenario: SimScenario,
+  rawOutput: unknown
+): EvaluationResult {
+  const out = rawOutput as Record<string, unknown> | null
+  if (!out || typeof out !== 'object') {
+    return { score: 0, passed: false, failures: ['Pipeline returned no valid object'] }
+  }
+
+  const gt = scenario.groundTruth
+  let score = 100
+  const failures: string[] = []
+
+  // Name check
+  const expectedName = gt.expectedName as string | null
+  const actualName = (out.fullName ?? null) as string | null
+  if (expectedName !== null) {
+    if (!fuzzyMatch(actualName, expectedName)) {
+      score -= 30
+      failures.push(`Name: expected "${expectedName}", got "${actualName}"`)
+    }
+  } else if (actualName !== null && actualName !== '') {
+    score -= 30
+    failures.push(`Name: expected null, parser invented "${actualName}"`)
+  }
+
+  // Email check
+  const expectedEmail = gt.expectedEmail as string | null
+  const actualEmail = (out.email ?? null) as string | null
+  if (expectedEmail !== null) {
+    if (!fuzzyMatch(actualEmail, expectedEmail)) {
+      score -= 25
+      failures.push(`Email: expected "${expectedEmail}", got "${actualEmail}"`)
+    }
+  } else if (actualEmail !== null && actualEmail !== '') {
+    score -= 25
+    failures.push(`Email: expected null, parser invented "${actualEmail}"`)
+  }
+
+  // Dietary restrictions check - expected items should appear in output
+  const expectedDietary = (gt.expectedDietary as string[]) ?? []
+  const actualDietary = [
+    ...((out.dietaryRestrictions as string[]) ?? []),
+    ...((out.allergies as string[]) ?? []),
+  ].map((s) => s.toLowerCase())
+  for (const expected of expectedDietary) {
+    const found = actualDietary.some(
+      (a) => a.includes(expected.toLowerCase()) || expected.toLowerCase().includes(a)
+    )
+    if (!found) {
+      score -= 20
+      failures.push(`Dietary restriction "${expected}" not found in output`)
+    }
+  }
+
+  score = Math.max(0, score)
+  return { score, passed: score >= 70, failures }
+}
+
+function evaluateAllergenRiskDeterministic(
+  scenario: SimScenario,
+  rawOutput: unknown
+): EvaluationResult {
+  const out = rawOutput as Record<string, unknown> | null
+  if (!out || typeof out !== 'object') {
+    return { score: 0, passed: false, failures: ['Pipeline returned no valid object'] }
+  }
+
+  const gt = scenario.groundTruth
+  const expectedRisks = (gt.expectedRisks as string[]) ?? []
+  let score = 100
+  const failures: string[] = []
+
+  // Must have rows array
+  const rows = out.rows
+  if (!Array.isArray(rows) || rows.length === 0) {
+    score -= 40
+    failures.push('Missing or empty rows array - no dish x guest analysis produced')
+  }
+
+  // Must have safetyFlags array
+  const safetyFlags = out.safetyFlags
+  if (!Array.isArray(safetyFlags)) {
+    score -= 20
+    failures.push('Missing safetyFlags field')
+  }
+
+  // If risks were expected, safetyFlags must be non-empty
+  if (expectedRisks.length > 0 && Array.isArray(safetyFlags) && safetyFlags.length === 0) {
+    score -= 30
+    failures.push(`Expected ${expectedRisks.length} risk(s) but safetyFlags is empty`)
+  }
+
+  // Must have at least one non-safe row when risks are expected
+  if (expectedRisks.length > 0 && Array.isArray(rows) && rows.length > 0) {
+    const hasNonSafe = (rows as Array<Record<string, unknown>>).some(
+      (r) => r.riskLevel !== 'safe' && r.riskLevel !== 'unknown'
+    )
+    if (!hasNonSafe) {
+      score -= 25
+      failures.push('All rows marked safe despite expected allergen conflicts')
+    }
+  }
+
+  // Confidence field should exist
+  if (!out.confidence) {
+    score -= 10
+    failures.push('Missing confidence field')
+  }
+
+  score = Math.max(0, score)
+  return { score, passed: score >= 70, failures }
+}
+
 /**
  * Evaluates a pipeline output against scenario ground truth.
- * Uses deterministic checks for inquiry_parse, correspondence, quote_draft (Formula > AI).
- * Uses Ollama for subjective quality evaluation on client_parse, allergen_risk, menu_suggestions.
+ * Uses deterministic checks for inquiry_parse, correspondence, quote_draft,
+ * client_parse, and allergen_risk (Formula > AI).
+ * Uses Ollama only for menu_suggestions (genuinely subjective evaluation).
  * Returns score (0–100), passed (>=70), and specific failure reasons.
  * Never throws - returns score=0 with error on failure.
  */
@@ -363,9 +478,13 @@ export async function evaluateOutput(
       return evaluateCorrespondenceDeterministic(scenario, rawOutput)
     case 'quote_draft':
       return evaluateQuoteDraftDeterministic(scenario, rawOutput)
+    case 'client_parse':
+      return evaluateClientParseDeterministic(scenario, rawOutput)
+    case 'allergen_risk':
+      return evaluateAllergenRiskDeterministic(scenario, rawOutput)
   }
 
-  // Ollama-based evaluation for subjective quality modules
+  // Ollama-based evaluation for subjective quality modules (menu_suggestions)
   const config = getOllamaConfig()
   const ollama = makeOllamaClient()
   const prompt = buildEvaluatorPrompt(scenario, rawOutput)
