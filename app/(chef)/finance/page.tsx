@@ -273,11 +273,6 @@ export default async function FinancePage() {
       </div>
 
       <div className="text-sm text-stone-400 flex items-center gap-2">
-        <span>Also available:</span>
-        <Link href="/financials" className="text-brand-600 hover:underline">
-          Full Financial Dashboard
-        </Link>
-        <span>·</span>
         <Link href="/goals" className="text-brand-600 hover:underline">
           Revenue Goals
         </Link>

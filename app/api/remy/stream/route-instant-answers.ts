@@ -90,7 +90,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       }
       return {
         text: `**This month:** ${monthRev}${pacing}${ytd}`,
-        navSuggestions: [{ label: 'Financials', href: '/financials' }],
+        navSuggestions: [{ label: 'Finance', href: '/finance' }],
       }
     },
   },
@@ -166,7 +166,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       const ps = ctx.profitabilityStats
       return {
         text: `**Average margin:** ${ps.avgMargin}% across ${ps.eventCount} events\n- Best: ${ps.bestMargin}%\n- Worst: ${ps.worstMargin}%\n- Avg profit/event: $${(ps.avgProfitCents / 100).toFixed(0)}\n\n${ps.avgMargin >= 55 ? "Strong margins - you're cooking with gas 🎯" : ps.avgMargin >= 40 ? 'Decent margins. Look for cost savings on your lower-margin events.' : "Margins are tight. Let's dig into your expense categories and find some savings."}`,
-        navSuggestions: [{ label: 'Financials', href: '/financials' }],
+        navSuggestions: [{ label: 'Finance', href: '/finance' }],
       }
     },
   },
@@ -490,12 +490,12 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       if (items.length === 0) {
         return {
           text: 'No payment deadlines coming up - all clear on the money front. 💰',
-          navSuggestions: [{ label: 'Financials', href: '/financials' }],
+          navSuggestions: [{ label: 'Finance', href: '/finance' }],
         }
       }
       return {
         text: items.join('\n'),
-        navSuggestions: [{ label: 'Financials', href: '/financials' }],
+        navSuggestions: [{ label: 'Finance', href: '/finance' }],
       }
     },
   },
@@ -977,7 +977,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       return {
         text: `**${new Date().getFullYear()} Year-to-Date:**\n\n- Revenue: **${rev}**\n- Expenses: ${exp}\n- Profit: **${profit}** (${margin}% margin)\n- Events: ${ys.totalEventsThisYear} total (${ys.completedEventsThisYear} completed)\n- Avg revenue/event: ${avgEvent}\n\n${margin >= 50 ? 'Strong margins - your year is on track. 🔥' : margin >= 30 ? 'Decent margins. Keep an eye on expenses.' : 'Margins are tight - worth reviewing your cost structure.'}`,
         navSuggestions: [
-          { label: 'Financials', href: '/financials' },
+          { label: 'Finance', href: '/finance' },
           { label: 'Analytics', href: '/analytics' },
         ],
       }
@@ -998,7 +998,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       }
       return {
         text: `**Cash flow outlook:** ${(cf.expectedCents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' })} expected from **${cf.eventCount} upcoming event${cf.eventCount !== 1 ? 's' : ''}**.\n\n${ctx.overduePayments && ctx.overduePayments.length > 0 ? `⚠️ Plus ${ctx.overduePayments.length} overdue payment${ctx.overduePayments.length !== 1 ? 's' : ''} outstanding.` : 'No overdue payments - clean pipeline. ✅'}`,
-        navSuggestions: [{ label: 'Financials', href: '/financials' }],
+        navSuggestions: [{ label: 'Finance', href: '/finance' }],
       }
     },
   },
@@ -1085,7 +1085,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       if (overdue.length === 0 && upcoming.length === 0) {
         return {
           text: 'No payments due or overdue. Clean slate! ✅',
-          navSuggestions: [{ label: 'Financials', href: '/financials' }],
+          navSuggestions: [{ label: 'Finance', href: '/finance' }],
         }
       }
       const lines: string[] = []
@@ -1112,7 +1112,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       }
       return {
         text: lines.join('\n'),
-        navSuggestions: [{ label: 'Financials', href: '/financials' }],
+        navSuggestions: [{ label: 'Finance', href: '/finance' }],
       }
     },
   },
@@ -1488,7 +1488,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       if (!ctx.overduePayments || ctx.overduePayments.length === 0) {
         return {
           text: 'No overdue payments. Everyone has paid up! 💸',
-          navSuggestions: [{ label: 'Financials', href: '/financials' }],
+          navSuggestions: [{ label: 'Finance', href: '/finance' }],
         }
       }
       const lines = [
@@ -1510,7 +1510,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       lines.push(`\n**Total outstanding: ${total}**`)
       return {
         text: lines.join('\n'),
-        navSuggestions: [{ label: 'Financials', href: '/financials' }],
+        navSuggestions: [{ label: 'Finance', href: '/finance' }],
       }
     },
   },

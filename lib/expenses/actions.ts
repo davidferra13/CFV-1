@@ -190,6 +190,7 @@ export async function createExpense(input: CreateExpenseInput) {
     revalidatePath(`/events/${validated.event_id}`)
   }
   revalidatePath('/financials')
+  revalidatePath('/finance')
 
   // Log chef activity (non-blocking)
   try {
@@ -349,6 +350,7 @@ export async function updateExpense(id: string, input: UpdateExpenseInput) {
     revalidatePath(`/events/${data.event_id}`)
   }
   revalidatePath('/financials')
+  revalidatePath('/finance')
 
   return { success: true, expense: data }
 }
@@ -392,6 +394,7 @@ export async function deleteExpense(id: string) {
     revalidatePath(`/events/${existing.event_id}`)
   }
   revalidatePath('/financials')
+  revalidatePath('/finance')
 
   return { success: true }
 }

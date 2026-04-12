@@ -524,6 +524,7 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
 
   revalidatePath('/receipts')
   revalidatePath('/financials')
+  revalidatePath('/finance')
   revalidatePath('/documents')
   if (photo.event_id) {
     revalidatePath(`/events/${photo.event_id}/receipts`)

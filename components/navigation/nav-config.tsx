@@ -192,7 +192,7 @@ export const standaloneTop: NavItem[] = [
     ],
   },
   {
-    href: '/financials',
+    href: '/finance',
     label: 'Finance',
     icon: DollarSign,
     coreFeature: true,
@@ -827,7 +827,7 @@ export const navGroups: NavGroup[] = [
         icon: Target,
       },
       {
-        href: '/financials',
+        href: '/finance',
         label: 'Financial Hub',
         icon: DollarSign,
         children: [
@@ -1525,7 +1525,7 @@ export const MOBILE_TAB_OPTIONS: NavItem[] = [
   { href: '/inquiries', label: 'Inquiries', icon: ChatTeardropText },
   { href: '/menus', label: 'Menus', icon: UtensilsCrossed },
   { href: '/recipes', label: 'Recipes', icon: BookOpen },
-  { href: '/financials', label: 'Finance', icon: DollarSign },
+  { href: '/finance', label: 'Finance', icon: DollarSign },
   { href: '/chat', label: 'Messaging', icon: MessageCircle },
   { href: '/documents', label: 'Documents', icon: FileText },
   { href: '/culinary/costing', label: 'Costing', icon: Calculator },

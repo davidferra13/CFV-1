@@ -152,7 +152,7 @@ async function getHeroMetrics(): Promise<HeroMetric[]> {
     {
       label: 'Revenue (all time)',
       value: `$${(revenueCents / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
-      href: '/financials',
+      href: '/finance',
       tier: 'supporting',
     },
     {

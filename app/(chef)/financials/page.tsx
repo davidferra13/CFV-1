@@ -135,6 +135,17 @@ export default async function FinancialsPage() {
 
   return (
     <div className="space-y-10">
+      {/* Compatibility notice */}
+      <div className="rounded-xl border border-stone-700/50 bg-stone-900/40 px-4 py-3 flex items-center gap-3">
+        <span className="text-stone-400 text-sm">
+          Finance now starts at{' '}
+          <Link href="/finance" className="text-brand-400 hover:underline font-medium">
+            /finance
+          </Link>
+          . This workspace remains available for legacy summary views.
+        </span>
+      </div>
+
       {/* Nav tiles render immediately */}
       {sections.map((section) => (
         <div key={section.heading}>

@@ -118,7 +118,7 @@ function getCoreAreas(counts: CommandCenterProps['counts']): CoreArea[] {
     },
     {
       label: 'Money',
-      href: '/financials',
+      href: '/finance',
       icon: DollarSign,
       color: '#22d3ee',
       description: 'Finance, quotes, and expenses',

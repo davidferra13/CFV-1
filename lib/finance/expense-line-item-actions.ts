@@ -142,6 +142,7 @@ export async function createExpenseLineItems(
   }
   revalidatePath('/expenses')
   revalidatePath('/financials')
+  revalidatePath('/finance')
 
   return { success: true, created: rows.length }
 }
@@ -264,6 +265,7 @@ export async function matchLineItemToIngredient(
 
   revalidatePath('/expenses')
   revalidatePath('/financials')
+  revalidatePath('/finance')
   return { success: true }
 }
 

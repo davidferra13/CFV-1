@@ -183,6 +183,7 @@ export async function importHistoricalEvent(
 
     revalidatePath('/events')
     revalidatePath('/financials')
+    revalidatePath('/finance')
 
     return {
       success: true,
