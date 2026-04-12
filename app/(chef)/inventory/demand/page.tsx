@@ -31,6 +31,12 @@ export default async function DemandPage() {
 
       {/* Auto-reorder: generate draft POs from shortfalls */}
       <AutoReorderPanel />
+
+      <p className="text-xs text-stone-600 text-right">
+        <Link href="/inventory/reorder" className="hover:text-stone-400">
+          Configure reorder rules (par levels + quantities) &rarr;
+        </Link>
+      </p>
     </div>
   )
 }
