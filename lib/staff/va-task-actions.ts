@@ -6,6 +6,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ============================================
 // TYPES
@@ -279,7 +280,12 @@ export async function getVaTaskStats(): Promise<{
       stats[status as keyof typeof stats]++
     }
     // Count overdue: has a due date in the past and not completed/cancelled
-    if (task.due_date && task.due_date < now && status !== 'completed' && status !== 'cancelled') {
+    if (
+      task.due_date &&
+      dateToDateString(task.due_date as Date | string) < now &&
+      status !== 'completed' &&
+      status !== 'cancelled'
+    ) {
       stats.overdue++
     }
   }

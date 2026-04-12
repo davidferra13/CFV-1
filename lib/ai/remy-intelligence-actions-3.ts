@@ -7,6 +7,7 @@
 // FORMULA > AI: Everything here is deterministic - no LLM calls.
 
 import { requireChef } from '@/lib/auth/get-user'
+import { dateToDateString } from '@/lib/utils/format'
 
 function localDateISO(d: Date): string {
   return [
@@ -164,7 +165,9 @@ export async function executeTasksOverdue() {
   const { listTasks } = await import('@/lib/tasks/actions')
   const allTasks = await listTasks({ status: 'pending' })
   const today = localDateISO(new Date())
-  const overdue = (allTasks ?? []).filter((t: any) => t.due_date && t.due_date < today)
+  const overdue = (allTasks ?? []).filter(
+    (t: any) => t.due_date && dateToDateString(t.due_date as Date | string) < today
+  )
   return {
     overdueTasks: overdue.slice(0, 15).map((t: any) => ({
       id: t.id,
