@@ -690,7 +690,7 @@ export async function transitionEvent({
     log.events.warn('Email send failed (non-blocking)', { error: emailErr })
   }
 
-  // Circle posts: accepted + paid (confirmed + completed handled by circleFirstNotify above)
+  // Circle posts: accepted + paid + in_progress (confirmed + completed handled by circleFirstNotify above)
 
   if (toStatus === 'accepted' && fromStatus === 'proposed') {
     try {
@@ -723,6 +723,26 @@ export async function transitionEvent({
       })
     } catch (circleErr) {
       log.events.warn('Circle post for paid failed (non-blocking)', { error: circleErr })
+    }
+  }
+
+  if (toStatus === 'in_progress' && fromStatus === 'confirmed') {
+    try {
+      const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
+      const arrivalMsg = event.arrival_time
+        ? `I'm on my way and will arrive around ${event.arrival_time}. See you soon!`
+        : "I'm on my way. See you soon!"
+      await circleFirstNotify({
+        eventId,
+        inquiryId: event.inquiry_id ?? null,
+        notificationType: 'running_late',
+        body: arrivalMsg,
+        metadata: { event_id: eventId },
+        actionUrl: `/my-events/${eventId}`,
+        actionLabel: 'View Event',
+      })
+    } catch (circleErr) {
+      log.events.warn('Circle post for in_progress failed (non-blocking)', { error: circleErr })
     }
   }
 

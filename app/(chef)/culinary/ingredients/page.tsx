@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { requireChef } from '@/lib/auth/get-user'
 import { getIngredients } from '@/lib/recipes/actions'
 import { Button } from '@/components/ui/button'
@@ -18,6 +19,8 @@ import { AddIngredientForm } from '@/components/culinary/add-ingredient-form'
 import { PriceWatchList } from '@/components/pricing/price-watch-list'
 import { ImageWithFallback } from '@/components/pricing/image-with-fallback'
 import { EnrichImagesButton } from '@/components/culinary/enrich-images-button'
+import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
+import { PricingIntelligenceBar } from '@/components/intelligence/pricing-intelligence-bar'
 
 export const metadata: Metadata = { title: 'Ingredients' }
 
@@ -88,6 +91,14 @@ export default async function IngredientsPage() {
             <p className="text-sm text-stone-500 mt-1">With price data</p>
           </Card>
         </div>
+      )}
+
+      {ingredients.length > 0 && (
+        <WidgetErrorBoundary name="Pricing Intelligence" compact>
+          <Suspense fallback={null}>
+            <PricingIntelligenceBar />
+          </Suspense>
+        </WidgetErrorBoundary>
       )}
 
       {ingredients.length === 0 ? (
