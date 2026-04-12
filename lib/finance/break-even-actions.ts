@@ -226,7 +226,7 @@ export async function getMonthlyFixedCostEstimate(): Promise<FixedCostEstimate> 
 
   const { data, error } = await db
     .from('expenses')
-    .select('amount_cents, recurrence, category')
+    .select('amount_cents, is_recurring, recurrence_interval, category')
     .eq('tenant_id', tenantId)
     .gte('expense_date', sixtyDaysAgo.toISOString().split('T')[0])
 
@@ -235,8 +235,7 @@ export async function getMonthlyFixedCostEstimate(): Promise<FixedCostEstimate> 
   const categoryTotals = new Map<string, number>()
 
   for (const expense of data) {
-    const recurrence: string = expense.recurrence ?? ''
-    const isFixed = recurrence === 'monthly' || recurrence === 'recurring' || recurrence === 'fixed'
+    const isFixed = expense.is_recurring === true || !!expense.recurrence_interval
     if (!isFixed) continue
 
     const cat = expense.category || 'Other'
