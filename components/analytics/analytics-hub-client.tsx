@@ -1104,10 +1104,10 @@ function BenchmarksTab() {
           Record monthly website traffic manually, or connect self-hosted Analytics / Plausible.
         </p>
         <a
-          href="/analytics/website"
+          href="/analytics"
           className="inline-flex items-center gap-2 text-sm font-medium text-amber-600 hover:underline"
         >
-          Manage website stats →
+          View analytics →
         </a>
       </Card>
       <Card className="p-6 bg-stone-800 border-stone-700">
