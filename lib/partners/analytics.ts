@@ -6,6 +6,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns'
+import { deriveProvenance } from '@/lib/analytics/source-provenance'
 
 // ============================================
 // TYPES
@@ -70,18 +71,6 @@ function getCurrentMonthRange(): DateRange {
   }
 }
 
-const CHANNEL_LABELS: Record<string, string> = {
-  text: 'Text',
-  email: 'Email',
-  phone: 'Phone',
-  referral: 'Referral',
-  walk_in: 'Walk-In',
-  instagram: 'Instagram',
-  take_a_chef: 'Take a Chef',
-  website: 'Website',
-  other: 'Other',
-}
-
 // ============================================
 // 1. SOURCE DISTRIBUTION
 // ============================================
@@ -93,7 +82,7 @@ export async function getSourceDistribution(range?: DateRange): Promise<SourceDa
 
   const { data: inquiries, error } = await db
     .from('inquiries')
-    .select('channel')
+    .select('channel, unknown_fields, utm_medium, external_platform')
     .eq('tenant_id', user.tenantId!)
     .gte('created_at', from)
     .lte('created_at', to)
@@ -105,7 +94,7 @@ export async function getSourceDistribution(range?: DateRange): Promise<SourceDa
 
   const counts: Record<string, number> = {}
   for (const inq of inquiries || []) {
-    const label = CHANNEL_LABELS[inq.channel] || inq.channel
+    const { label } = deriveProvenance(inq)
     counts[label] = (counts[label] || 0) + 1
   }
 
@@ -125,7 +114,7 @@ export async function getConversionRatesBySource(range?: DateRange): Promise<Con
 
   const { data: inquiries, error } = await db
     .from('inquiries')
-    .select('channel, status')
+    .select('id, channel, status, unknown_fields, utm_medium, external_platform')
     .eq('tenant_id', user.tenantId!)
     .gte('created_at', from)
     .lte('created_at', to)
@@ -150,14 +139,24 @@ export async function getConversionRatesBySource(range?: DateRange): Promise<Con
     }
   }
 
+  const COMMITTED_STATUSES = new Set(['accepted', 'paid', 'confirmed', 'in_progress', 'completed'])
+
   const data: Record<string, { inquiries: number; confirmed: number; completed: number }> = {}
 
   for (const inq of inquiries || []) {
-    const label = CHANNEL_LABELS[inq.channel] || inq.channel
+    const { label } = deriveProvenance(inq)
     if (!data[label]) data[label] = { inquiries: 0, confirmed: 0, completed: 0 }
     data[label].inquiries++
-    if (inq.status === 'confirmed') data[label].confirmed++
-    if (eventByInquiry[inq.id] === 'completed') data[label].completed++
+
+    const linkedStatus = eventByInquiry[inq.id]
+    if (linkedStatus) {
+      // Has linked event: use event status for confirmed and completed
+      if (COMMITTED_STATUSES.has(linkedStatus)) data[label].confirmed++
+      if (linkedStatus === 'completed') data[label].completed++
+    } else if (inq.status === 'confirmed') {
+      // Legacy fallback: no linked event, use inquiry's own status
+      data[label].confirmed++
+    }
   }
 
   return Object.entries(data)
@@ -194,18 +193,20 @@ export async function getRevenueBySource(range?: DateRange): Promise<RevenueData
     .filter((id: any): id is string => id != null)
   const { data: inquiries } =
     inquiryIds.length > 0
-      ? await db.from('inquiries').select('id, channel').in('id', inquiryIds)
+      ? await db
+          .from('inquiries')
+          .select('id, channel, unknown_fields, utm_medium, external_platform')
+          .in('id', inquiryIds)
       : { data: [] }
 
-  const channelMap: Record<string, string> = {}
+  const provenanceMap: Record<string, string> = {}
   for (const inq of inquiries || []) {
-    channelMap[inq.id] = inq.channel
+    provenanceMap[inq.id] = deriveProvenance(inq).label
   }
 
   const revenue: Record<string, number> = {}
   for (const evt of events || []) {
-    const channel = evt.inquiry_id ? channelMap[evt.inquiry_id] : null
-    const label = channel ? CHANNEL_LABELS[channel] || channel : 'Direct'
+    const label = evt.inquiry_id ? (provenanceMap[evt.inquiry_id] ?? 'Direct') : 'Direct'
     revenue[label] = (revenue[label] || 0) + (evt.quoted_price_cents || 0)
   }
 
@@ -227,7 +228,7 @@ export async function getSourceTrends(months = 12): Promise<TrendDataPoint[]> {
 
   const { data: inquiries, error } = await db
     .from('inquiries')
-    .select('channel, created_at')
+    .select('channel, created_at, unknown_fields, utm_medium, external_platform')
     .eq('tenant_id', user.tenantId!)
     .gte('created_at', from)
 
@@ -236,7 +237,7 @@ export async function getSourceTrends(months = 12): Promise<TrendDataPoint[]> {
     return []
   }
 
-  // Group by month and channel
+  // Group by month and provenance lane
   const monthData: Record<string, Record<string, number>> = {}
 
   for (let i = 0; i < months; i++) {
@@ -247,7 +248,7 @@ export async function getSourceTrends(months = 12): Promise<TrendDataPoint[]> {
 
   for (const inq of inquiries || []) {
     const key = format(new Date(inq.created_at), 'MMM yyyy')
-    const label = CHANNEL_LABELS[inq.channel] || inq.channel
+    const { label } = deriveProvenance(inq)
     if (monthData[key]) {
       monthData[key][label] = (monthData[key][label] || 0) + 1
     }

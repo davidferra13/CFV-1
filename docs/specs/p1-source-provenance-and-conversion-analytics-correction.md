@@ -1,6 +1,6 @@
 # Spec: Source Provenance and Conversion Analytics Correction
 
-> **Status:** ready
+> **Status:** verified
 > **Priority:** P1 (next up)
 > **Depends on:** `docs/specs/p0-public-booking-routing-and-source-truth.md`, `docs/research/foundations/2026-04-03-source-to-close-funnel-truth-map.md`
 > **Estimated complexity:** medium (3-8 files)
@@ -9,10 +9,14 @@
 
 _Every status change, every claim, every verification gets a row. This is the audit trail._
 
-| Event         | Date                 | Agent/Session | Commit |
-| ------------- | -------------------- | ------------- | ------ |
-| Created       | 2026-04-03 01:17 EDT | Codex         |        |
-| Status: ready | 2026-04-03 01:17 EDT | Codex         |        |
+| Event                 | Date                 | Agent/Session    | Commit |
+| --------------------- | -------------------- | ---------------- | ------ |
+| Created               | 2026-04-03 01:17 EDT | Codex            |        |
+| Status: ready         | 2026-04-03 01:17 EDT | Codex            |        |
+| Claimed (in-progress) | 2026-04-12           | Builder (Sonnet) |        |
+| Build completed       | 2026-04-12           | Builder (Sonnet) |        |
+| Type check passed     | 2026-04-12           | tsc clean        |        |
+| Status: verified      | 2026-04-12           | Builder (Sonnet) |        |
 
 ---
 
