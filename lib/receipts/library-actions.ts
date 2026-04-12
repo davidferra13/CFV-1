@@ -325,10 +325,10 @@ export async function getClientOptionsForChef(): Promise<ClientOption[]> {
 
   const { data } = await db
     .from('clients')
-    .select('id, name')
+    .select('id, full_name')
     .eq('tenant_id', user.tenantId!)
-    .order('name', { ascending: true })
+    .order('full_name', { ascending: true })
     .limit(200)
 
-  return (data ?? []).map((c: any) => ({ id: c.id, name: c.name }))
+  return (data ?? []).map((c: any) => ({ id: c.id, name: c.full_name }))
 }

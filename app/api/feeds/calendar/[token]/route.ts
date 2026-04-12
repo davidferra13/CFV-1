@@ -41,7 +41,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
   const { data: events } = await (db
     .from('events')
     .select(
-      'id, occasion, event_date, serve_time, departure_time, status, location_address, guest_count, additional_notes'
+      'id, occasion, event_date, serve_time, departure_time, status, location_address, guest_count, site_notes'
     )
     .eq('tenant_id', chef.id)
     .gte('event_date', thirtyDaysAgo.split('T')[0])
@@ -110,7 +110,7 @@ function formatIcsEvent(
     status: string
     location_address: string | null
     guest_count: number | null
-    additional_notes: string | null
+    site_notes: string | null
   },
   chefId: string
 ): string {
@@ -144,7 +144,7 @@ function formatIcsEvent(
   const descParts: string[] = []
   if (event.guest_count) descParts.push(`Guests: ${event.guest_count}`)
   if (event.status) descParts.push(`Status: ${event.status}`)
-  if (event.additional_notes) descParts.push(event.additional_notes)
+  if (event.site_notes) descParts.push(event.site_notes)
 
   const lines = [
     'BEGIN:VEVENT',
