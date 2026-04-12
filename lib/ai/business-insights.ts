@@ -110,8 +110,9 @@ export async function getBusinessInsights(): Promise<BusinessInsights> {
     conversionRate,
     closedInquiries,
     totalClients: clients.length,
-    newClientsThisYear: clients.filter((c: any) => c.created_at?.startsWith(String(thisYear)))
-      .length,
+    newClientsThisYear: clients.filter((c: any) =>
+      dateToDateString(c.created_at as Date | string).startsWith(String(thisYear))
+    ).length,
     peakMonth,
     currentMonth: now.getMonth() + 1,
     monthlyDistribution: monthCounts,

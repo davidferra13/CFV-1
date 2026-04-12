@@ -7,6 +7,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
+import { dateToDateString } from '@/lib/utils/format'
 import type { RecurringRule } from './actions'
 import type { Database } from '@/types/database'
 
@@ -70,7 +71,7 @@ export async function generateRecurringTasks(date: string): Promise<number> {
     if (rule.end_date && date > rule.end_date) continue
 
     // Don't generate for dates before the original task's due date
-    if (!task.due_date || date <= task.due_date) continue
+    if (!task.due_date || date <= dateToDateString(task.due_date as Date | string)) continue
 
     const matches = doesRuleMatchDate(rule, targetDayOfWeek, targetDayOfMonth)
     if (!matches) continue
@@ -107,7 +108,11 @@ export async function generateRecurringTasks(date: string): Promise<number> {
     throw new Error('Failed to check existing tasks')
   }
 
-  const existingSet = new Set((existingTasks ?? []).map((t: any) => `${t.title}::${t.due_date}`))
+  const existingSet = new Set(
+    (existingTasks ?? []).map(
+      (t: any) => `${t.title}::${dateToDateString(t.due_date as Date | string)}`
+    )
+  )
 
   // Filter out duplicates
   const newTasks = tasksToCreate.filter((t) => !existingSet.has(`${t.title}::${t.due_date}`))

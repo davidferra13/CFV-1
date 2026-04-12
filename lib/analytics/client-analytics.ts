@@ -162,10 +162,10 @@ export async function getClientChurnStats(): Promise<ClientChurnStats> {
     const daysSince = Math.floor((now.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24))
     totalDaysSince += daysSince
 
-    if (client.last_event_date! < oneTwentyDaysAgo && (client.total_events_count ?? 0) >= 2) {
+    if (daysSince > 120 && (client.total_events_count ?? 0) >= 2) {
       atRiskCount++
     }
-    if (client.last_event_date! < ninetyDaysAgo) {
+    if (daysSince > 90) {
       dormantCount++
     }
   }

@@ -9,6 +9,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from './parse-ollama'
 import { OllamaOfflineError } from './ollama-errors'
+import { dateToDateString } from '@/lib/utils/format'
 import { z } from 'zod'
 
 // ── Zod schema ──────────────────────────────────────────────────────────────
@@ -66,7 +67,7 @@ Return valid JSON only.`
 
   const userContent = `
 Client name: ${clientName}
-Message received: ${message.created_at}
+Message received: ${dateToDateString(message.created_at as Date | string)}
 Message content: "${(message.body as string)?.slice(0, 500) ?? ''}"
 
 Return JSON: {

@@ -6,6 +6,7 @@ import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
 import type { AgentActionPreview } from '@/lib/ai/command-types'
 import { createServerClient } from '@/lib/db/server'
 import { createCalendarEntry } from '@/lib/calendar/entry-actions'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ─── Action Definitions ──────────────────────────────────────────────────────
 
@@ -115,7 +116,7 @@ export const briefingAgentActions: AgentActionDefinition[] = [
         lines.push(`\n⚠️ OVERDUE (${(overdueTodos ?? []).length}):`)
         for (const t of overdueTodos ?? []) {
           const todo = t as Record<string, unknown>
-          lines.push(`• ${todo.title} (due ${todo.due_date})`)
+          lines.push(`• ${todo.title} (due ${dateToDateString(todo.due_date as Date | string)})`)
         }
       }
 

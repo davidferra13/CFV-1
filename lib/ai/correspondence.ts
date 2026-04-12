@@ -12,6 +12,7 @@ import {
   type ChefIdentity,
 } from './agent-brain'
 import { getPricingConfig } from '@/lib/pricing/config-actions'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ─── ACE Draft for Inquiry ──────────────────────────────────────────────────
 
@@ -127,7 +128,7 @@ export async function draftResponseForInquiry(inquiryId: string) {
         .reverse()
         .map(
           (m: any) =>
-            `[${m.created_at}] ${m.sender_id === chef.entityId ? 'Chef' : 'Client'}: ${m.body || '(no text)'}`
+            `[${dateToDateString(m.created_at as Date | string)}] ${m.sender_id === chef.entityId ? 'Chef' : 'Client'}: ${m.body || '(no text)'}`
         )
     }
   }
