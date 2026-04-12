@@ -23,6 +23,7 @@ import { suggestPhotoTags, confirmPhotoTag } from '@/lib/events/photo-tagging-ac
 import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { z } from 'zod'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ─── Event Finder Helper ─────────────────────────────────────────────────────
 
@@ -476,7 +477,7 @@ export const eventOpsAgentActions: AgentActionDefinition[] = [
           summary: `Generate prep timeline: ${event.occasion}`,
           fields: [
             { label: 'Event', value: String(event.occasion) },
-            { label: 'Date', value: String(event.event_date) },
+            { label: 'Date', value: dateToDateString(event.event_date as Date | string) },
           ],
           safety: 'reversible',
         },

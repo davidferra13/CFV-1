@@ -758,11 +758,12 @@ export async function getCalendarEvents(
 
     // Build start/end datetimes from serve_time
     const serveTime = event.serve_time || '18:00'
-    const startDt = `${event.event_date}T${serveTime}:00`
+    const eventDateStr = dateToDateString(event.event_date as Date | string)
+    const startDt = `${eventDateStr}T${serveTime}:00`
     // Default 3-hour service window
     const [h, m] = serveTime.split(':').map(Number)
     const endH = Math.min(h + 3, 23)
-    const endDt = `${event.event_date}T${String(endH).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`
+    const endDt = `${eventDateStr}T${String(endH).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`
 
     calendarEvents.push({
       id: event.id,

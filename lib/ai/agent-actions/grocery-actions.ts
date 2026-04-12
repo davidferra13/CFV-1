@@ -7,6 +7,7 @@ import { runGroceryPriceQuote, logActualGroceryCost } from '@/lib/grocery/pricin
 import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { z } from 'zod'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ─── Event Finder ────────────────────────────────────────────────────────────
 
@@ -66,7 +67,7 @@ export const groceryAgentActions: AgentActionDefinition[] = [
           summary: `Run grocery quote: ${event.occasion}`,
           fields: [
             { label: 'Event', value: String(event.occasion) },
-            { label: 'Date', value: String(event.event_date) },
+            { label: 'Date', value: dateToDateString(event.event_date as Date | string) },
             { label: 'Client', value: String(clientName) },
           ],
           warnings: ['This will query grocery pricing APIs. It may take a moment to fetch prices.'],

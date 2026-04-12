@@ -187,7 +187,7 @@ export function buildBusinessSectionMetrics({ data, now }: BuildBusinessSectionM
   const upcomingEvents = (allEvents ?? []).filter((event: any) => {
     const status = String(event?.status ?? '')
     if (['completed', 'cancelled'].includes(status)) return false
-    return String(event?.event_date ?? '') >= todayIso
+    return dateToDateString((event?.event_date ?? '') as Date | string) >= todayIso
   })
   const documentSnapshotEventIds = new Set(
     (documentSnapshots ?? []).map((snapshot: any) =>
@@ -249,7 +249,10 @@ export function buildBusinessSectionMetrics({ data, now }: BuildBusinessSectionM
   )
   const paymentEntriesFailedQueue = (allEvents ?? []).filter((event: any) => {
     const status = String(event?.status ?? '')
-    return status === 'accepted' && String(event?.event_date ?? '') < todayIso
+    return (
+      status === 'accepted' &&
+      dateToDateString((event?.event_date ?? '') as Date | string) < todayIso
+    )
   }).length
   const overdueInstallmentCount = (data.overdueInstallments ?? []).length
   const paymentEntriesInboundTotal = paymentEntriesInbound.reduce(
@@ -300,11 +303,11 @@ export function buildBusinessSectionMetrics({ data, now }: BuildBusinessSectionM
   const cannabisUpcomingEventCount = (cannabisEvents ?? []).filter((event: any) => {
     const status = String(event?.status ?? '')
     if (['completed', 'cancelled'].includes(status)) return false
-    return String(event?.event_date ?? '') >= todayIso
+    return dateToDateString((event?.event_date ?? '') as Date | string) >= todayIso
   }).length
   const cannabisMissingResponses = Number(cannabisRsvpDashboard?.summary?.missingResponses ?? 0)
   const charityUpcomingEventCount = (charityEvents ?? []).filter((event: any) => {
-    const eventDate = String(event?.event_date ?? '')
+    const eventDate = dateToDateString((event?.event_date ?? '') as Date | string)
     return eventDate >= todayIso
   }).length
   const communityTemplateDownloads = (communityTemplates ?? []).reduce(
