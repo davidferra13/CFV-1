@@ -365,7 +365,7 @@ export async function approveProposal(
 
   const { data: proposal, error: fetchError } = await db
     .from('client_proposals')
-    .select('id, status, expires_at')
+    .select('id, status, expires_at, tenant_id, title, event_id, client_id')
     .eq('share_token', shareToken)
     .single()
 
@@ -398,6 +398,25 @@ export async function approveProposal(
     return { success: false, message: 'Failed to approve proposal. Please try again.' }
   }
 
+  // Notify the chef (non-blocking)
+  try {
+    const { createNotification } = await import('@/lib/notifications/actions')
+    await createNotification({
+      tenantId: proposal.tenant_id,
+      recipientId: proposal.tenant_id,
+      category: 'event',
+      action: 'proposal_accepted',
+      title: 'Proposal approved',
+      body: `A client approved your proposal: ${proposal.title || 'Untitled'}`,
+      actionUrl: `/proposals`,
+      eventId: proposal.event_id ?? undefined,
+      clientId: proposal.client_id ?? undefined,
+      metadata: { proposalId: proposal.id },
+    })
+  } catch (err) {
+    console.error('[approveProposal] Chef notification failed (non-blocking):', err)
+  }
+
   return { success: true, message: 'Proposal approved successfully!' }
 }
 
@@ -409,7 +428,7 @@ export async function declineProposal(
 
   const { data: proposal, error: fetchError } = await db
     .from('client_proposals')
-    .select('id, status, expires_at')
+    .select('id, status, expires_at, tenant_id, title, event_id, client_id')
     .eq('share_token', shareToken)
     .single()
 
@@ -434,6 +453,25 @@ export async function declineProposal(
 
   if (error) {
     return { success: false, message: 'Failed to decline proposal. Please try again.' }
+  }
+
+  // Notify the chef (non-blocking)
+  try {
+    const { createNotification } = await import('@/lib/notifications/actions')
+    await createNotification({
+      tenantId: proposal.tenant_id,
+      recipientId: proposal.tenant_id,
+      category: 'event',
+      action: 'proposal_declined',
+      title: 'Proposal declined',
+      body: `A client declined your proposal: ${proposal.title || 'Untitled'}`,
+      actionUrl: `/proposals`,
+      eventId: proposal.event_id ?? undefined,
+      clientId: proposal.client_id ?? undefined,
+      metadata: { proposalId: proposal.id },
+    })
+  } catch (err) {
+    console.error('[declineProposal] Chef notification failed (non-blocking):', err)
   }
 
   return { success: true, message: 'Proposal declined.' }

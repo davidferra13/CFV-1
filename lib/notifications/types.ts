@@ -137,6 +137,7 @@ export type NotificationAction =
   | 'loyalty_adjustment'
   // Marketplace
   | 'marketplace_lead_stale'
+  | 'proposal_declined'
 
 export type Notification = {
   id: string
@@ -175,6 +176,7 @@ export const NOTIFICATION_CONFIG: Record<
 
   // Events
   proposal_accepted: { category: 'event', icon: 'CheckCircle', toastByDefault: true },
+  proposal_declined: { category: 'event', icon: 'XCircle', toastByDefault: true },
   event_paid: { category: 'event', icon: 'CreditCard', toastByDefault: true },
   event_completed: { category: 'event', icon: 'PartyPopper', toastByDefault: false },
   event_cancelled: { category: 'event', icon: 'XCircle', toastByDefault: true },
