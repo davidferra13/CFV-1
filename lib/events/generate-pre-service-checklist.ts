@@ -39,46 +39,60 @@ export async function generatePreServiceChecklist(eventId: string): Promise<PreS
   const { data: event, error: eventError } = await db
     .from('events')
     .select(
-      'id, title, event_date, start_time, end_time, guest_count, venue, venue_address, dietary_notes, notes, status, client_id'
+      'id, occasion, event_date, serve_time, guest_count, location_address, location_city, location_state, dietary_restrictions, allergies, notes, status, client_id'
     )
     .eq('id', eventId)
-    .eq('chef_id', tenantId)
+    .eq('tenant_id', tenantId)
     .single()
 
   if (eventError || !event) {
     throw new Error('Event not found')
   }
 
+  // Get menu dishes via event_menus -> dishes chain
+  const { data: eventMenuLinks } = await (db
+    .from('event_menus' as any)
+    .select('menu_id')
+    .eq('event_id', eventId) as any)
+  const checklistMenuIds = ((eventMenuLinks ?? []) as Array<{ menu_id: string }>).map(
+    (em) => em.menu_id
+  )
+  const menuDishData =
+    checklistMenuIds.length > 0
+      ? await (db
+          .from('dishes' as any)
+          .select('id, name, course_name')
+          .eq('tenant_id', tenantId)
+          .in('menu_id', checklistMenuIds)
+          .not('name', 'is', null)
+          .order('course_number', { ascending: true }) as any)
+      : { data: [] }
+
   // Fetch related data in parallel
-  const [clientResult, menuResult, staffResult, customItemsResult] = await Promise.all([
+  const [clientResult, staffResult] = await Promise.all([
     // Client info (for dietary/allergy data)
     event.client_id
       ? db
           .from('clients')
-          .select('id, name, dietary_restrictions, allergies, notes')
+          .select('id, full_name, dietary_restrictions, allergies')
           .eq('id', event.client_id)
           .single()
       : Promise.resolve({ data: null }),
-    // Menu items for this event
-    db
-      .from('event_menu_items')
-      .select('id, menu_item:menu_items(id, name), servings, notes')
-      .eq('event_id', eventId)
-      .then((r: any) => r)
-      .catch(() => ({ data: [] })),
     // Staff assigned
     db
-      .from('event_staff')
+      .from('event_staff_assignments' as any)
       .select('id, staff_member:staff_members(id, name, role), role_override')
       .eq('event_id', eventId)
       .then((r: any) => r)
       .catch(() => ({ data: [] })),
-    // Custom checklist items (stored in event's unknown_fields or a separate store)
-    Promise.resolve({ data: [] }),
   ])
 
   const client = clientResult.data
-  const menuItems = menuResult.data ?? []
+  const menuItems = (menuDishData.data ?? []) as Array<{
+    id: string
+    name: string
+    course_name: string | null
+  }>
   const staffAssigned = staffResult.data ?? []
 
   const items: ChecklistItem[] = []
@@ -88,12 +102,15 @@ export async function generatePreServiceChecklist(eventId: string): Promise<PreS
   // ============================================
 
   // Dietary restrictions from client
-  if (client?.dietary_restrictions) {
+  const clientDietary = Array.isArray(client?.dietary_restrictions)
+    ? client.dietary_restrictions.filter(Boolean)
+    : []
+  if (clientDietary.length > 0) {
     items.push({
       id: `safety-dietary-${eventId}`,
       category: 'safety',
       title: 'Verify dietary restrictions are accommodated',
-      detail: `Restrictions: ${client.dietary_restrictions}`,
+      detail: `Restrictions: ${clientDietary.join(', ')}`,
       completed: false,
       source: 'auto',
       priority: 'critical',
@@ -101,25 +118,34 @@ export async function generatePreServiceChecklist(eventId: string): Promise<PreS
   }
 
   // Allergies from client
-  if (client?.allergies) {
+  const clientAllergies = Array.isArray(client?.allergies) ? client.allergies.filter(Boolean) : []
+  if (clientAllergies.length > 0) {
     items.push({
       id: `safety-allergy-${eventId}`,
       category: 'safety',
       title: 'Confirm allergy-safe preparation',
-      detail: `Allergies: ${client.allergies}. Cross-contamination check required.`,
+      detail: `Allergies: ${clientAllergies.join(', ')}. Cross-contamination check required.`,
       completed: false,
       source: 'auto',
       priority: 'critical',
     })
   }
 
-  // Dietary notes from event itself
-  if (event.dietary_notes) {
+  // Dietary restrictions from event itself
+  const eventDietary = Array.isArray(event.dietary_restrictions)
+    ? event.dietary_restrictions.filter(Boolean)
+    : []
+  const eventAllergies = Array.isArray(event.allergies) ? event.allergies.filter(Boolean) : []
+  if (eventDietary.length > 0 || eventAllergies.length > 0) {
+    const parts = [
+      eventDietary.length > 0 ? `Dietary: ${eventDietary.join(', ')}` : null,
+      eventAllergies.length > 0 ? `Allergies: ${eventAllergies.join(', ')}` : null,
+    ].filter(Boolean)
     items.push({
       id: `safety-event-dietary-${eventId}`,
       category: 'safety',
-      title: 'Review event dietary notes',
-      detail: event.dietary_notes,
+      title: 'Review event dietary and allergy notes',
+      detail: parts.join(' | '),
       completed: false,
       source: 'auto',
       priority: 'critical',
@@ -143,15 +169,15 @@ export async function generatePreServiceChecklist(eventId: string): Promise<PreS
   // PREP ITEMS
   // ============================================
 
-  for (const mi of menuItems) {
-    const itemName = mi.menu_item?.name ?? 'Menu item'
-    const servings = mi.servings ?? event.guest_count ?? 0
-
+  for (const dish of menuItems) {
     items.push({
-      id: `prep-menu-${mi.id}`,
+      id: `prep-menu-${dish.id}`,
       category: 'prep',
-      title: `Prep: ${itemName}`,
-      detail: servings > 0 ? `${servings} servings` : null,
+      title: `Prep: ${dish.name}`,
+      detail:
+        event.guest_count > 0
+          ? `${event.guest_count} servings${dish.course_name ? ` (${dish.course_name})` : ''}`
+          : (dish.course_name ?? null),
       completed: false,
       source: 'auto',
       priority: 'high',
@@ -175,24 +201,27 @@ export async function generatePreServiceChecklist(eventId: string): Promise<PreS
   // VENUE ITEMS
   // ============================================
 
-  if (event.venue) {
+  if (event.location_address) {
+    const fullAddress = [event.location_address, event.location_city, event.location_state]
+      .filter(Boolean)
+      .join(', ')
     items.push({
       id: `venue-access-${eventId}`,
       category: 'venue',
-      title: `Confirm venue access: ${event.venue}`,
-      detail: event.venue_address ?? null,
+      title: `Confirm venue access`,
+      detail: fullAddress,
       completed: false,
       source: 'auto',
       priority: 'high',
     })
   }
 
-  if (event.start_time) {
+  if (event.serve_time) {
     // Suggest arrival 1-2 hours before
     items.push({
       id: `venue-arrival-${eventId}`,
       category: 'venue',
-      title: `Plan arrival time (service starts at ${formatTime(event.start_time)})`,
+      title: `Plan arrival time (service starts at ${formatTime(event.serve_time)})`,
       detail: 'Arrive at least 1-2 hours before service for setup',
       completed: false,
       source: 'auto',
@@ -248,10 +277,10 @@ export async function generatePreServiceChecklist(eventId: string): Promise<PreS
 
   return {
     event_id: event.id,
-    event_title: event.title ?? 'Untitled Event',
+    event_title: event.occasion ?? 'Event',
     event_date: event.event_date,
-    start_time: event.start_time,
-    client_name: client?.name ?? null,
+    start_time: event.serve_time ?? null,
+    client_name: client?.full_name ?? null,
     items,
   }
 }

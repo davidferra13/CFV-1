@@ -288,13 +288,25 @@ export async function getClaimDocumentPackage(id: string) {
       clientData = client
     }
 
-    // Get menu items if available
-    const { data: menuItems } = await db
-      .from('event_menu_items')
-      .select('*')
-      .eq('event_id', claim.event_id)
-
-    menuData = menuItems
+    // Get menu dishes via event_menus -> dishes chain
+    const { data: claimEventMenus } = await (db
+      .from('event_menus' as any)
+      .select('menu_id')
+      .eq('event_id', claim.event_id) as any)
+    const claimMenuIds = ((claimEventMenus ?? []) as Array<{ menu_id: string }>).map(
+      (em) => em.menu_id
+    )
+    if (claimMenuIds.length > 0) {
+      const { data: claimDishes } = await (db
+        .from('dishes' as any)
+        .select('id, name, description, course_name, dietary_tags, allergen_flags')
+        .eq('tenant_id', user.tenantId!)
+        .in('menu_id', claimMenuIds)
+        .not('name', 'is', null) as any)
+      menuData = claimDishes ?? []
+    } else {
+      menuData = []
+    }
 
     // Get event transitions for timeline
     const { data: transitions } = await db
