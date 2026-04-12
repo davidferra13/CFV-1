@@ -8,7 +8,7 @@ import { redirectToCheckout, redirectToBillingPortal } from './actions'
 import type { SubscriptionStatus } from '@/lib/stripe/subscription'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { CheckCircle2, Heart, Star, Sparkles } from '@/components/ui/icons'
+import { CheckCircle2, Heart, Star, Sparkles, AlertTriangle } from '@/components/ui/icons'
 
 type Props = {
   status: SubscriptionStatus
@@ -47,9 +47,36 @@ function SupporterBadge({ status }: { status: SubscriptionStatus }) {
 
 export function SupportClient({ status, thankYou }: Props) {
   const isSupporter = status.isGrandfathered || status.isActive
+  const isPaymentFailed = status.status === 'past_due' || status.status === 'unpaid'
 
   return (
     <div className="space-y-6">
+      {/* Payment failure banner */}
+      {isPaymentFailed && (
+        <div className="rounded-xl bg-red-950 border border-red-800 p-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle size={18} className="text-red-400 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-red-200">
+                {status.status === 'past_due'
+                  ? 'Payment failed - Stripe is retrying'
+                  : 'Contribution paused - payment could not be collected'}
+              </p>
+              <p className="mt-1 text-xs text-red-400">
+                {status.status === 'past_due'
+                  ? 'Your card was declined. Stripe will retry automatically. Update your payment method to resolve this now.'
+                  : 'Stripe was unable to collect payment after multiple attempts. Update your payment method to resume your contribution.'}
+              </p>
+              <form action={redirectToBillingPortal} className="mt-3">
+                <Button type="submit" variant="danger">
+                  Update Payment Method
+                </Button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Post-contribution thank you message */}
       {thankYou && (
         <div className="rounded-xl bg-green-950 border border-green-800 p-4 flex items-center gap-3">

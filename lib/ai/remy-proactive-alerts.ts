@@ -6,6 +6,7 @@
 // Runs on a scheduled cron (every hour) or on-demand.
 
 import { createServerClient } from '@/lib/db/server'
+import { createAdminClient } from '@/lib/db/admin'
 import { getCurrentUser } from '@/lib/auth/get-user'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 
@@ -449,4 +450,55 @@ export async function markAlertActedOn(alertId: string) {
     .eq('tenant_id', user.tenantId!)
 
   if (error) throw error
+}
+
+// ─── Admin Batch Runner (cron use only) ─────────────────────────────────────
+
+/**
+ * Run alert rules for a specific tenant using the admin client.
+ * Safe to call from cron endpoints with no user session.
+ */
+export async function runAlertRulesAdmin(tenantId: string): Promise<number> {
+  const db: any = createAdminClient()
+
+  const [prepAlerts, groceryAlerts, overdueAlerts, staleAlerts, birthdayAlerts, weatherAlerts] =
+    await Promise.all([
+      runRuleSafely(tenantId, 'check_missing_prep_list', () => checkMissingPrepList(db, tenantId)),
+      runRuleSafely(tenantId, 'check_missing_grocery_list', () =>
+        checkMissingGroceryList(db, tenantId)
+      ),
+      runRuleSafely(tenantId, 'check_overdue_invoices', () => checkOverdueInvoices(db, tenantId)),
+      runRuleSafely(tenantId, 'check_stale_inquiries', () => checkStaleInquiries(db, tenantId)),
+      runRuleSafely(tenantId, 'check_client_birthdays', () => checkClientBirthdays(db, tenantId)),
+      runRuleSafely(tenantId, 'check_weather_for_events', () => checkWeatherForEvents(tenantId)),
+    ])
+
+  const allCandidates = [
+    ...prepAlerts,
+    ...groceryAlerts,
+    ...overdueAlerts,
+    ...staleAlerts,
+    ...birthdayAlerts,
+    ...weatherAlerts,
+  ]
+
+  let inserted = 0
+  for (const alert of allCandidates) {
+    const dupe = await isDuplicate(db, tenantId, alert.alertType, alert.entityId)
+    if (dupe) continue
+
+    const { error } = await db.from('remy_alerts').insert({
+      tenant_id: tenantId,
+      alert_type: alert.alertType,
+      entity_type: alert.entityType,
+      entity_id: alert.entityId,
+      title: alert.title,
+      body: alert.body,
+      priority: alert.priority,
+    })
+
+    if (!error) inserted++
+  }
+
+  return inserted
 }

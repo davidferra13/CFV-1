@@ -23,6 +23,8 @@ import { getRecurringCollaborationCommandCenter } from '@/lib/recurring/actions'
 import { getStuckEvents } from '@/lib/pipeline/stuck-events'
 import { getNextBestActions } from '@/lib/clients/next-best-action'
 import { getCoolingClients } from '@/lib/clients/cooling-actions'
+import { getActiveAlerts } from '@/lib/ai/remy-proactive-alerts'
+import { getSubscriptionStatus, type SubscriptionStatus } from '@/lib/stripe/subscription'
 import { ResponseTimeWidget } from '@/components/dashboard/response-time-widget'
 import { PendingFollowUpsWidget } from '@/components/inquiries/pending-follow-ups-widget'
 import { StuckEventsWidget } from '@/components/pipeline/stuck-events-widget'
@@ -43,6 +45,7 @@ import { ClientBirthdaysWidget } from '@/components/dashboard/client-birthdays-w
 import { UnreadHubMessagesWidget } from '@/components/dashboard/unread-hub-messages-widget'
 import { QuickAvailabilityWidget } from '@/components/dashboard/quick-availability-widget'
 import { LiveInboxWidget } from '@/components/dashboard/live-inbox-widget'
+import { RemyAlertsWidget } from '@/components/dashboard/remy-alerts-widget'
 import { HolidayOutreachPanel } from '@/components/dashboard/holiday-outreach-panel'
 import { RecipeDebtWidget } from '@/components/dashboard/recipe-debt-widget'
 import { RecipeCaptureWidget } from '@/components/dashboard/recipe-capture-widget'
@@ -140,6 +143,8 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
     unreadHubMessages,
     inboxPreview,
     bookedDatesResult,
+    remyAlerts,
+    subscriptionStatus,
   ] = await Promise.all([
     safe('schedulingGaps', getSchedulingGaps, []),
     safe('responseTimeSummary', getResponseTimeSummary, emptyResponseTimeSummary),
@@ -179,6 +184,12 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
     safe('unreadHubMessages', () => getUnreadHubMessages(5), []),
     safe('inboxPreview', () => getUnifiedInbox({ limit: 8 }), []),
     safe('bookedDates', getBookedDates, { booked: [], tentative: [] }),
+    safe('remyAlerts', () => getActiveAlerts(10), []),
+    safe(
+      'subscriptionStatus',
+      () => getSubscriptionStatus(user.entityId),
+      null as SubscriptionStatus | null
+    ),
   ])
 
   const serializableHolidayOutreachSuggestions = holidayOutreachSuggestions.map((suggestion) => ({
@@ -201,8 +212,45 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
     menuNotes: suggestion.menuNotes,
   }))
 
+  const urgentRemyAlerts = remyAlerts.filter(
+    (a) => a.priority === 'urgent' || a.priority === 'high'
+  )
+  const isPaymentFailed =
+    subscriptionStatus?.status === 'past_due' || subscriptionStatus?.status === 'unpaid'
+
   return (
     <>
+      {isPaymentFailed && (
+        <section className="col-span-full" style={{ order: -2 }}>
+          <div className="flex items-start gap-3 rounded-lg border border-red-800 bg-red-950 px-4 py-3">
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-red-200">
+                {subscriptionStatus?.status === 'past_due'
+                  ? 'Support contribution payment failed'
+                  : 'Support contribution paused'}
+              </p>
+              <p className="text-xs text-red-400 mt-0.5">
+                {subscriptionStatus?.status === 'past_due'
+                  ? 'Your card was declined. Stripe is retrying. Update your payment method to resolve this.'
+                  : 'Stripe could not collect payment after multiple attempts. Update your payment method.'}
+              </p>
+            </div>
+            <Link
+              href="/settings/billing"
+              className="shrink-0 text-xs font-medium text-red-300 hover:text-red-100 underline transition-colors"
+            >
+              Fix now
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {urgentRemyAlerts.length > 0 && (
+        <section className="col-span-full" style={{ order: -1 }}>
+          <RemyAlertsWidget alerts={urgentRemyAlerts} />
+        </section>
+      )}
+
       {isWidgetEnabled('scheduling_gaps') && schedulingGaps.length > 0 && (
         <section
           className={widgetGridClass('scheduling_gaps')}
