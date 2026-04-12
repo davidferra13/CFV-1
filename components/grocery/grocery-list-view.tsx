@@ -1,12 +1,14 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useTransition } from 'react'
 import type {
   GroceryListData,
   GroceryItem,
   CustomGroceryItem,
   AnyGroceryItem,
 } from '@/lib/grocery/generate-grocery-list'
+import { splitListByStore } from '@/lib/grocery/store-shopping-actions'
+import type { StoreSplit } from '@/lib/grocery/store-shopping-actions'
 
 // ── localStorage Keys ─────────────────────────────────────────────────
 
@@ -63,6 +65,8 @@ interface GroceryListViewProps {
   eventId: string
 }
 
+type ViewMode = 'by-category' | 'by-store'
+
 export function GroceryListView({ data, eventId }: GroceryListViewProps) {
   const [checkedItems, setCheckedItems] = useState<Set<string>>(() => loadCheckedState(eventId))
   const [customItems, setCustomItems] = useState<CustomGroceryItem[]>(() =>
@@ -71,6 +75,41 @@ export function GroceryListView({ data, eventId }: GroceryListViewProps) {
   const [newItemName, setNewItemName] = useState('')
   const [newItemSection, setNewItemSection] = useState('Other')
   const [isPrintMode, setIsPrintMode] = useState(false)
+  const [viewMode, setViewMode] = useState<ViewMode>('by-category')
+  const [storeSplits, setStoreSplits] = useState<{
+    splits: StoreSplit[]
+    unassigned: { name: string; quantity: number | string; unit: string }[]
+  } | null>(null)
+  const [storeViewError, setStoreViewError] = useState<string | null>(null)
+  const [isLoadingStores, startStoreTransition] = useTransition()
+
+  const loadStoreSplits = useCallback(() => {
+    if (storeSplits) return // already loaded
+    const allItems = data.categories.flatMap((c) =>
+      c.items.map((item) => ({
+        name: item.ingredientName,
+        quantity: item.displayQuantity || String(item.totalQuantity),
+        unit: item.unit,
+      }))
+    )
+    startStoreTransition(async () => {
+      try {
+        const result = await splitListByStore(allItems)
+        setStoreSplits(result)
+        setStoreViewError(null)
+      } catch {
+        setStoreViewError('Could not load store assignments. Check Settings > Store Preferences.')
+      }
+    })
+  }, [data.categories, storeSplits])
+
+  const handleViewMode = useCallback(
+    (mode: ViewMode) => {
+      setViewMode(mode)
+      if (mode === 'by-store') loadStoreSplits()
+    },
+    [loadStoreSplits]
+  )
 
   // Persist checked state
   useEffect(() => {
@@ -147,18 +186,45 @@ export function GroceryListView({ data, eventId }: GroceryListViewProps) {
             {data.totalItems} ingredients
           </p>
         </div>
-        <button
-          onClick={() => {
-            setIsPrintMode(true)
-            setTimeout(() => {
-              window.print()
-              setIsPrintMode(false)
-            }, 100)
-          }}
-          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-        >
-          Print List
-        </button>
+        <div className="flex items-center gap-2">
+          <div className="flex rounded-md border border-gray-200 overflow-hidden text-xs font-medium">
+            <button
+              type="button"
+              onClick={() => handleViewMode('by-category')}
+              className={`px-3 py-1.5 transition-colors ${
+                viewMode === 'by-category'
+                  ? 'bg-gray-100 text-gray-900'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              By Category
+            </button>
+            <button
+              type="button"
+              onClick={() => handleViewMode('by-store')}
+              className={`px-3 py-1.5 border-l border-gray-200 transition-colors ${
+                viewMode === 'by-store'
+                  ? 'bg-gray-100 text-gray-900'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              By Store
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setIsPrintMode(true)
+              setTimeout(() => {
+                window.print()
+                setIsPrintMode(false)
+              }, 100)
+            }}
+            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            Print
+          </button>
+        </div>
       </div>
 
       {/* Print header (only visible in print) */}
@@ -223,21 +289,110 @@ export function GroceryListView({ data, eventId }: GroceryListViewProps) {
         </div>
       )}
 
-      {/* Categories */}
-      {data.categories.map((category) => {
-        const sectionCustom = customBySection.get(category.name) ?? []
-        return (
-          <CategorySection
-            key={category.name}
-            name={category.name}
-            items={category.items}
-            customItems={sectionCustom}
-            checkedItems={checkedItems}
-            onToggle={toggleItem}
-            onRemoveCustom={removeCustomItem}
-          />
-        )
-      })}
+      {/* By Store View */}
+      {viewMode === 'by-store' && (
+        <div className="print:hidden">
+          {isLoadingStores && (
+            <div className="py-6 text-center text-sm text-gray-500">
+              Loading store assignments...
+            </div>
+          )}
+          {storeViewError && !isLoadingStores && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+              {storeViewError}
+            </div>
+          )}
+          {!isLoadingStores && storeSplits && (
+            <>
+              {storeSplits.splits.length === 0 && storeSplits.unassigned.length === 0 && (
+                <div className="rounded-lg border border-dashed border-gray-300 py-8 text-center text-sm text-gray-500">
+                  No store assignments yet. Go to Settings &gt; Store Preferences to set up your
+                  stores and assign ingredients.
+                </div>
+              )}
+              {storeSplits.splits.map((split) => (
+                <div key={split.store.id} className="mb-5">
+                  <h3 className="mb-2 border-b border-gray-200 pb-1 text-sm font-semibold uppercase tracking-wide text-gray-500">
+                    {split.store.store_name}
+                    {split.store.store_type !== 'other' && (
+                      <span className="ml-2 text-xs font-normal normal-case text-gray-400">
+                        ({split.store.store_type.replace(/_/g, ' ')})
+                      </span>
+                    )}
+                  </h3>
+                  <ul className="space-y-1">
+                    {split.items.map((item, i) => (
+                      <li
+                        key={i}
+                        className="flex items-center gap-3 rounded-md px-2 py-1.5 hover:bg-gray-50"
+                      >
+                        <input
+                          type="checkbox"
+                          title={`Check off ${item.name}`}
+                          className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                        />
+                        <span className="text-sm text-gray-900">
+                          {item.quantity && <span className="font-medium">{item.quantity} </span>}
+                          {item.unit && item.unit !== 'unit' && (
+                            <span className="text-gray-500">{item.unit} </span>
+                          )}
+                          {item.name}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+              {storeSplits.unassigned.length > 0 && (
+                <div className="mb-5">
+                  <h3 className="mb-2 border-b border-gray-200 pb-1 text-sm font-semibold uppercase tracking-wide text-gray-400">
+                    Unassigned ({storeSplits.unassigned.length})
+                  </h3>
+                  <ul className="space-y-1">
+                    {storeSplits.unassigned.map((item, i) => (
+                      <li
+                        key={i}
+                        className="flex items-center gap-3 rounded-md px-2 py-1.5 hover:bg-gray-50"
+                      >
+                        <input
+                          type="checkbox"
+                          title={`Check off ${item.name}`}
+                          className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                        />
+                        <span className="text-sm text-gray-500">
+                          {item.quantity && <span className="font-medium">{item.quantity} </span>}
+                          {item.unit && item.unit !== 'unit' && <span>{item.unit} </span>}
+                          {item.name}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-2 text-xs text-gray-400">
+                    Assign these in Settings &gt; Store Preferences to route them automatically.
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Categories (hidden in store view) */}
+      {viewMode === 'by-category' &&
+        data.categories.map((category) => {
+          const sectionCustom = customBySection.get(category.name) ?? []
+          return (
+            <CategorySection
+              key={category.name}
+              name={category.name}
+              items={category.items}
+              customItems={sectionCustom}
+              checkedItems={checkedItems}
+              onToggle={toggleItem}
+              onRemoveCustom={removeCustomItem}
+            />
+          )
+        })}
 
       {/* Custom items in sections that don't exist in generated data */}
       {Array.from(customBySection.entries())
