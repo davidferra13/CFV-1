@@ -170,6 +170,33 @@ export function GroceryListView({ data, eventId }: GroceryListViewProps) {
         </p>
       </div>
 
+      {/* Budget Guardrail */}
+      {data.budget.projectedCents != null && (
+        <div
+          className={`mb-4 rounded-lg border px-4 py-3 print:hidden ${
+            data.budget.overBudget ? 'border-red-300 bg-red-50' : 'border-green-300 bg-green-50'
+          }`}
+        >
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center gap-3">
+              <span
+                className={`font-medium ${data.budget.overBudget ? 'text-red-700' : 'text-green-700'}`}
+              >
+                Projected grocery spend: ${(data.budget.projectedCents / 100).toFixed(0)}
+              </span>
+              {data.budget.ceilingCents != null && (
+                <span className="text-gray-500">
+                  Target (30% food cost): ${(data.budget.ceilingCents / 100).toFixed(0)}
+                </span>
+              )}
+            </div>
+            {data.budget.overBudget && (
+              <span className="text-xs font-medium text-red-600">Over budget</span>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Progress Bar */}
       <div className="mb-6 print:hidden">
         <div className="mb-1 flex items-center justify-between text-sm">

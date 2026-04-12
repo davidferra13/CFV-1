@@ -48,6 +48,12 @@ export interface GroceryListData {
   guestCount: number
   totalItems: number
   generatedAt: string
+  budget: {
+    quotedCents: number | null
+    projectedCents: number | null
+    ceilingCents: number | null
+    overBudget: boolean
+  }
 }
 
 // ── Category Display Names ────────────────────────────────────────────
@@ -85,7 +91,7 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
   // 1. Fetch event details + menu
   const { data: event, error: eventError } = await db
     .from('events')
-    .select('id, occasion, guest_count, event_date, menu_id')
+    .select('id, occasion, guest_count, event_date, menu_id, quoted_price_cents')
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -102,6 +108,7 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
       guestCount: event.guest_count ?? 0,
       totalItems: 0,
       generatedAt: new Date().toISOString(),
+      budget: { quotedCents: null, projectedCents: null, ceilingCents: null, overBudget: false },
     }
   }
 
@@ -267,6 +274,55 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
     return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi)
   })
 
+  // ── Budget guardrail ─────────────────────────────────────────────────────
+  // Fetch last known price for each ingredient and compute projected spend.
+  // Food cost target = 30% of quoted price (standard industry margin).
+  // Only shown when we have prices for 50%+ of ingredients.
+  let projectedCents: number | null = null
+  const ingredientIds = items.map((i) => i.ingredientId).filter(Boolean)
+  const quotedCents: number | null = event.quoted_price_cents ?? null
+
+  if (ingredientIds.length > 0) {
+    try {
+      const { data: priceRows } = await db
+        .from('ingredient_price_history')
+        .select('ingredient_id, price_cents, quantity, unit')
+        .in('ingredient_id', ingredientIds)
+        .eq('tenant_id', user.tenantId!)
+        .order('recorded_at', { ascending: false })
+
+      if (priceRows && priceRows.length > 0) {
+        // Keep only the most recent price per ingredient
+        const latestPrice = new Map<string, number>()
+        for (const row of priceRows) {
+          if (!latestPrice.has(row.ingredient_id) && row.price_cents > 0) {
+            latestPrice.set(row.ingredient_id, row.price_cents)
+          }
+        }
+
+        let priceCount = 0
+        let totalCents = 0
+        for (const item of items) {
+          const pricePer = latestPrice.get(item.ingredientId)
+          if (pricePer != null) {
+            totalCents += pricePer * item.totalQuantity
+            priceCount++
+          }
+        }
+
+        // Only surface if we have prices for at least half the items
+        if (priceCount >= items.length * 0.5) {
+          projectedCents = Math.round(totalCents)
+        }
+      }
+    } catch {
+      // Price lookup is non-blocking - never fail the list generation
+    }
+  }
+
+  // Ceiling = 30% of quoted (industry standard food cost target)
+  const ceilingCents = quotedCents != null ? Math.round(quotedCents * 0.3) : null
+
   return {
     categories,
     eventName: event.occasion ?? 'Untitled Event',
@@ -274,6 +330,12 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
     guestCount,
     totalItems: items.length,
     generatedAt: new Date().toISOString(),
+    budget: {
+      quotedCents,
+      projectedCents,
+      ceilingCents,
+      overBudget: projectedCents != null && ceilingCents != null && projectedCents > ceilingCents,
+    },
   }
 }
 
