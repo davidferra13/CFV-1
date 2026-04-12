@@ -58,8 +58,6 @@ export interface NpsStats {
   avgPresentationRating: number
   wouldRebookPercent: number
   responseRate: number // responded / sent
-  /** If set, NPS data is unavailable and this explains why */
-  _deferred?: string
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

@@ -34,8 +34,6 @@ export interface GhostRateStats {
   ghosted: number // status = expired
   ghostRate: number
   avgDaysToGhost: number
-  /** If set, avgDaysToGhost is unavailable and this explains why */
-  _deferred?: string
 }
 
 export interface LeadTimeStats {
@@ -53,8 +51,6 @@ export interface LeadTimeStats {
     oneToThreeMonths: number
     over3months: number
   }
-  /** If set, lead time buckets and avgLeadTimeDays are unavailable */
-  _deferred?: string
 }
 
 export interface DeclineReasonStats {
@@ -64,8 +60,6 @@ export interface DeclineReasonStats {
     percent: number
   }>
   totalDeclined: number
-  /** If set, decline reason breakdown is unavailable */
-  _deferred?: string
 }
 
 export interface NegotiationStats {
@@ -76,8 +70,6 @@ export interface NegotiationStats {
   avgFinalCents: number
   avgDiscountPercent: number
   avgDiscountCents: number
-  /** If set, negotiation tracking is unavailable */
-  _deferred?: string
 }
 
 export interface ResponseTimeStats {
@@ -178,39 +170,47 @@ export async function getQuoteAcceptanceStats(): Promise<QuoteAcceptanceStats> {
   }
 }
 
-// DEFERRED: getGhostRateStats requires inquiries.ghost_at column (not yet in schema).
-// Returns safe defaults until the column migration is applied.
 export async function getGhostRateStats(): Promise<GhostRateStats> {
   const chef = await requireChef()
   const db: any = createServerClient()
 
-  // We can still count expired inquiries (ghosted) even without ghost_at
   const { data } = await db
     .from('inquiries')
-    .select('status, created_at')
+    .select('status, created_at, ghost_at')
     .eq('tenant_id', chef.tenantId!)
 
   const all = data ?? []
   const ghosted = all.filter((i: any) => i.status === 'expired')
 
+  // Compute avg days to ghost from ghost_at if available, else fall back to created_at
+  let totalDays = 0
+  let countWithDate = 0
+  for (const i of ghosted) {
+    const endDate = i.ghost_at ?? null
+    if (endDate) {
+      const days = daysBetween(i.created_at, endDate)
+      if (days !== null && days >= 0) {
+        totalDays += days
+        countWithDate++
+      }
+    }
+  }
+
   return {
     totalInquiries: all.length,
     ghosted: ghosted.length,
     ghostRate: pct(ghosted.length, all.length),
-    avgDaysToGhost: 0,
-    _deferred: 'Average days to ghost requires the ghost_at column (planned migration)',
+    avgDaysToGhost: countWithDate > 0 ? Math.round(totalDays / countWithDate) : 0,
   }
 }
 
-// DEFERRED: getLeadTimeStats partially requires events.inquiry_received_at column (not yet in schema).
-// Lead time calculation is deferred; sales cycle from quotes still works.
 export async function getLeadTimeStats(): Promise<LeadTimeStats> {
   const chef = await requireChef()
   const db: any = createServerClient()
 
   const emptyBuckets = { under2weeks: 0, twoTo4weeks: 0, oneToThreeMonths: 0, over3months: 0 }
 
-  // Sales cycle: inquiry created -> quote accepted (this part works)
+  // Sales cycle: inquiry created -> quote accepted
   const { data: quotes } = await db
     .from('quotes')
     .select('created_at, accepted_at')
@@ -227,40 +227,120 @@ export async function getLeadTimeStats(): Promise<LeadTimeStats> {
       ? Math.round(cycleDays.reduce((a: any, b: any) => a + b, 0) / cycleDays.length)
       : 0
 
+  // Lead time: inquiry_received_at -> event_date (now available)
+  const { data: events } = await db
+    .from('events')
+    .select('inquiry_received_at, event_date')
+    .eq('tenant_id', chef.tenantId!)
+    .not('inquiry_received_at', 'is', null)
+    .not('event_date', 'is', null)
+
+  const leadDays = (events ?? [])
+    .map((e: any) => daysBetween(e.inquiry_received_at, e.event_date))
+    .filter((d: any): d is number => d !== null && d >= 0)
+
+  const avgLead =
+    leadDays.length > 0
+      ? Math.round(leadDays.reduce((a: any, b: any) => a + b, 0) / leadDays.length)
+      : 0
+
+  // Bucket the lead times
+  const buckets = { under2weeks: 0, twoTo4weeks: 0, oneToThreeMonths: 0, over3months: 0 }
+  for (const d of leadDays) {
+    if (d < 14) buckets.under2weeks++
+    else if (d < 28) buckets.twoTo4weeks++
+    else if (d < 90) buckets.oneToThreeMonths++
+    else buckets.over3months++
+  }
+
+  const total = leadDays.length
+  const bucketPercents = {
+    under2weeks: pct(buckets.under2weeks, total),
+    twoTo4weeks: pct(buckets.twoTo4weeks, total),
+    oneToThreeMonths: pct(buckets.oneToThreeMonths, total),
+    over3months: pct(buckets.over3months, total),
+  }
+
   return {
-    avgLeadTimeDays: 0,
+    avgLeadTimeDays: avgLead,
     avgSalesCycleDays: avgCycle,
-    buckets: emptyBuckets,
-    bucketPercents: emptyBuckets,
-    _deferred: 'Lead time buckets require the inquiry_received_at column (planned migration)',
+    buckets,
+    bucketPercents,
   }
 }
 
-// DEFERRED: getDeclineReasonStats requires inquiries.decline_reason column (not yet in schema).
-// Returns empty data until the column migration is applied.
 export async function getDeclineReasonStats(): Promise<DeclineReasonStats> {
-  await requireChef() // still enforce auth
-  return {
-    reasons: [],
-    totalDeclined: 0,
-    _deferred: 'Decline reason tracking requires the decline_reason column (planned migration)',
+  const chef = await requireChef()
+  const db: any = createServerClient()
+
+  const { data } = await db
+    .from('inquiries')
+    .select('decline_reason')
+    .eq('tenant_id', chef.tenantId!)
+    .eq('status', 'declined')
+
+  const declined = data ?? []
+  const total = declined.length
+
+  // Tally by reason
+  const tally = new Map<string, number>()
+  for (const i of declined) {
+    const reason = i.decline_reason ?? 'unspecified'
+    tally.set(reason, (tally.get(reason) ?? 0) + 1)
   }
+
+  const reasons = Array.from(tally.entries())
+    .sort(([, a], [, b]) => b - a)
+    .map(([reason, count]) => ({ reason, count, percent: pct(count, total) }))
+
+  return { reasons, totalDeclined: total }
 }
 
-// DEFERRED: getNegotiationStats requires quotes.negotiation_occurred and quotes.original_quoted_cents
-// columns (not yet in schema). Returns empty data until the column migration is applied.
 export async function getNegotiationStats(): Promise<NegotiationStats> {
-  await requireChef() // still enforce auth
+  const chef = await requireChef()
+  const db: any = createServerClient()
+
+  const { data } = await db
+    .from('quotes')
+    .select('negotiation_occurred, original_quoted_cents, total_quoted_cents')
+    .eq('tenant_id', chef.tenantId!)
+    .in('status', ['accepted', 'sent', 'rejected', 'expired'])
+
+  const quotes = data ?? []
+  const total = quotes.length
+  const negotiated = quotes.filter((q: any) => q.negotiation_occurred === true)
+  const negotiatedCount = negotiated.length
+
+  let avgOriginal = 0
+  let avgFinal = 0
+  let avgDiscountCents = 0
+  let avgDiscountPercent = 0
+
+  if (negotiatedCount > 0) {
+    const withBoth = negotiated.filter(
+      (q: any) => q.original_quoted_cents != null && q.total_quoted_cents != null
+    )
+    if (withBoth.length > 0) {
+      avgOriginal = Math.round(
+        withBoth.reduce((s: number, q: any) => s + q.original_quoted_cents, 0) / withBoth.length
+      )
+      avgFinal = Math.round(
+        withBoth.reduce((s: number, q: any) => s + q.total_quoted_cents, 0) / withBoth.length
+      )
+      avgDiscountCents = avgOriginal - avgFinal
+      avgDiscountPercent =
+        avgOriginal > 0 ? Math.round(((avgOriginal - avgFinal) / avgOriginal) * 1000) / 10 : 0
+    }
+  }
+
   return {
-    totalQuotes: 0,
-    negotiatedCount: 0,
-    negotiationRate: 0,
-    avgOriginalCents: 0,
-    avgFinalCents: 0,
-    avgDiscountPercent: 0,
-    avgDiscountCents: 0,
-    _deferred:
-      'Negotiation tracking requires negotiation_occurred and original_quoted_cents columns (planned migration)',
+    totalQuotes: total,
+    negotiatedCount,
+    negotiationRate: pct(negotiatedCount, total),
+    avgOriginalCents: avgOriginal,
+    avgFinalCents: avgFinal,
+    avgDiscountPercent,
+    avgDiscountCents,
   }
 }
 
