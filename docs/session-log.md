@@ -641,3 +641,24 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: a7784a15d
 - Build state on departure: tsc clean (0 errors)
 - Notes: All 5 files from the task-todo-contract-truth spec's "Verified contract drift" section fixed. Remy will no longer silently get empty todo data or crash on nonexistent DB tables. spec status updated to built.
+
+## 2026-04-12 (mempalace gap closure - daily workflow sweep)
+
+- Agent: Builder (Sonnet 4.6)
+- Task: MemPalace backlog execution - wire existing backend to missing UI surfaces
+- Status: completed
+- Files touched:
+  - components/dashboard/client-birthdays-widget.tsx (added Draft Note button + inline draft/copy UI)
+  - lib/daily-ops/draft-engine.ts (added generateBirthdayDraft server action)
+  - lib/inquiries/actions.ts (added getPendingInquiryCount lightweight badge query)
+  - components/inquiries/inquiries-unread-badge.tsx (switched to lightweight query)
+  - components/navigation/chef-nav.tsx (wired InquiriesUnreadBadge to Events nav item)
+  - components/grocery/grocery-list-view.tsx (added By Store tab using splitListByStore)
+  - database/migrations/20260412000007_partner_commission_rates.sql (additive migration)
+  - lib/partners/actions.ts (commission_type, commission_rate_percent, commission_flat_cents)
+  - components/partners/partner-form.tsx (commission type dropdown + conditional numeric inputs)
+  - app/(chef)/partners/[id]/page.tsx (structured commission display)
+  - components/navigation/nav-config.tsx (added /inventory/reorder to supply-chain group)
+- Commits: 295773b74, cd621c189, 55c57aa01, 51ecf4e38, d4511df08
+- Build state on departure: tsc green (verified after each batch)
+- Notes: All changes are wire-ups of already-built backend to missing UI. No new tables except partner commission migration (additive only). 4 backlog items resolved, 2 partial.
