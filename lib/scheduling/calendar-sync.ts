@@ -8,6 +8,7 @@
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { getGoogleAccessToken } from '@/lib/google/auth'
+import { dateToDateString } from '@/lib/utils/format'
 
 const GCAL_API = 'https://www.googleapis.com/calendar/v3/calendars/primary/events'
 
@@ -137,7 +138,7 @@ export async function syncEventToGoogleCalendar(
     const accessToken = await getGoogleAccessToken(chef.entityId!)
 
     // Build event date+time strings
-    const dateStr = (event.event_date as string).slice(0, 10)
+    const dateStr = dateToDateString(event.event_date as Date | string)
     const serveTime = (event.serve_time as string | null) ?? '18:00'
     const startDateTime = `${dateStr}T${serveTime}:00`
     const endDateTime = `${dateStr}T22:00:00` // default 4-hour window

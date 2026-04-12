@@ -2,6 +2,7 @@
 
 import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ---------------------------------------------------------------------------
 // Hub Availability Scheduling
@@ -116,6 +117,8 @@ export async function getGroupAvailability(groupId: string): Promise<HubAvailabi
 
   return (data ?? []).map((a: any) => ({
     ...a,
+    date_range_start: dateToDateString(a.date_range_start as Date | string),
+    date_range_end: dateToDateString(a.date_range_end as Date | string),
     created_by: a.hub_guest_profiles ?? null,
     hub_guest_profiles: undefined,
   })) as HubAvailability[]
@@ -155,6 +158,8 @@ export async function getAvailabilityWithResponses(
 
   return {
     ...avail,
+    date_range_start: dateToDateString(avail.date_range_start as Date | string),
+    date_range_end: dateToDateString(avail.date_range_end as Date | string),
     created_by: avail.hub_guest_profiles ?? null,
     hub_guest_profiles: undefined,
     responses: mappedResponses,

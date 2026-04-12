@@ -8,6 +8,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
+import { dateToDateString } from '@/lib/utils/format'
 
 export type ShareToken = {
   id: string
@@ -181,7 +182,7 @@ export async function getSharedAvailability(token: string): Promise<{
   const unavailable = new Set<string>()
 
   for (const ev of events ?? []) {
-    const d = ((ev as any).event_date as string).slice(0, 10)
+    const d = dateToDateString((ev as any).event_date as Date | string)
     unavailable.add(d)
   }
 

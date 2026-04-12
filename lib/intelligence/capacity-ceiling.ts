@@ -2,6 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -85,7 +86,8 @@ export async function getCapacityCeiling(): Promise<CapacityCeilingResult | null
   const weeklyMap = new Map<string, { events: number; minutes: number; revenue: number }>()
 
   for (const event of events) {
-    const [_ey, _em, _ed] = (event.event_date as string).split('-').map(Number)
+    const dateStr = dateToDateString(event.event_date as Date | string)
+    const [_ey, _em, _ed] = dateStr.split('-').map(Number)
     const d = new Date(_ey, _em - 1, _ed)
     // ISO week start (Monday)
     const day = d.getDay()
@@ -133,7 +135,8 @@ export async function getCapacityCeiling(): Promise<CapacityCeilingResult | null
   >()
 
   for (const event of events) {
-    const [_ey2, _em2, _ed2] = (event.event_date as string).split('-').map(Number)
+    const dateStr2 = dateToDateString(event.event_date as Date | string)
+    const [_ey2, _em2, _ed2] = dateStr2.split('-').map(Number)
     const d = new Date(_ey2, _em2 - 1, _ed2)
     const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
     const day = d.getDay()
@@ -153,7 +156,7 @@ export async function getCapacityCeiling(): Promise<CapacityCeilingResult | null
     m.minutes += getTotalMinutes(event)
     m.revenue += event.quoted_price_cents || 0
     m.weekEvents.set(weekKey, (m.weekEvents.get(weekKey) || 0) + 1)
-    m.eventDates.add(event.event_date)
+    m.eventDates.add(dateToDateString(event.event_date as Date | string))
   }
 
   const monthlyCapacity: MonthlyCapacity[] = Array.from(monthlyMap.entries())
@@ -207,7 +210,8 @@ export async function getCapacityCeiling(): Promise<CapacityCeilingResult | null
   // Overlap bottleneck
   const dateCounts = new Map<string, number>()
   for (const event of events) {
-    dateCounts.set(event.event_date, (dateCounts.get(event.event_date) || 0) + 1)
+    const edStr = dateToDateString(event.event_date as Date | string)
+    dateCounts.set(edStr, (dateCounts.get(edStr) || 0) + 1)
   }
   const multiEventDays = Array.from(dateCounts.values()).filter((c) => c > 1).length
   if (multiEventDays > 0) {

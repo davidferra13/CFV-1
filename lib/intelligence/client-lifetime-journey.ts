@@ -2,6 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -124,8 +125,10 @@ export async function getClientLifetimeJourneys(): Promise<ClientLifetimeResult 
   for (const client of clients) {
     const evts = clientEvents.get(client.id) || []
     const firstContact = firstInquiry.get(client.id) || client.created_at
-    const firstEventDate = evts.length > 0 ? evts[0].event_date : null
-    const lastEventDate = evts.length > 0 ? evts[evts.length - 1].event_date : null
+    const firstEventDate =
+      evts.length > 0 ? dateToDateString(evts[0].event_date as Date | string) : null
+    const lastEventDate =
+      evts.length > 0 ? dateToDateString(evts[evts.length - 1].event_date as Date | string) : null
 
     const totalRevenue = evts.reduce((s: number, e: any) => s + (e.quoted_price_cents || 0), 0)
     const totalProfit = evts.reduce((s: number, e: any) => {

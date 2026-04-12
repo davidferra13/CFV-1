@@ -6,6 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { dateToDateString } from '@/lib/utils/format'
 
 export interface CashFlowDay {
   date: string // YYYY-MM-DD
@@ -92,24 +93,24 @@ export async function getCashFlowCalendar(
   }
 
   for (const entry of ledgerRes.data ?? []) {
-    const date = ((entry.received_at ?? entry.created_at) as string).slice(0, 10)
+    const date = dateToDateString((entry.received_at ?? entry.created_at) as Date | string)
     if (date >= startDate && date < endDate) {
       getOrCreate(date).incomeCents += (entry as any).amount_cents
     }
   }
 
   for (const exp of expensesRes.data ?? []) {
-    const date = (exp as any).expense_date as string
+    const date = dateToDateString((exp as any).expense_date as Date | string)
     getOrCreate(date).outgoingCents += (exp as any).amount_cents
   }
 
   for (const event of eventsRes.data ?? []) {
-    const date = (event as any).event_date as string
+    const date = dateToDateString((event as any).event_date as Date | string)
     getOrCreate(date).eventCount++
   }
 
   for (const inst of (installmentsRes.data ?? []) as any[]) {
-    const date = inst.due_date as string
+    const date = dateToDateString(inst.due_date as Date | string)
     getOrCreate(date).installmentsDueCents += inst.amount_cents
   }
 

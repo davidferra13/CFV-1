@@ -2,6 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -82,7 +83,8 @@ export async function getRebookingPredictions(): Promise<RebookingInsights | nul
       intervalCount++
     }
 
-    const lastEventDate = client.last_event_date || eventDates[eventDates.length - 1]
+    const _rawLastDate = client.last_event_date || eventDates[eventDates.length - 1]
+    const lastEventDate = _rawLastDate ? dateToDateString(_rawLastDate as Date | string) : null
     const daysSinceLast = lastEventDate
       ? Math.floor((now - new Date(lastEventDate).getTime()) / 86400000)
       : 999

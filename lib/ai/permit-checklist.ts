@@ -8,6 +8,7 @@
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { dateToDateString } from '@/lib/utils/format'
 import { GoogleGenAI } from '@google/genai'
 
 const PermitChecklistItemSchema = z.object({
@@ -88,12 +89,14 @@ export async function generatePermitRenewalChecklist(
 
   const permitType = permitData?.permit_type ?? 'Food Handler / Food Service Establishment'
   const jurisdiction = permitData?.jurisdiction ?? 'US (general - verify with your local authority)'
-  const expiryDate = permitData?.expiry_date ?? null
+  const expiryDate = permitData?.expiry_date
+    ? dateToDateString(permitData.expiry_date as Date | string)
+    : null
 
   // Calculate renewal start date (60 days before expiry is typical)
   let renewalStartDate: string | null = null
   if (expiryDate) {
-    const [_ey, _em, _ed] = (expiryDate as string).split('-').map(Number)
+    const [_ey, _em, _ed] = expiryDate.split('-').map(Number)
     const expiry = new Date(_ey, _em - 1, _ed - 60)
     renewalStartDate = `${expiry.getFullYear()}-${String(expiry.getMonth() + 1).padStart(2, '0')}-${String(expiry.getDate()).padStart(2, '0')}`
   }
