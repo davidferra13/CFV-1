@@ -13,6 +13,7 @@ import { executeWithIdempotency } from '@/lib/mutations/idempotency'
 import { createConflictError } from '@/lib/mutations/conflict'
 import { UnknownAppError, ValidationError } from '@/lib/errors/app-error'
 import { isMissingSoftDeleteColumn } from '@/lib/mutations/soft-delete-compat'
+import { dateToDateString } from '@/lib/utils/format'
 import { validateEmailLocal, suggestEmailCorrection } from '@/lib/email/email-validator'
 import { ScheduleRequestSchema } from '@/lib/booking/schedule-schema'
 import { checkSeriesSessionConflicts } from '@/lib/availability/actions'
@@ -391,9 +392,13 @@ async function materializeSeriesEvents(params: {
   }
 
   return [...((existingEvents || []) as EventRow[]), ...insertedEvents].sort((a, b) => {
-    const dateCompare = a.event_date.localeCompare(b.event_date)
+    const dateCompare = dateToDateString(a.event_date as Date | string).localeCompare(
+      dateToDateString(b.event_date as Date | string)
+    )
     if (dateCompare !== 0) return dateCompare
-    return a.created_at.localeCompare(b.created_at)
+    return dateToDateString(a.created_at as Date | string).localeCompare(
+      dateToDateString(b.created_at as Date | string)
+    )
   })
 }
 
