@@ -6,6 +6,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/db/server'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -208,7 +209,7 @@ export async function getDailySalesReport(from: string, to: string): Promise<Dai
   >()
 
   for (const s of (sales ?? []) as any[]) {
-    const day = s.created_at.substring(0, 10)
+    const day = dateToDateString(s.created_at as Date | string)
     const existing = dayMap.get(day) ?? {
       salesCount: 0,
       revenueCents: 0,
@@ -224,7 +225,7 @@ export async function getDailySalesReport(from: string, to: string): Promise<Dai
   }
 
   for (const r of (refunds ?? []) as any[]) {
-    const day = r.created_at.substring(0, 10)
+    const day = dateToDateString(r.created_at as Date | string)
     const existing = dayMap.get(day) ?? {
       salesCount: 0,
       revenueCents: 0,
