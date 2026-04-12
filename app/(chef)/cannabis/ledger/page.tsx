@@ -33,11 +33,7 @@ const ENTRY_TYPE_LABELS: Record<string, string> = {
 }
 
 export default async function CannabisLedgerPage() {
-  const { events, entries, totals } = await getCannabisLedger().catch(() => ({
-    events: [],
-    entries: [],
-    totals: { revenue: 0, expenses: 0, profit: 0 },
-  }))
+  const { events, entries, totals } = await getCannabisLedger()
 
   return (
     <CannabisPageWrapper>
