@@ -7,6 +7,7 @@
 import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
+import { dateToDateString } from '@/lib/utils/format'
 import { z } from 'zod'
 
 // ============================================
@@ -221,8 +222,8 @@ export async function listProtectedBlocks(
 
   return (data ?? []).map((row: any) => ({
     id: row.id,
-    start_date: row.block_date,
-    end_date: row.block_date,
+    start_date: dateToDateString(row.block_date as Date | string),
+    end_date: dateToDateString(row.block_date as Date | string),
     title: row.reason ?? 'Protected time',
     block_type: row.block_type,
     start_time: row.start_time ?? null,
