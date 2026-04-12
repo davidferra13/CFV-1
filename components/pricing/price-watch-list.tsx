@@ -30,12 +30,16 @@ export function PriceWatchList() {
 
   useEffect(() => {
     startTransition(async () => {
-      const [watchData, alertData] = await Promise.all([
-        getPriceWatchList(),
-        checkPriceWatchAlerts(),
-      ])
-      setWatches(watchData)
-      setAlerts(alertData)
+      try {
+        const [watchData, alertData] = await Promise.all([
+          getPriceWatchList(),
+          checkPriceWatchAlerts(),
+        ])
+        setWatches(watchData)
+        setAlerts(alertData)
+      } catch {
+        // Non-critical widget: fail silently, show empty state
+      }
     })
   }, [])
 
@@ -66,9 +70,15 @@ export function PriceWatchList() {
   }
 
   const handleRemove = (watchId: string) => {
+    const previous = watches
+    setWatches((prev) => prev.filter((w) => w.id !== watchId))
     startTransition(async () => {
-      await removePriceWatch(watchId)
-      setWatches((prev) => prev.filter((w) => w.id !== watchId))
+      try {
+        await removePriceWatch(watchId)
+      } catch {
+        setWatches(previous)
+        setAddError('Failed to remove watch')
+      }
     })
   }
 

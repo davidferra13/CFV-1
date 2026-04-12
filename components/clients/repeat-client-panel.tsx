@@ -13,13 +13,21 @@ type Props = {
 export function RepeatClientPanel({ clientId }: Props) {
   const [data, setData] = useState<RepeatClientIntelligence | null>(null)
   const [loading, startTransition] = useTransition()
+  const [error, setError] = useState(false)
 
   useEffect(() => {
+    setError(false)
     startTransition(async () => {
-      const result = await getRepeatClientIntelligence(clientId)
-      setData(result)
+      try {
+        const result = await getRepeatClientIntelligence(clientId)
+        setData(result)
+      } catch {
+        setError(true)
+      }
     })
   }, [clientId])
+
+  if (error) return null
 
   if (loading || !data) {
     return (

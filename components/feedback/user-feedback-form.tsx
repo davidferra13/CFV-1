@@ -39,29 +39,33 @@ export function UserFeedbackForm({ pageContext }: UserFeedbackFormProps) {
     const effectivePageContext = pageContext ?? pathname ?? 'unknown'
 
     startTransition(async () => {
-      const result = await submitFeedback({
-        sentiment,
-        message,
-        anonymous,
-        page_context: effectivePageContext,
-        metadata: {
-          source: 'in-app-feedback-form',
-          pathname: effectivePageContext,
-          deviceType: detectDeviceType(),
-          viewportWidth: typeof window === 'undefined' ? undefined : window.innerWidth,
-          viewportHeight: typeof window === 'undefined' ? undefined : window.innerHeight,
-          appVersion: process.env.NEXT_PUBLIC_APP_VERSION,
-          appEnv: process.env.NEXT_PUBLIC_APP_ENV ?? process.env.NODE_ENV,
-        },
-      })
+      try {
+        const result = await submitFeedback({
+          sentiment,
+          message,
+          anonymous,
+          page_context: effectivePageContext,
+          metadata: {
+            source: 'in-app-feedback-form',
+            pathname: effectivePageContext,
+            deviceType: detectDeviceType(),
+            viewportWidth: typeof window === 'undefined' ? undefined : window.innerWidth,
+            viewportHeight: typeof window === 'undefined' ? undefined : window.innerHeight,
+            appVersion: process.env.NEXT_PUBLIC_APP_VERSION,
+            appEnv: process.env.NEXT_PUBLIC_APP_ENV ?? process.env.NODE_ENV,
+          },
+        })
 
-      if (!result.success) {
-        setError(result.error ?? 'Failed to send feedback.')
-        return
+        if (!result.success) {
+          setError(result.error ?? 'Failed to send feedback.')
+          return
+        }
+
+        setSubmitted(true)
+        setMessage('')
+      } catch {
+        setError('Failed to send feedback. Please try again.')
       }
-
-      setSubmitted(true)
-      setMessage('')
     })
   }
 
