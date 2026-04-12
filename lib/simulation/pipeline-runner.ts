@@ -334,7 +334,7 @@ export async function runScenario(scenario: SimScenario): Promise<PipelineOutput
       think: false,
     } as any)) as unknown as { message: { content: string } }
 
-    const rawText = response.message.content
+    const rawText = response.message.content.replace(/<think>[\s\S]*?<\/think>/g, '').trim()
     const jsonMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/)
     const jsonStr = jsonMatch ? jsonMatch[1].trim() : rawText.trim()
 

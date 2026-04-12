@@ -271,7 +271,7 @@ export async function generateScenarios(module: SimModule, count: number): Promi
       think: false,
     } as any)) as unknown as { message: { content: string } }
 
-    const rawText = response.message.content
+    const rawText = response.message.content.replace(/<think>[\s\S]*?<\/think>/g, '').trim()
     const jsonMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/)
     const jsonStr = jsonMatch ? jsonMatch[1].trim() : rawText.trim()
     const parsed = JSON.parse(jsonStr)

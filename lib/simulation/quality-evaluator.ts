@@ -4,8 +4,6 @@
 // Returns a score (0–100) and a list of specific failure reasons.
 // Score >= 70 = passed. Failures are human-readable for developer review.
 
-import { getOllamaConfig } from '@/lib/ai/providers'
-import { makeOllamaClient } from './ollama-client'
 import type { SimScenario } from './types'
 
 interface EvaluationResult {
@@ -255,91 +253,6 @@ function evaluateQuoteDraftDeterministic(
 
 // ── Ollama-based evaluators (for subjective quality only) ────────────────────
 
-function buildEvaluatorPrompt(
-  scenario: SimScenario,
-  rawOutput: unknown
-): { system: string; user: string } {
-  const outputStr = JSON.stringify(rawOutput, null, 2)
-  const gt = scenario.groundTruth
-  const ctx = scenario.context as Record<string, unknown> | undefined
-
-  switch (scenario.module) {
-    case 'client_parse':
-      return {
-        system: `You are an AI quality evaluator. Score how well a client note parser extracted contact information.
-Return valid JSON only.`,
-        user: `Original client note:
-${scenario.inputText}
-
-Expected ground truth:
-- Name: ${gt.expectedName}
-- Email: ${gt.expectedEmail}
-- Dietary: ${JSON.stringify(gt.expectedDietary)}
-
-Parser output:
-${outputStr}
-
-Score this extraction on a scale of 0–100. Deduct points for:
-- Missing or wrong name (-30)
-- Missing or wrong email (-25)
-- Missing dietary restrictions that were mentioned (-20)
-- Inventing contact details not in original (-30)
-- Wrong phone format when phone was present (-15)
-
-Return JSON: { "score": N, "failures": ["list of specific issues found"] }`,
-      }
-
-    case 'allergen_risk': {
-      const expectedRisks = (gt.expectedRisks as string[]) ?? []
-      return {
-        system: `You are a food safety expert evaluating an AI allergen risk analysis.
-Return valid JSON only.`,
-        user: `Expected risks to be detected: ${expectedRisks.join(', ') || 'at least 1 risk combination'}
-
-Allergen risk output:
-${outputStr}
-
-Score this analysis on a scale of 0–100. Deduct points for:
-- Missing any genuine allergen conflict (cross-reference expected risks) (-25 each)
-- Using "safe" when the ingredient clearly triggers a restriction (-30)
-- No safetyFlags despite severe allergens (nut, shellfish, celiac) present (-25)
-- Missing (dish, guest) pairs that should have been analyzed (-20)
-- Low confidence when sufficient ingredient info was provided (-10)
-
-Return JSON: { "score": N, "failures": ["list of specific issues found"] }`,
-      }
-    }
-
-    case 'menu_suggestions': {
-      const dietary = (ctx?.dietaryRestrictions as string[]) ?? []
-      return {
-        system: `You are evaluating AI-generated menu suggestions for a private chef. Check dietary compliance and quality.
-Return valid JSON only.`,
-        user: `Required dietary restrictions to accommodate: ${dietary.join(', ') || 'none'}
-
-Menu suggestions output:
-${outputStr}
-
-Score this on a scale of 0–100. Deduct points for:
-- Any menu containing dishes that violate stated dietary restrictions (-35 per violation)
-- Fewer than 3 distinct menu options (-20)
-- Menus without full course structure (-15)
-- Generic/uncreative dish names with no description (-15)
-- Menus that are too similar to each other (-10)
-
-Return JSON: { "score": N, "failures": ["list of specific issues found"] }`,
-      }
-    }
-
-    // inquiry_parse, correspondence, quote_draft handled by deterministic evaluators
-    default:
-      return {
-        system: 'Return valid JSON only.',
-        user: `Score this output: ${outputStr}\nReturn JSON: { "score": 50, "failures": ["no evaluator for this module"] }`,
-      }
-  }
-}
-
 function evaluateClientParseDeterministic(
   scenario: SimScenario,
   rawOutput: unknown
@@ -353,9 +266,9 @@ function evaluateClientParseDeterministic(
   let score = 100
   const failures: string[] = []
 
-  // Name check
+  // Name check (accept camelCase or snake_case from model)
   const expectedName = gt.expectedName as string | null
-  const actualName = (out.fullName ?? null) as string | null
+  const actualName = (out.fullName ?? out.full_name ?? null) as string | null
   if (expectedName !== null) {
     if (!fuzzyMatch(actualName, expectedName)) {
       score -= 30
@@ -366,9 +279,9 @@ function evaluateClientParseDeterministic(
     failures.push(`Name: expected null, parser invented "${actualName}"`)
   }
 
-  // Email check
+  // Email check (accept email or email_address from model)
   const expectedEmail = gt.expectedEmail as string | null
-  const actualEmail = (out.email ?? null) as string | null
+  const actualEmail = (out.email ?? out.email_address ?? null) as string | null
   if (expectedEmail !== null) {
     if (!fuzzyMatch(actualEmail, expectedEmail)) {
       score -= 25
@@ -454,11 +367,160 @@ function evaluateAllergenRiskDeterministic(
   return { score, passed: score >= 70, failures }
 }
 
+function evaluateMenuSuggestionsDeterministic(
+  scenario: SimScenario,
+  rawOutput: unknown
+): EvaluationResult {
+  const out = rawOutput as Record<string, unknown> | null
+  if (!out || typeof out !== 'object') {
+    return { score: 0, passed: false, failures: ['Pipeline returned no valid object'] }
+  }
+
+  const ctx = scenario.context as Record<string, unknown> | undefined
+  const dietary = ((ctx?.dietaryRestrictions as string[]) ?? []).map((d) => d.toLowerCase())
+  let score = 100
+  const failures: string[] = []
+
+  // Must have menus array with 3+ options
+  const menus = out.menus
+  if (!Array.isArray(menus) || menus.length === 0) {
+    return { score: 0, passed: false, failures: ['Missing or empty menus array'] }
+  }
+  if (menus.length < 3) {
+    score -= 20
+    failures.push(`Only ${menus.length} menu option(s), need at least 3`)
+  }
+
+  let hasCoursesAll = true
+  let violationCount = 0
+
+  // Allergen keywords that indicate a dietary violation
+  const GLUTEN_TRIGGERS = [
+    'bread',
+    'pasta',
+    'flour',
+    'wheat',
+    'gluten',
+    'crouton',
+    'soy sauce',
+    'breaded',
+    'battered',
+  ]
+  const NUT_TRIGGERS = [
+    'almond',
+    'walnut',
+    'pecan',
+    'cashew',
+    'hazelnut',
+    'pistachio',
+    'pine nut',
+    'peanut',
+    'nut',
+  ]
+  const DAIRY_TRIGGERS = [
+    'cheese',
+    'cream',
+    'butter',
+    'milk',
+    'yogurt',
+    'parmesan',
+    'cheddar',
+    'brie',
+    'ricotta',
+    'mozzarella',
+  ]
+  const VEGAN_TRIGGERS = [
+    'chicken',
+    'beef',
+    'pork',
+    'fish',
+    'salmon',
+    'shrimp',
+    'lobster',
+    'bacon',
+    'lamb',
+    'meat',
+    'egg',
+    'honey',
+    'dairy',
+    'cheese',
+    'cream',
+    'butter',
+    'milk',
+  ]
+  const SHELLFISH_TRIGGERS = [
+    'shrimp',
+    'lobster',
+    'crab',
+    'scallop',
+    'clam',
+    'oyster',
+    'mussel',
+    'shellfish',
+  ]
+
+  for (const menu of menus as Array<Record<string, unknown>>) {
+    // Each menu should have courses
+    const courses = menu.courses
+    if (!Array.isArray(courses) || courses.length === 0) {
+      hasCoursesAll = false
+    }
+
+    // Check dishes for dietary violations
+    if (dietary.length > 0 && Array.isArray(courses)) {
+      for (const course of courses as Array<Record<string, unknown>>) {
+        const dishText =
+          `${String(course.dish ?? '')} ${String(course.description ?? '')}`.toLowerCase()
+
+        for (const restriction of dietary) {
+          if (restriction.includes('gluten') && GLUTEN_TRIGGERS.some((t) => dishText.includes(t))) {
+            violationCount++
+            failures.push(`Gluten-free violation: "${course.dish}" contains gluten`)
+          }
+          if (
+            (restriction.includes('nut') || restriction.includes('tree nut')) &&
+            NUT_TRIGGERS.some((t) => dishText.includes(t))
+          ) {
+            violationCount++
+            failures.push(`Nut-free violation: "${course.dish}" contains nuts`)
+          }
+          if (restriction.includes('dairy') && DAIRY_TRIGGERS.some((t) => dishText.includes(t))) {
+            violationCount++
+            failures.push(`Dairy-free violation: "${course.dish}" contains dairy`)
+          }
+          if (restriction.includes('vegan') && VEGAN_TRIGGERS.some((t) => dishText.includes(t))) {
+            violationCount++
+            failures.push(`Vegan violation: "${course.dish}" is not vegan`)
+          }
+          if (
+            restriction.includes('shellfish') &&
+            SHELLFISH_TRIGGERS.some((t) => dishText.includes(t))
+          ) {
+            violationCount++
+            failures.push(`Shellfish-free violation: "${course.dish}" contains shellfish`)
+          }
+        }
+      }
+    }
+  }
+
+  if (!hasCoursesAll) {
+    score -= 15
+    failures.push('One or more menus missing course structure')
+  }
+
+  // Cap total violation penalty at -35
+  if (violationCount > 0) {
+    score -= Math.min(35, violationCount * 12)
+  }
+
+  score = Math.max(0, score)
+  return { score, passed: score >= 70, failures }
+}
+
 /**
  * Evaluates a pipeline output against scenario ground truth.
- * Uses deterministic checks for inquiry_parse, correspondence, quote_draft,
- * client_parse, and allergen_risk (Formula > AI).
- * Uses Ollama only for menu_suggestions (genuinely subjective evaluation).
+ * Uses deterministic checks for all modules (Formula > AI).
  * Returns score (0–100), passed (>=70), and specific failure reasons.
  * Never throws - returns score=0 with error on failure.
  */
@@ -470,7 +532,7 @@ export async function evaluateOutput(
     return { score: 0, passed: false, failures: ['Pipeline returned no output'] }
   }
 
-  // Formula > AI: deterministic evaluation for structured output modules
+  // Formula > AI: deterministic evaluation for all modules
   switch (scenario.module) {
     case 'inquiry_parse':
       return evaluateInquiryParseDeterministic(scenario, rawOutput)
@@ -482,37 +544,7 @@ export async function evaluateOutput(
       return evaluateClientParseDeterministic(scenario, rawOutput)
     case 'allergen_risk':
       return evaluateAllergenRiskDeterministic(scenario, rawOutput)
-  }
-
-  // Ollama-based evaluation for subjective quality modules (menu_suggestions)
-  const config = getOllamaConfig()
-  const ollama = makeOllamaClient()
-  const prompt = buildEvaluatorPrompt(scenario, rawOutput)
-
-  try {
-    const response = (await ollama.chat({
-      model: config.model,
-      messages: [
-        { role: 'system', content: prompt.system },
-        { role: 'user', content: prompt.user },
-      ],
-      format: 'json',
-      think: false,
-    } as any)) as unknown as { message: { content: string } }
-
-    const rawText = response.message.content
-    const jsonMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/)
-    const jsonStr = jsonMatch ? jsonMatch[1].trim() : rawText.trim()
-    const parsed = JSON.parse(jsonStr)
-
-    const score = Math.max(0, Math.min(100, Number(parsed.score) || 0))
-    const failures = Array.isArray(parsed.failures)
-      ? (parsed.failures as string[]).filter(Boolean)
-      : []
-
-    return { score, passed: score >= 70, failures }
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Evaluator call failed'
-    return { score: 0, passed: false, failures: [`Evaluator error: ${msg}`] }
+    case 'menu_suggestions':
+      return evaluateMenuSuggestionsDeterministic(scenario, rawOutput)
   }
 }
