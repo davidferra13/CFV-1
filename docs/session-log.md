@@ -492,3 +492,45 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: ce33ef117 (booking form hardening)
 - Build state on departure: green
 - Notes: All 8 active built specs verified via qa-tester Playwright agent. Specs 7+8 (featured chef, credentials showcase) were already verified April 2. All 4 P0 specs PASS. P1 WARNs are working-as-designed (soft-close card is conditional on inquiry state, staff routes correctly redirect non-staff users, opportunity composer requires text input first). The /culinary/recipe-builder/new 404 is expected - correct route is /recipes/new. Ingredient enrichment drain running in background (~4,500+ of 23,534 enriched).
+
+## 2026-04-11 (continuation - UX gaps, V1 exit criteria)
+
+- Agent: Builder (Sonnet 4.6)
+- Task: Continue autonomous V1 cleanup - metrics strip audit, booking page verification, UX energy gaps
+- Status: started
+- Build state on arrival: green (c2e1403ac, voice session build 2026-04-11)
+
+## 2026-04-11 (MemPalace execution - features + TS cleanup)
+
+- Agent: Builder (Sonnet 4.6)
+- Task: Execute MemPalace-sourced backlog: finance canonicalization, sourcing fallbacks, auth hardening, dead-zone gating, TS fixes
+- Status: completed
+- Files touched:
+  - app/(chef)/finance/page.tsx (canonicalize /finance, conditionally hide bank-feed/cash-flow tiles via surface availability)
+  - app/(chef)/financials/ (deleted - redirect to /finance)
+  - lib/finance/surface-availability.ts (created - classifies bank-feed/cash-flow as active/manual_only/degraded)
+  - app/(chef)/culinary/price-catalog/catalog-browser.tsx (auto-filter catalog by chef's preferred store on load)
+  - components/recipes/ingredient-sourcing-toggle.tsx (created - per-ingredient "Find price" button with WebSourcingPanel)
+  - app/(chef)/culinary/recipes/[id]/page.tsx (wire IngredientSourcingToggle for unpriced ingredients)
+  - components/costing/event-food-cost-insight.tsx (add "Fix missing prices" link to incomplete-coverage note)
+  - lib/quotes/price-confidence-actions.ts (created - getEventMenuPriceConfidence server action)
+  - components/quotes/quote-price-confidence-warning.tsx (created - amber/red warning on quote page when menus have unpriced recipes)
+  - app/(chef)/quotes/[id]/page.tsx (wire QuotePriceConfidenceWarning)
+  - lib/auth/password-policy.ts (created - OWASP/NIST policy: min 12, max 72 bytes, blocklist 50+ common passwords)
+  - lib/auth/actions.ts (use passwordPolicySchema in all 3 signup schemas, remove updatePassword bypass path, sign-out after changePassword)
+  - components/settings/change-password-form.tsx (update to 12-char min, remove composition rules, redirect to sign-in after change)
+  - app/auth/reset-password/page.tsx (update client validation to 12-char min)
+  - lib/chef/profile-actions.ts (await getPublicUrl)
+  - lib/discovery/actions.ts (await getPublicUrl)
+  - lib/journey/actions.ts (await getPublicUrl)
+  - lib/network/actions.ts (await getPublicUrl)
+  - lib/social/chef-social-actions.ts (await getPublicUrl)
+  - lib/guest-photos/actions.ts (await getPublicUrl, wrap map in Promise.all)
+  - lib/pricing/web-sourcing-actions.ts (fix RowList index access)
+  - lib/hub/integration-actions.ts (add explicit types to map callbacks)
+  - lib/expenses/receipt-actions.ts (add rawText to return type)
+  - lib/dietary/knowledge-dietary-check.ts (cast through unknown)
+  - docs/build-state.md (updated - tsc green at 5db22eaed)
+- Commits: 2ab8f1e91, 5bd099bf4, 64344e111, 3d8198188, f24912f36, 5db22eaed
+- Build state on departure: green (tsc exits 0, zero errors)
+- Notes: All 12 pre-existing TS errors resolved. 7 features shipped from MemPalace backlog. getPublicUrl in compat shim is async (needs await) - this was silently causing all image uploads to return null URLs. guest-photos needed Promise.all since getPublicUrl is async inside .map().
