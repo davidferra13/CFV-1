@@ -156,14 +156,20 @@ export const TIER_CHANNEL_DEFAULTS: Record<NotificationTier, ChannelSet> = {
   info: { email: true, push: false, sms: false },
 }
 
-// These action types never trigger an email, regardless of tier.
+// These action types never trigger an email via the generic notification router.
 // Intent signals are real-time nudges where email would be noise.
+// Event reminders are suppressed here because the lifecycle route sends a rich
+// dedicated template directly - the router only handles push and SMS for these.
 export const EMAIL_SUPPRESSED_ACTIONS = new Set<NotificationAction>([
   'client_on_payment_page',
   'client_viewed_quote',
   'quote_viewed_after_delay',
   'client_viewed_proposal',
   'client_portal_visit',
+  // Reminders use dedicated rich email from lifecycle route, not the generic router template
+  'event_reminder_1d',
+  'event_reminder_2d',
+  'event_reminder_7d',
 ])
 
 export const TIER_LABELS: Record<NotificationTier, string> = {

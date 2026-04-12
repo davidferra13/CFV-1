@@ -684,6 +684,46 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
       console.error('[handlePaymentSucceeded] Chef email failed (non-blocking):', emailErr)
     }
 
+    // Client payment confirmation email (non-blocking)
+    // Skip for instant_book (handled separately below with richer context)
+    const bookingSourceForConfirm = paymentIntent.metadata.booking_source
+    if (bookingSourceForConfirm !== 'instant_book') {
+      try {
+        const { data: eventData } = await dbAdmin
+          .from('events')
+          .select('occasion, event_date')
+          .eq('id', event_id)
+          .single()
+
+        const { data: clientData } = await (dbAdmin
+          .from('clients')
+          .select('email, full_name')
+          .eq('id', client_id)
+          .single() as any)
+
+        if (clientData?.email && eventData) {
+          const remaining = (financialSummary as any).outstanding_balance_cents
+          const { sendPaymentConfirmationEmail } = await import('@/lib/email/notifications')
+
+          await sendPaymentConfirmationEmail({
+            clientEmail: clientData.email,
+            clientName: clientData.full_name,
+            amountCents: paymentIntent.amount,
+            paymentType: payment_type || 'payment',
+            occasion: eventData.occasion || 'your event',
+            eventDate: eventData.event_date,
+            remainingBalanceCents:
+              typeof remaining === 'number' && remaining > 0 ? remaining : null,
+          })
+        }
+      } catch (clientEmailErr) {
+        console.error(
+          '[handlePaymentSucceeded] Client confirmation email failed (non-blocking):',
+          clientEmailErr
+        )
+      }
+    }
+
     // Instant-book: send dedicated chef notification email (non-blocking)
     const bookingSource = paymentIntent.metadata.booking_source
     if (bookingSource === 'instant_book') {

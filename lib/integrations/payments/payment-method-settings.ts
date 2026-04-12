@@ -15,19 +15,21 @@ export async function getPaymentMethodSettings() {
 
   const { data } = await db
     .from('chefs')
-    .select('apple_pay_enabled, google_pay_enabled')
+    .select('apple_pay_enabled, google_pay_enabled, ach_enabled')
     .eq('id', user.entityId)
     .single()
 
   return {
     applePayEnabled: data?.apple_pay_enabled ?? true,
     googlePayEnabled: data?.google_pay_enabled ?? true,
+    achEnabled: (data as any)?.ach_enabled ?? false,
   }
 }
 
 export async function updatePaymentMethodSettings(input: {
   applePayEnabled?: boolean
   googlePayEnabled?: boolean
+  achEnabled?: boolean
 }) {
   await requirePro('integrations')
   const user = await requireChef()
@@ -36,6 +38,7 @@ export async function updatePaymentMethodSettings(input: {
   const updates: Record<string, boolean> = {}
   if (input.applePayEnabled !== undefined) updates.apple_pay_enabled = input.applePayEnabled
   if (input.googlePayEnabled !== undefined) updates.google_pay_enabled = input.googlePayEnabled
+  if (input.achEnabled !== undefined) updates.ach_enabled = input.achEnabled
 
   if (Object.keys(updates).length === 0) return { success: true }
 

@@ -19738,6 +19738,7 @@ export const chefs = pgTable("chefs", {
 	icalFeedEnabled: boolean("ical_feed_enabled").default(false),
 	applePayEnabled: boolean("apple_pay_enabled").default(true),
 	googlePayEnabled: boolean("google_pay_enabled").default(true),
+	achEnabled: boolean("ach_enabled").default(false).notNull(),
 	dismissedRecallIds: text("dismissed_recall_ids").array().default([""]),
 	prepTimelineVisibility: jsonb("prep_timeline_visibility").default({"setup":true,"travel":true,"cleanup":true,"cooking":true,"packing":true,"serving":true,"complete":true,"prep_work":true,"menu_planning":true,"ingredient_sourcing":true}).notNull(),
 	showDietaryConfirmation: boolean("show_dietary_confirmation").default(true).notNull(),

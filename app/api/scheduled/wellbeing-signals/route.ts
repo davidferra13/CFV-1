@@ -11,12 +11,18 @@ const SYSTEM_KEYS = {
   education: 'wellbeing_no_education',
 }
 
-function getUtcWeekStart(date: Date): string {
-  const day = date.getUTCDay()
+function localDateISO(d: Date): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
+function getLocalWeekStart(date: Date): string {
+  const day = date.getDay() // 0=Sun, 1=Mon, ...6=Sat
   const offset = day === 0 ? 6 : day - 1 // Monday start
-  const monday = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()))
-  monday.setUTCDate(monday.getUTCDate() - offset)
-  return monday.toISOString().slice(0, 10)
+  return localDateISO(new Date(date.getFullYear(), date.getMonth(), date.getDate() - offset))
 }
 
 async function handleWellbeingSignals(request: NextRequest): Promise<NextResponse> {
@@ -27,17 +33,15 @@ async function handleWellbeingSignals(request: NextRequest): Promise<NextRespons
   try {
     const db = createServerClient({ admin: true }) as any
     const now = new Date()
-    const today = now.toISOString().slice(0, 10)
-    const weekStart = getUtcWeekStart(now)
-    const weekEndDate = new Date(`${weekStart}T00:00:00.000Z`)
-    weekEndDate.setUTCDate(weekEndDate.getUTCDate() + 6)
-    const weekEnd = weekEndDate.toISOString().slice(0, 10)
-    const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
-    const monthEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0))
-    const monthStartStr = monthStart.toISOString().slice(0, 10)
-    const monthEndStr = monthEnd.toISOString().slice(0, 10)
-    const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
-    const ninetyDaysAgoStr = ninetyDaysAgo.toISOString().slice(0, 10)
+    const today = localDateISO(now)
+    const weekStart = getLocalWeekStart(now)
+    const _wsd = weekStart.split('-').map(Number)
+    const weekEnd = localDateISO(new Date(_wsd[0], _wsd[1] - 1, _wsd[2] + 6))
+    const monthStartStr = localDateISO(new Date(now.getFullYear(), now.getMonth(), 1))
+    const monthEndStr = localDateISO(new Date(now.getFullYear(), now.getMonth() + 1, 0))
+    const ninetyDaysAgoStr = localDateISO(
+      new Date(now.getFullYear(), now.getMonth(), now.getDate() - 90)
+    )
 
     const { data: chefs } = await db
       .from('chefs')

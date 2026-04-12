@@ -17,12 +17,18 @@ const GOAL_MILESTONE_THRESHOLDS = [25, 50, 75, 100]
 const GOAL_MILESTONE_SYSTEM_KEY = 'goal_milestone'
 const GOAL_WEEKLY_DIGEST_SYSTEM_KEY = 'goal_weekly_digest'
 
-function getUtcWeekStart(date: Date): string {
-  const day = date.getUTCDay()
+function localDateISO(d: Date): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
+function getLocalWeekStart(date: Date): string {
+  const day = date.getDay() // 0=Sun, 1=Mon, ...6=Sat
   const offset = day === 0 ? 6 : day - 1 // Monday start
-  const monday = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()))
-  monday.setUTCDate(monday.getUTCDate() - offset)
-  return monday.toISOString().slice(0, 10)
+  return localDateISO(new Date(date.getFullYear(), date.getMonth(), date.getDate() - offset))
 }
 
 async function handleRevenueGoals(request: NextRequest): Promise<NextResponse> {
@@ -33,7 +39,7 @@ async function handleRevenueGoals(request: NextRequest): Promise<NextResponse> {
   try {
     const db = createServerClient({ admin: true }) as any
     const now = new Date()
-    const today = now.toISOString().slice(0, 10)
+    const today = localDateISO(now)
 
     // ── 1. Collect all tenant IDs to process ────────────────────────────────────
     // Legacy: chefs with revenue_goal_program_enabled
@@ -279,7 +285,7 @@ async function emitGoalSignalNotifications(
   const lookbackStart = new Date(now.getTime() - 35 * 24 * 60 * 60 * 1000)
     .toISOString()
     .slice(0, 10)
-  const weekStart = getUtcWeekStart(now)
+  const weekStart = getLocalWeekStart(now)
 
   const { data: snapshots } = await db
     .from('goal_snapshots')

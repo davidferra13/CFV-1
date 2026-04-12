@@ -113,10 +113,10 @@ export async function createPaymentCheckoutUrl(
     }
   }
 
-  // Check chef's Apple Pay / Google Pay preferences
+  // Check chef's payment method preferences
   const { data: chefPrefs } = await db
     .from('chefs')
-    .select('apple_pay_enabled, google_pay_enabled')
+    .select('apple_pay_enabled, google_pay_enabled, ach_enabled')
     .eq('id', tenantId)
     .single()
 
@@ -125,6 +125,7 @@ export async function createPaymentCheckoutUrl(
   // Otherwise, explicitly list allowed methods to exclude disabled wallets.
   const applePayOn = chefPrefs?.apple_pay_enabled !== false
   const googlePayOn = chefPrefs?.google_pay_enabled !== false
+  const achOn = chefPrefs?.ach_enabled === true
 
   const checkoutParams: Record<string, unknown> = {
     mode: 'payment',
@@ -147,11 +148,12 @@ export async function createPaymentCheckoutUrl(
     expires_at: Math.floor(Date.now() / 1000) + 72 * 3600, // 72 hours
   }
 
-  if (!applePayOn || !googlePayOn) {
-    // Explicit list: always include card; conditionally add wallets
+  if (!applePayOn || !googlePayOn || achOn) {
+    // Explicit list: always include card; conditionally add wallets and ACH
     const types: string[] = ['card']
     if (applePayOn) types.push('apple_pay')
     if (googlePayOn) types.push('google_pay')
+    if (achOn) types.push('us_bank_account')
     checkoutParams.payment_method_types = types
   }
 

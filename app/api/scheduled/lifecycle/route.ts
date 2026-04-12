@@ -11,6 +11,14 @@ import { recordCronHeartbeat, recordCronError } from '@/lib/cron/heartbeat'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 
+function localDateISO(d: Date): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
 async function throwLifecycleFailure(input: {
   operation: string
   error: { message: string } | null | undefined
@@ -302,9 +310,9 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
     //   2. Client: automated_emails_enabled = false → skip that individual client
 
     try {
-      const tomorrow = new Date()
-      tomorrow.setDate(tomorrow.getDate() + 1)
-      const tomorrowDate = tomorrow.toISOString().split('T')[0]
+      const _t = new Date()
+      const tomorrow = new Date(_t.getFullYear(), _t.getMonth(), _t.getDate() + 1)
+      const tomorrowDate = localDateISO(tomorrow)
 
       const { data: upcomingEvents, error: upcomingEventsError } = await db
         .from('events')
@@ -313,7 +321,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
         id, tenant_id, occasion, event_date, serve_time, arrival_time,
         location_address, location_city, location_state,
         guest_count, special_requests,
-        client:clients(id, email, full_name, automated_emails_enabled)
+        client:clients(id, auth_user_id, email, full_name, automated_emails_enabled)
       `
         )
         .eq('event_date', tomorrowDate)
@@ -333,6 +341,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
           try {
             const client = event.client as unknown as {
               id: string
+              auth_user_id: string | null
               email: string
               full_name: string
               automated_emails_enabled: boolean
@@ -373,6 +382,28 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
               specialRequests: event.special_requests,
             })
 
+            // Also fire push + SMS via notification system (email suppressed in tier-config
+            // to avoid duplicate; rich email already sent above)
+            if (client.auth_user_id) {
+              const { createNotification } = await import('@/lib/notifications/actions')
+              createNotification({
+                tenantId: event.tenant_id,
+                recipientId: client.auth_user_id,
+                category: 'event',
+                action: 'event_reminder_1d',
+                title: `Your ${event.occasion || 'event'} is tomorrow`,
+                body: `Reminder from ${chef?.business_name || 'your chef'} for your event tomorrow.`,
+                actionUrl: `/my-events/${event.id}`,
+                eventId: event.id,
+                clientId: client.id,
+              }).catch((err: Error) => {
+                console.error(
+                  '[lifecycle] event_reminder_1d notification failed (non-blocking):',
+                  err
+                )
+              })
+            }
+
             results.eventReminders++
           } catch (err) {
             results.errors.push(`Reminder for event ${event.id}: ${(err as Error).message}`)
@@ -397,10 +428,10 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
       ]
 
       // Fetch events that are accepted and unpaid, within the next 7 days
-      const sevenDaysOut = new Date(today)
-      sevenDaysOut.setDate(sevenDaysOut.getDate() + 7)
-      const sevenDaysOutDate = sevenDaysOut.toISOString().split('T')[0]
-      const todayDate = today.toISOString().split('T')[0]
+      const sevenDaysOutDate = localDateISO(
+        new Date(today.getFullYear(), today.getMonth(), today.getDate() + 7)
+      )
+      const todayDate = localDateISO(today)
 
       const { data: unpaidEvents, error: unpaidEventsError } = await db
         .from('events')
@@ -576,8 +607,10 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
         },
       ] as const
 
-      const todayDate5 = today5.toISOString().split('T')[0]
-      const thirtyDaysOutDate5 = thirtyDaysOut5.toISOString().split('T')[0]
+      const todayDate5 = localDateISO(today5)
+      const thirtyDaysOutDate5 = localDateISO(
+        new Date(today5.getFullYear(), today5.getMonth(), today5.getDate() + 30)
+      )
 
       const { data: upcomingEvents5, error: upcomingEvents5Error } = await db
         .from('events')
@@ -805,7 +838,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
 
     try {
       const todayMid = new Date()
-      const todayDateMid = todayMid.toISOString().split('T')[0]
+      const todayDateMid = localDateISO(todayMid)
 
       // Find confirmed/paid events in the future that haven't had a midpoint email yet
       const { data: midpointCandidates, error: midpointError } = await db
@@ -861,7 +894,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
             const createdMs = new Date(event.created_at).getTime()
             const eventMs = new Date(event.event_date).getTime()
             const midpointMs = createdMs + (eventMs - createdMs) / 2
-            const midpointDate = new Date(midpointMs).toISOString().split('T')[0]
+            const midpointDate = localDateISO(new Date(midpointMs))
 
             // Only send if today is the midpoint day (or past it, for catch-up)
             // and the event is at least 4 days away (skip very short-notice bookings)
@@ -1082,8 +1115,12 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
 
     try {
       const now7 = new Date()
-      const tenDaysAgo = new Date(now7.getTime() - 10 * 86_400_000).toISOString().split('T')[0]
-      const threeDaysAgo = new Date(now7.getTime() - 3 * 86_400_000).toISOString().split('T')[0]
+      const tenDaysAgo = localDateISO(
+        new Date(now7.getFullYear(), now7.getMonth(), now7.getDate() - 10)
+      )
+      const threeDaysAgo = localDateISO(
+        new Date(now7.getFullYear(), now7.getMonth(), now7.getDate() - 3)
+      )
 
       const { data: completedEvents, error: completedEventsError } = await db
         .from('events')

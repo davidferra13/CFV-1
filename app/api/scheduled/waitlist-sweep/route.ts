@@ -47,7 +47,14 @@ async function handleWaitlistSweep(request: NextRequest): Promise<NextResponse> 
     `
         )
         .eq('status', 'waiting')
-        .gt('requested_date', now.toISOString().split('T')[0]) // only future dates
+        .gt(
+          'requested_date',
+          [
+            now.getFullYear(),
+            String(now.getMonth() + 1).padStart(2, '0'),
+            String(now.getDate()).padStart(2, '0'),
+          ].join('-')
+        ) // only future dates
         .or(`contacted_at.is.null,contacted_at.lt.${renotifyThreshold}`)
         .limit(200)
 

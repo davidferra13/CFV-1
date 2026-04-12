@@ -30,6 +30,7 @@ async function PaymentMethodsContent() {
       <PaymentMethodsSettings
         applePayEnabled={settings.applePayEnabled}
         googlePayEnabled={settings.googlePayEnabled}
+        achEnabled={settings.achEnabled}
       />
     </div>
   )
