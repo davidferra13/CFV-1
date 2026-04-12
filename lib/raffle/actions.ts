@@ -370,7 +370,8 @@ export async function getActiveRaffle(): Promise<{
 
   if (!client) return null
 
-  const today = new Date().toISOString().split('T')[0]
+  const _rft = new Date()
+  const today = `${_rft.getFullYear()}-${String(_rft.getMonth() + 1).padStart(2, '0')}-${String(_rft.getDate()).padStart(2, '0')}`
   const thisMonthStart = today.substring(0, 7) + '-01' // YYYY-MM-01
 
   // Fetch active round + most recent completed round in parallel
@@ -586,7 +587,8 @@ export async function submitRaffleEntry(
     if (insertError.code === '23505') {
       // Already have an entry today - update score if this one is higher
       isNewEntry = false
-      const today = new Date().toISOString().split('T')[0]
+      const _rft = new Date()
+      const today = `${_rft.getFullYear()}-${String(_rft.getMonth() + 1).padStart(2, '0')}-${String(_rft.getDate()).padStart(2, '0')}`
       await (db as any)
         .from('raffle_entries')
         .update({ game_score: safeScore })

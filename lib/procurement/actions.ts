@@ -152,7 +152,13 @@ export async function getProcurementReferenceData(): Promise<ProcurementReferenc
       .from('events')
       .select('id, occasion, event_date')
       .eq('tenant_id', user.tenantId!)
-      .gte('event_date', new Date().toISOString().split('T')[0])
+      .gte(
+        'event_date',
+        ((_d) =>
+          `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+          new Date()
+        )
+      )
       .order('event_date')
       .limit(40),
   ])

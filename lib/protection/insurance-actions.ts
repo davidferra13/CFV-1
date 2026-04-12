@@ -156,16 +156,17 @@ export async function getExpiringPolicies(daysAhead: number) {
 
   const db: any = createServerClient()
 
-  const today = new Date()
-  const cutoff = new Date(today)
-  cutoff.setDate(today.getDate() + daysAhead)
+  const _tn = new Date()
+  const cutoff = new Date(_tn.getFullYear(), _tn.getMonth(), _tn.getDate() + daysAhead)
+  const _todayStr = `${_tn.getFullYear()}-${String(_tn.getMonth() + 1).padStart(2, '0')}-${String(_tn.getDate()).padStart(2, '0')}`
+  const _cutoffStr = `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, '0')}-${String(cutoff.getDate()).padStart(2, '0')}`
 
   const { data, error } = await db
     .from('chef_insurance_policies')
     .select('*')
     .eq('tenant_id', tenantId)
-    .lte('expiry_date', cutoff.toISOString().slice(0, 10))
-    .gte('expiry_date', today.toISOString().slice(0, 10))
+    .lte('expiry_date', _cutoffStr)
+    .gte('expiry_date', _todayStr)
     .order('expiry_date', { ascending: true })
 
   if (error) throw new Error(`Failed to fetch expiring policies: ${error.message}`)

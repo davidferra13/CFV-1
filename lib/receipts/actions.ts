@@ -304,7 +304,12 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
   let expensesCreated = 0
 
   if (businessItems.length > 0 && extraction) {
-    const expenseDate = extraction.purchase_date ?? new Date().toISOString().split('T')[0]
+    const expenseDate =
+      extraction.purchase_date ??
+      ((_d) =>
+        `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+        new Date()
+      )
     const vendorName = extraction.store_name ?? undefined
 
     // Map ingredient_category → expense category
@@ -492,7 +497,12 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
 
   // Auto-organize: create chef_document in year/month folder (non-blocking)
   try {
-    const receiptDate = extraction?.purchase_date ?? new Date().toISOString().split('T')[0]
+    const receiptDate =
+      extraction?.purchase_date ??
+      ((_d) =>
+        `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+        new Date()
+      )
     const folderId = await ensureReceiptFolder(user.tenantId!, receiptDate)
     await createReceiptDocument(user.tenantId!, {
       receiptPhotoId,

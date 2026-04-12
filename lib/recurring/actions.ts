@@ -1263,7 +1263,9 @@ export async function getServedHistoryForClient(clientId: string, weeks = 12) {
   const chef = await requireChef()
   const db: any = createServerClient()
 
-  const since = addWeeks(new Date(), -weeks).toISOString().slice(0, 10)
+  const _rsn = new Date()
+  const _rsi = new Date(_rsn.getFullYear(), _rsn.getMonth(), _rsn.getDate() - weeks * 7)
+  const since = `${_rsi.getFullYear()}-${String(_rsi.getMonth() + 1).padStart(2, '0')}-${String(_rsi.getDate()).padStart(2, '0')}`
 
   const { data, error } = await db
     .from('served_dish_history')
