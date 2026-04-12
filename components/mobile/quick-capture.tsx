@@ -15,6 +15,7 @@ import { useIsDemoMode } from '@/lib/demo-mode'
 import { useOnboardingPeripheralsEnabled } from '@/lib/onboarding/peripheral-visibility'
 import { toast } from 'sonner'
 import { createExpense } from '@/lib/expenses/actions'
+import { todayLocalDateString } from '@/lib/utils/format'
 
 export function QuickCapture() {
   const isDemo = useIsDemoMode()
@@ -42,7 +43,7 @@ export function QuickCapture() {
     const amountCents = Math.round(parsed * 100)
     if (!description.trim()) return toast.error('Enter a description')
 
-    const today = new Date().toISOString().split('T')[0]
+    const today = todayLocalDateString()
 
     startTransition(async () => {
       try {

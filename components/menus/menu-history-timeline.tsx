@@ -6,6 +6,7 @@ import {
   addMenuHistoryEntry,
   updateMenuFeedback,
 } from '@/lib/menus/menu-history-actions'
+import { todayLocalDateString } from '@/lib/utils/format'
 
 // -- Types --
 
@@ -275,7 +276,7 @@ function AddMenuForm({
   onSaved: (entry: HistoryEntry) => void
   onCancel: () => void
 }) {
-  const [servedDate, setServedDate] = useState(new Date().toISOString().split('T')[0])
+  const [servedDate, setServedDate] = useState(() => todayLocalDateString())
   const [dishesText, setDishesText] = useState('')
   const [guestCount, setGuestCount] = useState('')
   const [notes, setNotes] = useState('')
