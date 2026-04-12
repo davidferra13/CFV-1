@@ -85,6 +85,7 @@ import { ClientIntelligencePanel } from '@/components/intelligence/client-intell
 import { findPotentialClientMatches } from '@/lib/clients/cross-platform-matching'
 import { PotentialDuplicatesCard } from '@/components/clients/potential-duplicates-card'
 import { EntityPhotoUpload } from '@/components/entities/entity-photo-upload'
+import { ScheduleMessageDialog } from '@/components/communication/schedule-message-dialog'
 
 const TIER_COLORS: Record<string, string> = {
   bronze: 'bg-amber-900 text-amber-800',
@@ -254,6 +255,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
+          <ScheduleMessageDialog clientId={client.id} clientName={client.full_name} />
           <Link href={`/clients/${client.id}/recurring`}>
             <Button variant="secondary">Recurring Planning</Button>
           </Link>
