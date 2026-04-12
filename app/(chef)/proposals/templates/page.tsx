@@ -19,7 +19,7 @@ export default async function ProposalTemplatesPage() {
     db
       .from('menus')
       .select('id, name')
-      .eq('chef_id', user.tenantId!)
+      .eq('tenant_id', user.tenantId!)
       .then((res: any) => res.data ?? [])
       .catch(() => []),
   ])

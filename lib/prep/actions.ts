@@ -23,7 +23,7 @@ export type PrepTimer = {
   created_at: string
   updated_at: string
   station?: { id: string; name: string } | null
-  event?: { id: string; title: string } | null
+  event?: { id: string; occasion: string | null } | null
 }
 
 /**
@@ -35,7 +35,7 @@ export async function getActivePrepTimers(): Promise<PrepTimer[]> {
 
   const { data, error } = await db
     .from('prep_timeline')
-    .select('*, station:stations(id, name), event:events(id, title)')
+    .select('*, station:stations(id, name), event:events(id, occasion)')
     .eq('chef_id', user.tenantId!)
     .eq('status', 'active')
     .order('end_at', { ascending: true })
@@ -60,7 +60,7 @@ export async function getPrepTimersForDate(date: string): Promise<PrepTimer[]> {
 
   const { data, error } = await db
     .from('prep_timeline')
-    .select('*, station:stations(id, name), event:events(id, title)')
+    .select('*, station:stations(id, name), event:events(id, occasion)')
     .eq('chef_id', user.tenantId!)
     .eq('status', 'active')
     .gte('end_at', startOfDay)

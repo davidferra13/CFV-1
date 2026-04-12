@@ -426,7 +426,7 @@ export async function checkDietaryByClientName(clientName: string): Promise<Diet
     // Check kitchen notes from most recent event
     const { data: events } = await db
       .from('events')
-      .select('id, title, event_date, kitchen_notes')
+      .select('id, occasion, event_date, kitchen_notes')
       .eq('tenant_id', user.tenantId!)
       .eq('client_id', client.id)
       .not('status', 'eq', 'cancelled')

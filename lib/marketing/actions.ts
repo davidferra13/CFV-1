@@ -484,7 +484,7 @@ export async function recordUnsubscribeByRecipientId(recipientId: string) {
       marketing_unsubscribed_at: new Date().toISOString(),
     })
     .eq('id', recipient.client_id)
-    .eq('chef_id', recipient.chef_id)
+    .eq('tenant_id', recipient.chef_id)
 
   // Get chef name for confirmation page
   const { data: prefs } = await db

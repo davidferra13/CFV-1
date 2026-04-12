@@ -37,7 +37,7 @@ export const GET = withApiAuth(
       const { data } = await ctx.db
         .from('clients')
         .select('id, full_name, email, phone, status')
-        .eq('chef_id', ctx.tenantId)
+        .eq('tenant_id', ctx.tenantId)
         .or(`full_name.ilike.${searchTerm},email.ilike.${searchTerm}`)
         .limit(limit)
 

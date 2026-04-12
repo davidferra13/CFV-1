@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
     const { data: existingClient } = await db
       .from('clients')
       .select('id')
-      .eq('chef_id', tenantId)
+      .eq('tenant_id', tenantId)
       .ilike('email', clientEmail)
       .single()
 

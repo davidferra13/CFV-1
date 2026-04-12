@@ -43,7 +43,7 @@ export default async function SplitBillingPage({ params }: { params: { id: strin
     const { data } = await db
       .from('clients')
       .select('id, full_name, email')
-      .eq('chef_id', user.tenantId!)
+      .eq('tenant_id', user.tenantId!)
       .order('full_name')
     rawClients = data ?? []
   } catch {

@@ -67,7 +67,7 @@ export async function getProactiveAlerts(): Promise<ProactiveAlertsResult> {
       // 3. Events in next 7 days missing key info
       db
         .from('events')
-        .select('id, title, event_date, guest_count, menu_id, location_text')
+        .select('id, occasion, event_date, guest_count, menu_id, location_address')
         .eq('tenant_id', tenantId)
         .in('status', ['confirmed', 'accepted', 'paid'])
         .gte('event_date', now.toISOString().split('T')[0])
@@ -92,7 +92,7 @@ export async function getProactiveAlerts(): Promise<ProactiveAlertsResult> {
       // 5. Completed events with no payment
       db
         .from('events')
-        .select('id, title, event_date, quoted_price_cents, client:clients(full_name)')
+        .select('id, occasion, event_date, quoted_price_cents, client:clients(full_name)')
         .eq('tenant_id', tenantId)
         .eq('status', 'completed')
         .eq('payment_collected', false)
@@ -141,7 +141,7 @@ export async function getProactiveAlerts(): Promise<ProactiveAlertsResult> {
     const missing: string[] = []
     if (!ev.menu_id) missing.push('menu')
     if (!ev.guest_count) missing.push('guest count')
-    if (!ev.location_text) missing.push('location')
+    if (!ev.location_address) missing.push('location')
 
     if (missing.length > 0) {
       const daysUntil = Math.floor((new Date(ev.event_date).getTime() - now.getTime()) / 86400000)
@@ -149,7 +149,7 @@ export async function getProactiveAlerts(): Promise<ProactiveAlertsResult> {
         id: `prep-${ev.id}`,
         severity: daysUntil <= 2 ? 'critical' : 'warning',
         icon: '📋',
-        title: `${ev.title || 'Event'} in ${daysUntil} day${daysUntil !== 1 ? 's' : ''} - missing ${missing.join(', ')}`,
+        title: `${ev.occasion || 'Event'} in ${daysUntil} day${daysUntil !== 1 ? 's' : ''} - missing ${missing.join(', ')}`,
         detail: `Event on ${ev.event_date}`,
         action: `Add ${missing[0]}`,
         link: `/events/${ev.id}`,
@@ -179,7 +179,7 @@ export async function getProactiveAlerts(): Promise<ProactiveAlertsResult> {
       id: `unpaid-${ev.id}`,
       severity: 'warning',
       icon: '⚠️',
-      title: `$${Math.round(ev.quoted_price_cents / 100)} unpaid - ${ev.title || clientName}`,
+      title: `$${Math.round(ev.quoted_price_cents / 100)} unpaid - ${ev.occasion || clientName}`,
       detail: `Completed on ${ev.event_date}`,
       action: 'Send invoice',
       link: `/events/${ev.id}`,

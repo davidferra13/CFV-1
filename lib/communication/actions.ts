@@ -1078,13 +1078,13 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
       } else if (s.suggested_entity_type === 'event') {
         const { data: ev } = await db
           .from('events' as any)
-          .select('title, event_date')
+          .select('occasion, event_date')
           .eq('id', s.suggested_entity_id)
-          .eq('chef_id', user.tenantId!)
+          .eq('tenant_id', user.tenantId!)
           .single()
         if (ev) {
           entity_title =
-            [ev.title, ev.event_date ? new Date(ev.event_date).toLocaleDateString() : null]
+            [ev.occasion, ev.event_date ? new Date(ev.event_date).toLocaleDateString() : null]
               .filter(Boolean)
               .join(' · ') || 'Event'
         }

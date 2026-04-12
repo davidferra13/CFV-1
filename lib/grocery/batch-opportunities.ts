@@ -29,7 +29,7 @@ export async function getBatchOpportunities(
   // Step 1: Get all events in the date range that have menus
   const { data: events } = await db
     .from('events')
-    .select('id, title, event_date')
+    .select('id, occasion, event_date')
     .eq('tenant_id', tenantId)
     .gte('event_date', startDate)
     .lte('event_date', endDate)
@@ -40,7 +40,7 @@ export async function getBatchOpportunities(
   const eventIds = events.map((e: any) => e.id)
   const eventMap = new Map<string, { id: string; name: string; date: string }>()
   for (const e of events) {
-    eventMap.set(e.id, { id: e.id, name: e.title || 'Untitled Event', date: e.event_date })
+    eventMap.set(e.id, { id: e.id, name: e.occasion || 'Untitled Event', date: e.event_date })
   }
 
   // Step 2: Get all menus for these events

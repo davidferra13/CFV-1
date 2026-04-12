@@ -49,7 +49,7 @@ export async function schedulePostEventFollowUp(
   // Get event + client info
   const { data: event, error: eventError } = await db
     .from('events')
-    .select('id, client_id, title, event_date')
+    .select('id, client_id, occasion, event_date')
     .eq('id', eventId)
     .eq('tenant_id', tenantId)
     .single()

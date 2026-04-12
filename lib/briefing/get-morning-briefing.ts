@@ -224,7 +224,7 @@ export async function getMorningBriefing(): Promise<MorningBriefing> {
     // Prep timers completing today
     db
       .from('prep_timeline')
-      .select('id, title, end_at, status, station:stations(name), event:events(title)')
+      .select('id, title, end_at, status, station:stations(name), event:events(occasion)')
       .eq('chef_id', tenantId)
       .eq('status', 'active')
       .gte('end_at', today + 'T00:00:00')
