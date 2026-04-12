@@ -9,7 +9,7 @@
 -- filter patterns (tenant_id lookups and is_active filtering).
 
 CREATE INDEX IF NOT EXISTS idx_chef_marketplace_profiles_active
-  ON chef_marketplace_profiles (tenant_id, is_active);
+  ON chef_marketplace_profiles (chef_id, accepting_inquiries);
 
 CREATE INDEX IF NOT EXISTS idx_chef_marketplace_profiles_created
   ON chef_marketplace_profiles (created_at DESC);

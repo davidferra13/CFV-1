@@ -1,6 +1,6 @@
 # Spec: Ingredient Sourcing Intelligence
 
-> **Status:** ready
+> **Status:** verified
 > **Priority:** P1 (next up)
 > **Depends on:** none (catalog browser already exists)
 > **Estimated complexity:** medium (4-5 files)
