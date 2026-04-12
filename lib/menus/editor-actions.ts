@@ -662,6 +662,13 @@ export async function linkRecipeToEditorDish(dishId: string, recipeId: string, r
 
   if (existing) return { success: true, alreadyLinked: true }
 
+  const { data: dish } = await db
+    .from('dishes')
+    .select('menu_id')
+    .eq('id', dishId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
   const { error } = await db
     .from('components')
     .insert({
@@ -684,6 +691,11 @@ export async function linkRecipeToEditorDish(dishId: string, recipeId: string, r
     throw new Error('Failed to link recipe')
   }
 
+  if (dish?.menu_id) {
+    revalidatePath(`/menus/${dish.menu_id}`)
+    revalidatePath(`/menus/${dish.menu_id}/editor`)
+  }
+
   return { success: true, alreadyLinked: false }
 }
 
@@ -692,6 +704,13 @@ export async function linkRecipeToEditorDish(dishId: string, recipeId: string, r
 export async function unlinkRecipeFromEditorDish(dishId: string, recipeId: string) {
   const user = await requireChef()
   const db: any = createServerClient()
+
+  const { data: dish } = await db
+    .from('dishes')
+    .select('menu_id')
+    .eq('id', dishId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
 
   const { error } = await db
     .from('components')
@@ -703,6 +722,11 @@ export async function unlinkRecipeFromEditorDish(dishId: string, recipeId: strin
   if (error) {
     console.error('[unlinkRecipeFromEditorDish] Error:', error)
     throw new Error('Failed to unlink recipe')
+  }
+
+  if (dish?.menu_id) {
+    revalidatePath(`/menus/${dish.menu_id}`)
+    revalidatePath(`/menus/${dish.menu_id}/editor`)
   }
 
   return { success: true }
