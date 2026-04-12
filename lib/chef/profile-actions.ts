@@ -220,6 +220,7 @@ export async function updateChefFullProfile(input: UpdateChefFullProfileInput) {
   revalidatePath('/settings/public-profile')
   revalidatePath('/settings/profile')
   revalidateTag(`chef-layout-${user.entityId}`)
+  revalidateTag('chef-booking-profile')
 
   return { success: true as const }
 }
