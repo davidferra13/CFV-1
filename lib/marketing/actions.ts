@@ -718,9 +718,9 @@ export async function sendDirectOutreach(input: {
   // Fetch client
   const { data: client } = await db
     .from('clients')
-    .select('id, full_name, email, phone, chef_id')
+    .select('id, full_name, email, phone')
     .eq('id', input.clientId)
-    .eq('chef_id', chef.entityId)
+    .eq('tenant_id', chef.tenantId!)
     .single()
 
   if (!client) throw new Error('Client not found')
@@ -1086,7 +1086,7 @@ export async function processBirthdayEnrollments() {
     const { data: clients } = await db
       .from('clients')
       .select('id, full_name, email, personal_milestones')
-      .eq('chef_id', seq.chef_id)
+      .eq('tenant_id', seq.chef_id)
       .eq('marketing_unsubscribed', false)
       .not('email', 'is', null)
       .not('personal_milestones', 'is', null)

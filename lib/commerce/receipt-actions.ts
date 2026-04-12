@@ -101,7 +101,7 @@ async function getSaleContactSnapshot(
       .from('clients')
       .select('full_name, email, phone')
       .eq('id', clientId)
-      .eq('chef_id', tenantId)
+      .eq('tenant_id', tenantId)
       .maybeSingle() as any)
 
     clientName = client?.full_name ? String(client.full_name) : null

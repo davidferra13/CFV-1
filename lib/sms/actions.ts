@@ -38,7 +38,7 @@ export async function sendSmsToClient(input: {
     .from('clients')
     .select('id, full_name, phone')
     .eq('id', input.clientId)
-    .eq('chef_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!)
     .single()
 
   if (!client) return { success: false, error: 'Client not found' }
@@ -81,7 +81,7 @@ export async function sendWhatsAppToClient(input: {
     .from('clients')
     .select('id, full_name, phone')
     .eq('id', input.clientId)
-    .eq('chef_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!)
     .single()
 
   if (!client) return { success: false, error: 'Client not found' }

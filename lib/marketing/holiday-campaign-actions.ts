@@ -70,7 +70,7 @@ export async function processHolidayCampaignDrafts(): Promise<{
         const { count } = await db
           .from('clients')
           .select('id', { count: 'exact', head: true })
-          .eq('chef_id', chef.id)
+          .eq('tenant_id', chef.id)
           .eq('marketing_unsubscribed', false)
           .not('email', 'is', null)
 
