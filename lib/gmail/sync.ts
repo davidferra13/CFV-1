@@ -1745,7 +1745,10 @@ async function handleTacBookingConfirmed(
         existingInquiry.confirmed_date ||
         booking.primaryServiceDate ||
         booking.serviceDates?.split(/[-–]/)[0]?.trim() ||
-        new Date().toISOString().slice(0, 10)
+        ((_d) =>
+          `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+          new Date()
+        )
 
       const clientId = existingInquiry.client_id
       if (!clientId) return // Cannot create event without a client
