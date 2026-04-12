@@ -39,7 +39,9 @@ export async function getPricingSuggestion(params: {
 
   const { data: quotes, error } = await db
     .from('quotes')
-    .select('id, total_quoted_cents, guest_count_estimated, event_id')
+    .select(
+      'id, total_quoted_cents, guest_count_estimated, event_id, event:events(confirmed_occasion)'
+    )
     .eq('tenant_id', user.tenantId!)
     .eq('status', 'accepted')
     .eq('pricing_model', pricingModel as PricingModel)
@@ -55,19 +57,21 @@ export async function getPricingSuggestion(params: {
 
   let candidates = quotes ?? []
 
-  // Narrow to occasion match if available and sufficient
+  // Narrow to occasion match if available and sufficient data exists
   if (occasion && candidates.length >= 3) {
-    const lower = occasion.toLowerCase()
+    const lowerOccasion = occasion.toLowerCase()
     const occasionMatches = candidates.filter((q: any) => {
-      // We don't have occasion on quotes directly, so we match on occasion substring
-      // This is a best-effort filter using confirmed_occasion from the inquiry join
-      // For simplicity: if we had more data we'd join inquiries, but keep it fast here
-      return false // placeholder - occasion matching skipped at DB level; left for future
+      const eventOccasion = (q.event as { confirmed_occasion: string | null } | null)
+        ?.confirmed_occasion
+      if (!eventOccasion) return false
+      return (
+        eventOccasion.toLowerCase().includes(lowerOccasion) ||
+        lowerOccasion.includes(eventOccasion.toLowerCase())
+      )
     })
     if (occasionMatches.length >= 3) {
       candidates = occasionMatches
     }
-    void lower // suppress unused var
   }
 
   if (candidates.length < 3) {

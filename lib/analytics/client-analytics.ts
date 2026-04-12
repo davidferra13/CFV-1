@@ -261,9 +261,23 @@ export async function getClientAcquisitionStats(
     .gte('first_event_date', startDate)
     .lte('first_event_date', endDate)
 
-  // Marketing spend in period
-  // TODO: marketing_spend_log table not yet created - stub to 0
-  const totalSpend = 0
+  // Marketing spend in period - from marketing_spend_log table (migration 20260411000002)
+  let totalSpend = 0
+  try {
+    const { data: spendRows } = await db
+      .from('marketing_spend_log')
+      .select('amount_cents')
+      .eq('chef_id', chef.entityId)
+      .gte('spend_date', startDate.substring(0, 10))
+      .lte('spend_date', endDate.substring(0, 10))
+    totalSpend = (spendRows ?? []).reduce(
+      (sum: number, row: { amount_cents: number }) => sum + row.amount_cents,
+      0
+    )
+  } catch {
+    // Table may not exist yet if migration hasn't been applied
+    totalSpend = 0
+  }
   const newClientCount = newClients ?? 0
   const cac = newClientCount > 0 ? Math.round(totalSpend / newClientCount) : 0
 
