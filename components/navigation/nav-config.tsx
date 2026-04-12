@@ -189,6 +189,7 @@ export const standaloneTop: NavItem[] = [
       { href: '/culinary/price-catalog', label: 'Food Catalog' },
       { href: '/culinary/costing', label: 'Costing' },
       { href: '/culinary/prep', label: 'Prep' },
+      { href: '/culinary/prep/shopping', label: 'Shopping Lists' },
     ],
   },
   {
@@ -210,6 +211,7 @@ export const standaloneTop: NavItem[] = [
     coreFeature: true,
     tier: 'secondary',
     subMenu: [
+      { href: '/briefing', label: 'Morning Briefing' },
       { href: '/stations/daily-ops', label: 'Daily Ops' },
       { href: '/staff', label: 'Staff' },
       { href: '/tasks', label: 'Tasks' },

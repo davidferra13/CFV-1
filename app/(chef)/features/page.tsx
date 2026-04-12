@@ -199,13 +199,13 @@ const SECTIONS: Section[] = [
       },
       {
         label: 'Prep Timeline',
-        href: '/culinary/prep',
+        href: '/culinary/prep/timeline',
         description: 'Day-by-day prep schedule for every event.',
         icon: Clock,
       },
       {
         label: 'Shopping Lists',
-        href: '/culinary/shopping-lists',
+        href: '/culinary/prep/shopping',
         description: 'Auto-generated lists from your menu selections.',
         icon: ShoppingCart,
       },
