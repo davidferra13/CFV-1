@@ -247,9 +247,7 @@ export async function transitionEvent({
 
   if (verifiedEvent?.status !== toStatus) {
     log.events.warn('Transition side effects skipped - concurrent request won the race', {
-      eventId,
-      expected: toStatus,
-      actual: verifiedEvent?.status,
+      context: { eventId, expected: toStatus, actual: verifiedEvent?.status },
     })
     return { success: true, eventId, fromStatus, toStatus }
   }
@@ -692,7 +690,41 @@ export async function transitionEvent({
     log.events.warn('Email send failed (non-blocking)', { error: emailErr })
   }
 
-  // Circle posts for confirmed + completed are now handled by circleFirstNotify() above
+  // Circle posts: accepted + paid (confirmed + completed handled by circleFirstNotify above)
+
+  if (toStatus === 'accepted' && fromStatus === 'proposed') {
+    try {
+      const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
+      await circleFirstNotify({
+        eventId,
+        inquiryId: event.inquiry_id ?? null,
+        notificationType: 'quote_accepted',
+        body: "You've accepted the proposal. I'm looking forward to cooking for you. I'll follow up with the next steps soon.",
+        metadata: { event_id: eventId },
+        actionUrl: `/my-events/${eventId}`,
+        actionLabel: 'View Event',
+      })
+    } catch (circleErr) {
+      log.events.warn('Circle post for accepted failed (non-blocking)', { error: circleErr })
+    }
+  }
+
+  if (toStatus === 'paid') {
+    try {
+      const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
+      await circleFirstNotify({
+        eventId,
+        inquiryId: event.inquiry_id ?? null,
+        notificationType: 'payment_received',
+        body: 'Payment confirmed. Your date is locked in. I will start planning and share the full details here soon.',
+        metadata: { event_id: eventId },
+        actionUrl: `/my-events/${eventId}`,
+        actionLabel: 'View Event',
+      })
+    } catch (circleErr) {
+      log.events.warn('Circle post for paid failed (non-blocking)', { error: circleErr })
+    }
+  }
 
   // Create post-event survey and email client (non-blocking)
   if (toStatus === 'completed' && fromStatus === 'in_progress') {

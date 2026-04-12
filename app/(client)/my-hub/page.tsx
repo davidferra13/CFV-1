@@ -87,7 +87,7 @@ export default async function MyHubPage() {
         <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
           <div className="rounded-xl border border-stone-800 bg-stone-900/60 p-4 text-center">
             <p className="text-2xl font-bold text-stone-100">{groups.length}</p>
-            <p className="text-xs text-stone-400">Dinner Groups</p>
+            <p className="text-xs text-stone-400">Circles</p>
           </div>
           <div className="rounded-xl border border-stone-800 bg-stone-900/60 p-4 text-center">
             <p className="text-2xl font-bold text-stone-100">{friends.length}</p>
@@ -106,7 +106,7 @@ export default async function MyHubPage() {
       {/* Groups */}
       {groups.length > 0 ? (
         <div>
-          <h2 className="mb-4 text-lg font-semibold text-stone-200">Dinner Groups</h2>
+          <h2 className="mb-4 text-lg font-semibold text-stone-200">Circles</h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {groups.map((group) => (
               <HubGroupCard key={group.id} group={group} />
