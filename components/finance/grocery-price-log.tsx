@@ -10,6 +10,7 @@ import {
   type PriceEntry,
   type PriceEntryInput,
 } from '@/lib/finance/grocery-price-actions'
+import { todayLocalDateString } from '@/lib/utils/format'
 
 const UNIT_OPTIONS = [
   'lb',
@@ -49,7 +50,7 @@ export function GroceryPriceLog() {
   const [priceStr, setPriceStr] = useState('')
   const [quantity, setQuantity] = useState('1')
   const [storeName, setStoreName] = useState('')
-  const [receiptDate, setReceiptDate] = useState(new Date().toISOString().split('T')[0])
+  const [receiptDate, setReceiptDate] = useState(() => todayLocalDateString())
 
   const loadEntries = useCallback(() => {
     startTransition(async () => {

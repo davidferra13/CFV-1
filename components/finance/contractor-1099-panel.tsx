@@ -12,6 +12,7 @@ import {
 } from '@/lib/finance/contractor-actions'
 import { Users, AlertTriangle, Plus } from '@/components/ui/icons'
 import { toast } from 'sonner'
+import { todayLocalDateString } from '@/lib/utils/format'
 
 type StaffMember = { id: string; name: string; contractorType: string | null }
 
@@ -33,7 +34,7 @@ export function Contractor1099Panel({ summaries, recentPayments, staffMembers, t
   const [form, setForm] = useState({
     staffMemberId: '',
     amountCents: 0,
-    paymentDate: new Date().toISOString().split('T')[0],
+    paymentDate: todayLocalDateString(),
     paymentMethod: 'venmo' as string,
     description: '',
   })
@@ -57,7 +58,7 @@ export function Contractor1099Panel({ summaries, recentPayments, staffMembers, t
         setForm({
           staffMemberId: '',
           amountCents: 0,
-          paymentDate: new Date().toISOString().split('T')[0],
+          paymentDate: todayLocalDateString(),
           paymentMethod: 'venmo',
           description: '',
         })

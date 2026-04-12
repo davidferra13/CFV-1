@@ -9,6 +9,7 @@ import type { Employee } from '@/lib/finance/payroll-actions'
 import { computePayrollTaxes } from '@/lib/finance/payroll-constants'
 import { CheckCircle } from '@/components/ui/icons'
 import { toast } from 'sonner'
+import { todayLocalDateString } from '@/lib/utils/format'
 
 function formatCurrency(cents: number): string {
   return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
@@ -23,7 +24,7 @@ export function PayrollEntryForm({ employees, onSaved }: Props) {
   const [isPending, startTransition] = useTransition()
   const [saved, setSaved] = useState(false)
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = todayLocalDateString()
 
   const [form, setForm] = useState({
     employeeId: employees[0]?.id ?? '',

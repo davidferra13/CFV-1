@@ -605,6 +605,9 @@ export async function reorderEditorCourse(
     .update({ sort_order: a.sort_order })
     .eq('id', b.id)
     .eq('tenant_id', user.tenantId!)
+
+  revalidatePath(`/menus/${menuId}`)
+  revalidatePath(`/menus/${menuId}/editor`)
 }
 
 // ─── searchRecipesForEditor ───────────────────────────────────────────────────

@@ -43,7 +43,14 @@ export function RecordPaymentModal({
 
   const [amountDollars, setAmountDollars] = useState(defaultDollars)
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('venmo')
-  const [paidAt, setPaidAt] = useState(() => new Date().toISOString().split('T')[0])
+  const [paidAt, setPaidAt] = useState(() => {
+    const d = new Date()
+    return [
+      d.getFullYear(),
+      String(d.getMonth() + 1).padStart(2, '0'),
+      String(d.getDate()).padStart(2, '0'),
+    ].join('-')
+  })
   const [notes, setNotes] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)

@@ -166,6 +166,19 @@ export function nowFormatted(opts: FormatOpts = {}): string {
   return formatDateTime(new Date(), opts)
 }
 
+/**
+ * Returns today's date as YYYY-MM-DD using LOCAL time parts.
+ * Use this instead of `new Date().toISOString().split('T')[0]` which returns
+ * UTC date and causes off-by-one errors after 7pm ET (UTC is already "tomorrow").
+ */
+export function todayLocalDateString(d: Date = new Date()): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
 /** Get the current weekday name in a timezone */
 export function todayWeekday(
   opts: FormatOpts & { style?: 'long' | 'short' | 'narrow' } = {}

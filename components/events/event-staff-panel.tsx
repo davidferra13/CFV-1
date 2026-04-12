@@ -14,6 +14,7 @@ import {
   type AssignStaffInput,
 } from '@/lib/staff/actions'
 import { createTaskFromEvent } from '@/lib/tasks/actions'
+import { todayLocalDateString } from '@/lib/utils/format'
 
 const ROLE_LABELS: Record<string, string> = {
   sous_chef: 'Sous Chef',
@@ -65,7 +66,7 @@ type TaskDraft = {
 const DEFAULT_TASK_DRAFT: TaskDraft = {
   title: '',
   priority: 'medium',
-  due_date: new Date().toISOString().split('T')[0],
+  due_date: todayLocalDateString(),
   due_time: '',
   notes: '',
 }

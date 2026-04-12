@@ -13,6 +13,7 @@ import type { SalesTaxSummary, SalesTaxRemittance } from '@/lib/finance/sales-ta
 import { bpsToPercent } from '@/lib/finance/sales-tax-constants'
 import { CheckCircle, AlertTriangle, DollarSign } from '@/components/ui/icons'
 import { toast } from 'sonner'
+import { todayLocalDateString } from '@/lib/utils/format'
 
 function formatCurrency(cents: number): string {
   return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
@@ -40,7 +41,7 @@ export function SalesTaxPanel({ summary, unremittedEvents, remittances }: Props)
     periodStart: '',
     periodEnd: '',
     amountRemittedCents: 0,
-    remittedAt: new Date().toISOString().split('T')[0],
+    remittedAt: todayLocalDateString(),
     confirmationNumber: '',
     notes: '',
   })
@@ -65,7 +66,7 @@ export function SalesTaxPanel({ summary, unremittedEvents, remittances }: Props)
           periodStart: '',
           periodEnd: '',
           amountRemittedCents: 0,
-          remittedAt: new Date().toISOString().split('T')[0],
+          remittedAt: todayLocalDateString(),
           confirmationNumber: '',
           notes: '',
         })

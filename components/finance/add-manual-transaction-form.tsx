@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { addManualTransaction } from '@/lib/finance/bank-feed-actions'
 import { trackAction } from '@/lib/ai/remy-activity-tracker'
+import { todayLocalDateString } from '@/lib/utils/format'
 
 const EXPENSE_CATEGORIES = [
   'groceries',
@@ -37,7 +38,7 @@ export function AddManualTransactionForm() {
     description: '',
     amount: '',
     category: 'other',
-    date: new Date().toISOString().split('T')[0],
+    date: todayLocalDateString(),
   })
 
   function handleSubmit() {
@@ -56,7 +57,7 @@ export function AddManualTransactionForm() {
           description: '',
           amount: '',
           category: 'other',
-          date: new Date().toISOString().split('T')[0],
+          date: todayLocalDateString(),
         })
         setOpen(false)
         router.refresh()

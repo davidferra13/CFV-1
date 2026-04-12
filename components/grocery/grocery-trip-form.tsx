@@ -14,6 +14,7 @@ import {
   type CreateTripInput,
   type AddItemInput,
 } from '@/lib/grocery/grocery-splitting-actions'
+import { todayLocalDateString } from '@/lib/utils/format'
 
 const CATEGORIES = [
   { value: 'produce', label: 'Produce', color: 'bg-green-100 text-green-800' },
@@ -58,7 +59,7 @@ export function GroceryTripForm({
   const [isPending, startTransition] = useTransition()
 
   const [storeName, setStoreName] = useState(initialStoreName)
-  const [tripDate, setTripDate] = useState(initialDate || new Date().toISOString().split('T')[0])
+  const [tripDate, setTripDate] = useState(initialDate || todayLocalDateString())
   const [notes, setNotes] = useState(initialNotes)
   const [items, setItems] = useState<TripItem[]>(initialItems)
   const [tripId, setTripId] = useState<string | null>(existingTripId ?? null)

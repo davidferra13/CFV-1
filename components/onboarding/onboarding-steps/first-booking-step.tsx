@@ -6,6 +6,7 @@
 
 import { useState, useTransition } from 'react'
 import { createEvent } from '@/lib/events/actions'
+import { todayLocalDateString } from '@/lib/utils/format'
 
 interface FirstBookingStepProps {
   onComplete: (data?: Record<string, unknown>) => void
@@ -89,7 +90,7 @@ export function FirstBookingStep({ onComplete, onSkip }: FirstBookingStepProps) 
             type="date"
             value={eventDate}
             onChange={(e) => setEventDate(e.target.value)}
-            min={new Date().toISOString().split('T')[0]}
+            min={todayLocalDateString()}
             className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>

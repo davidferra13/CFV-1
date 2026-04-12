@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { uploadVendorInvoice } from '@/lib/inventory/vendor-invoice-actions'
+import { todayLocalDateString } from '@/lib/utils/format'
 
 type LineItem = {
   itemName: string
@@ -21,7 +22,7 @@ export function UploadVendorInvoiceForm() {
 
   const [form, setForm] = useState({
     invoiceNumber: '',
-    invoiceDate: new Date().toISOString().split('T')[0],
+    invoiceDate: todayLocalDateString(),
     totalCents: '',
   })
 
@@ -68,7 +69,7 @@ export function UploadVendorInvoiceForm() {
         })
         setForm({
           invoiceNumber: '',
-          invoiceDate: new Date().toISOString().split('T')[0],
+          invoiceDate: todayLocalDateString(),
           totalCents: '',
         })
         setItems([{ itemName: '', quantity: 1, unitPriceCents: 0, totalCents: 0 }])
