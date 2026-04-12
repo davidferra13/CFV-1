@@ -16,6 +16,7 @@ import { getCalendarEvents, rescheduleEvent, type CalendarEvent } from '@/lib/sc
 import { getUSHolidaysInRange, type HolidayEvent } from '@/lib/holidays/us-holidays'
 import type { SeasonalPalette } from '@/lib/seasonal/types'
 import { getCurrentSeason } from '@/lib/seasonal/helpers'
+import { todayLocalDateString } from '@/lib/utils/format'
 import { EventDetailPopover } from './event-detail-popover'
 import { AgendaView } from './agenda-view'
 import { MiniCalendar } from './mini-calendar'
@@ -304,7 +305,7 @@ export function CalendarView({
 
   const goToday = () => {
     calendarRef.current?.getApi().today()
-    setSelectedDate(new Date().toISOString().split('T')[0])
+    setSelectedDate(todayLocalDateString())
   }
   const goPrev = () => calendarRef.current?.getApi().prev()
   const goNext = () => calendarRef.current?.getApi().next()

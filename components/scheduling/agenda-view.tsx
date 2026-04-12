@@ -5,6 +5,7 @@
 
 import Link from 'next/link'
 import type { CalendarEvent } from '@/lib/scheduling/actions'
+import { todayLocalDateString } from '@/lib/utils/format'
 
 const STATUS_LABELS: Record<string, string> = {
   draft: 'Draft',
@@ -42,7 +43,7 @@ interface AgendaDay {
 }
 
 function groupEventsByDay(events: CalendarEvent[]): AgendaDay[] {
-  const today = new Date().toISOString().split('T')[0]
+  const today = todayLocalDateString()
   const dayMap = new Map<string, CalendarEvent[]>()
 
   for (const event of events) {
