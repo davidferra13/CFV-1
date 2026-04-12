@@ -103,7 +103,10 @@ export async function createAudit(
       status: 'in_progress',
       event_id: parsed.eventId ?? null,
       location_id: parsed.locationId ?? null,
-      audit_date: new Date().toISOString().split('T')[0],
+      audit_date: ((_d) =>
+        `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+        new Date()
+      ),
       notes: parsed.notes ?? null,
       started_at: new Date().toISOString(),
       created_by: user.id,

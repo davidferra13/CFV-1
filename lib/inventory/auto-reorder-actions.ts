@@ -97,7 +97,10 @@ export async function generateAutoReorderPOs(): Promise<AutoReorderResult> {
     const po = await createPurchaseOrder({
       vendorId: group.vendorId ?? undefined,
       notes: `Auto-generated reorder (${group.items.length} items)`,
-      orderDate: new Date().toISOString().split('T')[0],
+      orderDate: ((_d) =>
+        `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+        new Date()
+      ),
     })
 
     // Add each item to the PO

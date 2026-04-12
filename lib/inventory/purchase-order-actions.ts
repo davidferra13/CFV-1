@@ -628,7 +628,10 @@ export async function receivePOItems(
           source: 'po_receipt',
           source_id: item.itemId,
           vendor_id: po.vendor_id ?? null,
-          recorded_at: new Date().toISOString().split('T')[0],
+          recorded_at: ((_d) =>
+            `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+            new Date()
+          ),
           notes: `PO ${po.po_number || poId}`,
         })
       } catch (err) {

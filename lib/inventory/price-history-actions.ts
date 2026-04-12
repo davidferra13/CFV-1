@@ -84,7 +84,12 @@ export async function recordPricePoint(
       source,
       source_id: options?.sourceId ?? null,
       vendor_id: options?.vendorId ?? null,
-      purchase_date: options?.recordedAt ?? new Date().toISOString().split('T')[0],
+      purchase_date:
+        options?.recordedAt ??
+        ((_d) =>
+          `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+          new Date()
+        ),
       notes: options?.notes ?? null,
     })
     .select('id')
@@ -98,7 +103,12 @@ export async function recordPricePoint(
       .from('ingredients')
       .update({
         last_price_cents: priceCents,
-        last_price_date: options?.recordedAt ?? new Date().toISOString().split('T')[0],
+        last_price_date:
+          options?.recordedAt ??
+          ((_d) =>
+            `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+            new Date()
+          ),
       })
       .eq('id', ingredientId)
       .eq('tenant_id', user.tenantId!)
@@ -129,9 +139,12 @@ export async function getIngredientPriceHistory(
     .order('purchase_date', { ascending: false })
 
   if (options?.months) {
-    const cutoff = new Date()
-    cutoff.setMonth(cutoff.getMonth() - options.months)
-    query = query.gte('purchase_date', cutoff.toISOString().split('T')[0])
+    const _ct = new Date()
+    const cutoff = new Date(_ct.getFullYear(), _ct.getMonth() - options.months, _ct.getDate())
+    query = query.gte(
+      'purchase_date',
+      `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, '0')}-${String(cutoff.getDate()).padStart(2, '0')}`
+    )
   }
 
   if (options?.limit) {

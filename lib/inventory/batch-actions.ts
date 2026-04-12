@@ -47,9 +47,9 @@ export async function getExpiryAlerts(daysAhead: number = 7): Promise<ExpiryAler
   const db: any = createServerClient()
 
   // Compute the cutoff date: now + daysAhead days
-  const cutoff = new Date()
-  cutoff.setDate(cutoff.getDate() + daysAhead)
-  const cutoffIso = cutoff.toISOString().split('T')[0]
+  const _c = new Date()
+  const cutoff = new Date(_c.getFullYear(), _c.getMonth(), _c.getDate() + daysAhead)
+  const cutoffIso = `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, '0')}-${String(cutoff.getDate()).padStart(2, '0')}`
 
   // Fetch active batches with an expiry date within the window
   const { data: batches, error } = await db

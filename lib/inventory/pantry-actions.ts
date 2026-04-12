@@ -421,9 +421,9 @@ export async function getExpiringItems(daysAhead: number = 7): Promise<PantryIte
   const tenantId = user.tenantId!
   const db: any = createServerClient()
 
-  const cutoff = new Date()
-  cutoff.setDate(cutoff.getDate() + daysAhead)
-  const cutoffStr = cutoff.toISOString().split('T')[0]
+  const _cp = new Date()
+  const cutoff = new Date(_cp.getFullYear(), _cp.getMonth(), _cp.getDate() + daysAhead)
+  const cutoffStr = `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, '0')}-${String(cutoff.getDate()).padStart(2, '0')}`
 
   const { data, error } = await db
     .from('pantry_items')
@@ -482,9 +482,9 @@ export async function getPantrySummary(): Promise<PantrySummary> {
   ).length
 
   // Expiring count (next 7 days)
-  const cutoff = new Date()
-  cutoff.setDate(cutoff.getDate() + 7)
-  const cutoffStr = cutoff.toISOString().split('T')[0]
+  const _cp7 = new Date()
+  const cutoff7 = new Date(_cp7.getFullYear(), _cp7.getMonth(), _cp7.getDate() + 7)
+  const cutoffStr = `${cutoff7.getFullYear()}-${String(cutoff7.getMonth() + 1).padStart(2, '0')}-${String(cutoff7.getDate()).padStart(2, '0')}`
 
   const { count: expiringCount } = await db
     .from('pantry_items')

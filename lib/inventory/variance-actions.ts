@@ -237,7 +237,7 @@ export async function getVarianceTrend(months: number = 6): Promise<VarianceTren
   // Compute date range
   const now = new Date()
   const start = new Date(now.getFullYear(), now.getMonth() - months + 1, 1)
-  const startDate = start.toISOString().split('T')[0]
+  const startDate = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`
 
   // Fetch all event_deduction transactions in the range
   const { data: transactions, error: txError } = await db
@@ -336,7 +336,7 @@ export async function getIngredientVarianceHistory(
   // Compute date range
   const now = new Date()
   const start = new Date(now.getFullYear(), now.getMonth() - months + 1, 1)
-  const startDate = start.toISOString().split('T')[0]
+  const startDate = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`
 
   // Fetch event_deduction transactions for this ingredient
   const { data: transactions, error } = await db
