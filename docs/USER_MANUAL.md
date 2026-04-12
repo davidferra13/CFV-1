@@ -184,7 +184,7 @@ See when a client is currently viewing their event portal (a live indicator appe
 
 All recipes are entered manually. ChefFlow never generates or suggests recipes.
 
-1. Sidebar > Recipes > **New Recipe**
+1. Sidebar > Culinary > Recipes > **New Recipe**
 2. Enter: name, yield (servings), prep time, cook time
 3. Add ingredients from the master list (quantity, unit, name)
 4. Add step-by-step instructions
@@ -192,6 +192,20 @@ All recipes are entered manually. ChefFlow never generates or suggests recipes.
 6. Save
 
 ChefFlow automatically calculates ingredient cost from the price catalog (15,000+ items from 39 local stores).
+
+### Importing Recipes in Bulk
+
+If you have years of recipes to get into ChefFlow, use the Import hub: Sidebar > Culinary > **Import Recipes** (or Culinary hub > Import Recipes tile).
+
+**CSV Import** (for spreadsheets): Export from Excel/Sheets, paste the CSV text, preview all rows, then import. Required column: `name`. Optional: `category`, `description`, `method`, `ingredients` (pipe-separated: "2 cups flour|1 egg"), `prep_time`, `cook_time`, `yield`.
+
+**URL Import**: Paste a recipe URL from AllRecipes, Food Network, Epicurious, or any site with structured recipe data. Preview before saving. Batch import supports multiple URLs at once.
+
+**Photo Import**: Drop photos of recipe cards, cookbook pages, or handwritten notes. Vision AI extracts the structure. Requires Gemini API key.
+
+**Brain Dump**: Type everything you know about a dish in your own words. ChefFlow parses it into a structured recipe. Requires AI to be configured.
+
+**Recipe Sprint**: Queue-based rapid capture for a large backlog of past dishes.
 
 ### Creating a Menu
 
