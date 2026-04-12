@@ -1972,11 +1972,63 @@ Open booking form. Client describes event, gets matched to nearby chefs.
 | Form section 2: Preferences      | Budget range (select), dietary restrictions (textarea), additional notes (textarea)                                                  |
 | Form section 3: Contact info     | Full name, email, phone (optional)                                                                                                   |
 | Honeypot                         | Hidden `website_url` field for bot detection                                                                                         |
+| Turnstile CAPTCHA                | Invisible Cloudflare Turnstile widget. Token required server-side before submission accepted.                                        |
+| sessionStorage draft recovery    | Form auto-saves to sessionStorage on every field change. Restores on page reload. Honeypot never persisted. Cleared on success.      |
 | Submit                           | Posts to `/api/book`. Shows spinner during submission                                                                                |
 | Success state                    | Shows matched count and location. If 0 matches, shows "browse directory" fallback link                                               |
 | Trust footer                     | 4 checkmarks: Free to submit, No obligation, Chefs contact you directly, Zero commission                                             |
 
-**API:** `POST /api/book` - rate limited (5/10min per IP), Turnstile CAPTCHA, email validation, honeypot. Matches chefs via `matchChefsForBooking()` (Haversine distance, service type, guest count). Creates inquiry + draft event under each matched chef (up to 10). Sends chef notification emails + client confirmation.
+**API:** `POST /api/book` - rate limited (5/10min per IP), Turnstile CAPTCHA server-side verification, email validation, honeypot. Matches chefs via `matchChefsForBooking()` (Haversine distance, service type, guest count). Creates inquiry + draft event under each matched chef (up to 10). Sends chef notification emails + client confirmation.
+
+### Ingredient Guide (`/ingredients`)
+
+Public culinary encyclopedia. Searchable A-Z browse of enriched ingredients with photos, flavor profiles, dietary flags, and origin.
+
+| Element             | Description                                                                                                                                                              |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Header              | "Ingredient Guide" heading, total count ("X culinary ingredients with flavor profiles, origin, dietary info, and live pricing")                                          |
+| Category tab pills  | Scrollable pills linking to `/ingredients/[category]` - shown only on page 1 with no search query                                                                        |
+| Search bar          | `GET` form with `?q=` param. Searches `si.name ILIKE '%q%'` server-side. Minimum 2 chars to activate search filter.                                                      |
+| Recently Added grid | 8 square photo cards of most recently enriched ingredients (with images). Links to `/ingredient/[slug]`. Hidden during search or pagination.                             |
+| Results grid        | 4-column responsive grid. Each card: ingredient photo (h-32), name, category, wiki summary (2-line clamp), dietary badges, flavor profile. Links to `/ingredient/[slug]` |
+| Pagination          | Prev/Next links with `?page=N`. 48 items per page. Shows "Page X of Y".                                                                                                  |
+| Empty state         | "No ingredients found for X" on search miss; "No enriched ingredients yet" when DB empty                                                                                 |
+
+**Data:** Joins `ingredient_knowledge_slugs + system_ingredients + ingredient_knowledge`. Only shows `wiki_summary IS NOT NULL AND needs_review = false`.
+**SEO:** schema.org `CollectionPage` JSON-LD with `numberOfItems`. Canonical at `/ingredients`.
+
+### Ingredient Category (`/ingredients/[category]`)
+
+Filtered ingredient browse by category (produce, protein, dairy, spice, etc.).
+
+| Element        | Description                                                                                                |
+| -------------- | ---------------------------------------------------------------------------------------------------------- |
+| Header         | Category label + count ("X ingredients")                                                                   |
+| Results grid   | Same card layout as `/ingredients`. 96 items per page.                                                     |
+| Pagination     | Prev/Next with `?page=N`. Page-aware canonical URLs (`/ingredients/[category]` for p1, `?page=N` for p2+). |
+| Breadcrumb nav | Home > Ingredient Guide > [Category]                                                                       |
+
+**SEO:** Page-aware JSON-LD name ("X Ingredients - Page N" for pages > 1). Schema.org `CollectionPage`. Category 404s on unknown slug.
+
+### Ingredient Detail (`/ingredient/[slug]`)
+
+Full ingredient knowledge page. Wiki summary, flavor profile, dietary flags, origin, price data, substitutes, culinary uses.
+
+| Element              | Description                                                                                                                                                    |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hero image           | Full-width ingredient photo with gradient overlay. Falls back to placeholder.                                                                                  |
+| Breadcrumb           | Home > Ingredient Guide > [Category] > [Name]                                                                                                                  |
+| Quick facts sidebar  | Origin countries, season, flavor profile, dietary badges (vegan, gluten-free, etc.), allergen warnings (FDA Big 9)                                             |
+| Wiki summary         | Full Wikipedia-sourced description. Shown in `FullIngredientPage` when available.                                                                              |
+| Culinary uses        | Prepared uses, cooking methods, technique tags. From `ingredient_knowledge`.                                                                                   |
+| Substitutes panel    | Substitution suggestions with reason and confidence.                                                                                                           |
+| Price data panel     | Average price across stores, price history chart, store breakdown. Source-attributed.                                                                          |
+| Chef CTA             | Category-tailored booking conversion block. 15 copy variants keyed to ingredient category (produce, protein, dairy, spice, etc.). Links to `/book` + `/chefs`. |
+| Share                | Native share / copy link.                                                                                                                                      |
+| Knowledge-only state | `KnowledgeOnlyPage` fallback when full knowledge exists but no price data. Same ChefCta included.                                                              |
+| 404                  | "Ingredient not found" with link back to `/ingredients`.                                                                                                       |
+
+**SEO:** schema.org `ItemPage` JSON-LD with `name`, `description`, `nutrition`, `image`. Canonical at `/ingredient/[slug]`.
 
 ### FAQ (`/faq`)
 
