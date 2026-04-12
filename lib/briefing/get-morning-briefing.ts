@@ -114,10 +114,10 @@ export async function getMorningBriefing(): Promise<MorningBriefing> {
   const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const today = new Date().toISOString().split('T')[0]
-  const yesterday = new Date()
-  yesterday.setDate(yesterday.getDate() - 1)
-  const yesterdayStr = yesterday.toISOString().split('T')[0]
+  const _tn = new Date()
+  const today = `${_tn.getFullYear()}-${String(_tn.getMonth() + 1).padStart(2, '0')}-${String(_tn.getDate()).padStart(2, '0')}`
+  const _yd = new Date(_tn.getFullYear(), _tn.getMonth(), _tn.getDate() - 1)
+  const yesterdayStr = `${_yd.getFullYear()}-${String(_yd.getMonth() + 1).padStart(2, '0')}-${String(_yd.getDate()).padStart(2, '0')}`
 
   const hour = new Date().getHours()
   const shiftLabel = hour < 12 ? 'Morning' : hour < 17 ? 'Afternoon' : 'Evening'

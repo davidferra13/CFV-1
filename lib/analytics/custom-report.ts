@@ -83,7 +83,10 @@ export async function runCustomReport(config: ReportConfig): Promise<ReportDataP
       .from('expenses')
       .select('amount_cents, category, expense_date')
       .eq('tenant_id', user.entityId)
-      .gte('expense_date', fromDate.toISOString().split('T')[0])
+      .gte(
+        'expense_date',
+        `${fromDate.getFullYear()}-${String(fromDate.getMonth() + 1).padStart(2, '0')}-${String(fromDate.getDate()).padStart(2, '0')}`
+      )
 
     const grouped = new Map<string, { value: number; count: number }>()
     for (const expense of expenses || []) {

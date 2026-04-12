@@ -128,15 +128,18 @@ export async function getSocialGrowthTrend(
   const chef = await requireChef()
   const db: any = createServerClient()
 
-  const cutoff = new Date()
-  cutoff.setMonth(cutoff.getMonth() - months)
+  const _cn = new Date()
+  const cutoff = new Date(_cn.getFullYear(), _cn.getMonth() - months, _cn.getDate())
 
   const { data } = await db
     .from('social_stats_snapshots')
     .select('snapshot_date, followers, avg_engagement_rate, reach_7d')
     .eq('chef_id', chef.entityId)
     .eq('platform', platform)
-    .gte('snapshot_date', cutoff.toISOString().slice(0, 10))
+    .gte(
+      'snapshot_date',
+      `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, '0')}-${String(cutoff.getDate()).padStart(2, '0')}`
+    )
     .order('snapshot_date', { ascending: true })
 
   return (data ?? []).map((row: any) => ({

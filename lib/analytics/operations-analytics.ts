@@ -354,7 +354,10 @@ export async function getEffectiveHourlyRateByMonth(): Promise<EffectiveHourlyRa
     .eq('tenant_id', chef.tenantId!)
     .eq('is_demo', false)
     .eq('status', 'completed')
-    .gte('event_date', oneYearAgo.toISOString().slice(0, 10))
+    .gte(
+      'event_date',
+      `${oneYearAgo.getFullYear()}-${String(oneYearAgo.getMonth() + 1).padStart(2, '0')}-${String(oneYearAgo.getDate()).padStart(2, '0')}`
+    )
 
   const monthMap = new Map<string, { revenue: number; minutes: number; count: number }>()
 
