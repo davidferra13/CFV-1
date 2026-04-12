@@ -312,6 +312,17 @@ export const PLATFORM_OBSERVABILITY_TAXONOMY = {
     digestSection: 'engagement',
     alertDedupMinutes: 0,
   },
+  'feature.public_profile_viewed': {
+    label: 'Public Profile Viewed',
+    description: 'A visitor viewed the chef public profile page.',
+    group: 'feature',
+    scope: 'private',
+    severity: 'info',
+    realtimeAlert: false,
+    dailyDigest: true,
+    digestSection: 'engagement',
+    alertDedupMinutes: 0,
+  },
   'feature.session_heartbeat': {
     label: 'Session Heartbeat',
     description: 'A session heartbeat was recorded.',
@@ -369,6 +380,7 @@ export const ACTIVITY_EVENT_TO_PLATFORM_EVENT: Record<
   chat_opened: 'feature.chat_opened',
   rewards_viewed: 'feature.rewards_viewed',
   session_heartbeat: 'feature.session_heartbeat',
+  public_profile_viewed: 'feature.public_profile_viewed',
 }
 
 export function getPlatformObservabilityDefinition(
