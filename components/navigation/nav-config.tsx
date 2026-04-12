@@ -1536,6 +1536,8 @@ export const MOBILE_TAB_OPTIONS: NavItem[] = [
   { href: '/chat', label: 'Messaging', icon: MessageCircle },
   { href: '/documents', label: 'Documents', icon: FileText },
   { href: '/culinary/costing', label: 'Costing', icon: Calculator },
+  { href: '/briefing', label: 'Briefing', icon: Compass },
+  { href: '/culinary/prep/shopping', label: 'Shopping', icon: ShoppingCart },
   { href: '/queue', label: 'Queue', icon: Zap },
   { href: '/settings', label: 'Settings', icon: Settings },
 ]
