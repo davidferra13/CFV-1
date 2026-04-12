@@ -110,7 +110,7 @@ Know what things cost, where to buy them, what's on hand.
 - [x] Ingredient auto-matching (pg_trgm vs 5,435 canonical names, alias-aware pricing)
 - [x] Centralized unit conversions (single source of truth, zero duplicated constants)
 - [x] Operator-aware food cost targets (14 operation types, dynamic thresholds)
-- [ ] **Bulk menu import** - spec ready, not built
+- [x] Bulk menu import (file upload + pasted text at /menus/upload; spec was stale)
 
 ### 5. MONEY (Invoicing, Ledger, Tax, Reporting) - 92% Complete
 
@@ -165,7 +165,7 @@ The systems that power everything.
 - [x] Settings (54 configuration pages)
 - [x] Admin tools (platform pulse, beta signups, price catalog)
 - [x] Mission Control (developer ops dashboard, Gustav AI, 90+ API endpoints)
-- [ ] **SSE authentication** - SECURITY GAP (zero-auth on real-time bus)
+- [x] **SSE authentication** - fixed (session + validateRealtimeChannelAccess; stale gap entry)
 - [x] **Automated database backups** - built April 4, encrypted, 14-day retention
 - [ ] **Request correlation and observability** - spec ready, not built
 
