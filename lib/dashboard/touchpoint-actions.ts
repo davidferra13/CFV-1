@@ -44,7 +44,7 @@ export async function getUpcomingTouchpointReminders(): Promise<TouchpointRemind
       }
       const daysUntil = Math.ceil((thisYearBday.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
       if (daysUntil <= 14) {
-        const dateStr = thisYearBday.toISOString().slice(0, 10)
+        const dateStr = `${thisYearBday.getFullYear()}-${String(thisYearBday.getMonth() + 1).padStart(2, '0')}-${String(thisYearBday.getDate()).padStart(2, '0')}`
         reminders.push({
           clientId: client.id,
           clientName: name,
@@ -94,7 +94,7 @@ export async function getUpcomingTouchpointReminders(): Promise<TouchpointRemind
             clientId,
             clientName: name,
             type: 'anniversary',
-            date: anniversaryThisYear.toISOString().slice(0, 10),
+            date: `${anniversaryThisYear.getFullYear()}-${String(anniversaryThisYear.getMonth() + 1).padStart(2, '0')}-${String(anniversaryThisYear.getDate()).padStart(2, '0')}`,
             daysUntil,
           })
         }

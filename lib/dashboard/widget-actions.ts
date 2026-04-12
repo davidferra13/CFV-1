@@ -9,6 +9,10 @@ import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { sendPaymentReminderEmail } from '@/lib/email/notifications'
 
+function _liso(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 // ============================================
 // 1. Upcoming Payments Due
 // ============================================
@@ -153,8 +157,8 @@ export async function getDietaryAlertSummary(daysAhead = 7): Promise<DietaryAler
       'id, occasion, event_date, guest_count, dietary_notes, client:clients(id, full_name, dietary_restrictions, allergies)'
     )
     .eq('tenant_id', user.tenantId!)
-    .gte('event_date', now.toISOString().split('T')[0])
-    .lte('event_date', cutoff.toISOString().split('T')[0])
+    .gte('event_date', _liso(now))
+    .lte('event_date', _liso(cutoff))
     .in('status', ['accepted', 'paid', 'confirmed', 'in_progress'])
     .order('event_date', { ascending: true })
 
@@ -299,8 +303,8 @@ export async function getShoppingWindowItems(daysAhead = 3): Promise<ShoppingWin
     .from('events')
     .select('id, occasion, event_date, status, client:clients(id, full_name)')
     .eq('tenant_id', user.tenantId!)
-    .gte('event_date', now.toISOString().split('T')[0])
-    .lte('event_date', cutoff.toISOString().split('T')[0])
+    .gte('event_date', _liso(now))
+    .lte('event_date', _liso(cutoff))
     .in('status', ['accepted', 'paid', 'confirmed'])
     .order('event_date', { ascending: true })
 
@@ -358,7 +362,7 @@ export async function quickCaptureExpense(data: {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const expenseDate = new Date().toISOString().slice(0, 10)
+  const expenseDate = _liso(new Date())
 
   const { data: inserted, error } = await db
     .from('expenses')
@@ -434,7 +438,7 @@ export async function getUpcomingEventsForExpense(): Promise<
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const today = new Date().toISOString().slice(0, 10)
+  const today = _liso(new Date())
 
   const { data, error } = await db
     .from('events')
@@ -501,8 +505,8 @@ export async function getActiveShoppingList(daysAhead = 5): Promise<{
     .from('events')
     .select('id, occasion, event_date, client:clients(full_name)')
     .eq('tenant_id', user.tenantId!)
-    .gte('event_date', now.toISOString().split('T')[0])
-    .lte('event_date', cutoff.toISOString().split('T')[0])
+    .gte('event_date', _liso(now))
+    .lte('event_date', _liso(cutoff))
     .in('status', ['accepted', 'paid', 'confirmed'])
     .order('event_date', { ascending: true })
 
@@ -589,8 +593,8 @@ export async function getBookedDates(): Promise<{ booked: string[]; tentative: s
   const cutoff = new Date()
   cutoff.setDate(cutoff.getDate() + 90)
 
-  const nowStr = now.toISOString().split('T')[0]
-  const cutoffStr = cutoff.toISOString().split('T')[0]
+  const nowStr = _liso(now)
+  const cutoffStr = _liso(cutoff)
 
   // Booked = confirmed pipeline events
   const { data: bookedEvents } = await db
@@ -709,8 +713,8 @@ export async function getInvoicePulse(): Promise<InvoicePulseData> {
   const db: any = createServerClient()
 
   const now = new Date()
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
-  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
+  const monthStart = _liso(new Date(now.getFullYear(), now.getMonth(), 1))
+  const monthEnd = _liso(new Date(now.getFullYear(), now.getMonth() + 1, 0))
 
   // Get all events with financial summaries (non-void, non-draft)
   const { data: summaries } = await db

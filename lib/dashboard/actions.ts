@@ -242,7 +242,8 @@ export async function getDashboardEventCounts() {
 
   const allEvents = events || []
   const thisMonthEvents = allEvents.filter((e: any) => e.event_date >= monthStart)
-  const today = new Date().toISOString().split('T')[0]
+  const _tn1 = new Date()
+  const today = `${_tn1.getFullYear()}-${String(_tn1.getMonth() + 1).padStart(2, '0')}-${String(_tn1.getDate()).padStart(2, '0')}`
   const completedThisMonth = thisMonthEvents.filter((e: any) => e.status === 'completed').length
   const upcomingThisMonth = thisMonthEvents.filter(
     (e: any) => e.event_date >= today && e.status !== 'completed'
@@ -394,7 +395,8 @@ export async function getNextUpcomingEvent() {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const today = new Date().toISOString().split('T')[0]
+  const _tn2 = new Date()
+  const today = `${_tn2.getFullYear()}-${String(_tn2.getMonth() + 1).padStart(2, '0')}-${String(_tn2.getDate()).padStart(2, '0')}`
 
   const { data, error } = await db
     .from('events')
@@ -455,9 +457,18 @@ const LogDashboardHoursSchema = z.object({
   logged_for: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format')
-    .refine((val) => val <= new Date().toISOString().slice(0, 10), {
-      message: 'Cannot log hours for a future date.',
-    })
+    .refine(
+      (val) => {
+        const _d = new Date()
+        return (
+          val <=
+          `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`
+        )
+      },
+      {
+        message: 'Cannot log hours for a future date.',
+      }
+    )
     .optional(),
   category: z.enum(MANUAL_LABOR_CATEGORIES),
   note: z.string().trim().max(500).optional(),
@@ -658,8 +669,11 @@ export async function getDashboardHoursSnapshot(): Promise<DashboardHoursSnapsho
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const todayIso = new Date().toISOString().slice(0, 10)
-  const sevenDaysAgoIso = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+  const _tn3 = new Date()
+  const _liso3 = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const todayIso = _liso3(_tn3)
+  const sevenDaysAgoIso = _liso3(new Date(_tn3.getFullYear(), _tn3.getMonth(), _tn3.getDate() - 6))
   const batchSize = 1000
 
   const [events, manualRows] = await Promise.all([
@@ -964,7 +978,10 @@ export async function logDashboardHours(input: LogDashboardHoursInput) {
   const user = await requireChef()
   const validated = LogDashboardHoursSchema.parse(input)
 
-  const loggedFor = validated.logged_for ?? new Date().toISOString().slice(0, 10)
+  const _tnl = new Date()
+  const loggedFor =
+    validated.logged_for ??
+    `${_tnl.getFullYear()}-${String(_tnl.getMonth() + 1).padStart(2, '0')}-${String(_tnl.getDate()).padStart(2, '0')}`
   const category = validated.category
   const note = validated.note?.trim() || null
   const action = category === 'charity' ? 'charity_hours_logged' : 'hours_logged'
@@ -1021,8 +1038,10 @@ export async function getRevenueProjection(): Promise<RevenueProjection> {
   const user = await requireChef()
   const db: any = createServerClient()
   const now = new Date()
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
-  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
+  const _liso4 = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const startOfMonth = _liso4(new Date(now.getFullYear(), now.getMonth(), 1))
+  const endOfMonth = _liso4(new Date(now.getFullYear(), now.getMonth() + 1, 0))
   const dayOfMonth = now.getDate()
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
 
@@ -1215,10 +1234,11 @@ export async function getUnloggedEventHours(): Promise<UnloggedEvent[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const yesterday = new Date()
-  yesterday.setDate(yesterday.getDate() - 1)
-  const twoDaysAgo = new Date()
-  twoDaysAgo.setDate(twoDaysAgo.getDate() - 2)
+  const _tn5 = new Date()
+  const _liso5 = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const yesterdayStr = _liso5(new Date(_tn5.getFullYear(), _tn5.getMonth(), _tn5.getDate() - 1))
+  const twoDaysAgoStr = _liso5(new Date(_tn5.getFullYear(), _tn5.getMonth(), _tn5.getDate() - 2))
 
   const { data: recentEvents } = await db
     .from('events')
@@ -1228,8 +1248,8 @@ export async function getUnloggedEventHours(): Promise<UnloggedEvent[]> {
     .eq('tenant_id', user.tenantId!)
     .eq('is_demo', false)
     .in('status', ['completed', 'in_progress'])
-    .gte('event_date', twoDaysAgo.toISOString().slice(0, 10))
-    .lte('event_date', yesterday.toISOString().slice(0, 10))
+    .gte('event_date', twoDaysAgoStr)
+    .lte('event_date', yesterdayStr)
 
   return (recentEvents ?? [])
     .filter((e: any) => {
@@ -1271,8 +1291,9 @@ export async function getEventsNeedingAAR(): Promise<EventNeedingAAR[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const twoDaysAgo = new Date()
-  twoDaysAgo.setDate(twoDaysAgo.getDate() - 2)
+  const _tn6 = new Date()
+  const _d2 = new Date(_tn6.getFullYear(), _tn6.getMonth(), _tn6.getDate() - 2)
+  const _twoDaysAgo = `${_d2.getFullYear()}-${String(_d2.getMonth() + 1).padStart(2, '0')}-${String(_d2.getDate()).padStart(2, '0')}`
 
   const { data } = await db
     .from('events')
@@ -1281,7 +1302,7 @@ export async function getEventsNeedingAAR(): Promise<EventNeedingAAR[]> {
     .eq('is_demo', false)
     .eq('status', 'completed')
     .eq('aar_filed', false)
-    .gte('event_date', twoDaysAgo.toISOString().slice(0, 10))
+    .gte('event_date', _twoDaysAgo)
     .order('event_date', { ascending: false })
     .limit(3)
 

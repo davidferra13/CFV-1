@@ -185,9 +185,9 @@ export async function generateDailyBriefing(date?: string): Promise<DailyBriefin
   }
 
   // 4. Upcoming deadlines - events within 7 days needing prep
-  const sevenDaysOut = new Date(briefingDate)
-  sevenDaysOut.setDate(sevenDaysOut.getDate() + 7)
-  const sevenDaysOutStr = sevenDaysOut.toISOString().split('T')[0]
+  const [_bds7y, _bds7m, _bds7d] = briefingDate.split('-').map(Number)
+  const _sevenOut = new Date(_bds7y, _bds7m - 1, _bds7d + 7)
+  const sevenDaysOutStr = `${_sevenOut.getFullYear()}-${String(_sevenOut.getMonth() + 1).padStart(2, '0')}-${String(_sevenOut.getDate()).padStart(2, '0')}`
 
   const { data: upcomingEvents } = await db
     .from('events')
