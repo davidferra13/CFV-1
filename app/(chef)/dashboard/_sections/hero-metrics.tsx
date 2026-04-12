@@ -13,6 +13,8 @@ type HeroMetric = {
   trendUp?: boolean
   tier: 'hero' | 'supporting'
   sparkData?: number[]
+  isSurge?: boolean
+  surgeCount?: number
 }
 
 async function getHeroMetrics(): Promise<HeroMetric[]> {
@@ -141,13 +143,15 @@ async function getHeroMetrics(): Promise<HeroMetric[]> {
       sparkData: eventSparkData,
     },
     {
-      label: isSurge ? 'Open inquiries (surge)' : 'Open inquiries',
+      label: 'Open inquiries',
       value: String(inquiriesCount),
       href: '/inquiries',
       trend: inquiryTrend,
-      trendUp: newThisWeek >= 5,
+      trendUp: newThisWeek > 0,
       tier: 'hero',
       sparkData: inquirySparkData,
+      isSurge,
+      surgeCount: isSurge ? newThisWeek : undefined,
     },
     {
       label: 'Revenue (all time)',

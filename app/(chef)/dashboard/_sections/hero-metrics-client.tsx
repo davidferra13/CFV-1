@@ -12,14 +12,27 @@ type HeroMetric = {
   trendUp?: boolean
   tier: 'hero' | 'supporting'
   sparkData?: number[]
+  isSurge?: boolean
+  surgeCount?: number
 }
 
 export function HeroMetricsClient({ metrics }: { metrics: HeroMetric[] }) {
   const heroMetrics = metrics.filter((metric) => metric.tier === 'hero')
   const supportingMetrics = metrics.filter((metric) => metric.tier === 'supporting')
+  const surgeMetric = heroMetrics.find((m) => m.isSurge)
 
   return (
     <div className="space-y-5">
+      {surgeMetric && (
+        <Link
+          href={surgeMetric.href}
+          className="flex items-center gap-3 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-2.5 text-sm font-medium text-amber-400 transition-colors hover:bg-amber-500/15"
+        >
+          <span className="text-base">&#x26A1;</span>
+          <span>Surge Mode: {surgeMetric.surgeCount} new inquiries this week. Triage now.</span>
+          <span className="ml-auto text-xs text-amber-500/70">View all</span>
+        </Link>
+      )}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:gap-8">
         {heroMetrics.map((metric, i) => (
           <Link
