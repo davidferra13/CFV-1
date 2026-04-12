@@ -6,18 +6,19 @@
 import { useState, useEffect, useTransition } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  getSubcontracts,
-  type SubcontractAgreement,
-} from '@/lib/community/subcontract-actions'
+import { getSubcontracts, type SubcontractAgreement } from '@/lib/community/subcontract-actions'
+import { todayLocalDateString } from '@/lib/utils/format'
 
 type StatusFilter = 'all' | 'draft' | 'sent' | 'accepted' | 'active' | 'completed' | 'cancelled'
 
-const STATUS_BADGE: Record<string, { label: string; variant: 'default' | 'warning' | 'info' | 'success' | 'error' }> = {
-  draft:     { label: 'Draft',     variant: 'default' },
-  sent:      { label: 'Sent',      variant: 'warning' },
-  accepted:  { label: 'Accepted',  variant: 'info' },
-  active:    { label: 'Active',    variant: 'success' },
+const STATUS_BADGE: Record<
+  string,
+  { label: string; variant: 'default' | 'warning' | 'info' | 'success' | 'error' }
+> = {
+  draft: { label: 'Draft', variant: 'default' },
+  sent: { label: 'Sent', variant: 'warning' },
+  accepted: { label: 'Accepted', variant: 'info' },
+  active: { label: 'Active', variant: 'success' },
   completed: { label: 'Completed', variant: 'success' },
   cancelled: { label: 'Cancelled', variant: 'error' },
 }
@@ -35,7 +36,8 @@ const ROLE_LABELS: Record<string, string> = {
 
 function formatRate(rateCents: number, rateType: string, estimatedHours: number | null): string {
   const dollars = (rateCents / 100).toFixed(2)
-  if (rateType === 'hourly') return `$${dollars}/hr${estimatedHours ? ` (${estimatedHours}h est.)` : ''}`
+  if (rateType === 'hourly')
+    return `$${dollars}/hr${estimatedHours ? ` (${estimatedHours}h est.)` : ''}`
   if (rateType === 'flat') return `$${dollars} flat`
   if (rateType === 'percentage') return `${rateCents / 100}%`
   return `$${dollars}`
@@ -52,10 +54,14 @@ function COIBadge({ agreement }: { agreement: SubcontractAgreement }) {
     return <Badge variant="success">Verified</Badge>
   }
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = todayLocalDateString()
   const thirtyDaysOut = new Date()
   thirtyDaysOut.setDate(thirtyDaysOut.getDate() + 30)
-  const warningDate = thirtyDaysOut.toISOString().split('T')[0]
+  const warningDate = [
+    thirtyDaysOut.getFullYear(),
+    String(thirtyDaysOut.getMonth() + 1).padStart(2, '0'),
+    String(thirtyDaysOut.getDate()).padStart(2, '0'),
+  ].join('-')
 
   if (agreement.coi_expiry_date < today) {
     return <Badge variant="error">Expired</Badge>
@@ -98,13 +104,19 @@ export function SubcontractList({ onEdit, onCreateNew, eventId }: SubcontractLis
     })
   }
 
-  const statusOptions: StatusFilter[] = ['all', 'draft', 'sent', 'accepted', 'active', 'completed', 'cancelled']
+  const statusOptions: StatusFilter[] = [
+    'all',
+    'draft',
+    'sent',
+    'accepted',
+    'active',
+    'completed',
+    'cancelled',
+  ]
 
   if (loadError) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
-        {loadError}
-      </div>
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">{loadError}</div>
     )
   }
 
@@ -112,7 +124,7 @@ export function SubcontractList({ onEdit, onCreateNew, eventId }: SubcontractLis
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex gap-2">
-          {statusOptions.map(s => (
+          {statusOptions.map((s) => (
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
@@ -122,7 +134,7 @@ export function SubcontractList({ onEdit, onCreateNew, eventId }: SubcontractLis
                   : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
               }`}
             >
-              {s === 'all' ? 'All' : STATUS_BADGE[s]?.label ?? s}
+              {s === 'all' ? 'All' : (STATUS_BADGE[s]?.label ?? s)}
             </button>
           ))}
         </div>
@@ -136,9 +148,7 @@ export function SubcontractList({ onEdit, onCreateNew, eventId }: SubcontractLis
       {isPending ? (
         <div className="py-8 text-center text-stone-500">Loading...</div>
       ) : agreements.length === 0 ? (
-        <div className="py-8 text-center text-stone-500">
-          No subcontract agreements found.
-        </div>
+        <div className="py-8 text-center text-stone-500">No subcontract agreements found.</div>
       ) : (
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full text-sm">
@@ -153,7 +163,7 @@ export function SubcontractList({ onEdit, onCreateNew, eventId }: SubcontractLis
               </tr>
             </thead>
             <tbody className="divide-y">
-              {agreements.map(a => (
+              {agreements.map((a) => (
                 <tr key={a.id} className="hover:bg-stone-50">
                   <td className="px-4 py-3">
                     <div className="font-medium text-stone-900">{a.subcontractor_name}</div>
@@ -161,9 +171,7 @@ export function SubcontractList({ onEdit, onCreateNew, eventId }: SubcontractLis
                       <div className="text-xs text-stone-500">{a.subcontractor_email}</div>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-stone-700">
-                    {ROLE_LABELS[a.role] ?? a.role}
-                  </td>
+                  <td className="px-4 py-3 text-stone-700">{ROLE_LABELS[a.role] ?? a.role}</td>
                   <td className="px-4 py-3 text-stone-700">
                     {formatRate(a.rate_cents, a.rate_type, a.estimated_hours)}
                   </td>

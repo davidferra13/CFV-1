@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Calendar, CheckCircle, XCircle, CalendarPlus } from '@/components/ui/icons'
 import Link from 'next/link'
+import { todayLocalDateString } from '@/lib/utils/format'
 
 interface QuickAvailabilityWidgetProps {
   bookedDates: string[] // array of YYYY-MM-DD strings with confirmed events
@@ -64,7 +65,7 @@ export function QuickAvailabilityWidget({
     })
   }
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = todayLocalDateString()
   const nextAvailable =
     status === 'booked' || status === 'tentative' ? getNextAvailableDates(selectedDate, 3) : []
 

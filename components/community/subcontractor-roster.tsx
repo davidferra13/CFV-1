@@ -7,6 +7,7 @@ import { useState, useEffect, useTransition } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { getSubcontractorRoster } from '@/lib/community/subcontract-actions'
+import { todayLocalDateString } from '@/lib/utils/format'
 
 type RosterEntry = {
   name: string
@@ -27,10 +28,14 @@ function COIRosterBadge({ entry }: { entry: RosterEntry }) {
     return <Badge variant="success">Verified</Badge>
   }
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = todayLocalDateString()
   const thirtyDaysOut = new Date()
   thirtyDaysOut.setDate(thirtyDaysOut.getDate() + 30)
-  const warningDate = thirtyDaysOut.toISOString().split('T')[0]
+  const warningDate = [
+    thirtyDaysOut.getFullYear(),
+    String(thirtyDaysOut.getMonth() + 1).padStart(2, '0'),
+    String(thirtyDaysOut.getDate()).padStart(2, '0'),
+  ].join('-')
 
   if (entry.coiExpiry < today) {
     return <Badge variant="error">COI Expired</Badge>
@@ -43,14 +48,22 @@ function COIRosterBadge({ entry }: { entry: RosterEntry }) {
 
 function formatDate(iso: string): string {
   try {
-    return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    return new Date(iso).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })
   } catch {
     return iso
   }
 }
 
 type SubcontractorRosterProps = {
-  onCreateAgreement?: (prefill: { name: string; email: string | null; phone: string | null }) => void
+  onCreateAgreement?: (prefill: {
+    name: string
+    email: string | null
+    phone: string | null
+  }) => void
 }
 
 export function SubcontractorRoster({ onCreateAgreement }: SubcontractorRosterProps) {
@@ -73,9 +86,7 @@ export function SubcontractorRoster({ onCreateAgreement }: SubcontractorRosterPr
 
   if (loadError) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
-        {loadError}
-      </div>
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">{loadError}</div>
     )
   }
 
@@ -101,18 +112,16 @@ export function SubcontractorRoster({ onCreateAgreement }: SubcontractorRosterPr
             <div className="flex items-start justify-between">
               <div>
                 <h4 className="font-medium text-stone-900">{entry.name}</h4>
-                {entry.email && (
-                  <p className="text-xs text-stone-500">{entry.email}</p>
-                )}
-                {entry.phone && (
-                  <p className="text-xs text-stone-500">{entry.phone}</p>
-                )}
+                {entry.email && <p className="text-xs text-stone-500">{entry.email}</p>}
+                {entry.phone && <p className="text-xs text-stone-500">{entry.phone}</p>}
               </div>
               <COIRosterBadge entry={entry} />
             </div>
 
             <div className="mt-3 flex items-center gap-4 text-xs text-stone-500">
-              <span>{entry.usageCount} agreement{entry.usageCount !== 1 ? 's' : ''}</span>
+              <span>
+                {entry.usageCount} agreement{entry.usageCount !== 1 ? 's' : ''}
+              </span>
               <span>Last: {formatDate(entry.lastUsed)}</span>
             </div>
 
@@ -126,11 +135,13 @@ export function SubcontractorRoster({ onCreateAgreement }: SubcontractorRosterPr
               <div className="mt-3 border-t border-stone-100 pt-3">
                 <Button
                   variant="ghost"
-                  onClick={() => onCreateAgreement({
-                    name: entry.name,
-                    email: entry.email,
-                    phone: entry.phone,
-                  })}
+                  onClick={() =>
+                    onCreateAgreement({
+                      name: entry.name,
+                      email: entry.email,
+                      phone: entry.phone,
+                    })
+                  }
                   className="w-full text-xs"
                 >
                   + New Agreement

@@ -6,6 +6,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { format } from 'date-fns'
+import { todayLocalDateString } from '@/lib/utils/format'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowRight, AlertTriangle, ShoppingCart } from '@/components/ui/icons'
 import { formatCurrency } from '@/lib/utils/currency'
@@ -38,7 +39,7 @@ interface WeekStripProps {
 
 export function WeekStrip({ schedule, dayRevenueCents }: WeekStripProps) {
   const [showRevenue, setShowRevenue] = useState(false)
-  const today = new Date().toISOString().split('T')[0]
+  const today = todayLocalDateString()
   const eventDayCount = schedule.days.filter((d) => d.dayType === 'event').length
   const totalWeekGuests = schedule.days
     .flatMap((d) => d.events)

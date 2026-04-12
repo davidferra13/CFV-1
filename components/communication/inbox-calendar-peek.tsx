@@ -4,10 +4,11 @@ import { useMemo, useState } from 'react'
 import { Calendar, X } from '@/components/ui/icons'
 import { MiniCalendar } from '@/components/scheduling/mini-calendar'
 import type { CalendarEvent } from '@/lib/scheduling/actions'
+import { todayLocalDateString } from '@/lib/utils/format'
 
 export function InboxCalendarPeek({ events }: { events: CalendarEvent[] }) {
   const [open, setOpen] = useState(false)
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
+  const [selectedDate, setSelectedDate] = useState(() => todayLocalDateString())
 
   const eventsForDay = useMemo(
     () => events.filter((event) => event.start.split('T')[0] === selectedDate),

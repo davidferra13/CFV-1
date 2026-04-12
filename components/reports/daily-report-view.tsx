@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { generateDailyReport, getDailyReport } from '@/lib/reports/daily-report-actions'
+import { todayLocalDateString } from '@/lib/utils/format'
 import type { DailyReport, DailyReportSummary } from '@/lib/reports/types'
 import {
   CalendarDays,
@@ -129,7 +130,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
           <button
             onClick={() => navigateDay(1)}
             className="rounded-lg border border-stone-200 p-2 hover:bg-stone-800"
-            disabled={isPending || selectedDate >= new Date().toISOString().split('T')[0]}
+            disabled={isPending || selectedDate >= todayLocalDateString()}
           >
             <ChevronRight className="h-4 w-4" />
           </button>
