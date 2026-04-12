@@ -700,3 +700,16 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: 5d429b82b (simulation fix), 9d11b575e, 043e36d07 (utc fixes from prev work)
 - Build state on departure: tsc green (0 errors, verified post-commit)
 - Notes: Root cause of 50% simulation failure was qwen3:4b bleeding <think> chains into message.content despite think:false. Allergen_risk had 0 scenarios because generateScenarios() JSON.parse fails on <think>-prefixed content. client_parse evaluator only checked camelCase out.fullName; model returns snake_case out.full_name. menu_suggestions used fragile double-Ollama evaluator (evaluator calling Ollama to score Ollama output) - converted to deterministic keyword checking. Stale backlog items verified: invoice collision already handled, CPA export properly gated, read receipts null-safe.
+
+## 2026-04-12 (UTC date sweep + mempalace backlog close-out)
+
+- Agent: Builder (Sonnet 4.6)
+- Task: Complete UTC date bug sweep (all remaining files) + MemPalace backlog stale item resolution
+- Status: completed
+- Files touched:
+  - 35 files in scripts/, lib/, app/, components/, tests/ (batch 5 UTC fixes)
+  - 11 test harness files in tests/remy-quality/ + test helpers (batch 6 UTC fixes, background agent)
+  - C:/Users/david/.claude/projects/c--Users-david-Documents-CFv1/memory/project_mempalace_backlog.md (3 stale items resolved)
+- Commits: ff8593a80 (batch 6 test harnesses), 043e36d07 (batch 5 scripts/lib/components), d4024772b (analytics Date.slice crash fixes from prior session)
+- Build state on departure: green (tsc: 0 errors verified post-commit 5d429b82b; no structural changes in this session)
+- Notes: UTC date sweep complete. Zero remaining `new Date().toISOString().split('T')[0]` or `.slice(0,10)` instances in source. Compute-daily-report.ts used pure UTC ms arithmetic to avoid off-by-one at UTC midnight. MemPalace backlog: 3 stale items marked resolved (Feature Discovery already at /features, business-cards.tsx doesn't exist, v2/documents/generate fully implements all doc types).
