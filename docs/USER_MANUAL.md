@@ -32,6 +32,20 @@ ChefFlow is an all-in-one platform for food service professionals. It replaces s
 
 ---
 
+## Navigation
+
+The sidebar on the left is your primary navigation. It has three layers:
+
+**Action Bar (top):** Six daily-driver shortcuts - Today, Inbox, Events, Clients, Culinary, Finance - plus a Create button. These cover 90% of daily work and are always one click away.
+
+**Core Groups (middle):** Five expandable sections for deeper navigation within each workflow area: Events, Clients, Culinary, Finance, Operations. Click any group header to expand it and see all the pages within that area. The Admin group is also here if you have admin access.
+
+**All Features (bottom):** Everything else - Analytics, Marketing, Social Media, Integrations, Activity Log, Briefing, and more - is organized at **All Features** (`/features`). Click it to browse everything by workflow category. Nothing is hidden; it just lives here instead of taking up space in the sidebar you see every day.
+
+You can also use the search bar at the top of the sidebar or press **Cmd+K** to jump directly to any page in the app by name.
+
+---
+
 ## The Dashboard
 
 Your dashboard is the first screen you see after logging in. It shows a snapshot of your business right now.
@@ -307,7 +321,7 @@ The Travel page shows weekly travel legs: trips from home to event locations, st
 
 ### Morning Briefing
 
-Go to Sidebar > Briefing for a 60-second overview of your day:
+Go to **All Features > Morning Briefing** (or navigate to `/briefing`) for a 60-second overview of your day:
 
 - Alerts (overdue tasks, unanswered inquiries, stale follow-ups)
 - Yesterday's recap (events completed, revenue, tasks done)
@@ -425,7 +439,7 @@ If you have employees: Financials > Payroll manages wages, Form 941 (quarterly p
 
 ### Analytics Dashboard
 
-Sidebar > Analytics shows:
+**All Features > Analytics** (`/analytics`) shows:
 
 - Inquiry funnel with conversion rates at each stage
 - Revenue trends (monthly, by client, by event type)
@@ -445,11 +459,11 @@ Analytics > Intelligence provides AI-powered insights:
 
 ### Activity Log
 
-Sidebar > Activity shows a timeline of all system changes. Use Summary mode for an overview or Retrace mode to see the system's state at any past date. Filter by domain (Events, Clients, Finances, etc.).
+**All Features > Activity Log** (`/activity`) shows a timeline of all system changes. Use Summary mode for an overview or Retrace mode to see the system's state at any past date. Filter by domain (Events, Clients, Finances, etc.).
 
 ### Priority Queue
 
-Sidebar > Queue ranks all action items by urgency across your entire business. Snooze items (1 hour, 4 hours, tomorrow, next week) or click to jump to the relevant page.
+**All Features > Priority Queue** (`/queue`) ranks all action items by urgency across your entire business. Snooze items (1 hour, 4 hours, tomorrow, next week) or click to jump to the relevant page.
 
 ---
 
