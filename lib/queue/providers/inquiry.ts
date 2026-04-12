@@ -3,6 +3,7 @@
 
 import type { QueueItem, ScoreInputs } from '../types'
 import { computeScore, urgencyFromScore } from '../score'
+import { dateToDateString } from '@/lib/utils/format'
 
 function ageLabel(hours: number): string {
   if (hours < 1) return 'just now'
@@ -22,7 +23,9 @@ function inquirySummary(inq: {
   if (inq.confirmed_date) {
     try {
       parts.push(
-        new Date(inq.confirmed_date + 'T00:00:00').toLocaleDateString('en-US', {
+        new Date(
+          dateToDateString(inq.confirmed_date as Date | string) + 'T00:00:00'
+        ).toLocaleDateString('en-US', {
           month: 'short',
           day: 'numeric',
         })

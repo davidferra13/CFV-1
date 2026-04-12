@@ -1,4 +1,5 @@
 import { format, parseISO } from 'date-fns'
+import { dateToDateString } from '@/lib/utils/format'
 import { requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from './pdf-layout'
@@ -103,7 +104,7 @@ export async function fetchReceiptData(eventId: string): Promise<ReceiptData> {
     event: {
       id: event.id,
       occasion: event.occasion,
-      event_date: event.event_date,
+      event_date: dateToDateString(event.event_date as Date | string),
       serve_time: event.serve_time,
       guest_count: event.guest_count,
       location_address: event.location_address,
@@ -256,7 +257,7 @@ export async function fetchReceiptDataForChef(eventId: string): Promise<ReceiptD
     event: {
       id: event.id,
       occasion: event.occasion,
-      event_date: event.event_date,
+      event_date: dateToDateString(event.event_date as Date | string),
       serve_time: event.serve_time,
       guest_count: event.guest_count,
       location_address: event.location_address,
@@ -333,7 +334,7 @@ export async function generateReceiptByTenant(eventId: string, tenantId: string)
     event: {
       id: event.id,
       occasion: event.occasion,
-      event_date: event.event_date,
+      event_date: dateToDateString(event.event_date as Date | string),
       serve_time: event.serve_time,
       guest_count: event.guest_count,
       location_address: event.location_address,

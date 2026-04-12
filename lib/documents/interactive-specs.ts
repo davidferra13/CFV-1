@@ -13,6 +13,7 @@ import type { ExecutionSheetData } from './generate-execution-sheet'
 import type { FrontOfHouseMenuData } from './generate-front-of-house-menu'
 import type { TravelLegWithIngredients } from '@/lib/travel/types'
 import { format, parseISO } from 'date-fns'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ─── Core Types ───────────────────────────────────────────────────────────────
 
@@ -779,7 +780,9 @@ export function travelRouteToSpec(data: TravelRouteDataShape): InteractiveDocSpe
     sections.push({
       id: legId,
       title: `Leg ${li + 1} - ${typeLabel}`,
-      subtitle: leg.leg_date ? format(parseISO(leg.leg_date as string), 'EEEE, MMM d') : undefined,
+      subtitle: leg.leg_date
+        ? format(parseISO(dateToDateString(leg.leg_date as Date | string)), 'EEEE, MMM d')
+        : undefined,
       items: legItems,
     })
   }
