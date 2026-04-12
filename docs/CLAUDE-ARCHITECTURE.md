@@ -160,28 +160,34 @@ Only use variants that actually exist - wrong variants fail silently or throw.
 - **Never** let edge handles extend into the corner zone.
 - If refactoring the widget, preserve this resize architecture exactly.
 
-### 6. Monetization Model (UPDATED March 2026)
+### 6. Monetization Model (UPDATED April 2026)
 
-**All features are free.** There is no Pro tier, no paywalls, no locked features.
+**Two-tier model: Free + Paid.** The canonical classification is in `lib/billing/feature-classification.ts`.
 
-Revenue comes from **voluntary supporter contributions** (Stripe checkout, cancel anytime). The billing page (`/settings/billing`) is now a "Support ChefFlow" page.
+- **Free tier:** Complete standalone utility. Solo chef can operate without friction. Manual, capable, no dead ends.
+- **Paid tier:** Leverage, automation, scale. Replaces labor, increases accuracy, or scales output.
+
+**Core design rule:** No locked buttons. The free version always executes. Upgrade prompts surface AFTER the free action completes, not before.
 
 **For new features:**
 
-1. **Assign a module** in `lib/billing/modules.ts` (all modules are `tier: 'free'`).
-2. **Do NOT add `requirePro()` gating.** The function still exists (as a pass-through for auth) but should not be added to new code.
-3. **Do NOT wrap content in `<UpgradeGate>`.** The component still exists (as a pass-through) but should not be added to new code.
-4. **Do NOT add Pro badges, lock icons, or "upgrade to unlock" messaging anywhere in the UI.**
-5. Community features are always free and ungated. Community growth is the priority.
+1. **Classify the feature** in `lib/billing/feature-classification.ts` - assign `tier: 'free' | 'paid'`, `category`, and `upgrade_trigger` (if paid).
+2. **Assign a module** in `lib/billing/modules.ts` with the correct tier.
+3. **If the feature is paid and page-level:** `requirePro('your-feature-slug')` at the top of the page - it now enforces (redirects to `/settings/billing?feature=slug`).
+4. **If the feature is paid and sub-section level:** use `<UpgradeGate chefId={...} featureSlug="...">` - it shows an upgrade block/blur in place.
+5. **For contextual inline prompts** (after free action completes): use `<UpgradePrompt featureSlug="..." show={...} />` - reads copy from classification map automatically.
+6. **Never** add Pro badges, lock icons, or disabled buttons. The free path must always work.
 
-**AGENT WARNING: If you see `requirePro()` in a server action, it is NOT gating anything.** It is a plain auth pass-through identical to `requireChef()`. The name is a historical artifact. There are 73 call sites - do not remove them (compilation would break with zero functional benefit). Do not add new ones either.
+**Feature slugs in requirePro() that are NOT in the classification map** (legacy calls like `'operations'`, `'marketing'`, `'protection'`) degrade safely to auth-only - `isPaidFeature()` returns false for unknown slugs.
 
-**What still exists (for legacy compatibility):**
+**Key files:**
 
-- `requirePro()` in `lib/billing/require-pro.ts` - now just calls `requireChef()`, never blocks
-- `<UpgradeGate>` in `components/billing/upgrade-gate.tsx` - now just renders children
-- `PRO_FEATURES` registry in `lib/billing/pro-features.ts` - retained for reference only
-- Stripe subscription flow - used for voluntary supporter contributions
+- `lib/billing/feature-classification.ts` - canonical map: tier, category, upgrade_trigger
+- `lib/billing/require-pro.ts` - enforces paid features via redirect
+- `components/billing/upgrade-gate.tsx` - inline section gating (block/blur/hide modes)
+- `components/billing/upgrade-prompt.tsx` - contextual inline prompt (shows after free action)
+- `lib/billing/tier.ts` - subscription tier resolution (free/pro from subscription_status)
+- `PRO_FEATURES` registry in `lib/billing/pro-features.ts` - legacy reference, superseded by feature-classification.ts
 
 ### 7. No Forced Onboarding Gates in Chef Layout (PERMANENT)
 
