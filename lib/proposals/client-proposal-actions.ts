@@ -287,7 +287,7 @@ export async function getPublicProposal(shareToken: string): Promise<PublicPropo
   if (proposal.client_id) {
     const { data: c } = await db
       .from('clients')
-      .select('first_name, last_name')
+      .select('full_name')
       .eq('id', proposal.client_id)
       .single()
     client = c
@@ -460,7 +460,7 @@ function buildPublicData(
     createdAt: proposal.created_at,
     chefName: chef?.display_name || null,
     chefBusinessName: chef?.business_name || null,
-    clientName: client ? [client.first_name, client.last_name].filter(Boolean).join(' ') : null,
+    clientName: client?.full_name ?? null,
     eventDate: event?.event_date || null,
     eventOccasion: event?.occasion || null,
     guestCount: event?.guest_count || null,

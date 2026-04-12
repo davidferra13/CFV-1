@@ -185,8 +185,12 @@ export async function getSharedAvailability(token: string): Promise<{
     unavailable.add(d)
   }
 
-  // Get chef display name (first_name only - no last name for privacy)
-  const { data: chefRow } = await db.from('chefs').select('first_name').eq('id', tenantId).single()
+  // Get chef display name from business_name
+  const { data: chefRow } = await db
+    .from('chefs')
+    .select('business_name')
+    .eq('id', tenantId)
+    .single()
 
   const days: AvailabilityDay[] = dates.map((date) => ({
     date,
@@ -196,6 +200,6 @@ export async function getSharedAvailability(token: string): Promise<{
   return {
     valid: true,
     days,
-    chefDisplayName: (chefRow as any)?.first_name ?? undefined,
+    chefDisplayName: (chefRow as any)?.business_name ?? undefined,
   }
 }

@@ -136,7 +136,7 @@ export async function getUpcomingTouchpoints(): Promise<UpcomingTouchpoint[]> {
   // Load all clients for this chef
   const { data: clients } = await db
     .from('clients')
-    .select('id, first_name, last_name, date_of_birth')
+    .select('id, full_name, date_of_birth')
     .eq('tenant_id', user.tenantId!)
 
   if (!clients || clients.length === 0) return []
@@ -145,7 +145,7 @@ export async function getUpcomingTouchpoints(): Promise<UpcomingTouchpoint[]> {
   const touchpoints: UpcomingTouchpoint[] = []
 
   for (const client of clients) {
-    const name = [client.first_name, client.last_name].filter(Boolean).join(' ') || 'Client'
+    const name = client.full_name || 'Client'
 
     for (const rule of rules as TouchpointRule[]) {
       const match = await evaluateRule(rule, client, name, now, db, user)
@@ -166,8 +166,7 @@ async function evaluateRule(
   rule: TouchpointRule,
   client: {
     id: string
-    first_name: string | null
-    last_name: string | null
+    full_name: string | null
     date_of_birth: string | null
   },
   clientName: string,

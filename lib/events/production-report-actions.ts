@@ -68,7 +68,7 @@ export async function generateProductionReport(eventId: string): Promise<Product
       menu_id,
       allergies,
       dietary_restrictions,
-      clients!inner(first_name, last_name)
+      clients!inner(full_name)
     `
     )
     .eq('id', eventId)
@@ -83,11 +83,8 @@ export async function generateProductionReport(eventId: string): Promise<Product
     throw new Error('No menu assigned to this event')
   }
 
-  const client = event.clients as unknown as {
-    first_name: string
-    last_name: string
-  }
-  const clientName = `${client.first_name} ${client.last_name}`.trim()
+  const client = event.clients as unknown as { full_name: string }
+  const clientName = client.full_name ?? ''
 
   // 2. Fetch dishes for the menu, ordered by course
   const { data: dishes, error: dishErr } = await db

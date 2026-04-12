@@ -280,7 +280,7 @@ export async function getClaimDocumentPackage(id: string) {
     if (event?.client_id) {
       const { data: client } = await db
         .from('clients')
-        .select('id, first_name, last_name, email, phone, company')
+        .select('id, full_name, email, phone, company')
         .eq('id', event.client_id)
         .eq('tenant_id', user.tenantId!)
         .single()

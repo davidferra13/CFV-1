@@ -388,7 +388,7 @@ export async function getCancellationHistory(): Promise<{
         event_date,
         updated_at,
         client_id,
-        clients!inner(first_name, last_name)
+        clients!inner(full_name)
       `
       )
       .eq('tenant_id', tenantId)
@@ -420,9 +420,7 @@ export async function getCancellationHistory(): Promise<{
       const feeRetainedCents = totalPaidCents - totalRefundedCents
 
       const client = event.clients as any
-      const clientName = client
-        ? `${client.first_name ?? ''} ${client.last_name ?? ''}`.trim() || null
-        : null
+      const clientName = client?.full_name ?? null
 
       history.push({
         eventId: event.id,

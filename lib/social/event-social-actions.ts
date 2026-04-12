@@ -181,11 +181,11 @@ export async function generateCaption(
   if (event.client_id) {
     const { data: client } = await db
       .from('clients')
-      .select('first_name')
+      .select('full_name')
       .eq('id', event.client_id)
       .single()
-    if (client?.first_name) {
-      clientName = client.first_name
+    if (client?.full_name) {
+      clientName = client.full_name.split(' ')[0] || client.full_name
     }
   }
 
@@ -314,7 +314,7 @@ export async function getUnpostedEvents(): Promise<UnpostedEvent[]> {
     .select(
       `
       id, occasion, event_date, guest_count, location_city, client_id,
-      clients!inner(first_name, last_name),
+      clients!inner(full_name),
       is_demo
     `
     )
@@ -363,9 +363,7 @@ export async function getUnpostedEvents(): Promise<UnpostedEvent[]> {
       occasion: e.occasion,
       event_date: e.event_date,
       guest_count: e.guest_count,
-      client_name: e.clients
-        ? `${e.clients.first_name ?? ''} ${e.clients.last_name ?? ''}`.trim()
-        : 'Unknown',
+      client_name: e.clients?.full_name ?? 'Unknown',
       photo_count: photoCountMap[e.id] ?? 0,
       location_city: e.location_city ?? '',
     }))

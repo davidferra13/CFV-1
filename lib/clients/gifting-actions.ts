@@ -197,7 +197,7 @@ export async function getGiftSuggestions(clientId?: string): Promise<GiftSuggest
   // Build client query
   let clientQuery = db
     .from('clients')
-    .select('id, first_name, last_name, date_of_birth')
+    .select('id, full_name, date_of_birth')
     .eq('tenant_id', user.tenantId!)
 
   if (clientId) {
@@ -209,7 +209,7 @@ export async function getGiftSuggestions(clientId?: string): Promise<GiftSuggest
   if (!clients || clients.length === 0) return suggestions
 
   for (const client of clients) {
-    const name = [client.first_name, client.last_name].filter(Boolean).join(' ') || 'Client'
+    const name = client.full_name || 'Client'
 
     // Birthday check: within 14 days
     if (client.date_of_birth) {

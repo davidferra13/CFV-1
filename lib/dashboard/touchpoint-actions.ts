@@ -23,7 +23,7 @@ export async function getUpcomingTouchpointReminders(): Promise<TouchpointRemind
   // Load all clients with a date_of_birth
   const { data: clients, error } = await db
     .from('clients')
-    .select('id, first_name, last_name, date_of_birth')
+    .select('id, full_name, date_of_birth')
     .eq('tenant_id', tenantId)
 
   if (error) throw new Error(`Failed to load clients: ${error.message}`)
@@ -33,7 +33,7 @@ export async function getUpcomingTouchpointReminders(): Promise<TouchpointRemind
   const reminders: TouchpointReminder[] = []
 
   for (const client of clients) {
-    const name = [client.first_name, client.last_name].filter(Boolean).join(' ') || 'Client'
+    const name = client.full_name || 'Client'
 
     // Birthday check
     if (client.date_of_birth) {
@@ -89,9 +89,7 @@ export async function getUpcomingTouchpointReminders(): Promise<TouchpointRemind
         )
         if (daysUntil <= 14) {
           const client = clients.find((c: { id: string }) => c.id === clientId)
-          const name = client
-            ? [client.first_name, client.last_name].filter(Boolean).join(' ') || 'Client'
-            : 'Client'
+          const name = client?.full_name || 'Client'
           reminders.push({
             clientId,
             clientName: name,

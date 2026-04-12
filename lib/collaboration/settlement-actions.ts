@@ -89,15 +89,11 @@ export async function getEventSettlement(eventId: string): Promise<EventSettleme
 
   // Fetch chef names for collaborators
   const chefIds = collabs.map((c: any) => c.chef_id)
-  const { data: chefs } = await db
-    .from('chefs')
-    .select('id, business_name, first_name, last_name')
-    .in('id', chefIds)
+  const { data: chefs } = await db.from('chefs').select('id, business_name').in('id', chefIds)
 
   const chefNameMap: Record<string, string> = {}
   for (const chef of chefs ?? []) {
-    chefNameMap[chef.id] =
-      chef.business_name || `${chef.first_name ?? ''} ${chef.last_name ?? ''}`.trim() || 'Unknown'
+    chefNameMap[chef.id] = chef.business_name || 'Unknown'
   }
 
   const totalRevenue = event.amount_paid_cents ?? event.quoted_price_cents ?? 0
@@ -159,15 +155,11 @@ export async function getEventCollaboratorsWithStations(eventId: string): Promis
 
   // Fetch chef names
   const chefIds = collabs.map((c: any) => c.chef_id)
-  const { data: chefs } = await db
-    .from('chefs')
-    .select('id, business_name, first_name, last_name')
-    .in('id', chefIds)
+  const { data: chefs } = await db.from('chefs').select('id, business_name').in('id', chefIds)
 
   const chefNameMap: Record<string, string> = {}
   for (const chef of chefs ?? []) {
-    chefNameMap[chef.id] =
-      chef.business_name || `${chef.first_name ?? ''} ${chef.last_name ?? ''}`.trim() || 'Unknown'
+    chefNameMap[chef.id] = chef.business_name || 'Unknown'
   }
 
   const stations: Record<string, Array<{ chefName: string; role: string; chefId: string }>> = {}

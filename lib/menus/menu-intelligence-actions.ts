@@ -868,12 +868,14 @@ export async function initializeMenuForEvent(eventId: string): Promise<{
   if (event.client_id) {
     const { data: client } = await db
       .from('clients')
-      .select('last_name, dietary_restrictions, allergies')
+      .select('full_name, dietary_restrictions, allergies')
       .eq('id', event.client_id)
       .single()
 
     if (client) {
-      clientLastName = client.last_name || ''
+      // Use last word of full_name as surname for menu naming
+      const parts = (client.full_name || '').split(' ')
+      clientLastName = parts.length > 1 ? parts[parts.length - 1] : parts[0] || ''
       clientDietary = client.dietary_restrictions || []
       clientAllergies = client.allergies || []
     }
@@ -1033,12 +1035,12 @@ async function _getMenuContextDataInner(
       if (event.client_id) {
         const { data: client } = await db
           .from('clients')
-          .select('first_name, last_name, dietary_restrictions, allergies')
+          .select('full_name, dietary_restrictions, allergies')
           .eq('id', event.client_id)
           .single()
 
         if (client) {
-          clientName = [client.first_name, client.last_name].filter(Boolean).join(' ') || null
+          clientName = client.full_name || null
           clientDietary = client.dietary_restrictions || []
           clientAllergies = client.allergies || []
         }
@@ -1303,7 +1305,7 @@ export async function validateMenuAllergens(menuId: string): Promise<{
 
   const { data: client } = await db
     .from('clients')
-    .select('first_name, last_name, dietary_restrictions, allergies')
+    .select('full_name, dietary_restrictions, allergies')
     .eq('id', event.client_id)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -1318,9 +1320,7 @@ export async function validateMenuAllergens(menuId: string): Promise<{
   ].filter((v: string, i: number, a: string[]) => a.indexOf(v) === i)
 
   if (allergies.length === 0 && restrictions.length === 0) {
-    const clientName = client
-      ? [client.first_name, client.last_name].filter(Boolean).join(' ')
-      : null
+    const clientName = client ? client.full_name || null : null
     return { warnings: [], clientName, allergies: [], restrictions: [] }
   }
 
@@ -1332,9 +1332,7 @@ export async function validateMenuAllergens(menuId: string): Promise<{
     .eq('tenant_id', user.tenantId!)
 
   if (!dishes?.length) {
-    const clientName = client
-      ? [client.first_name, client.last_name].filter(Boolean).join(' ')
-      : null
+    const clientName = client ? client.full_name || null : null
     return { warnings: [], clientName, allergies, restrictions }
   }
 
@@ -1422,7 +1420,7 @@ export async function validateMenuAllergens(menuId: string): Promise<{
 
   unique.sort((a, b) => (a.severity === 'critical' ? -1 : 1) - (b.severity === 'critical' ? -1 : 1))
 
-  const clientName = client ? [client.first_name, client.last_name].filter(Boolean).join(' ') : null
+  const clientName = client?.full_name ?? null
 
   return { warnings: unique, clientName, allergies, restrictions }
 }
@@ -1488,13 +1486,10 @@ export async function getRecipeUsage(recipeId: string): Promise<RecipeUsageEntry
     const clientIds = (events || []).filter((e: any) => e.client_id).map((e: any) => e.client_id)
     let clientMap = new Map<string, string>()
     if (clientIds.length > 0) {
-      const { data: clients } = await db
-        .from('clients')
-        .select('id, first_name, last_name')
-        .in('id', clientIds)
+      const { data: clients } = await db.from('clients').select('id, full_name').in('id', clientIds)
 
       for (const c of (clients || []) as any[]) {
-        clientMap.set(c.id, [c.first_name, c.last_name].filter(Boolean).join(' '))
+        clientMap.set(c.id, c.full_name || '')
       }
     }
 
@@ -2473,14 +2468,14 @@ export async function getAssemblySources(filters?: {
       if (clientIds.length > 0) {
         const { data: clients } = await db
           .from('clients')
-          .select('id, first_name, last_name')
+          .select('id, full_name')
           .in('id', clientIds)
           .eq('tenant_id', user.tenantId!)
 
         if (clients) {
           const clientMap = new Map<string, string>()
           for (const c of clients) {
-            clientMap.set(c.id, [c.first_name, c.last_name].filter(Boolean).join(' '))
+            clientMap.set(c.id, c.full_name || '')
           }
           for (const e of events) {
             if (e.client_id && clientMap.has(e.client_id)) {

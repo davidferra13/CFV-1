@@ -73,7 +73,7 @@ export async function getContentReadyEvents(): Promise<ContentReadyEvent[]> {
     .select(
       `
       id, occasion, event_date, guest_count, client_id,
-      clients!inner(first_name, last_name, nda_active, photo_permission),
+      clients!inner(full_name, nda_active, photo_permission),
       is_demo
     `
     )
@@ -125,9 +125,7 @@ export async function getContentReadyEvents(): Promise<ContentReadyEvent[]> {
       event_date: e.event_date,
       guest_count: e.guest_count,
       photo_count: photoCountMap[e.id] ?? 0,
-      client_name: e.clients
-        ? `${e.clients.first_name ?? ''} ${e.clients.last_name ?? ''}`.trim()
-        : 'Unknown',
+      client_name: e.clients?.full_name ?? 'Unknown',
       has_nda: e.clients?.nda_active === true,
       photo_permission: e.clients?.photo_permission ?? 'none',
       draft_count: draftCountMap[e.id] ?? 0,
@@ -158,7 +156,7 @@ export async function generateContentDraft(
       `
       id, occasion, event_date, guest_count, service_style, location_city,
       special_requests, course_count, client_id, status,
-      clients(first_name, nda_active, nda_coverage, photo_permission)
+      clients(full_name, nda_active, nda_coverage, photo_permission)
     `
     )
     .eq('id', eventId)
