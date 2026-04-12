@@ -23,7 +23,7 @@ export async function getAtRiskClients(): Promise<ChurnRisk[]> {
       events(event_date, status)
     `
     )
-    .eq('chef_id', user.entityId)
+    .eq('tenant_id', user.tenantId!)
     .eq('status', 'active')
 
   if (!clients) return []

@@ -20,7 +20,7 @@ export async function findDuplicateClients(): Promise<DuplicatePair[]> {
   const { data: clients } = await db
     .from('clients')
     .select('id, full_name, email, phone')
-    .eq('chef_id', user.entityId)
+    .eq('tenant_id', user.tenantId!)
     .order('created_at', { ascending: true })
 
   if (!clients || clients.length < 2) return []
