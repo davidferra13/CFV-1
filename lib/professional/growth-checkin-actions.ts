@@ -15,7 +15,8 @@ export async function submitCheckin(input: {
   const tenantId = chef.tenantId!
   const db: any = createServerClient()
 
-  const today = new Date().toISOString().split('T')[0]
+  const _td = new Date()
+  const today = `${_td.getFullYear()}-${String(_td.getMonth() + 1).padStart(2, '0')}-${String(_td.getDate()).padStart(2, '0')}`
 
   const { error } = await db.from('chef_growth_checkins').upsert(
     {
@@ -74,7 +75,10 @@ export async function isDue(): Promise<boolean> {
     .from('chef_growth_checkins')
     .select('id')
     .eq('tenant_id', tenantId)
-    .gte('checkin_date', since.toISOString().split('T')[0])
+    .gte(
+      'checkin_date',
+      `${since.getFullYear()}-${String(since.getMonth() + 1).padStart(2, '0')}-${String(since.getDate()).padStart(2, '0')}`
+    )
     .limit(1)
     .maybeSingle()
 

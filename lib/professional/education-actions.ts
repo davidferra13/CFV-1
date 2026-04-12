@@ -63,14 +63,17 @@ export async function getAnnualCount(): Promise<number> {
   const tenantId = chef.tenantId!
   const db: any = createServerClient()
 
-  const since = new Date()
-  since.setFullYear(since.getFullYear() - 1)
+  const _sn = new Date()
+  const since = new Date(_sn.getFullYear() - 1, _sn.getMonth(), _sn.getDate())
 
   const { count, error } = await db
     .from('chef_education_log')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
-    .gte('entry_date', since.toISOString().split('T')[0])
+    .gte(
+      'entry_date',
+      `${since.getFullYear()}-${String(since.getMonth() + 1).padStart(2, '0')}-${String(since.getDate()).padStart(2, '0')}`
+    )
 
   if (error) throw new Error(error.message)
   return count ?? 0

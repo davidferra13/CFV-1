@@ -8,13 +8,12 @@ export async function computeAndStoreMomentum() {
   const tenantId = chef.tenantId!
   const db: any = createServerClient()
 
-  const today = new Date().toISOString().split('T')[0]
-
   const now = new Date()
-  const ago90 = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-  const ago365 = new Date()
-  ago365.setFullYear(ago365.getFullYear() - 1)
-  const ago365str = ago365.toISOString().split('T')[0]
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  const _a90 = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 90)
+  const ago90 = `${_a90.getFullYear()}-${String(_a90.getMonth() + 1).padStart(2, '0')}-${String(_a90.getDate()).padStart(2, '0')}`
+  const _a365 = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate())
+  const ago365str = `${_a365.getFullYear()}-${String(_a365.getMonth() + 1).padStart(2, '0')}-${String(_a365.getDate()).padStart(2, '0')}`
 
   // new_clients_90d
   const { count: newClients90d } = await db
