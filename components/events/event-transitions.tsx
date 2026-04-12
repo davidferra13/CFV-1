@@ -5,6 +5,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
@@ -113,6 +114,12 @@ export function EventTransitions({
 
       if (result.success) {
         if (actionLabel) trackAction(actionLabel, event.id)
+        // Surface soft warnings (e.g. same-date conflict) as amber toasts
+        if (result.warnings && result.warnings.length > 0) {
+          for (const w of result.warnings) {
+            toast.warning(w, { duration: 8000 })
+          }
+        }
         if (redirectTo) {
           router.push(redirectTo)
         } else {
