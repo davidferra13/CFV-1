@@ -99,6 +99,20 @@ export const CRON_MONITOR_DEFINITIONS: CronMonitorDefinition[] = [
     description: 'Email RSVP reminder nudges before shared events',
   },
   {
+    cronName: 'proactive-alerts',
+    routePath: '/api/scheduled/proactive-alerts',
+    maxExpectedMinutes: 120,
+    cadence: 'hourly',
+    description: 'Run Remy alert rules for all active tenants',
+  },
+  {
+    cronName: 'scheduled-messages',
+    routePath: '/api/scheduled/messages',
+    maxExpectedMinutes: 30,
+    cadence: '15m',
+    description: 'Deliver due scheduled messages via email and other channels',
+  },
+  {
     cronName: 'stale-leads',
     routePath: '/api/scheduled/stale-leads',
     maxExpectedMinutes: 120,
