@@ -58,6 +58,7 @@ export async function getYoYData(): Promise<YoYData> {
       .from('events')
       .select('event_date, quoted_price_cents, status')
       .eq('tenant_id', user.tenantId!)
+      .eq('is_demo', false)
       .in('status', ['completed', 'in_progress', 'confirmed', 'paid'])
       .gte('event_date', `${previousYear}-01-01`)
       .lt('event_date', `${currentYear + 1}-01-01`),

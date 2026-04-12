@@ -27,6 +27,7 @@ export async function getRevenueForecast(): Promise<RevenueForecast> {
     .from('events')
     .select('event_date, quoted_price_cents')
     .eq('tenant_id', user.entityId)
+    .eq('is_demo', false)
     .eq('status', 'completed')
     .gte('event_date', twelveMonthsAgo.toISOString().split('T')[0])
     .order('event_date', { ascending: true })

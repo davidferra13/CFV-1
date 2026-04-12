@@ -52,6 +52,7 @@ export async function getInquiryUrgenciesWithSLA(): Promise<InquiryUrgencyWithSL
     .from('inquiries')
     .select('id, created_at, status, channel')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .in('status', ['new', 'awaiting_client', 'awaiting_chef', 'quoted'])
     .is('deleted_at', null)
     .order('created_at', { ascending: true })
@@ -161,6 +162,7 @@ export async function getPlatformSLAStats(): Promise<PlatformSLAStat[]> {
     .from('inquiries')
     .select('id, created_at, channel, status')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .is('deleted_at', null)
 
   if (!inquiries?.length) return []

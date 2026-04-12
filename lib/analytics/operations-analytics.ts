@@ -76,6 +76,7 @@ export async function getComplianceStats(
     `
     )
     .eq('tenant_id', chef.tenantId!)
+    .eq('is_demo', false)
     .eq('status', 'completed')
 
   if (startDate) query = query.gte('event_date', startDate)
@@ -171,6 +172,7 @@ export async function getTimePhaseStats(
     `
     )
     .eq('tenant_id', chef.tenantId!)
+    .eq('is_demo', false)
     .eq('status', 'completed')
 
   if (startDate) query = query.gte('event_date', startDate)
@@ -234,6 +236,7 @@ export async function getWasteStats(startDate: string, endDate: string): Promise
     .from('events')
     .select('id, leftover_value_carried_forward_cents')
     .eq('tenant_id', chef.tenantId!)
+    .eq('is_demo', false)
     .eq('status', 'completed')
     .gte('event_date', startDate)
     .lte('event_date', endDate)
@@ -276,6 +279,7 @@ export async function getCulinaryOperationsStats(): Promise<CulinaryOperationsSt
     .from('events')
     .select('id, guest_count, occasion, dietary_restrictions')
     .eq('tenant_id', chef.tenantId!)
+    .eq('is_demo', false)
     .eq('status', 'completed')
 
   const total = events?.length ?? 0
@@ -348,6 +352,7 @@ export async function getEffectiveHourlyRateByMonth(): Promise<EffectiveHourlyRa
     `
     )
     .eq('tenant_id', chef.tenantId!)
+    .eq('is_demo', false)
     .eq('status', 'completed')
     .gte('event_date', oneYearAgo.toISOString().slice(0, 10))
 

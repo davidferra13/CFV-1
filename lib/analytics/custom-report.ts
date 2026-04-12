@@ -46,6 +46,7 @@ export async function runCustomReport(config: ReportConfig): Promise<ReportDataP
       .from('events')
       .select('event_date, quoted_price_cents, status, occasion')
       .eq('tenant_id', user.entityId)
+      .eq('is_demo', false)
       .gte('event_date', fromDate.toISOString().split('T')[0])
 
     const grouped = new Map<string, { value: number; count: number }>()

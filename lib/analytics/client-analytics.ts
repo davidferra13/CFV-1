@@ -78,6 +78,7 @@ export async function getClientRetentionStats(): Promise<ClientRetentionStats> {
     .from('events')
     .select('client_id, event_date')
     .eq('tenant_id', chef.tenantId!)
+    .eq('is_demo', false)
     .eq('status', 'completed')
     .not('client_id', 'is', null)
     .order('client_id')
@@ -310,6 +311,7 @@ export async function getReferralConversionStats(): Promise<ReferralConversionSt
     .from('inquiries')
     .select('status, converted_to_event_id')
     .eq('tenant_id', chef.tenantId!)
+    .eq('is_demo', false)
     .eq('channel', 'referral')
 
   const referred = inquiries?.length ?? 0

@@ -101,6 +101,7 @@ export async function computeDashboardKPIs(range: DateRange): Promise<DashboardK
     .from('events')
     .select('id, status, quoted_price_cents, guest_count, event_date')
     .eq('tenant_id', tenantId)
+    .eq('is_demo', false)
     .gte('event_date', range.start)
     .lte('event_date', range.end)
 
@@ -117,6 +118,7 @@ export async function computeDashboardKPIs(range: DateRange): Promise<DashboardK
     .from('inquiries')
     .select('id, status, converted_to_event_id')
     .eq('tenant_id', tenantId)
+    .eq('is_demo', false)
     .gte('created_at', range.start)
     .lte('created_at', range.end)
 
@@ -214,6 +216,7 @@ export async function computeTopClients(range: DateRange): Promise<TopClient[]> 
     .from('events')
     .select('id, client_id, quoted_price_cents, status, client:clients(full_name)')
     .eq('tenant_id', chef.tenantId!)
+    .eq('is_demo', false)
     .gte('event_date', range.start)
     .lte('event_date', range.end)
     .neq('status', 'cancelled')
@@ -254,6 +257,7 @@ export async function computeSeasonalPerformance(range: DateRange): Promise<Seas
     .from('events')
     .select('id, event_date, status, guest_count, quoted_price_cents')
     .eq('tenant_id', chef.tenantId!)
+    .eq('is_demo', false)
     .gte('event_date', range.start)
     .lte('event_date', range.end)
 
@@ -325,19 +329,20 @@ export function exportToCSV(rows: Record<string, unknown>[], filename: string): 
 
 // ─── Range Helpers ──────────────────────────────────────────────────────────
 
+function _liso(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 export function defaultRange(days = 30): DateRange {
   const end = new Date()
-  const start = new Date(end.getTime() - days * 86400000)
-  return {
-    start: start.toISOString().slice(0, 10),
-    end: end.toISOString().slice(0, 10),
-  }
+  const start = new Date(end.getFullYear(), end.getMonth(), end.getDate() - days)
+  return { start: _liso(start), end: _liso(end) }
 }
 
 export function yearRange(): DateRange {
   const now = new Date()
   return {
     start: `${now.getFullYear()}-01-01`,
-    end: now.toISOString().slice(0, 10),
+    end: _liso(now),
   }
 }

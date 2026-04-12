@@ -64,6 +64,7 @@ export async function getBookingSeasonality(): Promise<BookingSeasonality> {
     .from('events')
     .select('event_date, amount_paid_cents')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .in('status', ['completed', 'in_progress', 'confirmed', 'paid', 'accepted'])
     .not('event_date', 'is', null)
 
@@ -211,6 +212,7 @@ export async function getHolidayYearOverYear(): Promise<HolidayYoYRow[]> {
     .from('events')
     .select('event_date, amount_paid_cents')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .in('status', ['completed', 'confirmed', 'paid', 'in_progress'])
     .gte('event_date', threeYearsAgo.toISOString().slice(0, 10))
     .not('event_date', 'is', null)

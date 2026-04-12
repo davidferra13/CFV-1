@@ -103,6 +103,7 @@ export async function getInquiryFunnelStats(): Promise<InquiryFunnelStats> {
     .from('inquiries')
     .select('status, converted_to_event_id')
     .eq('tenant_id', chef.tenantId!)
+    .eq('is_demo', false)
 
   const inquiries = data ?? []
   const total = inquiries.length
@@ -118,6 +119,7 @@ export async function getInquiryFunnelStats(): Promise<InquiryFunnelStats> {
     .from('inquiries')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', chef.tenantId!)
+    .eq('is_demo', false)
     .not('converted_to_event_id', 'is', null)
 
   return {
@@ -178,6 +180,7 @@ export async function getGhostRateStats(): Promise<GhostRateStats> {
     .from('inquiries')
     .select('status, created_at, ghost_at')
     .eq('tenant_id', chef.tenantId!)
+    .eq('is_demo', false)
 
   const all = data ?? []
   const ghosted = all.filter((i: any) => i.status === 'expired')
@@ -232,6 +235,7 @@ export async function getLeadTimeStats(): Promise<LeadTimeStats> {
     .from('events')
     .select('inquiry_received_at, event_date')
     .eq('tenant_id', chef.tenantId!)
+    .eq('is_demo', false)
     .not('inquiry_received_at', 'is', null)
     .not('event_date', 'is', null)
 
@@ -277,6 +281,7 @@ export async function getDeclineReasonStats(): Promise<DeclineReasonStats> {
     .from('inquiries')
     .select('decline_reason')
     .eq('tenant_id', chef.tenantId!)
+    .eq('is_demo', false)
     .eq('status', 'declined')
 
   const declined = data ?? []
@@ -353,6 +358,7 @@ export async function getAvgInquiryResponseTime(): Promise<ResponseTimeStats> {
     .from('inquiries')
     .select('id, created_at')
     .eq('tenant_id', chef.tenantId!)
+    .eq('is_demo', false)
 
   if (!inquiries?.length) {
     return {

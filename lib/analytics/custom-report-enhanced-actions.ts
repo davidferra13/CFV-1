@@ -50,11 +50,16 @@ const DateRangeSchema = z.object({
 
 // --- Helpers ---
 
+function liso(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 function getDefaultDateRange(): { startDate: string; endDate: string } {
   const now = new Date()
-  const endDate = now.toISOString().split('T')[0]
-  const startDate = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0] // YTD
-  return { startDate, endDate }
+  return {
+    startDate: `${now.getFullYear()}-01-01`,
+    endDate: liso(now),
+  }
 }
 
 // --- Actions ---
@@ -81,6 +86,7 @@ export async function getClientRetentionRate(
     .from('events')
     .select('id, client_id')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .gte('event_date', rangeStart)
     .lte('event_date', rangeEnd)
     .not('status', 'eq', 'cancelled')
@@ -147,6 +153,7 @@ export async function getRevenueBySource(
     .from('events')
     .select('id, quoted_price_cents, client:clients(referral_source)')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .gte('event_date', rangeStart)
     .lte('event_date', rangeEnd)
     .not('status', 'eq', 'cancelled')

@@ -54,6 +54,7 @@ export async function generateDemandForecast(
     .from('inquiries')
     .select('created_at')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
 
   // Group inquiry counts by year-month
   const monthCounts = new Map<string, number>() // key: 'YYYY-MM'

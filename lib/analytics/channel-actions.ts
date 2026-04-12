@@ -82,6 +82,7 @@ export async function getChannelAnalytics(
     .from('inquiries')
     .select('id, channel, referral_source, converted_to_event_id, created_at')
     .eq('tenant_id', tenantId)
+    .eq('is_demo', false)
     .is('deleted_at', null)
 
   if (rangeStart) {
@@ -115,6 +116,7 @@ export async function getChannelAnalytics(
       .from('events')
       .select('id, status, quoted_price_cents')
       .eq('tenant_id', tenantId)
+      .eq('is_demo', false)
       .in('id', eventIds)
 
     // Get financial summaries for revenue data
@@ -228,6 +230,7 @@ export async function getSourceBreakdown(): Promise<SourceBreakdownEntry[]> {
     .from('inquiries')
     .select('channel')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .is('deleted_at', null)
 
   if (error) {

@@ -27,6 +27,7 @@ export async function getInquiryUrgencies(): Promise<InquiryUrgency[]> {
     .from('inquiries')
     .select('id, created_at, status')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .in('status', ['new', 'awaiting_client', 'awaiting_chef', 'quoted'])
     .order('created_at', { ascending: true })
 

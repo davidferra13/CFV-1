@@ -51,13 +51,15 @@ export async function computeBenchmarkSnapshot(): Promise<{
 }> {
   const user = await requireChef()
   const db: any = createServerClient()
-  const today = new Date().toISOString().split('T')[0]
+  const _td = new Date()
+  const today = `${_td.getFullYear()}-${String(_td.getMonth() + 1).padStart(2, '0')}-${String(_td.getDate()).padStart(2, '0')}`
 
   // 1. Average event value: mean total_amount_cents of completed events
   const { data: completedEvents } = await db
     .from('events')
     .select('id, quoted_price_cents, event_date, serve_time, departure_time')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .eq('status', 'completed')
 
   const events = completedEvents || []
@@ -101,6 +103,7 @@ export async function computeBenchmarkSnapshot(): Promise<{
     .from('inquiries')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
 
   const bookingConversionRate =
     (inquiryCount ?? 0) > 0
@@ -117,6 +120,7 @@ export async function computeBenchmarkSnapshot(): Promise<{
     .from('events')
     .select('client_id')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .eq('status', 'completed')
 
   const clientEventCounts = new Map<string, number>()
@@ -208,9 +212,9 @@ export async function getBenchmarkHistory(months?: number): Promise<BenchmarkSna
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const cutoffDate = new Date()
-  cutoffDate.setMonth(cutoffDate.getMonth() - monthCount)
-  const cutoffStr = cutoffDate.toISOString().split('T')[0]
+  const _now = new Date()
+  const cutoffDate = new Date(_now.getFullYear(), _now.getMonth() - monthCount, _now.getDate())
+  const cutoffStr = `${cutoffDate.getFullYear()}-${String(cutoffDate.getMonth() + 1).padStart(2, '0')}-${String(cutoffDate.getDate()).padStart(2, '0')}`
 
   const { data: snapshots, error } = await db
     .from('benchmark_snapshots')
@@ -256,6 +260,7 @@ export async function getConversionFunnel(): Promise<ConversionFunnel> {
     .from('inquiries')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .gte('created_at', periodStart)
     .lt('created_at', periodEnd)
 
@@ -264,6 +269,7 @@ export async function getConversionFunnel(): Promise<ConversionFunnel> {
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .gte('created_at', periodStart)
     .lt('created_at', periodEnd)
     .not('status', 'eq', 'draft')
@@ -273,6 +279,7 @@ export async function getConversionFunnel(): Promise<ConversionFunnel> {
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .gte('created_at', periodStart)
     .lt('created_at', periodEnd)
     .in('status', ['accepted', 'paid', 'confirmed', 'in_progress', 'completed'])
@@ -282,6 +289,7 @@ export async function getConversionFunnel(): Promise<ConversionFunnel> {
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .gte('created_at', periodStart)
     .lt('created_at', periodEnd)
     .in('status', ['paid', 'confirmed', 'in_progress', 'completed'])
@@ -291,6 +299,7 @@ export async function getConversionFunnel(): Promise<ConversionFunnel> {
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .gte('created_at', periodStart)
     .lt('created_at', periodEnd)
     .eq('status', 'completed')

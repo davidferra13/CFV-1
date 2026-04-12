@@ -140,6 +140,7 @@ export async function getDinnerTimeDistribution(): Promise<DinnerTimeSlot[]> {
     .from('events')
     .select('serve_time')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .in('status', ['completed', 'confirmed', 'in_progress'])
     .not('serve_time', 'is', null)
 
@@ -174,6 +175,7 @@ export async function getOccasionStats(): Promise<OccasionStat[]> {
     .from('events')
     .select('occasion, quoted_price_cents')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .not('occasion', 'is', null)
     .in('status', ['accepted', 'paid', 'confirmed', 'in_progress', 'completed'])
 
@@ -216,6 +218,7 @@ export async function getServiceStyleDistribution(): Promise<ServiceStyleStat[]>
     .from('events')
     .select('service_style')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .in('status', ['accepted', 'paid', 'confirmed', 'in_progress', 'completed'])
     .not('service_style', 'is', null)
 
@@ -247,6 +250,7 @@ export async function getGuestCountDistribution(): Promise<GuestCountBucket[]> {
     .from('events')
     .select('guest_count')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .in('status', ['completed', 'confirmed'])
     .not('guest_count', 'is', null)
 
@@ -295,6 +299,7 @@ export async function getDietaryRestrictionFrequency(): Promise<DietaryFrequency
         .from('events')
         .select('dietary_restrictions')
         .eq('tenant_id', user.tenantId!)
+        .eq('is_demo', false)
         .in('status', ['completed', 'confirmed', 'in_progress'])
         .not('dietary_restrictions', 'is', null),
     ])
@@ -333,6 +338,7 @@ export async function getMonthlyEventVolume(): Promise<MonthlyVolume[]> {
     .from('events')
     .select('event_date, quoted_price_cents, status')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .not('event_date', 'is', null)
     .not('status', 'in', '("draft","cancelled")')
 
@@ -390,6 +396,7 @@ export async function getDayOfWeekDistribution(): Promise<DayOfWeekStat[]> {
     .from('events')
     .select('event_date')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .in('status', ['completed', 'confirmed'])
     .not('event_date', 'is', null)
 
@@ -761,6 +768,7 @@ export async function getFinancialIntelligenceStats(): Promise<FinancialIntellig
     .from('events')
     .select('occasion, service_style, quoted_price_cents, tip_amount_cents, guest_count')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .eq('status', 'completed')
 
   if (error) {
@@ -892,6 +900,7 @@ export async function getTakeAChefROI(): Promise<TakeAChefROI> {
       .from('events')
       .select('id, client_id, inquiry_id, quoted_price_cents, status')
       .eq('tenant_id', tenantId)
+      .eq('is_demo', false)
       .in('client_id', tacClientIds)
       .not('status', 'in', '("cancelled","draft")')
 

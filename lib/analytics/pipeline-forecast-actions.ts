@@ -75,6 +75,7 @@ export async function getPipelineRevenueForecast(): Promise<PipelineRevenueForec
     .from('events')
     .select('id, status, quoted_price_cents')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .in('status', ['proposed', 'accepted', 'paid', 'confirmed'])
 
   const pipelineEvents = events || []
@@ -136,6 +137,7 @@ export async function getFunnelMetrics(
     .from('inquiries')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .gte('created_at', effectiveStart)
     .lte('created_at', effectiveEnd + 'T23:59:59')
 
@@ -145,6 +147,7 @@ export async function getFunnelMetrics(
     .from('events')
     .select('id, status')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .gte('created_at', effectiveStart)
     .lte('created_at', effectiveEnd + 'T23:59:59')
 

@@ -235,6 +235,7 @@ export async function predictChurnRisk(clientId: string): Promise<ChurnPredictio
     .from('events')
     .select('event_date')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .eq('client_id', clientId)
     .eq('status', 'completed')
     .order('event_date')

@@ -70,6 +70,7 @@ export async function computeCLV(clientId: string): Promise<ClientLTV> {
     .select('id, quoted_price_cents, event_date')
     .eq('client_id', validated.clientId)
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .eq('status', 'completed')
     .order('event_date', { ascending: true })
 
@@ -133,6 +134,7 @@ export async function getTopClientsByLTV(limit?: number): Promise<ClientLTV[]> {
     .from('events')
     .select('id, client_id, quoted_price_cents, event_date')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .eq('status', 'completed')
 
   // Get all business expenses linked to events
@@ -223,6 +225,7 @@ export async function getRetentionCohort(): Promise<RetentionCohortRow[]> {
     .from('events')
     .select('client_id, event_date')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .eq('status', 'completed')
     .order('event_date', { ascending: true })
 

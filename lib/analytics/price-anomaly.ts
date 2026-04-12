@@ -62,6 +62,7 @@ export async function detectPriceAnomalies(thresholdPercent = 20): Promise<Price
     .from('events')
     .select('id, event_date, occasion, guest_count, status')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .in('status', ['proposed', 'accepted', 'paid', 'confirmed', 'in_progress', 'completed'])
     .order('event_date')
 

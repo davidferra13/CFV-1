@@ -205,6 +205,7 @@ export async function getCostPerLeadByChannel(
         .from('inquiries')
         .select('id', { count: 'exact', head: true })
         .eq('tenant_id', chef.tenantId!)
+        .eq('is_demo', false)
         .in('channel', inquiryChannels)
         .gte('created_at', startDate)
         .lte('created_at', endDate)
@@ -213,6 +214,7 @@ export async function getCostPerLeadByChannel(
         .from('inquiries')
         .select('id', { count: 'exact', head: true })
         .eq('tenant_id', chef.tenantId!)
+        .eq('is_demo', false)
         .in('channel', inquiryChannels)
         .gte('created_at', startDate)
         .lte('created_at', endDate)
@@ -249,6 +251,7 @@ export async function getReviewStats(): Promise<ReviewStats> {
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', chef.tenantId!)
+    .eq('is_demo', false)
     .eq('status', 'completed')
 
   const all = reviews ?? []

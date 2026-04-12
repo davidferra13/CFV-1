@@ -251,6 +251,7 @@ export async function getMostCommonDietaryRestrictions(): Promise<
     .from('events')
     .select('dietary_restrictions')
     .eq('tenant_id', chef.id)
+    .eq('is_demo', false)
     .eq('status', 'completed')
 
   const total = events?.length ?? 0

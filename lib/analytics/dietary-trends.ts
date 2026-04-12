@@ -147,6 +147,7 @@ export async function getDietaryTrendsReport(): Promise<DietaryTrendsReport> {
     .from('events')
     .select('client_id, event_date')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .not('client_id', 'is', null)
     .in('status', ['completed', 'confirmed', 'in_progress'])
     .order('event_date')

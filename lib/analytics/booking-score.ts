@@ -116,6 +116,7 @@ async function _computeBookingScore(
       .from('events')
       .select('id')
       .eq('tenant_id', user.tenantId!)
+      .eq('is_demo', false)
       .eq('event_date', inquiry.confirmed_date)
       .in('status', ['confirmed', 'paid', 'in_progress'])
       .limit(1)
@@ -178,6 +179,7 @@ export async function getBookingScoresForOpenInquiries(): Promise<BookingScore[]
     .from('inquiries')
     .select('id')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .in('status', ['new', 'awaiting_client', 'awaiting_chef', 'quoted'])
 
   if (!inquiries || inquiries.length === 0) return []

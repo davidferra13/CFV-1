@@ -52,6 +52,7 @@ export async function getFoodCostTrend(months = 6): Promise<FoodCostTrend> {
     .from('events')
     .select('id, event_date')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .eq('status', 'completed')
     .gte('event_date', cutoffStr)
 

@@ -118,6 +118,7 @@ export async function getReferralFunnelData(): Promise<{
     .from('inquiries')
     .select('id, channel, referral_source, status, converted_to_event_id')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
 
   if (inqError) {
     console.error('[getReferralFunnelData] inquiries error:', inqError)
@@ -144,6 +145,7 @@ export async function getReferralFunnelData(): Promise<{
       .from('events')
       .select('id, status, quoted_price_cents')
       .eq('tenant_id', user.tenantId!)
+      .eq('is_demo', false)
       .in('id', eventIds)
 
     for (const evt of events || []) {
@@ -310,6 +312,7 @@ export async function getTopReferrers(): Promise<TopReferrer[]> {
     .from('events')
     .select('client_id, status, quoted_price_cents')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .in('client_id', allClientIds)
 
   // Build a map of client_id -> event stats
@@ -364,6 +367,7 @@ export async function getReferralTimeSeries(months = 12): Promise<{
     .from('inquiries')
     .select('channel, referral_source, created_at')
     .eq('tenant_id', user.tenantId!)
+    .eq('is_demo', false)
     .gte('created_at', from)
 
   if (error) {
