@@ -771,7 +771,8 @@ export async function getNetworkInsights(): Promise<NetworkInsights> {
     details: string
   }>
 
-  const today = new Date().toISOString().slice(0, 10)
+  const _td = new Date()
+  const today = `${_td.getFullYear()}-${String(_td.getMonth() + 1).padStart(2, '0')}-${String(_td.getDate()).padStart(2, '0')}`
   const inquiryIdPattern = /Inquiry ID:\s*([0-9a-f-]{36})/i
 
   const sharedInquiryIds = new Set<string>()

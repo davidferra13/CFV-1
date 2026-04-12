@@ -477,7 +477,8 @@ function buildTopCounts(values: string[], limit = 5): JourneyTopicSummary[] {
 }
 
 function todayDateString(): string {
-  return new Date().toISOString().slice(0, 10)
+  const _d = new Date()
+  return `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`
 }
 
 async function ensureEntryBelongsToJourney(

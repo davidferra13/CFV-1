@@ -581,7 +581,12 @@ export async function getCollabRecipientSuggestions(
     trustedMap.set(row.trusted_chef_id, row.trust_level as TrustLevel)
   }
 
-  const boundaryDate = validated.eventDate ?? new Date().toISOString().slice(0, 10)
+  const boundaryDate =
+    validated.eventDate ??
+    ((_d) =>
+      `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+      new Date()
+    )
   const { data: signalRows } = await availabilitySignalsTable(db)
     .select(
       'chef_id, date_start, date_end, region_text, cuisines, max_guest_count, status, share_with_trusted_only, updated_at'

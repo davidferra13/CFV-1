@@ -26,15 +26,16 @@ export type RecurringPaymentPlan = {
 }
 
 function addFrequencyDays(date: string, frequency: string): string {
-  const value = new Date(`${date}T00:00:00`)
+  const [_y, _m, _d] = date.split('-').map(Number)
+  let result: Date
   if (frequency === 'weekly') {
-    value.setDate(value.getDate() + 7)
+    result = new Date(_y, _m - 1, _d + 7)
   } else if (frequency === 'biweekly') {
-    value.setDate(value.getDate() + 14)
+    result = new Date(_y, _m - 1, _d + 14)
   } else {
-    value.setMonth(value.getMonth() + 1)
+    result = new Date(_y, _m, _d) // next month, same day
   }
-  return value.toISOString().slice(0, 10)
+  return `${result.getFullYear()}-${String(result.getMonth() + 1).padStart(2, '0')}-${String(result.getDate()).padStart(2, '0')}`
 }
 
 export async function listRecurringPaymentPlans(): Promise<RecurringPaymentPlan[]> {
@@ -111,11 +112,14 @@ export async function setRecurringPaymentPlanActive(planId: string, active: bool
 export async function listDueRecurringPayments(daysAhead = 7) {
   const user = await requireChef()
   const db: any = createServerClient()
-  const today = new Date()
-  const fromDate = today.toISOString().slice(0, 10)
-  const toDateValue = new Date(today)
-  toDateValue.setDate(toDateValue.getDate() + Math.max(daysAhead, 0))
-  const toDate = toDateValue.toISOString().slice(0, 10)
+  const _now = new Date()
+  const fromDate = `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, '0')}-${String(_now.getDate()).padStart(2, '0')}`
+  const _toD = new Date(
+    _now.getFullYear(),
+    _now.getMonth(),
+    _now.getDate() + Math.max(daysAhead, 0)
+  )
+  const toDate = `${_toD.getFullYear()}-${String(_toD.getMonth() + 1).padStart(2, '0')}-${String(_toD.getDate()).padStart(2, '0')}`
 
   const { data, error } = await db
     .from('recurring_invoices')

@@ -242,7 +242,10 @@ export async function createMilestonesForEvent(
       const eventDate = new Date(event.event_date)
       switch (def.due_trigger) {
         case 'on_confirmation':
-          dueDate = new Date().toISOString().split('T')[0]
+          dueDate = ((_d) =>
+            `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+            new Date()
+          )
           break
         case 'days_before_event':
           dueDate = new Date(eventDate.getTime() - def.due_offset_days * 86400000)
