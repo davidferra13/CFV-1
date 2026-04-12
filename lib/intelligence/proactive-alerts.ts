@@ -95,7 +95,7 @@ export async function getProactiveAlerts(): Promise<ProactiveAlertsResult> {
         .select('id, occasion, event_date, quoted_price_cents, client:clients(full_name)')
         .eq('tenant_id', tenantId)
         .eq('status', 'completed')
-        .eq('payment_collected', false)
+        .neq('payment_status', 'paid')
         .gt('quoted_price_cents', 0)
         .order('event_date', { ascending: false })
         .limit(5)

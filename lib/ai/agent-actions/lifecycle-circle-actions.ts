@@ -28,7 +28,7 @@ const sendPreEventBriefing: AgentActionDefinition = {
     const { data: event } = await db
       .from('events')
       .select(
-        'event_date, serve_time, arrival_time, occasion, guest_count, location_name, client_id'
+        'event_date, serve_time, arrival_time, occasion, guest_count, location_address, client_id'
       )
       .eq('id', eventId)
       .eq('tenant_id', ctx.tenantId)
@@ -92,7 +92,7 @@ const sendPreEventBriefing: AgentActionDefinition = {
       eventDate: event.event_date || 'your event',
       eventTime: event.serve_time ?? null,
       arrivalTime: event.arrival_time ?? null,
-      location: event.location_name ?? null,
+      location: event.location_address ?? null,
       guestCount: event.guest_count ?? null,
       menuName: menu?.name ?? null,
       courseHighlights,
