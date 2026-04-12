@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { deleteMarketingSpend, CHANNEL_LABELS } from '@/lib/analytics/marketing-spend-actions'
-import type { MarketingSpendEntry } from '@/lib/analytics/marketing-spend-actions'
+import { deleteMarketingSpend } from '@/lib/analytics/marketing-spend-actions'
+import { CHANNEL_LABELS } from '@/lib/analytics/marketing-spend-constants'
+import type { MarketingSpendEntry } from '@/lib/analytics/marketing-spend-constants'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 

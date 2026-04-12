@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { logMarketingSpend, CHANNEL_LABELS } from '@/lib/analytics/marketing-spend-actions'
+import { logMarketingSpend } from '@/lib/analytics/marketing-spend-actions'
+import { CHANNEL_LABELS } from '@/lib/analytics/marketing-spend-constants'
 import { Button } from '@/components/ui/button'
 import { Alert } from '@/components/ui/alert'
 

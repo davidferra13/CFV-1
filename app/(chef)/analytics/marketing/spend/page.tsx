@@ -1,5 +1,6 @@
 import { requireChef } from '@/lib/auth/get-user'
-import { getMarketingSpend, CHANNEL_LABELS } from '@/lib/analytics/marketing-spend-actions'
+import { getMarketingSpend } from '@/lib/analytics/marketing-spend-actions'
+import { CHANNEL_LABELS } from '@/lib/analytics/marketing-spend-constants'
 import { MarketingSpendForm } from './marketing-spend-form'
 import { MarketingSpendTable } from './marketing-spend-table'
 import { formatCurrency } from '@/lib/utils/currency'
