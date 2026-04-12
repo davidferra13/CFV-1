@@ -711,12 +711,13 @@ export async function drawRaffleWinner(roundId: string): Promise<{
         alias: e.alias_emoji,
         dayCount: 1,
         bestScore: e.game_score ?? 0,
-        earliestEntry: e.created_at,
+        earliestEntry: dateToDateString(e.created_at as Date | string),
       })
     } else {
       existing.dayCount++
       if ((e.game_score ?? 0) > existing.bestScore) existing.bestScore = e.game_score ?? 0
-      if (e.created_at < existing.earliestEntry) existing.earliestEntry = e.created_at
+      const entryDateStr = dateToDateString(e.created_at as Date | string)
+      if (entryDateStr < existing.earliestEntry) existing.earliestEntry = entryDateStr
     }
   }
   const mostDedicated =

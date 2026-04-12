@@ -323,7 +323,9 @@ export async function getClientDashboardData(): Promise<{
   const nextEventId = (upcoming as Array<Record<string, any>>)[0]?.id ?? null
   const lastPastEventId =
     [...(past as Array<Record<string, any>>)].sort(
-      (a, b) => new Date(String(b.event_date)).getTime() - new Date(String(a.event_date)).getTime()
+      (a, b) =>
+        new Date(b.event_date as Date | string).getTime() -
+        new Date(a.event_date as Date | string).getTime()
     )[0]?.id ?? null
 
   return {
