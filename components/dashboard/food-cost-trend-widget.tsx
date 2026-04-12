@@ -69,7 +69,7 @@ export function FoodCostTrendWidget({ trend }: Props) {
             return (
               <div key={month.month} className="flex-1 flex flex-col items-center gap-1">
                 <span className="text-xxs text-stone-500">
-                  {month.eventCount > 0 ? `${month.avgFoodCostPercent.toFixed(0)}%` : ''}
+                  {month.eventCount > 0 ? `${month.avgFoodCostPercent.toFixed(1)}%` : ''}
                 </span>
                 <div className="w-full relative" style={{ height: '48px' }}>
                   <div
