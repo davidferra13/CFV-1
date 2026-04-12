@@ -9,6 +9,7 @@ import { parseClientsFromBulk } from '@/lib/ai/parse-clients-bulk'
 import { parseBrainDump } from '@/lib/ai/parse-brain-dump'
 import { searchClientsByName, createClient } from '@/lib/clients/actions'
 import { createInquiry } from '@/lib/inquiries/actions'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -265,7 +266,9 @@ export const intakeAgentActions: AgentActionDefinition[] = [
                 | 'walk_in'
                 | 'other') ?? 'other',
             client_name: String(inq.client_name ?? 'Unknown'),
-            confirmed_date: inq.event_date ? String(inq.event_date) : undefined,
+            confirmed_date: inq.event_date
+              ? dateToDateString(inq.event_date as Date | string)
+              : undefined,
             confirmed_guest_count: inq.guest_count ? Number(inq.guest_count) : undefined,
             confirmed_occasion: inq.occasion ? String(inq.occasion) : undefined,
             confirmed_budget_cents: inq.budget_range_max_cents
