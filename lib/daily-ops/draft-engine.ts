@@ -148,6 +148,66 @@ export async function generateDailyDrafts(): Promise<GeneratedDraft[]> {
 }
 
 /**
+ * Generate a birthday/anniversary draft message for a specific client on-demand.
+ * Uses Ollama (client PII stays local). Falls back to a deterministic template
+ * if Ollama is offline, so the button is always useful.
+ */
+export async function generateBirthdayDraft(
+  clientId: string,
+  milestone: 'birthday' | 'anniversary'
+): Promise<{ body: string; clientName: string }> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data: client } = await db
+    .from('clients')
+    .select('id, full_name, allergies, dietary_restrictions')
+    .eq('id', clientId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!client) throw new Error('Client not found')
+
+  const clientName = client.full_name
+  const firstName = clientName?.split(' ')[0] || clientName
+
+  // Last event for personal reference
+  const { data: lastEvent } = await db
+    .from('events')
+    .select('occasion, event_date')
+    .eq('tenant_id', user.tenantId!)
+    .eq('client_id', clientId)
+    .eq('status', 'completed')
+    .order('event_date', { ascending: false })
+    .limit(1)
+    .single()
+
+  const lastEventContext = lastEvent
+    ? `Their most recent event was a ${lastEvent.occasion ?? 'dinner'} on ${lastEvent.event_date}.`
+    : ''
+
+  try {
+    const result = await parseWithOllama(
+      BIRTHDAY_SYSTEM,
+      `Draft a ${milestone} message for ${firstName} (${clientName}). ${lastEventContext}`,
+      DraftOutputSchema,
+      { modelTier: 'standard' }
+    )
+    return { body: result.body, clientName }
+  } catch (err) {
+    if (!(err instanceof OllamaOfflineError)) {
+      console.warn('[DraftEngine] generateBirthdayDraft Ollama failed, using template:', err)
+    }
+    // Deterministic fallback - always works offline
+    const verb = milestone === 'birthday' ? 'birthday' : 'anniversary'
+    const body = lastEvent
+      ? `Hi ${firstName}, thinking of you on your ${verb}! It was a pleasure cooking for you at your ${lastEvent.occasion ?? 'dinner'}. If you would like to celebrate with something special this year, I would love to help make it memorable.`
+      : `Hi ${firstName}, thinking of you on your ${verb}! If you would like to celebrate with a special dinner this year, I would love to help make it memorable.`
+    return { body, clientName }
+  }
+}
+
+/**
  * Approve a draft - marks it as approved.
  */
 export async function approveDraft(draftId: string): Promise<{ success: boolean }> {
