@@ -32,13 +32,13 @@ CREATE INDEX IF NOT EXISTS idx_messages_client_read_at
 
 CREATE TABLE IF NOT EXISTS marketing_spend_log (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id   UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
+  chef_id     UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   amount_cents INTEGER NOT NULL CHECK (amount_cents > 0),
-  channel     TEXT NOT NULL,           -- 'facebook_ads', 'google_ads', 'flyers', 'referral_bonus', 'other'
+  channel     TEXT NOT NULL,           -- 'facebook_ads', 'google_ads', 'instagram_ads', 'flyers', 'referral_bonus', 'event_sponsorship', 'other'
   description TEXT,
-  spent_at    DATE NOT NULL,
+  spend_date  DATE NOT NULL,
   created_at  TIMESTAMPTZ DEFAULT now() NOT NULL
 );
 
-CREATE INDEX IF NOT EXISTS idx_marketing_spend_tenant
-  ON marketing_spend_log (tenant_id, spent_at DESC);
+CREATE INDEX IF NOT EXISTS idx_marketing_spend_chef
+  ON marketing_spend_log (chef_id, spend_date DESC);
