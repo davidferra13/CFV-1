@@ -26,6 +26,9 @@ const CreatePartnerSchema = z.object({
   description: z.string().optional().or(z.literal('')),
   notes: z.string().optional().or(z.literal('')),
   commission_notes: z.string().optional().or(z.literal('')),
+  commission_type: z.enum(['none', 'percentage', 'flat_fee']).default('none').optional(),
+  commission_rate_percent: z.number().min(0).max(100).nullable().optional(),
+  commission_flat_cents: z.number().int().min(0).nullable().optional(),
   is_showcase_visible: z.boolean().optional(),
 })
 
@@ -46,6 +49,9 @@ const UpdatePartnerSchema = z.object({
   showcase_order: z.number().int().optional(),
   notes: z.string().nullable().optional(),
   commission_notes: z.string().nullable().optional(),
+  commission_type: z.enum(['none', 'percentage', 'flat_fee']).nullable().optional(),
+  commission_rate_percent: z.number().min(0).max(100).nullable().optional(),
+  commission_flat_cents: z.number().int().min(0).nullable().optional(),
 })
 
 const CreateLocationSchema = z.object({
@@ -114,6 +120,9 @@ export async function createPartner(input: CreatePartnerInput) {
       is_showcase_visible: validated.is_showcase_visible ?? false,
       notes: validated.notes || null,
       commission_notes: validated.commission_notes || null,
+      commission_type: validated.commission_type ?? 'none',
+      commission_rate_percent: validated.commission_rate_percent ?? null,
+      commission_flat_cents: validated.commission_flat_cents ?? null,
     })
     .select()
     .single()

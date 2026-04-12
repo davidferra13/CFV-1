@@ -190,11 +190,21 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
             ) : (
               <p className="text-stone-400 italic">No relationship notes</p>
             )}
+            {(partner as any).commission_type && (partner as any).commission_type !== 'none' && (
+              <div className="pt-3 border-t border-stone-800">
+                <p className="text-xs font-medium text-stone-500 mb-1">Commission</p>
+                <p className="text-stone-300 font-medium">
+                  {(partner as any).commission_type === 'percentage'
+                    ? `${(partner as any).commission_rate_percent ?? '?'}% of booking`
+                    : (partner as any).commission_flat_cents != null
+                      ? `$${((partner as any).commission_flat_cents / 100).toFixed(2)} flat fee per booking`
+                      : 'Flat fee (amount not set)'}
+                </p>
+              </div>
+            )}
             {partner.commission_notes && (
               <div className="pt-3 border-t border-stone-800">
-                <p className="text-xs font-medium text-stone-500 mb-1">
-                  Commission / Referral Arrangement
-                </p>
+                <p className="text-xs font-medium text-stone-500 mb-1">Commission Notes</p>
                 <p className="text-stone-300">{partner.commission_notes}</p>
               </div>
             )}

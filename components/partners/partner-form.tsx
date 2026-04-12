@@ -28,6 +28,8 @@ const PARTNER_TYPE_OPTIONS: { value: PartnerType; label: string }[] = [
   { value: 'other', label: 'Other' },
 ]
 
+type CommissionType = 'none' | 'percentage' | 'flat_fee'
+
 type ExistingPartner = {
   id: string
   name: string
@@ -42,12 +44,18 @@ type ExistingPartner = {
   is_showcase_visible: boolean
   notes: string | null
   commission_notes: string | null
+  commission_type: CommissionType | null
+  commission_rate_percent: number | null
+  commission_flat_cents: number | null
 }
 
 export function PartnerForm({ partner }: { partner?: ExistingPartner }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [commissionType, setCommissionType] = useState<CommissionType>(
+    partner?.commission_type ?? 'none'
+  )
 
   const isEdit = !!partner
 
@@ -59,6 +67,15 @@ export function PartnerForm({ partner }: { partner?: ExistingPartner }) {
     const formData = new FormData(e.currentTarget)
 
     try {
+      const commissionRateRaw = formData.get('commission_rate_percent') as string
+      const commissionFlatRaw = formData.get('commission_flat_dollars') as string
+      const commissionRatePercent =
+        commissionType === 'percentage' && commissionRateRaw ? parseFloat(commissionRateRaw) : null
+      const commissionFlatCents =
+        commissionType === 'flat_fee' && commissionFlatRaw
+          ? Math.round(parseFloat(commissionFlatRaw) * 100)
+          : null
+
       if (isEdit) {
         const input: UpdatePartnerInput = {
           name: formData.get('name') as string,
@@ -72,6 +89,9 @@ export function PartnerForm({ partner }: { partner?: ExistingPartner }) {
           is_showcase_visible: formData.get('is_showcase_visible') === 'on',
           notes: (formData.get('notes') as string) || null,
           commission_notes: (formData.get('commission_notes') as string) || null,
+          commission_type: commissionType,
+          commission_rate_percent: commissionRatePercent,
+          commission_flat_cents: commissionFlatCents,
         }
         await updatePartner(partner.id, input)
         router.push(`/partners/${partner.id}`)
@@ -88,6 +108,9 @@ export function PartnerForm({ partner }: { partner?: ExistingPartner }) {
           is_showcase_visible: formData.get('is_showcase_visible') === 'on',
           notes: (formData.get('notes') as string) || '',
           commission_notes: (formData.get('commission_notes') as string) || '',
+          commission_type: commissionType,
+          commission_rate_percent: commissionRatePercent,
+          commission_flat_cents: commissionFlatCents,
         }
         const result = await createPartner(input)
         router.push(`/partners/${result.partner.id}`)
@@ -234,13 +257,64 @@ export function PartnerForm({ partner }: { partner?: ExistingPartner }) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-stone-300 mb-1">
-            Commission / Referral Notes
-          </label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">Commission Type</label>
+          <Select
+            name="commission_type"
+            value={commissionType}
+            onChange={(e) => setCommissionType(e.target.value as CommissionType)}
+          >
+            <option value="none">No commission</option>
+            <option value="percentage">Percentage of booking</option>
+            <option value="flat_fee">Flat fee per booking</option>
+          </Select>
+        </div>
+
+        {commissionType === 'percentage' && (
+          <div>
+            <label className="block text-sm font-medium text-stone-300 mb-1">
+              Commission Rate (%)
+            </label>
+            <Input
+              name="commission_rate_percent"
+              type="number"
+              min="0"
+              max="100"
+              step="0.5"
+              defaultValue={partner?.commission_rate_percent ?? ''}
+              placeholder="e.g. 10"
+            />
+            <p className="text-xs text-stone-400 mt-1">
+              Percentage of event revenue paid to partner
+            </p>
+          </div>
+        )}
+
+        {commissionType === 'flat_fee' && (
+          <div>
+            <label className="block text-sm font-medium text-stone-300 mb-1">
+              Flat Fee per Booking ($)
+            </label>
+            <Input
+              name="commission_flat_dollars"
+              type="number"
+              min="0"
+              step="0.01"
+              defaultValue={
+                partner?.commission_flat_cents != null
+                  ? (partner.commission_flat_cents / 100).toFixed(2)
+                  : ''
+              }
+              placeholder="e.g. 50.00"
+            />
+          </div>
+        )}
+
+        <div>
+          <label className="block text-sm font-medium text-stone-300 mb-1">Commission Notes</label>
           <Textarea
             name="commission_notes"
             defaultValue={partner?.commission_notes || ''}
-            placeholder="Any referral fee or commission arrangements..."
+            placeholder="Payment timing, special conditions, how to submit..."
             rows={2}
           />
         </div>
