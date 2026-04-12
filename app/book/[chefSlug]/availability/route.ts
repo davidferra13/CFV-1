@@ -4,6 +4,7 @@
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/db/server'
+import { dateToDateString } from '@/lib/utils/format'
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 
@@ -87,9 +88,11 @@ export async function GET(request: NextRequest, { params }: { params: { chefSlug
     ])
 
     const bookedDates = new Set(
-      (eventsResult.data ?? []).map((e: any) => (e.event_date as string).slice(0, 10))
+      (eventsResult.data ?? []).map((e: any) => dateToDateString(e.event_date as Date | string))
     )
-    const manualBlocks = new Set((blocksResult.data ?? []).map((b: any) => b.block_date as string))
+    const manualBlocks = new Set(
+      (blocksResult.data ?? []).map((b: any) => dateToDateString(b.block_date as Date | string))
+    )
 
     // Build result map
     const _now = new Date()
