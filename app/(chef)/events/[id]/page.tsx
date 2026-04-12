@@ -165,6 +165,15 @@ function isEventSoon(eventDate: string): boolean {
   return evDate >= today && evDate < dayAfter
 }
 
+function isEventToday(eventDate: string): boolean {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const evDate = new Date(eventDate + 'T00:00:00')
+  return evDate >= today && evDate < tomorrow
+}
+
 async function getEventFinancialSummary(eventId: string) {
   const db: any = createServerClient()
 
@@ -567,6 +576,19 @@ export default async function EventDetailPage({
               <Button variant="secondary">Edit Event</Button>
             </Link>
           )}
+          {/* Event-day quick actions - promoted to primary buttons when event is today */}
+          {isEventToday(event.event_date) && !['draft', 'cancelled'].includes(event.status) && (
+            <>
+              <Link href={`/events/${event.id}/pack`}>
+                <Button variant="primary">Pack List</Button>
+              </Link>
+              {eventMenus && (
+                <Link href={`/events/${event.id}/grocery-quote`}>
+                  <Button variant="primary">Grocery List</Button>
+                </Link>
+              )}
+            </>
+          )}
           <Link href={`/events/${event.id}/schedule`}>
             <Button variant="secondary">Schedule</Button>
           </Link>
@@ -575,10 +597,12 @@ export default async function EventDetailPage({
           </Link>
           <EventActionsOverflow
             actions={[
-              ...(!['draft', 'cancelled'].includes(event.status)
+              ...(!isEventToday(event.event_date) && !['draft', 'cancelled'].includes(event.status)
                 ? [{ label: 'Packing List', href: `/events/${event.id}/pack` }]
                 : []),
-              ...(eventMenus && !['cancelled'].includes(event.status)
+              ...(!isEventToday(event.event_date) &&
+              eventMenus &&
+              !['cancelled'].includes(event.status)
                 ? [{ label: 'Grocery Quote', href: `/events/${event.id}/grocery-quote` }]
                 : []),
               { label: 'Travel Plan', href: `/events/${event.id}/travel` },

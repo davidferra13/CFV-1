@@ -205,47 +205,67 @@ export default async function BriefingPage() {
         ) : (
           <div className="space-y-3">
             {briefing.todayEvents.map((event) => (
-              <Link key={event.id} href={`/events/${event.id}`}>
-                <Card interactive className="mb-3">
-                  <CardContent className="pt-4 pb-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-medium text-stone-100">{event.title}</span>
-                          <Badge
-                            variant={event.status === 'confirmed' ? 'success' : 'info'}
-                            className="text-xxs"
-                          >
-                            {event.status}
-                          </Badge>
-                        </div>
-                        {event.client_name && (
-                          <p className="text-sm text-stone-400 mt-0.5">{event.client_name}</p>
+              <Card key={event.id} className="mb-3">
+                <CardContent className="pt-4 pb-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-stone-100">{event.title}</span>
+                        <Badge
+                          variant={event.status === 'confirmed' ? 'success' : 'info'}
+                          className="text-xxs"
+                        >
+                          {event.status}
+                        </Badge>
+                      </div>
+                      {event.client_name && (
+                        <p className="text-sm text-stone-400 mt-0.5">{event.client_name}</p>
+                      )}
+                      <div className="flex items-center gap-3 mt-2 text-xs text-stone-500 flex-wrap">
+                        {event.start_time && (
+                          <span>
+                            {formatTime(event.start_time)}
+                            {event.end_time ? ` - ${formatTime(event.end_time)}` : ''}
+                          </span>
                         )}
-                        <div className="flex items-center gap-3 mt-2 text-xs text-stone-500 flex-wrap">
-                          {event.start_time && (
-                            <span>
-                              {formatTime(event.start_time)}
-                              {event.end_time ? ` - ${formatTime(event.end_time)}` : ''}
-                            </span>
-                          )}
-                          {event.guest_count && <span>{event.guest_count} guests</span>}
-                          {event.venue && <span>{event.venue}</span>}
-                          {event.staff_count > 0 && <span>{event.staff_count} staff</span>}
-                        </div>
+                        {event.guest_count && <span>{event.guest_count} guests</span>}
+                        {event.venue && <span>{event.venue}</span>}
+                        {event.staff_count > 0 && <span>{event.staff_count} staff</span>}
                       </div>
                     </div>
+                  </div>
 
-                    {/* Dietary warnings */}
-                    {event.dietary_notes && (
-                      <div className="mt-3 rounded-md bg-amber-950/30 border border-amber-900/30 px-3 py-2">
-                        <p className="text-xs font-medium text-amber-400">Dietary Notes</p>
-                        <p className="text-xs text-stone-300 mt-0.5">{event.dietary_notes}</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </Link>
+                  {/* Dietary warnings */}
+                  {event.dietary_notes && (
+                    <div className="mt-3 rounded-md bg-amber-950/30 border border-amber-900/30 px-3 py-2">
+                      <p className="text-xs font-medium text-amber-400">Dietary Notes</p>
+                      <p className="text-xs text-stone-300 mt-0.5">{event.dietary_notes}</p>
+                    </div>
+                  )}
+
+                  {/* Event-day quick links */}
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Link
+                      href={`/events/${event.id}/pack`}
+                      className="inline-flex items-center px-3 py-1.5 rounded-md bg-orange-600 hover:bg-orange-500 text-white text-xs font-medium transition-colors"
+                    >
+                      Pack List
+                    </Link>
+                    <Link
+                      href={`/events/${event.id}/grocery-quote`}
+                      className="inline-flex items-center px-3 py-1.5 rounded-md bg-stone-700 hover:bg-stone-600 text-stone-200 text-xs font-medium transition-colors"
+                    >
+                      Grocery List
+                    </Link>
+                    <Link
+                      href={`/events/${event.id}`}
+                      className="inline-flex items-center px-3 py-1.5 rounded-md bg-stone-800 hover:bg-stone-700 text-stone-400 text-xs font-medium transition-colors"
+                    >
+                      Full Event
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         )}
