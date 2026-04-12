@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { getIngredientKnowledgeBatch } from '@/lib/openclaw/ingredient-knowledge-queries'
+import { IngredientSourcingToggle } from '@/components/recipes/ingredient-sourcing-toggle'
 
 export default async function ChefRecipeDetailPage({ params }: { params: { id: string } }) {
   const recipe = await getRecipeById(params.id)
@@ -170,11 +171,13 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
                           <p className="text-xs text-stone-500 mt-0.5">{ri.preparation_notes}</p>
                         )}
                       </div>
-                      {ri.ingredient?.average_price_cents != null && (
+                      {ri.ingredient?.average_price_cents != null ? (
                         <span className="text-xs text-stone-400 whitespace-nowrap">
                           {formatCurrency(ri.ingredient.average_price_cents)}/
                           {ri.ingredient.default_unit ?? 'unit'}
                         </span>
+                      ) : (
+                        iName && <IngredientSourcingToggle ingredientName={iName} />
                       )}
                     </div>
                     {/* Inline knowledge: dietary flags + pairings hint */}

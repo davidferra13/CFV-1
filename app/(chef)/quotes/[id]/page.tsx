@@ -20,6 +20,8 @@ import { formatCurrency } from '@/lib/utils/currency'
 import { format, formatDistanceToNow } from 'date-fns'
 import { PriceComparisonSummary } from '@/components/pricing/price-comparison-summary'
 import { rowToPriceComparison } from '@/lib/pricing/pricing-decision'
+import { QuotePriceConfidenceWarning } from '@/components/quotes/quote-price-confidence-warning'
+import { Suspense } from 'react'
 
 export default async function QuoteDetailPage({ params }: { params: { id: string } }) {
   const user = await requireChef()
@@ -85,6 +87,13 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
             Pricing snapshot frozen at acceptance. Original pricing is preserved.
           </p>
         </div>
+      )}
+
+      {/* Price confidence warning - shown when event's menu has incomplete recipe costs */}
+      {(quote as any).event?.id && (
+        <Suspense fallback={null}>
+          <QuotePriceConfidenceWarning eventId={(quote as any).event.id} />
+        </Suspense>
       )}
 
       {/* Version History */}

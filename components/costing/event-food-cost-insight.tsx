@@ -13,6 +13,7 @@ import { generateMenuWarnings } from '@/lib/costing/generate-warnings'
 import { getTargetsForArchetype } from '@/lib/costing/knowledge'
 import type { OperatorType } from '@/lib/costing/knowledge'
 import { archetypeToOperatorType } from '@/lib/costing/knowledge'
+import Link from 'next/link'
 
 export interface MenuCostData {
   totalRecipeCostCents: number | null
@@ -201,7 +202,10 @@ export function EventFoodCostInsight({ menuCost, quotedPriceCents, guestCount, a
         {/* Coverage note */}
         {menuCost.hasAllRecipeCosts === false && (
           <p className="text-xs text-amber-400">
-            Not all menu components have recipe costs. This analysis is based on partial data.
+            Not all menu components have recipe costs. This analysis is based on partial data.{' '}
+            <Link href="/culinary/costing/recipe" className="underline hover:text-amber-300">
+              Fix missing prices
+            </Link>
           </p>
         )}
 
