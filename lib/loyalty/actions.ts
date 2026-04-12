@@ -1242,10 +1242,11 @@ export async function redeemReward(clientId: string, rewardId: string, eventId?:
     throw new Error('Failed to redeem reward')
   }
 
-  // Update client balance - tier NEVER decreases from redemption
+  // Update client balance atomically - use gte guard to prevent double-redemption race condition.
+  // If two concurrent calls pass the point check above, only one succeeds here.
   const newBalance = (client.loyalty_points || 0) - reward.points_required
 
-  await db
+  const { data: updatedClient } = await db
     .from('clients')
     .update({
       loyalty_points: newBalance,
@@ -1253,6 +1254,19 @@ export async function redeemReward(clientId: string, rewardId: string, eventId?:
     })
     .eq('id', clientId)
     .eq('tenant_id', user.tenantId!)
+    .gte('loyalty_points', reward.points_required)
+    .select('id')
+    .maybeSingle()
+
+  if (!updatedClient) {
+    // Concurrent redemption depleted points first - roll back the transaction we just inserted
+    if (txData?.id) {
+      await db.from('loyalty_transactions').delete().eq('id', txData.id)
+    }
+    throw new Error(
+      `Insufficient points (concurrent redemption). Need ${reward.points_required}, but balance was already depleted.`
+    )
+  }
 
   // Create pending delivery record (non-blocking)
   if (txData?.id) {
