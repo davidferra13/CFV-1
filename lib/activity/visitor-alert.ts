@@ -14,6 +14,7 @@ const ALERTABLE_EVENTS: ActivityEventType[] = [
   'payment_page_visited',
   'proposal_viewed',
   'quote_viewed',
+  'public_profile_viewed',
 ]
 
 const EVENT_LABELS: Record<string, string> = {
@@ -21,6 +22,7 @@ const EVENT_LABELS: Record<string, string> = {
   payment_page_visited: 'is viewing the payment page',
   proposal_viewed: 'is reviewing a proposal',
   quote_viewed: 'is looking at a quote',
+  public_profile_viewed: 'viewed your public profile',
 }
 
 /**

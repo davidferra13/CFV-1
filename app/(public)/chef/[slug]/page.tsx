@@ -34,6 +34,8 @@ import {
 import { getPublicPortfolio } from '@/lib/events/photo-actions'
 import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
 import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
+import { getCurrentUser } from '@/lib/auth/get-user'
+import { triggerVisitorAlert } from '@/lib/activity/visitor-alert'
 
 type Props = { params: { slug: string } }
 
@@ -165,6 +167,20 @@ export default async function ChefProfilePage({ params }: Props) {
   if (!data) notFound()
 
   const { chef, partners } = data
+
+  // Non-blocking: notify chef when a known client views their public profile
+  getCurrentUser()
+    .then((user) => {
+      if (user?.role === 'client' && user.tenantId === chef.id && user.entityId) {
+        triggerVisitorAlert({
+          tenantId: chef.id,
+          clientId: user.entityId,
+          clientName: '',
+          eventType: 'public_profile_viewed',
+        }).catch(() => {})
+      }
+    })
+    .catch(() => {})
   const publicSlug = chef.public_slug || params.slug
   const inquirySlug = chef.inquiry_slug || publicSlug
 

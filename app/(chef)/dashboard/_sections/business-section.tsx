@@ -117,7 +117,7 @@ export async function BusinessSection({ widgetEnabled, widgetOrder }: BusinessSe
           className={widgetGridClass('onboarding_accelerator')}
           style={{ order: getWidgetOrder('onboarding_accelerator') }}
         >
-          <CollapsibleWidget widgetId="onboarding_accelerator" title="Getting Started">
+          <CollapsibleWidget widgetId="onboarding_accelerator" title="Business Import">
             <OnboardingAccelerator
               clientCount={clients.length}
               inquiryCount={totalInquiryCount}

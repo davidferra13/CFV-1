@@ -379,7 +379,7 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
             className={widgetGridClass('onboarding_checklist')}
             style={{ order: getWidgetOrder('onboarding_checklist') }}
           >
-            <CollapsibleWidget widgetId="onboarding_checklist" title="Onboarding Checklist">
+            <CollapsibleWidget widgetId="onboarding_checklist" title="Setup Progress">
               <OnboardingChecklistWidget progress={onboardingProgress} />
             </CollapsibleWidget>
           </section>

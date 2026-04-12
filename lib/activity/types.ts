@@ -22,6 +22,8 @@ export const ACTIVITY_EVENT_TYPES = [
   'rewards_viewed',
   // Time-on-page signal
   'session_heartbeat',
+  // Public profile visit by a known client
+  'public_profile_viewed',
 ] as const
 
 export const ACTOR_TYPES = ['client', 'chef', 'system'] as const

@@ -26,7 +26,6 @@ import {
   getCachedIsAdmin,
 } from '@/lib/chef/layout-data-cache'
 import { TestAccountBanner } from '@/components/dev/test-account-banner'
-import { ChefTourWrapper } from '@/components/onboarding/chef-tour-wrapper'
 import { CommandPalette } from '@/components/search/command-palette'
 import { NavigationPendingProvider } from '@/components/navigation/navigation-pending-provider'
 import { AppContextProvider } from '@/lib/context/app-context'
@@ -199,7 +198,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                         surveyType="market_research_operator"
                         channel="chef_portal"
                       />
-                      <ChefTourWrapper>{children}</ChefTourWrapper>
+                      {children}
                     </ChefMainContent>
 
                     {/* Feedback nudge - slide-in card, idle-detected, queued behind onboarding */}

@@ -66,7 +66,7 @@ export function OnboardingChecklistWidget({ progress }: Props) {
     <Card className="border-brand-700 bg-brand-950/30">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm">Getting Started</CardTitle>
+          <CardTitle className="text-sm">Setup Progress</CardTitle>
           <span className="text-xs text-stone-500">
             {progress.completedPhases}/{progress.totalPhases} complete
           </span>
