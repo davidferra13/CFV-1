@@ -8,6 +8,7 @@ import { requireStaff } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { pgClient } from '@/lib/db'
 import { revalidatePath } from 'next/cache'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ============================================
 // TYPES
@@ -196,7 +197,7 @@ export async function getMyTasksGroupedByDate(): Promise<Record<string, StaffTas
     const grouped: Record<string, StaffTask[]> = {}
 
     for (const task of tasks) {
-      const dateKey = task.due_date
+      const dateKey = dateToDateString(task.due_date as Date | string)
       if (!grouped[dateKey]) {
         grouped[dateKey] = []
       }

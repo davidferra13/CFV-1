@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { dateToDateString } from '@/lib/utils/format'
 import { ArrowLeft } from '@/components/ui/icons'
 
 export const metadata: Metadata = { title: 'Settlement Detail' }
@@ -151,8 +152,13 @@ export default async function SettlementDetailPage({
               <div className="flex justify-between">
                 <span className="text-stone-400">Period</span>
                 <span className="text-stone-200">
-                  {new Date(settlement.period_start + 'T12:00:00').toLocaleDateString()} –{' '}
-                  {new Date(settlement.period_end + 'T12:00:00').toLocaleDateString()}
+                  {new Date(
+                    dateToDateString(settlement.period_start as Date | string) + 'T12:00:00'
+                  ).toLocaleDateString()}{' '}
+                  –{' '}
+                  {new Date(
+                    dateToDateString(settlement.period_end as Date | string) + 'T12:00:00'
+                  ).toLocaleDateString()}
                 </span>
               </div>
             )}
