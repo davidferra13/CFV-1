@@ -277,6 +277,218 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
   }
 }
 
+// ─── Tenant-scoped fetch (no session - for API key routes) ───────────────────
+
+export async function fetchQuoteDocumentDataByTenant(
+  quoteId: string,
+  tenantId: string
+): Promise<QuoteDocumentData | null> {
+  const db: any = createServerClient()
+
+  const { data: quote } = await db
+    .from('quotes')
+    .select(
+      `
+      id, created_at, pricing_model, total_quoted_cents, price_per_person_cents,
+      guest_count_estimated, deposit_required, deposit_amount_cents,
+      deposit_percentage, valid_until, pricing_notes, sent_at,
+      event_id, inquiry_id,
+      client:clients(full_name, email, loyalty_tier, loyalty_points)
+    `
+    )
+    .eq('id', quoteId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!quote) return null
+
+  const { data: chef } = await db
+    .from('chefs')
+    .select('business_name, email, phone, cancellation_cutoff_days, deposit_refundable')
+    .eq('id', tenantId)
+    .single()
+
+  if (!chef) return null
+
+  const clientData = quote.client as {
+    full_name: string
+    email: string | null
+    loyalty_tier: 'bronze' | 'silver' | 'gold' | 'platinum' | null
+    loyalty_points: number | null
+  } | null
+
+  let eventDetails: QuoteDocumentData['event'] = {
+    occasion: null,
+    eventDate: null,
+    guestCount: quote.guest_count_estimated,
+    location: null,
+    serviceStyle: null,
+    dietaryRestrictions: [],
+    allergies: [],
+  }
+
+  let menuCourses: QuoteDocumentData['menu'] = []
+
+  if (quote.event_id) {
+    const { data: event } = await db
+      .from('events')
+      .select(
+        `
+        occasion, event_date, guest_count, location_address, location_city,
+        location_state, service_style, dietary_restrictions, allergies
+      `
+      )
+      .eq('id', quote.event_id)
+      .eq('tenant_id', tenantId)
+      .single()
+
+    if (event) {
+      const locationParts = [
+        event.location_address,
+        event.location_city,
+        event.location_state,
+      ].filter(Boolean)
+      eventDetails = {
+        occasion: event.occasion,
+        eventDate: event.event_date,
+        guestCount: event.guest_count,
+        location: locationParts.length > 0 ? locationParts.join(', ') : null,
+        serviceStyle: event.service_style,
+        dietaryRestrictions: event.dietary_restrictions ?? [],
+        allergies: event.allergies ?? [],
+      }
+
+      const { data: menus } = await db
+        .from('menus')
+        .select('id')
+        .eq('event_id', quote.event_id)
+        .eq('tenant_id', tenantId)
+        .order('created_at', { ascending: true })
+        .limit(1)
+
+      if (menus && menus.length > 0) {
+        const { data: dishes } = await db
+          .from('dishes')
+          .select('course_number, course_name, description, id')
+          .eq('menu_id', menus[0].id)
+          .eq('tenant_id', tenantId)
+          .order('course_number', { ascending: true })
+          .order('sort_order', { ascending: true })
+
+        if (dishes && dishes.length > 0) {
+          const courseMap = new Map<
+            number,
+            { name: string; description: string | null; dishIds: string[] }
+          >()
+          for (const dish of dishes) {
+            const existing = courseMap.get(dish.course_number)
+            if (existing) {
+              if (dish.description && existing.description) {
+                existing.description = existing.description + ' / ' + dish.description
+              } else if (dish.description) {
+                existing.description = dish.description
+              }
+              existing.dishIds.push(dish.id)
+            } else {
+              courseMap.set(dish.course_number, {
+                name: dish.course_name,
+                description: dish.description,
+                dishIds: [dish.id],
+              })
+            }
+          }
+
+          const allDishIds = dishes.map((d: any) => d.id)
+          const { data: components } = await db
+            .from('components')
+            .select('dish_id, name')
+            .in('dish_id', allDishIds)
+            .eq('tenant_id', tenantId)
+            .order('sort_order', { ascending: true })
+
+          const compsByDish = new Map<string, string[]>()
+          for (const comp of components || []) {
+            const arr = compsByDish.get(comp.dish_id) || []
+            arr.push(comp.name)
+            compsByDish.set(comp.dish_id, arr)
+          }
+
+          menuCourses = Array.from(courseMap.entries())
+            .sort((a, b) => a[0] - b[0])
+            .map(([courseNumber, data]) => {
+              const allComponentNames = data.dishIds.flatMap((id) => compsByDish.get(id) || [])
+              return {
+                courseNumber,
+                courseName: data.name,
+                description: data.description,
+                componentNames: allComponentNames,
+              }
+            })
+        }
+      }
+    }
+  } else if (quote.inquiry_id) {
+    const { data: inquiry } = await db
+      .from('inquiries')
+      .select(
+        'confirmed_date, confirmed_guest_count, confirmed_location, confirmed_occasion, confirmed_dietary_restrictions'
+      )
+      .eq('id', quote.inquiry_id)
+      .eq('tenant_id', tenantId)
+      .single()
+
+    if (inquiry) {
+      eventDetails = {
+        occasion: inquiry.confirmed_occasion,
+        eventDate: inquiry.confirmed_date ? inquiry.confirmed_date.split('T')[0] : null,
+        guestCount: inquiry.confirmed_guest_count ?? quote.guest_count_estimated,
+        location: inquiry.confirmed_location,
+        serviceStyle: null,
+        dietaryRestrictions: inquiry.confirmed_dietary_restrictions ?? [],
+        allergies: [],
+      }
+    }
+  }
+
+  const year = new Date(quote.created_at).getFullYear()
+  const shortId = quoteId.replace(/-/g, '').slice(0, 4).toUpperCase()
+  const quoteRef = `QUOTE-${year}-${shortId}`
+
+  return {
+    quote: {
+      id: quote.id,
+      quoteRef,
+      pricingModel: quote.pricing_model as 'per_person' | 'flat_rate' | 'custom',
+      totalQuotedCents: quote.total_quoted_cents,
+      pricePerPersonCents: quote.price_per_person_cents,
+      guestCountEstimated: quote.guest_count_estimated,
+      depositRequired: quote.deposit_required,
+      depositAmountCents: quote.deposit_amount_cents,
+      depositPercentage: quote.deposit_percentage,
+      validUntil: quote.valid_until,
+      pricingNotes: quote.pricing_notes,
+      sentAt: quote.sent_at,
+    },
+    chef: {
+      businessName: chef.business_name,
+      email: chef.email,
+      phone: chef.phone,
+    },
+    client: {
+      fullName: clientData?.full_name ?? 'Valued Guest',
+      email: clientData?.email ?? null,
+      loyaltyTier: clientData?.loyalty_tier ?? null,
+      loyaltyPoints: clientData?.loyalty_points ?? null,
+    },
+    event: eventDetails,
+    menu: menuCourses,
+    cancellationPolicy: {
+      cutoffDays: (chef as any).cancellation_cutoff_days ?? 15,
+      depositRefundable: (chef as any).deposit_refundable ?? false,
+    },
+  }
+}
+
 // ─── Format helpers ───────────────────────────────────────────────────────────
 
 function formatCents(cents: number): string {

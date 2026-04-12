@@ -276,6 +276,99 @@ export async function getInvoiceData(eventId: string): Promise<InvoiceData | nul
   )
 }
 
+// ─── getInvoiceDataByTenant ───────────────────────────────────────────────────
+
+/**
+ * Fetch invoice data scoped by explicit tenantId (no session required).
+ * Used by the v2 API key-authenticated route. Caller must have already verified
+ * that the API key's tenantId matches the requested event.
+ */
+export async function getInvoiceDataByTenant(
+  eventId: string,
+  tenantId: string
+): Promise<InvoiceData | null> {
+  const db: any = createServerClient()
+
+  const { data: event } = await db
+    .from('events')
+    .select(
+      `
+      id, occasion, event_date, guest_count, status, tenant_id,
+      quoted_price_cents, deposit_amount_cents, payment_status,
+      tip_amount_cents, pricing_model, override_kind, price_per_person_cents,
+      invoice_number, invoice_issued_at,
+      location_city, location_state, location_zip,
+      client:clients(id, full_name, email)
+    `
+    )
+    .eq('id', eventId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!event) return null
+
+  const { data: chef } = await db
+    .from('chefs')
+    .select('business_name, email, phone')
+    .eq('id', tenantId)
+    .single()
+
+  if (!chef) return null
+
+  const { data: ledgerEntries } = await db
+    .from('ledger_entries')
+    .select(
+      'id, amount_cents, entry_type, payment_method, received_at, created_at, description, transaction_reference, is_refund'
+    )
+    .eq('event_id', eventId)
+    .eq('tenant_id', tenantId)
+    .order('created_at', { ascending: true })
+
+  const clientData = event.client as { id?: string } | null
+  const baseServiceCents = event.quoted_price_cents ?? 0
+  const [loyalty, loyaltyAdjustments] = await Promise.all([
+    clientData?.id
+      ? getClientLoyaltySnapshotByTenant(tenantId, clientData.id).catch(() => null)
+      : Promise.resolve(null),
+    getEventLoyaltyAdjustmentSummary({
+      db,
+      tenantId,
+      clientId: clientData?.id,
+      eventId,
+      baseServiceCents,
+    }),
+  ])
+  const afterLoyaltyCents = loyaltyAdjustments?.adjustedServiceCents ?? baseServiceCents
+  let betaResult: BetaDiscountResult | null = null
+  if (clientData?.id) {
+    const { data: clientBeta } = await db
+      .from('clients')
+      .select('is_beta_tester, beta_discount_percent')
+      .eq('id', clientData.id)
+      .single()
+    if (clientBeta?.is_beta_tester) {
+      betaResult = await computeBetaDiscount(
+        afterLoyaltyCents,
+        true,
+        clientBeta.beta_discount_percent ?? 30
+      )
+    }
+  }
+  const taxableSubtotalCents = betaResult?.applied
+    ? betaResult.adjustedServiceCents
+    : (loyaltyAdjustments?.adjustedServiceCents ?? baseServiceCents)
+  const taxCalc = await lookupSalesTax(taxableSubtotalCents, event.location_zip ?? null)
+  return buildInvoiceData(
+    event,
+    chef,
+    ledgerEntries ?? [],
+    taxCalc,
+    loyalty,
+    loyaltyAdjustments,
+    betaResult
+  )
+}
+
 // ─── getInvoiceDataForClient ──────────────────────────────────────────────────
 
 /**

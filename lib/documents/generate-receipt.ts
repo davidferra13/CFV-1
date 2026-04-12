@@ -279,3 +279,77 @@ export async function generateReceiptForChef(eventId: string) {
   renderReceipt(pdf, data)
   return pdf.toBuffer()
 }
+
+/**
+ * Generate receipt PDF scoped by explicit tenantId (no session required).
+ * Used by the v2 API key-authenticated route.
+ */
+export async function generateReceiptByTenant(eventId: string, tenantId: string): Promise<Buffer> {
+  const db: any = createServerClient()
+
+  const { data: event } = await db
+    .from('events')
+    .select(
+      `
+      id, tenant_id, client_id, occasion, event_date, serve_time, guest_count,
+      location_address, location_city, location_state, location_zip,
+      quoted_price_cents, deposit_amount_cents
+    `
+    )
+    .eq('id', eventId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!event) throw new Error('Event not found')
+
+  const [{ data: client }, { data: chef }, { data: ledger }, { data: financial }] =
+    await Promise.all([
+      db.from('clients').select('full_name, email, address').eq('id', event.client_id).single(),
+      db.from('chefs').select('business_name, email, phone').eq('id', event.tenant_id).single(),
+      db
+        .from('ledger_entries')
+        .select(
+          'id, description, amount_cents, entry_type, payment_method, created_at, transaction_reference'
+        )
+        .eq('event_id', event.id)
+        .order('created_at', { ascending: true }),
+      db
+        .from('event_financial_summary')
+        .select('quoted_price_cents, total_paid_cents, outstanding_balance_cents')
+        .eq('event_id', event.id)
+        .maybeSingle(),
+    ])
+
+  if (!client || !chef) throw new Error('Receipt data is incomplete')
+
+  const quotedPriceCents = financial?.quoted_price_cents ?? event.quoted_price_cents ?? 0
+  const totalPaidCents =
+    financial?.total_paid_cents ??
+    (ledger || []).reduce((sum: any, e: any) => sum + e.amount_cents, 0)
+  const outstandingBalanceCents =
+    financial?.outstanding_balance_cents ?? Math.max(quotedPriceCents - totalPaidCents, 0)
+
+  const data: ReceiptData = {
+    event: {
+      id: event.id,
+      occasion: event.occasion,
+      event_date: event.event_date,
+      serve_time: event.serve_time,
+      guest_count: event.guest_count,
+      location_address: event.location_address,
+      location_city: event.location_city,
+      location_state: event.location_state,
+      location_zip: event.location_zip,
+      quoted_price_cents: event.quoted_price_cents,
+      deposit_amount_cents: event.deposit_amount_cents,
+    },
+    client,
+    chef,
+    ledger: (ledger || []) as ReceiptLedgerEntry[],
+    summary: { quotedPriceCents, totalPaidCents, outstandingBalanceCents },
+  }
+
+  const pdf = new PDFLayout()
+  renderReceipt(pdf, data)
+  return pdf.toBuffer()
+}
