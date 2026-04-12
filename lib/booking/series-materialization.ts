@@ -142,7 +142,7 @@ export async function materializeSeriesSessions(params: {
   }
 
   return [...((existingSessions || []) as EventSessionRow[]), ...insertedSessions].sort((a, b) => {
-    const dateCompare = a.session_date.localeCompare(b.session_date)
+    const dateCompare = compareDateTime(a.session_date, b.session_date)
     if (dateCompare !== 0) return dateCompare
     return a.sort_order - b.sort_order
   })
