@@ -128,10 +128,10 @@ export async function computeProfitAndLoss(year: number) {
   // Revenue from ledger (capped at 50K entries per year - prevents memory exhaustion)
   const { data: ledgerEntries, error: ledgerError } = await db
     .from('ledger_entries')
-    .select('entry_type, amount_cents, created_at, is_refund')
+    .select('entry_type, amount_cents, created_at, received_at, is_refund')
     .eq('tenant_id', user.tenantId!)
     .gte('created_at', startDate)
-    .lte('created_at', endDate + 'T23:59:59')
+    .lte('created_at', endDate + 'T23:59:59Z')
     .limit(50_000)
 
   if (ledgerError) {
@@ -185,11 +185,14 @@ export async function computeProfitAndLoss(year: number) {
   const profitMarginPercent =
     netRevenueCents > 0 ? Math.round((netProfitCents / netRevenueCents) * 1000) / 10 : 0
 
-  // Monthly revenue breakdown
+  // Monthly revenue breakdown - use received_at (when payment was received) when available,
+  // fall back to created_at. Convert to local time to avoid UTC midnight rollover.
   const monthlyRevenue = new Map<string, number>()
   for (const entry of entries) {
     if (!entry.is_refund && entry.entry_type !== 'refund') {
-      const month = (entry.created_at as string).slice(0, 7)
+      const raw = entry.received_at ?? entry.created_at
+      const d = raw instanceof Date ? raw : new Date(raw as string)
+      const month = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
       monthlyRevenue.set(month, (monthlyRevenue.get(month) || 0) + entry.amount_cents)
     }
   }
