@@ -183,7 +183,10 @@ async function EventsList({ status }: { status: EventStatus }) {
         </TableHeader>
         <TableBody>
           {events.map((event: any) => {
-            const isToday = event.event_date === new Date().toISOString().split('T')[0]
+            const _td = new Date()
+            const isToday =
+              event.event_date ===
+              `${_td.getFullYear()}-${String(_td.getMonth() + 1).padStart(2, '0')}-${String(_td.getDate()).padStart(2, '0')}`
             return (
               <TableRow
                 key={event.id}
@@ -258,7 +261,8 @@ async function EventsList({ status }: { status: EventStatus }) {
 }
 
 async function TodayEventsBanner() {
-  const today = new Date().toISOString().split('T')[0]
+  const _teb = new Date()
+  const today = `${_teb.getFullYear()}-${String(_teb.getMonth() + 1).padStart(2, '0')}-${String(_teb.getDate()).padStart(2, '0')}`
   const events = await getEvents()
   const todayEvents = events.filter(
     (e: any) => e.event_date === today && !['draft', 'cancelled'].includes(e.status)

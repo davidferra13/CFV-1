@@ -11,17 +11,21 @@ import { getCalendarEntriesForRange } from '@/lib/calendar/entry-actions'
 import { getWeatherForDateRange } from '@/lib/weather/weather-actions'
 import { WeekPlannerClient } from './week-planner-client'
 
+function liso(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 function getWeekBounds(offset: number): { startDate: string; endDate: string } {
   const today = new Date()
   const dayOfWeek = today.getDay()
-  const monday = new Date(today)
-  monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1) + offset * 7)
-  const sunday = new Date(monday)
-  sunday.setDate(monday.getDate() + 6)
-  return {
-    startDate: monday.toISOString().split('T')[0],
-    endDate: sunday.toISOString().split('T')[0],
-  }
+  const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1
+  const monday = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate() - mondayOffset + offset * 7
+  )
+  const sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6)
+  return { startDate: liso(monday), endDate: liso(sunday) }
 }
 
 export default async function WeekPlannerPage({

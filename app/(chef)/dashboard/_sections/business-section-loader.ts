@@ -382,8 +382,11 @@ export async function loadBusinessSectionData({
       'travelLegs',
       () =>
         getAllTravelLegs({
-          fromDate: now.toISOString().split('T')[0],
-          toDate: new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          fromDate: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`,
+          toDate: (() => {
+            const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 90)
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+          })(),
         }),
       [] as any[]
     ),

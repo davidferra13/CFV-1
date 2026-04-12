@@ -14,7 +14,8 @@ export const metadata: Metadata = { title: 'Day View' }
 export default async function DayViewPage({ searchParams }: { searchParams: { date?: string } }) {
   const user = await requireChef()
 
-  const today = new Date().toISOString().split('T')[0]
+  const _td = new Date()
+  const today = `${_td.getFullYear()}-${String(_td.getMonth() + 1).padStart(2, '0')}-${String(_td.getDate()).padStart(2, '0')}`
   const date = searchParams.date ?? today
 
   const [items, weatherByDate] = await Promise.all([

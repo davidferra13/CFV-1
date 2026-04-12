@@ -13,7 +13,8 @@ export const metadata = {
 
 export default async function DailyReportPage() {
   // Try to get today's report, generate if not found
-  const today = new Date().toISOString().split('T')[0]
+  const _d = new Date()
+  const today = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`
   let report = await getDailyReport(today)
 
   if (!report) {

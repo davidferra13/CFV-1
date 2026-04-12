@@ -65,21 +65,17 @@ export function DayViewClient({ date, items, chefId, weather }: Props) {
   const [showModal, setShowModal] = useState(false)
   const [modalStartTime, setModalStartTime] = useState<string | undefined>()
 
+  const _diso = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   // Compute prev/next day href
-  const prevDate = (() => {
-    const d = new Date(date + 'T00:00:00')
-    d.setDate(d.getDate() - 1)
-    return d.toISOString().split('T')[0]
-  })()
-  const nextDate = (() => {
-    const d = new Date(date + 'T00:00:00')
-    d.setDate(d.getDate() + 1)
-    return d.toISOString().split('T')[0]
-  })()
+  const [_dy, _dm, _dd] = date.split('-').map(Number)
+  const prevDate = _diso(new Date(_dy, _dm - 1, _dd - 1))
+  const nextDate = _diso(new Date(_dy, _dm - 1, _dd + 1))
   const prevHref = `/calendar/day?date=${prevDate}`
   const nextHref = `/calendar/day?date=${nextDate}`
 
-  const isToday = date === new Date().toISOString().split('T')[0]
+  const _tdn = new Date()
+  const isToday = date === _diso(_tdn)
 
   // Separate all-day items from timed items
   const allDayItems = items.filter((i) => i.allDay || !i.startTime)

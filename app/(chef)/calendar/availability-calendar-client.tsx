@@ -298,7 +298,8 @@ export function AvailabilityCalendarClient({
               (i) =>
                 i.type === 'availability_block' || (i.isBlocking && i.type === 'calendar_entry')
             )
-            const today = new Date().toISOString().split('T')[0]
+            const _tl = new Date()
+            const today = `${_tl.getFullYear()}-${String(_tl.getMonth() + 1).padStart(2, '0')}-${String(_tl.getDate()).padStart(2, '0')}`
             const isToday = ds === today
 
             // Background color for cell

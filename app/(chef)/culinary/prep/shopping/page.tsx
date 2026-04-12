@@ -6,14 +6,14 @@ import { generateShoppingList } from '@/lib/culinary/shopping-list-actions'
 
 export const metadata: Metadata = { title: 'Consolidated Shopping' }
 
+function liso(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 function getDefaultWindow() {
   const start = new Date()
-  const end = new Date()
-  end.setDate(end.getDate() + 14)
-  return {
-    startDate: start.toISOString().split('T')[0],
-    endDate: end.toISOString().split('T')[0],
-  }
+  const end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 14)
+  return { startDate: liso(start), endDate: liso(end) }
 }
 
 interface PageProps {

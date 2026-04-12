@@ -83,7 +83,10 @@ export default async function DailyRevenuePage() {
               <Input
                 name="date"
                 type="date"
-                defaultValue={new Date().toISOString().split('T')[0]}
+                defaultValue={(() => {
+                  const d = new Date()
+                  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+                })()}
                 required
               />
               <Input

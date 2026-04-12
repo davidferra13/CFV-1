@@ -12,7 +12,10 @@ export function MarketingSpendForm() {
   const [amountStr, setAmountStr] = useState('')
   const [channel, setChannel] = useState<string>('facebook_ads')
   const [description, setDescription] = useState('')
-  const [spentAt, setSpentAt] = useState(new Date().toISOString().split('T')[0])
+  const [spentAt, setSpentAt] = useState(() => {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 

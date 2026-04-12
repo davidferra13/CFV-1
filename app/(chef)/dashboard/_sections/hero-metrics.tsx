@@ -23,19 +23,21 @@ async function getHeroMetrics(): Promise<HeroMetric[]> {
   const tenantId = user.tenantId!
 
   const now = new Date()
-  const today = now.toISOString().split('T')[0]
-  const weekEnd = new Date(now.getTime() + 7 * 86400000).toISOString().split('T')[0]
+  const _liso = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const today = _liso(now)
+  const weekEnd = _liso(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7))
 
-  const sevenDaysAgo = new Date(now.getTime() - 7 * 86400000).toISOString()
+  const sevenDaysAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7).toISOString()
 
   // Build date strings for per-day sparkline bucketing
   const dayStrings: string[] = []
   for (let d = 6; d >= 0; d--) {
-    dayStrings.push(new Date(now.getTime() - d * 86400000).toISOString().split('T')[0])
+    dayStrings.push(_liso(new Date(now.getFullYear(), now.getMonth(), now.getDate() - d)))
   }
   const weekFutureStrings: string[] = []
   for (let d = 0; d < 7; d++) {
-    weekFutureStrings.push(new Date(now.getTime() + d * 86400000).toISOString().split('T')[0])
+    weekFutureStrings.push(_liso(new Date(now.getFullYear(), now.getMonth(), now.getDate() + d)))
   }
 
   // All queries in parallel

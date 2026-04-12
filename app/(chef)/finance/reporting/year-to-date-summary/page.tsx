@@ -15,7 +15,7 @@ export default async function YearToDateSummaryPage() {
   await requireChef()
 
   const currentYear = new Date().getFullYear()
-  const yearStart = startOfYear(new Date()).toISOString().split('T')[0]
+  const yearStart = `${new Date().getFullYear()}-01-01`
 
   const [summary, ytdEntries, ytdExpenses, events] = await Promise.all([
     getTenantFinancialSummary(),

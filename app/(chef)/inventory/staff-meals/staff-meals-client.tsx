@@ -17,7 +17,10 @@ export function StaffMealsClient({ initialMeals }: Props) {
   const [isPending, startTransition] = useTransition()
   const [description, setDescription] = useState('')
   const [staffCount, setStaffCount] = useState('1')
-  const [mealDate, setMealDate] = useState(new Date().toISOString().split('T')[0])
+  const [mealDate, setMealDate] = useState(() => {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  })
   const [notes, setNotes] = useState('')
   const [items, setItems] = useState<
     { ingredientName: string; quantity: string; unit: string; costCents: string }[]

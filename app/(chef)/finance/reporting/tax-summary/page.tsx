@@ -22,7 +22,7 @@ export default async function TaxSummaryPage() {
   await requireChef()
 
   const currentYear = new Date().getFullYear()
-  const yearStart = startOfYear(new Date()).toISOString().split('T')[0]
+  const yearStart = `${new Date().getFullYear()}-01-01`
 
   const [summary, allExpenses] = await Promise.all([
     getTenantFinancialSummary(),

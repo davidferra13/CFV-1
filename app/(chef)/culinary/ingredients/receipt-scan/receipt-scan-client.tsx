@@ -37,7 +37,10 @@ export function ReceiptScanClient() {
   const [error, setError] = useState<string | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [storeName, setStoreName] = useState('')
-  const [purchaseDate, setPurchaseDate] = useState(new Date().toISOString().split('T')[0])
+  const [purchaseDate, setPurchaseDate] = useState(() => {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  })
   const [items, setItems] = useState<MatchedItem[]>([])
   const [ingredients, setIngredients] = useState<Ingredient[]>([])
   const [importResult, setImportResult] = useState<{ imported: number; skipped: number } | null>(
@@ -199,7 +202,10 @@ export function ReceiptScanClient() {
     setError(null)
     setImagePreview(null)
     setStoreName('')
-    setPurchaseDate(new Date().toISOString().split('T')[0])
+    const _rsd = new Date()
+    setPurchaseDate(
+      `${_rsd.getFullYear()}-${String(_rsd.getMonth() + 1).padStart(2, '0')}-${String(_rsd.getDate()).padStart(2, '0')}`
+    )
     setItems([])
     setImportResult(null)
     if (fileInputRef.current) fileInputRef.current.value = ''

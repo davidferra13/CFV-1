@@ -10,16 +10,19 @@ import { AvailabilityGrid } from '@/components/staff/availability-grid'
 
 export const metadata: Metadata = { title: 'Staff Availability' }
 
+function liso(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 function addDays(dateStr: string, days: number): string {
-  const d = new Date(dateStr + 'T00:00:00')
-  d.setDate(d.getDate() + days)
-  return d.toISOString().split('T')[0]
+  const [y, m, day] = dateStr.split('-').map(Number)
+  return liso(new Date(y, m - 1, day + days))
 }
 
 export default async function StaffAvailabilityPage() {
   await requireChef()
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = liso(new Date())
   const endDate = addDays(today, 6)
 
   const [staff, gridRows] = await Promise.all([

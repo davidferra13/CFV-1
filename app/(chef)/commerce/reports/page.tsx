@@ -28,9 +28,12 @@ export default async function CommerceReportsPage({
   await requirePro('commerce')
 
   const params = await searchParams
-  const to = params.to || new Date().toISOString().split('T')[0]
+  const _now = new Date()
+  const _liso = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const to = params.to || _liso(_now)
   const from =
-    params.from || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    params.from || _liso(new Date(_now.getFullYear(), _now.getMonth(), _now.getDate() - 7))
 
   const [dailyReport, productReport, channelReport, paymentMixReport, { sessions }] =
     await Promise.all([

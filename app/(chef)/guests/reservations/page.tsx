@@ -17,7 +17,8 @@ export default async function ReservationsPage() {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const today = new Date().toISOString().split('T')[0]
+  const _t = new Date()
+  const today = `${_t.getFullYear()}-${String(_t.getMonth() + 1).padStart(2, '0')}-${String(_t.getDate()).padStart(2, '0')}`
 
   const [{ data: upcoming }, { data: past }] = await Promise.all([
     db

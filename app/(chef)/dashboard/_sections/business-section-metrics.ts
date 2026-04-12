@@ -182,7 +182,7 @@ export function buildBusinessSectionMetrics({ data, now }: BuildBusinessSectionM
           ) / activeGoalCount
         )
       : 0
-  const todayIso = now.toISOString().split('T')[0]
+  const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
   const upcomingEvents = (allEvents ?? []).filter((event: any) => {
     const status = String(event?.status ?? '')
     if (['completed', 'cancelled'].includes(status)) return false

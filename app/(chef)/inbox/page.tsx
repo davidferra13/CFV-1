@@ -26,8 +26,10 @@ export default async function InboxPage({ searchParams }: { searchParams?: { tab
   const triageEnabled = isCommTriageEnabled()
   if (triageEnabled) {
     const now = new Date()
-    const rangeStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
-    const rangeEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]
+    const _li = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    const rangeStart = _li(new Date(now.getFullYear(), now.getMonth(), 1))
+    const rangeEnd = _li(new Date(now.getFullYear(), now.getMonth() + 1, 0))
 
     const [items, stats, calendarEvents, gmailConnection, unreadCount] = await Promise.all([
       getCommunicationInbox(undefined, 100),

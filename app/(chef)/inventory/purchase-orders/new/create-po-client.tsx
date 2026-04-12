@@ -10,7 +10,10 @@ export function CreatePOClient() {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [poNumber, setPONumber] = useState('')
-  const [orderDate, setOrderDate] = useState(new Date().toISOString().split('T')[0])
+  const [orderDate, setOrderDate] = useState(() => {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  })
   const [expectedDelivery, setExpectedDelivery] = useState('')
   const [notes, setNotes] = useState('')
   const [error, setError] = useState('')
