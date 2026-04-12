@@ -138,20 +138,36 @@ export async function getEventGroceryList(
     }
   }
 
-  // Get recipe ingredients via menu items
-  const { data: menuItems } = await (db
-    .from('menu_items' as any)
-    .select('recipe_id')
+  // Get dish IDs from menu, then recipe_ids via components table
+  const { data: menuDishes } = await (db
+    .from('dishes' as any)
+    .select('id')
     .in('menu_id', menuIds)
+    .eq('tenant_id', user.tenantId!) as any)
+
+  const dishIds = ((menuDishes ?? []) as Array<{ id: string }>).map((d) => d.id)
+
+  if (dishIds.length === 0) {
+    return {
+      items: [],
+      summary: 'No dishes found in the menu for this event.',
+    }
+  }
+
+  const { data: components } = await (db
+    .from('components' as any)
+    .select('recipe_id')
+    .in('dish_id', dishIds)
+    .eq('tenant_id', user.tenantId!)
     .not('recipe_id', 'is', null) as any)
 
-  const recipeIds = ((menuItems ?? []) as Array<{ recipe_id: string }>).map((mi) => mi.recipe_id)
+  const recipeIds = ((components ?? []) as Array<{ recipe_id: string }>).map((c) => c.recipe_id)
 
   if (recipeIds.length === 0) {
     return {
       items: [],
       summary:
-        'No recipes linked to menu items. Add recipes to your menu items to generate a grocery list.',
+        'No recipes linked to menu dishes yet. Link recipes to dishes to auto-generate a grocery list.',
     }
   }
 

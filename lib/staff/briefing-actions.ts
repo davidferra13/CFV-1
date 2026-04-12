@@ -110,13 +110,24 @@ export async function generateStaffBriefing(eventId: string): Promise<StaffBrief
     .eq('tenant_id', user.tenantId!)
     .maybeSingle()
 
-  // Fetch active menu items for this event
-  const { data: menuRows } = await db
-    .from('event_menu_items' as any)
-    .select('name, description, course')
-    .eq('event_id', eventId)
-    .eq('tenant_id', user.tenantId!)
-    .order('course')
+  // Fetch active menu dishes for this event via event_menus -> dishes chain
+  const { data: eventMenuLinks } = await (db
+    .from('event_menus' as any)
+    .select('menu_id')
+    .eq('event_id', eventId) as any)
+  const briefingMenuIds = ((eventMenuLinks ?? []) as Array<{ menu_id: string }>).map(
+    (em) => em.menu_id
+  )
+  const { data: menuRows } =
+    briefingMenuIds.length > 0
+      ? await (db
+          .from('dishes' as any)
+          .select('name, description, course_name')
+          .eq('tenant_id', user.tenantId!)
+          .in('menu_id', briefingMenuIds)
+          .not('name', 'is', null)
+          .order('course_number', { ascending: true }) as any)
+      : { data: [] }
 
   // Build formatted event date
   let formattedDate: string | null = null
@@ -151,7 +162,7 @@ export async function generateStaffBriefing(eventId: string): Promise<StaffBrief
 
   // Build menu items list (grouped by course if available)
   const menuItems: string[] = (menuRows ?? []).map((item: any) => {
-    const course = item.course ? `[${item.course}] ` : ''
+    const course = item.course_name ? `[${item.course_name}] ` : ''
     const desc = item.description ? ` - ${item.description}` : ''
     return `${course}${item.name}${desc}`
   })

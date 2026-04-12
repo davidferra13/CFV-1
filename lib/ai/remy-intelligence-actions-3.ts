@@ -331,8 +331,14 @@ export async function executeStationsList() {
       id: s.id,
       name: s.name,
       displayOrder: s.display_order,
-      menuItemCount: s.menu_items?.length ?? 0,
-      componentCount: s.components?.length ?? 0,
+      menuItemCount: s.menu_item_count ?? s.station_menu_items?.length ?? 0,
+      componentCount:
+        s.component_count ??
+        s.station_menu_items?.reduce(
+          (sum: number, mi: any) => sum + (mi.station_components?.length ?? 0),
+          0
+        ) ??
+        0,
     })),
     totalCount: (stations ?? []).length,
   }

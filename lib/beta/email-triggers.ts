@@ -137,14 +137,28 @@ export async function sendPostEventCircleThanks(eventId: string) {
     return { success: true, reason: 'no_members' }
   }
 
-  // Get menu items for the event (for highlights)
-  const { data: menuItems } = await db
-    .from('event_menu_items')
-    .select('name, course')
+  // Get menu dishes for the event via event_menus -> dishes chain
+  const { data: eventMenuLinks2 } = await db
+    .from('event_menus' as any)
+    .select('menu_id')
     .eq('event_id', eventId)
-    .order('course', { ascending: true })
+  const triggerMenuIds = ((eventMenuLinks2 ?? []) as Array<{ menu_id: string }>).map(
+    (em) => em.menu_id
+  )
+  const { data: menuDishes } =
+    triggerMenuIds.length > 0
+      ? await db
+          .from('dishes' as any)
+          .select('name, course_name')
+          .eq('tenant_id', event.tenant_id)
+          .in('menu_id', triggerMenuIds)
+          .not('name', 'is', null)
+          .order('course_number', { ascending: true })
+      : { data: [] }
 
-  const menuHighlights = (menuItems ?? []).map((m: any) => m.name).slice(0, 5)
+  const menuHighlights = ((menuDishes ?? []) as Array<{ name: string }>)
+    .map((m) => m.name)
+    .slice(0, 5)
   const eventDate = format(new Date(event.event_date), 'MMMM d, yyyy')
 
   // Send to each member
