@@ -441,6 +441,7 @@ export function CatalogBrowser({ initialSearch = '' }: { initialSearch?: string 
   const [categories, setCategories] = useState<string[]>([])
   const [allStores, setAllStores] = useState<CatalogStore[]>([])
   const [preferredStoreNames, setPreferredStoreNames] = useState<string[]>([])
+  const [autoSelectedStoreName, setAutoSelectedStoreName] = useState<string | null>(null)
   const [category, setCategory] = useState<string | null>(null)
   const [selectedStore, setSelectedStore] = useState<string | null>(null)
   const [inStockOnly, setInStockOnly] = useState(false)
@@ -501,8 +502,36 @@ export function CatalogBrowser({ initialSearch = '' }: { initialSearch?: string 
     ]).then(([cats, stores, preferred]) => {
       setCategories(cats.filter((c: string) => c && c !== 'uncategorized' && c !== 'suggested'))
       setAllStores(stores)
-      setPreferredStoreNames(preferred.map((p: { store_name: string }) => p.store_name))
+      const preferredNames = preferred.map((p: { store_name: string }) => p.store_name)
+      setPreferredStoreNames(preferredNames)
       setStoresLoading(false)
+
+      // Auto-select the default preferred store to skip the store picker
+      const defaultPreferred = (preferred as { store_name: string; is_default: boolean }[]).find(
+        (p) => p.is_default
+      )
+      if (defaultPreferred) {
+        const defaultName = defaultPreferred.store_name.toLowerCase()
+        // Match against catalog stores by name (case-insensitive partial match)
+        const matched = (stores as { id: string; name: string; status: string }[]).find(
+          (s) =>
+            s.status === 'active' &&
+            (s.name.toLowerCase().includes(defaultName) ||
+              defaultName.includes(
+                s.name
+                  .toLowerCase()
+                  .replace(/\s*\(via[^)]+\)/gi, '')
+                  .trim()
+              ))
+        )
+        if (matched) {
+          setSelectedStore(matched.id)
+          setActiveStoreName(defaultPreferred.store_name)
+          setActiveStoreId(matched.id)
+          setAutoSelectedStoreName(defaultPreferred.store_name)
+          setCatalogView('browsing')
+        }
+      }
     })
   }, [])
 
@@ -865,6 +894,26 @@ export function CatalogBrowser({ initialSearch = '' }: { initialSearch?: string 
   // ---------------------------------------------------------------------------
   return (
     <div className="space-y-3">
+      {/* ---- Personalization banner (auto-filtered to preferred store) ---- */}
+      {autoSelectedStoreName && (
+        <div className="flex items-center justify-between rounded-lg border border-brand-800/40 bg-brand-950/30 px-4 py-2.5 text-sm">
+          <span className="text-stone-300">
+            Filtered to your preferred store:{' '}
+            <span className="font-medium text-brand-400">{autoSelectedStoreName}</span>
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setAutoSelectedStoreName(null)
+              handleBrowseAll()
+            }}
+            className="text-stone-400 hover:text-stone-200 transition-colors ml-4 text-xs underline underline-offset-2"
+          >
+            Show all stores
+          </button>
+        </div>
+      )}
+
       {/* ---- Store context bar ---- */}
       <div className="flex items-center gap-3 bg-stone-900 rounded-lg border border-stone-800 px-4 py-2.5">
         <button
