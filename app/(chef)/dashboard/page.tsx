@@ -39,6 +39,7 @@ import { SmartSuggestions, SmartSuggestionsSkeleton } from './_sections/smart-su
 import { MetricsStrip } from './_sections/metrics-strip'
 import { OpenClawLiveAlerts } from '@/components/pricing/openclaw-live-alerts'
 import { PipelineStatusBadge } from '@/components/pricing/pipeline-status-badge'
+import { DashboardHeartbeat } from '@/components/dashboard/dashboard-heartbeat'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -342,10 +343,13 @@ export default async function ChefDashboard() {
       {/* ============================================ */}
       <header className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
         <div>
-          <p className="text-sm text-stone-500 font-medium">
-            Good {timeOfDay}
-            {firstName ? `, ${firstName}` : ''}
-          </p>
+          <div className="flex items-center gap-3">
+            <p className="text-sm text-stone-500 font-medium">
+              Good {timeOfDay}
+              {firstName ? `, ${firstName}` : ''}
+            </p>
+            <DashboardHeartbeat tenantId={user.tenantId!} />
+          </div>
           <h1 className="text-3xl sm:text-4xl font-display text-stone-100 mt-1 tracking-tight">
             {greeting}
           </h1>
