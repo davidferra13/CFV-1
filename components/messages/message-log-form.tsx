@@ -88,7 +88,8 @@ export function MessageLogForm({
 
       <p className="text-xs text-stone-500">
         Log any message that happened outside ChefFlow (text, email, phone call, DM). It will appear
-        in the communication timeline and can be edited or deleted after saving.
+        in your communication timeline. Logged messages can be edited or deleted at any time - they
+        are your private records and are never sent to the client automatically.
       </p>
 
       {/* Direction Toggle */}
@@ -117,6 +118,12 @@ export function MessageLogForm({
         </button>
       </div>
 
+      <p className="text-xs text-stone-500">
+        {direction === 'outbound'
+          ? 'Direction: Outbound - appears as a message you sent in the timeline.'
+          : 'Direction: Inbound - appears as a message you received in the timeline.'}
+      </p>
+
       {/* Channel + Date Row */}
       <div className="flex gap-3">
         <div className="flex-1">
@@ -133,6 +140,16 @@ export function MessageLogForm({
               </option>
             ))}
           </select>
+          {channel === 'internal_note' && (
+            <p className="mt-1 text-xs text-amber-400">
+              Internal notes are only visible to you - clients never see these.
+            </p>
+          )}
+          {channel !== 'internal_note' && (
+            <p className="mt-1 text-xs text-stone-500">
+              This is a record for your timeline only - logging it does not send anything.
+            </p>
+          )}
         </div>
         <div className="flex-1">
           <label className="text-xs font-medium text-stone-500 block mb-1">When</label>
