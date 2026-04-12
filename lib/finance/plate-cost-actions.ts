@@ -62,7 +62,7 @@ export async function getEventPlateCost(eventId: string): Promise<EventPlateCost
     db
       .from('expenses')
       .select('category, amount_cents')
-      .eq('chef_id', tenantId)
+      .eq('tenant_id', tenantId)
       .eq('event_id', eventId)
       .limit(10_000),
   ])

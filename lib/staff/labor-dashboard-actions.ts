@@ -235,10 +235,10 @@ export async function getLaborRevenueRatio(
   // Get events in the date range with their revenue
   const { data: events, error: eventsError } = await db
     .from('events')
-    .select('id, total_amount_cents')
-    .eq('chef_id', user.tenantId!)
-    .gte('date', startDate)
-    .lte('date', endDate)
+    .select('id, quoted_price_cents')
+    .eq('tenant_id', user.tenantId!)
+    .gte('event_date', startDate)
+    .lte('event_date', endDate)
 
   if (eventsError) throw new Error(`Failed to load events: ${eventsError.message}`)
 
@@ -254,7 +254,7 @@ export async function getLaborRevenueRatio(
   }
 
   const totalRevenueCents = events.reduce(
-    (sum: number, e: any) => sum + (e.total_amount_cents ?? 0),
+    (sum: number, e: any) => sum + (e.quoted_price_cents ?? 0),
     0
   )
 

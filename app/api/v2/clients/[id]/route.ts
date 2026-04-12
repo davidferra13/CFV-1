@@ -32,7 +32,7 @@ export const GET = withApiAuth(
       .from('clients')
       .select('*')
       .eq('id', id)
-      .eq('chef_id', ctx.tenantId)
+      .eq('tenant_id', ctx.tenantId)
       .single()
 
     if (error || !data) return apiNotFound('Client')
@@ -61,7 +61,7 @@ export const PATCH = withApiAuth(
       .from('clients')
       .select('id')
       .eq('id', id)
-      .eq('chef_id', ctx.tenantId)
+      .eq('tenant_id', ctx.tenantId)
       .single()
 
     if (!existing) return apiNotFound('Client')
@@ -70,7 +70,7 @@ export const PATCH = withApiAuth(
       .from('clients')
       .update({ ...parsed.data, updated_at: new Date().toISOString() } as any)
       .eq('id', id)
-      .eq('chef_id', ctx.tenantId)
+      .eq('tenant_id', ctx.tenantId)
       .select()
       .single()
 

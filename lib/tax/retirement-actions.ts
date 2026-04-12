@@ -133,7 +133,7 @@ export async function getRetirementContributions(taxYear: number): Promise<{
   const { data: ledger } = await db
     .from('ledger_entries')
     .select('amount_cents, entry_type')
-    .eq('chef_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!)
     .gte('received_at', `${taxYear}-01-01`)
     .lte('received_at', `${taxYear}-12-31`)
 

@@ -87,7 +87,7 @@ export async function getProposalViewAnalytics(quoteId: string): Promise<Proposa
     .from('quotes')
     .select('id')
     .eq('id', quoteId)
-    .eq('chef_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!)
     .single()
 
   if (quoteError || !quote) {

@@ -234,7 +234,7 @@ export async function exportTaxPackage(taxYear: number): Promise<{
   const { data: expenses } = await db
     .from('expenses')
     .select('category, amount_cents')
-    .eq('chef_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!)
     .gte('expense_date', `${taxYear}-01-01`)
     .lte('expense_date', `${taxYear}-12-31`)
 
