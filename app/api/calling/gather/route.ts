@@ -516,7 +516,7 @@ async function handleVendorDelivery(
         subject: aiCall.subject,
         status: 'completed',
         extractedData: updatedData,
-      }).catch(() => {})
+      })
     }
     return closingTwiml(
       "Perfect, that's everything we needed. Thank you so much, we really appreciate it!"
@@ -591,7 +591,7 @@ async function handleVenueConfirmation(
         subject: aiCall.subject,
         status: 'completed',
         extractedData: updatedData,
-      }).catch(() => {})
+      })
     }
     return closingTwiml(
       "Great, we've got everything we need. Really appreciate your help, see you on the day!"
@@ -694,7 +694,7 @@ async function handleInboundUnknown(
         status: 'completed',
         callerPhone: aiCall.contact_phone,
         message: speech,
-      }).catch(() => {})
+      })
     }
   }
   return closingTwiml(

@@ -126,7 +126,10 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
     }
   }, [])
 
-  useSSE(tenantId ? `chef-${tenantId}` : null, { onMessage: handleSSEMessage })
+  useSSE(tenantId ? `chef-${tenantId}` : 'disabled', {
+    onMessage: handleSSEMessage,
+    enabled: !!tenantId,
+  })
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
