@@ -4,30 +4,11 @@ import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { PERMIT_TYPES, PERMIT_STATUSES } from './permit-constants'
+import type { PermitType, PermitStatus } from './permit-constants'
 
-const PERMIT_TYPES = [
-  'health',
-  'business',
-  'fire',
-  'parking',
-  'vendor',
-  'mobile_food',
-  'other',
-] as const
-const PERMIT_STATUSES = ['active', 'expired', 'pending_renewal', 'revoked'] as const
-
-export type PermitType = (typeof PERMIT_TYPES)[number]
-export type PermitStatus = (typeof PERMIT_STATUSES)[number]
-
-export const PERMIT_TYPE_LABELS: Record<PermitType, string> = {
-  health: 'Health Permit',
-  business: 'Business License',
-  fire: 'Fire Permit',
-  parking: 'Parking Permit',
-  vendor: 'Vendor Permit',
-  mobile_food: 'Mobile Food Unit',
-  other: 'Other',
-}
+// Types, labels, and constants are in permit-constants.ts - import from there in client components.
+export type { PermitType, PermitStatus } from './permit-constants'
 
 const PermitInputSchema = z.object({
   name: z.string().min(1, 'Name is required'),
