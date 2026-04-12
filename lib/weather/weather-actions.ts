@@ -148,7 +148,10 @@ export async function getWeatherForEvents(
 
     // Filter to events within 16 days that have coordinates
     const eligible = events.filter(
-      (e) => e.location_lat != null && e.location_lng != null && e.event_date <= maxDateStr
+      (e) =>
+        e.location_lat != null &&
+        e.location_lng != null &&
+        dateToDateString(e.event_date as Date | string) <= maxDateStr
     )
 
     if (eligible.length === 0) return {}

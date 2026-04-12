@@ -274,7 +274,7 @@ export async function computeSeasonalPerformance(range: DateRange): Promise<Seas
   >()
 
   for (const e of events || []) {
-    const key = dateToMonthString(e.event_date)
+    const key = dateToMonthString(e.event_date as Date | string)
     const entry = monthMap.get(key) || {
       total: 0,
       cancelled: 0,
