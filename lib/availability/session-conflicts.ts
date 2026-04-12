@@ -1,4 +1,5 @@
 import type { Database } from '@/types/database'
+import { dateToDateString } from '@/lib/utils/format'
 
 type MealSlot = Database['public']['Enums']['event_session_meal_slot']
 
@@ -77,7 +78,9 @@ export function detectSessionEventConflicts(params: {
 
   for (const session of sessions) {
     const sessionDate = session.session_date
-    const sameDateEvents = events.filter((event) => event.event_date.slice(0, 10) === sessionDate)
+    const sameDateEvents = events.filter(
+      (event) => dateToDateString(event.event_date as Date | string) === sessionDate
+    )
     if (sameDateEvents.length === 0) continue
 
     const sessionWindow = buildWindow(session.start_time, session.end_time)

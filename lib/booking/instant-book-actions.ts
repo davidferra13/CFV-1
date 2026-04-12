@@ -253,7 +253,7 @@ export async function createInstantBookingCheckout(
 
     for (const session of schedulePlan.sessions) {
       const eventOnDate = (eventsInRange.data || []).find(
-        (event: any) => String(event.event_date).slice(0, 10) === session.session_date
+        (event: any) => dateToDateString(event.event_date as Date | string) === session.session_date
       )
       if (eventOnDate) {
         conflicts.push({
