@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { RecipeImportDialog } from '@/components/recipes/recipe-import-dialog'
 import { RecipeBatchImport } from '@/components/recipes/recipe-batch-import'
 import { RecipePhotoBatchImport } from '@/components/recipes/recipe-photo-batch-import'
+import { RecipeCsvImport } from '@/components/recipes/recipe-csv-import'
 
 type Props = {
   aiConfigured: boolean
@@ -29,6 +30,7 @@ export function RecipeImportHubClient({ aiConfigured, visionConfigured }: Props)
   const [photoImportOpen, setPhotoImportOpen] = useState(false)
   const [urlImportOpen, setUrlImportOpen] = useState(false)
   const [batchUrlImportOpen, setBatchUrlImportOpen] = useState(false)
+  const [csvImportOpen, setCsvImportOpen] = useState(false)
 
   const methods: ImportMethod[] = [
     {
@@ -57,6 +59,16 @@ export function RecipeImportHubClient({ aiConfigured, visionConfigured }: Props)
       title: 'Quick URL Import',
       description: 'Import a single recipe from a URL. Preview before saving.',
       icon: '\uD83D\uDD17',
+      available: true,
+    },
+    {
+      id: 'csv-import',
+      title: 'CSV / Spreadsheet Import',
+      description:
+        'Import from a spreadsheet. Paste CSV or upload a .csv file. Supports name, category, description, method, ingredients (pipe-separated), prep and cook time, and yield. Preview all rows before saving.',
+      icon: '\uD83D\uDCCA',
+      badge: 'Batch',
+      badgeVariant: 'success' as const,
       available: true,
     },
     {
@@ -98,6 +110,9 @@ export function RecipeImportHubClient({ aiConfigured, visionConfigured }: Props)
         break
       case 'url-single':
         setUrlImportOpen(true)
+        break
+      case 'csv-import':
+        setCsvImportOpen(true)
         break
       case 'smart-import':
         window.location.href = '/recipes/new'
@@ -151,6 +166,9 @@ export function RecipeImportHubClient({ aiConfigured, visionConfigured }: Props)
                   </Button>
                   <Button size="sm" variant="secondary" onClick={() => setBatchUrlImportOpen(true)}>
                     URL Import
+                  </Button>
+                  <Button size="sm" variant="secondary" onClick={() => setCsvImportOpen(true)}>
+                    CSV Import
                   </Button>
                 </div>
               </div>
@@ -217,6 +235,7 @@ export function RecipeImportHubClient({ aiConfigured, visionConfigured }: Props)
       <RecipePhotoBatchImport open={photoImportOpen} onClose={() => setPhotoImportOpen(false)} />
       <RecipeImportDialog open={urlImportOpen} onClose={() => setUrlImportOpen(false)} />
       <RecipeBatchImport open={batchUrlImportOpen} onClose={() => setBatchUrlImportOpen(false)} />
+      <RecipeCsvImport open={csvImportOpen} onClose={() => setCsvImportOpen(false)} />
     </>
   )
 }
