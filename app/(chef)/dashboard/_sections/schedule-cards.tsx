@@ -16,6 +16,8 @@ import { StatCard } from '@/components/dashboard/widget-cards/stat-card'
 import { ListCard, type ListCardItem } from '@/components/dashboard/widget-cards/list-card'
 import { WidgetCardShell } from '@/components/dashboard/widget-cards/widget-card-shell'
 import { WeekStrip } from '@/components/dashboard/week-strip'
+import { Card } from '@/components/ui/card'
+import Link from 'next/link'
 import { format } from 'date-fns'
 
 async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promise<T> {
@@ -103,6 +105,57 @@ export async function ScheduleCards() {
 
   return (
     <>
+      {/* Event Day Quick-Actions - surfaces when chef has an event today */}
+      {todaysSchedule && (
+        <div className="col-span-full">
+          <Card className="p-4 bg-amber-950/40 border-amber-800/40">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <p className="text-xs text-amber-600 font-medium uppercase tracking-wide mb-0.5">
+                  Tonight
+                </p>
+                <p className="text-stone-100 font-semibold">
+                  {todaysSchedule.event.occasion || 'Event'}{' '}
+                  {todaysSchedule.event.serve_time ? `at ${todaysSchedule.event.serve_time}` : ''}
+                </p>
+                <p className="text-stone-400 text-sm">
+                  {(todaysSchedule.event as any).client?.full_name || 'Client'}{' '}
+                  {todaysSchedule.event.guest_count
+                    ? `· ${todaysSchedule.event.guest_count} guests`
+                    : ''}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href={`/events/${todaysSchedule.event.id}/pack`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-stone-800 hover:bg-stone-700 text-stone-200 text-sm font-medium transition-colors"
+                >
+                  Pack List
+                </Link>
+                <Link
+                  href={`/events/${todaysSchedule.event.id}/grocery-quote`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-stone-800 hover:bg-stone-700 text-stone-200 text-sm font-medium transition-colors"
+                >
+                  Grocery List
+                </Link>
+                <Link
+                  href="/briefing"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-stone-800 hover:bg-stone-700 text-stone-200 text-sm font-medium transition-colors"
+                >
+                  Briefing
+                </Link>
+                <Link
+                  href={`/events/${todaysSchedule.event.id}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-amber-900/60 hover:bg-amber-900/80 text-amber-200 text-sm font-medium transition-colors"
+                >
+                  Full Event
+                </Link>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
       {/* Today's Schedule - list card */}
       <ListCard
         widgetId="todays_schedule"
