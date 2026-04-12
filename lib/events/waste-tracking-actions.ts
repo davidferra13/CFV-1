@@ -3,6 +3,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
+import { dateToMonthString } from '@/lib/utils/format'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -228,7 +229,7 @@ export async function getWasteSummary(dateRange?: {
   // Monthly trend
   const monthMap = new Map<string, { totalCents: number; events: Set<string> }>()
   for (const e of entries) {
-    const month = e.logged_at.slice(0, 7) // YYYY-MM
+    const month = dateToMonthString(e.logged_at) // YYYY-MM
     const existing = monthMap.get(month) ?? { totalCents: 0, events: new Set<string>() }
     existing.totalCents += e.estimated_cost_cents ?? 0
     existing.events.add(e.event_id)

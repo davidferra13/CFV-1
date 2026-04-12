@@ -6,6 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { dateToMonthString } from '@/lib/utils/format'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -495,7 +496,7 @@ export async function getConversionTrend(months: number = 6): Promise<MonthlyCon
   // Group by month
   const monthGroups = new Map<string, { created: number; completed: number; cancelled: number }>()
   for (const event of events) {
-    const month = event.created_at.slice(0, 7) // YYYY-MM
+    const month = dateToMonthString(event.created_at) // YYYY-MM
     if (!monthGroups.has(month)) {
       monthGroups.set(month, { created: 0, completed: 0, cancelled: 0 })
     }

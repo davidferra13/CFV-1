@@ -1,5 +1,6 @@
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
+import { dateToMonthString } from '@/lib/utils/format'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -194,7 +195,7 @@ export async function computeRevenueByMonth(range: DateRange): Promise<RevenueBy
   const monthMap = new Map<string, number>()
 
   for (const entry of ledger || []) {
-    const key = entry.created_at.slice(0, 7) // YYYY-MM
+    const key = dateToMonthString(entry.created_at) // YYYY-MM
     const current = monthMap.get(key) || 0
     const amount =
       entry.entry_type === 'refund' ? -Math.abs(entry.amount_cents) : entry.amount_cents
@@ -273,7 +274,7 @@ export async function computeSeasonalPerformance(range: DateRange): Promise<Seas
   >()
 
   for (const e of events || []) {
-    const key = e.event_date.slice(0, 7)
+    const key = dateToMonthString(e.event_date)
     const entry = monthMap.get(key) || {
       total: 0,
       cancelled: 0,

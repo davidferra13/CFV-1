@@ -6,6 +6,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { log } from '@/lib/logger'
+import { dateToMonthString } from '@/lib/utils/format'
 
 /**
  * Get event financial summary (computed via the event_financial_summary view)
@@ -191,8 +192,7 @@ export async function computeProfitAndLoss(year: number) {
   for (const entry of entries) {
     if (!entry.is_refund && entry.entry_type !== 'refund') {
       const raw = entry.received_at ?? entry.created_at
-      const d = raw instanceof Date ? raw : new Date(raw as string)
-      const month = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+      const month = dateToMonthString(raw instanceof Date ? raw : new Date(raw as string))
       monthlyRevenue.set(month, (monthlyRevenue.get(month) || 0) + entry.amount_cents)
     }
   }

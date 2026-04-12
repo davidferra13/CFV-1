@@ -179,6 +179,17 @@ export function todayLocalDateString(d: Date = new Date()): string {
   ].join('-')
 }
 
+/**
+ * Converts a Date object (or ISO string) to a YYYY-MM month key using LOCAL time parts.
+ * Use this instead of `value.slice(0, 7)` on postgres.js results: postgres.js 3.x
+ * returns TIMESTAMPTZ and DATE columns as JavaScript Date objects, not strings, so
+ * calling `.slice()` on them throws TypeError at runtime.
+ */
+export function dateToMonthString(val: Date | string): string {
+  const d = val instanceof Date ? val : new Date(val)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
 /** Get the current weekday name in a timezone */
 export function todayWeekday(
   opts: FormatOpts & { style?: 'long' | 'short' | 'narrow' } = {}

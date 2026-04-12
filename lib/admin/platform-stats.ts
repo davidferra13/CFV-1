@@ -7,6 +7,7 @@ import { createAdminClient } from '@/lib/db/admin'
 import { requireAdmin } from '@/lib/auth/admin'
 import { evaluateProductionSafetyEnv } from '@/lib/environment/production-safety'
 import { resolveOwnerIdentity } from '@/lib/platform/owner-account'
+import { dateToMonthString } from '@/lib/utils/format'
 
 export type PlatformOverviewStats = {
   totalChefs: number
@@ -358,7 +359,7 @@ export async function getPlatformGrowthStats(): Promise<GrowthDataPoint[]> {
   ])
 
   const monthMap: Record<string, { newChefs: number; newClients: number }> = {}
-  const getMonth = (iso: string) => iso.slice(0, 7)
+  const getMonth = (val: Date | string) => dateToMonthString(val)
 
   ;(chefsData.data ?? []).forEach((c: any) => {
     const m = getMonth(c.created_at)
@@ -392,7 +393,7 @@ export async function getPlatformRevenueByMonth(): Promise<RevenueDataPoint[]> {
 
   const monthMap: Record<string, number> = {}
   ;(ledger ?? []).forEach((l: any) => {
-    const m = l.created_at.slice(0, 7)
+    const m = dateToMonthString(l.created_at)
     monthMap[m] = (monthMap[m] ?? 0) + (l.amount_cents ?? 0)
   })
 

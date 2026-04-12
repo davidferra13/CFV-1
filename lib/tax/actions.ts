@@ -10,6 +10,7 @@ import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { format, startOfYear, endOfYear, startOfQuarter, endOfQuarter } from 'date-fns'
+import { dateToMonthString } from '@/lib/utils/format'
 
 // 2025 IRS standard mileage rate: $0.70/mile = 70 cents
 const IRS_RATE_CENTS_PER_MILE = 70
@@ -243,7 +244,7 @@ export async function generateAccountantExport(year: number) {
   // Monthly breakdown
   const monthlyIncome: Record<string, number> = {}
   for (const entry of incomeEntries) {
-    const month = entry.created_at.slice(0, 7) // YYYY-MM
+    const month = dateToMonthString(entry.created_at) // YYYY-MM
     monthlyIncome[month] = (monthlyIncome[month] ?? 0) + entry.amount_cents
   }
 
