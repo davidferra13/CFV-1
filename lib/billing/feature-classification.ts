@@ -49,7 +49,7 @@ export type FeatureDefinition = {
 }
 
 // =============================================================================
-// FREE LAYER — "Complete, Standalone Utility"
+// FREE LAYER - "Complete, Standalone Utility"
 // =============================================================================
 // Everything here allows a chef to operate meaningfully without friction.
 // No dead ends. No locked core workflows.
@@ -220,7 +220,7 @@ const FREE_FEATURES: FeatureDefinition[] = [
 ]
 
 // =============================================================================
-// PAID LAYER — "Leverage, Automation, and Scale"
+// PAID LAYER - "Leverage, Automation, and Scale"
 // =============================================================================
 // Users pay when the system replaces labor, increases accuracy, or scales output.
 
