@@ -109,13 +109,15 @@ export async function executeRevenueForecast(tenantId: string) {
   if (tenantId !== user.tenantId) throw new Error('Unauthorized: tenant mismatch')
   const db: any = createServerClient()
   const now = new Date()
+  const _lia = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
   // Get upcoming events with quotes
   const { data: events } = await db
     .from('events')
     .select('id, occasion, event_date, guest_count, quoted_price_cents, status, client_id')
     .eq('tenant_id', tenantId)
-    .gte('event_date', now.toISOString().split('T')[0])
+    .gte('event_date', _lia(now))
     .order('event_date', { ascending: true })
 
   if (!events?.length) {
@@ -419,15 +421,16 @@ export async function executeUtilizationAnalysis(
   const db: any = createServerClient()
   const days = Number(inputs.days ?? 14)
   const now = new Date()
-  const endDate = new Date(now)
-  endDate.setDate(endDate.getDate() + days)
+  const _lib = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + days)
 
   const { data: events } = await db
     .from('events')
     .select('occasion, event_date, guest_count, status, arrival_time, serve_time')
     .eq('tenant_id', tenantId)
-    .gte('event_date', now.toISOString().split('T')[0])
-    .lte('event_date', endDate.toISOString().split('T')[0])
+    .gte('event_date', _lib(now))
+    .lte('event_date', _lib(endDate))
     .not('status', 'eq', 'cancelled')
     .order('event_date', { ascending: true })
 
@@ -894,7 +897,8 @@ export async function executeMorningBriefing(tenantId: string) {
   const user = await requireChef()
   if (tenantId !== user.tenantId) throw new Error('Unauthorized: tenant mismatch')
   const db: any = createServerClient()
-  const today = new Date().toISOString().split('T')[0]
+  const _tdb = new Date()
+  const today = `${_tdb.getFullYear()}-${String(_tdb.getMonth() + 1).padStart(2, '0')}-${String(_tdb.getDate()).padStart(2, '0')}`
 
   // Today's events with full details
   const { data: events } = await db

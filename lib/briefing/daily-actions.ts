@@ -69,7 +69,10 @@ export async function generateDailyBriefing(date?: string): Promise<DailyBriefin
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const briefingDate = DateSchema.parse(date) ?? new Date().toISOString().split('T')[0]
+  const _bd = new Date()
+  const briefingDate =
+    DateSchema.parse(date) ??
+    `${_bd.getFullYear()}-${String(_bd.getMonth() + 1).padStart(2, '0')}-${String(_bd.getDate()).padStart(2, '0')}`
 
   // 1. Events today
   const { data: todayEvents } = await db
@@ -145,14 +148,17 @@ export async function generateDailyBriefing(date?: string): Promise<DailyBriefin
   }
 
   // 3. Revenue this week - sum of ledger payments in the 7-day window
-  const weekStart = new Date(briefingDate)
-  const dayOfWeek = weekStart.getDay()
-  weekStart.setDate(weekStart.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
-  const weekEnd = new Date(weekStart)
-  weekEnd.setDate(weekStart.getDate() + 6)
+  const [_bdy, _bdm, _bdd] = briefingDate.split('-').map(Number)
+  const _bdate = new Date(_bdy, _bdm - 1, _bdd)
+  const dayOfWeek = _bdate.getDay()
+  const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1
+  const weekStart = new Date(_bdy, _bdm - 1, _bdd - mondayOffset)
+  const weekEnd = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + 6)
+  const _bdf = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
-  const weekStartStr = weekStart.toISOString().split('T')[0]
-  const weekEndStr = weekEnd.toISOString().split('T')[0]
+  const weekStartStr = _bdf(weekStart)
+  const weekEndStr = _bdf(weekEnd)
 
   const { data: weekEvents } = await db
     .from('events')
@@ -275,7 +281,10 @@ export async function getDailyBriefing(date?: string): Promise<DailyBriefing | n
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const briefingDate = DateSchema.parse(date) ?? new Date().toISOString().split('T')[0]
+  const _bd = new Date()
+  const briefingDate =
+    DateSchema.parse(date) ??
+    `${_bd.getFullYear()}-${String(_bd.getMonth() + 1).padStart(2, '0')}-${String(_bd.getDate()).padStart(2, '0')}`
 
   const { data: briefing, error } = await db
     .from('chef_daily_briefings')

@@ -21,9 +21,11 @@ export async function generateMorningBriefing(tenantId: string): Promise<string>
   }
   const db: any = createServerClient()
   const now = new Date()
-  const today = now.toISOString().split('T')[0]
-  const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-  const thisWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const _li = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const today = _li(now)
+  const tomorrow = _li(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1))
+  const thisWeek = _li(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7))
 
   const sections: BriefingSection[] = []
 

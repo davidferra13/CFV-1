@@ -23,8 +23,11 @@ interface AlertCandidate {
 
 async function checkMissingPrepList(db: any, tenantId: string): Promise<AlertCandidate[]> {
   const alerts: AlertCandidate[] = []
-  const in48h = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString().split('T')[0]
-  const today = new Date().toISOString().split('T')[0]
+  const _n1 = new Date()
+  const _li = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const in48h = _li(new Date(_n1.getFullYear(), _n1.getMonth(), _n1.getDate() + 2))
+  const today = _li(_n1)
 
   const { data: events, error } = await db
     .from('events')
@@ -57,8 +60,11 @@ async function checkMissingPrepList(db: any, tenantId: string): Promise<AlertCan
 
 async function checkMissingGroceryList(db: any, tenantId: string): Promise<AlertCandidate[]> {
   const alerts: AlertCandidate[] = []
-  const in24h = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-  const today = new Date().toISOString().split('T')[0]
+  const _n2 = new Date()
+  const _li2 = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const in24h = _li2(new Date(_n2.getFullYear(), _n2.getMonth(), _n2.getDate() + 1))
+  const today = _li2(_n2)
 
   const { data: events, error } = await db
     .from('events')

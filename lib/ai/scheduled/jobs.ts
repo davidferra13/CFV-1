@@ -35,8 +35,11 @@ export async function handleDailyBriefing(
   tenantId: string
 ): Promise<Record<string, unknown>> {
   const db: any = createAdminClient()
-  const today = new Date().toISOString().split('T')[0]
-  const threeDaysOut = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const _nj1 = new Date()
+  const _lij = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const today = _lij(_nj1)
+  const threeDaysOut = _lij(new Date(_nj1.getFullYear(), _nj1.getMonth(), _nj1.getDate() + 3))
 
   // Gather data for briefing
   const [events, inquiries, chefName] = await Promise.all([
@@ -373,7 +376,11 @@ export async function handleCertExpiry(
   tenantId: string
 ): Promise<Record<string, unknown>> {
   const db: any = createAdminClient()
-  const thirtyDaysOut = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const _nj2 = new Date()
+  const thirtyDaysOut = (() => {
+    const d = new Date(_nj2.getFullYear(), _nj2.getMonth(), _nj2.getDate() + 30)
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  })()
 
   const { data: expiringCerts } = await (db
     .from('chef_certifications')
@@ -735,7 +742,8 @@ export async function handleSocialPostDraft(
     .limit(3)
 
   // Get upcoming events for promotional angle
-  const today = new Date().toISOString().split('T')[0]
+  const _nj3 = new Date()
+  const today = `${_nj3.getFullYear()}-${String(_nj3.getMonth() + 1).padStart(2, '0')}-${String(_nj3.getDate()).padStart(2, '0')}`
   const { data: upcomingEvents } = await db
     .from('events')
     .select('occasion, event_date')
