@@ -18,6 +18,14 @@ import { getMenus } from '@/lib/menus/actions'
 import { getTenantFinancialSummary } from '@/lib/ledger/compute'
 import { checkCalendarAvailability } from '@/lib/scheduling/calendar-sync'
 import { generateFollowUpDraft } from '@/lib/ai/followup-draft'
+
+function localDateISO(d: Date): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
 import { parseEventFromText } from '@/lib/events/parse-event-from-text'
 import { getTaskName } from '@/lib/ai/command-task-descriptions'
 import { searchWeb, readWebPage } from '@/lib/ai/remy-web-actions'
@@ -599,14 +607,19 @@ async function executeMenuList(inputs: Record<string, unknown>) {
 }
 
 async function executeSchedulingNextAvailable(inputs: Record<string, unknown>) {
-  const startDateStr = String(inputs.startDate ?? new Date().toISOString().split('T')[0])
-  const startDate = new Date(startDateStr)
+  const startDateStr = String(inputs.startDate ?? localDateISO(new Date()))
+  // Parse YYYY-MM-DD as local date (not UTC) by using year/month/day parts
+  const [sy, sm, sd] = startDateStr.split('-').map(Number)
+  const startDate = new Date(sy, (sm || 1) - 1, sd || 1)
 
   // Check up to 30 days from start
   for (let i = 0; i < 30; i++) {
-    const checkDate = new Date(startDate)
-    checkDate.setDate(checkDate.getDate() + i)
-    const dateStr = checkDate.toISOString().split('T')[0]
+    const checkDate = new Date(
+      startDate.getFullYear(),
+      startDate.getMonth(),
+      startDate.getDate() + i
+    )
+    const dateStr = localDateISO(checkDate)
     const result = await checkCalendarAvailability(dateStr)
     if (result.available) {
       return { nextAvailable: dateStr, daysFromStart: i }

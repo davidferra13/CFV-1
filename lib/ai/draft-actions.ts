@@ -23,6 +23,14 @@ import {
 } from '@/lib/templates/email-drafts'
 import type { TemplateVars } from '@/lib/templates/email-drafts'
 
+function localDateISO(d: Date): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
 // ============================================
 // SHARED TYPES
 // ============================================
@@ -626,7 +634,7 @@ export async function generateFoodSafetyIncidentDraft(description: string): Prom
         `You are ${chefName}, a private chef writing a formal food safety incident report. First person singular "I". Be factual, thorough, and professional. Include: what happened, when, what immediate action was taken, who was affected, what corrective action will be implemented. This is for internal records and potentially insurance/regulatory purposes. Keep it structured and clear. Return JSON: { "subject": "...", "body": "..." }`,
         `Write a food safety incident report for:
 Incident description: ${description}
-Date: ${new Date().toISOString().split('T')[0]}`,
+Date: ${localDateISO(new Date())}`,
         EmailDraftSchema,
         { modelTier: 'standard', maxTokens: 1024 }
       )

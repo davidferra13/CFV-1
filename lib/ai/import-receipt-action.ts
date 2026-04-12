@@ -7,6 +7,14 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createExpense } from '@/lib/expenses/actions'
 import type { ReceiptExtraction } from '@/lib/ai/parse-receipt'
 
+function localDateISO(d: Date): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
 export async function importReceiptAsExpense(
   extraction: ReceiptExtraction,
   eventId: string | null,
@@ -28,7 +36,7 @@ export async function importReceiptAsExpense(
     category: category as any,
     payment_method: paymentMethod as any,
     description: desc,
-    expense_date: extraction.purchaseDate || new Date().toISOString().split('T')[0],
+    expense_date: extraction.purchaseDate || localDateISO(new Date()),
     vendor_name: extraction.storeName || null,
     notes: `Smart receipt import: ${extraction.itemCount} items, ${extraction.confidence} confidence`,
     is_business: true,

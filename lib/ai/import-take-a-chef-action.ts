@@ -14,6 +14,14 @@ import { z } from 'zod'
 import type { Database } from '@/types/database'
 import { getDefaultTakeAChefCommissionPercent } from '@/lib/integrations/take-a-chef-defaults'
 
+function localDateISO(d: Date): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
 // ─── Input Schema ──────────────────────────────────────────────────────────
 
 const TakeAChefImportSchema = z.object({
@@ -130,7 +138,9 @@ export async function importTakeAChefBooking(
         inquiry_id: inquiry.id,
         event_date:
           parsed.confirmed_date ||
-          new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          localDateISO(
+            new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 7)
+          ),
         guest_count: parsed.confirmed_guest_count ?? 4,
         location_address: parsed.confirmed_location || 'TBD',
         location_city: 'TBD',
@@ -192,8 +202,7 @@ export async function importTakeAChefBooking(
           amount_cents: commissionCents,
           category: 'professional_services' as const,
           payment_method: 'other' as const,
-          expense_date:
-            parsed.confirmed_date?.split('T')[0] || new Date().toISOString().split('T')[0],
+          expense_date: parsed.confirmed_date?.split('T')[0] || localDateISO(new Date()),
           vendor_name: 'Take a Chef',
           notes:
             'Automatically logged from Take a Chef booking import. Represents the platform commission paid.',

@@ -10,6 +10,14 @@ import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
 
+function localDateISO(d: Date): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
 // ─── NL → Structured Event Parser ─────────────────────────────────────────
 
 const ParsedEventSchema = z.object({
@@ -170,7 +178,7 @@ export const eventAgentActions: AgentActionDefinition[] = [
       // Build the event input - fill required fields with defaults if missing
       const eventInput = {
         client_id: payload.client_id as string | undefined,
-        event_date: (payload.event_date as string) ?? new Date().toISOString().slice(0, 10),
+        event_date: (payload.event_date as string) ?? localDateISO(new Date()),
         serve_time: (payload.serve_time as string) ?? '18:00',
         guest_count: (payload.guest_count as number) ?? 2,
         location_address: (payload.location_address as string) ?? 'TBD',

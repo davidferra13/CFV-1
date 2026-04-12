@@ -20,6 +20,14 @@
 import * as fs from 'fs'
 import * as path from 'path'
 
+function localDateISO(d: Date): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
 // ============================================
 // TYPES
 // ============================================
@@ -168,7 +176,7 @@ export function writeDailySummary(): void {
     // Directory might already exist
   }
 
-  const dateStr = new Date().toISOString().split('T')[0]
+  const dateStr = localDateISO(new Date())
   const filePath = path.join(statsDir, `daily-summary-${dateStr}.json`)
 
   // Append to existing if same day, otherwise create new

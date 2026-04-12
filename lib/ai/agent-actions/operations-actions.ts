@@ -8,6 +8,14 @@ import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { z } from 'zod'
 
+function localDateISO(d: Date): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
 // ─── Schedule Call ──────────────────────────────────────────────────────────
 
 const ParsedCallSchema = z.object({
@@ -236,7 +244,7 @@ export const operationsAgentActions: AgentActionDefinition[] = [
         amount_cents: payload.amount_cents,
         category: payload.category ?? 'other',
         vendor: payload.vendor ?? null,
-        expense_date: payload.date ?? new Date().toISOString().slice(0, 10),
+        expense_date: payload.date ?? localDateISO(new Date()),
         notes: payload.notes ?? null,
       })
 

@@ -37,6 +37,7 @@ type Props = {
   year: number
   mileage: MileageData
   quarterlyEstimates: QuarterEstimate[]
+  exportReady: boolean
 }
 
 function formatDollars(cents: number) {
@@ -52,7 +53,7 @@ const PURPOSES = [
   { value: 'other', label: 'Other' },
 ]
 
-export function TaxCenterClient({ year, mileage, quarterlyEstimates }: Props) {
+export function TaxCenterClient({ year, mileage, quarterlyEstimates, exportReady }: Props) {
   const router = useRouter()
   const [showMileageForm, setShowMileageForm] = useState(false)
   const [mileageForm, setMileageForm] = useState({
@@ -252,12 +253,21 @@ export function TaxCenterClient({ year, mileage, quarterlyEstimates }: Props) {
 
       {/* CPA Export - routes to the canonical year-end export package */}
       <div className="flex justify-end">
-        <a
-          href={`/finance/year-end/export?year=${year}`}
-          className="inline-flex items-center justify-center rounded-md border border-stone-600 bg-stone-900 px-4 py-2 text-sm text-stone-300 hover:bg-stone-800 transition-colors"
-        >
-          Download CPA Export
-        </a>
+        {exportReady ? (
+          <a
+            href={`/finance/year-end/export?year=${year}`}
+            className="inline-flex items-center justify-center rounded-md border border-stone-600 bg-stone-900 px-4 py-2 text-sm text-stone-300 hover:bg-stone-800 transition-colors"
+          >
+            Download CPA Export
+          </a>
+        ) : (
+          <span
+            title="Resolve uncategorized expenses in the Year-End section before downloading"
+            className="inline-flex items-center justify-center rounded-md border border-stone-800 bg-stone-950 px-4 py-2 text-sm text-stone-600 cursor-not-allowed"
+          >
+            Download CPA Export
+          </span>
+        )}
       </div>
     </div>
   )

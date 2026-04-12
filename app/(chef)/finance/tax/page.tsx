@@ -5,6 +5,7 @@ import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { TaxDeductionPanel } from '@/components/ai/tax-deduction-panel'
 import { getYearlyMileageSummary, computeQuarterlyEstimate } from '@/lib/tax/actions'
+import { getCpaExportReadiness } from '@/lib/finance/cpa-export-actions'
 import { TaxCenterClient, TaxYearSelect } from './tax-center-client'
 
 export const metadata: Metadata = { title: 'Tax Center' }
@@ -14,12 +15,13 @@ export default async function TaxCenterPage({ searchParams }: { searchParams: { 
 
   const year = parseInt(searchParams.year ?? String(new Date().getFullYear()))
 
-  const [mileage, q1, q2, q3, q4] = await Promise.all([
+  const [mileage, q1, q2, q3, q4, readiness] = await Promise.all([
     getYearlyMileageSummary(year),
     computeQuarterlyEstimate(year, 1),
     computeQuarterlyEstimate(year, 2),
     computeQuarterlyEstimate(year, 3),
     computeQuarterlyEstimate(year, 4),
+    getCpaExportReadiness(year).catch(() => ({ isReady: false })),
   ])
 
   return (
@@ -34,7 +36,12 @@ export default async function TaxCenterPage({ searchParams }: { searchParams: { 
         <TaxYearSelect currentYear={year} />
       </div>
 
-      <TaxCenterClient year={year} mileage={mileage} quarterlyEstimates={[q1, q2, q3, q4]} />
+      <TaxCenterClient
+        year={year}
+        mileage={mileage}
+        quarterlyEstimates={[q1, q2, q3, q4]}
+        exportReady={readiness.isReady}
+      />
 
       {/* AI Tax Deduction Identifier */}
       <TaxDeductionPanel />

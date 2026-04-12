@@ -8,6 +8,14 @@ import { searchClientsByName } from '@/lib/clients/actions'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { z } from 'zod'
 
+function localDateISO(d: Date): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
 const ParsedQuoteSchema = z.object({
   client_name: z.string(),
   quote_name: z.string().optional(),
@@ -91,8 +99,9 @@ export const quoteAgentActions: AgentActionDefinition[] = [
       if (!payload.client_id)
         return { success: false, message: 'Client not found - create the client first.' }
 
-      const validUntil = new Date()
-      validUntil.setDate(validUntil.getDate() + ((payload.valid_days as number) ?? 14))
+      const _now = new Date()
+      const validDays = (payload.valid_days as number) ?? 14
+      const validUntil = new Date(_now.getFullYear(), _now.getMonth(), _now.getDate() + validDays)
 
       const depositCents =
         payload.deposit_percent && payload.total_quoted_cents
@@ -110,7 +119,7 @@ export const quoteAgentActions: AgentActionDefinition[] = [
         price_per_person_cents: payload.price_per_person_cents as number | undefined,
         guest_count_estimated: payload.guest_count_estimated as number | undefined,
         deposit_amount_cents: depositCents,
-        valid_until: validUntil.toISOString().slice(0, 10),
+        valid_until: localDateISO(validUntil),
         pricing_notes: payload.pricing_notes as string | undefined,
       })
       if ('error' in result) return { success: false, message: `Failed: ${result.error}` }
