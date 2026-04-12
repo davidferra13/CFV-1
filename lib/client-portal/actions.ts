@@ -8,6 +8,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
+import { dateToDateString } from '@/lib/utils/format'
 import {
   generateClientPortalTokenValue,
   getClientPortalTokenExpiry,
@@ -216,10 +217,13 @@ export async function getClientPortalData(token: string): Promise<ClientPortalDa
     .order('event_date', { ascending: true })
 
   const upcoming = (events ?? []).filter(
-    (e: any) => e.event_date >= now && !['completed'].includes(e.status)
+    (e: any) =>
+      dateToDateString(e.event_date as Date | string) >= now && !['completed'].includes(e.status)
   )
   const past = (events ?? [])
-    .filter((e: any) => e.status === 'completed' || e.event_date < now)
+    .filter(
+      (e: any) => e.status === 'completed' || dateToDateString(e.event_date as Date | string) < now
+    )
     .slice(-5)
 
   // Fetch active (sent) quotes for this client's events

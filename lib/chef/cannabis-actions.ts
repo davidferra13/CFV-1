@@ -8,6 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { isAdmin } from '@/lib/auth/admin'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { dateToDateString } from '@/lib/utils/format'
 
 function parseEventDateTime(eventDate: string, timeValue?: string | null) {
   const safeTime = timeValue && /^\d{2}:\d{2}/.test(timeValue) ? timeValue.slice(0, 5) : '18:00'
@@ -367,7 +368,8 @@ export async function getCannabisRSVPDashboardData(selectedEventId?: string | nu
   const today = `${_t.getFullYear()}-${String(_t.getMonth() + 1).padStart(2, '0')}-${String(_t.getDate()).padStart(2, '0')}`
   const upcoming = events.filter(
     (event) =>
-      event.event_date >= today && !['completed', 'cancelled'].includes((event.status ?? '').trim())
+      dateToDateString(event.event_date as Date | string) >= today &&
+      !['completed', 'cancelled'].includes((event.status ?? '').trim())
   )
 
   const selectedEvent =

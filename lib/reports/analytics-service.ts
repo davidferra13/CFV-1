@@ -1,6 +1,6 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import { dateToMonthString } from '@/lib/utils/format'
+import { dateToMonthString, dateToDateString } from '@/lib/utils/format'
 
 export type FinancialAnalyticsSnapshot = {
   range: {
@@ -182,12 +182,19 @@ export async function getFinancialAnalytics(
     const outstanding = summary?.outstandingCents ?? Math.max(quoted - paid, 0)
     outstandingCents += outstanding
 
-    if (event.event_date >= nowDate && !['cancelled', 'completed'].includes(event.status)) {
+    if (
+      dateToDateString(event.event_date as Date | string) >= nowDate &&
+      !['cancelled', 'completed'].includes(event.status)
+    ) {
       upcomingEventCount += 1
       upcomingQuotedCents += quoted
     }
 
-    if (event.event_date < nowDate && outstanding > 0 && !['cancelled'].includes(event.status)) {
+    if (
+      dateToDateString(event.event_date as Date | string) < nowDate &&
+      outstanding > 0 &&
+      !['cancelled'].includes(event.status)
+    ) {
       overdueInvoiceCount += 1
     }
   }

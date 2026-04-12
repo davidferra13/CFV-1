@@ -5,6 +5,7 @@
 
 import { createServerClient } from '@/lib/db/server'
 import type { DateRangeFilter, ReportPeriod } from './report-definitions'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ── Revenue Summary ────────────────────────────────────────────────────────
 
@@ -184,8 +185,11 @@ export async function generateClientReport(
       lastDate: null,
     }
     existing.bookings += 1
-    if (!existing.lastDate || event.event_date > existing.lastDate) {
-      existing.lastDate = event.event_date
+    if (
+      !existing.lastDate ||
+      dateToDateString(event.event_date as Date | string) > existing.lastDate
+    ) {
+      existing.lastDate = dateToDateString(event.event_date as Date | string)
     }
     clientMap.set(event.client_id, existing)
   }

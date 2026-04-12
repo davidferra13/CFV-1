@@ -9,6 +9,7 @@ import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { canonicalizeDishName } from './dish-index-constants'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ============================================
 // SCHEMAS
@@ -445,10 +446,16 @@ export async function addDishAppearance(input: {
       times_served: dish.times_served + 1,
     }
     if (input.event_date) {
-      if (!dish.first_served || input.event_date < dish.first_served) {
+      if (
+        !dish.first_served ||
+        input.event_date < dateToDateString(dish.first_served as Date | string)
+      ) {
         updates.first_served = input.event_date
       }
-      if (!dish.last_served || input.event_date > dish.last_served) {
+      if (
+        !dish.last_served ||
+        input.event_date > dateToDateString(dish.last_served as Date | string)
+      ) {
         updates.last_served = input.event_date
       }
     }

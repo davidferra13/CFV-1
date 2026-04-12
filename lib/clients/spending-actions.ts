@@ -3,6 +3,7 @@
 import { requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { startOfYear, endOfYear } from 'date-fns'
+import { dateToDateString } from '@/lib/utils/format'
 
 export interface SpendingEvent {
   id: string
@@ -113,7 +114,11 @@ export async function getClientSpendingSummary(): Promise<SpendingSummary> {
 
   const lifetimeSpendCents = completed.reduce((sum, e) => sum + e.total_paid_cents, 0)
   const thisYearSpendCents = completed
-    .filter((e) => e.event_date >= yearStart && e.event_date <= yearEnd)
+    .filter(
+      (e) =>
+        dateToDateString(e.event_date as Date | string) >= yearStart.slice(0, 10) &&
+        dateToDateString(e.event_date as Date | string) <= yearEnd.slice(0, 10)
+    )
     .reduce((sum, e) => sum + e.total_paid_cents, 0)
   const eventsAttended = completed.length
   const averageEventCents = eventsAttended > 0 ? Math.round(lifetimeSpendCents / eventsAttended) : 0

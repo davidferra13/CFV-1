@@ -249,7 +249,10 @@ export async function getHolidayYearOverYear(): Promise<HolidayYoYRow[]> {
       const windowEndStr = `${windowEnd.getFullYear()}-${String(windowEnd.getMonth() + 1).padStart(2, '0')}-${String(windowEnd.getDate()).padStart(2, '0')}`
 
       const matchingEvents = (events as any[]).filter((e: any) => {
-        return e.event_date >= windowStartStr && e.event_date <= windowEndStr
+        return (
+          dateToDateString(e.event_date as Date | string) >= windowStartStr &&
+          dateToDateString(e.event_date as Date | string) <= windowEndStr
+        )
       })
 
       const eventCount = matchingEvents.length

@@ -6,6 +6,7 @@
 
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
+import { dateToDateString } from '@/lib/utils/format'
 
 function _liso(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -218,7 +219,9 @@ export async function getOpenDateSuggestions(): Promise<OpenDateSlot[]> {
     .gte('event_date', todayStr)
     .lte('event_date', endDateStr)
 
-  const bookedDates = new Set((events ?? []).map((e: any) => e.event_date))
+  const bookedDates = new Set(
+    (events ?? []).map((e: any) => dateToDateString(e.event_date as Date | string))
+  )
 
   // Walk the next 90 days, collect Fri/Sat/Sun that are free
   const slots: OpenDateSlot[] = []

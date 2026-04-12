@@ -2,6 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -121,7 +122,7 @@ export async function getGeographicIntelligence(): Promise<GeographicIntelligenc
       loc.occasions.set(event.occasion, (loc.occasions.get(event.occasion) || 0) + 1)
     }
 
-    if (event.event_date >= sixMonthsAgo) loc.recentCount++
+    if (dateToDateString(event.event_date as Date | string) >= sixMonthsAgo) loc.recentCount++
     else loc.olderCount++
   }
 

@@ -2,6 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -59,7 +60,9 @@ export async function getInquiryTriage(): Promise<InquiryTriageResult | null> {
     .eq('tenant_id', tenantId)
     .in('status', ['confirmed', 'paid', 'in_progress', 'accepted'])
 
-  const confirmedDates = new Set((confirmedEvents || []).map((e: any) => e.event_date))
+  const confirmedDates = new Set(
+    (confirmedEvents || []).map((e: any) => dateToDateString(e.event_date as Date | string))
+  )
 
   // Fetch historical response times (for context)
   const { data: recentConverted } = await db

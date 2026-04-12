@@ -14,6 +14,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { dateToDateString } from '@/lib/utils/format'
 import {
   generateInsights,
   type BusinessInsights,
@@ -68,7 +69,7 @@ export async function getBusinessInsights(): Promise<BusinessInsights> {
   // Compute summary stats
   const completedEvents = events.filter((e: any) => e.status === 'completed')
   const ytdRevenueCents = completedEvents
-    .filter((e: any) => e.event_date && e.event_date >= ytdStart)
+    .filter((e: any) => e.event_date && dateToDateString(e.event_date as Date | string) >= ytdStart)
     .reduce((s: number, e: any) => s + (e.quoted_price_cents ?? 0), 0)
   const ytdExpenseCents = expenses.reduce((s: number, e: any) => s + (e.amount_cents ?? 0), 0)
   const avgEventSizeCents =

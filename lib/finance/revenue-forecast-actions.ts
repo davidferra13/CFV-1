@@ -5,6 +5,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { dateToDateString } from '@/lib/utils/format'
 import {
   STAGE_WEIGHTS,
   STAGE_LABELS,
@@ -167,7 +168,10 @@ export async function getRevenueForecast(months = 6): Promise<RevenueForecast> {
 
   // 1. Current month actual (completed events this month)
   const currentMonthCompleted = allEvents.filter(
-    (e: any) => e.status === 'completed' && e.event_date >= monthStart && e.event_date <= monthEnd
+    (e: any) =>
+      e.status === 'completed' &&
+      dateToDateString(e.event_date as Date | string) >= monthStart &&
+      dateToDateString(e.event_date as Date | string) <= monthEnd
   )
   const currentMonthActual = currentMonthCompleted.reduce(
     (sum: number, e: any) => sum + getEventRevenue(e),
@@ -179,8 +183,8 @@ export async function getRevenueForecast(months = 6): Promise<RevenueForecast> {
     (e: any) =>
       BOOKED_STATUSES.includes(e.status) &&
       e.status !== 'completed' &&
-      e.event_date >= monthStart &&
-      e.event_date <= monthEnd
+      dateToDateString(e.event_date as Date | string) >= monthStart &&
+      dateToDateString(e.event_date as Date | string) <= monthEnd
   )
   const currentMonthProjected =
     currentMonthActual +
@@ -274,7 +278,9 @@ export async function getRevenueForecast(months = 6): Promise<RevenueForecast> {
 
   // 6. Pipeline value breakdown by stage
   const futureEvents = allEvents.filter(
-    (e: any) => e.event_date >= monthStart && PIPELINE_STATUSES.includes(e.status)
+    (e: any) =>
+      dateToDateString(e.event_date as Date | string) >= monthStart &&
+      PIPELINE_STATUSES.includes(e.status)
   )
 
   const stageMap: Record<string, { count: number; totalCents: number }> = {}
@@ -286,7 +292,10 @@ export async function getRevenueForecast(months = 6): Promise<RevenueForecast> {
   }
 
   const allFutureNonCompleted = allEvents.filter(
-    (e: any) => e.event_date >= monthStart && e.status !== 'completed' && e.status !== 'cancelled'
+    (e: any) =>
+      dateToDateString(e.event_date as Date | string) >= monthStart &&
+      e.status !== 'completed' &&
+      e.status !== 'cancelled'
   )
 
   for (const e of allFutureNonCompleted) {

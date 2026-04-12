@@ -7,6 +7,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
+import { dateToDateString } from '@/lib/utils/format'
 
 // --- Types ---
 
@@ -178,11 +179,12 @@ export async function getTopClientsByLTV(limit?: number): Promise<ClientLTV[]> {
     existing.expenseCents += expenseByEvent.get(event.id) || 0
     existing.eventCount += 1
 
-    if (!existing.firstDate || event.event_date < existing.firstDate) {
-      existing.firstDate = event.event_date
+    const evtDateStr = dateToDateString(event.event_date as Date | string)
+    if (!existing.firstDate || evtDateStr < existing.firstDate) {
+      existing.firstDate = evtDateStr
     }
-    if (!existing.lastDate || event.event_date > existing.lastDate) {
-      existing.lastDate = event.event_date
+    if (!existing.lastDate || evtDateStr > existing.lastDate) {
+      existing.lastDate = evtDateStr
     }
 
     clientMap.set(event.client_id, existing)

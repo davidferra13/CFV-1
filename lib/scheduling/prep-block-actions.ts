@@ -11,6 +11,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
+import { dateToDateString } from '@/lib/utils/format'
 import { getChefPreferences } from '@/lib/chef/actions'
 import { suggestPrepBlocks, detectGaps } from './prep-block-engine'
 import type {
@@ -274,7 +275,9 @@ export async function getYearSummary(year: number): Promise<YearSummary> {
     const weekEnd = _localDateISO(weekSunday)
 
     const weekEvents = allEvents.filter(
-      (e: any) => e.event_date >= weekStart && e.event_date <= weekEnd
+      (e: any) =>
+        dateToDateString(e.event_date as Date | string) >= weekStart &&
+        dateToDateString(e.event_date as Date | string) <= weekEnd
     )
     const weekBlocks = allBlocks.filter((b) => b.block_date >= weekStart && b.block_date <= weekEnd)
 

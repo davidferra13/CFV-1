@@ -2,6 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -97,11 +98,19 @@ export async function getCashFlowForecast(days: 30 | 60 | 90 = 30): Promise<Cash
       addDays(cursor, periodDays - 1) < endDate ? addDays(cursor, periodDays - 1) : endDate
 
     const periodConfirmedIncome = confirmedEvents
-      .filter((e: any) => e.event_date >= cursor && e.event_date <= periodEnd)
+      .filter(
+        (e: any) =>
+          dateToDateString(e.event_date as Date | string) >= cursor &&
+          dateToDateString(e.event_date as Date | string) <= periodEnd
+      )
       .reduce((sum: number, e: any) => sum + ((e as any).total_amount_cents || 0), 0)
 
     const periodProjectedIncome = projectedEvents
-      .filter((e: any) => e.event_date >= cursor && e.event_date <= periodEnd)
+      .filter(
+        (e: any) =>
+          dateToDateString(e.event_date as Date | string) >= cursor &&
+          dateToDateString(e.event_date as Date | string) <= periodEnd
+      )
       .reduce((sum: number, e: any) => sum + ((e as any).total_amount_cents || 0), 0)
 
     const periodRecurring = (recurring || [])

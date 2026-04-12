@@ -242,12 +242,14 @@ export async function getDashboardEventCounts() {
   }
 
   const allEvents = events || []
-  const thisMonthEvents = allEvents.filter((e: any) => e.event_date >= monthStart)
+  const thisMonthEvents = allEvents.filter(
+    (e: any) => dateToDateString(e.event_date as Date | string) >= monthStart
+  )
   const _tn1 = new Date()
   const today = `${_tn1.getFullYear()}-${String(_tn1.getMonth() + 1).padStart(2, '0')}-${String(_tn1.getDate()).padStart(2, '0')}`
   const completedThisMonth = thisMonthEvents.filter((e: any) => e.status === 'completed').length
   const upcomingThisMonth = thisMonthEvents.filter(
-    (e: any) => e.event_date >= today && e.status !== 'completed'
+    (e: any) => dateToDateString(e.event_date as Date | string) >= today && e.status !== 'completed'
   ).length
 
   return {
@@ -305,9 +307,11 @@ export async function getMonthOverMonthRevenue() {
   }
 
   const currentIds = events
-    .filter((e: any) => e.event_date >= currentMonthStart)
+    .filter((e: any) => dateToDateString(e.event_date as Date | string) >= currentMonthStart)
     .map((e: any) => e.id)
-  const prevIds = events.filter((e: any) => e.event_date < currentMonthStart).map((e: any) => e.id)
+  const prevIds = events
+    .filter((e: any) => dateToDateString(e.event_date as Date | string) < currentMonthStart)
+    .map((e: any) => e.id)
   const allIds = [...currentIds, ...prevIds]
 
   if (allIds.length === 0) {
@@ -771,7 +775,9 @@ export async function getDashboardHoursSnapshot(): Promise<DashboardHoursSnapsho
     activityTotals.service += breakdown.service
     activityTotals.packing += breakdown.packing
 
-    const inWeek = event.event_date >= sevenDaysAgoIso && event.event_date <= todayIso
+    const inWeek =
+      dateToDateString(event.event_date as Date | string) >= sevenDaysAgoIso &&
+      dateToDateString(event.event_date as Date | string) <= todayIso
     if (inWeek) {
       weekMinutes += breakdown.total
       weekActivityTotals.shopping += breakdown.shopping

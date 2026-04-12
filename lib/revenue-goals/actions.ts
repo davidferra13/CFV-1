@@ -3,6 +3,7 @@
 import { z } from 'zod'
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
+import { dateToDateString } from '@/lib/utils/format'
 import type { RevenueGoalSnapshot } from './types'
 import {
   applyPipelineWeight,
@@ -147,7 +148,9 @@ async function getRangeSignals(
 
   return {
     eventIds,
-    bookedDates: Array.from(new Set(eventRows.map((event) => event.event_date))),
+    bookedDates: Array.from(
+      new Set(eventRows.map((event) => dateToDateString(event.event_date as Date | string)))
+    ),
     realizedCents,
     quotedCents,
   }
@@ -254,7 +257,7 @@ async function getOpenDatesThisMonth(
     .not('status', 'eq', 'cancelled')
 
   const booked = new Set<string>(
-    (events || []).map((event: { event_date: string }) => event.event_date)
+    (events || []).map((event: { event_date: Date | string }) => dateToDateString(event.event_date))
   )
   const openDates: string[] = []
 
@@ -333,7 +336,9 @@ async function getHistoricalEventDates(db: any, tenantId: string, now: Date): Pr
     .lte('event_date', isoDate(now))
     .not('status', 'eq', 'cancelled')
 
-  return ((data || []) as Array<{ event_date: string }>).map((e) => e.event_date)
+  return ((data || []) as Array<{ event_date: Date | string }>).map((e) =>
+    dateToDateString(e.event_date)
+  )
 }
 
 async function buildRevenueGoalSnapshotForTenant(

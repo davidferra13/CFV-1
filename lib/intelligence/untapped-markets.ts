@@ -2,6 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -190,7 +191,8 @@ export async function getUntappedMarkets(): Promise<UntappedMarketsResult | null
     s.revenueCents += ev.quoted_price_cents || 0
     const expense = expenseByEvent.get(ev.id) || 0
     s.profitCents += (ev.quoted_price_cents || 0) - expense
-    if (ev.event_date > s.lastDate) s.lastDate = ev.event_date
+    if (dateToDateString(ev.event_date as Date | string) > s.lastDate)
+      s.lastDate = dateToDateString(ev.event_date as Date | string)
   }
 
   const serviceStyles: ServiceStyleGap[] = Array.from(styleMap.entries())

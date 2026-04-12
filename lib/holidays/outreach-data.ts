@@ -1,6 +1,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { getUpcomingHolidays, getHolidayDate } from './upcoming'
+import { dateToDateString } from '@/lib/utils/format'
 import { type Holiday } from './constants'
 import { type HolidayClientMatch, type HolidayOutreachSuggestion } from './outreach-types'
 
@@ -113,8 +114,8 @@ function findClientMatchesForHoliday(holiday: Holiday, pastEvents: any[]): Holid
     } else {
       const existing = clientMap.get(clientId)!
       existing.totalEvents += 1
-      if (event.event_date > existing.lastEventDate) {
-        existing.lastEventDate = event.event_date
+      if (dateToDateString(event.event_date as Date | string) > existing.lastEventDate) {
+        existing.lastEventDate = dateToDateString(event.event_date as Date | string)
       }
     }
   }

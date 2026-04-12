@@ -16,6 +16,7 @@ import {
   type NetworkFeatureKey,
 } from '@/lib/network/features'
 import { optimizeProfilePhoto } from '@/lib/images/optimize'
+import { dateToDateString } from '@/lib/utils/format'
 
 const CHEF_PROFILE_IMAGES_BUCKET = 'chef-profile-images'
 const MAX_PROFILE_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
@@ -814,12 +815,14 @@ export async function getNetworkInsights(): Promise<NetworkInsights> {
     .filter((client) => !sharedClientIds.has(client.id))
     .map((client) => client.full_name)
 
-  const dinnerDatesAll = new Set(events.map((event) => event.event_date))
+  const dinnerDatesAll = new Set(
+    events.map((event) => dateToDateString(event.event_date as Date | string))
+  )
   let completedCount = 0
   let upcomingCount = 0
   for (const event of events) {
     if (event.status === 'completed') completedCount += 1
-    else if (event.event_date >= today) upcomingCount += 1
+    else if (dateToDateString(event.event_date as Date | string) >= today) upcomingCount += 1
   }
 
   return {

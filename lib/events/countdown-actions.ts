@@ -77,7 +77,7 @@ export async function getEventCountdown(eventId: string): Promise<EventCountdown
   return {
     eventId: event.id,
     eventName: event.occasion || 'Untitled Event',
-    eventDate: event.event_date,
+    eventDate: dateToDateString(event.event_date as Date | string),
     status: event.status,
     countdownEnabled: event.countdown_enabled ?? true,
     daysUntil: Math.max(daysUntil, 0),
@@ -168,7 +168,7 @@ export async function getUpcomingCountdowns(): Promise<EventCountdown[]> {
     return {
       eventId: event.id,
       eventName: event.occasion || 'Untitled Event',
-      eventDate: event.event_date,
+      eventDate: dateToDateString(event.event_date as Date | string),
       status: event.status,
       countdownEnabled: event.countdown_enabled ?? true,
       daysUntil: Math.max(Math.floor(diffMs / (1000 * 60 * 60 * 24)), 0),

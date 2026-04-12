@@ -6,6 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { dateToDateString } from '@/lib/utils/format'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -98,8 +99,8 @@ async function applyBehavioralFilters(
     const agg = clientAgg[e.client_id]
     agg.eventCount++
     agg.totalSpendCents += e.quoted_price_cents ?? 0
-    if (!agg.lastEventDate || e.event_date > agg.lastEventDate) {
-      agg.lastEventDate = e.event_date
+    if (!agg.lastEventDate || dateToDateString(e.event_date as Date | string) > agg.lastEventDate) {
+      agg.lastEventDate = dateToDateString(e.event_date as Date | string)
     }
   }
 

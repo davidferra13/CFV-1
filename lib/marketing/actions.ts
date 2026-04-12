@@ -3,6 +3,7 @@
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
+import { dateToDateString } from '@/lib/utils/format'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { sendEmail } from '@/lib/email/send'
@@ -128,8 +129,11 @@ async function resolveAudience(
 
       const clientIdToDate: Record<string, string> = {}
       for (const e of events ?? []) {
-        if (!clientIdToDate[e.client_id] || e.event_date > clientIdToDate[e.client_id]) {
-          clientIdToDate[e.client_id] = e.event_date
+        if (
+          !clientIdToDate[e.client_id] ||
+          dateToDateString(e.event_date as Date | string) > clientIdToDate[e.client_id]
+        ) {
+          clientIdToDate[e.client_id] = dateToDateString(e.event_date as Date | string)
         }
       }
       if (Object.keys(clientIdToDate).length === 0) return []

@@ -17,6 +17,7 @@ import type {
 } from './types'
 import { generateTimeline } from './timeline'
 import { DEFAULT_PREFERENCES } from './types'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ============================================
 // CONSTANTS
@@ -260,7 +261,7 @@ export function suggestPrepBlocks(
   const prepHours = p.default_prep_hours
   const shoppingMin = p.default_shopping_minutes
   const shopDayBefore = p.shop_day_before
-  const eventDate = event.event_date
+  const eventDate = dateToDateString(event.event_date as Date | string)
   const dayBefore = addDays(eventDate, -1)
   const twoDaysBefore = addDays(eventDate, -2)
   const dayAfter = addDays(eventDate, 1)
@@ -426,20 +427,20 @@ export function detectGaps(
 
   for (const event of events) {
     if (terminalStatuses.has(event.status)) continue
-    if (event.event_date < todayStr) continue
+    if (dateToDateString(event.event_date as Date | string) < todayStr) continue
 
     const requiredTypes = getRequiredBlockTypes(event)
     const missingTypes = requiredTypes.filter((type) => !isCovered(event.id, type, existingBlocks))
 
     if (missingTypes.length === 0) continue
 
-    const days = daysFromNow(event.event_date)
+    const days = daysFromNow(dateToDateString(event.event_date as Date | string))
     const severity: SchedulingGap['severity'] =
       days < 2 ? 'critical' : days < 7 ? 'warning' : 'info'
 
     gaps.push({
       event_id: event.id,
-      event_date: event.event_date,
+      event_date: dateToDateString(event.event_date as Date | string),
       event_occasion: event.occasion,
       client_name: event.client?.full_name ?? 'Unknown Client',
       days_until_event: days,

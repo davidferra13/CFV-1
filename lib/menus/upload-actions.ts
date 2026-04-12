@@ -10,6 +10,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { extractTextFromFile } from './extract-text'
 import { parseMenuText } from './parse-menu-text'
+import { dateToDateString } from '@/lib/utils/format'
 import type { ParsedDish } from './parse-menu-text'
 import { canonicalizeDishName } from './dish-index-constants'
 
@@ -297,7 +298,10 @@ export async function approveAndIndexDishes(input: z.infer<typeof ApproveDishesB
       if (job.event_date) {
         updates.last_served = job.event_date
         // Update first_served if this event is earlier than the current earliest
-        if (!existing.first_served || job.event_date < existing.first_served) {
+        if (
+          !existing.first_served ||
+          job.event_date < dateToDateString(existing.first_served as Date | string)
+        ) {
           updates.first_served = job.event_date
         }
       }

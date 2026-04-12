@@ -208,8 +208,11 @@ export async function getTopClientsByRevenue(limit = 10): Promise<TopClientByRev
     if (existing) {
       existing.totalRevenueCents += revenue
       existing.totalEventCount += 1
-      if (!existing.lastEventDate || e.event_date > existing.lastEventDate) {
-        existing.lastEventDate = e.event_date
+      if (
+        !existing.lastEventDate ||
+        dateToDateString(e.event_date as Date | string) > existing.lastEventDate
+      ) {
+        existing.lastEventDate = dateToDateString(e.event_date as Date | string)
       }
     } else {
       clientMap.set(clientId, {
