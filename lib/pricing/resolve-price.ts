@@ -187,7 +187,7 @@ function tierForReceiptSource(
   ) {
     return 'zip_local'
   }
-  // Otherwise it is a scraped price with no geographic guarantee — fall back
+  // Otherwise it is a scraped price with no geographic guarantee. Fall back
   // to regional rather than claiming locality we cannot prove.
   return 'regional'
 }

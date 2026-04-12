@@ -95,7 +95,7 @@ function sourceLabel(source: PriceSource): string {
 
 /**
  * Honest human-readable label for the resolution tier. This is what the
- * chef actually sees next to the price — it tells the truth about where the
+ * chef actually sees next to the price. It tells the truth about where the
  * number came from so the UI cannot silently claim local data it does not
  * have.
  */

@@ -58,7 +58,7 @@ export interface PriceLookupResult {
   match_confidence: number
   /**
    * Honest geographic/authority tier for this price. Added 2026-04-10.
-   * Callers must render this — do not silently claim the result is local
+   * Callers must render this. Do not silently claim the result is local
    * when it is a national median.
    */
   resolution_tier: LookupResolutionTier
@@ -1091,7 +1091,7 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
   // --- Match ingredient ---
   const match = await safely('matchIngredient', () => matchIngredient(ingredient))
   // Suggestion: if match came via trigram, the matched name may differ from
-  // the query — surface it as a "did you mean" hint for the caller.
+  // the query; surface it as a "did you mean" hint for the caller.
   const suggestion =
     match &&
     match.method === 'trigram' &&

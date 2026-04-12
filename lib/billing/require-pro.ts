@@ -8,7 +8,7 @@
 //
 // Why it still exists: 73 call sites across the codebase import it.
 // Removing it would break compilation. The name is misleading but the
-// behavior is plain auth — identical to calling requireChef() directly.
+// behavior is plain auth, identical to calling requireChef() directly.
 //
 // If you are reading this because you saw requirePro() in a server action
 // and assumed the feature is Pro-gated: IT IS NOT. It is free for everyone.
