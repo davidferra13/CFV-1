@@ -2,7 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import { dateToMonthString } from '@/lib/utils/format'
+import { dateToMonthString, dateToDateString } from '@/lib/utils/format'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -106,7 +106,9 @@ export async function getComplianceStats(
   for (const ev of events ?? []) {
     if (ev.service_started_at && ev.serve_time) {
       // serve_time is a time string HH:MM; combine with event_date for comparison
-      const serveDateTime = new Date(`${ev.event_date}T${ev.serve_time}`)
+      const serveDateTime = new Date(
+        `${dateToDateString(ev.event_date as Date | string)}T${ev.serve_time}`
+      )
       const actualStart = new Date(ev.service_started_at)
       if (actualStart <= serveDateTime) onTimeCount++
     }

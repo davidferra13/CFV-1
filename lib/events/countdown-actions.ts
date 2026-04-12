@@ -9,6 +9,7 @@ import { getCurrentUser } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { dateToDateString } from '@/lib/utils/format'
 
 // --- Types ---
 
@@ -65,7 +66,9 @@ export async function getEventCountdown(eventId: string): Promise<EventCountdown
   // Calculate time until event
   const now = new Date()
   const serveTime = event.serve_time || '18:00'
-  const eventDateTime = new Date(`${event.event_date}T${serveTime}:00`)
+  const eventDateTime = new Date(
+    `${dateToDateString(event.event_date as Date | string)}T${serveTime}:00`
+  )
 
   const diffMs = eventDateTime.getTime() - now.getTime()
   const daysUntil = Math.floor(diffMs / (1000 * 60 * 60 * 24))
@@ -157,7 +160,9 @@ export async function getUpcomingCountdowns(): Promise<EventCountdown[]> {
 
   return (events || []).map((event: any) => {
     const serveTime = event.serve_time || '18:00'
-    const eventDateTime = new Date(`${event.event_date}T${serveTime}:00`)
+    const eventDateTime = new Date(
+      `${dateToDateString(event.event_date as Date | string)}T${serveTime}:00`
+    )
     const diffMs = eventDateTime.getTime() - now.getTime()
 
     return {
