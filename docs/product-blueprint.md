@@ -228,9 +228,9 @@ _Last cleared: 2026-04-06. Completed items moved to queue or exit criteria._
 | ~~P1~~   | ~~9 built specs Playwright verification~~     | **DONE** (April 11)                                  |
 | ~~P1~~   | ~~Interface philosophy violations (3 found)~~ | **DONE** (April 5)                                   |
 | ~~P1~~   | ~~CPA-ready tax export verification~~         | **DONE** (April 11 - year-end page honest, no crash) |
-| P1       | Bulk menu import                              | Spec ready                                           |
+| ~~P1~~   | ~~Bulk menu import~~                          | **DONE** (already built at /menus/upload)            |
+| ~~P2~~   | ~~Dead-zone gating and surface honesty~~      | **DONE** (claims/new redirects, finance gating live) |
 | P2       | Wave-1 operator survey launch                 | Surveys designed                                     |
-| P2       | Dead-zone gating and surface honesty          | `p1-dead-zone-gating-and-surface-honesty.md`         |
 | P2       | Form auto-save on critical paths              | No spec yet                                          |
 
 ---
