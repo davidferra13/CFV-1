@@ -142,16 +142,39 @@ export async function assignInvoiceNumber(eventId: string) {
 
   if (!event || event.invoice_number) return // already set, nothing to do
 
-  const invoiceNumber = await generateInvoiceNumber(event.tenant_id)
+  // Retry up to 5 times on collision (two payments at exact same moment → same count-based number).
+  // The update uses a conditional guard (.is('invoice_number', null)) so only one concurrent
+  // writer wins. The loser retries with a fresh count that accounts for the winner's write.
+  const MAX_ATTEMPTS = 5
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    const invoiceNumber = await generateInvoiceNumber(event.tenant_id)
 
-  await db
-    .from('events')
-    .update({
-      invoice_number: invoiceNumber,
-      invoice_issued_at: new Date().toISOString(),
-    })
-    .eq('id', eventId)
-    .eq('tenant_id', event.tenant_id)
+    const { count: updated } = await db
+      .from('events')
+      .update({
+        invoice_number: invoiceNumber,
+        invoice_issued_at: new Date().toISOString(),
+      })
+      .eq('id', eventId)
+      .eq('tenant_id', event.tenant_id)
+      .is('invoice_number', null) // Guard: only write if still unassigned
+      .select('id', { count: 'exact', head: true })
+
+    if ((updated ?? 0) > 0) {
+      // Successfully claimed this number
+      break
+    }
+
+    // Either someone else assigned a number first (check) or a collision: re-fetch and abort if now set
+    const { data: recheckEvent } = await db
+      .from('events')
+      .select('invoice_number')
+      .eq('id', eventId)
+      .single()
+
+    if (recheckEvent?.invoice_number) return // Another writer succeeded, nothing to do
+    // Otherwise retry with a fresh generated number
+  }
 
   revalidatePath(`/events/${eventId}`)
   revalidatePath(`/events/${eventId}/invoice`)
