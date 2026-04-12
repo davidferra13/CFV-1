@@ -1183,7 +1183,7 @@ export async function applyHotSwapToScheduledPost(input: z.infer<typeof HotSwapS
       campaign: sourceRow.campaign,
       seasonal_flag: sourceRow.seasonal_flag,
       notes:
-        `${sourceRow.notes ?? ''}\nApplied from hot-swap slot on ${new Date().toISOString().slice(0, 10)}.`.trim(),
+        `${sourceRow.notes ?? ''}\nApplied from hot-swap slot on ${((_hd) => `${_hd.getFullYear()}-${String(_hd.getMonth() + 1).padStart(2, '0')}-${String(_hd.getDate()).padStart(2, '0')}`)(new Date())}.`.trim(),
     })
     .eq('id', validated.scheduled_post_id)
     .eq('tenant_id', user.tenantId!)
@@ -1200,7 +1200,7 @@ export async function applyHotSwapToScheduledPost(input: z.infer<typeof HotSwapS
       hot_swap_ready: false,
       updated_by: user.id,
       notes:
-        `${sourceRow.notes ?? ''}\nUsed as hot-swap source on ${new Date().toISOString().slice(0, 10)}.`.trim(),
+        `${sourceRow.notes ?? ''}\nUsed as hot-swap source on ${((_hd) => `${_hd.getFullYear()}-${String(_hd.getMonth() + 1).padStart(2, '0')}-${String(_hd.getDate()).padStart(2, '0')}`)(new Date())}.`.trim(),
     })
     .eq('id', validated.hot_swap_post_id)
     .eq('tenant_id', user.tenantId!)
@@ -1514,8 +1514,8 @@ export async function exportSocialPlatformWindowCsv(
 
     return {
       post_code: post.post_code,
-      schedule_date: scheduleDate.toISOString().slice(0, 10),
-      schedule_time: scheduleDate.toISOString().slice(11, 16),
+      schedule_date: `${scheduleDate.getFullYear()}-${String(scheduleDate.getMonth() + 1).padStart(2, '0')}-${String(scheduleDate.getDate()).padStart(2, '0')}`,
+      schedule_time: `${String(scheduleDate.getHours()).padStart(2, '0')}:${String(scheduleDate.getMinutes()).padStart(2, '0')}`,
       title: post.title,
       caption: platformCaption,
       media_url: post.media_url ?? '',
@@ -1529,7 +1529,7 @@ export async function exportSocialPlatformWindowCsv(
   })
 
   const csv = toCsv(csvRows)
-  const dateToken = now.toISOString().slice(0, 10)
+  const dateToken = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
   const filename = `social-${validated.platform}-window-${dateToken}.csv`
 
   return {

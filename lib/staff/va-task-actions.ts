@@ -261,7 +261,8 @@ export async function getVaTaskStats(): Promise<{
   }
 
   const tasks = data ?? []
-  const now = new Date().toISOString().split('T')[0]
+  const _vat = new Date()
+  const now = `${_vat.getFullYear()}-${String(_vat.getMonth() + 1).padStart(2, '0')}-${String(_vat.getDate()).padStart(2, '0')}`
 
   const stats = {
     pending: 0,

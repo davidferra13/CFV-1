@@ -31,9 +31,9 @@ export async function getShiftNotes(date: string): Promise<{
   const db: any = createServerClient()
 
   // Yesterday's date
-  const yesterday = new Date(date + 'T00:00:00')
-  yesterday.setDate(yesterday.getDate() - 1)
-  const yesterdayStr = yesterday.toISOString().split('T')[0]
+  const [_shy, _shm, _shd] = (date as string).split('-').map(Number)
+  const yesterday = new Date(_shy, _shm - 1, _shd - 1)
+  const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`
 
   // Fetch in parallel: today's notes, pinned notes, yesterday's closing notes
   const [todayResult, pinnedResult, closingResult] = await Promise.all([
@@ -96,7 +96,12 @@ export async function createShiftNote(input: {
       author_id: user.entityId,
       author_name: chefData?.business_name ?? 'Chef',
       shift: input.shift,
-      date: input.date ?? new Date().toISOString().split('T')[0],
+      date:
+        input.date ??
+        ((_sd) =>
+          `${_sd.getFullYear()}-${String(_sd.getMonth() + 1).padStart(2, '0')}-${String(_sd.getDate()).padStart(2, '0')}`)(
+          new Date()
+        ),
       content: input.content.trim(),
       pinned: false,
     })

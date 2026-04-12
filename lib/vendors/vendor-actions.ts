@@ -177,7 +177,12 @@ export async function addPriceEntry(vendorId: string, input: PriceEntryInput) {
       item_name: data.item_name,
       price_cents: data.price_cents,
       unit: data.unit,
-      recorded_at: data.recorded_at || new Date().toISOString().split('T')[0],
+      recorded_at:
+        data.recorded_at ||
+        ((_vr) =>
+          `${_vr.getFullYear()}-${String(_vr.getMonth() + 1).padStart(2, '0')}-${String(_vr.getDate()).padStart(2, '0')}`)(
+          new Date()
+        ),
       notes: data.notes,
     })
     .select()

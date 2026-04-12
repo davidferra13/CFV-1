@@ -85,11 +85,12 @@ export async function getTravelPlan(eventId: string): Promise<TravelPlan> {
 
   let nearbyEvents: NearbyEvent[] = []
   if (primaryEvent?.event_date) {
-    const eventDate = new Date(primaryEvent.event_date)
-    const lower = new Date(eventDate)
-    lower.setDate(lower.getDate() - 7)
-    const upper = new Date(eventDate)
-    upper.setDate(upper.getDate() + 7)
+    const [_evy, _evm, _evd] = (primaryEvent.event_date as string).split('-').map(Number)
+    const eventDate = new Date(_evy, _evm - 1, _evd)
+    const lower = new Date(_evy, _evm - 1, _evd - 7)
+    const upper = new Date(_evy, _evm - 1, _evd + 7)
+    const _liso = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
     const { data: nearby } = await db
       .from('events')
@@ -102,8 +103,8 @@ export async function getTravelPlan(eventId: string): Promise<TravelPlan> {
       .eq('tenant_id', user.tenantId!)
       .neq('id', eventId)
       .not('status', 'in', '("cancelled","completed")')
-      .gte('event_date', lower.toISOString().split('T')[0])
-      .lte('event_date', upper.toISOString().split('T')[0])
+      .gte('event_date', _liso(lower))
+      .lte('event_date', _liso(upper))
       .order('event_date', { ascending: true })
 
     nearbyEvents = (nearby ?? []).map((e: any) => {

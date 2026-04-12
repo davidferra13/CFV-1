@@ -71,7 +71,12 @@ export async function logChefFeedback(input: LogFeedbackInput) {
       rating: validated.rating ?? null,
       feedback_text: validated.feedback_text,
       source_url: validated.source_url || null,
-      feedback_date: validated.feedback_date || new Date().toISOString().split('T')[0],
+      feedback_date:
+        validated.feedback_date ||
+        ((_fd) =>
+          `${_fd.getFullYear()}-${String(_fd.getMonth() + 1).padStart(2, '0')}-${String(_fd.getDate()).padStart(2, '0')}`)(
+          new Date()
+        ),
       logged_by: user.id,
       public_display: validated.public_display ?? false,
     })

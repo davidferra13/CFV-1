@@ -93,9 +93,9 @@ export async function getDOPTaskDigest(): Promise<DOPTaskDigest> {
   const db: any = createServerClient()
 
   // Events from 7 days ago to any future date, excluding cancelled
-  const sevenDaysAgo = new Date()
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-  const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0]
+  const _sda = new Date()
+  const sevenDaysAgo = new Date(_sda.getFullYear(), _sda.getMonth(), _sda.getDate() - 7)
+  const sevenDaysAgoStr = `${sevenDaysAgo.getFullYear()}-${String(sevenDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(sevenDaysAgo.getDate()).padStart(2, '0')}`
 
   const { data: events } = await db
     .from('events')
@@ -142,7 +142,8 @@ export async function getDOPTaskDigest(): Promise<DOPTaskDigest> {
     completionMap.get(row.event_id)!.add(row.task_key)
   }
 
-  const todayStr = new Date().toISOString().split('T')[0]
+  const _tds = new Date()
+  const todayStr = `${_tds.getFullYear()}-${String(_tds.getMonth() + 1).padStart(2, '0')}-${String(_tds.getDate()).padStart(2, '0')}`
   const allTasks: DigestTask[] = []
 
   for (const event of events) {

@@ -29,23 +29,21 @@ export async function getWellbeingSignals(): Promise<WellbeingResult> {
   const db: any = createServerClient()
 
   const now = new Date()
-  const todayStr = now.toISOString().slice(0, 10)
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
-  const sevenDaysAgo = new Date(now)
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-
-  const thirtyDaysAgo = new Date(now)
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-
-  const ninetyDaysAgo = new Date(now)
-  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
+  const sevenDaysAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7)
+  const thirtyDaysAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30)
+  const ninetyDaysAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 90)
 
   // ── events this week ──────────────────────────────────────────────────────
   const { count: weekCount } = await db
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
-    .gte('event_date', sevenDaysAgo.toISOString())
+    .gte(
+      'event_date',
+      `${sevenDaysAgo.getFullYear()}-${String(sevenDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(sevenDaysAgo.getDate()).padStart(2, '0')}`
+    )
     .not('status', 'in', '("cancelled","draft")')
 
   // ── events this month ─────────────────────────────────────────────────────
@@ -53,7 +51,10 @@ export async function getWellbeingSignals(): Promise<WellbeingResult> {
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
-    .gte('event_date', thirtyDaysAgo.toISOString())
+    .gte(
+      'event_date',
+      `${thirtyDaysAgo.getFullYear()}-${String(thirtyDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(thirtyDaysAgo.getDate()).padStart(2, '0')}`
+    )
     .not('status', 'in', '("cancelled","draft")')
 
   // ── days since last day off ───────────────────────────────────────────────
@@ -81,7 +82,10 @@ export async function getWellbeingSignals(): Promise<WellbeingResult> {
     .from('chef_growth_checkins')
     .select('satisfaction_score')
     .eq('tenant_id', tenantId)
-    .gte('checkin_date', ninetyDaysAgo.toISOString().slice(0, 10))
+    .gte(
+      'checkin_date',
+      `${ninetyDaysAgo.getFullYear()}-${String(ninetyDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(ninetyDaysAgo.getDate()).padStart(2, '0')}`
+    )
     .not('satisfaction_score', 'is', null)
 
   let avgSatisfactionLast90d: number | null = null

@@ -391,7 +391,8 @@ export async function shiftCheckOut(input: ShiftCheckOutInput) {
   const db: any = createServerClient()
 
   // Build snapshot of current clipboard state
-  const today = new Date().toISOString().split('T')[0]
+  const _cba = new Date()
+  const today = `${_cba.getFullYear()}-${String(_cba.getMonth() + 1).padStart(2, '0')}-${String(_cba.getDate()).padStart(2, '0')}`
   const { data: clipboardState } = await db
     .from('clipboard_entries')
     .select('*')
@@ -481,7 +482,8 @@ export async function getAll86dItems() {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const today = new Date().toISOString().split('T')[0]
+  const _cba = new Date()
+  const today = `${_cba.getFullYear()}-${String(_cba.getMonth() + 1).padStart(2, '0')}-${String(_cba.getDate()).padStart(2, '0')}`
 
   const { data, error } = await db
     .from('clipboard_entries')

@@ -321,8 +321,10 @@ export async function getMealPrepStats(): Promise<MealPrepStats> {
   const chef = await requireChef()
   const db = await createServerClient()
 
-  const today = new Date().toISOString().split('T')[0]
-  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const _mpn = new Date()
+  const today = `${_mpn.getFullYear()}-${String(_mpn.getMonth() + 1).padStart(2, '0')}-${String(_mpn.getDate()).padStart(2, '0')}`
+  const _mpw = new Date(_mpn.getFullYear(), _mpn.getMonth(), _mpn.getDate() - 7)
+  const weekAgo = `${_mpw.getFullYear()}-${String(_mpw.getMonth() + 1).padStart(2, '0')}-${String(_mpw.getDate()).padStart(2, '0')}`
 
   // Orders today
   const { count: ordersToday, error: e1 } = await db

@@ -29,7 +29,8 @@ export async function getStaffActivityBoard(): Promise<StaffActivity[]> {
   const user = await requireChef()
   const db: any = createServerClient()
   const tenantId = user.tenantId!
-  const today = new Date().toISOString().split('T')[0]
+  const _tab = new Date()
+  const today = `${_tab.getFullYear()}-${String(_tab.getMonth() + 1).padStart(2, '0')}-${String(_tab.getDate()).padStart(2, '0')}`
   const now = Date.now()
 
   // Fetch all active staff

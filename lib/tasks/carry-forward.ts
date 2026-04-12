@@ -54,7 +54,8 @@ export async function getCarriedOverTasks(today: string): Promise<CarriedTask[]>
 export async function getOverdueTaskCount(): Promise<number> {
   const user = await requireChef()
   const db: any = createServerClient()
-  const today = new Date().toISOString().split('T')[0]
+  const _tcf = new Date()
+  const today = `${_tcf.getFullYear()}-${String(_tcf.getMonth() + 1).padStart(2, '0')}-${String(_tcf.getDate()).padStart(2, '0')}`
 
   const { count, error } = await db
     .from('tasks')

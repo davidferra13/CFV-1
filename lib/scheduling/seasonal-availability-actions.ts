@@ -80,7 +80,8 @@ export async function getSeasonalPeriods(): Promise<SeasonalPeriod[]> {
 export async function getActiveSeasonalPeriod(): Promise<SeasonalPeriod | null> {
   const user = await requireChef()
   const db: any = createServerClient()
-  const today = new Date().toISOString().split('T')[0]
+  const _td = new Date()
+  const today = `${_td.getFullYear()}-${String(_td.getMonth() + 1).padStart(2, '0')}-${String(_td.getDate()).padStart(2, '0')}`
 
   const { data, error } = await db
     .from('seasonal_availability_periods')
@@ -196,15 +197,14 @@ export async function checkBookingConflict(date: string): Promise<{
   }
 
   // Check events this week against max_events_per_week
-  const targetDate = new Date(date)
+  const [_tdy, _tdm, _tdd] = (date as string).split('-').map(Number)
+  const targetDate = new Date(_tdy, _tdm - 1, _tdd)
   const dayOfWeek = targetDate.getDay()
-  const weekStart = new Date(targetDate)
-  weekStart.setDate(targetDate.getDate() - dayOfWeek)
-  const weekEnd = new Date(weekStart)
-  weekEnd.setDate(weekStart.getDate() + 6)
+  const weekStart = new Date(_tdy, _tdm - 1, _tdd - dayOfWeek)
+  const weekEnd = new Date(_tdy, _tdm - 1, _tdd - dayOfWeek + 6)
 
-  const weekStartStr = weekStart.toISOString().split('T')[0]
-  const weekEndStr = weekEnd.toISOString().split('T')[0]
+  const weekStartStr = `${weekStart.getFullYear()}-${String(weekStart.getMonth() + 1).padStart(2, '0')}-${String(weekStart.getDate()).padStart(2, '0')}`
+  const weekEndStr = `${weekEnd.getFullYear()}-${String(weekEnd.getMonth() + 1).padStart(2, '0')}-${String(weekEnd.getDate()).padStart(2, '0')}`
 
   const { count, error: countError } = await db
     .from('events')

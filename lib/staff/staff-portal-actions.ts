@@ -169,7 +169,9 @@ export async function getMyTasksGroupedByDate(): Promise<Record<string, StaffTas
   const user = await requireStaff()
 
   // Get upcoming tasks (today and future, plus recently overdue)
-  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const _waN = new Date()
+  const _waD = new Date(_waN.getFullYear(), _waN.getMonth(), _waN.getDate() - 7)
+  const weekAgo = `${_waD.getFullYear()}-${String(_waD.getMonth() + 1).padStart(2, '0')}-${String(_waD.getDate()).padStart(2, '0')}`
 
   try {
     const rows = await pgClient`
@@ -342,7 +344,8 @@ export async function getMyUpcomingAssignments(): Promise<StaffAssignment[]> {
   const user = await requireStaff()
   const db: any = createServerClient({ admin: true })
 
-  const today = new Date().toISOString().split('T')[0]
+  const _spa = new Date()
+  const today = `${_spa.getFullYear()}-${String(_spa.getMonth() + 1).padStart(2, '0')}-${String(_spa.getDate()).padStart(2, '0')}`
 
   const { data, error } = await db
     .from('event_staff_assignments')

@@ -70,7 +70,8 @@ export type DailyOpsData = {
 export async function getDailyOpsData(): Promise<DailyOpsData> {
   const user = await requireChef()
   const db: any = createServerClient()
-  const today = new Date().toISOString().split('T')[0]
+  const _doa = new Date()
+  const today = `${_doa.getFullYear()}-${String(_doa.getMonth() + 1).padStart(2, '0')}-${String(_doa.getDate()).padStart(2, '0')}`
   const chefId = user.tenantId!
 
   const [
@@ -274,7 +275,7 @@ export async function getDailyOpsData(): Promise<DailyOpsData> {
       const madeDate = new Date(entry.made_at)
       const expiresDate = new Date(madeDate)
       expiresDate.setDate(expiresDate.getDate() + shelfLifeDays)
-      const expiresDateStr = expiresDate.toISOString().split('T')[0]
+      const expiresDateStr = `${expiresDate.getFullYear()}-${String(expiresDate.getMonth() + 1).padStart(2, '0')}-${String(expiresDate.getDate()).padStart(2, '0')}`
       if (expiresDateStr <= today) {
         alerts.push({
           type: 'expiring',

@@ -621,13 +621,11 @@ export async function getPayrollReportForPeriod(
 
 export async function getDefaultStaffingWindow() {
   const now = new Date()
-  const start = new Date(now)
-  start.setDate(start.getDate() - 7)
-  const end = new Date(now)
-  end.setDate(end.getDate() + 14)
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7)
+  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 14)
 
   return {
-    startDate: start.toISOString().split('T')[0],
-    endDate: end.toISOString().split('T')[0],
+    startDate: `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`,
+    endDate: `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}`,
   }
 }

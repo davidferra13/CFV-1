@@ -71,7 +71,12 @@ export async function addSourcingEntry(input: SourcingEntryInput) {
   const { error } = await (db as any).from('sourcing_entries').insert({
     chef_id: chef.tenantId!,
     event_id: input.event_id || null,
-    entry_date: input.entry_date || new Date().toISOString().split('T')[0],
+    entry_date:
+      input.entry_date ||
+      ((_se) =>
+        `${_se.getFullYear()}-${String(_se.getMonth() + 1).padStart(2, '0')}-${String(_se.getDate()).padStart(2, '0')}`)(
+        new Date()
+      ),
     ingredient_name: input.ingredient_name,
     source_type: input.source_type,
     source_name: input.source_name || null,
@@ -211,9 +216,9 @@ export async function getMonthlyTrend(): Promise<
   const db: any = createServerClient()
 
   // Get last 12 months of entries
-  const twelveMonthsAgo = new Date()
-  twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12)
-  const dateFrom = twelveMonthsAgo.toISOString().split('T')[0]
+  const _tma = new Date()
+  const twelveMonthsAgo = new Date(_tma.getFullYear() - 1, _tma.getMonth(), _tma.getDate())
+  const dateFrom = `${twelveMonthsAgo.getFullYear()}-${String(twelveMonthsAgo.getMonth() + 1).padStart(2, '0')}-${String(twelveMonthsAgo.getDate()).padStart(2, '0')}`
 
   const { data, error } = await (db as any)
     .from('sourcing_entries')
