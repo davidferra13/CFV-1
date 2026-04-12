@@ -27,18 +27,8 @@ export function ChangePasswordForm() {
     setSuccess(false)
 
     // Client-side validation
-    if (newPassword.length < 8) {
-      setError('New password must be at least 8 characters')
-      return
-    }
-
-    if (!/[A-Z]/.test(newPassword)) {
-      setError('Password must include at least one uppercase letter')
-      return
-    }
-
-    if (!/[0-9]/.test(newPassword)) {
-      setError('Password must include at least one number')
+    if (newPassword.length < 12) {
+      setError('New password must be at least 12 characters')
       return
     }
 
@@ -54,7 +44,11 @@ export function ChangePasswordForm() {
         setCurrentPassword('')
         setNewPassword('')
         setConfirmPassword('')
-        router.refresh()
+        // Server signs out the session after password change for security.
+        // Redirect to sign-in so the user logs in with their new password.
+        setTimeout(() => {
+          router.push('/auth/signin')
+        }, 1500)
       } catch (err) {
         const error = err as Error
         setError(error.message)
@@ -71,7 +65,12 @@ export function ChangePasswordForm() {
 
         <CardContent className="space-y-4">
           {error && <Alert variant="error">{error}</Alert>}
-          {success && <Alert variant="success">Password updated successfully.</Alert>}
+          {success && (
+            <Alert variant="success">
+              Password updated. You will be signed out momentarily - please sign in with your new
+              password.
+            </Alert>
+          )}
 
           <Input
             type="password"
@@ -88,7 +87,7 @@ export function ChangePasswordForm() {
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             required
-            helperText="Minimum 8 characters, 1 uppercase, 1 number"
+            helperText="Minimum 12 characters. Passphrases welcome."
             autoComplete="new-password"
           />
 

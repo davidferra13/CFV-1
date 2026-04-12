@@ -37,8 +37,8 @@ function ResetPasswordForm() {
       return
     }
 
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters')
+    if (password.length < 12) {
+      setError('Password must be at least 12 characters')
       return
     }
 
@@ -111,7 +111,7 @@ function ResetPasswordForm() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={!recoveryToken}
-                helperText="Minimum 8 characters"
+                helperText="Minimum 12 characters. Passphrases welcome."
                 autoComplete="new-password"
                 autoFocus
               />

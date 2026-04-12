@@ -29,13 +29,11 @@ import { recordPlatformEvent } from '@/lib/platform-observability/events'
 import { extractRequestMetadata } from '@/lib/platform-observability/context'
 import { appendAccountSecurityControlEvent } from './account-access'
 import { requireAccessSessionSubject } from './access-session'
+import { passwordPolicySchema } from './password-policy'
 
 const ChefSignupSchema = z.object({
   email: z.string().email('Valid email required'),
-  password: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .max(128, 'Password must be 128 characters or fewer'),
+  password: passwordPolicySchema,
   business_name: z.string().optional(),
   phone: z.string().optional(),
   signup_ref: z.string().optional(),
@@ -43,10 +41,7 @@ const ChefSignupSchema = z.object({
 
 const ClientSignupSchema = z.object({
   email: z.string().email('Valid email required'),
-  password: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .max(128, 'Password must be 128 characters or fewer'),
+  password: passwordPolicySchema,
   full_name: z.string().min(1, 'Full name required'),
   phone: z.string().optional(),
   invitation_token: z.string().optional(),
@@ -63,10 +58,7 @@ const PasswordResetRequestSchema = z.object({
 })
 
 const UpdatePasswordSchema = z.object({
-  password: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .max(128, 'Password must be 128 characters or fewer'),
+  password: passwordPolicySchema,
 })
 
 export type ChefSignupInput = z.infer<typeof ChefSignupSchema>
@@ -592,62 +584,51 @@ export async function requestPasswordReset(email: string) {
 }
 
 /**
- * Update password - Sets new password for authenticated user.
- * Supports both: authenticated session (settings page) and recovery token (reset flow).
+ * Update password via recovery token (from password reset email).
+ * This is the ONLY path for unauthenticated password reset.
+ * Logged-in password changes must use changePassword() instead.
  */
-export async function updatePassword(newPassword: string, recoveryToken?: string) {
+export async function updatePassword(newPassword: string, recoveryToken: string) {
   const validated = UpdatePasswordSchema.parse({ password: newPassword })
   const hashedPassword = await bcrypt.hash(validated.password, 10)
 
-  if (recoveryToken) {
-    // Recovery token flow (from password reset email)
-    // Hash the incoming token to match the stored hash
-    const tokenHash = crypto.createHash('sha256').update(recoveryToken).digest('hex')
-    const [user] = await db
-      .select({ id: authUsers.id, recoverySentAt: authUsers.recoverySentAt })
-      .from(authUsers)
-      .where(eq(authUsers.recoveryToken, tokenHash))
-      .limit(1)
+  // Recovery token flow (from password reset email)
+  const tokenHash = crypto.createHash('sha256').update(recoveryToken).digest('hex')
+  const [user] = await db
+    .select({ id: authUsers.id, recoverySentAt: authUsers.recoverySentAt })
+    .from(authUsers)
+    .where(eq(authUsers.recoveryToken, tokenHash))
+    .limit(1)
 
-    if (!user) {
-      throw new Error('Invalid or expired reset link. Please request a new one.')
-    }
-
-    // Check token expiry (1 hour). If recoverySentAt is missing, reject (fail closed).
-    if (!user.recoverySentAt) {
-      throw new Error('Invalid or expired reset link. Please request a new one.')
-    }
-    const expiry = new Date(user.recoverySentAt.getTime() + 60 * 60 * 1000)
-    if (new Date() > expiry) {
-      throw new Error('Reset link has expired. Please request a new one.')
-    }
-
-    await db
-      .update(authUsers)
-      .set({
-        encryptedPassword: hashedPassword,
-        recoveryToken: null,
-        recoverySentAt: null,
-        updatedAt: new Date(),
-      })
-      .where(eq(authUsers.id, user.id))
-
-    return { success: true }
+  if (!user) {
+    throw new Error('Invalid or expired reset link. Please request a new one.')
   }
 
-  // Authenticated session flow
-  const session = await auth()
-  if (!session?.user) {
-    throw new Error('Not authenticated. Please request a new password reset link.')
+  // Check token expiry (1 hour). If recoverySentAt is missing, reject (fail closed).
+  if (!user.recoverySentAt) {
+    throw new Error('Invalid or expired reset link. Please request a new one.')
+  }
+  const expiry = new Date(user.recoverySentAt.getTime() + 60 * 60 * 1000)
+  if (new Date() > expiry) {
+    throw new Error('Reset link has expired. Please request a new one.')
   }
 
   await db
     .update(authUsers)
     .set({
       encryptedPassword: hashedPassword,
+      recoveryToken: null,
+      recoverySentAt: null,
       updatedAt: new Date(),
     })
-    .where(eq(authUsers.id, session.user.id))
+    .where(eq(authUsers.id, user.id))
+
+  // Force fresh sign-in after reset - do not keep the user automatically logged in
+  try {
+    await nextAuthSignOut({ redirect: false })
+  } catch {
+    // Non-critical: if already signed out, proceed
+  }
 
   return { success: true }
 }
@@ -720,10 +701,19 @@ export async function changePassword(currentPassword: string, newPassword: strin
     reason: 'Password changed from Account & Security.',
   })
 
-  revalidatePath('/settings/account')
-  revalidatePath('/account-security')
+  // Sign out after password change so the user must log in with the new password.
+  // This prevents session hijacking if the account was compromised.
+  try {
+    await nextAuthSignOut({ redirect: false })
+    const cookieStore = cookies()
+    cookieStore.delete('chefflow-role-cache')
+    cookieStore.delete('chefflow-session-only')
+  } catch {
+    // Non-critical: session cleanup failure should not block the password change response.
+  }
 
-  return { success: true }
+  revalidatePath('/', 'layout')
+  return { success: true, signedOut: true }
 }
 
 // ─── Email change ──────────────────────────────────────────────────────
