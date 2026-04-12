@@ -1,0 +1,378 @@
+import type { ActivityEventType } from '@/lib/activity/types'
+
+export type PlatformObservabilitySeverity = 'info' | 'important' | 'critical'
+export type PlatformObservabilityScope = 'public' | 'private' | 'system'
+export type PlatformObservabilityGroup =
+  | 'account'
+  | 'subscription'
+  | 'auth'
+  | 'feature'
+  | 'input'
+  | 'conversion'
+  | 'system'
+export type PlatformObservabilityDigestSection =
+  | 'growth'
+  | 'subscriptions'
+  | 'auth'
+  | 'engagement'
+  | 'conversion'
+  | 'system'
+
+export type PlatformObservabilityDefinition = {
+  label: string
+  description: string
+  group: PlatformObservabilityGroup
+  scope: PlatformObservabilityScope
+  severity: PlatformObservabilitySeverity
+  realtimeAlert: boolean
+  dailyDigest: boolean
+  digestSection: PlatformObservabilityDigestSection
+  alertDedupMinutes: number
+}
+
+export const PLATFORM_OBSERVABILITY_DIGEST_CONFIG = {
+  cadence: 'daily',
+  timezone: 'America/New_York',
+  windowHours: 24,
+} as const
+
+export const PLATFORM_OBSERVABILITY_TAXONOMY = {
+  'account.chef_signed_up': {
+    label: 'Chef Account Created',
+    description: 'A new chef account was created on the platform.',
+    group: 'account',
+    scope: 'public',
+    severity: 'important',
+    realtimeAlert: true,
+    dailyDigest: true,
+    digestSection: 'growth',
+    alertDedupMinutes: 0,
+  },
+  'account.client_signed_up': {
+    label: 'Client Account Created',
+    description: 'A new client account was created on the platform.',
+    group: 'account',
+    scope: 'private',
+    severity: 'important',
+    realtimeAlert: true,
+    dailyDigest: true,
+    digestSection: 'growth',
+    alertDedupMinutes: 0,
+  },
+  'subscription.stay_updated_subscribed': {
+    label: 'Stay Updated Subscription',
+    description: 'A user subscribed to Stay Updated marketing emails.',
+    group: 'subscription',
+    scope: 'public',
+    severity: 'important',
+    realtimeAlert: false,
+    dailyDigest: true,
+    digestSection: 'subscriptions',
+    alertDedupMinutes: 0,
+  },
+  'subscription.beta_waitlist_joined': {
+    label: 'Beta Waitlist Signup',
+    description: 'A user joined the beta waitlist.',
+    group: 'subscription',
+    scope: 'public',
+    severity: 'important',
+    realtimeAlert: false,
+    dailyDigest: true,
+    digestSection: 'subscriptions',
+    alertDedupMinutes: 0,
+  },
+  'auth.sign_in_succeeded': {
+    label: 'Successful Sign-In',
+    description: 'An account signed in successfully.',
+    group: 'auth',
+    scope: 'private',
+    severity: 'info',
+    realtimeAlert: false,
+    dailyDigest: true,
+    digestSection: 'auth',
+    alertDedupMinutes: 0,
+  },
+  'auth.sign_in_rate_limited': {
+    label: 'Rate-Limited Sign-In',
+    description: 'A sign-in attempt was rate limited.',
+    group: 'auth',
+    scope: 'system',
+    severity: 'important',
+    realtimeAlert: false,
+    dailyDigest: true,
+    digestSection: 'auth',
+    alertDedupMinutes: 60,
+  },
+  'input.contact_form_submitted': {
+    label: 'Contact Form Submitted',
+    description: 'A visitor submitted the public contact form.',
+    group: 'input',
+    scope: 'public',
+    severity: 'important',
+    realtimeAlert: true,
+    dailyDigest: true,
+    digestSection: 'conversion',
+    alertDedupMinutes: 0,
+  },
+  'conversion.public_inquiry_submitted': {
+    label: 'Public Inquiry Submitted',
+    description: 'A visitor submitted a high-intent public inquiry.',
+    group: 'conversion',
+    scope: 'public',
+    severity: 'important',
+    realtimeAlert: true,
+    dailyDigest: true,
+    digestSection: 'conversion',
+    alertDedupMinutes: 0,
+  },
+  'input.public_inquiry_budget_provided': {
+    label: 'Inquiry With Budget',
+    description: 'A public inquiry included explicit budget information.',
+    group: 'input',
+    scope: 'public',
+    severity: 'important',
+    realtimeAlert: false,
+    dailyDigest: true,
+    digestSection: 'conversion',
+    alertDedupMinutes: 0,
+  },
+  'conversion.public_inquiry_converted_to_draft_event': {
+    label: 'Inquiry Converted To Draft Event',
+    description: 'A public inquiry auto-created a draft event.',
+    group: 'conversion',
+    scope: 'private',
+    severity: 'important',
+    realtimeAlert: false,
+    dailyDigest: true,
+    digestSection: 'conversion',
+    alertDedupMinutes: 0,
+  },
+  'feature.portal_login': {
+    label: 'Portal Login',
+    description: 'A portal user logged in.',
+    group: 'feature',
+    scope: 'private',
+    severity: 'info',
+    realtimeAlert: false,
+    dailyDigest: true,
+    digestSection: 'engagement',
+    alertDedupMinutes: 0,
+  },
+  'feature.event_viewed': {
+    label: 'Event Viewed',
+    description: 'An event detail page was viewed.',
+    group: 'feature',
+    scope: 'private',
+    severity: 'info',
+    realtimeAlert: false,
+    dailyDigest: true,
+    digestSection: 'engagement',
+    alertDedupMinutes: 0,
+  },
+  'feature.quote_viewed': {
+    label: 'Quote Viewed',
+    description: 'A quote was viewed.',
+    group: 'feature',
+    scope: 'private',
+    severity: 'important',
+    realtimeAlert: false,
+    dailyDigest: true,
+    digestSection: 'engagement',
+    alertDedupMinutes: 0,
+  },
+  'feature.invoice_viewed': {
+    label: 'Invoice Viewed',
+    description: 'An invoice was viewed.',
+    group: 'feature',
+    scope: 'private',
+    severity: 'important',
+    realtimeAlert: false,
+    dailyDigest: true,
+    digestSection: 'engagement',
+    alertDedupMinutes: 0,
+  },
+  'feature.proposal_viewed': {
+    label: 'Proposal Viewed',
+    description: 'A proposal was viewed.',
+    group: 'feature',
+    scope: 'private',
+    severity: 'important',
+    realtimeAlert: false,
+    dailyDigest: true,
+    digestSection: 'engagement',
+    alertDedupMinutes: 0,
+  },
+  'feature.chat_message_sent': {
+    label: 'Chat Message Sent',
+    description: 'A chat message was sent.',
+    group: 'feature',
+    scope: 'private',
+    severity: 'info',
+    realtimeAlert: false,
+    dailyDigest: true,
+    digestSection: 'engagement',
+    alertDedupMinutes: 0,
+  },
+  'feature.rsvp_submitted': {
+    label: 'RSVP Submitted',
+    description: 'An RSVP response was submitted.',
+    group: 'feature',
+    scope: 'private',
+    severity: 'important',
+    realtimeAlert: false,
+    dailyDigest: true,
+    digestSection: 'engagement',
+    alertDedupMinutes: 0,
+  },
+  'feature.form_submitted': {
+    label: 'Form Submitted',
+    description: 'A tracked portal form was submitted.',
+    group: 'feature',
+    scope: 'private',
+    severity: 'important',
+    realtimeAlert: false,
+    dailyDigest: true,
+    digestSection: 'engagement',
+    alertDedupMinutes: 0,
+  },
+  'feature.page_viewed': {
+    label: 'Page Viewed',
+    description: 'A tracked page view occurred.',
+    group: 'feature',
+    scope: 'private',
+    severity: 'info',
+    realtimeAlert: false,
+    dailyDigest: true,
+    digestSection: 'engagement',
+    alertDedupMinutes: 0,
+  },
+  'feature.payment_page_visited': {
+    label: 'Payment Page Visited',
+    description: 'A payment page was visited.',
+    group: 'feature',
+    scope: 'private',
+    severity: 'important',
+    realtimeAlert: true,
+    dailyDigest: true,
+    digestSection: 'engagement',
+    alertDedupMinutes: 120,
+  },
+  'feature.document_downloaded': {
+    label: 'Document Downloaded',
+    description: 'A tracked document was downloaded.',
+    group: 'feature',
+    scope: 'private',
+    severity: 'important',
+    realtimeAlert: false,
+    dailyDigest: true,
+    digestSection: 'engagement',
+    alertDedupMinutes: 0,
+  },
+  'feature.events_list_viewed': {
+    label: 'Events List Viewed',
+    description: 'The events list was viewed.',
+    group: 'feature',
+    scope: 'private',
+    severity: 'info',
+    realtimeAlert: false,
+    dailyDigest: true,
+    digestSection: 'engagement',
+    alertDedupMinutes: 0,
+  },
+  'feature.quotes_list_viewed': {
+    label: 'Quotes List Viewed',
+    description: 'The quotes list was viewed.',
+    group: 'feature',
+    scope: 'private',
+    severity: 'info',
+    realtimeAlert: false,
+    dailyDigest: true,
+    digestSection: 'engagement',
+    alertDedupMinutes: 0,
+  },
+  'feature.chat_opened': {
+    label: 'Chat Opened',
+    description: 'A chat interface was opened.',
+    group: 'feature',
+    scope: 'private',
+    severity: 'info',
+    realtimeAlert: false,
+    dailyDigest: true,
+    digestSection: 'engagement',
+    alertDedupMinutes: 0,
+  },
+  'feature.rewards_viewed': {
+    label: 'Rewards Viewed',
+    description: 'A rewards page was viewed.',
+    group: 'feature',
+    scope: 'private',
+    severity: 'info',
+    realtimeAlert: false,
+    dailyDigest: true,
+    digestSection: 'engagement',
+    alertDedupMinutes: 0,
+  },
+  'feature.session_heartbeat': {
+    label: 'Session Heartbeat',
+    description: 'A session heartbeat was recorded.',
+    group: 'feature',
+    scope: 'private',
+    severity: 'info',
+    realtimeAlert: false,
+    dailyDigest: true,
+    digestSection: 'engagement',
+    alertDedupMinutes: 0,
+  },
+  'system.client_error_reported': {
+    label: 'Client Error Reported',
+    description: 'A client-side exception was reported from production.',
+    group: 'system',
+    scope: 'system',
+    severity: 'critical',
+    realtimeAlert: true,
+    dailyDigest: true,
+    digestSection: 'system',
+    alertDedupMinutes: 60,
+  },
+  'system.cron_job_failed': {
+    label: 'Cron Job Failed',
+    description: 'A scheduled job failed during execution.',
+    group: 'system',
+    scope: 'system',
+    severity: 'critical',
+    realtimeAlert: true,
+    dailyDigest: true,
+    digestSection: 'system',
+    alertDedupMinutes: 60,
+  },
+} as const satisfies Record<string, PlatformObservabilityDefinition>
+
+export type PlatformObservabilityEventKey = keyof typeof PLATFORM_OBSERVABILITY_TAXONOMY
+
+export const ACTIVITY_EVENT_TO_PLATFORM_EVENT: Record<
+  ActivityEventType,
+  PlatformObservabilityEventKey
+> = {
+  portal_login: 'feature.portal_login',
+  event_viewed: 'feature.event_viewed',
+  quote_viewed: 'feature.quote_viewed',
+  invoice_viewed: 'feature.invoice_viewed',
+  proposal_viewed: 'feature.proposal_viewed',
+  chat_message_sent: 'feature.chat_message_sent',
+  rsvp_submitted: 'feature.rsvp_submitted',
+  form_submitted: 'feature.form_submitted',
+  page_viewed: 'feature.page_viewed',
+  payment_page_visited: 'feature.payment_page_visited',
+  document_downloaded: 'feature.document_downloaded',
+  events_list_viewed: 'feature.events_list_viewed',
+  quotes_list_viewed: 'feature.quotes_list_viewed',
+  chat_opened: 'feature.chat_opened',
+  rewards_viewed: 'feature.rewards_viewed',
+  session_heartbeat: 'feature.session_heartbeat',
+}
+
+export function getPlatformObservabilityDefinition(
+  eventKey: PlatformObservabilityEventKey
+): PlatformObservabilityDefinition {
+  return PLATFORM_OBSERVABILITY_TAXONOMY[eventKey]
+}
