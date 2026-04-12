@@ -44,7 +44,7 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
   // Load event details
   const { data: event } = await db
     .from('events')
-    .select('id, occasion, event_date, guest_count, start_time, notes, client:clients(full_name)')
+    .select('id, occasion, event_date, guest_count, serve_time, notes, client:clients(full_name)')
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -85,7 +85,7 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
   const clientName = ((event as any).client as any)?.full_name ?? 'Client'
   const guestCount = (event as any).guest_count
   const eventDate = (event as any).event_date
-  const serviceTime = (event as any).start_time
+  const serviceTime = (event as any).serve_time
 
   // Build Ollama prompt
   const systemPrompt = `You are a professional private chef's prep timeline assistant.

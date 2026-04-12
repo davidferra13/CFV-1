@@ -57,7 +57,7 @@ export async function getKitchenModeContext(eventId?: string): Promise<KitchenEv
   // Fetch event details
   const { data: event } = await db
     .from('events')
-    .select('id, title, event_date, start_time, guest_count, status, occasion, client_id')
+    .select('id, occasion, event_date, serve_time, guest_count, status, client_id')
     .eq('id', targetEventId)
     .eq('tenant_id', tenantId)
     .single()
@@ -123,10 +123,10 @@ export async function getKitchenModeContext(eventId?: string): Promise<KitchenEv
 
   return {
     eventId: event.id,
-    eventTitle: event.title ?? event.occasion ?? 'Private Event',
+    eventTitle: event.occasion ?? 'Private Event',
     clientName,
     eventDate: event.event_date,
-    startTime: event.start_time ?? null,
+    startTime: event.serve_time ?? null,
     guestCount: event.guest_count ?? null,
     steps,
   }

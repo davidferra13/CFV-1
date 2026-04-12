@@ -55,7 +55,7 @@ interface EventWithMenu {
   id: string
   occasion: string | null
   event_date: string
-  start_time: string | null
+  serve_time: string | null
   guest_count: number | null
   status: string
   clientName: string | null
@@ -75,7 +75,7 @@ async function getTodayEventWithMenu(): Promise<EventWithMenu | null> {
   // Find today's most relevant event (in_progress first, then confirmed)
   const { data: events } = await db
     .from('events')
-    .select('id, occasion, event_date, start_time, guest_count, status, client_id')
+    .select('id, occasion, event_date, serve_time, guest_count, status, client_id')
     .eq('tenant_id', tenantId)
     .in('status', ['in_progress', 'confirmed'])
     .gte('event_date', today + 'T00:00:00')
@@ -204,7 +204,7 @@ export default async function MenuBoardPage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-stone-100">{eventLabel}</h1>
           <p className="mt-1 text-stone-400 text-sm">
             {formatDate(event.event_date)}
-            {event.start_time ? ` · Service at ${formatTime(event.start_time)}` : ''}
+            {event.serve_time ? ` · Service at ${formatTime(event.serve_time)}` : ''}
             {event.guest_count ? ` · ${event.guest_count} guests` : ''}
           </p>
         </div>

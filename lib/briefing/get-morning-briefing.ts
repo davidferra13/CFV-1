@@ -147,12 +147,12 @@ export async function getMorningBriefing(): Promise<MorningBriefing> {
     db
       .from('events')
       .select(
-        'id, title, event_date, start_time, end_time, guest_count, venue, status, dietary_notes, client_id'
+        'id, occasion, event_date, serve_time, departure_time, guest_count, location_address, status, dietary_restrictions, client_id'
       )
-      .eq('chef_id', tenantId)
+      .eq('tenant_id', tenantId)
       .eq('event_date', today)
       .in('status', ['confirmed', 'paid', 'in_progress', 'accepted'])
-      .order('start_time', { ascending: true, nullsFirst: false }),
+      .order('serve_time', { ascending: true, nullsFirst: false }),
     // Today's tasks
     db
       .from('tasks')
@@ -173,8 +173,8 @@ export async function getMorningBriefing(): Promise<MorningBriefing> {
     // Yesterday's completed events
     db
       .from('events')
-      .select('id, title')
-      .eq('chef_id', tenantId)
+      .select('id, occasion')
+      .eq('tenant_id', tenantId)
       .eq('event_date', yesterdayStr)
       .eq('status', 'completed'),
     // Yesterday's completed tasks
@@ -195,21 +195,21 @@ export async function getMorningBriefing(): Promise<MorningBriefing> {
     db
       .from('inquiries')
       .select('id', { count: 'exact', head: true })
-      .eq('chef_id', tenantId)
+      .eq('tenant_id', tenantId)
       .gte('created_at', yesterdayStr + 'T00:00:00')
       .lt('created_at', today + 'T00:00:00'),
     // Yesterday's expenses
     db
       .from('expenses')
       .select('id', { count: 'exact', head: true })
-      .eq('chef_id', tenantId)
+      .eq('tenant_id', tenantId)
       .gte('created_at', yesterdayStr + 'T00:00:00')
       .lt('created_at', today + 'T00:00:00'),
     // Unanswered inquiries (open, no response in 24h+)
     db
       .from('inquiries')
       .select('id, client_name, occasion, created_at')
-      .eq('chef_id', tenantId)
+      .eq('tenant_id', tenantId)
       .eq('status', 'new')
       .lt('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
       .limit(10),
@@ -217,7 +217,7 @@ export async function getMorningBriefing(): Promise<MorningBriefing> {
     db
       .from('inquiries')
       .select('id, client_name, occasion, updated_at')
-      .eq('chef_id', tenantId)
+      .eq('tenant_id', tenantId)
       .in('status', ['new', 'contacted', 'follow_up'])
       .lt('updated_at', new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString())
       .limit(10),
@@ -247,9 +247,12 @@ export async function getMorningBriefing(): Promise<MorningBriefing> {
     const [clientsResult, staffCountResult, prepCountResult] = await Promise.all([
       db
         .from('clients')
-        .select('id, name')
+        .select('id, full_name')
         .in('id', (todayEventsResult.data ?? []).map((e: any) => e.client_id).filter(Boolean)),
-      db.from('event_staff').select('event_id').in('event_id', eventIds),
+      db
+        .from('event_staff_assignments' as any)
+        .select('event_id')
+        .in('event_id', eventIds),
       db
         .from('tasks')
         .select('id, status')
@@ -259,7 +262,7 @@ export async function getMorningBriefing(): Promise<MorningBriefing> {
     ])
 
     for (const c of clientsResult.data ?? []) {
-      clientMap[c.id] = c.name
+      clientMap[c.id] = c.full_name
     }
     for (const s of staffCountResult.data ?? []) {
       eventStaffCounts[s.event_id] = (eventStaffCounts[s.event_id] ?? 0) + 1
@@ -269,15 +272,18 @@ export async function getMorningBriefing(): Promise<MorningBriefing> {
   for (const event of todayEventsResult.data ?? []) {
     todayEvents.push({
       id: event.id,
-      title: event.title ?? 'Untitled Event',
+      title: event.occasion ?? 'Event',
       client_name: event.client_id ? (clientMap[event.client_id] ?? null) : null,
       event_date: event.event_date,
-      start_time: event.start_time,
-      end_time: event.end_time,
+      start_time: event.serve_time ?? null,
+      end_time: event.departure_time ?? null,
       guest_count: event.guest_count,
-      venue: event.venue,
+      venue: event.location_address ?? null,
       status: event.status,
-      dietary_notes: event.dietary_notes,
+      dietary_notes:
+        Array.isArray(event.dietary_restrictions) && event.dietary_restrictions.length > 0
+          ? event.dietary_restrictions.join(', ')
+          : null,
       staff_count: eventStaffCounts[event.id] ?? 0,
       prep_tasks_total: 0,
       prep_tasks_done: 0,
@@ -362,7 +368,7 @@ export async function getMorningBriefing(): Promise<MorningBriefing> {
   const yesterdayEvents = yesterdayEventsResult.data ?? []
   const yesterdayRecap: YesterdayRecap = {
     eventsCompleted: yesterdayEvents.length,
-    eventNames: yesterdayEvents.map((e: any) => e.title ?? 'Untitled'),
+    eventNames: yesterdayEvents.map((e: any) => e.occasion ?? 'Event'),
     revenueCents: 0, // Would need ledger query, keeping simple for now
     tasksCompleted: yesterdayTasksDoneResult.count ?? 0,
     tasksMissed: yesterdayTasksMissedResult.count ?? 0,
@@ -377,7 +383,7 @@ export async function getMorningBriefing(): Promise<MorningBriefing> {
     title: p.title,
     end_at: p.end_at,
     station_name: p.station?.name ?? null,
-    event_title: p.event?.title ?? null,
+    event_title: p.event?.occasion ?? null,
     status: p.status,
   }))
 
