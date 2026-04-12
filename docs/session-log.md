@@ -534,3 +534,24 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: 2ab8f1e91, 5bd099bf4, 64344e111, 3d8198188, f24912f36, 5db22eaed
 - Build state on departure: green (tsc exits 0, zero errors)
 - Notes: All 12 pre-existing TS errors resolved. 7 features shipped from MemPalace backlog. getPublicUrl in compat shim is async (needs await) - this was silently causing all image uploads to return null URLs. guest-photos needed Promise.all since getPublicUrl is async inside .map().
+
+## 2026-04-12 (afternoon)
+
+- Agent: Builder
+- Task: MemPalace backlog execution - continued from prior session. Permit registry, remy proactive alerts, payment failure recovery, message form guidance, backlog audit.
+- Status: completed
+- Files touched:
+  - lib/compliance/permit-actions.ts (created - CRUD for permits table)
+  - app/(chef)/settings/compliance/permit-form.tsx (created - PermitList + PermitForm UI)
+  - app/(chef)/settings/compliance/page.tsx (wire permits section + expiry alerts)
+  - database/migrations/20260412000001_remy_alerts.sql (created - remy_alerts table + indexes)
+  - lib/ai/remy-proactive-alerts.ts (add runAlertRulesAdmin for cron context)
+  - app/api/scheduled/proactive-alerts/route.ts (created - hourly cron endpoint)
+  - components/dashboard/remy-alerts-widget.tsx (created - client widget with dismiss)
+  - app/(chef)/dashboard/\_sections/alerts-section.tsx (wire RemyAlertsWidget + payment failure banner + subscription status check)
+  - app/(chef)/settings/billing/billing-client.tsx (add payment failure banner with Stripe portal CTA)
+  - components/messages/message-log-form.tsx (add inline guidance - channel visibility, direction labels)
+  - Components/public/public-secondary-entry-cluster.tsx (prior session - secondary entry CTAs on public pages)
+- Commits: 27b5c1370, 38a42c929, 68bd929f4
+- Build state on departure: green (tsc exits 0)
+- Notes: Most "unbuilt features" from MemPalace backlog were already built. Stale items updated in memory. Remaining genuine gaps: SMS channel (needs Twilio), Google Calendar sync (needs OAuth), multi-chef client view, quick-service menu board display.
