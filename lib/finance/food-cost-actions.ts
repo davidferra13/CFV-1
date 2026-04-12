@@ -12,6 +12,7 @@ import {
   getFoodCostRating,
   type FoodCostRatingResult,
 } from './food-cost-calculator'
+import { dateToMonthString } from '@/lib/utils/format'
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -498,7 +499,7 @@ export async function getFoodCostDashboardSummary(): Promise<{
     totalPercent += pct
     countWithData++
 
-    const eventMonth = (evt.event_date as string).slice(0, 7)
+    const eventMonth = dateToMonthString(evt.event_date as Date | string)
     if (eventMonth === currentMonthStr) {
       currentMonthTotal += pct
       currentMonthCount++

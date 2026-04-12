@@ -1,5 +1,6 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { dateToMonthString } from '@/lib/utils/format'
 
 export type FinancialAnalyticsSnapshot = {
   range: {
@@ -49,8 +50,8 @@ function resolveDateRange(input?: DateRangeInput): { start: string; end: string 
   return { start: startDate, end: endDate }
 }
 
-function monthBucket(iso: string): string {
-  return iso.slice(0, 7)
+function monthBucket(val: Date | string): string {
+  return dateToMonthString(val)
 }
 
 export async function getFinancialAnalytics(

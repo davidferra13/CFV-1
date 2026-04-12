@@ -2,6 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { dateToMonthString } from '@/lib/utils/format'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -362,7 +363,7 @@ export async function getEffectiveHourlyRateByMonth(): Promise<EffectiveHourlyRa
   const monthMap = new Map<string, { revenue: number; minutes: number; count: number }>()
 
   for (const ev of events ?? []) {
-    const month = ev.event_date.slice(0, 7) // YYYY-MM
+    const month = dateToMonthString(ev.event_date) // YYYY-MM
     const slot = monthMap.get(month) ?? { revenue: 0, minutes: 0, count: 0 }
     slot.revenue += ev.quoted_price_cents ?? 0
     slot.count++

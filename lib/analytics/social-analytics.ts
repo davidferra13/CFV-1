@@ -2,6 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { dateToMonthString } from '@/lib/utils/format'
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export interface SocialPlatformSnapshot {
@@ -222,7 +223,7 @@ export async function getGoogleReviewStats(): Promise<GoogleReviewStats | null> 
   const monthMap = new Map<string, { total: number; sum: number }>()
   for (const r of reviews) {
     if (!r.review_date) continue
-    const month = r.review_date.slice(0, 7)
+    const month = dateToMonthString(r.review_date)
     const slot = monthMap.get(month) ?? { total: 0, sum: 0 }
     slot.total++
     slot.sum += Number(r.rating ?? 0)

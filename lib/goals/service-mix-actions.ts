@@ -13,6 +13,7 @@ import type {
 import { computeEffectivePrice, computeAutoSuggestMix } from './service-mix-utils'
 import { getActiveGoals } from './actions'
 import { isRevenueGoal } from './engine'
+import { dateToMonthString } from '@/lib/utils/format'
 
 // ── Validation ────────────────────────────────────────────────────────────────
 
@@ -214,7 +215,7 @@ export async function getRevenuePath(goalId: string): Promise<RevenuePathData> {
   )
   const alreadyBookedCount = (eventRows ?? []).length
   const gapCents = Math.max(0, goal.targetValue - alreadyBookedCents)
-  const targetMonth = goal.periodStart.slice(0, 7) // 'YYYY-MM'
+  const targetMonth = dateToMonthString(goal.periodStart as Date | string) // 'YYYY-MM'
 
   return {
     goal,

@@ -3,6 +3,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
+import { dateToMonthString } from '@/lib/utils/format'
 
 // ============================================
 // TYPES
@@ -314,7 +315,8 @@ export async function getMonthlyExpenseTrend(months: number = 12): Promise<Month
   }
 
   for (const row of data ?? []) {
-    const monthKey = (row.expense_date ?? row.date ?? '').slice(0, 7) // "YYYY-MM"
+    const monthKey =
+      row.expense_date || row.date ? dateToMonthString(row.expense_date ?? row.date) : '' // "YYYY-MM"
     const existing = monthMap.get(monthKey) ?? { total_cents: 0, count: 0 }
     existing.total_cents += row.amount_cents
     existing.count += 1

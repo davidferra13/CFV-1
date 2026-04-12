@@ -2,6 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { dateToMonthString } from '@/lib/utils/format'
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -291,7 +292,7 @@ export async function getMonthlyMargins(
   >()
 
   for (const evt of events) {
-    const yyyymm = (evt.event_date as string).slice(0, 7)
+    const yyyymm = dateToMonthString(evt.event_date as Date | string)
     if (!monthBuckets.has(yyyymm)) {
       monthBuckets.set(yyyymm, { events: [] })
     }
