@@ -80,6 +80,8 @@ export function TemplateLibrary({ eventId }: TemplateLibraryProps) {
         if (result.success) {
           toast.success('Menu created from template')
           router.push(`/menus/${result.data.id}`)
+        } else {
+          toast.error((result as any).error || 'Failed to create menu from template')
         }
       } catch (err) {
         toast.error('Failed to create menu from template')

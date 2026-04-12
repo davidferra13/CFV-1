@@ -209,12 +209,14 @@ export async function rejectQuote(quoteId: string, reason?: string) {
 
   const quote = response as {
     tenant_id: string
+    event_id?: string | null
     quote_name?: string | null
     inquiry_id?: string | null
   }
 
   revalidatePath('/my-quotes')
   revalidatePath(`/my-quotes/${quoteId}`)
+  revalidatePath('/my-events')
 
   // Chef-side cache invalidation
   revalidatePath('/quotes')
@@ -222,6 +224,10 @@ export async function rejectQuote(quoteId: string, reason?: string) {
   if (quote.inquiry_id) {
     revalidatePath(`/inquiries/${quote.inquiry_id}`)
     revalidatePath('/inquiries')
+  }
+  if (quote.event_id) {
+    revalidatePath(`/events/${quote.event_id}`)
+    revalidatePath('/events')
   }
 
   // Outbound webhook dispatch (non-blocking)

@@ -76,24 +76,28 @@ export function ReorderSettingsClient({
       is_active: setting.is_active,
     }
     startTransition(async () => {
-      const res = await upsertReorderSetting(input)
-      if (res.success) {
-        setSettings((prev) =>
-          prev.map((s) =>
-            s.id === setting.id
-              ? {
-                  ...s,
-                  ...input,
-                  preferred_vendor_name:
-                    vendors.find((v) => v.id === input.preferred_vendor_id)?.name ?? null,
-                }
-              : s
+      try {
+        const res = await upsertReorderSetting(input)
+        if (res.success) {
+          setSettings((prev) =>
+            prev.map((s) =>
+              s.id === setting.id
+                ? {
+                    ...s,
+                    ...input,
+                    preferred_vendor_name:
+                      vendors.find((v) => v.id === input.preferred_vendor_id)?.name ?? null,
+                  }
+                : s
+            )
           )
-        )
-        setEditingId(null)
-        toast.success('Saved')
-      } else {
-        toast.error(res.error || 'Failed to save')
+          setEditingId(null)
+          toast.success('Saved')
+        } else {
+          toast.error(res.error || 'Failed to save')
+        }
+      } catch {
+        toast.error('Failed to save. Please try again.')
       }
     })
   }
@@ -112,34 +116,38 @@ export function ReorderSettingsClient({
       return
     }
     startTransition(async () => {
-      const res = await upsertReorderSetting(input)
-      if (res.success) {
-        // Optimistic add with placeholder id (server will upsert by name)
-        const optimistic: ReorderSetting = {
-          id: `tmp-${Date.now()}`,
-          ingredient_name: input.ingredient_name,
-          par_level: input.par_level,
-          reorder_qty: input.reorder_qty,
-          unit: input.unit,
-          preferred_vendor_id: input.preferred_vendor_id ?? null,
-          preferred_vendor_name:
-            vendors.find((v) => v.id === input.preferred_vendor_id)?.name ?? null,
-          is_active: true,
-        }
-        setSettings((prev) => {
-          const exists = prev.findIndex((s) => s.ingredient_name === input.ingredient_name)
-          if (exists >= 0) {
-            return prev.map((s, i) => (i === exists ? { ...s, ...input, id: s.id } : s))
+      try {
+        const res = await upsertReorderSetting(input)
+        if (res.success) {
+          // Optimistic add with placeholder id (server will upsert by name)
+          const optimistic: ReorderSetting = {
+            id: `tmp-${Date.now()}`,
+            ingredient_name: input.ingredient_name,
+            par_level: input.par_level,
+            reorder_qty: input.reorder_qty,
+            unit: input.unit,
+            preferred_vendor_id: input.preferred_vendor_id ?? null,
+            preferred_vendor_name:
+              vendors.find((v) => v.id === input.preferred_vendor_id)?.name ?? null,
+            is_active: true,
           }
-          return [...prev, optimistic].sort((a, b) =>
-            a.ingredient_name.localeCompare(b.ingredient_name)
-          )
-        })
-        setAddingNew(false)
-        setNewRow(EMPTY_ROW)
-        toast.success('Added')
-      } else {
-        toast.error(res.error || 'Failed to add')
+          setSettings((prev) => {
+            const exists = prev.findIndex((s) => s.ingredient_name === input.ingredient_name)
+            if (exists >= 0) {
+              return prev.map((s, i) => (i === exists ? { ...s, ...input, id: s.id } : s))
+            }
+            return [...prev, optimistic].sort((a, b) =>
+              a.ingredient_name.localeCompare(b.ingredient_name)
+            )
+          })
+          setAddingNew(false)
+          setNewRow(EMPTY_ROW)
+          toast.success('Added')
+        } else {
+          toast.error(res.error || 'Failed to add')
+        }
+      } catch {
+        toast.error('Failed to add. Please try again.')
       }
     })
   }
@@ -148,12 +156,17 @@ export function ReorderSettingsClient({
     startTransition(async () => {
       const prev = settings
       setSettings((s) => s.filter((r) => r.id !== id))
-      const res = await deleteReorderSetting(id)
-      if (!res.success) {
+      try {
+        const res = await deleteReorderSetting(id)
+        if (!res.success) {
+          setSettings(prev)
+          toast.error(res.error || 'Failed to delete')
+        } else {
+          toast.success(`Removed ${name}`)
+        }
+      } catch {
         setSettings(prev)
-        toast.error(res.error || 'Failed to delete')
-      } else {
-        toast.success(`Removed ${name}`)
+        toast.error('Failed to delete. Please try again.')
       }
     })
   }
@@ -162,10 +175,15 @@ export function ReorderSettingsClient({
     startTransition(async () => {
       const prev = settings
       setSettings((s) => s.map((r) => (r.id === id ? { ...r, is_active: !current } : r)))
-      const res = await toggleReorderSetting(id, !current)
-      if (!res.success) {
+      try {
+        const res = await toggleReorderSetting(id, !current)
+        if (!res.success) {
+          setSettings(prev)
+          toast.error(res.error || 'Failed to update')
+        }
+      } catch {
         setSettings(prev)
-        toast.error(res.error || 'Failed to update')
+        toast.error('Failed to update. Please try again.')
       }
     })
   }

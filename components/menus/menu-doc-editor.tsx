@@ -2141,7 +2141,7 @@ export function MenuDocEditor({
           </div>
 
           {/* ─── Sidebar ─── */}
-          <div className="w-72 shrink-0">
+          <div className="hidden lg:block w-72 shrink-0">
             <ContextSidebar
               menuId={initialMenu.id}
               event={event}

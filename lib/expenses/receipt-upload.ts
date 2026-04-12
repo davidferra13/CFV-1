@@ -3,6 +3,7 @@
 
 'use server'
 
+import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 
@@ -69,6 +70,10 @@ export async function uploadReceipt(eventId: string, expenseId: string, formData
     console.error('[uploadReceipt] Expense update error:', updateError)
     throw new Error(`Receipt uploaded but failed to update expense: ${updateError.message}`)
   }
+
+  revalidatePath('/expenses')
+  revalidatePath(`/expenses/${expenseId}`)
+  revalidatePath(`/events/${eventId}`)
 
   return { success: true, storagePath }
 }
@@ -140,6 +145,9 @@ export async function deleteReceipt(expenseId: string) {
     console.error('[deleteReceipt] Error:', error)
     throw new Error('Failed to delete receipt')
   }
+
+  revalidatePath('/expenses')
+  revalidatePath(`/expenses/${expenseId}`)
 
   return { success: true }
 }
