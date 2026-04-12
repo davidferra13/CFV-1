@@ -393,14 +393,14 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
                         : 'text-red-600'
                   }`}
                 >
-                  {profitSummary.profit.profitMarginPercent}%
+                  {profitSummary.profit.profitMarginPercent.toFixed(1)}%
                 </dd>
               </div>
             </dl>
             <div className="flex flex-wrap gap-4 mt-3 text-sm text-stone-500">
               {profitSummary.profit.foodCostPercent > 0 && (
                 <span>
-                  Food cost: {profitSummary.profit.foodCostPercent}% of revenue
+                  Food cost: {profitSummary.profit.foodCostPercent.toFixed(1)}% of revenue
                   {profitSummary.profit.chefAvgFoodCostPercent !== null && (
                     <span
                       className={`ml-1.5 font-medium ${

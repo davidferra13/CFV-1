@@ -111,10 +111,38 @@ export async function computeMenuEngineering(
     }
   }
 
+  // Count how many times each dish name appears on completed/in_progress events
+  // as a proxy for sales count (one event = one "sale" of that dish)
+  const { data: dishHistory } = await (db as any)
+    .from('dishes')
+    .select('name, menu_id')
+    .eq('tenant_id', chef.tenantId!)
+    .not('name', 'is', null)
+
+  // Build a map from menu_id -> list of dish names for completed events
+  const { data: completedEventMenuIds } = await (db as any)
+    .from('events')
+    .select('menu_id')
+    .eq('tenant_id', chef.tenantId!)
+    .in('status', ['completed', 'in_progress'])
+    .not('menu_id', 'is', null)
+
+  const completedMenuIdSet = new Set<string>(
+    (completedEventMenuIds ?? []).map((e: any) => e.menu_id).filter(Boolean)
+  )
+
+  // Count by normalized dish name (case-insensitive)
+  const dishSaleCountMap = new Map<string, number>()
+  for (const dh of dishHistory ?? []) {
+    if (!dh.name || !completedMenuIdSet.has(dh.menu_id)) continue
+    const key = dh.name.trim().toLowerCase()
+    dishSaleCountMap.set(key, (dishSaleCountMap.get(key) ?? 0) + 1)
+  }
+
   // Build items with sales data (using event history as proxy)
   const rawItems = menuItems.map((mi: any) => {
     const cost = mi.linked_recipe_id ? (recipeCostMap.get(mi.linked_recipe_id) ?? 0) : 0
-    const salesCount = 1 // placeholder - would come from event history
+    const salesCount = dishSaleCountMap.get((mi.name ?? '').trim().toLowerCase()) ?? 1
     return {
       id: mi.id,
       name: mi.name,

@@ -56,7 +56,7 @@ export function ProfitLossClientControls({
     rows.push([])
     rows.push(['SUMMARY'])
     rows.push(['Net Profit', centsToDollars(pl.netProfitCents)])
-    rows.push(['Profit Margin', `${pl.profitMarginPercent}%`])
+    rows.push(['Profit Margin', `${pl.profitMarginPercent.toFixed(1)}%`])
     rows.push([])
     rows.push(['MONTHLY REVENUE'])
     rows.push(['Month', 'Revenue'])

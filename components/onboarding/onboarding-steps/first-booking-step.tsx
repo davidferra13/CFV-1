@@ -5,7 +5,7 @@
 // Creates a real draft event so the chef sees the system working immediately.
 
 import { useState, useTransition } from 'react'
-import { createEvent } from '@/lib/events/actions'
+import { createOnboardingEvent } from '@/lib/onboarding/actions'
 import { todayLocalDateString } from '@/lib/utils/format'
 
 interface FirstBookingStepProps {
@@ -38,10 +38,7 @@ export function FirstBookingStep({ onComplete, onSkip }: FirstBookingStepProps) 
 
     startTransition(async () => {
       try {
-        // Create event without a client (will use a placeholder)
-        // The chef can assign a client later
-        const result = await createEvent({
-          client_id: '00000000-0000-0000-0000-000000000000', // placeholder, will need real client
+        const result = await createOnboardingEvent({
           event_date: eventDate,
           serve_time: serveTime,
           guest_count: guestCount,
@@ -51,20 +48,14 @@ export function FirstBookingStep({ onComplete, onSkip }: FirstBookingStepProps) 
           occasion: occasion.trim() || undefined,
         })
 
-        if (result?.success && result.event?.id) {
-          onComplete({ eventId: result.event.id })
+        if (result?.success && result.eventId) {
+          onComplete({ eventId: result.eventId })
         } else {
-          setError('Failed to create event. Try again.')
+          setError(result?.error || 'Failed to create event. Try again.')
         }
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Failed to create event'
-        // If client_id validation fails, just skip gracefully
-        if (msg.includes('client') || msg.includes('uuid')) {
-          // Can't create without a real client; let user skip
-          setError('Create a client first, then add your event from the Events page.')
-        } else {
-          setError(msg)
-        }
+        setError(msg)
       }
     })
   }

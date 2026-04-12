@@ -904,7 +904,7 @@ function BudgetComplianceWidget({ menuId }: { menuId: string }) {
       </div>
       {data!.status !== 'ok' && (
         <p className="text-xs text-stone-500 mt-2 leading-relaxed">
-          Food cost is {data!.marginPercent.toFixed(0)}% of the quoted price.
+          Food cost is {data!.marginPercent.toFixed(1)}% of the quoted price.
           {data!.status === 'critical'
             ? ' Consider reducing portions or swapping high-cost ingredients.'
             : ' Keep an eye on ingredient costs.'}
