@@ -1315,11 +1315,24 @@ export async function trimConversationMessages(conversationId: string): Promise<
   const db = await openDB()
 
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORES.messages, 'readwrite')
-    const store = tx.objectStore(STORES.messages)
+    // Include conversations store so we can keep messageCount in sync
+    const tx = db.transaction([STORES.messages, STORES.conversations], 'readwrite')
+    const msgStore = tx.objectStore(STORES.messages)
     for (const msg of toDelete) {
-      store.delete(msg.id)
+      msgStore.delete(msg.id)
     }
+
+    // Decrement messageCount on the conversation
+    const convStore = tx.objectStore(STORES.conversations)
+    const convReq = convStore.get(conversationId)
+    convReq.onsuccess = () => {
+      const conv = convReq.result as LocalConversation | undefined
+      if (conv) {
+        conv.messageCount = Math.max(0, conv.messageCount - toDelete.length)
+        convStore.put(conv)
+      }
+    }
+
     tx.oncomplete = () => {
       db.close()
       console.log(
