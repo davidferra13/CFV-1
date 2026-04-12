@@ -1235,7 +1235,7 @@ export async function uploadSocialAsset(formData: FormData): Promise<SocialMedia
     throw new Error('Failed to upload asset to media vault.')
   }
 
-  const { data: publicData } = db.storage.from(SOCIAL_MEDIA_BUCKET).getPublicUrl(storagePath)
+  const { data: publicData } = await db.storage.from(SOCIAL_MEDIA_BUCKET).getPublicUrl(storagePath)
 
   const assetName = ((formData.get('assetName') as string | null) ?? '').trim()
   const usageContext = ((formData.get('usageContext') as string | null) ?? '').trim()

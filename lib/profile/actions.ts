@@ -453,7 +453,7 @@ export async function uploadChefPortalBackgroundImage(
     throw new Error('Failed to upload background image')
   }
 
-  const { data: publicUrlData } = db.storage
+  const { data: publicUrlData } = await db.storage
     .from(CHEF_PORTAL_BACKGROUNDS_BUCKET)
     .getPublicUrl(storagePath)
 

@@ -334,7 +334,7 @@ export async function uploadInquiryNoteAttachment(
     throw new Error('Upload failed')
   }
 
-  const { data: urlData } = db.storage.from('inquiry-note-attachments').getPublicUrl(path)
+  const { data: urlData } = await db.storage.from('inquiry-note-attachments').getPublicUrl(path)
 
   return { url: urlData.publicUrl, filename: file.name }
 }

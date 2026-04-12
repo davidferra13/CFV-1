@@ -111,7 +111,7 @@ export async function uploadRecipePhoto(
 
   const {
     data: { publicUrl },
-  } = db.storage.from(BUCKET).getPublicUrl(storagePath)
+  } = await db.storage.from(BUCKET).getPublicUrl(storagePath)
 
   const { error: updateError } = await db
     .from('recipes')
@@ -210,7 +210,7 @@ export async function uploadDishPhoto(
 
   const {
     data: { publicUrl },
-  } = db.storage.from(BUCKET).getPublicUrl(storagePath)
+  } = await db.storage.from(BUCKET).getPublicUrl(storagePath)
 
   const { error: updateError } = await db
     .from('dishes')

@@ -168,13 +168,17 @@ export async function getGuestPhotosForChef(eventId: string) {
   }
 
   // Generate public URLs
-  const photos = (data ?? []).map((photo: any) => {
-    const { data: urlData } = db.storage.from('guest-photos').getPublicUrl(photo.storage_path)
-    return {
-      ...photo,
-      url: urlData?.publicUrl || null,
-    }
-  })
+  const photos = await Promise.all(
+    (data ?? []).map(async (photo: any) => {
+      const { data: urlData } = await db.storage
+        .from('guest-photos')
+        .getPublicUrl(photo.storage_path)
+      return {
+        ...photo,
+        url: urlData?.publicUrl || null,
+      }
+    })
+  )
 
   return photos
 }

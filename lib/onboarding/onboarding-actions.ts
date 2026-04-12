@@ -398,7 +398,7 @@ export async function uploadPortfolioPhotos(
       continue
     }
 
-    const { data: urlData } = db.storage.from('portfolio-photos').getPublicUrl(storagePath)
+    const { data: urlData } = await db.storage.from('portfolio-photos').getPublicUrl(storagePath)
     if (urlData?.publicUrl) {
       uploadedUrls.push(urlData.publicUrl)
     }
