@@ -65,8 +65,12 @@ export async function GET(request: Request) {
 
       let completed = 0
       for (const event of toComplete ?? []) {
+        const departureStr =
+          event.departure_time instanceof Date
+            ? event.departure_time.toISOString()
+            : (event.departure_time as string | null)
         const isOver =
-          (event.departure_time && event.departure_time <= now) ||
+          (departureStr && departureStr <= now) ||
           (!event.departure_time && dateToDateString(event.event_date as Date | string) < today)
 
         if (!isOver) continue
