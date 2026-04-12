@@ -8,6 +8,7 @@ import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { getChefPreferences } from '@/lib/chef/actions'
 import { generateTimeline } from './timeline'
+import { dateToDateString } from '@/lib/utils/format'
 import { getDOPSchedule, getDOPProgress } from './dop'
 import { getActivePrompts } from './prep-prompts'
 import type {
@@ -261,7 +262,7 @@ export async function getTodaysScheduleEnriched(
   let minutesUntilDeparture: number | null = null
   if (departureItem) {
     const [dh, dm] = departureItem.time.split(':').map(Number)
-    const depDate = new Date(base.event.event_date + 'T00:00:00')
+    const depDate = new Date(dateToDateString(base.event.event_date as Date | string) + 'T00:00:00')
     depDate.setHours(dh, dm, 0, 0)
     departureTime = depDate.toISOString()
     minutesUntilDeparture = Math.round((depDate.getTime() - now.getTime()) / 60000)
@@ -786,7 +787,7 @@ export async function getCalendarEvents(
 
     // Add prep day (day before) if shop_day_before is enabled
     if (prefs.shop_day_before) {
-      const eventDate = new Date(event.event_date + 'T12:00:00')
+      const eventDate = new Date(dateToDateString(event.event_date as Date | string) + 'T12:00:00')
       eventDate.setDate(eventDate.getDate() - 1)
       const prepDate = localDateISO(eventDate)
 

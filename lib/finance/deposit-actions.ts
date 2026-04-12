@@ -10,6 +10,7 @@ import { appendLedgerEntryForChef } from '@/lib/ledger/append'
 import type { PaymentMethod } from '@/lib/ledger/append'
 import { differenceInDays, subDays, format } from 'date-fns'
 import { log } from '@/lib/logger'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ─── Types ──────────────────────────────────────────────────────
 
@@ -77,7 +78,7 @@ export async function calculateDeposit(eventId: string): Promise<DepositSummary>
     event.deposit_amount_cents ?? Math.round((quotedAmountCents * depositPercentage) / 100)
 
   // Balance due date = event_date minus balanceDueDaysBefore
-  const eventDate = new Date(event.event_date + 'T12:00:00')
+  const eventDate = new Date(dateToDateString(event.event_date as Date | string) + 'T12:00:00')
   const balanceDueDate = subDays(eventDate, settings.balanceDueDaysBefore)
 
   // Fetch ledger entries for this event to classify payments
@@ -442,7 +443,7 @@ export async function getOverdueDeposits(): Promise<OverdueDepositEvent[]> {
   const overdueEvents: OverdueDepositEvent[] = []
 
   for (const event of events) {
-    const eventDate = new Date(event.event_date + 'T12:00:00')
+    const eventDate = new Date(dateToDateString(event.event_date as Date | string) + 'T12:00:00')
     const balanceDueDate = subDays(eventDate, settings.balanceDueDaysBefore)
 
     const depositRequired =

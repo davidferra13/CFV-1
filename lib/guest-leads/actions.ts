@@ -3,6 +3,7 @@
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { z } from 'zod'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ---------------------------------------------------------------------------
 // Public actions (no auth required - guests submitting interest)
@@ -351,7 +352,9 @@ export async function draftGuestOutreachEmail(eventId: string) {
   const chefName = chef.display_name || chef.business_name
   const occasion = event.occasion || 'your event'
   const eventDate = event.event_date
-    ? new Date(event.event_date + 'T00:00:00').toLocaleDateString('en-US', {
+    ? new Date(
+        dateToDateString(event.event_date as Date | string) + 'T00:00:00'
+      ).toLocaleDateString('en-US', {
         month: 'long',
         day: 'numeric',
         year: 'numeric',

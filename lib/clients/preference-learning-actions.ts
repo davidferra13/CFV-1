@@ -11,6 +11,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { dateToDateString } from '@/lib/utils/format'
 
 // --- Types ---
 
@@ -85,7 +86,7 @@ export async function learnClientPreferences(clientId: string): Promise<ClientPa
 
   for (const event of events) {
     // Day of week preference
-    const eventDate = new Date(event.event_date + 'T12:00:00')
+    const eventDate = new Date(dateToDateString(event.event_date as Date | string) + 'T12:00:00')
     const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
     addPattern('preferred_day', dayNames[eventDate.getDay()])
 

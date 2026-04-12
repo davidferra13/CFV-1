@@ -5,6 +5,7 @@
 // Used on the dashboard Business Snapshot section and as a context hint in the inquiry pipeline.
 
 import { requireChef } from '@/lib/auth/get-user'
+import { dateToDateString } from '@/lib/utils/format'
 import { createServerClient } from '@/lib/db/server'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -85,7 +86,7 @@ export async function getBookingSeasonality(): Promise<BookingSeasonality> {
 
   for (const event of events) {
     if (!event.event_date) continue
-    const d = new Date(event.event_date + 'T12:00:00Z')
+    const d = new Date(dateToDateString(event.event_date as Date | string) + 'T12:00:00Z')
     const month = d.getUTCMonth() + 1 // 1-12
     const year = d.getUTCFullYear()
     const entry = byMonth.get(month)!

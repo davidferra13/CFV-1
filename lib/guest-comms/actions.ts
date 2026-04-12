@@ -2,6 +2,7 @@
 
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
+import { dateToDateString } from '@/lib/utils/format'
 
 /**
  * Get all guests with emails across events - for batch communication.
@@ -83,7 +84,9 @@ export async function draftPostEventEmail(eventId: string) {
   const chefName = chef.display_name || chef.business_name
   const occasion = event.occasion || 'our dinner'
   const eventDate = event.event_date
-    ? new Date(event.event_date + 'T00:00:00').toLocaleDateString('en-US', {
+    ? new Date(
+        dateToDateString(event.event_date as Date | string) + 'T00:00:00'
+      ).toLocaleDateString('en-US', {
         month: 'long',
         day: 'numeric',
         year: 'numeric',

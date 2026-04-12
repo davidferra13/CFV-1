@@ -1316,6 +1316,10 @@ export async function getEventsNeedingAAR(): Promise<EventNeedingAAR[]> {
     clientName: e.client?.full_name ?? 'Client',
     hoursSinceCompletion: e.completed_at
       ? Math.round((now - new Date(e.completed_at).getTime()) / 3600000)
-      : Math.round((now - new Date(e.event_date + 'T20:00:00').getTime()) / 3600000),
+      : Math.round(
+          (now -
+            new Date(dateToDateString(e.event_date as Date | string) + 'T20:00:00').getTime()) /
+            3600000
+        ),
   }))
 }

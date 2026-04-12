@@ -14,6 +14,7 @@ import {
 import { assessWeatherRisk, type WeatherRiskResult } from '@/lib/formulas/weather-risk'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { dateToDateString } from '@/lib/utils/format'
 
 export interface WeatherRequest {
   lat: number
@@ -206,7 +207,7 @@ export async function getEventWeatherForecast(
     // Need coordinates to fetch weather
     if (event.location_lat == null || event.location_lng == null) return null
 
-    const eventDate = new Date(event.event_date + 'T00:00:00')
+    const eventDate = new Date(dateToDateString(event.event_date as Date | string) + 'T00:00:00')
     const now = new Date()
     now.setHours(0, 0, 0, 0)
 

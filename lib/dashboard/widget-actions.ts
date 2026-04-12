@@ -8,6 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { sendPaymentReminderEmail } from '@/lib/email/notifications'
+import { dateToDateString } from '@/lib/utils/format'
 
 function _liso(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -320,7 +321,7 @@ export async function getShoppingWindowItems(daysAhead = 3): Promise<ShoppingWin
   const eventsWithLists = new Set((groceryLists || []).map((g: any) => g.event_id))
 
   return events.map((e: any) => {
-    const eventDate = new Date(e.event_date + 'T00:00:00')
+    const eventDate = new Date(dateToDateString(e.event_date as Date | string) + 'T00:00:00')
     const daysUntil = Math.max(
       0,
       Math.ceil((eventDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))

@@ -10,6 +10,7 @@ import { createServerClient } from '@/lib/db/server'
 import { createAdminClient } from '@/lib/db/admin'
 import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
 import { UnknownAppError } from '@/lib/errors/app-error'
+import { dateToDateString } from '@/lib/utils/format'
 
 import {
   MENU_CONTEXT_CACHE_TAG,
@@ -1656,7 +1657,8 @@ async function _getMenuSeasonalWarningsInner(
 
   if (!event?.event_date) return []
 
-  const eventMonth = new Date(event.event_date + 'T00:00:00').getMonth() + 1
+  const eventMonth =
+    new Date(dateToDateString(event.event_date as Date | string) + 'T00:00:00').getMonth() + 1
 
   const { getSeasonalProduceGrouped } = await import('@/lib/calendar/seasonal-produce')
   const seasonal = getSeasonalProduceGrouped(eventMonth)

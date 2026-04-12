@@ -8,6 +8,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -80,7 +81,7 @@ export async function getEventsNeedingAAR(tenantId: string): Promise<EventNeedin
 
     const clientData = event.client as any
     const clientName = clientData?.full_name ?? 'Client'
-    const eventDate = new Date(event.event_date + 'T00:00:00')
+    const eventDate = new Date(dateToDateString(event.event_date as Date | string) + 'T00:00:00')
     const daysSinceEvent = Math.floor((now - eventDate.getTime()) / 86400000)
 
     results.push({
