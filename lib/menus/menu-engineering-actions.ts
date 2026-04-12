@@ -3,6 +3,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import type { SimulatorDish } from './menu-simulator'
+import { dateToDateString } from '@/lib/utils/format'
 
 // ============================================
 // TYPES
@@ -448,7 +449,11 @@ export async function getRecipeProfitability(recipeId: string): Promise<RecipePr
     ingredientCount: costData.ingredient_count ?? 0,
     hasCompleteCostData: costData.has_all_prices ?? false,
     timesServed: eventsUsedIn.length,
-    eventsUsedIn: eventsUsedIn.sort((a, b) => b.eventDate.localeCompare(a.eventDate)),
+    eventsUsedIn: eventsUsedIn.sort((a, b) =>
+      dateToDateString(b.eventDate as Date | string).localeCompare(
+        dateToDateString(a.eventDate as Date | string)
+      )
+    ),
   }
 }
 
