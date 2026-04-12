@@ -13,29 +13,7 @@ export default async function ProfitLossPage() {
   await requireChef()
 
   const window = await getDefaultProfitLossWindow()
-  const report = await getProfitAndLossReport(window.startDate, window.endDate).catch(() => ({
-    startDate: window.startDate,
-    endDate: window.endDate,
-    revenue: {
-      billingRevenueCents: 0,
-      commerceRevenueCents: 0,
-      salesRevenueCents: 0,
-      totalRevenueCents: 0,
-    },
-    cogs: {
-      purchaseOrdersCents: 0,
-    },
-    operatingExpenses: {
-      expenseTableCents: 0,
-      laborFromPayrollCents: 0,
-      totalOperatingExpensesCents: 0,
-    },
-    totals: {
-      grossProfitCents: 0,
-      netProfitLossCents: 0,
-      profitMarginPercent: 0,
-    },
-  }))
+  const report = await getProfitAndLossReport(window.startDate, window.endDate)
 
   return (
     <div className="space-y-6">

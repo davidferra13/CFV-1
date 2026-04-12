@@ -18,15 +18,7 @@ export default async function SalesTaxPage() {
 
   const [settings, summary, unremitted, remittances] = await Promise.all([
     getSalesTaxSettings().catch(() => null),
-    getSalesTaxSummary().catch(() => ({
-      collectedCents: 0,
-      remittedCents: 0,
-      outstandingCents: 0,
-      eventCount: 0,
-      remittedEventCount: 0,
-      pendingEventCount: 0,
-      exemptEventCount: 0,
-    })),
+    getSalesTaxSummary(),
     getUnremittedEventTax().catch(() => []),
     getSalesTaxRemittances().catch(() => []),
   ])

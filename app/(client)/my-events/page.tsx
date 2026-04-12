@@ -319,11 +319,13 @@ export default async function MyEventsPage() {
     loyaltyStatus && (loyaltyStatus.pointsBalance > 0 || loyaltyStatus.totalEventsCompleted > 0)
   )
   const availableRewardsCount = loyaltyStatus?.availableRewards.length ?? 0
+  const spendingLoadError = (spendingSummary as any).loadError === true
   const hasSpendingActivity =
-    spendingSummary.lifetimeSpendCents > 0 ||
-    spendingSummary.thisYearSpendCents > 0 ||
-    spendingSummary.eventsAttended > 0 ||
-    spendingSummary.upcomingCommittedCents > 0
+    !spendingLoadError &&
+    (spendingSummary.lifetimeSpendCents > 0 ||
+      spendingSummary.thisYearSpendCents > 0 ||
+      spendingSummary.eventsAttended > 0 ||
+      spendingSummary.upcomingCommittedCents > 0)
   const profileNeedsAttention =
     profileSummary.completionPercent < 100 ||
     profileSummary.pendingMealRequests > 0 ||
@@ -1161,7 +1163,11 @@ export default async function MyEventsPage() {
         title="Spending"
         description="Snapshot of lifetime spend and upcoming commitments."
       >
-        {hasSpendingActivity ? (
+        {spendingLoadError ? (
+          <p className="text-sm text-stone-500">
+            Unable to load spending data. Refresh to try again.
+          </p>
+        ) : hasSpendingActivity ? (
           <div className="space-y-4">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <TrackedActivityLink

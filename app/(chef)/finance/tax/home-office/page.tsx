@@ -15,18 +15,7 @@ export default async function HomeOfficePage({
   const currentYear = new Date().getFullYear()
   const taxYear = searchParams.year ? parseInt(searchParams.year, 10) : currentYear
 
-  const deductionData = await getHomeOfficeDeduction(taxYear).catch(() => ({
-    settings: null,
-    homeOfficeSqft: 0,
-    homeTotalSqft: 0,
-    sqftPercentage: 0,
-    simplifiedDeductionCents: 0,
-    totalHomeExpensesCents: 0,
-    actualDeductionCents: 0,
-    selectedMethodDeductionCents: 0,
-    recommendedMethodDeductionCents: 0,
-    recommendedMethod: 'simplified' as const,
-  }))
+  const deductionData = await getHomeOfficeDeduction(taxYear)
 
   const years = [currentYear, currentYear - 1, currentYear - 2]
 

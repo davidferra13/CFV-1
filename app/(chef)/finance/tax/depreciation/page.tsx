@@ -20,13 +20,8 @@ export default async function DepreciationPage({
   const taxYear = searchParams.year ? parseInt(searchParams.year, 10) : currentYear
 
   const [equipment, yearSummary] = await Promise.all([
-    getEquipmentWithDepreciation(taxYear).catch(() => []),
-    getDepreciationForYear(taxYear).catch(() => ({
-      items: [],
-      totalSection179Cents: 0,
-      totalStraightLineCents: 0,
-      totalDepreciationCents: 0,
-    })),
+    getEquipmentWithDepreciation(taxYear),
+    getDepreciationForYear(taxYear),
   ])
 
   const years = [currentYear, currentYear - 1, currentYear - 2]

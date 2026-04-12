@@ -14,13 +14,8 @@ export default async function Form1099NECPage({
   const taxYear = searchParams.year ? parseInt(searchParams.year, 10) : currentYear
 
   const [reports, summary] = await Promise.all([
-    generate1099NECReports(taxYear).catch(() => []),
-    get1099NECFilingSummary(taxYear).catch(() => ({
-      totalContractors: 0,
-      requiresFilingCount: 0,
-      missingW9Count: 0,
-      totalNecCents: 0,
-    })),
+    generate1099NECReports(taxYear),
+    get1099NECFilingSummary(taxYear),
   ])
 
   const years = [currentYear, currentYear - 1, currentYear - 2]

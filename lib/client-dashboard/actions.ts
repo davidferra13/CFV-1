@@ -184,6 +184,7 @@ export async function getClientDashboardData(): Promise<{
       averageEventCents: 0,
       upcomingCommittedCents: 0,
       events: [],
+      loadError: true as const,
     })),
     getMyProfile().catch(() => null),
     getMyMealCollaborationData().catch(() => ({ history: [], requests: [] })),

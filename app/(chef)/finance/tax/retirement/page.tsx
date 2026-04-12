@@ -17,16 +17,8 @@ export default async function RetirementPage({
   const taxYear = searchParams.year ? parseInt(searchParams.year, 10) : currentYear
 
   const [retirementData, healthData] = await Promise.all([
-    getRetirementContributions(taxYear).catch(() => ({
-      contributions: [],
-      totalContributionCents: 0,
-      sepIraMaxCents: 0,
-      remainingCapacityCents: 0,
-    })),
-    getHealthInsurancePremiums(taxYear).catch(() => ({
-      premiums: [],
-      totalPremiumCents: 0,
-    })),
+    getRetirementContributions(taxYear),
+    getHealthInsurancePremiums(taxYear),
   ])
 
   const years = [currentYear, currentYear - 1, currentYear - 2]

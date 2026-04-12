@@ -13,18 +13,7 @@ function formatCurrency(cents: number): string {
 export default async function SalesTaxRemittancesPage() {
   await requireChef()
 
-  const [remittances, summary] = await Promise.all([
-    getSalesTaxRemittances().catch(() => []),
-    getSalesTaxSummary().catch(() => ({
-      collectedCents: 0,
-      remittedCents: 0,
-      outstandingCents: 0,
-      eventCount: 0,
-      remittedEventCount: 0,
-      pendingEventCount: 0,
-      exemptEventCount: 0,
-    })),
-  ])
+  const [remittances, summary] = await Promise.all([getSalesTaxRemittances(), getSalesTaxSummary()])
 
   const totalRemitted = remittances.reduce((s, r) => s + r.amountRemittedCents, 0)
 
