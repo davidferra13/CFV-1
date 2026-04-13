@@ -263,7 +263,7 @@ export async function getEvents() {
     if (withSoftDeleteFilter) {
       query = query.is('deleted_at' as any, null)
     }
-    return query.order('event_date', { ascending: true })
+    return query.order('event_date', { ascending: true }).limit(2000)
   }
 
   let response = await runQuery(true)

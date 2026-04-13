@@ -693,9 +693,9 @@ export async function getInquiries(filters?: {
     return query
   }
 
-  let response = await buildQuery(true).order('created_at', { ascending: false })
+  let response = await buildQuery(true).order('created_at', { ascending: false }).limit(2000)
   if (isMissingSoftDeleteColumn(response.error)) {
-    response = await buildQuery(false).order('created_at', { ascending: false })
+    response = await buildQuery(false).order('created_at', { ascending: false }).limit(2000)
   }
   const { data: inquiries, error } = response
 

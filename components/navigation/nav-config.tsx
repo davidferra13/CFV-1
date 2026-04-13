@@ -1122,6 +1122,7 @@ export const navGroups: NavGroup[] = [
           { href: '/staff/live', label: 'Live Activity' },
           { href: '/staff/performance', label: 'Performance' },
           { href: '/staff/permissions', label: 'Permissions' },
+          { href: '/staff/roster', label: 'Location Roster' },
           { href: '/staff/schedule', label: 'Schedule' },
         ],
       },

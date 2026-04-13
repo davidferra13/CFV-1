@@ -17,6 +17,7 @@ export interface SearchResult {
     | 'quote'
     | 'expense'
     | 'partner'
+    | 'staff'
     | 'note'
     | 'message'
     | 'conversation'
@@ -264,6 +265,27 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     }
   }
 
+  // Search staff members (name, role, email, phone - scoped by chef_id).
+  const { data: staffRows } = await db
+    .from('staff_members')
+    .select('id, name, role, email, phone, status')
+    .eq('chef_id', chef.tenantId!)
+    .or(`name.ilike.${q},email.ilike.${q},phone.ilike.${q}`)
+    .limit(8)
+
+  if (staffRows) {
+    for (const staff of staffRows) {
+      results.push({
+        id: makeId('staff', staff.id),
+        type: 'staff',
+        title: staff.name,
+        snippet: [staff.role, staff.email].filter(Boolean).join(' - ') || undefined,
+        url: `/staff/${staff.id}`,
+        metadata: { badge: staff.status },
+      })
+    }
+  }
+
   // Search client notes (note_text - scoped by tenant_id).
   const { data: notes } = await db
     .from('client_notes')
@@ -345,6 +367,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     quote: 'Quotes',
     expense: 'Expenses',
     partner: 'Partners',
+    staff: 'Staff',
     note: 'Notes',
     message: 'Messages',
     conversation: 'Conversations',
