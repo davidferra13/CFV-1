@@ -23,6 +23,7 @@ import {
   TableCell,
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
+import { UpgradePrompt } from '@/components/billing/upgrade-prompt'
 
 export const metadata: Metadata = { title: 'Costing' }
 
@@ -175,6 +176,14 @@ export default async function CostingPage() {
           </Card>
         )}
       </div>
+
+      {/* Upgrade prompts - surface after free costing is visible */}
+      {costedRecipes.length > 0 && (
+        <div className="space-y-2">
+          <UpgradePrompt featureSlug="menu-costing-live" show={true} />
+          {menuCosts.length > 0 && <UpgradePrompt featureSlug="margin-targeting" show={true} />}
+        </div>
+      )}
 
       {/* Ingredient Normalization Health */}
       {ingredientHealth && (

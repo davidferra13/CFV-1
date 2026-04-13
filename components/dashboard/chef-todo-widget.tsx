@@ -88,6 +88,7 @@ function AddTodoForm({
         await onAdd(text)
         inputRef.current?.focus()
       } catch (err) {
+        setValue(text)
         toast.error('Failed to add task')
       }
     })

@@ -103,6 +103,7 @@ function ConfidenceIcon({ confidence }: { confidence: string }) {
 }
 
 import { WebSourcingPanel } from '@/components/pricing/web-sourcing-panel'
+import { UpgradePrompt } from '@/components/billing/upgrade-prompt'
 
 // ---------------------------------------------------------------------------
 // Vendor Call Queue Panel
@@ -1853,6 +1854,13 @@ function ExpandedDetail({
             )}
           </div>
         )}
+
+      {/* Upgrade prompt - show after price history is visible */}
+      <UpgradePrompt
+        featureSlug="price-intel-advanced"
+        show={priceHistory.length > 0}
+        className="mt-2"
+      />
 
       {/* Action buttons */}
       <div className="flex flex-wrap items-center gap-2 pt-1">

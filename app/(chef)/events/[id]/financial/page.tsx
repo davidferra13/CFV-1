@@ -9,6 +9,7 @@ import { getEventFinancialSummaryFull } from '@/lib/events/financial-summary-act
 import { FinancialSummaryView } from '@/components/events/financial-summary-view'
 import { CostVarianceCard } from '@/components/finance/cost-variance-card'
 import { Button } from '@/components/ui/button'
+import { UpgradePrompt } from '@/components/billing/upgrade-prompt'
 
 export default async function EventFinancialPage({ params }: { params: { id: string } }) {
   await requireChef()
@@ -42,6 +43,9 @@ export default async function EventFinancialPage({ params }: { params: { id: str
 
       {/* Estimated vs Actual Cost Variance (from expense line items) */}
       <CostVarianceCard eventId={params.id} />
+
+      {/* Prompt for full profitability tracking after free summary is visible */}
+      <UpgradePrompt featureSlug="event-profitability" show={true} />
     </div>
   )
 }

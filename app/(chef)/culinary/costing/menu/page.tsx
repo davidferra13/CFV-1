@@ -7,6 +7,7 @@ import { safeFetchAll } from '@/lib/utils/safe-fetch'
 import { ErrorState } from '@/components/ui/error-state'
 import { Card } from '@/components/ui/card'
 import { CostingHelpPopover } from '@/components/costing/costing-help-popover'
+import { UpgradePrompt } from '@/components/billing/upgrade-prompt'
 import {
   Table,
   TableHeader,
@@ -205,6 +206,9 @@ export default async function MenuCostPage() {
           {noCost.length} menu{noCost.length !== 1 ? 's' : ''} have no linked recipe pricing yet.
         </p>
       )}
+
+      {/* Show component-level breakdown prompt after costs are visible */}
+      <UpgradePrompt featureSlug="costing-component-breakdown" show={withCost.length > 0} />
     </div>
   )
 }
