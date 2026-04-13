@@ -40,6 +40,8 @@ import { MetricsStrip } from './_sections/metrics-strip'
 import { OpenClawLiveAlerts } from '@/components/pricing/openclaw-live-alerts'
 import { PipelineStatusBadge } from '@/components/pricing/pipeline-status-badge'
 import { DashboardHeartbeat } from '@/components/dashboard/dashboard-heartbeat'
+import { RemyAlertsWidget } from '@/components/dashboard/remy-alerts-widget'
+import { getActiveAlerts } from '@/lib/ai/remy-proactive-alerts'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -322,6 +324,7 @@ export default async function ChefDashboard() {
 
   const archetype = await safe('archetype', () => getCachedChefArchetype(user.entityId), null)
   const primaryAction = getDashboardPrimaryAction(archetype)
+  const remyAlerts = await safe('remyAlerts', () => getActiveAlerts(10), [])
 
   // Time-aware greeting
   const greeting =
@@ -381,6 +384,14 @@ export default async function ChefDashboard() {
 
       {/* Onboarding banner - shows until setup is complete, then auto-hides */}
       <OnboardingBanner />
+
+      {/* Remy proactive alerts - urgent/high priority items needing attention */}
+      {remyAlerts.length > 0 && (
+        <div>
+          <div className="section-label mb-3">Alerts</div>
+          <RemyAlertsWidget alerts={remyAlerts} />
+        </div>
+      )}
 
       {/* ============================================ */}
       {/* TODAY & THIS WEEK - first thing a chef needs */}

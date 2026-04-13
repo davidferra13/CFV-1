@@ -5,6 +5,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getStaffMember, checkStaffHasLogin } from '@/lib/staff/actions'
+import { createServerClient } from '@/lib/db/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -33,10 +34,18 @@ const STATUS_BADGE: Record<string, 'success' | 'warning' | 'error' | 'default'> 
 
 export default async function StaffDetailPage({ params }: { params: { id: string } }) {
   const user = await requireChef()
-  const [member, hasLogin] = await Promise.all([
+  const db: any = createServerClient()
+  const [member, hasLogin, { data: locRows }] = await Promise.all([
     getStaffMember(params.id),
     checkStaffHasLogin(params.id),
+    db
+      .from('business_locations')
+      .select('id, name, location_type')
+      .eq('tenant_id', user.tenantId!)
+      .eq('is_active', true)
+      .order('name'),
   ])
+  const locations = (locRows ?? []) as { id: string; name: string; location_type: string }[]
 
   const onboardingComplete = member.onboarding.filter((i: any) => i.status === 'complete').length
   const onboardingTotal = member.onboarding.length
@@ -125,7 +134,7 @@ export default async function StaffDetailPage({ params }: { params: { id: string
           <CardTitle className="text-base">Edit Profile</CardTitle>
         </CardHeader>
         <CardContent>
-          <StaffMemberForm member={member} chefId={user.entityId} />
+          <StaffMemberForm member={member} chefId={user.entityId} locations={locations} />
         </CardContent>
       </Card>
 

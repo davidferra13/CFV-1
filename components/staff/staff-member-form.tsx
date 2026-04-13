@@ -30,15 +30,23 @@ type StaffMember = {
   email: string | null
   hourly_rate_cents: number
   notes: string | null
+  location_id?: string | null
+}
+
+type BusinessLocation = {
+  id: string
+  name: string
+  location_type: string
 }
 
 type Props = {
   member?: StaffMember
   chefId: string
+  locations?: BusinessLocation[]
   onDone?: () => void
 }
 
-export function StaffMemberForm({ member, chefId, onDone }: Props) {
+export function StaffMemberForm({ member, chefId, locations = [], onDone }: Props) {
   const router = useRouter()
   const [form, setForm] = useState({
     name: member?.name ?? '',
@@ -47,6 +55,7 @@ export function StaffMemberForm({ member, chefId, onDone }: Props) {
     email: member?.email ?? '',
     hourly_rate_dollars: member ? (member.hourly_rate_cents / 100).toFixed(2) : '',
     notes: member?.notes ?? '',
+    location_id: member?.location_id ?? '',
   })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -117,6 +126,7 @@ export function StaffMemberForm({ member, chefId, onDone }: Props) {
       email: form.email || undefined,
       hourly_rate_cents: Math.round(parseFloat(form.hourly_rate_dollars || '0') * 100),
       notes: form.notes || undefined,
+      location_id: form.location_id || null,
     }
 
     try {
@@ -210,6 +220,27 @@ export function StaffMemberForm({ member, chefId, onDone }: Props) {
             step="0.01"
           />
         </div>
+
+        {locations.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-stone-300 mb-1">
+              Location (optional)
+            </label>
+            <select
+              value={form.location_id}
+              onChange={(e) => update('location_id', e.target.value)}
+              title="Assigned location"
+              className="w-full rounded-lg border border-stone-600 bg-stone-800 px-3 py-2 text-sm text-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-500"
+            >
+              <option value="">No assigned location</option>
+              {locations.map((loc) => (
+                <option key={loc.id} value={loc.id}>
+                  {loc.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-stone-300 mb-1">Notes</label>

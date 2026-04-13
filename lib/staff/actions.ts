@@ -27,6 +27,7 @@ const CreateStaffSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
   hourly_rate_cents: z.number().int().min(0).default(0),
   notes: z.string().optional(),
+  location_id: z.string().uuid().nullable().optional(),
 })
 
 const UpdateStaffSchema = CreateStaffSchema.partial()
