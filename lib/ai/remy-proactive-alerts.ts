@@ -269,6 +269,102 @@ async function checkWeatherForEvents(tenantId: string): Promise<AlertCandidate[]
   }
 }
 
+async function checkPostEventCapture(db: any, tenantId: string): Promise<AlertCandidate[]> {
+  // Find events that completed in the last 6 hours with no AAR entry
+  const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString()
+  const now = new Date().toISOString()
+
+  const { data: events, error } = await db
+    .from('event_state_transitions')
+    .select(
+      'event_id, transitioned_at, events!inner(id, occasion, tenant_id, client:clients(full_name))'
+    )
+    .eq('events.tenant_id', tenantId)
+    .eq('to_status', 'completed')
+    .gte('transitioned_at', sixHoursAgo)
+    .lte('transitioned_at', now)
+    .limit(5)
+
+  if (error) throw error
+
+  const alerts: AlertCandidate[] = []
+
+  for (const row of events ?? []) {
+    const evt = row.events
+    if (!evt) continue
+
+    // Check if AAR already exists
+    const { count } = await db
+      .from('after_action_reviews')
+      .select('id', { count: 'exact', head: true })
+      .eq('event_id', row.event_id)
+      .eq('tenant_id', tenantId)
+
+    if ((count ?? 0) > 0) continue
+
+    const clientName = evt.client?.full_name ?? null
+    const eventLabel = evt.occasion || "Tonight's event"
+
+    alerts.push({
+      alertType: 'post_event_capture',
+      entityType: 'event',
+      entityId: row.event_id,
+      title: `How did ${eventLabel} go?`,
+      body: `${eventLabel}${clientName ? ` for ${clientName}` : ''} just wrapped up. Quick capture while it's fresh - notes, wins, lessons learned.`,
+      priority: 'normal',
+    })
+  }
+
+  return alerts
+}
+
+async function checkDormantClients(db: any, tenantId: string): Promise<AlertCandidate[]> {
+  // Find clients with no event or message in 90 days (one alert per dormant client per 7 days)
+  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+
+  const { data: clients, error } = await db
+    .from('clients')
+    .select('id, full_name, last_event_date')
+    .eq('tenant_id', tenantId)
+    .eq('is_active', true)
+    .not('last_event_date', 'is', null)
+    .lt('last_event_date', ninetyDaysAgo)
+    .limit(3)
+
+  if (error) throw error
+
+  const alerts: AlertCandidate[] = []
+
+  for (const client of clients ?? []) {
+    // Check if we already alerted on this client in the past 7 days
+    const { count } = await db
+      .from('remy_alerts')
+      .select('id', { count: 'exact', head: true })
+      .eq('tenant_id', tenantId)
+      .eq('alert_type', 'dormant_client')
+      .eq('entity_id', client.id)
+      .gte('created_at', sevenDaysAgo)
+
+    if ((count ?? 0) > 0) continue
+
+    const daysSince = Math.floor(
+      (Date.now() - new Date(client.last_event_date).getTime()) / (1000 * 60 * 60 * 24)
+    )
+
+    alerts.push({
+      alertType: 'dormant_client',
+      entityType: 'client',
+      entityId: client.id,
+      title: `${client.full_name} hasn't booked in ${daysSince} days`,
+      body: `Last event was ${daysSince} days ago. A quick check-in or seasonal offer could bring them back.`,
+      priority: 'low',
+    })
+  }
+
+  return alerts
+}
+
 // ─── Alert Orchestrator ──────────────────────────────────────────────────────
 
 async function isDuplicate(
@@ -340,6 +436,8 @@ export async function runAlertRules(tenantId: string): Promise<number> {
     paymentAlerts,
     birthdayAlerts,
     weatherAlerts,
+    postEventAlerts,
+    dormantAlerts,
   ] = await Promise.all([
     runRuleSafely(tenantId, 'check_missing_prep_list', () => checkMissingPrepList(db, tenantId)),
     runRuleSafely(tenantId, 'check_missing_grocery_list', () =>
@@ -350,6 +448,8 @@ export async function runAlertRules(tenantId: string): Promise<number> {
     runRuleSafely(tenantId, 'check_payment_received', () => checkPaymentReceived(db, tenantId)),
     runRuleSafely(tenantId, 'check_client_birthdays', () => checkClientBirthdays(db, tenantId)),
     runRuleSafely(tenantId, 'check_weather_for_events', () => checkWeatherForEvents(tenantId)),
+    runRuleSafely(tenantId, 'check_post_event_capture', () => checkPostEventCapture(db, tenantId)),
+    runRuleSafely(tenantId, 'check_dormant_clients', () => checkDormantClients(db, tenantId)),
   ])
 
   const allCandidates = [
@@ -360,6 +460,8 @@ export async function runAlertRules(tenantId: string): Promise<number> {
     ...paymentAlerts,
     ...birthdayAlerts,
     ...weatherAlerts,
+    ...postEventAlerts,
+    ...dormantAlerts,
   ]
 
   let inserted = 0
@@ -467,17 +569,27 @@ export async function markAlertActedOn(alertId: string) {
 export async function runAlertRulesAdmin(tenantId: string): Promise<number> {
   const db: any = createAdminClient()
 
-  const [prepAlerts, groceryAlerts, overdueAlerts, staleAlerts, birthdayAlerts, weatherAlerts] =
-    await Promise.all([
-      runRuleSafely(tenantId, 'check_missing_prep_list', () => checkMissingPrepList(db, tenantId)),
-      runRuleSafely(tenantId, 'check_missing_grocery_list', () =>
-        checkMissingGroceryList(db, tenantId)
-      ),
-      runRuleSafely(tenantId, 'check_overdue_invoices', () => checkOverdueInvoices(db, tenantId)),
-      runRuleSafely(tenantId, 'check_stale_inquiries', () => checkStaleInquiries(db, tenantId)),
-      runRuleSafely(tenantId, 'check_client_birthdays', () => checkClientBirthdays(db, tenantId)),
-      runRuleSafely(tenantId, 'check_weather_for_events', () => checkWeatherForEvents(tenantId)),
-    ])
+  const [
+    prepAlerts,
+    groceryAlerts,
+    overdueAlerts,
+    staleAlerts,
+    birthdayAlerts,
+    weatherAlerts,
+    postEventAlerts,
+    dormantAlerts,
+  ] = await Promise.all([
+    runRuleSafely(tenantId, 'check_missing_prep_list', () => checkMissingPrepList(db, tenantId)),
+    runRuleSafely(tenantId, 'check_missing_grocery_list', () =>
+      checkMissingGroceryList(db, tenantId)
+    ),
+    runRuleSafely(tenantId, 'check_overdue_invoices', () => checkOverdueInvoices(db, tenantId)),
+    runRuleSafely(tenantId, 'check_stale_inquiries', () => checkStaleInquiries(db, tenantId)),
+    runRuleSafely(tenantId, 'check_client_birthdays', () => checkClientBirthdays(db, tenantId)),
+    runRuleSafely(tenantId, 'check_weather_for_events', () => checkWeatherForEvents(tenantId)),
+    runRuleSafely(tenantId, 'check_post_event_capture', () => checkPostEventCapture(db, tenantId)),
+    runRuleSafely(tenantId, 'check_dormant_clients', () => checkDormantClients(db, tenantId)),
+  ])
 
   const allCandidates = [
     ...prepAlerts,
@@ -486,6 +598,8 @@ export async function runAlertRulesAdmin(tenantId: string): Promise<number> {
     ...staleAlerts,
     ...birthdayAlerts,
     ...weatherAlerts,
+    ...postEventAlerts,
+    ...dormantAlerts,
   ]
 
   let inserted = 0
