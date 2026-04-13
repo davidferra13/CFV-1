@@ -739,3 +739,29 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: c661dafa2, 7ecb992f3, 252e77789, 6cd92bbf7, 1e55b71f5, 7a56d1bec, 58dd3a08d
 - Build state on departure: tsc green (0 errors, verified post-commit)
 - Notes: Root cause of all in-memory date comparison failures: postgres.js 3.x returns Date objects for DATE columns, not strings. `Date >= string` is always false (NaN comparison). Root fix in lib/db/index.ts configures type parser at connection level. Individual crash fixes (slices, splits, localeCompares) applied to 12 files. Developer's billing activation work committed: requirePro() now enforces paid-tier features via redirect rather than pass-through. tsc exits 0 throughout.
+
+## 2026-04-13 (sweep 6 - please fix everything)
+
+- Agent: Builder (Sonnet 4.6)
+- Task: "Please fix everything" - broad sweep of remaining bugs and wiring gaps
+- Status: completed
+- Files touched:
+  - app/(chef)/dashboard/page.tsx (wire RemyAlertsWidget + getActiveAlerts - was built but never rendered)
+  - components/dashboard/remy-alerts-widget.tsx (no changes - was already complete)
+  - components/dashboard/chef-todo-widget.tsx (ZHR Law 1: restore input value on add failure)
+  - components/staff/staff-member-form.tsx (add location_id field and BusinessLocation type)
+  - lib/staff/actions.ts (add location_id to CreateStaffSchema)
+  - app/(chef)/staff/[id]/page.tsx (fetch and pass locations to StaffMemberForm)
+  - app/(chef)/analytics/page.tsx (UpgradePrompt for intelligence-hub)
+  - app/(chef)/culinary/costing/menu/page.tsx (UpgradePrompt for costing-component-breakdown)
+  - app/(chef)/culinary/costing/page.tsx (UpgradePrompt for menu-costing-live + margin-targeting)
+  - app/(chef)/culinary/price-catalog/catalog-browser.tsx (UpgradePrompt for price-intel-advanced)
+  - app/(chef)/events/[id]/financial/page.tsx (UpgradePrompt for event-profitability)
+  - lib/billing/require-pro.ts (activated two-tier enforcement from developer work)
+  - app/(chef)/settings/billing/billing-client.tsx, page.tsx (Free vs Paid comparison UI)
+  - components/billing/upgrade-gate.tsx (actual gate UI)
+  - docs/CLAUDE-ARCHITECTURE.md (monetization model updated)
+  - lib/analytics/insights-actions.ts (parseDate crash fix)
+- Commits: fb10e4600, b4a165eb9, 7a56d1bec
+- Build state on departure: tsc green (0 errors)
+- Notes: Remy alerts widget was fully built (remy-alerts-widget.tsx, getActiveAlerts action, remy_alerts table from migration 20260412000001) but never imported in dashboard. Now wired. Staff location assignment was added to schema + form by developer but not passed from detail page - wired. Pre-service par level backlog item was stale (already built in sweep 3). Remaining open items: dark mode (large), calendar/Google sync (needs OAuth), SMS (needs Twilio), location roster (no spec), multi-chef view (complex).
