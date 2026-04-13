@@ -31,6 +31,12 @@ function alertActionHref(alert: RemyAlert): string | null {
     case 'expiring_permit':
     case 'expiring_insurance':
       return `/settings/compliance`
+    case 'post_event_capture':
+      return `/events/${alert.entity_id}`
+    case 'dormant_client':
+      return `/clients/${alert.entity_id}`
+    case 'weather_warning':
+      return alert.entity_id ? `/events/${alert.entity_id}` : null
     default:
       return null
   }

@@ -38,13 +38,18 @@ export async function toggleFocusMode(enabled: boolean): Promise<void> {
 
   const modules = enabled ? [...CORE_MODULES] : [...ALL_MODULE_SLUGS]
 
-  await db
+  const { error } = await db
     .from('chef_preferences')
     .update({
       focus_mode: enabled,
       enabled_modules: modules,
     } as any)
     .eq('chef_id', user.entityId)
+
+  if (error) {
+    console.error('[toggleFocusMode] DB error:', error)
+    throw new Error('Failed to update focus mode')
+  }
 
   revalidateTag(`${CHEF_LAYOUT_CACHE_TAG}-${user.entityId}`)
 }

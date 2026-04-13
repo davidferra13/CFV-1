@@ -81,7 +81,7 @@ export async function saveSalesTaxSettings(input: {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  await db.from('sales_tax_settings').upsert(
+  const { error } = await db.from('sales_tax_settings').upsert(
     {
       chef_id: user.entityId,
       enabled: input.enabled,
@@ -95,6 +95,7 @@ export async function saveSalesTaxSettings(input: {
     },
     { onConflict: 'chef_id' }
   )
+  if (error) throw new Error(`Failed to save sales tax settings: ${error.message}`)
 }
 
 // ─── Per-Event Sales Tax ─────────────────────────────────────────────────────
@@ -113,7 +114,7 @@ export async function setEventSalesTax(input: {
     ? 0
     : Math.round((input.taxableAmountCents * input.taxRateBps) / 10000)
 
-  await db.from('event_sales_tax').upsert(
+  const { error } = await db.from('event_sales_tax').upsert(
     {
       chef_id: user.entityId,
       event_id: input.eventId,
@@ -126,6 +127,7 @@ export async function setEventSalesTax(input: {
     },
     { onConflict: 'event_id' }
   )
+  if (error) throw new Error(`Failed to save event sales tax: ${error.message}`)
 }
 
 export async function getEventSalesTax(eventId: string): Promise<EventSalesTax | null> {
@@ -150,7 +152,7 @@ export async function markEventSalesTaxRemitted(input: {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  await db
+  const { error } = await db
     .from('event_sales_tax')
     .update({
       remitted: true,
@@ -160,6 +162,7 @@ export async function markEventSalesTaxRemitted(input: {
     })
     .eq('chef_id', user.entityId)
     .eq('event_id', input.eventId)
+  if (error) throw new Error(`Failed to mark tax remitted: ${error.message}`)
 }
 
 // ─── Summary ─────────────────────────────────────────────────────────────────

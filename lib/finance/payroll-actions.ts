@@ -124,7 +124,7 @@ export async function createEmployee(input: {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  await db.from('employees').insert({
+  const { error } = await db.from('employees').insert({
     chef_id: user.entityId,
     staff_member_id: input.staffMemberId ?? null,
     name: input.name,
@@ -143,6 +143,7 @@ export async function createEmployee(input: {
     hourly_rate_cents: input.hourlyRateCents ?? null,
     annual_salary_cents: input.annualSalaryCents ?? null,
   })
+  if (error) throw new Error(`Failed to create employee: ${error.message}`)
 }
 
 export async function updateEmployee(
@@ -184,14 +185,19 @@ export async function updateEmployee(
   if (input.hourlyRateCents !== undefined) patch.hourly_rate_cents = input.hourlyRateCents
   if (input.annualSalaryCents !== undefined) patch.annual_salary_cents = input.annualSalaryCents
 
-  await db.from('employees').update(patch).eq('id', id).eq('chef_id', user.entityId)
+  const { error } = await db
+    .from('employees')
+    .update(patch)
+    .eq('id', id)
+    .eq('chef_id', user.entityId)
+  if (error) throw new Error(`Failed to update employee: ${error.message}`)
 }
 
 export async function terminateEmployee(id: string, terminationDate: string): Promise<void> {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  await db
+  const { error } = await db
     .from('employees')
     .update({
       status: 'terminated',
@@ -200,6 +206,7 @@ export async function terminateEmployee(id: string, terminationDate: string): Pr
     })
     .eq('id', id)
     .eq('chef_id', user.entityId)
+  if (error) throw new Error(`Failed to terminate employee: ${error.message}`)
 }
 
 // ─── Payroll Records ──────────────────────────────────────────────────────────
