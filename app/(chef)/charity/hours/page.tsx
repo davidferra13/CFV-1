@@ -20,7 +20,7 @@ export default async function CharityHoursPage() {
   const [entries, recentOrgs, summary, wfpStories] = await Promise.all([
     getCharityHours().catch(() => []),
     getRecentCharityOrgs().catch(() => []),
-    getCharityHoursSummary(),
+    getCharityHoursSummary().catch(() => null),
     getWfpNews(6).catch(() => []),
   ])
 
@@ -41,7 +41,7 @@ export default async function CharityHoursPage() {
         </p>
       </div>
 
-      <CharityHoursSummaryCards summary={summary} />
+      {summary != null && <CharityHoursSummaryCards summary={summary} />}
       <CharityHoursClient entries={entries} recentOrgs={recentOrgs} />
 
       {wfpStories.length > 0 && (

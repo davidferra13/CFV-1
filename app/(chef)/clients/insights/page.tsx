@@ -41,7 +41,7 @@ export default async function ClientInsightsPage() {
   await requireChef()
   const [clients, engagementStats] = await Promise.all([
     getClientsWithStats(),
-    getEngagementStats(),
+    getEngagementStats().catch(() => null),
   ])
 
   const sortedBySpend = [...clients].sort(
@@ -136,10 +136,13 @@ export default async function ClientInsightsPage() {
                 <p className="text-xs text-stone-400 uppercase tracking-wide mb-1">
                   Active on Portal Today
                 </p>
-                <p className="text-2xl font-bold text-stone-100">{engagementStats.activeToday}</p>
+                <p className="text-2xl font-bold text-stone-100">
+                  {engagementStats != null ? engagementStats.activeToday : '—'}
+                </p>
                 <p className="text-sm text-stone-500 mt-0.5">
-                  {engagementStats.activeThisWeek} this week · {engagementStats.totalEventsThisWeek}{' '}
-                  actions
+                  {engagementStats != null
+                    ? `${engagementStats.activeThisWeek} this week · ${engagementStats.totalEventsThisWeek} actions`
+                    : 'Activity data unavailable'}
                 </p>
               </div>
               <span className="text-sm text-brand-600 font-medium">View live monitor →</span>

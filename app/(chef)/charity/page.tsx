@@ -57,7 +57,7 @@ export default async function CharityHubPage() {
     getCharityMenus().catch(() => []),
     getCharityFinancials().catch(() => []),
     getCharityMisc().catch(() => []),
-    getCharityHoursSummary(),
+    getCharityHoursSummary().catch(() => null),
   ])
 
   const totalCount = events.length + menus.length + financials.length + misc.length
@@ -85,7 +85,7 @@ export default async function CharityHubPage() {
         </div>
       </div>
 
-      {(totalCount > 0 || hoursSummary.totalHours > 0) && (
+      {(totalCount > 0 || (hoursSummary != null && hoursSummary.totalHours > 0)) && (
         <div className="grid gap-4 md:grid-cols-5">
           <Card className="p-4 text-center">
             <p className="text-2xl font-bold text-stone-100">{events.length}</p>
@@ -105,14 +105,16 @@ export default async function CharityHubPage() {
           </Card>
           <Link href="/charity/hours" className="block">
             <Card className="h-full p-4 text-center transition-colors hover:bg-stone-800/50">
-              <p className="text-2xl font-bold text-stone-100">{hoursSummary.totalHours}</p>
+              <p className="text-2xl font-bold text-stone-100">
+                {hoursSummary != null ? hoursSummary.totalHours : '—'}
+              </p>
               <p className="mt-1 text-xs text-stone-500">Volunteer hours</p>
             </Card>
           </Link>
         </div>
       )}
 
-      {totalCount === 0 && hoursSummary.totalHours === 0 && (
+      {totalCount === 0 && (hoursSummary == null || hoursSummary.totalHours === 0) && (
         <Card className="p-10 text-center">
           <p className="text-lg font-medium text-stone-400">No community impact signals yet</p>
           <p className="mx-auto mt-2 max-w-md text-sm text-stone-500">
