@@ -145,6 +145,99 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
         />
       </div>
 
+      {/* Commission Summary - computed from completed events */}
+      {(partner as any).commission_type &&
+        (partner as any).commission_type !== 'none' &&
+        (() => {
+          const commType = (partner as any).commission_type as 'percentage' | 'flat_fee'
+          const ratePercent = (partner as any).commission_rate_percent as number | null
+          const flatCents = (partner as any).commission_flat_cents as number | null
+          const completedWithPrice = partnerEvents.filter(
+            (e) => e.status === 'completed' && (e.quoted_price_cents ?? 0) > 0
+          )
+          const totalCommissionCents = completedWithPrice.reduce((sum, e) => {
+            if (commType === 'percentage' && ratePercent != null)
+              return sum + Math.round(((e.quoted_price_cents ?? 0) * ratePercent) / 100)
+            if (commType === 'flat_fee' && flatCents != null) return sum + flatCents
+            return sum
+          }, 0)
+          return (
+            <Card className="p-6">
+              <h2 className="text-lg font-semibold text-stone-100 mb-4">Commission Summary</h2>
+              <div className="flex flex-wrap items-start gap-8 mb-4">
+                <div>
+                  <p className="text-2xl font-bold text-emerald-500">
+                    {formatCents(totalCommissionCents)}
+                  </p>
+                  <p className="text-xs text-stone-500 mt-1">
+                    Total earned ({completedWithPrice.length} completed event
+                    {completedWithPrice.length !== 1 ? 's' : ''})
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-stone-300">
+                    {commType === 'percentage'
+                      ? `${ratePercent ?? '?'}% of booking value`
+                      : flatCents != null
+                        ? `${formatCents(flatCents)} flat fee per event`
+                        : 'Flat fee (amount not set)'}
+                  </p>
+                  <p className="text-xs text-stone-500 mt-1">Commission rate</p>
+                </div>
+              </div>
+              {completedWithPrice.length > 0 ? (
+                <table className="w-full text-sm border border-stone-700 rounded-lg overflow-hidden">
+                  <thead className="bg-stone-800">
+                    <tr>
+                      <th className="text-left px-3 py-2 text-stone-500 font-medium">Date</th>
+                      <th className="text-left px-3 py-2 text-stone-500 font-medium">Event</th>
+                      <th className="text-right px-3 py-2 text-stone-500 font-medium">Booking</th>
+                      <th className="text-right px-3 py-2 text-stone-500 font-medium">
+                        Commission
+                      </th>
+                      <th className="text-right px-3 py-2 text-stone-500 font-medium">View</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-800">
+                    {completedWithPrice.map((evt) => {
+                      const comm =
+                        commType === 'percentage' && ratePercent != null
+                          ? Math.round(((evt.quoted_price_cents ?? 0) * ratePercent) / 100)
+                          : (flatCents ?? 0)
+                      return (
+                        <tr key={evt.id} className="hover:bg-stone-800/50">
+                          <td className="px-3 py-2 text-stone-300">
+                            {format(new Date(evt.event_date), 'MMM d, yyyy')}
+                          </td>
+                          <td className="px-3 py-2 text-stone-300">{evt.occasion || 'Untitled'}</td>
+                          <td className="px-3 py-2 text-right text-stone-300">
+                            {formatCents(evt.quoted_price_cents ?? 0)}
+                          </td>
+                          <td className="px-3 py-2 text-right font-semibold text-emerald-500">
+                            {formatCents(comm)}
+                          </td>
+                          <td className="px-3 py-2 text-right">
+                            <Link
+                              href={`/events/${evt.id}`}
+                              className="text-xs text-brand-600 hover:underline"
+                            >
+                              View
+                            </Link>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              ) : (
+                <p className="text-sm text-stone-400 italic">
+                  No completed events with pricing yet.
+                </p>
+              )}
+            </Card>
+          )
+        })()}
+
       {/* Contact & Booking Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="p-6">
