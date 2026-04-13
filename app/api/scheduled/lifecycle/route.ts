@@ -10,6 +10,7 @@ import { getAutomationSettingsForTenant } from '@/lib/automations/settings-actio
 import { recordCronHeartbeat, recordCronError } from '@/lib/cron/heartbeat'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
+import { dateToDateString } from '@/lib/utils/format'
 
 function localDateISO(d: Date): string {
   return [
@@ -374,7 +375,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
               clientName: client.full_name,
               chefName: chef?.business_name || 'Your Chef',
               occasion: event.occasion || 'your event',
-              eventDate: event.event_date,
+              eventDate: dateToDateString(event.event_date as Date | string),
               serveTime: event.serve_time,
               arrivalTime: event.arrival_time,
               location: buildLocation(event),
@@ -519,7 +520,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
                 clientName: client.full_name,
                 chefName: chef?.business_name || 'Your Chef',
                 occasion: event.occasion || 'your event',
-                eventDate: event.event_date,
+                eventDate: dateToDateString(event.event_date as Date | string),
                 daysUntilEvent: daysUntilEvent,
                 amountDueCents,
                 depositAmountCents: depositCents > 0 ? depositCents : null,
@@ -701,7 +702,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
                   clientName: client.full_name,
                   chefName: chefName5,
                   occasion: occasion5,
-                  eventDate: event.event_date,
+                  eventDate: dateToDateString(event.event_date as Date | string),
                   guestCount: event.guest_count ?? null,
                   location: location5,
                   eventId: event.id,
@@ -712,7 +713,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
                   clientName: client.full_name,
                   chefName: chefName5,
                   occasion: occasion5,
-                  eventDate: event.event_date,
+                  eventDate: dateToDateString(event.event_date as Date | string),
                   serveTime: event.serve_time ?? null,
                   guestCount: event.guest_count ?? null,
                   location: location5,
@@ -725,7 +726,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
                   clientName: client.full_name,
                   chefName: chefName5,
                   occasion: occasion5,
-                  eventDate: event.event_date,
+                  eventDate: dateToDateString(event.event_date as Date | string),
                   serveTime: event.serve_time ?? null,
                   arrivalTime: event.arrival_time ?? null,
                   location: location5,
@@ -738,7 +739,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
                   clientName: client.full_name,
                   chefName: chefName5,
                   occasion: occasion5,
-                  eventDate: event.event_date,
+                  eventDate: dateToDateString(event.event_date as Date | string),
                   serveTime: event.serve_time ?? null,
                   arrivalTime: event.arrival_time ?? null,
                   location: location5,
@@ -753,7 +754,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
                   clientName: client.full_name,
                   chefName: chefName5,
                   occasion: occasion5,
-                  eventDate: event.event_date,
+                  eventDate: dateToDateString(event.event_date as Date | string),
                   serveTime: event.serve_time ?? null,
                   arrivalTime: event.arrival_time ?? null,
                   location: location5,
@@ -912,7 +913,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
               clientName: client.full_name,
               chefName: chef?.business_name || 'Your Chef',
               occasion: event.occasion || 'your event',
-              eventDate: event.event_date,
+              eventDate: dateToDateString(event.event_date as Date | string),
               guestCount: event.guest_count ?? null,
               location: buildLocation(event),
               eventId: event.id,

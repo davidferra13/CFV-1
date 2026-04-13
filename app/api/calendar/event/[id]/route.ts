@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { generateICS } from '@/lib/scheduling/generate-ics'
+import { dateToDateString } from '@/lib/utils/format'
 
 const DOWNLOADABLE_STATUSES = ['paid', 'confirmed', 'in_progress', 'completed']
 
@@ -50,7 +51,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     const icsString = generateICS({
       id: event.id,
       title: event.occasion || 'Private Chef Dinner',
-      eventDate: event.event_date,
+      eventDate: dateToDateString(event.event_date as Date | string),
       startTime: event.serve_time ?? undefined,
       location,
       description: event.special_requests ?? undefined,

@@ -41,11 +41,7 @@ export default async function ClientInsightsPage() {
   await requireChef()
   const [clients, engagementStats] = await Promise.all([
     getClientsWithStats(),
-    getEngagementStats().catch(() => ({
-      activeToday: 0,
-      activeThisWeek: 0,
-      totalEventsThisWeek: 0,
-    })),
+    getEngagementStats(),
   ])
 
   const sortedBySpend = [...clients].sort(

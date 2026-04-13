@@ -20,13 +20,7 @@ export default async function CharityHoursPage() {
   const [entries, recentOrgs, summary, wfpStories] = await Promise.all([
     getCharityHours().catch(() => []),
     getRecentCharityOrgs().catch(() => []),
-    getCharityHoursSummary().catch(() => ({
-      totalHours: 0,
-      totalEntries: 0,
-      uniqueOrgs: 0,
-      verified501cOrgs: 0,
-      hoursByOrg: [],
-    })),
+    getCharityHoursSummary(),
     getWfpNews(6).catch(() => []),
   ])
 

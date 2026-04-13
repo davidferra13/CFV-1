@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/db/server'
 import { checkRateLimit } from '@/lib/rateLimit'
+import { dateToDateString } from '@/lib/utils/format'
 
 // Public iCal feed endpoint - no auth required.
 // URL: /api/feeds/calendar/{ical_feed_token}
@@ -128,14 +129,15 @@ function formatIcsEvent(
     cancelled: 'CANCELLED',
   }
 
-  const dtStart = formatIcsDate(event.event_date, event.serve_time)
+  const eventDateStr = dateToDateString(event.event_date as Date | string)
+  const dtStart = formatIcsDate(eventDateStr, event.serve_time)
   const dtEnd = event.departure_time
-    ? formatIcsDate(event.event_date, event.departure_time)
+    ? formatIcsDate(eventDateStr, event.departure_time)
     : event.serve_time
       ? (() => {
           const startHour = parseInt(event.serve_time!.split(':')[0])
           const endHour = Math.min(startHour + 3, 23) // Cap at 23:xx to avoid invalid iCal time
-          return formatIcsDate(event.event_date, `${endHour}:${event.serve_time!.split(':')[1]}`)
+          return formatIcsDate(eventDateStr, `${endHour}:${event.serve_time!.split(':')[1]}`)
         })()
       : null
 
