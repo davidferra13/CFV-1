@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { requireFocusAccess } from '@/lib/billing/require-focus-access'
 import { searchStaffMembers, deactivateStaffMember } from '@/lib/staff/actions'
+import { createServerClient } from '@/lib/db/server'
 import { StaffMemberForm } from '@/components/staff/staff-member-form'
 import { StaffSearchFilter } from '@/components/staff/staff-search-filter'
 import { Button } from '@/components/ui/button'
@@ -38,11 +39,21 @@ export default async function StaffRosterPage({
   const role = searchParams.role ?? 'all'
   const status = searchParams.status ?? 'active'
 
-  const staff = await searchStaffMembers({
-    search: search || undefined,
-    role,
-    status: status === 'all' ? undefined : status,
-  })
+  const db: any = createServerClient()
+  const [staff, { data: locRows }] = await Promise.all([
+    searchStaffMembers({
+      search: search || undefined,
+      role,
+      status: status === 'all' ? undefined : status,
+    }),
+    db
+      .from('business_locations')
+      .select('id, name, location_type')
+      .eq('tenant_id', user.tenantId!)
+      .eq('is_active', true)
+      .order('name'),
+  ])
+  const locations = (locRows ?? []) as { id: string; name: string; location_type: string }[]
 
   const active = staff.filter((s: any) => s.status === 'active')
   const inactive = staff.filter((s: any) => s.status === 'inactive')
@@ -138,7 +149,7 @@ export default async function StaffRosterPage({
           <CardTitle className="text-base">Add Team Member</CardTitle>
         </CardHeader>
         <CardContent>
-          <StaffMemberForm chefId={user.entityId} />
+          <StaffMemberForm chefId={user.entityId} locations={locations} />
         </CardContent>
       </Card>
     </div>

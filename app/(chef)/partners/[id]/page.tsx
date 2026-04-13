@@ -19,6 +19,8 @@ import { BulkAssignEvents } from '@/components/partners/bulk-assign-events'
 import { SharePartnerReportButton } from '@/components/partners/share-partner-report-button'
 import { PartnerInviteButton } from '@/components/partners/partner-invite-button'
 import { CopyReferralLinkButton } from '@/components/partners/copy-referral-link-button'
+import { PartnerPayoutPanel } from '@/components/partners/partner-payout-panel'
+import { getPartnerPayouts } from '@/lib/partners/payout-actions'
 import { Inbox, CalendarCheck, DollarSign, Users, TrendingUp, MapPin } from '@/components/ui/icons'
 import { EntityPhotoUpload } from '@/components/entities/entity-photo-upload'
 
@@ -45,12 +47,13 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
     .single()
   const chefSlug = chefRow?.inquiry_slug || chefRow?.public_slug || ''
 
-  const [partner, partnerEvents, unassignedEvents] = await Promise.all([
+  const [partner, partnerEvents, unassignedEvents, existingPayouts] = await Promise.all([
     getPartnerById(params.id),
     getPartnerEvents(params.id).catch(() => [] as Awaited<ReturnType<typeof getPartnerEvents>>),
     getEventsNotAssignedToPartner(params.id).catch(
       () => [] as Awaited<ReturnType<typeof getEventsNotAssignedToPartner>>
     ),
+    getPartnerPayouts(params.id).catch(() => []),
   ])
 
   if (!partner) notFound()
@@ -235,6 +238,31 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
                 </p>
               )}
             </Card>
+          )
+        })()}
+
+      {/* Payout History - shown when commission type is set */}
+      {(partner as any).commission_type &&
+        (partner as any).commission_type !== 'none' &&
+        (() => {
+          const commType = (partner as any).commission_type as 'percentage' | 'flat_fee'
+          const ratePercent = (partner as any).commission_rate_percent as number | null
+          const flatCents = (partner as any).commission_flat_cents as number | null
+          const completedWithPrice = partnerEvents.filter(
+            (e) => e.status === 'completed' && (e.quoted_price_cents ?? 0) > 0
+          )
+          const totalEarnedCents = completedWithPrice.reduce((sum, e) => {
+            if (commType === 'percentage' && ratePercent != null)
+              return sum + Math.round(((e.quoted_price_cents ?? 0) * ratePercent) / 100)
+            if (commType === 'flat_fee' && flatCents != null) return sum + flatCents
+            return sum
+          }, 0)
+          return (
+            <PartnerPayoutPanel
+              partnerId={partner.id}
+              initialPayouts={existingPayouts}
+              totalEarnedCents={totalEarnedCents}
+            />
           )
         })()}
 
