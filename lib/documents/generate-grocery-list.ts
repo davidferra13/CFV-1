@@ -65,6 +65,7 @@ export type GroceryListData = {
   budget: {
     ceilingCents: number | null
     projectedCents: number | null
+    overBudget: boolean
   }
   totalBuyItems: number
   hasStop2: boolean
@@ -262,7 +263,7 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
       stop2Items: [],
       presourcedItems,
       unrecipedComponents: allAsWarnings,
-      budget: { ceilingCents: null, projectedCents: null },
+      budget: { ceilingCents: null, projectedCents: null, overBudget: false },
       totalBuyItems: 0,
       hasStop2: false,
       allergies: event.allergies ?? [],
@@ -534,7 +535,12 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
     stop2Items,
     presourcedItems,
     unrecipedComponents,
-    budget: { ceilingCents, projectedCents: finalProjected },
+    budget: {
+      ceilingCents,
+      projectedCents: finalProjected,
+      overBudget:
+        ceilingCents != null && finalProjected != null ? finalProjected > ceilingCents : false,
+    },
     totalBuyItems,
     hasStop2: stop2Items.length > 0,
     allergies: Array.from(allAllergies),

@@ -252,7 +252,11 @@ export default function PrivacyPage() {
             </li>
           </ul>
           <p className="mt-4 leading-relaxed">
-            To exercise any of these rights, email us at{' '}
+            To exercise any of these rights, use our{' '}
+            <a href="/data-request" className="text-brand-400 hover:underline">
+              self-serve data request form
+            </a>{' '}
+            or email us at{' '}
             <a href="mailto:privacy@cheflowhq.com" className="text-brand-400 hover:underline">
               privacy@cheflowhq.com
             </a>
