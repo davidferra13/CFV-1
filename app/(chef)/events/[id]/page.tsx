@@ -71,6 +71,7 @@ import { getMenuLibraryForEvent } from '@/lib/menus/showcase-actions'
 import { EventPrepSchedule } from '@/components/events/event-prep-schedule'
 import { PrepBlockNudgeBanner } from '@/components/events/prep-block-nudge'
 import { getEventPrepBlocks } from '@/lib/scheduling/prep-block-actions'
+import { getParAlerts } from '@/lib/inventory/count-actions'
 import { ReadinessGatePanel } from '@/components/events/readiness-gate-panel'
 import { getEventReadiness } from '@/lib/events/readiness'
 import { getTakeAChefConversionData } from '@/lib/inquiries/take-a-chef-capture-actions'
@@ -173,6 +174,15 @@ function isEventToday(eventDate: Date | string): boolean {
   tomorrow.setDate(tomorrow.getDate() + 1)
   const evDate = new Date(dateToDateString(eventDate) + 'T00:00:00')
   return evDate >= today && evDate < tomorrow
+}
+
+function isEventWithinDays(eventDate: Date | string, days: number): boolean {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const cutoff = new Date(today)
+  cutoff.setDate(cutoff.getDate() + days)
+  const evDate = new Date(dateToDateString(eventDate) + 'T00:00:00')
+  return evDate >= today && evDate <= cutoff
 }
 
 async function getEventFinancialSummary(eventId: string) {
@@ -380,6 +390,7 @@ export default async function EventDetailPage({
     eventHasAllergyData,
     eventChatConversationId,
     revenueSplitCollaborators,
+    parAlerts,
   ] = await Promise.all([
     // Refund recommendation â€” only for cancelled events with payments
     event.status === 'cancelled' && totalPaid > 0
@@ -470,6 +481,10 @@ export default async function EventDetailPage({
       }
     })(),
     getRevenueSplitCollaborators(params.id).catch(() => []),
+    // Par level alerts - only for upcoming confirmed/in_progress events
+    ['confirmed', 'in_progress'].includes(event.status) && isEventWithinDays(event.event_date, 7)
+      ? getParAlerts().catch(() => [])
+      : Promise.resolve([]),
   ])
 
   // Cost forecast for future events with menus
@@ -765,6 +780,33 @@ export default async function EventDetailPage({
       {/* Prep Block Nudge - confirmed events with no prep blocks scheduled */}
       {event.status === 'confirmed' && (prepBlocks as any[]).length === 0 && (
         <PrepBlockNudgeBanner eventId={event.id} />
+      )}
+
+      {/* Par Level Alert - items below par for upcoming events */}
+      {(parAlerts as any[]).length > 0 && (
+        <Card className="p-4 border-amber-700/50 bg-amber-950/20">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-amber-400">
+                {(parAlerts as any[]).length} item{(parAlerts as any[]).length !== 1 ? 's' : ''}{' '}
+                below par level
+              </p>
+              <p className="text-xs text-stone-400 mt-0.5">
+                {(parAlerts as any[])
+                  .slice(0, 3)
+                  .map((a: any) => a.ingredientName)
+                  .join(', ')}
+                {(parAlerts as any[]).length > 3 ? ` +${(parAlerts as any[]).length - 3} more` : ''}
+              </p>
+            </div>
+            <Link
+              href="/inventory"
+              className="shrink-0 text-xs text-amber-400 hover:underline font-medium"
+            >
+              Check inventory
+            </Link>
+          </div>
+        </Card>
       )}
 
       {/* Prep Schedule */}
