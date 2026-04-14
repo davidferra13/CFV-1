@@ -151,10 +151,5 @@ CREATE POLICY notification_prefs_no_delete ON notification_preferences
   FOR DELETE USING (false);
 
 
--- ─── Enable Realtime ────────────────────────────────────────────────────
-
--- Allow Supabase Realtime to broadcast INSERT events on notifications
-ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
-
-
 -- ─── End of Notification System ─────────────────────────────────────────
+-- Realtime delivery handled by SSE (Server-Sent Events) in lib/realtime/

@@ -12,10 +12,6 @@ lib/db/schema/relations.ts
 lib/db/migrations/schema.ts
 lib/db/migrations/relations.ts
 
-# Supabase local
-supabase/.branches/
-supabase/.temp/
-
 # Env files
 .env*
 

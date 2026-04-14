@@ -23,7 +23,6 @@ test('extractRequestMetadata captures request correlation fields', () => {
       'x-forwarded-proto': 'https',
       'x-forwarded-for': '203.0.113.42',
       'user-agent': 'Mozilla/5.0',
-      'x-vercel-id': 'cle1::abc',
     })
   )
 
@@ -34,7 +33,6 @@ test('extractRequestMetadata captures request correlation fields', () => {
   assert.equal(metadata.request_proto, 'https')
   assert.equal(metadata.request_ip_hint, '203.0.113.x')
   assert.equal(metadata.user_agent, 'Mozilla/5.0')
-  assert.equal(metadata.edge_request_id, 'cle1::abc')
 })
 
 test('buildPlatformObservabilityMetadata merges runtime metadata with request metadata', () => {

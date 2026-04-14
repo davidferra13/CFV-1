@@ -30,7 +30,7 @@ COMMENT ON TABLE cron_executions IS
   'Read by /api/scheduled/monitor to detect stale or failing jobs.';
 
 COMMENT ON COLUMN cron_executions.cron_name IS
-  'Identifier matching the cron path in vercel.json, '
+  'Identifier matching the cron job name, '
   'e.g. ''lifecycle'', ''follow-ups'', ''loyalty-expiry''.';
 
 COMMENT ON COLUMN cron_executions.duration_ms IS

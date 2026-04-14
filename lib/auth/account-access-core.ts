@@ -123,18 +123,10 @@ export function parseUserAgent(userAgent: string | null | undefined): AccessDevi
 }
 
 export function resolveLocationFromHeaders(headers: Headers): AccessLocationSnapshot {
-  const countryCode =
-    headers.get('cf-ipcountry')?.trim() || headers.get('x-vercel-ip-country')?.trim() || null
-  const country =
-    headers.get('x-vercel-ip-country-name')?.trim() ||
-    headers.get('cf-country-name')?.trim() ||
-    countryCode
-  const region =
-    headers.get('x-vercel-ip-country-region')?.trim() ||
-    headers.get('cf-region-code')?.trim() ||
-    headers.get('cf-region')?.trim() ||
-    null
-  const city = headers.get('x-vercel-ip-city')?.trim() || headers.get('cf-ipcity')?.trim() || null
+  const countryCode = headers.get('cf-ipcountry')?.trim() || null
+  const country = headers.get('cf-country-name')?.trim() || countryCode
+  const region = headers.get('cf-region-code')?.trim() || headers.get('cf-region')?.trim() || null
+  const city = headers.get('cf-ipcity')?.trim() || null
 
   return {
     countryCode,

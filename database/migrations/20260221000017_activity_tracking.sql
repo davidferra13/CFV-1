@@ -2,7 +2,7 @@
 -- Activity Tracking — Phase 4
 -- Lightweight event tracking for client engagement visibility.
 -- Tracks high-signal actions: portal logins, event views, quote views, etc.
--- Enabled for Supabase Realtime for live "who's online" dashboard.
+-- Enabled for SSE realtime for live "who's online" dashboard.
 -- ============================================================================
 
 CREATE TABLE activity_events (
@@ -77,5 +77,4 @@ CREATE POLICY "Service role manages activity"
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
 
--- Enable Realtime for live dashboard updates
-ALTER PUBLICATION supabase_realtime ADD TABLE activity_events;
+-- Realtime delivery handled by SSE (Server-Sent Events) in lib/realtime/

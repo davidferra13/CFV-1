@@ -279,7 +279,7 @@ BEGIN
 END;
 $$;
 
-COMMENT ON FUNCTION redeem_incentive IS 'Atomically applies a voucher/gift card to an event: inserts ledger credit, decrements gift card balance, inserts audit row. Must be called via supabase.rpc() from server-side code only.';
+COMMENT ON FUNCTION redeem_incentive IS 'Atomically applies a voucher/gift card to an event: inserts ledger credit, decrements gift card balance, inserts audit row. Must be called via SQL function call from server-side code only.';
 
 -- =====================================================================================
 -- END

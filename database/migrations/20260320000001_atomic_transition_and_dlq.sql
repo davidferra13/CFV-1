@@ -6,7 +6,7 @@
 --
 -- Wraps event status UPDATE + event_state_transitions INSERT
 -- in a single database transaction.
--- Called from lib/events/transitions.ts via supabase.rpc()
+-- Called from lib/events/transitions.ts via direct SQL function call
 --
 -- NOTE: Tables (dead_letter_queue, job_retry_log) are in
 -- 20260320000003_dlq_tables.sql to work around CLI parser limits

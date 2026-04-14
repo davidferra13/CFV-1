@@ -38,17 +38,12 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-.vercel
-
 # temp/debug files
 .tmp-*
 tmp_*
 
 # Local file storage
 /storage/
-
-# Legacy supabase directory (replaced by database/)
-supabase/
 
 # Database temp files (Docker, migrations)
 database/.temp/

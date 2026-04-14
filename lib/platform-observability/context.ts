@@ -12,8 +12,6 @@ export type PlatformRuntimeMetadata = {
   build_surface: string | null
   build_id: string | null
   release: string | null
-  vercel_env: string | null
-  vercel_region: string | null
 }
 
 let cachedBuildId: string | null | undefined
@@ -56,13 +54,7 @@ export function getPlatformRuntimeMetadata(): PlatformRuntimeMetadata {
     app_url: firstNonEmpty(process.env.NEXT_PUBLIC_APP_URL, process.env.NEXT_PUBLIC_SITE_URL),
     build_surface: firstNonEmpty(process.env.NEXT_BUILD_SURFACE),
     build_id: readBuildId(),
-    release: firstNonEmpty(
-      process.env.SENTRY_RELEASE,
-      process.env.VERCEL_GIT_COMMIT_SHA,
-      process.env.GIT_COMMIT_SHA
-    ),
-    vercel_env: firstNonEmpty(process.env.VERCEL_ENV),
-    vercel_region: firstNonEmpty(process.env.VERCEL_REGION),
+    release: firstNonEmpty(process.env.SENTRY_RELEASE, process.env.GIT_COMMIT_SHA),
   }
 }
 
@@ -79,7 +71,6 @@ export function extractRequestMetadata(headersLike?: HeaderReader | null): Recor
     request_proto: headersLike.get('x-forwarded-proto'),
     request_ip_hint: maskIp(ip),
     user_agent: headersLike.get('user-agent'),
-    edge_request_id: headersLike.get('x-vercel-id'),
   }
 }
 
