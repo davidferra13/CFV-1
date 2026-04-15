@@ -816,6 +816,21 @@ export async function transitionMenu(menuId: string, toStatus: MenuStatus, reaso
     throw new UnknownAppError(`Cannot transition menu from '${currentStatus}' to '${toStatus}'`)
   }
 
+  // Prevent sharing or locking a menu with no dishes
+  if (toStatus === 'shared' || toStatus === 'locked') {
+    const { data: dishes } = await db
+      .from('menu_dishes')
+      .select('id')
+      .eq('menu_id', menuId)
+      .limit(1)
+
+    if (!dishes || dishes.length === 0) {
+      throw new UnknownAppError(
+        'Cannot share or lock a menu with no dishes. Add at least one dish first.'
+      )
+    }
+  }
+
   // Build update payload with status-specific timestamps
   const updatePayload: Record<string, unknown> = {
     status: toStatus,

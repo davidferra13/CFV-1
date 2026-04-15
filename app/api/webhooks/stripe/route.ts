@@ -464,6 +464,28 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
 
   console.info('[handlePaymentSucceeded] Processing payment for event:', event_id)
 
+  // Amount reconciliation: warn if Stripe amount diverges from expected
+  // Not a hard block (Stripe is the payment authority), but flags discrepancies for review
+  {
+    const { data: eventPricing } = await dbAdmin
+      .from('events')
+      .select('quoted_price_cents, deposit_amount_cents')
+      .eq('id', event_id)
+      .single()
+
+    if (eventPricing) {
+      const expectedCents =
+        payment_type === 'deposit'
+          ? eventPricing.deposit_amount_cents
+          : eventPricing.quoted_price_cents
+      if (expectedCents && expectedCents !== paymentIntent.amount) {
+        console.warn(
+          `[handlePaymentSucceeded] Amount mismatch: Stripe=${paymentIntent.amount}c, expected=${expectedCents}c (event=${event_id}, type=${payment_type})`
+        )
+      }
+    }
+  }
+
   // Determine entry type based on payment_type metadata
   const entryType = payment_type === 'deposit' ? ('deposit' as const) : ('payment' as const)
 

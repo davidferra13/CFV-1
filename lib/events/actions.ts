@@ -124,6 +124,15 @@ export async function createEvent(input: CreateEventInput) {
   // Validate input
   const validated = CreateEventSchema.parse(input)
 
+  // Warn on past-date events (not a hard block - chefs sometimes back-date)
+  const eventDate = new Date(validated.event_date)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const isPastDate = eventDate < today
+  if (isPastDate) {
+    console.warn(`[createEvent] Event created with past date: ${validated.event_date}`)
+  }
+
   const db: any = createServerClient()
 
   // Verify client belongs to this tenant (include dietary data for fallback)
@@ -205,6 +214,8 @@ export async function createEvent(input: CreateEventInput) {
       })
 
       revalidatePath('/events')
+      revalidatePath('/dashboard')
+      revalidatePath('/my-events')
       return { success: true, event }
     },
   })
