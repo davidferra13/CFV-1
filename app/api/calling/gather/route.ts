@@ -265,6 +265,7 @@ export async function POST(req: NextRequest) {
   const aiCallId = searchParams.get('aiCallId') // ai_calls.id (all new roles)
   const step = parseInt(searchParams.get('step') ?? '1', 10)
   const role = searchParams.get('role') ?? 'vendor_availability'
+  const retry = parseInt(searchParams.get('retry') ?? '0', 10)
 
   const db: any = createAdminClient()
 
@@ -277,7 +278,7 @@ export async function POST(req: NextRequest) {
   if (role === 'inbound_unknown') return handleInboundUnknown(db, aiCallId, speech)
 
   // Default: vendor_availability
-  return handleVendorAvailability(db, callId, aiCallId, step, speech, digits, confidence)
+  return handleVendorAvailability(db, callId, aiCallId, step, speech, digits, confidence, retry)
 }
 
 // ---------------------------------------------------------------------------
@@ -291,7 +292,8 @@ async function handleVendorAvailability(
   step: number,
   speech: string | null,
   digits: string | null,
-  confidence: number | null
+  confidence: number | null,
+  retry = 0
 ): Promise<NextResponse> {
   // If no callId but we have aiCallId, look up a recent unanswered supplier_call
   // for this vendor (happens when a vendor calls back inbound).
@@ -386,7 +388,7 @@ async function handleVendorAvailability(
         updated_at: new Date().toISOString(),
       })
       .eq('id', callId)
-      .select('chef_id, vendor_id, vendor_name, ingredient_name, result')
+      .select('chef_id, vendor_id, vendor_phone, vendor_name, ingredient_name, result')
       .single()
 
     if (aiCallId) {
@@ -400,7 +402,22 @@ async function handleVendorAvailability(
         .catch(() => {})
     }
 
-    if (callRecord && callRecord.vendor_id) {
+    // Fix #2: for national directory calls (vendor_id = null), look up a saved
+    // vendor by phone so the sentinel write reaches vendor_price_points.
+    let effectiveVendorId = callRecord?.vendor_id ?? null
+    if (!effectiveVendorId && callRecord?.vendor_phone) {
+      try {
+        const { data: savedVendor } = await db
+          .from('vendors')
+          .select('id')
+          .eq('chef_id', callRecord.chef_id)
+          .eq('phone', callRecord.vendor_phone)
+          .maybeSingle()
+        if (savedVendor) effectiveVendorId = savedVendor.id
+      } catch {}
+    }
+
+    if (callRecord && effectiveVendorId) {
       const today = (() => {
         const _d = new Date()
         return `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`
@@ -414,7 +431,7 @@ async function handleVendorAvailability(
           if (priceCents !== null) {
             await db.from('vendor_price_points').insert({
               chef_id: callRecord.chef_id,
-              vendor_id: callRecord.vendor_id,
+              vendor_id: effectiveVendorId,
               item_name: callRecord.ingredient_name,
               price_cents: priceCents,
               unit,
@@ -435,7 +452,7 @@ async function handleVendorAvailability(
         try {
           await db.from('vendor_price_points').insert({
             chef_id: callRecord.chef_id,
-            vendor_id: callRecord.vendor_id,
+            vendor_id: effectiveVendorId,
             item_name: callRecord.ingredient_name,
             price_cents: 1,
             unit: 'confirmed',
@@ -520,6 +537,20 @@ async function handleVendorAvailability(
     }
     return closingTwiml(
       'No problem at all, I appreciate you letting me know. Take care, have a good one!'
+    )
+  }
+
+  // On first timeout (retry=0): re-prompt once with a shorter question.
+  // On second timeout (retry=1): close the call.
+  if (retry === 0 && callId) {
+    const retryAction =
+      `${APP_URL}/api/calling/gather?callId=${encodeURIComponent(callId)}&step=1&role=vendor_availability&retry=1` +
+      (aiCallId ? `&aiCallId=${encodeURIComponent(aiCallId)}` : '')
+    return twimlResponse(
+      `<?xml version="1.0" encoding="UTF-8"?><Response>` +
+        `<Say voice="${DEFAULT_VOICE}">Sorry, I didn't quite catch that. Could you say yes if you have it in stock, or no if you don't?</Say>` +
+        `<Gather input="speech dtmf" timeout="6" action="${retryAction.replace(/&/g, '&amp;')}" method="POST"></Gather>` +
+        `<Hangup/></Response>`
     )
   }
 

@@ -203,18 +203,21 @@ export async function resolveIngredientAvailability(
   // Run all data queries in parallel
   // -------------------------------------------------------------------------
 
-  const [ocResult, vppRows, aiCallRows, vendorCallQueue] = await Promise.all([
+  const [ocResult, vppRows, aiCallRows, vendorCallQueue, flaggedVendorNames] = await Promise.all([
     // Query 1: openclaw.store_products - live market data
     queryOpenClawAvailability(normalized, searchPattern, ftsQuery, chefState),
 
     // Query 2: vendor_price_points - chef's own vendor price signals
     queryVendorPricePoints(searchPattern, chefId, db),
 
-    // Query 3: recent ai_calls with result='yes' - call feedback loop (#3)
+    // Query 3: recent ai_calls with result='yes' - call feedback loop
     queryAiCallFeedback(searchPattern, chefId, db),
 
     // Query 4: full vendor call queue (saved + national directory)
     getVendorCallQueue(ingredientName),
+
+    // Query 5: chef-flagged incorrect Tier 1 entries - exclude from resolved
+    queryIngredientFlags(searchPattern, chefId, db),
   ])
 
   const { rows: ocRows, succeeded: openclawAvailable } = ocResult
@@ -243,6 +246,9 @@ export async function resolveIngredientAvailability(
     if (row.in_stock === false) continue
 
     if (ageDays <= OPENCLAW_TIER1_CUTOFF_DAYS) {
+      // Skip if the chef flagged this chain as incorrect for this ingredient
+      if (flaggedVendorNames.has(row.chain_name.toLowerCase())) continue
+
       // Tier 1: price present within sync window = available proxy
       resolved.push({
         storeName: row.store_name,
@@ -543,6 +549,33 @@ async function queryAiCallFeedback(
     }))
   } catch {
     return []
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Query: ingredient_accuracy_flags
+// Returns a Set of lowercase chain/vendor names the chef marked incorrect
+// for this ingredient. Tier 1 entries with these names are demoted.
+// ---------------------------------------------------------------------------
+
+async function queryIngredientFlags(
+  searchPattern: string,
+  chefId: string,
+  db: any
+): Promise<Set<string>> {
+  try {
+    const { data } = await db
+      .from('ingredient_accuracy_flags')
+      .select('vendor_name')
+      .eq('chef_id', chefId)
+      .ilike('ingredient_name', searchPattern)
+      .eq('reviewed', false)
+
+    return new Set(
+      (data || []).map((r: any) => (r.vendor_name as string | null)?.toLowerCase()).filter(Boolean)
+    )
+  } catch {
+    return new Set()
   }
 }
 

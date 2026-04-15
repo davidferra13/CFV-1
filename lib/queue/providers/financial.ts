@@ -67,6 +67,69 @@ export async function getFinancialQueueItems(db: any, tenantId: string): Promise
     }
   }
 
+  // 1b. Upcoming accepted/proposed events with zero payments received
+  // Catches events with no quoted_price_cents (TakeAChef imports, manual bookings)
+  // where outstanding_balance_cents would be 0 despite no payment ever received.
+  const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10)
+  const todayStr = now.toISOString().slice(0, 10)
+  const { data: noPaymentEvents } = await db
+    .from('events')
+    .select('id, occasion, event_date, client:clients(full_name)')
+    .eq('tenant_id', tenantId)
+    .in('status', ['accepted', 'proposed'])
+    .gte('event_date', todayStr)
+    .lte('event_date', thirtyDaysFromNow)
+
+  if (noPaymentEvents && noPaymentEvents.length > 0) {
+    const noPaymentEventIds = noPaymentEvents.map((e: any) => e.id) as string[]
+    const { data: paidSummaries } = await db
+      .from('event_financial_summary')
+      .select('event_id, total_paid_cents')
+      .eq('tenant_id', tenantId)
+      .in('event_id', noPaymentEventIds)
+
+    const paidMap = new Map<string, number>()
+    for (const s of paidSummaries ?? []) {
+      paidMap.set(s.event_id, s.total_paid_cents ?? 0)
+    }
+
+    for (const event of noPaymentEvents) {
+      const paid = paidMap.get(event.id) ?? 0
+      if (paid > 0) continue // payment received - skip
+      const clientName = (event.client as any)?.full_name ?? 'Unknown'
+      const eventDate = new Date(event.event_date)
+      const hoursUntilEvent = (eventDate.getTime() - now.getTime()) / 3600000
+      const daysUntil = Math.ceil(hoursUntilEvent / 24)
+      const inputs: ScoreInputs = {
+        hoursUntilDue: hoursUntilEvent,
+        impactWeight: 0.85,
+        isBlocking: true,
+        hoursSinceCreated: 0,
+        revenueCents: 0,
+        isExpiring: daysUntil <= 7,
+      }
+      const score = computeScore(inputs)
+      items.push({
+        id: `financial:event:${event.id}:no_deposit`,
+        domain: 'financial',
+        urgency: urgencyFromScore(score),
+        score,
+        title: 'No deposit received',
+        description: `${clientName} has no payment on file for ${event.occasion || 'this event'} in ${daysUntil} day${daysUntil === 1 ? '' : 's'}.`,
+        href: `/events/${event.id}`,
+        icon: 'AlertCircle',
+        context: { primaryLabel: clientName },
+        createdAt: now.toISOString(),
+        dueAt: event.event_date,
+        blocks: 'No payment commitment secured',
+        entityId: event.id,
+        entityType: 'event',
+      })
+    }
+  }
+
   // 2. Business expenses missing receipt photos (capped at 10)
   const { data: expensesNoReceipt } = await db
     .from('expenses')

@@ -276,13 +276,25 @@ export async function generateEventContract(eventId: string, templateId?: string
     }
   }
 
+  // Load chef's cancellation policy config for the contract merge field
+  const { data: chefPolicyConfig } = await db
+    .from('chefs')
+    .select('cancellation_cutoff_days, deposit_refundable')
+    .eq('id', user.tenantId!)
+    .single()
+  const { getCancellationPolicySummary } = await import('@/lib/cancellation/policy')
+  const cancellationPolicyText = getCancellationPolicySummary({
+    cancellationCutoffDays: chefPolicyConfig?.cancellation_cutoff_days ?? 15,
+    depositRefundable: chefPolicyConfig?.deposit_refundable ?? false,
+  })
+
   // Render merge fields
   const renderedBody = renderMergeFields(bodyMarkdown, {
     client_name: client.full_name ?? 'Client',
     event_date: event.event_date ? format(new Date(event.event_date), 'MMMM d, yyyy') : 'TBD',
     quoted_price: formatCents(event.quoted_price_cents),
     deposit_amount: formatCents(event.deposit_amount_cents),
-    cancellation_policy: event.cancellation_reason ?? 'Per standard cancellation policy.',
+    cancellation_policy: cancellationPolicyText,
     occasion: event.occasion ?? 'Private Dining Event',
     guest_count: String(event.guest_count ?? 0),
     event_location: [event.location_address, event.location_city, event.location_state]

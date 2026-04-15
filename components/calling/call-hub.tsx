@@ -49,10 +49,8 @@ type CallState =
       priceQuoted?: string | null
       quantityAvailable?: string | null
       recordingUrl?: string | null
+      callCreatedAt?: string | null
     }
-
-// Map from callId -> vendorId so SSE results can update the right row
-const callIdToVendorId = new Map<string, string>()
 
 // ---------------------------------------------------------------------------
 // CallHub
@@ -78,6 +76,10 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const searchRef = useRef<HTMLInputElement>(null)
+  // Per-component map: callId -> vendorId for SSE result routing.
+  // useRef prevents stale entries leaking across ingredient searches when
+  // the component remounts or two tabs share the module.
+  const callIdToVendorId = useRef<Map<string, string>>(new Map())
 
   // SSE: receive call results in real-time
   const handleSSEMessage = useCallback(
@@ -86,7 +88,7 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
       const { callId, vendorId, result, status, priceQuoted, quantityAvailable, recordingUrl } =
         msg.data
 
-      const vid = vendorId || (callId ? callIdToVendorId.get(callId) : null)
+      const vid = vendorId || (callId ? callIdToVendorId.current.get(callId) : null)
       if (!vid) return
 
       const terminal = ['completed', 'failed', 'no_answer', 'busy'].includes(status)
@@ -172,7 +174,7 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
       }
 
       const callId = result.callId!
-      callIdToVendorId.set(callId, vendor.id)
+      callIdToVendorId.current.set(callId, vendor.id)
 
       // Poll as fallback if SSE misses
       let attempts = 0
@@ -293,6 +295,7 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
             priceQuoted: status.price_quoted,
             quantityAvailable: status.quantity_available,
             recordingUrl: status.recording_url,
+            callCreatedAt: status.created_at,
           })
         }
         if (attempts >= 30) clearInterval(poll)
@@ -493,6 +496,12 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
                     >
                       <Mic className="w-3 h-3" />
                       Listen
+                      {'callCreatedAt' in quickResult &&
+                        quickResult.callCreatedAt &&
+                        Date.now() - new Date(quickResult.callCreatedAt).getTime() >
+                          7 * 24 * 60 * 60 * 1000 && (
+                          <span className="text-stone-500">(may have expired)</span>
+                        )}
                     </a>
                   )}
                   <button
