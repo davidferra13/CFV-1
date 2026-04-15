@@ -77,8 +77,8 @@ async function printSummary() {
     const aliases = await sql`SELECT COUNT(*) as cnt FROM ingredient_aliases`
     const ings = await sql`SELECT COUNT(*) as cnt FROM ingredients`
     const priced = await sql`SELECT COUNT(*) as cnt FROM ingredients WHERE last_price_cents IS NOT NULL`
-    const bridge = await sql`SELECT COUNT(*) as cnt FROM openclaw.ingredient_price_bridge`
-
+    // ingredient_price_bridge is a CROSS JOIN LATERAL view over 280K ingredients -
+    // COUNT(*) would take hours. Use store_products as a proxy for bridge coverage.
     log(`\n${'='.repeat(60)}`)
     log('SYNC COMPLETE')
     log('='.repeat(60))
@@ -88,7 +88,6 @@ async function printSummary() {
     log(`  Price history:   ${history[0].cnt}`)
     log(`  Aliases:         ${aliases[0].cnt} / ${ings[0].cnt}`)
     log(`  Priced:          ${priced[0].cnt} / ${ings[0].cnt}`)
-    log(`  Bridge rows:     ${bridge[0].cnt}`)
     log(`  Mapping:         ${ings[0].cnt > 0 ? ((aliases[0].cnt / ings[0].cnt) * 100).toFixed(1) : 0}%`)
     log(`  Null results:    ${ings[0].cnt > 0 ? (((ings[0].cnt - priced[0].cnt) / ings[0].cnt) * 100).toFixed(1) : 0}%`)
   } finally {
