@@ -77,6 +77,27 @@ function isEtBusinessHours(): boolean {
 }
 
 // ---------------------------------------------------------------------------
+// Phone normalization - E.164 for US numbers
+// Ensures consistent dedup and storage regardless of input format.
+// ---------------------------------------------------------------------------
+
+function normalizePhone(phone: string): string {
+  const digits = phone.replace(/\D/g, '')
+  if (digits.length === 10) return `+1${digits}`
+  if (digits.length === 11 && digits.startsWith('1')) return `+${digits}`
+  return phone.trim()
+}
+
+// Twilio error code: concurrent outbound call limit per account
+const TWILIO_CONCURRENT_LIMIT = 21210
+
+function isTwilioError(
+  r: { sid: string } | { twErr: number; twMsg: string } | null
+): r is { twErr: number; twMsg: string } {
+  return r !== null && 'twErr' in r
+}
+
+// ---------------------------------------------------------------------------
 // Duplicate call guard
 // ---------------------------------------------------------------------------
 
@@ -91,7 +112,7 @@ async function hasPendingCall(
     .from('supplier_calls')
     .select('id')
     .eq('chef_id', chefId)
-    .eq('vendor_phone', vendorPhone)
+    .eq('vendor_phone', normalizePhone(vendorPhone))
     .ilike('ingredient_name', ingredientName.trim())
     .in('status', ['queued', 'ringing', 'in_progress'])
     .gte('created_at', fiveMinutesAgo)
@@ -127,7 +148,7 @@ async function placeTwilioCall(params: {
   twiml: string
   statusCallbackUrl: string
   recordingCallbackUrl: string
-}): Promise<{ sid: string } | null> {
+}): Promise<{ sid: string } | { twErr: number; twMsg: string } | null> {
   if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) return null
 
   const body = new URLSearchParams({
@@ -156,9 +177,14 @@ async function placeTwilioCall(params: {
   )
 
   if (!res.ok) {
-    const errText = await res.text()
-    console.error('[calling] Twilio API error:', errText)
-    return null
+    try {
+      const errJson = await res.json()
+      console.error('[calling] Twilio error:', errJson.code, errJson.message)
+      return { twErr: errJson.code ?? 0, twMsg: errJson.message ?? 'Twilio API error' }
+    } catch {
+      console.error('[calling] Twilio API error: unparseable response')
+      return { twErr: 0, twMsg: 'Twilio API error' }
+    }
   }
 
   return res.json()
@@ -211,6 +237,8 @@ export async function initiateSupplierCall(
     return { success: false, error: 'Vendor not found or missing phone number.' }
   }
 
+  const vendorPhoneNormalized = normalizePhone(vendor.phone)
+
   const withinLimit = await checkDailyLimit(db, user.tenantId!)
   if (!withinLimit) {
     return { success: false, error: 'Daily call limit reached (20 calls/day). Resets at midnight.' }
@@ -223,7 +251,12 @@ export async function initiateSupplierCall(
     }
   }
 
-  const alreadyCalling = await hasPendingCall(db, user.tenantId!, vendor.phone, ingredientName)
+  const alreadyCalling = await hasPendingCall(
+    db,
+    user.tenantId!,
+    vendorPhoneNormalized,
+    ingredientName
+  )
   if (alreadyCalling) {
     return {
       success: false,
@@ -237,7 +270,7 @@ export async function initiateSupplierCall(
       chef_id: user.tenantId!,
       vendor_id: vendorId,
       vendor_name: vendor.name,
-      vendor_phone: vendor.phone,
+      vendor_phone: vendorPhoneNormalized,
       ingredient_name: ingredientName.trim(),
       status: 'queued',
     })
@@ -255,7 +288,7 @@ export async function initiateSupplierCall(
       chef_id: user.tenantId!,
       direction: 'outbound',
       role: 'vendor_availability',
-      contact_phone: vendor.phone,
+      contact_phone: vendorPhoneNormalized,
       contact_name: vendor.name,
       contact_type: 'vendor',
       vendor_id: vendorId,
@@ -276,20 +309,27 @@ export async function initiateSupplierCall(
 
   try {
     const twilioData = await placeTwilioCall({
-      to: vendor.phone,
+      to: vendorPhoneNormalized,
       twiml,
       statusCallbackUrl,
       recordingCallbackUrl,
     })
 
-    if (!twilioData) {
+    if (!twilioData || 'twErr' in twilioData) {
+      const twilioErr = twilioData && 'twErr' in twilioData ? twilioData : null
       await db
         .from('supplier_calls')
-        .update({ status: 'failed', error_message: 'Twilio API error' })
+        .update({ status: 'failed', error_message: twilioErr?.twMsg ?? 'Twilio API error' })
         .eq('id', callRecord.id)
       if (aiCallRecord)
         await db.from('ai_calls').update({ status: 'failed' }).eq('id', aiCallRecord.id)
-      return { success: false, error: 'Failed to place call. Check Twilio configuration.' }
+      return {
+        success: false,
+        error:
+          twilioErr?.twErr === TWILIO_CONCURRENT_LIMIT
+            ? 'Another call is already in progress. Try again in a moment.'
+            : 'Failed to place call. Check Twilio configuration.',
+      }
     }
 
     await Promise.all([
@@ -364,7 +404,13 @@ export async function initiateAdHocCall(
     }
   }
 
-  const alreadyCalling = await hasPendingCall(db, user.tenantId!, vendorPhone, ingredientName)
+  const vendorPhoneNormalized = normalizePhone(vendorPhone.trim())
+  const alreadyCalling = await hasPendingCall(
+    db,
+    user.tenantId!,
+    vendorPhoneNormalized,
+    ingredientName
+  )
   if (alreadyCalling) {
     return {
       success: false,
@@ -376,7 +422,7 @@ export async function initiateAdHocCall(
     chef_id: user.tenantId!,
     vendor_id: null,
     vendor_name: vendorName.trim(),
-    vendor_phone: vendorPhone.trim(),
+    vendor_phone: vendorPhoneNormalized,
     ingredient_name: ingredientName.trim(),
     status: 'queued',
   }
@@ -398,7 +444,7 @@ export async function initiateAdHocCall(
       chef_id: user.tenantId!,
       direction: 'outbound',
       role: 'vendor_availability',
-      contact_phone: vendorPhone.trim(),
+      contact_phone: vendorPhoneNormalized,
       contact_name: vendorName.trim(),
       contact_type: 'vendor',
       subject: ingredientName.trim(),
@@ -417,18 +463,25 @@ export async function initiateAdHocCall(
 
   try {
     const twilioData = await placeTwilioCall({
-      to: vendorPhone.trim(),
+      to: vendorPhoneNormalized,
       twiml,
       statusCallbackUrl,
       recordingCallbackUrl,
     })
 
-    if (!twilioData) {
+    if (!twilioData || isTwilioError(twilioData)) {
+      const twilioErr = isTwilioError(twilioData) ? twilioData : null
       await db
         .from('supplier_calls')
-        .update({ status: 'failed', error_message: 'Twilio API error' })
+        .update({ status: 'failed', error_message: twilioErr?.twMsg ?? 'Twilio API error' })
         .eq('id', callRecord.id)
-      return { success: false, error: 'Failed to place call. Check Twilio configuration.' }
+      return {
+        success: false,
+        error:
+          twilioErr?.twErr === TWILIO_CONCURRENT_LIMIT
+            ? 'Another call is already in progress. Try again in a moment.'
+            : 'Failed to place call. Check Twilio configuration.',
+      }
     }
 
     await Promise.all([
@@ -533,8 +586,12 @@ export async function initiateDeliveryCoordinationCall(params: {
       recordingCallbackUrl,
     })
 
-    if (!twilioData) {
-      await db.from('ai_calls').update({ status: 'failed' }).eq('id', aiCallRecord.id)
+    if (!twilioData || !('sid' in twilioData)) {
+      const msg = twilioData && 'twMsg' in twilioData ? twilioData.twMsg : 'Twilio API error'
+      await db
+        .from('ai_calls')
+        .update({ status: 'failed', error_message: msg })
+        .eq('id', aiCallRecord.id)
       return { success: false, error: 'Failed to place call.' }
     }
 
@@ -626,8 +683,12 @@ export async function initiateVenueConfirmationCall(params: {
       recordingCallbackUrl,
     })
 
-    if (!twilioData) {
-      await db.from('ai_calls').update({ status: 'failed' }).eq('id', aiCallRecord.id)
+    if (!twilioData || !('sid' in twilioData)) {
+      const msg = twilioData && 'twMsg' in twilioData ? twilioData.twMsg : 'Twilio API error'
+      await db
+        .from('ai_calls')
+        .update({ status: 'failed', error_message: msg })
+        .eq('id', aiCallRecord.id)
       return { success: false, error: 'Failed to place call.' }
     }
 
