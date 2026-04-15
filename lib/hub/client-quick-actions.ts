@@ -73,6 +73,10 @@ export async function postGuestCountUpdate(
     body += ' Shopping quantities may need adjusting.'
   }
 
+  // Write DB first - if this fails the function throws before the message posts,
+  // so the circle feed never claims a count that didn't actually land in the DB.
+  await db.from('events').update({ guest_count: validated.newCount }).eq('id', validated.eventId)
+
   await db.from('hub_messages').insert({
     group_id: validated.groupId,
     author_profile_id: profile.id,
@@ -86,9 +90,6 @@ export async function postGuestCountUpdate(
       previous_count: previousCount,
     },
   })
-
-  // Write the new count back to the event so CircleClientStatus reflects reality
-  await db.from('events').update({ guest_count: validated.newCount }).eq('id', validated.eventId)
 
   revalidatePath(`/events/${validated.eventId}`)
   revalidatePath(`/hub/g`)
