@@ -23,7 +23,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { resolveIngredientAvailability } from '@/lib/calling/ingredient-resolution'
-import type { IngredientResolution } from '@/lib/calling/ingredient-resolution'
+import type { IngredientResolution, PartialSignal } from '@/lib/calling/ingredient-resolution'
 import type { VendorCallCandidate } from '@/lib/vendors/sourcing-actions'
 import {
   initiateSupplierCall,
@@ -218,6 +218,27 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
     })
   }
 
+  // Fix #5: escalate a Tier 2 partial-signal vendor directly to a call
+  async function escalateTier2Call(signal: PartialSignal) {
+    if (!signal.phone) return
+    const vendorId = signal.vendorId || undefined
+    try {
+      const result = await initiateAdHocCall(
+        signal.phone,
+        signal.vendorName,
+        ingredient.trim(),
+        vendorId
+      )
+      if (!result.success) {
+        toast.error(result.error ?? 'Call failed')
+        return
+      }
+      toast.success(`Calling ${signal.vendorName}...`)
+    } catch {
+      toast.error('Failed to place call')
+    }
+  }
+
   // ---------------------------------------------------------------------------
   // Quick Call
   // ---------------------------------------------------------------------------
@@ -319,6 +340,7 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
           onToggle={toggleVendor}
           onCallAll={callSelected}
           onCallOne={placeCall}
+          onEscalateTier2={escalateTier2Call}
           callingAll={callingAll}
           confirmOpen={confirmOpen}
           onConfirmOpen={() => setConfirmOpen(true)}

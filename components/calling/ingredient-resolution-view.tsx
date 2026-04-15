@@ -5,15 +5,21 @@
  *
  * Renders the 3-tier availability resolution for a given ingredient.
  *
- * TIER 1 (green) - System already knows. Price and availability confirmed
- *   from OpenClaw store data within the last 3 days. No action required.
+ * TIER 1 (green) - Confirmed available via market data.
+ *   Price present within OpenClaw sync window. No action required.
+ *   "Flag as incorrect" affordance: chef can mark bad data. (#7)
  *
- * TIER 2 (amber) - Supplier known, signal stale or unconfirmed.
- *   Data exists but is older than 3 days. Worth checking before ordering.
+ * TIER 2 (amber) - Known supplier, signal stale or unconfirmed.
+ *   Retail entries (openclaw_stale): informational only, no phone. (#9)
+ *   Specialty vendors with phone: "Verify by call" escalation path. (#5)
+ *   ai_call entries: vendor confirmed availability on a recent call.
  *
- * TIER 3 (red/violet) - System has no data. Call warranted.
- *   Only these vendors surface the call interface. Every vendor shown here
- *   represents the boundary of known data after full pipeline exhaustion.
+ * TIER 3 (violet) - No data. Call warranted.
+ *   Only these vendors surface the call interface.
+ *
+ * DEAD END (grey) - All tiers empty. (#10)
+ *   Web sourcing fallback via WebSourcingPanel.
+ *   Source health indicator when OpenClaw query failed. (#4)
  */
 
 import { useState } from 'react'
@@ -23,6 +29,7 @@ import type {
   PartialSignal,
 } from '@/lib/calling/ingredient-resolution'
 import type { VendorCallCandidate } from '@/lib/vendors/sourcing-actions'
+import { WebSourcingPanel } from '@/components/pricing/web-sourcing-panel'
 import {
   Check,
   AlertCircle,
@@ -36,6 +43,9 @@ import {
   X,
   Mic,
   Database,
+  Flag,
+  ExternalLink,
+  WifiOff,
 } from 'lucide-react'
 
 // ---------------------------------------------------------------------------
@@ -60,11 +70,15 @@ function freshnessLabel(freshness: ResolvedStore['freshness']): string {
 }
 
 // ---------------------------------------------------------------------------
-// Tier 1 panel: resolved (data confirmed)
+// Tier 1 panel: resolved stores
+// Fix #7: "Flag as incorrect" affordance on each row.
+// Data persistence for flags requires a migration; flagged state is local
+// until that migration lands.
 // ---------------------------------------------------------------------------
 
 function ResolvedPanel({ stores }: { stores: ResolvedStore[] }) {
   const [expanded, setExpanded] = useState(stores.length <= 3)
+  const [flagged, setFlagged] = useState<Set<number>>(new Set())
 
   const visible = expanded ? stores : stores.slice(0, 3)
 
@@ -78,33 +92,75 @@ function ResolvedPanel({ stores }: { stores: ResolvedStore[] }) {
         <span className="text-xs text-stone-600">from market data</span>
       </div>
       <div className="bg-stone-900 border border-emerald-900/40 rounded-xl overflow-hidden divide-y divide-stone-800/60">
-        {visible.map((store, i) => (
-          <div key={i} className="flex items-center justify-between gap-3 px-4 py-3">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-sm font-medium text-stone-200 truncate">
-                  {store.chainName}
-                </span>
-                <span className="flex items-center gap-1 text-xs text-stone-500">
-                  <MapPin className="w-3 h-3" />
-                  {store.city}, {store.state}
-                </span>
+        {visible.map((store, i) => {
+          const isFlagged = flagged.has(i)
+          return (
+            <div
+              key={i}
+              className={`flex items-center justify-between gap-3 px-4 py-3 ${isFlagged ? 'opacity-50' : ''}`}
+            >
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm font-medium text-stone-200 truncate">
+                    {store.chainName}
+                  </span>
+                  <span className="flex items-center gap-1 text-xs text-stone-500">
+                    <MapPin className="w-3 h-3" />
+                    {store.city}, {store.state}
+                  </span>
+                  {isFlagged && (
+                    <span className="text-xs text-rose-400 flex items-center gap-1">
+                      <Flag className="w-3 h-3" />
+                      Flagged as incorrect
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-stone-500 mt-0.5 truncate">{store.productName}</p>
               </div>
-              <p className="text-xs text-stone-500 mt-0.5 truncate">{store.productName}</p>
-            </div>
-            <div className="flex-shrink-0 text-right">
-              <p className="text-sm font-semibold text-stone-200">
-                {formatPrice(store.salePriceCents ?? store.priceCents, store.sizeUnit)}
-                {store.salePriceCents && store.salePriceCents < store.priceCents && (
-                  <span className="ml-1 text-xs text-emerald-400">sale</span>
+              <div className="flex-shrink-0 flex items-center gap-3">
+                <div className="text-right">
+                  <p className="text-sm font-semibold text-stone-200">
+                    {formatPrice(store.salePriceCents ?? store.priceCents, store.sizeUnit)}
+                    {store.salePriceCents && store.salePriceCents < store.priceCents && (
+                      <span className="ml-1 text-xs text-emerald-400">sale</span>
+                    )}
+                  </p>
+                  <p className={`text-xs ${freshnessColor(store.freshness)}`}>
+                    {freshnessLabel(store.freshness)}
+                  </p>
+                </div>
+                {/* Fix #7: flag incorrect affordance */}
+                {!isFlagged ? (
+                  <button
+                    type="button"
+                    onClick={() => setFlagged((prev) => new Set([...prev, i]))}
+                    aria-label="Flag as incorrect"
+                    title="Flag this data as incorrect"
+                    className="text-stone-700 hover:text-rose-400 transition-colors"
+                  >
+                    <Flag className="w-3.5 h-3.5" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFlagged((prev) => {
+                        const next = new Set(prev)
+                        next.delete(i)
+                        return next
+                      })
+                    }
+                    aria-label="Unflag"
+                    title="Remove flag"
+                    className="text-rose-400 hover:text-stone-500 transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
                 )}
-              </p>
-              <p className={`text-xs ${freshnessColor(store.freshness)}`}>
-                {freshnessLabel(store.freshness)}
-              </p>
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
       {stores.length > 3 && (
         <button
@@ -129,15 +185,24 @@ function ResolvedPanel({ stores }: { stores: ResolvedStore[] }) {
 
 // ---------------------------------------------------------------------------
 // Tier 2 panel: partial signals
+// Fix #5: "Verify by call" on signals that have a phone number.
+// Fix #9: Explicit "no direct contact" label on openclaw_stale retail entries.
 // ---------------------------------------------------------------------------
 
-function PartialPanel({ signals }: { signals: PartialSignal[] }) {
+function PartialPanel({
+  signals,
+  onEscalateCall,
+}: {
+  signals: PartialSignal[]
+  onEscalateCall: (signal: PartialSignal) => void
+}) {
   const [expanded, setExpanded] = useState(false)
-  const visible = expanded ? signals : signals.slice(0, 3)
+  const visible = expanded ? signals : signals.slice(0, 4)
 
   const sourceLabel = (source: PartialSignal['source']) => {
     if (source === 'vendor_price_point') return 'your data'
     if (source === 'openclaw_stale') return 'market data'
+    if (source === 'ai_call') return 'recent call'
     return 'history'
   }
 
@@ -153,7 +218,7 @@ function PartialPanel({ signals }: { signals: PartialSignal[] }) {
       <div className="bg-stone-900 border border-amber-900/30 rounded-xl overflow-hidden divide-y divide-stone-800/60">
         {visible.map((sig, i) => (
           <div key={i} className="flex items-center justify-between gap-3 px-4 py-3">
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-sm font-medium text-stone-300 truncate">
                   {sig.vendorName}
@@ -165,6 +230,19 @@ function PartialPanel({ signals }: { signals: PartialSignal[] }) {
                     {sig.state ? `, ${sig.state}` : ''}
                   </span>
                 )}
+                {/* Fix #9: explicit no-contact label for retail openclaw entries */}
+                {sig.source === 'openclaw_stale' && (
+                  <span className="text-xs text-stone-700 flex items-center gap-1">
+                    <ExternalLink className="w-3 h-3" />
+                    order online only
+                  </span>
+                )}
+                {sig.source === 'ai_call' && (
+                  <span className="text-xs text-violet-400 flex items-center gap-1">
+                    <Phone className="w-3 h-3" />
+                    confirmed by call
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-2 mt-0.5">
                 <Clock className="w-3 h-3 text-stone-600" />
@@ -173,20 +251,38 @@ function PartialPanel({ signals }: { signals: PartialSignal[] }) {
                 </span>
               </div>
             </div>
-            <div className="flex-shrink-0 text-right space-y-0.5">
-              {sig.priceCents ? (
-                <p className="text-sm font-semibold text-stone-400">
-                  {formatPrice(sig.priceCents, sig.priceUnit)}
-                </p>
-              ) : (
-                <p className="text-xs text-stone-600">price unknown</p>
+            <div className="flex-shrink-0 flex items-center gap-3">
+              <div className="text-right space-y-0.5">
+                {sig.priceCents ? (
+                  <p className="text-sm font-semibold text-stone-400">
+                    {formatPrice(sig.priceCents, sig.priceUnit)}
+                  </p>
+                ) : (
+                  <p className="text-xs text-stone-600">price unknown</p>
+                )}
+                {sig.phone && sig.source !== 'openclaw_stale' && (
+                  <p className="text-xs text-stone-600 font-mono">{sig.phone}</p>
+                )}
+              </div>
+              {/* Fix #5: escalation path for Tier 2 vendors with phone */}
+              {sig.canCall && sig.source !== 'ai_call' && (
+                <button
+                  type="button"
+                  onClick={() => onEscalateCall(sig)}
+                  title="Verify availability by call"
+                  className="text-xs px-2.5 py-1.5 rounded-md border transition-colors
+                    border-amber-800/50 bg-amber-950/30 text-amber-400 hover:bg-amber-900/40
+                    whitespace-nowrap flex items-center gap-1"
+                >
+                  <Phone className="w-3 h-3" />
+                  Verify
+                </button>
               )}
-              {sig.phone && <p className="text-xs text-stone-600 font-mono">{sig.phone}</p>}
             </div>
           </div>
         ))}
       </div>
-      {signals.length > 3 && (
+      {signals.length > 4 && (
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
@@ -198,7 +294,7 @@ function PartialPanel({ signals }: { signals: PartialSignal[] }) {
             </>
           ) : (
             <>
-              <ChevronDown className="w-3 h-3" /> Show {signals.length - 3} more
+              <ChevronDown className="w-3 h-3" /> Show {signals.length - 4} more
             </>
           )}
         </button>
@@ -223,6 +319,7 @@ const VENDOR_TYPE_LABELS: Record<string, string> = {
   organic: 'Organic',
   bakery: 'Bakery',
   deli: 'Deli',
+  grocery: 'Grocery',
 }
 
 const TYPE_COLORS: Record<string, string> = {
@@ -281,12 +378,16 @@ export function UnresolvedPanel({
   return (
     <div className="space-y-2">
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-violet-500" />
-          <p className="text-xs font-semibold text-violet-400 uppercase tracking-wider">
-            No data available ({vendors.length})
+        <div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-violet-500" />
+            <p className="text-xs font-semibold text-violet-400 uppercase tracking-wider">
+              No data available ({vendors.length})
+            </p>
+          </div>
+          <p className="text-xs text-stone-600 mt-0.5 pl-4">
+            System boundary reached. Outbound calls are warranted.
           </p>
-          <span className="text-xs text-stone-600">system boundary reached</span>
         </div>
         {selectedCount > 0 && (
           <div className="flex flex-col items-end gap-0.5">
@@ -326,7 +427,6 @@ export function UnresolvedPanel({
               key={vendor.id}
               className={`flex items-center gap-3 px-4 py-3 ${isSelected && !isDone ? 'bg-violet-950/20' : ''}`}
             >
-              {/* Checkbox */}
               <button
                 type="button"
                 onClick={() => onToggle(vendor.id)}
@@ -339,7 +439,6 @@ export function UnresolvedPanel({
                 {isSelected && <Check className="w-3 h-3 text-white" />}
               </button>
 
-              {/* Vendor info */}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-sm font-medium text-stone-200 truncate">{vendor.name}</span>
@@ -366,7 +465,6 @@ export function UnresolvedPanel({
                 </div>
               </div>
 
-              {/* Call result / action */}
               <div className="flex-shrink-0 flex items-center gap-2">
                 {callState.phase === 'idle' && (
                   <button
@@ -433,7 +531,6 @@ export function UnresolvedPanel({
 
 // ---------------------------------------------------------------------------
 // Main export: full resolution view
-// Combines all three tiers into one coherent surface
 // ---------------------------------------------------------------------------
 
 interface IngredientResolutionViewProps {
@@ -443,6 +540,7 @@ interface IngredientResolutionViewProps {
   onToggle: (id: string) => void
   onCallAll: () => void
   onCallOne: (vendor: VendorCallCandidate) => void
+  onEscalateTier2: (signal: PartialSignal) => void
   callingAll: boolean
   confirmOpen: boolean
   onConfirmOpen: () => void
@@ -456,18 +554,20 @@ export function IngredientResolutionView({
   onToggle,
   onCallAll,
   onCallOne,
+  onEscalateTier2,
   callingAll,
   confirmOpen,
   onConfirmOpen,
   onConfirmClose,
 }: IngredientResolutionViewProps) {
-  const { resolved, partial, unresolved, ingredientName, confidenceLevel } = resolution
+  const { resolved, partial, unresolved, ingredientName, confidenceLevel, health } = resolution
 
   const toCallCount = unresolved.filter(
     (v) => selected.has(v.id) && (!callStates[v.id] || callStates[v.id].phase === 'idle')
   ).length
 
   const hasAnyData = resolved.length > 0 || partial.length > 0
+  const completelyEmpty = resolved.length === 0 && partial.length === 0 && unresolved.length === 0
 
   return (
     <div className="space-y-6">
@@ -495,7 +595,7 @@ export function IngredientResolutionView({
               )}
             </p>
             <p className="text-xs text-stone-600">
-              Each call is 2-3 minutes. Billed via your Twilio account.
+              Each call is 2-3 minutes, billed via your Twilio account.
             </p>
             <div className="flex items-center gap-3 pt-1">
               <button
@@ -518,35 +618,46 @@ export function IngredientResolutionView({
         </div>
       )}
 
-      {/* Confidence summary bar */}
-      <div className="flex items-center gap-3 text-xs">
-        <Database className="w-3.5 h-3.5 text-stone-500" />
-        <span className="text-stone-500">
-          System resolution for <span className="text-stone-300 font-medium">{ingredientName}</span>
-          :
-        </span>
-        {confidenceLevel === 'high' && (
-          <span className="text-emerald-400 font-medium">High confidence</span>
+      {/* Fix #4: data source health indicator */}
+      <div className="flex items-center gap-3 text-xs flex-wrap">
+        {!health.openclawAvailable ? (
+          <span className="flex items-center gap-1 text-amber-400">
+            <WifiOff className="w-3.5 h-3.5" />
+            Market data unavailable - showing vendor directory only
+          </span>
+        ) : (
+          <span className="flex items-center gap-1 text-stone-500">
+            <Database className="w-3.5 h-3.5" />
+            System resolution for{' '}
+            <span className="text-stone-300 font-medium">{ingredientName}</span>:
+          </span>
         )}
-        {confidenceLevel === 'medium' && (
-          <span className="text-amber-400 font-medium">Partial coverage</span>
+        {health.openclawAvailable && (
+          <>
+            {confidenceLevel === 'high' && (
+              <span className="text-emerald-400 font-medium">High confidence</span>
+            )}
+            {confidenceLevel === 'medium' && (
+              <span className="text-amber-400 font-medium">Partial coverage</span>
+            )}
+            {confidenceLevel === 'low' && (
+              <span className="text-orange-400 font-medium">Limited signal</span>
+            )}
+            {confidenceLevel === 'none' && (
+              <span className="text-stone-500 font-medium">No data found</span>
+            )}
+            <span className="text-stone-700">
+              {resolved.length} confirmed · {partial.length} stale · {unresolved.length} unresolved
+            </span>
+          </>
         )}
-        {confidenceLevel === 'low' && (
-          <span className="text-orange-400 font-medium">Limited signal</span>
-        )}
-        {confidenceLevel === 'none' && (
-          <span className="text-stone-500 font-medium">No data found</span>
-        )}
-        <span className="text-stone-700">
-          {resolved.length} confirmed · {partial.length} stale · {unresolved.length} unresolved
-        </span>
       </div>
 
       {/* Tier 1 */}
       {resolved.length > 0 && <ResolvedPanel stores={resolved} />}
 
       {/* Tier 2 */}
-      {partial.length > 0 && <PartialPanel signals={partial} />}
+      {partial.length > 0 && <PartialPanel signals={partial} onEscalateCall={onEscalateTier2} />}
 
       {/* Tier 3 */}
       {unresolved.length > 0 && (
@@ -562,19 +673,34 @@ export function IngredientResolutionView({
         />
       )}
 
-      {/* All resolved - no calls needed */}
+      {/* All resolved: no calls needed */}
       {unresolved.length === 0 && hasAnyData && (
-        <div className="flex items-center gap-2 text-sm text-stone-500 py-2">
+        <div className="flex items-center gap-2 text-sm text-stone-500 py-1">
           <Check className="w-4 h-4 text-emerald-500" />
           System resolved {ingredientName} through existing data. No vendor calls needed.
         </div>
       )}
 
-      {/* No data at all */}
-      {!hasAnyData && unresolved.length === 0 && (
-        <div className="flex items-center gap-2 text-sm text-stone-600 py-2">
-          <AlertCircle className="w-4 h-4" />
-          No vendors or market data found for {ingredientName} in your region.
+      {/* Fix #10: dead end fallback - web sourcing when all tiers empty */}
+      {completelyEmpty && (
+        <div className="space-y-4">
+          {!health.openclawAvailable && (
+            <div className="flex items-start gap-2 bg-amber-950/20 border border-amber-900/30 rounded-lg px-4 py-3">
+              <WifiOff className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-amber-300">
+                Market data source is offline. Results below come from the vendor directory only.
+                Full resolution will resume when OpenClaw is reachable.
+              </p>
+            </div>
+          )}
+          <div className="space-y-2">
+            <p className="text-xs text-stone-500">
+              No vendors or market data found for{' '}
+              <span className="text-stone-300">{ingredientName}</span> in your region. Try these
+              online sources:
+            </p>
+            <WebSourcingPanel query={ingredientName} />
+          </div>
         </div>
       )}
     </div>

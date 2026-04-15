@@ -361,26 +361,51 @@ async function handleVendorAvailability(
         .catch(() => {})
     }
 
-    if (callRecord && priceQuoted && callRecord.vendor_id) {
-      try {
-        const priceCents = parsePriceToCents(priceQuoted)
-        const unit = extractUnit(speech || '') || 'each'
-        if (priceCents !== null) {
+    if (callRecord && callRecord.vendor_id) {
+      const today = (() => {
+        const _d = new Date()
+        return `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`
+      })()
+
+      if (priceQuoted) {
+        // Price captured: write a full price point
+        try {
+          const priceCents = parsePriceToCents(priceQuoted)
+          const unit = extractUnit(speech || '') || 'each'
+          if (priceCents !== null) {
+            await db.from('vendor_price_points').insert({
+              chef_id: callRecord.chef_id,
+              vendor_id: callRecord.vendor_id,
+              item_name: callRecord.ingredient_name,
+              price_cents: priceCents,
+              unit,
+              notes: `AI call: "${speech}"`,
+              recorded_at: today,
+            })
+          }
+        } catch (err) {
+          console.error('[calling/gather] vendor_price_points (price) error:', err)
+        }
+      } else if (callRecord?.result === 'yes') {
+        // Fix #3: availability confirmed but no price given.
+        // Write price_cents=1 as a sentinel ("confirmed available, price unknown").
+        // This graduates the vendor from Tier 3 to Tier 2 on next resolution query.
+        // price_cents=1 is distinguishable from a real price and will not display.
+        // The ai_calls.result='yes' query also catches this, but writing here ensures
+        // the signal persists beyond the 14-day ai_calls feedback window.
+        try {
           await db.from('vendor_price_points').insert({
             chef_id: callRecord.chef_id,
             vendor_id: callRecord.vendor_id,
             item_name: callRecord.ingredient_name,
-            price_cents: priceCents,
-            unit,
-            notes: `AI call: "${speech}"`,
-            recorded_at: (() => {
-              const _d = new Date()
-              return `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`
-            })(),
+            price_cents: 1,
+            unit: 'confirmed',
+            notes: `AI call: availability confirmed, price not captured`,
+            recorded_at: today,
           })
+        } catch (err) {
+          console.error('[calling/gather] vendor_price_points (availability) error:', err)
         }
-      } catch (err) {
-        console.error('[calling/gather] vendor_price_points error:', err)
       }
     }
 

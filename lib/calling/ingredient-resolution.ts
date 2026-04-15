@@ -9,29 +9,32 @@
  *
  * -----------------------------------------------------------------------
  * TIER 1 - RESOLVED (no call needed)
- *   openclaw.store_products has in_stock signal within 3 days.
- *   System returns confirmed availability with price and store.
+ *   openclaw.store_products has price data within 7 days.
+ *   NOTE: in_stock is not reliably populated by scrapers. Price presence
+ *   within the recency window is used as the availability proxy.
  *   Vendor contact is not warranted.
  *
  * TIER 2 - PARTIAL (known supplier, stale or unconfirmed signal)
- *   Vendor identity is known AND at least one of:
- *   - openclaw.store_products last_seen within 4-30 days (stale but informative)
+ *   At least one of:
+ *   - openclaw.store_products price within 8-60 days (stale retail data)
  *   - vendor_price_points recorded within 90 days (chef's own data)
- *   - ingredient_price_history with openclaw source within 60 days
- *   Returning the vendor with unknown stock is a valid resolution.
- *   Vendor contact is acceptable but not required.
+ *   - ai_calls result='yes' for this ingredient within 14 days (call feedback)
+ *   Returning vendor with unknown stock is a valid resolution.
+ *   Optional escalation path available if vendor has a phone number.
  *
  * TIER 3 - UNRESOLVED (call warranted)
- *   Specialty vendor identity known but NO availability signal in any source.
- *   This is the only tier that surfaces the call interface.
- *   Every vendor in this tier represents the boundary of known data.
- *   Outbound calls are a precision fallback, not a routine convenience.
+ *   Specialty vendor identity known, NO signal in any source.
+ *   Rule: saved vendors always reach Tier 3 regardless of type.
+ *   National directory vendors: specialty types only (no retail chains).
+ *   Every vendor here represents the boundary of known data.
+ *   Outbound calls are a precision fallback, not routine convenience.
  * -----------------------------------------------------------------------
  *
- * Key rule: retail chain stores (grocery, big-box) appear in Tiers 1/2 only.
- * Specialty vendors (butcher, fishmonger, farm, specialty, cheese, organic)
- * appear in Tier 3 because they are not scraped by OpenClaw at volume.
- * Calling a Stop & Shop about haddock availability is not what this is for.
+ * Failure posture:
+ * - openclaw query failure is surfaced explicitly (openclawAvailable: false)
+ *   and is DISTINGUISHABLE from "no matching products exist"
+ * - When all tiers return zero, the UI shows a web sourcing fallback
+ * - Freshness thresholds are calibrated to weekly sync cadence (not ideal)
  */
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -57,6 +60,8 @@ export type ResolvedStore = {
   inStock: boolean | null
   lastSeen: string
   freshness: 'current' | 'recent' | 'stale'
+  // Flag state is local only until a persistence migration is added
+  flaggedIncorrect?: boolean
 }
 
 export type PartialSignal = {
@@ -67,9 +72,17 @@ export type PartialSignal = {
   priceCents?: number | null
   priceUnit?: string | null
   dataAge: string
-  source: 'openclaw_stale' | 'vendor_price_point' | 'price_history'
+  source: 'openclaw_stale' | 'vendor_price_point' | 'price_history' | 'ai_call'
   vendorId?: string | null
   phone?: string | null
+  // Tier 2 escalation: has phone = can be called directly from partial panel
+  canCall: boolean
+}
+
+export type DataSourceHealth = {
+  openclawAvailable: boolean
+  openclawLastSync?: string | null
+  vendorDataAvailable: boolean
 }
 
 export type IngredientResolution = {
@@ -85,6 +98,9 @@ export type IngredientResolution = {
   // Tier 3: no data at all - only tier that goes to the call interface
   unresolved: VendorCallCandidate[]
 
+  // System health: distinguishes "no data" from "query failed"
+  health: DataSourceHealth
+
   // Summary
   confidenceLevel: 'high' | 'medium' | 'low' | 'none'
   resolvedCount: number
@@ -93,36 +109,65 @@ export type IngredientResolution = {
 }
 
 // ---------------------------------------------------------------------------
-// Freshness helper
+// Freshness thresholds
+// Calibrated to weekly OpenClaw sync cadence, not ideal daily cadence.
+// "current" = within one full sync cycle (7 days)
+// "recent"  = within two-four sync cycles (30 days)
+// "stale"   = older than recent, included for context but not as confirmation
 // ---------------------------------------------------------------------------
 
+const FRESHNESS_CURRENT_DAYS = 7
+const FRESHNESS_RECENT_DAYS = 30
+const OPENCLAW_TIER1_CUTOFF_DAYS = 7 // resolve as Tier 1 if within this window
+const OPENCLAW_TIER2_CUTOFF_DAYS = 60 // classify as Tier 2 if within this window
+const VENDOR_PRICE_POINT_CUTOFF_DAYS = 90
+const AI_CALL_FEEDBACK_CUTOFF_DAYS = 14
+
 function computeFreshness(dateStr: string): 'current' | 'recent' | 'stale' {
-  const ageMs = Date.now() - new Date(dateStr).getTime()
-  const ageDays = ageMs / 86_400_000
-  if (ageDays <= 3) return 'current'
-  if (ageDays <= 14) return 'recent'
+  const ageDays = (Date.now() - new Date(dateStr).getTime()) / 86_400_000
+  if (ageDays <= FRESHNESS_CURRENT_DAYS) return 'current'
+  if (ageDays <= FRESHNESS_RECENT_DAYS) return 'recent'
   return 'stale'
 }
 
 function ageLabel(dateStr: string): string {
-  const ageMs = Date.now() - new Date(dateStr).getTime()
-  const ageDays = Math.floor(ageMs / 86_400_000)
+  const ageDays = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86_400_000)
   if (ageDays === 0) return 'today'
   if (ageDays === 1) return '1 day ago'
   if (ageDays < 7) return `${ageDays} days ago`
   const weeks = Math.floor(ageDays / 7)
   if (weeks === 1) return '1 week ago'
   if (weeks < 5) return `${weeks} weeks ago`
-  const months = Math.floor(ageDays / 30)
-  return `${months} month${months !== 1 ? 's' : ''} ago`
+  return `${Math.floor(ageDays / 30)} month${Math.floor(ageDays / 30) !== 1 ? 's' : ''} ago`
 }
 
 // ---------------------------------------------------------------------------
-// Specialty vendor types - only these go to Tier 3 (call interface)
-// Retail chains are resolved through data, not outbound calls
+// Ingredient name normalization
+// Handles common variations before building the search pattern:
+// - Strip hyphens ("dry-aged" → "dry aged")
+// - Collapse whitespace
+// - Build multiple patterns for multi-word queries
 // ---------------------------------------------------------------------------
 
-const SPECIALTY_TYPES = new Set([
+function normalizeIngredientName(name: string): {
+  normalized: string
+  searchPattern: string
+  ftsQuery: string
+} {
+  const normalized = name.trim().toLowerCase().replace(/-/g, ' ').replace(/\s+/g, ' ')
+  const searchPattern = `%${normalized}%`
+  // For FTS: use the normalized form. For multi-word, this hits phrase proximity.
+  const ftsQuery = normalized
+  return { normalized, searchPattern, ftsQuery }
+}
+
+// ---------------------------------------------------------------------------
+// Specialty vendor types that reach Tier 3 from the national directory.
+// Saved vendors bypass this filter entirely (fix #8).
+// Retail chains are resolved through data pipelines, not outbound calls.
+// ---------------------------------------------------------------------------
+
+const NATIONAL_DIRECTORY_CALLABLE_TYPES = new Set([
   'butcher',
   'fishmonger',
   'farm',
@@ -148,7 +193,7 @@ export async function resolveIngredientAvailability(
   const db: any = createServerClient()
 
   const resolvedAt = new Date().toISOString()
-  const searchPattern = `%${ingredientName.toLowerCase()}%`
+  const { normalized, searchPattern, ftsQuery } = normalizeIngredientName(ingredientName)
 
   // Get chef's state for geographic scoping
   const { data: chef } = await db.from('chefs').select('home_state').eq('id', chefId).single()
@@ -158,19 +203,28 @@ export async function resolveIngredientAvailability(
   // Run all data queries in parallel
   // -------------------------------------------------------------------------
 
-  const [ocRows, vppRows, vendorCallQueue] = await Promise.all([
+  const [ocResult, vppRows, aiCallRows, vendorCallQueue] = await Promise.all([
     // Query 1: openclaw.store_products - live market data
-    queryOpenClawAvailability(ingredientName, searchPattern, chefState),
+    queryOpenClawAvailability(normalized, searchPattern, ftsQuery, chefState),
 
     // Query 2: vendor_price_points - chef's own vendor price signals
-    queryVendorPricePoints(ingredientName, searchPattern, chefId, db),
+    queryVendorPricePoints(searchPattern, chefId, db),
 
-    // Query 3: full vendor call queue (saved + national directory)
+    // Query 3: recent ai_calls with result='yes' - call feedback loop (#3)
+    queryAiCallFeedback(searchPattern, chefId, db),
+
+    // Query 4: full vendor call queue (saved + national directory)
     getVendorCallQueue(ingredientName),
   ])
 
+  const { rows: ocRows, succeeded: openclawAvailable } = ocResult
+
   // -------------------------------------------------------------------------
   // Classify openclaw results into Tier 1 (resolved) and Tier 2 (partial)
+  //
+  // Fix #1: in_stock is not reliably populated by scrapers.
+  // Price presence within TIER1 window = availability proxy.
+  // We only treat in_stock === false as a negative confirmation.
   // -------------------------------------------------------------------------
 
   const resolved: ResolvedStore[] = []
@@ -182,10 +236,14 @@ export async function resolveIngredientAvailability(
     if (seenStores.has(storeKey)) continue
     seenStores.add(storeKey)
 
+    const ageDays = (Date.now() - new Date(row.last_seen_at).getTime()) / 86_400_000
     const freshness = computeFreshness(row.last_seen_at)
 
-    if (freshness === 'current' && row.in_stock !== false) {
-      // Tier 1: confirmed current
+    // Explicit out-of-stock signal: skip (negative confirmation)
+    if (row.in_stock === false) continue
+
+    if (ageDays <= OPENCLAW_TIER1_CUTOFF_DAYS) {
+      // Tier 1: price present within sync window = available proxy
       resolved.push({
         storeName: row.store_name,
         chainName: row.chain_name,
@@ -198,10 +256,10 @@ export async function resolveIngredientAvailability(
         sizeUnit: row.size_unit,
         inStock: row.in_stock,
         lastSeen: row.last_seen_at,
-        freshness: 'current',
+        freshness,
       })
-    } else if (freshness !== 'stale' || row.price_cents > 0) {
-      // Tier 2: stale but informative
+    } else if (ageDays <= OPENCLAW_TIER2_CUTOFF_DAYS) {
+      // Tier 2: stale retail signal - informational, no direct contact path
       partial.push({
         vendorName: `${row.chain_name} (${row.city})`,
         vendorType: 'grocery',
@@ -210,23 +268,22 @@ export async function resolveIngredientAvailability(
         priceCents: row.price_cents,
         dataAge: ageLabel(row.last_seen_at),
         source: 'openclaw_stale',
-        phone: null,
+        phone: null, // openclaw.stores has no phone field (#9)
         vendorId: null,
+        canCall: false, // retail chains: order online, not callable
       })
     }
   }
 
   // -------------------------------------------------------------------------
   // Classify vendor_price_points into Tier 2
-  // (chef confirmed this vendor carries the item)
   // -------------------------------------------------------------------------
 
   const seenVendors = new Set<string>()
 
   for (const row of vppRows) {
-    const key = row.vendor_id
-    if (seenVendors.has(key)) continue
-    seenVendors.add(key)
+    if (seenVendors.has(row.vendor_id)) continue
+    seenVendors.add(row.vendor_id)
 
     partial.push({
       vendorName: row.vendor_name,
@@ -237,29 +294,55 @@ export async function resolveIngredientAvailability(
       source: 'vendor_price_point',
       vendorId: row.vendor_id,
       phone: row.phone,
+      canCall: !!row.phone, // has phone = can escalate from Tier 2
     })
   }
 
   // -------------------------------------------------------------------------
-  // Tier 3: specialty vendors with NO data signal at all
-  // These are the only vendors that go to the call interface
+  // Fix #3: ai_calls feedback loop
+  // Recent successful calls for this ingredient graduate that vendor to Tier 2.
+  // This means: call once, don't call again for 14 days.
   // -------------------------------------------------------------------------
 
-  // Build sets of what we already know about
-  const resolvedStoreKeys = new Set(resolved.map((r) => r.chainName.toLowerCase()))
+  for (const row of aiCallRows) {
+    const key = row.vendor_id || row.contact_phone
+    if (!key || seenVendors.has(key)) continue
+    seenVendors.add(key)
+
+    partial.push({
+      vendorName: row.contact_name || row.contact_phone || 'Unknown vendor',
+      vendorType: 'specialty',
+      dataAge: ageLabel(row.created_at),
+      source: 'ai_call',
+      vendorId: row.vendor_id,
+      phone: row.contact_phone,
+      priceCents: row.price_quoted ? parsePriceToCentsApprox(row.price_quoted) : null,
+      canCall: !!row.contact_phone,
+    })
+  }
+
+  // -------------------------------------------------------------------------
+  // Tier 3: vendors with NO signal after full pipeline exhaustion
+  //
+  // Fix #8: saved vendors ALWAYS enter Tier 3 if no signal found.
+  // National directory: specialty types only (no grocery/retail chains).
+  // -------------------------------------------------------------------------
+
   const partialVendorIds = new Set(partial.map((p) => p.vendorId).filter(Boolean))
-  const partialVendorNames = new Set(partial.map((p) => p.vendorName.toLowerCase().split(' (')[0]))
+  const partialVendorNames = new Set(
+    partial.map((p) => p.vendorName.toLowerCase().split(' (')[0].trim())
+  )
 
   const unresolved: VendorCallCandidate[] = vendorCallQueue.filter((v) => {
-    // Only specialty vendors go to the call interface
-    if (!SPECIALTY_TYPES.has(v.vendor_type)) return false
+    // Saved vendors: always callable if no data signal (fix #8)
+    const isSaved = v.source === 'saved'
 
-    // Skip if we already have a data signal for this vendor
+    // National directory: only specialty types
+    if (!isSaved && !NATIONAL_DIRECTORY_CALLABLE_TYPES.has(v.vendor_type)) return false
+
+    // Skip if we already have a data signal
     if (partialVendorIds.has(v.id)) return false
     if (partialVendorNames.has(v.name.toLowerCase())) return false
-
-    // Skip if chain name matches a resolved retail store
-    if (resolvedStoreKeys.has(v.name.toLowerCase())) return false
 
     return true
   })
@@ -273,12 +356,23 @@ export async function resolveIngredientAvailability(
   else if (resolved.length >= 1 || partial.length >= 3) confidenceLevel = 'medium'
   else if (partial.length >= 1) confidenceLevel = 'low'
 
+  // -------------------------------------------------------------------------
+  // Data source health (#4)
+  // Distinguishes "no matching products" from "query failed"
+  // -------------------------------------------------------------------------
+
+  const health: DataSourceHealth = {
+    openclawAvailable,
+    vendorDataAvailable: vppRows.length > 0 || aiCallRows.length > 0,
+  }
+
   return {
     ingredientName,
     resolvedAt,
     resolved,
     partial,
     unresolved,
+    health,
     confidenceLevel,
     resolvedCount: resolved.length,
     partialCount: partial.length,
@@ -288,16 +382,18 @@ export async function resolveIngredientAvailability(
 
 // ---------------------------------------------------------------------------
 // Query: openclaw.store_products
-// Searches for products matching the ingredient name in the chef's state.
-// Returns up to 60 most recent results across all matching stores.
+// Returns { rows, succeeded } so callers can distinguish failure from empty.
+// Fix #4: failure is surfaced explicitly.
+// Fix #6: uses normalized name + stripped hyphens for better matching.
 // ---------------------------------------------------------------------------
 
 async function queryOpenClawAvailability(
-  ingredientName: string,
+  normalized: string,
   searchPattern: string,
+  ftsQuery: string,
   state: string
-): Promise<
-  Array<{
+): Promise<{
+  rows: Array<{
     store_name: string
     chain_name: string
     city: string
@@ -311,8 +407,12 @@ async function queryOpenClawAvailability(
     last_seen_at: string
     source: string
   }>
-> {
+  succeeded: boolean
+}> {
   try {
+    // Build an alternate pattern with hyphens restored for products that use them
+    const hyphenPattern = `%${normalized.replace(/ /g, '-')}%`
+
     const rows = await pgClient`
       SELECT
         s.name         AS store_name,
@@ -336,27 +436,27 @@ async function queryOpenClawAvailability(
         AND p.is_food = true
         AND (
           lower(p.name) LIKE ${searchPattern}
-          OR to_tsvector('english', p.name) @@ plainto_tsquery('english', ${ingredientName})
+          OR lower(p.name) LIKE ${hyphenPattern}
+          OR to_tsvector('english', p.name) @@ plainto_tsquery('english', ${ftsQuery})
         )
-        AND sp.last_seen_at > NOW() - INTERVAL '30 days'
+        AND sp.last_seen_at > NOW() - INTERVAL '60 days'
         AND sp.price_cents > 0
+        AND sp.in_stock IS DISTINCT FROM false
       ORDER BY sp.last_seen_at DESC
-      LIMIT 60
+      LIMIT 80
     `
-    return rows as any[]
+    return { rows: rows as any[], succeeded: true }
   } catch {
-    // openclaw tables may not be seeded in dev - fail gracefully
-    return []
+    // Distinguish failure from empty: return succeeded=false
+    return { rows: [], succeeded: false }
   }
 }
 
 // ---------------------------------------------------------------------------
 // Query: vendor_price_points
-// Chef's own recorded signals for this ingredient from their vendors.
 // ---------------------------------------------------------------------------
 
 async function queryVendorPricePoints(
-  ingredientName: string,
   searchPattern: string,
   chefId: string,
   db: any
@@ -372,20 +472,18 @@ async function queryVendorPricePoints(
   }>
 > {
   try {
+    const cutoff = new Date(Date.now() - VENDOR_PRICE_POINT_CUTOFF_DAYS * 86_400_000)
+      .toISOString()
+      .split('T')[0]
+
     const { data } = await db
       .from('vendor_price_points')
       .select(
-        `
-        vendor_id,
-        price_cents,
-        unit,
-        recorded_at,
-        vendors!inner(id, name, vendor_type, phone)
-      `
+        `vendor_id, price_cents, unit, recorded_at, vendors!inner(id, name, vendor_type, phone)`
       )
       .eq('chef_id', chefId)
       .ilike('item_name', searchPattern)
-      .gte('recorded_at', new Date(Date.now() - 90 * 86_400_000).toISOString().split('T')[0])
+      .gte('recorded_at', cutoff)
       .order('recorded_at', { ascending: false })
       .limit(20)
 
@@ -401,4 +499,63 @@ async function queryVendorPricePoints(
   } catch {
     return []
   }
+}
+
+// ---------------------------------------------------------------------------
+// Query: ai_calls feedback loop (#3)
+// Recent calls where result='yes' for this ingredient.
+// Prevents re-calling vendors that already confirmed availability.
+// ---------------------------------------------------------------------------
+
+async function queryAiCallFeedback(
+  searchPattern: string,
+  chefId: string,
+  db: any
+): Promise<
+  Array<{
+    vendor_id: string | null
+    contact_name: string | null
+    contact_phone: string | null
+    price_quoted: string | null
+    created_at: string
+  }>
+> {
+  try {
+    const cutoff = new Date(Date.now() - AI_CALL_FEEDBACK_CUTOFF_DAYS * 86_400_000).toISOString()
+
+    const { data } = await db
+      .from('ai_calls')
+      .select('vendor_id, contact_name, contact_phone, extracted_data, created_at')
+      .eq('chef_id', chefId)
+      .eq('result', 'yes')
+      .eq('direction', 'outbound')
+      .ilike('subject', searchPattern)
+      .gte('created_at', cutoff)
+      .order('created_at', { ascending: false })
+      .limit(10)
+
+    return (data || []).map((row: any) => ({
+      vendor_id: row.vendor_id,
+      contact_name: row.contact_name,
+      contact_phone: row.contact_phone,
+      price_quoted: row.extracted_data?.price_quoted || null,
+      created_at: row.created_at,
+    }))
+  } catch {
+    return []
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Approximate price parser for ai_call extracted_data price strings.
+// e.g. "$8.50/lb" → 850, "12.99" → 1299
+// Not precise enough for financial use - only for display in Tier 2.
+// ---------------------------------------------------------------------------
+
+function parsePriceToCentsApprox(priceStr: string): number | null {
+  const match = priceStr.match(/[\d]+\.?[\d]*/)
+  if (!match) return null
+  const val = parseFloat(match[0])
+  if (isNaN(val) || val <= 0 || val > 10000) return null
+  return Math.round(val * 100)
 }
