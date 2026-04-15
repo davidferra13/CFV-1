@@ -323,6 +323,7 @@ async function classifyCommunication(input: {
   const matched = ((rules || []) as CommunicationClassificationRule[])
     .filter((rule) => ruleMatches(rule, values))
     .map((rule) => ({ id: rule.id, label: rule.label, priority: rule.priority }))
+    .slice(0, 5) // cap at 5 labels - UI shows at most 3, 5 gives safe margin
 
   return matched
 }
