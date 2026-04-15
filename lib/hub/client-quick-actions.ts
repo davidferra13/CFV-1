@@ -1,6 +1,7 @@
 'use server'
 
 import { createServerClient } from '@/lib/db/server'
+import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { getCircleForContext, getCircleForEvent } from './circle-lookup'
 import type { HubNotificationType } from './types'
@@ -73,6 +74,12 @@ export async function postGuestCountUpdate(
       previous_count: previousCount,
     },
   })
+
+  // Write the new count back to the event so CircleClientStatus reflects reality
+  await db.from('events').update({ guest_count: validated.newCount }).eq('id', validated.eventId)
+
+  revalidatePath(`/events/${validated.eventId}`)
+  revalidatePath(`/hub/g`)
 
   // Trigger notification to chef (non-blocking)
   try {
