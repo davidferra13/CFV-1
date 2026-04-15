@@ -24,6 +24,7 @@ export async function BusinessCards() {
     prospectStats,
     quoteStats,
     revenueGoal,
+    platformScore,
   } = await loadBusinessCardsData()
 
   const revenueSparkData: number[] = []
@@ -140,6 +141,30 @@ export async function BusinessCards() {
         trendDirection="flat"
         href="/events"
       />
+
+      {platformScore.hasData && (
+        <StatCard
+          widgetId="platform_independence"
+          title="Direct Bookings"
+          value={`${platformScore.directPercent.toFixed(0)}%`}
+          subtitle={`${platformScore.platformPercent.toFixed(0)}% via platforms`}
+          trend={
+            platformScore.directPercent >= 50
+              ? 'Majority direct'
+              : platformScore.directPercent >= 30
+                ? 'Growing direct'
+                : 'Platform dependent'
+          }
+          trendDirection={
+            platformScore.directPercent >= 50
+              ? 'up'
+              : platformScore.directPercent >= 30
+                ? 'flat'
+                : 'down'
+          }
+          href="/analytics/referral-sources"
+        />
+      )}
     </>
   )
 }

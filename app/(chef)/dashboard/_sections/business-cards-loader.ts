@@ -13,6 +13,10 @@ import { getHotPipelineCount } from '@/lib/prospecting/pipeline-actions'
 import { getRevenueGoalSnapshot } from '@/lib/revenue-goals/actions'
 import type { RevenueGoalSnapshot } from '@/lib/revenue-goals/types'
 import {
+  getPlatformIndependenceScore,
+  type PlatformIndependenceScore,
+} from '@/lib/partners/analytics'
+import {
   emptyEventCounts,
   emptyExpenses,
   emptyFoodCostTrend,
@@ -33,6 +37,15 @@ const EMPTY_INVOICE_PULSE: InvoicePulseData = {
   },
 }
 
+const EMPTY_PLATFORM_SCORE: PlatformIndependenceScore = {
+  directPercent: 0,
+  platformPercent: 0,
+  directCents: 0,
+  platformCents: 0,
+  totalCents: 0,
+  hasData: false,
+}
+
 export type BusinessCardsData = {
   eventCounts: typeof emptyEventCounts
   foodCostTrend: FoodCostTrend
@@ -44,6 +57,7 @@ export type BusinessCardsData = {
   prospectStats: ProspectStats
   quoteStats: typeof emptyQuoteStats
   revenueGoal: RevenueGoalSnapshot
+  platformScore: PlatformIndependenceScore
 }
 
 export async function loadBusinessCardsData(): Promise<BusinessCardsData> {
@@ -58,6 +72,7 @@ export async function loadBusinessCardsData(): Promise<BusinessCardsData> {
     prospectStats,
     quoteStats,
     revenueGoal,
+    platformScore,
   ] = await Promise.all([
     safe('eventCounts', getDashboardEventCounts, emptyEventCounts),
     safe('foodCostTrend', () => getFoodCostTrend(6), emptyFoodCostTrend),
@@ -69,6 +84,7 @@ export async function loadBusinessCardsData(): Promise<BusinessCardsData> {
     safe('prospectStats', getProspectStats, emptyProspectStats),
     safe('quoteStats', getDashboardQuoteStats, emptyQuoteStats),
     safe('revenueGoal', getRevenueGoalSnapshot, emptyRevenueGoal as RevenueGoalSnapshot),
+    safe('platformScore', getPlatformIndependenceScore, EMPTY_PLATFORM_SCORE),
   ])
 
   return {
@@ -82,5 +98,6 @@ export async function loadBusinessCardsData(): Promise<BusinessCardsData> {
     prospectStats,
     quoteStats,
     revenueGoal,
+    platformScore,
   }
 }

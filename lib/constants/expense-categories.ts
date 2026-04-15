@@ -19,6 +19,7 @@ export const EXPENSE_CATEGORY_VALUES = [
   'professional_services',
   'education',
   'utilities',
+  'platform_commission',
   'other',
 ] as const
 
@@ -57,6 +58,8 @@ export const EXPENSE_CATEGORIES: Record<ExpenseCategory, CategoryMeta> = {
   professional_services: { label: 'Professional Services', color: 'bg-brand-100 text-brand-800' },
   education: { label: 'Education', color: 'bg-lime-100 text-lime-800' },
   utilities: { label: 'Utilities', color: 'bg-emerald-100 text-emerald-800' },
+  // Platform fees
+  platform_commission: { label: 'Platform Commission', color: 'bg-red-100 text-red-800' },
   // Catch-all
   other: { label: 'Other', color: 'bg-stone-800 text-stone-400' },
 }
@@ -98,6 +101,10 @@ export const EXPENSE_CATEGORY_GROUPS: ExpenseCategoryGroup[] = [
       { value: 'education', ...EXPENSE_CATEGORIES.education },
       { value: 'utilities', ...EXPENSE_CATEGORIES.utilities },
     ],
+  },
+  {
+    label: 'Platform Fees',
+    categories: [{ value: 'platform_commission', ...EXPENSE_CATEGORIES.platform_commission }],
   },
   {
     label: 'Other',

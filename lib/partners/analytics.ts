@@ -216,6 +216,58 @@ export async function getRevenueBySource(range?: DateRange): Promise<RevenueData
 }
 
 // ============================================
+// 3b. PLATFORM INDEPENDENCE SCORE
+// ============================================
+
+// Labels that identify third-party marketplace revenue (commission-bearing platforms)
+const PLATFORM_LABELS = new Set(['Take a Chef', 'Wix Form'])
+
+export type PlatformIndependenceScore = {
+  directPercent: number
+  platformPercent: number
+  directCents: number
+  platformCents: number
+  totalCents: number
+  hasData: boolean
+}
+
+export async function getPlatformIndependenceScore(
+  range?: DateRange
+): Promise<PlatformIndependenceScore> {
+  const bySource = await getRevenueBySource(range)
+  const empty: PlatformIndependenceScore = {
+    directPercent: 0,
+    platformPercent: 0,
+    directCents: 0,
+    platformCents: 0,
+    totalCents: 0,
+    hasData: false,
+  }
+  if (!bySource.length) return empty
+
+  let directCents = 0
+  let platformCents = 0
+  for (const row of bySource) {
+    if (PLATFORM_LABELS.has(row.name)) {
+      platformCents += row.revenue_cents
+    } else {
+      directCents += row.revenue_cents
+    }
+  }
+  const totalCents = directCents + platformCents
+  if (totalCents === 0) return empty
+
+  return {
+    directPercent: Math.round((directCents / totalCents) * 1000) / 10,
+    platformPercent: Math.round((platformCents / totalCents) * 1000) / 10,
+    directCents,
+    platformCents,
+    totalCents,
+    hasData: true,
+  }
+}
+
+// ============================================
 // 4. SOURCE TRENDS (MONTHLY)
 // ============================================
 

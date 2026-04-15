@@ -404,6 +404,7 @@ const FEEDBACK_SOURCE_LABELS: Record<string, string> = {
   angi: 'Angi',
   nextdoor: 'Nextdoor',
   instagram: 'Instagram',
+  take_a_chef: 'TakeAChef',
 }
 
 function providerLabel(provider: string): string {
