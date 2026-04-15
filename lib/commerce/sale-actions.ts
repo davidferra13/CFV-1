@@ -212,8 +212,12 @@ export async function updateSaleItemQuantity(saleId: string, itemId: string, qua
     (sum: number, m: any) => sum + (m.price_delta_cents ?? 0) * quantity,
     0
   )
-  const lineTotalCents =
-    (item as any).unit_price_cents * quantity + modifierTotal - ((item as any).discount_cents ?? 0)
+  const newSubtotal = (item as any).unit_price_cents * quantity + modifierTotal
+  const discount = (item as any).discount_cents ?? 0
+  if (discount > newSubtotal) {
+    throw new Error('Discount cannot exceed the line subtotal at the new quantity')
+  }
+  const lineTotalCents = newSubtotal - discount
 
   const { error } = await (db
     .from('sale_items')

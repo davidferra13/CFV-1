@@ -30,7 +30,13 @@ const CampaignSchema = z.object({
   subject: z.string().min(1, 'Subject is required'),
   body_html: z.string().min(1, 'Body is required'),
   target_segment: z.record(z.string(), z.unknown()).default({}),
-  scheduled_at: z.string().datetime().optional(),
+  scheduled_at: z
+    .string()
+    .datetime()
+    .refine((val) => new Date(val) > new Date(), {
+      message: 'Scheduled date must be in the future',
+    })
+    .optional(),
 })
 
 export type CampaignInput = z.infer<typeof CampaignSchema>
@@ -345,8 +351,22 @@ export async function sendCampaignNow(campaignId: string) {
 
   if (campErr || !campaign) throw new Error('Campaign not found')
   if (campaign.status === 'sent') throw new Error('Campaign already sent')
+  if (campaign.status === 'sending') throw new Error('Campaign is already being sent')
 
-  await db.from('marketing_campaigns').update({ status: 'sending' }).eq('id', campaignId)
+  // Atomic CAS: only transition to 'sending' if still in a sendable state.
+  // Prevents duplicate sends when two concurrent calls both pass the status check above.
+  const { data: claimed, error: claimErr } = await db
+    .from('marketing_campaigns')
+    .update({ status: 'sending' })
+    .eq('id', campaignId)
+    .eq('chef_id', chef.entityId)
+    .in('status', ['draft', 'scheduled'])
+    .select('id')
+    .single()
+
+  if (claimErr || !claimed) {
+    throw new Error('Campaign could not be claimed for sending (already in progress or sent)')
+  }
 
   const audience = await resolveAudience(
     chef.entityId,

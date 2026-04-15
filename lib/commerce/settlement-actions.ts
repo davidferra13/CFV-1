@@ -38,6 +38,26 @@ export async function recordSettlement(input: RecordSettlementInput) {
   await requirePro('commerce')
   const db: any = createServerClient()
 
+  // Verify all paymentIds belong to this tenant before recording.
+  // Prevents cross-tenant data pollution in the settlement record.
+  if (input.paymentIds.length > 0) {
+    const { data: ownedPayments, error: paymentCheckError } = await (db
+      .from('commerce_payments')
+      .select('id')
+      .in('id', input.paymentIds)
+      .eq('tenant_id', user.tenantId!) as any)
+
+    if (paymentCheckError) {
+      throw new Error(`Failed to verify payment ownership: ${paymentCheckError.message}`)
+    }
+
+    const ownedIds = new Set((ownedPayments ?? []).map((p: any) => p.id))
+    const unauthorized = input.paymentIds.filter((id) => !ownedIds.has(id))
+    if (unauthorized.length > 0) {
+      throw new Error('One or more payment IDs do not belong to your account')
+    }
+  }
+
   const { data, error } = await (db
     .from('settlement_records' as any)
     .upsert(

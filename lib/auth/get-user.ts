@@ -140,6 +140,13 @@ export async function requireChef(): Promise<AuthUser> {
     redirect(SESSION_EXPIRED_URL)
   }
 
+  // Guard: chef must have a tenantId. A null tenantId means the auth record
+  // exists but the chef profile was never fully created - fail loudly rather
+  // than silently propagating null into every DB query.
+  if (!user.tenantId) {
+    throw new Error('Chef account is missing tenant context. Please contact support.')
+  }
+
   // Check suspension status (cached per request - safe to call in loops)
   if (user.entityId) {
     const suspended = await _checkSuspension(user.entityId)

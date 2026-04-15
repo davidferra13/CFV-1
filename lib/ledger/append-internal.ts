@@ -20,6 +20,13 @@ export async function appendLedgerEntryInternal(input: AppendLedgerEntryInput) {
     throw new Error('Amount must be in minor units (cents, integer only)')
   }
 
+  // Cap at $999,999.99 per entry. Prevents fat-finger data corruption and
+  // stays well within PostgreSQL INTEGER range (max ~$21.4M).
+  const MAX_ENTRY_CENTS = 99_999_999
+  if (input.amount_cents > MAX_ENTRY_CENTS) {
+    throw new Error('Amount exceeds the maximum allowed per ledger entry ($999,999.99)')
+  }
+
   const { data, error } = await db
     .from('ledger_entries')
     .insert({

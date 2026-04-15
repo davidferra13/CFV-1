@@ -42,7 +42,10 @@ export const GET = withApiAuth(
 
     let query = (ctx.db as any)
       .from('staff_members')
-      .select('*', { count: 'exact' })
+      .select(
+        'id, chef_id, name, role, phone, email, notes, is_active, status, created_at, updated_at',
+        { count: 'exact' }
+      )
       .eq('chef_id', ctx.tenantId)
       .order('name', { ascending: true })
 

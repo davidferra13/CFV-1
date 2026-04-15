@@ -722,6 +722,8 @@ export async function markContractSigned(contractId: string) {
   if (!contract) throw new Error('Contract not found')
   if (contract.status === 'signed') throw new Error('Contract is already signed')
   if (contract.status === 'voided') throw new Error('Cannot sign a voided contract')
+  if (contract.status !== 'sent')
+    throw new Error('Contract must be in sent status before it can be marked as signed')
 
   const { error } = await db
     .from('event_contracts')
