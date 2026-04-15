@@ -263,6 +263,20 @@ export async function voidSale(saleId: string, reason: string) {
     throw new Error(`Cannot void a sale in ${(sale as any).status} status`)
   }
 
+  // Block void if processed refunds already exist — voiding after a refund
+  // creates an inconsistent financial state (money returned + sale cancelled).
+  const { data: existingRefunds } = await (db
+    .from('commerce_refunds')
+    .select('id')
+    .eq('sale_id', saleId)
+    .eq('tenant_id', user.tenantId!)
+    .eq('status', 'processed')
+    .limit(1) as any)
+
+  if (existingRefunds && existingRefunds.length > 0) {
+    throw new Error('Cannot void a sale that has already had refunds processed')
+  }
+
   const { error } = await (db
     .from('sales')
     .update({
