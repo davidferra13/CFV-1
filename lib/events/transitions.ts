@@ -300,6 +300,28 @@ export async function transitionEvent({
     log.events.warn('SSE broadcast for client event status failed (non-blocking)', { error: err })
   }
 
+  // A3: Stamp menu food cost snapshot when chef proposes (draft -> proposed).
+  // Captures the cost at quote-send time so ingredient price drift doesn't
+  // silently change the displayed cost after the quote is out.
+  if (toStatus === 'proposed' && fromStatus === 'draft') {
+    try {
+      const adminDb = createServerClient({ admin: true })
+      const { data: costRow } = await (adminDb as any).rpc('compute_projected_food_cost_cents', {
+        p_event_id: eventId,
+      })
+      const snapshotCents = typeof costRow === 'number' && costRow > 0 ? costRow : null
+      await (adminDb as any)
+        .from('events')
+        .update({
+          menu_cost_snapshot_cents: snapshotCents,
+          menu_cost_snapshot_at: new Date().toISOString(),
+        })
+        .eq('id', eventId)
+    } catch (err) {
+      log.events.warn('Menu cost snapshot failed (non-blocking)', { error: err })
+    }
+  }
+
   // Auto-create Dinner Circle when event reaches 'paid' (non-blocking)
   // Ensures the coordination channel is ready the moment payment lands,
   // whether triggered by a Stripe webhook or a manual chef action.
@@ -1052,6 +1074,30 @@ export async function transitionEvent({
       })
     } catch (err) {
       log.events.warn('Post-event AAR alert failed (non-blocking)', { error: err })
+    }
+  }
+
+  // Archive Dinner Circle when event completes (non-blocking)
+  // Guests can still read the history, but no new messages can be posted.
+  if (toStatus === 'completed' && fromStatus === 'in_progress') {
+    try {
+      const adminSupa = createServerClient({ admin: true })
+      // Find circle linked to this event
+      const { data: linkedGroup } = await adminSupa
+        .from('hub_groups')
+        .select('id')
+        .eq('event_id', eventId)
+        .eq('is_active', true)
+        .maybeSingle()
+
+      if (linkedGroup?.id) {
+        await adminSupa
+          .from('hub_groups')
+          .update({ is_active: false, updated_at: new Date().toISOString() })
+          .eq('id', linkedGroup.id)
+      }
+    } catch (err) {
+      log.events.warn('Circle archive on completion failed (non-blocking)', { error: err })
     }
   }
 

@@ -388,10 +388,63 @@ export async function generateFrontOfHouseMenuPayload(
   templateId?: string,
   context?: object
 ): Promise<GeneratedFrontOfHousePayload> {
+  const user = await requireChef()
   const data = await fetchMenuData(menuId)
   const parsedContext = FrontOfHouseContextSchema.parse(context ?? {})
   const theme = normalizeTheme(parsedContext.theme) ?? normalizeTheme(data.occasion)
   const eventType = parsedContext.eventType ?? inferEventType(data.occasion, theme)
   const html = await generateFrontOfHouseMenu(menuId, templateId, parsedContext)
+
+  // J2: Save snapshot to front_of_house_menus so staleness can be detected.
+  // Non-blocking - generation succeeds even if the save fails.
+  try {
+    const db: any = createServerClient()
+    await db.from('front_of_house_menus').insert({
+      tenant_id: data.tenantId,
+      menu_id: menuId,
+      event_id: data.eventId ?? null,
+      event_type: eventType,
+      context: parsedContext,
+      rendered_html: html,
+      generated_by: user.id,
+      generated_at: new Date().toISOString(),
+    })
+  } catch (err) {
+    console.error('[generateFrontOfHouseMenuPayload] Snapshot save failed (non-blocking):', err)
+  }
+
   return { html, eventType, theme, context: parsedContext }
+}
+
+/**
+ * Returns the last generation timestamp and whether it is stale relative
+ * to the menu's last modification. Used to show "Regenerate" prompts in UI.
+ */
+export async function getFOHStaleness(menuId: string): Promise<{
+  lastGeneratedAt: string | null
+  isStale: boolean
+}> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const [{ data: foh }, { data: menu }] = await Promise.all([
+    db
+      .from('front_of_house_menus')
+      .select('generated_at')
+      .eq('menu_id', menuId)
+      .eq('tenant_id', user.tenantId!)
+      .order('generated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    db.from('menus').select('updated_at').eq('id', menuId).eq('tenant_id', user.tenantId!).single(),
+  ])
+
+  if (!foh) return { lastGeneratedAt: null, isStale: true }
+
+  const generatedAt = foh.generated_at as string
+  const menuUpdatedAt = (menu as any)?.updated_at as string | null
+
+  const isStale = menuUpdatedAt ? new Date(menuUpdatedAt) > new Date(generatedAt) : false
+
+  return { lastGeneratedAt: generatedAt, isStale }
 }
