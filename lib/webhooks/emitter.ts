@@ -10,6 +10,39 @@ import { createHmac } from 'crypto'
 import type { WebhookEventType } from './types'
 
 /**
+ * Validate webhook URL is safe to call:
+ * - Must use HTTPS (no plaintext delivery of PII/financials)
+ * - Must not target private/internal IPs (SSRF prevention)
+ */
+function isSafeWebhookUrl(rawUrl: string): boolean {
+  let url: URL
+  try {
+    url = new URL(rawUrl)
+  } catch {
+    return false
+  }
+
+  if (url.protocol !== 'https:') return false
+
+  const host = url.hostname.toLowerCase()
+
+  // Block loopback
+  if (host === 'localhost' || host === '127.0.0.1' || host === '::1') return false
+
+  // Block private IPv4 ranges
+  const privateRanges = [
+    /^10\./,
+    /^172\.(1[6-9]|2\d|3[01])\./,
+    /^192\.168\./,
+    /^169\.254\./, // link-local / AWS metadata
+    /^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./, // CGNAT
+  ]
+  if (privateRanges.some((r) => r.test(host))) return false
+
+  return true
+}
+
+/**
  * Emit a webhook event to all matching active endpoints for a chef.
  *
  * Safe to call from any server action as a non-blocking side effect.
@@ -49,6 +82,13 @@ export async function emitWebhook(
 
     for (const endpoint of endpoints) {
       const startMs = Date.now()
+
+      // Skip endpoints with unsafe URLs (non-HTTPS or private/internal IPs)
+      if (!isSafeWebhookUrl(endpoint.url)) {
+        console.warn('[emitWebhook] Skipping unsafe endpoint URL:', endpoint.url)
+        continue
+      }
+
       const signature = createHmac('sha256', endpoint.secret).update(body).digest('hex')
 
       let responseStatus: number | null = null
