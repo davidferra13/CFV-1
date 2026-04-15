@@ -493,12 +493,30 @@ async function queryVendorPricePoints(
       .order('recorded_at', { ascending: false })
       .limit(20)
 
-    return (data || []).map((row: any) => ({
+    // Deduplicate by vendor_id, preferring non-sentinel records.
+    // Sentinel: price_cents=1 AND unit='confirmed' (written after a call that
+    // confirmed availability but captured no price). Show as null price.
+    const byVendor = new Map<string, any>()
+    for (const row of data || []) {
+      const isSentinel = row.price_cents === 1 && row.unit === 'confirmed'
+      const existing = byVendor.get(row.vendor_id)
+      // Prefer: real price over sentinel. If both are sentinels, keep most recent (first seen).
+      if (
+        !existing ||
+        (existing.price_cents === 1 && existing.unit === 'confirmed' && !isSentinel)
+      ) {
+        byVendor.set(row.vendor_id, row)
+      }
+    }
+
+    return Array.from(byVendor.values()).map((row: any) => ({
       vendor_id: row.vendor_id,
       vendor_name: row.vendors?.name || 'Unknown vendor',
       vendor_type: row.vendors?.vendor_type || 'specialty',
       phone: row.vendors?.phone || null,
-      price_cents: row.price_cents,
+      // Sentinel (price_cents=1, unit='confirmed'): availability confirmed, price unknown.
+      // Do not display 1 cent as a real price.
+      price_cents: row.price_cents === 1 && row.unit === 'confirmed' ? null : row.price_cents,
       unit: row.unit,
       recorded_at: row.recorded_at,
     }))

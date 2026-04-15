@@ -10,12 +10,18 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
+import { validateTwilioWebhook } from '@/lib/calling/twilio-webhook-auth'
 
 export async function POST(req: NextRequest) {
+  const formData = await req.formData()
+  const valid = await validateTwilioWebhook(req, formData)
+  if (!valid) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+
   const { searchParams } = new URL(req.url)
   const aiCallId = searchParams.get('aiCallId')
 
-  // Mark the call completed if not already done
+  // Mark the call completed if not already done.
+  // Include 'voicemail' status: transcription callback may have set it before we get here.
   if (aiCallId) {
     try {
       const db: any = createAdminClient()
@@ -23,7 +29,7 @@ export async function POST(req: NextRequest) {
         .from('ai_calls')
         .update({ status: 'completed', updated_at: new Date().toISOString() })
         .eq('id', aiCallId)
-        .in('status', ['in_progress', 'queued', 'ringing'])
+        .in('status', ['in_progress', 'queued', 'ringing', 'voicemail'])
     } catch {
       // Non-critical - status callback will also handle this
     }

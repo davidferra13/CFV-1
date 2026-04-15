@@ -24,13 +24,24 @@ export async function POST(req: NextRequest) {
   }
 
   const db: any = createAdminClient()
-  await db
+  const mp3Url = `${recordingUrl}.mp3`
+  const now = new Date().toISOString()
+
+  const { data: updated } = await db
     .from('supplier_calls')
-    .update({
-      recording_url: `${recordingUrl}.mp3`,
-      updated_at: new Date().toISOString(),
-    })
+    .update({ recording_url: mp3Url, updated_at: now })
     .eq('call_sid', callSid)
+    .select('id')
+    .maybeSingle()
+
+  // Delivery and venue calls have no supplier_calls record - update ai_calls directly.
+  if (!updated) {
+    await db
+      .from('ai_calls')
+      .update({ recording_url: mp3Url, updated_at: now })
+      .eq('call_sid', callSid)
+      .catch(() => {})
+  }
 
   return NextResponse.json({ ok: true })
 }

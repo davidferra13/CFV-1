@@ -442,6 +442,7 @@ export async function initiateAdHocCall(
       contact_phone: vendorPhoneNormalized,
       contact_name: vendorName.trim(),
       contact_type: 'vendor',
+      vendor_id: nationalVendorId ?? null,
       subject: ingredientName.trim(),
       status: 'queued',
       supplier_call_id: callRecord.id,
@@ -542,13 +543,15 @@ export async function initiateDeliveryCoordinationCall(params: {
 
   if (!isEtBusinessHours()) return { success: false, error: 'Calls only placed 8am-7pm ET.' }
 
+  const vendorPhoneNormalized = normalizePhone(params.vendorPhone)
+
   const { data: aiCallRecord } = await db
     .from('ai_calls')
     .insert({
       chef_id: user.tenantId!,
       direction: 'outbound',
       role: 'vendor_delivery',
-      contact_phone: params.vendorPhone,
+      contact_phone: vendorPhoneNormalized,
       contact_name: params.vendorName,
       contact_type: 'vendor',
       vendor_id: params.vendorId ?? null,
@@ -575,19 +578,25 @@ export async function initiateDeliveryCoordinationCall(params: {
 
   try {
     const twilioData = await placeTwilioCall({
-      to: params.vendorPhone,
+      to: vendorPhoneNormalized,
       twiml,
       statusCallbackUrl,
       recordingCallbackUrl,
     })
 
-    if (!twilioData || !('sid' in twilioData)) {
-      const msg = twilioData && 'twMsg' in twilioData ? twilioData.twMsg : 'Twilio API error'
+    if (!twilioData || isTwilioError(twilioData)) {
+      const twilioErr = isTwilioError(twilioData) ? twilioData : null
       await db
         .from('ai_calls')
-        .update({ status: 'failed', error_message: msg })
+        .update({ status: 'failed', error_message: twilioErr?.twMsg ?? 'Twilio API error' })
         .eq('id', aiCallRecord.id)
-      return { success: false, error: 'Failed to place call.' }
+      return {
+        success: false,
+        error:
+          twilioErr?.twErr === TWILIO_CONCURRENT_LIMIT
+            ? 'Another call is already in progress. Try again in a moment.'
+            : 'Failed to place call. Check Twilio configuration.',
+      }
     }
 
     await db
@@ -640,13 +649,15 @@ export async function initiateVenueConfirmationCall(params: {
 
   if (!isEtBusinessHours()) return { success: false, error: 'Calls only placed 8am-7pm ET.' }
 
+  const venuePhoneNormalized = normalizePhone(params.venuePhone)
+
   const { data: aiCallRecord } = await db
     .from('ai_calls')
     .insert({
       chef_id: user.tenantId!,
       direction: 'outbound',
       role: 'venue_confirmation',
-      contact_phone: params.venuePhone,
+      contact_phone: venuePhoneNormalized,
       contact_name: params.venueName,
       contact_type: 'venue',
       event_id: params.eventId ?? null,
@@ -672,19 +683,25 @@ export async function initiateVenueConfirmationCall(params: {
 
   try {
     const twilioData = await placeTwilioCall({
-      to: params.venuePhone,
+      to: venuePhoneNormalized,
       twiml,
       statusCallbackUrl,
       recordingCallbackUrl,
     })
 
-    if (!twilioData || !('sid' in twilioData)) {
-      const msg = twilioData && 'twMsg' in twilioData ? twilioData.twMsg : 'Twilio API error'
+    if (!twilioData || isTwilioError(twilioData)) {
+      const twilioErr = isTwilioError(twilioData) ? twilioData : null
       await db
         .from('ai_calls')
-        .update({ status: 'failed', error_message: msg })
+        .update({ status: 'failed', error_message: twilioErr?.twMsg ?? 'Twilio API error' })
         .eq('id', aiCallRecord.id)
-      return { success: false, error: 'Failed to place call.' }
+      return {
+        success: false,
+        error:
+          twilioErr?.twErr === TWILIO_CONCURRENT_LIMIT
+            ? 'Another call is already in progress. Try again in a moment.'
+            : 'Failed to place call. Check Twilio configuration.',
+      }
     }
 
     await db

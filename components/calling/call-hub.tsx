@@ -80,6 +80,9 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
   // useRef prevents stale entries leaking across ingredient searches when
   // the component remounts or two tabs share the module.
   const callIdToVendorId = useRef<Map<string, string>>(new Map())
+  // Track which vendor IDs have reached a terminal state.
+  // setInterval closures capture stale `callStates` - this ref is always current.
+  const doneVendors = useRef<Set<string>>(new Set())
 
   // SSE: receive call results in real-time
   const handleSSEMessage = useCallback(
@@ -93,6 +96,7 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
 
       const terminal = ['completed', 'failed', 'no_answer', 'busy'].includes(status)
       if (terminal) {
+        doneVendors.current.add(vid)
         setCallStates((prev) => ({
           ...prev,
           [vid]: {
@@ -176,10 +180,12 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
       const callId = result.callId!
       callIdToVendorId.current.set(callId, vendor.id)
 
-      // Poll as fallback if SSE misses
+      // Poll as fallback if SSE misses.
+      // Use doneVendors ref (not callStates) to detect terminal state -
+      // setInterval closures capture stale state but refs are always current.
       let attempts = 0
       const poll = setInterval(async () => {
-        if (callStates[vendor.id]?.phase === 'done') {
+        if (doneVendors.current.has(vendor.id)) {
           clearInterval(poll)
           return
         }
@@ -188,6 +194,7 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
         if (!status) return
         if (['completed', 'failed', 'no_answer', 'busy'].includes(status.status)) {
           clearInterval(poll)
+          doneVendors.current.add(vendor.id)
           setCallStates((prev) => ({
             ...prev,
             [vendor.id]: {
