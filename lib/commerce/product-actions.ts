@@ -60,8 +60,8 @@ export async function createProduct(input: CreateProductInput) {
   await requirePro('commerce')
   const db: any = createServerClient()
 
-  if (!Number.isInteger(input.priceCents) || input.priceCents < 0) {
-    throw new Error('Price must be a non-negative integer (cents)')
+  if (!Number.isInteger(input.priceCents) || input.priceCents <= 0) {
+    throw new Error('Price must be a positive integer (cents)')
   }
 
   const { data, error } = await (db

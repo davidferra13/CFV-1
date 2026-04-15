@@ -23,6 +23,7 @@ export const GET = withApiAuth(
         }
       )
       .eq('tenant_id', ctx.tenantId)
+      .is('deleted_at', null)
       .order('recipe_name', { ascending: true })
 
     if (category) query = query.eq('category', category as any)
