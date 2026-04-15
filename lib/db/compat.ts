@@ -1178,7 +1178,8 @@ class QueryBuilder<T = any> {
     // Arrays of primitives (string[], int[]) are native PostgreSQL arrays - pass through.
     if (Array.isArray(val)) {
       const hasObjects = val.length > 0 && typeof val[0] === 'object' && val[0] !== null
-      if (hasObjects || val.length === 0) return JSON.stringify(val)
+      // hasObjects = JSONB column, JSON-stringify. Empty [] = native text[] column, pass through.
+      if (hasObjects) return JSON.stringify(val)
       return val
     }
     if (typeof val === 'object' && !(val instanceof Date)) return JSON.stringify(val)
@@ -1279,6 +1280,51 @@ class AuthAdminCompat {
         },
         error: null,
       }
+    } catch (err: any) {
+      return { data: { user: null }, error: { message: err.message } }
+    }
+  }
+
+  async updateUserById(
+    userId: string,
+    opts: {
+      password?: string
+      email?: string
+      email_confirm?: boolean
+      user_metadata?: Record<string, unknown>
+    }
+  ) {
+    try {
+      const bcrypt = await import('bcryptjs')
+      const updates: string[] = []
+      const params: unknown[] = []
+
+      if (opts.password) {
+        const hash = await bcrypt.hash(opts.password, 10)
+        updates.push(`encrypted_password = $${params.length + 1}`)
+        params.push(hash)
+      }
+      if (opts.email) {
+        updates.push(`email = $${params.length + 1}`)
+        params.push(opts.email.toLowerCase())
+      }
+      if (opts.email_confirm) {
+        updates.push(`email_confirmed_at = $${params.length + 1}`)
+        params.push(new Date().toISOString())
+      }
+      if (opts.user_metadata) {
+        updates.push(`raw_user_meta_data = $${params.length + 1}`)
+        params.push(JSON.stringify(opts.user_metadata))
+      }
+      if (updates.length === 0) return { data: { user: { id: userId } }, error: null }
+
+      updates.push(`updated_at = NOW()`)
+      params.push(userId)
+      await pgClient.unsafe(
+        `UPDATE auth.users SET ${updates.join(', ')} WHERE id = $${params.length}`,
+        params as any[]
+      )
+      return { data: { user: { id: userId } }, error: null }
     } catch (err: any) {
       return { data: { user: null }, error: { message: err.message } }
     }
