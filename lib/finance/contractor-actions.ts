@@ -78,11 +78,15 @@ export async function recordContractorPayment(
 
   const ytdTotal = (ytdData || []).reduce((s: number, r: any) => s + r.amount_cents, 0)
 
-  await db
+  const { error: ytdError } = await db
     .from('staff_members')
     .update({ ytd_payments_cents: ytdTotal })
     .eq('id', parsed.staffMemberId)
     .eq('chef_id', user.tenantId!)
+  if (ytdError) {
+    console.error('[recordContractorPayment] Failed to update YTD:', ytdError)
+    // Non-blocking - payment was recorded, YTD sync failure is recoverable
+  }
 
   revalidatePath('/finance/contractors')
 
