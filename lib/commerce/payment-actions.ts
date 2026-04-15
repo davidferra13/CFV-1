@@ -62,6 +62,15 @@ export async function recordPayment(input: RecordPaymentInput) {
 
   if (saleErr || !sale) throw new Error('Sale not found')
 
+  // Guard against overpayment: payment amount must not exceed sale total + tip.
+  // This catches fat-finger errors (e.g. entering $1,000 for a $10 sale).
+  const saleTotal = ((sale as any).total_cents ?? 0) + (input.tipCents ?? 0)
+  if (input.amountCents > saleTotal) {
+    throw new Error(
+      `Payment amount ($${(input.amountCents / 100).toFixed(2)}) exceeds sale total ($${(saleTotal / 100).toFixed(2)})`
+    )
+  }
+
   // Determine payment status - POS counter sales are immediately captured
   const paymentStatus = input.status ?? 'captured'
 
