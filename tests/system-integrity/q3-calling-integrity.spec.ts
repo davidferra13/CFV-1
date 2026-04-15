@@ -468,6 +468,82 @@ test.describe('Q3: Calling system integrity', () => {
   // The direction=outbound filter excluded inbound_vendor_callback result=yes
   // rows from Tier 2 resolution, making callbacks invisible to ingredient scoring.
   // -------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
+  // Test 21: gather route bi-directional link backfill is logged on failure
+  // Silent .catch(()=>{}) meant inbound callback supplier_call_id backfill
+  // failures were invisible — broken link between ai_calls and supplier_calls.
+  // -------------------------------------------------------------------------
+  test('gather route logs ai_calls.supplier_call_id backfill failure', () => {
+    expect(existsSync(GATHER_SOURCE), `Source not found: ${GATHER_SOURCE}`).toBe(true)
+
+    const src = readFileSync(GATHER_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('ai_calls.supplier_call_id backfill failed'),
+      'gather route does not log the supplier_call_id backfill error — silent failure'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 22: gather route step2 ai_calls result write is logged on failure
+  // This is the single most critical write in the system — result='yes' on
+  // ai_calls is the Tier 2 ingredient feedback signal.
+  // -------------------------------------------------------------------------
+  test('gather route step2 ai_calls result write logs on failure', () => {
+    expect(existsSync(GATHER_SOURCE), `Source not found: ${GATHER_SOURCE}`).toBe(true)
+
+    const src = readFileSync(GATHER_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('ai_calls result/status/extracted_data write failed (step2)'),
+      'gather route does not log step2 ai_calls result write failure — Tier 2 signal silently lost'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 23: handleInboundVendorCallback writes full_transcript on confirmation
+  // Without this write, Call Sheet shows empty transcript for vendor callbacks.
+  // -------------------------------------------------------------------------
+  test('handleInboundVendorCallback writes full_transcript to ai_calls', () => {
+    expect(existsSync(GATHER_SOURCE), `Source not found: ${GATHER_SOURCE}`).toBe(true)
+
+    const src = readFileSync(GATHER_SOURCE, 'utf-8')
+
+    // Find the inbound_vendor_callback handler
+    const fnStart = src.indexOf('async function handleInboundVendorCallback')
+    expect(fnStart, 'handleInboundVendorCallback not found').toBeGreaterThan(-1)
+
+    const fnEnd = src.indexOf('\nasync function ', fnStart + 1)
+    const fnBody = fnEnd > -1 ? src.slice(fnStart, fnEnd) : src.slice(fnStart)
+
+    expect(
+      fnBody.includes('full_transcript'),
+      'handleInboundVendorCallback never writes full_transcript — Call Sheet always shows empty transcript for callbacks'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 24: call-hub registers poll cleanup on unmount
+  // Without cleanup, intervals run for up to 110s after unmount, calling
+  // setState on a dead component and wasting server action invocations.
+  // -------------------------------------------------------------------------
+  test('call-hub registers activePolls ref for cleanup on unmount', () => {
+    const CALL_HUB_SOURCE = resolve(process.cwd(), 'components/calling/call-hub.tsx')
+    expect(existsSync(CALL_HUB_SOURCE), `Source not found: ${CALL_HUB_SOURCE}`).toBe(true)
+
+    const src = readFileSync(CALL_HUB_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('activePolls'),
+      'call-hub has no activePolls ref — poll intervals never cleaned up on unmount'
+    ).toBe(true)
+
+    expect(
+      src.includes('activePolls.current.forEach'),
+      'call-hub does not clear activePolls on unmount — memory leak'
+    ).toBe(true)
+  })
+
   test('queryAiCallFeedback does not filter direction=outbound', () => {
     const RESOLUTION_SOURCE = resolve(process.cwd(), 'lib/calling/ingredient-resolution.ts')
     expect(existsSync(RESOLUTION_SOURCE), `Source not found: ${RESOLUTION_SOURCE}`).toBe(true)

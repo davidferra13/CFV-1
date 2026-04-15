@@ -239,11 +239,6 @@ async function logTranscript(
   }
 }
 
-// Safe JSON stringify for use in raw SQL JSONB concat (escapes single quotes)
-function toJsonbSafe(obj: unknown): string {
-  return JSON.stringify(obj).replace(/'/g, "''")
-}
-
 // ---------------------------------------------------------------------------
 // Route handler
 // ---------------------------------------------------------------------------
@@ -372,7 +367,12 @@ async function handleVendorAvailability(
           .from('ai_calls')
           .update({ supplier_call_id: newCall.id, updated_at: new Date().toISOString() })
           .eq('id', aiCallId)
-          .catch(() => {})
+          .catch((err: unknown) => {
+            console.error(
+              '[calling/gather] ai_calls.supplier_call_id backfill failed — bi-directional link broken:',
+              err
+            )
+          })
       }
     }
   }
@@ -414,7 +414,14 @@ async function handleVendorAvailability(
           updated_at: new Date().toISOString(),
         })
         .eq('id', aiCallId)
-        .catch(() => {})
+        .catch((err: unknown) => {
+          // CRITICAL: if this write fails, result='yes' is never persisted on ai_calls
+          // and the Tier 2 ingredient feedback loop permanently loses this call signal.
+          console.error(
+            '[calling/gather] ai_calls result/status/extracted_data write failed (step2):',
+            err
+          )
+        })
     }
 
     // Fix #2: for national directory calls (vendor_id = null), look up a saved
@@ -611,7 +618,9 @@ async function handleVendorAvailability(
           priceQuoted: null,
           quantityAvailable: null,
         })
-      } catch {}
+      } catch (err) {
+        console.error('[calling/gather] broadcast error (result=no):', err)
+      }
     }
     return closingTwiml(
       'No problem at all, I appreciate you letting me know. Take care, have a good one!'
@@ -852,6 +861,21 @@ async function handleInboundVendorCallback(
   if (isConfirm) {
     if (speech) await logTranscript(db, aiCallId, 1, 'caller', speech, 'speech', confidence)
 
+    // Write the confirmation utterance to full_transcript so it's visible in Call Sheet.
+    // Without this, the transcript column stays null even though speech was captured.
+    if (speech) {
+      await db
+        .from('ai_calls')
+        .update({ full_transcript: speech, updated_at: new Date().toISOString() })
+        .eq('id', aiCallId)
+        .catch((err: unknown) => {
+          console.error(
+            '[calling/gather] inbound_vendor_callback full_transcript write failed:',
+            err
+          )
+        })
+    }
+
     // Pivot into availability check
     const gatherAction = `${APP_URL}/api/calling/gather?aiCallId=${encodeURIComponent(aiCallId)}&step=1&role=vendor_availability`
     return twimlResponse(`<?xml version="1.0" encoding="UTF-8"?>
@@ -861,6 +885,20 @@ async function handleInboundVendorCallback(
   <Hangup/>
 </Response>`)
   }
+
+  // Vendor declined or wrong number — mark the ai_calls record completed so it
+  // doesn't show as permanently in_progress in Call Sheet.
+  await db
+    .from('ai_calls')
+    .update({
+      status: 'completed',
+      full_transcript: speech || null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', aiCallId)
+    .catch((err: unknown) => {
+      console.error('[calling/gather] inbound_vendor_callback decline status write failed:', err)
+    })
 
   return closingTwiml('No worries at all, sorry for the confusion. Have a great day!')
 }

@@ -83,6 +83,8 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
   // Track which vendor IDs have reached a terminal state.
   // setInterval closures capture stale `callStates` - this ref is always current.
   const doneVendors = useRef<Set<string>>(new Set())
+  // Track all active poll intervals so they can be cancelled on unmount.
+  const activePolls = useRef<Set<ReturnType<typeof setInterval>>>(new Set())
 
   // SSE: receive call results in real-time
   const handleSSEMessage = useCallback(
@@ -126,6 +128,15 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
     enabled: !!tenantId,
   })
 
+  // Cleanup: cancel all active poll intervals on unmount to prevent
+  // stale setCallStates calls and memory leaks.
+  useEffect(() => {
+    return () => {
+      activePolls.current.forEach((id) => clearInterval(id))
+      activePolls.current.clear()
+    }
+  }, [])
+
   // Resolution: debounced on ingredient change
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
@@ -137,8 +148,11 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
     }
     debounceRef.current = setTimeout(async () => {
       setResolving(true)
-      // Clear terminal-state tracking for the new search
+      // Clear terminal-state tracking for the new search.
+      // Also clear callIdToVendorId so stale call IDs from a previous ingredient
+      // search don't route SSE events to vendor cards in the new search.
       doneVendors.current.clear()
+      callIdToVendorId.current.clear()
       try {
         const result = await resolveIngredientAvailability(ingredient.trim())
         setResolution(result)
@@ -189,28 +203,36 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
       const poll = setInterval(async () => {
         if (doneVendors.current.has(vendor.id)) {
           clearInterval(poll)
+          activePolls.current.delete(poll)
           return
         }
         attempts++
-        const status = await getCallStatus(callId)
-        if (!status) return
-        if (['completed', 'failed', 'no_answer', 'busy'].includes(status.status)) {
-          clearInterval(poll)
-          doneVendors.current.add(vendor.id)
-          setCallStates((prev) => ({
-            ...prev,
-            [vendor.id]: {
-              phase: 'done',
-              result: status.result,
-              status: status.status,
-              priceQuoted: status.price_quoted,
-              quantityAvailable: status.quantity_available,
-              recordingUrl: status.recording_url,
-            },
-          }))
+        try {
+          const status = await getCallStatus(callId)
+          if (!status) return
+          if (['completed', 'failed', 'no_answer', 'busy'].includes(status.status)) {
+            clearInterval(poll)
+            activePolls.current.delete(poll)
+            doneVendors.current.add(vendor.id)
+            setCallStates((prev) => ({
+              ...prev,
+              [vendor.id]: {
+                phase: 'done',
+                result: status.result,
+                status: status.status,
+                priceQuoted: status.price_quoted,
+                quantityAvailable: status.quantity_available,
+                recordingUrl: status.recording_url,
+              },
+            }))
+          }
+        } catch {
+          // Network/auth error on poll — don't kill the interval, let it retry.
+          // Attempts still increments so the loop eventually exhausts gracefully.
         }
         if (attempts >= 22) {
           clearInterval(poll)
+          activePolls.current.delete(poll)
           if (!doneVendors.current.has(vendor.id)) {
             doneVendors.current.add(vendor.id)
             setCallStates((prev) => ({
@@ -224,6 +246,7 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
           }
         }
       }, 4000)
+      activePolls.current.add(poll)
     } catch {
       setCallStates((prev) => ({
         ...prev,
