@@ -491,14 +491,12 @@ export async function getEventCloseOutData(eventId: string): Promise<CloseOutDat
   const tipCents = financialRow?.tip_amount_cents ?? 0
   const quoted = financialRow?.quoted_price_cents ?? 0
   const outstanding = financialRow?.outstanding_balance_cents ?? 0
-  const totalExpenses = (financialRow as any)?.total_expenses_cents ?? 0
-  const grossProfit = (financialRow as any)?.profit_cents ?? quoted - totalExpenses
-  const grossMargin = (financialRow as any)?.profit_margin
-    ? parseFloat(String((financialRow as any).profit_margin)) * 100
-    : 0
-  const foodCostPct = (financialRow as any)?.food_cost_percentage
-    ? parseFloat(String((financialRow as any).food_cost_percentage)) * 100
-    : 0
+  const totalExpenses = Number((financialRow as any)?.total_expenses_cents) || 0
+  const grossProfit = Number((financialRow as any)?.profit_cents) || quoted - totalExpenses
+  const rawMargin = parseFloat(String((financialRow as any)?.profit_margin ?? ''))
+  const grossMargin = Number.isFinite(rawMargin) ? rawMargin * 100 : 0
+  const rawFoodCost = parseFloat(String((financialRow as any)?.food_cost_percentage ?? ''))
+  const foodCostPct = Number.isFinite(rawFoodCost) ? rawFoodCost * 100 : 0
 
   const mileageMiles = event.mileage_miles ? parseFloat(String(event.mileage_miles)) : null
   const deductionValueCents = mileageMiles

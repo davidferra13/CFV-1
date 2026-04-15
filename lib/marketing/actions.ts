@@ -357,7 +357,17 @@ export async function sendCampaignNow(campaignId: string) {
   let sentCount = 0
   let skippedCount = 0
 
+  // Hard cap per campaign run: prevents an oversized audience or cron overlap
+  // from blasting thousands of emails in one execution. Adjust if needed.
+  const MAX_SENDS_PER_RUN = 500
+
   for (const client of audience) {
+    if (sentCount >= MAX_SENDS_PER_RUN) {
+      console.warn(
+        `[campaign] sendCampaignNow hit MAX_SENDS_PER_RUN (${MAX_SENDS_PER_RUN}) for campaign ${campaignId}. Remaining recipients will be sent on the next run.`
+      )
+      break
+    }
     if (!client.email) {
       skippedCount++
       continue
@@ -450,6 +460,9 @@ export async function sendCampaignNow(campaignId: string) {
         .update({ error_message: err instanceof Error ? err.message : 'Delivery failed' })
         .eq('id', recipientRow.id)
     }
+
+    // Throttle: ~5 sends/sec to stay well under Resend's rate limits
+    await new Promise((r) => setTimeout(r, 200))
   }
 
   await db

@@ -3,6 +3,14 @@
 
 const memoryMap = new Map<string, { count: number; resetAt: number }>()
 
+// Evict expired entries every 10 minutes to prevent unbounded heap growth.
+setInterval(() => {
+  const now = Date.now()
+  for (const [key, entry] of memoryMap) {
+    if (now > entry.resetAt) memoryMap.delete(key)
+  }
+}, 10 * 60_000).unref()
+
 /**
  * Check a rate limit for the given key.
  * Throws if the limit is exceeded.

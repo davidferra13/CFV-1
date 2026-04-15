@@ -27,6 +27,17 @@ export async function POST(req: NextRequest) {
     return new NextResponse('Forbidden', { status: 403 })
   }
 
+  // Defense-in-depth: only accept from loopback even when the flag is set.
+  // E2E tests always run on the same machine — external IPs never need this route.
+  const forwardedFor = req.headers.get('x-forwarded-for')
+  const realIp = req.headers.get('x-real-ip')
+  const remoteIp = forwardedFor?.split(',')[0]?.trim() ?? realIp ?? ''
+  const isLoopback =
+    !remoteIp || remoteIp === '127.0.0.1' || remoteIp === '::1' || remoteIp === 'localhost'
+  if (!isLoopback) {
+    return new NextResponse('Forbidden', { status: 403 })
+  }
+
   let email: string, password: string
   try {
     const body = await req.json()
