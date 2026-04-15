@@ -36,7 +36,9 @@ export const GET = withApiAuth(
 
     const { data, error } = await ctx.db
       .from('quotes')
-      .select('*, client:clients(id, full_name, email)')
+      .select(
+        'id, tenant_id, client_id, event_id, inquiry_id, quote_name, status, pricing_model, total_quoted_cents, price_per_person_cents, guest_count_estimated, deposit_required, deposit_amount_cents, deposit_percentage, pricing_notes, valid_until, sent_at, accepted_at, expires_at, rejected_at, created_at, updated_at, client:clients(id, full_name, email)'
+      )
       .eq('id', id)
       .eq('tenant_id', ctx.tenantId)
       .single()
@@ -81,7 +83,9 @@ export const PATCH = withApiAuth(
       .update({ ...parsed.data, updated_at: new Date().toISOString() } as any)
       .eq('id', id)
       .eq('tenant_id', ctx.tenantId)
-      .select()
+      .select(
+        'id, tenant_id, client_id, event_id, inquiry_id, quote_name, status, pricing_model, total_quoted_cents, price_per_person_cents, guest_count_estimated, deposit_required, deposit_amount_cents, deposit_percentage, pricing_notes, valid_until, sent_at, accepted_at, expires_at, rejected_at, created_at, updated_at'
+      )
       .single()
 
     if (error) {

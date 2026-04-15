@@ -112,7 +112,9 @@ export const POST = withApiAuth(
         valid_until: input.valid_until,
         status: 'draft',
       } as any)
-      .select()
+      .select(
+        'id, tenant_id, client_id, event_id, inquiry_id, quote_name, status, pricing_model, total_quoted_cents, price_per_person_cents, guest_count_estimated, deposit_required, deposit_amount_cents, deposit_percentage, pricing_notes, valid_until, sent_at, accepted_at, expires_at, rejected_at, created_at, updated_at'
+      )
       .single()
 
     if (error) {

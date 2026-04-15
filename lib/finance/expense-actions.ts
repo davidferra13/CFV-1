@@ -124,6 +124,19 @@ export async function createExpense(input: CreateExpenseInput): Promise<Expense>
   const tenantId = user.tenantId!
   const db: any = await createServerClient()
 
+  // Verify event_id belongs to this tenant before attaching the expense
+  if (input.event_id) {
+    const { data: eventCheck } = await db
+      .from('events')
+      .select('id')
+      .eq('id', input.event_id)
+      .eq('tenant_id', tenantId)
+      .single()
+    if (!eventCheck) {
+      throw new Error('Event not found or does not belong to your account')
+    }
+  }
+
   const { data, error } = await db
     .from('expenses')
     .insert({

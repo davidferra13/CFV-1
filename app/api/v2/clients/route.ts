@@ -96,7 +96,9 @@ export const POST = withApiAuth(
         source: input.source ?? 'api',
         tags: input.tags,
       } as any)
-      .select()
+      .select(
+        'id, chef_id, full_name, email, phone, status, dietary_restrictions, allergies, notes, address, city, state, zip, source, tags, created_at, updated_at'
+      )
       .single()
 
     if (error) {

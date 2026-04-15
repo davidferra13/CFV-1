@@ -36,6 +36,13 @@ export const CRON_MONITOR_DEFINITIONS: CronMonitorDefinition[] = [
     description: 'Retry queued or failed Wix submissions',
   },
   {
+    cronName: 'ai-queue-drain',
+    routePath: '/api/scheduled/ai-queue-drain',
+    maxExpectedMinutes: 5,
+    cadence: '15m',
+    description: 'Ensure the background AI task worker poll loop is running',
+  },
+  {
     cronName: 'automations',
     routePath: '/api/scheduled/automations',
     maxExpectedMinutes: 30,
