@@ -268,6 +268,18 @@ export async function assignStaffToEvent(input: AssignStaffInput) {
   const validated = AssignStaffSchema.parse(input)
   const db: any = createServerClient()
 
+  // Verify the staff member belongs to this tenant before assigning
+  const { data: staffMember } = await db
+    .from('staff_members')
+    .select('id')
+    .eq('id', validated.staff_member_id)
+    .eq('chef_id', user.tenantId!)
+    .single()
+
+  if (!staffMember) {
+    throw new Error('Staff member not found or does not belong to your account')
+  }
+
   const { data, error } = await db
     .from('event_staff_assignments')
     .upsert(
