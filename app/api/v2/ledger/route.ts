@@ -16,7 +16,10 @@ export const GET = withApiAuth(
 
     let query = ctx.db
       .from('ledger_entries')
-      .select('*', { count: 'exact' })
+      .select(
+        'id, tenant_id, event_id, entry_type, amount_cents, description, is_refund, transaction_reference, created_at',
+        { count: 'exact' }
+      )
       .eq('tenant_id', ctx.tenantId)
       .order('created_at', { ascending: false })
 

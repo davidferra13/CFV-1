@@ -30,7 +30,9 @@ export const GET = withApiAuth(
 
     const { data, error } = await ctx.db
       .from('recipes')
-      .select('*')
+      .select(
+        'id, tenant_id, title, description, cuisine_type, course, prep_time_minutes, cook_time_minutes, servings, difficulty, instructions, notes, tags, is_archived, created_at, updated_at'
+      )
       .eq('id', id)
       .eq('tenant_id', ctx.tenantId)
       .single()
@@ -71,7 +73,9 @@ export const PATCH = withApiAuth(
       .update({ ...parsed.data, updated_at: new Date().toISOString() } as any)
       .eq('id', id)
       .eq('tenant_id', ctx.tenantId)
-      .select()
+      .select(
+        'id, tenant_id, title, description, cuisine_type, course, prep_time_minutes, cook_time_minutes, servings, difficulty, instructions, notes, tags, is_archived, created_at, updated_at'
+      )
       .single()
 
     if (error) {
