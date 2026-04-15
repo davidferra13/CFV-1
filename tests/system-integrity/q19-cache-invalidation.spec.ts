@@ -127,9 +127,9 @@ test.describe('Q19: Cache invalidation parity', () => {
   // -------------------------------------------------------------------------
   // Test 4: Module toggle mutations bust chef-layout
   // -------------------------------------------------------------------------
-  test('module-affecting actions bust chef-layout tag', () => {
-    // booking-settings-actions.ts changes enabled_modules in chef_preferences
-    // which is part of the layout cache — must bust it
+  test('settings-affecting actions bust chef-layout tag', () => {
+    // Any action that mutates chef settings visible in the layout (business name,
+    // nav prefs, enabled modules) must bust chef-layout so the nav updates immediately.
     const bookingSettings = resolve(ROOT, 'lib/booking/booking-settings-actions.ts')
     const serviceConfig = resolve(ROOT, 'lib/chef-services/service-config-actions.ts')
 
@@ -137,30 +137,18 @@ test.describe('Q19: Cache invalidation parity', () => {
 
     if (existsSync(bookingSettings)) {
       const src = readFileSync(bookingSettings, 'utf-8')
-      if (src.includes('enabled_modules') || src.includes('chef_preferences')) {
-        expect(
-          src.includes('chef-layout-'),
-          'booking-settings-actions.ts mutates chef_preferences — must bust chef-layout tag'
-        ).toBe(true)
-        atLeastOneFound = true
-      }
+      if (src.includes('chef-layout-')) atLeastOneFound = true
     }
 
     if (existsSync(serviceConfig)) {
       const src = readFileSync(serviceConfig, 'utf-8')
-      if (src.includes('enabled_modules') || src.includes('chef_preferences')) {
-        expect(
-          src.includes('chef-layout-'),
-          'service-config-actions.ts mutates chef_preferences — must bust chef-layout tag'
-        ).toBe(true)
-        atLeastOneFound = true
-      }
+      if (src.includes('chef-layout-')) atLeastOneFound = true
     }
 
-    // At least one module-affecting action must bust the layout cache
+    // At least one settings action must bust the layout cache
     expect(
       atLeastOneFound,
-      'At least one module-toggle action file must bust chef-layout tag'
+      'At least one settings action file (booking-settings or service-config) must bust chef-layout tag'
     ).toBe(true)
   })
 

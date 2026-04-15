@@ -23,12 +23,12 @@
 | Q11 | Priority Queue Coverage     | q11-queue-coverage.spec.ts          | BUILT   | Struct |
 | Q12 | Contract Policy Truth       | q12-contract-truth.spec.ts          | BUILT   | Struct |
 | Q13 | AI Resilience               | q13-ai-resilience.spec.ts           | BUILT   | Struct |
-| Q14 | TakeAChef Pipeline          | q14-tac-pipeline.spec.ts            | PENDING | Struct |
-| Q15 | Financial View Integrity    | q15-financial-view.spec.ts          | PENDING | DB     |
-| Q16 | Notification Delivery Chain | q16-notifications.spec.ts           | PENDING | API    |
-| Q17 | Embed Widget Atomicity      | q17-embed-atomicity.spec.ts         | PENDING | API    |
-| Q18 | Ledger Immutability         | q18-ledger-immutability.spec.ts     | PENDING | DB     |
-| Q19 | Cache Invalidation Parity   | q19-cache-invalidation.spec.ts      | PENDING | Struct |
+| Q14 | TakeAChef Pipeline          | q14-tac-pipeline.spec.ts            | BUILT   | Struct |
+| Q15 | Financial View Integrity    | q15-financial-view.spec.ts          | BUILT   | DB     |
+| Q16 | Notification Delivery Chain | q16-notification-delivery.spec.ts   | BUILT   | Struct |
+| Q17 | Embed Widget Atomicity      | q17-embed-atomicity.spec.ts         | BUILT   | API    |
+| Q18 | Ledger Immutability         | q18-ledger-immutability.spec.ts     | BUILT   | DB     |
+| Q19 | Cache Invalidation Parity   | q19-cache-invalidation.spec.ts      | BUILT   | Struct |
 | Q20 | PWA / Service Worker        | q20-pwa.spec.ts                     | PENDING | UI     |
 
 ---
