@@ -825,6 +825,22 @@ export async function deleteClient(clientId: string) {
     throw new ValidationError('Client not found')
   }
 
+  // Prevent deletion when active events exist — deleting would orphan them
+  const { data: activeEvents } = await (db
+    .from('events')
+    .select('id')
+    .eq('client_id', clientId)
+    .eq('tenant_id', user.tenantId!)
+    .is('deleted_at', null)
+    .not('status', 'in', '("completed","cancelled")')
+    .limit(1) as any)
+
+  if (activeEvents && activeEvents.length > 0) {
+    throw new ValidationError(
+      'Cannot delete a client with active events. Close or cancel their events first.'
+    )
+  }
+
   const { error } = await db
     .from('clients')
     .update({

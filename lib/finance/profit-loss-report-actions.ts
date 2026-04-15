@@ -3,6 +3,7 @@
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { pgClient } from '@/lib/db'
 import { getPayrollReportForPeriod } from '@/lib/staff/staffing-actions'
 
 const DateRangeSchema = z.object({
@@ -76,14 +77,30 @@ export async function getProfitAndLossReport(
       .select('sale_id')
       .eq('tenant_id', user.tenantId!)
       .not('sale_id', 'is', null),
-    db
-      .from('purchase_orders')
-      .select('status, order_date, received_at, estimated_total_cents, actual_total_cents')
-      .eq('chef_id', user.tenantId!)
-      .in('status', ['partially_received', 'received'])
-      .or(
-        `order_date.gte.${parsed.startDate},and(order_date.lte.${parsed.endDate}),received_at.gte.${parsed.startDate}T00:00:00Z,and(received_at.lte.${parsed.endDate}T23:59:59Z)`
-      ),
+    // Two-query approach: OR across two date columns cannot be safely expressed
+    // in the compat shim's .or() syntax without silently dropping and() clauses.
+    // Use pgClient with parameterized SQL instead.
+    pgClient<
+      {
+        status: string
+        order_date: string
+        received_at: string | null
+        estimated_total_cents: number | null
+        actual_total_cents: number | null
+      }[]
+    >`
+      SELECT status, order_date, received_at, estimated_total_cents, actual_total_cents
+      FROM purchase_orders
+      WHERE chef_id = ${user.tenantId!}
+        AND status IN ('partially_received', 'received')
+        AND (
+          (order_date >= ${parsed.startDate} AND order_date <= ${parsed.endDate})
+          OR
+          (received_at >= ${parsed.startDate + 'T00:00:00Z'} AND received_at <= ${parsed.endDate + 'T23:59:59Z'})
+        )
+    `
+      .then((rows) => ({ data: rows, error: null }))
+      .catch((err: Error) => ({ data: null, error: { message: err.message } })),
     db
       .from('expenses')
       .select('amount_cents')

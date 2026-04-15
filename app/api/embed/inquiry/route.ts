@@ -110,15 +110,26 @@ export async function POST(request: NextRequest) {
 
     const db: any = createAdminClient()
 
-    // 1. Verify chef exists
+    // 1. Verify chef exists and is accepting inquiries
     const { data: chef, error: chefError } = await db
       .from('chefs')
-      .select('id, business_name')
+      .select('id, business_name, account_status, deletion_scheduled_for')
       .eq('id', data.chef_id)
       .single()
 
     if (chefError || !chef) {
       return NextResponse.json({ error: 'Chef not found' }, { status: 404, headers: corsHeaders })
+    }
+
+    // Reject inquiries for suspended or pending-deletion accounts
+    if (
+      (chef as any).account_status === 'suspended' ||
+      (chef as any).deletion_scheduled_for != null
+    ) {
+      return NextResponse.json(
+        { error: 'This chef is not currently accepting inquiries' },
+        { status: 404, headers: corsHeaders }
+      )
     }
 
     const tenantId = chef.id as string
