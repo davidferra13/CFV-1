@@ -746,11 +746,12 @@ export async function getInquiryById(id: string) {
     return null
   }
 
-  // Get transition history
+  // Get transition history (tenant-scoped to prevent cross-tenant reads)
   const { data: transitions } = await db
     .from('inquiry_state_transitions')
     .select('*')
     .eq('inquiry_id', id)
+    .eq('tenant_id', user.tenantId!)
     .order('transitioned_at', { ascending: true })
 
   return { ...inquiry, transitions: transitions || [] }

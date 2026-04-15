@@ -365,6 +365,18 @@ export async function sendCampaignNow(campaignId: string) {
 
     const { first, last } = splitName(client.full_name)
 
+    // Guard against duplicate sends if cron fires twice for the same campaign
+    const { data: existing } = await (db as any)
+      .from('campaign_recipients')
+      .select('id')
+      .eq('campaign_id', campaignId)
+      .eq('client_id', client.id)
+      .maybeSingle()
+    if (existing) {
+      skippedCount++
+      continue
+    }
+
     // Insert recipient row first - its ID is the unsubscribe token
     const { data: recipientRow } = await db
       .from('campaign_recipients')

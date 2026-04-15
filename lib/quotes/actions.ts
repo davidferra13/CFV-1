@@ -324,11 +324,12 @@ export async function getQuoteById(id: string) {
     return null
   }
 
-  // Get transition history
+  // Get transition history (tenant-scoped to prevent cross-tenant reads)
   const { data: transitions } = await db
     .from('quote_state_transitions')
     .select('*')
     .eq('quote_id', id)
+    .eq('tenant_id', user.tenantId!)
     .order('transitioned_at', { ascending: true })
 
   return { ...quote, transitions: transitions || [] }

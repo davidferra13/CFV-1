@@ -12,7 +12,15 @@ export async function GET(
     return NextResponse.json({ error: 'Invalid path' }, { status: 400 })
   }
 
-  const bucket = segments[0]
+  // Sanitize path segments BEFORE token verification (defense-in-depth)
+  for (const seg of segments) {
+    if (seg === '..' || seg === '.' || seg.includes('\\') || seg.includes('/')) {
+      return NextResponse.json({ error: 'Invalid path' }, { status: 400 })
+    }
+  }
+
+  // Normalize bucket through basename to prevent encoding-based traversal
+  const bucket = path.basename(segments[0])
   const filePath = segments.slice(1).join('/')
 
   // Validate signed token
@@ -23,13 +31,6 @@ export async function GET(
 
   if (!verifySignedToken(bucket, filePath, token)) {
     return NextResponse.json({ error: 'Invalid or expired token' }, { status: 403 })
-  }
-
-  // Sanitize path segments
-  for (const seg of segments) {
-    if (seg === '..' || seg === '.' || seg.includes('\\')) {
-      return NextResponse.json({ error: 'Invalid path' }, { status: 400 })
-    }
   }
 
   try {
