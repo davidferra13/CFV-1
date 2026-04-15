@@ -4,6 +4,7 @@
 // Writes to chef_feature_flags table via service role.
 // All mutations are audit-logged.
 
+import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/db/admin'
 import { requireAdmin } from '@/lib/auth/admin'
 import { logAdminAction } from './audit'
@@ -38,6 +39,8 @@ export async function toggleChefFlag(
     console.error('[Admin] toggleChefFlag error:', error)
     return { success: false, error: error.message }
   }
+
+  revalidatePath('/admin/flags')
 
   if (previousEnabled === enabled) {
     return { success: true }
@@ -90,6 +93,8 @@ export async function setBulkChefFlags(
     console.error('[Admin] setBulkChefFlags error:', error)
     return { success: false, error: error.message }
   }
+
+  revalidatePath('/admin/flags')
 
   await logAdminAction({
     actorEmail: admin.email,

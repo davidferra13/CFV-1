@@ -4,6 +4,7 @@
 // 12 structured Q&A questions that Remy reads to understand the chef deeply.
 // Injected into Remy's system prompt as the CULINARY PROFILE section.
 
+import { revalidatePath } from 'next/cache'
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { CULINARY_QUESTIONS } from '@/lib/ai/chef-profile-constants'
@@ -79,6 +80,7 @@ export async function saveCulinaryProfileAnswer(
     return { success: false, error: (error as any).message }
   }
 
+  revalidatePath('/settings/culinary-profile')
   return { success: true }
 }
 
@@ -113,6 +115,7 @@ export async function saveCulinaryProfileBulk(
     return { success: false, saved: 0, error: (error as any).message }
   }
 
+  revalidatePath('/settings/culinary-profile')
   return { success: true, saved: rows.length }
 }
 

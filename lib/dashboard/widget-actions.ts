@@ -597,6 +597,8 @@ export async function toggleShoppingItem(itemId: string, purchased: boolean): Pr
   if (error) {
     throw new Error('Failed to update shopping item')
   }
+
+  revalidatePath('/dashboard')
 }
 
 // ============================================

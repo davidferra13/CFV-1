@@ -113,6 +113,7 @@ export function ActivityPageClient({
   const [breadcrumbCursor, setBreadcrumbCursor] = useState<string | null>(initialBreadcrumbCursor)
   const [retraceLoading, setRetraceLoading] = useState(false)
   const [retraceLoadingMore, setRetraceLoadingMore] = useState(false)
+  const [retraceLoadError, setRetraceLoadError] = useState(false)
 
   const loadFeed = useCallback(
     async (opts?: { append?: boolean }) => {
@@ -186,7 +187,7 @@ export function ActivityPageClient({
         }
         setBreadcrumbCursor(result.nextCursor)
       } catch {
-        // Non-blocking
+        setRetraceLoadError(true)
       } finally {
         setRetraceLoading(false)
         setRetraceLoadingMore(false)
@@ -431,13 +432,19 @@ export function ActivityPageClient({
             </select>
           </div>
 
-          <RetraceTimeline
-            sessions={breadcrumbSessions}
-            loading={retraceLoading}
-            hasMore={Boolean(breadcrumbCursor)}
-            onLoadMore={() => void loadRetraceSessions({ append: true })}
-            loadingMore={retraceLoadingMore}
-          />
+          {retraceLoadError ? (
+            <p className="text-sm text-stone-500 py-4 text-center">
+              Could not load navigation history. Refresh to try again.
+            </p>
+          ) : (
+            <RetraceTimeline
+              sessions={breadcrumbSessions}
+              loading={retraceLoading}
+              hasMore={Boolean(breadcrumbCursor)}
+              onLoadMore={() => void loadRetraceSessions({ append: true })}
+              loadingMore={retraceLoadingMore}
+            />
+          )}
         </>
       )}
     </div>

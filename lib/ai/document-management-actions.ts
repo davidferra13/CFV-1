@@ -4,6 +4,7 @@
 // PRIVACY: Document contents = business data → local only.
 // CRUD for chef_folders + chef_documents management via Remy commands.
 
+import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import type { ChefFolder, ChefDocument } from './document-management-types'
@@ -63,6 +64,7 @@ export async function createFolder(
     return { success: false, error: (error as any).message }
   }
 
+  revalidatePath('/documents')
   return {
     success: true,
     folder: {
@@ -98,6 +100,7 @@ export async function moveDocumentToFolder(
     return { success: false, error: error.message }
   }
 
+  revalidatePath('/documents')
   return { success: true }
 }
 
@@ -190,5 +193,6 @@ export async function deleteFolder(
     return { success: false, error: (error as any).message }
   }
 
+  revalidatePath('/documents')
   return { success: true }
 }
