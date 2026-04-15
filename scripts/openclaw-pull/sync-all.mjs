@@ -52,9 +52,10 @@ async function refreshViews() {
   const sql = postgres(config.pg.connectionString)
   try {
     await sql.unsafe('SET search_path TO public, extensions')
-    await sql.unsafe('REFRESH MATERIALIZED VIEW regional_price_averages')
+    // CONCURRENTLY allows reads while refresh runs; requires unique index (exists).
+    await sql.unsafe('REFRESH MATERIALIZED VIEW CONCURRENTLY regional_price_averages')
     log('  Refreshed regional_price_averages')
-    await sql.unsafe('REFRESH MATERIALIZED VIEW category_price_baselines')
+    await sql.unsafe('REFRESH MATERIALIZED VIEW CONCURRENTLY category_price_baselines')
     log('  Refreshed category_price_baselines')
 
     // Quick stats

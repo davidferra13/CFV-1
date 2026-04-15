@@ -163,7 +163,7 @@ async function main() {
       .prepare(`SELECT * FROM normalization_map LIMIT ${BATCH_SIZE} OFFSET ${offset}`)
       .all()
 
-    for (const row of rows) {
+    await Promise.all(rows.map(async (row) => {
       try {
         await sql`
           INSERT INTO openclaw.normalization_map (
@@ -182,7 +182,7 @@ async function main() {
         `
         synced++
       } catch (err) { /* skip bad rows */ }
-    }
+    }))
 
     offset += BATCH_SIZE
     if (offset % 5000 === 0) log(`  Norm map: ${offset}/${total}...`)

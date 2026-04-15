@@ -116,7 +116,7 @@ const CreateComponentSchema = z.object({
   category: z.enum(COMPONENT_CATEGORIES),
   description: z.string().optional(),
   recipe_id: z.string().uuid().optional(),
-  scale_factor: z.number().positive().default(1),
+  scale_factor: z.number().positive().max(20, 'Scale factor cannot exceed 20').default(1),
   is_make_ahead: z.boolean().default(false),
   make_ahead_window_hours: z.number().int().positive().optional(),
   transport_category: z.enum(TRANSPORT_CATEGORIES).optional(),
@@ -137,7 +137,7 @@ const UpdateComponentSchema = z.object({
   category: z.enum(COMPONENT_CATEGORIES).optional(),
   description: z.string().optional(),
   recipe_id: z.string().uuid().nullable().optional(),
-  scale_factor: z.number().positive().optional(),
+  scale_factor: z.number().positive().max(20, 'Scale factor cannot exceed 20').optional(),
   is_make_ahead: z.boolean().optional(),
   make_ahead_window_hours: z.number().int().positive().nullable().optional(),
   transport_category: z.enum(TRANSPORT_CATEGORIES).nullable().optional(),
@@ -2122,6 +2122,13 @@ export type CostingGap = {
     missingCount: number
     totalIngredients: number
   }>
+  /** Ingredients where recipe unit differs from price unit (A6). Cost math may be wrong. */
+  unitMismatches: Array<{
+    ingredientName: string
+    recipeName: string
+    recipeUnit: string
+    priceUnit: string
+  }>
 }
 
 /**
@@ -2183,6 +2190,32 @@ export async function getMenuCostingGaps(menuId: string): Promise<CostingGap> {
     ORDER BY missing_count DESC
   `
 
+  // A6: Unit mismatches - recipe_ingredients.unit vs ingredients.price_unit
+  type UnitMismatchRow = {
+    ingredient_name: string
+    recipe_name: string
+    recipe_unit: string
+    price_unit: string
+  }
+
+  const unitMismatchRows = await pgClient<UnitMismatchRow[]>`
+    SELECT DISTINCT i.name AS ingredient_name,
+           r.name          AS recipe_name,
+           ri.unit         AS recipe_unit,
+           i.price_unit
+    FROM components c
+    JOIN dishes d ON d.id = c.dish_id
+    JOIN recipes r ON r.id = c.recipe_id
+    JOIN recipe_ingredients ri ON ri.recipe_id = r.id
+    JOIN ingredients i ON i.id = ri.ingredient_id
+    WHERE d.menu_id = ${menuId}
+      AND c.recipe_id IS NOT NULL
+      AND i.price_unit IS NOT NULL
+      AND ri.unit IS NOT NULL
+      AND lower(trim(ri.unit)) != lower(trim(i.price_unit))
+    ORDER BY i.name
+  `
+
   return {
     unrecipedComponents: unrecipedRows.map((r: UnrecipedRow) => ({
       componentId: r.component_id,
@@ -2195,5 +2228,115 @@ export async function getMenuCostingGaps(menuId: string): Promise<CostingGap> {
       missingCount: Number(r.missing_count),
       totalIngredients: Number(r.total_ingredients),
     })),
+    unitMismatches: unitMismatchRows.map((r: UnitMismatchRow) => ({
+      ingredientName: r.ingredient_name,
+      recipeName: r.recipe_name,
+      recipeUnit: r.recipe_unit,
+      priceUnit: r.price_unit,
+    })),
+  }
+}
+
+// ============================================
+// MENU HEALTH SCORE (L3)
+// ============================================
+
+export type MenuHealthData = {
+  menuId: string
+  menuStatus: string
+  dishCount: number
+  /** Dishes that have at least one costing gap (unreciped component or missing price). */
+  dishesWithGaps: number
+  /** True when at least one dish has allergen_flags populated. */
+  allergenReviewed: boolean
+  hasEvent: boolean
+  eventId: string | null
+  /** null when no event is linked. */
+  approvalStatus: string | null
+}
+
+/**
+ * Returns a compact readiness snapshot for a menu.
+ * Drives the MenuHealthScore UI checklist (L3).
+ * Combines dish stats, costing gap counts, allergen coverage, and approval state.
+ */
+export async function getMenuHealthData(menuId: string): Promise<MenuHealthData> {
+  const user = await requireChef()
+
+  type HealthRow = {
+    menu_status: string
+    event_id: string | null
+    approval_status: string | null
+    dish_count: string
+    dishes_with_allergens: string
+    dishes_with_gaps: string
+  }
+
+  const [row] = await pgClient<HealthRow[]>`
+    WITH menu_base AS (
+      SELECT m.id,
+             m.status                    AS menu_status,
+             m.event_id,
+             e.menu_approval_status      AS approval_status
+      FROM menus m
+      LEFT JOIN events e ON e.id = m.event_id AND e.tenant_id = ${user.tenantId!}
+      WHERE m.id = ${menuId}
+        AND m.tenant_id = ${user.tenantId!}
+        AND m.deleted_at IS NULL
+    ),
+    dish_stats AS (
+      SELECT d.menu_id,
+             COUNT(*)                                                        AS dish_count,
+             COUNT(*) FILTER (
+               WHERE d.allergen_flags IS NOT NULL
+                 AND array_length(d.allergen_flags, 1) > 0
+             )                                                               AS dishes_with_allergens
+      FROM dishes d
+      WHERE d.menu_id = ${menuId}
+      GROUP BY d.menu_id
+    ),
+    gap_dishes AS (
+      -- dishes that have at least one unreciped component
+      SELECT DISTINCT d.id AS dish_id
+      FROM dishes d
+      JOIN components c ON c.dish_id = d.id
+      WHERE d.menu_id = ${menuId}
+        AND c.recipe_id IS NULL
+      UNION
+      -- dishes where a linked recipe has at least one ingredient with no price
+      SELECT DISTINCT d.id
+      FROM dishes d
+      JOIN components c ON c.dish_id = d.id AND c.recipe_id IS NOT NULL
+      JOIN recipe_ingredients ri ON ri.recipe_id = c.recipe_id
+      JOIN ingredients i ON i.id = ri.ingredient_id
+      WHERE d.menu_id = ${menuId}
+        AND i.last_price_cents IS NULL
+    )
+    SELECT mb.menu_status,
+           mb.event_id,
+           mb.approval_status,
+           COALESCE(ds.dish_count, 0)           AS dish_count,
+           COALESCE(ds.dishes_with_allergens, 0) AS dishes_with_allergens,
+           COUNT(gd.dish_id)                     AS dishes_with_gaps
+    FROM menu_base mb
+    LEFT JOIN dish_stats ds ON TRUE
+    LEFT JOIN gap_dishes gd ON TRUE
+    GROUP BY mb.menu_status, mb.event_id, mb.approval_status,
+             ds.dish_count, ds.dishes_with_allergens
+  `
+
+  if (!row) throw new UnknownAppError('Menu not found')
+
+  const dishCount = Number(row.dish_count)
+
+  return {
+    menuId,
+    menuStatus: row.menu_status,
+    dishCount,
+    dishesWithGaps: Number(row.dishes_with_gaps),
+    allergenReviewed: Number(row.dishes_with_allergens) > 0,
+    hasEvent: row.event_id !== null,
+    eventId: row.event_id,
+    approvalStatus: row.approval_status,
   }
 }

@@ -4,6 +4,7 @@ import { getMenuEngineFeatures } from '@/lib/chef/actions'
 import { MenuEditorClient } from '@/components/culinary/MenuEditor'
 import { FoodPlaceholderImage } from '@/components/ui/food-placeholder-image'
 import { MenuCostSidebar } from '@/components/culinary/menu-cost-sidebar'
+import { MenuHealthScore } from '@/components/menus/menu-health-score'
 import { MenuBreakdownView } from '@/components/culinary/menu-breakdown-view'
 import { MenuScaleDialog } from '@/components/culinary/menu-scale-dialog'
 import { MenuContextSidebar } from '@/components/culinary/menu-context-sidebar'
@@ -91,6 +92,12 @@ export default async function MenuDetailPage({ params }: { params: { id: string 
                 Configure
               </Button>
             </Link>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-stone-500 uppercase tracking-wider mb-2">
+              Readiness
+            </p>
+            <MenuHealthScore menuId={menu.id} />
           </div>
           <MenuCostSidebar menuId={menu.id} vendorHintsEnabled={engineFeatures.vendor_hints} />
           <MenuWhatIfPanel menuId={menu.id} />

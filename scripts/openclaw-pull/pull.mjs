@@ -106,6 +106,7 @@ const SOURCE_TO_CHAIN = [
   [/^stop-shop-flipp$/,           'stop_and_shop'],
   [/^target-flipp$/,              'target'],
   [/^dollar-general-flipp$/,      'dollar_general'],
+  [/^dollar-tree-flipp$/,         'dollar_tree'],
   [/^restaurant-depot-flipp$/,    'restaurant_depot'],
   [/^costco-flipp$/,              'costco'],
   [/^ocean-state-flipp$/,         'ocean_state'],
@@ -386,10 +387,32 @@ const SOURCE_TO_CHAIN = [
   [/^aldi-/,                      'aldi'],
 ]
 
+// Known mismatches: bare ic-{name} in current_prices ≠ PG chain slug
+const BARE_IC_OVERRIDES = {
+  'ic-shaws':             'shaws',
+  'ic-harristeeter':      'harris_teeter',
+  'ic-frys':              'frys_food',
+  'ic-food4less':         'food_4_less',
+  'ic-lunds-and-byerlys': 'lunds_byerlys',
+  'ic-weis':              'weis_markets',
+  'ic-smart-final':       'smart_and_final',
+  'ic-cvs':               'cvs',
+  'ic-stop-shop':         'stop_and_shop',
+}
+
 function sourceIdToChainSlug(sourceId) {
   for (const [pattern, slug] of SOURCE_TO_CHAIN) {
     if (pattern.test(sourceId)) return slug
   }
+  // Fallback for bare ic-{chain} source_ids (used in current_prices, no location suffix)
+  if (BARE_IC_OVERRIDES[sourceId]) return BARE_IC_OVERRIDES[sourceId]
+  if (sourceId.startsWith('ic-')) {
+    return sourceId.slice(3).replace(/-/g, '_')
+  }
+  // Government price data sources (BLS, USDA AMS) -> virtual 'government' chain
+  if (sourceId.startsWith('gov-')) return 'government'
+  // Generic Flipp regional feed -> 'flipp' virtual chain
+  if (sourceId.startsWith('flipp-')) return 'flipp'
   return null
 }
 
@@ -949,19 +972,20 @@ async function main() {
         .prepare(`SELECT * FROM current_prices LIMIT ${BATCH_SIZE} OFFSET ${offset}`)
         .all()
 
-      for (const cp of rows) {
-        if (!cp.price_cents || cp.price_cents <= 0) continue
+      // Process all rows in this batch concurrently (independent of each other)
+      await Promise.all(rows.map(async (cp) => {
+        if (!cp.price_cents || cp.price_cents <= 0) return
 
         const pgStoreId = sourceStoreMap.get(cp.source_id)
         if (!pgStoreId) {
           skippedNoStore++
-          continue
+          return
         }
 
         // Skip obvious non-food items
         if (cp.raw_product_name && isNonFoodProduct(cp.raw_product_name)) {
           skippedNonFood++
-          continue
+          return
         }
 
         try {
@@ -989,7 +1013,7 @@ async function main() {
             pgProductId = existing[0]?.id
           }
 
-          if (!pgProductId) continue
+          if (!pgProductId) return
 
           // Determine if this is a sale price
           const isSale = cp.price_type === 'sale'
@@ -1034,7 +1058,7 @@ async function main() {
           errors++
           if (errorDetails.length < 20) errorDetails.push(`current_price "${cp.raw_product_name}": ${err.message}`)
         }
-      }
+      }))
 
       offset += BATCH_SIZE
       if (offset % 10000 === 0) log(`  current_prices: ${offset}/${total}...`)
@@ -1058,7 +1082,7 @@ async function main() {
         .prepare(`SELECT * FROM canonical_ingredients LIMIT ${BATCH_SIZE} OFFSET ${offset}`)
         .all()
 
-      for (const ing of rows) {
+      await Promise.all(rows.map(async (ing) => {
         try {
           await sql`
             INSERT INTO openclaw.canonical_ingredients (
@@ -1084,7 +1108,7 @@ async function main() {
           errors++
           if (errorDetails.length < 20) errorDetails.push(`Ingredient "${ing.name}": ${err.message}`)
         }
-      }
+      }))
 
       offset += BATCH_SIZE
       if (offset % 5000 === 0) log(`  Ingredients: ${offset}/${total}...`)
@@ -1126,7 +1150,7 @@ async function main() {
         .prepare(`SELECT * FROM normalization_map LIMIT ${BATCH_SIZE} OFFSET ${normOffset}`)
         .all()
 
-      for (const row of normRows) {
+      await Promise.all(normRows.map(async (row) => {
         try {
           await sql`
             INSERT INTO openclaw.normalization_map (
@@ -1148,7 +1172,7 @@ async function main() {
           errors++
           if (errorDetails.length < 20) errorDetails.push(`Norm map "${row.raw_name}": ${err.message}`)
         }
-      }
+      }))
 
       normOffset += BATCH_SIZE
       if (normOffset % 10000 === 0) log(`  Norm map: ${normOffset}/${totalNorm}...`)
