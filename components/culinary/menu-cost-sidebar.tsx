@@ -160,9 +160,7 @@ export function MenuCostSidebar({
       {gaps && gaps.unrecipedComponents.length > 0 && (
         <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 space-y-1">
           <div className="flex items-center gap-2">
-            <Badge variant="warning">
-              {gaps.unrecipedComponents.length} unlinked
-            </Badge>
+            <Badge variant="warning">{gaps.unrecipedComponents.length} unlinked</Badge>
             <span className="text-xs text-amber-300 font-medium">No recipe attached</span>
           </div>
           <p className="text-xs text-amber-200/70">
@@ -175,9 +173,7 @@ export function MenuCostSidebar({
               </li>
             ))}
             {gaps.unrecipedComponents.length > 5 && (
-              <li className="text-amber-200/40">
-                +{gaps.unrecipedComponents.length - 5} more
-              </li>
+              <li className="text-amber-200/40">+{gaps.unrecipedComponents.length - 5} more</li>
             )}
           </ul>
         </div>
