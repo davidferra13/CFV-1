@@ -7,6 +7,7 @@
 import { createServerClient } from '@/lib/db/server'
 import { pgClient } from '@/lib/db'
 import { revalidatePath } from 'next/cache'
+import { requireAdmin } from '@/lib/auth/admin'
 import { slugify, ITEMS_PER_PAGE, normalizeUsStateCode, US_STATES } from './constants'
 import {
   sendDirectoryWelcomeEmail,
@@ -699,6 +700,7 @@ export async function requestListingRemoval(input: {
 // ─── Admin Actions ────────────────────────────────────────────────────────────
 
 export async function adminGetAllListings(): Promise<DirectoryListing[]> {
+  await requireAdmin()
   const db = createServerClient({ admin: true })
 
   const { data, error } = await db
@@ -718,6 +720,7 @@ export async function adminUpdateListingStatus(
   listingId: string,
   status: string
 ): Promise<{ success: boolean; error?: string }> {
+  await requireAdmin()
   const db = createServerClient({ admin: true })
 
   const updates: Record<string, any> = { status }
@@ -766,6 +769,7 @@ export async function adminCreateListing(input: {
   websiteUrl?: string
   source?: string
 }): Promise<{ success: boolean; error?: string; slug?: string }> {
+  await requireAdmin()
   if (!input.name.trim()) {
     return { success: false, error: 'Name is required.' }
   }
@@ -856,6 +860,7 @@ export async function enhanceDirectoryListing(input: {
 }
 
 export async function adminGetNominations(): Promise<any[]> {
+  await requireAdmin()
   const db = createServerClient({ admin: true })
 
   const { data, error } = await db
@@ -875,6 +880,7 @@ export async function adminReviewNomination(
   nominationId: string,
   status: 'approved' | 'rejected' | 'duplicate'
 ): Promise<{ success: boolean; error?: string }> {
+  await requireAdmin()
   const db = createServerClient({ admin: true })
 
   const { error } = await db

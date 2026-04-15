@@ -64,24 +64,37 @@ export async function POST(req: NextRequest) {
   // Look up by callId (query param) first - avoids race condition where call_sid
   // hasn't been written yet when the first status callback fires.
   // Fall back to call_sid lookup for backwards compatibility.
+  // Both writes must be guarded: a DB error here produces a 500, which causes
+  // Twilio to retry every 5 minutes for up to 24 hours. Without a guard, a single
+  // DB blip creates an infinite retry loop and the call stays stuck in 'ringing'.
   let callRecord: any = null
   if (callId) {
-    const { data } = await db
-      .from('supplier_calls')
-      .update(update)
-      .eq('id', callId)
-      .select('id, chef_id, vendor_id, vendor_name, ingredient_name, result')
-      .single()
-    callRecord = data
+    try {
+      const { data } = await db
+        .from('supplier_calls')
+        .update(update)
+        .eq('id', callId)
+        .select('id, chef_id, vendor_id, vendor_name, ingredient_name, result')
+        .single()
+      callRecord = data
+    } catch (err) {
+      console.error('[calling/status] supplier_calls update (callId) failed:', err)
+      return NextResponse.json({ ok: true }) // return 200 so Twilio does not retry
+    }
   }
   if (!callRecord) {
-    const { data } = await db
-      .from('supplier_calls')
-      .update(update)
-      .eq('call_sid', callSid)
-      .select('id, chef_id, vendor_id, vendor_name, ingredient_name, result')
-      .single()
-    callRecord = data
+    try {
+      const { data } = await db
+        .from('supplier_calls')
+        .update(update)
+        .eq('call_sid', callSid)
+        .select('id, chef_id, vendor_id, vendor_name, ingredient_name, result')
+        .single()
+      callRecord = data
+    } catch (err) {
+      console.error('[calling/status] supplier_calls update (call_sid) failed:', err)
+      return NextResponse.json({ ok: true })
+    }
   }
 
   if (!callRecord) {
@@ -95,12 +108,19 @@ export async function POST(req: NextRequest) {
       if (callDuration) aiUpdate.duration_seconds = parseInt(callDuration, 10)
       aiUpdate.call_sid = callSid
 
-      const { data: aiCallRecord } = await db
-        .from('ai_calls')
-        .update(aiUpdate)
-        .eq('id', aiCallId)
-        .select('id, chef_id, role, contact_name, subject')
-        .single()
+      let aiCallRecord: any = null
+      try {
+        const { data } = await db
+          .from('ai_calls')
+          .update(aiUpdate)
+          .eq('id', aiCallId)
+          .select('id, chef_id, role, contact_name, subject')
+          .single()
+        aiCallRecord = data
+      } catch (err) {
+        console.error('[calling/status] ai_calls update (ai-only path) failed:', err)
+        return NextResponse.json({ ok: true })
+      }
 
       if (aiCallRecord && isTerminal) {
         try {

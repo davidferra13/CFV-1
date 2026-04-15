@@ -247,7 +247,8 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
         }
       }, 4000)
       activePolls.current.add(poll)
-    } catch {
+    } catch (err) {
+      console.error('[call-hub] placeCall unexpected error:', err)
       setCallStates((prev) => ({
         ...prev,
         [vendor.id]: { phase: 'done', result: null, status: 'Error placing call' },
@@ -298,32 +299,42 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
         let attempts = 0
         const poll = setInterval(async () => {
           attempts++
-          const status = await getCallStatus(callId)
-          if (!status) return
-          if (['completed', 'failed', 'no_answer', 'busy'].includes(status.status)) {
-            clearInterval(poll)
-            if (status.result === 'yes') {
-              const msg = `${signal.vendorName}: In stock${status.price_quoted ? ` at ${status.price_quoted}` : ''}`
-              toast.success(msg)
-              // Re-resolve so the vendor is demoted from Tier 2 stale to confirmed
-              if (ingredient.trim().length >= 2) {
-                resolveIngredientAvailability(ingredient.trim())
-                  .then((refreshed) => setResolution(refreshed))
-                  .catch(() => {})
+          try {
+            const status = await getCallStatus(callId)
+            if (!status) return
+            if (['completed', 'failed', 'no_answer', 'busy'].includes(status.status)) {
+              clearInterval(poll)
+              activePolls.current.delete(poll)
+              if (status.result === 'yes') {
+                const msg = `${signal.vendorName}: In stock${status.price_quoted ? ` at ${status.price_quoted}` : ''}`
+                toast.success(msg)
+                // Re-resolve so the vendor is demoted from Tier 2 stale to confirmed
+                if (ingredient.trim().length >= 2) {
+                  resolveIngredientAvailability(ingredient.trim())
+                    .then((refreshed) => setResolution(refreshed))
+                    .catch((err) => {
+                      console.error('[call-hub] escalateTier2Call re-resolve failed:', err)
+                    })
+                }
+              } else if (status.result === 'no') {
+                toast.info(`${signal.vendorName}: Not available`)
+              } else {
+                toast.info(`${signal.vendorName}: ${status.status}`)
               }
-            } else if (status.result === 'no') {
-              toast.info(`${signal.vendorName}: Not available`)
-            } else {
-              toast.info(`${signal.vendorName}: ${status.status}`)
             }
-          }
-          if (attempts >= 22) {
-            clearInterval(poll)
-            toast.info(`${signal.vendorName}: Call still in progress`)
+            if (attempts >= 22) {
+              clearInterval(poll)
+              activePolls.current.delete(poll)
+              toast.info(`${signal.vendorName}: Call still in progress`)
+            }
+          } catch (err) {
+            console.error('[call-hub] escalateTier2Call poll error:', err)
           }
         }, 4000)
+        activePolls.current.add(poll)
       }
-    } catch {
+    } catch (err) {
+      console.error('[call-hub] escalateTier2Call unexpected error:', err)
       toast.error('Failed to place call')
     }
   }
@@ -360,31 +371,39 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
       let attempts = 0
       const poll = setInterval(async () => {
         attempts++
-        const status = await getCallStatus(callId)
-        if (!status) return
-        if (['completed', 'failed', 'no_answer', 'busy'].includes(status.status)) {
-          clearInterval(poll)
-          setQuickResult({
-            phase: 'done',
-            result: status.result,
-            status: status.status,
-            priceQuoted: status.price_quoted,
-            quantityAvailable: status.quantity_available,
-            recordingUrl: status.recording_url,
-            callCreatedAt: status.created_at,
-          })
-        }
-        if (attempts >= 30) {
-          clearInterval(poll)
-          // Fix #4: transition to done so the UI doesn't hang in 'calling' state.
-          setQuickResult({
-            phase: 'done',
-            result: null,
-            status: 'No response yet - call may still be in progress',
-          })
+        try {
+          const status = await getCallStatus(callId)
+          if (!status) return
+          if (['completed', 'failed', 'no_answer', 'busy'].includes(status.status)) {
+            clearInterval(poll)
+            activePolls.current.delete(poll)
+            setQuickResult({
+              phase: 'done',
+              result: status.result,
+              status: status.status,
+              priceQuoted: status.price_quoted,
+              quantityAvailable: status.quantity_available,
+              recordingUrl: status.recording_url,
+              callCreatedAt: status.created_at,
+            })
+          }
+          if (attempts >= 30) {
+            clearInterval(poll)
+            activePolls.current.delete(poll)
+            // Fix #4: transition to done so the UI doesn't hang in 'calling' state.
+            setQuickResult({
+              phase: 'done',
+              result: null,
+              status: 'No response yet - call may still be in progress',
+            })
+          }
+        } catch (err) {
+          console.error('[call-hub] placeQuickCall poll error:', err)
         }
       }, 3000)
-    } catch {
+      activePolls.current.add(poll)
+    } catch (err) {
+      console.error('[call-hub] placeQuickCall unexpected error:', err)
       setQuickResult({ phase: 'done', result: null, status: 'Error' })
     } finally {
       setQuickCalling(false)

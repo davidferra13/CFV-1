@@ -156,7 +156,8 @@ export async function POST(req: NextRequest) {
 
   const role = isKnownVendor ? 'inbound_vendor_callback' : 'inbound_unknown'
 
-  const { data: aiCallRecord } = await db
+  // If insert fails, log it — the call gets no transcript, result, or Tier 2 signal.
+  const { data: aiCallRecord, error: aiCallInsertError } = await db
     .from('ai_calls')
     .insert({
       chef_id: chefId,
@@ -173,6 +174,13 @@ export async function POST(req: NextRequest) {
     .select()
     .single()
 
+  if (aiCallInsertError || !aiCallRecord) {
+    console.error(
+      '[calling/inbound] ai_calls insert failed — call will have no transcript or result:',
+      aiCallInsertError
+    )
+  }
+
   // Notify chef that someone is calling right now (SSE + non-blocking)
   try {
     await broadcast(`chef-${chefId}`, 'inbound_call_live', {
@@ -182,7 +190,9 @@ export async function POST(req: NextRequest) {
       role,
       callSid,
     })
-  } catch {}
+  } catch (err) {
+    console.error('[calling/inbound] inbound_call_live broadcast failed:', err)
+  }
 
   const gatherAction = aiCallRecord?.id
     ? `${APP_URL}/api/calling/gather?aiCallId=${encodeURIComponent(aiCallRecord.id)}&step=1&role=${role}`

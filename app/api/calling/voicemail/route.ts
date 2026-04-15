@@ -36,12 +36,21 @@ export async function POST(req: NextRequest) {
   if (transcriptionText) updates.full_transcript = transcriptionText
   if (recordingUrl) updates.recording_url = recordingUrl + '.mp3'
 
-  const { data: aiCall } = await db
-    .from('ai_calls')
-    .update(updates)
-    .eq('id', aiCallId)
-    .select('chef_id, contact_phone, contact_name')
-    .single()
+  // Guard the update: an unhandled DB error here produces a 500, which causes
+  // Twilio to retry the voicemail callback indefinitely, permanently losing the transcript.
+  let aiCall: any = null
+  try {
+    const { data } = await db
+      .from('ai_calls')
+      .update(updates)
+      .eq('id', aiCallId)
+      .select('chef_id, contact_phone, contact_name')
+      .single()
+    aiCall = data
+  } catch (err) {
+    console.error('[voicemail] ai_calls update failed — voicemail transcript not persisted:', err)
+    return NextResponse.json({ ok: true }) // 200 so Twilio does not retry
+  }
 
   if (!aiCall) return NextResponse.json({ ok: true })
 
@@ -69,7 +78,9 @@ export async function POST(req: NextRequest) {
       transcription: transcriptionText,
       recordingUrl: updates.recording_url || null,
     })
-  } catch {}
+  } catch (err) {
+    console.error('[voicemail] voicemail_received broadcast failed:', err)
+  }
 
   return NextResponse.json({ ok: true })
 }

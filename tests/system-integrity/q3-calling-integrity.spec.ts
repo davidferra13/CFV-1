@@ -816,4 +816,135 @@ test.describe('Q3: Calling system integrity', () => {
       'handleVenueConfirmation step2 existingCall read is silent on failure — step-1 access_window silently lost'
     ).toBe(true)
   })
+
+  // -------------------------------------------------------------------------
+  // Test 35: status/route.ts supplier_calls writes are guarded
+  // An unguarded DB write in the status callback produces a 500, which triggers
+  // a Twilio retry loop every 5 minutes for 24 hours. The call stays stuck in
+  // 'ringing' forever and the retry loop hammers the DB.
+  // -------------------------------------------------------------------------
+  test('status route supplier_calls writes are guarded against DB errors', () => {
+    const STATUS_SOURCE = resolve(process.cwd(), 'app/api/calling/status/route.ts')
+    expect(existsSync(STATUS_SOURCE), `Source not found: ${STATUS_SOURCE}`).toBe(true)
+
+    const src = readFileSync(STATUS_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('supplier_calls update (callId) failed'),
+      'status route supplier_calls update (callId path) is unguarded — DB error triggers infinite Twilio retry loop'
+    ).toBe(true)
+
+    expect(
+      src.includes('supplier_calls update (call_sid) failed'),
+      'status route supplier_calls update (call_sid path) is unguarded — DB error triggers infinite Twilio retry loop'
+    ).toBe(true)
+
+    expect(
+      src.includes('ai_calls update (ai-only path) failed'),
+      'status route ai_calls update (ai-only path) is unguarded — DB error triggers infinite Twilio retry loop'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 36: voicemail/route.ts main ai_calls update is guarded
+  // Unguarded update throws 500 → Twilio retries voicemail callback indefinitely
+  // → transcript is permanently lost and logs show nothing.
+  // -------------------------------------------------------------------------
+  test('voicemail route ai_calls update is guarded against DB errors', () => {
+    const VOICEMAIL_SOURCE = resolve(process.cwd(), 'app/api/calling/voicemail/route.ts')
+    expect(existsSync(VOICEMAIL_SOURCE), `Source not found: ${VOICEMAIL_SOURCE}`).toBe(true)
+
+    const src = readFileSync(VOICEMAIL_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('voicemail transcript not persisted'),
+      'voicemail route ai_calls update is unguarded — DB error triggers Twilio retry loop and loses transcript'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 37: voicemail broadcast catch is logged
+  // Silent broadcast failure means chef never sees voicemail arrive in real-time.
+  // -------------------------------------------------------------------------
+  test('voicemail route broadcast failure is logged', () => {
+    const VOICEMAIL_SOURCE = resolve(process.cwd(), 'app/api/calling/voicemail/route.ts')
+    const src = readFileSync(VOICEMAIL_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('voicemail_received broadcast failed'),
+      'voicemail route broadcast catch is silent — chef never sees voicemail in real-time'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 38: inbound route ai_calls insert failure is logged
+  // Silent null on insert means the call gets no transcript, no result, no Tier 2
+  // signal, and there is no trace that anything went wrong.
+  // -------------------------------------------------------------------------
+  test('inbound route ai_calls insert failure is logged', () => {
+    const INBOUND_SOURCE = resolve(process.cwd(), 'app/api/calling/inbound/route.ts')
+    expect(existsSync(INBOUND_SOURCE), `Source not found: ${INBOUND_SOURCE}`).toBe(true)
+
+    const src = readFileSync(INBOUND_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('ai_calls insert failed — call will have no transcript'),
+      'inbound route ai_calls insert failure is silent — total call data loss with no trace'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 39: call-hub escalateTier2Call and placeQuickCall polls tracked in activePolls
+  // Untracked intervals survive component unmount, calling toast/setState on a
+  // dead component for up to 22+ attempts (88+ seconds of zombie polling).
+  // -------------------------------------------------------------------------
+  test('call-hub secondary polls are tracked in activePolls', () => {
+    const CALL_HUB_SOURCE = resolve(process.cwd(), 'components/calling/call-hub.tsx')
+    expect(existsSync(CALL_HUB_SOURCE), `Source not found: ${CALL_HUB_SOURCE}`).toBe(true)
+
+    const src = readFileSync(CALL_HUB_SOURCE, 'utf-8')
+
+    // escalateTier2Call poll must be tracked
+    const tier2Start = src.indexOf('async function escalateTier2Call')
+    expect(tier2Start, 'escalateTier2Call not found').toBeGreaterThan(-1)
+    const tier2End = src.indexOf('\n  async function ', tier2Start + 1)
+    const tier2Body =
+      tier2End > -1 ? src.slice(tier2Start, tier2End) : src.slice(tier2Start, tier2Start + 2000)
+    expect(
+      tier2Body.includes('activePolls.current.add(poll)'),
+      'escalateTier2Call poll not tracked in activePolls — interval leaks after component unmount'
+    ).toBe(true)
+
+    // placeQuickCall poll must be tracked
+    const quickStart = src.indexOf('async function placeQuickCall')
+    expect(quickStart, 'placeQuickCall not found').toBeGreaterThan(-1)
+    const quickEnd = src.indexOf('\n  async function ', quickStart + 1)
+    const quickBody =
+      quickEnd > -1 ? src.slice(quickStart, quickEnd) : src.slice(quickStart, quickStart + 2000)
+    expect(
+      quickBody.includes('activePolls.current.add(poll)'),
+      'placeQuickCall poll not tracked in activePolls — interval leaks after component unmount'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 40: call-hub secondary poll callbacks wrapped in try/catch
+  // Uncaught getCallStatus throw inside setInterval propagates as unhandled
+  // rejection — React does not catch these. The interval keeps running broken
+  // for all remaining attempts with no user feedback.
+  // -------------------------------------------------------------------------
+  test('call-hub secondary poll callbacks are wrapped in try/catch', () => {
+    const CALL_HUB_SOURCE = resolve(process.cwd(), 'components/calling/call-hub.tsx')
+    const src = readFileSync(CALL_HUB_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('[call-hub] escalateTier2Call poll error'),
+      'escalateTier2Call poll callback is not guarded — getCallStatus throw causes unhandled rejection'
+    ).toBe(true)
+
+    expect(
+      src.includes('[call-hub] placeQuickCall poll error'),
+      'placeQuickCall poll callback is not guarded — getCallStatus throw causes unhandled rejection'
+    ).toBe(true)
+  })
 })
