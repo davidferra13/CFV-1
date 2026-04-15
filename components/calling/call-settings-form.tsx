@@ -33,7 +33,7 @@ export function CallSettingsForm({ initialRules }: Props) {
   const [activeStart, setActiveStart] = useState(initialRules?.active_hours_start || '08:00')
   const [activeEnd, setActiveEnd] = useState(initialRules?.active_hours_end || '20:00')
   const [timezone, setTimezone] = useState(initialRules?.active_timezone || 'America/New_York')
-  const [dailyLimit, setDailyLimit] = useState(String(initialRules?.daily_call_limit || 20))
+  const [dailyLimit, setDailyLimit] = useState(String(initialRules?.daily_call_limit ?? 20))
   const [chefSmsNumber, setChefSmsNumber] = useState(initialRules?.chef_sms_number || '')
   const [enableVoicemail, setEnableVoicemail] = useState(
     initialRules?.enable_inbound_voicemail ?? true
@@ -50,6 +50,15 @@ export function CallSettingsForm({ initialRules }: Props) {
   function handleSave() {
     setSaved(false)
     setError(null)
+
+    // Q9: client-side guard — start >= end causes upsertRoutingRules to reject,
+    // but catching it here avoids an unnecessary server round-trip and gives
+    // immediate feedback before the transition begins.
+    if (activeStart >= activeEnd) {
+      setError('Start time must be before end time. Cross-midnight windows are not supported.')
+      return
+    }
+
     startTransition(async () => {
       try {
         const result = await upsertRoutingRules({

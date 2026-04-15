@@ -563,4 +563,117 @@ test.describe('Q3: Calling system integrity', () => {
       "queryAiCallFeedback still filters direction='outbound' — inbound_vendor_callback results are excluded from Tier 2"
     ).toBe(true)
   })
+
+  // -------------------------------------------------------------------------
+  // Test 25: vendor query functions log errors on failure
+  // Silent catch blocks in queryVendorPricePoints / queryAiCallFeedback /
+  // queryIngredientFlags swallow DB errors — Tier 2 signals vanish with no
+  // indication in logs that the query failed vs. returning genuinely empty.
+  // -------------------------------------------------------------------------
+  test('queryVendorPricePoints logs error on catch', () => {
+    const RESOLUTION_SOURCE = resolve(process.cwd(), 'lib/calling/ingredient-resolution.ts')
+    expect(existsSync(RESOLUTION_SOURCE), `Source not found: ${RESOLUTION_SOURCE}`).toBe(true)
+
+    const src = readFileSync(RESOLUTION_SOURCE, 'utf-8')
+
+    const fnStart = src.indexOf('async function queryVendorPricePoints')
+    expect(fnStart, 'queryVendorPricePoints not found').toBeGreaterThan(-1)
+
+    const fnEnd = src.indexOf('\nasync function ', fnStart + 1)
+    const fnBody = fnEnd > -1 ? src.slice(fnStart, fnEnd) : src.slice(fnStart)
+
+    expect(
+      fnBody.includes('[calling/resolution] queryVendorPricePoints failed'),
+      'queryVendorPricePoints catch block is silent — DB failures are invisible in logs'
+    ).toBe(true)
+  })
+
+  test('queryAiCallFeedback logs error on catch', () => {
+    const RESOLUTION_SOURCE = resolve(process.cwd(), 'lib/calling/ingredient-resolution.ts')
+    const src = readFileSync(RESOLUTION_SOURCE, 'utf-8')
+
+    const fnStart = src.indexOf('async function queryAiCallFeedback')
+    expect(fnStart, 'queryAiCallFeedback not found').toBeGreaterThan(-1)
+
+    const fnEnd = src.indexOf('\nasync function ', fnStart + 1)
+    const fnBody = fnEnd > -1 ? src.slice(fnStart, fnEnd) : src.slice(fnStart)
+
+    expect(
+      fnBody.includes('[calling/resolution] queryAiCallFeedback failed'),
+      'queryAiCallFeedback catch block is silent — DB failures are invisible in logs'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 26: DataSourceHealth type includes vendorQueryFailed
+  // Without this flag the call-sheet UI cannot distinguish "no vendors with
+  // data" from "vendor query crashed" — both look identical (empty Tier 2).
+  // -------------------------------------------------------------------------
+  test('DataSourceHealth type exposes vendorQueryFailed flag', () => {
+    const RESOLUTION_SOURCE = resolve(process.cwd(), 'lib/calling/ingredient-resolution.ts')
+    const src = readFileSync(RESOLUTION_SOURCE, 'utf-8')
+
+    const typeStart = src.indexOf('export type DataSourceHealth')
+    expect(typeStart, 'DataSourceHealth type not found').toBeGreaterThan(-1)
+
+    const typeEnd = src.indexOf('\n}', typeStart) + 2
+    const typeBody = src.slice(typeStart, typeEnd)
+
+    expect(
+      typeBody.includes('vendorQueryFailed'),
+      'DataSourceHealth does not include vendorQueryFailed — query failures are indistinguishable from empty results'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 27: upsertRoutingRules validates time format and start < end
+  // Without validation, malformed time strings are stored verbatim.
+  // NaN comparisons in checkCallingEligibility silently disable the active-hours
+  // gate — calls go out 24/7 regardless of configuration.
+  // -------------------------------------------------------------------------
+  test('upsertRoutingRules validates time format before storing', () => {
+    expect(existsSync(TWILIO_ACTIONS_SOURCE), `Source not found: ${TWILIO_ACTIONS_SOURCE}`).toBe(
+      true
+    )
+
+    const src = readFileSync(TWILIO_ACTIONS_SOURCE, 'utf-8')
+
+    const fnStart = src.indexOf('export async function upsertRoutingRules')
+    expect(fnStart, 'upsertRoutingRules not found').toBeGreaterThan(-1)
+
+    const fnEnd = src.indexOf('\nexport async function ', fnStart + 1)
+    const fnBody = fnEnd > -1 ? src.slice(fnStart, fnEnd) : src.slice(fnStart)
+
+    expect(
+      fnBody.includes('HH:MM format'),
+      'upsertRoutingRules does not validate time format — malformed values silently disable active-hours gate'
+    ).toBe(true)
+
+    expect(
+      fnBody.includes('Cross-midnight windows are not supported'),
+      'upsertRoutingRules does not guard against start >= end — equal/reversed times permanently block outbound calls'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 28: call-settings-form uses ?? not || for daily_call_limit init
+  // daily_call_limit=0 is a valid config (disable all outbound calls).
+  // Using || coerces 0 to the default 20, silently overriding the setting.
+  // -------------------------------------------------------------------------
+  test('call-settings-form initializes daily_call_limit with ?? not ||', () => {
+    const SETTINGS_SOURCE = resolve(process.cwd(), 'components/calling/call-settings-form.tsx')
+    expect(existsSync(SETTINGS_SOURCE), `Source not found: ${SETTINGS_SOURCE}`).toBe(true)
+
+    const src = readFileSync(SETTINGS_SOURCE, 'utf-8')
+
+    expect(
+      !src.includes('daily_call_limit || 20'),
+      'call-settings-form uses || for daily_call_limit init — limit=0 is coerced to 20, silently overriding the setting'
+    ).toBe(true)
+
+    expect(
+      src.includes('daily_call_limit ?? 20'),
+      'call-settings-form should use ?? for daily_call_limit init to preserve 0 as a valid value'
+    ).toBe(true)
+  })
 })

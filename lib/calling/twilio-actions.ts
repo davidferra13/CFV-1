@@ -956,6 +956,40 @@ export async function upsertRoutingRules(updates: {
   enable_vendor_delivery?: boolean
   enable_venue_confirmation?: boolean
 }): Promise<{ success: boolean; error?: string }> {
+  // Q5: validate time format before storing - malformed values cause NaN comparisons
+  // in checkCallingEligibility which silently disables the active-hours gate
+  const timePattern = /^\d{2}:\d{2}$/
+  if (updates.active_hours_start !== undefined && !timePattern.test(updates.active_hours_start)) {
+    return { success: false, error: 'Start time must be in HH:MM format (e.g. 08:00).' }
+  }
+  if (updates.active_hours_end !== undefined && !timePattern.test(updates.active_hours_end)) {
+    return { success: false, error: 'End time must be in HH:MM format (e.g. 20:00).' }
+  }
+
+  // Q6: start must be before end - equal or reversed values permanently block all outbound calls
+  if (
+    updates.active_hours_start !== undefined &&
+    updates.active_hours_end !== undefined &&
+    updates.active_hours_start >= updates.active_hours_end
+  ) {
+    return {
+      success: false,
+      error: 'Start time must be before end time. Cross-midnight windows are not supported.',
+    }
+  }
+
+  // Q7: validate SMS number format if provided
+  if (updates.chef_sms_number) {
+    const normalized = normalizePhone(updates.chef_sms_number)
+    if (!isValidE164(normalized)) {
+      return {
+        success: false,
+        error: 'SMS number must be a valid phone number (e.g. +1 555 123 4567).',
+      }
+    }
+    updates = { ...updates, chef_sms_number: normalized }
+  }
+
   const user = await requireChef()
   const db: any = createServerClient()
 

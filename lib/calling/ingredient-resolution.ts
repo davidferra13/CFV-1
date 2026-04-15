@@ -83,6 +83,7 @@ export type DataSourceHealth = {
   openclawAvailable: boolean
   openclawLastSync?: string | null
   vendorDataAvailable: boolean
+  vendorQueryFailed: boolean
 }
 
 export type IngredientResolution = {
@@ -203,7 +204,7 @@ export async function resolveIngredientAvailability(
   // Run all data queries in parallel
   // -------------------------------------------------------------------------
 
-  const [ocResult, vppRows, aiCallRows, vendorCallQueue, flaggedVendorNames] = await Promise.all([
+  const [ocResult, vppResult, aiResult, vendorCallQueue, flagsResult] = await Promise.all([
     // Query 1: openclaw.store_products - live market data
     queryOpenClawAvailability(normalized, searchPattern, ftsQuery, chefState),
 
@@ -221,6 +222,10 @@ export async function resolveIngredientAvailability(
   ])
 
   const { rows: ocRows, succeeded: openclawAvailable } = ocResult
+  const vppRows = vppResult.rows
+  const aiCallRows = aiResult.rows
+  const flaggedVendorNames = flagsResult.flags
+  const vendorQueryFailed = vppResult.failed || aiResult.failed || flagsResult.failed
 
   // -------------------------------------------------------------------------
   // Classify openclaw results into Tier 1 (resolved) and Tier 2 (partial)
@@ -379,6 +384,7 @@ export async function resolveIngredientAvailability(
   const health: DataSourceHealth = {
     openclawAvailable,
     vendorDataAvailable: vppRows.length > 0 || aiCallRows.length > 0,
+    vendorQueryFailed,
   }
 
   return {
@@ -475,8 +481,8 @@ async function queryVendorPricePoints(
   searchPattern: string,
   chefId: string,
   db: any
-): Promise<
-  Array<{
+): Promise<{
+  rows: Array<{
     vendor_id: string
     vendor_name: string
     vendor_type: string
@@ -485,7 +491,8 @@ async function queryVendorPricePoints(
     unit: string
     recorded_at: string
   }>
-> {
+  failed: boolean
+}> {
   try {
     const cutoff = new Date(Date.now() - VENDOR_PRICE_POINT_CUTOFF_DAYS * 86_400_000)
       .toISOString()
@@ -518,19 +525,23 @@ async function queryVendorPricePoints(
       }
     }
 
-    return Array.from(byVendor.values()).map((row: any) => ({
-      vendor_id: row.vendor_id,
-      vendor_name: row.vendors?.name || 'Unknown vendor',
-      vendor_type: row.vendors?.vendor_type || 'specialty',
-      phone: row.vendors?.phone || null,
-      // Sentinel (price_cents=1, unit='confirmed'): availability confirmed, price unknown.
-      // Do not display 1 cent as a real price.
-      price_cents: row.price_cents === 1 && row.unit === 'confirmed' ? null : row.price_cents,
-      unit: row.unit,
-      recorded_at: row.recorded_at,
-    }))
-  } catch {
-    return []
+    return {
+      rows: Array.from(byVendor.values()).map((row: any) => ({
+        vendor_id: row.vendor_id,
+        vendor_name: row.vendors?.name || 'Unknown vendor',
+        vendor_type: row.vendors?.vendor_type || 'specialty',
+        phone: row.vendors?.phone || null,
+        // Sentinel (price_cents=1, unit='confirmed'): availability confirmed, price unknown.
+        // Do not display 1 cent as a real price.
+        price_cents: row.price_cents === 1 && row.unit === 'confirmed' ? null : row.price_cents,
+        unit: row.unit,
+        recorded_at: row.recorded_at,
+      })),
+      failed: false,
+    }
+  } catch (err) {
+    console.error('[calling/resolution] queryVendorPricePoints failed:', err)
+    return { rows: [], failed: true }
   }
 }
 
@@ -544,15 +555,16 @@ async function queryAiCallFeedback(
   searchPattern: string,
   chefId: string,
   db: any
-): Promise<
-  Array<{
+): Promise<{
+  rows: Array<{
     vendor_id: string | null
     contact_name: string | null
     contact_phone: string | null
     price_quoted: string | null
     created_at: string
   }>
-> {
+  failed: boolean
+}> {
   try {
     const cutoff = new Date(Date.now() - AI_CALL_FEEDBACK_CUTOFF_DAYS * 86_400_000).toISOString()
 
@@ -566,15 +578,19 @@ async function queryAiCallFeedback(
       .order('created_at', { ascending: false })
       .limit(10)
 
-    return (data || []).map((row: any) => ({
-      vendor_id: row.vendor_id,
-      contact_name: row.contact_name,
-      contact_phone: row.contact_phone,
-      price_quoted: row.extracted_data?.price_quoted || null,
-      created_at: row.created_at,
-    }))
-  } catch {
-    return []
+    return {
+      rows: (data || []).map((row: any) => ({
+        vendor_id: row.vendor_id,
+        contact_name: row.contact_name,
+        contact_phone: row.contact_phone,
+        price_quoted: row.extracted_data?.price_quoted || null,
+        created_at: row.created_at,
+      })),
+      failed: false,
+    }
+  } catch (err) {
+    console.error('[calling/resolution] queryAiCallFeedback failed:', err)
+    return { rows: [], failed: true }
   }
 }
 
@@ -588,7 +604,7 @@ async function queryIngredientFlags(
   searchPattern: string,
   chefId: string,
   db: any
-): Promise<Set<string>> {
+): Promise<{ flags: Set<string>; failed: boolean }> {
   try {
     const { data } = await db
       .from('ingredient_accuracy_flags')
@@ -597,11 +613,17 @@ async function queryIngredientFlags(
       .ilike('ingredient_name', searchPattern)
       .eq('reviewed', false)
 
-    return new Set(
-      (data || []).map((r: any) => (r.vendor_name as string | null)?.toLowerCase()).filter(Boolean)
-    )
-  } catch {
-    return new Set()
+    return {
+      flags: new Set(
+        (data || [])
+          .map((r: any) => (r.vendor_name as string | null)?.toLowerCase())
+          .filter(Boolean)
+      ),
+      failed: false,
+    }
+  } catch (err) {
+    console.error('[calling/resolution] queryIngredientFlags failed:', err)
+    return { flags: new Set(), failed: true }
   }
 }
 
