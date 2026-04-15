@@ -26,15 +26,28 @@ This file is read by Claude Code at the start of every conversation. These rules
 
 ## MODEL STRATEGY (3-Tier System - READ THIS)
 
-**Default model for this project is Sonnet 4.6.** This is configured in `.claude/settings.json` (`"model": "sonnet"`). The Max $200/mo plan bills against a token budget. Tier selection is cost discipline, not preference.
+**Default model for this project is Opus 4.6.** This is configured in `.claude/settings.json` (`"model": "opus"`). The Max $200/mo plan bills against a token budget. Tier selection is cost discipline, not preference.
 
 **The 3-tier model:**
 
-| Tier         | Model      | Agent          | Purpose                                    |
-| ------------ | ---------- | -------------- | ------------------------------------------ |
-| **Worker**   | Haiku 4.5  | `haiku-worker` | Mechanical, judgment-free tasks. Cheapest. |
-| **Executor** | Sonnet 4.6 | (main session) | All normal work. Default.                  |
-| **Advisor**  | Opus 4.6   | `opus-advisor` | Hard decisions only. Most expensive.       |
+| Tier         | Model     | Agent          | Purpose                                    |
+| ------------ | --------- | -------------- | ------------------------------------------ |
+| **Worker**   | Haiku 4.5 | `haiku-worker` | Mechanical, judgment-free tasks. Cheapest. |
+| **Executor** | Opus 4.6  | (main session) | All normal work. Default.                  |
+| **Advisor**  | Opus 4.6  | `opus-advisor` | Hard decisions only. Most expensive.       |
+
+### SONNET BAN (ABSOLUTE - ZERO TOLERANCE)
+
+**Sonnet is NOT part of our tier system. Never use it.** Claude Code's built-in agent types (`Explore`, `Plan`, `general-purpose`) default to Sonnet when no model is specified. This drains a separate Sonnet token bucket. When that bucket empties, the entire session locks out, even with Opus tokens remaining.
+
+**Rules:**
+
+1. **EVERY `Agent` tool call MUST include an explicit `model` parameter.** No exceptions. Use `"haiku"` for mechanical tasks, `"opus"` for everything else.
+2. **Prefer direct tool calls over subagents.** Use `Grep`, `Glob`, `Read` directly instead of spawning an `Explore` agent. Use the main session for planning instead of a `Plan` agent. Only spawn agents when the task genuinely benefits from isolation or parallelism.
+3. **Never omit the `model` parameter.** Omitting it lets the system default to Sonnet, which burns a token budget we don't use and can lock us out.
+4. **If you need an Explore-type search:** do it yourself with Grep/Glob/Read. If you must spawn an agent, pass `model: "haiku"` (search is mechanical) or `model: "opus"` (if it requires judgment).
+
+**Why this matters:** The Max plan has separate rate limits per model. Burning Sonnet tokens starves the session even though Opus and Haiku budgets are untouched. This has already locked the developer out of their own tool.
 
 ---
 
@@ -54,23 +67,23 @@ Call `haiku-worker` via `Agent` tool with `subagent_type: "haiku-worker"` when t
 **Do NOT call Haiku for:**
 
 - Any task requiring understanding of the project architecture
-- Code that ships without Sonnet reviewing the output
+- Code that ships without the main session reviewing the output
 - Anything where a wrong answer causes a regression
 - Anything requiring judgment, context, or tradeoff analysis
 
-**Rule of thumb:** if a human intern could do it correctly from a checklist alone, Haiku can do it. If it requires knowing the codebase, keep it on Sonnet.
+**Rule of thumb:** if a human intern could do it correctly from a checklist alone, Haiku can do it. If it requires knowing the codebase, keep it on the main session.
 
 ---
 
-### Tier 2: Sonnet Executor (default - handles everything else)
+### Tier 2: Opus Executor (default - handles everything else)
 
-Sonnet runs the session end-to-end: reads files, edits code, runs commands, implements features, ships. This is the default tier. Do not escalate to Opus or delegate to Haiku unless there is a clear reason.
+Opus runs the session end-to-end: reads files, edits code, runs commands, implements features, ships. This is the default tier. Do not delegate to Haiku unless there is a clear reason.
 
 ---
 
 ### Tier 3: Opus Advisor (most expensive - last resort for hard decisions)
 
-Call `opus-advisor` via `Agent` tool with `subagent_type: "opus-advisor"` only when Sonnet is genuinely stuck or the decision has long-term consequences.
+Call `opus-advisor` via `Agent` tool with `subagent_type: "opus-advisor"` only when the main session is genuinely stuck or the decision has long-term consequences.
 
 **Good reasons to call Opus:**
 
@@ -90,11 +103,11 @@ Call `opus-advisor` via `Agent` tool with `subagent_type: "opus-advisor"` only w
 
 **Rule of thumb:** if you can solve it in under 3 tool calls without guessing, do not call Opus. If you are stuck, going in circles, or the decision has lasting consequences, call Opus and get one clear recommendation back.
 
-**Extended Thinking on Opus (use it):** When calling `opus-advisor` for architectural decisions, explicitly tell it to use extended thinking. Add this to your prompt: `"Think deeply and use extended thinking to work through this."` Extended thinking makes Opus reason step-by-step through complex tradeoffs before answering. It costs 5-10x more tokens per response but produces significantly better decisions on hard problems. Only enable it for Opus, never Sonnet or Haiku.
+**Extended Thinking on Opus (use it):** When calling `opus-advisor` for architectural decisions, explicitly tell it to use extended thinking. Add this to your prompt: `"Think deeply and use extended thinking to work through this."` Extended thinking makes Opus reason step-by-step through complex tradeoffs before answering. It costs 5-10x more tokens per response but produces significantly better decisions on hard problems. Only enable it for Opus, never Haiku.
 
 ---
 
-**Switching models mid-session:** Use `/model sonnet` or `/model opus` in Claude Code. The default-on-start comes from `.claude/settings.json`.
+**Switching models mid-session:** Use `/model opus` in Claude Code if the current session did not start on Opus. The default-on-start comes from `.claude/settings.json`.
 
 ---
 

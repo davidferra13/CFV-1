@@ -70,7 +70,8 @@ export async function markInstallmentPaid(installmentId: string, paymentId?: str
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const { error } = await db
+  // CAS guard: only transition from 'pending' to 'paid' (prevents double-execution)
+  const { data, error } = await db
     .from('commerce_payment_schedules')
     .update({
       status: 'paid',
@@ -78,8 +79,14 @@ export async function markInstallmentPaid(installmentId: string, paymentId?: str
     } as any)
     .eq('id', installmentId)
     .eq('tenant_id', user.tenantId!)
+    .eq('status', 'pending')
+    .select('id')
 
   if (error) throw new Error(`Failed to mark installment paid: ${error.message}`)
+  if (!data || (Array.isArray(data) && data.length === 0)) {
+    // Already paid or waived; no-op is safe (idempotent)
+    return { success: true, alreadyProcessed: true }
+  }
 
   revalidatePath('/commerce')
 }
@@ -90,13 +97,19 @@ export async function waiveInstallment(installmentId: string) {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const { error } = await db
+  // CAS guard: only transition from 'pending' to 'waived' (prevents double-execution)
+  const { data, error } = await db
     .from('commerce_payment_schedules')
     .update({ status: 'waived' } as any)
     .eq('id', installmentId)
     .eq('tenant_id', user.tenantId!)
+    .eq('status', 'pending')
+    .select('id')
 
   if (error) throw new Error(`Failed to waive installment: ${error.message}`)
+  if (!data || (Array.isArray(data) && data.length === 0)) {
+    return { success: true, alreadyProcessed: true }
+  }
 
   revalidatePath('/commerce')
 }
