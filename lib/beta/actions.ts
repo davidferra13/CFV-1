@@ -1,6 +1,7 @@
 'use server'
 
 import { createAdminClient } from '@/lib/db/admin'
+import { requireAdmin } from '@/lib/auth/admin'
 import { headers } from 'next/headers'
 import { sendEmail } from '@/lib/email/send'
 import { BetaWelcomeEmail } from '@/lib/email/templates/beta-welcome'
@@ -346,6 +347,7 @@ export async function updateBetaSignupStatus(
  * Delete a beta signup (admin action).
  */
 export async function deleteBetaSignup(id: string): Promise<{ success: boolean; error?: string }> {
+  await requireAdmin()
   const db: any = createAdminClient()
 
   const { error } = await db.from('beta_signups').delete().eq('id', id)

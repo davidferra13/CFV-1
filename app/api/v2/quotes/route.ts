@@ -93,6 +93,24 @@ export const POST = withApiAuth(
       )
     }
 
+    // Verify event belongs to tenant (if provided)
+    if (input.event_id) {
+      const { data: event } = await ctx.db
+        .from('events')
+        .select('id')
+        .eq('id', input.event_id)
+        .eq('tenant_id' as any, ctx.tenantId)
+        .single()
+
+      if (!event) {
+        return apiError(
+          'event_not_found',
+          'Event not found or does not belong to your account',
+          404
+        )
+      }
+    }
+
     const { data: quote, error } = await ctx.db
       .from('quotes')
       .insert({

@@ -16,7 +16,10 @@ import {
 
 const UpdateEventBody = z
   .object({
-    event_date: z.string().optional(),
+    event_date: z
+      .string()
+      .refine((v) => !isNaN(Date.parse(v)), { message: 'Invalid date format' })
+      .optional(),
     serve_time: z.string().optional(),
     guest_count: z.number().int().positive().optional(),
     location_address: z.string().min(1).optional(),
