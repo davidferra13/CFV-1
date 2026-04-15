@@ -35,7 +35,12 @@ const VIEWS = [
 
 export default async function ClientPreferencesPage() {
   await requireChef()
-  const clients = await getClientsWithStats()
+  let clients: Awaited<ReturnType<typeof getClientsWithStats>> = []
+  try {
+    clients = await getClientsWithStats()
+  } catch {
+    clients = []
+  }
 
   const withDietary = clients.filter(
     (c: any) => c.dietary_restrictions && (c.dietary_restrictions as string[]).length > 0

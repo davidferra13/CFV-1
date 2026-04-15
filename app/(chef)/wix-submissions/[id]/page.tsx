@@ -14,8 +14,12 @@ const STATUS_STYLES: Record<string, string> = {
 }
 
 export default async function WixSubmissionPage({ params }: { params: { id: string } }) {
-  const submission = await getWixSubmission(params.id)
-
+  let submission: Awaited<ReturnType<typeof getWixSubmission>>
+  try {
+    submission = await getWixSubmission(params.id)
+  } catch {
+    notFound()
+  }
   if (!submission) notFound()
 
   const canRetry =

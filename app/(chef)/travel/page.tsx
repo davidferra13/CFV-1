@@ -137,10 +137,15 @@ export default async function GlobalTravelPage() {
   const today = new Date()
   const future = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 90)
 
-  const legs = await getAllTravelLegs({
-    fromDate: `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`,
-    toDate: `${future.getFullYear()}-${String(future.getMonth() + 1).padStart(2, '0')}-${String(future.getDate()).padStart(2, '0')}`,
-  })
+  let legs: Awaited<ReturnType<typeof getAllTravelLegs>> = []
+  try {
+    legs = await getAllTravelLegs({
+      fromDate: `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`,
+      toDate: `${future.getFullYear()}-${String(future.getMonth() + 1).padStart(2, '0')}-${String(future.getDate()).padStart(2, '0')}`,
+    })
+  } catch {
+    legs = []
+  }
 
   const weekGroups = groupByWeek(legs)
   const weeks = Array.from(weekGroups.values()).sort(

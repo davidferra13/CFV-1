@@ -11,7 +11,12 @@ export const metadata: Metadata = { title: 'Client Segments' }
 
 export default async function SegmentsPage() {
   await requireChef()
-  const segments = await getSegments()
+  let segments: Awaited<ReturnType<typeof getSegments>> = []
+  try {
+    segments = await getSegments()
+  } catch {
+    segments = []
+  }
 
   return (
     <div className="space-y-6">

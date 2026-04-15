@@ -1011,7 +1011,16 @@ async function DuplicatesSection({
 }
 
 async function ClientEventsContent({ clientId }: { clientId: string }) {
-  const events = await getClientEvents(clientId)
+  let events: Awaited<ReturnType<typeof getClientEvents>> = []
+  try {
+    events = await getClientEvents(clientId)
+  } catch {
+    return (
+      <div className="text-center py-8 text-stone-500">
+        <p className="text-sm">Could not load events. Refresh to try again.</p>
+      </div>
+    )
+  }
 
   if (events.length === 0) {
     return (

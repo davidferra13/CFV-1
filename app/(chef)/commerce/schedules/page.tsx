@@ -13,7 +13,12 @@ export default async function PaymentSchedulesPage() {
   await requireChef()
   await requirePro('commerce')
 
-  const overdueInstallments = await getOverdueInstallments()
+  let overdueInstallments: Awaited<ReturnType<typeof getOverdueInstallments>> = []
+  try {
+    overdueInstallments = await getOverdueInstallments()
+  } catch {
+    overdueInstallments = []
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
