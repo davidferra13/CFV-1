@@ -474,6 +474,8 @@ These workflows are now available as `/slash-commands`. Type the command name to
 - **`/pre-flight`** - Builder pre-flight check (git status, tsc, next build)
 - **`/feature-closeout`** - Feature close-out (tsc, build, commit, push)
 - **`/hallucination-scan`** - Zero Hallucination audit (optimistic updates, silent failures, stale cache, etc.)
+- **`/debug`** - Systematic 4-phase debugging. No fixes without root cause first. Escalates to opus-advisor after 3 failures.
+- **`/tdd`** - Test-Driven Development. RED (failing test) -> GREEN (minimal code) -> REFACTOR. No production code without a failing test first.
 
 **End every session:** run `/close-session` or `/ship`. Work must be on GitHub before signing off.
 
@@ -557,6 +559,79 @@ The GitHub MCP server is now configured in `.claude/mcp.json`. It requires `GITH
 **To activate:** set `GITHUB_PERSONAL_ACCESS_TOKEN` in your Windows environment variables (System Properties > Environment Variables), then restart Claude Code. You will see GitHub tools in your tool list (create issue, list PRs, get file contents, etc.).
 
 **When to use:** creating issues directly from bugs found during development, checking PR status, reading files from other branches without switching.
+
+---
+
+### Postgres MCP - Direct Database Queries
+
+The Postgres MCP server is configured in `.claude/mcp.json` with the local Docker connection string.
+
+**Use this instead of writing throwaway scripts** when you need to inspect live data, count rows, check schema state, or verify a migration applied correctly.
+
+**When to use Postgres MCP:**
+
+- "How many events are in status X?" - query directly, no script needed
+- "Did this migration add the column?" - check information_schema
+- "What does this record look like?" - SELECT and read it
+- "Is this foreign key set up correctly?" - inspect constraints
+
+**Do NOT use for:** writes, migrations, drops. Read-only inspection only. All mutations go through server actions and Drizzle ORM.
+
+---
+
+### MemPalace MCP - Search 535 Indexed Conversations
+
+The MemPalace MCP server is configured in `.claude/mcp.json`. It indexes all Claude Code conversations in `c:/Users/david/Documents/CFv1`.
+
+**Use this when:** you need to find how something was decided or built in a past session. Faster than re-reading session digests.
+
+**When to use MemPalace:**
+
+- "How did we implement X?" - search for it across all past sessions
+- "Why did we abandon approach Y?" - find the session where that decision was made
+- "Has this bug come up before?" - search for the error string
+
+**The 40-item backlog** (mined 2026-04-11) is in `memory/project_mempalace_backlog.md`. Work from that list before opening new investigations.
+
+---
+
+### /batch - Parallel Worktree Agents for Large Refactors
+
+`/batch <instruction>` spawns 5-30 isolated worktree agents working in parallel. Each gets its own git worktree so they don't conflict.
+
+**This is NOT a parallel build** (which is forbidden). Each agent works in isolation. Only ONE does a final build at the end.
+
+**When to use /batch:**
+
+- Renaming a symbol across 20+ files
+- Applying the same pattern fix across many components
+- Large-scale compliance sweep (em dash, OpenClaw scan, @ts-nocheck audit)
+- Any task that is embarrassingly parallel with no inter-agent dependency
+
+**Do NOT use /batch for:** anything where agents need to coordinate mid-task, sequential migrations, or builds.
+
+---
+
+### /security-review - Scan Pending Changes
+
+`/security-review` analyzes uncommitted changes for security vulnerabilities before committing.
+
+**Make this a habit before any commit that touches:** auth, billing, server actions, API routes, or anything that handles user input.
+
+---
+
+### Session Hygiene Commands (Use These Every Session)
+
+These commands are available but underused. Build them into your workflow:
+
+| Command            | When to use                                                                                                     |
+| ------------------ | --------------------------------------------------------------------------------------------------------------- |
+| `/context`         | Start of any long session - visualize context usage before it becomes a problem                                 |
+| `/rewind`          | Before any migration, destructive op, or risky experiment - create a checkpoint                                 |
+| `/compact [focus]` | When context is high - use focus param (e.g., `/compact focus on billing changes`) to preserve relevant context |
+| `/btw <question>`  | Quick side questions without polluting conversation context. Use constantly.                                    |
+
+**`Alt+T` habit:** When calling the `opus-advisor` agent for architectural decisions, ALWAYS press `Alt+T` first to enable extended thinking. CLAUDE.md says to do this - now it's enforced as a keyboard habit.
 
 ---
 
