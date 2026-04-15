@@ -922,3 +922,56 @@ export async function sendInvoiceReminder(
   revalidatePath('/dashboard')
   return { success: true }
 }
+
+// ============================================
+// Stalled Drafts
+// ============================================
+
+export type StalledDraft = {
+  id: string
+  occasion: string | null
+  eventDate: string | null
+  clientName: string | null
+  clientId: string | null
+  createdAt: string
+  daysSinceCreated: number
+}
+
+export async function getStalledDrafts(staleDays = 7): Promise<StalledDraft[]> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const cutoff = new Date()
+  cutoff.setDate(cutoff.getDate() - staleDays)
+  const cutoffIso = cutoff.toISOString()
+
+  const { data, error } = await db
+    .from('events')
+    .select('id, occasion, event_date, created_at, clients(id, full_name)')
+    .eq('tenant_id', user.tenantId!)
+    .eq('status', 'draft')
+    .eq('is_demo', false)
+    .lt('created_at', cutoffIso)
+    .order('created_at', { ascending: true })
+    .limit(10)
+
+  if (error) {
+    console.error('[getStalledDrafts] Error:', error)
+    return []
+  }
+
+  const now = Date.now()
+  return (data || []).map((e: any) => {
+    const createdAt = new Date(e.created_at)
+    const daysSinceCreated = Math.floor((now - createdAt.getTime()) / 86400000)
+    return {
+      id: e.id,
+      occasion: e.occasion ?? null,
+      eventDate: e.event_date ? String(e.event_date) : null,
+      clientName: e.clients?.full_name ?? null,
+      clientId: e.clients?.id ?? null,
+      createdAt: e.created_at,
+      daysSinceCreated,
+    }
+  })
+}
