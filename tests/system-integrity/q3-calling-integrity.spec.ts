@@ -1160,4 +1160,188 @@ test.describe('Q3: Calling system integrity', () => {
       'twilio-webhook-auth does not strip trailing slash from APP_URL - breaks all webhook signatures'
     ).toBe(true)
   })
+
+  // =========================================================================
+  // Round 16 (Q51-Q60): APP_URL consistency, gather route DB guards,
+  // broadcast safety, call-hub observability, call-sheet page resilience
+  // =========================================================================
+
+  // -------------------------------------------------------------------------
+  // Test 51: gather/route.ts strips trailing slash from APP_URL
+  // Same vulnerability as Q50 but in the file that builds ALL gather callback
+  // URLs. Step-2, retry, delivery, venue callbacks all break on double-slash.
+  // -------------------------------------------------------------------------
+  test('gather route strips trailing slash from APP_URL', () => {
+    expect(existsSync(GATHER_SOURCE), `Source not found: ${GATHER_SOURCE}`).toBe(true)
+
+    const src = readFileSync(GATHER_SOURCE, 'utf-8')
+
+    const hasTrailingSlashStrip =
+      src.includes("'https://app.cheflowhq.com')") && src.includes('.replace(')
+    expect(
+      hasTrailingSlashStrip,
+      'gather route does not strip trailing slash from APP_URL — all gather callbacks break on double-slash'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 52: inbound/route.ts strips trailing slash from APP_URL
+  // Voicemail + gather callback URLs break. All inbound calls lose transcript.
+  // -------------------------------------------------------------------------
+  test('inbound route strips trailing slash from APP_URL', () => {
+    const INBOUND_SOURCE = resolve(process.cwd(), 'app/api/calling/inbound/route.ts')
+    expect(existsSync(INBOUND_SOURCE), `Source not found: ${INBOUND_SOURCE}`).toBe(true)
+
+    const src = readFileSync(INBOUND_SOURCE, 'utf-8')
+
+    const hasTrailingSlashStrip =
+      src.includes("'https://app.cheflowhq.com')") && src.includes('.replace(')
+    expect(
+      hasTrailingSlashStrip,
+      'inbound route does not strip trailing slash from APP_URL — voicemail/gather callbacks break'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 53: twilio-actions.ts strips trailing slash from APP_URL
+  // Recording + status callback URLs break for ALL outbound calls.
+  // No recordings, no status updates, calls stuck in ringing forever.
+  // -------------------------------------------------------------------------
+  test('twilio-actions strips trailing slash from APP_URL', () => {
+    expect(existsSync(TWILIO_ACTIONS_SOURCE), `Source not found: ${TWILIO_ACTIONS_SOURCE}`).toBe(
+      true
+    )
+
+    const src = readFileSync(TWILIO_ACTIONS_SOURCE, 'utf-8')
+
+    const hasTrailingSlashStrip =
+      src.includes("'https://app.cheflowhq.com')") && src.includes('.replace(')
+    expect(
+      hasTrailingSlashStrip,
+      'twilio-actions does not strip trailing slash from APP_URL — recording/status callbacks break for all outbound calls'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 54: gather step-1 result=yes supplier_calls write is guarded
+  // Unguarded throw = 500 = Twilio retries every 5 min for 24 hours.
+  // Vendor hears "do you have it?" replayed. Step-2 never reached.
+  // -------------------------------------------------------------------------
+  test('gather step-1 result=yes supplier_calls write is guarded', () => {
+    expect(existsSync(GATHER_SOURCE), `Source not found: ${GATHER_SOURCE}`).toBe(true)
+
+    const src = readFileSync(GATHER_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('supplier_calls result=yes write failed'),
+      'gather route step-1 result=yes supplier_calls write is unguarded — DB error triggers Twilio retry storm'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 55: gather step-1 result=no supplier_calls write is guarded
+  // .single() throws on no match. Same Twilio retry storm.
+  // -------------------------------------------------------------------------
+  test('gather step-1 result=no supplier_calls write is guarded', () => {
+    expect(existsSync(GATHER_SOURCE), `Source not found: ${GATHER_SOURCE}`).toBe(true)
+
+    const src = readFileSync(GATHER_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('supplier_calls result=no write failed'),
+      'gather route step-1 result=no supplier_calls write is unguarded — DB error triggers Twilio retry storm'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 56: gather timeout close supplier_calls write is guarded
+  // Unguarded throw = 500 = Twilio retry storm. Call stays stuck in UI
+  // as "calling" forever.
+  // -------------------------------------------------------------------------
+  test('gather timeout close supplier_calls write is guarded', () => {
+    expect(existsSync(GATHER_SOURCE), `Source not found: ${GATHER_SOURCE}`).toBe(true)
+
+    const src = readFileSync(GATHER_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('supplier_calls timeout close write failed'),
+      'gather route timeout close supplier_calls write is unguarded — DB error triggers Twilio retry storm'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 57: gather step-2 supplier_calls write is guarded
+  // Price/qty data captured by voice but never persisted. Call replays.
+  // -------------------------------------------------------------------------
+  test('gather step-2 supplier_calls write is guarded', () => {
+    expect(existsSync(GATHER_SOURCE), `Source not found: ${GATHER_SOURCE}`).toBe(true)
+
+    const src = readFileSync(GATHER_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('supplier_calls step-2 write failed'),
+      'gather route step-2 supplier_calls write is unguarded — price/qty data lost and call replays'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 58: gather inbound_unknown broadcast is guarded
+  // Unguarded throw = 500 = Twilio retries = unknown caller hears greeting
+  // replayed indefinitely.
+  // -------------------------------------------------------------------------
+  test('gather inbound_unknown broadcast is guarded', () => {
+    expect(existsSync(GATHER_SOURCE), `Source not found: ${GATHER_SOURCE}`).toBe(true)
+
+    const src = readFileSync(GATHER_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('inbound_unknown broadcast failed'),
+      'gather route inbound_unknown broadcast is unguarded — broadcast error causes Twilio retry loop'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 59: call-hub silent catches have error logging
+  // Two silent catches violate Zero Hallucination rule:
+  // (1) debounce resolution catch swallows error
+  // (2) placeCall poll catch is empty
+  // -------------------------------------------------------------------------
+  test('call-hub debounce resolution catch logs error', () => {
+    const CALL_HUB_SOURCE = resolve(process.cwd(), 'components/calling/call-hub.tsx')
+    expect(existsSync(CALL_HUB_SOURCE), `Source not found: ${CALL_HUB_SOURCE}`).toBe(true)
+
+    const src = readFileSync(CALL_HUB_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('[call-hub] ingredient resolution failed'),
+      'call-hub debounce resolution catch is silent — resolution failure invisible'
+    ).toBe(true)
+
+    expect(
+      src.includes('[call-hub] placeCall poll error'),
+      'call-hub placeCall poll catch is silent — poll failure invisible'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 60: call-sheet page data loading is guarded
+  // Unguarded Promise.all for 5 fetches means single failure crashes entire
+  // page. Chef sees blank server error instead of degraded Call Sheet.
+  // -------------------------------------------------------------------------
+  test('call-sheet page data loading is guarded against individual fetch failures', () => {
+    const CALL_SHEET_SOURCE = resolve(process.cwd(), 'app/(chef)/culinary/call-sheet/page.tsx')
+    expect(existsSync(CALL_SHEET_SOURCE), `Source not found: ${CALL_SHEET_SOURCE}`).toBe(true)
+
+    const src = readFileSync(CALL_SHEET_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('[call-sheet] calls fetch failed'),
+      'call-sheet getRecentCalls is unguarded — single fetch failure crashes entire page'
+    ).toBe(true)
+
+    expect(
+      src.includes('[call-sheet] routingRules fetch failed'),
+      'call-sheet getRoutingRules is unguarded — single fetch failure crashes entire page'
+    ).toBe(true)
+  })
 })

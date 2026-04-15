@@ -28,7 +28,10 @@ import {
   DEFAULT_VOICE,
 } from '@/lib/calling/voice-helpers'
 
-const APP_URL = process.env.NEXTAUTH_URL || 'https://app.cheflowhq.com'
+// Q51: Strip trailing slash - same vulnerability as Q50 in twilio-webhook-auth.
+// Trailing slash on NEXTAUTH_URL produces double-slash callback URLs that break
+// Twilio signature validation on every subsequent callback.
+const APP_URL = (process.env.NEXTAUTH_URL || 'https://app.cheflowhq.com').replace(/\/+$/, '')
 
 // ---------------------------------------------------------------------------
 // Availability resolution helpers
@@ -388,18 +391,26 @@ async function handleVendorAvailability(
 
     if (speech) await logTranscript(db, aiCallId, 2, 'caller', speech, inputType as any, confidence)
 
-    const { data: callRecord } = await db
-      .from('supplier_calls')
-      .update({
-        price_quoted: priceQuoted,
-        quantity_available: quantityAvailable,
-        speech_transcript: speech,
-        status: 'completed',
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', callId)
-      .select('chef_id, vendor_id, vendor_phone, vendor_name, ingredient_name, result')
-      .single()
+    // Q57: Guard step-2 supplier_calls write - price/qty data captured by voice
+    // but never persisted if this throws. 500 = Twilio retries = call replays.
+    let callRecord: any = null
+    try {
+      const { data } = await db
+        .from('supplier_calls')
+        .update({
+          price_quoted: priceQuoted,
+          quantity_available: quantityAvailable,
+          speech_transcript: speech,
+          status: 'completed',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', callId)
+        .select('chef_id, vendor_id, vendor_phone, vendor_name, ingredient_name, result')
+        .single()
+      callRecord = data
+    } catch (err) {
+      console.error('[calling/gather] supplier_calls step-2 write failed:', err)
+    }
 
     if (aiCallId) {
       const aiExtracted: Record<string, any> = {}
@@ -579,10 +590,16 @@ async function handleVendorAvailability(
   if (speech) await logTranscript(db, aiCallId, 1, 'caller', speech, inputType as any, confidence)
 
   if (result === 'yes') {
-    await db
-      .from('supplier_calls')
-      .update({ result: 'yes', updated_at: new Date().toISOString() })
-      .eq('id', callId)
+    // Q54: Guard supplier_calls write - unguarded throw = 500 = Twilio retries
+    // every 5 min for 24 hours. Must still proceed to step-2 for price/qty capture.
+    try {
+      await db
+        .from('supplier_calls')
+        .update({ result: 'yes', updated_at: new Date().toISOString() })
+        .eq('id', callId)
+    } catch (err) {
+      console.error('[calling/gather] supplier_calls result=yes write failed:', err)
+    }
     if (aiCallId) {
       await db
         .from('ai_calls')
@@ -598,12 +615,20 @@ async function handleVendorAvailability(
   }
 
   if (result === 'no') {
-    const { data: callRecord } = await db
-      .from('supplier_calls')
-      .update({ result: 'no', status: 'completed', updated_at: new Date().toISOString() })
-      .eq('id', callId)
-      .select('chef_id, vendor_name, ingredient_name')
-      .single()
+    // Q55: Guard supplier_calls write - .single() throws on no match, and any
+    // DB error = 500 = Twilio retry storm. Must still return closing TwiML.
+    let callRecord: any = null
+    try {
+      const { data } = await db
+        .from('supplier_calls')
+        .update({ result: 'no', status: 'completed', updated_at: new Date().toISOString() })
+        .eq('id', callId)
+        .select('chef_id, vendor_name, ingredient_name')
+        .single()
+      callRecord = data
+    } catch (err) {
+      console.error('[calling/gather] supplier_calls result=no write failed:', err)
+    }
 
     if (aiCallId) {
       await db
@@ -653,12 +678,19 @@ async function handleVendorAvailability(
 
   // Timeout close: mark completed and broadcast so the UI card transitions out of 'calling'.
   // Without the broadcast, the card stays stuck until the Twilio status callback fires.
-  const { data: timedOutRecord } = await db
-    .from('supplier_calls')
-    .update({ status: 'completed', updated_at: new Date().toISOString() })
-    .eq('id', callId)
-    .select('chef_id, vendor_id, vendor_name, ingredient_name')
-    .single()
+  // Q56: Guard timeout close write - unguarded throw = 500 = Twilio retry storm.
+  let timedOutRecord: any = null
+  try {
+    const { data } = await db
+      .from('supplier_calls')
+      .update({ status: 'completed', updated_at: new Date().toISOString() })
+      .eq('id', callId)
+      .select('chef_id, vendor_id, vendor_name, ingredient_name')
+      .single()
+    timedOutRecord = data
+  } catch (err) {
+    console.error('[calling/gather] supplier_calls timeout close write failed:', err)
+  }
 
   if (aiCallId) {
     await db
@@ -985,13 +1017,19 @@ async function handleInboundUnknown(
           console.error('[calling/gather] inbound_unknown quick_note insert failed:', err)
         })
 
-      await broadcast(`chef-${aiCall.chef_id}`, 'ai_call_result', {
-        aiCallId,
-        role: 'inbound_unknown',
-        status: 'completed',
-        callerPhone: aiCall.contact_phone,
-        message: speech,
-      })
+      // Q58: Guard broadcast - unguarded throw = 500 = Twilio retries,
+      // unknown caller hears greeting replayed.
+      try {
+        await broadcast(`chef-${aiCall.chef_id}`, 'ai_call_result', {
+          aiCallId,
+          role: 'inbound_unknown',
+          status: 'completed',
+          callerPhone: aiCall.contact_phone,
+          message: speech,
+        })
+      } catch (err) {
+        console.error('[calling/gather] inbound_unknown broadcast failed:', err)
+      }
     }
   }
   return closingTwiml(

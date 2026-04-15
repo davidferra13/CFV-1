@@ -165,7 +165,9 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
         )
         setSelected(autoSelected)
         setCallStates({})
-      } catch {
+      } catch (err) {
+        // Q59: Was silent — Zero Hallucination violation.
+        console.error('[call-hub] ingredient resolution failed:', err)
         setResolution(null)
       } finally {
         setResolving(false)
@@ -229,9 +231,11 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
               },
             }))
           }
-        } catch {
-          // Network/auth error on poll  - don't kill the interval, let it retry.
+        } catch (err) {
+          // Network/auth error on poll - don't kill the interval, let it retry.
           // Attempts still increments so the loop eventually exhausts gracefully.
+          // Q59: Was silent catch {} — Zero Hallucination violation.
+          console.error('[call-hub] placeCall poll error:', err)
         }
         if (attempts >= 22) {
           clearInterval(poll)

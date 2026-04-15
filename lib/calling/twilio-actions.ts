@@ -27,7 +27,9 @@ import { normalizePhone, isValidE164 } from '@/lib/calling/phone-utils'
 const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID
 const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN
 const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER
-const APP_URL = process.env.NEXTAUTH_URL || 'https://app.cheflowhq.com'
+// Q53: Strip trailing slash - same vulnerability as Q50/Q51/Q52. Broken recording
+// and status callback URLs for ALL outbound calls. No recordings, no status updates.
+const APP_URL = (process.env.NEXTAUTH_URL || 'https://app.cheflowhq.com').replace(/\/+$/, '')
 
 export type CallResult = {
   success: boolean

@@ -154,18 +154,35 @@ export default async function CallSheetPage({
     .single()
   const chefState = chef?.home_state || 'MA'
 
+  // Q60: Guard each fetch independently - single failure must not crash entire page.
+  // Chef sees degraded Call Sheet (missing tab data) instead of blank server error.
   const [calls, aiCalls, vendors, nationalCount, routingRules] = await Promise.all([
-    getRecentCalls(100),
-    getRecentAiCalls(100),
-    listVendors(),
-    getNationalVendorCount(chefState),
-    getRoutingRules(),
+    getRecentCalls(100).catch((err: any) => {
+      console.error('[call-sheet] calls fetch failed:', err)
+      return [] as any[]
+    }),
+    getRecentAiCalls(100).catch((err: any) => {
+      console.error('[call-sheet] aiCalls fetch failed:', err)
+      return [] as any[]
+    }),
+    listVendors().catch((err: any) => {
+      console.error('[call-sheet] vendors fetch failed:', err)
+      return [] as any[]
+    }),
+    getNationalVendorCount(chefState).catch((err: any) => {
+      console.error('[call-sheet] nationalCount fetch failed:', err)
+      return 0
+    }),
+    getRoutingRules().catch((err: any) => {
+      console.error('[call-sheet] routingRules fetch failed:', err)
+      return null
+    }),
   ])
 
   const savedWithPhone = (vendors as any[]).filter((v) => v.phone)
   const addedVendorIds = new Set(savedWithPhone.map((v: any) => v.id as string))
 
-  // vendor_availability ai_calls already appear via supplier_calls — exclude them
+  // vendor_availability ai_calls already appear via supplier_calls  - exclude them
   // to prevent every availability call showing twice in the Call Log.
   const filteredAiCalls = aiCalls.filter((c) => c.role !== 'vendor_availability')
 

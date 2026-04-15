@@ -29,7 +29,9 @@ import {
   twimlResponse,
 } from '@/lib/calling/voice-helpers'
 
-const APP_URL = process.env.NEXTAUTH_URL || 'https://app.cheflowhq.com'
+// Q52: Strip trailing slash - same vulnerability as Q50/Q51. Broken voicemail
+// and gather callback URLs mean inbound calls get no transcript capture.
+const APP_URL = (process.env.NEXTAUTH_URL || 'https://app.cheflowhq.com').replace(/\/+$/, '')
 
 // Active hours check using per-chef DB config.
 // Falls back to 8am-8pm ET when no routing rule exists.
