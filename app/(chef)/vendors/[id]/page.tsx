@@ -2,6 +2,7 @@
 // Part of the Vendor & Food Cost System
 
 import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
 import { getVendor, deactivateVendor, listVendors } from '@/lib/vendors/actions'
 import { listInvoices } from '@/lib/vendors/invoice-actions'
@@ -38,7 +39,12 @@ export default async function VendorDetailPage({ params }: { params: Promise<{ i
   await requireChef()
   const { id } = await params
 
-  const vendor = await getVendor(id)
+  let vendor: Awaited<ReturnType<typeof getVendor>>
+  try {
+    vendor = await getVendor(id)
+  } catch {
+    notFound()
+  }
   const [invoices, allVendors, pendingCatalogRows, vendorUploads, vendorInsights] =
     await Promise.all([
       listInvoices(id),

@@ -88,7 +88,12 @@ function unitMismatch(
 }
 
 export default async function ChefRecipeDetailPage({ params }: { params: { id: string } }) {
-  const recipe = await getRecipeById(params.id)
+  let recipe: Awaited<ReturnType<typeof getRecipeById>> = null
+  try {
+    recipe = await getRecipeById(params.id)
+  } catch {
+    notFound()
+  }
   if (!recipe) notFound()
 
   const r = recipe as any

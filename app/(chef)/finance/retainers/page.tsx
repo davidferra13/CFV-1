@@ -12,7 +12,25 @@ export const metadata: Metadata = { title: 'Retainers' }
 
 export default async function RetainersPage() {
   await requireChef()
-  const retainers = await getRetainersByTenant()
+  let retainers: Awaited<ReturnType<typeof getRetainersByTenant>> = []
+  try {
+    retainers = await getRetainersByTenant()
+  } catch {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-stone-100">Retainers</h1>
+            <p className="text-stone-500 mt-1">Recurring service agreements with clients</p>
+          </div>
+        </div>
+        <Card className="p-8 text-center">
+          <p className="text-stone-400 font-medium mb-1">Could not load retainers</p>
+          <p className="text-stone-500 text-sm">Check your connection and refresh.</p>
+        </Card>
+      </div>
+    )
+  }
 
   // Summary stats
   const activeRetainers = retainers.filter((r: any) => r.status === 'active')

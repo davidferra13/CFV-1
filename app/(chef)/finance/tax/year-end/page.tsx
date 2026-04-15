@@ -17,13 +17,33 @@ export default async function YearEndTaxPage({
   await requireChef()
   const currentYear = new Date().getFullYear()
   const taxYear = searchParams.year ? parseInt(searchParams.year, 10) : currentYear - 1
-  const taxData = await getYearEndTaxPackage(taxYear)
+  let taxData: Awaited<ReturnType<typeof getYearEndTaxPackage>> | null = null
+  try {
+    taxData = await getYearEndTaxPackage(taxYear)
+  } catch {
+    // render error state below
+  }
 
   const availableYears = [currentYear, currentYear - 1, currentYear - 2, currentYear - 3]
-  const netIncome = Math.max(
-    0,
-    taxData.grossRevenueCents + taxData.tipsCents - taxData.totalDeductibleExpensesCents
-  )
+  const netIncome =
+    taxData != null
+      ? Math.max(
+          0,
+          taxData.grossRevenueCents + taxData.tipsCents - taxData.totalDeductibleExpensesCents
+        )
+      : 0
+
+  if (!taxData) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold text-stone-100">{taxYear} Tax Package</h1>
+        <div className="rounded-lg border border-stone-700 bg-stone-800/50 px-6 py-8 text-center">
+          <p className="text-stone-400 font-medium mb-1">Could not load tax data</p>
+          <p className="text-stone-500 text-sm">Check your connection and refresh.</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

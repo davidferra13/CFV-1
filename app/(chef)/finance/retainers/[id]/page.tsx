@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { notFound } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
 import { getRetainerDetail } from '@/lib/retainers/actions'
 import { Card } from '@/components/ui/card'
@@ -14,7 +15,12 @@ export const metadata: Metadata = { title: 'Retainer Detail' }
 
 export default async function RetainerDetailPage({ params }: { params: { id: string } }) {
   await requireChef()
-  const retainer = await getRetainerDetail(params.id)
+  let retainer: Awaited<ReturnType<typeof getRetainerDetail>>
+  try {
+    retainer = await getRetainerDetail(params.id)
+  } catch {
+    notFound()
+  }
 
   return (
     <div className="space-y-6">

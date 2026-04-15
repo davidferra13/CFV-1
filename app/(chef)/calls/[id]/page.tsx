@@ -44,8 +44,12 @@ const STATUS_PILL: Record<string, string> = {
 
 export default async function CallDetailPage({ params }: Props) {
   const user = await requireChef()
-  const call = await getCall(params.id)
-
+  let call: Awaited<ReturnType<typeof getCall>>
+  try {
+    call = await getCall(params.id)
+  } catch {
+    notFound()
+  }
   if (!call) notFound()
 
   const contact = getContactLabel(call)

@@ -32,7 +32,12 @@ export default async function ChefChatViewPage({ params }: { params: Promise<{ i
   const { id: conversationId } = await params
 
   // Load conversation
-  const conversation = await getConversation(conversationId)
+  let conversation: Awaited<ReturnType<typeof getConversation>>
+  try {
+    conversation = await getConversation(conversationId)
+  } catch {
+    redirect('/chat')
+  }
   if (!conversation) {
     redirect('/chat')
   }

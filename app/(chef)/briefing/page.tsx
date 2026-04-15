@@ -61,7 +61,25 @@ const ROLE_LABELS: Record<string, string> = {
 
 export default async function BriefingPage() {
   await requireChef()
-  const briefing = await getMorningBriefing()
+
+  let briefing: Awaited<ReturnType<typeof getMorningBriefing>> | null = null
+  try {
+    briefing = await getMorningBriefing()
+  } catch {
+    // show error state below
+  }
+
+  if (!briefing) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+        <h1 className="text-2xl font-bold text-stone-100">Morning Briefing</h1>
+        <div className="rounded-lg border border-stone-700 bg-stone-800/50 px-6 py-8 text-center">
+          <p className="text-stone-400 font-medium mb-1">Could not load briefing</p>
+          <p className="text-stone-500 text-sm">Check your connection and refresh the page.</p>
+        </div>
+      </div>
+    )
+  }
 
   const totalTodayTasks = briefing.todayTasks.length
   const doneTodayTasks = briefing.todayTasks.filter((t) => t.status === 'done').length

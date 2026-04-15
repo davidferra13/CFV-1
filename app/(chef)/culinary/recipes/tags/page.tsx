@@ -8,7 +8,25 @@ export const metadata: Metadata = { title: 'Recipe Tags' }
 
 export default async function RecipeTagsPage() {
   await requireChef()
-  const recipes = await getRecipes()
+  let recipes: Awaited<ReturnType<typeof getRecipes>> = []
+  try {
+    recipes = await getRecipes()
+  } catch {
+    return (
+      <div className="space-y-6">
+        <div>
+          <Link href="/culinary/recipes" className="text-sm text-stone-500 hover:text-stone-300">
+            ← Recipe Book
+          </Link>
+          <h1 className="text-3xl font-bold text-stone-100 mt-1">Recipe Tags</h1>
+        </div>
+        <Card className="p-8 text-center">
+          <p className="text-stone-400 font-medium mb-1">Could not load recipes</p>
+          <p className="text-stone-500 text-sm">Check your connection and refresh.</p>
+        </Card>
+      </div>
+    )
+  }
 
   // Build tag → recipe list map
   const tagMap = new Map<string, typeof recipes>()

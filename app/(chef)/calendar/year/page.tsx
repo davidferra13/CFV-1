@@ -17,11 +17,23 @@ export default async function YearViewPage({ searchParams }: { searchParams: { y
   const currentYear = new Date().getFullYear()
   const year = parseInt(searchParams.year ?? String(currentYear), 10)
 
-  const summary = await getYearSummary(year)
+  let summary: Awaited<ReturnType<typeof getYearSummary>> | null = null
+  try {
+    summary = await getYearSummary(year)
+  } catch {
+    // render empty state below
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-      <YearViewClient summary={summary} year={year} currentYear={currentYear} />
+      {summary ? (
+        <YearViewClient summary={summary} year={year} currentYear={currentYear} />
+      ) : (
+        <div className="rounded-lg border border-stone-700 bg-stone-800/50 px-6 py-8 text-center">
+          <p className="text-stone-400 font-medium mb-1">Could not load year summary</p>
+          <p className="text-stone-500 text-sm">Check your connection and refresh.</p>
+        </div>
+      )}
     </div>
   )
 }
