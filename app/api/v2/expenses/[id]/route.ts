@@ -13,11 +13,12 @@ import {
   apiValidationError,
   apiError,
 } from '@/lib/api/v2'
+import { EXPENSE_CATEGORY_VALUES } from '@/lib/constants/expense-categories'
 
 const UpdateExpenseBody = z
   .object({
     amount_cents: z.number().int().positive().optional(),
-    category: z.string().min(1).optional(),
+    category: z.enum(EXPENSE_CATEGORY_VALUES).optional(),
     vendor_name: z.string().optional(),
     description: z.string().optional(),
     expense_date: z.string().optional(),
