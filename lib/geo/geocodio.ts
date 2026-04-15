@@ -49,8 +49,8 @@ export async function geocodeAddress(address: string): Promise<GeocodioResult | 
   try {
     const cached = await cacheGet<GeocodioResult>(cacheKey)
     if (cached !== null) return cached
-  } catch {
-    // Redis down - fall through to API
+  } catch (err) {
+    console.warn('[geocodio] Forward cache read failed, falling through to API:', err)
   }
 
   try {
@@ -60,6 +60,7 @@ export async function geocodeAddress(address: string): Promise<GeocodioResult | 
     })
     const res = await fetch(`${GEOCODIO_BASE}/geocode?${params}`, {
       next: { revalidate: 86400 },
+      signal: AbortSignal.timeout(5_000),
     })
     if (!res.ok) return null
     const data: GeocodeResponse = await res.json()
@@ -71,7 +72,8 @@ export async function geocodeAddress(address: string): Promise<GeocodioResult | 
     }
 
     return result
-  } catch {
+  } catch (err) {
+    console.warn('[geocodio] Forward geocode request failed:', err)
     return null
   }
 }
@@ -86,8 +88,8 @@ export async function reverseGeocode(lat: number, lng: number): Promise<Geocodio
   try {
     const cached = await cacheGet<GeocodioResult>(cacheKey)
     if (cached !== null) return cached
-  } catch {
-    // Redis down - fall through to API
+  } catch (err) {
+    console.warn('[geocodio] Reverse cache read failed, falling through to API:', err)
   }
 
   try {
@@ -97,6 +99,7 @@ export async function reverseGeocode(lat: number, lng: number): Promise<Geocodio
     })
     const res = await fetch(`${GEOCODIO_BASE}/reverse?${params}`, {
       next: { revalidate: 86400 },
+      signal: AbortSignal.timeout(5_000),
     })
     if (!res.ok) return null
     const data: GeocodeResponse = await res.json()
@@ -107,7 +110,8 @@ export async function reverseGeocode(lat: number, lng: number): Promise<Geocodio
     }
 
     return result
-  } catch {
+  } catch (err) {
+    console.warn('[geocodio] Reverse geocode request failed:', err)
     return null
   }
 }
@@ -125,11 +129,13 @@ export async function batchGeocode(addresses: string[]): Promise<(GeocodioResult
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(addresses),
+      signal: AbortSignal.timeout(30_000),
     })
     if (!res.ok) return addresses.map(() => null)
     const data = await res.json()
     return (data.results ?? []).map((r: any) => r?.response?.results?.[0] ?? null)
-  } catch {
+  } catch (err) {
+    console.warn('[geocodio] Batch geocode request failed:', err)
     return addresses.map(() => null)
   }
 }
