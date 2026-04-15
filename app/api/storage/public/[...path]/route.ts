@@ -12,15 +12,22 @@ export async function GET(
     return NextResponse.json({ error: 'Invalid path' }, { status: 400 })
   }
 
-  const bucket = segments[0]
-  const filePath = segments.slice(1).join('/')
-
-  // Sanitize path segments
+  // Sanitize path segments (match private route security level)
   for (const seg of segments) {
-    if (seg === '..' || seg === '.' || seg.includes('\\')) {
+    if (
+      seg === '..' ||
+      seg === '.' ||
+      seg.includes('\\') ||
+      seg.includes('/') ||
+      seg.includes('\0')
+    ) {
       return NextResponse.json({ error: 'Invalid path' }, { status: 400 })
     }
   }
+
+  // Normalize bucket through basename to prevent encoding-based traversal
+  const bucket = path.basename(segments[0])
+  const filePath = segments.slice(1).join('/')
 
   try {
     const fullPath = path.join(getStorageRoot(), bucket, ...segments.slice(1))
@@ -32,6 +39,7 @@ export async function GET(
         'Content-Type': contentType,
         'Cache-Control': 'public, max-age=86400',
         'Content-Length': String(data.length),
+        'X-Content-Type-Options': 'nosniff',
       },
     })
   } catch {
