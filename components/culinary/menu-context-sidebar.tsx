@@ -318,50 +318,61 @@ export function MenuContextSidebar({
         </div>
       )}
 
-      {/* Budget compliance check */}
-      {features.budget_compliance && budgetCompliance && (
-        <div
-          className={`px-4 py-3 ${
-            budgetCompliance.status === 'critical'
-              ? 'bg-red-500/10'
-              : budgetCompliance.status === 'warning'
-                ? 'bg-amber-500/10'
-                : ''
-          }`}
-        >
-          <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-1">
-            Budget Check
-          </h4>
-          <div className="flex items-baseline gap-2">
-            <span
-              className={`text-sm font-bold ${
-                budgetCompliance.status === 'critical'
-                  ? 'text-red-400'
-                  : budgetCompliance.status === 'warning'
-                    ? 'text-amber-400'
-                    : 'text-emerald-400'
-              }`}
-            >
-              {budgetCompliance.marginPercent.toFixed(1)}% food cost
-            </span>
-            <Badge
-              variant={
-                budgetCompliance.status === 'critical'
-                  ? 'error'
-                  : budgetCompliance.status === 'warning'
-                    ? 'warning'
-                    : 'success'
-              }
-            >
-              {budgetCompliance.status}
-            </Badge>
+      {/* Budget compliance check (E3: handle missing quote) */}
+      {features.budget_compliance &&
+        budgetCompliance &&
+        ('noQuoteSet' in budgetCompliance && budgetCompliance.noQuoteSet ? (
+          <div className="px-4 py-3">
+            <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-1">
+              Budget Check
+            </h4>
+            <p className="text-xs text-amber-400">
+              Set a quote price on the event to enable budget tracking.
+            </p>
           </div>
-          <p className="text-xxs text-stone-500 mt-1">
-            Cost: ${(budgetCompliance.totalCostCents / 100).toFixed(2)} / Quoted: $
-            {(budgetCompliance.quotedPriceCents / 100).toFixed(2)}
-          </p>
-        </div>
-      )}
+        ) : !('noQuoteSet' in budgetCompliance) ? (
+          <div
+            className={`px-4 py-3 ${
+              budgetCompliance.status === 'critical'
+                ? 'bg-red-500/10'
+                : budgetCompliance.status === 'warning'
+                  ? 'bg-amber-500/10'
+                  : ''
+            }`}
+          >
+            <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-1">
+              Budget Check
+            </h4>
+            <div className="flex items-baseline gap-2">
+              <span
+                className={`text-sm font-bold ${
+                  budgetCompliance.status === 'critical'
+                    ? 'text-red-400'
+                    : budgetCompliance.status === 'warning'
+                      ? 'text-amber-400'
+                      : 'text-emerald-400'
+                }`}
+              >
+                {budgetCompliance.marginPercent.toFixed(1)}% food cost
+              </span>
+              <Badge
+                variant={
+                  budgetCompliance.status === 'critical'
+                    ? 'error'
+                    : budgetCompliance.status === 'warning'
+                      ? 'warning'
+                      : 'success'
+                }
+              >
+                {budgetCompliance.status}
+              </Badge>
+            </div>
+            <p className="text-xxs text-stone-500 mt-1">
+              Cost: ${(budgetCompliance.totalCostCents / 100).toFixed(2)} / Quoted: $
+              {(budgetCompliance.quotedPriceCents / 100).toFixed(2)}
+            </p>
+          </div>
+        ) : null)}
 
       {/* Active dietary conflict detection */}
       {features.dietary_conflicts && dietaryConflicts && dietaryConflicts.conflicts.length > 0 && (
@@ -518,54 +529,60 @@ export function MenuContextSidebar({
         </div>
       )}
 
-      {/* Client taste profile */}
-      {features.client_taste &&
-        clientTaste &&
-        (clientTaste.loved.length > 0 || clientTaste.disliked.length > 0) && (
-          <div className="px-4 py-3 space-y-2">
-            <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider">
-              {clientTaste.clientName}&apos;s Preferences
-            </h4>
-            {clientTaste.cuisinePreferences.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {clientTaste.cuisinePreferences.map((c) => (
-                  <Badge key={c} variant="info">
-                    {c}
-                  </Badge>
-                ))}
-              </div>
-            )}
-            {clientTaste.loved.length > 0 && (
-              <div>
-                <p className="text-xxs text-emerald-400 font-medium mb-1">Loved</p>
+      {/* Client taste profile (E2: show "No preferences" when client linked but empty) */}
+      {features.client_taste && clientTaste && (
+        <div className="px-4 py-3 space-y-2">
+          <h4 className="text-xs font-medium text-stone-400 uppercase tracking-wider">
+            {clientTaste.clientName}&apos;s Preferences
+          </h4>
+          {clientTaste.loved.length === 0 &&
+          clientTaste.disliked.length === 0 &&
+          clientTaste.cuisinePreferences.length === 0 ? (
+            <p className="text-xs text-stone-500">No preferences recorded for this client.</p>
+          ) : (
+            <>
+              {clientTaste.cuisinePreferences.length > 0 && (
                 <div className="flex flex-wrap gap-1">
-                  {clientTaste.loved.map((item) => (
-                    <Badge key={item} variant="success">
-                      {item}
+                  {clientTaste.cuisinePreferences.map((c) => (
+                    <Badge key={c} variant="info">
+                      {c}
                     </Badge>
                   ))}
                 </div>
-              </div>
-            )}
-            {clientTaste.disliked.length > 0 && (
-              <div>
-                <p className="text-xxs text-red-400 font-medium mb-1">Avoid</p>
-                <div className="flex flex-wrap gap-1">
-                  {clientTaste.disliked.map((item) => (
-                    <Badge key={item} variant="error">
-                      {item}
-                    </Badge>
-                  ))}
+              )}
+              {clientTaste.loved.length > 0 && (
+                <div>
+                  <p className="text-xxs text-emerald-400 font-medium mb-1">Loved</p>
+                  <div className="flex flex-wrap gap-1">
+                    {clientTaste.loved.map((item) => (
+                      <Badge key={item} variant="success">
+                        {item}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-            {clientTaste.pastEventCount > 0 && (
-              <p className="text-xxs text-stone-500">
-                {clientTaste.pastEventCount} past event{clientTaste.pastEventCount !== 1 ? 's' : ''}
-              </p>
-            )}
-          </div>
-        )}
+              )}
+              {clientTaste.disliked.length > 0 && (
+                <div>
+                  <p className="text-xxs text-red-400 font-medium mb-1">Avoid</p>
+                  <div className="flex flex-wrap gap-1">
+                    {clientTaste.disliked.map((item) => (
+                      <Badge key={item} variant="error">
+                        {item}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+          {clientTaste.pastEventCount > 0 && (
+            <p className="text-xxs text-stone-500">
+              {clientTaste.pastEventCount} past event{clientTaste.pastEventCount !== 1 ? 's' : ''}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Menu performance history */}
       {features.menu_history && performance && (

@@ -113,12 +113,17 @@ export interface ScalingAdjustment {
   note: string | null
 }
 
-export interface BudgetComplianceResult {
-  quotedPriceCents: number
-  totalCostCents: number
-  marginPercent: number
-  status: 'ok' | 'warning' | 'critical'
-}
+export type BudgetComplianceResult =
+  | {
+      noQuoteSet: true
+    }
+  | {
+      noQuoteSet?: false
+      quotedPriceCents: number
+      totalCostCents: number
+      marginPercent: number
+      status: 'ok' | 'warning' | 'critical'
+    }
 
 export interface DietaryConflict {
   ingredientName: string
@@ -2190,7 +2195,7 @@ export async function checkMenuBudgetCompliance(
     .eq('tenant_id', user.tenantId!)
     .single()
 
-  if (!event?.quoted_price_cents) return null
+  if (!event?.quoted_price_cents) return { noQuoteSet: true }
 
   // Get menu cost from the summary view
   const { data: costData } = await db

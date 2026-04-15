@@ -206,6 +206,29 @@ export function MenuCostSidebar({
         </div>
       )}
 
+      {/* A6: Unit mismatches - recipe unit vs price unit */}
+      {gaps && gaps.unitMismatches.length > 0 && (
+        <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 space-y-1">
+          <div className="flex items-center gap-2">
+            <Badge variant="warning">{gaps.unitMismatches.length} mismatch</Badge>
+            <span className="text-xs text-yellow-300 font-medium">Unit mismatch</span>
+          </div>
+          <p className="text-xs text-yellow-200/70">
+            Recipe unit differs from price unit. Cost math may be wrong:
+          </p>
+          <ul className="text-xs text-yellow-200/60 space-y-0.5 pl-2">
+            {gaps.unitMismatches.slice(0, 5).map((m, i) => (
+              <li key={i} className="truncate">
+                {m.ingredientName}: {m.recipeUnit} vs {m.priceUnit}
+              </li>
+            ))}
+            {gaps.unitMismatches.length > 5 && (
+              <li className="text-yellow-200/40">+{gaps.unitMismatches.length - 5} more</li>
+            )}
+          </ul>
+        </div>
+      )}
+
       {/* Margin alerts */}
       {alerts.length > 0 && (
         <div className="space-y-2">
