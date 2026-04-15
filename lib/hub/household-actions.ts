@@ -63,6 +63,24 @@ export async function getHouseholdMembers(profileToken: string): Promise<Househo
 // Get full dietary summary for a circle (all members + their households)
 // ---------------------------------------------------------------------------
 
+/**
+ * Same as getCircleHouseholdSummary but looks up groupId from groupToken.
+ * Used by the chef's event detail panel which only has the token.
+ */
+export async function getCircleDietarySummaryByToken(
+  groupToken: string
+): Promise<HouseholdDietarySummary | null> {
+  const db: any = createServerClient({ admin: true })
+  const { data: group } = await db
+    .from('hub_groups')
+    .select('id')
+    .eq('group_token', groupToken)
+    .single()
+
+  if (!group) return null
+  return getCircleHouseholdSummary(group.id)
+}
+
 export async function getCircleHouseholdSummary(groupId: string): Promise<HouseholdDietarySummary> {
   const db: any = createServerClient({ admin: true })
 

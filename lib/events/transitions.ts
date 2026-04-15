@@ -300,6 +300,18 @@ export async function transitionEvent({
     log.events.warn('SSE broadcast for client event status failed (non-blocking)', { error: err })
   }
 
+  // Auto-create Dinner Circle when event reaches 'paid' (non-blocking)
+  // Ensures the coordination channel is ready the moment payment lands,
+  // whether triggered by a Stripe webhook or a manual chef action.
+  if (toStatus === 'paid') {
+    try {
+      const { ensureCircleForEvent } = await import('@/lib/hub/chef-circle-actions')
+      await ensureCircleForEvent(eventId, event.tenant_id)
+    } catch (err) {
+      log.events.warn('Auto circle creation failed (non-blocking)', { error: err })
+    }
+  }
+
   // Post system message to linked chat conversation (non-blocking)
   try {
     const { postEventSystemMessage } = await import('@/lib/chat/system-messages')

@@ -1,8 +1,10 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import Link from 'next/link'
 import { createCircleForEvent } from '@/lib/hub/chef-circle-actions'
+import { getCircleDietarySummaryByToken } from '@/lib/hub/household-actions'
+import type { HouseholdDietarySummary } from '@/lib/hub/household-actions'
 import { toast } from 'sonner'
 
 interface EventHubLinkPanelProps {
@@ -17,6 +19,14 @@ interface EventHubLinkPanelProps {
 export function EventHubLinkPanel({ groupToken, eventId }: EventHubLinkPanelProps) {
   const [token, setToken] = useState(groupToken)
   const [isPending, startTransition] = useTransition()
+  const [dietary, setDietary] = useState<HouseholdDietarySummary | null>(null)
+
+  useEffect(() => {
+    if (!token) return
+    getCircleDietarySummaryByToken(token)
+      .then(setDietary)
+      .catch(() => {})
+  }, [token])
 
   const handleCreate = () => {
     startTransition(async () => {
@@ -54,8 +64,11 @@ export function EventHubLinkPanel({ groupToken, eventId }: EventHubLinkPanelProp
     )
   }
 
+  const hasAlerts = dietary && dietary.allAllergies.length > 0
+  const hasUnknowns = dietary && dietary.profilesNotAnswered > 0
+
   return (
-    <div className="rounded-xl border border-[#e88f47]/20 bg-[#e88f47]/5 p-4">
+    <div className="rounded-xl border border-[#e88f47]/20 bg-[#e88f47]/5 p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="text-xl">💬</span>
@@ -73,6 +86,48 @@ export function EventHubLinkPanel({ groupToken, eventId }: EventHubLinkPanelProp
           View Circle
         </Link>
       </div>
+
+      {/* Dietary alerts from circle guests */}
+      {dietary && (hasAlerts || hasUnknowns || dietary.allDietary.length > 0) && (
+        <div className="border-t border-[#e88f47]/20 pt-3 space-y-2">
+          {hasAlerts && (
+            <div className="flex flex-wrap gap-1 items-center">
+              <span className="text-[10px] font-medium uppercase tracking-wide text-red-400 mr-1">
+                Allergies:
+              </span>
+              {dietary.allAllergies.map((a) => (
+                <span
+                  key={a}
+                  className="rounded-full bg-red-500/15 border border-red-500/30 px-2 py-0.5 text-xs text-red-300"
+                >
+                  {a}
+                </span>
+              ))}
+            </div>
+          )}
+          {dietary.allDietary.length > 0 && (
+            <div className="flex flex-wrap gap-1 items-center">
+              <span className="text-[10px] font-medium uppercase tracking-wide text-emerald-400 mr-1">
+                Dietary:
+              </span>
+              {dietary.allDietary.map((d) => (
+                <span
+                  key={d}
+                  className="rounded-full bg-emerald-900/30 px-2 py-0.5 text-xs text-emerald-300"
+                >
+                  {d}
+                </span>
+              ))}
+            </div>
+          )}
+          {hasUnknowns && (
+            <p className="text-[10px] text-amber-400">
+              {dietary.profilesNotAnswered} guest{dietary.profilesNotAnswered !== 1 ? 's' : ''} have
+              not answered the allergy question.
+            </p>
+          )}
+        </div>
+      )}
     </div>
   )
 }

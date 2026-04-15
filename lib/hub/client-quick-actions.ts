@@ -92,7 +92,9 @@ export async function postGuestCountUpdate(
   })
 
   revalidatePath(`/events/${validated.eventId}`)
-  revalidatePath(`/hub/g`)
+  revalidatePath(`/my-events/${validated.eventId}`)
+  revalidatePath('/dashboard')
+  revalidatePath('/hub/g')
 
   // Trigger notification to chef (non-blocking)
   try {
@@ -181,6 +183,9 @@ export async function postDietaryUpdate(
       allergies: validated.allergies,
     },
   })
+
+  revalidatePath('/dashboard')
+  revalidatePath('/hub/g')
 
   // Notify chef (non-blocking)
   try {

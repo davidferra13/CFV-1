@@ -43,6 +43,7 @@ export async function GET(
         'Content-Type': contentType,
         'Cache-Control': 'private, max-age=3600',
         'Content-Length': String(data.length),
+        'X-Content-Type-Options': 'nosniff',
       },
     })
   } catch {

@@ -21,6 +21,7 @@ import { HubMessageSearch } from '@/components/hub/hub-message-search'
 import { HubGroupSettings } from '@/components/hub/hub-group-settings'
 import { WeeklyMealBoard } from '@/components/hub/weekly-meal-board'
 import { toggleMuteCircle, updateMemberNotificationPreferences } from '@/lib/hub/group-actions'
+import { sendCircleRecoveryEmail } from '@/lib/hub/profile-actions'
 import { NotificationPreferences } from '@/components/hub/notification-preferences'
 import { CircleClientStatus } from '@/components/hub/circle-client-status'
 import { LifecycleClientView } from '@/components/hub/lifecycle-client-view'
@@ -79,6 +80,10 @@ export function HubGroupView({
   const [showNotifPrefs, setShowNotifPrefs] = useState(false)
   const [showWelcome, setShowWelcome] = useState(false)
   const [inviteCopied, setInviteCopied] = useState(false)
+  const [showRecovery, setShowRecovery] = useState(false)
+  const [recoveryEmail, setRecoveryEmail] = useState('')
+  const [recoveryPending, startRecoveryTransition] = useTransition()
+  const [recoverySent, setRecoverySent] = useState(false)
 
   const copyInviteLink = useCallback(() => {
     const origin =
@@ -344,16 +349,63 @@ export function HubGroupView({
       {/* Join prompt for guests without a profile token */}
       {!profileToken && (
         <div className="sticky bottom-0 z-20 border-t border-stone-700 bg-stone-900/95 px-4 py-3 backdrop-blur">
-          <div className="mx-auto flex max-w-2xl items-center justify-between gap-3">
-            <p className="text-sm text-stone-400">
-              Join this circle to chat, update your details, and see the full plan.
-            </p>
-            <Link
-              href={`/hub/join/${group.group_token}`}
-              className="shrink-0 rounded-lg bg-[var(--hub-primary,#e88f47)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
-            >
-              Join
-            </Link>
+          <div className="mx-auto max-w-2xl space-y-2">
+            {!showRecovery ? (
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm text-stone-400">
+                  Join this circle to chat, update your details, and see the full plan.
+                </p>
+                <div className="flex shrink-0 items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowRecovery(true)}
+                    className="text-xs text-stone-500 underline underline-offset-2 hover:text-stone-300"
+                  >
+                    Been here before?
+                  </button>
+                  <Link
+                    href={`/hub/join/${group.group_token}`}
+                    className="rounded-lg bg-[var(--hub-primary,#e88f47)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+                  >
+                    Join
+                  </Link>
+                </div>
+              </div>
+            ) : recoverySent ? (
+              <p className="text-center text-sm text-emerald-400">
+                Check your email for a link to rejoin the circle.
+              </p>
+            ) : (
+              <div className="flex items-center gap-2">
+                <input
+                  type="email"
+                  value={recoveryEmail}
+                  onChange={(e) => setRecoveryEmail(e.target.value)}
+                  placeholder="Your email address"
+                  className="flex-1 rounded-lg bg-stone-800 px-3 py-2 text-sm text-stone-200 placeholder-stone-600 focus:outline-none focus:ring-1 focus:ring-[var(--hub-primary,#e88f47)]"
+                />
+                <button
+                  type="button"
+                  disabled={recoveryPending || !recoveryEmail.includes('@')}
+                  onClick={() => {
+                    startRecoveryTransition(async () => {
+                      await sendCircleRecoveryEmail(recoveryEmail, group.group_token)
+                      setRecoverySent(true)
+                    })
+                  }}
+                  className="shrink-0 rounded-lg bg-stone-700 px-3 py-2 text-sm text-stone-200 hover:bg-stone-600 disabled:opacity-50"
+                >
+                  {recoveryPending ? 'Sending...' : 'Send link'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowRecovery(false)}
+                  className="text-xs text-stone-600 hover:text-stone-400"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -297,3 +297,82 @@ export async function getProfileGroups(
   if (error) throw new Error(`Failed to load groups: ${error.message}`)
   return data ?? []
 }
+
+// ---------------------------------------------------------------------------
+// Profile token recovery - for guests who cleared cookies
+// ---------------------------------------------------------------------------
+
+/**
+ * Send a recovery link to a guest's email so they can reclaim their circle access.
+ * Looks up their profile by email, verifies membership in the group,
+ * then sends an email with a /hub/recover/[groupToken]?t=[profileToken] link.
+ *
+ * Public - no auth required. Rate limiting should be applied at the route layer.
+ */
+export async function sendCircleRecoveryEmail(
+  email: string,
+  groupToken: string
+): Promise<{ success: boolean; message: string }> {
+  const db: any = createServerClient({ admin: true })
+
+  const normalized = email.toLowerCase().trim()
+
+  // Look up profile by email
+  const { data: profile } = await db
+    .from('hub_guest_profiles')
+    .select('id, profile_token, display_name')
+    .eq('email_normalized', normalized)
+    .single()
+
+  if (!profile) {
+    // Return same message to prevent email enumeration
+    return { success: true, message: 'If that email is in our system, we sent a link.' }
+  }
+
+  // Verify profile is in this group
+  const { data: group } = await db
+    .from('hub_groups')
+    .select('id, name')
+    .eq('group_token', groupToken)
+    .single()
+
+  if (!group) {
+    return { success: false, message: 'Circle not found.' }
+  }
+
+  const { data: membership } = await db
+    .from('hub_group_members')
+    .select('id')
+    .eq('group_id', group.id)
+    .eq('profile_id', profile.id)
+    .maybeSingle()
+
+  if (!membership) {
+    return { success: true, message: 'If that email is in our system, we sent a link.' }
+  }
+
+  // Send recovery email
+  const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
+  const recoveryUrl = `${APP_URL}/hub/recover/${groupToken}?t=${profile.profile_token}`
+
+  try {
+    const { sendEmail } = await import('@/lib/email/send')
+    const { createElement } = await import('react')
+    const { NotificationGenericEmail } = await import('@/lib/email/templates/notification-generic')
+
+    await sendEmail({
+      to: email,
+      subject: `Your link to rejoin ${group.name || 'the dinner circle'}`,
+      react: createElement(NotificationGenericEmail, {
+        title: 'Rejoin your dinner circle',
+        body: `Here is your access link to rejoin ${group.name || 'the circle'}. Click below to continue where you left off.`,
+        actionUrl: recoveryUrl,
+        actionLabel: 'Rejoin Circle',
+      }),
+    })
+  } catch {
+    // Non-blocking - tell user it worked to avoid confusion
+  }
+
+  return { success: true, message: 'If that email is in our system, we sent a link.' }
+}

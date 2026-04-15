@@ -494,3 +494,141 @@ export async function getCircleEvents(groupId: string): Promise<
     status: row.events?.status ?? 'draft',
   }))
 }
+
+// ---------------------------------------------------------------------------
+// System-level circle auto-creation (no auth required - called from transitions)
+// ---------------------------------------------------------------------------
+
+/**
+ * Ensure a circle exists for an event. Called by the event FSM when an event
+ * transitions to 'paid' so the coordination channel is always ready before the
+ * chef receives the payment confirmation. Idempotent: no-op if circle exists.
+ *
+ * Uses admin DB client and looks up the chef's auth_user_id from user_roles
+ * so it works in system/webhook contexts where there is no active session.
+ */
+export async function ensureCircleForEvent(
+  eventId: string,
+  tenantId: string
+): Promise<{ groupToken: string } | null> {
+  try {
+    const db: any = createServerClient({ admin: true })
+
+    // Idempotency check: circle already linked to event
+    const { data: existing } = await db
+      .from('hub_groups')
+      .select('group_token')
+      .eq('event_id', eventId)
+      .eq('tenant_id', tenantId)
+      .maybeSingle()
+
+    if (existing) return { groupToken: existing.group_token }
+
+    // Also check via inquiry (inquiry circle may predate the event)
+    const { data: inquiry } = await db
+      .from('inquiries')
+      .select('id')
+      .eq('converted_to_event_id', eventId)
+      .maybeSingle()
+
+    if (inquiry) {
+      const { data: inquiryCircle } = await db
+        .from('hub_groups')
+        .select('group_token')
+        .eq('inquiry_id', inquiry.id)
+        .maybeSingle()
+
+      if (inquiryCircle) return { groupToken: inquiryCircle.group_token }
+    }
+
+    // Fetch event for naming
+    const { data: event } = await db
+      .from('events')
+      .select('event_date, occasion, client_id')
+      .eq('id', eventId)
+      .single()
+
+    if (!event) return null
+
+    // Fetch chef name and auth user id
+    const [{ data: chef }, { data: chefUserRole }] = await Promise.all([
+      db.from('chefs').select('display_name, business_name, email').eq('id', tenantId).single(),
+      db
+        .from('user_roles')
+        .select('auth_user_id, id')
+        .eq('entity_id', tenantId)
+        .eq('role', 'chef')
+        .single(),
+    ])
+
+    if (!chefUserRole) return null
+
+    const chefName = chef?.display_name || chef?.business_name || 'Chef'
+    const chefEmail = chef?.email || null
+
+    // Get or create chef hub profile
+    const { getOrCreateProfile } = await import('./profile-actions')
+    const chefProfile = await getOrCreateProfile({
+      email: chefEmail,
+      displayName: chefName,
+      authUserId: chefUserRole.auth_user_id,
+    })
+
+    // Client first name for circle name
+    let clientFirstName = 'Guest'
+    if (event.client_id) {
+      const { data: client } = await db
+        .from('clients')
+        .select('full_name')
+        .eq('id', event.client_id)
+        .single()
+      if (client) clientFirstName = client.full_name.split(' ')[0]
+    }
+
+    const groupName = event.occasion
+      ? `${event.occasion} with ${clientFirstName}`
+      : `Dinner with ${clientFirstName}`
+
+    // Create the group
+    const { createHubGroup } = await import('./group-actions')
+    const group = await createHubGroup({
+      name: groupName,
+      event_id: eventId,
+      tenant_id: tenantId,
+      created_by_profile_id: chefProfile.id,
+      emoji: '🍽️',
+    })
+
+    // Set chef role (creator is already owner - elevate to chef role)
+    await db
+      .from('hub_group_members')
+      .update({ role: 'chef' })
+      .eq('group_id', group.id)
+      .eq('profile_id', chefProfile.id)
+
+    // Auto-add client if they already have a hub profile
+    if (event.client_id) {
+      const { data: clientProfile } = await db
+        .from('hub_guest_profiles')
+        .select('id')
+        .eq('client_id', event.client_id)
+        .maybeSingle()
+
+      if (clientProfile) {
+        await db.from('hub_group_members').insert({
+          group_id: group.id,
+          profile_id: clientProfile.id,
+          role: 'member',
+          can_post: true,
+          can_invite: true,
+          can_pin: false,
+        })
+      }
+    }
+
+    return { groupToken: group.group_token }
+  } catch {
+    // Non-blocking - circle creation failure must never block payment confirmation
+    return null
+  }
+}
