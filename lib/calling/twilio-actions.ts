@@ -684,9 +684,7 @@ export async function getRecentAiCalls(limit = 50): Promise<AiCall[]> {
 // Get transcript for a specific ai_call
 // ---------------------------------------------------------------------------
 
-export async function getCallTranscript(
-  aiCallId: string
-): Promise<
+export async function getCallTranscript(aiCallId: string): Promise<
   Array<{
     speaker: string
     content: string
@@ -760,4 +758,53 @@ export async function upsertRoutingRules(updates: {
 
   if (error) return { success: false, error: error.message }
   return { success: true }
+}
+
+// ---------------------------------------------------------------------------
+// Request access to the supplier calling feature.
+// Writes a chef_feature_flags row with flag_name='supplier_calling_requested'
+// so admin can see pending requests in the flags panel.
+// ---------------------------------------------------------------------------
+
+export async function requestCallingAccess(): Promise<{
+  success: boolean
+  alreadyRequested: boolean
+  error?: string
+}> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+  const chefId = user.tenantId!
+
+  // Check if already enabled - no need to request
+  const { data: enabledFlag } = await db
+    .from('chef_feature_flags')
+    .select('enabled')
+    .eq('chef_id', chefId)
+    .eq('flag_name', 'supplier_calling')
+    .maybeSingle()
+
+  if (enabledFlag?.enabled === true) {
+    return { success: true, alreadyRequested: false }
+  }
+
+  // Check if already requested
+  const { data: existing } = await db
+    .from('chef_feature_flags')
+    .select('enabled')
+    .eq('chef_id', chefId)
+    .eq('flag_name', 'supplier_calling_requested')
+    .maybeSingle()
+
+  if (existing !== null) {
+    return { success: true, alreadyRequested: true }
+  }
+
+  const { error } = await db.from('chef_feature_flags').insert({
+    chef_id: chefId,
+    flag_name: 'supplier_calling_requested',
+    enabled: true,
+  })
+
+  if (error) return { success: false, alreadyRequested: false, error: error.message }
+  return { success: true, alreadyRequested: false }
 }

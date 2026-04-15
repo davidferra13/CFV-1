@@ -11,7 +11,6 @@
  */
 
 import { Metadata } from 'next'
-import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
@@ -36,6 +35,7 @@ import { CallLog } from '@/components/calling/call-log'
 import { NationalVendorSearch } from '@/components/vendors/national-vendor-search'
 import { VendorDirectoryClient } from '@/app/(chef)/culinary/vendors/vendor-directory-client'
 import { CallSettingsForm } from '@/components/calling/call-settings-form'
+import { CallAccessRequest } from '@/components/calling/call-access-request'
 
 export const metadata: Metadata = { title: 'Call Sheet' }
 
@@ -124,7 +124,14 @@ export default async function CallSheetPage({
 }) {
   const user = await requireChef()
   const enabled = await isCallingEnabled(user.tenantId!)
-  if (!enabled) redirect('/culinary/price-catalog')
+
+  if (!enabled) {
+    return (
+      <div className="max-w-5xl">
+        <CallAccessRequest />
+      </div>
+    )
+  }
 
   const params = await searchParams
   const rawTab = params.tab
@@ -166,18 +173,24 @@ export default async function CallSheetPage({
   return (
     <div className="space-y-6 max-w-5xl">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="p-2 bg-violet-950 rounded-lg">
+      <div className="flex items-start gap-3">
+        <div className="p-2 bg-violet-950 rounded-lg mt-0.5">
           <Phone size={18} className="text-violet-400" />
         </div>
         <div>
           <h1 className="text-xl font-bold text-stone-100">Call Sheet</h1>
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-stone-400 mt-0.5">
+            Type an ingredient and ChefFlow calls your suppliers to check availability and get
+            prices. You hear back in minutes, not hours.
+          </p>
+          <p className="text-xs text-stone-600 mt-1.5">
             {savedWithPhone.length > 0
               ? `${savedWithPhone.length} saved vendor${savedWithPhone.length !== 1 ? 's' : ''}`
               : 'No saved vendors'}
             {nationalCount > 0 && ` + ${nationalCount.toLocaleString()} in directory`}
             {calls.length > 0 && ` · ${calls.length} call${calls.length !== 1 ? 's' : ''} logged`}
+            {' · '}
+            <span className="text-stone-600">Calls billed via your Twilio account</span>
           </p>
         </div>
       </div>

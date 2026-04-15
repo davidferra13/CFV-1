@@ -39,6 +39,9 @@ export type CommunicationEventInput = {
   linkedEntityId?: string | null
   ingestionSource: CommunicationActionSource
   actorId?: string | null
+  // When true: stored in raw feed only, not surfaced in triage tabs.
+  // Use for personal/marketing/spam emails ingested for completeness.
+  isRawSignalOnly?: boolean
 }
 
 export type CommunicationInboxItem = {

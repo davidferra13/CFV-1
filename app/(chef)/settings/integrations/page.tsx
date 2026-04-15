@@ -21,6 +21,8 @@ import { getTakeAChefIntegrationSettings } from '@/lib/integrations/take-a-chef-
 import { getChefPlatformSettings } from '@/lib/integrations/platform-settings'
 import { BusinessToolStrip } from '@/components/integrations/business-tool-strip'
 import { IntegrationsAdvancedSection } from '@/components/integrations/integrations-advanced-section'
+import { TwilioByoSetup } from '@/components/integrations/twilio-byo-setup'
+import { getTwilioCredentialStatus } from '@/lib/comms/twilio-byo-actions'
 
 export const metadata: Metadata = { title: 'Integrations' }
 
@@ -36,6 +38,7 @@ export default async function IntegrationsSettingsPage() {
     connectedAccounts,
     tacSettings,
     platformSettings,
+    twilioStatus,
   ] = await Promise.all([
     getIntegrationProviderOverview(),
     getRecentIntegrationEvents(30),
@@ -56,6 +59,11 @@ export default async function IntegrationsSettingsPage() {
     listConnectedAccounts().catch(() => []),
     getTakeAChefIntegrationSettings(),
     getChefPlatformSettings().catch(() => ({ platforms: {} })),
+    getTwilioCredentialStatus().catch(() => ({
+      connected: false,
+      phoneNumber: null,
+      accountSid: null,
+    })),
   ])
 
   // Business tool strip: show connection state from oauthStatuses
@@ -100,6 +108,13 @@ export default async function IntegrationsSettingsPage() {
           Connect ChefFlow to your email capture, booking platforms, and business tools.
         </p>
       </div>
+
+      {/* SMS integration - bring your own Twilio */}
+      <TwilioByoSetup
+        connected={twilioStatus.connected}
+        phoneNumber={twilioStatus.phoneNumber}
+        accountSid={twilioStatus.accountSid}
+      />
 
       {/* Email lead capture - guided setup for booking platform notifications via Gmail */}
       <TakeAChefSetup

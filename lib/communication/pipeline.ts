@@ -448,8 +448,9 @@ export async function ingestCommunicationEvent(input: CommunicationEventInput) {
       linked_entity_type: input.linkedEntityType || null,
       linked_entity_id: input.linkedEntityId || null,
       status: initialStatus,
+      is_raw_signal_only: input.isRawSignalOnly ?? false,
     })
-    .select('id, status, linked_entity_type, linked_entity_id')
+    .select('id, status, linked_entity_type, linked_entity_id, is_raw_signal_only')
     .single()
 
   if (error?.message?.includes('uq_comm_events_external')) {
@@ -523,6 +524,18 @@ export async function ingestCommunicationEvent(input: CommunicationEventInput) {
     actorId: input.actorId,
   })
 
+  // Auto-stage: when sender is unknown and message is triage-visible,
+  // create a staged client + staged inquiry so the chef can confirm or dismiss.
+  if (input.direction === 'inbound' && !resolvedClientId && !event.is_raw_signal_only) {
+    autoStageFromSignal({
+      tenantId: input.tenantId,
+      communicationEventId: event.id,
+      senderIdentity: input.senderIdentity,
+      source: input.source,
+      rawContent: input.rawContent,
+    }).catch((err) => console.error('[pipeline] auto-stage failed (non-fatal):', err))
+  }
+
   // Send push notification for inbound messages (non-blocking)
   if (input.direction === 'inbound') {
     import('./push-notify')
@@ -541,6 +554,75 @@ export async function ingestCommunicationEvent(input: CommunicationEventInput) {
   }
 
   return { id: event.id, threadId, deduped: false }
+}
+
+// ─── Auto-staging: unknown sender creates staged client + inquiry ─────────────
+
+async function autoStageFromSignal(input: {
+  tenantId: string
+  communicationEventId: string
+  senderIdentity: string
+  source: string
+  rawContent: string
+}) {
+  const db: any = createServerClient({ admin: true })
+
+  const email = extractEmail(input.senderIdentity)
+  const phone = extractPhone(input.senderIdentity)
+
+  // Derive a display name from the sender identity
+  const namePart = input.senderIdentity.split('<')[0].trim()
+  const name = namePart || email || phone || 'Unknown Contact'
+
+  // Create staged client
+  const { data: stagedClient, error: clientErr } = await db
+    .from('clients')
+    .insert({
+      tenant_id: input.tenantId,
+      name,
+      email: email || null,
+      phone: phone || null,
+      is_staged: true,
+      staged_from_signal_id: input.communicationEventId,
+    })
+    .select('id')
+    .single()
+
+  if (clientErr || !stagedClient?.id) {
+    console.error('[auto-stage] Failed to create staged client:', clientErr?.message)
+    return
+  }
+
+  // Link thread to staged client
+  await db
+    .from('conversation_threads')
+    .update({ client_id: stagedClient.id })
+    .eq('tenant_id', input.tenantId)
+    .is('client_id', null)
+    .in(
+      'id',
+      db.from('communication_events').select('thread_id').eq('id', input.communicationEventId)
+    )
+
+  // Create staged inquiry
+  const channelMap: Record<string, string> = {
+    email: 'email',
+    sms: 'text',
+    whatsapp: 'text',
+    instagram: 'instagram',
+    takeachef: 'platform',
+    yhangry: 'platform',
+  }
+
+  await db.from('inquiries').insert({
+    tenant_id: input.tenantId,
+    client_id: stagedClient.id,
+    status: 'new',
+    channel: channelMap[input.source] || 'other',
+    notes: input.rawContent.slice(0, 2000),
+    is_staged: true,
+    staged_from_signal_id: input.communicationEventId,
+  })
 }
 
 export async function seedDefaultCommunicationRules(tenantId: string) {

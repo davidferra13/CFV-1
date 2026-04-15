@@ -6,11 +6,14 @@ import { InboxFeed } from '@/components/inbox/inbox-feed'
 import { CommunicationInboxClient } from '@/components/communication/communication-inbox-client'
 import { InboxCalendarPeek } from '@/components/communication/inbox-calendar-peek'
 import { TriageSuggestionsSection } from '@/components/communication/triage-suggestions-section'
+import { StagedSignalsPanel } from '@/components/communication/staged-signals-panel'
 import {
   getCommunicationInbox,
   getCommunicationInboxStats,
   getUnreadThreadCount,
 } from '@/lib/communication/actions'
+import { getStagedEntities } from '@/lib/comms/staging-actions'
+import { getOrCreateEmailChannel } from '@/lib/comms/email-channel'
 import type { CommunicationTab } from '@/lib/communication/types'
 import { getCalendarEvents } from '@/lib/scheduling/actions'
 import { getGoogleConnection } from '@/lib/google/auth'
@@ -21,7 +24,7 @@ export const metadata: Metadata = { title: 'Inbox' }
 const VALID_TABS: CommunicationTab[] = ['unlinked', 'needs_attention', 'snoozed', 'resolved']
 
 export default async function InboxPage({ searchParams }: { searchParams?: { tab?: string } }) {
-  await requireChef()
+  const user = await requireChef()
 
   const triageEnabled = isCommTriageEnabled()
   if (triageEnabled) {
@@ -31,13 +34,16 @@ export default async function InboxPage({ searchParams }: { searchParams?: { tab
     const rangeStart = _li(new Date(now.getFullYear(), now.getMonth(), 1))
     const rangeEnd = _li(new Date(now.getFullYear(), now.getMonth() + 1, 0))
 
-    const [items, stats, calendarEvents, gmailConnection, unreadCount] = await Promise.all([
-      getCommunicationInbox(undefined, 100),
-      getCommunicationInboxStats(),
-      getCalendarEvents(rangeStart, rangeEnd),
-      getGoogleConnection(),
-      getUnreadThreadCount(),
-    ])
+    const [items, stats, calendarEvents, gmailConnection, unreadCount, staged, emailChannel] =
+      await Promise.all([
+        getCommunicationInbox(undefined, 100),
+        getCommunicationInboxStats(),
+        getCalendarEvents(rangeStart, rangeEnd),
+        getGoogleConnection(),
+        getUnreadThreadCount(),
+        getStagedEntities().catch(() => ({ clients: [], inquiries: [] })),
+        getOrCreateEmailChannel(user.entityId!).catch(() => null),
+      ])
 
     // Smart default: if user specified a tab use it, otherwise pick the tab with content
     // Prefer needs_attention (actionable), fall back to unlinked (new/unsorted)
@@ -67,6 +73,20 @@ export default async function InboxPage({ searchParams }: { searchParams?: { tab
             <Link href="/settings" className="underline underline-offset-2 hover:text-amber-900">
               Reconnect in Settings →
             </Link>
+          </div>
+        )}
+
+        {/* Staged signals - auto-detected contacts awaiting confirmation */}
+        {staged.clients.length > 0 && <StagedSignalsPanel clients={staged.clients} />}
+
+        {/* Per-chef inbound email address */}
+        {emailChannel && (
+          <div className="rounded-lg border border-stone-700 bg-stone-900/50 px-4 py-3 text-sm text-stone-400">
+            Your ChefFlow inbox address:{' '}
+            <span className="font-mono text-stone-200 select-all">{emailChannel.address}</span>
+            <span className="ml-2 text-stone-600">
+              Forward anything here and it lands in your inbox.
+            </span>
           </div>
         )}
 

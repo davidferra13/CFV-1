@@ -7,7 +7,12 @@
  * can supply it (your saved favorites first, then nearby national vendors),
  * toggle which ones to call, and hit "Call All". Results stream back live.
  *
- * No "add vendor" step required. Call anyone in the national directory directly.
+ * UX principles:
+ * - Ingredient search is the primary flow. Quick Call is secondary (collapsed).
+ * - Empty state shows a 3-step guide so new users know what to do.
+ * - Pre-call confirm modal prevents accidental bulk calls.
+ * - Vendor nudge appears when chef has no saved vendors.
+ * - Cost transparency: Twilio billing note near Call button.
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react'
@@ -29,6 +34,8 @@ import {
   Mic,
   ChevronDown,
   ChevronUp,
+  ChevronRight,
+  AlertCircle,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -92,21 +99,23 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const searchRef = useRef<HTMLInputElement>(null)
 
-  // Quick Call - dial any number directly
+  // Quick Call - collapsed by default
+  const [quickOpen, setQuickOpen] = useState(false)
   const [quickPhone, setQuickPhone] = useState('')
   const [quickName, setQuickName] = useState('')
   const [quickIngredient, setQuickIngredient] = useState('')
   const [quickCalling, setQuickCalling] = useState(false)
   const [quickResult, setQuickResult] = useState<CallState>({ phase: 'idle' })
 
+  // Pre-call confirmation modal
+  const [confirmOpen, setConfirmOpen] = useState(false)
+
   // SSE: receive call results in real-time instead of polling
-  // Replaces the polling interval for calls that are currently in-flight.
   const handleSSEMessage = useCallback((msg: { event: string; data: any }) => {
     if (msg.event !== 'supplier_call_result') return
     const { callId, vendorId, result, status, priceQuoted, quantityAvailable, recordingUrl } =
       msg.data
 
-    // Resolve vendorId: SSE may send it directly, or we look it up from our map
     const vid = vendorId || (callId ? callIdToVendorId.get(callId) : null)
     if (!vid) return
 
@@ -192,7 +201,6 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
       if (vendor.source === 'saved') {
         result = await initiateSupplierCall(vendor.id, ingredient.trim())
       } else {
-        // National vendor - call directly without saving
         result = await initiateAdHocCall(vendor.phone, vendor.name, ingredient.trim(), vendor.id)
       }
 
@@ -204,15 +212,12 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
         return
       }
 
-      // Register callId -> vendorId mapping so SSE result can find the right row
       const callId = result.callId!
       callIdToVendorId.set(callId, vendor.id)
 
       // Poll as fallback: SSE will fire first if connection is live.
-      // Poll fires every 4s, times out after 90s.
       let attempts = 0
       const poll = setInterval(async () => {
-        // If SSE already resolved this call, stop polling
         if (callStates[vendor.id]?.phase === 'done') {
           clearInterval(poll)
           return
@@ -234,7 +239,7 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
             },
           }))
         }
-        if (attempts >= 22) clearInterval(poll) // ~90s
+        if (attempts >= 22) clearInterval(poll)
       }, 4000)
     } catch {
       setCallStates((prev) => ({
@@ -249,9 +254,21 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
       (v) => selected.has(v.id) && (!callStates[v.id] || callStates[v.id].phase === 'idle')
     )
     if (toCall.length === 0) return
+    setConfirmOpen(false)
     setCallingAll(true)
     await Promise.allSettled(toCall.map((v) => placeCall(v)))
     setCallingAll(false)
+  }
+
+  function handleCallButtonClick() {
+    const toCall = vendors.filter(
+      (v) => selected.has(v.id) && (!callStates[v.id] || callStates[v.id].phase === 'idle')
+    )
+    if (toCall.length >= 2) {
+      setConfirmOpen(true)
+    } else {
+      callSelected()
+    }
   }
 
   async function placeQuickCall() {
@@ -309,110 +326,53 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
   const selectedCount = vendors.filter((v) => selected.has(v.id)).length
   const callingCount = vendors.filter((v) => callStates[v.id]?.phase === 'calling').length
   const doneCount = vendors.filter((v) => callStates[v.id]?.phase === 'done').length
+  const toCallCount = vendors.filter(
+    (v) => selected.has(v.id) && (!callStates[v.id] || callStates[v.id].phase === 'idle')
+  ).length
 
   return (
     <div className="space-y-6">
-      {/* Quick Call - dial any number directly */}
-      <div className="bg-stone-900 border border-stone-700 rounded-xl p-4 space-y-3">
-        <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">
-          Quick Call - any number
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          <input
-            type="tel"
-            value={quickPhone}
-            onChange={(e) => setQuickPhone(e.target.value)}
-            placeholder="Phone number"
-            className="px-3 py-2 text-sm bg-stone-800 border border-stone-700 rounded-lg text-stone-100 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
-          />
-          <input
-            type="text"
-            value={quickName}
-            onChange={(e) => setQuickName(e.target.value)}
-            placeholder="Vendor name (optional)"
-            className="px-3 py-2 text-sm bg-stone-800 border border-stone-700 rounded-lg text-stone-100 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
-          />
-          <input
-            type="text"
-            value={quickIngredient}
-            onChange={(e) => setQuickIngredient(e.target.value)}
-            placeholder="Ask about... (e.g. haddock)"
-            onKeyDown={(e) => e.key === 'Enter' && placeQuickCall()}
-            className="px-3 py-2 text-sm bg-stone-800 border border-stone-700 rounded-lg text-stone-100 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
-          />
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={placeQuickCall}
-            disabled={quickCalling || quickResult.phase === 'calling'}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors
-              bg-violet-600 hover:bg-violet-500 text-white disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {quickResult.phase === 'calling' ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Calling...
-              </>
-            ) : (
-              <>
-                <Phone className="w-4 h-4" />
-                Call now
-              </>
-            )}
-          </button>
-          {quickResult.phase === 'done' && (
-            <div className="flex items-center gap-3 text-sm">
-              {'result' in quickResult && quickResult.result === 'yes' && (
-                <span className="flex items-center gap-1 text-emerald-400 font-medium">
-                  <Check className="w-4 h-4" />
-                  In stock
-                </span>
-              )}
-              {'result' in quickResult && quickResult.result === 'no' && (
-                <span className="flex items-center gap-1 text-rose-400 font-medium">
-                  <X className="w-4 h-4" />
-                  Not available
-                </span>
-              )}
-              {'result' in quickResult && quickResult.result === null && (
-                <span className="text-stone-400">
-                  {'status' in quickResult ? quickResult.status : 'No answer'}
-                </span>
-              )}
-              {'priceQuoted' in quickResult && quickResult.priceQuoted && (
-                <span className="text-stone-300 font-mono text-xs">{quickResult.priceQuoted}</span>
-              )}
-              {'recordingUrl' in quickResult && quickResult.recordingUrl && (
-                <a
-                  href={quickResult.recordingUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-violet-400 hover:text-violet-300 text-xs"
-                >
-                  <Mic className="w-3 h-3" />
-                  Listen to recording
-                </a>
-              )}
+      {/* Pre-call confirmation modal */}
+      {confirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-stone-900 border border-stone-700 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-violet-950 rounded-lg">
+                <Phone className="w-4 h-4 text-violet-400" />
+              </div>
+              <h2 className="text-base font-semibold text-stone-100">Confirm calls</h2>
+            </div>
+            <p className="text-sm text-stone-400">
+              You are about to call{' '}
+              <span className="text-stone-200 font-medium">{toCallCount} vendors</span> about{' '}
+              <span className="text-stone-200 font-medium">{ingredient}</span>. Each call is 2-3
+              minutes and billed via your Twilio account.
+            </p>
+            <p className="text-xs text-stone-600">
+              Calls go out immediately during business hours (8am-7pm).
+            </p>
+            <div className="flex items-center gap-3 pt-1">
               <button
                 type="button"
-                onClick={() => {
-                  setQuickResult({ phase: 'idle' })
-                  setQuickPhone('')
-                  setQuickIngredient('')
-                }}
-                className="text-xs text-stone-500 hover:text-stone-300 underline underline-offset-2"
+                onClick={callSelected}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-colors"
               >
-                Reset
+                <Phone className="w-3.5 h-3.5" />
+                Call {toCallCount} vendor{toCallCount !== 1 ? 's' : ''}
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmOpen(false)}
+                className="px-4 py-2 rounded-lg text-sm text-stone-400 hover:text-stone-200 transition-colors"
+              >
+                Cancel
               </button>
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="border-t border-stone-800" />
-
-      {/* Ingredient search */}
+      {/* Ingredient search - primary flow */}
       <div className="relative">
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500 pointer-events-none" />
         <input
@@ -428,6 +388,7 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
           <button
             type="button"
             onClick={() => setIngredient('')}
+            aria-label="Clear search"
             className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-300"
           >
             <X className="w-4 h-4" />
@@ -450,6 +411,23 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
 
       {vendors.length > 0 && (
         <div className="space-y-4">
+          {/* Vendor setup nudge: shown when there are no saved vendors */}
+          {savedVendors.length === 0 && nationalVendors.length > 0 && (
+            <div className="flex items-start gap-2.5 bg-amber-950/30 border border-amber-900/40 rounded-lg px-4 py-3">
+              <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-amber-300">
+                These are public directory vendors near you. Save your regulars in the{' '}
+                <a
+                  href="/culinary/call-sheet?tab=vendors"
+                  className="underline underline-offset-2 hover:text-amber-200"
+                >
+                  My Vendors tab
+                </a>{' '}
+                to get them auto-selected first.
+              </p>
+            </div>
+          )}
+
           {/* Call controls bar */}
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-3 flex-wrap">
@@ -469,27 +447,30 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
                 </span>
               )}
             </div>
-            <button
-              type="button"
-              onClick={callSelected}
-              disabled={callingAll || selectedCount === 0 || callingCount === selectedCount}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors
-                bg-violet-600 hover:bg-violet-500 text-white
-                disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {callingAll ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Calling {callingCount > 0 ? `${callingCount}` : selectedCount}...
-                </>
-              ) : (
-                <>
-                  <Phone className="w-4 h-4" />
-                  Call {selectedCount > 0 ? `${selectedCount}` : ''} vendor
-                  {selectedCount !== 1 ? 's' : ''}
-                </>
-              )}
-            </button>
+            <div className="flex flex-col items-end gap-1">
+              <button
+                type="button"
+                onClick={handleCallButtonClick}
+                disabled={callingAll || selectedCount === 0 || callingCount === selectedCount}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors
+                  bg-violet-600 hover:bg-violet-500 text-white
+                  disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {callingAll ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Calling {callingCount > 0 ? `${callingCount}` : selectedCount}...
+                  </>
+                ) : (
+                  <>
+                    <Phone className="w-4 h-4" />
+                    Call {selectedCount > 0 ? `${selectedCount}` : ''} vendor
+                    {selectedCount !== 1 ? 's' : ''}
+                  </>
+                )}
+              </button>
+              <span className="text-[10px] text-stone-600">Billed via Twilio</span>
+            </div>
           </div>
 
           {/* Saved vendors (favorites) */}
@@ -566,15 +547,164 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
         </div>
       )}
 
+      {/* Empty state: guided 3-step intro when no ingredient typed */}
       {!ingredient.trim() && (
-        <div className="text-center py-12 text-stone-600">
-          <Phone className="w-10 h-10 mx-auto mb-3 opacity-30" />
-          <p className="text-sm">Type an ingredient to find vendors that carry it.</p>
-          <p className="text-xs mt-1">
-            We'll show your saved contacts first, then specialty vendors nearby.
+        <div className="py-8 space-y-6">
+          <div className="space-y-3 max-w-sm">
+            {[
+              {
+                n: '1',
+                label: 'Type an ingredient above',
+                sub: 'e.g. haddock, black truffle, dry-aged rib eye',
+              },
+              {
+                n: '2',
+                label: 'Select which vendors to call',
+                sub: 'Your saved vendors are pre-selected. National directory is there as backup.',
+              },
+              {
+                n: '3',
+                label: 'Hit Call and wait for results',
+                sub: 'Availability, price, and quantity stream back live as each call finishes.',
+              },
+            ].map(({ n, label, sub }) => (
+              <div key={n} className="flex items-start gap-3">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-stone-800 text-stone-500 text-xs font-bold flex items-center justify-center mt-0.5">
+                  {n}
+                </span>
+                <div>
+                  <p className="text-sm font-medium text-stone-300">{label}</p>
+                  <p className="text-xs text-stone-600 mt-0.5">{sub}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-stone-700 max-w-sm">
+            No saved vendors yet? Go to the{' '}
+            <a
+              href="/culinary/call-sheet?tab=vendors"
+              className="text-stone-500 underline underline-offset-2 hover:text-stone-400"
+            >
+              My Vendors tab
+            </a>{' '}
+            to add your regulars from the national directory.
           </p>
         </div>
       )}
+
+      {/* Quick Call - collapsed by default, secondary flow */}
+      <div className="border-t border-stone-800 pt-4">
+        <button
+          type="button"
+          onClick={() => setQuickOpen((v) => !v)}
+          className="flex items-center gap-2 text-xs text-stone-500 hover:text-stone-300 transition-colors"
+        >
+          {quickOpen ? (
+            <ChevronUp className="w-3.5 h-3.5" />
+          ) : (
+            <ChevronRight className="w-3.5 h-3.5" />
+          )}
+          Quick Call - dial any number directly
+        </button>
+
+        {quickOpen && (
+          <div className="mt-3 space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <input
+                type="tel"
+                value={quickPhone}
+                onChange={(e) => setQuickPhone(e.target.value)}
+                placeholder="Phone number"
+                className="px-3 py-2 text-sm bg-stone-800 border border-stone-700 rounded-lg text-stone-100 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
+              />
+              <input
+                type="text"
+                value={quickName}
+                onChange={(e) => setQuickName(e.target.value)}
+                placeholder="Vendor name (optional)"
+                className="px-3 py-2 text-sm bg-stone-800 border border-stone-700 rounded-lg text-stone-100 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
+              />
+              <input
+                type="text"
+                value={quickIngredient}
+                onChange={(e) => setQuickIngredient(e.target.value)}
+                placeholder="Ask about... (e.g. haddock)"
+                onKeyDown={(e) => e.key === 'Enter' && placeQuickCall()}
+                className="px-3 py-2 text-sm bg-stone-800 border border-stone-700 rounded-lg text-stone-100 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
+              />
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={placeQuickCall}
+                disabled={quickCalling || quickResult.phase === 'calling'}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors
+                  bg-violet-600 hover:bg-violet-500 text-white disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {quickResult.phase === 'calling' ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Calling...
+                  </>
+                ) : (
+                  <>
+                    <Phone className="w-4 h-4" />
+                    Call now
+                  </>
+                )}
+              </button>
+              {quickResult.phase === 'done' && (
+                <div className="flex items-center gap-3 text-sm">
+                  {'result' in quickResult && quickResult.result === 'yes' && (
+                    <span className="flex items-center gap-1 text-emerald-400 font-medium">
+                      <Check className="w-4 h-4" />
+                      In stock
+                    </span>
+                  )}
+                  {'result' in quickResult && quickResult.result === 'no' && (
+                    <span className="flex items-center gap-1 text-rose-400 font-medium">
+                      <X className="w-4 h-4" />
+                      Not available
+                    </span>
+                  )}
+                  {'result' in quickResult && quickResult.result === null && (
+                    <span className="text-stone-400">
+                      {'status' in quickResult ? quickResult.status : 'No answer'}
+                    </span>
+                  )}
+                  {'priceQuoted' in quickResult && quickResult.priceQuoted && (
+                    <span className="text-stone-300 font-mono text-xs">
+                      {quickResult.priceQuoted}
+                    </span>
+                  )}
+                  {'recordingUrl' in quickResult && quickResult.recordingUrl && (
+                    <a
+                      href={quickResult.recordingUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-violet-400 hover:text-violet-300 text-xs"
+                    >
+                      <Mic className="w-3 h-3" />
+                      Listen
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setQuickResult({ phase: 'idle' })
+                      setQuickPhone('')
+                      setQuickIngredient('')
+                    }}
+                    className="text-xs text-stone-500 hover:text-stone-300 underline underline-offset-2"
+                  >
+                    Reset
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

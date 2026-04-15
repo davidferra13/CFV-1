@@ -428,14 +428,15 @@ async function processMessage(
     }
   )
 
-  // Communication intake signal layer (non-blocking, additive)
-  // Whitelist: only actionable emails enter the triage inbox.
-  // Personal, spam, and marketing emails are logged in gmail_sync_log but
-  // never create conversation threads or follow-up timers.
-  if (
-    isCommTriageEnabled() &&
-    (classification.category === 'inquiry' || classification.category === 'existing_thread')
-  ) {
+  // Communication intake signal layer (non-blocking, additive).
+  // ALL inbound emails are ingested for completeness.
+  // Non-actionable categories (personal, spam, marketing, newsletter) are
+  // stored with is_raw_signal_only=true so they appear in the raw feed
+  // but never surface in triage tabs or create follow-up timers.
+  if (isCommTriageEnabled()) {
+    const actionableCategories = ['inquiry', 'existing_thread']
+    const isRawSignalOnly = !actionableCategories.includes(classification.category)
+
     try {
       const { ingestCommunicationEvent } = await import('@/lib/communication/pipeline')
       await ingestCommunicationEvent({
@@ -448,6 +449,7 @@ async function processMessage(
         rawContent: `${email.subject || ''}\n\n${email.body || ''}`.trim(),
         direction: 'inbound',
         ingestionSource: 'import',
+        isRawSignalOnly,
       })
     } catch (intakeErr) {
       console.error('[processMessage] Communication intake failed (non-fatal):', intakeErr)
