@@ -1214,9 +1214,11 @@ export function CatalogBrowser({ initialSearch = '' }: { initialSearch?: string 
                 <Search className="w-8 h-8 text-stone-600 mx-auto mb-2" />
                 <p className="text-sm text-stone-400">No ingredients found</p>
                 <p className="text-xs text-stone-500 mt-1">
-                  {activeStoreName
-                    ? `No catalog data for ${activeStoreName} yet. Coverage for this store is still in progress.`
-                    : 'Try adjusting your filters or search term'}
+                  {locationState && !activeStoreName
+                    ? `Price data for ${locationState.toUpperCase()} stores is still being collected. Showing national estimates may help.`
+                    : activeStoreName
+                      ? `No catalog data for ${activeStoreName} yet. Coverage for this store is still in progress.`
+                      : 'Try adjusting your filters or search term'}
                 </p>
                 {hasActiveFilters && (
                   <button
