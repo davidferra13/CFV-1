@@ -8,38 +8,48 @@
 
 ## Coverage Map
 
-| Q   | Title                         | Test File                            | Status | Tier   |
-| --- | ----------------------------- | ------------------------------------ | ------ | ------ |
-| Q1  | Zero-Data Bootstrap           | q1-zero-data-bootstrap.spec.ts       | BUILT  | UI     |
-| Q2  | Core Mutation Loop            | q2-mutation-loop.spec.ts             | BUILT  | UI+API |
-| Q3  | Calling System Integrity      | q3-calling-integrity.spec.ts         | BUILT  | Struct |
-| Q4  | Event FSM Integrity           | q4-event-fsm.spec.ts                 | BUILT  | Struct |
-| Q5  | Optimistic Rollback           | q5-optimistic-rollback.spec.ts       | BUILT  | UI     |
-| Q6  | Server Action Auth            | q6-server-action-auth.spec.ts        | BUILT  | Struct |
-| Q7  | Tenant Isolation              | q7-tenant-isolation.spec.ts          | BUILT  | API    |
-| Q8  | Module Toggle                 | q8-module-toggle.spec.ts             | BUILT  | UI     |
-| Q9  | Nav Completeness              | q9-nav-completeness.spec.ts          | BUILT  | UI     |
-| Q10 | Financial Hallucination       | q10-financial-hallucination.spec.ts  | BUILT  | UI     |
-| Q11 | Priority Queue Coverage       | q11-queue-coverage.spec.ts           | BUILT  | Struct |
-| Q12 | Contract Policy Truth         | q12-contract-truth.spec.ts           | BUILT  | Struct |
-| Q13 | AI Resilience                 | q13-ai-resilience.spec.ts            | BUILT  | Struct |
-| Q14 | TakeAChef Pipeline            | q14-tac-pipeline.spec.ts             | BUILT  | Struct |
-| Q15 | Financial View Integrity      | q15-financial-view.spec.ts           | BUILT  | DB     |
-| Q16 | Notification Delivery Chain   | q16-notification-delivery.spec.ts    | BUILT  | Struct |
-| Q17 | Embed Widget Atomicity        | q17-embed-atomicity.spec.ts          | BUILT  | API    |
-| Q18 | Ledger Immutability           | q18-ledger-immutability.spec.ts      | BUILT  | DB     |
-| Q19 | Cache Invalidation Parity     | q19-cache-invalidation.spec.ts       | BUILT  | Struct |
-| Q20 | PWA / Service Worker          | q20-pwa.spec.ts                      | BUILT  | UI     |
-| Q21 | Stripe Webhook Integrity      | q21-stripe-webhook.spec.ts           | BUILT  | Struct |
-| Q22 | Quote State Machine Guards    | q22-quote-fsm.spec.ts                | BUILT  | Struct |
-| Q23 | Commerce Sale Guards          | q23-commerce-guards.spec.ts          | BUILT  | Struct |
-| Q24 | SSE Channel Isolation         | q24-sse-isolation.spec.ts            | BUILT  | Struct |
-| Q25 | Storage Security              | q25-storage-security.spec.ts         | BUILT  | Struct |
-| Q26 | Staff Tenant Scoping          | q26-staff-tenant-scoping.spec.ts     | BUILT  | Struct |
-| Q27 | Migration Timestamp Integrity | q27-migration-ordering.spec.ts       | BUILT  | DB     |
-| Q28 | Hub Token Security            | q28-hub-token-security.spec.ts       | BUILT  | Struct |
-| Q29 | Email Delivery Gate           | q29-email-delivery-gate.spec.ts      | BUILT  | Struct |
-| Q30 | Input Validation Surface      | q30-input-validation-surface.spec.ts | BUILT  | Struct |
+| Q   | Title                         | Test File                             | Status | Tier   |
+| --- | ----------------------------- | ------------------------------------- | ------ | ------ |
+| Q1  | Zero-Data Bootstrap           | q1-zero-data-bootstrap.spec.ts        | BUILT  | UI     |
+| Q2  | Core Mutation Loop            | q2-mutation-loop.spec.ts              | BUILT  | UI+API |
+| Q3  | Calling System Integrity      | q3-calling-integrity.spec.ts          | BUILT  | Struct |
+| Q4  | Event FSM Integrity           | q4-event-fsm.spec.ts                  | BUILT  | Struct |
+| Q5  | Optimistic Rollback           | q5-optimistic-rollback.spec.ts        | BUILT  | UI     |
+| Q6  | Server Action Auth            | q6-server-action-auth.spec.ts         | BUILT  | Struct |
+| Q7  | Tenant Isolation              | q7-tenant-isolation.spec.ts           | BUILT  | API    |
+| Q8  | Module Toggle                 | q8-module-toggle.spec.ts              | BUILT  | UI     |
+| Q9  | Nav Completeness              | q9-nav-completeness.spec.ts           | BUILT  | UI     |
+| Q10 | Financial Hallucination       | q10-financial-hallucination.spec.ts   | BUILT  | UI     |
+| Q11 | Priority Queue Coverage       | q11-queue-coverage.spec.ts            | BUILT  | Struct |
+| Q12 | Contract Policy Truth         | q12-contract-truth.spec.ts            | BUILT  | Struct |
+| Q13 | AI Resilience                 | q13-ai-resilience.spec.ts             | BUILT  | Struct |
+| Q14 | TakeAChef Pipeline            | q14-tac-pipeline.spec.ts              | BUILT  | Struct |
+| Q15 | Financial View Integrity      | q15-financial-view.spec.ts            | BUILT  | DB     |
+| Q16 | Notification Delivery Chain   | q16-notification-delivery.spec.ts     | BUILT  | Struct |
+| Q17 | Embed Widget Atomicity        | q17-embed-atomicity.spec.ts           | BUILT  | API    |
+| Q18 | Ledger Immutability           | q18-ledger-immutability.spec.ts       | BUILT  | DB     |
+| Q19 | Cache Invalidation Parity     | q19-cache-invalidation.spec.ts        | BUILT  | Struct |
+| Q20 | PWA / Service Worker          | q20-pwa.spec.ts                       | BUILT  | UI     |
+| Q21 | Stripe Webhook Integrity      | q21-stripe-webhook.spec.ts            | BUILT  | Struct |
+| Q22 | Quote State Machine Guards    | q22-quote-fsm.spec.ts                 | BUILT  | Struct |
+| Q23 | Commerce Sale Guards          | q23-commerce-guards.spec.ts           | BUILT  | Struct |
+| Q24 | SSE Channel Isolation         | q24-sse-isolation.spec.ts             | BUILT  | Struct |
+| Q25 | Storage Security              | q25-storage-security.spec.ts          | BUILT  | Struct |
+| Q26 | Staff Tenant Scoping          | q26-staff-tenant-scoping.spec.ts      | BUILT  | Struct |
+| Q27 | Migration Timestamp Integrity | q27-migration-ordering.spec.ts        | BUILT  | DB     |
+| Q28 | Hub Token Security            | q28-hub-token-security.spec.ts        | BUILT  | Struct |
+| Q29 | Email Delivery Gate           | q29-email-delivery-gate.spec.ts       | BUILT  | Struct |
+| Q30 | Input Validation Surface      | q30-input-validation-surface.spec.ts  | BUILT  | Struct |
+| Q31 | Onboarding Integrity          | q31-onboarding-integrity.spec.ts      | BUILT  | Struct |
+| Q32 | AI Routing Boundary           | q32-ai-routing-boundary.spec.ts       | BUILT  | Struct |
+| Q33 | Ledger Append Idempotency     | q33-ledger-idempotency.spec.ts        | BUILT  | Struct |
+| Q34 | Broadcast Tenant Scoping      | q34-broadcast-tenant-scoping.spec.ts  | BUILT  | Struct |
+| Q35 | Recipe Generation Block       | q35-recipe-generation-block.spec.ts   | BUILT  | Struct |
+| Q36 | Financial View Integrity II   | q36-financial-view-integrity.spec.ts  | BUILT  | DB     |
+| Q37 | Embed CORS and Atomicity      | q37-embed-cors-atomicity.spec.ts      | BUILT  | API    |
+| Q38 | Calling System Auth Gate      | q38-calling-auth-gate.spec.ts         | BUILT  | Struct |
+| Q39 | Event FSM Terminal States     | q39-event-fsm-terminal-states.spec.ts | BUILT  | Struct |
+| Q40 | Staff Action Auth             | q40-staff-action-auth.spec.ts         | BUILT  | Struct |
 
 ---
 
