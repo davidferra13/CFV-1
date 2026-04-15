@@ -9,9 +9,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
 import { broadcast } from '@/lib/realtime/broadcast'
+import { validateTwilioWebhook } from '@/lib/calling/twilio-webhook-auth'
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData()
+
+  const valid = await validateTwilioWebhook(req, formData)
+  if (!valid) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+
   const transcriptionText = (formData.get('TranscriptionText') as string | null)?.trim() || null
   const recordingUrl = (formData.get('RecordingUrl') as string | null) || null
   const transcriptionStatus = (formData.get('TranscriptionStatus') as string | null) || null

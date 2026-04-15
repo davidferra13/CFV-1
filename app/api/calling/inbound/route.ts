@@ -29,7 +29,6 @@ import {
 } from '@/lib/calling/voice-helpers'
 
 const APP_URL = process.env.NEXTAUTH_URL || 'https://app.cheflowhq.com'
-const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID
 
 // Active hours: 8am - 8pm ET (calls outside this go to voicemail)
 function isWithinActiveHours(): boolean {
