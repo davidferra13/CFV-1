@@ -35,7 +35,21 @@ export async function dismissStagedClient(clientId: string) {
   const user = await requireChef()
   const db: any = createServerClient({ admin: true })
 
-  // Dismiss related staged inquiries first
+  // Guard: refuse to delete if any non-staged inquiries reference this client.
+  // Those are real records - deleting the client would orphan them.
+  const { data: realInquiries } = await db
+    .from('inquiries')
+    .select('id')
+    .eq('client_id', clientId)
+    .eq('tenant_id', user.tenantId!)
+    .eq('is_staged', false)
+    .limit(1)
+
+  if (realInquiries && realInquiries.length > 0) {
+    return { success: false, error: 'Client has confirmed inquiries and cannot be dismissed.' }
+  }
+
+  // Delete staged inquiries first
   await db
     .from('inquiries')
     .delete()

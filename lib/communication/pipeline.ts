@@ -570,6 +570,17 @@ async function autoStageFromSignal(input: {
   const email = extractEmail(input.senderIdentity)
   const phone = extractPhone(input.senderIdentity)
 
+  // Skip staging if a real (non-staged) client already exists with this email or phone.
+  // resolveClientId may have returned null due to identity format differences,
+  // so we do a direct lookup here before creating a duplicate.
+  if (email || phone) {
+    let q = db.from('clients').select('id').eq('tenant_id', input.tenantId).eq('is_staged', false)
+    if (email) q = q.eq('email', email)
+    else if (phone) q = q.eq('phone', phone)
+    const { data: existing } = await q.maybeSingle()
+    if (existing?.id) return
+  }
+
   // Derive a display name from the sender identity
   const namePart = input.senderIdentity.split('<')[0].trim()
   const name = namePart || email || phone || 'Unknown Contact'
