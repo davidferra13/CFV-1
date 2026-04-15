@@ -149,117 +149,127 @@ async function main() {
   const _osd = new Date()
   const today = `${_osd.getFullYear()}-${String(_osd.getMonth() + 1).padStart(2, '0')}-${String(_osd.getDate()).padStart(2, '0')}`
 
-  // 4. Process each result - apply to all original names covered by this lookup key
-  for (const [lookupKey, result] of Object.entries(allResults)) {
-    const originals = normToOriginals.get(lookupKey) || [lookupKey]
-    for (const name of originals) {
-    const tenantIngs = rows.filter(r => r.name.trim() === name)
+  // 4. Process each result - apply to all original names covered by this lookup key.
+  // Process CONCURRENCY lookup keys at a time for ~10x throughput vs sequential.
+  // JS is single-threaded so counter increments are safe across concurrent promises.
+  const CONCURRENCY = 50
+  const allEntries = Object.entries(allResults)
+  for (let i = 0; i < allEntries.length; i += CONCURRENCY) {
+    const chunk = allEntries.slice(i, i + CONCURRENCY)
+    await Promise.all(chunk.map(async ([lookupKey, result]) => {
+      const originals = normToOriginals.get(lookupKey) || [lookupKey]
+      for (const name of originals) {
+      const tenantIngs = rows.filter(r => r.name.trim() === name)
 
-    if (!result || !result.best_price) {
-      notFound += tenantIngs.length
-      totalSkipped += tenantIngs.length
-      notFoundNames.push(name)
-      continue
-    }
-    matched += tenantIngs.length
+      if (!result || !result.best_price) {
+        notFound += tenantIngs.length
+        totalSkipped += tenantIngs.length
+        notFoundNames.push(name)
+        continue
+      }
+      matched += tenantIngs.length
 
-    for (const ing of tenantIngs) {
-      // 4a. Write ALL store prices to ingredient_price_history (with validation)
-      for (const sp of result.all_prices) {
-        totalProcessed++
-        const source = tierToSource(sp.tier)
-        const priceCents = sp.normalized_cents
+      for (const ing of tenantIngs) {
+        // 4a. Write ALL store prices to ingredient_price_history (with validation)
+        for (const sp of result.all_prices) {
+          totalProcessed++
+          const source = tierToSource(sp.tier)
+          const priceCents = sp.normalized_cents
 
-        // --- Validation gate ---
-        const priceCheck = validatePrice(priceCents, ing.name)
-        if (!priceCheck.valid) {
-          totalQuarantined++
-          await quarantine(source, ing.name, priceCents, ing.last_price_cents, priceCheck.reason, {
-            store: sp.store, tier: sp.tier, unit: sp.normalized_unit,
-          })
+          // --- Validation gate ---
+          const priceCheck = validatePrice(priceCents, ing.name)
+          if (!priceCheck.valid) {
+            totalQuarantined++
+            await quarantine(source, ing.name, priceCents, ing.last_price_cents, priceCheck.reason, {
+              store: sp.store, tier: sp.tier, unit: sp.normalized_unit,
+            })
+            continue
+          }
+
+          // Check for suspicious price swings against existing price
+          const changeCheck = validatePriceChange(ing.last_price_cents, priceCents, ing.name)
+          if (!changeCheck.valid) {
+            totalQuarantined++
+            await quarantine(source, ing.name, priceCents, ing.last_price_cents, changeCheck.reason, {
+              store: sp.store, tier: sp.tier, unit: sp.normalized_unit,
+            })
+            continue
+          }
+
+          // --- Passed validation, insert ---
+          try {
+            await sql`
+              INSERT INTO ingredient_price_history
+                (id, ingredient_id, tenant_id, price_cents, price_per_unit_cents,
+                 quantity, unit, purchase_date, store_name, source, notes)
+              VALUES (
+                gen_random_uuid(), ${ing.id}, ${ing.tenant_id},
+                ${priceCents}, ${priceCents},
+                1, ${sp.normalized_unit}, ${today},
+                ${sp.store}, ${source},
+                ${'Synced from OpenClaw - ' + sp.store}
+              )
+              ON CONFLICT (ingredient_id, tenant_id, source, store_name, purchase_date)
+                WHERE source LIKE 'openclaw_%'
+              DO UPDATE SET
+                price_cents = EXCLUDED.price_cents,
+                price_per_unit_cents = EXCLUDED.price_per_unit_cents,
+                unit = EXCLUDED.unit,
+                notes = EXCLUDED.notes
+            `
+            priceRows++
+            totalAccepted++
+          } catch (err) {
+            totalSkipped++
+            console.warn(`  Skip: ${ing.name} @ ${sp.store}: ${err.message?.substring(0, 80)}`)
+          }
+        }
+
+        // 4b. Update ingredient row with best price (also validated)
+        const bp = result.best_price
+        const bpCheck = validatePrice(bp.normalized_cents, ing.name)
+        if (!bpCheck.valid) {
+          // Don't update the ingredient row with a bad best price
+          continue
+        }
+        const bpChangeCheck = validatePriceChange(ing.last_price_cents, bp.normalized_cents, ing.name)
+        if (!bpChangeCheck.valid) {
+          // Don't update the ingredient row with a suspicious price swing
           continue
         }
 
-        // Check for suspicious price swings against existing price
-        const changeCheck = validatePriceChange(ing.last_price_cents, priceCents, ing.name)
-        if (!changeCheck.valid) {
-          totalQuarantined++
-          await quarantine(source, ing.name, priceCents, ing.last_price_cents, changeCheck.reason, {
-            store: sp.store, tier: sp.tier, unit: sp.normalized_unit,
-          })
-          continue
-        }
+        const conf = tierToConfidence(bp.tier)
+        const src = tierToSource(bp.tier)
 
-        // --- Passed validation, insert ---
         try {
           await sql`
-            INSERT INTO ingredient_price_history
-              (id, ingredient_id, tenant_id, price_cents, price_per_unit_cents,
-               quantity, unit, purchase_date, store_name, source, notes)
-            VALUES (
-              gen_random_uuid(), ${ing.id}, ${ing.tenant_id},
-              ${priceCents}, ${priceCents},
-              1, ${sp.normalized_unit}, ${today},
-              ${sp.store}, ${source},
-              ${'Synced from OpenClaw - ' + sp.store}
-            )
-            ON CONFLICT (ingredient_id, tenant_id, source, store_name, purchase_date)
-              WHERE source LIKE 'openclaw_%'
-            DO UPDATE SET
-              price_cents = EXCLUDED.price_cents,
-              price_per_unit_cents = EXCLUDED.price_per_unit_cents,
-              unit = EXCLUDED.unit,
-              notes = EXCLUDED.notes
+            UPDATE ingredients SET
+              last_price_cents = ${bp.normalized_cents},
+              last_price_date = ${today},
+              price_unit = ${bp.normalized_unit},
+              last_price_source = ${src},
+              last_price_store = ${bp.store},
+              last_price_confidence = ${conf},
+              price_trend_direction = ${result.trend?.direction ?? null},
+              price_trend_pct = ${result.trend?.change_7d_pct ?? null}
+            WHERE id = ${ing.id}
           `
-          priceRows++
-          totalAccepted++
         } catch (err) {
-          totalSkipped++
-          console.warn(`  Skip: ${ing.name} @ ${sp.store}: ${err.message?.substring(0, 80)}`)
+          // Fallback if enrichment columns don't exist
+          await sql`
+            UPDATE ingredients SET
+              last_price_cents = ${bp.normalized_cents},
+              last_price_date = ${today},
+              price_unit = ${bp.normalized_unit}
+            WHERE id = ${ing.id}
+          `
         }
-      }
-
-      // 4b. Update ingredient row with best price (also validated)
-      const bp = result.best_price
-      const bpCheck = validatePrice(bp.normalized_cents, ing.name)
-      if (!bpCheck.valid) {
-        // Don't update the ingredient row with a bad best price
-        continue
-      }
-      const bpChangeCheck = validatePriceChange(ing.last_price_cents, bp.normalized_cents, ing.name)
-      if (!bpChangeCheck.valid) {
-        // Don't update the ingredient row with a suspicious price swing
-        continue
-      }
-
-      const conf = tierToConfidence(bp.tier)
-      const src = tierToSource(bp.tier)
-
-      try {
-        await sql`
-          UPDATE ingredients SET
-            last_price_cents = ${bp.normalized_cents},
-            last_price_date = ${today},
-            price_unit = ${bp.normalized_unit},
-            last_price_source = ${src},
-            last_price_store = ${bp.store},
-            last_price_confidence = ${conf},
-            price_trend_direction = ${result.trend?.direction ?? null},
-            price_trend_pct = ${result.trend?.change_7d_pct ?? null}
-          WHERE id = ${ing.id}
-        `
-      } catch (err) {
-        // Fallback if enrichment columns don't exist
-        await sql`
-          UPDATE ingredients SET
-            last_price_cents = ${bp.normalized_cents},
-            last_price_date = ${today},
-            price_unit = ${bp.normalized_unit}
-          WHERE id = ${ing.id}
-        `
-      }
-    } // end for (const ing of tenantIngs)
-    } // end for (const name of originals)
+      } // end for (const ing of tenantIngs)
+      } // end for (const name of originals)
+    }))
+    if (i > 0 && i % 1000 === 0) {
+      console.log(`  Write progress: ${i}/${allEntries.length} keys processed...`)
+    }
   }
 
   // --- Sync Results ---
