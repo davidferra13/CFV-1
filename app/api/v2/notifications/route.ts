@@ -9,9 +9,9 @@ import { z } from 'zod'
 import { withApiAuth, apiCreated, apiValidationError, apiError } from '@/lib/api/v2'
 
 const SendNotificationBody = z.object({
-  // Recipient targeting (at least one required)
+  // Recipient targeting - recipient_id is always derived from the authenticated session,
+  // never accepted from caller input (prevents cross-tenant notification injection)
   client_id: z.string().uuid().optional(),
-  recipient_id: z.string().uuid().optional(),
   recipient_role: z.enum(['chef', 'client']).default('chef'),
 
   // Content
@@ -44,12 +44,10 @@ export const POST = withApiAuth(
 
     const input = parsed.data
 
-    // Default recipient to the tenant (chef) if not specified
-    const recipientId = input.recipient_id || ctx.tenantId
-
+    // recipient_id is always the authenticated tenant - never accept from caller input
     const insertPayload: Record<string, unknown> = {
       tenant_id: ctx.tenantId,
-      recipient_id: recipientId,
+      recipient_id: ctx.tenantId,
       recipient_role: input.recipient_role,
       title: input.title,
       body: input.body,

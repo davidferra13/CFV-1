@@ -38,8 +38,12 @@ export const GET = withApiAuth(
 
     let query = ctx.db
       .from('inquiries')
-      .select('*', { count: 'exact' })
+      .select(
+        'id, tenant_id, client_name, client_email, client_phone, event_date, guest_count, occasion, message, source, budget_cents, dietary_restrictions, allergies, location_city, location_state, status, created_at, updated_at',
+        { count: 'exact' }
+      )
       .eq('tenant_id', ctx.tenantId)
+      .is('deleted_at' as any, null)
       .order('created_at', { ascending: false })
 
     if (status) query = query.eq('status', status as any)
