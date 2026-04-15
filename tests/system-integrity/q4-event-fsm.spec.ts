@@ -122,7 +122,7 @@ test.describe('Q4: Event FSM integrity', () => {
   // Test 5: Draft event page does NOT show "Complete" or "Mark Completed" button
   // -------------------------------------------------------------------------
   test('events list page does not show invalid transition buttons', async ({ page }) => {
-    await page.goto('/events', { waitUntil: 'domcontentloaded', timeout: 30_000 })
+    await page.goto('/events', { waitUntil: 'domcontentloaded' })
 
     // Navigate to any event or check events list
     const bodyText = await page

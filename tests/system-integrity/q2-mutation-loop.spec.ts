@@ -14,7 +14,7 @@ const UPDATED_NAME = `Updated ${UNIQUE_SUFFIX}`
 test.describe('Core mutation loop — client entity', () => {
   test('create client → verify visible → update name → verify updated', async ({ page }) => {
     // ── CREATE ──
-    await page.goto('/clients/new', { waitUntil: 'domcontentloaded', timeout: 30_000 })
+    await page.goto('/clients/new', { waitUntil: 'domcontentloaded' })
 
     // Fill the new-client form
     const nameInput = page
@@ -41,7 +41,7 @@ test.describe('Core mutation loop — client entity', () => {
     await page.waitForURL(/\/clients/, { timeout: 15_000 })
 
     // Navigate to client list and verify the new client appears
-    await page.goto('/clients', { waitUntil: 'domcontentloaded', timeout: 30_000 })
+    await page.goto('/clients', { waitUntil: 'domcontentloaded' })
     await expect(
       page.locator(`text=${CLIENT_NAME}`).first(),
       'Newly created client must appear in client list'

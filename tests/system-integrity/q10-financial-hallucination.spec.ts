@@ -52,7 +52,7 @@ const SUSPICIOUS_EXACT_VALUES = [
 test.describe('Financial zero-hallucination scan', () => {
   for (const pagePath of FINANCIAL_PAGES) {
     test(`no hardcoded sample amounts on: ${pagePath}`, async ({ page }) => {
-      await page.goto(pagePath, { waitUntil: 'domcontentloaded', timeout: 30_000 })
+      await page.goto(pagePath, { waitUntil: 'domcontentloaded' })
 
       const bodyText = await page
         .locator('body')
@@ -104,7 +104,7 @@ test.describe('Financial zero-hallucination scan', () => {
   })
 
   test('dashboard revenue widget shows zero or real data — not placeholder', async ({ page }) => {
-    await page.goto('/dashboard', { waitUntil: 'domcontentloaded', timeout: 30_000 })
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' })
 
     // Look for revenue/earnings widgets
     const dashText = await page

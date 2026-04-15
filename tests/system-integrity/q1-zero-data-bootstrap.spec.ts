@@ -50,7 +50,7 @@ const CHEF_ROUTES = [
 
 for (const route of CHEF_ROUTES) {
   test(`should load without crash: ${route}`, async ({ page }) => {
-    const response = await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 30_000 })
+    const response = await page.goto(route, { waitUntil: 'domcontentloaded' })
 
     // HTTP level: must not be a server error
     // (Auth redirects to /sign-in return 200/302, not 500)

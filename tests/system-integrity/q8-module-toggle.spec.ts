@@ -14,7 +14,7 @@ const MODULE_NAV_HREF = '/culinary'
 test.describe('Module toggle fidelity', () => {
   test('toggling a module off removes its nav link', async ({ page }) => {
     // Go to modules settings
-    await page.goto('/settings/modules', { waitUntil: 'domcontentloaded', timeout: 30_000 })
+    await page.goto('/settings/modules', { waitUntil: 'domcontentloaded' })
 
     // Find the toggle button for Culinary
     const toggleBtn = page.getByRole('button', { name: `Toggle ${MODULE_LABEL}` })
@@ -31,34 +31,34 @@ test.describe('Module toggle fidelity', () => {
     }
 
     // Navigate to dashboard and verify nav link IS present
-    await page.goto('/dashboard', { waitUntil: 'domcontentloaded', timeout: 30_000 })
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' })
     const navLink = page.locator(`a[href="${MODULE_NAV_HREF}"]`).first()
     await expect(navLink, 'Nav link should be visible when module is ON').toBeVisible({
       timeout: 5_000,
     })
 
     // Go back to modules settings and toggle it OFF
-    await page.goto('/settings/modules', { waitUntil: 'domcontentloaded', timeout: 30_000 })
+    await page.goto('/settings/modules', { waitUntil: 'domcontentloaded' })
     const toggleBtnOff = page.getByRole('button', { name: `Toggle ${MODULE_LABEL}` })
     await toggleBtnOff.click()
     // Wait for the server action to persist
     await page.waitForTimeout(1_500)
 
     // Navigate to dashboard and verify nav link is GONE
-    await page.goto('/dashboard', { waitUntil: 'domcontentloaded', timeout: 30_000 })
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' })
     const navLinkAfterOff = page.locator(`a[href="${MODULE_NAV_HREF}"]`).first()
     await expect(navLinkAfterOff, 'Nav link must be absent when module is OFF').toBeHidden({
       timeout: 5_000,
     })
 
     // Restore: toggle back ON so we don't leave the account broken
-    await page.goto('/settings/modules', { waitUntil: 'domcontentloaded', timeout: 30_000 })
+    await page.goto('/settings/modules', { waitUntil: 'domcontentloaded' })
     const toggleBtnRestore = page.getByRole('button', { name: `Toggle ${MODULE_LABEL}` })
     await toggleBtnRestore.click()
     await page.waitForTimeout(1_500)
 
     // Final check: nav link is back
-    await page.goto('/dashboard', { waitUntil: 'domcontentloaded', timeout: 30_000 })
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' })
     const navLinkRestored = page.locator(`a[href="${MODULE_NAV_HREF}"]`).first()
     await expect(
       navLinkRestored,

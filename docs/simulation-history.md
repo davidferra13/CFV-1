@@ -240,3 +240,13 @@ Failing: client_parse (0%), allergen_risk (0%), menu_suggestions (0%)
 
 Passing: inquiry_parse, correspondence, quote_draft
 Failing: client_parse (0%), allergen_risk (0%), menu_suggestions (0%)
+
+## 2026-04-15 03:13 UTC - 50% pass rate - Run 1a408bd6
+
+Passing: inquiry_parse, correspondence, quote_draft
+Failing: client_parse (0%), allergen_risk (0%), menu_suggestions (0%)
+
+## 2026-04-15 03:13 UTC - 50% pass rate - Run 3e316547
+
+Passing: inquiry_parse, correspondence, quote_draft
+Failing: client_parse (0%), allergen_risk (0%), menu_suggestions (0%)

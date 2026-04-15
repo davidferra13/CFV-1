@@ -12,7 +12,7 @@ import { test, expect } from '@playwright/test'
 test.describe('Optimistic rollback on server failure', () => {
   test('task toggle reverts when server returns 500', async ({ page }) => {
     // Navigate to tasks page
-    await page.goto('/tasks', { waitUntil: 'domcontentloaded', timeout: 30_000 })
+    await page.goto('/tasks', { waitUntil: 'domcontentloaded' })
 
     // If no tasks exist, create one via UI first
     const addBtn = page
@@ -97,7 +97,7 @@ test.describe('Optimistic rollback on server failure', () => {
   })
 
   test('shopping list item toggle shows error state on 500', async ({ page }) => {
-    await page.goto('/dashboard', { waitUntil: 'domcontentloaded', timeout: 30_000 })
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' })
 
     // Find the shopping list widget if present
     const widget = page

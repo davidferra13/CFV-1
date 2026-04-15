@@ -1,6 +1,6 @@
 {
-  "runId": "live-ops-142092-1775985301",
-  "ranAt": "2026-04-12T09:15:21.2638643Z",
+  "runId": "live-ops-86796-1776226508",
+  "ranAt": "2026-04-15T04:15:55.9510290Z",
   "target": {
     "label": "prod",
     "baseUrl": "http://localhost:3000"
@@ -8,21 +8,23 @@
   "newChangesDetected": true,
   "periodicSweepDue": false,
   "authSweepsEnabled": false,
-  "changedPathCount": 13,
+  "changedPathCount": 15,
   "changedPaths": [
-    ".openclaw-deploy/captured-responses.json",
-    ".openclaw-deploy/captured-session.json",
-    "app/(chef)/features/page.tsx",
-    "docs/build-state.md",
+    "app/(client)/my-events/page.tsx",
     "docs/simulation-history.md",
     "docs/simulation-report.md",
     "docs/uptime-history.json",
+    "lib/client-dashboard/actions.ts",
+    "lib/events/client-actions.ts",
+    "lib/hub/group-actions.ts",
     "logs/live-ops-guardian-latest.json",
     "logs/live-ops-guardian-state.json",
-    "screenshots/",
-    "scripts/start-beta.ps1",
-    "tests/p0-verify.spec.ts",
-    "tmp-vcq-test.mjs"
+    ".tsc-dirty",
+    "logs/live-ops-guardian-alert.txt",
+    "playwright.ops-readiness.config.ts",
+    "test-output.txt",
+    "test-stderr.txt",
+    "tests/ops-readiness.spec.ts"
   ],
   "healthProbes": [
     {
@@ -59,10 +61,10 @@
       "name": "unit-canary",
       "status": "passed",
       "exitCode": 0,
-      "durationSeconds": 7
+      "durationSeconds": 29
     }
   ],
-  "notes": [],
+  "notes": ["Auth-sensitive changes detected, but LIVE_OPS_ENABLE_AUTH_SWEEPS is disabled."],
   "failureCount": 0,
   "status": "ok"
 }

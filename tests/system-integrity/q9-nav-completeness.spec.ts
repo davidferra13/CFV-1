@@ -55,7 +55,7 @@ const NAV_LINKS = [
 test.describe('Navigation completeness', () => {
   for (const href of NAV_LINKS) {
     test(`nav link resolves: ${href}`, async ({ page }) => {
-      const response = await page.goto(href, { waitUntil: 'domcontentloaded', timeout: 30_000 })
+      const response = await page.goto(href, { waitUntil: 'domcontentloaded' })
 
       // A nav link must never land on 404 or 500
       if (response) {
