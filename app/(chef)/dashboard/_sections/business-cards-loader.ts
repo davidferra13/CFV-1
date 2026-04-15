@@ -64,9 +64,12 @@ export type BusinessCardsData = {
   revenueGoal: RevenueGoalSnapshot
   platformScore: PlatformIndependenceScore
   stalledDrafts: StalledDraft[]
+  failedSections: string[]
 }
 
 export async function loadBusinessCardsData(): Promise<BusinessCardsData> {
+  const failedSections: string[] = []
+
   const [
     eventCounts,
     foodCostTrend,
@@ -81,18 +84,23 @@ export async function loadBusinessCardsData(): Promise<BusinessCardsData> {
     platformScore,
     stalledDrafts,
   ] = await Promise.all([
-    safe('eventCounts', getDashboardEventCounts, emptyEventCounts),
-    safe('foodCostTrend', () => getFoodCostTrend(6), emptyFoodCostTrend),
-    safe('hotPipelineCount', getHotPipelineCount, 0),
-    safe('inquiryStats', getInquiryStats, emptyInquiryStats),
-    safe('invoicePulse', getInvoicePulse, EMPTY_INVOICE_PULSE),
-    safe('monthExpenses', getCurrentMonthExpenseSummary, emptyExpenses),
-    safe('monthRevenue', getMonthOverMonthRevenue, emptyMonthRevenue),
-    safe('prospectStats', getProspectStats, emptyProspectStats),
-    safe('quoteStats', getDashboardQuoteStats, emptyQuoteStats),
-    safe('revenueGoal', getRevenueGoalSnapshot, emptyRevenueGoal as RevenueGoalSnapshot),
-    safe('platformScore', getPlatformIndependenceScore, EMPTY_PLATFORM_SCORE),
-    safe('stalledDrafts', getStalledDrafts, [] as StalledDraft[]),
+    safe('eventCounts', getDashboardEventCounts, emptyEventCounts, failedSections),
+    safe('foodCostTrend', () => getFoodCostTrend(6), emptyFoodCostTrend, failedSections),
+    safe('hotPipelineCount', getHotPipelineCount, 0, failedSections),
+    safe('inquiryStats', getInquiryStats, emptyInquiryStats, failedSections),
+    safe('invoicePulse', getInvoicePulse, EMPTY_INVOICE_PULSE, failedSections),
+    safe('monthExpenses', getCurrentMonthExpenseSummary, emptyExpenses, failedSections),
+    safe('monthRevenue', getMonthOverMonthRevenue, emptyMonthRevenue, failedSections),
+    safe('prospectStats', getProspectStats, emptyProspectStats, failedSections),
+    safe('quoteStats', getDashboardQuoteStats, emptyQuoteStats, failedSections),
+    safe(
+      'revenueGoal',
+      getRevenueGoalSnapshot,
+      emptyRevenueGoal as RevenueGoalSnapshot,
+      failedSections
+    ),
+    safe('platformScore', getPlatformIndependenceScore, EMPTY_PLATFORM_SCORE, failedSections),
+    safe('stalledDrafts', getStalledDrafts, [] as StalledDraft[], failedSections),
   ])
 
   return {
@@ -108,5 +116,6 @@ export async function loadBusinessCardsData(): Promise<BusinessCardsData> {
     revenueGoal,
     platformScore,
     stalledDrafts,
+    failedSections,
   }
 }

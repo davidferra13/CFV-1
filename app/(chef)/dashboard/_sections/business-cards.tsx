@@ -27,6 +27,7 @@ export async function BusinessCards() {
     revenueGoal,
     platformScore,
     stalledDrafts,
+    failedSections,
   } = await loadBusinessCardsData()
 
   const revenueSparkData: number[] = []
@@ -52,6 +53,11 @@ export async function BusinessCards() {
 
   return (
     <>
+      {failedSections.length > 0 && (
+        <div className="rounded-md border border-yellow-200 bg-yellow-50 px-4 py-2 text-sm text-yellow-800">
+          Some dashboard data could not be loaded. Numbers shown may not reflect current state.
+        </div>
+      )}
       {stalledDrafts.length > 0 && <StalledDraftsCard drafts={stalledDrafts} />}
 
       <StatCard

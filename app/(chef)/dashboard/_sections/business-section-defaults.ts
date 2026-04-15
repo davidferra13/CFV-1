@@ -15,12 +15,19 @@ import type { PipelineRevenueForecast } from '@/lib/pipeline/forecast'
 import type { YoYData } from '@/lib/analytics/year-over-year'
 import type { ProspectStats } from '@/lib/prospecting/types'
 
-// Safe wrapper
-export async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promise<T> {
+// Safe wrapper — records failures so callers can surface an error indicator
+// instead of silently showing zeros as if they were real data.
+export async function safe<T>(
+  label: string,
+  fn: () => Promise<T>,
+  fallback: T,
+  failures?: string[]
+): Promise<T> {
   try {
     return await fn()
   } catch (err) {
     console.error(`[Dashboard/Business] ${label} failed:`, err)
+    failures?.push(label)
     return fallback
   }
 }
