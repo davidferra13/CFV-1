@@ -3,7 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getRecipes } from '@/lib/recipes/actions'
-import { getPlaceholderImages } from '@/lib/images/placeholder-actions'
+import { getPlaceholderImages, type PlaceholderImage } from '@/lib/images/placeholder-actions'
 import { FoodPlaceholderImage } from '@/components/ui/food-placeholder-image'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -39,14 +39,25 @@ const CATEGORY_STYLES: Record<string, string> = {
 
 export default async function ChefRecipesPage() {
   await requireChef()
-  const recipes = await getRecipes()
+
+  let recipes: Awaited<ReturnType<typeof getRecipes>> = []
+  let fetchError = false
+  try {
+    recipes = await getRecipes()
+  } catch {
+    fetchError = true
+  }
 
   // Batch-fetch placeholder images for recipes without their own photo
   const needPlaceholders = recipes
     .filter((r: any) => !r.photo_url)
     .map((r: any) => ({ id: r.id, query: r.name }))
-  const placeholders =
-    needPlaceholders.length > 0 ? await getPlaceholderImages(needPlaceholders) : {}
+  const placeholders: Record<string, PlaceholderImage | null> =
+    needPlaceholders.length > 0
+      ? await getPlaceholderImages(needPlaceholders).catch(
+          () => ({}) as Record<string, PlaceholderImage | null>
+        )
+      : {}
 
   return (
     <div className="space-y-6">
@@ -54,9 +65,11 @@ export default async function ChefRecipesPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold text-stone-100">Recipe Book</h1>
-            <span className="bg-stone-800 text-stone-400 text-sm px-2 py-0.5 rounded-full">
-              {recipes.length}
-            </span>
+            {!fetchError && (
+              <span className="bg-stone-800 text-stone-400 text-sm px-2 py-0.5 rounded-full">
+                {recipes.length}
+              </span>
+            )}
           </div>
           <Link href="/culinary/recipes/new">
             <Button>Add Recipe</Button>
@@ -65,7 +78,12 @@ export default async function ChefRecipesPage() {
         <p className="text-stone-500 mt-1">Your complete collection of documented recipes</p>
       </div>
 
-      {recipes.length === 0 ? (
+      {fetchError ? (
+        <Card className="p-8 text-center">
+          <p className="text-stone-400 font-medium mb-1">Could not load recipes</p>
+          <p className="text-stone-500 text-sm">Check your connection and refresh the page.</p>
+        </Card>
+      ) : recipes.length === 0 ? (
         <Card className="p-12 text-center">
           <div className="flex justify-center mb-4">
             <NoRecipesIllustration className="h-24 w-24" />

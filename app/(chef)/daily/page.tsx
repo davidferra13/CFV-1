@@ -14,8 +14,28 @@ import { BriefingAlertsBanner } from '@/components/daily-ops/briefing-alerts-ban
 export const metadata: Metadata = { title: 'Daily Ops' }
 
 export default async function DailyOpsPage() {
-  const plan = await getDailyPlan()
+  let plan: Awaited<ReturnType<typeof getDailyPlan>> | null = null
+  try {
+    plan = await getDailyPlan()
+  } catch {
+    // getDailyPlan failure shows error state rather than crash
+  }
   const todayFormatted = format(new Date(), 'EEEE, MMMM d')
+
+  if (!plan) {
+    return (
+      <div className="flex flex-col gap-6 max-w-3xl mx-auto">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-display text-stone-100">Daily Ops</h1>
+          <p className="text-sm text-stone-400 mt-0.5">{todayFormatted}</p>
+        </div>
+        <div className="rounded-lg border border-stone-700 bg-stone-800/50 px-6 py-8 text-center">
+          <p className="text-stone-400 font-medium mb-1">Could not load today&apos;s plan</p>
+          <p className="text-stone-500 text-sm">Check your connection and refresh the page.</p>
+        </div>
+      </div>
+    )
+  }
 
   const { stats } = plan
   const remaining = stats.totalItems - stats.completedItems

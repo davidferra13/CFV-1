@@ -53,6 +53,23 @@ if [ "$TOTAL" -eq 0 ]; then
   echo "[$(timestamp)] Clean session - no zombies found" >> "$LOG_FILE"
 fi
 
+# 6. Run tsc if TypeScript files were modified this session
+DIRTY_FILE="$PROJECT_DIR/.tsc-dirty"
+if [ -f "$DIRTY_FILE" ]; then
+  DIRTY_COUNT=$(sort -u "$DIRTY_FILE" | wc -l | tr -d ' ')
+  echo "[$(timestamp)] Running tsc check ($DIRTY_COUNT unique TS files modified)" >> "$LOG_FILE"
+  TSC_OUTPUT=$(cd "$PROJECT_DIR" && npx tsc --noEmit --skipLibCheck 2>&1)
+  TSC_EXIT=$?
+  if [ $TSC_EXIT -eq 0 ]; then
+    echo "[$(timestamp)] tsc: CLEAN - no type errors" >> "$LOG_FILE"
+  else
+    ERROR_COUNT=$(echo "$TSC_OUTPUT" | grep -c "error TS" || true)
+    echo "[$(timestamp)] tsc: $ERROR_COUNT ERROR(S) FOUND:" >> "$LOG_FILE"
+    echo "$TSC_OUTPUT" >> "$LOG_FILE"
+  fi
+  rm -f "$DIRTY_FILE"
+fi
+
 # Keep log file from growing forever (last 200 lines)
 if [ -f "$LOG_FILE" ]; then
   tail -200 "$LOG_FILE" > "$LOG_FILE.tmp" && mv "$LOG_FILE.tmp" "$LOG_FILE"
