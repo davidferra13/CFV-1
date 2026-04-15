@@ -124,6 +124,10 @@ export async function createExpense(input: CreateExpenseInput): Promise<Expense>
   const tenantId = user.tenantId!
   const db: any = await createServerClient()
 
+  if (!Number.isInteger(input.amount_cents) || input.amount_cents <= 0) {
+    throw new Error('Expense amount must be a positive integer (cents)')
+  }
+
   // Verify event_id belongs to this tenant before attaching the expense
   if (input.event_id) {
     const { data: eventCheck } = await db

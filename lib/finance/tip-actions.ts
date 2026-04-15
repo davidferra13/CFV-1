@@ -333,6 +333,10 @@ export async function recordTip(
   if (!Number.isInteger(amountCents) || amountCents <= 0) {
     return { success: false, error: 'Invalid tip amount' }
   }
+  // Cap at $10,000 per tip to prevent fat-finger entry errors
+  if (amountCents > 1_000_000) {
+    return { success: false, error: 'Tip amount cannot exceed $10,000' }
+  }
 
   const db: any = createServerClient({ admin: true })
 

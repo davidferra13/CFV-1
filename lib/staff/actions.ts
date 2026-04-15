@@ -299,6 +299,18 @@ export async function removeStaffFromEvent(assignmentId: string, eventId: string
   const user = await requireChef()
   const db: any = createServerClient()
 
+  // Block removal during live events - staff cannot be unassigned once in_progress
+  const { data: event } = await db
+    .from('events')
+    .select('status')
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (event?.status === 'in_progress') {
+    throw new Error('Cannot remove staff from an event that is currently in progress')
+  }
+
   const { error } = await db
     .from('event_staff_assignments')
     .delete()
