@@ -545,6 +545,7 @@ export async function voidContract(contractId: string, reason?: string) {
 
   if (!contract) throw new Error('Contract not found')
   if (contract.status === 'signed') throw new Error('Cannot void a signed contract')
+  if (contract.status === 'voided') throw new Error('Contract is already voided')
 
   const { error } = await db
     .from('event_contracts')
