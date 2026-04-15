@@ -874,6 +874,7 @@ function BudgetComplianceWidget({ menuId }: { menuId: string }) {
   // No event quote linked, or no cost data - don't render
   if (!data && !error) return null
   if (error) return null
+  if (data && 'noQuoteSet' in data && data.noQuoteSet) return null
 
   const statusConfig = {
     ok: { label: 'On budget', color: 'text-emerald-400', bg: 'bg-emerald-950 border-emerald-800' },

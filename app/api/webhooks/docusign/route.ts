@@ -40,9 +40,10 @@ export async function POST(req: NextRequest) {
 
     // DocuSign Connect sends XML by default, but we configure JSON.
     // The envelope status is nested in the payload.
-    const envelopeId = body.envelopeId || body.EnvelopeStatus?.EnvelopeID
-    const envelopeStatus = body.status || body.EnvelopeStatus?.Status
-    const completedAt = body.completedDateTime || body.EnvelopeStatus?.Completed
+    const envelopePayload = body.EnvelopeStatus as Record<string, any> | undefined
+    const envelopeId = body.envelopeId || envelopePayload?.EnvelopeID
+    const envelopeStatus = body.status || envelopePayload?.Status
+    const completedAt = body.completedDateTime || envelopePayload?.Completed
 
     if (!envelopeId) {
       return NextResponse.json({ error: 'Missing envelopeId' }, { status: 400 })
