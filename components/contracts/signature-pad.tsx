@@ -3,27 +3,31 @@
 // Signature Pad
 // HTML5 canvas-based signature capture with mouse + touch support.
 // Returns a base64 PNG data URL via the onChange callback.
+// Responsive: fills container width, adapts to mobile screens.
 
 import { useRef, useEffect, useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 
 type Props = {
   onChange: (dataUrl: string | null) => void
-  width?: number
   height?: number
 }
 
-export function SignaturePad({ onChange, width = 500, height = 160 }: Props) {
+export function SignaturePad({ onChange, height = 160 }: Props) {
+  const containerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const isDrawingRef = useRef(false)
   const [hasSignature, setHasSignature] = useState(false)
 
-  // Set canvas resolution for retina displays
-  useEffect(() => {
+  // Size canvas to container width (responsive)
+  const setupCanvas = useCallback(() => {
+    const container = containerRef.current
     const canvas = canvasRef.current
-    if (!canvas) return
+    if (!container || !canvas) return
     const ctx = canvas.getContext('2d')
     if (!ctx) return
+
+    const width = container.clientWidth
     const ratio = window.devicePixelRatio || 1
     canvas.width = width * ratio
     canvas.height = height * ratio
@@ -34,7 +38,14 @@ export function SignaturePad({ onChange, width = 500, height = 160 }: Props) {
     ctx.lineWidth = 2
     ctx.lineCap = 'round'
     ctx.lineJoin = 'round'
-  }, [width, height])
+  }, [height])
+
+  useEffect(() => {
+    setupCanvas()
+    // Re-setup on window resize for orientation changes
+    window.addEventListener('resize', setupCanvas)
+    return () => window.removeEventListener('resize', setupCanvas)
+  }, [setupCanvas])
 
   const getPos = (e: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) => {
     const rect = canvas.getBoundingClientRect()
@@ -108,15 +119,17 @@ export function SignaturePad({ onChange, width = 500, height = 160 }: Props) {
     if (!canvas) return
     const ctx = canvas.getContext('2d')
     if (!ctx) return
-    const ratio = window.devicePixelRatio || 1
-    ctx.clearRect(0, 0, width * ratio, height * ratio)
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
     setHasSignature(false)
     onChange(null)
   }
 
   return (
     <div className="space-y-2">
-      <div className="relative rounded-lg border-2 border-dashed border-stone-600 bg-stone-900 overflow-hidden cursor-crosshair">
+      <div
+        ref={containerRef}
+        className="relative rounded-lg border-2 border-dashed border-stone-600 bg-stone-900 overflow-hidden cursor-crosshair"
+      >
         <canvas
           ref={canvasRef}
           className="block touch-none"

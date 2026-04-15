@@ -51,6 +51,9 @@ export default async function ClientQuotesPage() {
                         {quote.quote_name || (quote.inquiry as any)?.confirmed_occasion || 'Quote'}
                       </span>
                       <Badge variant="info">Pending Review</Badge>
+                      {(quote.version as number) > 1 && (
+                        <Badge variant="default">Revision {quote.version as number}</Badge>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 mt-1">
                       <p className="text-sm text-stone-500">
@@ -108,6 +111,12 @@ export default async function ClientQuotesPage() {
                             'Quote'}
                         </span>
                         <Badge variant={display.variant}>{display.label}</Badge>
+                        {(quote.version as number) > 1 && (
+                          <Badge variant="default">Revision {quote.version as number}</Badge>
+                        )}
+                        {(quote.is_superseded as boolean) && (
+                          <Badge variant="warning">Superseded</Badge>
+                        )}
                       </div>
                     </div>
                     <p className="text-lg font-semibold text-stone-100">

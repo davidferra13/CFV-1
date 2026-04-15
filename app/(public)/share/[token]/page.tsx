@@ -13,6 +13,7 @@ import { GuestPhotoGallery } from '@/components/sharing/guest-photo-gallery'
 import { EventCountdown } from '@/components/sharing/event-countdown'
 import { GuestNetworkShare } from '@/components/sharing/guest-network-share'
 import { JoinHubCTA } from '@/components/hub/join-hub-cta'
+import { GuestResendLink } from '@/components/sharing/guest-resend-link'
 import { cookies } from 'next/headers'
 
 export default async function SharePage({ params }: { params: { token: string } }) {
@@ -267,6 +268,13 @@ export default async function SharePage({ params }: { params: { token: string } 
               />
             </CardContent>
           </Card>
+        )}
+
+        {/* Resend portal link for returning guests */}
+        {!existingGuest && eventData.status !== 'completed' && (
+          <div className="text-center mb-4">
+            <GuestResendLink shareToken={params.token} />
+          </div>
         )}
 
         {rsvpClosed && (

@@ -62,7 +62,36 @@ export async function getClientQuoteById(quoteId: string) {
     return null
   }
 
-  return quote
+  // Fetch menu snapshot if quote is linked to an event
+  let menus: Array<{
+    id: string
+    name: string
+    description: string | null
+    service_style: string | null
+    dishes: Array<{
+      id: string
+      course_name: string | null
+      course_number: number | null
+      description: string | null
+      dietary_tags: string[] | null
+      allergen_flags: string[] | null
+      sort_order: number | null
+    }>
+  }> = []
+
+  if (quote.event_id) {
+    const { data: menuData } = await db
+      .from('menus')
+      .select(
+        `id, name, description, service_style,
+        dishes (id, course_name, course_number, description, dietary_tags, allergen_flags, sort_order)`
+      )
+      .eq('event_id', quote.event_id)
+
+    menus = menuData || []
+  }
+
+  return { ...quote, menus }
 }
 
 // ============================================

@@ -31,9 +31,15 @@ export default async function ClientQuoteDetailPage({ params }: { params: { id: 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-stone-100">
-            {quote.quote_name || 'Quote'}
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-stone-100">
+              {quote.quote_name || 'Quote'}
+            </h1>
+            {(quote.version as number) > 1 && (
+              <Badge variant="info">Revision {quote.version as number}</Badge>
+            )}
+            {(quote.is_superseded as boolean) && <Badge variant="warning">Superseded</Badge>}
+          </div>
           {(quote.inquiry as any)?.confirmed_occasion && (
             <p className="text-stone-400 mt-1">{(quote.inquiry as any).confirmed_occasion}</p>
           )}
@@ -169,6 +175,48 @@ export default async function ClientQuoteDetailPage({ params }: { params: { id: 
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">What&apos;s Included</h2>
           <p className="text-sm text-stone-300 whitespace-pre-wrap">{quote.pricing_notes}</p>
+        </Card>
+      )}
+
+      {/* Menu Snapshot (if event has menus) */}
+      {quote.menus && (quote.menus as any[]).length > 0 && (
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Your Menu</h2>
+          {(quote.menus as any[]).map((menu: any) => (
+            <div key={menu.id} className="space-y-3">
+              {menu.name && <h3 className="text-sm font-medium text-stone-300">{menu.name}</h3>}
+              {menu.description && <p className="text-sm text-stone-400">{menu.description}</p>}
+              {menu.dishes && menu.dishes.length > 0 && (
+                <div className="space-y-2">
+                  {(menu.dishes as any[])
+                    .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+                    .map((dish: any) => (
+                      <div key={dish.id} className="border-l-2 border-brand-700 pl-3 py-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            {dish.course_name && (
+                              <span className="text-xs uppercase tracking-wide text-stone-500">
+                                {dish.course_name}
+                              </span>
+                            )}
+                            {dish.description && (
+                              <p className="text-sm text-stone-200">{dish.description}</p>
+                            )}
+                          </div>
+                          <div className="flex gap-1 flex-shrink-0">
+                            {dish.dietary_tags?.map((tag: string) => (
+                              <Badge key={tag} variant="default" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          ))}
         </Card>
       )}
 
