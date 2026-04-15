@@ -131,6 +131,11 @@ export async function transitionEvent({
     }
   }
 
+  // Idempotency: already in target state is a no-op, not an error
+  if (fromStatus === toStatus) {
+    return event
+  }
+
   // Validate transition is allowed
   const allowedTransitions = TRANSITION_RULES[fromStatus]
   if (!allowedTransitions.includes(toStatus)) {
@@ -537,7 +542,17 @@ export async function transitionEvent({
           })
         } catch (cfErr) {
           log.events.warn('Circle-first confirmed notify failed (non-blocking)', { error: cfErr })
-          // Fallback: send the email directly
+          // Fallback: send the email directly (include circle link if available)
+          let fallbackCircleUrl: string | undefined
+          try {
+            const { getCircleForEvent } = await import('@/lib/hub/circle-lookup')
+            const circle = await getCircleForEvent(eventId)
+            if (circle?.groupToken) {
+              fallbackCircleUrl = `${process.env.NEXT_PUBLIC_APP_URL}/hub/g/${circle.groupToken}`
+            }
+          } catch {
+            // Non-blocking
+          }
           await sendEventConfirmedEmail({
             clientEmail: client.email,
             clientName: client.full_name,
@@ -548,6 +563,7 @@ export async function transitionEvent({
             location,
             guestCount: event.guest_count,
             eventId,
+            circleUrl: fallbackCircleUrl,
           })
         }
 

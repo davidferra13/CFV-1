@@ -78,6 +78,14 @@ export function RSVPForm({
   const [error, setError] = useState('')
   const [guestToken, setGuestToken] = useState(existingGuest?.guest_token || '')
   const [showDetails, setShowDetails] = useState(isEditing && hasExistingDetails)
+  // null = not yet answered, 'none' = confirmed no allergies, 'has' = has allergies/restrictions
+  const [allergyAnswer, setAllergyAnswer] = useState<null | 'none' | 'has'>(
+    existingGuest
+      ? existingGuest.allergies?.length || existingGuest.dietary_restrictions?.length
+        ? 'has'
+        : 'none'
+      : null
+  )
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -103,6 +111,12 @@ export function RSVPForm({
 
     if (!dataProcessingConsent) {
       setError('Data processing consent is required to submit RSVP.')
+      setLoading(false)
+      return
+    }
+
+    if (rsvpStatus !== 'declined' && allergyAnswer === null) {
+      setError('Please answer the allergy question before submitting.')
       setLoading(false)
       return
     }
@@ -299,39 +313,124 @@ export function RSVPForm({
         <p className="text-xs text-stone-500 mt-1">So we can reach you if anything changes</p>
       </div>
 
-      {/* Expandable details section */}
+      {/* Allergy confirmation - required, not optional */}
       {rsvpStatus !== 'declined' && (
-        <>
-          {!showDetails ? (
+        <div className="space-y-3">
+          <label className="block text-sm font-medium text-stone-300">
+            Any food allergies or dietary restrictions? <span className="text-red-500">*</span>
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setAllergyAnswer('none')
+                setShowDetails(false)
+              }}
+              className={`px-4 py-3 rounded-lg border-2 text-sm font-medium transition-all ${
+                allergyAnswer === 'none'
+                  ? 'border-emerald-500 bg-emerald-950 text-emerald-300'
+                  : 'border-stone-700 text-stone-400 hover:border-stone-600'
+              }`}
+            >
+              No, none
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setAllergyAnswer('has')
+                setShowDetails(true)
+              }}
+              className={`px-4 py-3 rounded-lg border-2 text-sm font-medium transition-all ${
+                allergyAnswer === 'has'
+                  ? 'border-amber-500 bg-amber-950 text-amber-300'
+                  : 'border-stone-700 text-stone-400 hover:border-stone-600'
+              }`}
+            >
+              Yes, I do
+            </button>
+          </div>
+
+          {allergyAnswer === 'has' && (
+            <div className="space-y-4 bg-stone-800 rounded-lg p-4 border border-stone-700">
+              {/* Dietary */}
+              <div>
+                <label htmlFor="dietary" className="block text-sm font-medium text-stone-300 mb-1">
+                  Dietary Restrictions
+                </label>
+                <input
+                  id="dietary"
+                  type="text"
+                  value={dietaryInput}
+                  onChange={(e) => setDietaryInput(e.target.value)}
+                  placeholder="e.g., vegetarian, kosher, gluten-free"
+                  className="w-full px-4 py-2.5 rounded-lg border border-stone-600 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 bg-stone-900"
+                />
+                <p className="text-xs text-stone-500 mt-1">Separate multiple with commas</p>
+              </div>
+
+              {/* Allergies */}
+              <div>
+                <label
+                  htmlFor="allergies"
+                  className="block text-sm font-medium text-stone-300 mb-1"
+                >
+                  Allergies
+                </label>
+                <input
+                  id="allergies"
+                  type="text"
+                  value={allergyInput}
+                  onChange={(e) => setAllergyInput(e.target.value)}
+                  placeholder="e.g., peanuts, shellfish, dairy"
+                  className="w-full px-4 py-2.5 rounded-lg border border-stone-600 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 bg-stone-900"
+                />
+                <p className="text-xs text-stone-500 mt-1">Separate multiple with commas</p>
+              </div>
+            </div>
+          )}
+
+          {/* Plus-one and notes remain as optional expand */}
+          {!showDetails && allergyAnswer !== null ? (
             <button
               type="button"
               onClick={() => setShowDetails(true)}
-              className="w-full py-3 rounded-lg border-2 border-dashed border-stone-600 text-sm font-medium text-stone-500 hover:border-stone-400 hover:text-stone-300 transition-colors flex items-center justify-center gap-2"
+              className="w-full py-2.5 rounded-lg border border-dashed border-stone-700 text-xs font-medium text-stone-500 hover:border-stone-500 hover:text-stone-400 transition-colors"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-              </svg>
-              Add allergies, dietary needs, or a plus-one
+              + Add a plus-one or note
             </button>
-          ) : (
+          ) : allergyAnswer !== null && allergyAnswer !== 'has' && showDetails ? (
             <div className="space-y-4 bg-stone-800 rounded-lg p-4 border border-stone-700">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium text-stone-300">Additional Details</h4>
+                <h4 className="text-sm font-medium text-stone-300">Plus-one / Notes</h4>
                 <button
                   type="button"
                   onClick={() => setShowDetails(false)}
-                  className="text-xs text-stone-400 hover:text-stone-400"
+                  className="text-xs text-stone-500 hover:text-stone-400"
                 >
                   Hide
                 </button>
               </div>
+              {/* Notes */}
+              <div>
+                <label htmlFor="notes" className="block text-sm font-medium text-stone-300 mb-1">
+                  Notes or Questions
+                </label>
+                <textarea
+                  id="notes"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Anything you'd like the host to know..."
+                  rows={2}
+                  className="w-full px-4 py-2.5 rounded-lg border border-stone-600 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 resize-none bg-stone-900"
+                />
+              </div>
+            </div>
+          ) : null}
 
-              {/* Plus One toggle + details */}
+          {/* When allergy === 'has', show notes inside the expanded block */}
+          {allergyAnswer === 'has' && (
+            <div className="space-y-4 bg-stone-800 rounded-lg p-4 border border-stone-700">
+              {/* Plus One */}
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
                   <input
@@ -400,48 +499,13 @@ export function RSVPForm({
                 )}
               </div>
 
-              {/* Dietary */}
-              <div>
-                <label htmlFor="dietary" className="block text-sm font-medium text-stone-300 mb-1">
-                  Dietary Restrictions
-                </label>
-                <input
-                  id="dietary"
-                  type="text"
-                  value={dietaryInput}
-                  onChange={(e) => setDietaryInput(e.target.value)}
-                  placeholder="e.g., vegetarian, kosher, gluten-free"
-                  className="w-full px-4 py-2.5 rounded-lg border border-stone-600 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 bg-stone-900"
-                />
-                <p className="text-xs text-stone-500 mt-1">Separate multiple with commas</p>
-              </div>
-
-              {/* Allergies */}
-              <div>
-                <label
-                  htmlFor="allergies"
-                  className="block text-sm font-medium text-stone-300 mb-1"
-                >
-                  Allergies
-                </label>
-                <input
-                  id="allergies"
-                  type="text"
-                  value={allergyInput}
-                  onChange={(e) => setAllergyInput(e.target.value)}
-                  placeholder="e.g., peanuts, shellfish, dairy"
-                  className="w-full px-4 py-2.5 rounded-lg border border-stone-600 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 bg-stone-900"
-                />
-                <p className="text-xs text-stone-500 mt-1">Separate multiple with commas</p>
-              </div>
-
               {/* Notes */}
               <div>
-                <label htmlFor="notes" className="block text-sm font-medium text-stone-300 mb-1">
+                <label htmlFor="notes2" className="block text-sm font-medium text-stone-300 mb-1">
                   Notes or Questions
                 </label>
                 <textarea
-                  id="notes"
+                  id="notes2"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Anything you'd like the host to know..."
@@ -451,7 +515,7 @@ export function RSVPForm({
               </div>
             </div>
           )}
-        </>
+        </div>
       )}
 
       {/* Declined - still allow a note */}

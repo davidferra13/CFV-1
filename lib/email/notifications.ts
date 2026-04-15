@@ -271,6 +271,7 @@ export async function sendEventConfirmedEmail(params: {
   location: string | null
   guestCount: number | null
   eventId: string
+  circleUrl?: string
 }) {
   await sendEmail({
     to: params.clientEmail,
@@ -284,6 +285,7 @@ export async function sendEventConfirmedEmail(params: {
       location: params.location,
       guestCount: params.guestCount,
       calendarUrl: `${APP_URL}/api/calendar/event/${params.eventId}`,
+      circleUrl: params.circleUrl,
     }),
   })
 }
@@ -1148,6 +1150,7 @@ export async function sendInstantBookingClientEmail(params: {
   depositCents: number
   totalCents: number
   eventId: string
+  circleUrl?: string
 }) {
   await sendEmail({
     to: params.clientEmail,
@@ -1161,6 +1164,7 @@ export async function sendInstantBookingClientEmail(params: {
       depositFormatted: formatCents(params.depositCents),
       totalFormatted: formatCents(params.totalCents),
       eventUrl: `${APP_URL}/my-events/${params.eventId}`,
+      circleUrl: params.circleUrl,
     }),
   })
 }

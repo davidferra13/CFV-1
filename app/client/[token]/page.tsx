@@ -4,13 +4,26 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
+import { headers } from 'next/headers'
 import { getClientPortalData } from '@/lib/client-portal/actions'
+import { checkRateLimit } from '@/lib/api/rate-limit'
 import { formatCurrency } from '@/lib/utils/currency'
 import { EventStatusBadge } from '@/components/events/event-status-badge'
 
 export const dynamic = 'force-dynamic'
 
 export default async function ClientPortalPage({ params }: { params: { token: string } }) {
+  // Rate limit portal token lookups: 10 per minute per IP (brute-force guard)
+  const headersList = await headers()
+  const ip =
+    headersList.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    headersList.get('x-real-ip') ??
+    'unknown'
+  const rl = await checkRateLimit(`portal:${ip}`)
+  if (!rl.success) {
+    notFound()
+  }
+
   const portal = await getClientPortalData(params.token)
 
   if (!portal) {

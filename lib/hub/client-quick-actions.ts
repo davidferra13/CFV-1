@@ -58,8 +58,20 @@ export async function postGuestCountUpdate(
   const previousCount = event?.guest_count ?? null
 
   // Post notification to circle
-  let body = `Guest count updated to ${validated.newCount}.`
+  const countChange =
+    previousCount !== null
+      ? validated.newCount > previousCount
+        ? `up from ${previousCount}`
+        : validated.newCount < previousCount
+          ? `down from ${previousCount}`
+          : null
+      : null
+  let body = `Guest count updated to ${validated.newCount}${countChange ? ` (${countChange})` : ''}.`
   if (validated.note) body += ` Note: ${validated.note}`
+  // Remind the chef to check quantities if count dropped (most likely to cause waste)
+  if (previousCount !== null && validated.newCount < previousCount) {
+    body += ' Shopping quantities may need adjusting.'
+  }
 
   await db.from('hub_messages').insert({
     group_id: validated.groupId,

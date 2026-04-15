@@ -88,6 +88,7 @@ export default async function HubGroupPage({ params }: Props) {
       mealBoardEntries={mealBoardEntries}
       guestStatus={guestStatus}
       lifecycleStages={lifecycleClient?.stages || []}
+      linkedEventId={groupEvents[0]?.event_id ?? null}
     />
   )
 }

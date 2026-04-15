@@ -95,13 +95,13 @@ export async function getCashFlowCalendar(
   for (const entry of ledgerRes.data ?? []) {
     const date = dateToDateString((entry.received_at ?? entry.created_at) as Date | string)
     if (date >= startDate && date < endDate) {
-      getOrCreate(date).incomeCents += (entry as any).amount_cents
+      getOrCreate(date).incomeCents += Number((entry as any).amount_cents) || 0
     }
   }
 
   for (const exp of expensesRes.data ?? []) {
     const date = dateToDateString((exp as any).expense_date as Date | string)
-    getOrCreate(date).outgoingCents += (exp as any).amount_cents
+    getOrCreate(date).outgoingCents += Number((exp as any).amount_cents) || 0
   }
 
   for (const event of eventsRes.data ?? []) {
@@ -111,7 +111,7 @@ export async function getCashFlowCalendar(
 
   for (const inst of (installmentsRes.data ?? []) as any[]) {
     const date = dateToDateString(inst.due_date as Date | string)
-    getOrCreate(date).installmentsDueCents += inst.amount_cents
+    getOrCreate(date).installmentsDueCents += Number(inst.amount_cents) || 0
   }
 
   const days = Array.from(dayMap.values()).sort((a, b) => a.date.localeCompare(b.date))

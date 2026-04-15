@@ -24,6 +24,7 @@ import { toggleMuteCircle, updateMemberNotificationPreferences } from '@/lib/hub
 import { NotificationPreferences } from '@/components/hub/notification-preferences'
 import { CircleClientStatus } from '@/components/hub/circle-client-status'
 import { LifecycleClientView } from '@/components/hub/lifecycle-client-view'
+import { HubQuickActions } from '@/components/hub/hub-quick-actions'
 import type { GuestCriticalPathResult } from '@/lib/lifecycle/critical-path'
 
 type Tab =
@@ -47,6 +48,7 @@ interface HubGroupViewProps {
   mealBoardEntries: MealBoardEntry[]
   profileToken?: string
   guestStatus?: GuestCriticalPathResult | null
+  linkedEventId?: string | null
   lifecycleStages?: {
     stageNumber: number
     stageName: string
@@ -64,6 +66,7 @@ export function HubGroupView({
   mealBoardEntries,
   profileToken: profileTokenProp,
   guestStatus,
+  linkedEventId,
   lifecycleStages,
 }: HubGroupViewProps) {
   const [activeTab, setActiveTab] = useState<Tab>(((group as any).default_tab as Tab) || 'chat')
@@ -305,6 +308,30 @@ export function HubGroupView({
       {lifecycleStages && lifecycleStages.length > 0 && (
         <div className="mx-auto w-full max-w-2xl px-4 mt-3">
           <LifecycleClientView stages={lifecycleStages} />
+        </div>
+      )}
+
+      {/* Persistent quick actions - visible on every tab, not buried in Chat */}
+      {profileToken && linkedEventId && (
+        <div className="mx-auto w-full max-w-2xl px-4 pt-3">
+          <HubQuickActions groupId={group.id} profileToken={profileToken} eventId={linkedEventId} />
+        </div>
+      )}
+
+      {/* Join prompt for guests without a profile token */}
+      {!profileToken && (
+        <div className="sticky bottom-0 z-20 border-t border-stone-700 bg-stone-900/95 px-4 py-3 backdrop-blur">
+          <div className="mx-auto flex max-w-2xl items-center justify-between gap-3">
+            <p className="text-sm text-stone-400">
+              Join this circle to chat, update your details, and see the full plan.
+            </p>
+            <Link
+              href={`/hub/join/${group.group_token}`}
+              className="shrink-0 rounded-lg bg-[var(--hub-primary,#e88f47)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+            >
+              Join
+            </Link>
+          </div>
         </div>
       )}
 

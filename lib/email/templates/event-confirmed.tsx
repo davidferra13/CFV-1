@@ -1,7 +1,7 @@
 // Event Confirmed Email
 // Sent to client when chef confirms the event (paid → confirmed)
 
-import { Button, Text } from '@react-email/components'
+import { Button, Link, Text } from '@react-email/components'
 import * as React from 'react'
 import { BaseLayout } from './base-layout'
 
@@ -14,6 +14,7 @@ type EventConfirmedProps = {
   location: string | null
   guestCount: number | null
   calendarUrl: string
+  circleUrl?: string
 }
 
 export function EventConfirmedEmail({
@@ -25,6 +26,7 @@ export function EventConfirmedEmail({
   location,
   guestCount,
   calendarUrl,
+  circleUrl,
 }: EventConfirmedProps) {
   return (
     <BaseLayout preview={`Your ${occasion} event is confirmed!`}>
@@ -64,13 +66,31 @@ export function EventConfirmedEmail({
           )}
         </tbody>
       </table>
-      <Button style={button} href={calendarUrl}>
-        Add to Calendar
-      </Button>
-      <Text style={muted}>
-        If any details change, your chef will reach out. You can also message them directly through
-        ChefFlow at any time.
-      </Text>
+      {circleUrl ? (
+        <>
+          <Button style={button} href={circleUrl}>
+            Open Your Dinner Circle
+          </Button>
+          <Text style={muted}>
+            Your Dinner Circle is where everything happens: chat with {chefName}, share with guests,
+            update the guest count, and track the menu. Add the event to your calendar:{' '}
+            <Link href={calendarUrl} style={{ color: '#9ca3af' }}>
+              calendar link
+            </Link>
+            .
+          </Text>
+        </>
+      ) : (
+        <>
+          <Button style={button} href={calendarUrl}>
+            Add to Calendar
+          </Button>
+          <Text style={muted}>
+            If any details change, your chef will reach out. You can also message them directly
+            through ChefFlow at any time.
+          </Text>
+        </>
+      )}
     </BaseLayout>
   )
 }

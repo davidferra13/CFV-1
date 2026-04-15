@@ -14,6 +14,7 @@ type Props = {
   depositFormatted: string
   totalFormatted: string
   eventUrl: string
+  circleUrl?: string
 }
 
 export function InstantBookingClientEmail({
@@ -25,6 +26,7 @@ export function InstantBookingClientEmail({
   depositFormatted,
   totalFormatted,
   eventUrl,
+  circleUrl,
 }: Props) {
   return (
     <BaseLayout preview={`Your booking with ${chefName} is confirmed`}>
@@ -87,6 +89,34 @@ export function InstantBookingClientEmail({
           View My Event
         </Link>
       </div>
+
+      {circleUrl && (
+        <>
+          <Text style={paragraph}>
+            Your Dinner Circle is ready. This is where you can chat with {chefName}, share the
+            invite link with your guests, update the guest count, and track everything leading up to
+            the event.
+          </Text>
+          <div style={{ textAlign: 'center', margin: '0 0 24px' }}>
+            <Link
+              href={circleUrl}
+              style={{
+                display: 'inline-block',
+                backgroundColor: '#f5f5f4',
+                color: '#18181b',
+                padding: '12px 28px',
+                borderRadius: '8px',
+                fontWeight: '600',
+                fontSize: '15px',
+                textDecoration: 'none',
+                border: '1px solid #e7e5e4',
+              }}
+            >
+              Open Your Dinner Circle
+            </Link>
+          </div>
+        </>
+      )}
 
       <Text style={muted}>
         The remaining balance of {totalFormatted} will be collected closer to your event date.

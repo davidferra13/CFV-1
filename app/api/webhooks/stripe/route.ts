@@ -481,63 +481,67 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
     created_by: null,
   })
 
-  if (result.duplicate) {
-    console.info('[handlePaymentSucceeded] Duplicate entry (idempotent)')
-    return
+  const isDuplicateLedger = result.duplicate
+  if (isDuplicateLedger) {
+    console.info(
+      '[handlePaymentSucceeded] Duplicate ledger entry — skipping transfer recording, still checking transition'
+    )
   }
 
-  // 2. Record transfer details if payment was routed to chef's connected account
-  const transferRouted = paymentIntent.metadata.transfer_routed === 'true'
-  if (transferRouted) {
-    try {
-      const latestCharge = paymentIntent.latest_charge
-      const chargeId = typeof latestCharge === 'string' ? latestCharge : (latestCharge as any)?.id
-      if (chargeId) {
-        const stripeClient = getStripe()
-        const chargeObj = await stripeClient.charges.retrieve(chargeId, { expand: ['transfer'] })
-        const transfer = (chargeObj as any).transfer
-        if (transfer) {
-          const { recordStripeTransfer, recordPlatformFee } =
-            await import('@/lib/stripe/transfer-routing')
-          const destination =
-            typeof transfer.destination === 'string'
-              ? transfer.destination
-              : (transfer.destination?.id ?? '')
+  // 2. Record transfer details if payment was routed to chef's connected account (skip on duplicate)
+  if (!isDuplicateLedger) {
+    const transferRouted = paymentIntent.metadata.transfer_routed === 'true'
+    if (transferRouted) {
+      try {
+        const latestCharge = paymentIntent.latest_charge
+        const chargeId = typeof latestCharge === 'string' ? latestCharge : (latestCharge as any)?.id
+        if (chargeId) {
+          const stripeClient = getStripe()
+          const chargeObj = await stripeClient.charges.retrieve(chargeId, { expand: ['transfer'] })
+          const transfer = (chargeObj as any).transfer
+          if (transfer) {
+            const { recordStripeTransfer, recordPlatformFee } =
+              await import('@/lib/stripe/transfer-routing')
+            const destination =
+              typeof transfer.destination === 'string'
+                ? transfer.destination
+                : (transfer.destination?.id ?? '')
 
-          await recordStripeTransfer({
-            tenantId: tenant_id,
-            eventId: event_id,
-            stripeTransferId: transfer.id,
-            stripePaymentIntentId: paymentIntent.id,
-            stripeChargeId: chargeId,
-            stripeDestinationAccount: destination,
-            grossAmountCents: paymentIntent.amount,
-            platformFeeCents: (paymentIntent as any).application_fee_amount ?? 0,
-            netTransferCents: transfer.amount,
-            status: 'paid',
-          })
-
-          const appFee = (paymentIntent as any).application_fee_amount
-          if (appFee && appFee > 0) {
-            await recordPlatformFee({
+            await recordStripeTransfer({
               tenantId: tenant_id,
               eventId: event_id,
               stripeTransferId: transfer.id,
               stripePaymentIntentId: paymentIntent.id,
-              amountCents: appFee,
-              description: `Platform fee on event ${event_id} payment`,
-              transactionReference: `fee_${event.id}`,
+              stripeChargeId: chargeId,
+              stripeDestinationAccount: destination,
+              grossAmountCents: paymentIntent.amount,
+              platformFeeCents: (paymentIntent as any).application_fee_amount ?? 0,
+              netTransferCents: transfer.amount,
+              status: 'paid',
             })
+
+            const appFee = (paymentIntent as any).application_fee_amount
+            if (appFee && appFee > 0) {
+              await recordPlatformFee({
+                tenantId: tenant_id,
+                eventId: event_id,
+                stripeTransferId: transfer.id,
+                stripePaymentIntentId: paymentIntent.id,
+                amountCents: appFee,
+                description: `Platform fee on event ${event_id} payment`,
+                transactionReference: `fee_${event.id}`,
+              })
+            }
           }
         }
+      } catch (transferErr) {
+        console.error(
+          '[handlePaymentSucceeded] Transfer recording failed (non-blocking):',
+          transferErr
+        )
       }
-    } catch (transferErr) {
-      console.error(
-        '[handlePaymentSucceeded] Transfer recording failed (non-blocking):',
-        transferErr
-      )
     }
-  }
+  } // end !isDuplicateLedger
 
   // 3. Check financial summary (reuse the admin client created above)
   const { data: financialSummary } = await (dbAdmin
@@ -754,6 +758,19 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
           const { sendInstantBookingChefEmail, sendInstantBookingClientEmail } =
             await import('@/lib/email/notifications')
           const chefName = chefData.business_name || chefData.display_name || 'Chef'
+
+          // Look up Dinner Circle token so the confirmation email links directly there
+          let circleUrl: string | undefined
+          try {
+            const { getCircleForEvent } = await import('@/lib/hub/circle-lookup')
+            const circle = await getCircleForEvent(event_id)
+            if (circle?.groupToken) {
+              circleUrl = `${process.env.NEXT_PUBLIC_APP_URL}/hub/g/${circle.groupToken}`
+            }
+          } catch {
+            // Non-blocking - email still sends without circle link
+          }
+
           await sendInstantBookingChefEmail({
             chefEmail: chefData.email,
             chefName,
@@ -777,6 +794,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
             depositCents: paymentIntent.amount,
             totalCents: eventData.quoted_price_cents ?? paymentIntent.amount,
             eventId: event_id,
+            circleUrl,
           })
         }
       } catch (instantBookEmailErr) {
