@@ -14,3 +14,12 @@ export function normalizePhone(phone: string): string {
   if (digits.length === 11 && digits.startsWith('1')) return `+${digits}`
   return phone.trim()
 }
+
+/**
+ * Validate that a phone string looks like a valid E.164 number.
+ * Accepts +[country_code][subscriber] with 7-15 total digits.
+ * Use after normalizePhone() before passing to Twilio.
+ */
+export function isValidE164(phone: string): boolean {
+  return /^\+\d{7,15}$/.test(phone)
+}

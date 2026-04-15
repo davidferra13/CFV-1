@@ -22,7 +22,7 @@ import {
   buildVendorDeliveryTwiml,
   buildVenueConfirmationTwiml,
 } from '@/lib/calling/voice-helpers'
-import { normalizePhone } from '@/lib/calling/phone-utils'
+import { normalizePhone, isValidE164 } from '@/lib/calling/phone-utils'
 
 const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID
 const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN
@@ -264,6 +264,9 @@ export async function initiateSupplierCall(
   }
 
   const vendorPhoneNormalized = normalizePhone(vendor.phone)
+  if (!isValidE164(vendorPhoneNormalized)) {
+    return { success: false, error: 'Vendor phone number is not a valid format.' }
+  }
 
   const eligibility = await checkCallingEligibility(db, user.tenantId!)
   if (!eligibility.allowed) {
@@ -419,6 +422,13 @@ export async function initiateAdHocCall(
   }
 
   const vendorPhoneNormalized = normalizePhone(vendorPhone.trim())
+  if (!isValidE164(vendorPhoneNormalized)) {
+    return {
+      success: false,
+      error: 'Phone number is not a valid format. Use a 10-digit US number or E.164 format.',
+    }
+  }
+
   const alreadyCalling = await hasPendingCall(
     db,
     user.tenantId!,
@@ -562,6 +572,9 @@ export async function initiateDeliveryCoordinationCall(params: {
   if (!eligibility.allowed) return { success: false, error: eligibility.reason }
 
   const vendorPhoneNormalized = normalizePhone(params.vendorPhone)
+  if (!isValidE164(vendorPhoneNormalized)) {
+    return { success: false, error: 'Vendor phone number is not a valid format.' }
+  }
 
   const { data: aiCallRecord } = await db
     .from('ai_calls')
@@ -666,6 +679,9 @@ export async function initiateVenueConfirmationCall(params: {
   if (!eligibility.allowed) return { success: false, error: eligibility.reason }
 
   const venuePhoneNormalized = normalizePhone(params.venuePhone)
+  if (!isValidE164(venuePhoneNormalized)) {
+    return { success: false, error: 'Venue phone number is not a valid format.' }
+  }
 
   const { data: aiCallRecord } = await db
     .from('ai_calls')
