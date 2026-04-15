@@ -7,7 +7,7 @@ export default {
     host: '10.0.0.177',
     port: 8081,
     dbEndpoint: '/api/sync/database',
-    timeoutMs: 120000, // 2 min for large DB downloads
+    timeoutMs: 600000, // 10 min - snapshot creation on busy Pi can take 3-5 min
   },
   pg: {
     connectionString:
