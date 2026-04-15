@@ -257,4 +257,69 @@ test.describe('Q3: Calling system integrity', () => {
       "TwiML URL still uses aiCallRecord?.id ?? '' fallback — empty aiCallId will cause handler failures"
     ).toBe(true)
   })
+
+  // -------------------------------------------------------------------------
+  // Round 8 structural checks
+  // -------------------------------------------------------------------------
+
+  // Test 10: Legacy twiml/route.ts is gone (Round 8 Fix #1)
+  // The route had XML injection (raw URL param in TwiML), no webhook auth,
+  // and a GET handler that let browsers generate TwiML. Modern flow uses
+  // inline Twiml param — the route is dead code and a security liability.
+  test('legacy twiml/route.ts does not exist', () => {
+    const LEGACY_TWIML_ROUTE = resolve(process.cwd(), 'app/api/calling/twiml/route.ts')
+    expect(
+      !existsSync(LEGACY_TWIML_ROUTE),
+      'app/api/calling/twiml/route.ts still exists — delete it. The route has XML injection, no webhook auth, and is unreachable in the modern flow.'
+    ).toBe(true)
+  })
+
+  // Test 11: checkCallingEligibility reads active_hours from DB (Round 8 Fix #3)
+  // Before Round 8, isEtBusinessHours() hardcoded ET 8am-7pm, ignoring the
+  // active_hours_start/end/timezone columns the settings form writes. The 7pm
+  // cutoff also contradicted the form default of 20:00 (8pm).
+  test('calling eligibility reads active_hours config from DB, not hardcoded ET hours', () => {
+    expect(existsSync(TWILIO_ACTIONS_SOURCE), `Source not found: ${TWILIO_ACTIONS_SOURCE}`).toBe(
+      true
+    )
+    const src = readFileSync(TWILIO_ACTIONS_SOURCE, 'utf-8')
+
+    // The unified function must exist
+    expect(
+      src.includes('checkCallingEligibility'),
+      'checkCallingEligibility function not found — active hours check is still hardcoded'
+    ).toBe(true)
+
+    // The old hardcoded function must not exist
+    expect(
+      !src.includes('isEtBusinessHours'),
+      'isEtBusinessHours still present — active hours check is still hardcoded to ET 8am-7pm'
+    ).toBe(true)
+
+    // Must read the stored config columns
+    expect(
+      src.includes('active_hours_start') && src.includes('active_hours_end'),
+      'checkCallingEligibility does not read active_hours_start/end from DB'
+    ).toBe(true)
+  })
+
+  // Test 12: call-sheet page filters vendor_availability ai_calls from CallLog (Round 8 Fix #2)
+  // supplier_calls and ai_calls with role=vendor_availability represent the same
+  // availability call. Without filtering, every availability call appears twice in the log.
+  test('call-sheet page filters vendor_availability ai_calls before passing to CallLog', () => {
+    const CALL_SHEET_SOURCE = resolve(process.cwd(), 'app/(chef)/culinary/call-sheet/page.tsx')
+    expect(existsSync(CALL_SHEET_SOURCE), `Source not found: ${CALL_SHEET_SOURCE}`).toBe(true)
+
+    const src = readFileSync(CALL_SHEET_SOURCE, 'utf-8')
+
+    expect(
+      src.includes("role !== 'vendor_availability'"),
+      'call-sheet page does not filter vendor_availability ai_calls — availability calls appear twice in the log'
+    ).toBe(true)
+
+    expect(
+      src.includes('filteredAiCalls'),
+      'call-sheet page must use filteredAiCalls variable when passing to CallLog'
+    ).toBe(true)
+  })
 })

@@ -165,6 +165,10 @@ export default async function CallSheetPage({
   const savedWithPhone = (vendors as any[]).filter((v) => v.phone)
   const addedVendorIds = new Set(savedWithPhone.map((v: any) => v.id as string))
 
+  // vendor_availability ai_calls already appear via supplier_calls — exclude them
+  // to prevent every availability call showing twice in the Call Log.
+  const filteredAiCalls = aiCalls.filter((c) => c.role !== 'vendor_availability')
+
   const inboxItems = aiCalls.filter(
     (c) => c.direction === 'inbound' && ['inbound_voicemail', 'inbound_unknown'].includes(c.role)
   )
@@ -202,7 +206,10 @@ export default async function CallSheetPage({
           {
             key: 'log' as Tab,
             label: 'Call Log',
-            badge: calls.length > 0 ? String(calls.length) : null,
+            badge:
+              calls.length + filteredAiCalls.length > 0
+                ? String(calls.length + filteredAiCalls.length)
+                : null,
           },
           {
             key: 'inbox' as Tab,
@@ -240,7 +247,7 @@ export default async function CallSheetPage({
       {tab === 'call' && <CallHub tenantId={user.tenantId ?? user.entityId} />}
 
       {/* Tab: Call Log */}
-      {tab === 'log' && <CallLog calls={calls as any} aiCalls={aiCalls as any} />}
+      {tab === 'log' && <CallLog calls={calls as any} aiCalls={filteredAiCalls as any} />}
 
       {/* Tab: Inbox */}
       {tab === 'inbox' && (

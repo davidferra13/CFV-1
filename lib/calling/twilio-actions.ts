@@ -66,17 +66,6 @@ export type AiCall = {
   created_at: string
 }
 
-// ---------------------------------------------------------------------------
-// Business hours - ET (America/New_York), 8am-7pm
-// ---------------------------------------------------------------------------
-
-function isEtBusinessHours(): boolean {
-  const etHour = new Date(
-    new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })
-  ).getHours()
-  return etHour >= 8 && etHour < 19
-}
-
 // Twilio error code: concurrent outbound call limit per account
 const TWILIO_CONCURRENT_LIMIT = 21210
 
@@ -180,41 +169,66 @@ async function placeTwilioCall(params: {
 }
 
 // ---------------------------------------------------------------------------
-// Check daily limit
+// Unified eligibility check: active hours + daily limit in one DB query
 // ---------------------------------------------------------------------------
 
-async function checkDailyLimit(
+async function checkCallingEligibility(
   db: any,
   chefId: string,
   defaultLimit = 20
-): Promise<{ allowed: boolean; limit: number }> {
-  // Use ET midnight so the limit resets at midnight Eastern, not UTC midnight.
-  const nowEt = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }))
-  nowEt.setHours(0, 0, 0, 0)
-  // Offset from local ET back to UTC: ET is UTC-5 (EST) or UTC-4 (EDT).
-  const utcOffset =
-    new Date().getTime() -
-    new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })).getTime()
-  const todayStart = new Date(nowEt.getTime() + utcOffset)
-
-  // Read per-chef limit from routing_rules (falls back to defaultLimit if not configured)
+): Promise<{ allowed: boolean; reason?: string; limit: number }> {
+  // One query for all per-chef calling config
   const { data: routingRule } = await db
     .from('ai_call_routing_rules')
-    .select('daily_call_limit')
+    .select('daily_call_limit, active_hours_start, active_hours_end, active_timezone')
     .eq('chef_id', chefId)
     .maybeSingle()
-  const limit = routingRule?.daily_call_limit ?? defaultLimit
+
+  const limit: number = routingRule?.daily_call_limit ?? defaultLimit
+  const tz: string = routingRule?.active_timezone || 'America/New_York'
+  const hoursStart: string = routingRule?.active_hours_start || '08:00'
+  const hoursEnd: string = routingRule?.active_hours_end || '20:00'
+
+  // Check active hours using configured timezone and stored start/end times
+  const [startH, startM] = hoursStart.split(':').map(Number)
+  const [endH, endM] = hoursEnd.split(':').map(Number)
+  const nowInTz = new Date(new Date().toLocaleString('en-US', { timeZone: tz }))
+  const currentMinutes = nowInTz.getHours() * 60 + nowInTz.getMinutes()
+  const startMinutes = startH * 60 + startM
+  const endMinutes = endH * 60 + endM
+
+  if (currentMinutes < startMinutes || currentMinutes >= endMinutes) {
+    return {
+      allowed: false,
+      reason: `Calls are only placed between ${hoursStart} and ${hoursEnd} (${tz}). Try again during active hours.`,
+      limit,
+    }
+  }
 
   // Count ALL outbound call types (availability, delivery, venue) against the limit.
-  // Availability calls create supplier_calls + ai_calls; delivery/venue create only ai_calls.
-  // Counting ai_calls direction='outbound' captures all three types uniformly.
+  // Reset boundary uses configured timezone midnight, not UTC.
+  const nowTzMidnight = new Date(new Date().toLocaleString('en-US', { timeZone: tz }))
+  nowTzMidnight.setHours(0, 0, 0, 0)
+  const utcOffset =
+    new Date().getTime() - new Date(new Date().toLocaleString('en-US', { timeZone: tz })).getTime()
+  const todayStart = new Date(nowTzMidnight.getTime() + utcOffset)
+
   const { count } = await db
     .from('ai_calls')
     .select('*', { count: 'exact', head: true })
     .eq('chef_id', chefId)
     .eq('direction', 'outbound')
     .gte('created_at', todayStart.toISOString())
-  return { allowed: (count ?? 0) < limit, limit }
+
+  if ((count ?? 0) >= limit) {
+    return {
+      allowed: false,
+      reason: `Daily call limit reached (${limit} calls/day). Resets at midnight.`,
+      limit,
+    }
+  }
+
+  return { allowed: true, limit }
 }
 
 // ---------------------------------------------------------------------------
@@ -251,19 +265,9 @@ export async function initiateSupplierCall(
 
   const vendorPhoneNormalized = normalizePhone(vendor.phone)
 
-  const { allowed: withinLimit, limit: dailyLimit } = await checkDailyLimit(db, user.tenantId!)
-  if (!withinLimit) {
-    return {
-      success: false,
-      error: `Daily call limit reached (${dailyLimit} calls/day). Resets at midnight.`,
-    }
-  }
-
-  if (!isEtBusinessHours()) {
-    return {
-      success: false,
-      error: 'Calls are only placed between 8am and 7pm ET. Try again during business hours.',
-    }
+  const eligibility = await checkCallingEligibility(db, user.tenantId!)
+  if (!eligibility.allowed) {
+    return { success: false, error: eligibility.reason }
   }
 
   const alreadyCalling = await hasPendingCall(
@@ -409,19 +413,9 @@ export async function initiateAdHocCall(
     .eq('id', user.tenantId!)
     .single()
 
-  const { allowed: withinLimit, limit: dailyLimit } = await checkDailyLimit(db, user.tenantId!)
-  if (!withinLimit) {
-    return {
-      success: false,
-      error: `Daily call limit reached (${dailyLimit} calls/day). Resets at midnight.`,
-    }
-  }
-
-  if (!isEtBusinessHours()) {
-    return {
-      success: false,
-      error: 'Calls are only placed between 8am and 7pm ET. Try again during business hours.',
-    }
+  const eligibility = await checkCallingEligibility(db, user.tenantId!)
+  if (!eligibility.allowed) {
+    return { success: false, error: eligibility.reason }
   }
 
   const vendorPhoneNormalized = normalizePhone(vendorPhone.trim())
@@ -564,11 +558,8 @@ export async function initiateDeliveryCoordinationCall(params: {
     .eq('id', user.tenantId!)
     .single()
 
-  const { allowed: withinLimit, limit: dailyLimit } = await checkDailyLimit(db, user.tenantId!)
-  if (!withinLimit)
-    return { success: false, error: `Daily call limit reached (${dailyLimit} calls/day).` }
-
-  if (!isEtBusinessHours()) return { success: false, error: 'Calls only placed 8am-7pm ET.' }
+  const eligibility = await checkCallingEligibility(db, user.tenantId!)
+  if (!eligibility.allowed) return { success: false, error: eligibility.reason }
 
   const vendorPhoneNormalized = normalizePhone(params.vendorPhone)
 
@@ -671,11 +662,8 @@ export async function initiateVenueConfirmationCall(params: {
     .eq('id', user.tenantId!)
     .single()
 
-  const { allowed: withinLimit, limit: dailyLimit } = await checkDailyLimit(db, user.tenantId!)
-  if (!withinLimit)
-    return { success: false, error: `Daily call limit reached (${dailyLimit} calls/day).` }
-
-  if (!isEtBusinessHours()) return { success: false, error: 'Calls only placed 8am-7pm ET.' }
+  const eligibility = await checkCallingEligibility(db, user.tenantId!)
+  if (!eligibility.allowed) return { success: false, error: eligibility.reason }
 
   const venuePhoneNormalized = normalizePhone(params.venuePhone)
 

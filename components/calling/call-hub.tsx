@@ -209,7 +209,20 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
             },
           }))
         }
-        if (attempts >= 22) clearInterval(poll)
+        if (attempts >= 22) {
+          clearInterval(poll)
+          if (!doneVendors.current.has(vendor.id)) {
+            doneVendors.current.add(vendor.id)
+            setCallStates((prev) => ({
+              ...prev,
+              [vendor.id]: {
+                phase: 'done',
+                result: null,
+                status: 'No response - call may still be in progress',
+              },
+            }))
+          }
+        }
       }, 4000)
     } catch {
       setCallStates((prev) => ({
