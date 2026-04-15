@@ -279,7 +279,9 @@ export async function createMenu(input: CreateMenuInput) {
       event_id: validated.event_id || null,
       is_template: validated.is_template || false,
     })
-  } catch {}
+  } catch (err) {
+    console.error('[createMenu] Webhook emit failed (non-blocking):', err)
+  }
 
   return result
 }
@@ -578,7 +580,9 @@ export async function updateMenu(menuId: string, input: UpdateMenuInput) {
           name: menu.name,
           changed_fields: Object.keys(updateFields),
         })
-      } catch {}
+      } catch (err) {
+        console.error('[updateMenu] Webhook emit failed (non-blocking):', err)
+      }
 
       // Notify client if menu is linked to an approved event (non-blocking)
       try {

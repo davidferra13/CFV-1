@@ -174,7 +174,9 @@ export async function acceptQuote(quoteId: string) {
         client_id: user.entityId,
         total_quoted_cents: quote.total_quoted_cents,
       })
-    } catch {}
+    } catch (err) {
+      console.error('[acceptQuote] Webhook emit failed (non-blocking):', err)
+    }
   }
 
   // Loyalty trigger: quote accepted (non-blocking)
@@ -264,7 +266,9 @@ export async function rejectQuote(quoteId: string, reason?: string) {
         client_id: user.entityId,
         reason: reason || null,
       })
-    } catch {}
+    } catch (err) {
+      console.error('[rejectQuote] Webhook emit failed (non-blocking):', err)
+    }
   }
 
   // Notify chef that quote was rejected (non-blocking)
