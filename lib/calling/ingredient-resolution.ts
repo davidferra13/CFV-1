@@ -338,6 +338,13 @@ export async function resolveIngredientAvailability(
   const partialVendorNames = new Set(
     partial.map((p) => p.vendorName.toLowerCase().split(' (')[0].trim())
   )
+  // Fix #9: phone-based dedup for ai_call partials where vendor_id is null.
+  // National directory calls before a vendor is saved to vendors table produce
+  // ai_call records with vendor_id=null. Without this set, those vendors would
+  // still appear in Tier 3 on the next query because partialVendorIds misses them.
+  const partialVendorPhones = new Set(
+    partial.filter((p) => !p.vendorId && p.phone).map((p) => p.phone!)
+  )
 
   const unresolved: VendorCallCandidate[] = vendorCallQueue.filter((v) => {
     // Saved vendors: always callable if no data signal (fix #8)
@@ -349,6 +356,8 @@ export async function resolveIngredientAvailability(
     // Skip if we already have a data signal
     if (partialVendorIds.has(v.id)) return false
     if (partialVendorNames.has(v.name.toLowerCase())) return false
+    // Fix #9: phone-based dedup — don't re-call a vendor we already have a result for
+    if (v.phone && partialVendorPhones.has(v.phone)) return false
 
     return true
   })
