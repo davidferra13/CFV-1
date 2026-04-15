@@ -10,8 +10,8 @@
  *  3. Base64 encode
  *  4. Constant-time compare with X-Twilio-Signature header
  *
- * In development, validation is skipped when no signature is present.
- * In production, missing or invalid signatures return false.
+ * Signature validation is always enforced. The only bypass is via
+ * DISABLE_TWILIO_SIGNATURE_FOR_E2E=true (never set in production).
  */
 
 import { createHmac } from 'crypto'
@@ -23,11 +23,14 @@ export async function validateTwilioWebhook(
   req: NextRequest,
   formData: FormData
 ): Promise<boolean> {
+  // E2E-only bypass: never set DISABLE_TWILIO_SIGNATURE_FOR_E2E in production
+  if (process.env.DISABLE_TWILIO_SIGNATURE_FOR_E2E === 'true') return true
+
   const authToken = process.env.TWILIO_AUTH_TOKEN
-  if (!authToken) return process.env.NODE_ENV === 'development'
+  if (!authToken) return false
 
   const signature = req.headers.get('x-twilio-signature')
-  if (!signature) return process.env.NODE_ENV === 'development'
+  if (!signature) return false
 
   // Full URL including query string (Twilio signs the complete URL)
   const url = `${APP_URL}${req.nextUrl.pathname}${req.nextUrl.search}`
