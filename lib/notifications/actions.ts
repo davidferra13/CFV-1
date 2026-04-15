@@ -83,6 +83,24 @@ export async function createNotification({
       .trim()
       .slice(0, 500) ?? null
 
+  // Dedup guard: skip if an identical notification was created in the last 60 seconds.
+  // Prevents double-click, retry storms, and concurrent side effects from spamming.
+  {
+    const { data: recent } = await db
+      .from('notifications')
+      .select('id')
+      .eq('recipient_id', recipientId)
+      .eq('action', action)
+      .eq('event_id', eventId ?? null)
+      .eq('inquiry_id', inquiryId ?? null)
+      .gte('created_at', new Date(Date.now() - 60_000).toISOString())
+      .limit(1)
+
+    if (recent && recent.length > 0) {
+      return recent[0] as any
+    }
+  }
+
   const { data: notification, error } = await db
     .from('notifications')
     .insert({
@@ -103,7 +121,9 @@ export async function createNotification({
 
   if (error || !notification) {
     console.error('[createNotification] Insert failed:', error)
-    throw new Error('Failed to create notification')
+    // I3 fix: return null instead of throwing. This function is called as a
+    // non-blocking side effect; throwing crashes the parent operation (webhooks, transitions).
+    return null as any
   }
 
   broadcastInsert('notifications', recipientId, notification)
