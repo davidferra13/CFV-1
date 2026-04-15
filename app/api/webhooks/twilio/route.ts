@@ -130,6 +130,11 @@ export async function POST(request: NextRequest) {
       } catch {
         // Already logged above
       }
+      // Return 500 so Twilio retries delivery rather than silently dropping the message
+      return new NextResponse('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {
+        headers: { 'Content-Type': 'text/xml' },
+        status: 500,
+      })
     }
 
     // Mid-service alert: if chef has an in_progress event today, surface via Remy (non-blocking)
@@ -180,9 +185,10 @@ export async function POST(request: NextRequest) {
     })
   } catch (err) {
     console.error('[twilio-webhook] Error processing inbound message:', err)
-    return new NextResponse(
-      '<?xml version="1.0" encoding="UTF-8"?><Response></Response>',
-      { headers: { 'Content-Type': 'text/xml' }, status: 200 } // Always 200 to Twilio
-    )
+    // Return 500 so Twilio retries — a 200 here would silently drop the message
+    return new NextResponse('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {
+      headers: { 'Content-Type': 'text/xml' },
+      status: 500,
+    })
   }
 }

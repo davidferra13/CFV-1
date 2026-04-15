@@ -11,6 +11,7 @@ import {
 } from '@/lib/notes/actions'
 import type { ClientNote, NoteCategory } from '@/lib/notes/actions'
 import { QuickNoteForm } from './quick-note-form'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 
 const CATEGORY_STYLES: Record<NoteCategory, { bg: string; text: string; label: string }> = {
   general: { bg: 'bg-stone-800', text: 'text-stone-300', label: 'General' },
@@ -30,6 +31,7 @@ export function QuickNotes({ clientId, initialNotes }: QuickNotesProps) {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
 
   const handleAdd = async (data: { note_text: string; category: NoteCategory }) => {
     startTransition(async () => {
@@ -64,8 +66,15 @@ export function QuickNotes({ clientId, initialNotes }: QuickNotesProps) {
     })
   }
 
-  const handleDelete = async (noteId: string) => {
+  const handleDelete = (noteId: string) => {
+    setDeleteTargetId(noteId)
+  }
+
+  const handleConfirmedDelete = () => {
+    if (!deleteTargetId) return
+    const noteId = deleteTargetId
     const prevNotes = notes
+    setDeleteTargetId(null)
     startTransition(async () => {
       try {
         await deleteClientNote(noteId)
@@ -209,6 +218,16 @@ export function QuickNotes({ clientId, initialNotes }: QuickNotesProps) {
           </div>
         ))}
       </div>
+
+      <ConfirmModal
+        open={deleteTargetId !== null}
+        title="Delete this note?"
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={handleConfirmedDelete}
+        onCancel={() => setDeleteTargetId(null)}
+      />
     </div>
   )
 }

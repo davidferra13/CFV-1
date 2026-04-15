@@ -11,6 +11,7 @@ import {
 import type { InquiryNote, InquiryNoteCategory } from '@/lib/inquiries/note-actions'
 import { InquiryNoteForm } from './inquiry-note-form'
 import { toast } from 'sonner'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 
 // ============================================================
 // Category styles + filter tabs
@@ -47,6 +48,7 @@ export function InquiryNotes({ inquiryId, initialNotes }: InquiryNotesProps) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [activeFilter, setActiveFilter] = useState<InquiryNoteCategory | 'all'>('all')
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
   // ---- Derived ----
@@ -101,7 +103,14 @@ export function InquiryNotes({ inquiryId, initialNotes }: InquiryNotesProps) {
     })
   }
 
-  const handleDelete = async (noteId: string) => {
+  const handleDelete = (noteId: string) => {
+    setDeleteTargetId(noteId)
+  }
+
+  const handleConfirmedDelete = () => {
+    if (!deleteTargetId) return
+    const noteId = deleteTargetId
+    setDeleteTargetId(null)
     startTransition(async () => {
       try {
         await deleteInquiryNote(noteId)
@@ -316,6 +325,16 @@ export function InquiryNotes({ inquiryId, initialNotes }: InquiryNotesProps) {
           ))}
         </div>
       </div>
+
+      <ConfirmModal
+        open={deleteTargetId !== null}
+        title="Delete this note?"
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={handleConfirmedDelete}
+        onCancel={() => setDeleteTargetId(null)}
+      />
 
       {/* Lightbox */}
       {lightboxUrl && (
