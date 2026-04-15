@@ -214,6 +214,20 @@ export async function toggleProductActive(productId: string, isActive: boolean) 
   await requirePro('commerce')
   const db: any = createServerClient()
 
+  // When deactivating, check for active (non-voided) sale items referencing this product
+  if (!isActive) {
+    const { data: activeSaleItems } = await (db
+      .from('sale_items')
+      .select('id')
+      .eq('product_projection_id', productId)
+      .eq('tenant_id', user.tenantId!)
+      .limit(1) as any)
+
+    if (activeSaleItems && activeSaleItems.length > 0) {
+      throw new Error('Cannot deactivate a product that has existing sale items')
+    }
+  }
+
   const { error } = await (db
     .from('product_projections')
     .update({ is_active: isActive } as any)

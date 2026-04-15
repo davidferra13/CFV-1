@@ -169,6 +169,12 @@ export async function requireClient(): Promise<AuthUser> {
     redirect(SESSION_EXPIRED_URL)
   }
 
+  // Guard: client must have an entityId linking to a client record.
+  // A null entityId means the auth record exists but no client profile was created.
+  if (!user.entityId) {
+    throw new Error('Client account is missing profile context. Please contact support.')
+  }
+
   return user
 }
 

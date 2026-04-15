@@ -187,6 +187,12 @@ export async function updateExpense(
   const tenantId = user.tenantId!
   const db: any = await createServerClient()
 
+  if (input.amount_cents !== undefined) {
+    if (!Number.isInteger(input.amount_cents) || input.amount_cents <= 0) {
+      throw new Error('Expense amount must be a positive integer (cents)')
+    }
+  }
+
   const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() }
   if (input.category !== undefined) updateData.category = input.category
   if (input.description !== undefined) updateData.description = input.description

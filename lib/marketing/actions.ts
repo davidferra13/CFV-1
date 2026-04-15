@@ -388,7 +388,7 @@ export async function sendCampaignNow(campaignId: string) {
       )
       break
     }
-    if (!client.email) {
+    if (!client.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(client.email)) {
       skippedCount++
       continue
     }

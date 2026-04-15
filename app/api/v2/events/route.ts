@@ -16,7 +16,10 @@ import {
 
 const CreateEventBody = z.object({
   client_id: z.string().uuid(),
-  event_date: z.string().min(1),
+  event_date: z
+    .string()
+    .min(1)
+    .refine((v) => !isNaN(Date.parse(v)), { message: 'event_date must be a valid date string' }),
   serve_time: z.string().min(1),
   guest_count: z.number().int().positive(),
   location_address: z.string().min(1),
