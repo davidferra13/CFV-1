@@ -65,7 +65,9 @@ export function AllFeaturesCollapse({
       const next = !prev
       try {
         localStorage.setItem(STORAGE_KEY, String(next))
-      } catch {}
+      } catch (err) {
+        console.warn('[AllFeaturesCollapse] localStorage write failed:', err)
+      }
       return next
     })
   }, [])

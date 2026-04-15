@@ -179,7 +179,9 @@ export async function createTask(input: CreateTaskInput) {
           validated.title,
           validated.due_date
         )
-      } catch {}
+      } catch (err) {
+        console.error('[createTask] notifyTaskAssigned failed (non-blocking):', err)
+      }
     } catch (err) {
       console.error('[createTask] Task notification failed (non-fatal):', err)
     }
@@ -259,7 +261,9 @@ export async function createTaskFromEvent(
         validated.title,
         validated.due_date
       )
-    } catch {}
+    } catch (err) {
+      console.error('[createTaskFromEvent] notifyTaskAssigned failed (non-blocking):', err)
+    }
   } catch (err) {
     console.error('[createTaskFromEvent] Notification failed (non-fatal):', err)
   }

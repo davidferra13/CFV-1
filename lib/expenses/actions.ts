@@ -119,7 +119,9 @@ async function syncExpenseTaxMapping(
         .eq('source', 'expense')
         .eq('source_id', expenseId)
         .eq('tax_year', taxYear)
-    } catch {}
+    } catch (err) {
+      console.error('[syncExpenseTaxCategory] Tax category cleanup failed (non-blocking):', err)
+    }
     return
   }
 
@@ -223,7 +225,9 @@ export async function createExpense(input: CreateExpenseInput) {
       category: validated.category,
       event_id: validated.event_id || null,
     })
-  } catch {}
+  } catch (err) {
+    console.error('[createExpense] Webhook emit failed (non-blocking):', err)
+  }
 
   return { success: true, expense: data }
 }

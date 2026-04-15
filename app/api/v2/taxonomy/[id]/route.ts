@@ -36,7 +36,9 @@ export const DELETE = withApiAuth(
         action: 'remove',
         id,
       })
-    } catch {}
+    } catch (err) {
+      console.error('[v2/taxonomy] Webhook emit failed (non-blocking):', err)
+    }
 
     return apiNoContent()
   },

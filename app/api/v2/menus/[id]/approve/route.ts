@@ -68,7 +68,9 @@ export const POST = withApiAuth(
         action: 'view_event',
         action_url: `/events/${eventId}`,
       })
-    } catch {}
+    } catch (err) {
+      console.error('[v2/menus/approve] Notification failed (non-blocking):', err)
+    }
 
     return apiSuccess({
       menu_id: id,

@@ -232,7 +232,12 @@ export async function updateClipboardEntry(entryId: string, updates: UpdateClipb
           const componentName = comp.name ?? 'Unknown component'
           try {
             await notifyLowStock(user.tenantId!, stationName, componentName, onHand, parLevel)
-          } catch {}
+          } catch (err) {
+            console.error(
+              '[updateClipboardEntry] Low stock notification inner failed (non-blocking):',
+              err
+            )
+          }
         }
       }
     } catch (err) {

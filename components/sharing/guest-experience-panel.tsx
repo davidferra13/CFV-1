@@ -266,7 +266,9 @@ function MessagesTab({ eventId }: { eventId: string }) {
         setMessages((prev) =>
           prev.map((m) => (m.id === id ? { ...m, readAt: new Date().toISOString() } : m))
         )
-      } catch {}
+      } catch (err) {
+        console.error('[GuestExperiencePanel] markRead failed:', err)
+      }
     })
   }
 
@@ -432,7 +434,9 @@ function DocumentsTab({ eventId }: { eventId: string }) {
         setContentText('')
         setShowForm(false)
         load()
-      } catch {}
+      } catch (err) {
+        console.error('[GuestExperiencePanel] create document failed:', err)
+      }
     })
   }
 
@@ -441,7 +445,9 @@ function DocumentsTab({ eventId }: { eventId: string }) {
       try {
         await publishGuestDocument(id)
         load()
-      } catch {}
+      } catch (err) {
+        console.error('[GuestExperiencePanel] publish failed:', err)
+      }
     })
   }
 
@@ -450,7 +456,9 @@ function DocumentsTab({ eventId }: { eventId: string }) {
       try {
         await deleteGuestDocument(id)
         load()
-      } catch {}
+      } catch (err) {
+        console.error('[GuestExperiencePanel] delete failed:', err)
+      }
     })
   }
 

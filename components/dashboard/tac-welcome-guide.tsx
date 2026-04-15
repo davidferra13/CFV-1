@@ -25,7 +25,9 @@ export function TacWelcomeGuide() {
   const handleDismiss = () => {
     try {
       localStorage.setItem(STORAGE_KEY, '1')
-    } catch {}
+    } catch (err) {
+      console.warn('[TacWelcomeGuide] localStorage write failed:', err)
+    }
     setDismissed(true)
   }
 

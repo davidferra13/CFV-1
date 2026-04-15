@@ -32,7 +32,9 @@ export function DashboardSecondaryInsights({
       const next = !prev
       try {
         localStorage.setItem(STORAGE_KEY, String(next))
-      } catch {}
+      } catch (err) {
+        console.warn('[DashboardSecondaryInsights] localStorage write failed:', err)
+      }
       return next
     })
   }

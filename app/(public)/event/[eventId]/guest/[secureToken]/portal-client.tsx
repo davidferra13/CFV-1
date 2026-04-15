@@ -1243,7 +1243,9 @@ function GuestAboutMeSection({ eventId, secureToken }: { eventId: string; secure
         await updateGuestAboutMe({ eventId, secureToken, aboutMe: aboutMe.trim() })
         setSaved(true)
         setTimeout(() => setSaved(false), 3000)
-      } catch {}
+      } catch (err) {
+        console.error('[GuestPortal] About me save failed:', err)
+      }
     })
   }
 

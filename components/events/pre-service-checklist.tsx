@@ -48,7 +48,9 @@ export function PreServiceChecklist({ eventId, eventTitle, items, compact }: Pro
       if (stored) {
         setCompletedIds(new Set(JSON.parse(stored)))
       }
-    } catch {}
+    } catch (err) {
+      console.warn('[PreServiceChecklist] localStorage read failed:', err)
+    }
   }, [eventId])
 
   function toggleItem(itemId: string) {
@@ -62,7 +64,9 @@ export function PreServiceChecklist({ eventId, eventTitle, items, compact }: Pro
       // Persist
       try {
         localStorage.setItem(getStorageKey(eventId), JSON.stringify([...next]))
-      } catch {}
+      } catch (err) {
+        console.warn('[PreServiceChecklist] localStorage write failed:', err)
+      }
       return next
     })
   }

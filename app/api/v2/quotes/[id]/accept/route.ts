@@ -53,7 +53,9 @@ export const POST = withApiAuth(
         transitioned_by: null,
         metadata: { source: 'api_v2', api_key_id: ctx.keyId },
       })
-    } catch {}
+    } catch (err) {
+      console.error('[v2/quotes/accept] State transition record failed (non-blocking):', err)
+    }
 
     return apiSuccess({ quote: updated, status: 'accepted' })
   },

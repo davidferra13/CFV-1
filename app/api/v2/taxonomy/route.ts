@@ -162,7 +162,9 @@ export const POST = withApiAuth(
         action: 'add',
         value: slug,
       })
-    } catch {}
+    } catch (err) {
+      console.error('[v2/taxonomy] Webhook emit failed (non-blocking):', err)
+    }
 
     return apiCreated(data)
   },

@@ -225,7 +225,9 @@ export async function createQuote(input: CreateQuoteInput) {
       total_quoted_cents: validated.total_quoted_cents,
       pricing_model: validated.pricing_model,
     })
-  } catch {}
+  } catch (err) {
+    console.error('[createQuote] Webhook emit failed (non-blocking):', err)
+  }
 
   return result
 }
@@ -783,7 +785,9 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
         client_id: updated.client_id,
       })
     }
-  } catch {}
+  } catch (err) {
+    console.error('[updateQuoteStatus] Webhook emit failed (non-blocking):', err)
+  }
 
   return { success: true, quote: updated, warnings: warnings.length > 0 ? warnings : undefined }
 }

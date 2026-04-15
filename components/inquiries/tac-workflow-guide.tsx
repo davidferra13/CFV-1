@@ -56,7 +56,9 @@ export function TacWorkflowGuide({ inquiryStatus }: TacWorkflowGuideProps) {
   const handleDismiss = () => {
     try {
       localStorage.setItem(STORAGE_KEY, '1')
-    } catch {}
+    } catch (err) {
+      console.warn('[TacWorkflowGuide] localStorage write failed:', err)
+    }
     setDismissed(true)
   }
 

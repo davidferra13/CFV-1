@@ -28,7 +28,9 @@ export function IntegrationsAdvancedSection({ children }: IntegrationsAdvancedSe
       const next = !prev
       try {
         localStorage.setItem(STORAGE_KEY, String(next))
-      } catch {}
+      } catch (err) {
+        console.warn('[IntegrationsAdvanced] localStorage write failed:', err)
+      }
       return next
     })
   }

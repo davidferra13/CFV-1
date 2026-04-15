@@ -132,7 +132,9 @@ export const POST = withApiAuth(
           api_key_id: ctx.keyId,
         },
       })
-    } catch {}
+    } catch (err) {
+      console.error('[v2/events/clone] State transition record failed (non-blocking):', err)
+    }
 
     // Clone menus and dishes (non-blocking, best effort)
     try {

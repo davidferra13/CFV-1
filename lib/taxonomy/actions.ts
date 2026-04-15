@@ -121,7 +121,9 @@ export async function addTaxonomyEntry(
   try {
     const { emitWebhook } = await import('@/lib/webhooks/emitter')
     await emitWebhook(chefId, 'taxonomy.updated' as any, { category, action: 'add', value: slug })
-  } catch {}
+  } catch (err) {
+    console.error('[addTaxonomyEntry] Webhook emit failed (non-blocking):', err)
+  }
 
   revalidatePath('/settings/taxonomy')
   return { success: true }
@@ -149,7 +151,9 @@ export async function removeTaxonomyEntry(
   try {
     const { emitWebhook } = await import('@/lib/webhooks/emitter')
     await emitWebhook(chefId, 'taxonomy.updated' as any, { action: 'remove', id })
-  } catch {}
+  } catch (err) {
+    console.error('[removeTaxonomyEntry] Webhook emit failed (non-blocking):', err)
+  }
 
   revalidatePath('/settings/taxonomy')
   return { success: true }
