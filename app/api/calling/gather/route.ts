@@ -363,7 +363,17 @@ async function handleVendorAvailability(
         })
         .select('id')
         .single()
-      if (newCall) callId = newCall.id
+      if (newCall) {
+        callId = newCall.id
+        // Fix #8: bi-directional link — ai_calls already has supplier_call_id = null
+        // at this point (call was initiated before a supplier_calls record existed).
+        // Stamp it so queryAiCallFeedback and call sheet lookups can navigate both ways.
+        await db
+          .from('ai_calls')
+          .update({ supplier_call_id: newCall.id, updated_at: new Date().toISOString() })
+          .eq('id', aiCallId)
+          .catch(() => {})
+      }
     }
   }
 
@@ -445,6 +455,8 @@ async function handleVendorAvailability(
         pricePointAlreadyExists = !!existing
       } catch {}
 
+      let actionTaken: string | null = null
+
       if (!pricePointAlreadyExists && priceQuoted) {
         // Price captured: write a full price point
         try {
@@ -460,6 +472,7 @@ async function handleVendorAvailability(
               notes: `AI call: "${speech}"`,
               recorded_at: today,
             })
+            actionTaken = 'vendor_price_point_created'
           }
         } catch (err) {
           console.error('[calling/gather] vendor_price_points (price) error:', err)
@@ -481,8 +494,29 @@ async function handleVendorAvailability(
             notes: `AI call: availability confirmed, price not captured`,
             recorded_at: today,
           })
+          actionTaken = 'vendor_price_point_created'
         } catch (err) {
           console.error('[calling/gather] vendor_price_points (availability) error:', err)
+        }
+      } else if (pricePointAlreadyExists) {
+        actionTaken = 'vendor_price_point_skipped_duplicate'
+      }
+
+      // Fix #7: record auto-actions in ai_calls.action_log for auditability.
+      // action_log is JSONB DEFAULT '[]'; we append one entry per call completion.
+      if (aiCallId && actionTaken) {
+        try {
+          await db
+            .from('ai_calls')
+            .update({
+              action_log: [
+                { action: actionTaken, at: new Date().toISOString(), vendor_id: effectiveVendorId },
+              ],
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', aiCallId)
+        } catch (err) {
+          console.error('[calling/gather] action_log update error:', err)
         }
       }
     }

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { getOrCreateProfile } from '@/lib/hub/profile-actions'
+import { getOrCreateProfile, updateProfile } from '@/lib/hub/profile-actions'
 import { joinHubGroup } from '@/lib/hub/group-actions'
 
 interface JoinGroupFormProps {
@@ -14,6 +14,8 @@ export function JoinGroupForm({ groupToken, isBridge }: JoinGroupFormProps) {
   const router = useRouter()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [allergyAnswer, setAllergyAnswer] = useState<null | 'none' | 'has'>(null)
+  const [allergyText, setAllergyText] = useState('')
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
 
@@ -22,22 +24,37 @@ export function JoinGroupForm({ groupToken, isBridge }: JoinGroupFormProps) {
 
     startTransition(async () => {
       try {
-        // Create or find profile
         const profile = await getOrCreateProfile({
           display_name: name.trim(),
           email: email.trim() || null,
         })
 
-        // Join the group
-        await joinHubGroup({
-          groupToken,
-          profileId: profile.id,
-        })
+        await joinHubGroup({ groupToken, profileId: profile.id })
 
         // Set profile cookie (persistent, 1 year)
         document.cookie = `hub_profile_token=${profile.profile_token}; path=/; max-age=${365 * 24 * 60 * 60}; samesite=lax`
 
-        // Redirect to the group
+        // Persist allergy/dietary info if provided
+        if (allergyAnswer === 'has' && allergyText.trim()) {
+          const items = allergyText
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+          await updateProfile({
+            profileToken: profile.profile_token,
+            known_allergies: items,
+          }).catch(() => {
+            // Non-blocking - profile update failure doesn't prevent joining
+          })
+        } else if (allergyAnswer === 'none') {
+          // Explicitly record confirmed-none so chef can distinguish from not-answered
+          await updateProfile({
+            profileToken: profile.profile_token,
+            known_allergies: [],
+            known_dietary: [],
+          }).catch(() => {})
+        }
+
         router.push(`/hub/g/${groupToken}`)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to join')
@@ -53,7 +70,7 @@ export function JoinGroupForm({ groupToken, isBridge }: JoinGroupFormProps) {
           onChange={(e) => setName(e.target.value)}
           placeholder="Your name"
           className="w-full rounded-xl bg-stone-800 px-4 py-3 text-sm text-stone-200 outline-none ring-1 ring-stone-700 placeholder:text-stone-500 focus:ring-[var(--hub-primary,#e88f47)]"
-          onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
+          onKeyDown={(e) => e.key === 'Enter' && !allergyAnswer && handleJoin()}
           autoFocus
         />
 
@@ -64,6 +81,48 @@ export function JoinGroupForm({ groupToken, isBridge }: JoinGroupFormProps) {
           type="email"
           className="w-full rounded-xl bg-stone-800 px-4 py-3 text-sm text-stone-200 outline-none ring-1 ring-stone-700 placeholder:text-stone-500 focus:ring-[var(--hub-primary,#e88f47)]"
         />
+
+        {/* Allergy question - required context for the chef */}
+        <div className="space-y-2 pt-1">
+          <p className="text-xs font-medium text-stone-400">
+            Any food allergies or dietary restrictions?
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setAllergyAnswer('none')
+                setAllergyText('')
+              }}
+              className={`rounded-lg border py-2.5 text-sm font-medium transition-all ${
+                allergyAnswer === 'none'
+                  ? 'border-emerald-500 bg-emerald-950 text-emerald-300'
+                  : 'border-stone-700 text-stone-400 hover:border-stone-600'
+              }`}
+            >
+              No, none
+            </button>
+            <button
+              type="button"
+              onClick={() => setAllergyAnswer('has')}
+              className={`rounded-lg border py-2.5 text-sm font-medium transition-all ${
+                allergyAnswer === 'has'
+                  ? 'border-amber-500 bg-amber-950 text-amber-300'
+                  : 'border-stone-700 text-stone-400 hover:border-stone-600'
+              }`}
+            >
+              Yes, I do
+            </button>
+          </div>
+          {allergyAnswer === 'has' && (
+            <input
+              value={allergyText}
+              onChange={(e) => setAllergyText(e.target.value)}
+              placeholder="e.g. peanuts, shellfish, gluten-free"
+              className="w-full rounded-xl bg-stone-800 px-4 py-2.5 text-sm text-stone-200 outline-none ring-1 ring-stone-700 placeholder:text-stone-500 focus:ring-[var(--hub-primary,#e88f47)]"
+            />
+          )}
+        </div>
       </div>
 
       {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
