@@ -5,9 +5,11 @@
 // Protected by layout via requireChef().
 
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import { format } from 'date-fns'
 import { getDailyPlan } from '@/lib/daily-ops/actions'
 import { DailyPlanView } from '@/components/daily-ops/daily-plan-view'
+import { BriefingAlertsBanner } from '@/components/daily-ops/briefing-alerts-banner'
 
 export const metadata: Metadata = { title: 'Daily Ops' }
 
@@ -46,6 +48,11 @@ export default async function DailyOpsPage() {
           </div>
         )}
       </div>
+
+      {/* Urgent alerts from morning briefing */}
+      <Suspense fallback={null}>
+        <BriefingAlertsBanner />
+      </Suspense>
 
       {/* Plan */}
       <DailyPlanView plan={plan} />

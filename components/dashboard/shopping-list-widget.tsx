@@ -45,7 +45,29 @@ const STORE_WALK_ORDER = [
 type Category = (typeof STORE_WALK_ORDER)[number]
 
 function normalizeCategory(raw: string): Category {
-  const lower = raw.toLowerCase().trim()
+  const lower = raw.toLowerCase().trim().replace(/\s+/g, '_')
+  // Map smart_grocery_items aisle_section values to display categories
+  const map: Record<string, Category> = {
+    produce: 'Produce',
+    meat_seafood: 'Protein',
+    dairy_eggs: 'Dairy',
+    bakery: 'Bakery',
+    frozen: 'Frozen',
+    pantry_dry: 'Pantry',
+    canned: 'Pantry',
+    condiments_sauces: 'Pantry',
+    spices: 'Pantry',
+    baking: 'Pantry',
+    beverages: 'Other',
+    deli: 'Other',
+    bulk: 'Other',
+    international: 'Other',
+    snacks: 'Other',
+    household: 'Other',
+    other: 'Other',
+  }
+  if (map[lower]) return map[lower]
+  // Fallback: direct match against STORE_WALK_ORDER labels
   for (const cat of STORE_WALK_ORDER) {
     if (cat.toLowerCase() === lower) return cat
   }

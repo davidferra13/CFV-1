@@ -176,6 +176,7 @@ export default async function IngredientsPage() {
                         trendDirection={ing.price_trend_direction}
                         trendPct={ing.price_trend_pct ? Number(ing.price_trend_pct) : null}
                         lastPriceDate={ing.last_price_date}
+                        source={ing.last_price_source ?? null}
                         compact
                       />
                     ) : (

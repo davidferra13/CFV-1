@@ -15,7 +15,10 @@ import {
   memo,
 } from 'react'
 import type { LucideIcon } from '@/components/ui/icons'
-import { navGroups, standaloneBottom, CORE_GROUP_IDS } from './nav-config'
+import { navGroups, standaloneBottom } from './nav-config'
+import { DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
+
+const DEFAULT_MODULE_SLUGS = new Set(DEFAULT_ENABLED_MODULES)
 import type { NavGroup } from './nav-config'
 import { ActionBar } from './action-bar'
 import { NotificationBell } from '@/components/notifications/notification-bell'
@@ -565,7 +568,12 @@ export function ChefSidebar({
   )
   const accessibleGroups = useMemo(() => {
     const baseGroups = navGroups
-      .filter((group) => CORE_GROUP_IDS.has(group.id) || (isAdmin && group.id === 'admin'))
+      .filter((group) => {
+        if (group.id === 'admin') return Boolean(isAdmin)
+        if (!group.module) return false
+        if (enabledSet) return enabledSet.has(group.module)
+        return DEFAULT_MODULE_SLUGS.has(group.module)
+      })
       .map((group) => ({
         ...group,
         items: (isAdmin ? group.items : group.items.filter((item) => !item.adminOnly))
@@ -592,14 +600,10 @@ export function ChefSidebar({
     return strictGroups.sort(
       (a, b) => getStrictFocusGroupRank(a.id) - getStrictFocusGroupRank(b.id)
     )
-  }, [isAdmin, focusMode])
+  }, [isAdmin, focusMode, enabledSet])
   const groupEntries = useMemo(
-    () =>
-      accessibleGroups.map((group) => ({
-        group,
-        isLocked: Boolean(!isAdmin && enabledSet && group.module && !enabledSet.has(group.module)),
-      })),
-    [accessibleGroups, enabledSet, isAdmin]
+    () => accessibleGroups.map((group) => ({ group, isLocked: false })),
+    [accessibleGroups]
   )
   const filteredGroupEntries = useMemo(
     () =>

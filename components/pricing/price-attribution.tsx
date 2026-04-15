@@ -24,6 +24,39 @@ export interface PriceAttributionProps {
   compact?: boolean
   /** Chef's preferred store name. When it matches `store`, a star indicator is shown. */
   preferredStore?: string | null
+  /** Price source from resolve-price chain (e.g. 'receipt', 'regional_average', 'government') */
+  source?: string | null
+}
+
+function sourceTierLabel(
+  source: string | null | undefined
+): { label: string; color: string } | null {
+  if (!source) return null
+  switch (source) {
+    case 'receipt':
+      return { label: 'your data', color: 'text-emerald-400' }
+    case 'api_quote':
+    case 'wholesale':
+      return { label: 'live quote', color: 'text-emerald-400' }
+    case 'direct_scrape':
+      return { label: 'local', color: 'text-emerald-400' }
+    case 'flyer':
+      return { label: 'circular', color: 'text-sky-400' }
+    case 'instacart':
+      return { label: 'instacart', color: 'text-sky-400' }
+    case 'regional_average':
+      return { label: 'regional avg', color: 'text-sky-400' }
+    case 'market_aggregate':
+      return { label: 'market avg', color: 'text-amber-400' }
+    case 'government':
+      return { label: 'USDA est.', color: 'text-amber-400' }
+    case 'historical':
+      return { label: 'your history', color: 'text-stone-500' }
+    case 'category_baseline':
+      return { label: 'category est.', color: 'text-stone-500' }
+    default:
+      return null
+  }
 }
 
 function freshnessText(date: string | null): string {
@@ -99,6 +132,7 @@ export function PriceAttribution({
   lastPriceDate,
   compact = false,
   preferredStore,
+  source,
 }: PriceAttributionProps) {
   const isPreferred =
     !!preferredStore && !!store && store.toLowerCase() === preferredStore.toLowerCase()
@@ -114,6 +148,7 @@ export function PriceAttribution({
   const trend = trendArrow(trendDirection ?? null, trendPct != null ? Number(trendPct) : null)
   const fresh = freshnessText(lastPriceDate ?? null)
   const freshColor = freshnessColor(lastPriceDate ?? null)
+  const tier = sourceTierLabel(source)
 
   // No attribution data (legacy ingredient, no enrichment columns populated)
   if (!store && confidence === null && !trendDirection) {
@@ -132,6 +167,14 @@ export function PriceAttribution({
           {priceText}
           {unitSuffix && <span className="text-stone-400">{unitSuffix}</span>}
         </span>
+        {tier && (
+          <span
+            className={`text-[0.6rem] uppercase tracking-wide ${tier.color}`}
+            title={`Source: ${source}`}
+          >
+            {tier.label}
+          </span>
+        )}
         {store && (
           <span className="inline-flex items-center gap-0.5 text-xs text-stone-500 truncate max-w-[100px]">
             {isPreferred && (
@@ -178,6 +221,14 @@ export function PriceAttribution({
             {store}
           </span>
         </>
+      )}
+      {tier && (
+        <span
+          className={`text-[0.6rem] uppercase tracking-wide ${tier.color}`}
+          title={`Source: ${source}`}
+        >
+          {tier.label}
+        </span>
       )}
       <span className={`inline-block w-2 h-2 rounded-full ${dot.color}`} title={dot.title} />
       {trend && (

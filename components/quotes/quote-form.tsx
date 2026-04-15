@@ -22,6 +22,10 @@ import {
   updateQuote,
   type CreateQuoteInput,
 } from '@/lib/quotes/actions'
+import {
+  getQuotePriceFreshnessSummary,
+  type QuotePriceFreshnessSummary,
+} from '@/lib/quotes/price-confidence-actions'
 import { parseCurrencyToCents, formatCurrency } from '@/lib/utils/currency'
 import { CurrencyConversionHint } from '@/components/currency/currency-conversion-hint'
 import {
@@ -172,7 +176,10 @@ export function QuoteForm({
     guestCount: number | null
   } | null>(null)
 
-  // Load menu cost when form has an event ID
+  // Price freshness state (stale/missing ingredient prices)
+  const [priceFreshness, setPriceFreshness] = useState<QuotePriceFreshnessSummary | null>(null)
+
+  // Load menu cost + price freshness when form has an event ID
   useEffect(() => {
     const eventId = existingQuote?.event_id ?? prefilledEventId ?? null
     if (!eventId) return
@@ -181,6 +188,12 @@ export function QuoteForm({
     getEventMenuCost(eventId)
       .then((data) => {
         if (!cancelled) setMenuCost(data)
+      })
+      .catch(() => {})
+
+    getQuotePriceFreshnessSummary(eventId)
+      .then((data) => {
+        if (!cancelled) setPriceFreshness(data)
       })
       .catch(() => {})
 
@@ -1191,6 +1204,19 @@ export function QuoteForm({
                       Some recipe ingredients are missing price data
                     </p>
                   )}
+                  {priceFreshness &&
+                    (priceFreshness.staleCount > 0 || priceFreshness.noPriceCount > 0) && (
+                      <p className="text-xs text-amber-500">
+                        {[
+                          priceFreshness.staleCount > 0 &&
+                            `${priceFreshness.staleCount} price${priceFreshness.staleCount !== 1 ? 's' : ''} older than 30d${priceFreshness.oldestPriceDays ? ` (oldest: ${priceFreshness.oldestPriceDays}d)` : ''}`,
+                          priceFreshness.noPriceCount > 0 &&
+                            `${priceFreshness.noPriceCount} ingredient${priceFreshness.noPriceCount !== 1 ? 's' : ''} unpriced`,
+                        ]
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </p>
+                    )}
                 </div>
               </Card>
             )}

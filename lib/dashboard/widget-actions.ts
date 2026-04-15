@@ -501,10 +501,10 @@ export async function getActiveShoppingList(daysAhead = 5): Promise<{
   const cutoff = new Date()
   cutoff.setDate(cutoff.getDate() + daysAhead)
 
-  // Find upcoming events with grocery lists
+  // Find upcoming events
   const { data: events } = await db
     .from('events')
-    .select('id, occasion, event_date, client:clients(full_name)')
+    .select('id, occasion, event_date')
     .eq('tenant_id', user.tenantId!)
     .gte('event_date', _liso(now))
     .lte('event_date', _liso(cutoff))
@@ -518,39 +518,53 @@ export async function getActiveShoppingList(daysAhead = 5): Promise<{
   const eventIds = events.map((e: any) => e.id)
   const eventMap = new Map(events.map((e: any) => [e.id, e]))
 
-  // Fetch grocery list items for these events
-  const { data: groceryItems } = await db
-    .from('grocery_list_items')
-    .select(
-      'id, name, quantity, category, purchased, substitute_note, grocery_list:grocery_lists!inner(event_id)'
-    )
-    .in('grocery_lists.event_id', eventIds)
-    .order('category', { ascending: true })
+  // Fetch smart grocery lists for these events
+  const { data: lists } = await db
+    .from('smart_grocery_lists')
+    .select('id, event_id')
+    .eq('chef_id', user.entityId!)
+    .in('event_id', eventIds)
+    .eq('status', 'active')
 
-  if (!groceryItems || groceryItems.length === 0) {
+  if (!lists || lists.length === 0) {
+    return { items: [], eventLabel: 'No grocery lists', consolidatedEvents: [] }
+  }
+
+  const listIds = lists.map((l: any) => l.id)
+  const listEventMap = new Map(lists.map((l: any) => [l.id, l.event_id]))
+
+  // Fetch items from those lists
+  const { data: rawItems } = await db
+    .from('smart_grocery_items')
+    .select('id, list_id, name, quantity, unit, aisle_section, is_checked, notes')
+    .in('list_id', listIds)
+    .order('aisle_section', { ascending: true })
+
+  if (!rawItems || rawItems.length === 0) {
     return { items: [], eventLabel: 'No grocery lists', consolidatedEvents: [] }
   }
 
   const consolidatedEvents: string[] = []
   const seenEvents = new Set<string>()
 
-  const items: ActiveShoppingItem[] = groceryItems.map((gi: any) => {
-    const eventId = gi.grocery_list?.event_id ?? ''
+  const items: ActiveShoppingItem[] = rawItems.map((gi: any) => {
+    const eventId: string = String(listEventMap.get(gi.list_id) ?? '')
     const event = eventMap.get(eventId) as any
     const occasion = event?.occasion || 'Untitled Event'
-    if (!seenEvents.has(eventId)) {
+    if (eventId && !seenEvents.has(eventId)) {
       seenEvents.add(eventId)
       consolidatedEvents.push(occasion)
     }
+    const qty = gi.unit ? `${gi.quantity} ${gi.unit}` : String(gi.quantity ?? '')
     return {
       id: gi.id,
       name: gi.name ?? '',
-      quantity: gi.quantity ?? '',
-      category: gi.category ?? 'Other',
-      purchased: gi.purchased ?? false,
+      quantity: qty,
+      category: gi.aisle_section ?? 'other',
+      purchased: gi.is_checked ?? false,
       eventOccasion: occasion,
       eventId,
-      substituteNote: gi.substitute_note ?? undefined,
+      substituteNote: gi.notes ?? undefined,
     }
   })
 
@@ -564,18 +578,21 @@ export async function toggleShoppingItem(itemId: string, purchased: boolean): Pr
   const user = await requireChef()
   const db: any = createServerClient()
 
-  // Verify the item belongs to a grocery list owned by this tenant
+  // Verify the item belongs to a smart grocery list owned by this chef
   const { data: item } = await db
-    .from('grocery_list_items')
-    .select('id, grocery_list:grocery_lists!inner(tenant_id)')
+    .from('smart_grocery_items')
+    .select('id, list_id, smart_grocery_list:smart_grocery_lists!inner(chef_id)')
     .eq('id', itemId)
     .single()
 
-  if (!item || (item as any).grocery_list?.tenant_id !== user.tenantId) {
+  if (!item || (item as any).smart_grocery_list?.chef_id !== user.entityId) {
     throw new Error('Item not found or unauthorized')
   }
 
-  const { error } = await db.from('grocery_list_items').update({ purchased }).eq('id', itemId)
+  const { error } = await db
+    .from('smart_grocery_items')
+    .update({ is_checked: purchased })
+    .eq('id', itemId)
 
   if (error) {
     throw new Error('Failed to update shopping item')

@@ -1,6 +1,9 @@
-// Timeline View Component - displays a day-of event timeline
-// Server component - no client-side state needed.
+'use client'
 
+// Timeline View Component - displays a day-of event timeline.
+// Client component so the NOW indicator updates every minute without a page reload.
+
+import { useState, useEffect } from 'react'
 import type { EventTimeline } from '@/lib/scheduling/types'
 
 const TYPE_COLORS: Record<string, string> = {
@@ -14,32 +17,64 @@ const TYPE_COLORS: Record<string, string> = {
   milestone: 'bg-stone-800 text-stone-200 border-stone-700',
 }
 
-function getCurrentTimePosition(timeline: EventTimeline['timeline']): string | null {
-  const now = new Date()
-  const h = now.getHours()
-  const m = now.getMinutes()
-  const currentMinutes = h * 60 + m
-  const currentTime = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`
-
-  // Check if current time falls within the timeline window
-  if (timeline.length < 2) return null
-
-  const firstTime = parseTimeToMinutes(timeline[0].time)
-  const lastTime = parseTimeToMinutes(timeline[timeline.length - 1].time)
-
-  if (currentMinutes >= firstTime && currentMinutes <= lastTime) {
-    return currentTime
-  }
-  return null
-}
-
 function parseTimeToMinutes(time: string): number {
   const [h, m] = time.split(':').map(Number)
   return h * 60 + (m || 0)
 }
 
+function getCurrentTimeString(): string {
+  const now = new Date()
+  const h = now.getHours()
+  const m = now.getMinutes()
+  return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`
+}
+
+function getActiveTimePosition(
+  items: EventTimeline['timeline'],
+  currentTime: string
+): string | null {
+  if (items.length < 2) return null
+  const currentMinutes = parseTimeToMinutes(currentTime)
+  const firstTime = parseTimeToMinutes(items[0].time)
+  const lastTime = parseTimeToMinutes(items[items.length - 1].time)
+  if (currentMinutes >= firstTime && currentMinutes <= lastTime) return currentTime
+  return null
+}
+
+function getMinutesToNext(
+  items: EventTimeline['timeline'],
+  currentTime: string
+): { label: string; minutes: number } | null {
+  const currentMinutes = parseTimeToMinutes(currentTime)
+  for (const item of items) {
+    const itemMinutes = parseTimeToMinutes(item.time)
+    if (itemMinutes > currentMinutes) {
+      return { label: item.label, minutes: itemMinutes - currentMinutes }
+    }
+  }
+  return null
+}
+
 export function TimelineView({ timeline }: { timeline: EventTimeline }) {
-  const currentTime = getCurrentTimePosition(timeline.timeline)
+  const [currentTime, setCurrentTime] = useState<string>(getCurrentTimeString)
+
+  useEffect(() => {
+    const tick = () => setCurrentTime(getCurrentTimeString())
+    let interval: ReturnType<typeof setInterval> | null = null
+    // Align first tick to the next minute boundary for accuracy
+    const msUntilNextMinute = 60_000 - (Date.now() % 60_000)
+    const timeout = setTimeout(() => {
+      tick()
+      interval = setInterval(tick, 60_000)
+    }, msUntilNextMinute)
+    return () => {
+      clearTimeout(timeout)
+      if (interval !== null) clearInterval(interval)
+    }
+  }, [])
+
+  const activeTime = getActiveTimePosition(timeline.timeline, currentTime)
+  const nextUp = activeTime ? getMinutesToNext(timeline.timeline, activeTime) : null
 
   return (
     <div className="space-y-6">
@@ -54,6 +89,15 @@ export function TimelineView({ timeline }: { timeline: EventTimeline }) {
         </div>
       )}
 
+      {/* Next-up banner - only shown when inside the event window */}
+      {nextUp && (
+        <div className="flex items-center gap-3 rounded-lg border border-brand-700 bg-brand-950/40 px-4 py-2">
+          <div className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" />
+          <span className="text-sm text-brand-300 font-medium">Next: {nextUp.label}</span>
+          <span className="text-xs text-brand-600 ml-auto">in {nextUp.minutes} min</span>
+        </div>
+      )}
+
       {/* Timeline */}
       <div className="relative">
         {/* Vertical line */}
@@ -63,20 +107,20 @@ export function TimelineView({ timeline }: { timeline: EventTimeline }) {
           {timeline.timeline.map((item, index) => {
             const colorClass = TYPE_COLORS[item.type] || TYPE_COLORS.milestone
             const isCurrentOrNext =
-              currentTime !== null &&
+              activeTime !== null &&
               index > 0 &&
               parseTimeToMinutes(timeline.timeline[index - 1].time) <=
-                parseTimeToMinutes(currentTime) &&
-              parseTimeToMinutes(item.time) > parseTimeToMinutes(currentTime)
+                parseTimeToMinutes(activeTime) &&
+              parseTimeToMinutes(item.time) > parseTimeToMinutes(activeTime)
 
             return (
               <div key={item.id} className="relative">
                 {/* Current time indicator */}
                 {isCurrentOrNext && (
                   <div className="relative flex items-center py-1 pl-2">
-                    <div className="w-3 h-3 rounded-full bg-brand-600 ring-2 ring-brand-700 z-10" />
+                    <div className="w-3 h-3 rounded-full bg-brand-600 ring-2 ring-brand-700 z-10 animate-pulse" />
                     <div className="ml-4 text-xs font-medium text-brand-600">
-                      NOW ({currentTime})
+                      NOW ({activeTime})
                     </div>
                     <div className="flex-1 ml-2 h-px bg-brand-800" />
                   </div>

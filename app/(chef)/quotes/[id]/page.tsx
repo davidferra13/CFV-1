@@ -21,6 +21,7 @@ import { format, formatDistanceToNow } from 'date-fns'
 import { PriceComparisonSummary } from '@/components/pricing/price-comparison-summary'
 import { rowToPriceComparison } from '@/lib/pricing/pricing-decision'
 import { QuotePriceConfidenceWarning } from '@/components/quotes/quote-price-confidence-warning'
+import { QuotePriceFreshnessWarning } from '@/components/quotes/quote-price-freshness-warning'
 import { Suspense } from 'react'
 
 export default async function QuoteDetailPage({ params }: { params: { id: string } }) {
@@ -93,6 +94,13 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
       {(quote as any).event?.id && (
         <Suspense fallback={null}>
           <QuotePriceConfidenceWarning eventId={(quote as any).event.id} />
+        </Suspense>
+      )}
+
+      {/* Price freshness warning - shown when ingredient prices are stale or missing */}
+      {(quote as any).event?.id && (
+        <Suspense fallback={null}>
+          <QuotePriceFreshnessWarning eventId={(quote as any).event.id} />
         </Suspense>
       )}
 
