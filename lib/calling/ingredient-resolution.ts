@@ -561,7 +561,6 @@ async function queryAiCallFeedback(
       .select('vendor_id, contact_name, contact_phone, extracted_data, created_at')
       .eq('chef_id', chefId)
       .eq('result', 'yes')
-      .eq('direction', 'outbound')
       .ilike('subject', searchPattern)
       .gte('created_at', cutoff)
       .order('created_at', { ascending: false })

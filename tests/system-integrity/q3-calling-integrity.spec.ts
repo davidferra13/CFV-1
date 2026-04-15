@@ -403,4 +403,88 @@ test.describe('Q3: Calling system integrity', () => {
       'inbound route does not check enable_inbound_voicemail — toggle is a no-op'
     ).toBe(true)
   })
+
+  // -------------------------------------------------------------------------
+  // Test 17: call-log.tsx AiCall interface has result field
+  // Without result the statusDot receives undefined and always shows grey.
+  // -------------------------------------------------------------------------
+  test('call-log AiCall interface includes result field and statusDot receives it', () => {
+    const CALL_LOG_SOURCE = resolve(process.cwd(), 'components/calling/call-log.tsx')
+    expect(existsSync(CALL_LOG_SOURCE), `Source not found: ${CALL_LOG_SOURCE}`).toBe(true)
+
+    const src = readFileSync(CALL_LOG_SOURCE, 'utf-8')
+
+    expect(
+      src.includes("result?: 'yes' | 'no' | null"),
+      'local AiCall interface is missing result field'
+    ).toBe(true)
+
+    expect(
+      src.includes('statusDot(c.status, c.result)'),
+      'statusDot called without result — inbound_vendor_callback calls always show grey dot'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 18: inbound route gatherAction URL uses conditional pattern
+  // Empty aiCallId param causes gather to skip all DB writes silently.
+  // -------------------------------------------------------------------------
+  test('inbound route gatherAction URL uses conditional construction, not empty string fallback', () => {
+    const INBOUND_SOURCE = resolve(process.cwd(), 'app/api/calling/inbound/route.ts')
+    expect(existsSync(INBOUND_SOURCE), `Source not found: ${INBOUND_SOURCE}`).toBe(true)
+
+    const src = readFileSync(INBOUND_SOURCE, 'utf-8')
+
+    expect(
+      !src.includes("aiCallRecord?.id ?? ''"),
+      "gatherAction still uses ?? '' fallback — empty aiCallId is silently passed to gather"
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 19: delivery/venue toggle enforcement in twilio-actions.ts
+  // Both feature flags default false — calls must be blocked when not enabled.
+  // -------------------------------------------------------------------------
+  test('twilio-actions enforces enable_vendor_delivery and enable_venue_confirmation toggles', () => {
+    expect(existsSync(TWILIO_ACTIONS_SOURCE), `Source not found: ${TWILIO_ACTIONS_SOURCE}`).toBe(
+      true
+    )
+
+    const src = readFileSync(TWILIO_ACTIONS_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('enable_vendor_delivery'),
+      'initiateDeliveryCoordinationCall does not check enable_vendor_delivery toggle'
+    ).toBe(true)
+
+    expect(
+      src.includes('enable_venue_confirmation'),
+      'initiateVenueConfirmationCall does not check enable_venue_confirmation toggle'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 20: queryAiCallFeedback includes inbound callbacks
+  // The direction=outbound filter excluded inbound_vendor_callback result=yes
+  // rows from Tier 2 resolution, making callbacks invisible to ingredient scoring.
+  // -------------------------------------------------------------------------
+  test('queryAiCallFeedback does not filter direction=outbound', () => {
+    const RESOLUTION_SOURCE = resolve(process.cwd(), 'lib/calling/ingredient-resolution.ts')
+    expect(existsSync(RESOLUTION_SOURCE), `Source not found: ${RESOLUTION_SOURCE}`).toBe(true)
+
+    const src = readFileSync(RESOLUTION_SOURCE, 'utf-8')
+
+    // Find the queryAiCallFeedback function body
+    const fnStart = src.indexOf('async function queryAiCallFeedback')
+    expect(fnStart, 'queryAiCallFeedback function not found').toBeGreaterThan(-1)
+
+    // The block between queryAiCallFeedback and the next top-level function
+    const fnEnd = src.indexOf('\nasync function ', fnStart + 1)
+    const fnBody = fnEnd > -1 ? src.slice(fnStart, fnEnd) : src.slice(fnStart)
+
+    expect(
+      !fnBody.includes(".eq('direction', 'outbound')"),
+      "queryAiCallFeedback still filters direction='outbound' — inbound_vendor_callback results are excluded from Tier 2"
+    ).toBe(true)
+  })
 })

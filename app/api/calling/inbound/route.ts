@@ -184,7 +184,9 @@ export async function POST(req: NextRequest) {
     })
   } catch {}
 
-  const gatherAction = `${APP_URL}/api/calling/gather?aiCallId=${encodeURIComponent(aiCallRecord?.id ?? '')}&step=1&role=${role}`
+  const gatherAction = aiCallRecord?.id
+    ? `${APP_URL}/api/calling/gather?aiCallId=${encodeURIComponent(aiCallRecord.id)}&step=1&role=${role}`
+    : `${APP_URL}/api/calling/gather?step=1&role=${role}`
 
   if (isKnownVendor) {
     return twimlResponse(buildVendorCallbackTwiml(businessName, gatherAction, voice))

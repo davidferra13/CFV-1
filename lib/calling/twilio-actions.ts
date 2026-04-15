@@ -100,6 +100,28 @@ async function hasPendingCall(
   return !!data
 }
 
+// Dedup guard for ai_calls-based roles (delivery, venue, ad-hoc).
+// supplier_calls has its own hasPendingCall guard.
+async function hasPendingAiCall(
+  db: any,
+  chefId: string,
+  contactPhone: string,
+  role: string
+): Promise<boolean> {
+  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+  const { data } = await db
+    .from('ai_calls')
+    .select('id')
+    .eq('chef_id', chefId)
+    .eq('contact_phone', normalizePhone(contactPhone))
+    .eq('role', role)
+    .in('status', ['queued', 'ringing', 'in_progress'])
+    .gte('created_at', fiveMinutesAgo)
+    .limit(1)
+    .maybeSingle()
+  return !!data
+}
+
 // ---------------------------------------------------------------------------
 // Gate check
 // ---------------------------------------------------------------------------
@@ -572,9 +594,26 @@ export async function initiateDeliveryCoordinationCall(params: {
   const eligibility = await checkCallingEligibility(db, user.tenantId!)
   if (!eligibility.allowed) return { success: false, error: eligibility.reason }
 
+  // Enforce feature toggle — vendor_delivery is disabled unless explicitly enabled
+  const { data: deliveryToggle } = await db
+    .from('ai_call_routing_rules')
+    .select('enable_vendor_delivery')
+    .eq('chef_id', user.tenantId!)
+    .maybeSingle()
+  if (!deliveryToggle?.enable_vendor_delivery) {
+    return {
+      success: false,
+      error: 'Vendor delivery calls are not enabled. Enable them in Calling Settings.',
+    }
+  }
+
   const vendorPhoneNormalized = normalizePhone(params.vendorPhone)
   if (!isValidE164(vendorPhoneNormalized)) {
     return { success: false, error: 'Vendor phone number is not a valid format.' }
+  }
+
+  if (await hasPendingAiCall(db, user.tenantId!, vendorPhoneNormalized, 'vendor_delivery')) {
+    return { success: false, error: 'A delivery call to this vendor is already in progress.' }
   }
 
   const { data: aiCallRecord } = await db
@@ -679,9 +718,29 @@ export async function initiateVenueConfirmationCall(params: {
   const eligibility = await checkCallingEligibility(db, user.tenantId!)
   if (!eligibility.allowed) return { success: false, error: eligibility.reason }
 
+  // Enforce feature toggle — venue_confirmation is disabled unless explicitly enabled
+  const { data: venueToggle } = await db
+    .from('ai_call_routing_rules')
+    .select('enable_venue_confirmation')
+    .eq('chef_id', user.tenantId!)
+    .maybeSingle()
+  if (!venueToggle?.enable_venue_confirmation) {
+    return {
+      success: false,
+      error: 'Venue confirmation calls are not enabled. Enable them in Calling Settings.',
+    }
+  }
+
   const venuePhoneNormalized = normalizePhone(params.venuePhone)
   if (!isValidE164(venuePhoneNormalized)) {
     return { success: false, error: 'Venue phone number is not a valid format.' }
+  }
+
+  if (await hasPendingAiCall(db, user.tenantId!, venuePhoneNormalized, 'venue_confirmation')) {
+    return {
+      success: false,
+      error: 'A venue confirmation call to this number is already in progress.',
+    }
   }
 
   const { data: aiCallRecord } = await db

@@ -48,6 +48,7 @@ interface AiCall {
   contact_phone?: string | null
   subject?: string | null
   status: string
+  result?: 'yes' | 'no' | null
   full_transcript?: string | null
   extracted_data?: Record<string, any> | null
   recording_url?: string | null
@@ -300,8 +301,8 @@ function CallRow({ item }: { item: UnifiedCall }) {
 
         {/* Status */}
         <span className="flex items-center gap-1.5 w-28 shrink-0">
-          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusDot(c.status)}`} />
-          <span className="text-xs text-stone-400">{statusText(c.status)}</span>
+          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusDot(c.status, c.result)}`} />
+          <span className="text-xs text-stone-400">{statusText(c.status, c.result)}</span>
         </span>
 
         {/* Spacer (price col) */}

@@ -710,7 +710,9 @@ async function handleVendorDelivery(
         updated_at: new Date().toISOString(),
       })
       .eq('id', aiCallId)
-      .catch(() => {})
+      .catch((err: unknown) => {
+        console.error('[calling/gather] vendor_delivery step2 extracted_data write failed:', err)
+      })
 
     const { data: aiCall } = await db
       .from('ai_calls')
@@ -742,7 +744,9 @@ async function handleVendorDelivery(
       .from('ai_calls')
       .update({ extracted_data: { delivery_window: timeWindow } })
       .eq('id', aiCallId)
-      .catch(() => {})
+      .catch((err: unknown) => {
+        console.error('[calling/gather] vendor_delivery step1 delivery_window write failed:', err)
+      })
   }
 
   const gatherAction = `${APP_URL}/api/calling/gather?aiCallId=${encodeURIComponent(aiCallId)}&step=2&role=vendor_delivery`
@@ -785,7 +789,9 @@ async function handleVenueConfirmation(
         updated_at: new Date().toISOString(),
       })
       .eq('id', aiCallId)
-      .catch(() => {})
+      .catch((err: unknown) => {
+        console.error('[calling/gather] venue_confirmation step2 extracted_data write failed:', err)
+      })
 
     const { data: aiCall } = await db
       .from('ai_calls')
@@ -817,7 +823,9 @@ async function handleVenueConfirmation(
       .from('ai_calls')
       .update({ extracted_data: { access_window: timeWindow } })
       .eq('id', aiCallId)
-      .catch(() => {})
+      .catch((err: unknown) => {
+        console.error('[calling/gather] venue_confirmation step1 access_window write failed:', err)
+      })
   }
 
   const gatherAction = `${APP_URL}/api/calling/gather?aiCallId=${encodeURIComponent(aiCallId)}&step=2&role=venue_confirmation`
@@ -884,7 +892,9 @@ async function handleInboundUnknown(
         updated_at: new Date().toISOString(),
       })
       .eq('id', aiCallId)
-      .catch(() => {})
+      .catch((err: unknown) => {
+        console.error('[calling/gather] inbound_unknown transcript+status write failed:', err)
+      })
 
     if (aiCall) {
       // Surface message in quick notes so chef sees it without visiting Call Sheet
@@ -895,7 +905,9 @@ async function handleInboundUnknown(
           chef_id: aiCall.chef_id,
           text: `Inbound call from ${callerLabel}: "${speech}"`,
         })
-        .catch(() => {})
+        .catch((err: unknown) => {
+          console.error('[calling/gather] inbound_unknown quick_note insert failed:', err)
+        })
 
       await broadcast(`chef-${aiCall.chef_id}`, 'ai_call_result', {
         aiCallId,
