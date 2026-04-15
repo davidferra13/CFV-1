@@ -22,11 +22,11 @@ const InviteClientSchema = z.object({
 
 const CreateClientSchema = z.object({
   // Required
-  full_name: z.string().min(1, 'Name required'),
+  full_name: z.string().min(1, 'Name required').max(255, 'Name too long'),
   // Optional identity
   email: z.string().email('Valid email').optional(),
-  phone: z.string().optional(),
-  preferred_name: z.string().optional(),
+  phone: z.string().max(50).optional(),
+  preferred_name: z.string().max(255).optional(),
   preferred_contact_method: z.enum(['phone', 'email', 'text', 'instagram']).optional(),
   referral_source: z
     .enum(['take_a_chef', 'instagram', 'referral', 'website', 'phone', 'email', 'other'])
