@@ -3,43 +3,41 @@
 /**
  * Call Hub
  *
- * The primary calling interface. Type an ingredient, see every vendor that
- * can supply it (your saved favorites first, then nearby national vendors),
- * toggle which ones to call, and hit "Call All". Results stream back live.
+ * The resolution-first calling interface.
  *
- * UX principles:
- * - Ingredient search is the primary flow. Quick Call is secondary (collapsed).
- * - Empty state shows a 3-step guide so new users know what to do.
- * - Pre-call confirm modal prevents accidental bulk calls.
- * - Vendor nudge appears when chef has no saved vendors.
- * - Cost transparency: Twilio billing note near Call button.
+ * Before any vendor contact is offered, the system exhausts every passive
+ * data channel (OpenClaw market data, chef's own vendor price points,
+ * ingredient price history). The call interface surfaces ONLY for vendors
+ * that have no availability signal after full pipeline resolution.
+ *
+ * Vendor calls are a precision fallback at the boundary of known data.
+ * They are not a convenience feature.
+ *
+ * Flow:
+ *   1. Chef types an ingredient
+ *   2. System runs 3-tier resolution (OpenClaw + vendor data + history)
+ *   3. Tier 1 (confirmed): shown as read-only market data
+ *   4. Tier 2 (partial): shown with stale signal warning
+ *   5. Tier 3 (unresolved): ONLY these get the call interface
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { getVendorCallQueue, type VendorCallCandidate } from '@/lib/vendors/sourcing-actions'
+import { resolveIngredientAvailability } from '@/lib/calling/ingredient-resolution'
+import type { IngredientResolution } from '@/lib/calling/ingredient-resolution'
+import type { VendorCallCandidate } from '@/lib/vendors/sourcing-actions'
 import {
   initiateSupplierCall,
   initiateAdHocCall,
   getCallStatus,
 } from '@/lib/calling/twilio-actions'
 import { useSSE } from '@/lib/realtime/sse-client'
-import {
-  Phone,
-  Search,
-  Loader2,
-  Check,
-  X,
-  Star,
-  MapPin,
-  Mic,
-  ChevronDown,
-  ChevronUp,
-  ChevronRight,
-  AlertCircle,
-} from 'lucide-react'
+import { Phone, Search, Loader2, X, Mic, ChevronRight, ChevronUp } from 'lucide-react'
 import { toast } from 'sonner'
+import { IngredientResolutionView } from '@/components/calling/ingredient-resolution-view'
 
-type CallPhase = 'idle' | 'calling' | 'done'
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 type CallState =
   | { phase: 'idle' }
@@ -53,53 +51,24 @@ type CallState =
       recordingUrl?: string | null
     }
 
-const VENDOR_TYPE_LABELS: Record<string, string> = {
-  specialty: 'Specialty',
-  butcher: 'Butcher',
-  fishmonger: 'Fishmonger',
-  farm: 'Farm',
-  greengrocer: 'Produce',
-  produce: 'Produce',
-  dairy: 'Dairy',
-  cheese: 'Cheese',
-  organic: 'Organic',
-  bakery: 'Bakery',
-  deli: 'Deli',
-  grocery: 'Grocery',
-  liquor: 'Liquor',
-  equipment: 'Equipment',
-  other: 'Other',
-}
-
-const TYPE_COLORS: Record<string, string> = {
-  butcher: 'bg-red-900/30 text-red-400',
-  fishmonger: 'bg-blue-900/30 text-blue-400',
-  greengrocer: 'bg-green-900/30 text-green-400',
-  produce: 'bg-green-900/30 text-green-400',
-  farm: 'bg-lime-900/30 text-lime-400',
-  deli: 'bg-orange-900/30 text-orange-400',
-  cheese: 'bg-yellow-900/30 text-yellow-400',
-  organic: 'bg-emerald-900/30 text-emerald-400',
-  specialty: 'bg-violet-900/30 text-violet-400',
-  liquor: 'bg-purple-900/30 text-purple-400',
-  bakery: 'bg-amber-900/30 text-amber-400',
-}
-
 // Map from callId -> vendorId so SSE results can update the right row
 const callIdToVendorId = new Map<string, string>()
 
+// ---------------------------------------------------------------------------
+// CallHub
+// ---------------------------------------------------------------------------
+
 export function CallHub({ tenantId }: { tenantId?: string }) {
   const [ingredient, setIngredient] = useState('')
-  const [vendors, setVendors] = useState<VendorCallCandidate[]>([])
-  const [loading, setLoading] = useState(false)
+  const [resolution, setResolution] = useState<IngredientResolution | null>(null)
+  const [resolving, setResolving] = useState(false)
+
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [callStates, setCallStates] = useState<Record<string, CallState>>({})
   const [callingAll, setCallingAll] = useState(false)
-  const [showNational, setShowNational] = useState(true)
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const searchRef = useRef<HTMLInputElement>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
-  // Quick Call - collapsed by default
+  // Quick Call - collapsed secondary flow
   const [quickOpen, setQuickOpen] = useState(false)
   const [quickPhone, setQuickPhone] = useState('')
   const [quickName, setQuickName] = useState('')
@@ -107,10 +76,10 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
   const [quickCalling, setQuickCalling] = useState(false)
   const [quickResult, setQuickResult] = useState<CallState>({ phase: 'idle' })
 
-  // Pre-call confirmation modal
-  const [confirmOpen, setConfirmOpen] = useState(false)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const searchRef = useRef<HTMLInputElement>(null)
 
-  // SSE: receive call results in real-time instead of polling
+  // SSE: receive call results in real-time
   const handleSSEMessage = useCallback((msg: { event: string; data: any }) => {
     if (msg.event !== 'supplier_call_result') return
     const { callId, vendorId, result, status, priceQuoted, quantityAvailable, recordingUrl } =
@@ -140,61 +109,40 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
     enabled: !!tenantId,
   })
 
+  // Resolution: debounced on ingredient change
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
     if (ingredient.trim().length < 2) {
-      setVendors([])
+      setResolution(null)
       setSelected(new Set())
       setCallStates({})
       return
     }
     debounceRef.current = setTimeout(async () => {
-      setLoading(true)
+      setResolving(true)
       try {
-        const results = await getVendorCallQueue(ingredient.trim())
-        setVendors(results)
-        // Auto-select all saved vendors (favorites), not national by default
+        const result = await resolveIngredientAvailability(ingredient.trim())
+        setResolution(result)
+        // Auto-select all unresolved specialty vendors (saved ones only)
         const autoSelected = new Set(
-          results.filter((v) => v.source === 'saved' || v.is_preferred).map((v) => v.id)
+          result.unresolved.filter((v) => v.source === 'saved' || v.is_preferred).map((v) => v.id)
         )
         setSelected(autoSelected)
         setCallStates({})
       } catch {
-        setVendors([])
+        setResolution(null)
       } finally {
-        setLoading(false)
+        setResolving(false)
       }
-    }, 400)
+    }, 500)
   }, [ingredient])
 
-  function toggleVendor(id: string) {
-    setSelected((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }
-
-  function toggleAll() {
-    if (selected.size === vendors.length) {
-      setSelected(new Set())
-    } else {
-      setSelected(new Set(vendors.map((v) => v.id)))
-    }
-  }
-
-  function selectAllNational() {
-    setSelected((prev) => {
-      const next = new Set(prev)
-      vendors.filter((v) => v.source === 'national').forEach((v) => next.add(v.id))
-      return next
-    })
-  }
+  // ---------------------------------------------------------------------------
+  // Call mechanics
+  // ---------------------------------------------------------------------------
 
   async function placeCall(vendor: VendorCallCandidate) {
     setCallStates((prev) => ({ ...prev, [vendor.id]: { phase: 'calling' } }))
-
     try {
       let result: Awaited<ReturnType<typeof initiateSupplierCall>>
 
@@ -215,7 +163,7 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
       const callId = result.callId!
       callIdToVendorId.set(callId, vendor.id)
 
-      // Poll as fallback: SSE will fire first if connection is live.
+      // Poll as fallback if SSE misses
       let attempts = 0
       const poll = setInterval(async () => {
         if (callStates[vendor.id]?.phase === 'done') {
@@ -250,7 +198,8 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
   }
 
   async function callSelected() {
-    const toCall = vendors.filter(
+    if (!resolution) return
+    const toCall = resolution.unresolved.filter(
       (v) => selected.has(v.id) && (!callStates[v.id] || callStates[v.id].phase === 'idle')
     )
     if (toCall.length === 0) return
@@ -260,16 +209,18 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
     setCallingAll(false)
   }
 
-  function handleCallButtonClick() {
-    const toCall = vendors.filter(
-      (v) => selected.has(v.id) && (!callStates[v.id] || callStates[v.id].phase === 'idle')
-    )
-    if (toCall.length >= 2) {
-      setConfirmOpen(true)
-    } else {
-      callSelected()
-    }
+  function toggleVendor(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
   }
+
+  // ---------------------------------------------------------------------------
+  // Quick Call
+  // ---------------------------------------------------------------------------
 
   async function placeQuickCall() {
     const phone = quickPhone.replace(/\D/g, '')
@@ -321,58 +272,13 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
     }
   }
 
-  const savedVendors = vendors.filter((v) => v.source === 'saved')
-  const nationalVendors = vendors.filter((v) => v.source === 'national')
-  const selectedCount = vendors.filter((v) => selected.has(v.id)).length
-  const callingCount = vendors.filter((v) => callStates[v.id]?.phase === 'calling').length
-  const doneCount = vendors.filter((v) => callStates[v.id]?.phase === 'done').length
-  const toCallCount = vendors.filter(
-    (v) => selected.has(v.id) && (!callStates[v.id] || callStates[v.id].phase === 'idle')
-  ).length
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
 
   return (
     <div className="space-y-6">
-      {/* Pre-call confirmation modal */}
-      {confirmOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-stone-900 border border-stone-700 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-violet-950 rounded-lg">
-                <Phone className="w-4 h-4 text-violet-400" />
-              </div>
-              <h2 className="text-base font-semibold text-stone-100">Confirm calls</h2>
-            </div>
-            <p className="text-sm text-stone-400">
-              You are about to call{' '}
-              <span className="text-stone-200 font-medium">{toCallCount} vendors</span> about{' '}
-              <span className="text-stone-200 font-medium">{ingredient}</span>. Each call is 2-3
-              minutes and billed via your Twilio account.
-            </p>
-            <p className="text-xs text-stone-600">
-              Calls go out immediately during business hours (8am-7pm).
-            </p>
-            <div className="flex items-center gap-3 pt-1">
-              <button
-                type="button"
-                onClick={callSelected}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-colors"
-              >
-                <Phone className="w-3.5 h-3.5" />
-                Call {toCallCount} vendor{toCallCount !== 1 ? 's' : ''}
-              </button>
-              <button
-                type="button"
-                onClick={() => setConfirmOpen(false)}
-                className="px-4 py-2 rounded-lg text-sm text-stone-400 hover:text-stone-200 transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Ingredient search - primary flow */}
+      {/* Search */}
       <div className="relative">
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500 pointer-events-none" />
         <input
@@ -396,176 +302,52 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
         )}
       </div>
 
-      {loading && (
+      {/* Resolving indicator */}
+      {resolving && (
         <div className="flex items-center gap-2 text-sm text-stone-500 pl-1">
           <Loader2 className="w-4 h-4 animate-spin" />
-          Finding vendors...
+          Resolving availability...
         </div>
       )}
 
-      {!loading && ingredient.trim().length >= 2 && vendors.length === 0 && (
-        <div className="text-sm text-stone-500 pl-1">
-          No vendors found for &ldquo;{ingredient}&rdquo; in your area. Try a more general term.
-        </div>
+      {/* Resolution view */}
+      {!resolving && resolution && (
+        <IngredientResolutionView
+          resolution={resolution}
+          callStates={callStates}
+          selected={selected}
+          onToggle={toggleVendor}
+          onCallAll={callSelected}
+          onCallOne={placeCall}
+          callingAll={callingAll}
+          confirmOpen={confirmOpen}
+          onConfirmOpen={() => setConfirmOpen(true)}
+          onConfirmClose={() => setConfirmOpen(false)}
+        />
       )}
 
-      {vendors.length > 0 && (
-        <div className="space-y-4">
-          {/* Vendor setup nudge: shown when there are no saved vendors */}
-          {savedVendors.length === 0 && nationalVendors.length > 0 && (
-            <div className="flex items-start gap-2.5 bg-amber-950/30 border border-amber-900/40 rounded-lg px-4 py-3">
-              <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-amber-300">
-                These are public directory vendors near you. Save your regulars in the{' '}
-                <a
-                  href="/culinary/call-sheet?tab=vendors"
-                  className="underline underline-offset-2 hover:text-amber-200"
-                >
-                  My Vendors tab
-                </a>{' '}
-                to get them auto-selected first.
-              </p>
-            </div>
-          )}
-
-          {/* Call controls bar */}
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-3 flex-wrap">
-              <span className="text-sm text-stone-400">
-                {selectedCount} of {vendors.length} vendor{vendors.length !== 1 ? 's' : ''} selected
-              </span>
-              <button
-                type="button"
-                onClick={toggleAll}
-                className="text-xs text-violet-400 hover:text-violet-300 underline underline-offset-2"
-              >
-                {selected.size === vendors.length ? 'Deselect all' : 'Select all'}
-              </button>
-              {doneCount > 0 && (
-                <span className="text-xs text-stone-500">
-                  {doneCount} call{doneCount !== 1 ? 's' : ''} complete
-                </span>
-              )}
-            </div>
-            <div className="flex flex-col items-end gap-1">
-              <button
-                type="button"
-                onClick={handleCallButtonClick}
-                disabled={callingAll || selectedCount === 0 || callingCount === selectedCount}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors
-                  bg-violet-600 hover:bg-violet-500 text-white
-                  disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                {callingAll ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Calling {callingCount > 0 ? `${callingCount}` : selectedCount}...
-                  </>
-                ) : (
-                  <>
-                    <Phone className="w-4 h-4" />
-                    Call {selectedCount > 0 ? `${selectedCount}` : ''} vendor
-                    {selectedCount !== 1 ? 's' : ''}
-                  </>
-                )}
-              </button>
-              <span className="text-[10px] text-stone-600">Billed via Twilio</span>
-            </div>
-          </div>
-
-          {/* Saved vendors (favorites) */}
-          {savedVendors.length > 0 && (
-            <div className="space-y-1">
-              <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider px-1">
-                Your vendors ({savedVendors.length})
-              </p>
-              <div className="bg-stone-900 rounded-xl border border-stone-700 divide-y divide-stone-800 overflow-hidden">
-                {savedVendors.map((vendor) => (
-                  <VendorRow
-                    key={vendor.id}
-                    vendor={vendor}
-                    selected={selected.has(vendor.id)}
-                    callState={callStates[vendor.id] ?? { phase: 'idle' }}
-                    onToggle={() => toggleVendor(vendor.id)}
-                    onCall={() => placeCall(vendor)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* National vendors */}
-          {nationalVendors.length > 0 && (
-            <div className="space-y-1">
-              <button
-                type="button"
-                onClick={() => setShowNational((v) => !v)}
-                className="flex items-center gap-2 w-full text-left px-1"
-              >
-                <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider flex-1">
-                  Nearby vendors ({nationalVendors.length})
-                </p>
-                {nationalVendors.length > 0 && !showNational && (
-                  <span
-                    className="text-xs text-violet-400 hover:text-violet-300 underline underline-offset-2"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      selectAllNational()
-                    }}
-                  >
-                    Select all
-                  </span>
-                )}
-                {showNational ? (
-                  <ChevronUp className="w-3.5 h-3.5 text-stone-500" />
-                ) : (
-                  <ChevronDown className="w-3.5 h-3.5 text-stone-500" />
-                )}
-              </button>
-              {showNational && (
-                <div className="bg-stone-900 rounded-xl border border-stone-700 divide-y divide-stone-800 overflow-hidden">
-                  {nationalVendors.map((vendor) => (
-                    <VendorRow
-                      key={vendor.id}
-                      vendor={vendor}
-                      selected={selected.has(vendor.id)}
-                      callState={callStates[vendor.id] ?? { phase: 'idle' }}
-                      onToggle={() => toggleVendor(vendor.id)}
-                      onCall={() => placeCall(vendor)}
-                    />
-                  ))}
-                </div>
-              )}
-              {!showNational && (
-                <p className="text-xs text-stone-600 px-1">
-                  {nationalVendors.filter((v) => selected.has(v.id)).length} of{' '}
-                  {nationalVendors.length} selected
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Empty state: guided 3-step intro when no ingredient typed */}
+      {/* Empty state: shown when nothing typed */}
       {!ingredient.trim() && (
         <div className="py-8 space-y-6">
-          <div className="space-y-3 max-w-sm">
+          <div className="space-y-4 max-w-sm">
+            <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider">
+              How resolution works
+            </p>
             {[
               {
                 n: '1',
-                label: 'Type an ingredient above',
-                sub: 'e.g. haddock, black truffle, dry-aged rib eye',
+                label: 'Type an ingredient',
+                sub: 'System queries OpenClaw market data, your vendor history, and price records simultaneously.',
               },
               {
                 n: '2',
-                label: 'Select which vendors to call',
-                sub: 'Your saved vendors are pre-selected. National directory is there as backup.',
+                label: 'See what the system already knows',
+                sub: 'Confirmed availability, pricing, and stale signals are surfaced before any vendor is contacted.',
               },
               {
                 n: '3',
-                label: 'Hit Call and wait for results',
-                sub: 'Availability, price, and quantity stream back live as each call finishes.',
+                label: 'Calls go out only where data ends',
+                sub: 'Only specialty vendors with no signal in any data source reach the call interface.',
               },
             ].map(({ n, label, sub }) => (
               <div key={n} className="flex items-start gap-3">
@@ -580,19 +362,19 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
             ))}
           </div>
           <p className="text-xs text-stone-700 max-w-sm">
-            No saved vendors yet? Go to the{' '}
+            No saved vendors?{' '}
             <a
               href="/culinary/call-sheet?tab=vendors"
               className="text-stone-500 underline underline-offset-2 hover:text-stone-400"
             >
-              My Vendors tab
+              Add them in My Vendors
             </a>{' '}
-            to add your regulars from the national directory.
+            so they appear in Tier 3 resolution.
           </p>
         </div>
       )}
 
-      {/* Quick Call - collapsed by default, secondary flow */}
+      {/* Quick Call - collapsed, secondary flow */}
       <div className="border-t border-stone-800 pt-4">
         <button
           type="button"
@@ -643,29 +425,21 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
               >
                 {quickResult.phase === 'calling' ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Calling...
+                    <Loader2 className="w-4 h-4 animate-spin" /> Calling...
                   </>
                 ) : (
                   <>
-                    <Phone className="w-4 h-4" />
-                    Call now
+                    <Phone className="w-4 h-4" /> Call now
                   </>
                 )}
               </button>
               {quickResult.phase === 'done' && (
                 <div className="flex items-center gap-3 text-sm">
                   {'result' in quickResult && quickResult.result === 'yes' && (
-                    <span className="flex items-center gap-1 text-emerald-400 font-medium">
-                      <Check className="w-4 h-4" />
-                      In stock
-                    </span>
+                    <span className="text-emerald-400 font-medium">In stock</span>
                   )}
                   {'result' in quickResult && quickResult.result === 'no' && (
-                    <span className="flex items-center gap-1 text-rose-400 font-medium">
-                      <X className="w-4 h-4" />
-                      Not available
-                    </span>
+                    <span className="text-rose-400 font-medium">Not available</span>
                   )}
                   {'result' in quickResult && quickResult.result === null && (
                     <span className="text-stone-400">
@@ -702,134 +476,6 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
                 </div>
               )}
             </div>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Single vendor row
-// ---------------------------------------------------------------------------
-
-function VendorRow({
-  vendor,
-  selected,
-  callState,
-  onToggle,
-  onCall,
-}: {
-  vendor: VendorCallCandidate
-  selected: boolean
-  callState: CallState
-  onToggle: () => void
-  onCall: () => void
-}) {
-  const typeColor = TYPE_COLORS[vendor.vendor_type] || 'bg-stone-800 text-stone-400'
-  const isDone = callState.phase === 'done'
-  const isCalling = callState.phase === 'calling'
-
-  return (
-    <div
-      className={`flex items-center gap-3 px-4 py-3 transition-colors ${
-        selected && !isDone ? 'bg-violet-950/20' : ''
-      }`}
-    >
-      {/* Checkbox */}
-      <button
-        type="button"
-        onClick={onToggle}
-        disabled={isDone || isCalling}
-        className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors
-          ${isDone || isCalling ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
-          ${selected ? 'bg-violet-600 border-violet-600' : 'border-stone-600 bg-transparent hover:border-stone-400'}`}
-      >
-        {selected && <Check className="w-3 h-3 text-white" />}
-      </button>
-
-      {/* Vendor info */}
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-medium text-stone-200 truncate">{vendor.name}</span>
-          {vendor.is_preferred && (
-            <Star className="w-3 h-3 text-amber-400 flex-shrink-0" fill="currentColor" />
-          )}
-          <span className={`text-xs px-1.5 py-0.5 rounded font-medium flex-shrink-0 ${typeColor}`}>
-            {VENDOR_TYPE_LABELS[vendor.vendor_type] || vendor.vendor_type}
-          </span>
-          {vendor.source === 'national' && (
-            <span className="text-xs text-stone-600 flex-shrink-0">Directory</span>
-          )}
-        </div>
-        <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-          <span className="text-xs text-stone-500 font-mono">{vendor.phone}</span>
-          {(vendor.city || vendor.address) && (
-            <span className="flex items-center gap-1 text-xs text-stone-600">
-              <MapPin className="w-3 h-3" />
-              {[vendor.city, vendor.state].filter(Boolean).join(', ')}
-            </span>
-          )}
-          {vendor.contact_name && (
-            <span className="text-xs text-stone-500">Attn: {vendor.contact_name}</span>
-          )}
-        </div>
-      </div>
-
-      {/* Call result / action */}
-      <div className="flex-shrink-0 flex items-center gap-2">
-        {callState.phase === 'idle' && (
-          <button
-            type="button"
-            onClick={onCall}
-            disabled={!selected}
-            className="text-xs px-2.5 py-1.5 rounded-md border transition-colors
-              border-stone-700 bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-stone-200
-              disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            Call now
-          </button>
-        )}
-        {callState.phase === 'calling' && (
-          <span className="flex items-center gap-1.5 text-xs text-amber-400">
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            Calling...
-          </span>
-        )}
-        {callState.phase === 'done' && (
-          <div className="flex flex-col items-end gap-0.5">
-            <span
-              className={`flex items-center gap-1 text-xs font-medium
-                ${'result' in callState && callState.result === 'yes' ? 'text-emerald-400' : ''}
-                ${'result' in callState && callState.result === 'no' ? 'text-rose-400' : ''}
-                ${'result' in callState && callState.result === null ? 'text-stone-400' : ''}`}
-            >
-              {'result' in callState && callState.result === 'yes' && (
-                <>
-                  <Check className="w-3 h-3" /> In stock
-                </>
-              )}
-              {'result' in callState && callState.result === 'no' && (
-                <>
-                  <X className="w-3 h-3" /> Not available
-                </>
-              )}
-              {'result' in callState && callState.result === null && 'No answer'}
-            </span>
-            {'priceQuoted' in callState && callState.priceQuoted && (
-              <span className="text-[10px] text-stone-400">{callState.priceQuoted}</span>
-            )}
-            {'recordingUrl' in callState && callState.recordingUrl && (
-              <a
-                href={callState.recordingUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 text-[10px] text-violet-400 hover:text-violet-300"
-              >
-                <Mic className="w-3 h-3" />
-                Listen
-              </a>
-            )}
           </div>
         )}
       </div>
