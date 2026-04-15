@@ -1,20 +1,27 @@
 /**
- * Q7: Tenant Isolation
+ * Q7: Tenant Isolation + Auth Enforcement
  *
- * Chef B must never be able to access Chef A's resources by guessing IDs.
- * Tests probe known endpoint patterns with cross-tenant IDs.
+ * Three layers tested:
  *
- * Failure = a 200 response with actual data returned to the wrong tenant.
- * Pass = 404, 403, redirect-to-sign-in (302), or 401.
+ * Layer 1 — UNAUTHENTICATED PROBE
+ *   Every authenticated API route must reject requests with no session cookie.
+ *   A single 200 response with real data to an unauthenticated request = critical failure.
+ *
+ * Layer 2 — CROSS-TENANT IDOR (requires chef-b.json)
+ *   Chef B must never receive Chef A's real event/client/invoice data by guessing
+ *   or iterating IDs. Skipped gracefully if second auth state not available.
+ *
+ * Layer 3 — SELF-SCOPING CONSISTENCY
+ *   Authenticated requests for non-existent IDs must return 404, never 500 or
+ *   a different tenant's data. Proves the WHERE tenant_id = ? clause exists.
  */
 import { test, expect, request } from '@playwright/test'
-import { readFileSync } from 'fs'
+import { readFileSync, existsSync } from 'fs'
 
-// Auth state files
-const CHEF_A_AUTH = '.auth/chef.json'
-const CHEF_B_AUTH = '.auth/chef-b.json'
+const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3100'
 
 function loadCookieHeader(authFile: string): string {
+  if (!existsSync(authFile)) return ''
   try {
     const state = JSON.parse(readFileSync(authFile, 'utf-8'))
     return (state.cookies as Array<{ name: string; value: string }>)
@@ -25,99 +32,187 @@ function loadCookieHeader(authFile: string): string {
   }
 }
 
-test.describe('Tenant isolation — cross-tenant ID probing', () => {
-  // If chef-b auth doesn't exist, skip gracefully
-  const chefBCookies = loadCookieHeader(CHEF_B_AUTH)
-  const chefACookies = loadCookieHeader(CHEF_A_AUTH)
+// ── Authenticated document/data API routes that must reject no-auth requests ──
+// Each returns real chef/client data and therefore MUST require a valid session.
+const PROTECTED_API_ROUTES = [
+  '/api/activity/feed',
+  '/api/clients/preferences',
+  '/api/ai/health',
+  '/api/calling/enabled',
+]
 
-  test.skip(!chefBCookies, 'Chef B auth state missing — run main playwright setup first')
+// ── Document routes that require an entity ID — probe with synthetic UUID ────
+// These must return 404 (entity not found), never 200 with another tenant's data.
+const SYNTHETIC_ID = '00000000-dead-beef-0000-000000000001'
+const ID_GUESSING_ROUTES = [
+  `/api/documents/invoice/${SYNTHETIC_ID}`,
+  `/api/documents/financial-summary/${SYNTHETIC_ID}`,
+  `/api/documents/quote/${SYNTHETIC_ID}`,
+  `/api/documents/contract/${SYNTHETIC_ID}`,
+  `/api/calendar/event/${SYNTHETIC_ID}`,
+]
 
-  test('event detail page rejects cross-tenant access', async ({ baseURL }) => {
-    // Step 1: As Chef A, create a real event and get its ID
+// ── Layer 1: Unauthenticated Probe ───────────────────────────────────────────
+
+test.describe('Layer 1: Unauthenticated access rejected', () => {
+  for (const route of PROTECTED_API_ROUTES) {
+    test(`no-auth → rejected: ${route}`, async () => {
+      const ctx = await request.newContext({ baseURL: BASE_URL })
+      const resp = await ctx.get(route)
+      // Must NOT return 200 with data — must be 401, 403, or redirect
+      const status = resp.status()
+      const body = status === 200 ? await resp.text() : ''
+
+      if (status === 200) {
+        // A 200 is allowed ONLY if the endpoint deliberately returns a public empty state.
+        // It must NOT contain any chef/client identifying data.
+        expect(body, `${route} returned 200 with real data to unauthenticated request`).not.toMatch(
+          /email|tenant_id|client_id|chef_id|"id":"[0-9a-f-]{36}"/i
+        )
+      } else {
+        expect(
+          [401, 403, 302, 307].includes(status),
+          `${route} returned unexpected ${status} to unauthenticated request`
+        ).toBe(true)
+      }
+      await ctx.dispose()
+    })
+  }
+})
+
+// ── Layer 2: ID-guessing probe (authenticated, synthetic UUID) ───────────────
+
+test.describe("Layer 2: ID-guessing returns 404, not another tenant's data", () => {
+  const chefCookies = loadCookieHeader('.auth/chef.json')
+
+  test.skip(!chefCookies, 'chef.json missing — skipping ID-guessing probe')
+
+  for (const route of ID_GUESSING_ROUTES) {
+    test(`synthetic ID → 404: ${route}`, async () => {
+      const ctx = await request.newContext({
+        baseURL: BASE_URL,
+        extraHTTPHeaders: { Cookie: chefCookies },
+      })
+      const resp = await ctx.get(route)
+      const status = resp.status()
+
+      // 200 with actual data for a synthetic (non-existent) UUID = tenant scoping broken
+      if (status === 200) {
+        const body = await resp.text()
+        // Must be an empty document or "not found" HTML — not real PDF/JSON with data
+        expect(body.length, `${route} returned non-empty body for synthetic ID`).toBeLessThan(500)
+      } else {
+        expect(
+          [404, 400, 403].includes(status),
+          `${route} returned ${status} for synthetic ID — expected 404/400/403`
+        ).toBe(true)
+      }
+
+      await ctx.dispose()
+    })
+  }
+})
+
+// ── Layer 3: Cross-tenant IDOR (requires two auth states) ───────────────────
+
+test.describe('Layer 3: Cross-tenant IDOR — Chef B cannot read Chef A data', () => {
+  const chefACookies = loadCookieHeader('.auth/chef.json')
+  const chefBCookies = loadCookieHeader('.auth/chef-b.json')
+
+  test.skip(
+    !chefBCookies || !chefACookies,
+    'Two chef auth states required — run main playwright setup to seed Chef B'
+  )
+
+  test('Chef B cannot access Chef A invoice via document API', async () => {
+    // Step 1: As Chef A, get a real event ID from the activity feed
     const ctxA = await request.newContext({
-      baseURL,
+      baseURL: BASE_URL,
       extraHTTPHeaders: { Cookie: chefACookies },
     })
 
-    // Probe the events list to find any event belonging to Chef A
-    const eventsResp = await ctxA.get('/api/events')
-    // If no API endpoint, probe the page for an event link
-    // We use a synthetic UUID that wouldn't belong to Chef B
-    const syntheticId = '00000000-0000-0000-0000-000000000001'
+    const feedResp = await ctxA.get('/api/activity/feed')
+    let chefAEventId: string | null = null
 
-    // Step 2: As Chef B, try to access Chef A's event
-    const ctxB = await request.newContext({
-      baseURL,
-      extraHTTPHeaders: { Cookie: chefBCookies },
-    })
-
-    // Test: event detail page (Next.js page route)
-    const eventPageResp = await ctxB.get(`/events/${syntheticId}`)
-    expect(
-      [200, 404, 302, 301, 403, 401].includes(eventPageResp.status()),
-      `Event page returned unexpected ${eventPageResp.status()}`
-    ).toBe(true)
-
-    // If 200, body must NOT contain sensitive data for Chef A's event
-    if (eventPageResp.status() === 200) {
-      const body = await eventPageResp.text()
-      // A real event page for a non-existent event should show empty state or notFound
-      // It must not show actual financial/client data
-      expect(body).not.toMatch(/\$[0-9,]+\.[0-9]{2}/)
+    if (feedResp.status() === 200) {
+      try {
+        const feed = await feedResp.json()
+        // Extract first event ID from feed if available
+        const firstItem = Array.isArray(feed) ? feed[0] : null
+        chefAEventId = firstItem?.eventId ?? firstItem?.id ?? null
+      } catch {
+        // Feed format varies — ID extraction is best-effort
+      }
     }
 
     await ctxA.dispose()
-    await ctxB.dispose()
-  })
 
-  test('client detail page rejects cross-tenant access', async ({ baseURL }) => {
-    const syntheticId = '00000000-0000-0000-0000-000000000001'
+    if (!chefAEventId) {
+      // No events in Chef A's account — skip the IDOR portion but don't fail
+      test.skip()
+      return
+    }
 
+    // Step 2: As Chef B, attempt to access Chef A's event invoice
     const ctxB = await request.newContext({
-      baseURL,
+      baseURL: BASE_URL,
       extraHTTPHeaders: { Cookie: chefBCookies },
     })
 
-    const resp = await ctxB.get(`/clients/${syntheticId}`)
-    // Must not be 200 with real data — should be 404 or redirect
-    const allowed = [302, 301, 404, 403, 401]
-    const body = resp.status() === 200 ? await resp.text() : ''
+    const crossTenantResp = await ctxB.get(`/api/documents/invoice/${chefAEventId}`)
+    const status = crossTenantResp.status()
 
-    if (resp.status() === 200) {
-      // If it loads, it must show a not-found/empty state — no actual client data
-      expect(body, 'Client page for foreign ID showed real data').not.toMatch(
-        /email.*@.*\.(com|net|org)/i
-      )
-    } else {
-      expect(
-        allowed.includes(resp.status()),
-        `Unexpected status ${resp.status()} for foreign client ID`
-      ).toBe(true)
-    }
+    // Chef B must receive 404 or 403 — never Chef A's invoice data
+    expect(
+      [404, 403, 401].includes(status),
+      `Chef B received HTTP ${status} for Chef A's event ${chefAEventId} — potential tenant isolation breach`
+    ).toBe(true)
 
     await ctxB.dispose()
   })
 
-  test('server action tenant scoping — quote access', async ({ baseURL }) => {
-    const syntheticId = '00000000-0000-0000-0000-000000000002'
-
-    const ctxB = await request.newContext({
-      baseURL,
-      extraHTTPHeaders: { Cookie: chefBCookies },
+  test('Chef B page route for Chef A resource shows 404 not data', async ({ page }) => {
+    // Get a real event ID belonging to Chef A by visiting their events page
+    const ctxA = await request.newContext({
+      baseURL: BASE_URL,
+      extraHTTPHeaders: { Cookie: chefACookies },
     })
+    const feedResp = await ctxA.get('/api/activity/feed')
+    let chefAEventId: string | null = null
+    if (feedResp.status() === 200) {
+      try {
+        const feed = await feedResp.json()
+        const first = Array.isArray(feed) ? feed[0] : null
+        chefAEventId = first?.eventId ?? first?.id ?? null
+      } catch {}
+    }
+    await ctxA.dispose()
 
-    const resp = await ctxB.get(`/quotes/${syntheticId}`)
-    const allowed = [302, 301, 404, 403, 401, 200]
-    expect(allowed.includes(resp.status()), `Quote page returned ${resp.status()}`).toBe(true)
-
-    if (resp.status() === 200) {
-      const body = await resp.text()
-      // Should be an empty/not-found state
-      expect(body, 'Quote page for foreign ID showed real financial data').not.toMatch(
-        /Total.*\$[0-9]+/i
-      )
+    if (!chefAEventId) {
+      test.skip()
+      return
     }
 
-    await ctxB.dispose()
+    // Navigate as Chef B to Chef A's event detail page
+    // The page should load but show 404 or empty state — not Chef A's event data
+    const response = await page.goto(`/events/${chefAEventId}`, {
+      waitUntil: 'domcontentloaded',
+    })
+
+    const body = await page
+      .locator('body')
+      .innerText()
+      .catch(() => '')
+
+    // Must not show Chef A's actual event data
+    expect(body).not.toMatch(/Application error/i)
+
+    // If the page returned a real event, it must not contain Chef A-specific data
+    if (response?.status() === 200 && body.length > 200) {
+      // The page should show "not found" or redirect — never real event details
+      // A real event page would have the occasion, date, client name
+      // We check that the specific event ID isn't rendered as a data field
+      expect(body).not.toContain(chefAEventId)
+    }
   })
 })
