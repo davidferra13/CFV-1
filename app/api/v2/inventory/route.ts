@@ -54,7 +54,10 @@ export const GET = withApiAuth(
     if (view === 'transactions' || txType || eventId) {
       let txQuery = (ctx.db as any)
         .from('inventory_transactions')
-        .select('*', { count: 'exact' })
+        .select(
+          'id, chef_id, ingredient_id, ingredient_name, transaction_type, quantity, unit, cost_cents, location_id, event_id, notes, created_at, updated_at',
+          { count: 'exact' }
+        )
         .eq('chef_id', ctx.tenantId)
         .order('created_at', { ascending: false })
 
@@ -86,7 +89,10 @@ export const GET = withApiAuth(
       // If the view doesn't exist, fall back to raw transaction query
       let fallbackQuery = (ctx.db as any)
         .from('inventory_transactions')
-        .select('*', { count: 'exact' })
+        .select(
+          'id, chef_id, ingredient_id, ingredient_name, transaction_type, quantity, unit, cost_cents, location_id, event_id, notes, created_at, updated_at',
+          { count: 'exact' }
+        )
         .eq('chef_id', ctx.tenantId)
         .order('created_at', { ascending: false })
 
@@ -127,7 +133,9 @@ export const POST = withApiAuth(
         ...parsed.data,
         chef_id: ctx.tenantId,
       })
-      .select()
+      .select(
+        'id, chef_id, ingredient_id, ingredient_name, transaction_type, quantity, unit, cost_cents, location_id, event_id, notes, created_at, updated_at'
+      )
       .single()
 
     if (error) {

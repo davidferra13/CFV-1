@@ -541,6 +541,13 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
     )
   }
 
+  // Prevent sending an already-expired quote
+  if (newStatus === 'sent' && quote.valid_until && new Date(quote.valid_until) < new Date()) {
+    throw new ValidationError(
+      'This quote has already expired. Update the expiry date before sending.'
+    )
+  }
+
   const { data: rpcResponse, error: rpcError } = await db.rpc('transition_quote_atomic', {
     p_quote_id: id,
     p_tenant_id: user.tenantId!,
