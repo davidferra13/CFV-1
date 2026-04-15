@@ -1,6 +1,7 @@
 // Dashboard Business Cards - renders stat/list cards instead of accordions
 
 import { StatCard } from '@/components/dashboard/widget-cards/stat-card'
+import { StalledDraftsCard } from '@/components/dashboard/widget-cards/stalled-drafts-card'
 import { formatCurrency } from '@/lib/utils/currency'
 import { getTargetsForArchetype } from '@/lib/costing/knowledge'
 import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
@@ -25,6 +26,7 @@ export async function BusinessCards() {
     quoteStats,
     revenueGoal,
     platformScore,
+    stalledDrafts,
   } = await loadBusinessCardsData()
 
   const revenueSparkData: number[] = []
@@ -50,6 +52,8 @@ export async function BusinessCards() {
 
   return (
     <>
+      {stalledDrafts.length > 0 && <StalledDraftsCard drafts={stalledDrafts} />}
+
       <StatCard
         widgetId="business_snapshot"
         title={`${currentMonthName} Revenue`}

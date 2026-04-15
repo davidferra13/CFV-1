@@ -5,7 +5,12 @@ import {
   getMonthOverMonthRevenue,
   getCurrentMonthExpenseSummary,
 } from '@/lib/dashboard/actions'
-import { getInvoicePulse, type InvoicePulseData } from '@/lib/dashboard/widget-actions'
+import {
+  getInvoicePulse,
+  getStalledDrafts,
+  type InvoicePulseData,
+  type StalledDraft,
+} from '@/lib/dashboard/widget-actions'
 import { getInquiryStats } from '@/lib/inquiries/actions'
 import { getProspectStats } from '@/lib/prospecting/actions'
 import type { ProspectStats } from '@/lib/prospecting/types'
@@ -58,6 +63,7 @@ export type BusinessCardsData = {
   quoteStats: typeof emptyQuoteStats
   revenueGoal: RevenueGoalSnapshot
   platformScore: PlatformIndependenceScore
+  stalledDrafts: StalledDraft[]
 }
 
 export async function loadBusinessCardsData(): Promise<BusinessCardsData> {
@@ -73,6 +79,7 @@ export async function loadBusinessCardsData(): Promise<BusinessCardsData> {
     quoteStats,
     revenueGoal,
     platformScore,
+    stalledDrafts,
   ] = await Promise.all([
     safe('eventCounts', getDashboardEventCounts, emptyEventCounts),
     safe('foodCostTrend', () => getFoodCostTrend(6), emptyFoodCostTrend),
@@ -85,6 +92,7 @@ export async function loadBusinessCardsData(): Promise<BusinessCardsData> {
     safe('quoteStats', getDashboardQuoteStats, emptyQuoteStats),
     safe('revenueGoal', getRevenueGoalSnapshot, emptyRevenueGoal as RevenueGoalSnapshot),
     safe('platformScore', getPlatformIndependenceScore, EMPTY_PLATFORM_SCORE),
+    safe('stalledDrafts', getStalledDrafts, [] as StalledDraft[]),
   ])
 
   return {
@@ -99,5 +107,6 @@ export async function loadBusinessCardsData(): Promise<BusinessCardsData> {
     quoteStats,
     revenueGoal,
     platformScore,
+    stalledDrafts,
   }
 }

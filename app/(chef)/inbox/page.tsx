@@ -79,14 +79,39 @@ export default async function InboxPage({ searchParams }: { searchParams?: { tab
         {/* Staged signals - auto-detected contacts awaiting confirmation */}
         {staged.clients.length > 0 && <StagedSignalsPanel clients={staged.clients} />}
 
-        {/* Per-chef inbound email address */}
+        {/* Per-chef inbound email address + pipeline health */}
         {emailChannel && (
-          <div className="rounded-lg border border-stone-700 bg-stone-900/50 px-4 py-3 text-sm text-stone-400">
-            Your ChefFlow inbox address:{' '}
-            <span className="font-mono text-stone-200 select-all">{emailChannel.address}</span>
-            <span className="ml-2 text-stone-600">
-              Forward anything here and it lands in your inbox.
-            </span>
+          <div
+            className={`rounded-lg border px-4 py-3 text-sm ${
+              emailChannel.signalCount > 0
+                ? 'border-stone-700 bg-stone-900/50'
+                : 'border-amber-800/40 bg-amber-950/20'
+            }`}
+          >
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div>
+                <span className="text-stone-400">Your ChefFlow inbox address: </span>
+                <span className="font-mono text-stone-200 select-all">{emailChannel.address}</span>
+              </div>
+              {emailChannel.signalCount > 0 ? (
+                <span className="text-xs text-emerald-500">
+                  {emailChannel.signalCount} signal{emailChannel.signalCount !== 1 ? 's' : ''}{' '}
+                  received
+                </span>
+              ) : (
+                <span className="text-xs text-amber-500">
+                  No signals yet - Cloudflare Email Routing setup required
+                </span>
+              )}
+            </div>
+            {emailChannel.signalCount === 0 && (
+              <p className="text-xs text-stone-500 mt-1">
+                Forward emails here or configure Cloudflare routing to activate the pipeline. See{' '}
+                <span className="font-mono text-stone-400">
+                  docs/cloudflare-email-routing-setup.md
+                </span>
+              </p>
+            )}
           </div>
         )}
 
