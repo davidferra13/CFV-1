@@ -701,8 +701,16 @@ export async function changePassword(currentPassword: string, newPassword: strin
     reason: 'Password changed from Account & Security.',
   })
 
-  // Sign out after password change so the user must log in with the new password.
-  // This prevents session hijacking if the account was compromised.
+  // Invalidate ALL active sessions for this user (not just the current device).
+  // Increments sessionVersion so any existing JWTs fail the version check on next request.
+  try {
+    const { revokeAllSessionsForUser } = await import('@/lib/auth/account-access')
+    await revokeAllSessionsForUser(session.user.id)
+  } catch {
+    // Non-critical: continue even if session revocation fails.
+  }
+
+  // Sign out the current device.
   try {
     await nextAuthSignOut({ redirect: false })
     const cookieStore = cookies()

@@ -129,11 +129,22 @@ export async function buildPublicHealthSnapshot(
     }))
 
   const backgroundJobs = options.includeBackgroundJobs ? await getBackgroundJobSummary() : null
+
+  // Real DB connectivity check: a failing SELECT 1 means the pool is exhausted,
+  // the container is down, or the connection string is wrong — all critical.
+  let dbHealthy = true
+  try {
+    const { pgClient } = await import('@/lib/db')
+    await pgClient`SELECT 1`
+  } catch {
+    dbHealthy = false
+  }
+
   const envHealthy = missingEnv.length === 0
   const circuitBreakersHealthy = degradedCircuitBreakers.length === 0
   const backgroundJobsHealthy = backgroundJobs ? backgroundJobs.status === 'ok' : true
   const status: PublicHealthStatus =
-    envHealthy && circuitBreakersHealthy && backgroundJobsHealthy ? 'ok' : 'degraded'
+    envHealthy && circuitBreakersHealthy && backgroundJobsHealthy && dbHealthy ? 'ok' : 'degraded'
 
   return {
     requestId,
@@ -144,6 +155,7 @@ export async function buildPublicHealthSnapshot(
       requestId,
       checks: {
         env: envHealthy ? 'ok' : 'missing',
+        db: dbHealthy ? 'ok' : 'unreachable',
         circuitBreakers: circuitBreakersHealthy ? 'ok' : 'degraded',
         ...(backgroundJobs ? { backgroundJobs: backgroundJobs.status } : {}),
       },

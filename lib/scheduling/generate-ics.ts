@@ -21,16 +21,25 @@ export function generateICS(
     location?: string
     description?: string
     guestCount?: number
+    timezone?: string // IANA tz name, e.g. 'America/New_York'. Omit for floating time.
   },
   sequence = 0
 ): string {
-  const start = event.startTime
+  const startLocal = event.startTime
     ? `${event.eventDate.replace(/-/g, '')}T${event.startTime.replace(/:/g, '')}00`
     : `${event.eventDate.replace(/-/g, '')}T180000`
 
-  const end = event.endTime
+  const endLocal = event.endTime
     ? `${event.eventDate.replace(/-/g, '')}T${event.endTime.replace(/:/g, '')}00`
     : `${event.eventDate.replace(/-/g, '')}T220000`
+
+  // When a timezone is known, emit TZID so calendar apps show the correct local time
+  // regardless of the viewer's own timezone. Without TZID, the time is "floating" and
+  // renders in the recipient's local timezone — wrong for cross-timezone scheduling.
+  const dtStart = event.timezone
+    ? `DTSTART;TZID=${event.timezone}:${startLocal}`
+    : `DTSTART:${startLocal}`
+  const dtEnd = event.timezone ? `DTEND;TZID=${event.timezone}:${endLocal}` : `DTEND:${endLocal}`
 
   const now = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
 
@@ -42,8 +51,8 @@ export function generateICS(
     'BEGIN:VEVENT',
     `UID:${event.id}@cheflowhq.com`,
     `DTSTAMP:${now}`,
-    `DTSTART:${start}`,
-    `DTEND:${end}`,
+    dtStart,
+    dtEnd,
     `SUMMARY:${escapeICS(event.title)}`,
     `SEQUENCE:${sequence}`,
   ]
