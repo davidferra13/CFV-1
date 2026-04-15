@@ -12,6 +12,7 @@ import {
   markWeekDelivered,
   advanceRotation,
   recordContainerReturn,
+  suggestNextWeekMenu,
 } from '@/lib/meal-prep/program-actions'
 
 interface Menu {
@@ -29,6 +30,12 @@ export function WeeklyPlanner({ program, weeks: initialWeeks, menus }: WeeklyPla
   const [weeks, setWeeks] = useState(initialWeeks)
   const [pending, startTransition] = useTransition()
   const [returnCount, setReturnCount] = useState(1)
+  const [suggestion, setSuggestion] = useState<{
+    menuId: string | null
+    menuTitle: string | null
+    reason: string
+  } | null>(null)
+  const [loadingSuggestion, setLoadingSuggestion] = useState(false)
 
   function handleAssignMenu(rotationWeek: number, menuId: string | null) {
     const previous = [...weeks]
@@ -121,6 +128,25 @@ export function WeeklyPlanner({ program, weeks: initialWeeks, menus }: WeeklyPla
     })
   }
 
+  async function handleSuggestMenu() {
+    setLoadingSuggestion(true)
+    setSuggestion(null)
+    try {
+      const result = await suggestNextWeekMenu(program.id, 3)
+      setSuggestion(result)
+    } catch {
+      setSuggestion({ menuId: null, menuTitle: null, reason: 'Could not load suggestion' })
+    } finally {
+      setLoadingSuggestion(false)
+    }
+  }
+
+  function handleApplySuggestion(rotationWeek: number) {
+    if (!suggestion?.menuId) return
+    handleAssignMenu(rotationWeek, suggestion.menuId)
+    setSuggestion(null)
+  }
+
   function getWeekStatus(week: MealPrepWeek): {
     label: string
     variant: 'success' | 'warning' | 'info' | 'default'
@@ -210,7 +236,19 @@ export function WeeklyPlanner({ program, weeks: initialWeeks, menus }: WeeklyPla
 
               {/* Menu selector */}
               <div>
-                <label className="text-xs text-stone-500 block mb-1">Menu</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs text-stone-500">Menu</label>
+                  {isCurrent && !week.delivered_at && (
+                    <button
+                      type="button"
+                      onClick={handleSuggestMenu}
+                      disabled={loadingSuggestion || pending}
+                      className="text-xs text-amber-500 hover:text-amber-400 disabled:opacity-40 transition-colors"
+                    >
+                      {loadingSuggestion ? 'Finding...' : 'Suggest'}
+                    </button>
+                  )}
+                </div>
                 <select
                   value={week.menu_id ?? ''}
                   onChange={(e) => handleAssignMenu(week.rotation_week, e.target.value || null)}
@@ -224,6 +262,23 @@ export function WeeklyPlanner({ program, weeks: initialWeeks, menus }: WeeklyPla
                     </option>
                   ))}
                 </select>
+                {isCurrent && suggestion && (
+                  <div className="mt-2 rounded-md bg-amber-950 border border-amber-800 px-3 py-2">
+                    <p className="text-xs text-amber-300 font-medium">
+                      Suggestion: {suggestion.menuTitle ?? 'No menus available'}
+                    </p>
+                    <p className="text-xs text-stone-500 mt-0.5">{suggestion.reason}</p>
+                    {suggestion.menuId && (
+                      <button
+                        type="button"
+                        onClick={() => handleApplySuggestion(week.rotation_week)}
+                        className="mt-1.5 text-xs text-amber-400 hover:text-amber-300 transition-colors"
+                      >
+                        Apply this menu
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Custom dishes display */}

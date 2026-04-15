@@ -5,6 +5,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/db/server'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
@@ -32,6 +33,7 @@ const LOCATION_TYPE_LABELS: Record<string, string> = {
 
 export default async function LocationRosterPage() {
   const user = await requireChef()
+  await requirePro('staff-management')
   const db: any = createServerClient()
 
   const [{ data: locations }, { data: staffRows }] = await Promise.all([

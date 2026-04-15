@@ -4,6 +4,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { getStaffPerformanceBoard } from '@/lib/staff/performance-actions'
 import { PerformanceBoard } from '@/components/staff/performance-board'
 
@@ -11,6 +12,7 @@ export const metadata: Metadata = { title: 'Staff Performance' }
 
 export default async function StaffPerformancePage() {
   await requireChef()
+  await requirePro('staff-management')
 
   const scores = await getStaffPerformanceBoard().catch(() => [])
 

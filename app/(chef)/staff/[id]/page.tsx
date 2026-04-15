@@ -4,6 +4,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { getStaffMember, checkStaffHasLogin } from '@/lib/staff/actions'
 import { createServerClient } from '@/lib/db/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -34,6 +35,7 @@ const STATUS_BADGE: Record<string, 'success' | 'warning' | 'error' | 'default'> 
 
 export default async function StaffDetailPage({ params }: { params: { id: string } }) {
   const user = await requireChef()
+  await requirePro('staff-management')
   const db: any = createServerClient()
   const [member, hasLogin, { data: locRows }] = await Promise.all([
     getStaffMember(params.id),

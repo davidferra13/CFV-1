@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { TimeTracker } from '@/components/staffing/TimeTracker'
 import { getDefaultStaffingWindow, getTimeTrackerData } from '@/lib/staff/staffing-actions'
 
@@ -8,6 +9,7 @@ export const metadata: Metadata = { title: 'Clock In/Out' }
 
 export default async function StaffClockPage() {
   await requireChef()
+  await requirePro('staff-management')
 
   const window = await getDefaultStaffingWindow()
   const trackerData = await getTimeTrackerData(window.startDate, window.endDate).catch(() => ({

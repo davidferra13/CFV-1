@@ -4,6 +4,7 @@
 
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { getStaffActivityBoard, type StaffActivity } from '@/lib/staff/activity-board'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -138,6 +139,7 @@ function StaffCard({ staff }: { staff: StaffActivity }) {
 
 export default async function StaffLivePage() {
   await requireChef()
+  await requirePro('staff-management')
   const staffActivity = await getStaffActivityBoard()
 
   const activeCount = staffActivity.filter((s) => s.status === 'active').length

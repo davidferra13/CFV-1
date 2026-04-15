@@ -478,3 +478,78 @@ export async function advanceRotation(programId: string) {
   revalidatePath('/meal-prep')
   return { success: true, current_rotation_week: nextWeek }
 }
+
+// ============================================
+// Smart Rotation: Menu Suggestion
+// ============================================
+
+/**
+ * Suggests the next menu for a meal prep week by avoiding recently used menus.
+ * Looks at the last `repeatWindowWeeks` delivered weeks and excludes their menus.
+ * If all menus have been used recently, returns the least recently used one.
+ *
+ * @param programId  - the meal prep program
+ * @param repeatWindowWeeks - how many past deliveries to treat as "recent" (default 3)
+ */
+export async function suggestNextWeekMenu(
+  programId: string,
+  repeatWindowWeeks: number = 3
+): Promise<{ menuId: string | null; menuTitle: string | null; reason: string }> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  // Fetch the most recently delivered weeks for this program
+  const { data: deliveredWeeks, error: weeksErr } = await db
+    .from('meal_prep_weeks')
+    .select('menu_id, delivered_at')
+    .eq('program_id', programId)
+    .eq('tenant_id', user.tenantId!)
+    .not('delivered_at', 'is', null)
+    .not('menu_id', 'is', null)
+    .order('delivered_at', { ascending: false })
+    .limit(repeatWindowWeeks)
+
+  if (weeksErr) {
+    return { menuId: null, menuTitle: null, reason: 'Could not load delivery history' }
+  }
+
+  const recentMenuIds = new Set<string>(
+    ((deliveredWeeks ?? []) as { menu_id: string }[]).map((w) => w.menu_id).filter(Boolean)
+  )
+
+  // Fetch all menus for this tenant
+  const { data: allMenus, error: menusErr } = await db
+    .from('menus')
+    .select('id, title')
+    .eq('tenant_id', user.tenantId!)
+    .order('title')
+
+  if (menusErr || !allMenus || (allMenus as { id: string; title: string }[]).length === 0) {
+    return { menuId: null, menuTitle: null, reason: 'No menus available' }
+  }
+
+  const menus = allMenus as { id: string; title: string }[]
+
+  // Prefer menus not in the recent window
+  const unused = menus.filter((m) => !recentMenuIds.has(m.id))
+  if (unused.length > 0) {
+    return {
+      menuId: unused[0].id,
+      menuTitle: unused[0].title,
+      reason: `Not used in the last ${repeatWindowWeeks} deliveries`,
+    }
+  }
+
+  // All menus used recently: pick the least recently used one
+  const recentOrder = ((deliveredWeeks ?? []) as { menu_id: string }[]).map((w) => w.menu_id)
+  const lastUsedIndex = (menuId: string) => {
+    const idx = recentOrder.indexOf(menuId)
+    return idx === -1 ? Infinity : idx
+  }
+  const lru = [...menus].sort((a, b) => lastUsedIndex(b.id) - lastUsedIndex(a.id))[0]
+  return {
+    menuId: lru.id,
+    menuTitle: lru.title,
+    reason: 'All menus used recently - selecting least recent',
+  }
+}

@@ -34,6 +34,53 @@ function PriceCell({ cents }: { cents: number | null }) {
   return <span>{formatCurrency(cents)}</span>
 }
 
+function getQuoteAgeHours(createdAt: string): number {
+  return (Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60)
+}
+
+function QuoteAgeBanner({ createdAt, isFromCache }: { createdAt: string; isFromCache: boolean }) {
+  const ageHours = getQuoteAgeHours(createdAt)
+  if (ageHours < 8) return null
+
+  const isVeryStale = ageHours >= 24
+  const ageLabel =
+    ageHours >= 48
+      ? `${Math.floor(ageHours / 24)} days`
+      : ageHours >= 24
+        ? '1 day'
+        : `${Math.round(ageHours)} hours`
+
+  return (
+    <div
+      className={`mt-3 rounded-md px-3 py-2 text-sm ${
+        isVeryStale
+          ? 'bg-red-950 border border-red-800 text-red-400'
+          : 'bg-amber-950 border border-amber-800 text-amber-400'
+      }`}
+    >
+      {isVeryStale
+        ? `Price data is ${ageLabel} old. Market prices may have shifted. Click "Refresh Prices" before locking a quote.`
+        : `Price data is ${ageLabel} old${isFromCache ? ' (cached)' : ''}. Consider refreshing for same-day accuracy.`}
+    </div>
+  )
+}
+
+function getItemSourceLabel(item: {
+  usdaCents: number | null
+  spoonacularCents: number | null
+  krogerCents: number | null
+  mealMeCents: number | null
+  hasNoApiData: boolean
+}): string {
+  if (item.hasNoApiData) return 'Recipe Book'
+  const sources: string[] = []
+  if (item.usdaCents !== null) sources.push('USDA')
+  if (item.krogerCents !== null) sources.push('Kroger')
+  if (item.spoonacularCents !== null) sources.push('Spoonacular')
+  if (item.mealMeCents !== null) sources.push('Local')
+  return sources.length > 0 ? sources.join(', ') : 'No data'
+}
+
 function BudgetBar({
   averageCents,
   ceilingCents,
@@ -158,6 +205,9 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                   ingredients
                 </p>
               )}
+              {quote?.createdAt && (
+                <QuoteAgeBanner createdAt={quote.createdAt} isFromCache={quote.isFromCache} />
+              )}
               {!hasQuote && (
                 <p className="text-sm text-stone-500 mt-1">
                   Uses current local store price data first (free, instant), then USDA Northeast
@@ -257,6 +307,9 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                       <th className="text-right py-2 font-medium text-stone-100 whitespace-nowrap">
                         Avg Estimate
                       </th>
+                      <th className="text-right py-2 pl-4 font-medium text-stone-500 whitespace-nowrap">
+                        Sources
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -300,6 +353,9 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                         <td className="py-2 text-right font-medium text-stone-100">
                           <PriceCell cents={item.averageCents} />
                         </td>
+                        <td className="py-2 pl-4 text-right text-xs text-stone-500 whitespace-nowrap">
+                          {getItemSourceLabel(item)}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -329,6 +385,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                       <td className="py-3 text-right font-bold text-lg text-stone-100">
                         {formatCurrency(quote.averageTotalCents)}
                       </td>
+                      <td />
                     </tr>
                   </tfoot>
                 </table>

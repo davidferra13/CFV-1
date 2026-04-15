@@ -4,6 +4,7 @@
 
 import type { Metadata } from 'next'
 import { requirePermission } from '@/lib/auth/permissions'
+import { requirePro } from '@/lib/billing/require-pro'
 import { db } from '@/lib/db'
 import { sql } from 'drizzle-orm'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -98,6 +99,7 @@ async function getRoleDefaults(): Promise<Record<string, Record<string, string[]
 }
 
 export default async function TeamPermissionsPage() {
+  await requirePro('staff-management')
   const user = await requirePermission('users', 'view')
   const tenantId = user.tenantId!
 

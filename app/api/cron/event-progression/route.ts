@@ -35,6 +35,7 @@ export async function GET(request: Request) {
       }
 
       let started = 0
+      let failed = 0
       for (const event of toStart ?? []) {
         try {
           await transitionEvent({
@@ -49,6 +50,7 @@ export async function GET(request: Request) {
           started += 1
           console.log(`[event-progression] ${event.id} confirmed -> in_progress`)
         } catch (error) {
+          failed += 1
           console.error(`[event-progression] Failed to start event ${event.id}:`, error)
         }
       }
@@ -88,13 +90,21 @@ export async function GET(request: Request) {
           completed += 1
           console.log(`[event-progression] ${event.id} in_progress -> completed`)
         } catch (error) {
+          failed += 1
           console.error(`[event-progression] Failed to complete event ${event.id}:`, error)
         }
+      }
+
+      if (failed > 0) {
+        console.error(
+          `[event-progression] ${failed} transition(s) failed. started=${started} completed=${completed}`
+        )
       }
 
       return {
         started,
         completed,
+        failed,
         durationMs: Date.now() - start,
       }
     })

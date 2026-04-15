@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { PayrollReport } from '@/components/staffing/PayrollReport'
 import { getPayrollReportForPeriod } from '@/lib/staff/staffing-actions'
 
@@ -17,6 +18,7 @@ function getCurrentMonthWindow() {
 
 export default async function StaffLaborPage() {
   await requireChef()
+  await requirePro('staff-management')
 
   const period = getCurrentMonthWindow()
   const report = await getPayrollReportForPeriod(period.startDate, period.endDate).catch(() => ({

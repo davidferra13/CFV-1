@@ -1,6 +1,8 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useMemo, useState, useTransition } from 'react'
+import { useProtectedForm } from '@/lib/qol/use-protected-form'
+import { FormShield } from '@/components/forms/form-shield'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -35,14 +37,27 @@ export function RecurringInvoiceForm({ initialInvoices, clients }: Props) {
   const [invoices, setInvoices] = useState(initialInvoices)
   const [isPending, startTransition] = useTransition()
   const [showCreate, setShowCreate] = useState(false)
-  const [form, setForm] = useState({
-    clientId: '',
-    frequency: 'monthly' as 'weekly' | 'biweekly' | 'monthly' | 'quarterly',
-    amountCents: 0,
-    description: '',
-    nextSendDate: '',
-    lateFeeCents: 0,
-    lateFeeDays: 30,
+  const defaultFormData = useMemo(
+    () => ({
+      clientId: '',
+      frequency: 'monthly' as 'weekly' | 'biweekly' | 'monthly' | 'quarterly',
+      amountCents: 0,
+      description: '',
+      nextSendDate: '',
+      lateFeeCents: 0,
+      lateFeeDays: 30,
+    }),
+    []
+  )
+
+  const [form, setForm] = useState(defaultFormData)
+
+  const protection = useProtectedForm({
+    surfaceId: 'recurring-invoice-create',
+    recordId: null,
+    tenantId: 'local',
+    defaultData: defaultFormData,
+    currentData: form,
   })
 
   function handleCreate() {
@@ -58,6 +73,7 @@ export function RecurringInvoiceForm({ initialInvoices, clients }: Props) {
           lateFeeDays: form.lateFeeDays,
         })
         setInvoices((prev) => [created, ...prev])
+        protection.markCommitted()
         setShowCreate(false)
         setForm({
           clientId: '',
@@ -133,102 +149,115 @@ export function RecurringInvoiceForm({ initialInvoices, clients }: Props) {
 
       {/* Create Form */}
       {showCreate && (
-        <Card className="border-stone-600">
-          <CardHeader className="py-3">
-            <CardTitle className="text-base">New Recurring Invoice</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div>
-              <label className="block text-sm font-medium text-stone-300 mb-1.5">Client</label>
-              <select
-                value={form.clientId}
-                onChange={(e) => setForm({ ...form, clientId: e.target.value })}
-                className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
-              >
-                <option value="">Select client…</option>
-                {clients.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.full_name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-stone-300 mb-1.5">Frequency</label>
-              <select
-                value={form.frequency}
-                onChange={(e) => setForm({ ...form, frequency: e.target.value as any })}
-                className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
-              >
-                {Object.entries(FREQUENCY_LABELS).map(([k, v]) => (
-                  <option key={k} value={k}>
-                    {v}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <Input
-              label="Amount ($)"
-              type="number"
-              min="0"
-              step="0.01"
-              value={(form.amountCents / 100).toString()}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  amountCents: Math.round(parseFloat(e.target.value || '0') * 100),
-                })
-              }
-            />
-            <Input
-              label="Description"
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-              placeholder="e.g., Weekly meal prep service"
-            />
-            <Input
-              label="Next Send Date"
-              type="date"
-              value={form.nextSendDate}
-              onChange={(e) => setForm({ ...form, nextSendDate: e.target.value })}
-            />
-            <div className="grid grid-cols-2 gap-3">
+        <FormShield
+          guard={protection.guard}
+          showRestorePrompt={protection.showRestorePrompt}
+          lastSavedAt={protection.lastSavedAt}
+          onRestore={() => {
+            const d = protection.restoreDraft()
+            if (d) setForm(d)
+          }}
+          onDiscard={protection.discardDraft}
+        >
+          <Card className="border-stone-600">
+            <CardHeader className="py-3">
+              <CardTitle className="text-base">New Recurring Invoice</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-stone-300 mb-1.5">Client</label>
+                <select
+                  value={form.clientId}
+                  onChange={(e) => setForm({ ...form, clientId: e.target.value })}
+                  className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
+                >
+                  <option value="">Select client…</option>
+                  {clients.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.full_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-300 mb-1.5">Frequency</label>
+                <select
+                  value={form.frequency}
+                  onChange={(e) => setForm({ ...form, frequency: e.target.value as any })}
+                  className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
+                >
+                  {Object.entries(FREQUENCY_LABELS).map(([k, v]) => (
+                    <option key={k} value={k}>
+                      {v}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <Input
-                label="Late Fee ($)"
+                label="Amount ($)"
                 type="number"
                 min="0"
                 step="0.01"
-                value={(form.lateFeeCents / 100).toString()}
+                value={(form.amountCents / 100).toString()}
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    lateFeeCents: Math.round(parseFloat(e.target.value || '0') * 100),
+                    amountCents: Math.round(parseFloat(e.target.value || '0') * 100),
                   })
                 }
               />
               <Input
-                label="Late After (days)"
-                type="number"
-                min="0"
-                value={form.lateFeeDays.toString()}
-                onChange={(e) => setForm({ ...form, lateFeeDays: parseInt(e.target.value || '0') })}
+                label="Description"
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                placeholder="e.g., Weekly meal prep service"
               />
-            </div>
-            <div className="flex gap-2 pt-2">
-              <Button
-                size="sm"
-                onClick={handleCreate}
-                loading={isPending}
-                disabled={!form.clientId || !form.nextSendDate}
-              >
-                Create
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => setShowCreate(false)}>
-                Cancel
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+              <Input
+                label="Next Send Date"
+                type="date"
+                value={form.nextSendDate}
+                onChange={(e) => setForm({ ...form, nextSendDate: e.target.value })}
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <Input
+                  label="Late Fee ($)"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={(form.lateFeeCents / 100).toString()}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      lateFeeCents: Math.round(parseFloat(e.target.value || '0') * 100),
+                    })
+                  }
+                />
+                <Input
+                  label="Late After (days)"
+                  type="number"
+                  min="0"
+                  value={form.lateFeeDays.toString()}
+                  onChange={(e) =>
+                    setForm({ ...form, lateFeeDays: parseInt(e.target.value || '0') })
+                  }
+                />
+              </div>
+              <div className="flex gap-2 pt-2">
+                <Button
+                  size="sm"
+                  onClick={handleCreate}
+                  loading={isPending}
+                  disabled={!form.clientId || !form.nextSendDate}
+                >
+                  Create
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setShowCreate(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </FormShield>
       )}
 
       {/* Invoice List */}

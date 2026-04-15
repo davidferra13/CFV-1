@@ -5,6 +5,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { requireFocusAccess } from '@/lib/billing/require-focus-access'
 import { searchStaffMembers, deactivateStaffMember } from '@/lib/staff/actions'
 import { createServerClient } from '@/lib/db/server'
@@ -33,6 +34,7 @@ export default async function StaffRosterPage({
   searchParams: { q?: string; role?: string; status?: string }
 }) {
   const user = await requireChef()
+  await requirePro('staff-management')
   await requireFocusAccess()
 
   const search = searchParams.q ?? ''

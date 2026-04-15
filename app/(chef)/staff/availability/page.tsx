@@ -4,6 +4,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { listStaffMembers } from '@/lib/staff/actions'
 import { getStaffAvailabilityGrid } from '@/lib/staff/availability-actions'
 import { AvailabilityGrid } from '@/components/staff/availability-grid'
@@ -21,6 +22,7 @@ function addDays(dateStr: string, days: number): string {
 
 export default async function StaffAvailabilityPage() {
   await requireChef()
+  await requirePro('staff-management')
 
   const today = liso(new Date())
   const endDate = addDays(today, 6)

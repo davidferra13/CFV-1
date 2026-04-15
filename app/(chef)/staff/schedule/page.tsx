@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { StaffScheduler } from '@/components/staffing/StaffScheduler'
 import { getDefaultStaffingWindow, getStaffSchedulerData } from '@/lib/staff/staffing-actions'
 
@@ -8,6 +9,7 @@ export const metadata: Metadata = { title: 'Staff Schedule' }
 
 export default async function StaffSchedulePage() {
   await requireChef()
+  await requirePro('staff-management')
   const window = await getDefaultStaffingWindow()
   const schedulerData = await getStaffSchedulerData(window.startDate, window.endDate).catch(() => ({
     startDate: window.startDate,
