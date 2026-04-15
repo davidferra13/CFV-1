@@ -38,14 +38,22 @@ export async function GET(
     const data = await fs.readFile(fullPath)
     const contentType = getContentType(filePath)
 
-    return new NextResponse(data, {
-      headers: {
-        'Content-Type': contentType,
-        'Cache-Control': 'private, max-age=3600',
-        'Content-Length': String(data.length),
-        'X-Content-Type-Options': 'nosniff',
-      },
-    })
+    // SVG and HTML files served from storage must not execute scripts inline.
+    // Force download for these types to prevent XSS via uploaded content.
+    const FORCE_DOWNLOAD_TYPES = ['image/svg+xml', 'text/html']
+    const forceDownload = FORCE_DOWNLOAD_TYPES.includes(contentType)
+
+    const responseHeaders: Record<string, string> = {
+      'Content-Type': contentType,
+      'Cache-Control': 'private, max-age=3600',
+      'Content-Length': String(data.length),
+      'X-Content-Type-Options': 'nosniff',
+    }
+    if (forceDownload) {
+      responseHeaders['Content-Disposition'] = 'attachment'
+    }
+
+    return new NextResponse(data, { headers: responseHeaders })
   } catch {
     return NextResponse.json({ error: 'File not found' }, { status: 404 })
   }

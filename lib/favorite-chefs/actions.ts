@@ -12,18 +12,23 @@ import type { FavoriteChef, CreateFavoriteChefInput, UpdateFavoriteChefInput } f
 
 // --- Zod Schemas ---
 
+const safeUrl = z
+  .string()
+  .url()
+  .refine((v) => v.startsWith('https://') || v.startsWith('http://'), 'URL must use http or https')
+
 const CreateSchema = z.object({
   chefName: z.string().min(1, 'Name is required').max(200),
   reason: z.string().max(1000).optional(),
-  imageUrl: z.string().url().optional().or(z.literal('')),
-  websiteUrl: z.string().url().optional().or(z.literal('')),
+  imageUrl: safeUrl.optional().or(z.literal('')),
+  websiteUrl: safeUrl.optional().or(z.literal('')),
 })
 
 const UpdateSchema = z.object({
   chefName: z.string().min(1).max(200).optional(),
   reason: z.string().max(1000).optional().nullable(),
-  imageUrl: z.string().url().optional().or(z.literal('')).nullable(),
-  websiteUrl: z.string().url().optional().or(z.literal('')).nullable(),
+  imageUrl: safeUrl.optional().or(z.literal('')).nullable(),
+  websiteUrl: safeUrl.optional().or(z.literal('')).nullable(),
 })
 
 // --- Actions ---

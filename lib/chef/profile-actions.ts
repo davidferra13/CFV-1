@@ -72,10 +72,42 @@ const UpdateChefFullProfileSchema = z.object({
   bio: z.string().max(1200).nullable().optional(),
   phone: z.string().max(40).nullable().optional(),
   tagline: z.string().max(160).nullable().optional(),
-  google_review_url: z.string().url('Google review URL must be valid').nullable().optional(),
-  profile_image_url: z.string().url('Profile image URL must be valid').nullable().optional(),
-  logo_url: z.string().url('Logo URL must be valid').nullable().optional(),
-  website_url: z.string().url('Website URL must be valid').nullable().optional(),
+  google_review_url: z
+    .string()
+    .url('Google review URL must be valid')
+    .refine(
+      (v) => v.startsWith('https://') || v.startsWith('http://'),
+      'URL must use http or https'
+    )
+    .nullable()
+    .optional(),
+  profile_image_url: z
+    .string()
+    .url('Profile image URL must be valid')
+    .refine(
+      (v) => v.startsWith('https://') || v.startsWith('http://'),
+      'URL must use http or https'
+    )
+    .nullable()
+    .optional(),
+  logo_url: z
+    .string()
+    .url('Logo URL must be valid')
+    .refine(
+      (v) => v.startsWith('https://') || v.startsWith('http://'),
+      'URL must use http or https'
+    )
+    .nullable()
+    .optional(),
+  website_url: z
+    .string()
+    .url('Website URL must be valid')
+    .refine(
+      (v) => v.startsWith('https://') || v.startsWith('http://'),
+      'URL must use http or https'
+    )
+    .nullable()
+    .optional(),
   show_website_on_public_profile: z.boolean().optional(),
   preferred_inquiry_destination: z.enum(['website_only', 'chefflow_only', 'both']).optional(),
   social_links: SocialLinksSchema,
