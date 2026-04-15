@@ -161,6 +161,7 @@ export async function getClientPortalData(token: string): Promise<ClientPortalDa
     .from('clients')
     .select(selectColumns)
     .eq('portal_access_token_hash', tokenHash)
+    .is('deleted_at', null)
     .maybeSingle()
 
   let client = (hashedClient ?? null) as ClientPortalLookupRow | null
@@ -171,6 +172,7 @@ export async function getClientPortalData(token: string): Promise<ClientPortalDa
       .from('clients')
       .select(selectColumns)
       .eq('portal_access_token', normalizedToken)
+      .is('deleted_at', null)
       .maybeSingle()
 
     client = (legacyClient ?? null) as ClientPortalLookupRow | null
