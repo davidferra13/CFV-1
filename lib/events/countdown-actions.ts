@@ -21,6 +21,14 @@ export type EventCountdown = {
   countdownEnabled: boolean
   daysUntil: number
   hoursUntil: number
+  serveTime: string
+  arrivalTime: string | null
+  locationAddress: string | null
+  locationCity: string | null
+  locationState: string | null
+  guestCount: number | null
+  specialRequests: string | null
+  accessInstructions: string | null
 }
 
 // --- Schemas ---
@@ -48,7 +56,9 @@ export async function getEventCountdown(eventId: string): Promise<EventCountdown
 
   let query = db
     .from('events')
-    .select('id, occasion, event_date, serve_time, status, countdown_enabled')
+    .select(
+      'id, occasion, event_date, serve_time, status, countdown_enabled, arrival_time, location_address, location_city, location_state, guest_count, special_requests, access_instructions'
+    )
     .eq('id', validatedEventId)
 
   if (user.role === 'chef') {
@@ -82,6 +92,14 @@ export async function getEventCountdown(eventId: string): Promise<EventCountdown
     countdownEnabled: event.countdown_enabled ?? true,
     daysUntil: Math.max(daysUntil, 0),
     hoursUntil: Math.max(hoursUntil, 0),
+    serveTime: serveTime,
+    arrivalTime: event.arrival_time || null,
+    locationAddress: event.location_address || null,
+    locationCity: event.location_city || null,
+    locationState: event.location_state || null,
+    guestCount: event.guest_count || null,
+    specialRequests: event.special_requests || null,
+    accessInstructions: event.access_instructions || null,
   }
 }
 

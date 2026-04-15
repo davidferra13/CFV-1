@@ -99,6 +99,7 @@ export const DEFAULT_TIER_MAP: Record<NotificationAction, NotificationTier> = {
   guest_rsvp_received: 'alert',
   guest_dietary_alert: 'critical',
   client_allergy_changed: 'critical',
+  guest_count_changed: 'alert',
 
   // Loyalty
   reward_redeemed_by_client: 'alert',

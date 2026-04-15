@@ -42,7 +42,13 @@ export default async function EmbedInquiryPage({ params, searchParams }: Props) 
   }
 
   const chefName = (chef.business_name as string) || (chef.display_name as string) || 'Your Chef'
-  const accentColor = searchParams.accent || '#e88f47' // Default to ChefFlow brand color
+  const rawAccent = searchParams.accent || ''
+  const isValidHex = /^#?[0-9a-fA-F]{3,8}$/.test(rawAccent)
+  const accentColor = isValidHex
+    ? rawAccent.startsWith('#')
+      ? rawAccent
+      : `#${rawAccent}`
+    : '#e88f47'
   const theme = searchParams.theme === 'dark' ? 'dark' : 'light'
 
   return (

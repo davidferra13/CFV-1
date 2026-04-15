@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, FormEvent } from 'react'
+import { useState, useEffect, useCallback, FormEvent } from 'react'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
@@ -107,6 +107,31 @@ function parseBudgetCents(text: string): number | null {
   return null
 }
 
+// Draft persistence helpers
+const DRAFT_KEY_PREFIX = 'cf-inquiry-draft-'
+function saveDraft(slug: string, data: FormData) {
+  try {
+    sessionStorage.setItem(`${DRAFT_KEY_PREFIX}${slug}`, JSON.stringify(data))
+  } catch {
+    /* storage full or unavailable */
+  }
+}
+function loadDraft(slug: string): FormData | null {
+  try {
+    const raw = sessionStorage.getItem(`${DRAFT_KEY_PREFIX}${slug}`)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+function clearDraft(slug: string) {
+  try {
+    sessionStorage.removeItem(`${DRAFT_KEY_PREFIX}${slug}`)
+  } catch {
+    /* ignore */
+  }
+}
+
 export function PublicInquiryForm({ chefSlug, chefName, primaryColor, referralPartnerId }: Props) {
   const [formData, setFormData] = useState<FormData>({
     full_name: '',
@@ -133,6 +158,24 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor, referralPa
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [returningClient, setReturningClient] = useState(false)
   const [lookupDone, setLookupDone] = useState(false)
+
+  // Restore draft from sessionStorage on mount
+  useEffect(() => {
+    const draft = loadDraft(chefSlug)
+    if (draft) setFormData(draft)
+  }, [chefSlug])
+
+  // Save draft on every form change
+  const updateFormData = useCallback(
+    (updater: (prev: FormData) => FormData) => {
+      setFormData((prev) => {
+        const next = updater(prev)
+        saveDraft(chefSlug, next)
+        return next
+      })
+    },
+    [chefSlug]
+  )
 
   // Returning-client lookup on email blur.
   // For privacy, this no longer pre-fills stored client details.
@@ -286,6 +329,7 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor, referralPa
         guest_count: guestCount,
       })
 
+      clearDraft(chefSlug)
       setShowSuccess(true)
       setDietaryIntake(emptyDietaryIntake())
       setFormData({
@@ -316,7 +360,7 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor, referralPa
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    updateFormData((prev) => ({ ...prev, [name]: value }))
 
     if (name === 'email') {
       setLookupDone(false)
@@ -436,11 +480,11 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor, referralPa
             required
             value={formData.address}
             onChange={(val) => {
-              setFormData((prev) => ({ ...prev, address: val }))
+              updateFormData((prev) => ({ ...prev, address: val }))
               if (errors.address) setErrors((prev) => ({ ...prev, address: undefined }))
             }}
             onPlaceSelect={(data) => {
-              setFormData((prev) => ({ ...prev, address: data.formattedAddress }))
+              updateFormData((prev) => ({ ...prev, address: data.formattedAddress }))
               if (errors.address) setErrors((prev) => ({ ...prev, address: undefined }))
             }}
             placeholder="Street, City, State, ZIP"

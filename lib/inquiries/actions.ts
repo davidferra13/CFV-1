@@ -1917,7 +1917,9 @@ export async function declineInquiry(id: string, reason?: string) {
 
   const { data: inquiry } = await (db
     .from('inquiries')
-    .select('status, deleted_at, client_id')
+    .select(
+      'status, deleted_at, client_id, client_name, client_email, confirmed_occasion, confirmed_event_date'
+    )
     .eq('id', id)
     .eq('tenant_id', user.tenantId!)
     .single() as any)
@@ -1985,6 +1987,30 @@ export async function declineInquiry(id: string, reason?: string) {
     }
   } catch (err) {
     console.error('[declineInquiry] Client notification failed (non-blocking):', err)
+  }
+
+  // Non-blocking: send decline email to client
+  try {
+    if (inquiry.client_email) {
+      const { sendInquiryDeclinedEmail } = await import('@/lib/email/notifications')
+      // Look up chef display name for the email
+      const { data: chefRecord } = await db
+        .from('chefs')
+        .select('business_name, display_name')
+        .eq('id', user.tenantId!)
+        .single()
+      const chefDisplayName =
+        (chefRecord?.business_name as string) || (chefRecord?.display_name as string) || 'Your Chef'
+      await sendInquiryDeclinedEmail({
+        clientEmail: inquiry.client_email,
+        clientName: inquiry.client_name || 'there',
+        chefName: chefDisplayName,
+        occasion: inquiry.confirmed_occasion || undefined,
+        eventDate: inquiry.confirmed_event_date || undefined,
+      })
+    }
+  } catch (err) {
+    console.error('[declineInquiry] Decline email failed (non-blocking):', err)
   }
 
   revalidatePath('/my-inquiries')

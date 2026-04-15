@@ -8,6 +8,7 @@ import { createServerClient } from '@/lib/db/server'
 import { acceptProposal, transitionEvent } from '@/lib/events/transitions'
 import { clientGetOrCreateConversation, sendChatMessage } from '@/lib/chat/actions'
 import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
 
 /**
  * Get events for the current client.
@@ -257,4 +258,85 @@ export async function requestCancellationViaChat(eventId: string, reason: string
   revalidatePath(`/my-events/${eventId}`)
 
   return { success: true as const }
+}
+
+// ─── Guest Count Update ──────────────────────────────────────────────────
+
+const UpdateGuestCountSchema = z.object({
+  eventId: z.string().uuid(),
+  guestCount: z.number().int().positive().max(500),
+})
+
+/**
+ * Client requests a guest count change on an active event.
+ * Updates the event record and notifies the chef via chat + in-app notification.
+ */
+export async function requestGuestCountUpdate(eventId: string, guestCount: number) {
+  const user = await requireClient()
+  const validated = UpdateGuestCountSchema.parse({ eventId, guestCount })
+  const db: any = createServerClient()
+
+  const { data: event } = await db
+    .from('events')
+    .select('id, status, guest_count, occasion, client_id, tenant_id')
+    .eq('id', validated.eventId)
+    .eq('client_id', user.entityId)
+    .single()
+
+  if (!event) {
+    throw new Error('Event not found')
+  }
+
+  if (!['proposed', 'accepted', 'paid', 'confirmed'].includes(event.status)) {
+    throw new Error('Guest count can only be updated on active events')
+  }
+
+  const previousCount = event.guest_count
+
+  const { error } = await db
+    .from('events')
+    .update({ guest_count: validated.guestCount })
+    .eq('id', validated.eventId)
+    .eq('client_id', user.entityId)
+
+  if (error) {
+    console.error('[requestGuestCountUpdate] Error:', error)
+    throw new Error('Failed to update guest count')
+  }
+
+  // Notify chef via chat (non-blocking)
+  try {
+    const conversationResult = await clientGetOrCreateConversation({
+      context_type: 'event',
+      event_id: validated.eventId,
+    })
+    await sendChatMessage({
+      conversation_id: conversationResult.conversation.id,
+      message_type: 'text',
+      body: `Guest count updated from ${previousCount} to ${validated.guestCount} for "${event.occasion || 'event'}".`,
+    })
+  } catch (err) {
+    console.error('[requestGuestCountUpdate] Chat notify failed (non-blocking):', err)
+  }
+
+  // In-app notification (non-blocking)
+  try {
+    const { createNotification } = await import('@/lib/notifications/actions')
+    await createNotification({
+      tenantId: event.tenant_id,
+      recipientId: event.tenant_id,
+      category: 'event',
+      action: 'guest_count_changed',
+      title: 'Guest count updated',
+      body: `Guest count changed from ${previousCount} to ${validated.guestCount}`,
+      actionUrl: `/events/${validated.eventId}`,
+      eventId: validated.eventId,
+    })
+  } catch (err) {
+    console.error('[requestGuestCountUpdate] Notification failed (non-blocking):', err)
+  }
+
+  revalidatePath(`/my-events/${validated.eventId}`)
+
+  return { success: true as const, previousCount, newCount: validated.guestCount }
 }

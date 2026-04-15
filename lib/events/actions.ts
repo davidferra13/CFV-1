@@ -126,10 +126,10 @@ export async function createEvent(input: CreateEventInput) {
 
   const db: any = createServerClient()
 
-  // Verify client belongs to this tenant
+  // Verify client belongs to this tenant (include dietary data for fallback)
   const { data: client } = await db
     .from('clients')
-    .select('tenant_id')
+    .select('tenant_id, dietary_restrictions, allergies')
     .eq('id', validated.client_id)
     .single()
 
@@ -160,8 +160,12 @@ export async function createEvent(input: CreateEventInput) {
         pricing_model: validated.pricing_model,
         quoted_price_cents: validated.quoted_price_cents,
         deposit_amount_cents: validated.deposit_amount_cents,
-        dietary_restrictions: validated.dietary_restrictions,
-        allergies: validated.allergies,
+        dietary_restrictions: validated.dietary_restrictions?.length
+          ? validated.dietary_restrictions
+          : (client.dietary_restrictions as string[]) || [],
+        allergies: validated.allergies?.length
+          ? validated.allergies
+          : (client.allergies as string[]) || [],
         special_requests: validated.special_requests,
         site_notes: validated.site_notes,
         access_instructions: validated.access_instructions,

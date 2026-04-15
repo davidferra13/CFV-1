@@ -55,6 +55,7 @@ import { AvailabilitySignalEmail } from './templates/availability-signal'
 import { CircleMessageEmail } from './templates/circle-message'
 import { FriendRequestEmail } from './templates/friend-request'
 import { ContactMessageReceivedEmail } from './templates/contact-message-received'
+import { InquiryDeclinedEmail } from './templates/inquiry-declined'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -125,6 +126,29 @@ export async function sendContactMessageReceivedEmail(params: {
       contactName: params.contactName,
       supportEmail: params.supportEmail,
       responseWindowText: params.responseWindowText,
+    }),
+  })
+}
+
+// ─── Inquiry Declined ───────────────────────────────────────────────────
+
+export async function sendInquiryDeclinedEmail(params: {
+  clientEmail: string
+  clientName: string
+  chefName: string
+  occasion?: string
+  eventDate?: string
+}) {
+  const eventDateFormatted = params.eventDate ? formatDate(params.eventDate) : null
+  await sendEmail({
+    to: params.clientEmail,
+    subject: `Update on your inquiry with ${params.chefName}`,
+    react: createElement(InquiryDeclinedEmail, {
+      clientName: params.clientName,
+      chefName: params.chefName,
+      occasion: params.occasion || 'your event',
+      eventDate: eventDateFormatted,
+      browseUrl: `${APP_URL}/chefs`,
     }),
   })
 }

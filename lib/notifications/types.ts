@@ -123,6 +123,7 @@ export type NotificationAction =
   | 'guest_rsvp_received'
   | 'guest_dietary_alert'
   | 'client_allergy_changed'
+  | 'guest_count_changed'
   | 'gift_card_redeemed'
   | 'new_chat_message_to_client'
   | 'dispute_funds_withdrawn'
@@ -316,6 +317,7 @@ export const NOTIFICATION_CONFIG: Record<
   guest_rsvp_received: { category: 'client', icon: 'UserCheck', toastByDefault: true },
   guest_dietary_alert: { category: 'client', icon: 'AlertTriangle', toastByDefault: true },
   client_allergy_changed: { category: 'client', icon: 'AlertTriangle', toastByDefault: true },
+  guest_count_changed: { category: 'event', icon: 'Users', toastByDefault: true },
   gift_card_redeemed: { category: 'loyalty', icon: 'Gift', toastByDefault: true },
   new_chat_message_to_client: { category: 'chat', icon: 'MessageCircle', toastByDefault: false },
   dispute_funds_withdrawn: { category: 'payment', icon: 'ShieldAlert', toastByDefault: true },

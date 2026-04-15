@@ -2,6 +2,8 @@
 // No authentication required.
 // Detects ?mode=instant for instant-book confirmation messaging.
 
+import Link from 'next/link'
+
 export default function BookingThankYouPage({
   params,
   searchParams,
@@ -28,6 +30,30 @@ export default function BookingThankYouPage({
             ? 'A receipt and booking confirmation have been sent to your email.'
             : 'A confirmation has been sent to your email address.'}
         </p>
+
+        {/* Navigation links to prevent dead end */}
+        <div className="pt-4 space-y-2">
+          <Link
+            href={`/chef/${params.chefSlug}`}
+            className="block w-full rounded-lg bg-stone-700 hover:bg-stone-600 text-stone-100 py-2.5 px-4 text-sm font-medium transition-colors text-center"
+          >
+            Back to Chef Profile
+          </Link>
+          <div className="flex gap-2">
+            <Link
+              href="/my-bookings"
+              className="flex-1 rounded-lg border border-stone-600 hover:bg-stone-800 text-stone-300 py-2 px-3 text-sm transition-colors text-center"
+            >
+              Check Inquiry Status
+            </Link>
+            <Link
+              href="/chefs"
+              className="flex-1 rounded-lg border border-stone-600 hover:bg-stone-800 text-stone-300 py-2 px-3 text-sm transition-colors text-center"
+            >
+              Browse More Chefs
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   )

@@ -709,6 +709,24 @@ export default async function EventDetailPage({
         </div>
       )}
 
+      {/* Rebook CTA (completed events only) */}
+      {event.status === 'completed' && (
+        <Card className="mb-8 border-brand-700 bg-gradient-to-r from-stone-900 to-stone-800">
+          <CardContent className="py-6 text-center">
+            <h3 className="text-lg font-semibold text-stone-100 mb-2">Loved the experience?</h3>
+            <p className="text-sm text-stone-400 mb-4">
+              Book your next event and let us create something special again.
+            </p>
+            <Link
+              href="/book-now"
+              className="inline-block rounded-lg bg-brand-600 hover:bg-brand-500 text-white py-2.5 px-6 text-sm font-medium transition-colors"
+            >
+              Book Again
+            </Link>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Live event status watcher - refreshes page when chef transitions the event */}
       <EventStatusWatcher eventId={event.id} />
 
