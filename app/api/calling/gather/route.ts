@@ -18,6 +18,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
 import { broadcast } from '@/lib/realtime/broadcast'
+import { validateTwilioWebhook } from '@/lib/calling/twilio-webhook-auth'
 import {
   twimlResponse,
   closingTwiml,
@@ -147,10 +148,27 @@ function extractPrice(speech: string): string | null {
   )
   const m3 = normalised.match(wordNumPattern)
   if (m3) {
-    const major = wordNumbers[m3[1].toLowerCase()]
-    const minor = m3[2] ? wordNumbers[m3[2].toLowerCase()] : null
-    if (major) return minor ? `$${major}.${minor.padStart(2, '0')}` : `$${major}`
+    const majorNum = parseInt(wordNumbers[m3[1].toLowerCase()] ?? '0', 10)
+    const minorNum = m3[2] ? parseInt(wordNumbers[m3[2].toLowerCase()] ?? '0', 10) : null
+    if (majorNum) {
+      if (minorNum !== null) {
+        // "forty five" = compound number (40+5=45), not dollars.cents
+        const isTens = majorNum % 10 === 0 && majorNum >= 20
+        const isUnits = minorNum >= 1 && minorNum <= 9
+        if (isTens && isUnits) return `$${majorNum + minorNum}`
+        return `$${majorNum}.${String(minorNum).padStart(2, '0')}`
+      }
+      return `$${majorNum}`
+    }
   }
+
+  // "45 a pound", "45/lb", "45 per case" - bare digit with unit, no currency word
+  const bareDigitWithUnit = new RegExp(
+    `\\b(\\d+(?:\\.\\d{1,2})?)\\s*(?:a|per|/)\\s*${UNIT_WORDS}`,
+    'i'
+  )
+  const m4 = speech.match(bareDigitWithUnit)
+  if (m4) return `$${m4[1]}`
 
   return null
 }
@@ -232,6 +250,10 @@ function toJsonbSafe(obj: unknown): string {
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData()
+
+  const valid = await validateTwilioWebhook(req, formData)
+  if (!valid) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+
   const digits = formData.get('Digits') as string | null
   const speech = (formData.get('SpeechResult') as string | null)?.trim() || null
   const confidence = formData.get('Confidence')
@@ -309,6 +331,23 @@ async function handleVendorAvailability(
           vendorPhone = vendor.phone || vendorPhone
         }
       }
+      // Recover ingredient name from the most recent completed/no_answer call for this vendor
+      let ingredientName = 'Inbound callback'
+      if (aiCall.vendor_id) {
+        const { data: priorCall } = await db
+          .from('supplier_calls')
+          .select('ingredient_name')
+          .eq('chef_id', aiCall.chef_id)
+          .eq('vendor_id', aiCall.vendor_id)
+          .in('status', ['completed', 'no_answer', 'busy'])
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+        if (priorCall?.ingredient_name && priorCall.ingredient_name !== 'Inbound callback') {
+          ingredientName = priorCall.ingredient_name
+        }
+      }
+
       const { data: newCall } = await db
         .from('supplier_calls')
         .insert({
@@ -316,7 +355,7 @@ async function handleVendorAvailability(
           vendor_id: aiCall.vendor_id ?? null,
           vendor_name: vendorName,
           vendor_phone: vendorPhone,
-          ingredient_name: 'Inbound callback',
+          ingredient_name: ingredientName,
           status: 'in_progress',
           ai_call_id: aiCallId,
         })

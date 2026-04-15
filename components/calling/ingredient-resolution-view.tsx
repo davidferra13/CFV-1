@@ -29,6 +29,7 @@ import type {
   PartialSignal,
 } from '@/lib/calling/ingredient-resolution'
 import type { VendorCallCandidate } from '@/lib/vendors/sourcing-actions'
+import { flagIngredientEntry } from '@/lib/calling/ingredient-flags'
 import { WebSourcingPanel } from '@/components/pricing/web-sourcing-panel'
 import {
   Check,
@@ -76,9 +77,25 @@ function freshnessLabel(freshness: ResolvedStore['freshness']): string {
 // until that migration lands.
 // ---------------------------------------------------------------------------
 
-function ResolvedPanel({ stores }: { stores: ResolvedStore[] }) {
+function ResolvedPanel({
+  stores,
+  ingredientName,
+}: {
+  stores: ResolvedStore[]
+  ingredientName: string
+}) {
   const [expanded, setExpanded] = useState(stores.length <= 3)
   const [flagged, setFlagged] = useState<Set<number>>(new Set())
+
+  async function handleFlag(i: number, store: ResolvedStore) {
+    setFlagged((prev) => new Set([...prev, i]))
+    await flagIngredientEntry({
+      ingredientName,
+      storeProductId: null,
+      vendorName: store.chainName,
+      source: 'openclaw',
+    }).catch(() => {})
+  }
 
   const visible = expanded ? stores : stores.slice(0, 3)
 
@@ -129,11 +146,11 @@ function ResolvedPanel({ stores }: { stores: ResolvedStore[] }) {
                     {freshnessLabel(store.freshness)}
                   </p>
                 </div>
-                {/* Fix #7: flag incorrect affordance */}
+                {/* Fix #7+#9: flag incorrect affordance - persisted to DB */}
                 {!isFlagged ? (
                   <button
                     type="button"
-                    onClick={() => setFlagged((prev) => new Set([...prev, i]))}
+                    onClick={() => handleFlag(i, store)}
                     aria-label="Flag as incorrect"
                     title="Flag this data as incorrect"
                     className="text-stone-700 hover:text-rose-400 transition-colors"
@@ -187,6 +204,7 @@ function ResolvedPanel({ stores }: { stores: ResolvedStore[] }) {
 // Tier 2 panel: partial signals
 // Fix #5: "Verify by call" on signals that have a phone number.
 // Fix #9: Explicit "no direct contact" label on openclaw_stale retail entries.
+// Fix #10: Unit incomparability warning when priced signals have different units.
 // ---------------------------------------------------------------------------
 
 function PartialPanel({
@@ -198,6 +216,16 @@ function PartialPanel({
 }) {
   const [expanded, setExpanded] = useState(false)
   const visible = expanded ? signals : signals.slice(0, 4)
+
+  // Fix #10: detect mixed units across priced signals
+  const pricedUnits = [
+    ...new Set(
+      signals
+        .filter((s) => s.priceCents && s.priceCents > 1 && s.priceUnit)
+        .map((s) => s.priceUnit!)
+    ),
+  ]
+  const hasUnitMismatch = pricedUnits.length > 1
 
   const sourceLabel = (source: PartialSignal['source']) => {
     if (source === 'vendor_price_point') return 'your data'
@@ -215,6 +243,15 @@ function PartialPanel({
         </p>
         <span className="text-xs text-stone-600">verify before ordering</span>
       </div>
+      {/* Fix #10: unit mismatch warning */}
+      {hasUnitMismatch && (
+        <div className="flex items-start gap-2 px-3 py-2 bg-amber-950/30 border border-amber-800/30 rounded-lg">
+          <AlertCircle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-400">
+            Prices use different units ({pricedUnits.join(', ')}). Normalize before comparing.
+          </p>
+        </div>
+      )}
       <div className="bg-stone-900 border border-amber-900/30 rounded-xl overflow-hidden divide-y divide-stone-800/60">
         {visible.map((sig, i) => (
           <div key={i} className="flex items-center justify-between gap-3 px-4 py-3">
@@ -253,7 +290,7 @@ function PartialPanel({
             </div>
             <div className="flex-shrink-0 flex items-center gap-3">
               <div className="text-right space-y-0.5">
-                {sig.priceCents ? (
+                {sig.priceCents && sig.priceCents > 1 ? (
                   <p className="text-sm font-semibold text-stone-400">
                     {formatPrice(sig.priceCents, sig.priceUnit)}
                   </p>
@@ -654,7 +691,7 @@ export function IngredientResolutionView({
       </div>
 
       {/* Tier 1 */}
-      {resolved.length > 0 && <ResolvedPanel stores={resolved} />}
+      {resolved.length > 0 && <ResolvedPanel stores={resolved} ingredientName={ingredientName} />}
 
       {/* Tier 2 */}
       {partial.length > 0 && <PartialPanel signals={partial} onEscalateCall={onEscalateTier2} />}

@@ -80,29 +80,40 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
   const searchRef = useRef<HTMLInputElement>(null)
 
   // SSE: receive call results in real-time
-  const handleSSEMessage = useCallback((msg: { event: string; data: any }) => {
-    if (msg.event !== 'supplier_call_result') return
-    const { callId, vendorId, result, status, priceQuoted, quantityAvailable, recordingUrl } =
-      msg.data
+  const handleSSEMessage = useCallback(
+    (msg: { event: string; data: any }) => {
+      if (msg.event !== 'supplier_call_result') return
+      const { callId, vendorId, result, status, priceQuoted, quantityAvailable, recordingUrl } =
+        msg.data
 
-    const vid = vendorId || (callId ? callIdToVendorId.get(callId) : null)
-    if (!vid) return
+      const vid = vendorId || (callId ? callIdToVendorId.get(callId) : null)
+      if (!vid) return
 
-    const terminal = ['completed', 'failed', 'no_answer', 'busy'].includes(status)
-    if (terminal) {
-      setCallStates((prev) => ({
-        ...prev,
-        [vid]: {
-          phase: 'done',
-          result: result ?? null,
-          status,
-          priceQuoted,
-          quantityAvailable,
-          recordingUrl,
-        },
-      }))
-    }
-  }, [])
+      const terminal = ['completed', 'failed', 'no_answer', 'busy'].includes(status)
+      if (terminal) {
+        setCallStates((prev) => ({
+          ...prev,
+          [vid]: {
+            phase: 'done',
+            result: result ?? null,
+            status,
+            priceQuoted,
+            quantityAvailable,
+            recordingUrl,
+          },
+        }))
+
+        // Fix #5: after a successful call (result=yes), re-run resolution so
+        // the vendor is promoted out of Tier 3 and into Tier 2 (sentinel written)
+        if (result === 'yes' && ingredient.trim().length >= 2) {
+          resolveIngredientAvailability(ingredient.trim())
+            .then((refreshed) => setResolution(refreshed))
+            .catch(() => {})
+        }
+      }
+    },
+    [ingredient]
+  )
 
   useSSE(tenantId ? `chef-${tenantId}` : 'disabled', {
     onMessage: handleSSEMessage,

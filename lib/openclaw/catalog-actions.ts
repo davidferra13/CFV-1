@@ -24,6 +24,8 @@ type CatalogQueryParams = {
   search?: string
   category?: string
   store?: string
+  city?: string
+  state?: string
   pricedOnly?: boolean
   inStockOnly?: boolean
   tier?: string
@@ -193,21 +195,6 @@ function normalizeImage(value: string | null | undefined): string | null {
   return trimmed
 }
 
-function normalizeStoreRegion(city: string | null, state: string | null): string | null {
-  const normalizedCity = city?.trim().toLowerCase() ?? ''
-  const normalizedState = state?.trim().toLowerCase() ?? ''
-
-  if (normalizedState === 'me' || normalizedCity.includes('portland')) {
-    return 'portland-me'
-  }
-
-  if (normalizedState === 'ma' || normalizedState === 'nh') {
-    return 'haverhill-ma'
-  }
-
-  return null
-}
-
 function confidenceFromSource(source: string | null): string {
   const normalized = source?.toLowerCase() ?? ''
 
@@ -289,6 +276,16 @@ function buildCatalogAggregateContext(params: CatalogQueryParams) {
     } else {
       storeJoinConditions.push(`LOWER(s.name) = ${bind(normalizedStore.toLowerCase())}`)
     }
+  }
+
+  const normalizedState = params.state?.trim()
+  if (normalizedState) {
+    storeJoinConditions.push(`LOWER(s.state) = ${bind(normalizedState.toLowerCase())}`)
+  }
+
+  const normalizedCity = params.city?.trim()
+  if (normalizedCity) {
+    storeJoinConditions.push(`LOWER(s.city) ILIKE ${bind(`%${normalizedCity.toLowerCase()}%`)}`)
   }
 
   const normalizedTier = params.tier?.trim()
@@ -652,7 +649,7 @@ async function getCatalogStoresInternal(): Promise<CatalogStore[]> {
     status: row.status as string,
     logoUrl: row.logo_url ?? null,
     storeColor: null,
-    region: normalizeStoreRegion(row.city as string | null, row.state as string | null),
+    region: row.city && row.state ? `${row.city}, ${row.state}` : (row.state ?? null),
     city: row.city ?? null,
     state: row.state ?? null,
   }))
@@ -864,6 +861,8 @@ export async function searchCatalogV2(params: {
   search?: string
   category?: string
   store?: string
+  city?: string
+  state?: string
   pricedOnly?: boolean
   inStockOnly?: boolean
   tier?: string
@@ -885,6 +884,8 @@ export async function searchCatalogV2(params: {
     search: params.search,
     category: params.category,
     store: params.store,
+    city: params.city,
+    state: params.state,
     pricedOnly: params.pricedOnly,
     inStockOnly: params.inStockOnly,
     tier: params.tier,

@@ -20,6 +20,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
 import { broadcast } from '@/lib/realtime/broadcast'
+import { validateTwilioWebhook } from '@/lib/calling/twilio-webhook-auth'
 import {
   buildVoicemailTwiml,
   buildVendorCallbackTwiml,
@@ -29,7 +30,6 @@ import {
 
 const APP_URL = process.env.NEXTAUTH_URL || 'https://app.cheflowhq.com'
 const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID
-const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN
 
 // Active hours: 8am - 8pm ET (calls outside this go to voicemail)
 function isWithinActiveHours(): boolean {
@@ -38,22 +38,13 @@ function isWithinActiveHours(): boolean {
   return etHour >= 8 && etHour < 20
 }
 
-// Simple Twilio signature validation
-async function validateTwilioSignature(req: NextRequest): Promise<boolean> {
-  if (!TWILIO_AUTH_TOKEN) return false
-  // In dev/test, skip validation if no signature present
-  const signature = req.headers.get('x-twilio-signature')
-  if (!signature) return process.env.NODE_ENV === 'development'
-  return true // Full HMAC validation would go here - Twilio SDK handles this
-}
-
 export async function POST(req: NextRequest) {
-  const isValid = await validateTwilioSignature(req)
-  if (!isValid) {
+  const formData = await req.formData()
+
+  const valid = await validateTwilioWebhook(req, formData)
+  if (!valid) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
-
-  const formData = await req.formData()
   const callerPhone = (formData.get('From') as string | null)?.trim() || ''
   const callSid = (formData.get('CallSid') as string | null) || ''
   const toNumber = (formData.get('To') as string | null) || ''

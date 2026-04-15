@@ -445,6 +445,8 @@ export function CatalogBrowser({ initialSearch = '' }: { initialSearch?: string 
   const [autoSelectedStoreName, setAutoSelectedStoreName] = useState<string | null>(null)
   const [category, setCategory] = useState<string | null>(null)
   const [selectedStore, setSelectedStore] = useState<string | null>(null)
+  const [locationCity, setLocationCity] = useState('')
+  const [locationState, setLocationState] = useState('')
   const [inStockOnly, setInStockOnly] = useState(false)
   const [sort, setSort] = useState<'name' | 'price' | 'stores' | 'updated'>('name')
   const [onSaleOnly, setOnSaleOnly] = useState(false)
@@ -549,6 +551,8 @@ export function CatalogBrowser({ initialSearch = '' }: { initialSearch?: string 
         search: search || undefined,
         category: category || undefined,
         store: selectedStore || undefined,
+        city: locationCity.trim() || undefined,
+        state: locationState.trim() || undefined,
         pricedOnly: true,
         inStockOnly: inStockOnly || undefined,
         sort,
@@ -584,7 +588,7 @@ export function CatalogBrowser({ initialSearch = '' }: { initialSearch?: string 
         action().finally(() => setIsLoadingMore(false))
       }
     },
-    [search, category, selectedStore, inStockOnly, sort]
+    [search, category, selectedStore, locationCity, locationState, inStockOnly, sort]
   )
 
   // Trigger search on filter changes (debounced for search input)
@@ -601,7 +605,17 @@ export function CatalogBrowser({ initialSearch = '' }: { initialSearch?: string 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current)
     }
-  }, [search, category, selectedStore, inStockOnly, sort, catalogView, doSearch])
+  }, [
+    search,
+    category,
+    selectedStore,
+    locationCity,
+    locationState,
+    inStockOnly,
+    sort,
+    catalogView,
+    doSearch,
+  ])
 
   // ---------------------------------------------------------------------------
   // Infinite scroll
@@ -722,6 +736,8 @@ export function CatalogBrowser({ initialSearch = '' }: { initialSearch?: string 
   const clearAllFilters = useCallback(() => {
     setSearch('')
     setCategory(null)
+    setLocationCity('')
+    setLocationState('')
     setInStockOnly(false)
     setSort('name')
     setOnSaleOnly(false)
@@ -827,7 +843,14 @@ export function CatalogBrowser({ initialSearch = '' }: { initialSearch?: string 
     clearAllFilters()
   }, [clearAllFilters])
 
-  const hasActiveFilters = search || category || inStockOnly || onSaleOnly || sort !== 'name'
+  const hasActiveFilters =
+    search ||
+    category ||
+    locationCity ||
+    locationState ||
+    inStockOnly ||
+    onSaleOnly ||
+    sort !== 'name'
 
   const filteredCategories = categories.filter((c) =>
     c.toLowerCase().includes(categorySearch.toLowerCase())
@@ -838,6 +861,13 @@ export function CatalogBrowser({ initialSearch = '' }: { initialSearch?: string 
   if (search) activeFilters.push({ label: `Search: "${search}"`, onClear: () => setSearch('') })
   if (category)
     activeFilters.push({ label: `Category: ${category}`, onClear: () => setCategory(null) })
+  if (locationCity)
+    activeFilters.push({ label: `City: ${locationCity}`, onClear: () => setLocationCity('') })
+  if (locationState)
+    activeFilters.push({
+      label: `State: ${locationState.toUpperCase()}`,
+      onClear: () => setLocationState(''),
+    })
   if (inStockOnly)
     activeFilters.push({ label: 'In Stock Only', onClear: () => setInStockOnly(false) })
   if (onSaleOnly) activeFilters.push({ label: 'On Sale', onClear: () => setOnSaleOnly(false) })
@@ -1001,6 +1031,25 @@ export function CatalogBrowser({ initialSearch = '' }: { initialSearch?: string 
                   </button>
                 )}
               </div>
+
+              {/* Location: State */}
+              <input
+                type="text"
+                value={locationState}
+                onChange={(e) => setLocationState(e.target.value)}
+                placeholder="State (e.g. KS)"
+                maxLength={2}
+                className="w-24 px-3 py-1.5 text-sm bg-stone-800 border border-stone-700 rounded-md text-stone-100 placeholder:text-stone-500 focus:outline-none focus:ring-1 focus:ring-brand-600 uppercase"
+              />
+
+              {/* Location: City */}
+              <input
+                type="text"
+                value={locationCity}
+                onChange={(e) => setLocationCity(e.target.value)}
+                placeholder="City (optional)"
+                className="w-36 px-3 py-1.5 text-sm bg-stone-800 border border-stone-700 rounded-md text-stone-100 placeholder:text-stone-500 focus:outline-none focus:ring-1 focus:ring-brand-600"
+              />
 
               {/* Category dropdown */}
               <div className="relative" ref={categoryDropdownRef}>

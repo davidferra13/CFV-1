@@ -66,6 +66,41 @@ export type AiCall = {
 }
 
 // ---------------------------------------------------------------------------
+// Business hours - ET (America/New_York), 8am-7pm
+// ---------------------------------------------------------------------------
+
+function isEtBusinessHours(): boolean {
+  const etHour = new Date(
+    new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })
+  ).getHours()
+  return etHour >= 8 && etHour < 19
+}
+
+// ---------------------------------------------------------------------------
+// Duplicate call guard
+// ---------------------------------------------------------------------------
+
+async function hasPendingCall(
+  db: any,
+  chefId: string,
+  vendorPhone: string,
+  ingredientName: string
+): Promise<boolean> {
+  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+  const { data } = await db
+    .from('supplier_calls')
+    .select('id')
+    .eq('chef_id', chefId)
+    .eq('vendor_phone', vendorPhone)
+    .ilike('ingredient_name', ingredientName.trim())
+    .in('status', ['queued', 'ringing', 'in_progress'])
+    .gte('created_at', fiveMinutesAgo)
+    .limit(1)
+    .maybeSingle()
+  return !!data
+}
+
+// ---------------------------------------------------------------------------
 // Gate check
 // ---------------------------------------------------------------------------
 
@@ -181,11 +216,18 @@ export async function initiateSupplierCall(
     return { success: false, error: 'Daily call limit reached (20 calls/day). Resets at midnight.' }
   }
 
-  const hour = new Date().getHours()
-  if (hour < 8 || hour >= 19) {
+  if (!isEtBusinessHours()) {
     return {
       success: false,
-      error: 'Calls are only placed between 8am and 7pm. Try again during business hours.',
+      error: 'Calls are only placed between 8am and 7pm ET. Try again during business hours.',
+    }
+  }
+
+  const alreadyCalling = await hasPendingCall(db, user.tenantId!, vendor.phone, ingredientName)
+  if (alreadyCalling) {
+    return {
+      success: false,
+      error: 'A call to this vendor for this ingredient is already in progress.',
     }
   }
 
@@ -315,11 +357,18 @@ export async function initiateAdHocCall(
     return { success: false, error: 'Daily call limit reached (20 calls/day). Resets at midnight.' }
   }
 
-  const hour = new Date().getHours()
-  if (hour < 8 || hour >= 19) {
+  if (!isEtBusinessHours()) {
     return {
       success: false,
-      error: 'Calls are only placed between 8am and 7pm. Try again during business hours.',
+      error: 'Calls are only placed between 8am and 7pm ET. Try again during business hours.',
+    }
+  }
+
+  const alreadyCalling = await hasPendingCall(db, user.tenantId!, vendorPhone, ingredientName)
+  if (alreadyCalling) {
+    return {
+      success: false,
+      error: 'A call to this vendor for this ingredient is already in progress.',
     }
   }
 
@@ -443,8 +492,7 @@ export async function initiateDeliveryCoordinationCall(params: {
   const withinLimit = await checkDailyLimit(db, user.tenantId!)
   if (!withinLimit) return { success: false, error: 'Daily call limit reached.' }
 
-  const hour = new Date().getHours()
-  if (hour < 8 || hour >= 19) return { success: false, error: 'Calls only placed 8am-7pm.' }
+  if (!isEtBusinessHours()) return { success: false, error: 'Calls only placed 8am-7pm ET.' }
 
   const { data: aiCallRecord } = await db
     .from('ai_calls')
@@ -538,8 +586,7 @@ export async function initiateVenueConfirmationCall(params: {
   const withinLimit = await checkDailyLimit(db, user.tenantId!)
   if (!withinLimit) return { success: false, error: 'Daily call limit reached.' }
 
-  const hour = new Date().getHours()
-  if (hour < 8 || hour >= 19) return { success: false, error: 'Calls only placed 8am-7pm.' }
+  if (!isEtBusinessHours()) return { success: false, error: 'Calls only placed 8am-7pm ET.' }
 
   const { data: aiCallRecord } = await db
     .from('ai_calls')

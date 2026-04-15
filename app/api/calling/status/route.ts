@@ -16,9 +16,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
 import { broadcast } from '@/lib/realtime/broadcast'
 import { sendSms } from '@/lib/sms/send'
+import { validateTwilioWebhook } from '@/lib/calling/twilio-webhook-auth'
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData()
+
+  const valid = await validateTwilioWebhook(req, formData)
+  if (!valid) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+
   const callSid = formData.get('CallSid') as string | null
   const callStatus = formData.get('CallStatus') as string | null
   const callDuration = formData.get('CallDuration') as string | null
