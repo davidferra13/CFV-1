@@ -947,4 +947,217 @@ test.describe('Q3: Calling system integrity', () => {
       'placeQuickCall poll callback is not guarded — getCallStatus throw causes unhandled rejection'
     ).toBe(true)
   })
+
+  // =========================================================================
+  // Round 15 (Q41-Q50): Recording race conditions, dedup guard resilience,
+  // post-Twilio DB safety, vendor sourcing degradation, webhook auth edge case
+  // =========================================================================
+
+  // -------------------------------------------------------------------------
+  // Test 41: recording/route.ts supplier_calls update is guarded
+  // Unguarded DB error = 500 = Twilio retries recording callback every 5 min
+  // for 24 hours. Recording URL permanently lost + retry loop hammers DB.
+  // -------------------------------------------------------------------------
+  test('recording route supplier_calls writes are guarded against DB errors', () => {
+    const RECORDING_SOURCE = resolve(process.cwd(), 'app/api/calling/recording/route.ts')
+    expect(existsSync(RECORDING_SOURCE), `Source not found: ${RECORDING_SOURCE}`).toBe(true)
+
+    const src = readFileSync(RECORDING_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('supplier_calls update (callId) failed'),
+      'recording route supplier_calls update (callId path) is unguarded — DB error triggers Twilio retry loop'
+    ).toBe(true)
+
+    expect(
+      src.includes('supplier_calls update (call_sid) failed'),
+      'recording route supplier_calls update (call_sid path) is unguarded — DB error triggers Twilio retry loop'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 42: recording route uses callId query param for primary lookup
+  // call_sid may not be stored yet when recording callback fires (same race
+  // condition proven in status/route.ts). Without callId fallback, recording
+  // URL silently dropped for fast-completing calls.
+  // -------------------------------------------------------------------------
+  test('recording route uses callId query param for primary lookup', () => {
+    const RECORDING_SOURCE = resolve(process.cwd(), 'app/api/calling/recording/route.ts')
+    const src = readFileSync(RECORDING_SOURCE, 'utf-8')
+
+    expect(
+      src.includes("searchParams.get('callId')"),
+      'recording route does not read callId param — recording URL silently lost when call_sid not yet written'
+    ).toBe(true)
+
+    // Verify the initiateSupplierCall passes callId to recording URL
+    const actionsSource = readFileSync(TWILIO_ACTIONS_SOURCE, 'utf-8')
+    expect(
+      actionsSource.includes('/api/calling/recording?callId='),
+      'initiateSupplierCall does not pass callId to recording callback URL — recording route cannot look up by ID'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 43: voicemail/done/route.ts catch block logs error
+  // Silent catch {} = Zero Hallucination violation. If status callback also
+  // misses, call stuck in in_progress forever with no trace.
+  // -------------------------------------------------------------------------
+  test('voicemail done route logs ai_calls status update failure', () => {
+    const VOICEMAIL_DONE_SOURCE = resolve(process.cwd(), 'app/api/calling/voicemail/done/route.ts')
+    expect(existsSync(VOICEMAIL_DONE_SOURCE), `Source not found: ${VOICEMAIL_DONE_SOURCE}`).toBe(
+      true
+    )
+
+    const src = readFileSync(VOICEMAIL_DONE_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('[calling/voicemail/done] ai_calls status update failed'),
+      'voicemail done route catch block is silent — status update failure invisible'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 44: ingredient-resolution-view flagIngredientEntry catch logs error
+  // Silent .catch(() => {}) swallows DB write failure. Chef sees local UI
+  // "flagged" state but the flag is silently lost — they think they reported it.
+  // -------------------------------------------------------------------------
+  test('ingredient resolution view logs flag persistence errors', () => {
+    const IRV_SOURCE = resolve(process.cwd(), 'components/calling/ingredient-resolution-view.tsx')
+    expect(existsSync(IRV_SOURCE), `Source not found: ${IRV_SOURCE}`).toBe(true)
+
+    const src = readFileSync(IRV_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('flagIngredientEntry failed'),
+      'ingredient-resolution-view flagIngredientEntry catch is silent — flag silently lost'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 45: getFlaggedEntries DB query is guarded
+  // Unguarded throw crashes the parent ingredient resolution call. The entire
+  // call hub fails to render because one ancillary query (flags) threw.
+  // -------------------------------------------------------------------------
+  test('getFlaggedEntries guards its DB query', () => {
+    const FLAGS_SOURCE = resolve(process.cwd(), 'lib/calling/ingredient-flags.ts')
+    expect(existsSync(FLAGS_SOURCE), `Source not found: ${FLAGS_SOURCE}`).toBe(true)
+
+    const src = readFileSync(FLAGS_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('getFlaggedEntries query failed'),
+      'getFlaggedEntries DB query is unguarded — throw crashes entire ingredient resolution'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 46: hasPendingCall and hasPendingAiCall fail open on DB error
+  // These are dedup guards. If the DB query fails and throws, the entire
+  // initiateSupplierCall crashes. Chef cannot make any calls during transient
+  // DB errors. Should fail open: worst case is a $0.10 duplicate call.
+  // -------------------------------------------------------------------------
+  test('dedup guards fail open on DB error', () => {
+    const src = readFileSync(TWILIO_ACTIONS_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('hasPendingCall query failed'),
+      'hasPendingCall throws on DB error — blocks all calls during transient failures'
+    ).toBe(true)
+
+    expect(
+      src.includes('hasPendingAiCall query failed'),
+      'hasPendingAiCall throws on DB error — blocks all delivery/venue calls during transient failures'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 47: post-Twilio-success DB updates do not throw
+  // After Twilio accepts the call, DB writes for call_sid and ringing status
+  // must not throw. If they do, the outer catch returns { success: false }
+  // to the UI for a call that IS ringing — chef sees "Failed" and double-calls.
+  // -------------------------------------------------------------------------
+  test('post-Twilio-success DB updates are guarded in all call initiators', () => {
+    const src = readFileSync(TWILIO_ACTIONS_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('initiateSupplierCall: post-Twilio DB update failed'),
+      'initiateSupplierCall post-Twilio DB update can throw — UI shows failure for ringing call'
+    ).toBe(true)
+
+    expect(
+      src.includes('initiateAdHocCall: post-Twilio DB update failed'),
+      'initiateAdHocCall post-Twilio DB update can throw — UI shows failure for ringing call'
+    ).toBe(true)
+
+    expect(
+      src.includes('initiateDeliveryCoordinationCall: post-Twilio DB update failed'),
+      'initiateDeliveryCoordinationCall post-Twilio DB update can throw — UI shows failure for ringing call'
+    ).toBe(true)
+
+    expect(
+      src.includes('initiateVenueConfirmationCall: post-Twilio DB update failed'),
+      'initiateVenueConfirmationCall post-Twilio DB update can throw — UI shows failure for ringing call'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 48: getVendorCallQueue guards both DB queries
+  // Unguarded throw on either saved or national vendor query crashes the
+  // entire server action. If one source fails, the other can still provide
+  // partial results.
+  // -------------------------------------------------------------------------
+  test('getVendorCallQueue guards both DB queries for graceful degradation', () => {
+    const SOURCING_SOURCE = resolve(process.cwd(), 'lib/vendors/sourcing-actions.ts')
+    expect(existsSync(SOURCING_SOURCE), `Source not found: ${SOURCING_SOURCE}`).toBe(true)
+
+    const src = readFileSync(SOURCING_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('saved vendors query failed'),
+      'getVendorCallQueue saved vendors query unguarded — one source failure crashes entire vendor list'
+    ).toBe(true)
+
+    expect(
+      src.includes('national vendors query failed'),
+      'getVendorCallQueue national vendors query unguarded — one source failure crashes entire vendor list'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 49: call-hub post-call resolution refresh logs errors
+  // Silent .catch(() => {}) hides resolution refresh failure. After a
+  // successful vendor call, the tier data never updates and the vendor
+  // stays in Tier 3 with no indication that the refresh failed.
+  // -------------------------------------------------------------------------
+  test('call-hub post-call resolution refresh logs errors', () => {
+    const CALL_HUB_SOURCE = resolve(process.cwd(), 'components/calling/call-hub.tsx')
+    const src = readFileSync(CALL_HUB_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('[call-hub] post-call resolution refresh failed'),
+      'call-hub resolution refresh catch is silent — failed tier promotion invisible'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 50: twilio-webhook-auth strips trailing slash from APP_URL
+  // A trailing slash on NEXTAUTH_URL produces double-slash URLs. Twilio
+  // signs the URL it was given (with double-slash), but req.nextUrl.pathname
+  // starts with single /. Signature mismatch rejects ALL legitimate webhooks.
+  // Every call loses its transcript, status updates, and recordings.
+  // -------------------------------------------------------------------------
+  test('twilio-webhook-auth strips trailing slash from APP_URL', () => {
+    const AUTH_SOURCE = resolve(process.cwd(), 'lib/calling/twilio-webhook-auth.ts')
+    expect(existsSync(AUTH_SOURCE), `Source not found: ${AUTH_SOURCE}`).toBe(true)
+
+    const src = readFileSync(AUTH_SOURCE, 'utf-8')
+
+    // Check that the source strips trailing slashes from APP_URL
+    const hasTrailingSlashStrip = src.includes('.replace(/') && src.includes('+$/')
+    expect(
+      hasTrailingSlashStrip,
+      'twilio-webhook-auth does not strip trailing slash from APP_URL - breaks all webhook signatures'
+    ).toBe(true)
+  })
 })

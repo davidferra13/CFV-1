@@ -30,8 +30,10 @@ export async function POST(req: NextRequest) {
         .update({ status: 'completed', updated_at: new Date().toISOString() })
         .eq('id', aiCallId)
         .in('status', ['in_progress', 'queued', 'ringing', 'voicemail'])
-    } catch {
-      // Non-critical - status callback will also handle this
+    } catch (err) {
+      // Q43: Non-critical, but silent catch is a Zero Hallucination violation.
+      // Status callback may also handle this, but log in case it doesn't.
+      console.error('[calling/voicemail/done] ai_calls status update failed:', err)
     }
   }
 

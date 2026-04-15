@@ -108,16 +108,24 @@ export async function getVendorCallQueue(ingredientName: string): Promise<Vendor
 
   const relevantTypes = getRelevantTypes(ingredientName)
 
+  // Q48: Guard both DB queries. If one source fails, the other can still
+  // provide results. Unguarded throw crashes the entire server action.
   // 1. Chef's saved vendors (favorites / personal call sheet)
-  const { data: savedVendors } = await db
-    .from('vendors')
-    .select('id, name, vendor_type, phone, contact_name, is_preferred, address')
-    .eq('chef_id', user.tenantId!)
-    .eq('status', 'active')
-    .not('phone', 'is', null)
-    .neq('phone', '')
+  let savedVendors: any[] = []
+  try {
+    const { data } = await db
+      .from('vendors')
+      .select('id, name, vendor_type, phone, contact_name, is_preferred, address')
+      .eq('chef_id', user.tenantId!)
+      .eq('status', 'active')
+      .not('phone', 'is', null)
+      .neq('phone', '')
+    savedVendors = data || []
+  } catch (err) {
+    console.error('[sourcing] saved vendors query failed — showing national only:', err)
+  }
 
-  const savedCandidates: VendorCallCandidate[] = (savedVendors || []).map((v: any) => {
+  const savedCandidates: VendorCallCandidate[] = savedVendors.map((v: any) => {
     const typeScore = TYPE_RELEVANCE[v.vendor_type] ?? 4
     const preferredBonus = v.is_preferred ? 5 : 0
     const typeHintBonus = relevantTypes.includes(v.vendor_type) ? 3 : 0
@@ -145,19 +153,25 @@ export async function getVendorCallQueue(ingredientName: string): Promise<Vendor
 
   const chefState = chef?.home_state || 'MA'
 
-  let nationalQuery = db
-    .from('national_vendors')
-    .select('id, name, vendor_type, phone, address, city, state')
-    .eq('state', chefState.toUpperCase())
-    .not('phone', 'is', null)
-    .neq('phone', '')
+  let nationalVendors: any[] = []
+  try {
+    let nationalQuery = db
+      .from('national_vendors')
+      .select('id, name, vendor_type, phone, address, city, state')
+      .eq('state', chefState.toUpperCase())
+      .not('phone', 'is', null)
+      .neq('phone', '')
 
-  // If we know the relevant types, filter to those first
-  if (relevantTypes.length > 0) {
-    nationalQuery = nationalQuery.in('vendor_type', relevantTypes)
+    // If we know the relevant types, filter to those first
+    if (relevantTypes.length > 0) {
+      nationalQuery = nationalQuery.in('vendor_type', relevantTypes)
+    }
+
+    const { data } = await nationalQuery.order('name', { ascending: true }).limit(50)
+    nationalVendors = data || []
+  } catch (err) {
+    console.error('[sourcing] national vendors query failed — showing saved only:', err)
   }
-
-  const { data: nationalVendors } = await nationalQuery.order('name', { ascending: true }).limit(50)
 
   // Deduplicate by phone - saved vendors take priority
   const savedPhones = new Set(savedCandidates.map((v) => v.phone.replace(/\D/g, '')))

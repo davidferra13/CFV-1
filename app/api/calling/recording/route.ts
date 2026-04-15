@@ -23,27 +23,58 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true })
   }
 
+  const { searchParams } = new URL(req.url)
+  const callId = searchParams.get('callId')
+  const aiCallId = searchParams.get('aiCallId')
+
   const db: any = createAdminClient()
   const mp3Url = `${recordingUrl}.mp3`
   const now = new Date().toISOString()
 
-  const { data: updated } = await db
-    .from('supplier_calls')
-    .update({ recording_url: mp3Url, updated_at: now })
-    .eq('call_sid', callSid)
-    .select('id')
-    .maybeSingle()
+  // Q41: Guard supplier_calls update - unguarded DB error produces 500,
+  // causing Twilio to retry recording callback every 5 min for 24 hours.
+  // Q42: Try callId query param first (same race condition as status/route.ts
+  // where call_sid may not be written yet when recording callback fires).
+  let updated: any = null
+  if (callId) {
+    try {
+      const { data } = await db
+        .from('supplier_calls')
+        .update({ recording_url: mp3Url, updated_at: now })
+        .eq('id', callId)
+        .select('id')
+        .maybeSingle()
+      updated = data
+    } catch (err) {
+      console.error('[calling/recording] supplier_calls update (callId) failed:', err)
+    }
+  }
+  if (!updated) {
+    try {
+      const { data } = await db
+        .from('supplier_calls')
+        .update({ recording_url: mp3Url, updated_at: now })
+        .eq('call_sid', callSid)
+        .select('id')
+        .maybeSingle()
+      updated = data
+    } catch (err) {
+      console.error('[calling/recording] supplier_calls update (call_sid) failed:', err)
+    }
+  }
 
   // Delivery and venue calls have no supplier_calls record - update ai_calls directly.
-  if (!updated) {
-    await db
-      .from('ai_calls')
-      .update({ recording_url: mp3Url, updated_at: now })
-      .eq('call_sid', callSid)
-      .catch((err: unknown) => {
-        // Recording URL loss is data loss for delivery/venue calls - log it.
-        console.error('[calling/recording] ai_calls recording_url update failed:', err)
-      })
+  // Also update ai_calls if linked via aiCallId param.
+  if (!updated || aiCallId) {
+    const aiFilter = aiCallId ? { key: 'id', value: aiCallId } : { key: 'call_sid', value: callSid }
+    try {
+      await db
+        .from('ai_calls')
+        .update({ recording_url: mp3Url, updated_at: now })
+        .eq(aiFilter.key, aiFilter.value)
+    } catch (err) {
+      console.error('[calling/recording] ai_calls recording_url update failed:', err)
+    }
   }
 
   return NextResponse.json({ ok: true })

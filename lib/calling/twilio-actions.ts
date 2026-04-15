@@ -80,24 +80,32 @@ function isTwilioError(
 // Duplicate call guard
 // ---------------------------------------------------------------------------
 
+// Q46: Dedup guards must fail OPEN on DB error. A transient DB error here
+// should not block all calls. Worst case of fail-open: a duplicate call
+// (cost ~$0.10). Worst case of fail-closed: chef cannot call any vendor.
 async function hasPendingCall(
   db: any,
   chefId: string,
   vendorPhone: string,
   ingredientName: string
 ): Promise<boolean> {
-  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
-  const { data } = await db
-    .from('supplier_calls')
-    .select('id')
-    .eq('chef_id', chefId)
-    .eq('vendor_phone', normalizePhone(vendorPhone))
-    .ilike('ingredient_name', ingredientName.trim())
-    .in('status', ['queued', 'ringing', 'in_progress'])
-    .gte('created_at', fiveMinutesAgo)
-    .limit(1)
-    .maybeSingle()
-  return !!data
+  try {
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+    const { data } = await db
+      .from('supplier_calls')
+      .select('id')
+      .eq('chef_id', chefId)
+      .eq('vendor_phone', normalizePhone(vendorPhone))
+      .ilike('ingredient_name', ingredientName.trim())
+      .in('status', ['queued', 'ringing', 'in_progress'])
+      .gte('created_at', fiveMinutesAgo)
+      .limit(1)
+      .maybeSingle()
+    return !!data
+  } catch (err) {
+    console.error('[calling] hasPendingCall query failed  - allowing call (fail-open):', err)
+    return false
+  }
 }
 
 // Dedup guard for ai_calls-based roles (delivery, venue, ad-hoc).
@@ -108,18 +116,23 @@ async function hasPendingAiCall(
   contactPhone: string,
   role: string
 ): Promise<boolean> {
-  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
-  const { data } = await db
-    .from('ai_calls')
-    .select('id')
-    .eq('chef_id', chefId)
-    .eq('contact_phone', normalizePhone(contactPhone))
-    .eq('role', role)
-    .in('status', ['queued', 'ringing', 'in_progress'])
-    .gte('created_at', fiveMinutesAgo)
-    .limit(1)
-    .maybeSingle()
-  return !!data
+  try {
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+    const { data } = await db
+      .from('ai_calls')
+      .select('id')
+      .eq('chef_id', chefId)
+      .eq('contact_phone', normalizePhone(contactPhone))
+      .eq('role', role)
+      .in('status', ['queued', 'ringing', 'in_progress'])
+      .gte('created_at', fiveMinutesAgo)
+      .limit(1)
+      .maybeSingle()
+    return !!data
+  } catch (err) {
+    console.error('[calling] hasPendingAiCall query failed  - allowing call (fail-open):', err)
+    return false
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -201,7 +214,7 @@ async function checkCallingEligibility(
   defaultLimit = 20
 ): Promise<{ allowed: boolean; reason?: string; limit: number }> {
   // One query for all per-chef calling config.
-  // If this query fails, fail closed — a DB error must not default to
+  // If this query fails, fail closed  - a DB error must not default to
   // "no routing rules found" which would allow calls 24/7 with no limit.
   let routingRule: Record<string, any> | null = null
   try {
@@ -212,7 +225,7 @@ async function checkCallingEligibility(
       .maybeSingle()
     routingRule = data
   } catch (err) {
-    console.error('[calling/eligibility] routing rules query failed — blocking call:', err)
+    console.error('[calling/eligibility] routing rules query failed  - blocking call:', err)
     return {
       allowed: false,
       reason: 'Calling unavailable due to a system error. Please try again.',
@@ -243,7 +256,7 @@ async function checkCallingEligibility(
 
   // Count ALL outbound call types (availability, delivery, venue) against the limit.
   // Reset boundary uses configured timezone midnight, not UTC.
-  // If the count query fails, fail closed — a DB error must not allow unlimited calls.
+  // If the count query fails, fail closed  - a DB error must not allow unlimited calls.
   const nowTzMidnight = new Date(new Date().toLocaleString('en-US', { timeZone: tz }))
   nowTzMidnight.setHours(0, 0, 0, 0)
   const utcOffset =
@@ -260,7 +273,7 @@ async function checkCallingEligibility(
       .gte('created_at', todayStart.toISOString())
     count = result.count
   } catch (err) {
-    console.error('[calling/eligibility] daily call count query failed — blocking call:', err)
+    console.error('[calling/eligibility] daily call count query failed  - blocking call:', err)
     return {
       allowed: false,
       reason: 'Calling unavailable due to a system error. Please try again.',
@@ -352,7 +365,7 @@ export async function initiateSupplierCall(
   }
 
   // Create ai_calls record for full logging.
-  // If this insert fails, log it — the Tier 2 feedback loop never fires for this call.
+  // If this insert fails, log it  - the Tier 2 feedback loop never fires for this call.
   const { data: aiCallRecord, error: aiCallInsertError } = await db
     .from('ai_calls')
     .insert({
@@ -372,7 +385,7 @@ export async function initiateSupplierCall(
 
   if (aiCallInsertError || !aiCallRecord) {
     console.error(
-      '[calling] initiateSupplierCall: ai_calls insert failed — Tier 2 feedback loop broken for this call:',
+      '[calling] initiateSupplierCall: ai_calls insert failed  - Tier 2 feedback loop broken for this call:',
       aiCallInsertError
     )
   }
@@ -382,7 +395,8 @@ export async function initiateSupplierCall(
   const aiCallIdParam = aiCallRecord?.id ? `&aiCallId=${encodeURIComponent(aiCallRecord.id)}` : ''
   const gatherAction = `${APP_URL}/api/calling/gather?callId=${encodeURIComponent(callRecord.id)}&step=1&role=vendor_availability${aiCallIdParam}`
   const statusCallbackUrl = `${APP_URL}/api/calling/status?callId=${encodeURIComponent(callRecord.id)}${aiCallIdParam}`
-  const recordingCallbackUrl = `${APP_URL}/api/calling/recording`
+  // Q42: Pass callId + aiCallId to recording route so it can look up by ID (not just call_sid)
+  const recordingCallbackUrl = `${APP_URL}/api/calling/recording?callId=${encodeURIComponent(callRecord.id)}${aiCallIdParam}`
 
   const businessName = chef?.business_name || 'a private chef'
 
@@ -413,25 +427,39 @@ export async function initiateSupplierCall(
       }
     }
 
-    await Promise.all([
-      db
-        .from('supplier_calls')
-        .update({ call_sid: twilioData.sid, status: 'ringing' })
-        .eq('id', callRecord.id),
-      aiCallRecord
-        ? db
-            .from('ai_calls')
-            .update({ call_sid: twilioData.sid, status: 'ringing' })
-            .eq('id', aiCallRecord.id)
-        : Promise.resolve(),
-    ])
+    // Q47: Post-Twilio-success DB updates must not throw  - call is already placed.
+    // If these fail, the call still happens but call_sid won't be stored.
+    // Throwing here would return { success: false } for a call that IS ringing.
+    try {
+      await Promise.all([
+        db
+          .from('supplier_calls')
+          .update({ call_sid: twilioData.sid, status: 'ringing' })
+          .eq('id', callRecord.id),
+        aiCallRecord
+          ? db
+              .from('ai_calls')
+              .update({ call_sid: twilioData.sid, status: 'ringing' })
+              .eq('id', aiCallRecord.id)
+          : Promise.resolve(),
+      ])
+    } catch (err) {
+      console.error(
+        '[calling] initiateSupplierCall: post-Twilio DB update failed  - call is ringing but call_sid not stored:',
+        err
+      )
+    }
 
-    await broadcast(`chef-${user.tenantId}`, 'supplier_call_started', {
-      callId: callRecord.id,
-      aiCallId: aiCallRecord?.id,
-      vendorName: vendor.name,
-      ingredientName,
-    })
+    try {
+      await broadcast(`chef-${user.tenantId}`, 'supplier_call_started', {
+        callId: callRecord.id,
+        aiCallId: aiCallRecord?.id,
+        vendorName: vendor.name,
+        ingredientName,
+      })
+    } catch (err) {
+      console.error('[calling] initiateSupplierCall: broadcast failed:', err)
+    }
 
     return { success: true, callId: callRecord.id, aiCallId: aiCallRecord?.id }
   } catch (err) {
@@ -515,7 +543,7 @@ export async function initiateAdHocCall(
     return { success: false, error: 'Failed to create call record.' }
   }
 
-  // If this insert fails, log it — the Tier 2 feedback loop never fires for this call.
+  // If this insert fails, log it  - the Tier 2 feedback loop never fires for this call.
   const { data: aiCallRecord, error: aiCallInsertErrorAdhoc } = await db
     .from('ai_calls')
     .insert({
@@ -534,7 +562,7 @@ export async function initiateAdHocCall(
 
   if (aiCallInsertErrorAdhoc || !aiCallRecord) {
     console.error(
-      '[calling] initiateAdHocCall: ai_calls insert failed — Tier 2 feedback loop broken for this call:',
+      '[calling] initiateAdHocCall: ai_calls insert failed  - Tier 2 feedback loop broken for this call:',
       aiCallInsertErrorAdhoc
     )
   }
@@ -546,7 +574,8 @@ export async function initiateAdHocCall(
     : ''
   const gatherAction = `${APP_URL}/api/calling/gather?callId=${encodeURIComponent(callRecord.id)}&step=1&role=vendor_availability${aiCallIdParamAdhoc}`
   const statusCallbackUrl = `${APP_URL}/api/calling/status?callId=${encodeURIComponent(callRecord.id)}${aiCallIdParamAdhoc}`
-  const recordingCallbackUrl = `${APP_URL}/api/calling/recording`
+  // Q42: Pass callId + aiCallId to recording route
+  const recordingCallbackUrl = `${APP_URL}/api/calling/recording?callId=${encodeURIComponent(callRecord.id)}${aiCallIdParamAdhoc}`
   const businessName = chef?.business_name || 'a private chef'
 
   const twiml = buildVendorAvailabilityTwiml(businessName, ingredientName.trim(), gatherAction)
@@ -574,25 +603,37 @@ export async function initiateAdHocCall(
       }
     }
 
-    await Promise.all([
-      db
-        .from('supplier_calls')
-        .update({ call_sid: twilioData.sid, status: 'ringing' })
-        .eq('id', callRecord.id),
-      aiCallRecord
-        ? db
-            .from('ai_calls')
-            .update({ call_sid: twilioData.sid, status: 'ringing' })
-            .eq('id', aiCallRecord.id)
-        : Promise.resolve(),
-    ])
+    // Q47: Post-Twilio-success DB updates must not throw  - call is already placed.
+    try {
+      await Promise.all([
+        db
+          .from('supplier_calls')
+          .update({ call_sid: twilioData.sid, status: 'ringing' })
+          .eq('id', callRecord.id),
+        aiCallRecord
+          ? db
+              .from('ai_calls')
+              .update({ call_sid: twilioData.sid, status: 'ringing' })
+              .eq('id', aiCallRecord.id)
+          : Promise.resolve(),
+      ])
+    } catch (err) {
+      console.error(
+        '[calling] initiateAdHocCall: post-Twilio DB update failed  - call is ringing but call_sid not stored:',
+        err
+      )
+    }
 
-    await broadcast(`chef-${user.tenantId}`, 'supplier_call_started', {
-      callId: callRecord.id,
-      aiCallId: aiCallRecord?.id,
-      vendorName: vendorName.trim(),
-      ingredientName,
-    })
+    try {
+      await broadcast(`chef-${user.tenantId}`, 'supplier_call_started', {
+        callId: callRecord.id,
+        aiCallId: aiCallRecord?.id,
+        vendorName: vendorName.trim(),
+        ingredientName,
+      })
+    } catch (err) {
+      console.error('[calling] initiateAdHocCall: broadcast failed:', err)
+    }
 
     return { success: true, callId: callRecord.id, aiCallId: aiCallRecord?.id }
   } catch (err) {
@@ -635,7 +676,7 @@ export async function initiateDeliveryCoordinationCall(params: {
   const eligibility = await checkCallingEligibility(db, user.tenantId!)
   if (!eligibility.allowed) return { success: false, error: eligibility.reason }
 
-  // Enforce feature toggle — vendor_delivery is disabled unless explicitly enabled
+  // Enforce feature toggle  - vendor_delivery is disabled unless explicitly enabled
   const { data: deliveryToggle } = await db
     .from('ai_call_routing_rules')
     .select('enable_vendor_delivery')
@@ -679,7 +720,8 @@ export async function initiateDeliveryCoordinationCall(params: {
   const businessName = chef?.business_name || 'a private chef'
   const gatherAction = `${APP_URL}/api/calling/gather?aiCallId=${encodeURIComponent(aiCallRecord.id)}&step=1&role=vendor_delivery`
   const statusCallbackUrl = `${APP_URL}/api/calling/status?aiCallId=${encodeURIComponent(aiCallRecord.id)}`
-  const recordingCallbackUrl = `${APP_URL}/api/calling/recording`
+  // Q42: Pass aiCallId to recording route for direct lookup
+  const recordingCallbackUrl = `${APP_URL}/api/calling/recording?aiCallId=${encodeURIComponent(aiCallRecord.id)}`
 
   const twiml = buildVendorDeliveryTwiml(
     businessName,
@@ -711,17 +753,29 @@ export async function initiateDeliveryCoordinationCall(params: {
       }
     }
 
-    await db
-      .from('ai_calls')
-      .update({ call_sid: twilioData.sid, status: 'ringing' })
-      .eq('id', aiCallRecord.id)
+    // Q47: Post-Twilio-success DB updates must not throw  - call is already placed.
+    try {
+      await db
+        .from('ai_calls')
+        .update({ call_sid: twilioData.sid, status: 'ringing' })
+        .eq('id', aiCallRecord.id)
+    } catch (err) {
+      console.error(
+        '[calling] initiateDeliveryCoordinationCall: post-Twilio DB update failed:',
+        err
+      )
+    }
 
-    await broadcast(`chef-${user.tenantId}`, 'ai_call_started', {
-      aiCallId: aiCallRecord.id,
-      role: 'vendor_delivery',
-      contactName: params.vendorName,
-      subject: params.itemDescription,
-    })
+    try {
+      await broadcast(`chef-${user.tenantId}`, 'ai_call_started', {
+        aiCallId: aiCallRecord.id,
+        role: 'vendor_delivery',
+        contactName: params.vendorName,
+        subject: params.itemDescription,
+      })
+    } catch (err) {
+      console.error('[calling] initiateDeliveryCoordinationCall: broadcast failed:', err)
+    }
 
     return { success: true, aiCallId: aiCallRecord.id }
   } catch (err) {
@@ -768,7 +822,7 @@ export async function initiateVenueConfirmationCall(params: {
   const eligibility = await checkCallingEligibility(db, user.tenantId!)
   if (!eligibility.allowed) return { success: false, error: eligibility.reason }
 
-  // Enforce feature toggle — venue_confirmation is disabled unless explicitly enabled
+  // Enforce feature toggle  - venue_confirmation is disabled unless explicitly enabled
   const { data: venueToggle } = await db
     .from('ai_call_routing_rules')
     .select('enable_venue_confirmation')
@@ -814,7 +868,8 @@ export async function initiateVenueConfirmationCall(params: {
   const businessName = chef?.business_name || 'a private chef'
   const gatherAction = `${APP_URL}/api/calling/gather?aiCallId=${encodeURIComponent(aiCallRecord.id)}&step=1&role=venue_confirmation`
   const statusCallbackUrl = `${APP_URL}/api/calling/status?aiCallId=${encodeURIComponent(aiCallRecord.id)}`
-  const recordingCallbackUrl = `${APP_URL}/api/calling/recording`
+  // Q42: Pass aiCallId to recording route for direct lookup
+  const recordingCallbackUrl = `${APP_URL}/api/calling/recording?aiCallId=${encodeURIComponent(aiCallRecord.id)}`
 
   const twiml = buildVenueConfirmationTwiml(
     businessName,
@@ -846,17 +901,26 @@ export async function initiateVenueConfirmationCall(params: {
       }
     }
 
-    await db
-      .from('ai_calls')
-      .update({ call_sid: twilioData.sid, status: 'ringing' })
-      .eq('id', aiCallRecord.id)
+    // Q47: Post-Twilio-success DB updates must not throw  - call is already placed.
+    try {
+      await db
+        .from('ai_calls')
+        .update({ call_sid: twilioData.sid, status: 'ringing' })
+        .eq('id', aiCallRecord.id)
+    } catch (err) {
+      console.error('[calling] initiateVenueConfirmationCall: post-Twilio DB update failed:', err)
+    }
 
-    await broadcast(`chef-${user.tenantId}`, 'ai_call_started', {
-      aiCallId: aiCallRecord.id,
-      role: 'venue_confirmation',
-      contactName: params.venueName,
-      subject: `Event on ${params.eventDate}`,
-    })
+    try {
+      await broadcast(`chef-${user.tenantId}`, 'ai_call_started', {
+        aiCallId: aiCallRecord.id,
+        role: 'venue_confirmation',
+        contactName: params.venueName,
+        subject: `Event on ${params.eventDate}`,
+      })
+    } catch (err) {
+      console.error('[calling] initiateVenueConfirmationCall: broadcast failed:', err)
+    }
 
     return { success: true, aiCallId: aiCallRecord.id }
   } catch (err) {
@@ -1052,7 +1116,7 @@ export async function upsertRoutingRules(updates: {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  // onConflict: 'chef_id' is required — the compat shim defaults to ON CONFLICT (id),
+  // onConflict: 'chef_id' is required  - the compat shim defaults to ON CONFLICT (id),
   // but ai_call_routing_rules has a UNIQUE constraint on chef_id, not id.
   // Without this, every save after the first fails with a unique violation on chef_id.
   const { error } = await db.from('ai_call_routing_rules').upsert(

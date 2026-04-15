@@ -35,12 +35,21 @@ export async function getFlaggedEntries(
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const { data } = await db
-    .from('ingredient_accuracy_flags')
-    .select('store_product_id, vendor_name')
-    .eq('chef_id', user.tenantId!)
-    .ilike('ingredient_name', `%${ingredientName.trim()}%`)
-    .eq('reviewed', false)
+  // Q45: Guard DB query - unguarded throw crashes the parent ingredient
+  // resolution call. Return empty on failure so resolution degrades gracefully.
+  let data: any[] | null = null
+  try {
+    const result = await db
+      .from('ingredient_accuracy_flags')
+      .select('store_product_id, vendor_name')
+      .eq('chef_id', user.tenantId!)
+      .ilike('ingredient_name', `%${ingredientName.trim()}%`)
+      .eq('reviewed', false)
+    data = result.data
+  } catch (err) {
+    console.error('[ingredient-flags] getFlaggedEntries query failed:', err)
+    return { storeProductIds: [], vendorNames: [] }
+  }
 
   if (!data?.length) return { storeProductIds: [], vendorNames: [] }
 

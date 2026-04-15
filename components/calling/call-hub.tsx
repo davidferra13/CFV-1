@@ -113,10 +113,13 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
 
         // Fix #5: after a successful call (result=yes), re-run resolution so
         // the vendor is promoted out of Tier 3 and into Tier 2 (sentinel written)
+        // Q49: Log refresh errors - silent catch hides failed tier promotion
         if (result === 'yes' && ingredient.trim().length >= 2) {
           resolveIngredientAvailability(ingredient.trim())
             .then((refreshed) => setResolution(refreshed))
-            .catch(() => {})
+            .catch((err) => {
+              console.error('[call-hub] post-call resolution refresh failed:', err)
+            })
         }
       }
     },
@@ -227,7 +230,7 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
             }))
           }
         } catch {
-          // Network/auth error on poll — don't kill the interval, let it retry.
+          // Network/auth error on poll  - don't kill the interval, let it retry.
           // Attempts still increments so the loop eventually exhausts gracefully.
         }
         if (attempts >= 22) {
@@ -476,7 +479,7 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
               {
                 n: '1',
                 label: 'Type an ingredient',
-                sub: 'System queries OpenClaw market data, your vendor history, and price records simultaneously.',
+                sub: 'System queries market data, your vendor history, and price records simultaneously.',
               },
               {
                 n: '2',

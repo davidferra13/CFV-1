@@ -89,12 +89,16 @@ function ResolvedPanel({
 
   async function handleFlag(i: number, store: ResolvedStore) {
     setFlagged((prev) => new Set([...prev, i]))
+    // Q44: Log flag persistence errors instead of silently swallowing.
+    // Chef sees local UI state (flagged) but DB write may have failed.
     await flagIngredientEntry({
       ingredientName,
       storeProductId: null,
       vendorName: store.chainName,
       source: 'openclaw',
-    }).catch(() => {})
+    }).catch((err) => {
+      console.error('[ingredient-resolution] flagIngredientEntry failed — flag not persisted:', err)
+    })
   }
 
   const visible = expanded ? stores : stores.slice(0, 3)
@@ -726,7 +730,7 @@ export function IngredientResolutionView({
               <WifiOff className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
               <p className="text-xs text-amber-300">
                 Market data source is offline. Results below come from the vendor directory only.
-                Full resolution will resume when OpenClaw is reachable.
+                Full resolution will resume when the price engine is reachable.
               </p>
             </div>
           )}

@@ -17,7 +17,10 @@
 import { createHmac } from 'crypto'
 import type { NextRequest } from 'next/server'
 
-const APP_URL = process.env.NEXTAUTH_URL || 'https://app.cheflowhq.com'
+// Q50: Strip trailing slash - a trailing slash on NEXTAUTH_URL produces
+// double-slash URLs (e.g. https://app.cheflowhq.com//api/...) which break
+// signature validation because req.nextUrl.pathname starts with single /.
+const APP_URL = (process.env.NEXTAUTH_URL || 'https://app.cheflowhq.com').replace(/\/+$/, '')
 
 export async function validateTwilioWebhook(
   req: NextRequest,
