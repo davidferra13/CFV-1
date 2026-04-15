@@ -27,6 +27,16 @@ export const POST = withApiAuth(
     const parsed = EnrollBody.safeParse(body)
     if (!parsed.success) return apiValidationError(parsed.error)
 
+    // Verify client belongs to this chef before enrolling
+    const { data: clientCheck } = await ctx.db
+      .from('clients')
+      .select('id')
+      .eq('id', parsed.data.clientId)
+      .eq('chef_id', ctx.tenantId)
+      .single()
+
+    if (!clientCheck) return apiNotFound('Client')
+
     try {
       await enrollInSequence(
         ctx.tenantId,

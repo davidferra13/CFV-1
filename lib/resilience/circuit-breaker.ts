@@ -221,6 +221,7 @@ export class CircuitOpenError extends Error {
 export const breakers = {
   stripe: getCircuitBreaker('stripe', { failureThreshold: 3, resetTimeoutMs: 30_000 }),
   resend: getCircuitBreaker('resend', { failureThreshold: 5, resetTimeoutMs: 60_000 }),
+  twilio: getCircuitBreaker('twilio', { failureThreshold: 5, resetTimeoutMs: 60_000 }),
   gemini: getCircuitBreaker('gemini', { failureThreshold: 5, resetTimeoutMs: 60_000 }),
   mealme: getCircuitBreaker('mealme', { failureThreshold: 5, resetTimeoutMs: 120_000 }),
   kroger: getCircuitBreaker('kroger', { failureThreshold: 5, resetTimeoutMs: 120_000 }),

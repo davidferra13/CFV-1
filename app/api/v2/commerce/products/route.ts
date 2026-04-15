@@ -14,7 +14,7 @@ const CreateProductBody = z.object({
   sku: z.string().optional(),
   barcode: z.string().optional(),
   image_url: z.string().optional(),
-  price_cents: z.number().int().nonnegative(),
+  price_cents: z.number().int().min(1, 'Price must be at least 1 cent'),
   cost_cents: z.number().int().nonnegative().optional(),
   tax_class: z
     .enum(['standard', 'reduced', 'exempt', 'alcohol', 'cannabis', 'prepared_food', 'zero'])

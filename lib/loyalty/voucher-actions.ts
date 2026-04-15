@@ -59,7 +59,12 @@ const CreateVoucherOrGiftCardSchema = z
       .max(32, 'Code must be 32 characters or fewer')
       .regex(/^[A-Za-z0-9-]+$/, 'Code may only contain letters, numbers, and hyphens')
       .optional(),
-    amount_cents: z.number().int().positive('Amount must be positive').optional(),
+    amount_cents: z
+      .number()
+      .int()
+      .positive('Amount must be positive')
+      .max(1_000_000, 'Amount cannot exceed $10,000')
+      .optional(),
     discount_percent: z.number().int().min(1).max(100).optional(),
     expires_at: z.string().optional(),
     max_redemptions: z.number().int().min(1).max(1000).optional(),

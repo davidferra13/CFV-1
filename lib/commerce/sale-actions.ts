@@ -96,6 +96,13 @@ export async function addSaleItem(input: AddSaleItemInput) {
   }
 
   const discount = input.discountCents ?? 0
+  const lineSubtotal = input.unitPriceCents * input.quantity
+  if (!Number.isInteger(discount) || discount < 0) {
+    throw new Error('Discount must be a non-negative integer (cents)')
+  }
+  if (discount > lineSubtotal) {
+    throw new Error('Discount cannot exceed the line subtotal')
+  }
   const modifierTotal = (input.modifiersApplied ?? []).reduce(
     (sum, m) => sum + m.price_delta_cents * input.quantity,
     0
