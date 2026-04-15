@@ -37,10 +37,13 @@ function validatePriceChange(oldPriceCents, newPriceCents, ingredientName) {
   if (oldPriceCents == null || oldPriceCents <= 0) {
     return { valid: true }
   }
-  // Skip spike check when old price looks like a per-unit price and new looks
-  // like a per-lb/per-package price. Per-unit prices are usually < $1.50 (150c).
-  // Comparing $0.14/lemon to $5/lb will always look like a 35x spike but is valid.
+  // Skip spike/crash check when prices look like different unit sizes.
+  // Case 1: old per-unit ($0.14/lemon) vs new per-lb ($5/lb) = spike but valid.
   if (oldPriceCents < 150 && newPriceCents > 200) {
+    return { valid: true }
+  }
+  // Case 2: old per-lb ($4.46/lb cooked onions) vs new per-serving ($0.21/oz) = crash but valid.
+  if (oldPriceCents > 200 && newPriceCents < 150) {
     return { valid: true }
   }
   const ratio = newPriceCents / oldPriceCents

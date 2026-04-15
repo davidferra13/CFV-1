@@ -85,6 +85,15 @@ export function validatePriceChange(
     return { valid: true }
   }
 
+  // Skip ratio check when prices look like different unit sizes.
+  // Old per-unit ($0.14/lemon) vs new per-lb ($5/lb) and vice versa are both valid.
+  if (oldPriceCents < 150 && newPriceCents > 200) {
+    return { valid: true }
+  }
+  if (oldPriceCents > 200 && newPriceCents < 150) {
+    return { valid: true }
+  }
+
   const ratio = newPriceCents / oldPriceCents
 
   if (ratio > 200) {
