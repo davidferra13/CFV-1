@@ -183,7 +183,11 @@ async function placeTwilioCall(params: {
 // Check daily limit
 // ---------------------------------------------------------------------------
 
-async function checkDailyLimit(db: any, chefId: string, defaultLimit = 20): Promise<boolean> {
+async function checkDailyLimit(
+  db: any,
+  chefId: string,
+  defaultLimit = 20
+): Promise<{ allowed: boolean; limit: number }> {
   // Use ET midnight so the limit resets at midnight Eastern, not UTC midnight.
   const nowEt = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }))
   nowEt.setHours(0, 0, 0, 0)
@@ -201,12 +205,16 @@ async function checkDailyLimit(db: any, chefId: string, defaultLimit = 20): Prom
     .maybeSingle()
   const limit = routingRule?.daily_call_limit ?? defaultLimit
 
+  // Count ALL outbound call types (availability, delivery, venue) against the limit.
+  // Availability calls create supplier_calls + ai_calls; delivery/venue create only ai_calls.
+  // Counting ai_calls direction='outbound' captures all three types uniformly.
   const { count } = await db
-    .from('supplier_calls')
+    .from('ai_calls')
     .select('*', { count: 'exact', head: true })
     .eq('chef_id', chefId)
+    .eq('direction', 'outbound')
     .gte('created_at', todayStart.toISOString())
-  return (count ?? 0) < limit
+  return { allowed: (count ?? 0) < limit, limit }
 }
 
 // ---------------------------------------------------------------------------
@@ -243,9 +251,12 @@ export async function initiateSupplierCall(
 
   const vendorPhoneNormalized = normalizePhone(vendor.phone)
 
-  const withinLimit = await checkDailyLimit(db, user.tenantId!)
+  const { allowed: withinLimit, limit: dailyLimit } = await checkDailyLimit(db, user.tenantId!)
   if (!withinLimit) {
-    return { success: false, error: 'Daily call limit reached (20 calls/day). Resets at midnight.' }
+    return {
+      success: false,
+      error: `Daily call limit reached (${dailyLimit} calls/day). Resets at midnight.`,
+    }
   }
 
   if (!isEtBusinessHours()) {
@@ -303,8 +314,11 @@ export async function initiateSupplierCall(
     .select()
     .single()
 
-  const gatherAction = `${APP_URL}/api/calling/gather?callId=${encodeURIComponent(callRecord.id)}&step=1&role=vendor_availability&aiCallId=${encodeURIComponent(aiCallRecord?.id ?? '')}`
-  const statusCallbackUrl = `${APP_URL}/api/calling/status?callId=${encodeURIComponent(callRecord.id)}&aiCallId=${encodeURIComponent(aiCallRecord?.id ?? '')}`
+  // Omit aiCallId param entirely if the ai_calls insert failed (empty string causes
+  // gather/status handlers to attempt a lookup on id='' which always returns null).
+  const aiCallIdParam = aiCallRecord?.id ? `&aiCallId=${encodeURIComponent(aiCallRecord.id)}` : ''
+  const gatherAction = `${APP_URL}/api/calling/gather?callId=${encodeURIComponent(callRecord.id)}&step=1&role=vendor_availability${aiCallIdParam}`
+  const statusCallbackUrl = `${APP_URL}/api/calling/status?callId=${encodeURIComponent(callRecord.id)}${aiCallIdParam}`
   const recordingCallbackUrl = `${APP_URL}/api/calling/recording`
 
   const businessName = chef?.business_name || 'a private chef'
@@ -395,9 +409,12 @@ export async function initiateAdHocCall(
     .eq('id', user.tenantId!)
     .single()
 
-  const withinLimit = await checkDailyLimit(db, user.tenantId!)
+  const { allowed: withinLimit, limit: dailyLimit } = await checkDailyLimit(db, user.tenantId!)
   if (!withinLimit) {
-    return { success: false, error: 'Daily call limit reached (20 calls/day). Resets at midnight.' }
+    return {
+      success: false,
+      error: `Daily call limit reached (${dailyLimit} calls/day). Resets at midnight.`,
+    }
   }
 
   if (!isEtBusinessHours()) {
@@ -454,8 +471,13 @@ export async function initiateAdHocCall(
     .select()
     .single()
 
-  const gatherAction = `${APP_URL}/api/calling/gather?callId=${encodeURIComponent(callRecord.id)}&step=1&role=vendor_availability&aiCallId=${encodeURIComponent(aiCallRecord?.id ?? '')}`
-  const statusCallbackUrl = `${APP_URL}/api/calling/status?callId=${encodeURIComponent(callRecord.id)}&aiCallId=${encodeURIComponent(aiCallRecord?.id ?? '')}`
+  // Omit aiCallId param entirely if the ai_calls insert failed (empty string causes
+  // gather/status handlers to attempt a lookup on id='' which always returns null).
+  const aiCallIdParamAdhoc = aiCallRecord?.id
+    ? `&aiCallId=${encodeURIComponent(aiCallRecord.id)}`
+    : ''
+  const gatherAction = `${APP_URL}/api/calling/gather?callId=${encodeURIComponent(callRecord.id)}&step=1&role=vendor_availability${aiCallIdParamAdhoc}`
+  const statusCallbackUrl = `${APP_URL}/api/calling/status?callId=${encodeURIComponent(callRecord.id)}${aiCallIdParamAdhoc}`
   const recordingCallbackUrl = `${APP_URL}/api/calling/recording`
   const businessName = chef?.business_name || 'a private chef'
 
@@ -542,8 +564,9 @@ export async function initiateDeliveryCoordinationCall(params: {
     .eq('id', user.tenantId!)
     .single()
 
-  const withinLimit = await checkDailyLimit(db, user.tenantId!)
-  if (!withinLimit) return { success: false, error: 'Daily call limit reached.' }
+  const { allowed: withinLimit, limit: dailyLimit } = await checkDailyLimit(db, user.tenantId!)
+  if (!withinLimit)
+    return { success: false, error: `Daily call limit reached (${dailyLimit} calls/day).` }
 
   if (!isEtBusinessHours()) return { success: false, error: 'Calls only placed 8am-7pm ET.' }
 
@@ -648,8 +671,9 @@ export async function initiateVenueConfirmationCall(params: {
     .eq('id', user.tenantId!)
     .single()
 
-  const withinLimit = await checkDailyLimit(db, user.tenantId!)
-  if (!withinLimit) return { success: false, error: 'Daily call limit reached.' }
+  const { allowed: withinLimit, limit: dailyLimit } = await checkDailyLimit(db, user.tenantId!)
+  if (!withinLimit)
+    return { success: false, error: `Daily call limit reached (${dailyLimit} calls/day).` }
 
   if (!isEtBusinessHours()) return { success: false, error: 'Calls only placed 8am-7pm ET.' }
 

@@ -186,4 +186,75 @@ test.describe('Q3: Calling system integrity', () => {
       'gather route does not record vendor_price_point_created in action_log'
     ).toBe(true)
   })
+
+  // -------------------------------------------------------------------------
+  // Round 7 structural checks
+  // -------------------------------------------------------------------------
+
+  // Test 7: checkDailyLimit counts ALL outbound call types (Round 7 Fix #1)
+  // Before Round 7, delivery and venue calls didn't count against the daily limit
+  // because checkDailyLimit queried supplier_calls — but those call types only
+  // create ai_calls rows.
+  test('checkDailyLimit counts ai_calls direction=outbound, not just supplier_calls', () => {
+    expect(existsSync(TWILIO_ACTIONS_SOURCE), `Source not found: ${TWILIO_ACTIONS_SOURCE}`).toBe(
+      true
+    )
+    const src = readFileSync(TWILIO_ACTIONS_SOURCE, 'utf-8')
+
+    // The function must query ai_calls, not supplier_calls for counting
+    const checkFnIdx = src.indexOf('async function checkDailyLimit')
+    expect(checkFnIdx, 'checkDailyLimit function not found').toBeGreaterThan(-1)
+
+    // Extract the function body (next 600 chars covers the full function)
+    const fnBody = src.slice(checkFnIdx, checkFnIdx + 600)
+
+    expect(
+      fnBody.includes("from('ai_calls')"),
+      "checkDailyLimit must count ai_calls rows — delivery/venue calls don't create supplier_calls"
+    ).toBe(true)
+
+    expect(
+      !fnBody.includes("from('supplier_calls')") ||
+        fnBody.indexOf("from('ai_calls')") < fnBody.indexOf("from('supplier_calls')"),
+      'checkDailyLimit should not count supplier_calls for the limit (that table misses delivery/venue)'
+    ).toBe(true)
+  })
+
+  // Test 8: "Call All" is serialized to prevent daily-limit race condition (Round 7 Fix #2)
+  // Before Round 7, Promise.allSettled fired all calls simultaneously.
+  // All would pass the daily limit check before any insert committed.
+  test('callSelected uses sequential for...of loop, not Promise.allSettled', () => {
+    const callHubSource = resolve(process.cwd(), 'components/calling/call-hub.tsx')
+    expect(existsSync(callHubSource), `Source not found: ${callHubSource}`).toBe(true)
+
+    const src = readFileSync(callHubSource, 'utf-8')
+
+    expect(
+      !src.includes('Promise.allSettled(toCall'),
+      'callSelected still uses Promise.allSettled — race condition at daily limit remains'
+    ).toBe(true)
+
+    // Must use sequential iteration
+    expect(
+      src.includes('for (const v of toCall)') || src.includes('for(const v of toCall)'),
+      'callSelected must use sequential for...of to prevent daily limit race condition'
+    ).toBe(true)
+  })
+
+  // Test 9: aiCallId='' is never passed in TwiML URLs (Round 7 Fix #8)
+  // When ai_calls insert fails, the old code passed aiCallId='' which causes
+  // gather/status handlers to look up an empty string ID and fail silently.
+  test('TwiML URLs omit aiCallId param rather than passing empty string', () => {
+    expect(existsSync(TWILIO_ACTIONS_SOURCE), `Source not found: ${TWILIO_ACTIONS_SOURCE}`).toBe(
+      true
+    )
+    const src = readFileSync(TWILIO_ACTIONS_SOURCE, 'utf-8')
+
+    // The old pattern was: `&aiCallId=${encodeURIComponent(aiCallRecord?.id ?? '')}`
+    // The empty string fallback must not exist anywhere in TwiML URL construction
+    expect(
+      !src.includes("aiCallRecord?.id ?? ''"),
+      "TwiML URL still uses aiCallRecord?.id ?? '' fallback — empty aiCallId will cause handler failures"
+    ).toBe(true)
+  })
 })

@@ -40,7 +40,10 @@ export async function POST(req: NextRequest) {
       .from('ai_calls')
       .update({ recording_url: mp3Url, updated_at: now })
       .eq('call_sid', callSid)
-      .catch(() => {})
+      .catch((err: unknown) => {
+        // Recording URL loss is data loss for delivery/venue calls - log it.
+        console.error('[calling/recording] ai_calls recording_url update failed:', err)
+      })
   }
 
   return NextResponse.json({ ok: true })

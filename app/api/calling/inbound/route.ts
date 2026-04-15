@@ -63,11 +63,17 @@ export async function POST(req: NextRequest) {
     .eq('inbound_phone_number', toNumber)
     .maybeSingle()
 
-  // Fall back to the only chef if single-tenant
+  // Fall back to the only chef only if this is a single-tenant instance.
+  // In multi-tenant setup, routing to an arbitrary chef is dangerous - return hangup instead.
   let chefId: string | null = routingRule?.chef_id ?? null
   if (!chefId) {
-    const { data: firstChef } = await db.from('chefs').select('id').limit(1).single()
-    chefId = firstChef?.id ?? null
+    const { count } = await db.from('chefs').select('*', { count: 'exact', head: true })
+    if ((count ?? 0) === 1) {
+      const { data: firstChef } = await db.from('chefs').select('id').limit(1).single()
+      chefId = firstChef?.id ?? null
+    }
+    // If multiple chefs: inbound number not configured — drop the call.
+    // The caller will hear a disconnect rather than being routed to the wrong chef.
   }
 
   if (!chefId) {

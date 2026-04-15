@@ -227,7 +227,12 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
     if (toCall.length === 0) return
     setConfirmOpen(false)
     setCallingAll(true)
-    await Promise.allSettled(toCall.map((v) => placeCall(v)))
+    // Fix #2: serialize calls to prevent daily-limit race condition.
+    // Parallel calls all pass the limit check before any insert commits.
+    // Sequential execution ensures each call is counted before the next check.
+    for (const v of toCall) {
+      await placeCall(v)
+    }
     setCallingAll(false)
   }
 
@@ -250,6 +255,38 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
         return
       }
       toast.success(`Calling ${signal.vendorName}...`)
+      // Fix #3: track result via polling so the chef sees yes/no/price feedback.
+      // Tier 2 escalations aren't in the resolution grid, so results surface via toast.
+      if (result.callId) {
+        const callId = result.callId
+        let attempts = 0
+        const poll = setInterval(async () => {
+          attempts++
+          const status = await getCallStatus(callId)
+          if (!status) return
+          if (['completed', 'failed', 'no_answer', 'busy'].includes(status.status)) {
+            clearInterval(poll)
+            if (status.result === 'yes') {
+              const msg = `${signal.vendorName}: In stock${status.price_quoted ? ` at ${status.price_quoted}` : ''}`
+              toast.success(msg)
+              // Re-resolve so the vendor is demoted from Tier 2 stale to confirmed
+              if (ingredient.trim().length >= 2) {
+                resolveIngredientAvailability(ingredient.trim())
+                  .then((refreshed) => setResolution(refreshed))
+                  .catch(() => {})
+              }
+            } else if (status.result === 'no') {
+              toast.info(`${signal.vendorName}: Not available`)
+            } else {
+              toast.info(`${signal.vendorName}: ${status.status}`)
+            }
+          }
+          if (attempts >= 22) {
+            clearInterval(poll)
+            toast.info(`${signal.vendorName}: Call still in progress`)
+          }
+        }, 4000)
+      }
     } catch {
       toast.error('Failed to place call')
     }
@@ -301,7 +338,15 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
             callCreatedAt: status.created_at,
           })
         }
-        if (attempts >= 30) clearInterval(poll)
+        if (attempts >= 30) {
+          clearInterval(poll)
+          // Fix #4: transition to done so the UI doesn't hang in 'calling' state.
+          setQuickResult({
+            phase: 'done',
+            result: null,
+            status: 'No response yet - call may still be in progress',
+          })
+        }
       }, 3000)
     } catch {
       setQuickResult({ phase: 'done', result: null, status: 'Error' })
@@ -512,6 +557,7 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
                     onClick={() => {
                       setQuickResult({ phase: 'idle' })
                       setQuickPhone('')
+                      setQuickName('')
                       setQuickIngredient('')
                     }}
                     className="text-xs text-stone-500 hover:text-stone-300 underline underline-offset-2"
