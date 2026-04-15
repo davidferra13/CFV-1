@@ -48,13 +48,13 @@ export async function getClientLTVTrajectory(clientId: string): Promise<ClientLT
   // Fetch payment totals from the financial summary view
   const { data: summaries } = await db
     .from('event_financial_summary')
-    .select('event_id, total_paid_cents')
+    .select('event_id, total_paid_cents, tip_amount_cents')
     .eq('tenant_id', user.tenantId!)
     .in('event_id', eventIds)
 
   const revenueMap = new Map<string, number>()
   for (const s of summaries ?? []) {
-    revenueMap.set(s.event_id, s.total_paid_cents ?? 0)
+    revenueMap.set(s.event_id, (s.total_paid_cents ?? 0) + (s.tip_amount_cents ?? 0))
   }
 
   let running = 0

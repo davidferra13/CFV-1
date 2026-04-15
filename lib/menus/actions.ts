@@ -579,6 +579,14 @@ export async function updateMenu(menuId: string, input: UpdateMenuInput) {
         })
       } catch {}
 
+      // Notify client if menu is linked to an approved event (non-blocking)
+      try {
+        const { notifyClientOfMenuEdit } = await import('@/lib/menus/editor-actions')
+        await notifyClientOfMenuEdit(menuId, user.tenantId!)
+      } catch (err) {
+        console.error('[updateMenu] Post-approval notification failed (non-blocking):', err)
+      }
+
       return { success: true, menu }
     },
   })

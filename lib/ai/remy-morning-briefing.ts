@@ -142,6 +142,26 @@ export async function generateMorningBriefing(tenantId: string): Promise<string>
     sections.push({ heading: 'Client Birthdays', items: birthdayItems, priority: 'info' })
   }
 
+  // 5b. Ghost events stuck in in_progress (event_date is in the past)
+  const yesterday = _li(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1))
+  const { data: ghostEvents } = await db
+    .from('events')
+    .select('id, occasion, event_date, client:clients(full_name)')
+    .eq('tenant_id', tenantId)
+    .eq('status', 'in_progress')
+    .lte('event_date', yesterday)
+    .limit(5)
+
+  if (ghostEvents && ghostEvents.length > 0) {
+    const items = ghostEvents.map((e: any) => {
+      const daysPast = Math.floor(
+        (now.getTime() - new Date(e.event_date).getTime()) / (1000 * 60 * 60 * 24)
+      )
+      return `${e.occasion ?? 'Event'} for ${e.client?.full_name ?? 'Unknown'} - ${daysPast}d ago, needs close-out`
+    })
+    sections.push({ heading: 'Events Needing Close-Out', items, priority: 'high' })
+  }
+
   // 6. This week's event count
   const { count: weekEventCount } = await db
     .from('events')

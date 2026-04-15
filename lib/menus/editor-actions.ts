@@ -12,7 +12,7 @@ import { revalidatePath } from 'next/cache'
 // When a chef edits a menu that is already approved on an event, the client
 // receives a notification so they can review the change.
 
-async function notifyClientOfMenuEdit(menuId: string, tenantId: string): Promise<void> {
+export async function notifyClientOfMenuEdit(menuId: string, tenantId: string): Promise<void> {
   try {
     const db: any = createServerClient({ admin: true })
 

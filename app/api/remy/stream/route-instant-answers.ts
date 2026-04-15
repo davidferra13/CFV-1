@@ -976,7 +976,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
             })
           : '$0'
       return {
-        text: `**${new Date().getFullYear()} Year-to-Date:**\n\n- Revenue: **${rev}**\n- Expenses: ${exp}\n- Profit: **${profit}** (${margin}% margin)\n- Events: ${ys.totalEventsThisYear} total (${ys.completedEventsThisYear} completed)\n- Avg revenue/event: ${avgEvent}\n\n${margin >= 50 ? 'Strong margins - your year is on track. 🔥' : margin >= 30 ? 'Decent margins. Keep an eye on expenses.' : 'Margins are tight - worth reviewing your cost structure.'}`,
+        text: `**${new Date().getFullYear()} Year-to-Date:**\n\n- Revenue: **${rev}** (actual payments received)\n- Expenses: ${exp}\n- Profit: **${profit}** (${margin}% margin)\n- Events: ${ys.totalEventsThisYear} total (${ys.completedEventsThisYear} completed)\n- Avg revenue/event: ${avgEvent}\n\n${margin >= 50 ? 'Strong margins - your year is on track.' : margin >= 30 ? 'Decent margins. Keep an eye on expenses.' : 'Margins are tight - worth reviewing your cost structure.'}\n\n_Revenue reflects payments logged in your ledger. Quoted prices for upcoming events appear in Finance > Reporting._`,
         navSuggestions: [
           { label: 'Finance', href: '/finance' },
           { label: 'Analytics', href: '/analytics' },
