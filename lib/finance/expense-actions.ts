@@ -133,6 +133,16 @@ export async function createExpense(input: CreateExpenseInput): Promise<Expense>
     throw new Error(`Invalid expense category: ${input.category}`)
   }
 
+  if (input.description && input.description.length > 500) {
+    throw new Error('Description too long (max 500 chars)')
+  }
+  if (input.vendor && input.vendor.length > 255) {
+    throw new Error('Vendor name too long (max 255 chars)')
+  }
+  if (input.notes && input.notes.length > 2000) {
+    throw new Error('Notes too long (max 2000 chars)')
+  }
+
   // Verify event_id belongs to this tenant before attaching the expense
   if (input.event_id) {
     const { data: eventCheck } = await db
@@ -196,6 +206,15 @@ export async function updateExpense(
     if (!Number.isInteger(input.amount_cents) || input.amount_cents <= 0) {
       throw new Error('Expense amount must be a positive integer (cents)')
     }
+  }
+  if (input.description && input.description.length > 500) {
+    throw new Error('Description too long (max 500 chars)')
+  }
+  if (input.vendor && input.vendor.length > 255) {
+    throw new Error('Vendor name too long (max 255 chars)')
+  }
+  if (input.notes && input.notes.length > 2000) {
+    throw new Error('Notes too long (max 2000 chars)')
   }
 
   const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() }
