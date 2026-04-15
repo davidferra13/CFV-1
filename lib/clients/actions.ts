@@ -924,13 +924,14 @@ export async function getClientsWithStats() {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  // Get all clients
+  // Get all clients (hard cap at 2000 to prevent unbounded memory load)
   const { data: clients, error: clientsError } = await db
     .from('clients')
     .select('*')
     .eq('tenant_id', user.tenantId!)
     .is('deleted_at' as any, null)
     .order('created_at', { ascending: false })
+    .limit(2000)
 
   if (clientsError) {
     console.error('[getClientsWithStats] Error:', clientsError)

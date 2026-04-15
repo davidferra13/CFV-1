@@ -80,6 +80,25 @@ export async function acceptQuote(quoteId: string) {
   const user = await requireClient()
   const db: any = createServerClient()
 
+  // Pre-flight: fetch quote + associated event before calling the atomic RPC.
+  // The RPC checks client ownership but not expiry or event cancellation.
+  const { data: preCheck } = await db
+    .from('quotes')
+    .select('id, valid_until, event_id, events(status)')
+    .eq('id', quoteId)
+    .eq('client_id', user.entityId)
+    .single()
+
+  if (preCheck) {
+    if (preCheck.valid_until && new Date(preCheck.valid_until) < new Date()) {
+      throw new Error('This quote has expired and can no longer be accepted.')
+    }
+    const eventStatus = (preCheck.events as any)?.status
+    if (eventStatus === 'cancelled') {
+      throw new Error('This event has been cancelled. The quote is no longer available.')
+    }
+  }
+
   const { data: response, error: responseError } = await db.rpc('respond_to_quote_atomic', {
     p_quote_id: quoteId,
     p_client_id: user.entityId,

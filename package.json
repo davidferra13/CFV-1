@@ -127,6 +127,7 @@
     "test:experiential:boundaries": "npx playwright test --config=playwright.experiential.config.ts --project=exp-cross-boundary",
     "test:experiential:loading": "npx playwright test --config=playwright.experiential.config.ts --project=exp-loading-states",
     "test:experiential:errors": "npx playwright test --config=playwright.experiential.config.ts --project=exp-error-states",
+    "test:system-integrity": "npx playwright test --config=playwright.system-integrity.config.ts",
     "test:sentinel:smoke": "npx playwright test --config=playwright.sentinel.config.ts --project=sentinel-smoke",
     "test:sentinel:critical": "npx playwright test --config=playwright.sentinel.config.ts --project=sentinel-critical",
     "test:sentinel:data": "npx playwright test --config=playwright.sentinel.config.ts --project=sentinel-data",

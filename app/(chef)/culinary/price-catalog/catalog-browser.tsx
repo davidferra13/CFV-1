@@ -194,7 +194,7 @@ function VendorCallQueuePanel({ query }: { query: string }) {
     try {
       const result =
         vendor.source === 'national'
-          ? await initiateAdHocCall(vendor.phone, vendor.name, query, vendor.id)
+          ? await initiateAdHocCall(vendor.phone, vendor.name, query)
           : await initiateSupplierCall(vendor.id, query)
       if (!result.success) {
         setCallStates((prev) => ({

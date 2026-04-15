@@ -183,7 +183,7 @@ async function placeTwilioCall(params: {
 // Check daily limit
 // ---------------------------------------------------------------------------
 
-async function checkDailyLimit(db: any, chefId: string, limit = 20): Promise<boolean> {
+async function checkDailyLimit(db: any, chefId: string, defaultLimit = 20): Promise<boolean> {
   // Use ET midnight so the limit resets at midnight Eastern, not UTC midnight.
   const nowEt = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }))
   nowEt.setHours(0, 0, 0, 0)
@@ -192,6 +192,15 @@ async function checkDailyLimit(db: any, chefId: string, limit = 20): Promise<boo
     new Date().getTime() -
     new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })).getTime()
   const todayStart = new Date(nowEt.getTime() + utcOffset)
+
+  // Read per-chef limit from routing_rules (falls back to defaultLimit if not configured)
+  const { data: routingRule } = await db
+    .from('ai_call_routing_rules')
+    .select('daily_call_limit')
+    .eq('chef_id', chefId)
+    .maybeSingle()
+  const limit = routingRule?.daily_call_limit ?? defaultLimit
+
   const { count } = await db
     .from('supplier_calls')
     .select('*', { count: 'exact', head: true })
@@ -365,8 +374,7 @@ export async function initiateSupplierCall(
 export async function initiateAdHocCall(
   vendorPhone: string,
   vendorName: string,
-  ingredientName: string,
-  nationalVendorId?: string
+  ingredientName: string
 ): Promise<CallResult> {
   const user = await requireChef()
   await requireCallingEnabled(user.tenantId!)
@@ -413,19 +421,16 @@ export async function initiateAdHocCall(
     }
   }
 
-  const insertPayload: Record<string, any> = {
-    chef_id: user.tenantId!,
-    vendor_id: null,
-    vendor_name: vendorName.trim(),
-    vendor_phone: vendorPhoneNormalized,
-    ingredient_name: ingredientName.trim(),
-    status: 'queued',
-  }
-  if (nationalVendorId) insertPayload.notes = `national_vendor_id:${nationalVendorId}`
-
   const { data: callRecord, error: insertError } = await db
     .from('supplier_calls')
-    .insert(insertPayload)
+    .insert({
+      chef_id: user.tenantId!,
+      vendor_id: null,
+      vendor_name: vendorName.trim(),
+      vendor_phone: vendorPhoneNormalized,
+      ingredient_name: ingredientName.trim(),
+      status: 'queued',
+    })
     .select()
     .single()
 
@@ -442,7 +447,6 @@ export async function initiateAdHocCall(
       contact_phone: vendorPhoneNormalized,
       contact_name: vendorName.trim(),
       contact_type: 'vendor',
-      vendor_id: nationalVendorId ?? null,
       subject: ingredientName.trim(),
       status: 'queued',
       supplier_call_id: callRecord.id,

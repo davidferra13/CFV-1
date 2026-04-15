@@ -137,6 +137,8 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
     }
     debounceRef.current = setTimeout(async () => {
       setResolving(true)
+      // Clear terminal-state tracking for the new search
+      doneVendors.current.clear()
       try {
         const result = await resolveIngredientAvailability(ingredient.trim())
         setResolution(result)
@@ -166,7 +168,7 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
       if (vendor.source === 'saved') {
         result = await initiateSupplierCall(vendor.id, ingredient.trim())
       } else {
-        result = await initiateAdHocCall(vendor.phone, vendor.name, ingredient.trim(), vendor.id)
+        result = await initiateAdHocCall(vendor.phone, vendor.name, ingredient.trim())
       }
 
       if (!result.success) {
@@ -241,14 +243,8 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
   // Fix #5: escalate a Tier 2 partial-signal vendor directly to a call
   async function escalateTier2Call(signal: PartialSignal) {
     if (!signal.phone) return
-    const vendorId = signal.vendorId || undefined
     try {
-      const result = await initiateAdHocCall(
-        signal.phone,
-        signal.vendorName,
-        ingredient.trim(),
-        vendorId
-      )
+      const result = await initiateAdHocCall(signal.phone, signal.vendorName, ingredient.trim())
       if (!result.success) {
         toast.error(result.error ?? 'Call failed')
         return

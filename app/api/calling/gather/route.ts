@@ -428,7 +428,24 @@ async function handleVendorAvailability(
         return `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`
       })()
 
-      if (priceQuoted) {
+      // Twilio retry guard: check if a price point already exists for this
+      // vendor + ingredient + date before inserting. Prevents duplicates when
+      // Twilio retries the webhook due to a slow or non-2xx response.
+      let pricePointAlreadyExists = false
+      try {
+        const { data: existing } = await db
+          .from('vendor_price_points')
+          .select('id')
+          .eq('chef_id', callRecord.chef_id)
+          .eq('vendor_id', effectiveVendorId)
+          .ilike('item_name', callRecord.ingredient_name)
+          .eq('recorded_at', today)
+          .limit(1)
+          .maybeSingle()
+        pricePointAlreadyExists = !!existing
+      } catch {}
+
+      if (!pricePointAlreadyExists && priceQuoted) {
         // Price captured: write a full price point
         try {
           const priceCents = parsePriceToCents(priceQuoted)
@@ -447,8 +464,8 @@ async function handleVendorAvailability(
         } catch (err) {
           console.error('[calling/gather] vendor_price_points (price) error:', err)
         }
-      } else if (callRecord?.result === 'yes') {
-        // Fix #3: availability confirmed but no price given.
+      } else if (!pricePointAlreadyExists && callRecord?.result === 'yes') {
+        // Availability confirmed but no price given.
         // Write price_cents=1 as a sentinel ("confirmed available, price unknown").
         // This graduates the vendor from Tier 3 to Tier 2 on next resolution query.
         // price_cents=1 is distinguishable from a real price and will not display.
