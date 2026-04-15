@@ -300,6 +300,9 @@ async function main() {
   // Summary
   await printSummary()
 
+  // Step 7: Price probe - verify key ingredients have prices
+  runScript('Price probe', resolve(__dirname, 'price-probe.mjs'))
+
   // Save sync timestamp for future delta syncs
   writeFileSync(LAST_SYNC_FILE, new Date().toISOString())
 

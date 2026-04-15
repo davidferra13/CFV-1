@@ -140,6 +140,18 @@ async function main() {
   log('normalization_map table ready')
 
   // ── Step 2: Sync normalization_map from SQLite ─────────────────────────
+  // The normalization_map table was added to the Pi schema in April 2026.
+  // Older SQLite snapshots won't have it - skip gracefully.
+  const hasNormTable = sqlite.prepare(
+    `SELECT name FROM sqlite_master WHERE type='table' AND name='normalization_map'`
+  ).get()
+  if (!hasNormTable) {
+    log('normalization_map table not in SQLite snapshot - skipping (old snapshot or pull failed)')
+    sqlite.close()
+    await sql.end()
+    process.exit(0)
+  }
+
   const total = sqlite.prepare('SELECT COUNT(*) as cnt FROM normalization_map').get().cnt
   log(`Found ${total} normalization mappings in SQLite`)
 

@@ -37,11 +37,17 @@ function validatePriceChange(oldPriceCents, newPriceCents, ingredientName) {
   if (oldPriceCents == null || oldPriceCents <= 0) {
     return { valid: true }
   }
+  // Skip spike check when old price looks like a per-unit price and new looks
+  // like a per-lb/per-package price. Per-unit prices are usually < $1.50 (150c).
+  // Comparing $0.14/lemon to $5/lb will always look like a 35x spike but is valid.
+  if (oldPriceCents < 150 && newPriceCents > 200) {
+    return { valid: true }
+  }
   const ratio = newPriceCents / oldPriceCents
-  if (ratio > 10) {
+  if (ratio > 20) {
     return { valid: false, reason: `Price spike: ${oldPriceCents}c -> ${newPriceCents}c (${ratio.toFixed(1)}x) for "${ingredientName}"` }
   }
-  if (ratio < 0.1) {
+  if (ratio < 0.05) {
     return { valid: false, reason: `Price crash: ${oldPriceCents}c -> ${newPriceCents}c (${ratio.toFixed(2)}x) for "${ingredientName}"` }
   }
   return { valid: true }
@@ -97,17 +103,44 @@ async function main() {
   `
   console.log(`Ingredients in DB: ${rows.length}`)
 
-  // 2. Deduplicate names
-  const names = [...new Set(rows.map(r => r.name.trim()))]
-  console.log(`Unique names to look up: ${names.length}`)
+  // 2. Deduplicate names + normalize USDA-style compound names for lookup.
+  // USDA names follow "Primary, Modifier, Modifier..." pattern.
+  // "Broccoli, Frozen, Spears, Unprepared" → "broccoli" for lookup.
+  // Multiple originals may collapse to the same lookup key; results are
+  // applied to all originals that share that key.
+  const rawNames = [...new Set(rows.map(r => r.name.trim()))]
+  console.log(`Unique names to look up: ${rawNames.length}`)
 
-  // 3. Call Pi enriched endpoint
-  const res = await fetch(`${PI_URL}/api/prices/enriched`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ items: names }),
-  })
-  const data = await res.json()
+  function normalizeForLookup(name) {
+    // Take first comma-segment, lowercase, strip trailing punctuation
+    const base = name.split(',')[0].trim().toLowerCase().replace(/[^a-z0-9 &'-]/g, '').trim()
+    return base.length >= 3 ? base : name.toLowerCase().trim()
+  }
+
+  // Map: normalized lookup key → array of original names it covers
+  const normToOriginals = new Map()
+  for (const name of rawNames) {
+    const key = normalizeForLookup(name)
+    if (!normToOriginals.has(key)) normToOriginals.set(key, [])
+    normToOriginals.get(key).push(name)
+  }
+  const names = [...normToOriginals.keys()]
+  console.log(`Normalized lookup keys: ${names.length} (collapsed from ${rawNames.length})`)
+
+  // 3. Call Pi enriched endpoint in chunks to avoid 5000-item limit
+  const CHUNK = 5000
+  const allResults = {}
+  for (let i = 0; i < names.length; i += CHUNK) {
+    const chunk = names.slice(i, i + CHUNK)
+    const res = await fetch(`${PI_URL}/api/prices/enriched`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: chunk }),
+    })
+    const data = await res.json()
+    Object.assign(allResults, data.results || {})
+    if (names.length > CHUNK) console.log(`  Pi lookup: ${Math.min(i + CHUNK, names.length)}/${names.length} names queried`)
+  }
 
   let matched = 0
   let notFound = 0
@@ -116,8 +149,10 @@ async function main() {
   const _osd = new Date()
   const today = `${_osd.getFullYear()}-${String(_osd.getMonth() + 1).padStart(2, '0')}-${String(_osd.getDate()).padStart(2, '0')}`
 
-  // 4. Process each result
-  for (const [name, result] of Object.entries(data.results)) {
+  // 4. Process each result - apply to all original names covered by this lookup key
+  for (const [lookupKey, result] of Object.entries(allResults)) {
+    const originals = normToOriginals.get(lookupKey) || [lookupKey]
+    for (const name of originals) {
     const tenantIngs = rows.filter(r => r.name.trim() === name)
 
     if (!result || !result.best_price) {
@@ -223,7 +258,8 @@ async function main() {
           WHERE id = ${ing.id}
         `
       }
-    }
+    } // end for (const ing of tenantIngs)
+    } // end for (const name of originals)
   }
 
   // --- Sync Results ---
