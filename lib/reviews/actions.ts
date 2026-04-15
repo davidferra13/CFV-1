@@ -60,11 +60,12 @@ export async function submitClientReview(input: SubmitReviewInput) {
     throw new Error('Reviews can only be submitted for completed events')
   }
 
-  // Check if a review already exists
+  // Check if this client already submitted a review for this event
   const { data: existing } = await db
     .from('client_reviews')
     .select('id')
     .eq('event_id', validated.event_id)
+    .eq('client_id', user.entityId)
     .single()
 
   if (existing) {
