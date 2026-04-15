@@ -37,12 +37,22 @@ export interface HouseholdDietarySummary {
 // Get household members for a profile
 // ---------------------------------------------------------------------------
 
-export async function getHouseholdMembers(profileId: string): Promise<HouseholdMember[]> {
+export async function getHouseholdMembers(profileToken: string): Promise<HouseholdMember[]> {
   const db: any = createServerClient({ admin: true })
+
+  // Resolve profileId from token — token acts as the auth credential for this profile
+  const { data: profile } = await db
+    .from('hub_guest_profiles')
+    .select('id')
+    .eq('profile_token', profileToken)
+    .single()
+
+  if (!profile) throw new Error('Invalid profile token')
+
   const { data, error } = await db
     .from('hub_household_members')
     .select('*')
-    .eq('profile_id', profileId)
+    .eq('profile_id', profile.id)
     .order('sort_order', { ascending: true })
 
   if (error) throw new Error(`Failed to load household: ${error.message}`)
