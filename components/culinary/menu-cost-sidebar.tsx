@@ -1,13 +1,15 @@
 'use client'
 
-// MenuCostSidebar - Live cost display with margin alerts
-// Shows food cost %, cost per guest, total cost, and margin alerts
+// MenuCostSidebar - Live cost display with margin alerts + costing gap warnings
+// Shows food cost %, cost per guest, total cost, margin alerts, and data quality gaps (A1, A2)
 // Reads from server actions, no AI
 
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { checkMenuMargins, getMenuVendorHints } from '@/lib/menus/menu-intelligence-actions'
 import type { MarginAlert, MenuVendorHint } from '@/lib/menus/menu-intelligence-actions'
+import { getMenuCostingGaps } from '@/lib/menus/actions'
+import type { CostingGap } from '@/lib/menus/actions'
 
 interface MenuCostSidebarProps {
   menuId: string
@@ -49,18 +51,21 @@ export function MenuCostSidebar({
   } | null>(null)
   const [alerts, setAlerts] = useState<MarginAlert[]>([])
   const [vendorHints, setVendorHints] = useState<MenuVendorHint[]>([])
+  const [gaps, setGaps] = useState<CostingGap | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
 
   const fetchCost = () => {
     startTransition(async () => {
       try {
-        const [result, hints] = await Promise.all([
+        const [result, hints, costingGaps] = await Promise.all([
           checkMenuMargins(menuId),
           vendorHintsEnabled ? getMenuVendorHints(menuId).catch(() => []) : Promise.resolve([]),
+          getMenuCostingGaps(menuId).catch(() => null),
         ])
         setCostData(result.costBreakdown)
         setAlerts(result.alerts)
         setVendorHints(hints)
+        setGaps(costingGaps)
         setLoadError(null)
       } catch (err) {
         console.error('[MenuCostSidebar] Failed to load:', err)
@@ -149,8 +154,61 @@ export function MenuCostSidebar({
       {/* Component count */}
       <div className="flex items-center justify-between text-xs text-stone-500">
         <span>{costData.componentCount} components</span>
-        {!costData.hasAllPrices && <Badge variant="warning">Missing prices</Badge>}
       </div>
+
+      {/* A2: Components with no recipe - cost excluded silently without this warning */}
+      {gaps && gaps.unrecipedComponents.length > 0 && (
+        <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 space-y-1">
+          <div className="flex items-center gap-2">
+            <Badge variant="warning">
+              {gaps.unrecipedComponents.length} unlinked
+            </Badge>
+            <span className="text-xs text-amber-300 font-medium">No recipe attached</span>
+          </div>
+          <p className="text-xs text-amber-200/70">
+            These components are excluded from the cost total:
+          </p>
+          <ul className="text-xs text-amber-200/60 space-y-0.5 pl-2">
+            {gaps.unrecipedComponents.slice(0, 5).map((c) => (
+              <li key={c.componentId} className="truncate">
+                {c.courseName}: {c.componentName}
+              </li>
+            ))}
+            {gaps.unrecipedComponents.length > 5 && (
+              <li className="text-amber-200/40">
+                +{gaps.unrecipedComponents.length - 5} more
+              </li>
+            )}
+          </ul>
+        </div>
+      )}
+
+      {/* A1: Recipes with missing ingredient prices - cost is understated */}
+      {gaps && gaps.recipesWithMissingPrices.length > 0 && (
+        <div className="rounded-lg border border-orange-500/30 bg-orange-500/10 px-3 py-2 space-y-1">
+          <div className="flex items-center gap-2">
+            <Badge variant="warning">
+              {gaps.recipesWithMissingPrices.reduce((s, r) => s + r.missingCount, 0)} missing
+            </Badge>
+            <span className="text-xs text-orange-300 font-medium">Unpriced ingredients</span>
+          </div>
+          <p className="text-xs text-orange-200/70">
+            Cost total is understated. Set prices to fix:
+          </p>
+          <ul className="text-xs text-orange-200/60 space-y-0.5 pl-2">
+            {gaps.recipesWithMissingPrices.slice(0, 4).map((r) => (
+              <li key={r.recipeId} className="truncate">
+                {r.recipeName}: {r.missingCount}/{r.totalIngredients} ingredients unpriced
+              </li>
+            ))}
+            {gaps.recipesWithMissingPrices.length > 4 && (
+              <li className="text-orange-200/40">
+                +{gaps.recipesWithMissingPrices.length - 4} more recipes
+              </li>
+            )}
+          </ul>
+        </div>
+      )}
 
       {/* Margin alerts */}
       {alerts.length > 0 && (

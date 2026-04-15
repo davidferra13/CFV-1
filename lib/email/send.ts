@@ -32,6 +32,14 @@ export async function sendEmail({
   replyTo,
   attachments,
 }: SendEmailParams): Promise<boolean> {
+  // Guard against header injection via newline characters in email fields
+  const hasNewline = (v: string) => /[\r\n]/.test(v)
+  const recipients = Array.isArray(to) ? to : [to]
+  if (recipients.some(hasNewline) || hasNewline(subject) || (replyTo && hasNewline(replyTo))) {
+    console.error('[sendEmail] Rejected: newline detected in email headers')
+    return false
+  }
+
   // Skip if Resend is not configured (dev environments without key)
   if (!process.env.RESEND_API_KEY) {
     console.warn('[sendEmail] RESEND_API_KEY not configured. Email NOT sent:', subject)

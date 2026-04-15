@@ -31,7 +31,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
     }
 
-    const body = JSON.parse(rawBody)
+    let body: Record<string, unknown>
+    try {
+      body = JSON.parse(rawBody)
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 })
+    }
 
     // DocuSign Connect sends XML by default, but we configure JSON.
     // The envelope status is nested in the payload.

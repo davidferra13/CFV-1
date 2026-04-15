@@ -28,6 +28,85 @@ const RequestRevisionSchema = z.object({
 
 export type RequestRevisionInput = z.infer<typeof RequestRevisionSchema>
 
+export type MenuSendValidation = {
+  valid: boolean
+  /** Hard errors that block sending */
+  errors: string[]
+  /** Soft warnings that don't block but chef should know */
+  warnings: string[]
+}
+
+// ============================================
+// VALIDATION (L1 - pre-send gate)
+// ============================================
+
+/**
+ * Validates a menu is ready to be sent for client approval.
+ * Returns hard errors (block send) and soft warnings (informational).
+ * Call this before sendMenuForApproval to surface issues to the chef.
+ */
+export async function validateMenuForSend(eventId: string): Promise<MenuSendValidation> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const errors: string[] = []
+  const warnings: string[] = []
+
+  const { data: event, error } = await db
+    .from('events')
+    .select(
+      `
+      id, guest_count,
+      menus (
+        id, name, status, is_template,
+        dishes (
+          id, course_name,
+          components: components (id, name, recipe_id)
+        )
+      )
+    `
+    )
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (error || !event) {
+    return { valid: false, errors: ['Event not found'], warnings: [] }
+  }
+
+  const menus: any[] = (event as any).menus ?? []
+  const allDishes = menus.flatMap((m: any) => m.dishes ?? [])
+  const allComponents = allDishes.flatMap((d: any) => d.components ?? [])
+
+  // C2: At least one dish required (hard block)
+  if (allDishes.length === 0) {
+    errors.push('Add at least one course before sending for approval.')
+  }
+
+  // L1: Menu must not be in draft status (hard block)
+  const draftMenus = menus.filter((m: any) => m.status === 'draft')
+  if (draftMenus.length > 0) {
+    errors.push(
+      `${draftMenus.length === 1 ? 'The menu is' : `${draftMenus.length} menus are`} still in draft. Mark as ready before sending.`
+    )
+  }
+
+  // A2: Components without recipes (soft warning - costs will be understated)
+  const unrecipedComponents = allComponents.filter((c: any) => !c.recipe_id)
+  if (unrecipedComponents.length > 0) {
+    warnings.push(
+      `${unrecipedComponents.length} component${unrecipedComponents.length > 1 ? 's' : ''} have no recipe attached. Food cost estimates will be incomplete.`
+    )
+  }
+
+  // Guest count missing (soft warning)
+  if (!event.guest_count || event.guest_count === 0) {
+    warnings.push('No guest count set. Cost-per-guest cannot be calculated.')
+  }
+
+  return { valid: errors.length === 0, errors, warnings }
+}
+
 // ============================================
 // CHEF ACTIONS
 // ============================================
@@ -40,6 +119,12 @@ export type RequestRevisionInput = z.infer<typeof RequestRevisionSchema>
 export async function sendMenuForApproval(eventId: string) {
   const user = await requireChef()
   const db: any = createServerClient()
+
+  // L1 + C2: Pre-send validation gate
+  const validation = await validateMenuForSend(eventId)
+  if (!validation.valid) {
+    throw new Error(validation.errors.join(' | '))
+  }
 
   // Load event + client + linked menus
   const { data: event, error: eventError } = await db

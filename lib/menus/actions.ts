@@ -6,6 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { pgClient } from '@/lib/db/index'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { Database } from '@/types/database'
@@ -2063,5 +2064,95 @@ export async function getMenuShoppingList(menuId: string): Promise<MenuShoppingL
     totalEstimatedCostCents: items.reduce((sum, i) => sum + i.estimatedCostCents, 0),
     linkedRecipeCount: recipeIds.length,
     unlinkedComponentCount: unlinkedCount,
+  }
+}
+
+// ============================================
+// COSTING GAP ANALYSIS (A1 + A2)
+// ============================================
+
+export type CostingGap = {
+  /** Components in this menu that have no recipe attached (A2). */
+  unrecipedComponents: Array<{ componentId: string; componentName: string; courseName: string }>
+  /** Recipes used in this menu that have at least one ingredient with no price set (A1). */
+  recipesWithMissingPrices: Array<{
+    recipeId: string
+    recipeName: string
+    missingCount: number
+    totalIngredients: number
+  }>
+}
+
+/**
+ * Returns two categories of costing gaps for a menu:
+ *   A2 - components with no recipe attached (cost contribution is $0, silently)
+ *   A1 - recipes that have ingredients with no price set (cost is understated)
+ *
+ * Uses raw SQL because the compat shim doesn't support multi-table aggregation
+ * in a single pass without losing the per-recipe breakdown.
+ */
+export async function getMenuCostingGaps(menuId: string): Promise<CostingGap> {
+  const user = await requireChef()
+
+  // Verify the menu belongs to this chef (tenant check)
+  const [menuCheck] = await pgClient`
+    SELECT 1 FROM menus
+    WHERE id = ${menuId}
+      AND tenant_id = ${user.tenantId!}
+      AND deleted_at IS NULL
+    LIMIT 1
+  `
+  if (!menuCheck) throw new UnknownAppError('Menu not found')
+
+  type UnrecipedRow = { component_id: string; component_name: string; course_name: string }
+  type MissingPriceRow = {
+    recipe_id: string
+    recipe_name: string
+    missing_count: string
+    total_ingredients: string
+  }
+
+  // A2: Components with no recipe_id
+  const unrecipedRows = await pgClient<UnrecipedRow[]>`
+    SELECT c.id   AS component_id,
+           c.name AS component_name,
+           d.course_name
+    FROM components c
+    JOIN dishes d ON d.id = c.dish_id
+    WHERE d.menu_id     = ${menuId}
+      AND c.recipe_id   IS NULL
+    ORDER BY d.course_number, c.name
+  `
+
+  // A1: Recipes used in this menu that have at least one ingredient with NULL price
+  const missingPriceRows = await pgClient<MissingPriceRow[]>`
+    SELECT r.id                                            AS recipe_id,
+           r.name                                          AS recipe_name,
+           COUNT(*) FILTER (WHERE i.last_price_cents IS NULL) AS missing_count,
+           COUNT(*)                                         AS total_ingredients
+    FROM components c
+    JOIN dishes        d  ON d.id  = c.dish_id
+    JOIN recipes       r  ON r.id  = c.recipe_id
+    JOIN recipe_ingredients ri ON ri.recipe_id = r.id
+    JOIN ingredients   i  ON i.id  = ri.ingredient_id
+    WHERE d.menu_id    = ${menuId}
+      AND c.recipe_id IS NOT NULL
+    GROUP BY r.id, r.name
+    HAVING COUNT(*) FILTER (WHERE i.last_price_cents IS NULL) > 0
+    ORDER BY missing_count DESC
+  `
+
+  return {
+    unrecipedComponents: unrecipedRows.map((r: UnrecipedRow) => ({
+      componentId: r.component_id,
+      componentName: r.component_name,
+      courseName: r.course_name,
+    })),
+    recipesWithMissingPrices: missingPriceRows.map((r: MissingPriceRow) => ({
+      recipeId: r.recipe_id,
+      recipeName: r.recipe_name,
+      missingCount: Number(r.missing_count),
+      totalIngredients: Number(r.total_ingredients),
+    })),
   }
 }

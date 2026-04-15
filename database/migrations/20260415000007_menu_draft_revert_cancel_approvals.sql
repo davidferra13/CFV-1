@@ -12,42 +12,8 @@
 -- fires after status changes to 'draft'.
 
 -- Step 1: Extend the approval status enum to include 'cancelled'
-ALTER TYPE IF EXISTS menu_approval_status_enum ADD VALUE IF NOT EXISTS 'cancelled';
-
--- Fallback: if the column uses a CHECK constraint instead of an enum, patch it
-DO $$
-BEGIN
-  -- Try to add 'cancelled' to approval status on the table if it's a check-based text column
-  -- This is a no-op if the column already accepts 'cancelled'
-  BEGIN
-    ALTER TABLE menu_approval_requests
-      DROP CONSTRAINT IF EXISTS menu_approval_requests_status_check;
-
-    ALTER TABLE menu_approval_requests
-      ADD CONSTRAINT menu_approval_requests_status_check
-      CHECK (status IN ('not_sent', 'sent', 'approved', 'revision_requested', 'cancelled'));
-  EXCEPTION WHEN others THEN
-    -- Column may be an enum; no action needed
-    NULL;
-  END;
-END;
-$$;
-
--- Also patch the events.menu_approval_status if it has a similar check
-DO $$
-BEGIN
-  BEGIN
-    ALTER TABLE events
-      DROP CONSTRAINT IF EXISTS events_menu_approval_status_check;
-
-    ALTER TABLE events
-      ADD CONSTRAINT events_menu_approval_status_check
-      CHECK (menu_approval_status IN ('not_sent', 'sent', 'approved', 'revision_requested', 'cancelled'));
-  EXCEPTION WHEN others THEN
-    NULL;
-  END;
-END;
-$$;
+-- IF NOT EXISTS requires PostgreSQL 12+ (supported)
+ALTER TYPE menu_approval_status ADD VALUE IF NOT EXISTS 'cancelled';
 
 -- Step 2: Function that cancels open approval requests for an event
 CREATE OR REPLACE FUNCTION cancel_pending_menu_approvals_for_event(p_event_id UUID)
