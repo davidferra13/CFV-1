@@ -556,6 +556,11 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
     )
   }
 
+  // Prevent sending a quote with zero or missing total
+  if (newStatus === 'sent' && (!quote.total_quoted_cents || quote.total_quoted_cents <= 0)) {
+    throw new ValidationError('Cannot send a quote with a zero or missing total amount.')
+  }
+
   // Prevent sending an already-expired quote
   if (newStatus === 'sent' && quote.valid_until && new Date(quote.valid_until) < new Date()) {
     throw new ValidationError(

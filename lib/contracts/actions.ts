@@ -230,7 +230,7 @@ export async function generateEventContract(eventId: string, templateId?: string
     .from('events')
     .select(
       `
-      id, event_date, quoted_price_cents, deposit_amount_cents,
+      id, status, event_date, quoted_price_cents, deposit_amount_cents,
       occasion, guest_count, location_address, location_city, location_state,
       cancellation_reason,
       clients (id, full_name, email)
@@ -242,6 +242,15 @@ export async function generateEventContract(eventId: string, templateId?: string
 
   if (eventError || !event) {
     throw new Error('Event not found')
+  }
+
+  // Prevent generating contracts for cancelled or completed events
+  const eventStatus = (event as any).status
+  if (eventStatus === 'cancelled') {
+    throw new Error('Cannot generate a contract for a cancelled event')
+  }
+  if (eventStatus === 'completed') {
+    throw new Error('Cannot generate a contract for a completed event')
   }
 
   const client = (event as any).clients

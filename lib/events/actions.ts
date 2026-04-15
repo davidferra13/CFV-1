@@ -23,7 +23,10 @@ import {
 // Validation schemas aligned with new events table
 const CreateEventSchema = z.object({
   client_id: z.string().uuid(),
-  event_date: z.string().min(1, 'Event date required'),
+  event_date: z
+    .string()
+    .min(1, 'Event date required')
+    .refine((v) => !isNaN(Date.parse(v)), { message: 'Event date must be a valid date string' }),
   serve_time: z.string().min(1, 'Serve time required'),
   guest_count: z.number().int().positive(),
   location_address: z.string().min(1, 'Address required'),

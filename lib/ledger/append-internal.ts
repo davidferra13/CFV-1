@@ -20,6 +20,10 @@ export async function appendLedgerEntryInternal(input: AppendLedgerEntryInput) {
     throw new Error('Amount must be in minor units (cents, integer only)')
   }
 
+  if (input.amount_cents <= 0) {
+    throw new Error('Ledger entry amount must be positive (use is_refund=true for refunds)')
+  }
+
   // Cap at $999,999.99 per entry. Prevents fat-finger data corruption and
   // stays well within PostgreSQL INTEGER range (max ~$21.4M).
   const MAX_ENTRY_CENTS = 99_999_999

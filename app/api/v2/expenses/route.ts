@@ -13,11 +13,12 @@ import {
   parsePagination,
   paginationMeta,
 } from '@/lib/api/v2'
+import { EXPENSE_CATEGORY_VALUES } from '@/lib/constants/expense-categories'
 
 const CreateExpenseBody = z.object({
   event_id: z.string().uuid().optional(),
   amount_cents: z.number().int().positive(),
-  category: z.string().min(1),
+  category: z.enum(EXPENSE_CATEGORY_VALUES),
   description: z.string().optional(),
   vendor: z.string().optional(),
   expense_date: z.string().optional(),
