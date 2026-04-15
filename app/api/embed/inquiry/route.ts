@@ -81,6 +81,11 @@ export async function POST(request: NextRequest) {
 
     const data = parseResult.data
 
+    // Strip HTML tags from all free-text fields to prevent stored XSS.
+    // These fields come from unauthenticated external users and are stored in
+    // the database, so they must be sanitized before any DB insertion.
+    const stripHtml = (s: string) => s.replace(/<[^>]*>/g, '').trim()
+
     // Honeypot check - bots fill hidden fields
     if (data.website_url && data.website_url.length > 0) {
       // Silently accept but don't create anything (don't reveal bot detection)
@@ -139,13 +144,13 @@ export async function POST(request: NextRequest) {
     const allergiesList = data.allergies_food_restrictions
       ? data.allergies_food_restrictions
           .split(/[\n,]/)
-          .map((item: string) => item.trim())
+          .map((item: string) => stripHtml(item))
           .filter(Boolean)
       : null
 
     // 2. Create or find existing client (idempotent by email)
     const clientEmail = data.email.toLowerCase().trim()
-    const clientName = data.full_name.trim()
+    const clientName = stripHtml(data.full_name)
 
     // Check for existing client under this chef
     const { data: existingClient } = await db
@@ -166,9 +171,9 @@ export async function POST(request: NextRequest) {
           chef_id: tenantId,
           full_name: clientName,
           email: clientEmail,
-          phone: data.phone?.trim() || null,
+          phone: data.phone ? stripHtml(data.phone) : null,
           referral_source: 'website',
-          address: data.address?.trim() || null,
+          address: data.address ? stripHtml(data.address) : null,
           dietary_restrictions: allergiesList ?? [],
           allergies: allergiesList ?? [],
         })
@@ -188,20 +193,22 @@ export async function POST(request: NextRequest) {
     // 3. Build source message from optional fields
     const sourceParts = [
       `Source: Embedded widget`,
-      `Serving Time: ${data.serve_time.trim()}`,
-      data.address?.trim() ? `Address: ${data.address.trim()}` : null,
+      `Serving Time: ${stripHtml(data.serve_time)}`,
+      data.address?.trim() ? `Address: ${stripHtml(data.address)}` : null,
       data.budget_cents != null
         ? `Exact Budget: $${(data.budget_cents / 100).toFixed(2)}`
         : data.budget_range
-          ? `Budget Range: ${data.budget_range}`
+          ? `Budget Range: ${stripHtml(data.budget_range)}`
           : null,
       data.favorite_ingredients_dislikes?.trim()
-        ? `Favorites/Dislikes: ${data.favorite_ingredients_dislikes.trim()}`
+        ? `Favorites/Dislikes: ${stripHtml(data.favorite_ingredients_dislikes)}`
         : null,
       data.allergies_food_restrictions?.trim()
         ? `Allergies/Restrictions: ${data.allergies_food_restrictions.trim()}`
         : null,
-      data.additional_notes?.trim() ? `Additional Notes: ${data.additional_notes.trim()}` : null,
+      data.additional_notes?.trim()
+        ? `Additional Notes: ${stripHtml(data.additional_notes)}`
+        : null,
     ].filter(Boolean)
     const sourceMessage = sourceParts.join('\n')
 
@@ -230,8 +237,8 @@ export async function POST(request: NextRequest) {
         first_contact_at: new Date().toISOString(),
         confirmed_date: data.event_date || null,
         confirmed_guest_count: data.guest_count,
-        confirmed_location: data.address?.trim() || null,
-        confirmed_occasion: data.occasion.trim(),
+        confirmed_location: data.address ? stripHtml(data.address) : null,
+        confirmed_occasion: stripHtml(data.occasion),
         confirmed_budget_cents: budgetCents,
         confirmed_service_expectations: `Serve time ${data.serve_time.trim()}. Chef will arrive 2hr prior.`,
         confirmed_dietary_restrictions: allergiesList,
@@ -276,12 +283,12 @@ export async function POST(request: NextRequest) {
           client_id: clientId,
           inquiry_id: inquiry.id,
           event_date: data.event_date,
-          serve_time: data.serve_time.trim(),
+          serve_time: stripHtml(data.serve_time),
           guest_count: data.guest_count,
-          location_address: data.address?.trim() || 'TBD',
+          location_address: data.address ? stripHtml(data.address) : 'TBD',
           location_city: 'TBD',
           location_zip: 'TBD',
-          occasion: data.occasion.trim(),
+          occasion: stripHtml(data.occasion),
           quoted_price_cents: budgetCents,
           special_requests: sourceMessage || null,
           dietary_restrictions: allergiesList ?? [],
