@@ -167,10 +167,10 @@ const AddHouseholdSchema = z.object({
     'other',
   ]),
   ageGroup: z.enum(['infant', 'toddler', 'child', 'teen', 'adult']).optional().nullable(),
-  dietaryRestrictions: z.array(z.string()).optional(),
-  allergies: z.array(z.string()).optional(),
-  dislikes: z.array(z.string()).optional(),
-  favorites: z.array(z.string()).optional(),
+  dietaryRestrictions: z.array(z.string().max(100)).max(50).optional(),
+  allergies: z.array(z.string().max(100)).max(50).optional(),
+  dislikes: z.array(z.string().max(100)).max(100).optional(),
+  favorites: z.array(z.string().max(100)).max(100).optional(),
   notes: z.string().max(500).optional().nullable(),
 })
 
@@ -244,10 +244,10 @@ const UpdateHouseholdSchema = z.object({
     ])
     .optional(),
   ageGroup: z.enum(['infant', 'toddler', 'child', 'teen', 'adult']).optional().nullable(),
-  dietaryRestrictions: z.array(z.string()).optional(),
-  allergies: z.array(z.string()).optional(),
-  dislikes: z.array(z.string()).optional(),
-  favorites: z.array(z.string()).optional(),
+  dietaryRestrictions: z.array(z.string().max(100)).max(50).optional(),
+  allergies: z.array(z.string().max(100)).max(50).optional(),
+  dislikes: z.array(z.string().max(100)).max(100).optional(),
+  favorites: z.array(z.string().max(100)).max(100).optional(),
   notes: z.string().max(500).optional().nullable(),
 })
 

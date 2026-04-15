@@ -75,8 +75,8 @@ const CreateDishSchema = z.object({
   course_number: z.number().int().positive(),
   name: z.string().optional(),
   description: z.string().optional(),
-  dietary_tags: z.array(z.string()).default([]),
-  allergen_flags: z.array(z.string()).default([]),
+  dietary_tags: z.array(z.string().max(100)).max(30).default([]),
+  allergen_flags: z.array(z.string().max(100)).max(30).default([]),
   chef_notes: z.string().optional(),
   client_notes: z.string().optional(),
   sort_order: z.number().int().optional(),
@@ -90,8 +90,8 @@ const UpdateDishSchema = z.object({
   course_number: z.number().int().positive().optional(),
   name: z.string().nullable().optional(),
   description: z.string().optional(),
-  dietary_tags: z.array(z.string()).optional(),
-  allergen_flags: z.array(z.string()).optional(),
+  dietary_tags: z.array(z.string().max(100)).max(30).optional(),
+  allergen_flags: z.array(z.string().max(100)).max(30).optional(),
   chef_notes: z.string().optional(),
   client_notes: z.string().optional(),
   sort_order: z.number().int().optional(),
@@ -905,6 +905,47 @@ export async function transitionMenu(menuId: string, toStatus: MenuStatus, reaso
       })
     } catch (err) {
       console.error('[transitionMenu] Circle-first notify failed (non-blocking):', err)
+    }
+  }
+
+  // Circle-first: post menu finalized notification (non-blocking)
+  if (toStatus === 'locked') {
+    try {
+      const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
+      const adminSupa = createServerClient({ admin: true })
+      const { data: menuData } = await adminSupa
+        .from('menus')
+        .select('name, event_id')
+        .eq('id', menuId)
+        .single()
+
+      let inquiryId: string | null = null
+      if (menuData?.event_id) {
+        const { data: inq } = await adminSupa
+          .from('inquiries')
+          .select('id')
+          .eq('converted_to_event_id', menuData.event_id)
+          .limit(1)
+          .maybeSingle()
+        inquiryId = inq?.id ?? null
+      }
+
+      const menuName = menuData?.name || 'Menu'
+      await circleFirstNotify({
+        eventId: menuData?.event_id ?? null,
+        inquiryId,
+        notificationType: 'menu_shared',
+        body: `Menu finalized: ${menuName}. The meal plan is set!`,
+        metadata: {
+          menu_id: menuId,
+          menu_name: menuName,
+          finalized: true,
+        },
+        actionUrl: menuData?.event_id ? `/my-events/${menuData.event_id}` : undefined,
+        actionLabel: 'View Menu',
+      })
+    } catch (err) {
+      console.error('[transitionMenu] Circle-first notify (locked) failed (non-blocking):', err)
     }
   }
 
