@@ -513,7 +513,7 @@ async function main() {
   log(`SQLite tables: ${tables.join(', ')}`)
 
   // ── Step 3: Connect to PostgreSQL ──────────────────────────────────────
-  const sql = postgres(config.pg.connectionString)
+  const sql = postgres(config.pg.connectionString, { max: 20 })
 
   let storesSynced = 0
   let productsSynced = 0
@@ -656,7 +656,8 @@ async function main() {
         .prepare(`SELECT * FROM catalog_products LIMIT ${BATCH_SIZE} OFFSET ${offset}`)
         .all()
 
-      for (const product of products) {
+      // Process all products in this batch concurrently (they are independent)
+      await Promise.all(products.map(async (product) => {
         try {
           // Resolve category
           let categoryId = null
@@ -769,7 +770,7 @@ async function main() {
           errors++
           if (errorDetails.length < 20) errorDetails.push(`Product "${product.name}": ${err.message}`)
         }
-      }
+      }))
 
       offset += BATCH_SIZE
       if (offset % 5000 === 0) log(`  Products: ${offset}/${total}...`)

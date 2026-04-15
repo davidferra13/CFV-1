@@ -25,7 +25,7 @@ const LAST_SYNC_FILE = resolve(__dirname, '.last-sync-time')
 
 const log = (msg) => console.log(`[${new Date().toISOString()}] ${msg}`)
 
-function runScript(name, path) {
+function runScript(name, path, timeoutMs = 3600000) {
   log(`\n${'='.repeat(60)}`)
   log(`STEP: ${name}`)
   log('='.repeat(60))
@@ -33,7 +33,7 @@ function runScript(name, path) {
     execFileSync('node', [path], {
       cwd: rootDir,
       stdio: 'inherit',
-      timeout: 1800000, // 30 min max per step
+      timeout: timeoutMs, // default 1 hour; caller can override
       env: { ...process.env, DATABASE_URL: config.pg.connectionString },
     })
     log(`${name}: DONE`)
