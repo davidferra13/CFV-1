@@ -58,6 +58,7 @@ export type AiCall = {
   contact_name: string | null
   subject: string | null
   status: string
+  result: 'yes' | 'no' | null
   full_transcript: string | null
   extracted_data: Record<string, any>
   action_log: string[]
@@ -823,7 +824,7 @@ export async function getRecentAiCalls(limit = 50): Promise<AiCall[]> {
   const { data } = await db
     .from('ai_calls')
     .select(
-      'id, direction, role, contact_phone, contact_name, subject, status, full_transcript, extracted_data, action_log, recording_url, duration_seconds, created_at'
+      'id, direction, role, contact_phone, contact_name, subject, status, result, full_transcript, extracted_data, action_log, recording_url, duration_seconds, created_at'
     )
     .eq('chef_id', user.tenantId!)
     .order('created_at', { ascending: false })
@@ -899,14 +900,17 @@ export async function upsertRoutingRules(updates: {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const { error } = await db
-    .from('ai_call_routing_rules')
-    .upsert({
+  // onConflict: 'chef_id' is required — the compat shim defaults to ON CONFLICT (id),
+  // but ai_call_routing_rules has a UNIQUE constraint on chef_id, not id.
+  // Without this, every save after the first fails with a unique violation on chef_id.
+  const { error } = await db.from('ai_call_routing_rules').upsert(
+    {
       chef_id: user.tenantId!,
       ...updates,
       updated_at: new Date().toISOString(),
-    })
-    .eq('chef_id', user.tenantId!)
+    },
+    { onConflict: 'chef_id' }
+  )
 
   if (error) return { success: false, error: error.message }
   return { success: true }

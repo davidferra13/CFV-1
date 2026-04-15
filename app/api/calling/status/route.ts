@@ -132,7 +132,9 @@ export async function POST(req: NextRequest) {
       .from('ai_calls')
       .update(aiUpdate)
       .eq('id', aiCallId)
-      .catch(() => {})
+      .catch((err: unknown) => {
+        console.error('[calling/status] ai_calls status update failed:', err)
+      })
   }
 
   // Broadcast for hard-fail cases (no-answer, busy, failed) - gather never ran.

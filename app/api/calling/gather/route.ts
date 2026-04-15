@@ -502,14 +502,24 @@ async function handleVendorAvailability(
         actionTaken = 'vendor_price_point_skipped_duplicate'
       }
 
-      // Fix #7: record auto-actions in ai_calls.action_log for auditability.
-      // action_log is JSONB DEFAULT '[]'; we append one entry per call completion.
+      // Record auto-actions in ai_calls.action_log for auditability.
+      // Read existing array first so we append rather than overwrite — a single
+      // call can have multiple action entries (price + sentinel on separate retries).
       if (aiCallId && actionTaken) {
         try {
+          const { data: currentAiCall } = await db
+            .from('ai_calls')
+            .select('action_log')
+            .eq('id', aiCallId)
+            .single()
+          const existingLog = Array.isArray(currentAiCall?.action_log)
+            ? currentAiCall.action_log
+            : []
           await db
             .from('ai_calls')
             .update({
               action_log: [
+                ...existingLog,
                 { action: actionTaken, at: new Date().toISOString(), vendor_id: effectiveVendorId },
               ],
               updated_at: new Date().toISOString(),
@@ -561,7 +571,10 @@ async function handleVendorAvailability(
         .from('ai_calls')
         .update({ result: 'yes', updated_at: new Date().toISOString() })
         .eq('id', aiCallId)
-        .catch(() => {})
+        .catch((err: unknown) => {
+          // Critical: if result='yes' write fails, Tier 2 feedback loop silently misses this call
+          console.error('[calling/gather] ai_calls result=yes write failed:', err)
+        })
     }
     const gatherAction = `${APP_URL}/api/calling/gather?callId=${encodeURIComponent(callId)}&step=2&role=vendor_availability${aiCallId ? `&aiCallId=${encodeURIComponent(aiCallId)}` : ''}`
     return twimlResponse(buildAvailabilityStep2Twiml(gatherAction))
@@ -580,7 +593,9 @@ async function handleVendorAvailability(
         .from('ai_calls')
         .update({ result: 'no', status: 'completed', updated_at: new Date().toISOString() })
         .eq('id', aiCallId)
-        .catch(() => {})
+        .catch((err: unknown) => {
+          console.error('[calling/gather] ai_calls result=no write failed:', err)
+        })
     }
 
     if (callRecord) {
@@ -617,17 +632,43 @@ async function handleVendorAvailability(
     )
   }
 
-  await db
+  // Timeout close: mark completed and broadcast so the UI card transitions out of 'calling'.
+  // Without the broadcast, the card stays stuck until the Twilio status callback fires.
+  const { data: timedOutRecord } = await db
     .from('supplier_calls')
     .update({ status: 'completed', updated_at: new Date().toISOString() })
     .eq('id', callId)
+    .select('chef_id, vendor_id, vendor_name, ingredient_name')
+    .single()
+
   if (aiCallId) {
     await db
       .from('ai_calls')
       .update({ status: 'completed', updated_at: new Date().toISOString() })
       .eq('id', aiCallId)
-      .catch(() => {})
+      .catch((err: unknown) => {
+        console.error('[calling/gather] ai_calls timeout status update failed:', err)
+      })
   }
+
+  if (timedOutRecord) {
+    try {
+      await broadcast(`chef-${timedOutRecord.chef_id}`, 'supplier_call_result', {
+        callId,
+        aiCallId,
+        vendorId: timedOutRecord.vendor_id,
+        vendorName: timedOutRecord.vendor_name,
+        ingredientName: timedOutRecord.ingredient_name,
+        result: null,
+        status: 'completed',
+        priceQuoted: null,
+        quantityAvailable: null,
+      })
+    } catch (err) {
+      console.error('[calling/gather] broadcast error (timeout):', err)
+    }
+  }
+
   return closingTwiml(
     "Sorry, I didn't quite catch that. No worries, thanks so much for picking up!"
   )

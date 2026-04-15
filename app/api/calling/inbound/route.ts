@@ -31,11 +31,17 @@ import {
 
 const APP_URL = process.env.NEXTAUTH_URL || 'https://app.cheflowhq.com'
 
-// Active hours: 8am - 8pm ET (calls outside this go to voicemail)
-function isWithinActiveHours(): boolean {
-  const now = new Date()
-  const etHour = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' })).getHours()
-  return etHour >= 8 && etHour < 20
+// Active hours check using per-chef DB config.
+// Falls back to 8am-8pm ET when no routing rule exists.
+function isWithinConfiguredHours(routingRule: any): boolean {
+  const tz: string = routingRule?.active_timezone || 'America/New_York'
+  const hoursStart: string = routingRule?.active_hours_start || '08:00'
+  const hoursEnd: string = routingRule?.active_hours_end || '20:00'
+  const [startH, startM] = hoursStart.split(':').map(Number)
+  const [endH, endM] = hoursEnd.split(':').map(Number)
+  const nowInTz = new Date(new Date().toLocaleString('en-US', { timeZone: tz }))
+  const currentMinutes = nowInTz.getHours() * 60 + nowInTz.getMinutes()
+  return currentMinutes >= startH * 60 + startM && currentMinutes < endH * 60 + endM
 }
 
 export async function POST(req: NextRequest) {
@@ -86,8 +92,14 @@ export async function POST(req: NextRequest) {
   const { data: chef } = await db.from('chefs').select('business_name').eq('id', chefId).single()
   const businessName = chef?.business_name || 'this private chef service'
 
-  // Outside active hours -> voicemail
-  if (!isWithinActiveHours()) {
+  // Outside active hours or voicemail disabled -> after-hours handling
+  const voicemailEnabled = routingRule?.enable_inbound_voicemail !== false
+  if (!isWithinConfiguredHours(routingRule)) {
+    // Chef disabled voicemail: hang up rather than leaving an unwanted transcript
+    if (!voicemailEnabled) {
+      return twimlResponse(`<?xml version="1.0" encoding="UTF-8"?><Response><Hangup/></Response>`)
+    }
+
     const { data: aiCallRecord } = await db
       .from('ai_calls')
       .insert({
@@ -104,8 +116,14 @@ export async function POST(req: NextRequest) {
       .select()
       .single()
 
-    const voicemailCallbackUrl = `${APP_URL}/api/calling/voicemail?aiCallId=${encodeURIComponent(aiCallRecord?.id ?? '')}`
-    const voicemailDoneUrl = `${APP_URL}/api/calling/voicemail/done?aiCallId=${encodeURIComponent(aiCallRecord?.id ?? '')}`
+    // Use conditional param: omit aiCallId entirely if the insert failed.
+    // An empty aiCallId param causes the voicemail route to silently drop the transcript.
+    const voicemailCallbackUrl = aiCallRecord?.id
+      ? `${APP_URL}/api/calling/voicemail?aiCallId=${encodeURIComponent(aiCallRecord.id)}`
+      : `${APP_URL}/api/calling/voicemail`
+    const voicemailDoneUrl = aiCallRecord?.id
+      ? `${APP_URL}/api/calling/voicemail/done?aiCallId=${encodeURIComponent(aiCallRecord.id)}`
+      : `${APP_URL}/api/calling/voicemail/done`
 
     return twimlResponse(
       buildVoicemailTwiml(businessName, voicemailCallbackUrl, voicemailDoneUrl, voice)

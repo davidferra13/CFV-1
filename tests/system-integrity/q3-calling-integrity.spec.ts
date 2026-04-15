@@ -322,4 +322,85 @@ test.describe('Q3: Calling system integrity', () => {
       'call-sheet page must use filteredAiCalls variable when passing to CallLog'
     ).toBe(true)
   })
+
+  // -------------------------------------------------------------------------
+  // Round 9 structural checks
+  // -------------------------------------------------------------------------
+
+  // Test 13: upsertRoutingRules specifies onConflict: 'chef_id' (Round 9 Fix #1)
+  // The compat shim defaults to ON CONFLICT (id). ai_call_routing_rules has a UNIQUE
+  // constraint on chef_id (not id). Without specifying the conflict target, every
+  // settings save after the first fails with a unique violation — the page appears
+  // to succeed but nothing is written.
+  test('upsertRoutingRules specifies onConflict chef_id', () => {
+    expect(existsSync(TWILIO_ACTIONS_SOURCE), `Source not found: ${TWILIO_ACTIONS_SOURCE}`).toBe(
+      true
+    )
+    const src = readFileSync(TWILIO_ACTIONS_SOURCE, 'utf-8')
+
+    const upsertFnIdx = src.indexOf('async function upsertRoutingRules')
+    expect(upsertFnIdx, 'upsertRoutingRules function not found').toBeGreaterThan(-1)
+
+    const fnBody = src.slice(upsertFnIdx, upsertFnIdx + 600)
+    expect(
+      fnBody.includes("onConflict: 'chef_id'"),
+      "upsertRoutingRules missing onConflict: 'chef_id' — saves after the first always fail"
+    ).toBe(true)
+  })
+
+  // Test 14: Inbound route uses isWithinConfiguredHours (DB-driven), not hardcoded (Round 9 Fix #3)
+  // Before Round 9, inbound/route.ts had its own isWithinActiveHours() hardcoded to ET 8am-8pm,
+  // diverging from checkCallingEligibility which reads per-chef DB config for outbound.
+  test('inbound route reads active hours from DB config, not hardcoded function', () => {
+    const INBOUND_SOURCE = resolve(process.cwd(), 'app/api/calling/inbound/route.ts')
+    expect(existsSync(INBOUND_SOURCE), `Source not found: ${INBOUND_SOURCE}`).toBe(true)
+
+    const src = readFileSync(INBOUND_SOURCE, 'utf-8')
+
+    expect(
+      !src.includes('isWithinActiveHours'),
+      'inbound route still uses hardcoded isWithinActiveHours — active hours config is ignored for inbound'
+    ).toBe(true)
+
+    expect(
+      src.includes('isWithinConfiguredHours'),
+      'inbound route must use isWithinConfiguredHours (DB-driven) for consistent active hours enforcement'
+    ).toBe(true)
+  })
+
+  // Test 15: Inbound voicemail URLs use conditional param pattern (Round 9 Fix #2)
+  // aiCallRecord?.id ?? '' produces an empty string when insert fails. The voicemail
+  // route's `if (!aiCallId)` check treats '' as falsy and silently drops the transcript.
+  // The correct pattern omits the param entirely when id is unavailable.
+  test('inbound route voicemail URLs use conditional param, not empty string fallback', () => {
+    const INBOUND_SOURCE = resolve(process.cwd(), 'app/api/calling/inbound/route.ts')
+    expect(existsSync(INBOUND_SOURCE), `Source not found: ${INBOUND_SOURCE}`).toBe(true)
+
+    const src = readFileSync(INBOUND_SOURCE, 'utf-8')
+
+    expect(
+      !src.includes("aiCallRecord?.id ?? ''"),
+      "inbound route still uses aiCallRecord?.id ?? '' — empty aiCallId silently drops voicemail transcripts"
+    ).toBe(true)
+
+    expect(
+      src.includes('aiCallRecord?.id') && src.includes('api/calling/voicemail'),
+      'inbound route must build voicemail URL conditionally from aiCallRecord?.id'
+    ).toBe(true)
+  })
+
+  // Test 16: Inbound route checks enable_inbound_voicemail before routing to voicemail (Round 9 Fix #4)
+  // The flag was fetched but never checked — disabling voicemail had no effect on
+  // after-hours routing, callers would still receive voicemail TwiML.
+  test('inbound route respects enable_inbound_voicemail toggle', () => {
+    const INBOUND_SOURCE = resolve(process.cwd(), 'app/api/calling/inbound/route.ts')
+    expect(existsSync(INBOUND_SOURCE), `Source not found: ${INBOUND_SOURCE}`).toBe(true)
+
+    const src = readFileSync(INBOUND_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('voicemailEnabled') || src.includes('enable_inbound_voicemail'),
+      'inbound route does not check enable_inbound_voicemail — toggle is a no-op'
+    ).toBe(true)
+  })
 })
