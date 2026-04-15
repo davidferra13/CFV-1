@@ -102,6 +102,21 @@ export async function createQuote(input: CreateQuoteInput) {
   const validated = CreateQuoteSchema.parse(input)
   const db: any = createServerClient()
 
+  // For per_person pricing with all values present, validate total consistency.
+  // Allow up to $1 (100 cents) tolerance for rounding/fees.
+  if (
+    validated.pricing_model === 'per_person' &&
+    validated.price_per_person_cents &&
+    validated.guest_count_estimated
+  ) {
+    const expectedTotal = validated.price_per_person_cents * validated.guest_count_estimated
+    if (Math.abs(validated.total_quoted_cents - expectedTotal) > 100) {
+      throw new ValidationError(
+        `Quote total ($${(validated.total_quoted_cents / 100).toFixed(2)}) does not match price per person \u00d7 guest count ($${(expectedTotal / 100).toFixed(2)})`
+      )
+    }
+  }
+
   // Verify client belongs to tenant
   const { data: client } = await db
     .from('clients')

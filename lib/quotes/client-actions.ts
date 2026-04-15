@@ -84,12 +84,18 @@ export async function acceptQuote(quoteId: string) {
   // The RPC checks client ownership but not expiry or event cancellation.
   const { data: preCheck } = await db
     .from('quotes')
-    .select('id, valid_until, event_id, events(status)')
+    .select('id, status, valid_until, event_id, events(status)')
     .eq('id', quoteId)
     .eq('client_id', user.entityId)
     .single()
 
   if (preCheck) {
+    // Only quotes in 'sent' status can be accepted. Guard here to fail fast
+    // before the atomic RPC — the RPC enforces this too, but an early check
+    // returns a clearer error message to the client.
+    if (preCheck.status !== 'sent') {
+      throw new Error('This quote is no longer available for acceptance.')
+    }
     if (preCheck.valid_until && new Date(preCheck.valid_until) < new Date()) {
       throw new Error('This quote has expired and can no longer be accepted.')
     }
