@@ -25,7 +25,8 @@ export async function getClientEvents(options?: { pastLimit?: number }) {
     .select(
       `
       *,
-      client:clients!inner(id, full_name, email)
+      client:clients!inner(id, full_name, email),
+      hub_group:hub_groups(group_token)
     `
     )
     .eq('client_id', user.entityId)

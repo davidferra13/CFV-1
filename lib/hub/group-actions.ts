@@ -139,7 +139,7 @@ export async function joinHubGroup(input: {
   // Look up group
   const { data: group } = await db
     .from('hub_groups')
-    .select('id, is_active')
+    .select('id, is_active, name, group_token')
     .eq('group_token', input.groupToken)
     .single()
 
@@ -173,10 +173,10 @@ export async function joinHubGroup(input: {
 
   if (error) throw new Error(`Failed to join group: ${error.message}`)
 
-  // Get profile name for system message
+  // Get profile name and email for system message + confirmation email
   const { data: profile } = await db
     .from('hub_guest_profiles')
-    .select('display_name')
+    .select('display_name, email, profile_token')
     .eq('id', input.profileId)
     .single()
 
@@ -192,6 +192,30 @@ export async function joinHubGroup(input: {
     })
   } catch {
     // Non-blocking
+  }
+
+  // Send confirmation email to guest with their circle link (non-blocking)
+  if (profile?.email && group.group_token) {
+    try {
+      const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
+      const circleUrl = `${APP_URL}/hub/g/${group.group_token}`
+      const { sendEmail } = await import('@/lib/email/send')
+      const { createElement } = await import('react')
+      const { NotificationGenericEmail } =
+        await import('@/lib/email/templates/notification-generic')
+      await sendEmail({
+        to: profile.email,
+        subject: `You joined ${group.name || 'the dinner circle'}`,
+        react: createElement(NotificationGenericEmail, {
+          title: `You are in the circle`,
+          body: `Bookmark this link so you can always find your way back. This is where you can chat with the chef, share photos, and track everything leading up to the event.`,
+          actionUrl: circleUrl,
+          actionLabel: 'Open Your Dinner Circle',
+        }),
+      })
+    } catch {
+      // Non-blocking
+    }
   }
 
   // Referral tracking: record first group + who created it (non-blocking)

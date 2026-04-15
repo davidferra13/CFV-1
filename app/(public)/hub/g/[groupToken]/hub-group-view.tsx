@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useTransition } from 'react'
+import { useState, useEffect, useTransition, useCallback } from 'react'
 import Link from 'next/link'
 import type {
   HubGroup,
@@ -78,6 +78,17 @@ export function HubGroupView({
   const [mutePending, startMuteTransition] = useTransition()
   const [showNotifPrefs, setShowNotifPrefs] = useState(false)
   const [showWelcome, setShowWelcome] = useState(false)
+  const [inviteCopied, setInviteCopied] = useState(false)
+
+  const copyInviteLink = useCallback(() => {
+    const origin =
+      typeof window !== 'undefined' ? window.location.origin : 'https://app.cheflowhq.com'
+    const url = `${origin}/hub/join/${group.group_token}`
+    navigator.clipboard.writeText(url).then(() => {
+      setInviteCopied(true)
+      setTimeout(() => setInviteCopied(false), 2000)
+    })
+  }, [group.group_token])
 
   // Show welcome card on first visit
   useEffect(() => {
@@ -248,6 +259,18 @@ export function HubGroupView({
               >
                 My Profile
               </Link>
+            )}
+
+            {/* Invite button - owners/admins only */}
+            {isOwnerOrAdmin && (
+              <button
+                type="button"
+                onClick={copyInviteLink}
+                className="rounded-full bg-stone-800 px-3 py-1 text-xs text-stone-400 hover:bg-stone-700 hover:text-stone-200 transition-colors"
+                title="Copy invite link"
+              >
+                {inviteCopied ? 'Copied!' : 'Invite'}
+              </button>
             )}
 
             {/* Member avatars */}

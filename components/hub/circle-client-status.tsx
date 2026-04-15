@@ -6,6 +6,30 @@ interface CircleClientStatusProps {
   status: GuestCriticalPathResult
 }
 
+function getCountdownLabel(eventDate: string | null): {
+  label: string
+  urgent: boolean
+  dayOf: boolean
+} | null {
+  if (!eventDate) return null
+  const now = new Date()
+  const event = new Date(eventDate)
+  // Compare calendar days, not exact ms
+  const nowDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const eventDay = new Date(event.getFullYear(), event.getMonth(), event.getDate())
+  const diffDays = Math.round((eventDay.getTime() - nowDay.getTime()) / (1000 * 60 * 60 * 24))
+
+  if (diffDays < 0) return null // Past event - no countdown
+  if (diffDays === 0) return { label: 'Today!', urgent: true, dayOf: true }
+  if (diffDays === 1) return { label: 'Tomorrow', urgent: true, dayOf: false }
+  if (diffDays <= 7) return { label: `${diffDays} days away`, urgent: true, dayOf: false }
+  return {
+    label: event.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+    urgent: false,
+    dayOf: false,
+  }
+}
+
 function CheckIcon() {
   return (
     <svg className="h-4 w-4 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
@@ -43,25 +67,48 @@ function PartialIcon() {
 }
 
 export function CircleClientStatus({ status }: CircleClientStatusProps) {
-  const { confirmed, missing, chefName } = status
+  const { confirmed, missing, chefName, eventDate } = status
   const total = confirmed.length + missing.length
   const allConfirmed = missing.length === 0
+  const countdown = getCountdownLabel(eventDate)
 
   return (
-    <div className="mx-4 mt-4 rounded-xl border border-stone-700 bg-stone-800/60 overflow-hidden">
+    <div
+      className={`mx-4 mt-4 rounded-xl overflow-hidden border ${countdown?.dayOf ? 'border-amber-500/50 bg-amber-950/40' : 'border-stone-700 bg-stone-800/60'}`}
+    >
+      {/* Day-of banner */}
+      {countdown?.dayOf && (
+        <div className="bg-amber-500/20 px-4 py-2 text-center">
+          <p className="text-sm font-bold text-amber-300">Dinner is today!</p>
+        </div>
+      )}
+
       {/* Header */}
       <div className="px-4 py-3 border-b border-stone-700/50">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-stone-200">Your Dinner Status</h3>
-          {allConfirmed ? (
-            <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full">
-              All set
-            </span>
-          ) : (
-            <span className="text-xs text-stone-500">
-              {confirmed.length}/{total} confirmed
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {countdown && (
+              <span
+                className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                  countdown.urgent
+                    ? 'text-amber-300 bg-amber-500/15'
+                    : 'text-stone-400 bg-stone-700/50'
+                }`}
+              >
+                {countdown.label}
+              </span>
+            )}
+            {allConfirmed ? (
+              <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full">
+                All set
+              </span>
+            ) : (
+              <span className="text-xs text-stone-500">
+                {confirmed.length}/{total} confirmed
+              </span>
+            )}
+          </div>
         </div>
         {allConfirmed && (
           <p className="text-xs text-stone-400 mt-1">

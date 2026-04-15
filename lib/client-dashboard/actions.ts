@@ -41,6 +41,7 @@ export type UpdateClientDashboardPreferencesInput = z.infer<
 type EventRow = Database['public']['Tables']['events']['Row']
 export type ClientDashboardEvent = EventRow & {
   client: { id: string; full_name: string; email: string }
+  hub_group?: { group_token: string } | null
 }
 
 function fromClientPreferences(db: any): any {

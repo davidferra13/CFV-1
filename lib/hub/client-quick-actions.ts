@@ -157,6 +157,17 @@ export async function postDietaryUpdate(
 
   const body = parts.join(' ')
 
+  // Write to profile first - dietary data must land in the DB before the
+  // circle message announces it, so the chef's summary reflects reality.
+  await db
+    .from('hub_guest_profiles')
+    .update({
+      known_allergies: validated.allergies.length > 0 ? validated.allergies : [],
+      known_dietary: validated.restrictions.length > 0 ? validated.restrictions : [],
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', profile.id)
+
   await db.from('hub_messages').insert({
     group_id: validated.groupId,
     author_profile_id: profile.id,

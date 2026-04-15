@@ -77,12 +77,14 @@ export function DietaryDashboard({ groupId, isChefOrAdmin }: DietaryDashboardPro
     !summary ||
     (summary.members.length === 0 &&
       summary.allAllergies.length === 0 &&
-      summary.allDietary.length === 0)
+      summary.allDietary.length === 0 &&
+      summary.profilesNotAnswered === 0)
   ) {
     return null
   }
 
   const hasAlerts = summary.allAllergies.length > 0
+  const hasUnknowns = summary.profilesNotAnswered > 0
 
   return (
     <div className="rounded-xl border border-stone-800 bg-stone-900/40 p-3">
@@ -98,6 +100,11 @@ export function DietaryDashboard({ groupId, isChefOrAdmin }: DietaryDashboardPro
               {summary.allAllergies.length} allerg{summary.allAllergies.length !== 1 ? 'ies' : 'y'}
             </span>
           )}
+          {hasUnknowns && (
+            <span className="rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-medium text-amber-300">
+              {summary.profilesNotAnswered} not answered
+            </span>
+          )}
           {summary.allDietary.length > 0 && (
             <span className="rounded-full bg-emerald-500/20 px-1.5 py-0.5 text-[10px] text-emerald-400">
               {summary.allDietary.length} restriction{summary.allDietary.length !== 1 ? 's' : ''}
@@ -111,6 +118,19 @@ export function DietaryDashboard({ groupId, isChefOrAdmin }: DietaryDashboardPro
 
       {expanded && (
         <div className="mt-3 space-y-3">
+          {/* Unknown allergy status - guests who never answered */}
+          {hasUnknowns && (
+            <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2">
+              <p className="text-xs font-medium text-amber-300">
+                {summary.profilesNotAnswered} guest{summary.profilesNotAnswered !== 1 ? 's' : ''}{' '}
+                never answered the allergy question
+              </p>
+              <p className="mt-0.5 text-[10px] text-amber-400/70">
+                Follow up before the event to confirm.
+              </p>
+            </div>
+          )}
+
           {/* Allergy alerts (critical) */}
           {summary.allAllergies.length > 0 && (
             <div>
@@ -205,6 +225,12 @@ export function DietaryDashboard({ groupId, isChefOrAdmin }: DietaryDashboardPro
             </div>
           )}
 
+          {summary.profilesConfirmedNone > 0 && (
+            <p className="text-[10px] text-emerald-600">
+              {summary.profilesConfirmedNone} guest{summary.profilesConfirmedNone !== 1 ? 's' : ''}{' '}
+              confirmed no allergies.
+            </p>
+          )}
           <p className="text-[10px] text-stone-600 italic">Chef only</p>
         </div>
       )}

@@ -27,6 +27,10 @@ export interface HouseholdDietarySummary {
   members: HouseholdMember[]
   allAllergies: string[]
   allDietary: string[]
+  // null  = guest never answered the allergy question (unknown risk)
+  // []    = guest explicitly confirmed no allergies (safe)
+  profilesNotAnswered: number
+  profilesConfirmedNone: number
 }
 
 // ---------------------------------------------------------------------------
@@ -60,7 +64,13 @@ export async function getCircleHouseholdSummary(groupId: string): Promise<Househ
 
   const profileIds = (memberships ?? []).map((m: any) => m.profile_id)
   if (profileIds.length === 0) {
-    return { members: [], allAllergies: [], allDietary: [] }
+    return {
+      members: [],
+      allAllergies: [],
+      allDietary: [],
+      profilesNotAnswered: 0,
+      profilesConfirmedNone: 0,
+    }
   }
 
   // Get all household members for those profiles
@@ -81,8 +91,17 @@ export async function getCircleHouseholdSummary(groupId: string): Promise<Househ
   // Aggregate all allergies and dietary restrictions
   const allergySet = new Set<string>()
   const dietarySet = new Set<string>()
+  let profilesNotAnswered = 0
+  let profilesConfirmedNone = 0
 
   for (const profile of profiles ?? []) {
+    if (profile.known_allergies === null) {
+      // null = never answered - unknown risk
+      profilesNotAnswered++
+    } else if ((profile.known_allergies as string[]).length === 0) {
+      // empty array = explicitly confirmed no allergies
+      profilesConfirmedNone++
+    }
     for (const a of profile.known_allergies ?? []) allergySet.add(a)
     for (const d of profile.known_dietary ?? []) dietarySet.add(d)
   }
@@ -96,6 +115,8 @@ export async function getCircleHouseholdSummary(groupId: string): Promise<Househ
     members,
     allAllergies: [...allergySet].sort(),
     allDietary: [...dietarySet].sort(),
+    profilesNotAnswered,
+    profilesConfirmedNone,
   }
 }
 

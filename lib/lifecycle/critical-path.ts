@@ -39,6 +39,7 @@ export interface GuestCriticalPathResult {
   groupName: string | null
   chefName: string | null
   discussedDishes: string[] | null
+  eventDate: string | null
 }
 
 // ---------------------------------------------------------------------------
@@ -401,5 +402,6 @@ export async function getCriticalPathForGuest(
     groupName: group.name,
     chefName,
     discussedDishes,
+    eventDate: event?.event_date ?? inquiry?.confirmed_date ?? null,
   }
 }

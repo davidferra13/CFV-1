@@ -99,17 +99,27 @@ function EventActionButton({
   }
 
   if (['paid', 'confirmed', 'in_progress'].includes(status)) {
+    const circleToken = event.hub_group?.group_token
     return (
-      <TrackedActivityLink
-        href={`/my-events/${id}`}
-        entityType="event"
-        entityId={id}
-        metadata={{ action: 'view_event_details', event_status: status }}
-      >
-        <Button variant="secondary" size="sm">
-          View Details
-        </Button>
-      </TrackedActivityLink>
+      <div className="flex items-center gap-2">
+        {circleToken && (
+          <Link href={`/hub/g/${circleToken}`}>
+            <Button variant="primary" size="sm">
+              Open Circle
+            </Button>
+          </Link>
+        )}
+        <TrackedActivityLink
+          href={`/my-events/${id}`}
+          entityType="event"
+          entityId={id}
+          metadata={{ action: 'view_event_details', event_status: status }}
+        >
+          <Button variant={circleToken ? 'secondary' : 'secondary'} size="sm">
+            Details
+          </Button>
+        </TrackedActivityLink>
+      </div>
     )
   }
 
