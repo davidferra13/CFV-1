@@ -21,6 +21,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
 import { broadcast } from '@/lib/realtime/broadcast'
 import { validateTwilioWebhook } from '@/lib/calling/twilio-webhook-auth'
+import { normalizePhone } from '@/lib/calling/phone-utils'
 import {
   buildVoicemailTwiml,
   buildVendorCallbackTwiml,
@@ -44,7 +45,8 @@ export async function POST(req: NextRequest) {
   if (!valid) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
-  const callerPhone = (formData.get('From') as string | null)?.trim() || ''
+  const callerPhoneRaw = (formData.get('From') as string | null)?.trim() || ''
+  const callerPhone = normalizePhone(callerPhoneRaw)
   const callSid = (formData.get('CallSid') as string | null) || ''
   const toNumber = (formData.get('To') as string | null) || ''
 

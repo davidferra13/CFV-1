@@ -392,10 +392,15 @@ async function handleVendorAvailability(
       .single()
 
     if (aiCallId) {
+      const aiExtracted: Record<string, any> = {}
+      if (priceQuoted) aiExtracted.price_quoted = priceQuoted
+      if (quantityAvailable) aiExtracted.quantity_available = quantityAvailable
       await db
         .from('ai_calls')
         .update({
+          result: callRecord?.result ?? null,
           status: 'completed',
+          ...(Object.keys(aiExtracted).length > 0 ? { extracted_data: aiExtracted } : {}),
           updated_at: new Date().toISOString(),
         })
         .eq('id', aiCallId)
@@ -500,6 +505,13 @@ async function handleVendorAvailability(
       .from('supplier_calls')
       .update({ result: 'yes', updated_at: new Date().toISOString() })
       .eq('id', callId)
+    if (aiCallId) {
+      await db
+        .from('ai_calls')
+        .update({ result: 'yes', updated_at: new Date().toISOString() })
+        .eq('id', aiCallId)
+        .catch(() => {})
+    }
     const gatherAction = `${APP_URL}/api/calling/gather?callId=${encodeURIComponent(callId)}&step=2&role=vendor_availability${aiCallId ? `&aiCallId=${encodeURIComponent(aiCallId)}` : ''}`
     return twimlResponse(buildAvailabilityStep2Twiml(gatherAction))
   }
@@ -515,7 +527,7 @@ async function handleVendorAvailability(
     if (aiCallId) {
       await db
         .from('ai_calls')
-        .update({ status: 'completed', updated_at: new Date().toISOString() })
+        .update({ result: 'no', status: 'completed', updated_at: new Date().toISOString() })
         .eq('id', aiCallId)
         .catch(() => {})
     }
@@ -558,6 +570,13 @@ async function handleVendorAvailability(
     .from('supplier_calls')
     .update({ status: 'completed', updated_at: new Date().toISOString() })
     .eq('id', callId)
+  if (aiCallId) {
+    await db
+      .from('ai_calls')
+      .update({ status: 'completed', updated_at: new Date().toISOString() })
+      .eq('id', aiCallId)
+      .catch(() => {})
+  }
   return closingTwiml(
     "Sorry, I didn't quite catch that. No worries, thanks so much for picking up!"
   )

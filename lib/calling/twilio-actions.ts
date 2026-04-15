@@ -22,6 +22,7 @@ import {
   buildVendorDeliveryTwiml,
   buildVenueConfirmationTwiml,
 } from '@/lib/calling/voice-helpers'
+import { normalizePhone } from '@/lib/calling/phone-utils'
 
 const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID
 const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN
@@ -74,18 +75,6 @@ function isEtBusinessHours(): boolean {
     new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })
   ).getHours()
   return etHour >= 8 && etHour < 19
-}
-
-// ---------------------------------------------------------------------------
-// Phone normalization - E.164 for US numbers
-// Ensures consistent dedup and storage regardless of input format.
-// ---------------------------------------------------------------------------
-
-function normalizePhone(phone: string): string {
-  const digits = phone.replace(/\D/g, '')
-  if (digits.length === 10) return `+1${digits}`
-  if (digits.length === 11 && digits.startsWith('1')) return `+${digits}`
-  return phone.trim()
 }
 
 // Twilio error code: concurrent outbound call limit per account
@@ -195,8 +184,14 @@ async function placeTwilioCall(params: {
 // ---------------------------------------------------------------------------
 
 async function checkDailyLimit(db: any, chefId: string, limit = 20): Promise<boolean> {
-  const todayStart = new Date()
-  todayStart.setHours(0, 0, 0, 0)
+  // Use ET midnight so the limit resets at midnight Eastern, not UTC midnight.
+  const nowEt = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }))
+  nowEt.setHours(0, 0, 0, 0)
+  // Offset from local ET back to UTC: ET is UTC-5 (EST) or UTC-4 (EDT).
+  const utcOffset =
+    new Date().getTime() -
+    new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })).getTime()
+  const todayStart = new Date(nowEt.getTime() + utcOffset)
   const { count } = await db
     .from('supplier_calls')
     .select('*', { count: 'exact', head: true })
