@@ -4,6 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { dateToMonthString } from '@/lib/utils/format'
+import { EXPENSE_CATEGORY_VALUES } from '@/lib/constants/expense-categories'
 
 // ============================================
 // TYPES
@@ -126,6 +127,10 @@ export async function createExpense(input: CreateExpenseInput): Promise<Expense>
 
   if (!Number.isInteger(input.amount_cents) || input.amount_cents <= 0) {
     throw new Error('Expense amount must be a positive integer (cents)')
+  }
+
+  if (!(EXPENSE_CATEGORY_VALUES as readonly string[]).includes(input.category)) {
+    throw new Error(`Invalid expense category: ${input.category}`)
   }
 
   // Verify event_id belongs to this tenant before attaching the expense
