@@ -1439,6 +1439,32 @@ async function handleTacClientMessage(
     }
   }
 
+  // Unmatched message: no inquiry found. Notify chef so the message isn't silently dropped.
+  if (!inquiryId) {
+    try {
+      const chefUserId = await getChefAuthUserId(tenantId)
+      if (chefUserId) {
+        await createNotification({
+          tenantId,
+          recipientId: chefUserId,
+          category: 'inquiry',
+          action: 'inquiry_reply',
+          title: 'Unmatched TakeAChef message',
+          body: `${clientName || 'A client'} sent a message${eventDate ? ` (${eventDate})` : ''} on TakeAChef but no matching inquiry was found. Check your marketplace inbox.`,
+          actionUrl: '/marketplace',
+          metadata: {
+            tac_client_name: clientName,
+            tac_event_date: eventDate,
+            tac_cta_link: msg?.ctaLink ?? null,
+            gmail_message_id: email.messageId,
+          },
+        })
+      }
+    } catch (notifErr) {
+      console.error('[TakeAChef] Unmatched message notification failed (non-fatal):', notifErr)
+    }
+  }
+
   await logSyncEntry(db, tenantId, email, {
     classification: 'existing_thread',
     confidence: 'high',
