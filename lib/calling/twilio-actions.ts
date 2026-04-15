@@ -200,12 +200,25 @@ async function checkCallingEligibility(
   chefId: string,
   defaultLimit = 20
 ): Promise<{ allowed: boolean; reason?: string; limit: number }> {
-  // One query for all per-chef calling config
-  const { data: routingRule } = await db
-    .from('ai_call_routing_rules')
-    .select('daily_call_limit, active_hours_start, active_hours_end, active_timezone')
-    .eq('chef_id', chefId)
-    .maybeSingle()
+  // One query for all per-chef calling config.
+  // If this query fails, fail closed — a DB error must not default to
+  // "no routing rules found" which would allow calls 24/7 with no limit.
+  let routingRule: Record<string, any> | null = null
+  try {
+    const { data } = await db
+      .from('ai_call_routing_rules')
+      .select('daily_call_limit, active_hours_start, active_hours_end, active_timezone')
+      .eq('chef_id', chefId)
+      .maybeSingle()
+    routingRule = data
+  } catch (err) {
+    console.error('[calling/eligibility] routing rules query failed — blocking call:', err)
+    return {
+      allowed: false,
+      reason: 'Calling unavailable due to a system error. Please try again.',
+      limit: defaultLimit,
+    }
+  }
 
   const limit: number = routingRule?.daily_call_limit ?? defaultLimit
   const tz: string = routingRule?.active_timezone || 'America/New_York'
@@ -230,18 +243,30 @@ async function checkCallingEligibility(
 
   // Count ALL outbound call types (availability, delivery, venue) against the limit.
   // Reset boundary uses configured timezone midnight, not UTC.
+  // If the count query fails, fail closed — a DB error must not allow unlimited calls.
   const nowTzMidnight = new Date(new Date().toLocaleString('en-US', { timeZone: tz }))
   nowTzMidnight.setHours(0, 0, 0, 0)
   const utcOffset =
     new Date().getTime() - new Date(new Date().toLocaleString('en-US', { timeZone: tz })).getTime()
   const todayStart = new Date(nowTzMidnight.getTime() + utcOffset)
 
-  const { count } = await db
-    .from('ai_calls')
-    .select('*', { count: 'exact', head: true })
-    .eq('chef_id', chefId)
-    .eq('direction', 'outbound')
-    .gte('created_at', todayStart.toISOString())
+  let count: number | null = null
+  try {
+    const result = await db
+      .from('ai_calls')
+      .select('*', { count: 'exact', head: true })
+      .eq('chef_id', chefId)
+      .eq('direction', 'outbound')
+      .gte('created_at', todayStart.toISOString())
+    count = result.count
+  } catch (err) {
+    console.error('[calling/eligibility] daily call count query failed — blocking call:', err)
+    return {
+      allowed: false,
+      reason: 'Calling unavailable due to a system error. Please try again.',
+      limit,
+    }
+  }
 
   if ((count ?? 0) >= limit) {
     return {
@@ -326,8 +351,9 @@ export async function initiateSupplierCall(
     return { success: false, error: 'Failed to create call record.' }
   }
 
-  // Create ai_calls record for full logging
-  const { data: aiCallRecord } = await db
+  // Create ai_calls record for full logging.
+  // If this insert fails, log it — the Tier 2 feedback loop never fires for this call.
+  const { data: aiCallRecord, error: aiCallInsertError } = await db
     .from('ai_calls')
     .insert({
       chef_id: user.tenantId!,
@@ -343,6 +369,13 @@ export async function initiateSupplierCall(
     })
     .select()
     .single()
+
+  if (aiCallInsertError || !aiCallRecord) {
+    console.error(
+      '[calling] initiateSupplierCall: ai_calls insert failed — Tier 2 feedback loop broken for this call:',
+      aiCallInsertError
+    )
+  }
 
   // Omit aiCallId param entirely if the ai_calls insert failed (empty string causes
   // gather/status handlers to attempt a lookup on id='' which always returns null).
@@ -482,7 +515,8 @@ export async function initiateAdHocCall(
     return { success: false, error: 'Failed to create call record.' }
   }
 
-  const { data: aiCallRecord } = await db
+  // If this insert fails, log it — the Tier 2 feedback loop never fires for this call.
+  const { data: aiCallRecord, error: aiCallInsertErrorAdhoc } = await db
     .from('ai_calls')
     .insert({
       chef_id: user.tenantId!,
@@ -497,6 +531,13 @@ export async function initiateAdHocCall(
     })
     .select()
     .single()
+
+  if (aiCallInsertErrorAdhoc || !aiCallRecord) {
+    console.error(
+      '[calling] initiateAdHocCall: ai_calls insert failed — Tier 2 feedback loop broken for this call:',
+      aiCallInsertErrorAdhoc
+    )
+  }
 
   // Omit aiCallId param entirely if the ai_calls insert failed (empty string causes
   // gather/status handlers to attempt a lookup on id='' which always returns null).
@@ -685,7 +726,16 @@ export async function initiateDeliveryCoordinationCall(params: {
     return { success: true, aiCallId: aiCallRecord.id }
   } catch (err) {
     console.error('[calling] initiateDeliveryCoordinationCall error:', err)
-    await db.from('ai_calls').update({ status: 'failed' }).eq('id', aiCallRecord.id)
+    await db
+      .from('ai_calls')
+      .update({ status: 'failed' })
+      .eq('id', aiCallRecord.id)
+      .catch((updateErr: unknown) => {
+        console.error(
+          '[calling] initiateDeliveryCoordinationCall: failed-status update also failed:',
+          updateErr
+        )
+      })
     return { success: false, error: 'Unexpected error placing call.' }
   }
 }
@@ -811,7 +861,16 @@ export async function initiateVenueConfirmationCall(params: {
     return { success: true, aiCallId: aiCallRecord.id }
   } catch (err) {
     console.error('[calling] initiateVenueConfirmationCall error:', err)
-    await db.from('ai_calls').update({ status: 'failed' }).eq('id', aiCallRecord.id)
+    await db
+      .from('ai_calls')
+      .update({ status: 'failed' })
+      .eq('id', aiCallRecord.id)
+      .catch((updateErr: unknown) => {
+        console.error(
+          '[calling] initiateVenueConfirmationCall: failed-status update also failed:',
+          updateErr
+        )
+      })
     return { success: false, error: 'Unexpected error placing call.' }
   }
 }
@@ -847,7 +906,7 @@ export async function getAiCallStatus(aiCallId: string): Promise<AiCall | null> 
   const { data } = await db
     .from('ai_calls')
     .select(
-      'id, direction, role, contact_phone, contact_name, subject, status, full_transcript, extracted_data, action_log, recording_url, duration_seconds, created_at'
+      'id, direction, role, contact_phone, contact_name, subject, status, result, full_transcript, extracted_data, action_log, recording_url, duration_seconds, created_at'
     )
     .eq('id', aiCallId)
     .eq('chef_id', user.tenantId!)

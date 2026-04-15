@@ -676,4 +676,144 @@ test.describe('Q3: Calling system integrity', () => {
       'call-settings-form should use ?? for daily_call_limit init to preserve 0 as a valid value'
     ).toBe(true)
   })
+
+  // -------------------------------------------------------------------------
+  // Test 29: checkCallingEligibility fails closed on DB error
+  // Without try/catch, a DB blip causes routingRule=undefined → defaults apply
+  // → active-hours gate disabled + daily limit never checked → 24/7 unlimited calls.
+  // -------------------------------------------------------------------------
+  test('checkCallingEligibility routing rules query wrapped in try/catch', () => {
+    expect(existsSync(TWILIO_ACTIONS_SOURCE), `Source not found: ${TWILIO_ACTIONS_SOURCE}`).toBe(
+      true
+    )
+
+    const src = readFileSync(TWILIO_ACTIONS_SOURCE, 'utf-8')
+
+    const fnStart = src.indexOf('async function checkCallingEligibility')
+    expect(fnStart, 'checkCallingEligibility not found').toBeGreaterThan(-1)
+
+    const fnEnd = src.indexOf('\nasync function ', fnStart + 1)
+    const fnBody = fnEnd > -1 ? src.slice(fnStart, fnEnd) : src.slice(fnStart)
+
+    expect(
+      fnBody.includes('[calling/eligibility] routing rules query failed'),
+      'checkCallingEligibility does not guard the routing rules query — DB error silently allows 24/7 unlimited calls'
+    ).toBe(true)
+
+    expect(
+      fnBody.includes('[calling/eligibility] daily call count query failed'),
+      'checkCallingEligibility does not guard the count query — DB error silently bypasses daily limit'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 30: getAiCallStatus selects result column
+  // Missing result in select means call-hub polls always see result=undefined
+  // even after delivery/venue calls complete — UI never transitions to done state.
+  // -------------------------------------------------------------------------
+  test('getAiCallStatus select includes result column', () => {
+    expect(existsSync(TWILIO_ACTIONS_SOURCE), `Source not found: ${TWILIO_ACTIONS_SOURCE}`).toBe(
+      true
+    )
+
+    const src = readFileSync(TWILIO_ACTIONS_SOURCE, 'utf-8')
+
+    const fnStart = src.indexOf('export async function getAiCallStatus')
+    expect(fnStart, 'getAiCallStatus not found').toBeGreaterThan(-1)
+
+    const fnEnd = src.indexOf('\nexport async function ', fnStart + 1)
+    const fnBody = fnEnd > -1 ? src.slice(fnStart, fnEnd) : src.slice(fnStart)
+
+    // The select string must include 'result' as a standalone column name
+    expect(
+      /status,\s*result,/.test(fnBody) || /, result,/.test(fnBody),
+      'getAiCallStatus select does not include result column — polls never see call outcome'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 31: initiateSupplierCall logs ai_calls insert failure
+  // Silent null on insert = Tier 2 feedback loop broken from call 1 with no
+  // visibility that the signal pipeline is broken.
+  // -------------------------------------------------------------------------
+  test('initiateSupplierCall logs ai_calls insert failure', () => {
+    expect(existsSync(TWILIO_ACTIONS_SOURCE), `Source not found: ${TWILIO_ACTIONS_SOURCE}`).toBe(
+      true
+    )
+
+    const src = readFileSync(TWILIO_ACTIONS_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('initiateSupplierCall: ai_calls insert failed'),
+      'initiateSupplierCall does not log ai_calls insert failure — Tier 2 signal broken silently'
+    ).toBe(true)
+
+    expect(
+      src.includes('initiateAdHocCall: ai_calls insert failed'),
+      'initiateAdHocCall does not log ai_calls insert failure — Tier 2 signal broken silently'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 32: gather route logs price-point existence check failure
+  // Silent catch = duplicate write guard disabled, Twilio retries write
+  // duplicate price points; no log that the guard was bypassed.
+  // -------------------------------------------------------------------------
+  test('gather route logs price-point existence check failure', () => {
+    expect(existsSync(GATHER_SOURCE), `Source not found: ${GATHER_SOURCE}`).toBe(true)
+
+    const src = readFileSync(GATHER_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('price-point existence check failed'),
+      'gather route price-point existence check catch block is silent — duplicate write guard bypass is invisible'
+    ).toBe(true)
+
+    expect(
+      src.includes('vendor phone lookup for effectiveVendorId failed'),
+      'gather route vendor phone lookup catch block is silent — price/sentinel write skip is invisible'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 33: handleVendorDelivery and handleVenueConfirmation wrap step-2 broadcast
+  // Unguarded broadcast at step-2 throws → 500 → Twilio retries → duplicate
+  // extracted_data writes and double notifications.
+  // -------------------------------------------------------------------------
+  test('handleVendorDelivery step2 broadcast wrapped in try/catch', () => {
+    expect(existsSync(GATHER_SOURCE), `Source not found: ${GATHER_SOURCE}`).toBe(true)
+
+    const src = readFileSync(GATHER_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('vendor_delivery step2 broadcast failed'),
+      'handleVendorDelivery step2 broadcast is not guarded — broadcast error causes Twilio webhook retry loop'
+    ).toBe(true)
+
+    expect(
+      src.includes('venue_confirmation step2 broadcast failed'),
+      'handleVenueConfirmation step2 broadcast is not guarded — broadcast error causes Twilio webhook retry loop'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 34: delivery/venue step-2 existingCall read logs on failure
+  // If the read fails and falls through silently, step-1 data (delivery_window
+  // or access_window) is overwritten with just step-2 data and lost forever.
+  // -------------------------------------------------------------------------
+  test('handleVendorDelivery step2 existingCall read logs failure', () => {
+    expect(existsSync(GATHER_SOURCE), `Source not found: ${GATHER_SOURCE}`).toBe(true)
+
+    const src = readFileSync(GATHER_SOURCE, 'utf-8')
+
+    expect(
+      src.includes('vendor_delivery step2 existingCall read failed'),
+      'handleVendorDelivery step2 existingCall read is silent on failure — step-1 delivery_window silently lost'
+    ).toBe(true)
+
+    expect(
+      src.includes('venue_confirmation step2 existingCall read failed'),
+      'handleVenueConfirmation step2 existingCall read is silent on failure — step-1 access_window silently lost'
+    ).toBe(true)
+  })
 })

@@ -436,7 +436,12 @@ async function handleVendorAvailability(
           .eq('phone', callRecord.vendor_phone)
           .maybeSingle()
         if (savedVendor) effectiveVendorId = savedVendor.id
-      } catch {}
+      } catch (err) {
+        console.error(
+          '[calling/gather] vendor phone lookup for effectiveVendorId failed — sentinel/price write skipped:',
+          err
+        )
+      }
     }
 
     if (callRecord && effectiveVendorId) {
@@ -460,7 +465,12 @@ async function handleVendorAvailability(
           .limit(1)
           .maybeSingle()
         pricePointAlreadyExists = !!existing
-      } catch {}
+      } catch (err) {
+        console.error(
+          '[calling/gather] price-point existence check failed — duplicate write guard disabled for this webhook:',
+          err
+        )
+      }
 
       let actionTaken: string | null = null
 
@@ -702,14 +712,24 @@ async function handleVendorDelivery(
   if (step === 2) {
     if (speech) await logTranscript(db, aiCallId, 2, 'caller', speech, inputType as any, confidence)
 
-    // Merge step-2 contact/notes into extracted_data
-    const { data: existingCall } = await db
-      .from('ai_calls')
-      .select('extracted_data')
-      .eq('id', aiCallId)
-      .single()
-    const existing = (existingCall?.extracted_data as Record<string, any>) ?? {}
-    const updatedData = { ...existing, contact_notes: speech }
+    // Merge step-2 contact/notes into extracted_data.
+    // If the read fails, log it — step-1 delivery_window will be overwritten with
+    // just contact_notes and lost permanently. Fall back to empty object.
+    let existingCallData: Record<string, any> = {}
+    try {
+      const { data: existingCall } = await db
+        .from('ai_calls')
+        .select('extracted_data')
+        .eq('id', aiCallId)
+        .single()
+      existingCallData = (existingCall?.extracted_data as Record<string, any>) ?? {}
+    } catch (err) {
+      console.error(
+        '[calling/gather] vendor_delivery step2 existingCall read failed — step-1 delivery_window lost:',
+        err
+      )
+    }
+    const updatedData = { ...existingCallData, contact_notes: speech }
 
     await db
       .from('ai_calls')
@@ -729,14 +749,18 @@ async function handleVendorDelivery(
       .eq('id', aiCallId)
       .single()
     if (aiCall) {
-      await broadcast(`chef-${aiCall.chef_id}`, 'ai_call_result', {
-        aiCallId,
-        role: 'vendor_delivery',
-        contactName: aiCall.contact_name,
-        subject: aiCall.subject,
-        status: 'completed',
-        extractedData: updatedData,
-      })
+      try {
+        await broadcast(`chef-${aiCall.chef_id}`, 'ai_call_result', {
+          aiCallId,
+          role: 'vendor_delivery',
+          contactName: aiCall.contact_name,
+          subject: aiCall.subject,
+          status: 'completed',
+          extractedData: updatedData,
+        })
+      } catch (err) {
+        console.error('[calling/gather] vendor_delivery step2 broadcast failed:', err)
+      }
     }
     return closingTwiml(
       "Perfect, that's everything we needed. Thank you so much, we really appreciate it!"
@@ -781,14 +805,24 @@ async function handleVenueConfirmation(
   if (step === 2) {
     if (speech) await logTranscript(db, aiCallId, 2, 'caller', speech, inputType as any, confidence)
 
-    // Merge step-2 kitchen restrictions into extracted_data
-    const { data: existingCall } = await db
-      .from('ai_calls')
-      .select('extracted_data')
-      .eq('id', aiCallId)
-      .single()
-    const existing = (existingCall?.extracted_data as Record<string, any>) ?? {}
-    const updatedData = { ...existing, kitchen_notes: speech }
+    // Merge step-2 kitchen restrictions into extracted_data.
+    // If the read fails, log it — step-1 access_window will be overwritten with
+    // just kitchen_notes and lost permanently. Fall back to empty object.
+    let existingVenueData: Record<string, any> = {}
+    try {
+      const { data: existingCall } = await db
+        .from('ai_calls')
+        .select('extracted_data')
+        .eq('id', aiCallId)
+        .single()
+      existingVenueData = (existingCall?.extracted_data as Record<string, any>) ?? {}
+    } catch (err) {
+      console.error(
+        '[calling/gather] venue_confirmation step2 existingCall read failed — step-1 access_window lost:',
+        err
+      )
+    }
+    const updatedData = { ...existingVenueData, kitchen_notes: speech }
 
     await db
       .from('ai_calls')
@@ -808,14 +842,18 @@ async function handleVenueConfirmation(
       .eq('id', aiCallId)
       .single()
     if (aiCall) {
-      await broadcast(`chef-${aiCall.chef_id}`, 'ai_call_result', {
-        aiCallId,
-        role: 'venue_confirmation',
-        contactName: aiCall.contact_name,
-        subject: aiCall.subject,
-        status: 'completed',
-        extractedData: updatedData,
-      })
+      try {
+        await broadcast(`chef-${aiCall.chef_id}`, 'ai_call_result', {
+          aiCallId,
+          role: 'venue_confirmation',
+          contactName: aiCall.contact_name,
+          subject: aiCall.subject,
+          status: 'completed',
+          extractedData: updatedData,
+        })
+      } catch (err) {
+        console.error('[calling/gather] venue_confirmation step2 broadcast failed:', err)
+      }
     }
     return closingTwiml(
       "Great, we've got everything we need. Really appreciate your help, see you on the day!"
