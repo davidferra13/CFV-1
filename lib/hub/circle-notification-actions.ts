@@ -178,29 +178,38 @@ export async function notifyCircleMembers(input: {
       // --- Push notification ---
       const pushEnabled = (member as any).notify_push !== false
 
-      if (profile.auth_user_id && pushEnabled) {
-        // Push notifications respect quiet hours too, except for urgent types
-        const inQuietHours = isWithinQuietHours(
-          (member as any).quiet_hours_start,
-          (member as any).quiet_hours_end
-        )
+      const inQuietHours = isWithinQuietHours(
+        (member as any).quiet_hours_start,
+        (member as any).quiet_hours_end
+      )
 
-        if (!inQuietHours) {
+      if (pushEnabled && !inQuietHours) {
+        const pushPayload = {
+          title: `${authorName} in ${group.name}`,
+          body: input.messageBody.slice(0, 120),
+          icon: '/icon-192.png',
+          action_url: circleUrl,
+        }
+
+        // Authenticated users: use chef push_subscriptions table
+        if (profile.auth_user_id) {
           try {
             const subs = await getActiveSubscriptions(profile.auth_user_id)
-            await Promise.allSettled(
-              subs.map((sub: any) =>
-                sendPushNotification(sub, {
-                  title: `${authorName} in ${group.name}`,
-                  body: input.messageBody.slice(0, 120),
-                  icon: '/icon-192.png',
-                  action_url: circleUrl,
-                })
-              )
-            )
+            await Promise.allSettled(subs.map((sub: any) => sendPushNotification(sub, pushPayload)))
           } catch {
             // Non-blocking
           }
+        }
+
+        // Unauthenticated hub guests: use hub_push_subscriptions table
+        try {
+          const { getHubPushSubscriptions } = await import('./hub-push-subscriptions')
+          const hubSubs = await getHubPushSubscriptions(profile.id)
+          await Promise.allSettled(
+            hubSubs.map((sub: any) => sendPushNotification(sub, pushPayload))
+          )
+        } catch {
+          // Non-blocking
         }
       }
     }

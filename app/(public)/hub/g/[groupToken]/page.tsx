@@ -32,8 +32,26 @@ export default async function HubGroupPage({ params }: Props) {
 
   const group = await getGroupByToken(groupToken)
 
-  if (!group || !group.is_active) {
+  if (!group) {
     notFound()
+  }
+
+  // Circle was archived (event completed or manually closed)
+  if (!group.is_active) {
+    return (
+      <div className="min-h-screen bg-stone-950 flex items-center justify-center p-6">
+        <div className="text-center max-w-sm">
+          <div className="text-4xl mb-4">🍽️</div>
+          <h1 className="text-xl font-semibold text-stone-200 mb-2">
+            This dinner circle has ended
+          </h1>
+          <p className="text-stone-400 text-sm">
+            The event is complete. Thanks for being part of it. Your messages and memories are
+            preserved here.
+          </p>
+        </div>
+      </div>
+    )
   }
 
   const [

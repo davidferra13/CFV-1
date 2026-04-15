@@ -26,6 +26,7 @@ import { NotificationPreferences } from '@/components/hub/notification-preferenc
 import { CircleClientStatus } from '@/components/hub/circle-client-status'
 import { LifecycleClientView } from '@/components/hub/lifecycle-client-view'
 import { HubQuickActions } from '@/components/hub/hub-quick-actions'
+import { HubPushPrompt } from '@/components/hub/hub-push-prompt'
 import type { GuestCriticalPathResult } from '@/lib/lifecycle/critical-path'
 
 type Tab =
@@ -445,12 +446,15 @@ export function HubGroupView({
         )}
 
         {activeTab === 'chat' && (
-          <HubFeed
-            groupId={group.id}
-            profileToken={profileToken}
-            currentProfileId={currentProfileId}
-            isOwnerOrAdmin={isOwnerOrAdmin}
-          />
+          <>
+            {profileToken && <HubPushPrompt profileToken={profileToken} />}
+            <HubFeed
+              groupId={group.id}
+              profileToken={profileToken}
+              currentProfileId={currentProfileId}
+              isOwnerOrAdmin={isOwnerOrAdmin}
+            />
+          </>
         )}
 
         {activeTab === 'meals' && (

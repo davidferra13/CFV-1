@@ -313,6 +313,15 @@ export async function sendCircleRecoveryEmail(
   email: string,
   groupToken: string
 ): Promise<{ success: boolean; message: string }> {
+  // Rate limit: 3 recovery emails per email address per 15 minutes
+  try {
+    const { checkRateLimit } = await import('@/lib/rateLimit')
+    const normalized0 = email.toLowerCase().trim()
+    await checkRateLimit(`hub-recovery:${normalized0}`, 3, 15 * 60 * 1000)
+  } catch {
+    return { success: false, message: 'Too many requests. Please try again later.' }
+  }
+
   const db: any = createServerClient({ admin: true })
 
   const normalized = email.toLowerCase().trim()

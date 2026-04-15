@@ -25,6 +25,15 @@ export async function postHubMessage(
   input: z.infer<typeof PostMessageSchema>
 ): Promise<HubMessage> {
   const validated = PostMessageSchema.parse(input)
+
+  // Rate limit: 30 messages per 60 seconds per profile token (prevents spam)
+  try {
+    const { checkRateLimit } = await import('@/lib/rateLimit')
+    await checkRateLimit(`hub-post:${validated.profileToken}`, 30, 60 * 1000)
+  } catch {
+    throw new Error('Too many messages. Please slow down.')
+  }
+
   const db: any = createServerClient({ admin: true })
 
   // Resolve profile
@@ -66,6 +75,27 @@ export async function postHubMessage(
 
   if (error) throw new Error(`Failed to post message: ${error.message}`)
 
+  // Non-blocking: broadcast to open circle views via SSE
+  // Fetch the full message with author profile so the client renders the correct name/avatar.
+  try {
+    const { broadcast } = await import('@/lib/realtime/sse-server')
+    const { data: enriched } = await db
+      .from('hub_messages')
+      .select('*, hub_guest_profiles!author_profile_id(*)')
+      .eq('id', data.id)
+      .single()
+    const payload = enriched
+      ? {
+          ...enriched,
+          author: enriched.hub_guest_profiles ?? undefined,
+          hub_guest_profiles: undefined,
+        }
+      : data
+    broadcast(`hub_messages:${validated.groupId}`, 'INSERT', { new: payload })
+  } catch {
+    // Non-blocking
+  }
+
   // Non-blocking: notify other circle members via email
   try {
     const { notifyCircleMembers } = await import('./circle-notification-actions')
@@ -94,14 +124,40 @@ export async function postSystemMessage(input: {
   const db: any = createServerClient({ admin: true })
 
   try {
-    await db.from('hub_messages').insert({
-      group_id: input.groupId,
-      author_profile_id: input.authorProfileId,
-      message_type: 'system',
-      system_event_type: input.systemEventType,
-      system_metadata: (input.metadata ?? {}) as Json,
-      body: input.body ?? null,
-    })
+    const { data: sysMsg } = await db
+      .from('hub_messages')
+      .insert({
+        group_id: input.groupId,
+        author_profile_id: input.authorProfileId,
+        message_type: 'system',
+        system_event_type: input.systemEventType,
+        system_metadata: (input.metadata ?? {}) as Json,
+        body: input.body ?? null,
+      })
+      .select('*')
+      .single()
+
+    if (sysMsg) {
+      try {
+        const { broadcast } = await import('@/lib/realtime/sse-server')
+        // Fetch enriched message with author profile so SSE clients render the correct name
+        const { data: enriched } = await db
+          .from('hub_messages')
+          .select('*, hub_guest_profiles!author_profile_id(*)')
+          .eq('id', sysMsg.id)
+          .single()
+        const payload = enriched
+          ? {
+              ...enriched,
+              author: enriched.hub_guest_profiles ?? undefined,
+              hub_guest_profiles: undefined,
+            }
+          : sysMsg
+        broadcast(`hub_messages:${input.groupId}`, 'INSERT', { new: payload })
+      } catch {
+        // Non-blocking
+      }
+    }
   } catch {
     // System messages are non-blocking
     console.error('[non-blocking] Failed to post system message')
@@ -210,7 +266,7 @@ export async function togglePinMessage(input: {
     throw new Error('No permission to pin messages')
   }
 
-  const { error } = await db
+  const { data: pinnedMsg, error } = await db
     .from('hub_messages')
     .update({
       is_pinned: !message.is_pinned,
@@ -218,8 +274,20 @@ export async function togglePinMessage(input: {
       pinned_at: !message.is_pinned ? new Date().toISOString() : null,
     })
     .eq('id', input.messageId)
+    .select('id, group_id, is_pinned, pinned_by_profile_id, pinned_at')
+    .single()
 
   if (error) throw new Error(`Failed to toggle pin: ${error.message}`)
+
+  // Non-blocking: broadcast pin change to open circle views
+  try {
+    const { broadcast } = await import('@/lib/realtime/sse-server')
+    if (pinnedMsg) {
+      broadcast(`hub_messages_updates:${pinnedMsg.group_id}`, 'UPDATE', { new: pinnedMsg })
+    }
+  } catch {
+    // Non-blocking
+  }
 }
 
 /**
@@ -262,10 +330,22 @@ export async function addReaction(input: {
     for (const r of counts) {
       reactionCounts[r.emoji] = (reactionCounts[r.emoji] ?? 0) + 1
     }
-    await db
+    const { data: updatedMsg } = await db
       .from('hub_messages')
       .update({ reaction_counts: reactionCounts })
       .eq('id', input.messageId)
+      .select('id, group_id, reaction_counts')
+      .single()
+
+    // Non-blocking: broadcast reaction update to open circle views
+    try {
+      const { broadcast } = await import('@/lib/realtime/sse-server')
+      if (updatedMsg) {
+        broadcast(`hub_messages_updates:${updatedMsg.group_id}`, 'UPDATE', { new: updatedMsg })
+      }
+    } catch {
+      // Non-blocking
+    }
   }
 }
 
@@ -306,10 +386,22 @@ export async function removeReaction(input: {
       reactionCounts[r.emoji] = (reactionCounts[r.emoji] ?? 0) + 1
     }
   }
-  await db
+  const { data: updatedMsg } = await db
     .from('hub_messages')
     .update({ reaction_counts: reactionCounts })
     .eq('id', input.messageId)
+    .select('id, group_id, reaction_counts')
+    .single()
+
+  // Non-blocking: broadcast reaction update to open circle views
+  try {
+    const { broadcast } = await import('@/lib/realtime/sse-server')
+    if (updatedMsg) {
+      broadcast(`hub_messages_updates:${updatedMsg.group_id}`, 'UPDATE', { new: updatedMsg })
+    }
+  } catch {
+    // Non-blocking
+  }
 }
 
 /**
@@ -352,12 +444,24 @@ export async function deleteHubMessage(input: {
     }
   }
 
-  const { error } = await db
+  const { data: deletedMsg, error } = await db
     .from('hub_messages')
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', input.messageId)
+    .select('group_id, id, deleted_at')
+    .single()
 
   if (error) throw new Error(`Failed to delete message: ${error.message}`)
+
+  // Non-blocking: broadcast delete to open circle views
+  try {
+    const { broadcast } = await import('@/lib/realtime/sse-server')
+    if (deletedMsg) {
+      broadcast(`hub_messages_updates:${deletedMsg.group_id}`, 'UPDATE', { new: deletedMsg })
+    }
+  } catch {
+    // Non-blocking
+  }
 }
 
 /**
@@ -510,12 +614,24 @@ export async function editHubMessage(input: {
   const trimmed = input.body.trim()
   if (!trimmed || trimmed.length > 2000) throw new Error('Invalid message body')
 
-  const { error } = await db
+  const { data: editedMsg, error } = await db
     .from('hub_messages')
     .update({ body: trimmed, edited_at: new Date().toISOString() })
     .eq('id', input.messageId)
+    .select('*')
+    .single()
 
   if (error) throw new Error(`Failed to edit message: ${error.message}`)
+
+  // Non-blocking: broadcast edit to open circle views
+  try {
+    const { broadcast } = await import('@/lib/realtime/sse-server')
+    if (editedMsg) {
+      broadcast(`hub_messages_updates:${message.group_id}`, 'UPDATE', { new: editedMsg })
+    }
+  } catch {
+    // Non-blocking
+  }
 }
 
 /**

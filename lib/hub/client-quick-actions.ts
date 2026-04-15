@@ -77,19 +77,41 @@ export async function postGuestCountUpdate(
   // so the circle feed never claims a count that didn't actually land in the DB.
   await db.from('events').update({ guest_count: validated.newCount }).eq('id', validated.eventId)
 
-  await db.from('hub_messages').insert({
-    group_id: validated.groupId,
-    author_profile_id: profile.id,
-    message_type: 'notification',
-    notification_type: 'guest_count_updated' as HubNotificationType,
-    body,
-    source: 'circle',
-    system_metadata: {
-      event_id: validated.eventId,
-      new_count: validated.newCount,
-      previous_count: previousCount,
-    },
-  })
+  // Sync to inquiries.confirmed_guest_count (non-blocking - inquiry may not exist)
+  try {
+    await db
+      .from('inquiries')
+      .update({ confirmed_guest_count: validated.newCount })
+      .eq('converted_to_event_id', validated.eventId)
+  } catch {
+    // Non-blocking
+  }
+
+  const { data: countMsg } = await db
+    .from('hub_messages')
+    .insert({
+      group_id: validated.groupId,
+      author_profile_id: profile.id,
+      message_type: 'notification',
+      notification_type: 'guest_count_updated' as HubNotificationType,
+      body,
+      source: 'circle',
+      system_metadata: {
+        event_id: validated.eventId,
+        new_count: validated.newCount,
+        previous_count: previousCount,
+      },
+    })
+    .select('*')
+    .single()
+
+  // Non-blocking: broadcast to open circle views
+  try {
+    const { broadcast } = await import('@/lib/realtime/sse-server')
+    if (countMsg) broadcast(`hub_messages:${validated.groupId}`, 'INSERT', { new: countMsg })
+  } catch {
+    // Non-blocking
+  }
 
   revalidatePath(`/events/${validated.eventId}`)
   revalidatePath(`/my-events/${validated.eventId}`)
@@ -170,19 +192,31 @@ export async function postDietaryUpdate(
     })
     .eq('id', profile.id)
 
-  await db.from('hub_messages').insert({
-    group_id: validated.groupId,
-    author_profile_id: profile.id,
-    message_type: 'notification',
-    notification_type: 'dietary_updated' as HubNotificationType,
-    body,
-    source: 'circle',
-    system_metadata: {
-      guest_name: validated.guestName,
-      restrictions: validated.restrictions,
-      allergies: validated.allergies,
-    },
-  })
+  const { data: dietaryMsg } = await db
+    .from('hub_messages')
+    .insert({
+      group_id: validated.groupId,
+      author_profile_id: profile.id,
+      message_type: 'notification',
+      notification_type: 'dietary_updated' as HubNotificationType,
+      body,
+      source: 'circle',
+      system_metadata: {
+        guest_name: validated.guestName,
+        restrictions: validated.restrictions,
+        allergies: validated.allergies,
+      },
+    })
+    .select('*')
+    .single()
+
+  // Non-blocking: broadcast to open circle views
+  try {
+    const { broadcast } = await import('@/lib/realtime/sse-server')
+    if (dietaryMsg) broadcast(`hub_messages:${validated.groupId}`, 'INSERT', { new: dietaryMsg })
+  } catch {
+    // Non-blocking
+  }
 
   revalidatePath('/dashboard')
   revalidatePath('/hub/g')
@@ -238,18 +272,30 @@ export async function postRunningLate(
     ? validated.message
     : `Running about ${validated.etaMinutes} minutes late. Sorry for the delay!`
 
-  await db.from('hub_messages').insert({
-    group_id: validated.groupId,
-    author_profile_id: profile.id,
-    message_type: 'notification',
-    notification_type: 'running_late' as HubNotificationType,
-    body,
-    source: 'circle',
-    system_metadata: {
-      eta_minutes: validated.etaMinutes,
-      sender_name: profile.display_name,
-    },
-  })
+  const { data: lateMsg } = await db
+    .from('hub_messages')
+    .insert({
+      group_id: validated.groupId,
+      author_profile_id: profile.id,
+      message_type: 'notification',
+      notification_type: 'running_late' as HubNotificationType,
+      body,
+      source: 'circle',
+      system_metadata: {
+        eta_minutes: validated.etaMinutes,
+        sender_name: profile.display_name,
+      },
+    })
+    .select('*')
+    .single()
+
+  // Non-blocking: broadcast to open circle views
+  try {
+    const { broadcast } = await import('@/lib/realtime/sse-server')
+    if (lateMsg) broadcast(`hub_messages:${validated.groupId}`, 'INSERT', { new: lateMsg })
+  } catch {
+    // Non-blocking
+  }
 
   // Running late bypasses quiet hours (urgent)
   try {
@@ -308,19 +354,31 @@ export async function postRepeatBookingRequest(
 
   const body = parts.join(' ')
 
-  await db.from('hub_messages').insert({
-    group_id: validated.groupId,
-    author_profile_id: profile.id,
-    message_type: 'notification',
-    notification_type: 'repeat_booking_request' as HubNotificationType,
-    body,
-    source: 'circle',
-    system_metadata: {
-      preferred_date: validated.preferredDate ?? null,
-      same_menu: validated.sameMenu,
-      guest_count: validated.guestCount ?? null,
-    },
-  })
+  const { data: bookingMsg } = await db
+    .from('hub_messages')
+    .insert({
+      group_id: validated.groupId,
+      author_profile_id: profile.id,
+      message_type: 'notification',
+      notification_type: 'repeat_booking_request' as HubNotificationType,
+      body,
+      source: 'circle',
+      system_metadata: {
+        preferred_date: validated.preferredDate ?? null,
+        same_menu: validated.sameMenu,
+        guest_count: validated.guestCount ?? null,
+      },
+    })
+    .select('*')
+    .single()
+
+  // Non-blocking: broadcast to open circle views
+  try {
+    const { broadcast } = await import('@/lib/realtime/sse-server')
+    if (bookingMsg) broadcast(`hub_messages:${validated.groupId}`, 'INSERT', { new: bookingMsg })
+  } catch {
+    // Non-blocking
+  }
 
   // Notify chef (non-blocking)
   try {

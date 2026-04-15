@@ -112,6 +112,27 @@ export function HubFeed({ groupId, profileToken, currentProfileId, isOwnerOrAdmi
     }
   }, [groupId, currentProfileId, touchReadMarker])
 
+  // Catch-up fetch when the tab becomes visible again after being hidden.
+  // EventSource auto-reconnects but doesn't replay missed messages.
+  useEffect(() => {
+    const handleVisibility = async () => {
+      if (document.visibilityState !== 'visible') return
+      try {
+        const result = await getHubMessages({ groupId, limit: 20 })
+        const latest = result.messages.reverse() // oldest first
+        setMessages((prev) => {
+          const existingIds = new Set(prev.map((m) => m.id))
+          const missed = latest.filter((m) => !existingIds.has(m.id))
+          return missed.length > 0 ? [...prev, ...missed] : prev
+        })
+      } catch {
+        // Non-blocking
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
+  }, [groupId])
+
   // Typing indicators
   useEffect(() => {
     if (!currentProfileId) return
