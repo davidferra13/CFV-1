@@ -202,7 +202,7 @@ Each question tagged with failure type, current behavior, gap, and build path.
 ### P1 (Fix next - reliability)
 
 - **A3** financial_reconciled gate always pending - FIXED (auto-checks outstanding balance from event_financial_summary, passes when balance <= 0)
-- **B2** 50K ledger entry limit
+- **B2** 50K ledger entry limit - FIXED (DB-side SUM aggregation via RPC; JS loop kept as fallback with 50K cap; migration: 20260416000001)
 - **B4** Stripe intent not cancelled on event cancel - FIXED (webhook handler now checks event status; auto-refunds payment on cancelled event with side_effect_failures recording)
 - **B5** Quote revision doesn't update event - FIXED (transitionQuote syncs quoted_price_cents and deposit_amount_cents to linked event when sending revised quote)
 - **C3** Meal feedback missing notification - FIXED (chef gets in-app notification when guest submits meal feedback)

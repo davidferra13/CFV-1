@@ -52,34 +52,57 @@ export async function getTenantFinancialSummary() {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  // Hard limit to prevent memory exhaustion - a single tenant should never have
-  // more than 50K ledger entries. If they do, this caps the computation.
-  const { data: entries, error } = await db
-    .from('ledger_entries')
-    .select('entry_type, amount_cents, is_refund')
-    .eq('tenant_id', user.tenantId!)
-    .limit(50_000)
+  // Use DB-side aggregation to avoid pulling all rows into JS memory.
+  // This scales to any number of ledger entries without OOM risk.
+  const { data: agg, error } = await db.rpc('compute_tenant_financial_summary', {
+    p_tenant_id: user.tenantId!,
+  })
+
+  // Fallback: if RPC doesn't exist yet, use the JS loop (bounded)
+  if (error?.code === '42883' || error?.message?.includes('does not exist')) {
+    const { data: entries, error: fallbackErr } = await db
+      .from('ledger_entries')
+      .select('entry_type, amount_cents, is_refund')
+      .eq('tenant_id', user.tenantId!)
+      .limit(50_000)
+
+    if (fallbackErr) {
+      log.ledger.error('getTenantFinancialSummary failed', { error: fallbackErr })
+      throw new Error('Failed to compute tenant financials')
+    }
+
+    let totalRevenue = 0
+    let totalRefunds = 0
+    let totalTips = 0
+
+    for (const entry of entries ?? []) {
+      if (entry.is_refund || entry.entry_type === 'refund') {
+        totalRefunds += Math.abs(entry.amount_cents)
+      } else if (entry.entry_type === 'tip') {
+        totalTips += entry.amount_cents
+      } else {
+        totalRevenue += entry.amount_cents
+      }
+    }
+
+    return {
+      totalRevenueCents: totalRevenue,
+      totalRefundsCents: totalRefunds,
+      totalTipsCents: totalTips,
+      netRevenueCents: totalRevenue - totalRefunds,
+      totalWithTipsCents: totalRevenue + totalTips - totalRefunds,
+    }
+  }
 
   if (error) {
     log.ledger.error('getTenantFinancialSummary failed', { error })
     throw new Error('Failed to compute tenant financials')
   }
 
-  // Compute totals from ledger entries using new entry types
-  let totalRevenue = 0
-  let totalRefunds = 0
-  let totalTips = 0
-
-  for (const entry of entries) {
-    if (entry.is_refund || entry.entry_type === 'refund') {
-      totalRefunds += Math.abs(entry.amount_cents)
-    } else if (entry.entry_type === 'tip') {
-      totalTips += entry.amount_cents
-    } else {
-      // payment, deposit, installment, final_payment, add_on, credit
-      totalRevenue += entry.amount_cents
-    }
-  }
+  const row = Array.isArray(agg) ? agg[0] : agg
+  const totalRevenue = row?.total_revenue_cents ?? 0
+  const totalRefunds = row?.total_refunds_cents ?? 0
+  const totalTips = row?.total_tips_cents ?? 0
 
   return {
     totalRevenueCents: totalRevenue,
