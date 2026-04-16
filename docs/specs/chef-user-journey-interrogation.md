@@ -4,7 +4,7 @@
 > Each question targets real code, real flows, real gaps.
 > Organized by lifecycle phase. Each question must be answerable with evidence from the running app.
 >
-> **Scored: 2026-04-16** | **41 PASS, 18 PARTIAL, 1 FAIL**
+> **Scored: 2026-04-16** | **45 PASS, 14 PARTIAL, 1 FAIL**
 
 ---
 
@@ -241,13 +241,13 @@ This is not a feature wishlist. Every question maps to something a real chef wou
 
 ### Phase 3: First Client Acquisition
 
-| Q#  | Question                        | Verdict     | Evidence                                                                                                                                            |
-| --- | ------------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Q16 | Client creation without inquiry | **PASS**    | `/clients/new` requires only `full_name`. Email and phone optional                                                                                  |
-| Q17 | Embed widget setup              | **PASS**    | Works immediately with just `chefId`. No profile fields needed                                                                                      |
-| Q18 | Inquiry notifications           | **PARTIAL** | **BUG:** `sendNewInquiryChefEmail` NOT called from embed route. Chef never emailed about embed inquiries. Function exists for portal inquiries only |
-| Q19 | Inquiry to event conversion     | **PARTIAL** | Draft events auto-create from inquiries, but no manual "convert inquiry" UI with pre-populated data                                                 |
-| Q20 | Client portal access            | **PARTIAL** | Client creation and portal invitation are separate steps. Not automatic                                                                             |
+| Q#  | Question                        | Verdict     | Evidence                                                                                                                                  |
+| --- | ------------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Q16 | Client creation without inquiry | **PASS**    | `/clients/new` requires only `full_name`. Email and phone optional                                                                        |
+| Q17 | Embed widget setup              | **PASS**    | Works immediately with just `chefId`. No profile fields needed                                                                            |
+| Q18 | Inquiry notifications           | **PASS**    | `sendNewInquiryChefEmail` called at embed route line 398. Chef emailed on every embed inquiry. In-app notification via automations engine |
+| Q19 | Inquiry to event conversion     | **PARTIAL** | Draft events auto-create from inquiries, but no manual "convert inquiry" UI with pre-populated data                                       |
+| Q20 | Client portal access            | **PARTIAL** | Client creation and portal invitation are separate steps. Not automatic                                                                   |
 
 ### Phase 4: First Menu and Recipe Entry
 
@@ -281,23 +281,23 @@ This is not a feature wishlist. Every question maps to something a real chef wou
 
 ### Phase 7: Financial Reality
 
-| Q#  | Question                     | Verdict     | Evidence                                                                                                            |
-| --- | ---------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------- |
-| Q36 | Revenue visibility           | **PASS**    | Hero metrics show "Revenue (all time)" from ledger. Updates on ledger write                                         |
-| Q37 | Expense tracking             | **PASS**    | Full CRUD with categories, receipt photos, mileage, event linking. Auto food cost calc                              |
-| Q38 | Profit calculation honesty   | **PARTIAL** | Profit section hidden when no expenses logged (not misleading, but no guidance saying "log expenses to see profit") |
-| Q39 | Financial reports/tax export | **PASS**    | 5 report types, date range picker, CSV export. No PDF, but CSV works for tax prep                                   |
-| Q40 | Split payments               | **PASS**    | Append-only ledger naturally supports multiple payment methods per event                                            |
+| Q#  | Question                     | Verdict  | Evidence                                                                                                              |
+| --- | ---------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------- |
+| Q36 | Revenue visibility           | **PASS** | Hero metrics show "Revenue (all time)" from ledger. Updates on ledger write                                           |
+| Q37 | Expense tracking             | **PASS** | Full CRUD with categories, receipt photos, mileage, event linking. Auto food cost calc                                |
+| Q38 | Profit calculation honesty   | **PASS** | Dashed-border card with guidance "Log your expenses to see your true profit margin" when revenue > 0 and expenses = 0 |
+| Q39 | Financial reports/tax export | **PASS** | 5 report types, date range picker, CSV export. No PDF, but CSV works for tax prep                                     |
+| Q40 | Split payments               | **PASS** | Append-only ledger naturally supports multiple payment methods per event                                              |
 
 ### Phase 8: Growth and Repeat Business
 
-| Q#  | Question                     | Verdict     | Evidence                                                                                |
-| --- | ---------------------------- | ----------- | --------------------------------------------------------------------------------------- |
-| Q41 | Rebooking past client        | **PARTIAL** | Rebooking predictions exist but no "Rebook" button. Chef must create new event manually |
-| Q42 | Client dietary memory        | **PARTIAL** | Dietary data tracked on client profile but NOT auto-populated on event creation form    |
-| Q43 | Recurring service setup      | **PASS**    | Full recurring service management with frequency, planning board, recommendations       |
-| Q44 | Client communication history | **PASS**    | Unified timeline: events, emails, notes, quotes, payments, referrals. Comprehensive     |
-| Q45 | Referral tracking            | **PASS**    | Referral source on clients, client-to-client referral records, dedicated referrals page |
+| Q#  | Question                     | Verdict     | Evidence                                                                                                                 |
+| --- | ---------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Q41 | Rebooking past client        | **PARTIAL** | Rebooking predictions exist but no "Rebook" button. Chef must create new event manually                                  |
+| Q42 | Client dietary memory        | **PASS**    | Banner shows dietary data on client select (line 699). Server action auto-populates event from client profile (line 172) |
+| Q43 | Recurring service setup      | **PASS**    | Full recurring service management with frequency, planning board, recommendations                                        |
+| Q44 | Client communication history | **PASS**    | Unified timeline: events, emails, notes, quotes, payments, referrals. Comprehensive                                      |
+| Q45 | Referral tracking            | **PASS**    | Referral source on clients, client-to-client referral records, dedicated referrals page                                  |
 
 ### Phase 9: Scale and Multi-Event Management
 
@@ -321,37 +321,34 @@ This is not a feature wishlist. Every question maps to something a real chef wou
 
 ### Phase 11: Veteran Migration
 
-| Q#  | Question                     | Verdict     | Evidence                                                                              |
-| --- | ---------------------------- | ----------- | ------------------------------------------------------------------------------------- |
-| Q56 | Bulk client import           | **PARTIAL** | `importClientDirect()` exists for one-at-a-time. No CSV import, no batch UI           |
-| Q57 | Historical event backfill    | **PASS**    | Past-date validation removed. Events with past dates allowed for historical backfill. |
-| Q58 | Recipe bulk import           | **PASS**    | CSV upload, batch URL import, AI text parse, brain dump. Strong migration support     |
-| Q59 | Client relationship notes    | **PASS**    | Quick notes, unified timeline, milestones, taste profiles, outreach history           |
-| Q60 | Analytics from imported data | **PARTIAL** | Ledger handles historical dates correctly, but Q57 blocks getting historical data in  |
+| Q#  | Question                     | Verdict     | Evidence                                                                                                        |
+| --- | ---------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------- |
+| Q56 | Bulk client import           | **PARTIAL** | `importClientDirect()` exists for one-at-a-time. No CSV import, no batch UI                                     |
+| Q57 | Historical event backfill    | **PASS**    | Past-date validation removed. Events with past dates allowed for historical backfill.                           |
+| Q58 | Recipe bulk import           | **PASS**    | CSV upload, batch URL import, AI text parse, brain dump. Strong migration support                               |
+| Q59 | Client relationship notes    | **PASS**    | Quick notes, unified timeline, milestones, taste profiles, outreach history                                     |
+| Q60 | Analytics from imported data | **PASS**    | Q57 fixed (past dates allowed). Ledger handles historical dates. Analytics work from day one with imported data |
 
 ---
 
 ## Results Summary
 
-**Final Score: 41 PASS / 18 PARTIAL / 1 FAIL**
+**Final Score: 45 PASS / 14 PARTIAL / 1 FAIL**
 
 **Grade: Usable but rough edges will lose users** (35-49 PASS range)
 
-### The 2 FAILs (immediate build priority)
+### The 1 FAIL (requires architectural work)
 
-| Q#      | Issue                                                       | Impact                                                                    | Fix Complexity                                                              |
-| ------- | ----------------------------------------------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| **Q50** | No seasonal pricing in the 10-tier resolution chain         | Chef quotes December lobster at April prices. Financial risk for chefs    | Medium: add event_date param to `resolvePrice()`, seasonal adjustment layer |
-| **Q57** | Event form rejects past dates, blocking historical backfill | Veterans cannot migrate business history. No trend analytics from day one | Low: remove or relax past-date validation, add "historical event" flag      |
+| Q#      | Issue                                               | Impact                                                                 | Fix Complexity                                                              |
+| ------- | --------------------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| **Q50** | No seasonal pricing in the 10-tier resolution chain | Chef quotes December lobster at April prices. Financial risk for chefs | Medium: add event_date param to `resolvePrice()`, seasonal adjustment layer |
 
-### The 18 PARTIALs (prioritized by user impact)
+### The 14 PARTIALs (prioritized by user impact)
 
 **High impact (will lose real users):**
 
 | Q#      | Issue                                                              | Fix                                                                             |
 | ------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
-| **Q18** | Chef never emailed about embed widget inquiries (BUG)              | Add `sendNewInquiryChefEmail` call to `app/api/embed/inquiry/route.ts`          |
-| **Q42** | Client dietary data not auto-populated on event form               | Load client allergies/restrictions when `clientId` is selected in event form    |
 | **Q56** | No bulk client import (300 clients = 300 form submissions)         | Build CSV import UI using existing `importClientDirect()` action                |
 | **Q25** | Price resolution tiers mostly tenant-scoped, useless for new chefs | Make tiers 6 (regional) and 9 (category baseline) resolve from system-wide data |
 
@@ -370,11 +367,9 @@ This is not a feature wishlist. Every question maps to something a real chef wou
 
 **Low impact (polish):**
 
-| Q#      | Issue                                                                 | Fix                                                 |
-| ------- | --------------------------------------------------------------------- | --------------------------------------------------- |
-| **Q33** | "Call sheet" name misleading (it's vendor calling, not event rundown) | Rename or add actual day-of event call sheet        |
-| **Q38** | Profit section hidden with no expenses (no guidance)                  | Show "Log expenses to see your true profit" message |
-| **Q49** | Multi-menu events: DB supports it, UI doesn't                         | Allow multiple menu attachment in event detail      |
-| **Q51** | PWA disabled, offline = fallback page                                 | Enable PWA build, cache critical routes             |
-| **Q55** | No system-wide conflict resolution beyond event form                  | Extend CAS pattern to other forms                   |
-| **Q60** | Analytics blocked by Q57 (historical events impossible)               | Fix Q57 first, then analytics work automatically    |
+| Q#      | Issue                                                                 | Fix                                            |
+| ------- | --------------------------------------------------------------------- | ---------------------------------------------- |
+| **Q33** | "Call sheet" name misleading (it's vendor calling, not event rundown) | Rename or add actual day-of event call sheet   |
+| **Q49** | Multi-menu events: DB supports it, UI doesn't                         | Allow multiple menu attachment in event detail |
+| **Q51** | PWA disabled, offline = fallback page                                 | Enable PWA build, cache critical routes        |
+| **Q55** | No system-wide conflict resolution beyond event form                  | Extend CAS pattern to other forms              |

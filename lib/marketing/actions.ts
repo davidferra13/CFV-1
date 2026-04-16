@@ -337,16 +337,16 @@ async function getChefDisplayName(chefEntityId: string): Promise<string> {
   return prefs?.display_name || prefs?.business_name || 'Your Chef'
 }
 
-export async function sendCampaignNow(campaignId: string) {
-  const chef = await requireChef()
-  await requirePro('marketing')
-  const db: any = createServerClient()
-
+/**
+ * Internal campaign send logic. Used by both the authenticated sendCampaignNow
+ * and the cron-triggered processScheduledCampaigns.
+ */
+async function executeCampaignSend(campaignId: string, chefId: string, db: any) {
   const { data: campaign, error: campErr } = await db
     .from('marketing_campaigns')
     .select('*')
     .eq('id', campaignId)
-    .eq('chef_id', chef.entityId)
+    .eq('chef_id', chefId)
     .single()
 
   if (campErr || !campaign) throw new Error('Campaign not found')
@@ -359,7 +359,7 @@ export async function sendCampaignNow(campaignId: string) {
     .from('marketing_campaigns')
     .update({ status: 'sending' })
     .eq('id', campaignId)
-    .eq('chef_id', chef.entityId)
+    .eq('chef_id', chefId)
     .in('status', ['draft', 'scheduled'])
     .select('id')
     .single()
@@ -368,11 +368,8 @@ export async function sendCampaignNow(campaignId: string) {
     throw new Error('Campaign could not be claimed for sending (already in progress or sent)')
   }
 
-  const audience = await resolveAudience(
-    chef.entityId,
-    campaign.target_segment as Record<string, unknown>
-  )
-  const chefName = await getChefDisplayName(chef.entityId)
+  const audience = await resolveAudience(chefId, campaign.target_segment as Record<string, unknown>)
+  const chefName = await getChefDisplayName(chefId)
 
   let sentCount = 0
   let skippedCount = 0
@@ -384,7 +381,7 @@ export async function sendCampaignNow(campaignId: string) {
   for (const client of audience) {
     if (sentCount >= MAX_SENDS_PER_RUN) {
       console.warn(
-        `[campaign] sendCampaignNow hit MAX_SENDS_PER_RUN (${MAX_SENDS_PER_RUN}) for campaign ${campaignId}. Remaining recipients will be sent on the next run.`
+        `[campaign] executeCampaignSend hit MAX_SENDS_PER_RUN (${MAX_SENDS_PER_RUN}) for campaign ${campaignId}. Remaining recipients will be sent on the next run.`
       )
       break
     }
@@ -412,7 +409,7 @@ export async function sendCampaignNow(campaignId: string) {
       .from('campaign_recipients')
       .insert({
         campaign_id: campaignId,
-        chef_id: chef.entityId,
+        chef_id: chefId,
         client_id: client.id,
         email: client.email,
       })
@@ -494,8 +491,17 @@ export async function sendCampaignNow(campaignId: string) {
     })
     .eq('id', campaignId)
 
-  revalidatePath('/marketing')
   return { sentCount, skippedCount }
+}
+
+export async function sendCampaignNow(campaignId: string) {
+  const chef = await requireChef()
+  await requirePro('marketing')
+  const db: any = createServerClient()
+
+  const result = await executeCampaignSend(campaignId, chef.entityId, db)
+  revalidatePath('/marketing')
+  return result
 }
 
 // ============================================
@@ -861,7 +867,9 @@ export async function getClientOutreachHistory(clientId: string) {
  * Called from /api/scheduled/campaigns cron.
  */
 export async function processScheduledCampaigns() {
-  const db: any = createServerClient()
+  // Uses admin client because this runs from cron (no user session)
+  const { createAdminClient } = await import('@/lib/db/admin')
+  const db: any = createAdminClient()
 
   const { data: due } = await db
     .from('marketing_campaigns')
@@ -875,7 +883,7 @@ export async function processScheduledCampaigns() {
   let processed = 0
   for (const campaign of due) {
     try {
-      await sendCampaignNow(campaign.id)
+      await executeCampaignSend(campaign.id, campaign.chef_id, db)
       processed++
     } catch (err) {
       console.error('[campaigns] Failed to send scheduled campaign', campaign.id, err)
@@ -1057,6 +1065,19 @@ export async function processSequences() {
         .eq('id', enrollment.id)
       continue
     }
+
+    // CAS claim: atomically set next_send_at to null so concurrent cron runs skip this enrollment.
+    // Only succeeds if next_send_at still matches what we read (prevents double-fire).
+    const { data: claimed } = await db
+      .from('sequence_enrollments')
+      .update({ next_send_at: null })
+      .eq('id', enrollment.id)
+      .eq('current_step', enrollment.current_step)
+      .lte('next_send_at', new Date().toISOString())
+      .select('id')
+      .maybeSingle()
+
+    if (!claimed) continue // Another cron instance already claimed this enrollment
 
     // Fetch the current step
     const { data: step } = await db

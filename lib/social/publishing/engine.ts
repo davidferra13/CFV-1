@@ -256,6 +256,21 @@ export async function runPublishingEngine(): Promise<EngineRun> {
       continue
     }
 
+    // CAS claim: atomically set status to 'publishing' so concurrent cron runs
+    // skip this post (the eq('status', 'queued') filter excludes it once claimed).
+    const { data: claimed } = await db
+      .from('social_posts')
+      .update({ status: 'publishing' })
+      .eq('id', post.id)
+      .eq('status', 'queued')
+      .select('id')
+      .maybeSingle()
+
+    if (!claimed) {
+      run.skipped++
+      continue // Another cron instance already claimed this post
+    }
+
     run.processed++
 
     for (const platform of pending) {
@@ -312,6 +327,23 @@ export async function runPublishingEngine(): Promise<EngineRun> {
         run.errors.push(`Post ${post.id} / ${platform}: ${msg}`)
         run.failed++
       }
+    }
+
+    // Re-check: if not all platforms are published, reset to 'queued' so the next
+    // cron run can retry remaining platforms. markPlatformPublished sets 'published'
+    // when all platforms are done, so only reset if still in 'publishing'.
+    const { data: postStatus } = await db
+      .from('social_posts')
+      .select('status')
+      .eq('id', post.id)
+      .single()
+
+    if (postStatus?.status === 'publishing') {
+      await db
+        .from('social_posts')
+        .update({ status: 'queued' })
+        .eq('id', post.id)
+        .eq('status', 'publishing')
     }
   }
 

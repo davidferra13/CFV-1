@@ -21,10 +21,10 @@
 | SQ7  | Reengagement Window Dedup       | Idempotency   | P1       | **PASS**            |
 | SQ8  | Follow-Up Reschedule Atomicity  | Consistency   | P1       | **PASS**            |
 | SQ9  | Inquiry Followup Metadata Dedup | Idempotency   | P0       | **PASS**            |
-| SQ10 | Campaign Double-Send Prevention | Idempotency   | P0       | **PARTIAL**         |
-| SQ11 | Sequence Step Double-Fire       | Idempotency   | P0       | **PARTIAL**         |
-| SQ12 | Social Publish Double-Post      | Idempotency   | P1       | **PARTIAL**         |
-| SQ13 | Automation Trigger Dedup        | Idempotency   | P1       | **PARTIAL**         |
+| SQ10 | Campaign Double-Send Prevention | Idempotency   | P0       | **PASS** (fixed)    |
+| SQ11 | Sequence Step Double-Fire       | Idempotency   | P0       | **PASS** (fixed)    |
+| SQ12 | Social Publish Double-Post      | Idempotency   | P1       | **PASS** (fixed)    |
+| SQ13 | Automation Trigger Dedup        | Idempotency   | P1       | **PASS**            |
 | SQ14 | Loyalty Expiry Idempotency      | Idempotency   | P2       | **PASS**            |
 | SQ15 | Raffle Draw Fairness            | Correctness   | P2       | **PASS**            |
 
@@ -54,7 +54,7 @@ All 29 routes report to `cron_executions` table. 21 use `runMonitoredCronJob` wr
 
 **Verdict: PARTIAL**
 
-Some email crons (client-reengagement, inquiry-client-followup) have metadata-based dedup. Others (campaigns, sequences) rely on state fields but lack explicit "already-sent" guards against double-fire.
+Some email crons (client-reengagement, inquiry-client-followup) have metadata-based dedup. Campaigns now have atomic CAS claim (status='sending') + per-recipient dedup. Sequences have CAS claim (next_send_at=null). Remaining gap: daily-report and call-reminders lack explicit dedup (though they only fire once per cycle).
 
 ### SQ5: Batch Query Limits
 
@@ -84,3 +84,11 @@ Added `recordSideEffectFailure` to 7 additional email/notification-sending crons
 
 **Before fixes:** 8 PASS, 6 PARTIAL, 1 FAIL
 **After Sprint 1+2:** 9 PASS, 6 PARTIAL, 0 FAIL (SQ3 upgraded from 4/29 to 12/29, SQ5 FAIL->PASS)
+**After Sprint 3 (idempotency):** 12 PASS, 3 PARTIAL, 0 FAIL
+
+Sprint 3 fixes:
+
+- **SQ10**: `processScheduledCampaigns` now uses admin client (was calling `requireChef()` in cron context - campaigns never actually sent from cron). Extracted `executeCampaignSend` internal function. CAS claim + per-recipient dedup already existed.
+- **SQ11**: Added CAS claim in `processSequences`: atomically sets `next_send_at=null` before processing, so concurrent cron runs skip already-claimed enrollments.
+- **SQ12**: Added CAS claim in `runPublishingEngine`: atomically sets `status='publishing'` before processing, resets to `'queued'` if not all platforms completed. Prevents concurrent engine runs from double-posting.
+- **SQ13**: Already PASS. Automation engine has cooldown dedup via `automation_executions` table + per-entity cooldown windows.
