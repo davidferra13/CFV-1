@@ -726,7 +726,7 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/culinary/call-sheet',
-        label: 'Call Sheet',
+        label: 'Voice Hub',
         icon: Phone,
       },
     ],

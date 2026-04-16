@@ -4,7 +4,7 @@
 > Each question targets real code, real flows, real gaps.
 > Organized by lifecycle phase. Each question must be answerable with evidence from the running app.
 >
-> **Scored: 2026-04-16** | **45 PASS, 14 PARTIAL, 1 FAIL**
+> **Scored: 2026-04-16** | **48 PASS, 11 PARTIAL, 1 FAIL**
 
 ---
 
@@ -232,12 +232,12 @@ This is not a feature wishlist. Every question maps to something a real chef wou
 
 ### Phase 2: Profile and Identity Setup
 
-| Q#  | Question                       | Verdict     | Evidence                                                                                   |
-| --- | ------------------------------ | ----------- | ------------------------------------------------------------------------------------------ |
-| Q12 | Profile minimum viability      | **PASS**    | Email-prefix business name is ugly but functional everywhere                               |
-| Q13 | Profile completeness indicator | **PARTIAL** | Exists in onboarding banner/hub only. Once dismissed, no other surface shows completeness  |
-| Q14 | Public profile exposure        | **PARTIAL** | Empty profile with email-prefix name renders. Functional but embarrassing. No quality gate |
-| Q15 | Service type selection         | **PASS**    | Optional. No feature breaks without service types                                          |
+| Q#  | Question                       | Verdict     | Evidence                                                                                  |
+| --- | ------------------------------ | ----------- | ----------------------------------------------------------------------------------------- |
+| Q12 | Profile minimum viability      | **PASS**    | Email-prefix business name is ugly but functional everywhere                              |
+| Q13 | Profile completeness indicator | **PARTIAL** | Exists in onboarding banner/hub only. Once dismissed, no other surface shows completeness |
+| Q14 | Public profile exposure        | **PASS**    | Quality gate: bare profiles (no bio/tagline or email-prefix name) show "Coming Soon" page |
+| Q15 | Service type selection         | **PASS**    | Optional. No feature breaks without service types                                         |
 
 ### Phase 3: First Client Acquisition
 
@@ -261,23 +261,23 @@ This is not a feature wishlist. Every question maps to something a real chef wou
 
 ### Phase 5: First Event and Quote
 
-| Q#  | Question                     | Verdict     | Evidence                                                                                             |
-| --- | ---------------------------- | ----------- | ---------------------------------------------------------------------------------------------------- |
-| Q26 | Event creation prerequisites | **PARTIAL** | 7 required fields (client, date, serve time, guests, address, city, ZIP). Not minimal                |
-| Q27 | Quote with missing data      | **PASS**    | Quote only needs client + pricing model + total cents. No menu required                              |
-| Q28 | Quote delivery               | **PASS**    | Email to client via `circleFirstNotify`, client portal view, PDF download, accept/reject UI          |
-| Q29 | Event FSM guidance           | **PASS**    | Status-specific help text for every state. Gate list shows hard blocks and soft warnings             |
-| Q30 | Payment without Stripe       | **PASS**    | `RecordPaymentPanel` supports Venmo, Zelle, Cash, Check, PayPal, Card (manual). No Stripe dependency |
+| Q#  | Question                     | Verdict  | Evidence                                                                                                          |
+| --- | ---------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------- |
+| Q26 | Event creation prerequisites | **PASS** | Only client + date required. Address/city/ZIP default to 'TBD'. Schema uses `.optional().default('TBD')`. Minimal |
+| Q27 | Quote with missing data      | **PASS** | Quote only needs client + pricing model + total cents. No menu required                                           |
+| Q28 | Quote delivery               | **PASS** | Email to client via `circleFirstNotify`, client portal view, PDF download, accept/reject UI                       |
+| Q29 | Event FSM guidance           | **PASS** | Status-specific help text for every state. Gate list shows hard blocks and soft warnings                          |
+| Q30 | Payment without Stripe       | **PASS** | `RecordPaymentPanel` supports Venmo, Zelle, Cash, Check, PayPal, Card (manual). No Stripe dependency              |
 
 ### Phase 6: Execution and Operations
 
-| Q#  | Question                  | Verdict     | Evidence                                                                          |
-| --- | ------------------------- | ----------- | --------------------------------------------------------------------------------- |
-| Q31 | Calendar with first event | **PASS**    | FullCalendar with day/week/month/list views. Single event renders correctly       |
-| Q32 | Shopping list generation  | **PASS**    | Full generator with quantities, cost estimates, CSV export, web sourcing fallback |
-| Q33 | Call sheet                | **PARTIAL** | Route is vendor calling automation, NOT a day-of event rundown. Name misleading   |
-| Q34 | Day-of execution          | **PASS**    | `TodaysScheduleWidget` with phase tracking, countdown, weather, client context    |
-| Q35 | Event completion          | **PASS**    | Full `in_progress -> completed` flow. AAR prompts, loyalty awards, trust panel    |
+| Q#  | Question                  | Verdict  | Evidence                                                                                            |
+| --- | ------------------------- | -------- | --------------------------------------------------------------------------------------------------- |
+| Q31 | Calendar with first event | **PASS** | FullCalendar with day/week/month/list views. Single event renders correctly                         |
+| Q32 | Shopping list generation  | **PASS** | Full generator with quantities, cost estimates, CSV export, web sourcing fallback                   |
+| Q33 | Call sheet                | **PASS** | Renamed to "Voice Hub" (nav, page title, heading). Correctly identifies as AI vendor calling system |
+| Q34 | Day-of execution          | **PASS** | `TodaysScheduleWidget` with phase tracking, countdown, weather, client context                      |
+| Q35 | Event completion          | **PASS** | Full `in_progress -> completed` flow. AAR prompts, loyalty awards, trust panel                      |
 
 ### Phase 7: Financial Reality
 
@@ -333,7 +333,7 @@ This is not a feature wishlist. Every question maps to something a real chef wou
 
 ## Results Summary
 
-**Final Score: 45 PASS / 14 PARTIAL / 1 FAIL**
+**Final Score: 48 PASS / 11 PARTIAL / 1 FAIL**
 
 **Grade: Usable but rough edges will lose users** (35-49 PASS range)
 
@@ -343,7 +343,7 @@ This is not a feature wishlist. Every question maps to something a real chef wou
 | ------- | --------------------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | **Q50** | No seasonal pricing in the 10-tier resolution chain | Chef quotes December lobster at April prices. Financial risk for chefs | Medium: add event_date param to `resolvePrice()`, seasonal adjustment layer |
 
-### The 14 PARTIALs (prioritized by user impact)
+### The 11 PARTIALs (prioritized by user impact)
 
 **High impact (will lose real users):**
 
@@ -359,17 +359,14 @@ This is not a feature wishlist. Every question maps to something a real chef wou
 | **Q7**  | Dashboard shows "$0 Revenue" with no welcome treatment        | Add first-visit detection, show "Welcome to ChefFlow" instead of metrics  |
 | **Q11** | Full sidebar shown regardless of account state                | Progressive disclosure: dim/badge sections based on what's configured     |
 | **Q13** | Profile completeness dies with onboarding banner              | Surface completeness indicator in settings or dashboard beyond the banner |
-| **Q14** | Public profile with bare defaults is embarrassing             | Add quality gate: don't allow `isPublic` until minimum fields set         |
 | **Q19** | No manual inquiry-to-event conversion with pre-populated data | Add "Create Event from Inquiry" button on inquiry detail page             |
 | **Q20** | Client creation and portal invitation are separate steps      | Add "Create and Invite" mode or prompt after creation                     |
-| **Q26** | Event creation requires 7 fields (heavy for a quick booking)  | Make address fields optional (default to chef's home city)                |
 | **Q41** | No "Rebook" button despite rebooking prediction engine        | Add rebook CTA on client detail and past event pages                      |
 
 **Low impact (polish):**
 
-| Q#      | Issue                                                                 | Fix                                            |
-| ------- | --------------------------------------------------------------------- | ---------------------------------------------- |
-| **Q33** | "Call sheet" name misleading (it's vendor calling, not event rundown) | Rename or add actual day-of event call sheet   |
-| **Q49** | Multi-menu events: DB supports it, UI doesn't                         | Allow multiple menu attachment in event detail |
-| **Q51** | PWA disabled, offline = fallback page                                 | Enable PWA build, cache critical routes        |
-| **Q55** | No system-wide conflict resolution beyond event form                  | Extend CAS pattern to other forms              |
+| Q#      | Issue                                                | Fix                                            |
+| ------- | ---------------------------------------------------- | ---------------------------------------------- |
+| **Q49** | Multi-menu events: DB supports it, UI doesn't        | Allow multiple menu attachment in event detail |
+| **Q51** | PWA disabled, offline = fallback page                | Enable PWA build, cache critical routes        |
+| **Q55** | No system-wide conflict resolution beyond event form | Extend CAS pattern to other forms              |

@@ -170,6 +170,28 @@ export default async function ChefProfilePage({ params }: Props) {
 
   const { chef, partners } = data
 
+  // Quality gate: don't show bare profiles to the public (Q14 fix)
+  // A profile needs at least a bio OR tagline AND a non-email-prefix display name
+  const isEmailPrefix =
+    chef.display_name?.includes('@') || /^[a-z0-9]+$/i.test(chef.display_name?.trim() || '')
+  const hasMinimumContent = (chef.bio || chef.tagline) && !isEmailPrefix
+  if (!hasMinimumContent) {
+    return (
+      <div className="min-h-screen bg-stone-900 flex items-center justify-center">
+        <div className="text-center max-w-md px-6">
+          <div className="w-20 h-20 rounded-full bg-stone-800 flex items-center justify-center mx-auto mb-6">
+            <span className="text-3xl text-stone-500">?</span>
+          </div>
+          <h1 className="text-xl font-semibold text-stone-100 mb-2">Profile Coming Soon</h1>
+          <p className="text-sm text-stone-400">
+            This chef is setting up their profile. Check back soon for their full portfolio, menu
+            offerings, and booking details.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   // Non-blocking: notify chef when a known client views their public profile
   getCurrentUser()
     .then((user) => {

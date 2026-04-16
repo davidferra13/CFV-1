@@ -37,7 +37,7 @@ import { VendorDirectoryClient } from '@/app/(chef)/culinary/vendors/vendor-dire
 import { CallSettingsForm } from '@/components/calling/call-settings-form'
 import { CallAccessRequest } from '@/components/calling/call-access-request'
 
-export const metadata: Metadata = { title: 'Call Sheet' }
+export const metadata: Metadata = { title: 'Voice Hub' }
 
 async function isCallingEnabled(chefId: string): Promise<boolean> {
   const db: any = createServerClient()
@@ -199,7 +199,7 @@ export default async function CallSheetPage({
           <Phone size={18} className="text-violet-400" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-stone-100">Call Sheet</h1>
+          <h1 className="text-xl font-bold text-stone-100">Voice Hub</h1>
           <p className="text-sm text-stone-400 mt-0.5">
             Type an ingredient and ChefFlow calls your suppliers to check availability and get
             prices. You hear back in minutes, not hours.
