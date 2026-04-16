@@ -21,9 +21,6 @@ export async function GET() {
       headers: { 'Cache-Control': 'no-store' },
     })
   } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Sweep failed' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Health sweep failed' }, { status: 500 })
   }
 }

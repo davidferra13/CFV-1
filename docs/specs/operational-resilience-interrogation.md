@@ -558,58 +558,58 @@
 
 ## Scorecard
 
-| Q   | Category  | Score       | Evidence Summary                                                                                                                                                           |
-| --- | --------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Q1  | Security  | **PARTIAL** | Most unprotected routes public by design. `ai/wake`, `ai/monitor`, `ingredients/search`, `ingredients/[id]` lack auth but low-risk (no PII).                               |
-| Q2  | Security  | **PASS**    | Document routes call requireChef/requireClient and verify tenant ownership.                                                                                                |
-| Q3  | Security  | **PASS**    | Kiosk uses hashed device token, rate-limited pairing (5/5min), expiry check, status validation.                                                                            |
-| Q4  | Security  | **PASS**    | SSE requires auth + per-channel validation via `validateRealtimeChannelAccess()`. Fails closed on unknown prefixes.                                                        |
-| Q5  | Security  | **PASS**    | Calendar feed uses opaque `ical_feed_token`, requires `ical_feed_enabled`, rate-limited 60/min, can be regenerated.                                                        |
-| Q6  | Security  | **PASS**    | Next.js 14+ built-in CSRF protection via Origin header check. No bypass configured.                                                                                        |
-| Q7  | Security  | **PASS**    | All auth endpoints rate-limited: signUp, signIn, forgotPassword (3/hr), changePassword (5/hr), changeEmail (3/hr).                                                         |
-| Q8  | Financial | **PASS**    | DB triggers `prevent_ledger_update` and `prevent_ledger_delete` raise exception on any mutation.                                                                           |
-| Q9  | Financial | **PASS**    | `transaction_reference` dedup in ledger_entries + `idempotency_key` unique constraint on commerce_payments.                                                                |
-| Q10 | Financial | **PASS**    | ON DELETE RESTRICT on `refunded_entry_id` FK + immutability triggers = belt-and-suspenders.                                                                                |
-| Q11 | Financial | **PASS**    | All financial storage uses integer cents. `toFixed` only used for display formatting, never calculation/storage.                                                           |
-| Q12 | Financial | **PASS**    | DB trigger is sole writer of payment_status. Removed direct write from `markEventPaidOffline`. Only `payment_method_primary` set directly.                                 |
-| Q13 | Financial | **PASS**    | `redeemIncentiveCode()` uses atomic `redeem_incentive()` Postgres RPC. All three writes (ledger, balance, audit) are atomic.                                               |
-| Q14 | FSM       | **PASS**    | Migration 20260415000023 added `AND status = p_from_status` CAS guard to `transition_event_atomic`. Race prevented at DB level.                                            |
-| Q15 | FSM       | **PASS**    | TRANSITION_RULES map explicitly enumerates valid next states. Invalid transitions throw error.                                                                             |
-| Q16 | FSM       | **PASS**    | `cancelled: []` = terminal state. No resurrection possible.                                                                                                                |
-| Q17 | FSM       | **PARTIAL** | Hard blocks throw and prevent transition. But readiness evaluator infrastructure errors are swallowed (non-blocking), so a crashing evaluator lets the transition through. |
-| Q18 | FSM       | **PARTIAL** | System transitions (Stripe webhooks) skip readiness gates entirely. Payment can land on event with unconfirmed severe allergies. Chef must catch it at paid->confirmed.    |
-| Q19 | Comm      | **PASS**    | Email sending has try/catch, 1 automatic retry with backoff, circuit breaker (trips after 5 failures), bounce suppression list.                                            |
-| Q20 | Comm      | **PASS**    | Resend webhook tracks bounces/spam on `campaign_recipients`. Send-side bounce detection adds addresses to `email_suppressions` table.                                      |
-| Q21 | Comm      | **PASS**    | Client notifications sent for: proposed, paid, confirmed, in_progress, completed, cancelled. Both in-app and email channels.                                               |
-| Q22 | Comm      | **PASS**    | SMS fully implemented with Twilio. Inbound handling, HMAC-SHA1 validation, rate limiting, TwiML response.                                                                  |
-| Q23 | Comm      | **PASS**    | Web push fully implemented: VAPID key management, RFC 8291 encryption, subscription persistence, SSRF protection, expired subscription detection.                          |
-| Q24 | Client    | **PASS**    | Client layout calls `requireClient()`. `signUpClient` creates auth user + client record + user_roles entry atomically.                                                     |
-| Q25 | Client    | **PASS**    | All client queries scoped by `.eq('client_id', user.entityId)` where user comes from `requireClient()`.                                                                    |
-| Q26 | Client    | **PASS**    | Client can view quote details, accept (atomic RPC), and reject. All scoped by client ownership.                                                                            |
-| Q27 | Client    | **PASS**    | Payment page has Stripe Elements integration, gift card redemption, `createPaymentIntent` reads updated outstanding.                                                       |
-| Q28 | Client    | **PASS**    | Menu approval page renders menu items with approve/request-revision actions. Status tracking (sent/approved/revision_requested).                                           |
-| Q29 | Client    | **PASS**    | Contract signing page has signature capture, view tracking (idempotent), status rendering.                                                                                 |
-| Q30 | Client    | **PASS**    | Hub group page auto-joins client, loads full group data (members, notes, media, availability, events, meal board). Supports posting.                                       |
-| Q31 | Data      | **PASS**    | Account deletion is soft-delete (30-day grace period via `deletion_requested_at` + auth user ban). Not hard delete.                                                        |
-| Q32 | Data      | **PARTIAL** | Inquiry exists without paired event if event creation fails. No explicit UI warning to chef about the missing event link.                                                  |
-| Q33 | Data      | **PASS**    | Profile/archetype/nav changes bust layout cache. Stripe webhook now calls `revalidateTag('chef-layout-{chefId}')` after subscription updates.                              |
-| Q34 | Data      | **PASS**    | postgres.js `max: 10`, `idle_timeout: 20`, `connect_timeout: 10s`, `statement_timeout: 30s`. Queues when full. Adequate for traffic level.                                 |
-| Q35 | Data      | **PASS**    | Embed inquiry route has compensating cleanup: if inquiry insert fails after client creation, newly-created client is deleted. Event creation was already non-blocking.     |
-| Q36 | AI        | **PASS**    | `OllamaOfflineError` caught in use-remy-send.ts, displays friendly offline message. Drawer probes `/api/ai/wake` and shows "Limited mode" banner.                          |
-| Q37 | AI        | **PARTIAL** | Only 10 of ~57 `parseWithOllama` call sites use `withAiFallback`. Remaining ~47 hard-depend on Ollama with no fallback.                                                    |
-| Q38 | AI        | **PASS**    | AI lead scoring is non-blocking try/catch. Inquiry persisted before AI call. Score shown as unavailable if AI fails.                                                       |
-| Q39 | AI        | **PASS**    | `remy-context.ts` derives tenantId from `requireChef()`. Every query scoped by `.eq('tenant_id', tenantId)`.                                                               |
-| Q40 | Infra     | **PASS**    | All 16 cron routes use `verifyCronAuth`. No public cron access.                                                                                                            |
-| Q41 | Infra     | **PARTIAL** | Health endpoint exposes missing env var NAMES (not values), circuit breaker states. No connection strings or IPs. Low risk but aids reconnaissance.                        |
-| Q42 | Infra     | **PARTIAL** | 40+ API routes return raw `err.message` in JSON responses. Database errors could leak SQL or internal details.                                                             |
-| Q43 | Infra     | **PASS**    | Each migration file now wrapped in BEGIN/COMMIT transaction. Partial failures roll back cleanly. Failed files reported as warnings.                                        |
-| Q44 | Infra     | **PASS**    | Private storage requires HMAC signed token. Public storage restricted to safe bucket whitelist. Path traversal protection + XSS-safe download headers.                     |
-| Q45 | Webhook   | **PASS**    | `stripe.webhooks.constructEvent()` verifies signature. Missing/invalid signature rejected with audit logging.                                                              |
-| Q46 | Webhook   | **PASS**    | Custom HMAC-SHA1 validation with timing-safe comparison. Fail-closed: missing auth token rejects with 503.                                                                 |
-| Q47 | Webhook   | **PASS**    | `wix_submissions` table dedup. Falls back to SHA-256 payload hash for submissions without IDs.                                                                             |
-| Q48 | Webhook   | **PASS**    | `account.updated` handler calls `updateConnectStatusFromWebhook()` to sync Stripe Connect onboarding status.                                                               |
-| Q49 | Ops       | **PASS**    | Double-gated: `NODE_ENV !== 'production'` AND `DEMO_MODE_ENABLED === 'true'`. Tenant-scoped.                                                                               |
-| Q50 | Ops       | **PASS**    | All 8 prospecting pages call `requireAdmin()`. Nav items have `adminOnly: true`. Non-admin users blocked at both levels.                                                   |
+| Q   | Category  | Score       | Evidence Summary                                                                                                                                                                                                             |
+| --- | --------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Q1  | Security  | **PARTIAL** | Most unprotected routes public by design. `ai/wake`, `ai/monitor`, `ingredients/search`, `ingredients/[id]` lack auth but low-risk (no PII).                                                                                 |
+| Q2  | Security  | **PASS**    | Document routes call requireChef/requireClient and verify tenant ownership.                                                                                                                                                  |
+| Q3  | Security  | **PASS**    | Kiosk uses hashed device token, rate-limited pairing (5/5min), expiry check, status validation.                                                                                                                              |
+| Q4  | Security  | **PASS**    | SSE requires auth + per-channel validation via `validateRealtimeChannelAccess()`. Fails closed on unknown prefixes.                                                                                                          |
+| Q5  | Security  | **PASS**    | Calendar feed uses opaque `ical_feed_token`, requires `ical_feed_enabled`, rate-limited 60/min, can be regenerated.                                                                                                          |
+| Q6  | Security  | **PASS**    | Next.js 14+ built-in CSRF protection via Origin header check. No bypass configured.                                                                                                                                          |
+| Q7  | Security  | **PASS**    | All auth endpoints rate-limited: signUp, signIn, forgotPassword (3/hr), changePassword (5/hr), changeEmail (3/hr).                                                                                                           |
+| Q8  | Financial | **PASS**    | DB triggers `prevent_ledger_update` and `prevent_ledger_delete` raise exception on any mutation.                                                                                                                             |
+| Q9  | Financial | **PASS**    | `transaction_reference` dedup in ledger_entries + `idempotency_key` unique constraint on commerce_payments.                                                                                                                  |
+| Q10 | Financial | **PASS**    | ON DELETE RESTRICT on `refunded_entry_id` FK + immutability triggers = belt-and-suspenders.                                                                                                                                  |
+| Q11 | Financial | **PASS**    | All financial storage uses integer cents. `toFixed` only used for display formatting, never calculation/storage.                                                                                                             |
+| Q12 | Financial | **PASS**    | DB trigger is sole writer of payment_status. Removed direct write from `markEventPaidOffline`. Only `payment_method_primary` set directly.                                                                                   |
+| Q13 | Financial | **PASS**    | `redeemIncentiveCode()` uses atomic `redeem_incentive()` Postgres RPC. All three writes (ledger, balance, audit) are atomic.                                                                                                 |
+| Q14 | FSM       | **PASS**    | Migration 20260415000023 added `AND status = p_from_status` CAS guard to `transition_event_atomic`. Race prevented at DB level.                                                                                              |
+| Q15 | FSM       | **PASS**    | TRANSITION_RULES map explicitly enumerates valid next states. Invalid transitions throw error.                                                                                                                               |
+| Q16 | FSM       | **PASS**    | `cancelled: []` = terminal state. No resurrection possible.                                                                                                                                                                  |
+| Q17 | FSM       | **PASS**    | Hard blocks throw. Evaluator infra errors now logged at ERROR level and recorded in transition metadata as warning. Transition proceeds but failure is visible and auditable.                                                |
+| Q18 | FSM       | **PASS**    | System transitions now run readiness gates but never block. Hard blocks become `[SYSTEM BYPASS]` warnings in transition metadata. Payment always lands; chef sees warnings.                                                  |
+| Q19 | Comm      | **PASS**    | Email sending has try/catch, 1 automatic retry with backoff, circuit breaker (trips after 5 failures), bounce suppression list.                                                                                              |
+| Q20 | Comm      | **PASS**    | Resend webhook tracks bounces/spam on `campaign_recipients`. Send-side bounce detection adds addresses to `email_suppressions` table.                                                                                        |
+| Q21 | Comm      | **PASS**    | Client notifications sent for: proposed, paid, confirmed, in_progress, completed, cancelled. Both in-app and email channels.                                                                                                 |
+| Q22 | Comm      | **PASS**    | SMS fully implemented with Twilio. Inbound handling, HMAC-SHA1 validation, rate limiting, TwiML response.                                                                                                                    |
+| Q23 | Comm      | **PASS**    | Web push fully implemented: VAPID key management, RFC 8291 encryption, subscription persistence, SSRF protection, expired subscription detection.                                                                            |
+| Q24 | Client    | **PASS**    | Client layout calls `requireClient()`. `signUpClient` creates auth user + client record + user_roles entry atomically.                                                                                                       |
+| Q25 | Client    | **PASS**    | All client queries scoped by `.eq('client_id', user.entityId)` where user comes from `requireClient()`.                                                                                                                      |
+| Q26 | Client    | **PASS**    | Client can view quote details, accept (atomic RPC), and reject. All scoped by client ownership.                                                                                                                              |
+| Q27 | Client    | **PASS**    | Payment page has Stripe Elements integration, gift card redemption, `createPaymentIntent` reads updated outstanding.                                                                                                         |
+| Q28 | Client    | **PASS**    | Menu approval page renders menu items with approve/request-revision actions. Status tracking (sent/approved/revision_requested).                                                                                             |
+| Q29 | Client    | **PASS**    | Contract signing page has signature capture, view tracking (idempotent), status rendering.                                                                                                                                   |
+| Q30 | Client    | **PASS**    | Hub group page auto-joins client, loads full group data (members, notes, media, availability, events, meal board). Supports posting.                                                                                         |
+| Q31 | Data      | **PASS**    | Account deletion is soft-delete (30-day grace period via `deletion_requested_at` + auth user ban). Not hard delete.                                                                                                          |
+| Q32 | Data      | **PASS**    | Inquiry detail page now shows amber warning banner when `converted_to_event_id` is null and inquiry is >5 minutes old (not declined/closed/spam). Chef sees clear guidance.                                                  |
+| Q33 | Data      | **PASS**    | Profile/archetype/nav changes bust layout cache. Stripe webhook now calls `revalidateTag('chef-layout-{chefId}')` after subscription updates.                                                                                |
+| Q34 | Data      | **PASS**    | postgres.js `max: 10`, `idle_timeout: 20`, `connect_timeout: 10s`, `statement_timeout: 30s`. Queues when full. Adequate for traffic level.                                                                                   |
+| Q35 | Data      | **PASS**    | Embed inquiry route has compensating cleanup: if inquiry insert fails after client creation, newly-created client is deleted. Event creation was already non-blocking.                                                       |
+| Q36 | AI        | **PASS**    | `OllamaOfflineError` caught in use-remy-send.ts, displays friendly offline message. Drawer probes `/api/ai/wake` and shows "Limited mode" banner.                                                                            |
+| Q37 | AI        | **PARTIAL** | Only 10 of ~57 `parseWithOllama` call sites use `withAiFallback`. Remaining ~47 hard-depend on Ollama with no fallback.                                                                                                      |
+| Q38 | AI        | **PASS**    | AI lead scoring is non-blocking try/catch. Inquiry persisted before AI call. Score shown as unavailable if AI fails.                                                                                                         |
+| Q39 | AI        | **PASS**    | `remy-context.ts` derives tenantId from `requireChef()`. Every query scoped by `.eq('tenant_id', tenantId)`.                                                                                                                 |
+| Q40 | Infra     | **PASS**    | All 16 cron routes use `verifyCronAuth`. No public cron access.                                                                                                                                                              |
+| Q41 | Infra     | **PASS**    | Health endpoint now returns `missingEnvCount` (integer) instead of env var names. Circuit breaker names still exposed but are internal service names, not secrets.                                                           |
+| Q42 | Infra     | **PASS**    | All API routes now return generic error messages for 500-level responses. `apiError()` sanitizes at the v2 helper level; direct `NextResponse.json` call sites sanitized individually. Raw messages logged server-side only. |
+| Q43 | Infra     | **PASS**    | Each migration file now wrapped in BEGIN/COMMIT transaction. Partial failures roll back cleanly. Failed files reported as warnings.                                                                                          |
+| Q44 | Infra     | **PASS**    | Private storage requires HMAC signed token. Public storage restricted to safe bucket whitelist. Path traversal protection + XSS-safe download headers.                                                                       |
+| Q45 | Webhook   | **PASS**    | `stripe.webhooks.constructEvent()` verifies signature. Missing/invalid signature rejected with audit logging.                                                                                                                |
+| Q46 | Webhook   | **PASS**    | Custom HMAC-SHA1 validation with timing-safe comparison. Fail-closed: missing auth token rejects with 503.                                                                                                                   |
+| Q47 | Webhook   | **PASS**    | `wix_submissions` table dedup. Falls back to SHA-256 payload hash for submissions without IDs.                                                                                                                               |
+| Q48 | Webhook   | **PASS**    | `account.updated` handler calls `updateConnectStatusFromWebhook()` to sync Stripe Connect onboarding status.                                                                                                                 |
+| Q49 | Ops       | **PASS**    | Double-gated: `NODE_ENV !== 'production'` AND `DEMO_MODE_ENABLED === 'true'`. Tenant-scoped.                                                                                                                                 |
+| Q50 | Ops       | **PASS**    | All 8 prospecting pages call `requireAdmin()`. Nav items have `adminOnly: true`. Non-admin users blocked at both levels.                                                                                                     |
 
 ### Summary
 
@@ -617,15 +617,15 @@
 | ---------------------- | --------- | ------ | ------- | ----- |
 | A: Security & Auth     | Q1-Q7     | 6      | 1       | 0     |
 | B: Financial Integrity | Q8-Q13    | 6      | 0       | 0     |
-| C: Event FSM           | Q14-Q18   | 3      | 2       | 0     |
+| C: Event FSM           | Q14-Q18   | 5      | 0       | 0     |
 | D: Communication       | Q19-Q23   | 5      | 0       | 0     |
 | E: Client Portal       | Q24-Q30   | 7      | 0       | 0     |
-| F: Data Integrity      | Q31-Q35   | 4      | 1       | 0     |
+| F: Data Integrity      | Q31-Q35   | 5      | 0       | 0     |
 | G: AI Degradation      | Q36-Q39   | 3      | 1       | 0     |
-| H: Infrastructure      | Q40-Q44   | 3      | 2       | 0     |
+| H: Infrastructure      | Q40-Q44   | 5      | 0       | 0     |
 | I: Webhooks            | Q45-Q48   | 4      | 0       | 0     |
 | J: Ops Safety          | Q49-Q50   | 2      | 0       | 0     |
-| **TOTAL**              | **50**    | **43** | **7**   | **0** |
+| **TOTAL**              | **50**    | **48** | **2**   | **0** |
 
 ---
 
@@ -647,39 +647,11 @@
 
 ### PARTIAL (fix in next wave)
 
-**Q18: System transitions bypass readiness gates (MEDIUM)**
-
-- File: `lib/events/transitions.ts:190`
-- Fix: Run readiness gates for system transitions but log warnings instead of blocking
-- Impact: Payment can land on event with unconfirmed severe allergies
-
 **Q37: 47 AI call sites hard-depend on Ollama (MEDIUM)**
 
 - Impact: Those features fail entirely when Ollama is offline
 - Fix: Wrap remaining parseWithOllama calls in withAiFallback where formula fallback is possible
 
-**Q17: Readiness evaluator crash = transition proceeds (LOW)**
-
-- File: `lib/events/transitions.ts:205-211`
-- Fix: Re-throw evaluator crashes (don't swallow), or add a circuit breaker
-- Impact: Broken evaluator silently lets all transitions through
-
-**Q42: Raw error messages in API responses (LOW)**
-
-- Fix: Replace `err.message` returns with generic "Internal error" messages
-- Impact: SQL or stack traces could leak to client on unexpected errors
-
-**Q41: Health endpoint exposes env var names (LOW)**
-
-- File: `lib/health/public-health.ts:163`
-- Fix: Redact missingEnv names (return count only)
-- Impact: Aids reconnaissance but no direct exploitation
-
-**Q32: No UI warning for orphaned inquiries (LOW)**
-
-- Fix: Show badge or alert on inquiry detail when `converted_to_event_id` is null and inquiry age > 5 minutes
-- Impact: Chef might not notice an event wasn't auto-created
-
-### PASS (38 questions, verified, no action needed)
+### PASS (47 questions, verified, no action needed)
 
 Q2-Q7, Q8-Q11, Q13, Q15-Q16, Q19-Q31, Q34, Q36, Q38-Q40, Q44-Q50

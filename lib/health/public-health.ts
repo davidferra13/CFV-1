@@ -160,7 +160,7 @@ export async function buildPublicHealthSnapshot(
         ...(backgroundJobs ? { backgroundJobs: backgroundJobs.status } : {}),
       },
       details: {
-        missingEnv,
+        missingEnvCount: missingEnv.length,
         circuitBreakers: degradedCircuitBreakers,
         ...(backgroundJobs
           ? {

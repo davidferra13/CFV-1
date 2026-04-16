@@ -54,7 +54,7 @@ async function handleMonitor(request: NextRequest): Promise<NextResponse> {
     const message = error instanceof Error ? error.message : String(error)
     console.error('[CronMonitor] Failed to build monitor report:', error)
     await recordCronError('monitor', message, Date.now() - startedAt)
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: 'Monitor report failed' }, { status: 500 })
   }
 }
 

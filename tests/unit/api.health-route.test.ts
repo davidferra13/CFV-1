@@ -50,7 +50,7 @@ test('GET /api/health returns checks and request id when required env is present
       assert.equal(body.status, 'ok')
       assert.equal(body.checks.env, 'ok')
       assert.equal(body.checks.circuitBreakers, 'ok')
-      assert.equal(body.details.missingEnv.length, 0)
+      assert.equal(body.details.missingEnvCount, 0)
       assert.equal(body.requestId, response.headers.get('x-request-id'))
       assert.equal(response.headers.get('x-health-status'), 'ok')
       assert.equal(response.headers.get('x-health-scope'), 'health')
@@ -70,7 +70,7 @@ test('GET /api/health?strict=1 returns 503 when required env is missing', async 
       assert.equal(response.status, 503)
       assert.equal(body.status, 'degraded')
       assert.equal(body.checks.env, 'missing')
-      assert.deepEqual(body.details.missingEnv.sort(), [...REQUIRED_ENV_KEYS].sort())
+      assert.equal(body.details.missingEnvCount, REQUIRED_ENV_KEYS.length)
     }
   )
 })

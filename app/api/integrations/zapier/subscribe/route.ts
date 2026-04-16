@@ -168,7 +168,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(data, { status: 201 })
   } catch (err) {
     const status = err instanceof HttpError ? err.status : 400
-    const message = err instanceof Error ? err.message : 'Subscription failed'
+    const message = err instanceof HttpError ? err.message : 'Subscription failed'
+    if (!(err instanceof HttpError)) console.error('[zapier/subscribe] POST error:', err)
     return NextResponse.json({ error: message }, { status })
   }
 }
@@ -192,7 +193,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(data || [])
   } catch (err) {
     const status = err instanceof HttpError ? err.status : 500
-    const message = err instanceof Error ? err.message : 'Failed to list subscriptions'
+    const message = err instanceof HttpError ? err.message : 'Failed to list subscriptions'
+    if (!(err instanceof HttpError)) console.error('[zapier/subscribe] GET error:', err)
     return NextResponse.json({ error: message }, { status })
   }
 }
@@ -235,7 +237,8 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ success: true })
   } catch (err) {
     const status = err instanceof HttpError ? err.status : 400
-    const message = err instanceof Error ? err.message : 'Delete failed'
+    const message = err instanceof HttpError ? err.message : 'Delete failed'
+    if (!(err instanceof HttpError)) console.error('[zapier/subscribe] DELETE error:', err)
     return NextResponse.json({ error: message }, { status })
   }
 }

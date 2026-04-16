@@ -159,7 +159,7 @@ async function handleReengagement(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(result)
   } catch (err: any) {
     console.error('[client-reengagement] Fatal error:', err)
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return NextResponse.json({ error: 'Reengagement processing failed' }, { status: 500 })
   }
 }
 

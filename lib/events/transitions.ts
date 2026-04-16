@@ -184,30 +184,56 @@ export async function transitionEvent({
 
   // ── Readiness Gate Check (pre-transition) ────────────────────────────────
   // Evaluate gates for this transition. Hard blocks (e.g., unconfirmed anaphylaxis)
-  // throw and abort. Soft warnings are logged in metadata but do not block.
-  // System transitions (Stripe webhooks) skip readiness checks.
+  // throw and abort for chef-initiated transitions. Soft warnings are logged in
+  // metadata but do not block.
+  // System transitions (Stripe webhooks) run readiness checks but never block -
+  // payment must always land. Hard blocks become warnings recorded in metadata. (Q18 fix)
   let readinessWarnings: string[] = []
-  if (!isSystemTransition) {
+  {
     try {
       const { evaluateReadinessForTransition } = await import('@/lib/events/readiness')
       const readiness = await evaluateReadinessForTransition(eventId, fromStatus, toStatus)
 
       if (readiness.hardBlocked) {
-        const hardBlockerDescriptions = readiness.blockers
-          .filter((b) => b.isHardBlock)
-          .map((b) => b.details || b.label)
-          .join('; ')
-        throw new Error(`Cannot proceed: ${hardBlockerDescriptions}`)
+        if (isSystemTransition) {
+          // System transitions: record hard blocks as warnings but proceed (Q18 fix)
+          const hardBlockLabels = readiness.blockers
+            .filter((b) => b.isHardBlock)
+            .map((b) => b.details || b.label)
+          log.events.warn('System transition bypassed hard readiness blocks', {
+            eventId,
+            fromStatus,
+            toStatus,
+            hardBlocks: hardBlockLabels,
+          })
+          readinessWarnings.push(...hardBlockLabels.map((l) => `[SYSTEM BYPASS] ${l}`))
+        } else {
+          const hardBlockerDescriptions = readiness.blockers
+            .filter((b) => b.isHardBlock)
+            .map((b) => b.details || b.label)
+            .join('; ')
+          throw new Error(`Cannot proceed: ${hardBlockerDescriptions}`)
+        }
       }
 
       // Collect soft warnings for metadata
-      readinessWarnings = readiness.blockers.filter((b) => !b.isHardBlock).map((b) => b.label)
+      readinessWarnings.push(
+        ...readiness.blockers.filter((b) => !b.isHardBlock).map((b) => b.label)
+      )
     } catch (readinessErr: any) {
-      // Re-throw hard blocks; swallow infrastructure errors (non-blocking)
+      // Re-throw hard blocks (e.g., unconfirmed anaphylaxis)
       if (readinessErr.message?.startsWith('Cannot proceed:')) {
         throw readinessErr
       }
-      log.events.warn('Readiness check failed (non-blocking)', { error: readinessErr })
+      // Infrastructure errors: log at error level and record in transition metadata
+      // so the failure is visible, but don't hard-block on temporary DB blips (Q17 fix)
+      log.events.error('Readiness evaluator crashed - transition proceeding without verification', {
+        error: readinessErr,
+        eventId,
+        fromStatus,
+        toStatus,
+      })
+      readinessWarnings.push('Readiness check failed: gates could not be verified')
     }
   }
 

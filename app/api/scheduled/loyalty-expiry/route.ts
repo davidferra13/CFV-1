@@ -60,7 +60,7 @@ async function handleLoyaltyExpiry(request: NextRequest): Promise<NextResponse> 
     const message = err instanceof Error ? err.message : String(err)
     await recordCronError('loyalty-expiry', message, Date.now() - startedAt)
     console.error('[loyalty-expiry] Cron failed:', err)
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: 'Loyalty expiry processing failed' }, { status: 500 })
   }
 }
 

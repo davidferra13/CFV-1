@@ -44,12 +44,21 @@ export function apiNoContent(): NextResponse {
 
 // ── Error responses ────────────────────────────────────────────────────────
 
+// Generic messages for 5xx errors to prevent leaking internals (SQL, paths, stack traces)
+const SAFE_SERVER_ERROR = 'An internal error occurred. Please try again.'
+
 export function apiError(
   code: string,
   message: string,
   status: number,
   details?: unknown
 ): NextResponse<ApiErrorResponse> {
+  // For 5xx, log the real message server-side but return a generic one to the client
+  if (status >= 500) {
+    console.error(`[api-v2] ${code}:`, message)
+    const body: ApiErrorResponse = { error: { code, message: SAFE_SERVER_ERROR } }
+    return NextResponse.json(body, { status })
+  }
   const body: ApiErrorResponse = { error: { code, message } }
   if (details !== undefined) body.error.details = details
   return NextResponse.json(body, { status })

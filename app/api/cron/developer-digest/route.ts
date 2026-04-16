@@ -39,6 +39,6 @@ export async function GET(request: Request) {
     console.error('[cron/developer-digest] Error:', err)
     await recordCronError('developer-digest', msg, durationMs)
 
-    return NextResponse.json({ error: msg }, { status: 500 })
+    return NextResponse.json({ error: 'Digest generation failed' }, { status: 500 })
   }
 }

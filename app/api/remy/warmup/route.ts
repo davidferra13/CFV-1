@@ -38,9 +38,6 @@ export async function POST() {
 
     return NextResponse.json({ warm: true, model })
   } catch (err) {
-    return NextResponse.json(
-      { warm: false, error: err instanceof Error ? err.message : 'Warmup failed' },
-      { status: 502 }
-    )
+    return NextResponse.json({ warm: false, error: 'Warmup failed' }, { status: 502 })
   }
 }

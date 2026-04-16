@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       {
         success: false,
         cartridge,
-        error: message,
+        error: 'Sync failed',
         timestamp: new Date().toISOString(),
       },
       { status: 500 }

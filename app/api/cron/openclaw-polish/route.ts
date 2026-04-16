@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     const message = err instanceof Error ? err.message : 'Unknown error'
     console.error('[openclaw-polish cron] Error:', message)
     return NextResponse.json(
-      { success: false, error: message, timestamp: new Date().toISOString() },
+      { success: false, error: 'Polish processing failed', timestamp: new Date().toISOString() },
       { status: 500 }
     )
   }
