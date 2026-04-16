@@ -37,11 +37,11 @@ type TransitionPermission = 'chef' | 'client' | 'system'
 
 const TRANSITION_PERMISSIONS: Record<string, TransitionPermission | TransitionPermission[]> = {
   'draft->proposed': 'chef',
-  'proposed->accepted': 'client',
+  'proposed->accepted': ['client', 'chef'], // Chef can accept on behalf (verbal confirmation)
   'proposed->cancelled': ['chef', 'client'],
   'accepted->cancelled': ['chef', 'client'],
-  'accepted->paid': 'system', // Stripe webhook only
-  'draft->paid': 'system', // Instant-book: Stripe webhook transitions draft directly to paid
+  'accepted->paid': ['system', 'chef'], // Stripe webhook or chef marks paid offline
+  'draft->paid': ['system', 'chef'], // Instant-book: Stripe webhook or chef marks paid offline
   'paid->confirmed': 'chef',
   'confirmed->in_progress': 'chef',
   'in_progress->completed': 'chef',
@@ -275,10 +275,22 @@ export async function transitionEvent({
     .single()
 
   if (verifiedEvent?.status !== toStatus) {
-    log.events.warn('Transition side effects skipped - concurrent request won the race', {
+    log.events.warn('Transition race lost - another request changed status first', {
       context: { eventId, expected: toStatus, actual: verifiedEvent?.status },
     })
-    return { success: true, eventId, fromStatus, toStatus }
+    // Revalidate so UI reflects the winner's state
+    revalidatePath(`/events/${eventId}`)
+    revalidatePath('/events')
+    revalidatePath('/dashboard')
+    revalidatePath('/finance')
+    return {
+      success: false,
+      error: 'concurrent_modification',
+      eventId,
+      fromStatus,
+      toStatus,
+      actualStatus: verifiedEvent?.status,
+    }
   }
 
   revalidatePath(`/events/${eventId}`)
@@ -286,6 +298,7 @@ export async function transitionEvent({
   revalidatePath('/events')
   revalidatePath('/my-events')
   revalidatePath('/dashboard')
+  revalidatePath('/finance')
 
   // Broadcast event status change so clients viewing the event page get a live refresh (non-blocking)
   try {
@@ -331,6 +344,39 @@ export async function transitionEvent({
       await ensureCircleForEvent(eventId, event.tenant_id)
     } catch (err) {
       log.events.warn('Auto circle creation failed (non-blocking)', { error: err })
+    }
+  }
+
+  // Q7: On cancellation with payments received, notify chef about pending refund
+  if (toStatus === 'cancelled') {
+    try {
+      const { getEventFinancialSummary } = await import('@/lib/ledger/compute')
+      const financials = await getEventFinancialSummary(eventId)
+      const totalPaid = financials?.totalPaidCents ?? 0
+      const totalRefunded = financials?.totalRefundedCents ?? 0
+      const unrefunded = totalPaid - totalRefunded
+
+      if (unrefunded > 0) {
+        const { createNotification, getChefAuthUserId } =
+          await import('@/lib/notifications/actions')
+        const chefUserId = await getChefAuthUserId(event.tenant_id)
+        if (chefUserId) {
+          const amountStr = (unrefunded / 100).toFixed(2)
+          await createNotification({
+            tenantId: event.tenant_id,
+            recipientId: chefUserId,
+            category: 'payment',
+            action: 'cancellation_pending_refund',
+            title: 'Refund needed',
+            body: `"${event.occasion || 'Event'}" was cancelled with $${amountStr} unrefunded. Process refund via Stripe or record offline refund.`,
+            actionUrl: `/events/${eventId}`,
+            eventId,
+            clientId: event.client_id,
+          })
+        }
+      }
+    } catch (err) {
+      log.events.warn('Cancellation refund notification failed (non-blocking)', { error: err })
     }
   }
 
@@ -1218,6 +1264,94 @@ export async function cancelEvent(eventId: string, reason: string) {
       action: 'chef_cancelled',
       reason,
       chefId: user.entityId,
+    },
+  })
+}
+
+/**
+ * Chef accepts event on behalf of client (verbal/text confirmation).
+ * Moves proposed -> accepted without requiring client portal login.
+ */
+export async function acceptOnBehalf(eventId: string) {
+  const user = await requireChef()
+
+  return transitionEvent({
+    eventId,
+    toStatus: 'accepted',
+    metadata: { action: 'chef_accepted_on_behalf', chefId: user.entityId },
+  })
+}
+
+/**
+ * Chef marks event as paid after receiving offline payment (cash, Venmo, Zelle, check).
+ * Creates a ledger entry for the payment amount so the financial view stays accurate.
+ * If no amount is specified, uses the event's quoted_price_cents as the payment amount.
+ */
+export async function markEventPaid(
+  eventId: string,
+  paymentMethod: 'cash' | 'venmo' | 'zelle' | 'check' | 'paypal' | 'card' | 'other' = 'cash',
+  amountCents?: number
+) {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  // Fetch event to get quoted price and client ID
+  const { data: event } = await db
+    .from('events')
+    .select('quoted_price_cents, client_id, tenant_id, occasion')
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!event) throw new Error('Event not found')
+
+  const paymentAmountCents = amountCents ?? event.quoted_price_cents
+  if (!paymentAmountCents || paymentAmountCents <= 0) {
+    throw new Error('Cannot mark paid: no quoted price set and no amount provided')
+  }
+
+  // Write ledger entry FIRST (before status transition) so financial view is accurate.
+  // Uses the internal append function (not the server action) since we already have auth.
+  // Deterministic idempotency key: prevents double-click / concurrent tab duplicate entries.
+  // Same event + method + amount = same reference = idempotent.
+  const { appendLedgerEntryInternal } = await import('@/lib/ledger/append-internal')
+  const result = await appendLedgerEntryInternal({
+    tenant_id: user.tenantId!,
+    client_id: event.client_id,
+    event_id: eventId,
+    entry_type: 'payment',
+    amount_cents: paymentAmountCents,
+    payment_method: paymentMethod === 'other' ? 'cash' : paymentMethod,
+    description: `Offline payment for ${event.occasion || 'event'} (${paymentMethod})`,
+    transaction_reference: `offline_${eventId}_${paymentMethod}_${paymentAmountCents}`,
+    created_by: user.id,
+  })
+
+  if (result.duplicate) {
+    log.events.info('Duplicate offline payment (idempotent)', {
+      context: { eventId, paymentMethod },
+    })
+  }
+
+  // Update payment method on the event.
+  // payment_status is NOT set here: the DB trigger (update_event_payment_status_on_ledger_insert)
+  // computes it from ledger entries. Direct writes would bypass the trigger and could diverge.
+  await db
+    .from('events')
+    .update({
+      payment_method_primary: paymentMethod === 'other' ? 'cash' : paymentMethod,
+    })
+    .eq('id', eventId)
+
+  // Now transition status
+  return transitionEvent({
+    eventId,
+    toStatus: 'paid',
+    metadata: {
+      action: 'chef_marked_paid_offline',
+      chefId: user.entityId,
+      payment_method: paymentMethod,
+      amount_cents: paymentAmountCents,
     },
   })
 }
