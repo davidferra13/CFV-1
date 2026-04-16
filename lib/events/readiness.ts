@@ -248,12 +248,14 @@ async function evaluateGate(
     case 'deposit_collected':
       return checkDepositGate(gate, eventId, catalog, db)
 
+    case 'financial_reconciled':
+      return checkFinancialReconciledGate(gate, eventId, catalog, db)
+
     case 'packing_reviewed':
     case 'equipment_confirmed':
     case 'receipts_uploaded':
     case 'kitchen_clean':
     case 'dop_complete':
-    case 'financial_reconciled':
       // These require explicit chef action - they're pending until marked
       return {
         gate,
@@ -333,6 +335,57 @@ async function checkDepositGate(
     description: catalog.description,
     isHardBlock: false, // Soft block: chef can override if deposit was collected off-platform
     details: `Deposit required: ${formatCents(depositRequired)} - collected: ${formatCents(totalPaid)} - shortfall: ${formatCents(shortfall)}. Record the payment to proceed, or override if collected off-platform.`,
+  }
+}
+
+// ─── Gate: Financial Reconciled ───────────────────────────────────────────────
+
+async function checkFinancialReconciledGate(
+  gate: ReadinessGate,
+  eventId: string,
+  catalog: { label: string; description: string },
+  db: any
+): Promise<GateResult> {
+  const { data: summary } = await db
+    .from('event_financial_summary')
+    .select('outstanding_balance_cents, total_paid_cents, quoted_price_cents')
+    .eq('event_id', eventId)
+    .single()
+
+  if (!summary) {
+    return {
+      gate,
+      status: 'pending',
+      label: catalog.label,
+      description: catalog.description,
+      isHardBlock: false,
+      details: 'Could not load financial summary. Tap to confirm manually.',
+    }
+  }
+
+  const outstanding = (summary.outstanding_balance_cents ?? 0) as number
+
+  if (outstanding <= 0) {
+    // Balance is zero (or overpaid) - auto-pass
+    return {
+      gate,
+      status: 'passed',
+      label: catalog.label,
+      description: catalog.description,
+      isHardBlock: false,
+    }
+  }
+
+  const formatCents = (c: number) =>
+    `$${(c / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
+
+  return {
+    gate,
+    status: 'pending',
+    label: catalog.label,
+    description: catalog.description,
+    isHardBlock: false,
+    details: `Outstanding balance: ${formatCents(outstanding)}. Record the payment or override if settled off-platform.`,
   }
 }
 

@@ -85,6 +85,50 @@ export async function submitMealFeedback(
       feedback = data
     }
 
+    // Notify chef about new feedback (non-blocking)
+    try {
+      const { data: group } = await db
+        .from('hub_groups')
+        .select('chef_id')
+        .eq('id', entry.group_id)
+        .single()
+
+      if (group?.chef_id) {
+        const { data: profileInfo } = await db
+          .from('hub_guest_profiles')
+          .select('display_name')
+          .eq('id', profile.id)
+          .single()
+
+        const guestName = profileInfo?.display_name || 'A guest'
+        const reactionLabel =
+          validated.reaction === 'loved'
+            ? 'loved'
+            : validated.reaction === 'liked'
+              ? 'liked'
+              : validated.reaction === 'disliked'
+                ? 'disliked'
+                : 'rated'
+
+        const { createNotification, getChefAuthUserId } =
+          await import('@/lib/notifications/actions')
+        const chefUserId = await getChefAuthUserId(group.chef_id)
+        if (chefUserId) {
+          await createNotification({
+            tenantId: group.chef_id,
+            recipientId: chefUserId,
+            category: 'system',
+            action: 'system_alert',
+            title: 'Meal feedback received',
+            body: `${guestName} ${reactionLabel} a meal${validated.note ? `: "${validated.note}"` : ''}`,
+            actionUrl: '/hub',
+          })
+        }
+      }
+    } catch {
+      // Non-blocking - feedback already saved
+    }
+
     return { success: true, feedback }
   } catch (err: any) {
     return { success: false, error: err.message }

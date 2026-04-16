@@ -6,6 +6,7 @@ import { sendEmail } from '@/lib/email/send'
 import { RSVPReminderEmail } from '@/lib/email/templates/rsvp-reminder'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { runMonitoredCronJob } from '@/lib/cron/monitor'
+import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 
 type PendingGuestRow = {
   id: string
@@ -39,6 +40,7 @@ async function handleRSVPReminders(request: NextRequest): Promise<NextResponse> 
         .eq('is_active', true)
         .eq('reminders_enabled', true)
         .not('rsvp_deadline_at', 'is', null)
+        .limit(200)
 
       if (shareError) {
         console.error('[rsvp-reminders] Failed to fetch shares:', shareError)
@@ -133,6 +135,15 @@ async function handleRSVPReminders(request: NextRequest): Promise<NextResponse> 
               }
             } else {
               failed += 1
+              await recordSideEffectFailure({
+                source: 'cron:rsvp-reminders',
+                operation: 'send_rsvp_reminder',
+                severity: 'medium',
+                entityType: 'event_guest',
+                entityId: guest.id,
+                tenantId: share.tenant_id,
+                errorMessage: `Email send failed for guest ${guest.email} (event ${share.event_id}, cadence ${cadence})`,
+              })
               const { error: logErr } = await ((db as any)
                 .from('rsvp_reminder_log')
                 .update({ status: 'failed' })

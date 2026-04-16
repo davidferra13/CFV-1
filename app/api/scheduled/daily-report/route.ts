@@ -10,6 +10,7 @@ import { DailyReportEmail } from '@/lib/email/templates/daily-report'
 import type { DailyReportContent } from '@/lib/reports/types'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { runMonitoredCronJob } from '@/lib/cron/monitor'
+import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
 
@@ -84,6 +85,15 @@ export async function GET(request: Request) {
           }
         } catch (err) {
           console.error(`[daily-report-cron] Failed for chef ${chef.id}:`, err)
+          await recordSideEffectFailure({
+            source: 'cron:daily-report',
+            operation: 'send_daily_report',
+            severity: 'medium',
+            entityType: 'chef',
+            entityId: chef.id,
+            tenantId: chef.id,
+            errorMessage: err instanceof Error ? err.message : String(err),
+          })
           failed++
         }
       }

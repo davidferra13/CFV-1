@@ -598,6 +598,38 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
     valid_until: string | null
   }
 
+  // Sync quoted price to linked event when sending a revised quote
+  if (newStatus === 'sent' && updated.event_id && updated.total_quoted_cents > 0) {
+    try {
+      const updatePayload: Record<string, unknown> = {
+        quoted_price_cents: updated.total_quoted_cents,
+      }
+      if (updated.deposit_amount_cents != null) {
+        updatePayload.deposit_amount_cents = updated.deposit_amount_cents
+      }
+      await db
+        .from('events')
+        .update(updatePayload)
+        .eq('id', updated.event_id)
+        .eq('tenant_id', user.tenantId!)
+
+      const { logChefActivity } = await import('@/lib/activity/log-chef')
+      await logChefActivity({
+        tenantId: user.tenantId!,
+        actorId: user.id,
+        action: 'event_updated',
+        domain: 'quote',
+        entityType: 'event',
+        entityId: updated.event_id,
+        summary: `Event price updated to $${(updated.total_quoted_cents / 100).toFixed(2)} from quote ${id}`,
+        context: { quote_id: id, total_cents: updated.total_quoted_cents },
+      })
+    } catch (syncErr) {
+      console.error('[transitionQuote] Event price sync failed (non-blocking):', syncErr)
+      warnings.push('Quote sent but event price may not reflect the latest amount.')
+    }
+  }
+
   // Send quote-sent email to client (non-blocking)
   if (newStatus === 'sent') {
     try {

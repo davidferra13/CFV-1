@@ -868,6 +868,7 @@ export async function processScheduledCampaigns() {
     .select('id, chef_id')
     .eq('status', 'scheduled')
     .lte('scheduled_at', new Date().toISOString())
+    .limit(200)
 
   if (!due || due.length === 0) return { processed: 0 }
 
@@ -878,6 +879,16 @@ export async function processScheduledCampaigns() {
       processed++
     } catch (err) {
       console.error('[campaigns] Failed to send scheduled campaign', campaign.id, err)
+      const { recordSideEffectFailure } = await import('@/lib/monitoring/non-blocking')
+      await recordSideEffectFailure({
+        source: 'cron:campaigns',
+        operation: 'send_scheduled_campaign',
+        severity: 'high',
+        entityType: 'marketing_campaign',
+        entityId: campaign.id,
+        tenantId: campaign.chef_id,
+        errorMessage: err instanceof Error ? err.message : String(err),
+      })
       await db.from('marketing_campaigns').update({ status: 'draft' }).eq('id', campaign.id)
     }
   }
@@ -1017,7 +1028,7 @@ export async function enrollInSequence(
 export async function processSequences() {
   const db: any = createServerClient()
 
-  // Find all pending enrollments due to send
+  // Find all pending enrollments due to send (capped to prevent OOM)
   const { data: pending } = await db
     .from('sequence_enrollments')
     .select(
@@ -1030,6 +1041,7 @@ export async function processSequences() {
     .is('completed_at', null)
     .is('cancelled_at', null)
     .lte('next_send_at', new Date().toISOString())
+    .limit(200)
 
   if (!pending || pending.length === 0) return { processed: 0 }
 
@@ -1076,16 +1088,32 @@ export async function processSequences() {
     const renderedSubject = renderTokens(step.subject, tokenCtx)
     const renderedBody = renderTokens(step.body_html, tokenCtx)
 
-    await sendEmail({
-      to: client.email,
-      subject: renderedSubject,
-      react: React.createElement(CampaignEmail, {
-        chefName,
-        bodyText: renderedBody,
-        previewText: renderedBody.slice(0, 90),
-        unsubscribeUrl: tokenCtx.unsubscribe_url,
-      }),
-    })
+    try {
+      await sendEmail({
+        to: client.email,
+        subject: renderedSubject,
+        react: React.createElement(CampaignEmail, {
+          chefName,
+          bodyText: renderedBody,
+          previewText: renderedBody.slice(0, 90),
+          unsubscribeUrl: tokenCtx.unsubscribe_url,
+        }),
+      })
+    } catch (emailErr) {
+      console.error(`[sequences] Email send failed for enrollment ${enrollment.id}:`, emailErr)
+      const { recordSideEffectFailure } = await import('@/lib/monitoring/non-blocking')
+      await recordSideEffectFailure({
+        source: 'cron:sequences',
+        operation: 'send_sequence_step',
+        severity: 'high',
+        entityType: 'sequence_enrollment',
+        entityId: enrollment.id,
+        tenantId: enrollment.chef_id,
+        errorMessage: emailErr instanceof Error ? emailErr.message : String(emailErr),
+        context: { step: enrollment.current_step, clientId: enrollment.client_id },
+      })
+      continue
+    }
 
     // Find next step
     const { data: nextStep } = await db

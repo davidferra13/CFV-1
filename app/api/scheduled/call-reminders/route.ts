@@ -11,6 +11,7 @@ import { createServerClient } from '@/lib/db/server'
 import type { CallType } from '@/lib/calls/actions'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { runMonitoredCronJob } from '@/lib/cron/monitor'
+import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 
 async function handleCallReminders(request: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(request.headers.get('authorization'))
@@ -139,6 +140,15 @@ async function handleCallReminders(request: NextRequest): Promise<NextResponse> 
           }
         } catch (err) {
           console.error(`[CallReminders] 24h reminder failed for call ${call.id}:`, err)
+          await recordSideEffectFailure({
+            source: 'cron:call-reminders',
+            operation: 'send_24h_reminder',
+            severity: 'medium',
+            entityType: 'scheduled_call',
+            entityId: call.id,
+            tenantId: call.tenant_id,
+            errorMessage: err instanceof Error ? err.message : String(err),
+          })
           errors++
         }
       }
@@ -181,6 +191,15 @@ async function handleCallReminders(request: NextRequest): Promise<NextResponse> 
           }
         } catch (err) {
           console.error(`[CallReminders] 1h reminder failed for call ${call.id}:`, err)
+          await recordSideEffectFailure({
+            source: 'cron:call-reminders',
+            operation: 'send_1h_reminder',
+            severity: 'medium',
+            entityType: 'scheduled_call',
+            entityId: call.id,
+            tenantId: call.tenant_id,
+            errorMessage: err instanceof Error ? err.message : String(err),
+          })
           errors++
         }
       }

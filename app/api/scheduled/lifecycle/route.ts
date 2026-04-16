@@ -78,6 +78,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
         .from('inquiries')
         .select('id, tenant_id, updated_at, client:clients(id, full_name)')
         .eq('status', 'awaiting_client')
+        .limit(500)
 
       await throwLifecycleFailure({
         operation: 'query_stale_inquiries',
@@ -179,6 +180,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
         .eq('status', 'sent')
         .not('expires_at', 'is', null)
         .lt('expires_at', new Date().toISOString())
+        .limit(200)
 
       await throwLifecycleFailure({
         operation: 'query_expired_quotes',

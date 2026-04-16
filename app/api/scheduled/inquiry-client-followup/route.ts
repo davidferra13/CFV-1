@@ -31,6 +31,7 @@ async function handleClientFollowup(request: NextRequest): Promise<NextResponse>
         .in('status', ['new', 'awaiting_chef'])
         .lte('created_at', cutoff48h)
         .is('deleted_at' as any, null)
+        .limit(200)
 
       if (error) {
         console.error('[inquiry-client-followup] Query failed:', error)

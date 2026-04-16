@@ -35,6 +35,7 @@ async function handleAutomations(request: NextRequest): Promise<NextResponse> {
           )
           .eq('status', 'awaiting_client')
           .not('last_response_at', 'is', null)
+          .limit(200)
 
         for (const inquiry of staleInquiries || []) {
           try {
@@ -85,6 +86,7 @@ async function handleAutomations(request: NextRequest): Promise<NextResponse> {
           .in('status', ['confirmed', 'paid'])
           .gte('event_date', now.toISOString())
           .lte('event_date', in168h)
+          .limit(200)
 
         for (const event of approachingEvents || []) {
           try {
@@ -132,6 +134,7 @@ async function handleAutomations(request: NextRequest): Promise<NextResponse> {
           .eq('status', 'awaiting_client')
           .not('follow_up_due_at', 'is', null)
           .lte('follow_up_due_at', new Date().toISOString())
+          .limit(200)
 
         for (const inquiry of overdueInquiries || []) {
           try {

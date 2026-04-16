@@ -30,6 +30,7 @@ async function handleFollowUps(request: NextRequest): Promise<NextResponse> {
         .eq('status', 'awaiting_client')
         .not('follow_up_due_at', 'is', null)
         .lte('follow_up_due_at', new Date().toISOString())
+        .limit(200)
 
       if (error) {
         console.error('[Follow-ups Cron] Query failed:', error)

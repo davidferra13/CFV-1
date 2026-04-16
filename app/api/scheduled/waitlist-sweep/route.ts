@@ -12,6 +12,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/db/server'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { runMonitoredCronJob } from '@/lib/cron/monitor'
+import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 
 // Re-notify threshold: don't notify the same waitlist entry more than once per 7 days
 const RENOTIFY_INTERVAL_DAYS = 7
@@ -169,6 +170,15 @@ async function handleWaitlistSweep(request: NextRequest): Promise<NextResponse> 
         } catch (err) {
           const error = err as Error
           console.error(`[Waitlist Sweep Cron] Failed for entry ${entry.id}:`, error.message)
+          await recordSideEffectFailure({
+            source: 'cron:waitlist-sweep',
+            operation: 'notify_waitlist_entry',
+            severity: 'medium',
+            entityType: 'waitlist_entry',
+            entityId: entry.id,
+            tenantId: entry.chef_id,
+            errorMessage: error.message,
+          })
           errors++
         }
       }

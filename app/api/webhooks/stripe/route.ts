@@ -462,7 +462,70 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
     throw new Error('Payment metadata does not match a known event for this tenant')
   }
 
+  // Guard: if event is cancelled, don't apply payment - issue auto-refund instead
+  const { data: eventStatusRow } = await dbAdmin
+    .from('events')
+    .select('status')
+    .eq('id', event_id)
+    .single()
+
+  if (eventStatusRow?.status === 'cancelled') {
+    console.warn(
+      `[handlePaymentSucceeded] Payment received for CANCELLED event ${event_id}. ` +
+        `Issuing automatic refund for ${paymentIntent.amount}c.`
+    )
+    try {
+      const stripe = getStripe()
+      await stripe.refunds.create({ payment_intent: paymentIntent.id })
+
+      const { recordSideEffectFailure } = await import('@/lib/monitoring/non-blocking')
+      await recordSideEffectFailure({
+        source: 'stripe:webhook',
+        operation: 'auto_refund_cancelled_event',
+        severity: 'high',
+        entityType: 'event',
+        entityId: event_id,
+        tenantId: tenant_id,
+        errorMessage: `Auto-refunded ${paymentIntent.amount}c - payment arrived after event cancellation`,
+      })
+    } catch (refundErr) {
+      console.error('[handlePaymentSucceeded] Auto-refund failed for cancelled event:', refundErr)
+      const { recordSideEffectFailure } = await import('@/lib/monitoring/non-blocking')
+      await recordSideEffectFailure({
+        source: 'stripe:webhook',
+        operation: 'auto_refund_failed',
+        severity: 'critical',
+        entityType: 'event',
+        entityId: event_id,
+        tenantId: tenant_id,
+        errorMessage: `Payment ${paymentIntent.amount}c on cancelled event - auto-refund FAILED: ${(refundErr as Error).message}`,
+      })
+    }
+    return // Do not record in ledger or transition event
+  }
+
   console.info('[handlePaymentSucceeded] Processing payment for event:', event_id)
+
+  // Q6: Ensure quoted_price_cents is set (instant-book race: webhook arrives before price is set)
+  {
+    const { data: pricingCheck } = await dbAdmin
+      .from('events')
+      .select('quoted_price_cents')
+      .eq('id', event_id)
+      .single()
+
+    if (pricingCheck && pricingCheck.quoted_price_cents == null) {
+      // Set quoted_price from PaymentIntent amount so financial views don't break
+      await dbAdmin
+        .from('events')
+        .update({ quoted_price_cents: paymentIntent.amount } as any)
+        .eq('id', event_id)
+      console.info(
+        '[handlePaymentSucceeded] Set quoted_price_cents from PaymentIntent amount:',
+        paymentIntent.amount
+      )
+    }
+  }
 
   // Amount reconciliation: warn if Stripe amount diverges from expected
   // Not a hard block (Stripe is the payment authority), but flags discrepancies for review
@@ -482,6 +545,32 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
         console.warn(
           `[handlePaymentSucceeded] Amount mismatch: Stripe=${paymentIntent.amount}c, expected=${expectedCents}c (event=${event_id}, type=${payment_type})`
         )
+        // Q11: Surface mismatch to chef as notification (not just a log warning)
+        try {
+          const { createNotification, getChefAuthUserId } =
+            await import('@/lib/notifications/actions')
+          const chefUserId = await getChefAuthUserId(tenant_id)
+          if (chefUserId) {
+            const stripeAmt = (paymentIntent.amount / 100).toFixed(2)
+            const expectedAmt = (expectedCents / 100).toFixed(2)
+            await createNotification({
+              tenantId: tenant_id,
+              recipientId: chefUserId,
+              category: 'payment',
+              action: 'payment_amount_mismatch',
+              title: 'Payment amount mismatch',
+              body: `Received $${stripeAmt} but expected $${expectedAmt} for ${payment_type}. Review the event financials.`,
+              actionUrl: `/events/${event_id}`,
+              eventId: event_id,
+              clientId: client_id,
+            })
+          }
+        } catch (mismatchErr) {
+          console.error(
+            '[handlePaymentSucceeded] Mismatch notification failed (non-blocking):',
+            mismatchErr
+          )
+        }
       }
     }
   }
@@ -927,18 +1016,9 @@ async function handlePaymentFailed(event: Stripe.Event) {
 
   console.info('[handlePaymentFailed] Payment failed for event:', event_id)
 
-  await appendLedgerEntryFromWebhook({
-    tenant_id,
-    client_id,
-    entry_type: 'adjustment',
-    amount_cents: 0, // No money moved
-    payment_method: 'card',
-    description: `Payment failed for event ${event_id}`,
-    event_id,
-    transaction_reference: event.id,
-    internal_notes: `Failure: ${paymentIntent.last_payment_error?.code ?? 'unknown'} - ${paymentIntent.last_payment_error?.message ?? 'no message'}`,
-    created_by: null,
-  })
+  // H1 fix: No ledger entry for failed payments (amount_cents: 0 violates the
+  // positive-amount guard and causes infinite Stripe retries). The audit trail
+  // is already captured by logWebhookEvent() at the top of the POST handler.
 
   // Notify chef of payment failure (non-blocking)
   try {
@@ -1035,18 +1115,9 @@ async function handlePaymentCanceled(event: Stripe.Event) {
 
   console.info('[handlePaymentCanceled] Payment canceled for event:', event_id)
 
-  await appendLedgerEntryFromWebhook({
-    tenant_id,
-    client_id,
-    entry_type: 'adjustment',
-    amount_cents: 0,
-    payment_method: 'card',
-    description: `Payment canceled for event ${event_id}`,
-    event_id,
-    transaction_reference: event.id,
-    internal_notes: `PaymentIntent ${paymentIntent.id} was canceled. Cancellation reason: ${paymentIntent.cancellation_reason ?? 'none'}`,
-    created_by: null,
-  })
+  // H1 fix: No ledger entry for canceled payments (amount_cents: 0 violates the
+  // positive-amount guard and causes infinite Stripe retries). The audit trail
+  // is already captured by logWebhookEvent() at the top of the POST handler.
 
   // Notify chef of payment cancellation (non-blocking)
   try {
@@ -1130,7 +1201,7 @@ async function handleRefund(event: Stripe.Event) {
     tenant_id,
     client_id,
     entry_type: 'refund',
-    amount_cents: refund.amount, // Positive amount; is_refund flag handles sign semantics
+    amount_cents: -Math.abs(refund.amount), // H2 fix: DB constraint requires negative for is_refund=true
     payment_method: 'card',
     description: `Refund issued for event ${event_id}`,
     event_id,
@@ -1140,6 +1211,69 @@ async function handleRefund(event: Stripe.Event) {
     internal_notes: `Charge: ${refund.charge}, Refund: ${refund.id}`,
     created_by: null,
   })
+
+  // Recompute payment_status from ledger (Q2 fix: stored status drifts after refunds)
+  try {
+    const dbAdmin = createServerClient({ admin: true })
+    const { data: summary } = await dbAdmin
+      .from('event_financial_summary')
+      .select('net_revenue_cents, quoted_price_cents')
+      .eq('event_id', event_id)
+      .single()
+
+    if (summary) {
+      const net = Number(summary.net_revenue_cents ?? 0)
+      const quoted = Number(summary.quoted_price_cents ?? 0)
+      let newPaymentStatus: string
+      if (net <= 0) {
+        newPaymentStatus = 'refunded'
+      } else if (quoted > 0 && net >= quoted) {
+        newPaymentStatus = 'paid'
+      } else {
+        newPaymentStatus = 'partial'
+      }
+
+      await dbAdmin
+        .from('events')
+        .update({ payment_status: newPaymentStatus } as any)
+        .eq('id', event_id)
+
+      // Q13: Alert chef if event is fully refunded but still in an active state
+      if (net <= 0) {
+        const { data: eventState } = await dbAdmin
+          .from('events')
+          .select('status, occasion')
+          .eq('id', event_id)
+          .single()
+
+        const activeStates = ['proposed', 'accepted', 'paid', 'confirmed', 'in_progress']
+        if (eventState && activeStates.includes(eventState.status)) {
+          try {
+            const { createNotification, getChefAuthUserId } =
+              await import('@/lib/notifications/actions')
+            const chefUserId = await getChefAuthUserId(tenant_id)
+            if (chefUserId) {
+              await createNotification({
+                tenantId: tenant_id,
+                recipientId: chefUserId,
+                category: 'payment',
+                action: 'full_refund_active_event',
+                title: 'Full refund on active event',
+                body: `"${eventState.occasion || 'Event'}" has been fully refunded but is still ${eventState.status}. Consider cancelling.`,
+                actionUrl: `/events/${event_id}`,
+                eventId: event_id,
+                clientId: client_id,
+              })
+            }
+          } catch (alertErr) {
+            console.error('[handleRefund] Full refund alert failed (non-blocking):', alertErr)
+          }
+        }
+      }
+    }
+  } catch (payStatusErr) {
+    console.error('[handleRefund] payment_status recompute failed (non-blocking):', payStatusErr)
+  }
 
   // Notify chef of refund (non-blocking)
   try {
@@ -1252,18 +1386,10 @@ async function handleDisputeCreated(event: Stripe.Event) {
 
   console.info('[handleDisputeCreated] Dispute opened for event:', event_id)
 
-  await appendLedgerEntryFromWebhook({
-    tenant_id,
-    client_id,
-    entry_type: 'adjustment',
-    amount_cents: 0, // No money moved yet - funds_withdrawn handles that
-    payment_method: 'card',
-    description: `Dispute opened for event ${event_id}`,
-    event_id,
-    transaction_reference: event.id,
-    internal_notes: `Dispute ${dispute.id}: ${dispute.reason}. Amount: ${dispute.amount}. Status: ${dispute.status}`,
-    created_by: null,
-  })
+  // H1 fix: No ledger entry for dispute creation (amount_cents: 0 violates the
+  // positive-amount guard and causes infinite Stripe retries). The audit trail
+  // is already captured by logWebhookEvent(). Actual fund movement is handled
+  // by handleDisputeFundsWithdrawn when the bank claws back the money.
 
   // Notify chef of dispute (non-blocking, urgent)
   try {

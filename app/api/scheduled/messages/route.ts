@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createElement } from 'react'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { runMonitoredCronJob } from '@/lib/cron/monitor'
+import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 import { createServerClient } from '@/lib/db/server'
 import { sendEmail } from '@/lib/email/send'
 import { NotificationGenericEmail } from '@/lib/email/templates/notification-generic'
@@ -115,6 +116,15 @@ async function handleScheduledMessages(req: NextRequest): Promise<NextResponse> 
           else failed++
         } catch (err) {
           console.error(`[scheduled-messages] Error processing message ${msg.id}:`, err)
+          await recordSideEffectFailure({
+            source: 'cron:scheduled-messages',
+            operation: 'send_scheduled_message',
+            severity: 'medium',
+            entityType: 'scheduled_message',
+            entityId: msg.id,
+            tenantId: msg.chef_id,
+            errorMessage: err instanceof Error ? err.message : String(err),
+          })
           await db
             .from('scheduled_messages')
             .update({
