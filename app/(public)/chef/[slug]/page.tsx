@@ -22,10 +22,12 @@ import {
 import { getOptimizedAvatar, getOptimizedImageUrl } from '@/lib/images/cloudinary'
 import { getPublicAvailabilitySignals } from '@/lib/calendar/entry-actions'
 import { getPublicChefProfile } from '@/lib/profile/actions'
+import { formatCurrency } from '@/lib/utils/currency'
 import { getPublicChefReviewFeed } from '@/lib/reviews/public-actions'
 import { ChefProofSummary } from '@/components/public/chef-proof-summary'
 import { ChefCredentialsPanel } from '@/components/public/chef-credentials-panel'
 import { DietaryTrustStrip } from '@/components/public/dietary-trust-strip'
+import { ChefAvailabilityWaitlist } from '@/components/public/chef-availability-waitlist'
 import {
   getPublicWorkHistory,
   getPublicAchievements,
@@ -252,6 +254,9 @@ export default async function ChefProfilePage({ params }: Props) {
   const priceRangeLabel = discovery.price_range
     ? getDiscoveryPriceRangeLabel(discovery.price_range)
     : null
+  const startingPrice = chef.booking_base_price_cents
+    ? formatCurrency(chef.booking_base_price_cents)
+    : null
   const cuisineLabels = discovery.cuisine_types.slice(0, 6).map(getDiscoveryCuisineLabel)
   const serviceLabels = discovery.service_types.slice(0, 6).map(getDiscoveryServiceTypeLabel)
   const profileUrl = `${BASE_URL}/chef/${publicSlug}`
@@ -312,7 +317,11 @@ export default async function ChefProfilePage({ params }: Props) {
                 label={`${discovery.avg_rating.toFixed(1)} stars · ${discovery.review_count} reviews`}
               />
             )}
-            {priceRangeLabel && <DetailChip label={priceRangeLabel} />}
+            {startingPrice ? (
+              <DetailChip label={`From ${startingPrice}/person`} />
+            ) : priceRangeLabel ? (
+              <DetailChip label={priceRangeLabel} />
+            ) : null}
           </div>
 
           <h1 className="text-4xl md:text-5xl font-bold text-stone-100">{chef.display_name}</h1>
@@ -504,10 +513,21 @@ export default async function ChefProfilePage({ params }: Props) {
                   <p className="mt-2 text-sm leading-relaxed text-stone-300">{leadTimeLabel}</p>
                 </div>
               )}
-              {priceRangeLabel && (
+              {(priceRangeLabel || startingPrice) && (
                 <div className="rounded-2xl border border-stone-700 bg-stone-950/80 p-5">
-                  <p className="text-sm font-semibold text-stone-100">Positioning</p>
-                  <p className="mt-2 text-sm leading-relaxed text-stone-300">{priceRangeLabel}</p>
+                  <p className="text-sm font-semibold text-stone-100">Pricing</p>
+                  {startingPrice && (
+                    <p className="mt-2 text-lg font-semibold text-brand-400">
+                      Starting at {startingPrice}/person
+                    </p>
+                  )}
+                  {priceRangeLabel && (
+                    <p
+                      className={`${startingPrice ? 'mt-1' : 'mt-2'} text-sm leading-relaxed text-stone-300`}
+                    >
+                      {priceRangeLabel}
+                    </p>
+                  )}
                 </div>
               )}
             </div>
@@ -682,6 +702,11 @@ export default async function ChefProfilePage({ params }: Props) {
                 </p>
               )}
           </div>
+          {!discovery.accepting_inquiries && (
+            <div className="mt-6 max-w-md mx-auto">
+              <ChefAvailabilityWaitlist chefId={chef.id} chefName={chef.display_name} />
+            </div>
+          )}
           <PublicSecondaryEntryCluster
             links={PUBLIC_SECONDARY_ENTRY_CONFIG.chef_profile}
             heading="Not sure yet?"

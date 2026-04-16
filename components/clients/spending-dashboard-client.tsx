@@ -126,6 +126,9 @@ export function SpendingDashboardClient({ summary }: SpendingDashboardClientProp
         </Card>
       </div>
 
+      {/* Spending Insights */}
+      {pastEvents.length >= 2 && <SpendingInsights events={pastEvents} />}
+
       {/* Upcoming Committed */}
       {upcomingCommittedCents > 0 && (
         <Card className="mb-6 border-brand-700 bg-brand-950">
@@ -258,5 +261,89 @@ export function SpendingDashboardClient({ summary }: SpendingDashboardClientProp
         </section>
       )}
     </div>
+  )
+}
+
+// Monthly spending insights derived from completed events
+function SpendingInsights({
+  events,
+}: {
+  events: SpendingDashboardClientProps['summary']['events']
+}) {
+  // Group by month
+  const monthlyTotals = new Map<string, number>()
+  for (const event of events) {
+    const monthKey = format(new Date(event.event_date), 'yyyy-MM')
+    monthlyTotals.set(monthKey, (monthlyTotals.get(monthKey) || 0) + event.total_paid_cents)
+  }
+
+  const months = Array.from(monthlyTotals.entries()).sort(([a], [b]) => a.localeCompare(b))
+  if (months.length < 2) return null
+
+  // Peak month
+  const peak = months.reduce((best, curr) => (curr[1] > best[1] ? curr : best))
+  const peakLabel = format(new Date(`${peak[0]}-01T00:00:00`), 'MMMM yyyy')
+
+  // Average monthly
+  const totalCents = months.reduce((sum, [, cents]) => sum + cents, 0)
+  const avgMonthly = Math.round(totalCents / months.length)
+
+  // Trend: compare last 2 months
+  const last = months[months.length - 1][1]
+  const prev = months[months.length - 2][1]
+  const trendUp = last > prev
+  const trendFlat = last === prev
+
+  // Visual bar chart (simple horizontal bars)
+  const maxCents = Math.max(...months.map(([, c]) => c))
+
+  return (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle className="text-base">Spending Insights</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Key stats row */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="text-center">
+            <p className="text-xs text-stone-500">Monthly Avg</p>
+            <p className="text-sm font-bold text-stone-100">{formatCurrency(avgMonthly)}</p>
+          </div>
+          <div className="text-center">
+            <p className="text-xs text-stone-500">Peak Month</p>
+            <p className="text-sm font-bold text-brand-400">{peakLabel}</p>
+          </div>
+          <div className="text-center">
+            <p className="text-xs text-stone-500">Trend</p>
+            <p className="text-sm font-bold text-stone-100">
+              {trendFlat ? 'Steady' : trendUp ? 'Increasing' : 'Decreasing'}
+            </p>
+          </div>
+        </div>
+
+        {/* Monthly bar chart */}
+        <div className="space-y-1.5">
+          {months.slice(-6).map(([monthKey, cents]) => {
+            const pct = maxCents > 0 ? Math.round((cents / maxCents) * 100) : 0
+            return (
+              <div key={monthKey} className="flex items-center gap-2">
+                <span className="text-xs text-stone-500 w-16 shrink-0">
+                  {format(new Date(`${monthKey}-01T00:00:00`), 'MMM yy')}
+                </span>
+                <div className="flex-1 bg-stone-800 rounded-full h-3 overflow-hidden">
+                  <div
+                    className="bg-brand-500 h-3 rounded-full transition-all"
+                    style={{ width: `${Math.max(pct, 4)}%` }}
+                  />
+                </div>
+                <span className="text-xs text-stone-300 w-16 text-right shrink-0">
+                  {formatCurrency(cents)}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      </CardContent>
+    </Card>
   )
 }

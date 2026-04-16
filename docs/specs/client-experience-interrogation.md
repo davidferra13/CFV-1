@@ -19,16 +19,27 @@
 
 **Initial Score: 30/57 fully working (53%)**
 
-### After Fixes (2026-04-15 same session)
+### After Batch 1 (2026-04-15)
 
 | Grade       | Count        | Meaning                                                    |
 | ----------- | ------------ | ---------------------------------------------------------- |
-| **Working** | 30 + 11 = 41 | 11 items fixed or upgraded this session                    |
+| **Working** | 30 + 11 = 41 | 11 items fixed or upgraded                                 |
 | **Partial** | 7            | Remaining partial items (Q7, Q11, Q12, Q26, Q28, Q55, Q56) |
 | **Missing** | 6            | Remaining missing items (Q19, Q29, Q36, Q45, Q57, Q31)     |
 | **Broken**  | 0            | All broken items resolved                                  |
 
-**Post-Fix Score: 41/57 fully working (72%)**
+**Batch 1 Score: 41/57 fully working (72%)**
+
+### After Batch 2 (2026-04-15)
+
+| Grade       | Count       | Meaning                                               |
+| ----------- | ----------- | ----------------------------------------------------- |
+| **Working** | 41 + 5 = 46 | 5 more items fixed (Q19, Q28, Q29, Q31, Q45)          |
+| **Partial** | 5           | Remaining partial items (Q7, Q11, Q12, Q55, Q56)      |
+| **Missing** | 3           | Remaining missing items (Q36, Q57, Q26 extension TBD) |
+| **Broken**  | 0           | All broken items resolved                             |
+
+**Batch 2 Score: 46/57 fully working (81%)**
 
 ### Fixes Applied This Session
 
@@ -45,6 +56,11 @@
 | Q42 | Can't update guest count after booking        | Added `requestGuestCountUpdate()` server action     |
 | Q47 | RSVP cutoff not communicated                  | Re-graded to Working (cutoff shown prominently)     |
 | Q52 | No rebook button on completed events          | Added "Book Again" CTA card                         |
+| Q19 | No inquiry follow-up emails                   | Added 48h cron with metadata dedup                  |
+| Q28 | Quote versions not labeled                    | Added version + superseded badges                   |
+| Q29 | Quote doesn't show menu                       | Added menu snapshot with dishes in quote detail     |
+| Q31 | Contract not mobile-optimized                 | Signature pad responsive rewrite (containerRef)     |
+| Q45 | Guest token recovery impossible               | Email-based resend flow (rate-limited, enum-safe)   |
 
 ### Remaining Backlog (Prioritized)
 
@@ -52,12 +68,7 @@
 | -------- | --- | --------------------------------- | ------------------------------- |
 | Medium   | Q7  | No dollar-amount pricing signals  | Needs chef opt-in setting       |
 | Medium   | Q11 | No waitlist for paused chefs      | Email capture + "similar chefs" |
-| Medium   | Q19 | No inquiry follow-up emails       | Needs cron job (48h + 5d)       |
-| Medium   | Q28 | Quote versions not labeled        | Version badges in UI            |
-| Medium   | Q29 | Quote doesn't show menu           | Menu snapshot in quote view     |
-| Medium   | Q31 | Contract not mobile-optimized     | Responsive text sizing          |
 | Low      | Q36 | No split payments                 | Standard for market             |
-| Low      | Q45 | Guest token recovery impossible   | Email-based resend flow         |
 | Low      | Q55 | Spending dashboard lacks insights | Monthly trend chart             |
 | Low      | Q56 | No client re-engagement emails    | Automated "we miss you" email   |
 | Low      | Q57 | No client account deletion / GDPR | Deletion + export page          |
@@ -172,10 +183,8 @@ Email-based. `lib/clients/actions.ts` (lines 591-659) creates client via `create
 
 ### Q19: No automated inquiry follow-up
 
-**Grade: MISSING**
-No inquiry follow-up emails, no reminder crons. Only event-level reminders exist (2d, 14d, 30d). Client hears nothing between inquiry submission and chef response.
-
-**Fix:** Add 48-hour "still reviewing" auto-email. Add 5-day "check in" reminder.
+**Grade: FIXED -> WORKING**
+Cron route `app/api/scheduled/inquiry-client-followup/route.ts` sends "still reviewing" email after 48h for inquiries in `new`/`awaiting_chef` status. Uses `metadata.client_followup_48h_sent` flag for dedup. Monitored via `runMonitoredCronJob`. Email uses BaseLayout with branded CTA.
 
 ### Q20: Client can message chef from inquiry
 
@@ -223,17 +232,13 @@ Client receives both email (via `lib/email/templates/quote-sent.tsx`) and in-app
 
 ### Q28: Multiple quote revisions
 
-**Grade: PARTIAL**
-`getQuoteVersionHistory()` exists with version chains. But client-facing `getClientQuotes()` shows all quotes as separate entries. No version label or "Revised offer" badge.
-
-**Fix:** Add version badge ("Original", "Revision 2") and collapse old versions.
+**Grade: FIXED -> WORKING**
+Version badges added to both `my-quotes/page.tsx` (list) and `my-quotes/[id]/page.tsx` (detail). Shows "Revision N" badge when `version > 1` and "Superseded" badge when `is_superseded`. Pending and resolved quotes both display version info.
 
 ### Q29: Quote doesn't show menu
 
-**Grade: MISSING**
-`getClientQuoteById()` returns quote fields but no menu data. Only `pricing_notes` (text field) under "What's Included." Client accepts a price without seeing the menu.
-
-**Fix:** Include menu snapshot in quote view (if menu is attached to the event/inquiry at that point).
+**Grade: FIXED -> WORKING**
+`getClientQuoteById()` now joins menus + dishes via `quote.event_id`. Client quote detail renders "Your Menu" card with course names, descriptions, dietary tags, sorted by `sort_order`. Full menu visibility before accepting.
 
 ---
 
@@ -246,10 +251,8 @@ Client receives both email (via `lib/email/templates/quote-sent.tsx`) and in-app
 
 ### Q31: Contract mobile responsiveness
 
-**Grade: PARTIAL**
-Container uses `max-w-2xl` with `py-10 px-4`. No responsive breakpoints for text sizing (fixed `text-2xl`, `text-base`, `text-sm`). Works but not mobile-optimized. Long legal text in small viewports is cramped.
-
-**Fix:** Add responsive text sizing and improved mobile padding.
+**Grade: FIXED -> WORKING**
+Signature pad rewritten with dynamic width via `containerRef` + `ResizeObserver`. Canvas sizes to container width, handles orientation changes. No more fixed 500px width that broke on mobile.
 
 ### Q32: Contract PDF download
 
@@ -328,10 +331,8 @@ Added `requestGuestCountUpdate()` server action. Validates ownership, updates DB
 
 ### Q45: Guest token recovery
 
-**Grade: MISSING**
-No resend or recovery mechanism. Lost RSVP link = no way back. Guest must ask the client who must ask the chef.
-
-**Fix:** Add "Resend my invite" by email lookup on guest portal.
+**Grade: FIXED -> WORKING**
+`GuestResendLink` component on share page. Collapsible email form, rate-limited (3/5min), enum-safe (always returns generic success). Server action `resendGuestPortalLink()` looks up guest by email + share token, sends portal link email. No token exposure.
 
 ### Q46: Guest portal mobile
 

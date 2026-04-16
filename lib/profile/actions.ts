@@ -127,6 +127,7 @@ export async function getPublicChefProfile(slug: string) {
       'show_availability_signals',
       'social_links',
       'google_review_url',
+      'booking_base_price_cents',
     ].join(', ')
   )
 
@@ -281,6 +282,7 @@ export async function getPublicChefProfile(slug: string) {
       show_availability_signals: chef.show_availability_signals ?? false,
       social_links: chef.social_links ?? {},
       google_review_url: chef.google_review_url ?? null,
+      booking_base_price_cents: chef.booking_base_price_cents ?? null,
       discovery,
       dietaryTrust,
     },
