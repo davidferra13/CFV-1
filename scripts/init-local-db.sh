@@ -152,9 +152,19 @@ echo "=== Step 2: Apply migrations ==="
 SUCCESS=0
 FAIL=0
 for file in $(ls "$MIGRATIONS_DIR"/*.sql | sort); do
-  docker exec -i "$CONTAINER" psql -U postgres -d postgres -f - < "$file" > /dev/null 2>&1
-  # Count as success even with non-fatal errors (CREATE IF NOT EXISTS, etc.)
-  SUCCESS=$((SUCCESS+1))
+  # Wrap each migration in a transaction so partial failures roll back cleanly
+  {
+    echo "BEGIN;"
+    cat "$file"
+    echo ""
+    echo "COMMIT;"
+  } | docker exec -i "$CONTAINER" psql -U postgres -d postgres -f - > /dev/null 2>&1
+  if [ $? -eq 0 ]; then
+    SUCCESS=$((SUCCESS+1))
+  else
+    echo "  WARN: $(basename "$file") had errors (rolled back)"
+    FAIL=$((FAIL+1))
+  fi
 done
 echo "Applied $SUCCESS migration files."
 

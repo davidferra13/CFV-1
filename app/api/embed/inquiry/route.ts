@@ -81,6 +81,16 @@ export async function POST(request: NextRequest) {
 
     const data = parseResult.data
 
+    // F2 fix: Email-based rate limit (prevents same email flooding across IPs)
+    try {
+      await checkRateLimit(`embed-inquiry-email:${data.email.toLowerCase().trim()}`, 3, 60 * 60_000)
+    } catch {
+      return NextResponse.json(
+        { error: 'Too many submissions from this email. Please try again later.' },
+        { status: 429, headers: corsHeaders }
+      )
+    }
+
     // Strip HTML tags from all free-text fields to prevent stored XSS.
     // These fields come from unauthenticated external users and are stored in
     // the database, so they must be sanitized before any DB insertion.
@@ -118,7 +128,7 @@ export async function POST(request: NextRequest) {
     // 1. Verify chef exists and is accepting inquiries
     const { data: chef, error: chefError } = await db
       .from('chefs')
-      .select('id, business_name, account_status, deletion_scheduled_for')
+      .select('id, business_name, email, account_status, deletion_scheduled_for')
       .eq('id', data.chef_id)
       .single()
 
@@ -268,6 +278,14 @@ export async function POST(request: NextRequest) {
 
     if (inquiryError) {
       console.error('[embed-inquiry] Inquiry creation error:', inquiryError)
+      // Compensating cleanup: if we just created this client, remove the orphan
+      if (!existingClient) {
+        try {
+          await db.from('clients').delete().eq('id', clientId).eq('tenant_id', tenantId)
+        } catch (cleanupErr) {
+          console.error('[embed-inquiry] Client cleanup failed (orphan may remain):', cleanupErr)
+        }
+      }
       return NextResponse.json(
         { error: 'Failed to create inquiry' },
         { status: 500, headers: corsHeaders }
@@ -351,6 +369,26 @@ export async function POST(request: NextRequest) {
       })
     } catch (emailErr) {
       console.error('[embed-inquiry] Acknowledgment email failed (non-blocking):', emailErr)
+    }
+
+    // 6b. Notify chef about new inquiry (non-blocking)
+    try {
+      const chefEmail = (chef as any).email as string | null
+      if (chefEmail) {
+        const { sendNewInquiryChefEmail } = await import('@/lib/email/notifications')
+        await sendNewInquiryChefEmail({
+          chefEmail,
+          chefName,
+          clientName,
+          occasion: data.occasion?.trim() || null,
+          eventDate: data.event_date || null,
+          guestCount: data.guest_count ?? null,
+          source: 'website',
+          inquiryId: inquiry.id,
+        })
+      }
+    } catch (chefEmailErr) {
+      console.error('[embed-inquiry] Chef notification email failed (non-blocking):', chefEmailErr)
     }
 
     // 7. Fire automations (non-blocking)
