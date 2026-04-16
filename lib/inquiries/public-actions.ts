@@ -229,7 +229,28 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   const budgetRange = validated.budget_range ?? null
   const budgetKnown = budgetMode === 'exact' || budgetMode === 'range'
 
-  // 3. Create inquiry record linked to client
+  // 3a. Dedup: same client + chef + date within 24h = duplicate
+  const dedup24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  const { data: existingInquiry } = await db
+    .from('inquiries')
+    .select('id')
+    .eq('tenant_id', tenantId)
+    .eq('client_id', client.id)
+    .eq('confirmed_date', validated.event_date || null)
+    .gte('created_at', dedup24h)
+    .limit(1)
+    .single()
+
+  if (existingInquiry) {
+    return {
+      success: true,
+      inquiryCreated: false,
+      eventCreated: false,
+      duplicateOf: existingInquiry.id,
+    }
+  }
+
+  // 3b. Create inquiry record linked to client
   const { data: inquiry, error: inquiryError } = await db
     .from('inquiries')
     .insert({

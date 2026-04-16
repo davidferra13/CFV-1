@@ -237,6 +237,30 @@ export async function POST(request: NextRequest) {
 
     // allergiesList already parsed above (before client creation)
 
+    // 3b. Dedup: same client + chef + date within 24h = duplicate
+    const dedup24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    const { data: existingInquiry } = await db
+      .from('inquiries')
+      .select('id')
+      .eq('tenant_id', tenantId)
+      .eq('client_id', clientId)
+      .eq('confirmed_date', data.event_date || null)
+      .gte('created_at', dedup24h)
+      .limit(1)
+      .single()
+
+    if (existingInquiry) {
+      // Return success to avoid confusing the user - inquiry already exists
+      return NextResponse.json(
+        {
+          success: true,
+          message: 'Inquiry submitted successfully.',
+          inquiry_id: existingInquiry.id,
+        },
+        { status: 200, headers: corsHeaders }
+      )
+    }
+
     // 4. Create inquiry
     const { data: inquiry, error: inquiryError } = await db
       .from('inquiries')

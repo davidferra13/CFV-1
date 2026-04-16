@@ -11,6 +11,7 @@ import { ClientProfileForm } from './client-profile-form'
 import { FunQAForm } from '@/components/clients/fun-qa-form'
 import { ClientSignalNotificationToggle } from '@/components/calendar/client-signal-notification-toggle'
 import { FeedbackForm } from '@/components/feedback/feedback-form'
+import Link from 'next/link'
 import type { Metadata } from 'next'
 import { MealCollaborationPanel } from './meal-collaboration-panel'
 
@@ -22,9 +23,9 @@ export default async function MyProfilePage() {
   await requireClient()
   const [profile, funQAAnswers, signalNotifEnabled, mealCollab] = await Promise.all([
     getMyProfile() as Promise<Parameters<typeof ClientProfileForm>[0]['profile']>,
-    getMyFunQA(),
-    getClientSignalNotificationPref(),
-    getMyMealCollaborationData(),
+    getMyFunQA().catch(() => ({})),
+    getClientSignalNotificationPref().catch(() => false),
+    getMyMealCollaborationData().catch(() => ({ history: [], requests: [], recommendations: [] })),
   ])
 
   return (
@@ -64,6 +65,16 @@ export default async function MyProfilePage() {
           </p>
         </div>
         <FeedbackForm pageContext="/my-profile" />
+      </div>
+
+      {/* Account management */}
+      <div className="pt-4 border-t border-stone-800">
+        <Link
+          href="/my-profile/delete-account"
+          className="text-sm text-stone-500 hover:text-red-400 transition-colors"
+        >
+          Delete my account
+        </Link>
       </div>
     </div>
   )
