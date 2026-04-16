@@ -52,6 +52,17 @@
 
 **Batch 3 Score: 50/57 fully working (88%)**
 
+### After Batch 4 (2026-04-16)
+
+| Grade       | Count       | Meaning                        |
+| ----------- | ----------- | ------------------------------ |
+| **Working** | 50 + 2 = 52 | 2 more items fixed (Q12, Q57)  |
+| **Partial** | 0           | All partial items resolved     |
+| **Missing** | 1           | Q36 (split payments, deferred) |
+| **Broken**  | 0           | All broken items resolved      |
+
+**Batch 4 Score: 52/57 fully working (91%)**
+
 ### Fixes Applied This Session
 
 | Q#  | Issue                                         | Fix Applied                                             |
@@ -76,15 +87,14 @@
 | Q11 | No waitlist for paused chefs                  | ChefAvailabilityWaitlist on profile when not accepting  |
 | Q55 | Spending dashboard lacks insights             | Monthly bar chart, peak month, trend direction          |
 | Q56 | No client re-engagement emails                | 60-90 day window cron, respects marketing prefs         |
+| Q12 | Duplicate inquiry not detected                | 24h dedup by client + chef + date (embed + public form) |
+| Q57 | No client account deletion / GDPR             | 30-day soft delete + JSON data export at /my-profile    |
 
-### Remaining Backlog (Prioritized)
+### Remaining Backlog
 
-| Priority | Q#  | Issue                             | Notes                         |
-| -------- | --- | --------------------------------- | ----------------------------- |
-| Low      | Q36 | No split payments                 | Standard for market           |
-| Low      | Q55 | Spending dashboard lacks insights | Monthly trend chart           |
-| Low      | Q56 | No client re-engagement emails    | Automated "we miss you" email |
-| Low      | Q57 | No client account deletion / GDPR | Deletion + export page        |
+| Priority | Q#  | Issue             | Notes                                               |
+| -------- | --- | ----------------- | --------------------------------------------------- |
+| Low      | Q36 | No split payments | Complex Stripe work, standard for market. Deferred. |
 
 ---
 
@@ -151,10 +161,8 @@ Added "Back to Chef Profile", "Check Inquiry Status", and "Browse More Chefs" li
 
 ### Q12: Duplicate inquiry handling
 
-**Grade: PARTIAL**
-Rate limiting in `app/api/embed/inquiry/route.ts` (line 61): 10 submissions per 5 minutes, returns 429 "Too many submissions." But no actual deduplication (same email + same chef + same date = duplicate created). Honeypot silently succeeds if triggered.
-
-**Fix:** Deduplicate by email + chef + date window.
+**Grade: FIXED -> WORKING**
+24h dedup added to both embed route and public form. Checks for existing inquiry with same client_id + tenant_id + confirmed_date created within 24h. Returns success silently on duplicate.
 
 ### Q13: Address autocomplete failure
 
@@ -404,10 +412,8 @@ Cron route `app/api/scheduled/client-reengagement/route.ts`. Queries clients wit
 
 ### Q57: Account deletion / GDPR
 
-**Grade: MISSING**
-Chef delete-account exists (`app/(chef)/settings/delete-account/page.tsx`). No client equivalent. No GDPR export, no "delete my data" button.
-
-**Fix:** Add client account deletion page and data export.
+**Grade: FIXED -> WORKING**
+Client account deletion at `/my-profile/delete-account`. 30-day grace period, cancel option, DELETE confirmation. GDPR data export downloads JSON (profile, events, quotes, messages). Link from profile page. Mirrors chef deletion pattern.
 
 ---
 
