@@ -41,37 +41,50 @@
 
 **Batch 2 Score: 46/57 fully working (81%)**
 
+### After Batch 3 (2026-04-15)
+
+| Grade       | Count       | Meaning                                         |
+| ----------- | ----------- | ----------------------------------------------- |
+| **Working** | 46 + 4 = 50 | 4 more items fixed (Q7, Q11, Q55, Q56)          |
+| **Partial** | 1           | Remaining partial item (Q12)                    |
+| **Missing** | 3           | Remaining missing items (Q36, Q57, Q26 ext TBD) |
+| **Broken**  | 0           | All broken items resolved                       |
+
+**Batch 3 Score: 50/57 fully working (88%)**
+
 ### Fixes Applied This Session
 
-| Q#  | Issue                                         | Fix Applied                                         |
-| --- | --------------------------------------------- | --------------------------------------------------- |
-| Q5  | Embed widget breaks with invalid color params | Hex validation with fallback to default             |
-| Q6  | Chef profile has no loading state             | Added `loading.tsx` skeleton loader                 |
-| Q10 | Thank-you page is dead end                    | Added Back to Profile, Check Status, Browse links   |
-| Q15 | Dietary restrictions lost inquiry->event      | Auto-pull from client record in `createEvent()`     |
-| Q16 | Inquiry form loses draft on navigation        | Added sessionStorage draft persistence              |
-| Q21 | No decline email (in-app only)                | Added `inquiry-declined.tsx` email template + send  |
-| Q26 | No extension request on expiring quotes       | Added "Request Extension" link (<48h)               |
-| Q41 | Countdown lacks practical info                | Added serve time, arrival, location, prep reminders |
-| Q42 | Can't update guest count after booking        | Added `requestGuestCountUpdate()` server action     |
-| Q47 | RSVP cutoff not communicated                  | Re-graded to Working (cutoff shown prominently)     |
-| Q52 | No rebook button on completed events          | Added "Book Again" CTA card                         |
-| Q19 | No inquiry follow-up emails                   | Added 48h cron with metadata dedup                  |
-| Q28 | Quote versions not labeled                    | Added version + superseded badges                   |
-| Q29 | Quote doesn't show menu                       | Added menu snapshot with dishes in quote detail     |
-| Q31 | Contract not mobile-optimized                 | Signature pad responsive rewrite (containerRef)     |
-| Q45 | Guest token recovery impossible               | Email-based resend flow (rate-limited, enum-safe)   |
+| Q#  | Issue                                         | Fix Applied                                             |
+| --- | --------------------------------------------- | ------------------------------------------------------- |
+| Q5  | Embed widget breaks with invalid color params | Hex validation with fallback to default                 |
+| Q6  | Chef profile has no loading state             | Added `loading.tsx` skeleton loader                     |
+| Q10 | Thank-you page is dead end                    | Added Back to Profile, Check Status, Browse links       |
+| Q15 | Dietary restrictions lost inquiry->event      | Auto-pull from client record in `createEvent()`         |
+| Q16 | Inquiry form loses draft on navigation        | Added sessionStorage draft persistence                  |
+| Q21 | No decline email (in-app only)                | Added `inquiry-declined.tsx` email template + send      |
+| Q26 | No extension request on expiring quotes       | Added "Request Extension" link (<48h)                   |
+| Q41 | Countdown lacks practical info                | Added serve time, arrival, location, prep reminders     |
+| Q42 | Can't update guest count after booking        | Added `requestGuestCountUpdate()` server action         |
+| Q47 | RSVP cutoff not communicated                  | Re-graded to Working (cutoff shown prominently)         |
+| Q52 | No rebook button on completed events          | Added "Book Again" CTA card                             |
+| Q19 | No inquiry follow-up emails                   | Added 48h cron with metadata dedup                      |
+| Q28 | Quote versions not labeled                    | Added version + superseded badges                       |
+| Q29 | Quote doesn't show menu                       | Added menu snapshot with dishes in quote detail         |
+| Q31 | Contract not mobile-optimized                 | Signature pad responsive rewrite (containerRef)         |
+| Q45 | Guest token recovery impossible               | Email-based resend flow (rate-limited, enum-safe)       |
+| Q7  | No dollar-amount pricing signals              | Starting price from booking_base_price_cents on profile |
+| Q11 | No waitlist for paused chefs                  | ChefAvailabilityWaitlist on profile when not accepting  |
+| Q55 | Spending dashboard lacks insights             | Monthly bar chart, peak month, trend direction          |
+| Q56 | No client re-engagement emails                | 60-90 day window cron, respects marketing prefs         |
 
 ### Remaining Backlog (Prioritized)
 
-| Priority | Q#  | Issue                             | Notes                           |
-| -------- | --- | --------------------------------- | ------------------------------- |
-| Medium   | Q7  | No dollar-amount pricing signals  | Needs chef opt-in setting       |
-| Medium   | Q11 | No waitlist for paused chefs      | Email capture + "similar chefs" |
-| Low      | Q36 | No split payments                 | Standard for market             |
-| Low      | Q55 | Spending dashboard lacks insights | Monthly trend chart             |
-| Low      | Q56 | No client re-engagement emails    | Automated "we miss you" email   |
-| Low      | Q57 | No client account deletion / GDPR | Deletion + export page          |
+| Priority | Q#  | Issue                             | Notes                         |
+| -------- | --- | --------------------------------- | ----------------------------- |
+| Low      | Q36 | No split payments                 | Standard for market           |
+| Low      | Q55 | Spending dashboard lacks insights | Monthly trend chart           |
+| Low      | Q56 | No client re-engagement emails    | Automated "we miss you" email |
+| Low      | Q57 | No client account deletion / GDPR | Deletion + export page        |
 
 ---
 
@@ -109,10 +122,8 @@ Added `loading.tsx` skeleton with hero, avatar, bio, snapshot grid, and CTA sect
 
 ### Q7: Pricing signals on profile
 
-**Grade: PARTIAL**
-Shows categorical label (`Budget`, `Premium`, `Luxury`) via `getDiscoveryPriceRangeLabel()`. No actual dollar amounts, no "starting at $X/person" signal. Clients inquire blind on price.
-
-**Fix:** Add optional starting-rate display from chef settings (if chef opts in).
+**Grade: FIXED -> WORKING**
+`booking_base_price_cents` now fetched in `getPublicChefProfile()`. When set, displays "Starting at $X/person" on profile hero chip and pricing card. Falls back to categorical label when no price set.
 
 ### Q8: SEO meta tags & structured data
 
@@ -135,10 +146,8 @@ Added "Back to Chef Profile", "Check Inquiry Status", and "Browse More Chefs" li
 
 ### Q11: Paused chef alternatives
 
-**Grade: PARTIAL**
-`app/(public)/chef/[slug]/inquire/page.tsx` (lines 439-470) shows "Inquiries are paused" with next available date and "Back to profile" button. No waitlist option. No alternative chef suggestion.
-
-**Fix:** Add waitlist email capture and "Browse similar chefs" link.
+**Grade: FIXED -> WORKING**
+`ChefAvailabilityWaitlist` component on chef profile CTA section when `!discovery.accepting_inquiries`. Email capture stores to `directory_waitlist` with `chef:{id}` location key. Styled with amber border and clear messaging.
 
 ### Q12: Duplicate inquiry handling
 
@@ -385,17 +394,13 @@ Points earned from real actions (events completed, guests served, milestones, re
 
 ### Q55: Spending dashboard depth
 
-**Grade: PARTIAL**
-Shows: lifetime spend, this-year spend, events attended, avg per event, upcoming committed. But no trend analysis, no month-by-month, no spending velocity, no "peak month" insights.
-
-**Fix:** Add monthly trend chart and spending insights.
+**Grade: FIXED -> WORKING**
+`SpendingInsights` component added when 2+ past events. Shows monthly average, peak month, trend direction (increasing/decreasing/steady), and horizontal bar chart of last 6 months. All derived client-side from event data.
 
 ### Q56: Re-engagement for inactive clients
 
-**Grade: PARTIAL**
-Chef-side only: `lib/clients/dormancy.ts` identifies dormant clients (90+ days). `lib/intelligence/churn-prevention-triggers.ts` calculates risk. But no client-facing re-engagement emails. Client UX is passive.
-
-**Fix:** Add automated "We miss you" email at 60 days inactive with chef's latest menu or offering.
+**Grade: FIXED -> WORKING**
+Cron route `app/api/scheduled/client-reengagement/route.ts`. Queries clients with `last_event_date` in 60-90 day window. Respects `automated_emails_enabled`, `marketing_unsubscribed`, `is_demo`, `deleted_at`. Personalized email with chef name and "Plan Your Next Event" CTA.
 
 ### Q57: Account deletion / GDPR
 
