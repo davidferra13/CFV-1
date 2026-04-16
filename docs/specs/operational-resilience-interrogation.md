@@ -573,7 +573,7 @@
 | Q11 | Financial | **PASS**    | All financial storage uses integer cents. `toFixed` only used for display formatting, never calculation/storage.                                                                 |
 | Q12 | Financial | **PARTIAL** | DB trigger `update_event_payment_status_on_ledger_insert` exists. BUT `transitions.ts:1335` directly writes `payment_status` for manual offline payments, bypassing the trigger. |
 | Q13 | Financial | **PASS**    | `redeemIncentiveCode()` uses atomic `redeem_incentive()` Postgres RPC. All three writes (ledger, balance, audit) are atomic.                                                     |
-| Q14 | FSM       | **PARTIAL** | DB function `transition_event_atomic` lacks `WHERE status = p_from_status`. App-layer post-check detects race but doesn't prevent it.                                            |
+| Q14 | FSM       | **PASS**    | Migration 20260415000023 added `AND status = p_from_status` CAS guard to `transition_event_atomic`. Race prevented at DB level.                                                  |
 | Q15 | FSM       | **PASS**    | TRANSITION_RULES map explicitly enumerates valid next states. Invalid transitions throw error.                                                                                   |
 | Q16 | FSM       | **PASS**    | `cancelled: []` = terminal state. No resurrection possible.                                                                                                                      |
 | Q17 | FSM       | **PARTIAL** | Hard blocks throw and prevent transition. But readiness evaluator infrastructure errors are swallowed (non-blocking), so a crashing evaluator lets the transition through.       |
@@ -592,7 +592,7 @@
 | Q30 | Client    | **PASS**    | Hub group page auto-joins client, loads full group data (members, notes, media, availability, events, meal board). Supports posting.                                             |
 | Q31 | Data      | **PASS**    | Account deletion is soft-delete (30-day grace period via `deletion_requested_at` + auth user ban). Not hard delete.                                                              |
 | Q32 | Data      | **PARTIAL** | Inquiry exists without paired event if event creation fails. No explicit UI warning to chef about the missing event link.                                                        |
-| Q33 | Data      | **PARTIAL** | Profile/archetype/nav changes bust layout cache. But Stripe webhook does NOT call `revalidateTag('chef-layout-...')` after updating `subscription_status`.                       |
+| Q33 | Data      | **PASS**    | Profile/archetype/nav changes bust layout cache. Stripe webhook now calls `revalidateTag('chef-layout-{chefId}')` after subscription updates.                                    |
 | Q34 | Data      | **PASS**    | postgres.js `max: 10`, `idle_timeout: 20`, `connect_timeout: 10s`, `statement_timeout: 30s`. Queues when full. Adequate for traffic level.                                       |
 | Q35 | Data      | **PASS**    | Embed inquiry route has compensating cleanup: if inquiry insert fails after client creation, newly-created client is deleted. Event creation was already non-blocking.           |
 | Q36 | AI        | **PASS**    | `OllamaOfflineError` caught in use-remy-send.ts, displays friendly offline message. Drawer probes `/api/ai/wake` and shows "Limited mode" banner.                                |
@@ -617,15 +617,15 @@
 | ---------------------- | --------- | ------ | ------- | ----- |
 | A: Security & Auth     | Q1-Q7     | 6      | 1       | 0     |
 | B: Financial Integrity | Q8-Q13    | 5      | 1       | 0     |
-| C: Event FSM           | Q14-Q18   | 2      | 3       | 0     |
+| C: Event FSM           | Q14-Q18   | 3      | 2       | 0     |
 | D: Communication       | Q19-Q23   | 5      | 0       | 0     |
 | E: Client Portal       | Q24-Q30   | 7      | 0       | 0     |
-| F: Data Integrity      | Q31-Q35   | 3      | 2       | 0     |
+| F: Data Integrity      | Q31-Q35   | 4      | 1       | 0     |
 | G: AI Degradation      | Q36-Q39   | 3      | 1       | 0     |
 | H: Infrastructure      | Q40-Q44   | 3      | 2       | 0     |
 | I: Webhooks            | Q45-Q48   | 4      | 0       | 0     |
 | J: Ops Safety          | Q49-Q50   | 2      | 0       | 0     |
-| **TOTAL**              | **50**    | **40** | **10**  | **0** |
+| **TOTAL**              | **50**    | **42** | **8**   | **0** |
 
 ---
 
@@ -646,18 +646,6 @@
 - Fix: Add `BEGIN;` at top and `COMMIT;` at bottom of each migration, or wrap in the bash runner
 
 ### PARTIAL (fix in next wave)
-
-**Q14: CAS guard missing from transition_event_atomic() (HIGH)**
-
-- File: `database/migrations/20260320000001_atomic_transition_and_dlq.sql`
-- Fix: Add `AND status = p_from_status` to the WHERE clause
-- Impact: Prevents concurrent transition races at the DB level instead of detect-and-skip
-
-**Q33: Stripe webhook doesn't bust layout cache (HIGH)**
-
-- File: `app/api/webhooks/stripe/route.ts`
-- Fix: Add `revalidateTag('chef-layout-{tenantId}')` after subscription_status update
-- Impact: Stale subscription tier in layout for up to 60s after payment
 
 **Q12: Direct payment_status write bypasses trigger (MEDIUM)**
 

@@ -184,6 +184,13 @@ export async function handleSubscriptionUpdated(subscription: Stripe.Subscriptio
     ? new Date(sub.current_period_end * 1000).toISOString()
     : null
 
+  // Resolve chefId first so we can bust the layout cache
+  const { data: chef } = await db
+    .from('chefs')
+    .select('id')
+    .eq('stripe_customer_id' as any, customerId)
+    .single()
+
   const { error } = await db
     .from('chefs')
     .update({
@@ -197,6 +204,12 @@ export async function handleSubscriptionUpdated(subscription: Stripe.Subscriptio
     console.error('[stripe] Failed to update subscription status from webhook', { customerId })
     throw error
   }
+
+  // Bust layout cache so subscription tier reflects immediately (Q33 fix)
+  if (chef?.id) {
+    const { revalidateTag } = await import('next/cache')
+    revalidateTag(`chef-layout-${chef.id}`)
+  }
 }
 
 /**
@@ -207,6 +220,13 @@ export async function handleSubscriptionDeleted(subscription: Stripe.Subscriptio
   const db = createServerClient({ admin: true })
   const customerId =
     typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id
+
+  // Resolve chefId first so we can bust the layout cache
+  const { data: chef } = await db
+    .from('chefs')
+    .select('id')
+    .eq('stripe_customer_id' as any, customerId)
+    .single()
 
   const { error } = await db
     .from('chefs')
@@ -220,6 +240,12 @@ export async function handleSubscriptionDeleted(subscription: Stripe.Subscriptio
   if (error) {
     console.error('[stripe] Failed to handle subscription deletion from webhook', { customerId })
     throw error
+  }
+
+  // Bust layout cache so subscription tier reflects immediately (Q33 fix)
+  if (chef?.id) {
+    const { revalidateTag } = await import('next/cache')
+    revalidateTag(`chef-layout-${chef.id}`)
   }
 }
 

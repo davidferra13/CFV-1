@@ -206,7 +206,7 @@ Each question tagged with failure type, current behavior, gap, and build path.
 - **B4** Stripe intent not cancelled on event cancel - FIXED (webhook handler now checks event status; auto-refunds payment on cancelled event with side_effect_failures recording)
 - **B5** Quote revision doesn't update event - FIXED (transitionQuote syncs quoted_price_cents and deposit_amount_cents to linked event when sending revised quote)
 - **C3** Meal feedback missing notification - FIXED (chef gets in-app notification when guest submits meal feedback)
-- **D1** Hub group orphaned on creator deletion
+- **D1** Hub group orphaned on creator deletion - FIXED (migration 20260416000002: FK changed to ON DELETE SET NULL, column made nullable, type updated)
 - **D2** Soft-delete inconsistency audit
 
 ### P2 (Track - data quality)
