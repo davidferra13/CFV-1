@@ -63,7 +63,7 @@ export function ProfitAndLossReport({ initialData }: Props) {
 
         <div className="grid gap-3 md:grid-cols-4">
           <Metric
-            label="Total Revenue"
+            label="Net Revenue"
             value={formatCurrency(report.revenue.totalRevenueCents)}
             tone="text-emerald-600"
           />
@@ -91,7 +91,7 @@ export function ProfitAndLossReport({ initialData }: Props) {
               <Row label="Commerce Revenue" value={report.revenue.commerceRevenueCents} />
               <Row label="Sales Revenue" value={report.revenue.salesRevenueCents} />
               <Row
-                label="Total Revenue"
+                label="Net Revenue (after refunds)"
                 value={report.revenue.totalRevenueCents}
                 strong
                 tone="text-emerald-600"

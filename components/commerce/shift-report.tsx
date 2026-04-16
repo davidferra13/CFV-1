@@ -83,7 +83,7 @@ export function ShiftReport({ sessions }: Props) {
                   <p className="text-2xl font-bold text-stone-100">{session.total_sales_count}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-stone-500 uppercase">Revenue</p>
+                  <p className="text-xs text-stone-500 uppercase">Gross Revenue</p>
                   <p className="text-2xl font-bold text-stone-100">
                     {formatCurrency(session.total_revenue_cents)}
                   </p>
