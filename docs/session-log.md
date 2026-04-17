@@ -765,3 +765,20 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: fb10e4600, b4a165eb9, 7a56d1bec
 - Build state on departure: tsc green (0 errors)
 - Notes: Remy alerts widget was fully built (remy-alerts-widget.tsx, getActiveAlerts action, remy_alerts table from migration 20260412000001) but never imported in dashboard. Now wired. Staff location assignment was added to schema + form by developer but not passed from detail page - wired. Pre-service par level backlog item was stale (already built in sweep 3). Remaining open items: dark mode (large), calendar/Google sync (needs OAuth), SMS (needs Twilio), location roster (no spec), multi-chef view (complex).
+
+## 2026-04-17 ~03:00 EST
+
+- Agent: Builder
+- Task: Interrogation spec PARTIAL sweep - stale verdict detection + code fixes
+- Status: completed
+- Files touched:
+  - components/finance/ProfitAndLossReport.tsx (FQ27: "Total Revenue" -> "Net Revenue")
+  - components/commerce/shift-report.tsx (FQ27: "Revenue" -> "Gross Revenue")
+  - app/(chef)/dashboard/\_sections/restaurant-metrics.tsx (FQ27: subtitle "net revenue")
+  - docs/specs/commerce-financial-integrity-interrogation.md (FQ27 PASS, FQ15 verdict fix, FQ16 PARTIAL->PASS, P1 count fix)
+  - docs/specs/chef-user-journey-interrogation.md (Q7/Q19/Q41 stale->PASS, score 48->51 PASS, fix priority list cleaned)
+  - docs/specs/restaurant-adoption-interrogation.md (RQ13 missing from scorecard, corrected 3->4 PARTIALs)
+  - docs/specs/scheduled-jobs-integrity-interrogation.md (SQ3 text 4/29->12/29, total count 12->13 PASS)
+- Commits: 17595351b, 0795d4dad, 7c69dd368
+- Build state on departure: not verified (doc-only + label changes, no structural code changes)
+- Notes: Found 6 stale verdicts across specs (features already built, verdicts not updated). FQ27 was the only real code change (UI label fixes). Remaining 18 PARTIALs are genuine gaps. Best candidates for next session: FQ9 (commerce-to-ledger), Q20 (client auto-invite), FQ11 (tip auto-sync).
