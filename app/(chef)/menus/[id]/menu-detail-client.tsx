@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -46,8 +46,7 @@ import {
   type MenuSimulatorPanelProps,
 } from '@/components/menus/menu-simulator-panel'
 import type { SimulatorDish } from '@/lib/menus/menu-simulator'
-import { CompletionCard, CompletionCardSkeleton } from '@/components/completion/completion-card'
-import { getCompletionForEntity } from '@/lib/completion/actions'
+import { CompletionCard } from '@/components/completion/completion-card'
 import type { CompletionResult } from '@/lib/completion/types'
 
 type RecipeInfo = {
@@ -121,6 +120,7 @@ type Props = {
   event: Event
   recipeMap?: Record<string, RecipeInfo>
   costSummary?: MenuCostSummary | null
+  initialCompletion?: CompletionResult | null
 }
 
 const STATUS_BADGE: Record<
@@ -133,20 +133,19 @@ const STATUS_BADGE: Record<
   archived: { label: 'Archived', variant: 'default' },
 }
 
-export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, costSummary }: Props) {
+export function MenuDetailClient({
+  menu: initialMenu,
+  event,
+  recipeMap = {},
+  costSummary,
+  initialCompletion,
+}: Props) {
   const router = useRouter()
   const [menu] = useState(initialMenu)
   const [isEditing, setIsEditing] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
-  const [completion, setCompletion] = useState<CompletionResult | null>(null)
-
-  useEffect(() => {
-    getCompletionForEntity('menu', initialMenu.id)
-      .then(setCompletion)
-      .catch(() => {})
-  }, [initialMenu.id])
   const [deletePolicy, setDeletePolicy] = useState<ConfirmPolicyInput | null>(null)
   const [isShowcase, setIsShowcase] = useState(initialMenu.is_showcase)
   const undoStack = useUndoStack<string | null>(null)
@@ -569,7 +568,7 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
       </div>
 
       {/* Completion Contract */}
-      {completion ? <CompletionCard result={completion} /> : <CompletionCardSkeleton />}
+      {initialCompletion && <CompletionCard result={initialCompletion} />}
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
         <Card>

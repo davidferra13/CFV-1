@@ -16,6 +16,8 @@ interface RecipeRow {
   cook_time_minutes: string | null
   category: string | null
   dietary_tags: string[] | null
+  peak_hours_min: number | null
+  peak_hours_max: number | null
 }
 
 interface IngredientStats {
@@ -30,7 +32,8 @@ export async function evaluateRecipe(
 ): Promise<CompletionResult | null> {
   const [recipe] = await pgClient<RecipeRow[]>`
     SELECT id, name, method, yield_quantity, yield_unit,
-           prep_time_minutes, cook_time_minutes, category, dietary_tags
+           prep_time_minutes, cook_time_minutes, category, dietary_tags,
+           peak_hours_min, peak_hours_max
     FROM recipes
     WHERE id = ${recipeId} AND tenant_id = ${tenantId}
   `
@@ -146,6 +149,16 @@ export async function evaluateRecipe(
       category: 'culinary',
       actionUrl: editUrl,
       actionLabel: 'Add dietary tags',
+    },
+    {
+      key: 'peak_window',
+      label: 'Has peak freshness window',
+      met: recipe.peak_hours_min != null && recipe.peak_hours_max != null,
+      blocking: false,
+      weight: 5,
+      category: 'culinary',
+      actionUrl: editUrl,
+      actionLabel: 'Set peak window',
     },
   ]
 

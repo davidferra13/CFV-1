@@ -8,6 +8,7 @@ import { MenuDetailClient } from './menu-detail-client'
 import { getMenuRecommendations } from '@/lib/analytics/menu-recommendations'
 import { MenuRecommendationHints } from '@/components/analytics/menu-recommendation-hints'
 import { getMenuInquiryLink } from '@/lib/menus/menu-intelligence-actions'
+import { evaluateCompletion } from '@/lib/completion/engine'
 import Link from 'next/link'
 
 type Props = {
@@ -46,7 +47,7 @@ export default async function MenuDetailPage({ params }: Props) {
     }
   }
 
-  const [recipeMapResult, recommendations, inquiryLink] = await Promise.all([
+  const [recipeMapResult, recommendations, inquiryLink, completionData] = await Promise.all([
     recipeIds.size > 0
       ? createServerClient()
           .from('recipes' as any)
@@ -66,6 +67,7 @@ export default async function MenuDetailPage({ params }: Props) {
       allergies: (event as any)?.allergies ?? [],
     }).catch(() => null),
     getMenuInquiryLink(id).catch(() => null),
+    evaluateCompletion('menu', id, user.tenantId!).catch(() => null),
   ])
 
   let recipeMap: Record<
@@ -106,6 +108,7 @@ export default async function MenuDetailPage({ params }: Props) {
         event={event}
         recipeMap={recipeMap}
         costSummary={costSummaries.find((summary) => summary.menu_id === menu.id) || null}
+        initialCompletion={completionData}
       />
       {recommendations && <MenuRecommendationHints result={recommendations} />}
     </div>

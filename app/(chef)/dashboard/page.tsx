@@ -43,7 +43,8 @@ import { DashboardHeartbeat } from '@/components/dashboard/dashboard-heartbeat'
 import { RemyAlertsWidget } from '@/components/dashboard/remy-alerts-widget'
 import { getActiveAlerts } from '@/lib/ai/remy-proactive-alerts'
 import { RestaurantMetricsSection, RestaurantMetricsSkeleton } from './_sections/restaurant-metrics'
-import { CompletionSummaryWidget } from '@/components/completion/completion-summary-widget'
+import { CompletionSummaryWidgetServer } from '@/components/completion/completion-summary-server'
+import { NetworkActivitySection } from './_sections/network-activity'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -70,6 +71,7 @@ const emptyQueue: PriorityQueue = {
       post_event: 0,
       client: 0,
       culinary: 0,
+      network: 0,
     },
     byUrgency: { critical: 0, high: 0, normal: 0, low: 0 },
     allCaughtUp: true,
@@ -425,7 +427,9 @@ export default async function ChefDashboard() {
       {/* EVENT READINESS - completion scores           */}
       {/* ============================================ */}
       <WidgetErrorBoundary name="Event Readiness" compact>
-        <CompletionSummaryWidget />
+        <Suspense fallback={null}>
+          <CompletionSummaryWidgetServer />
+        </Suspense>
       </WidgetErrorBoundary>
 
       {/* ============================================ */}
@@ -434,6 +438,13 @@ export default async function ChefDashboard() {
       <WidgetErrorBoundary name="Respond Next" compact>
         <Suspense fallback={null}>
           <RespondNextCard />
+        </Suspense>
+      </WidgetErrorBoundary>
+
+      {/* Network Activity - pending handoffs, connection requests, collab messages */}
+      <WidgetErrorBoundary name="Network Activity" compact>
+        <Suspense fallback={null}>
+          <NetworkActivitySection />
         </Suspense>
       </WidgetErrorBoundary>
 

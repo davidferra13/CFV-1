@@ -1,24 +1,26 @@
 # Spec: Completion Contract
 
-> **Status:** draft
+> **Status:** verified
 > **Priority:** P0 (blocking)
 > **Depends on:** none (wraps existing systems)
 > **Estimated complexity:** large (9+ files)
 
 ## Timeline
 
-| Event                 | Date       | Agent/Session  | Commit |
-| --------------------- | ---------- | -------------- | ------ |
-| Created               | 2026-04-17 | Opus (planner) |        |
-| Status: ready         | 2026-04-17 | Opus (planner) |        |
-| Claimed (in-progress) |            |                |        |
-| Spike completed       |            |                |        |
-| Pre-flight passed     |            |                |        |
-| Build completed       |            |                |        |
-| Type check passed     |            |                |        |
-| Build check passed    |            |                |        |
-| Playwright verified   |            |                |        |
-| Status: verified      |            |                |        |
+| Event                 | Date       | Agent/Session  | Commit      |
+| --------------------- | ---------- | -------------- | ----------- |
+| Created               | 2026-04-17 | Opus (planner) |             |
+| Status: ready         | 2026-04-17 | Opus (planner) |             |
+| Claimed (in-progress) | 2026-04-17 | Opus (builder) |             |
+| Spike completed       | 2026-04-17 | Opus (builder) |             |
+| Pre-flight passed     | 2026-04-17 | Opus (builder) |             |
+| Build completed       | 2026-04-17 | Opus (builder) |             |
+| Chef feedback pass    | 2026-04-17 | Opus (builder) | 15->21 reqs |
+| Type check passed     | 2026-04-17 | Opus (builder) |             |
+| Build check passed    | 2026-04-17 | Opus (builder) |             |
+| Playwright verified   | 2026-04-17 | Opus (builder) | 4/4 pass    |
+| Status: verified      | 2026-04-17 | Opus (builder) |             |
+| Status: verified      |            |                |             |
 
 ---
 
@@ -234,25 +236,31 @@ No optimistic updates needed (read-only). No mutations. No rollback scenarios.
 
 ### Event Evaluator (wraps existing systems)
 
-Requirements (weights sum to 100):
+21 requirements, 7 blocking, weights sum to 100. Updated 2026-04-17 with chef feedback (serve time, access notes, allergen cross-check, budget guardrail, post-event close-out).
 
-| Requirement                           | Weight | Source                                                    | Blocking?            |
-| ------------------------------------- | ------ | --------------------------------------------------------- | -------------------- |
-| Client linked                         | 5      | `events.client_id IS NOT NULL`                            | Yes                  |
-| Client profile adequate (score >= 60) | 5      | `getClientProfileCompleteness()`                          | No                   |
-| Client allergies confirmed            | 10     | `readiness.ts` allergy gate                               | Yes (if anaphylaxis) |
-| Date confirmed                        | 5      | `events.event_date IS NOT NULL`                           | Yes                  |
-| Location confirmed                    | 5      | `events.location` + address heuristic from critical-path  | Yes                  |
-| Guest count set                       | 5      | `events.guest_count > 0`                                  | Yes                  |
-| Menu linked                           | 10     | `events.menu_id IS NOT NULL`                              | Yes                  |
-| Menu complete (score >= 80)           | 10     | recursive `evaluateCompletion('menu', menuId)`            | No                   |
-| Quote/pricing exists                  | 10     | `quotes` table, accepted quote for event                  | No                   |
-| Deposit collected                     | 10     | `event_financial_summary.total_paid_cents > 0`            | No                   |
-| Financial reconciled                  | 5      | `event_financial_summary.outstanding_balance_cents === 0` | No                   |
-| Documents generated                   | 5      | `events.prep_sheet_generated_at IS NOT NULL`              | No                   |
-| Grocery list ready                    | 5      | `events.grocery_list_ready`                               | No                   |
-| Prep list ready                       | 5      | `events.prep_list_ready`                                  | No                   |
-| Packing reviewed                      | 5      | `events.packing_list_ready`                               | No                   |
+| Requirement                           | Weight | Source                                                    | Blocking? | Category  |
+| ------------------------------------- | ------ | --------------------------------------------------------- | --------- | --------- |
+| Client linked                         | 5      | `events.client_id IS NOT NULL`                            | Yes       | profile   |
+| Client profile adequate (score >= 60) | 5      | `getClientProfileCompleteness()`                          | No        | profile   |
+| Client allergies confirmed            | 8      | `readiness.ts` allergy gate                               | Yes       | safety    |
+| Menu clear of client allergens        | 5      | `client_allergy_records` vs `recipes.allergen_flags` join | No        | safety    |
+| Date confirmed                        | 5      | `events.event_date IS NOT NULL`                           | Yes       | logistics |
+| Service time set                      | 4      | `events.serve_time` not empty                             | Yes       | logistics |
+| Location confirmed                    | 5      | `events.location` not empty                               | Yes       | logistics |
+| Guest count set                       | 5      | `events.guest_count > 0`                                  | Yes       | logistics |
+| Arrival/access instructions           | 3      | `events.access_instructions` not empty                    | No        | logistics |
+| Documents generated                   | 3      | `events.prep_sheet_generated_at IS NOT NULL`              | No        | logistics |
+| Menu linked                           | 8      | `events.menu_id IS NOT NULL`                              | Yes       | culinary  |
+| Menu complete (score >= 80)           | 8      | recursive `evaluateCompletion('menu', menuId)`            | No        | culinary  |
+| Grocery list ready                    | 5      | `events.grocery_list_ready`                               | No        | culinary  |
+| Quote/pricing exists                  | 7      | `quotes` table, sent/accepted quote for event             | No        | financial |
+| Deposit collected                     | 7      | `event_financial_summary.total_paid_cents > 0`            | No        | financial |
+| Budget on track                       | 3      | `food_cost_percentage <= 50%` (yellow flag, not blocker)  | No        | financial |
+| Financially reconciled                | 3      | `event_financial_summary.outstanding_balance_cents === 0` | No        | financial |
+| Prep list ready                       | 3      | `events.prep_list_ready`                                  | No        | logistics |
+| Packing reviewed                      | 3      | `events.packing_list_ready`                               | No        | logistics |
+| After-action review filed             | 3      | `events.aar_filed`                                        | No        | logistics |
+| Receipts uploaded                     | 2      | `receipt_photos` count > 0 for event                      | No        | financial |
 
 ### Client Evaluator (wraps existing)
 

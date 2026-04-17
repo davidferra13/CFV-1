@@ -13,7 +13,12 @@ export async function getCompletionForEntity(
   entityId: string
 ): Promise<CompletionResult | null> {
   const user = await requireChef()
-  return evaluateCompletion(entityType, entityId, user.tenantId!)
+  try {
+    return await evaluateCompletion(entityType, entityId, user.tenantId!)
+  } catch (err) {
+    console.error(`[Completion] ${entityType}/${entityId} failed:`, err)
+    return null
+  }
 }
 
 export async function getEventCompletionDeep(eventId: string): Promise<CompletionResult | null> {
@@ -35,8 +40,10 @@ export async function getDashboardCompletionSummary(): Promise<DashboardEventCom
   const tenantId = user.tenantId!
 
   // Upcoming events in next 30 days (shallow eval for performance)
-  const events = await pgClient<{ id: string; title: string | null; event_date: string | null }[]>`
-    SELECT id, title, event_date
+  const events = await pgClient<
+    { id: string; occasion: string | null; event_date: string | null }[]
+  >`
+    SELECT id, occasion, event_date
     FROM events
     WHERE tenant_id = ${tenantId}
       AND status NOT IN ('completed', 'cancelled')
@@ -49,16 +56,20 @@ export async function getDashboardCompletionSummary(): Promise<DashboardEventCom
 
   const results: DashboardEventCompletion[] = []
   for (const ev of events) {
-    const result = await evaluateCompletion('event', ev.id, tenantId, { shallow: true })
-    if (result) {
-      results.push({
-        eventId: ev.id,
-        eventName: ev.title || 'Untitled event',
-        eventDate: ev.event_date,
-        score: result.score,
-        status: result.status,
-        nextAction: result.nextAction,
-      })
+    try {
+      const result = await evaluateCompletion('event', ev.id, tenantId, { shallow: true })
+      if (result) {
+        results.push({
+          eventId: ev.id,
+          eventName: ev.occasion || 'Untitled event',
+          eventDate: ev.event_date,
+          score: result.score,
+          status: result.status,
+          nextAction: result.nextAction,
+        })
+      }
+    } catch (err) {
+      console.error(`[Completion] dashboard event ${ev.id} failed:`, err)
     }
   }
 

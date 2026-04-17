@@ -1,6 +1,7 @@
 // Completion Evaluator - Event
 // Wraps readiness gates, financial summary, critical path, and recursive deps.
 // Most complex evaluator: checks client, menu, financial, logistics in one pass.
+// 21 requirements across safety, financial, culinary, logistics, profile, communication.
 
 import { pgClient } from '@/lib/db/index'
 import { getClientProfileCompleteness } from '@/lib/clients/completeness'
@@ -11,22 +12,26 @@ import { buildResult, type CompletionResult } from '../types'
 
 interface EventRow {
   id: string
-  title: string | null
+  occasion: string | null
   event_date: string | null
-  location: string | null
+  serve_time: string | null
+  location_address: string | null
   guest_count: string | null
   client_id: string | null
   menu_id: string | null
   status: string
+  access_instructions: string | null
   grocery_list_ready: boolean | null
   prep_list_ready: boolean | null
   packing_list_ready: boolean | null
-  prep_sheet_generated_at: string | null
+  aar_filed: boolean | null
 }
 
 interface FinancialRow {
   total_paid_cents: string | null
   outstanding_balance_cents: string | null
+  quoted_price_cents: string | null
+  food_cost_percentage: string | null
 }
 
 interface ClientRow {
@@ -44,17 +49,18 @@ export async function evaluateEvent(
 ): Promise<CompletionResult | null> {
   // Batch: event + financial summary in one round
   const [event] = await pgClient<EventRow[]>`
-    SELECT id, title, event_date, location, guest_count,
-           client_id, menu_id, status,
+    SELECT id, occasion, event_date, serve_time, location_address, guest_count,
+           client_id, menu_id, status, access_instructions,
            grocery_list_ready, prep_list_ready, packing_list_ready,
-           prep_sheet_generated_at
+           aar_filed
     FROM events
     WHERE id = ${eventId} AND tenant_id = ${tenantId}
   `
   if (!event) return null
 
   const [financial] = await pgClient<FinancialRow[]>`
-    SELECT total_paid_cents::text, outstanding_balance_cents::text
+    SELECT total_paid_cents::text, outstanding_balance_cents::text,
+           quoted_price_cents::text, food_cost_percentage::text
     FROM event_financial_summary
     WHERE event_id = ${eventId}
   `
@@ -101,12 +107,56 @@ export async function evaluateEvent(
       AND status IN ('sent', 'accepted')
   `
 
+  // Allergen cross-check: client allergens vs menu recipe allergen flags
+  // Chain: menus -> dishes -> components -> recipes
+  let allergenConflict = false
+  let allergenCheckApplicable = false
+  if (event.client_id && event.menu_id) {
+    const [conflict] = await pgClient<{ conflict_count: string }[]>`
+      SELECT COUNT(*)::text AS conflict_count
+      FROM client_allergy_records car
+      WHERE car.client_id = ${event.client_id}
+        AND LOWER(car.allergen) = ANY(
+          SELECT LOWER(unnest(r.allergen_flags))
+          FROM dishes d
+          JOIN components c ON c.dish_id = d.id
+          JOIN recipes r ON r.id = c.recipe_id
+          WHERE d.menu_id = ${event.menu_id}
+            AND r.allergen_flags IS NOT NULL
+        )
+    `
+    allergenCheckApplicable = true
+    allergenConflict = Number(conflict?.conflict_count || 0) > 0
+  }
+
+  // Document + receipt counts
+  const [docCheck] = await pgClient<{ doc_count: string }[]>`
+    SELECT COUNT(*)::text AS doc_count
+    FROM chef_documents
+    WHERE event_id = ${eventId} AND tenant_id = ${tenantId}
+  `
+  const [receiptCheck] = await pgClient<{ receipt_count: string }[]>`
+    SELECT COUNT(*)::text AS receipt_count
+    FROM receipt_photos
+    WHERE event_id = ${eventId} AND tenant_id = ${tenantId}
+  `
+
   const totalPaid = Number(financial?.total_paid_cents || 0)
   const outstanding = Number(financial?.outstanding_balance_cents || 0)
-  const hasLocation = !!event.location && event.location.trim().length > 0
+  const quotedPrice = Number(financial?.quoted_price_cents || 0)
+  const foodCostPct = Number(financial?.food_cost_percentage || 0)
+  const hasLocation = !!event.location_address && event.location_address.trim().length > 0
+  const hasServeTime = !!event.serve_time && event.serve_time.trim().length > 0
+  const hasAccessInstructions =
+    !!event.access_instructions && event.access_instructions.trim().length > 0
+  const hasDocuments = Number(docCheck?.doc_count || 0) > 0
+  const hasReceipts = Number(receiptCheck?.receipt_count || 0) > 0
+  // Budget yellow flag: food cost > 50% of quoted price signals overspend
+  const budgetAligned = quotedPrice <= 0 || foodCostPct <= 50
   const eventUrl = `/events/${eventId}`
 
   const reqs: CompletionRequirement[] = [
+    // --- Profile (10 pts) ---
     {
       key: 'client_linked',
       label: 'Client linked',
@@ -127,16 +177,28 @@ export async function evaluateEvent(
       actionUrl: event.client_id ? `/clients/${event.client_id}` : undefined,
       actionLabel: 'Complete client profile',
     },
+    // --- Safety (13 pts) ---
     {
       key: 'allergies',
       label: 'Client allergies confirmed',
       met: clientAllergyConfirmed,
       blocking: true,
-      weight: 10,
+      weight: 8,
       category: 'safety',
       actionUrl: event.client_id ? `/clients/${event.client_id}` : undefined,
       actionLabel: 'Confirm allergies',
     },
+    {
+      key: 'allergen_crosscheck',
+      label: 'Menu clear of client allergens',
+      met: allergenCheckApplicable ? !allergenConflict : true,
+      blocking: false,
+      weight: 5,
+      category: 'safety',
+      actionUrl: event.menu_id ? `/menus/${event.menu_id}` : undefined,
+      actionLabel: 'Review allergen conflicts',
+    },
+    // --- Logistics (25 pts) ---
     {
       key: 'date',
       label: 'Date confirmed',
@@ -146,6 +208,16 @@ export async function evaluateEvent(
       category: 'logistics',
       actionUrl: eventUrl,
       actionLabel: 'Set event date',
+    },
+    {
+      key: 'serve_time',
+      label: 'Service time set',
+      met: hasServeTime,
+      blocking: true,
+      weight: 4,
+      category: 'logistics',
+      actionUrl: eventUrl,
+      actionLabel: 'Set service time',
     },
     {
       key: 'location',
@@ -168,11 +240,32 @@ export async function evaluateEvent(
       actionLabel: 'Set guest count',
     },
     {
+      key: 'access_instructions',
+      label: 'Arrival/access instructions',
+      met: hasAccessInstructions,
+      blocking: false,
+      weight: 3,
+      category: 'logistics',
+      actionUrl: eventUrl,
+      actionLabel: 'Add access notes',
+    },
+    {
+      key: 'documents',
+      label: 'Documents generated',
+      met: hasDocuments,
+      blocking: false,
+      weight: 3,
+      category: 'logistics',
+      actionUrl: `/events/${eventId}?tab=prep`,
+      actionLabel: 'Generate documents',
+    },
+    // --- Culinary (21 pts) ---
+    {
       key: 'menu_linked',
       label: 'Menu linked',
       met: !!event.menu_id,
       blocking: true,
-      weight: 10,
+      weight: 8,
       category: 'culinary',
       actionUrl: eventUrl,
       actionLabel: 'Link menu',
@@ -182,50 +275,10 @@ export async function evaluateEvent(
       label: 'Menu complete',
       met: menuComplete,
       blocking: false,
-      weight: 10,
+      weight: 8,
       category: 'culinary',
       actionUrl: event.menu_id ? `/menus/${event.menu_id}` : undefined,
       actionLabel: 'Complete menu',
-    },
-    {
-      key: 'quote_exists',
-      label: 'Quote/pricing exists',
-      met: Number(quoteCheck?.has_quote || 0) > 0,
-      blocking: false,
-      weight: 10,
-      category: 'financial',
-      actionUrl: `/events/${eventId}?tab=money`,
-      actionLabel: 'Create quote',
-    },
-    {
-      key: 'deposit',
-      label: 'Deposit collected',
-      met: totalPaid > 0,
-      blocking: false,
-      weight: 10,
-      category: 'financial',
-      actionUrl: `/events/${eventId}?tab=money`,
-      actionLabel: 'Record payment',
-    },
-    {
-      key: 'financial_reconciled',
-      label: 'Financially reconciled',
-      met: outstanding === 0 && totalPaid > 0,
-      blocking: false,
-      weight: 5,
-      category: 'financial',
-      actionUrl: `/events/${eventId}?tab=money`,
-      actionLabel: 'Reconcile',
-    },
-    {
-      key: 'documents',
-      label: 'Documents generated',
-      met: !!event.prep_sheet_generated_at,
-      blocking: false,
-      weight: 5,
-      category: 'logistics',
-      actionUrl: `/events/${eventId}?tab=prep`,
-      actionLabel: 'Generate documents',
     },
     {
       key: 'grocery_ready',
@@ -237,12 +290,54 @@ export async function evaluateEvent(
       actionUrl: `/events/${eventId}?tab=prep`,
       actionLabel: 'Prepare grocery list',
     },
+    // --- Financial (20 pts) ---
+    {
+      key: 'quote_exists',
+      label: 'Quote/pricing exists',
+      met: Number(quoteCheck?.has_quote || 0) > 0,
+      blocking: false,
+      weight: 7,
+      category: 'financial',
+      actionUrl: `/events/${eventId}?tab=money`,
+      actionLabel: 'Create quote',
+    },
+    {
+      key: 'deposit',
+      label: 'Deposit collected',
+      met: totalPaid > 0,
+      blocking: false,
+      weight: 7,
+      category: 'financial',
+      actionUrl: `/events/${eventId}?tab=money`,
+      actionLabel: 'Record payment',
+    },
+    {
+      key: 'budget_aligned',
+      label: 'Budget on track',
+      met: budgetAligned,
+      blocking: false,
+      weight: 3,
+      category: 'financial',
+      actionUrl: `/events/${eventId}?tab=money`,
+      actionLabel: 'Review food costs',
+    },
+    {
+      key: 'financial_reconciled',
+      label: 'Financially reconciled',
+      met: outstanding === 0 && totalPaid > 0,
+      blocking: false,
+      weight: 3,
+      category: 'financial',
+      actionUrl: `/events/${eventId}?tab=money`,
+      actionLabel: 'Reconcile',
+    },
+    // --- Prep & Packing (6 pts) ---
     {
       key: 'prep_ready',
       label: 'Prep list ready',
       met: !!event.prep_list_ready,
       blocking: false,
-      weight: 5,
+      weight: 3,
       category: 'logistics',
       actionUrl: `/events/${eventId}?tab=prep`,
       actionLabel: 'Prepare prep list',
@@ -252,10 +347,31 @@ export async function evaluateEvent(
       label: 'Packing reviewed',
       met: !!event.packing_list_ready,
       blocking: false,
-      weight: 5,
+      weight: 3,
       category: 'logistics',
       actionUrl: `/events/${eventId}?tab=prep`,
       actionLabel: 'Review packing',
+    },
+    // --- Post-event close-out (5 pts) ---
+    {
+      key: 'aar_filed',
+      label: 'After-action review filed',
+      met: !!event.aar_filed,
+      blocking: false,
+      weight: 3,
+      category: 'logistics',
+      actionUrl: `/events/${eventId}?tab=aar`,
+      actionLabel: 'File AAR',
+    },
+    {
+      key: 'receipts_uploaded',
+      label: 'Receipts uploaded',
+      met: hasReceipts,
+      blocking: false,
+      weight: 2,
+      category: 'financial',
+      actionUrl: `/events/${eventId}?tab=money`,
+      actionLabel: 'Upload receipts',
     },
   ]
 
@@ -264,7 +380,7 @@ export async function evaluateEvent(
   if (menuResult) children.push(menuResult)
 
   return buildResult('event', eventId, reqs, {
-    entityLabel: event.title || 'Untitled event',
+    entityLabel: event.occasion || 'Untitled event',
     children: children.length > 0 ? children : undefined,
   })
 }
