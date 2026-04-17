@@ -131,9 +131,28 @@ export default async function HubGroupPage({ params }: Props) {
   )
 }
 
-// L4 fix: Private dinner circle data must never be indexed by search engines
-export const metadata: Metadata = {
-  robots: { index: false, follow: false, nocache: true },
+// Dynamic metadata: public community circles get OG previews, private ones stay noindex
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { groupToken } = await params
+  const group = await getGroupByToken(groupToken)
+
+  if (group?.group_type === 'community' && group.visibility === 'public') {
+    return {
+      title: group.name || 'Community Circle',
+      description: group.description || 'Join this community circle on ChefFlow.',
+      robots: { index: false, follow: false }, // Still noindex (circle content is private) but OG works
+      openGraph: {
+        title: group.name || 'Community Circle',
+        description: group.description || 'Join this community circle on ChefFlow.',
+        type: 'website',
+      },
+    }
+  }
+
+  // Default: private dinner circle data must never be indexed
+  return {
+    robots: { index: false, follow: false, nocache: true },
+  }
 }
 
 export const dynamic = 'force-dynamic'

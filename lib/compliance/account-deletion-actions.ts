@@ -403,6 +403,105 @@ export async function executeFinalPurge(chefId: string): Promise<{
 
     await logDeletionAudit({ ...auditBase, action: 'pii_purged' })
 
+    // 4b. Clean up chef-to-chef collaboration records (chef_id FK, not cascaded by auth deletion)
+    try {
+      const collabTables = [
+        { table: 'chef_connections', col: 'requester_id' },
+        { table: 'chef_connections', col: 'addressee_id' },
+        { table: 'event_collaborators', col: 'chef_id' },
+        { table: 'event_collaborators', col: 'invited_by_chef_id' },
+        { table: 'chef_trusted_circle', col: 'chef_id' },
+        { table: 'chef_trusted_circle', col: 'trusted_chef_id' },
+        { table: 'chef_collab_spaces', col: 'created_by' },
+        { table: 'chef_collab_space_members', col: 'chef_id' },
+        { table: 'chef_collab_handoffs', col: 'sender_chef_id' },
+        { table: 'chef_collab_handoffs', col: 'recipient_chef_id' },
+        { table: 'chef_social_notifications', col: 'actor_chef_id' },
+        { table: 'chef_social_notifications', col: 'recipient_chef_id' },
+        { table: 'chef_social_follows', col: 'follower_chef_id' },
+        { table: 'chef_social_follows', col: 'followed_chef_id' },
+        { table: 'chef_intro_bridges', col: 'source_chef_id' },
+        { table: 'chef_intro_bridges', col: 'target_chef_id' },
+        { table: 'chef_network_contact_shares', col: 'sender_chef_id' },
+        { table: 'chef_network_contact_shares', col: 'recipient_chef_id' },
+        { table: 'chef_availability_signals', col: 'chef_id' },
+        { table: 'chef_opportunity_interests', col: 'chef_id' },
+      ]
+      for (const { table, col } of collabTables) {
+        try {
+          await adminClient.from(table).delete().eq(col, chefId)
+        } catch {
+          // Table may not exist yet; non-blocking
+        }
+      }
+      await logDeletionAudit({ ...auditBase, action: 'collaboration_records_cleaned' })
+    } catch (err) {
+      console.error('[purge] Collaboration cleanup failed (non-blocking)', err)
+    }
+
+    // 4b. Clean up hub memberships and archive orphaned community circles (non-blocking)
+    try {
+      if (chef.auth_user_id) {
+        const { data: hubProfile } = await adminClient
+          .from('hub_guest_profiles')
+          .select('id')
+          .eq('auth_user_id', chef.auth_user_id)
+          .maybeSingle()
+
+        if (hubProfile) {
+          // Archive community circles this user owns (tenant_id=null, no other owner)
+          const { data: ownedCircles } = await adminClient
+            .from('hub_group_members')
+            .select('group_id')
+            .eq('profile_id', hubProfile.id)
+            .eq('role', 'owner')
+
+          for (const membership of ownedCircles ?? []) {
+            // Check if community circle with no other owners
+            const { data: group } = await adminClient
+              .from('hub_groups')
+              .select('id, tenant_id')
+              .eq('id', membership.group_id)
+              .is('tenant_id', null)
+              .eq('is_active', true)
+              .maybeSingle()
+
+            if (group) {
+              const { count } = await adminClient
+                .from('hub_group_members')
+                .select('*', { count: 'exact', head: true })
+                .eq('group_id', group.id)
+                .in('role', ['owner', 'admin'])
+                .neq('profile_id', hubProfile.id)
+
+              if (!count || count === 0) {
+                await adminClient
+                  .from('hub_groups')
+                  .update({ is_active: false, updated_at: new Date().toISOString() })
+                  .eq('id', group.id)
+              }
+            }
+          }
+
+          // Remove all hub memberships
+          await adminClient.from('hub_group_members').delete().eq('profile_id', hubProfile.id)
+
+          // Anonymize hub profile
+          await adminClient
+            .from('hub_guest_profiles')
+            .update({
+              display_name: 'Deleted User',
+              email: null,
+              avatar_url: null,
+            })
+            .eq('id', hubProfile.id)
+        }
+      }
+      await logDeletionAudit({ ...auditBase, action: 'hub_memberships_cleaned' })
+    } catch (err) {
+      console.error('[purge] Hub membership cleanup failed (non-blocking)', err)
+    }
+
     // 5. Delete auth user (triggers CASCADE on non-financial tables)
     if (chef.auth_user_id) {
       const { error: deleteError } = await adminClient.auth.admin.deleteUser(chef.auth_user_id)

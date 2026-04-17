@@ -143,15 +143,15 @@
 
 ## Domain 15: System Boundaries (Third Sweep)
 
-| #   | Question                                                              | Answer                                                                                                                                            | Status                 |
-| --- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| 67  | Does account deletion clean up community circle memberships?          | **No.** `account-deletion-actions.ts` does not touch `hub_group_members` or `hub_guest_profiles`. Orphaned memberships and owned circles persist. | **GAP**                |
-| 68  | Does Remy know about community circles?                               | No. No `/hub/circles` in Remy's navigation options. Clients cannot discover community circles via Remy.                                           | **GAP** (low severity) |
-| 69  | Do community circle pages have Open Graph metadata for link previews? | No. `page.tsx` uses static `metadata` with `robots: noindex`. No dynamic OG title/description from circle name. Sharing a link shows no preview.  | **GAP** (low severity) |
-| 70  | Is community circles in the feature classification map?               | No entry. Per monetization policy (all features free), no classification needed.                                                                  | N/A (correct)          |
-| 71  | Does the public `/hub` landing page mention community circles?        | No. Only describes event-based Dinner Circles. Separate entry at `/hub/circles`.                                                                  | N/A (separate entry)   |
-| 72  | Does ticket webhook auto-join affect community circles?               | No. Ticket webhooks look up event-linked circles only. Community circles have no events.                                                          | N/A (correct)          |
-| 73  | Does the embed widget relate to community circles?                    | No. Embed handles inquiry capture. Separate system.                                                                                               | N/A (separate)         |
+| #   | Question                                                              | Answer                                                                                                                                   | Status                 |
+| --- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| 67  | Does account deletion clean up community circle memberships?          | Fixed. Purge now: archives sole-owner community circles, removes all hub memberships, anonymizes hub profile to "Deleted User".          | BUILT                  |
+| 68  | Does Remy know about community circles?                               | No. No `/hub/circles` in Remy's navigation options. Clients cannot discover community circles via Remy.                                  | **GAP** (low severity) |
+| 69  | Do community circle pages have Open Graph metadata for link previews? | Fixed. `generateMetadata()` returns OG title/description for public community circles. Private/dinner circles remain noindex with no OG. | BUILT                  |
+| 70  | Is community circles in the feature classification map?               | No entry. Per monetization policy (all features free), no classification needed.                                                         | N/A (correct)          |
+| 71  | Does the public `/hub` landing page mention community circles?        | No. Only describes event-based Dinner Circles. Separate entry at `/hub/circles`.                                                         | N/A (separate entry)   |
+| 72  | Does ticket webhook auto-join affect community circles?               | No. Ticket webhooks look up event-linked circles only. Community circles have no events.                                                 | N/A (correct)          |
+| 73  | Does the embed widget relate to community circles?                    | No. Embed handles inquiry capture. Separate system.                                                                                      | N/A (separate)         |
 
 ---
 
@@ -159,8 +159,8 @@
 
 | Status | Count |
 | ------ | ----- |
-| BUILT  | 58    |
-| GAP    | 5     |
+| BUILT  | 60    |
+| GAP    | 3     |
 | N/A    | 10    |
 
 ### Resolved GAPs (first sweep)
@@ -185,11 +185,11 @@
 12. **Q33: Dashboard unread widget** - Fixed 5 wrong table/column refs in `getUnreadHubMessages()`.
 13. **Q54-56: Chef UI labels** - "Dinner Circles" -> "Circles" across nav, page, dashboard.
 14. **Q57-58: Client UI labels** - "Dinner Circle Notifications" -> "Circle Notifications", "Dinner Circle" -> "My Circle".
+15. **Q67: Account deletion** - Purge now archives sole-owner community circles, removes memberships, anonymizes hub profile.
+16. **Q69: OG metadata** - `generateMetadata()` returns OG title/description for public community circles.
 
 ### Remaining GAPs
 
 1. **Q10: Platform-wide moderation** - Circle owners moderate their own. No admin-level abuse tools. Acceptable at current scale.
 2. **Q40: Content moderation on circle names** - No automated filtering. Add report mechanism when needed.
-3. **Q67: Account deletion orphans** - Memberships and owned circles persist after deletion. Needs cleanup in `account-deletion-actions.ts`.
-4. **Q68: Remy awareness** - Remy cannot navigate to or suggest community circles. Low severity (clients have direct access via `/my-hub` and `/hub/circles`).
-5. **Q69: OG metadata** - No link preview when sharing community circle URLs. Needs dynamic `generateMetadata` on group page.
+3. **Q68: Remy awareness** - Remy cannot navigate to or suggest community circles. Low severity (clients have direct access via `/my-hub` and `/hub/circles`).
