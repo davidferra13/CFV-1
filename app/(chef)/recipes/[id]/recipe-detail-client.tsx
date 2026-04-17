@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
@@ -43,6 +43,9 @@ import { generateRecipeWarnings } from '@/lib/costing/generate-warnings'
 import { formatHoursAsReadable } from '@/lib/prep-timeline/compute-timeline'
 import { updateRecipePeakWindow } from '@/lib/prep-timeline/actions'
 import { Snowflake } from '@/components/ui/icons'
+import { CompletionCard, CompletionCardSkeleton } from '@/components/completion/completion-card'
+import { getCompletionForEntity } from '@/lib/completion/actions'
+import type { CompletionResult } from '@/lib/completion/types'
 
 const CATEGORY_COLORS: Record<string, 'default' | 'success' | 'warning' | 'info' | 'error'> = {
   sauce: 'warning',
@@ -67,6 +70,13 @@ export function RecipeDetailClient({ recipe }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [completion, setCompletion] = useState<CompletionResult | null>(null)
+
+  useEffect(() => {
+    getCompletionForEntity('recipe', recipe.id)
+      .then(setCompletion)
+      .catch(() => {})
+  }, [recipe.id])
 
   // Taxonomy-driven display labels
   const { entries: cuisineEntries } = useTaxonomy('cuisine')
@@ -425,6 +435,9 @@ export function RecipeDetailClient({ recipe }: Props) {
           onCancel={() => setShowShareModal(false)}
         />
       )}
+
+      {/* Completion Contract */}
+      {completion ? <CompletionCard result={completion} /> : <CompletionCardSkeleton />}
 
       {/* Post-save guidance: show when recipe is not yet on any menu or event */}
       {recipe.eventHistory.length === 0 && (

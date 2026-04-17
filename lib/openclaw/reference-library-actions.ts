@@ -244,6 +244,48 @@ export async function getWasteFactor(
   }
 }
 
+/**
+ * Suggest yield percentage for an ingredient by name.
+ * Looks up USDA waste factors and returns all matching prep methods.
+ * Used by the recipe ingredient form to auto-suggest yield_pct.
+ */
+export async function suggestYieldByName(
+  ingredientName: string
+): Promise<Array<{ prepMethod: string | null; yieldPct: number; source: string }>> {
+  await requireChef()
+  const sql = pgClient
+
+  const rows = await sql`
+    SELECT w.prep_method, w.as_purchased_to_edible_pct, w.waste_type
+    FROM ingredient_waste_factors w
+    WHERE lower(w.ingredient_name) = lower(${ingredientName})
+    ORDER BY w.prep_method ASC NULLS FIRST
+    LIMIT 10
+  `
+
+  if (rows.length === 0) {
+    // Fuzzy fallback: try partial match
+    const fuzzyRows = await sql`
+      SELECT w.prep_method, w.as_purchased_to_edible_pct, w.waste_type
+      FROM ingredient_waste_factors w
+      WHERE lower(w.ingredient_name) LIKE '%' || lower(${ingredientName}) || '%'
+      ORDER BY length(w.ingredient_name) ASC, w.prep_method ASC NULLS FIRST
+      LIMIT 5
+    `
+    return fuzzyRows.map((r: any) => ({
+      prepMethod: r.prep_method,
+      yieldPct: Math.round(Number(r.as_purchased_to_edible_pct)),
+      source: 'USDA (partial match)',
+    }))
+  }
+
+  return rows.map((r: any) => ({
+    prepMethod: r.prep_method,
+    yieldPct: Math.round(Number(r.as_purchased_to_edible_pct)),
+    source: 'USDA',
+  }))
+}
+
 export async function getAdjustedCost(ingredientId: string, priceCents: number): Promise<number> {
   await requireChef()
 

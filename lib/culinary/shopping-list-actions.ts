@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { createPurchaseOrder, addPOItem } from '@/lib/inventory/purchase-order-actions'
+import { normalizeUnit, canConvert, addQuantities } from '@/lib/grocery/unit-conversion'
 
 const ShoppingListInputSchema = z.object({
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -17,7 +18,9 @@ export type ShoppingListItem = {
   category: string
   supplier: string
   unit: string
-  totalRequired: number
+  recipeQty: number
+  yieldPct: number
+  totalRequired: number // yield-adjusted buy quantity
   onHand: number
   toBuy: number
   estimatedCostCents: number
@@ -39,19 +42,26 @@ function round2(value: number) {
 async function getRecipeMultipliersForEvents(
   db: any,
   tenantId: string,
-  eventIds: string[]
+  eventIds: string[],
+  eventGuestCounts: Map<string, number>
 ): Promise<Map<string, number>> {
+  // Fetch menus with event_id so we can trace guest count
   const { data: menus } = await db
     .from('menus')
-    .select('id')
+    .select('id, event_id')
     .eq('tenant_id', tenantId)
     .in('event_id', eventIds)
 
   if (!menus?.length) return new Map()
 
+  const menuEventMap = new Map<string, string>()
+  for (const m of menus as any[]) {
+    menuEventMap.set(m.id, m.event_id)
+  }
+
   const { data: dishes } = await db
     .from('dishes')
-    .select('id')
+    .select('id, menu_id')
     .eq('tenant_id', tenantId)
     .in(
       'menu_id',
@@ -60,9 +70,14 @@ async function getRecipeMultipliersForEvents(
 
   if (!dishes?.length) return new Map()
 
+  const dishMenuMap = new Map<string, string>()
+  for (const d of dishes as any[]) {
+    dishMenuMap.set(d.id, d.menu_id)
+  }
+
   const { data: components } = await db
     .from('components')
-    .select('recipe_id, scale_factor')
+    .select('recipe_id, scale_factor, dish_id')
     .eq('tenant_id', tenantId)
     .in(
       'dish_id',
@@ -72,11 +87,27 @@ async function getRecipeMultipliersForEvents(
 
   if (!components?.length) return new Map()
 
+  // Also fetch recipe servings for guest-count scaling
+  const recipeIds = [...new Set((components as any[]).map((c: any) => c.recipe_id))]
+  const { data: recipeRows } = await db.from('recipes').select('id, servings').in('id', recipeIds)
+
+  const recipeServingsMap = new Map<string, number>()
+  for (const r of (recipeRows ?? []) as any[]) {
+    recipeServingsMap.set(r.id, Number(r.servings) || 4)
+  }
+
+  // Compute: (guestCount / recipeServings) * scale_factor per component
   const multipliers = new Map<string, number>()
   for (const component of components as any[]) {
     const recipeId = component.recipe_id as string
-    const scale = Number(component.scale_factor) || 1
-    multipliers.set(recipeId, (multipliers.get(recipeId) ?? 0) + scale)
+    const scaleFactor = Number(component.scale_factor) || 1
+    const menuId = dishMenuMap.get(component.dish_id) ?? ''
+    const eventId = menuEventMap.get(menuId) ?? ''
+    const guestCount = eventGuestCounts.get(eventId) ?? 10
+    const recipeServings = recipeServingsMap.get(recipeId) ?? 4
+    const effectiveMultiplier = (guestCount / recipeServings) * scaleFactor
+
+    multipliers.set(recipeId, (multipliers.get(recipeId) ?? 0) + effectiveMultiplier)
   }
 
   // include sub-recipes recursively
@@ -118,7 +149,7 @@ export async function generateShoppingList(input: {
 
   let eventsQuery = db
     .from('events')
-    .select('id, event_date')
+    .select('id, event_date, guest_count')
     .eq('tenant_id', user.tenantId!)
     .gte('event_date', parsed.startDate)
     .lte('event_date', parsed.endDate)
@@ -142,7 +173,15 @@ export async function generateShoppingList(input: {
   }
 
   const eventIds = events.map((event: any) => event.id)
-  const recipeMultipliers = await getRecipeMultipliersForEvents(db, user.tenantId!, eventIds)
+  const eventGuestCounts = new Map<string, number>(
+    (events as any[]).map((e: any) => [e.id, Number(e.guest_count) || 10])
+  )
+  const recipeMultipliers = await getRecipeMultipliersForEvents(
+    db,
+    user.tenantId!,
+    eventIds,
+    eventGuestCounts
+  )
 
   if (recipeMultipliers.size === 0) {
     return {
@@ -156,7 +195,7 @@ export async function generateShoppingList(input: {
 
   const { data: recipeIngredients, error: recipeIngredientsError } = await db
     .from('recipe_ingredients')
-    .select('recipe_id, ingredient_id, quantity, unit')
+    .select('recipe_id, ingredient_id, quantity, unit, yield_pct')
     .in('recipe_id', Array.from(recipeMultipliers.keys()))
 
   if (recipeIngredientsError) {
@@ -180,7 +219,7 @@ export async function generateShoppingList(input: {
   const [ingredientRows, stockRows, vendorItemsRows, vendorRows] = await Promise.all([
     db
       .from('ingredients')
-      .select('id, name, category, last_price_cents, preferred_vendor')
+      .select('id, name, category, last_price_cents, preferred_vendor, default_yield_pct')
       .eq('tenant_id', user.tenantId!)
       .in('id', ingredientIds),
     db
@@ -238,36 +277,90 @@ export async function generateShoppingList(input: {
     )
   }
 
-  const aggregated = new Map<string, ShoppingListItem>()
+  // Aggregate by ingredient ID, consolidating compatible units
+  const aggregated = new Map<
+    string,
+    ShoppingListItem & {
+      _recipeAccum: { qty: number; unit: string }[]
+      _buyAccum: { qty: number; unit: string }[]
+    }
+  >()
   for (const row of recipeIngredients ?? []) {
     const ingredient = ingredientMap.get(row.ingredient_id)
     if (!ingredient) continue
 
     const multiplier = recipeMultipliers.get(row.recipe_id) ?? 1
-    const requiredQty = (Number(row.quantity) || 0) * multiplier
-    const key = `${row.ingredient_id}:${row.unit}`
+    const recipeQty = (Number(row.quantity) || 0) * multiplier
+    const yieldPct = Math.max(
+      Number(row.yield_pct) || Number(ingredient.default_yield_pct) || 100,
+      1
+    )
+    const buyQty = (recipeQty * 100) / yieldPct
+    const normUnit = normalizeUnit(row.unit)
 
-    const existing = aggregated.get(key) ?? {
-      ingredientId: row.ingredient_id,
-      ingredientName: ingredient.name,
-      category: ingredient.category,
-      supplier:
-        ingredient.preferred_vendor ||
-        preferredVendorByIngredient.get(row.ingredient_id) ||
-        'Unassigned',
-      unit: row.unit,
-      totalRequired: 0,
-      onHand: 0,
-      toBuy: 0,
-      estimatedCostCents: 0,
-      eventCount: events.length,
+    const existing = aggregated.get(row.ingredient_id)
+    if (existing) {
+      existing._recipeAccum.push({ qty: recipeQty, unit: normUnit })
+      existing._buyAccum.push({ qty: buyQty, unit: normUnit })
+      existing.yieldPct = Math.min(existing.yieldPct, yieldPct)
+    } else {
+      aggregated.set(row.ingredient_id, {
+        ingredientId: row.ingredient_id,
+        ingredientName: ingredient.name,
+        category: ingredient.category,
+        supplier:
+          ingredient.preferred_vendor ||
+          preferredVendorByIngredient.get(row.ingredient_id) ||
+          'Unassigned',
+        unit: normUnit,
+        recipeQty: 0,
+        yieldPct,
+        totalRequired: 0,
+        onHand: 0,
+        toBuy: 0,
+        estimatedCostCents: 0,
+        eventCount: events.length,
+        _recipeAccum: [{ qty: recipeQty, unit: normUnit }],
+        _buyAccum: [{ qty: buyQty, unit: normUnit }],
+      })
     }
-
-    existing.totalRequired += requiredQty
-    aggregated.set(key, existing)
   }
 
-  const items = Array.from(aggregated.values()).map((item) => {
+  // Consolidate accumulated quantities with unit conversion
+  for (const [, item] of aggregated) {
+    // Consolidate recipe quantities
+    let rResult = {
+      quantity: item._recipeAccum[0]?.qty ?? 0,
+      unit: item._recipeAccum[0]?.unit ?? item.unit,
+    }
+    for (let i = 1; i < item._recipeAccum.length; i++) {
+      const next = item._recipeAccum[i]
+      if (canConvert(rResult.unit, next.unit)) {
+        rResult = addQuantities(rResult.quantity, rResult.unit, next.qty, next.unit)
+      } else {
+        rResult.quantity += next.qty
+      }
+    }
+    item.recipeQty = rResult.quantity
+
+    // Consolidate buy quantities
+    let bResult = {
+      quantity: item._buyAccum[0]?.qty ?? 0,
+      unit: item._buyAccum[0]?.unit ?? item.unit,
+    }
+    for (let i = 1; i < item._buyAccum.length; i++) {
+      const next = item._buyAccum[i]
+      if (canConvert(bResult.unit, next.unit)) {
+        bResult = addQuantities(bResult.quantity, bResult.unit, next.qty, next.unit)
+      } else {
+        bResult.quantity += next.qty
+      }
+    }
+    item.totalRequired = bResult.quantity
+    item.unit = bResult.unit
+  }
+
+  const items = Array.from(aggregated.values()).map(({ _recipeAccum, _buyAccum, ...item }) => {
     const onHand = onHandByIngredient.get(item.ingredientId) ?? 0
     const toBuy = Math.max(0, item.totalRequired - onHand)
     const ingredient = ingredientMap.get(item.ingredientId)

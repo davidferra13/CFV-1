@@ -161,6 +161,8 @@ Keep this file current. Add new rules when patterns are established or mistakes 
 
 These workflows are now available as `/slash-commands`. Type the command name to run the full procedure:
 
+- **`/morning`** - Daily briefing: build state, overnight changes, servers, Pi health, priorities, session continuity. Start your day here.
+- **`/status`** - Quick "where am I?" snapshot: branch, uncommitted work, last commit, what was in progress, what's next.
 - **`/ship`** - git add + commit + push. The full "ship it" chain. No confirmation needed.
 - **`/soak`** - Full software aging pipeline (useEffect audit, fixes, soak tests). Full docs: `docs/soak-testing.md`
 - **`/close-session`** - Standard session close-out (stage, commit, push, update session log + build state)
@@ -169,6 +171,15 @@ These workflows are now available as `/slash-commands`. Type the command name to
 - **`/hallucination-scan`** - Zero Hallucination audit (optimistic updates, silent failures, stale cache, etc.)
 - **`/debug`** - Systematic 4-phase debugging. No fixes without root cause first. Escalates to opus-advisor after 3 failures.
 - **`/tdd`** - Test-Driven Development. RED (failing test) -> GREEN (minimal code) -> REFACTOR. No production code without a failing test first.
+- **`/pi`** - Pi health + OpenClaw status. Connectivity, disk, memory, services, recent cron.
+- **`/pipeline`** - OpenClaw pricing pipeline audit. Coverage, freshness, targets vs actuals.
+- **`/compliance`** - Rule violation scan: em dashes, OpenClaw in UI, ts-nocheck exports.
+- **`/backup`** - Back up ChefFlow database (pg_dump). Safe read-only export.
+- **`/first-principles`** - Structured reasoning before building. Breaks assumptions, validates approach.
+- **`/5-whys`** - Root cause analysis. Keep asking why until real cause surfaces.
+- **`/review`** - Code review on uncommitted changes. Quality gate before `/ship`.
+- **`/document`** - Auto-update USER_MANUAL.md and app-complete-audit.md after code changes.
+- **`/heal-skill`** - Self-repair a skill that failed or produced bad results.
 
 **End every session:** run `/close-session` or `/ship`. Work must be on GitHub before signing off.
 
@@ -259,9 +270,8 @@ Credentials in `.auth/agent.json`. Sign in via `POST http://localhost:3100/api/e
 
 ## IMPLEMENTATION PATTERNS, ARCHITECTURE & REFERENCE
 
-Full implementation patterns, architecture reminders, file locations, workspace map, environment config, and database setup are in these imported files:
+Full implementation patterns and architecture reminders are in this imported file:
 
 - @docs/CLAUDE-ARCHITECTURE.md
-- @docs/CLAUDE-REFERENCE.md
 
-These files are loaded on demand when Claude works with relevant code. They contain all the detailed tables and patterns that were previously inline here.
+File locations, workspace map, and environment config are in `docs/CLAUDE-REFERENCE.md` (read it when you need to look up file paths, not auto-loaded to save tokens).

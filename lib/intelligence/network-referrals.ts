@@ -89,11 +89,9 @@ export async function getNetworkIntelligence(): Promise<NetworkIntelligenceResul
     if (survey.would_rebook) wouldRebook.add(survey.client_id)
   }
 
-  // Fetch backup chefs
-  const { data: backupChefs } = await db
-    .from('backup_chefs')
-    .select('id, name, cuisine_types, availability_status')
-    .eq('tenant_id', tenantId)
+  // backup_chefs table does not exist; use collab availability signals instead
+  // For now, return empty to avoid silent SQL failures
+  const backupChefs: any[] = []
 
   // ── Referral source performance ──────────────────────────────────────────
 

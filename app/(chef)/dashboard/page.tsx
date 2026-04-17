@@ -43,6 +43,7 @@ import { DashboardHeartbeat } from '@/components/dashboard/dashboard-heartbeat'
 import { RemyAlertsWidget } from '@/components/dashboard/remy-alerts-widget'
 import { getActiveAlerts } from '@/lib/ai/remy-proactive-alerts'
 import { RestaurantMetricsSection, RestaurantMetricsSkeleton } from './_sections/restaurant-metrics'
+import { CompletionSummaryWidget } from '@/components/completion/completion-summary-widget'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -419,6 +420,13 @@ export default async function ChefDashboard() {
           </WidgetErrorBoundary>
         </div>
       </section>
+
+      {/* ============================================ */}
+      {/* EVENT READINESS - completion scores           */}
+      {/* ============================================ */}
+      <WidgetErrorBoundary name="Event Readiness" compact>
+        <CompletionSummaryWidget />
+      </WidgetErrorBoundary>
 
       {/* ============================================ */}
       {/* RESPOND NEXT - top inquiry needing action    */}

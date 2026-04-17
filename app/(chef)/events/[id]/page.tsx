@@ -80,7 +80,6 @@ import { getMarketplaceConversionData } from '@/lib/marketplace/conversion-actio
 import { MarketplaceConvertBanner } from '@/components/events/marketplace-convert-banner'
 import { EventCollaboratorsPanel } from '@/components/events/event-collaborators-panel'
 import { getEventCollaborators } from '@/lib/collaboration/actions'
-import { getEventCollaborators as getRevenueSplitCollaborators } from '@/lib/events/collaborator-actions'
 import { ContractSection } from '@/components/contracts/contract-section'
 import { QuickReceiptCapture } from '@/components/events/quick-receipt-capture'
 import { AvailableLeftovers } from '@/components/events/available-leftovers'
@@ -139,6 +138,14 @@ import { EventIntelligencePanel } from '@/components/intelligence/event-intellig
 import { getLifecycleProgress } from '@/lib/lifecycle/actions'
 import { getChefArchetype } from '@/lib/archetypes/actions'
 import { LifecycleProgressPanel } from '@/components/lifecycle/lifecycle-progress-panel'
+import { CompletionCard, CompletionCardSkeleton } from '@/components/completion/completion-card'
+import { getCompletionForEntity } from '@/lib/completion/actions'
+
+async function EventCompletionSection({ eventId }: { eventId: string }) {
+  const result = await getCompletionForEntity('event', eventId)
+  if (!result) return null
+  return <CompletionCard result={result} />
+}
 
 async function getEventMenuCostSummary(eventId: string) {
   const db: any = createServerClient()
@@ -404,7 +411,6 @@ export default async function EventDetailPage({
     takeAChefFinance,
     eventHasAllergyData,
     eventChatConversationId,
-    revenueSplitCollaborators,
     parAlerts,
   ] = await Promise.all([
     // Refund recommendation â€” only for cancelled events with payments
@@ -495,7 +501,6 @@ export default async function EventDetailPage({
         return null
       }
     })(),
-    getRevenueSplitCollaborators(params.id).catch(() => []),
     // Par level alerts - only for upcoming confirmed/in_progress events
     ['confirmed', 'in_progress'].includes(event.status) && isEventWithinDays(event.event_date, 7)
       ? getParAlerts().catch(() => [])
@@ -751,6 +756,13 @@ export default async function EventDetailPage({
         </WidgetErrorBoundary>
       )}
 
+      {/* Completion Contract */}
+      <WidgetErrorBoundary name="Completion" compact>
+        <Suspense fallback={<CompletionCardSkeleton />}>
+          <EventCompletionSection eventId={params.id} />
+        </Suspense>
+      </WidgetErrorBoundary>
+
       {/* Schedule Summary & DOP Progress */}
       {dopProgress && !['cancelled'].includes(event.status) && (
         <Card className="p-4">
@@ -957,7 +969,6 @@ export default async function EventDetailPage({
         unrecordedComponents={unrecordedComponents}
         aiConfigured={aiConfigured}
         hasAllergyData={eventHasAllergyData as boolean}
-        revenueSplitCollaborators={revenueSplitCollaborators as any[]}
         eventTotalCents={eventTotalCents}
       />
       {/* TAB: WRAP-UP â€” Debrief, survey, history      */}

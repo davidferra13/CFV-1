@@ -7,7 +7,6 @@ import { StaffBriefingAIPanel } from '@/components/ai/staff-briefing-ai-panel'
 import { PrepTimelinePanel } from '@/components/ai/prep-timeline-panel'
 import { ServiceTimelinePanel } from '@/components/ai/service-timeline-panel'
 import { EventCollaboratorsPanel } from '@/components/events/event-collaborators-panel'
-import { CollaboratorPanel } from '@/components/events/collaborator-panel'
 import { TravelIngredientsPanel } from '@/components/events/travel-ingredients-panel'
 import { TempLogPanel } from '@/components/events/temp-log-panel'
 import { TempSafetyPanel } from '@/components/ai/temp-safety-panel'
@@ -27,6 +26,7 @@ import { EventTransitions } from '@/components/events/event-transitions'
 import { EventClosureActions } from '@/components/events/event-closure-actions'
 import { EventPhotoGallery } from '@/components/events/event-photo-gallery'
 import { RecipeCapturePrompt } from '@/components/recipes/recipe-capture-prompt'
+import { EventAmbiancePanel } from '@/components/events/event-ambiance-panel'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 
@@ -59,7 +59,6 @@ type EventDetailOpsTabProps = {
   unrecordedComponents: any[]
   aiConfigured: boolean
   hasAllergyData: boolean
-  revenueSplitCollaborators: any[]
   eventTotalCents: number
 }
 
@@ -93,7 +92,6 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
     unrecordedComponents,
     aiConfigured,
     hasAllergyData,
-    revenueSplitCollaborators,
     eventTotalCents,
   } = props
 
@@ -172,15 +170,6 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
         />
       )}
 
-      {/* Revenue Split Collaborators - station assignments and split management */}
-      {event.status !== 'cancelled' && isEventOwner && (
-        <CollaboratorPanel
-          eventId={event.id}
-          initialCollaborators={revenueSplitCollaborators}
-          eventTotalCents={eventTotalCents}
-        />
-      )}
-
       {/* Temperature Log â€” active and completed events */}
       {['in_progress', 'completed'].includes(event.status) && (
         <Card className="p-6">
@@ -235,6 +224,14 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
 
       {/* AI Contingency Suggestions */}
       {event.status !== 'cancelled' && <ContingencyAIPanel eventId={event.id} />}
+
+      {/* Atmosphere / Ambiance - music, lighting, table setting, mood */}
+      {event.status !== 'cancelled' && (
+        <EventAmbiancePanel
+          eventId={event.id}
+          initialNotes={(event as any).ambiance_notes ?? null}
+        />
+      )}
 
       {/* Travel Ingredients - shows ingredients by travel leg/stop */}
       {event.status !== 'cancelled' && <TravelIngredientsPanel eventId={event.id} />}

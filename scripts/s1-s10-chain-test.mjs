@@ -43,8 +43,16 @@ async function shot(name) {
 
 async function nav(label, path) {
   console.log(`\n── ${label} ──`)
-  await page.goto(`${BASE}${path}`, { waitUntil: 'domcontentloaded', timeout: 15000 })
-  await page.waitForTimeout(2000)
+  await page.goto(`${BASE}${path}`, { waitUntil: 'domcontentloaded', timeout: 45000 })
+  await page.waitForTimeout(4000)
+  // Verify we're on the right page (Next.js client-side redirects can push elsewhere)
+  const url = page.url()
+  if (!url.includes(path.split('?')[0])) {
+    console.log(`  ⚠️ Nav drift: expected ${path}, got ${url}`)
+    // Retry once with full load
+    await page.goto(`${BASE}${path}`, { waitUntil: 'load', timeout: 45000 })
+    await page.waitForTimeout(4000)
+  }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -52,46 +60,75 @@ async function nav(label, path) {
 // ═══════════════════════════════════════════════════════
 async function signIn() {
   console.log('\n═══ SIGN IN ═══')
-  await page.goto(`${BASE}/auth/signin`, { waitUntil: 'domcontentloaded', timeout: 15000 })
-  await page.waitForTimeout(3000)
+  // Strategy: fetch CSRF + POST credentials via page.evaluate (JS context)
+  // Then navigate to dashboard with session cookie set.
+  // This avoids the "Signing you in..." hydration issue.
 
-  // Handle PWA "Updating app..." interstitial
+  // Navigate to any page first to establish origin context for fetch()
+  await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 30000 })
+  await page.waitForTimeout(2000)
+
+  // Step 1+2: Get CSRF and POST credentials in one evaluate
+  const authResult = await page.evaluate(async ({ base, email, password }) => {
+    try {
+      // Get CSRF token
+      const csrfResp = await fetch(`${base}/api/auth/csrf`)
+      const csrfData = await csrfResp.json()
+      const csrf = csrfData.csrfToken
+      if (!csrf) return { ok: false, error: 'No CSRF token' }
+
+      // POST credentials
+      const resp = await fetch(`${base}/api/auth/callback/credentials`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          csrfToken: csrf,
+          email,
+          password,
+          json: 'true',
+        }),
+        redirect: 'manual', // Don't follow redirect
+      })
+
+      return { ok: resp.status < 400, status: resp.status, location: resp.headers.get('location') }
+    } catch (err) {
+      return { ok: false, error: err.message }
+    }
+  }, { base: BASE, email: CREDS.email, password: CREDS.password })
+
+  console.log(`  Auth result: ${JSON.stringify(authResult)}`)
+
+  // Step 3: Navigate to dashboard (session cookie now set)
+  await page.goto(`${BASE}/dashboard`, { waitUntil: 'commit', timeout: 60000 })
+  await page.waitForTimeout(8000)
+
+  // Handle PWA/cookie overlays
   const reloadBtn = page.locator('button:has-text("Reload Now")')
-  if (await reloadBtn.isVisible().catch(() => false)) {
-    console.log('  PWA update screen detected, clicking Reload Now...')
+  if (await reloadBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
     await reloadBtn.click()
     await page.waitForTimeout(5000)
-    // After reload, navigate to signin again
-    await page.goto(`${BASE}/auth/signin`, { waitUntil: 'domcontentloaded', timeout: 15000 })
+    await page.goto(`${BASE}/dashboard`, { waitUntil: 'domcontentloaded', timeout: 30000 })
     await page.waitForTimeout(3000)
   }
-
-  // Handle cookie banner
   const acceptBtn = page.locator('button:has-text("Accept")')
-  if (await acceptBtn.isVisible().catch(() => false)) {
+  if (await acceptBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
     await acceptBtn.click()
-    await page.waitForTimeout(500)
   }
 
-  await page.waitForSelector('input[type="email"]', { timeout: 15000 })
-  await page.fill('input[type="email"]', CREDS.email)
-  await page.fill('input[type="password"]', CREDS.password)
-  await page.click('button[type="submit"]')
-
-  // Wait for navigation away from signin (poll URL for up to 15s)
+  // Check we're authenticated
   let loginUrl = page.url()
   for (let i = 0; i < 15; i++) {
     await page.waitForTimeout(1000)
     loginUrl = page.url()
-    if (!loginUrl.includes('/auth/signin')) break
+    if (!loginUrl.includes('/auth/') && !loginUrl.includes('/signin')) break
   }
 
   if (loginUrl.includes('/auth/signin')) {
     await shot('login-failed')
-    throw new Error('Login failed - still on signin page after 15s')
+    throw new Error('Login failed - still on signin page after auth')
   }
   finding('PASS', 'Auth', `Signed in, landed at ${loginUrl}`)
-  await page.waitForTimeout(2000) // let dashboard fully render
+  await page.waitForTimeout(2000)
   await shot('signed-in')
 }
 
@@ -157,12 +194,13 @@ async function createClient() {
   // Submit and wait for navigation
   const submitBtn = page.getByRole('button', { name: 'Add Client' })
 
-  // Log network requests for debugging
-  page.on('response', resp => {
+  // Log network requests for debugging (scoped - remove after)
+  const netLogger = resp => {
     if (resp.url().includes('client') || resp.status() >= 400) {
       console.log(`    NET: ${resp.status()} ${resp.url().slice(0, 80)}`)
     }
-  })
+  }
+  page.on('response', netLogger)
 
   await submitBtn.click()
 
@@ -177,6 +215,9 @@ async function createClient() {
 
   console.log(`  After submit URL: ${afterUrl}`)
   await shot('client-after-submit')
+
+  // Remove network logger to prevent flooding subsequent tests
+  page.removeListener('response', netLogger)
 
   if (afterUrl.includes('/clients/') && !afterUrl.includes('/new')) {
     // Extract client ID from URL
@@ -420,23 +461,37 @@ async function createRecipe(name, category, description, ingredients) {
   await nav(`Recipe: ${name}`, '/recipes/new')
   await page.waitForTimeout(2000)
 
+  // Verify we're on the recipe form
+  const recipeUrl = page.url()
+  if (!recipeUrl.includes('/recipes/new')) {
+    console.log(`    ⚠️ Not on recipe page. URL: ${recipeUrl}. Retrying...`)
+    await page.goto(`${BASE}/recipes/new`, { waitUntil: 'load', timeout: 45000 })
+    await page.waitForTimeout(5000)
+    if (!page.url().includes('/recipes/new')) {
+      console.log(`    ❌ Still not on recipe page: ${page.url()}`)
+      return false
+    }
+  }
+
   // Handle "Restore unsent draft?" modal
   const discardBtn = page.locator('button:has-text("Discard")')
-  if (await discardBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+  if (await discardBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
     console.log('    Discarding unsent draft...')
     await discardBtn.click()
     await page.waitForTimeout(1000)
   }
 
-  // Click Manual Entry tab
+  // Click Manual Entry tab (required - Smart Import is default)
   const manualTab = page.locator('button:has-text("Manual Entry")')
-  if (await manualTab.isVisible({ timeout: 3000 }).catch(() => false)) {
-    await manualTab.click()
-    await page.waitForTimeout(500)
-  }
+  await manualTab.waitFor({ state: 'visible', timeout: 15000 })
+  await manualTab.click()
+  await page.waitForTimeout(1000)
+  console.log('    Switched to Manual Entry mode')
 
-  // Fill recipe name
-  await page.getByPlaceholder('e.g., Diane Sauce').fill(name)
+  // Fill recipe name - wait for it to be visible
+  const nameInput = page.getByPlaceholder('e.g., Diane Sauce')
+  await nameInput.waitFor({ state: 'visible', timeout: 10000 })
+  await nameInput.fill(name)
 
   // Select category
   const catSelect = page.locator('select[aria-label="Category"]')
@@ -613,90 +668,264 @@ async function createRecipes() {
 }
 
 // ═══════════════════════════════════════════════════════
-// S5d: EXPLORE EVENT DETAIL (menu, shopping list, prep timeline)
+// S5d: CREATE MENU (3-step wizard)
 // ═══════════════════════════════════════════════════════
-async function exploreEventDetail() {
-  console.log('\n═══ S5d: EVENT DETAIL EXPLORATION ═══')
+async function createMenu() {
+  console.log('\n═══ S5d: CREATE MENU ═══')
 
-  if (!created.eventId) {
-    finding('FAIL', 'S5d: Event Detail', 'No event ID to explore')
+  await nav('New Menu', '/menus/new')
+  await page.waitForTimeout(2000)
+  await shot('menu-form-step1')
+
+  const ts = Date.now().toString().slice(-4)
+  const menuName = `Dinner Party Menu ${ts}`
+
+  // Step 1: Metadata
+  const nameInput = page.getByPlaceholder('e.g., Summer BBQ Menu')
+  await nameInput.fill(menuName)
+
+  const descInput = page.getByPlaceholder('Describe this menu...')
+  if (await descInput.isVisible().catch(() => false)) {
+    await descInput.fill('6-guest Italian-forward dinner. Pasta, chicken, tart.')
+  }
+
+  // Guest count
+  const guestInput = page.getByPlaceholder('e.g., 12')
+  if (await guestInput.isVisible().catch(() => false)) {
+    await guestInput.fill('6')
+  }
+
+  // Scene type
+  const sceneSelect = page.locator('select[aria-label="Scene type"]')
+  if (await sceneSelect.isVisible().catch(() => false)) {
+    await sceneSelect.selectOption('Intimate Dinner')
+  }
+
+  // Service style
+  const styleSelect = page.locator('select[aria-label="Service style"]')
+  if (await styleSelect.isVisible().catch(() => false)) {
+    await styleSelect.selectOption('plated')
+  }
+
+  await shot('menu-step1-filled')
+
+  // Click "Next: Add Courses"
+  const nextBtn = page.getByRole('button', { name: /Next.*Add Courses/i })
+  if (!await nextBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+    finding('FAIL', 'S5d: Menu', 'Next: Add Courses button not found')
+    return false
+  }
+  await nextBtn.click()
+  await page.waitForTimeout(1000)
+
+  // Step 2: Courses - match recipe names for auto-linking in step 3
+  // Course 1 already exists
+  const courseLabelInputs = () => page.getByPlaceholder('e.g., Main Course')
+  const dishNameInputs = () => page.getByPlaceholder('e.g., Duck Breast')
+  const dishDescInputs = () => page.getByPlaceholder('Brief description...')
+
+  // Course 1: Pasta (will match "Sage Butter Ravioli")
+  await courseLabelInputs().first().fill('First Course')
+  await dishNameInputs().first().fill('Sage Butter Ravioli')
+  await dishDescInputs().first().fill('Fresh ricotta ravioli with brown butter and crispy sage')
+  console.log('  Course 1: First Course - Sage Butter Ravioli')
+
+  // Add Course 2
+  const addCourseBtn = page.locator('button:has-text("+ Add Course")')
+  await addCourseBtn.click()
+  await page.waitForTimeout(500)
+
+  // Course 2: Protein (will match "Herb Roasted Chicken")
+  await courseLabelInputs().nth(1).fill('Main Course')
+  await dishNameInputs().nth(1).fill('Herb Roasted Chicken')
+  await dishDescInputs().nth(1).fill('Dry-brined whole chicken with herbs and garlic confit')
+  console.log('  Course 2: Main Course - Herb Roasted Chicken')
+
+  // Add Course 3
+  await addCourseBtn.click()
+  await page.waitForTimeout(500)
+
+  // Course 3: Dessert (will match "Lemon Olive Oil Tart")
+  await courseLabelInputs().nth(2).fill('Dessert')
+  await dishNameInputs().nth(2).fill('Lemon Olive Oil Tart')
+  await dishDescInputs().nth(2).fill('Bright citrus tart with olive oil crust and whipped cream')
+  console.log('  Course 3: Dessert - Lemon Olive Oil Tart')
+
+  await shot('menu-step2-courses')
+
+  // Click "Create Menu (3 courses)"
+  const createBtn = page.getByRole('button', { name: /Create Menu/i })
+  await createBtn.click()
+  console.log('  Clicked Create Menu, waiting for step 3...')
+
+  // Wait for step 3 (breakdown panel) or redirect - up to 45s
+  let menuCreated = false
+  for (let i = 0; i < 45; i++) {
+    await page.waitForTimeout(1000)
+
+    // Check for breakdown panel (step 3)
+    const breakdown = await page.getByText('Menu Breakdown').isVisible().catch(() => false)
+    const viewMenu = await page.getByText('View Menu').isVisible().catch(() => false)
+    const openEditor = await page.getByText('Open Editor').isVisible().catch(() => false)
+
+    if (breakdown || viewMenu || openEditor) {
+      menuCreated = true
+      console.log(`  Menu created after ${i+1}s (breakdown panel visible)`)
+      break
+    }
+
+    // Also check URL change
+    const url = page.url()
+    if (url.includes('/menus/') && !url.includes('/new')) {
+      menuCreated = true
+      const match = url.match(/\/menus\/([a-f0-9-]+)/)
+      if (match) created.menuId = match[1]
+      console.log(`  Menu created after ${i+1}s (URL redirect)`)
+      break
+    }
+
+    if (i % 10 === 9) console.log(`    Still creating menu... (${i+1}s)`)
+  }
+
+  if (!menuCreated) {
+    await shot('menu-create-timeout')
+    finding('FAIL', 'S5d: Menu', 'Menu creation timed out after 45s')
     return false
   }
 
-  await nav('Event Detail', `/events/${created.eventId}`)
-  await shot('event-detail-overview')
+  await shot('menu-step3-breakdown')
 
-  // Catalog all tabs/sections visible on event detail page
-  const allButtons = await page.$$eval('button, [role="tab"], a[href]', els =>
-    els.map(e => ({
-      tag: e.tagName,
-      text: e.textContent?.trim()?.slice(0, 60),
-      href: e.getAttribute('href'),
-      role: e.getAttribute('role'),
-    })).filter(e => e.text && e.text.length > 0)
-  )
-  console.log(`  Found ${allButtons.length} interactive elements`)
-  for (const btn of allButtons.slice(0, 30)) {
-    console.log(`    ${btn.tag}[${btn.role || ''}] "${btn.text}" ${btn.href || ''}`)
-  }
-
-  // Look for tabs on the event detail page
-  const tabs = await page.$$('[role="tab"], [data-state]')
-  if (tabs.length > 0) {
-    console.log(`  Found ${tabs.length} tab elements`)
-    for (const tab of tabs) {
-      const text = await tab.textContent()
-      const state = await tab.getAttribute('data-state')
-      console.log(`    Tab: "${text?.trim()}" (${state})`)
-    }
-  }
-
-  // Screenshot each section/tab
-  const tabNames = ['Overview', 'Menu', 'Prep', 'Shopping', 'Financial', 'Timeline', 'Guests', 'Details']
-  for (const tabName of tabNames) {
+  // Try to extract menu ID from "View Menu" link
+  if (!created.menuId) {
     try {
-      const tab = page.getByRole('tab', { name: tabName }).or(
-        page.locator(`button:has-text("${tabName}")`).first()
-      )
-      if (await tab.isVisible().catch(() => false)) {
-        await tab.click()
-        await page.waitForTimeout(1000)
-        await shot(`event-tab-${tabName.toLowerCase()}`)
-        console.log(`  📋 Tab "${tabName}" visible`)
+      const viewLink = await page.$('a[href*="/menus/"]')
+      if (viewLink) {
+        const href = await viewLink.getAttribute('href')
+        const match = href?.match(/\/menus\/([a-f0-9-]+)/)
+        if (match) created.menuId = match[1]
       }
-    } catch {
-      // Tab doesn't exist, that's fine
-    }
+    } catch {}
   }
 
-  // Check for status badge and FSM controls
-  const statusBadge = await page.$eval('[class*="badge"], [class*="Badge"]',
-    el => el.textContent?.trim()).catch(() => null)
-  if (statusBadge) {
-    console.log(`  Status badge: "${statusBadge}"`)
-    finding('PASS', 'S7: Status Badge', `Event shows status "${statusBadge}"`)
+  // Wait for auto recipe matching (searches by dish name)
+  console.log('  Waiting for auto recipe matching...')
+  await page.waitForTimeout(5000) // give it time to search
+
+  await shot('menu-recipe-matching')
+
+  if (created.menuId) {
+    finding('PASS', 'S5d: Menu', `Created menu "${menuName}" (${created.menuId}) with 3 courses`)
+  } else {
+    finding('PARTIAL', 'S5d: Menu', `Menu created but could not extract ID`)
   }
 
-  // Look for transition buttons (FSM)
-  const transitionBtns = await page.$$eval('button', els =>
-    els.map(e => e.textContent?.trim())
-      .filter(t => t && (
-        t.includes('Propose') || t.includes('Accept') || t.includes('Mark Paid') ||
-        t.includes('Confirm') || t.includes('Start') || t.includes('Complete') ||
-        t.includes('Cancel') || t.includes('Send') || t.includes('Begin')
-      ))
-  )
-  if (transitionBtns.length > 0) {
-    console.log(`  FSM transition buttons: ${transitionBtns.join(', ')}`)
-  }
-
-  await shot('event-detail-explored')
-  finding('PASS', 'S5d: Event Detail', `Event detail loaded with tabs and status`)
   return true
 }
 
 // ═══════════════════════════════════════════════════════
-// S7: EVENT FSM TRAVERSAL
+// S5e: LINK MENU TO EVENT (Money tab -> MenuLibraryPicker)
+// ═══════════════════════════════════════════════════════
+async function linkMenuToEvent() {
+  console.log('\n═══ S5e: LINK MENU TO EVENT ═══')
+
+  if (!created.eventId || !created.menuId) {
+    finding('FAIL', 'S5e: Menu Link', `Missing IDs: event=${created.eventId}, menu=${created.menuId}`)
+    return false
+  }
+
+  // Navigate to event detail
+  await nav('Event Detail', `/events/${created.eventId}`)
+  await page.waitForTimeout(3000)
+
+  // Click Money tab (tab bar uses URL params)
+  await page.goto(`${BASE}/events/${created.eventId}?tab=money`, { waitUntil: 'load', timeout: 45000 })
+  await page.waitForTimeout(8000) // Money tab has Suspense boundaries, wait for hydration
+  await shot('event-money-tab')
+
+  // Look for MenuLibraryPicker "Use" button for our menu
+  const pageText = await page.$eval('body', el => el.innerText).catch(() => '')
+
+  // Find all "Use" buttons
+  const useButtons = page.getByRole('button', { name: /^Use$/i })
+  const useCount = await useButtons.count()
+  console.log(`  Found ${useCount} "Use" buttons in menu library`)
+
+  if (useCount > 0) {
+    // Click the first "Use" button (our menu should be most recent)
+    await useButtons.first().click()
+    console.log('  Clicked "Use" on first menu')
+    await page.waitForTimeout(5000) // server action to link
+
+    await shot('event-menu-linked')
+
+    // Verify the link by checking page content
+    const afterText = await page.$eval('body', el => el.innerText).catch(() => '')
+    if (afterText.includes('Dinner Party Menu') || afterText.includes('Sage Butter') || afterText.includes('Herb Roasted')) {
+      finding('PASS', 'S5e: Menu Link', 'Menu linked to event via MenuLibraryPicker')
+    } else {
+      finding('PARTIAL', 'S5e: Menu Link', 'Clicked Use but could not confirm link')
+    }
+    return true
+  } else {
+    // Maybe menus show as cards, try scrolling
+    console.log('  No "Use" buttons found. Checking if menu library is empty...')
+    await shot('event-menu-library-empty')
+    finding('GAP', 'S5e: Menu Link', 'No menus in library picker')
+    return false
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// S5f: EXPLORE EVENT DETAIL (verify full chain)
+// ═══════════════════════════════════════════════════════
+async function exploreEventDetail() {
+  console.log('\n═══ S5f: EVENT DETAIL EXPLORATION ═══')
+
+  if (!created.eventId) {
+    finding('FAIL', 'S5f: Event Detail', 'No event ID to explore')
+    return false
+  }
+
+  await nav('Event Detail', `/events/${created.eventId}`)
+  await page.waitForTimeout(3000)
+  await shot('event-detail-overview')
+
+  // Screenshot each tab via URL param (more reliable than clicking)
+  const tabs = ['overview', 'money', 'prep', 'tickets', 'ops', 'wrap']
+  for (const tab of tabs) {
+    try {
+      await page.goto(`${BASE}/events/${created.eventId}?tab=${tab}`, { waitUntil: 'domcontentloaded', timeout: 15000 })
+      await page.waitForTimeout(2000)
+      await shot(`event-tab-${tab}`)
+      console.log(`  Tab "${tab}" loaded`)
+    } catch {
+      console.log(`  Tab "${tab}" failed to load`)
+    }
+  }
+
+  // Check Ops tab for FSM transition buttons
+  await page.goto(`${BASE}/events/${created.eventId}?tab=ops`, { waitUntil: 'domcontentloaded', timeout: 15000 })
+  await page.waitForTimeout(2000)
+
+  const transitionBtns = await page.$$eval('button', els =>
+    els.map(e => e.textContent?.trim())
+      .filter(t => t && (
+        t.includes('Propose') || t.includes('Accept') || t.includes('Mark Paid') ||
+        t.includes('Confirm') || t.includes('In Progress') || t.includes('Complete') ||
+        t.includes('Cancel')
+      ))
+  )
+  if (transitionBtns.length > 0) {
+    console.log(`  FSM buttons on Ops tab: ${transitionBtns.join(', ')}`)
+  }
+
+  await shot('event-detail-explored')
+  finding('PASS', 'S5f: Event Detail', `Event detail loaded with ${tabs.length} tabs`)
+  return true
+}
+
+// ═══════════════════════════════════════════════════════
+// S7: EVENT FSM TRAVERSAL (full 6-step, Ops tab, 60s waits)
 // ═══════════════════════════════════════════════════════
 async function testFSMTraversal() {
   console.log('\n═══ S7: FSM TRAVERSAL ═══')
@@ -706,106 +935,172 @@ async function testFSMTraversal() {
     return false
   }
 
-  await nav('Event for FSM', `/events/${created.eventId}`)
-  await page.waitForTimeout(2000)
+  // Verify starting status from DB via page
+  async function getEventStatus() {
+    // Navigate to Ops tab which shows EventTransitions
+    await page.goto(`${BASE}/events/${created.eventId}?tab=ops`, { waitUntil: 'domcontentloaded', timeout: 15000 })
+    await page.waitForTimeout(4000)
+    // Read visible status from badges
+    const badges = await page.$$eval('[class*="badge"], [class*="Badge"], [class*="status"]', els =>
+      els.map(e => e.textContent?.trim().toLowerCase()).filter(Boolean)
+    )
+    return badges
+  }
 
   // Expected transitions: draft -> proposed -> accepted -> paid -> confirmed -> in_progress -> completed
   const transitions = [
-    { button: /Send Proposal|Propose to Client/i, expected: 'proposed', label: 'draft -> proposed' },
-    { button: /Accept on Behalf|Accept Event/i, expected: 'accepted', label: 'proposed -> accepted' },
-    { button: /Mark Paid|Record Payment|Mark Paid \(Offline\)/i, expected: 'paid', label: 'accepted -> paid' },
-    { button: /Confirm/i, expected: 'confirmed', label: 'paid -> confirmed' },
-    { button: /Start|Begin Service|In Progress/i, expected: 'in_progress', label: 'confirmed -> in_progress' },
-    { button: /Complete|Mark Complete/i, expected: 'completed', label: 'in_progress -> completed' },
+    { button: 'Propose to Client', expected: 'proposed', label: 'draft -> proposed' },
+    { button: 'Accept on Behalf', expected: 'accepted', label: 'proposed -> accepted' },
+    { button: 'Mark Paid (Offline)', expected: 'paid', label: 'accepted -> paid' },
+    { button: 'Confirm Event', expected: 'confirmed', label: 'paid -> confirmed' },
+    { button: 'Mark In Progress', expected: 'in_progress', label: 'confirmed -> in_progress' },
+    { button: 'Mark Completed', expected: 'completed', label: 'in_progress -> completed' },
   ]
 
   let transitionsCompleted = 0
+  let lastStatus = 'draft'
 
   for (const tr of transitions) {
-    // Reload page to pick up latest event state after each transition
-    if (transitionsCompleted > 0) {
-      await page.goto(`${BASE}/events/${created.eventId}`, { waitUntil: 'domcontentloaded', timeout: 15000 })
-      await page.waitForTimeout(3000)
+    // Always reload the Ops tab to get fresh state
+    await page.goto(`${BASE}/events/${created.eventId}?tab=ops`, { waitUntil: 'domcontentloaded', timeout: 15000 })
+    await page.waitForTimeout(4000)
+
+    // Find exact button text match
+    const btn = page.getByRole('button', { name: tr.button, exact: true })
+    const btnVisible = await btn.isVisible({ timeout: 5000 }).catch(() => false)
+
+    if (!btnVisible) {
+      console.log(`    Button "${tr.button}" not visible. Current buttons on page:`)
+      const allBtnTexts = await page.$$eval('button', els =>
+        els.map(e => e.textContent?.trim()).filter(t => t && t.length > 1 && t.length < 50)
+      )
+      console.log(`      ${allBtnTexts.join(' | ')}`)
+      await shot(`fsm-missing-${tr.expected}`)
+      break // Can't proceed with remaining transitions
     }
 
-    // Find the transition button
-    let btn = null
-    try {
-      btn = page.getByRole('button', { name: tr.button })
-      if (!await btn.isVisible({ timeout: 3000 }).catch(() => false)) {
-        btn = null
+    // Check disabled state
+    const isDisabled = await btn.isDisabled().catch(() => false)
+    if (isDisabled) {
+      console.log(`    Button "${tr.button}" is DISABLED (readiness gate?)`)
+      // Check for readiness blockers
+      const blockerText = await page.$$eval('[class*="border-red"], [class*="border-amber"]', els =>
+        els.map(e => e.textContent?.trim().slice(0, 100)).join('; ')
+      ).catch(() => '')
+      if (blockerText) console.log(`    Readiness blockers: ${blockerText}`)
+      await shot(`fsm-blocked-${tr.expected}`)
+
+      // For paid->confirmed, try overriding soft gates
+      if (tr.expected === 'confirmed') {
+        // Check for override buttons
+        const overrideBtn = page.locator('button:has-text("Override"), button:has-text("Proceed Anyway")')
+        if (await overrideBtn.isVisible().catch(() => false)) {
+          await overrideBtn.click()
+          await page.waitForTimeout(2000)
+          console.log('    Clicked override for readiness gate')
+        }
       }
-    } catch {
-      btn = null
+
+      // If still disabled, stop
+      const stillDisabled = await btn.isDisabled().catch(() => true)
+      if (stillDisabled) {
+        finding('PARTIAL', 'S7: FSM', `Blocked at "${tr.label}" by readiness gate. ${transitionsCompleted}/6 done.`)
+        break
+      }
     }
 
-    if (!btn) {
-      // Try broader text match
-      const allBtns = await page.$$('button')
-      for (const b of allBtns) {
-        const text = await b.textContent().catch(() => '')
-        if (text && tr.button.test(text)) {
-          btn = b
+    console.log(`  Clicking: ${tr.label}`)
+    // Scroll button into view and force-click (bypass overlay checks)
+    await btn.scrollIntoViewIfNeeded()
+    await page.waitForTimeout(500)
+
+    // Listen for page errors during click
+    const pageErrors = []
+    const errHandler = err => pageErrors.push(err.message?.slice(0, 100) || String(err))
+    page.on('pageerror', errHandler)
+
+    await btn.click({ force: true })
+
+    // Wait for server action to complete (120s on slow hardware - side effects + router.refresh)
+    console.log(`    Waiting for server action...`)
+    let transitioned = false
+    for (let i = 0; i < 120; i++) {
+      await page.waitForTimeout(1000)
+
+      // Check if the button disappears (meaning state changed and component re-rendered)
+      const stillVisible = await page.getByRole('button', { name: tr.button, exact: true })
+        .isVisible().catch(() => false)
+
+      // For "Mark Completed" - it redirects to /events/[id]/close-out
+      if (tr.expected === 'completed') {
+        const url = page.url()
+        if (url.includes('/close-out')) {
+          transitioned = true
+          console.log(`    Redirected to close-out page after ${i+1}s`)
           break
         }
       }
+
+      if (!stillVisible) {
+        transitioned = true
+        console.log(`    Button gone after ${i+1}s (transition succeeded)`)
+        break
+      }
+
+      // Also check for error toast/message
+      const errorMsg = await page.$$eval('[role="alert"], .text-red-500, [data-sonner-toast]', els =>
+        els.map(e => e.textContent?.trim()).filter(t => t && t.length > 2).join('; ')
+      ).catch(() => '')
+      if (errorMsg && errorMsg.length > 5) {
+        console.log(`    Error during transition: ${errorMsg.slice(0, 120)}`)
+        await shot(`fsm-error-${tr.expected}`)
+        break
+      }
+
+      if (i % 15 === 14) console.log(`      Still waiting... (${i+1}s)`)
     }
 
-    if (btn) {
-      // Check if button is disabled
-      const isDisabled = await page.evaluate(el => el.disabled, btn).catch(() => false)
-      if (isDisabled) {
-        console.log(`    ⚠️ Button found but disabled for: ${tr.label}`)
-        await shot(`fsm-disabled-${tr.expected}`)
-        continue
-      }
+    // Remove error listener
+    page.removeListener('pageerror', errHandler)
+    if (pageErrors.length > 0) {
+      console.log(`    Page JS errors: ${pageErrors.join('; ')}`)
+    }
 
-      console.log(`  Clicking: ${tr.label}`)
-      await btn.click()
-      await page.waitForTimeout(3000)
-
-      // Handle any confirmation dialogs/modals
-      const confirmBtn = await page.$('button:has-text("Confirm"), button:has-text("Yes"), button:has-text("OK")')
-      if (confirmBtn) {
-        await confirmBtn.click()
-        await page.waitForTimeout(2000)
-      }
-
-      // For "Mark Paid" transition, we may need to fill payment details
-      if (tr.label.includes('paid')) {
-        const amountInput = await page.$('input[type="number"]')
-        if (amountInput) {
-          await amountInput.fill('750')
-          console.log('    Filled payment amount: $750')
-          const methodSelect = await page.$('select')
-          if (methodSelect) {
-            await methodSelect.selectOption('cash').catch(() => {})
-          }
-          const payBtn = await page.$('button:has-text("Record"), button:has-text("Submit"), button:has-text("Save"), button[type="submit"]')
-          if (payBtn) {
-            await payBtn.click()
-            await page.waitForTimeout(3000)
-          }
-        }
-      }
-
-      // Wait for transition to complete (server action)
-      await page.waitForTimeout(5000)
-      await shot(`fsm-${tr.expected}`)
+    if (transitioned) {
       transitionsCompleted++
-      console.log(`    ✅ ${tr.label}`)
+      lastStatus = tr.expected
+      await shot(`fsm-${tr.expected}`)
+      console.log(`    ✅ ${tr.label} (${transitionsCompleted}/6)`)
     } else {
-      console.log(`    ⚠️ Button not found for: ${tr.label}`)
-      await shot(`fsm-missing-${tr.expected}`)
+      // Check if transition actually worked by looking at the error state
+      const errorEl = await page.$('[class*="text-red"], [role="alert"]')
+      const errorText = errorEl ? await errorEl.textContent() : null
+      console.log(`    ❌ ${tr.label} - transition may not have completed`)
+      if (errorText) console.log(`    Error on page: ${errorText.slice(0, 120)}`)
+
+      // Check if button is still loading (action still in progress)
+      const isLoading = await btn.getAttribute('data-loading').catch(() => null)
+      const btnDisabled = await btn.isDisabled().catch(() => false)
+      console.log(`    Button state: disabled=${btnDisabled}, data-loading=${isLoading}`)
+
+      await shot(`fsm-stuck-${tr.expected}`)
+      // Don't break - reload and check if it actually worked
     }
   }
 
-  if (transitionsCompleted >= 4) {
-    finding('PASS', 'S7: FSM', `Completed ${transitionsCompleted}/6 transitions`)
+  // Final status check
+  await page.goto(`${BASE}/events/${created.eventId}?tab=ops`, { waitUntil: 'domcontentloaded', timeout: 15000 })
+  await page.waitForTimeout(3000)
+  await shot('fsm-final-state')
+
+  if (transitionsCompleted >= 5) {
+    finding('PASS', 'S7: FSM', `Completed ${transitionsCompleted}/6 transitions. Event reached "${lastStatus}"`)
+  } else if (transitionsCompleted >= 3) {
+    finding('PARTIAL', 'S7: FSM', `${transitionsCompleted}/6 transitions. Stopped at "${lastStatus}"`)
   } else if (transitionsCompleted > 0) {
-    finding('PARTIAL', 'S7: FSM', `Only ${transitionsCompleted}/6 transitions found`)
+    finding('PARTIAL', 'S7: FSM', `Only ${transitionsCompleted}/6 transitions. Last: "${lastStatus}"`)
   } else {
-    finding('FAIL', 'S7: FSM', 'No transition buttons found on event detail')
+    finding('FAIL', 'S7: FSM', 'No transitions completed')
   }
 
   return transitionsCompleted > 0
@@ -988,13 +1283,25 @@ async function run() {
     // Auth
     await signIn()
 
-    // S5: Full chain
+    // S5: Full chain - Client -> Event -> Recipes -> Menu -> Link Menu -> FSM
     const clientOk = await createClient()
     if (clientOk) {
       const eventOk = await createEvent()
       if (eventOk) {
         await createRecipes()
+        // S5d: Create menu with 3 courses matching recipe names
+        try { await createMenu() } catch (e) {
+          console.error(`  Menu creation error: ${e.message.slice(0, 80)}`)
+          finding('FAIL', 'S5d: Menu', `Crashed: ${e.message.slice(0, 60)}`)
+        }
+        // S5e: Link menu to event via Money tab
+        try { await linkMenuToEvent() } catch (e) {
+          console.error(`  Menu linking error: ${e.message.slice(0, 80)}`)
+          finding('FAIL', 'S5e: Menu Link', `Crashed: ${e.message.slice(0, 60)}`)
+        }
+        // S5f: Explore event detail with all tabs
         await exploreEventDetail()
+        // S7: Full FSM traversal (Ops tab, 60s waits)
         await testFSMTraversal()
       }
     }

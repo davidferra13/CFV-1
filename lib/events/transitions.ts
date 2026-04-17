@@ -255,6 +255,25 @@ export async function transitionEvent({
     }
   }
 
+  // Backfill pricing_model if transitioning to a payable status and it's missing.
+  // The DB constraint events_payable_status_requires_pricing enforces pricing_model NOT NULL
+  // for statuses >= accepted. Events created before the constraint may be missing this field.
+  const PAYABLE_STATUSES: EventStatus[] = [
+    'accepted',
+    'paid',
+    'confirmed',
+    'in_progress',
+    'completed',
+  ]
+  if (PAYABLE_STATUSES.includes(toStatus) && event.quoted_price_cents > 0 && !event.pricing_model) {
+    try {
+      await db.from('events').update({ pricing_model: 'flat_rate' }).eq('id', eventId)
+      log.events.info('Backfilled missing pricing_model to flat_rate', { context: { eventId } })
+    } catch (err) {
+      log.events.warn('pricing_model backfill failed (non-blocking)', { error: err })
+    }
+  }
+
   // Atomically update event status + insert transition audit log in one DB transaction.
   // transition_event_atomic() is a SECURITY DEFINER Postgres function that handles:
   //   - events.status, events.updated_by, events.cancelled_at, events.cancellation_reason,

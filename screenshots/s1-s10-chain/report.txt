@@ -1,14 +1,18 @@
-S1-S10 Chain Test Report - 2026-04-17T15:11:55.373Z
+S1-S10 Chain Test Report - 2026-04-17T18:43:43.839Z
 ═══════════════════════════════════════
-PASS: 7 | FAIL: 0 | GAP: 2 | PARTIAL: 2
-Created entities: client=49172719-4f78-451f-b504-b7da9afc866a, event=8106d7d3-a4a0-4c28-8223-b5cc98539957, recipes=041f3eb6-edf8-4218-b8e3-b5112e75662b, 279bae32-6a5b-452a-b230-addd28920913, a006e1f7-0c7f-419e-afa5-af659c61e200
+PASS: 8 | FAIL: 1 | GAP: 2 | PARTIAL: 2
+Created entities: client=8c40bca7-8b6b-4235-8c52-77489f313ffb, event=1375c682-0e1c-46f6-9412-d94c8f7ec573, recipes=c3c3cf3f-21e4-4c6f-90a3-e125b2e1f3d8, f543444d-a8aa-45d5-9969-66ab54a7880e, e696ed04-82e5-4084-8eea-7fc921d0a6b1
 
 [PASS] Auth: Signed in, landed at http://localhost:3000/dashboard
-[PASS] S5a: Client: Created client "Chain Test 292261" (49172719-4f78-451f-b504-b7da9afc866a)
-[PASS] S5b: Event: Created event (8106d7d3-a4a0-4c28-8223-b5cc98539957), linked to client "Chain Test 292261"
+[PASS] S5a: Client: Created client "Chain Test 795478" (8c40bca7-8b6b-4235-8c52-77489f313ffb)
+[PASS] S5b: Event: Created event (1375c682-0e1c-46f6-9412-d94c8f7ec573), linked to client "Chain Test 795478"
 [PASS] S5c: Recipes: Created 3/3 recipes with ingredients
-[PASS] S5d: Event Detail: Event detail loaded with tabs and status
-[PARTIAL] S7: FSM: Only 2/6 transitions found
+[PASS] S5d: Menu: Created menu "Dinner Party Menu 5881" (a) with 3 courses
+[FAIL] S5e: Menu Link: Crashed: page.goto: Timeout 45000ms exceeded.
+Call log:
+[2m  - navig
+[PASS] S5f: Event Detail: Event detail loaded with 6 tabs
+[PARTIAL] S7: FSM: Only 1/6 transitions. Last: "proposed"
 [GAP] S1: Guest UI: No add guest button found
 [GAP] S2: Allergy Severity: Allergies not visible on client detail
 [PARTIAL] S9: Calendar: Calendar loaded but event not visible in current view

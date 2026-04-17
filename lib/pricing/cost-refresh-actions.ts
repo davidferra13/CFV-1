@@ -24,7 +24,7 @@ export async function propagatePriceChange(ingredientIds: string[]) {
   // Find all recipe_ingredients referencing these ingredients
   const { data: riRows } = await db
     .from('recipe_ingredients')
-    .select('id, recipe_id, ingredient_id, quantity, unit')
+    .select('id, recipe_id, ingredient_id, quantity, unit, yield_pct')
     .in('ingredient_id', ingredientIds)
 
   if (!riRows || riRows.length === 0) return
@@ -50,7 +50,8 @@ export async function propagatePriceChange(ingredientIds: string[]) {
         tenantId,
         ri.ingredient_id,
         ri.quantity ?? 1,
-        ri.unit || 'each'
+        ri.unit || 'each',
+        ri.yield_pct ?? undefined
       )
       // Write computed cost
       await db

@@ -146,6 +146,20 @@ export async function createEvent(input: CreateEventInput) {
     throw new AuthError('Client not found or does not belong to your tenant')
   }
 
+  // Seed ambiance from client taste profile (non-blocking, best-effort)
+  let clientAmbianceDefault: string | null = null
+  try {
+    const { data: tasteProfile } = await db
+      .from('client_taste_profiles')
+      .select('ambiance_preferences')
+      .eq('client_id', validated.client_id)
+      .eq('tenant_id', user.tenantId!)
+      .maybeSingle()
+    clientAmbianceDefault = (tasteProfile as any)?.ambiance_preferences ?? null
+  } catch {
+    // Non-blocking: taste profile lookup failure doesn't block event creation
+  }
+
   const result = await executeWithIdempotency({
     db,
     tenantId: user.tenantId!,
@@ -166,7 +180,8 @@ export async function createEvent(input: CreateEventInput) {
         location_zip: validated.location_zip,
         occasion: validated.occasion,
         service_style: validated.service_style,
-        pricing_model: validated.pricing_model,
+        pricing_model:
+          validated.pricing_model ?? (validated.quoted_price_cents ? 'flat_rate' : null),
         quoted_price_cents: validated.quoted_price_cents,
         deposit_amount_cents: validated.deposit_amount_cents,
         dietary_restrictions: validated.dietary_restrictions?.length
@@ -188,6 +203,7 @@ export async function createEvent(input: CreateEventInput) {
         referral_partner_id: validated.referral_partner_id ?? null,
         partner_location_id: validated.partner_location_id ?? null,
         event_timezone: validated.event_timezone ?? null,
+        ambiance_notes: clientAmbianceDefault,
         created_by: user.id,
         updated_by: user.id,
       }

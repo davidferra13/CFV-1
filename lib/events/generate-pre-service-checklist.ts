@@ -39,7 +39,7 @@ export async function generatePreServiceChecklist(eventId: string): Promise<PreS
   const { data: event, error: eventError } = await db
     .from('events')
     .select(
-      'id, occasion, event_date, serve_time, guest_count, location_address, location_city, location_state, dietary_restrictions, allergies, notes, status, client_id'
+      'id, occasion, event_date, serve_time, guest_count, location_address, location_city, location_state, dietary_restrictions, allergies, notes, status, client_id, ambiance_notes'
     )
     .eq('id', eventId)
     .eq('tenant_id', tenantId)
@@ -274,6 +274,23 @@ export async function generatePreServiceChecklist(eventId: string): Promise<PreS
     source: 'auto',
     priority: 'normal',
   })
+
+  // ============================================
+  // ATMOSPHERE ITEMS (from ambiance_notes)
+  // ============================================
+
+  const ambianceNotes = (event as any).ambiance_notes as string | null
+  if (ambianceNotes && ambianceNotes.trim()) {
+    items.push({
+      id: `service-ambiance-${eventId}`,
+      category: 'service',
+      title: 'Set up atmosphere',
+      detail: ambianceNotes.length > 200 ? ambianceNotes.slice(0, 200) + '...' : ambianceNotes,
+      completed: false,
+      source: 'auto',
+      priority: 'normal',
+    })
+  }
 
   return {
     event_id: event.id,

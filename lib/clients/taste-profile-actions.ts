@@ -23,6 +23,7 @@ export type ClientTasteProfile = {
   preferredProteins: string[]
   avoids: string[]
   specialOccasionsNotes: string | null
+  ambiancePreferences: string | null
   createdAt: string
   updatedAt: string
 }
@@ -38,6 +39,7 @@ const TasteProfileSchema = z.object({
   preferredProteins: z.array(z.string()).default([]),
   avoids: z.array(z.string()).default([]),
   specialOccasionsNotes: z.string().nullable().default(null),
+  ambiancePreferences: z.string().nullable().default(null),
 })
 
 export type TasteProfileInput = z.infer<typeof TasteProfileSchema>
@@ -57,6 +59,7 @@ function rowToProfile(row: Record<string, unknown>): ClientTasteProfile {
     preferredProteins: (row.preferred_proteins as string[]) ?? [],
     avoids: (row.avoids as string[]) ?? [],
     specialOccasionsNotes: (row.special_occasions_notes as string) ?? null,
+    ambiancePreferences: (row.ambiance_preferences as string) ?? null,
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,
   }
@@ -103,6 +106,7 @@ export async function upsertTasteProfile(
     preferred_proteins: parsed.preferredProteins,
     avoids: parsed.avoids,
     special_occasions_notes: parsed.specialOccasionsNotes || null,
+    ambiance_preferences: parsed.ambiancePreferences || null,
   }
 
   const { data, error } = await db

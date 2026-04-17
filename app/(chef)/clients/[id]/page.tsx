@@ -86,6 +86,14 @@ import { findPotentialClientMatches } from '@/lib/clients/cross-platform-matchin
 import { PotentialDuplicatesCard } from '@/components/clients/potential-duplicates-card'
 import { EntityPhotoUpload } from '@/components/entities/entity-photo-upload'
 import { ScheduleMessageDialog } from '@/components/communication/schedule-message-dialog'
+import { CompletionCard, CompletionCardSkeleton } from '@/components/completion/completion-card'
+import { getCompletionForEntity } from '@/lib/completion/actions'
+
+async function ClientCompletionSection({ clientId }: { clientId: string }) {
+  const result = await getCompletionForEntity('client', clientId)
+  if (!result) return null
+  return <CompletionCard result={result} />
+}
 
 const TIER_COLORS: Record<string, string> = {
   bronze: 'bg-amber-900 text-amber-800',
@@ -309,63 +317,12 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         </Suspense>
       </WidgetErrorBoundary>
 
-      {/* Profile Completeness Meter */}
-      {(() => {
-        const completeness = getClientProfileCompleteness(client as any)
-        if (completeness.score >= 85) return null // Don't show when complete
-        return (
-          <div className="rounded-lg border border-stone-700 bg-stone-800 px-4 py-3">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-medium text-stone-300">Profile completeness</p>
-              <span
-                className={`text-xs font-semibold ${
-                  completeness.tier === 'good'
-                    ? 'text-emerald-600'
-                    : completeness.tier === 'basic'
-                      ? 'text-amber-600'
-                      : 'text-red-600'
-                }`}
-              >
-                {completeness.score}%
-              </span>
-            </div>
-            <div className="h-1.5 bg-stone-700 rounded-full overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all ${
-                  completeness.score >= 60
-                    ? 'bg-emerald-500'
-                    : completeness.score >= 35
-                      ? 'bg-amber-500'
-                      : 'bg-red-500'
-                } ${
-                  completeness.score >= 90
-                    ? 'w-full'
-                    : completeness.score >= 80
-                      ? 'w-4/5'
-                      : completeness.score >= 70
-                        ? 'w-3/4'
-                        : completeness.score >= 60
-                          ? 'w-3/5'
-                          : completeness.score >= 50
-                            ? 'w-1/2'
-                            : completeness.score >= 40
-                              ? 'w-2/5'
-                              : completeness.score >= 30
-                                ? 'w-1/3'
-                                : completeness.score >= 20
-                                  ? 'w-1/4'
-                                  : 'w-1/5'
-                }`}
-              />
-            </div>
-            {completeness.missing.length > 0 && (
-              <p className="text-xs text-stone-500 mt-1.5">
-                Missing: {completeness.missing.join(', ')}
-              </p>
-            )}
-          </div>
-        )
-      })()}
+      {/* Completion Contract */}
+      <WidgetErrorBoundary name="Completion" compact>
+        <Suspense fallback={<CompletionCardSkeleton />}>
+          <ClientCompletionSection clientId={client.id} />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       {/* Client Details */}
       <Card>

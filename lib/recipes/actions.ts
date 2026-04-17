@@ -167,6 +167,7 @@ const AddIngredientToRecipeSchema = z.object({
   preparation_notes: z.string().optional(),
   is_optional: z.boolean().optional(),
   sort_order: z.number().int().optional(),
+  yield_pct: z.number().int().min(5).max(100).optional(),
 })
 
 export type AddIngredientInput = z.infer<typeof AddIngredientToRecipeSchema>
@@ -177,6 +178,7 @@ const UpdateRecipeIngredientSchema = z.object({
   preparation_notes: z.string().nullable().optional(),
   is_optional: z.boolean().optional(),
   sort_order: z.number().int().optional(),
+  yield_pct: z.number().int().min(5).max(100).nullable().optional(),
 })
 
 export type UpdateRecipeIngredientInput = z.infer<typeof UpdateRecipeIngredientSchema>
@@ -190,6 +192,7 @@ const CreateIngredientSchema = z.object({
   is_staple: z.boolean().optional(),
   allergen_flags: z.array(z.string()).optional(),
   dietary_tags: z.array(z.string()).optional(),
+  default_yield_pct: z.number().int().min(5).max(100).optional(),
 })
 
 export type CreateIngredientInput = z.infer<typeof CreateIngredientSchema>
@@ -203,6 +206,7 @@ const UpdateIngredientSchema = z.object({
   is_staple: z.boolean().optional(),
   allergen_flags: z.array(z.string()).optional(),
   dietary_tags: z.array(z.string()).optional(),
+  default_yield_pct: z.number().int().min(5).max(100).nullable().optional(),
 })
 
 export type UpdateIngredientInput = z.infer<typeof UpdateIngredientSchema>
@@ -769,22 +773,28 @@ export async function addIngredientToRecipe(recipeId: string, input: AddIngredie
     user.tenantId!,
     ingredientId,
     validated.quantity,
-    validated.unit
+    validated.unit,
+    validated.yield_pct
   )
 
   // Insert recipe_ingredient with computed cost
+  const insertData: Record<string, unknown> = {
+    recipe_id: recipeId,
+    ingredient_id: ingredientId,
+    quantity: validated.quantity,
+    unit: validated.unit,
+    preparation_notes: validated.preparation_notes || null,
+    is_optional: validated.is_optional || false,
+    sort_order: validated.sort_order ?? 0,
+    computed_cost_cents: costResult.costCents,
+  }
+  if (validated.yield_pct !== undefined) {
+    insertData.yield_pct = validated.yield_pct
+  }
+
   const { data: recipeIngredient, error } = await db
     .from('recipe_ingredients')
-    .insert({
-      recipe_id: recipeId,
-      ingredient_id: ingredientId,
-      quantity: validated.quantity,
-      unit: validated.unit,
-      preparation_notes: validated.preparation_notes || null,
-      is_optional: validated.is_optional || false,
-      sort_order: validated.sort_order ?? 0,
-      computed_cost_cents: costResult.costCents,
-    })
+    .insert(insertData)
     .select()
     .single()
 
@@ -823,7 +833,7 @@ export async function updateRecipeIngredient(
   // Verify tenant access through the recipe and get current data for cost recompute
   const { data: ri } = await db
     .from('recipe_ingredients')
-    .select('recipe_id, ingredient_id, quantity, unit, recipe:recipes(tenant_id)')
+    .select('recipe_id, ingredient_id, quantity, unit, yield_pct, recipe:recipes(tenant_id)')
     .eq('id', recipeIngredientId)
     .single()
 
@@ -838,18 +848,25 @@ export async function updateRecipeIngredient(
     updateData.preparation_notes = validated.preparation_notes
   if (validated.is_optional !== undefined) updateData.is_optional = validated.is_optional
   if (validated.sort_order !== undefined) updateData.sort_order = validated.sort_order
+  if (validated.yield_pct !== undefined) updateData.yield_pct = validated.yield_pct
 
-  // Recompute cost if quantity or unit changed
+  // Recompute cost if quantity, unit, or yield changed
   let costWarning: string | null = null
-  if (validated.quantity !== undefined || validated.unit !== undefined) {
+  if (
+    validated.quantity !== undefined ||
+    validated.unit !== undefined ||
+    validated.yield_pct !== undefined
+  ) {
     const newQty = validated.quantity ?? Number(ri.quantity)
     const newUnit = validated.unit ?? ri.unit
+    const newYield = validated.yield_pct !== undefined ? validated.yield_pct : ri.yield_pct
     const costResult = await computeRecipeIngredientCost(
       db,
       user.tenantId!,
       ri.ingredient_id,
       newQty,
-      newUnit
+      newUnit,
+      newYield ?? undefined
     )
     updateData.computed_cost_cents = costResult.costCents
     costWarning = costResult.warning
@@ -980,21 +997,26 @@ export async function createIngredient(input: CreateIngredientInput) {
     return { success: true, ingredient: existing, existed: true }
   }
 
+  const insertData: Record<string, unknown> = {
+    tenant_id: user.tenantId!,
+    name: validated.name,
+    category: validated.category as IngredientCategory,
+    default_unit: validated.default_unit,
+    description: validated.description || null,
+    average_price_cents: validated.average_price_cents || null,
+    is_staple: validated.is_staple || false,
+    allergen_flags: validated.allergen_flags || [],
+    dietary_tags: validated.dietary_tags || [],
+    created_by: user.id,
+    updated_by: user.id,
+  }
+  if (validated.default_yield_pct !== undefined) {
+    insertData.default_yield_pct = validated.default_yield_pct
+  }
+
   const { data: ingredient, error } = await db
     .from('ingredients')
-    .insert({
-      tenant_id: user.tenantId!,
-      name: validated.name,
-      category: validated.category as IngredientCategory,
-      default_unit: validated.default_unit,
-      description: validated.description || null,
-      average_price_cents: validated.average_price_cents || null,
-      is_staple: validated.is_staple || false,
-      allergen_flags: validated.allergen_flags || [],
-      dietary_tags: validated.dietary_tags || [],
-      created_by: user.id,
-      updated_by: user.id,
-    })
+    .insert(insertData)
     .select()
     .single()
 
@@ -1026,6 +1048,8 @@ export async function updateIngredient(ingredientId: string, input: UpdateIngred
   if (validated.is_staple !== undefined) updateData.is_staple = validated.is_staple
   if (validated.allergen_flags !== undefined) updateData.allergen_flags = validated.allergen_flags
   if (validated.dietary_tags !== undefined) updateData.dietary_tags = validated.dietary_tags
+  if (validated.default_yield_pct !== undefined)
+    updateData.default_yield_pct = validated.default_yield_pct
 
   const { data: ingredient, error } = await db
     .from('ingredients')
@@ -1900,7 +1924,8 @@ export async function computeRecipeIngredientCost(
   tenantId: string,
   ingredientId: string,
   quantity: number,
-  recipeUnit: string
+  recipeUnit: string,
+  overrideYieldPct?: number | null
 ): Promise<CostResult> {
   const { computeIngredientCost, canConvert, lookupDensity } =
     await import('@/lib/units/conversion-engine')
@@ -1932,7 +1957,7 @@ export async function computeRecipeIngredientCost(
   if (!canConvert(recipeUnit, costUnit, density)) {
     // Can't convert: return naive fallback but flag it
     const naiveCost = Math.round(quantity * costPerUnit)
-    const yieldPct = ingredient.default_yield_pct ?? 100
+    const yieldPct = overrideYieldPct ?? ingredient.default_yield_pct ?? 100
     const yieldAdjusted = yieldPct < 100 ? Math.round((naiveCost * 100) / yieldPct) : naiveCost
     return {
       costCents: yieldAdjusted,
@@ -1949,8 +1974,8 @@ export async function computeRecipeIngredientCost(
     }
   }
 
-  // Apply yield percentage
-  const yieldPct = ingredient.default_yield_pct ?? 100
+  // Apply yield percentage (per-ingredient override takes precedence)
+  const yieldPct = overrideYieldPct ?? ingredient.default_yield_pct ?? 100
   const yieldAdjusted = yieldPct < 100 ? Math.round((rawCost * 100) / yieldPct) : rawCost
 
   return { costCents: yieldAdjusted, warning: null }
@@ -2145,7 +2170,7 @@ export async function recomputeRecipeCosts(recipeId: string) {
   // Get all recipe ingredients
   const { data: ingredients } = await db
     .from('recipe_ingredients')
-    .select('id, ingredient_id, quantity, unit')
+    .select('id, ingredient_id, quantity, unit, yield_pct')
     .eq('recipe_id', recipeId)
 
   if (!ingredients || ingredients.length === 0) {
@@ -2161,7 +2186,8 @@ export async function recomputeRecipeCosts(recipeId: string) {
       user.tenantId!,
       ri.ingredient_id,
       Number(ri.quantity),
-      ri.unit
+      ri.unit,
+      ri.yield_pct ?? undefined
     )
 
     await db

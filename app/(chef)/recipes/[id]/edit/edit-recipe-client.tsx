@@ -24,6 +24,7 @@ import { updateRecipePeakWindow } from '@/lib/prep-timeline/actions'
 import { getCategoryDefault } from '@/lib/prep-timeline/peak-defaults'
 import { formatHoursAsReadable } from '@/lib/prep-timeline/compute-timeline'
 import { ChevronDown, ChevronUp, Snowflake } from '@/components/ui/icons'
+import { suggestYieldByName } from '@/lib/openclaw/reference-library-actions'
 
 const RECIPE_CATEGORIES = [
   'sauce',
@@ -49,6 +50,7 @@ type ExistingIngredient = {
   preparation_notes: string | null
   is_optional: boolean
   sort_order: number
+  yield_pct: number | null
   ingredient: {
     id: string
     name: string
@@ -65,6 +67,7 @@ type NewIngredient = {
   category: string
   preparation_notes: string
   is_optional: boolean
+  yield_pct: number | null
 }
 
 type RecipeDetail = NonNullable<
@@ -139,6 +142,7 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
       preparation_notes: ri.preparation_notes,
       is_optional: ri.is_optional,
       sort_order: ri.sort_order,
+      yield_pct: ri.yield_pct ?? null,
       ingredient: ri.ingredient,
     }))
   )
@@ -284,6 +288,7 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
         category: 'other',
         preparation_notes: '',
         is_optional: false,
+        yield_pct: null,
       },
     ])
   }
@@ -291,7 +296,7 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
   const updateNew = (
     index: number,
     field: keyof NewIngredient,
-    value: string | number | boolean
+    value: string | number | boolean | null
   ) => {
     const updated = [...newIngredients]
     updated[index] = { ...updated[index], [field]: value }
@@ -360,6 +365,7 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
             preparation_notes: ei.preparation_notes,
             is_optional: ei.is_optional,
             sort_order: ei.sort_order,
+            yield_pct: ei.yield_pct,
           })
         }
       }
@@ -378,6 +384,7 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
           preparation_notes: ing.preparation_notes || undefined,
           is_optional: ing.is_optional,
           sort_order: startOrder + i,
+          yield_pct: ing.yield_pct ?? undefined,
         })
       }
 
@@ -964,6 +971,14 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
                   <div className="w-28">
                     <label className="block text-xs text-stone-500">Prep</label>
                   </div>
+                  <div className="w-20">
+                    <label
+                      className="block text-xs text-stone-500"
+                      title="Usable yield after trim/waste. 100% = no loss."
+                    >
+                      Yield %
+                    </label>
+                  </div>
                   <div className="w-8">&nbsp;</div>
                 </div>
               )}
@@ -1006,6 +1021,27 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
                       placeholder="diced"
                     />
                   </div>
+                  <div className="w-20">
+                    <Input
+                      type="number"
+                      value={ei.yield_pct ?? ''}
+                      onChange={(e) => {
+                        const v =
+                          e.target.value === ''
+                            ? null
+                            : Math.min(100, Math.max(5, parseInt(e.target.value) || 5))
+                        updateExisting(ei.id, 'yield_pct', v)
+                      }}
+                      min={5}
+                      max={100}
+                      placeholder="100"
+                      title={
+                        ei.yield_pct
+                          ? `${ei.yield_pct}% usable after prep`
+                          : 'Default 100% (no waste)'
+                      }
+                    />
+                  </div>
                   <button
                     onClick={() => removeExisting(ei.id)}
                     className="p-2 text-stone-400 hover:text-red-500"
@@ -1027,6 +1063,23 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
                       type="text"
                       value={ing.name}
                       onChange={(e) => updateNew(index, 'name', e.target.value)}
+                      onBlur={async (e) => {
+                        const ingredientName = e.target.value.trim()
+                        if (!ingredientName || ing.yield_pct !== null) return
+                        try {
+                          const suggestions = await suggestYieldByName(ingredientName)
+                          if (suggestions.length > 0) {
+                            const updated = [...newIngredients]
+                            updated[index] = {
+                              ...updated[index],
+                              yield_pct: suggestions[0].yieldPct,
+                            }
+                            setNewIngredients(updated)
+                          }
+                        } catch {
+                          /* non-blocking */
+                        }
+                      }}
                       placeholder="New ingredient"
                     />
                   </div>
@@ -1054,6 +1107,29 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
                       value={ing.preparation_notes}
                       onChange={(e) => updateNew(index, 'preparation_notes', e.target.value)}
                       placeholder="diced"
+                    />
+                  </div>
+                  <div className="w-20">
+                    <Input
+                      type="number"
+                      value={ing.yield_pct ?? ''}
+                      onChange={(e) => {
+                        const v =
+                          e.target.value === ''
+                            ? null
+                            : Math.min(100, Math.max(5, parseInt(e.target.value) || 5))
+                        const updated = [...newIngredients]
+                        updated[index] = { ...updated[index], yield_pct: v }
+                        setNewIngredients(updated)
+                      }}
+                      min={5}
+                      max={100}
+                      placeholder="100"
+                      title={
+                        ing.yield_pct
+                          ? `${ing.yield_pct}% usable after prep`
+                          : 'Default 100% (no waste)'
+                      }
                     />
                   </div>
                   <button

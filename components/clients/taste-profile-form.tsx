@@ -88,6 +88,7 @@ function emptyForm(): TasteProfileInput {
     preferredProteins: [],
     avoids: [],
     specialOccasionsNotes: null,
+    ambiancePreferences: null,
   }
 }
 
@@ -101,6 +102,7 @@ function profileToForm(p: ClientTasteProfile): TasteProfileInput {
     preferredProteins: p.preferredProteins,
     avoids: p.avoids,
     specialOccasionsNotes: p.specialOccasionsNotes,
+    ambiancePreferences: p.ambiancePreferences,
   }
 }
 
@@ -219,6 +221,20 @@ export function TasteProfileForm({ clientId, initial }: TasteProfileFormProps) {
           value={form.specialOccasionsNotes ?? ''}
           onChange={(e) => update('specialOccasionsNotes', e.target.value || null)}
           placeholder="Birthday cake preferences, holiday traditions, anniversary dishes..."
+          rows={3}
+        />
+      </div>
+
+      {/* Ambiance Preferences */}
+      <div>
+        <label htmlFor="ambiance-prefs" className="block text-sm font-medium text-zinc-300 mb-1">
+          Ambiance Preferences
+        </label>
+        <Textarea
+          id="ambiance-prefs"
+          value={form.ambiancePreferences ?? ''}
+          onChange={(e) => update('ambiancePreferences', e.target.value || null)}
+          placeholder="Music genre, lighting, table setting style, service pace, mood..."
           rows={3}
         />
       </div>

@@ -16,9 +16,11 @@ import { assignStoreSection } from '@/lib/formulas/grocery-consolidation'
 export interface GroceryItem {
   ingredientId: string
   ingredientName: string
-  totalQuantity: number
+  recipeQuantity: number // raw recipe quantity (before yield adjustment)
+  totalQuantity: number // yield-adjusted buy quantity
   displayQuantity: string
   unit: string
+  yieldPct: number // effective yield percentage used
   category: string // ingredient_category from DB
   storeSection: string // mapped store section for shopping
   recipes: string[] // which recipes need this ingredient
@@ -122,6 +124,7 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
       name,
       dish_id,
       recipe_id,
+      scale_factor,
       dishes!inner(menu_id),
       recipes(
         id,
@@ -130,8 +133,9 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
         recipe_ingredients(
           quantity,
           unit,
+          yield_pct,
           ingredient_id,
-          ingredients(id, name, category)
+          ingredients(id, name, category, default_yield_pct)
         )
       )
     `
@@ -149,45 +153,137 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
       ingredientId: string
       ingredientName: string
       category: string
+      recipeQuantities: { qty: number; unit: string }[]
       quantities: { qty: number; unit: string }[]
+      yieldPct: number
       recipes: Set<string>
     }
   >()
+
+  // Helper: add ingredient to map with scaling and yield adjustment
+  function addIngredient(
+    ri: {
+      quantity: number
+      unit: string
+      yield_pct: number | null
+      ingredient_id: string
+      ingredients: any
+    },
+    scaleFactor: number,
+    recipeName: string
+  ) {
+    const ingredient = Array.isArray(ri.ingredients) ? ri.ingredients[0] : ri.ingredients
+    if (!ingredient) return
+
+    const key = ingredient.id
+    if (!ingredientMap.has(key)) {
+      ingredientMap.set(key, {
+        ingredientId: ingredient.id,
+        ingredientName: ingredient.name,
+        category: ingredient.category ?? 'other',
+        recipeQuantities: [],
+        quantities: [],
+        yieldPct: 100,
+        recipes: new Set(),
+      })
+    }
+
+    const entry = ingredientMap.get(key)!
+    const scaledQty = (Number(ri.quantity) || 0) * scaleFactor
+    const yieldPct = Math.max(
+      Number(ri.yield_pct) || Number(ingredient.default_yield_pct) || 100,
+      1
+    )
+    const buyQty = (scaledQty * 100) / yieldPct
+
+    if (scaledQty > 0) {
+      entry.recipeQuantities.push({
+        qty: scaledQty,
+        unit: normalizeUnit(ri.unit ?? ''),
+      })
+      entry.quantities.push({
+        qty: buyQty,
+        unit: normalizeUnit(ri.unit ?? ''),
+      })
+      entry.yieldPct = Math.min(entry.yieldPct, yieldPct)
+    }
+    entry.recipes.add(recipeName)
+  }
+
+  // Build recipe multipliers from components (top-level recipes)
+  const recipeMultipliers = new Map<string, { scale: number; name: string }>()
 
   for (const comp of componentRows) {
     const recipe = Array.isArray(comp.recipes) ? comp.recipes[0] : comp.recipes
     if (!recipe) continue
 
     const recipeServings = recipe.servings ?? 4
-    const scaleFactor = guestCount / recipeServings
+    const componentScale = Number(comp.scale_factor) || 1
+    const scaleFactor = (guestCount / recipeServings) * componentScale
     const recipeIngredients = Array.isArray(recipe.recipe_ingredients)
       ? recipe.recipe_ingredients
       : []
 
+    recipeMultipliers.set(recipe.id, {
+      scale: (recipeMultipliers.get(recipe.id)?.scale ?? 0) + scaleFactor,
+      name: recipe.name,
+    })
+
     for (const ri of recipeIngredients) {
-      const ingredient = Array.isArray(ri.ingredients) ? ri.ingredients[0] : ri.ingredients
-      if (!ingredient) continue
+      addIngredient(ri, scaleFactor, recipe.name)
+    }
+  }
 
-      const key = ingredient.id
-      if (!ingredientMap.has(key)) {
-        ingredientMap.set(key, {
-          ingredientId: ingredient.id,
-          ingredientName: ingredient.name,
-          category: ingredient.category ?? 'other',
-          quantities: [],
-          recipes: new Set(),
-        })
+  // Recurse into sub-recipes
+  const visited = new Set<string>()
+  const queue = [...recipeMultipliers.entries()].map(([id, v]) => ({ id, scale: v.scale }))
+
+  while (queue.length > 0) {
+    const batch = queue.filter((item) => !visited.has(item.id))
+    if (batch.length === 0) break
+    batch.forEach((item) => visited.add(item.id))
+
+    const { data: subRecipeRows } = await db
+      .from('recipe_sub_recipes')
+      .select('parent_recipe_id, child_recipe_id, quantity')
+      .in(
+        'parent_recipe_id',
+        batch.map((b) => b.id)
+      )
+
+    if (!subRecipeRows?.length) break
+
+    // Get child recipe IDs and fetch their ingredients
+    const childIds = [...new Set((subRecipeRows as any[]).map((r: any) => r.child_recipe_id))]
+    const { data: childRecipes } = await db
+      .from('recipes')
+      .select('id, name, servings')
+      .in('id', childIds)
+    const { data: childIngredients } = await db
+      .from('recipe_ingredients')
+      .select(
+        'recipe_id, quantity, unit, yield_pct, ingredient_id, ingredients(id, name, category, default_yield_pct)'
+      )
+      .in('recipe_id', childIds)
+
+    const childRecipeMap = new Map<string, any>((childRecipes ?? []).map((r: any) => [r.id, r]))
+
+    for (const sr of subRecipeRows as any[]) {
+      const parentItem = batch.find((b) => b.id === sr.parent_recipe_id)
+      const parentScale = parentItem?.scale ?? 1
+      const childScale = parentScale * (Number(sr.quantity) || 1)
+      const childRecipe = childRecipeMap.get(sr.child_recipe_id)
+      const childName = childRecipe?.name ?? 'Sub-recipe'
+
+      // Add child recipe ingredients
+      const childRIs = (childIngredients ?? []).filter(
+        (ci: any) => ci.recipe_id === sr.child_recipe_id
+      )
+      for (const ri of childRIs as any[]) {
+        addIngredient(ri, childScale, childName)
       }
 
-      const entry = ingredientMap.get(key)!
-      const scaledQty = (Number(ri.quantity) || 0) * scaleFactor
-      if (scaledQty > 0) {
-        entry.quantities.push({
-          qty: scaledQty,
-          unit: normalizeUnit(ri.unit ?? ''),
-        })
-      }
-      entry.recipes.add(recipe.name)
+      queue.push({ id: sr.child_recipe_id, scale: childScale })
     }
   }
 
@@ -196,8 +292,24 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
 
   for (const [, entry] of ingredientMap) {
     let totalQty = 0
+    let recipeQty = 0
     let finalUnit = ''
 
+    // Consolidate recipe quantities (pre-yield)
+    if (entry.recipeQuantities.length > 0) {
+      let result = { quantity: entry.recipeQuantities[0].qty, unit: entry.recipeQuantities[0].unit }
+      for (let i = 1; i < entry.recipeQuantities.length; i++) {
+        const next = entry.recipeQuantities[i]
+        if (canConvert(result.unit, next.unit)) {
+          result = addQuantities(result.quantity, result.unit, next.qty, next.unit)
+        } else {
+          result.quantity += next.qty
+        }
+      }
+      recipeQty = result.quantity
+    }
+
+    // Consolidate buy quantities (yield-adjusted)
     if (entry.quantities.length === 0) {
       totalQty = 0
       finalUnit = ''
@@ -205,14 +317,12 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
       totalQty = entry.quantities[0].qty
       finalUnit = entry.quantities[0].unit
     } else {
-      // Consolidate compatible units
       let result = { quantity: entry.quantities[0].qty, unit: entry.quantities[0].unit }
       for (let i = 1; i < entry.quantities.length; i++) {
         const next = entry.quantities[i]
         if (canConvert(result.unit, next.unit)) {
           result = addQuantities(result.quantity, result.unit, next.qty, next.unit)
         } else {
-          // Incompatible units, best-effort sum
           result.quantity += next.qty
         }
       }
@@ -223,9 +333,11 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
     items.push({
       ingredientId: entry.ingredientId,
       ingredientName: entry.ingredientName,
+      recipeQuantity: recipeQty,
       totalQuantity: totalQty,
       displayQuantity: formatQuantity(totalQty, finalUnit),
       unit: finalUnit,
+      yieldPct: entry.yieldPct,
       category: getCategoryDisplay(entry.category),
       storeSection: assignStoreSection(entry.ingredientName),
       recipes: Array.from(entry.recipes),
@@ -346,6 +458,7 @@ interface ComponentRow {
   name: string
   dish_id: string
   recipe_id: string | null
+  scale_factor: number | null
   dishes: { menu_id: string } | null
   recipes: {
     id: string
@@ -354,11 +467,13 @@ interface ComponentRow {
     recipe_ingredients: Array<{
       quantity: number
       unit: string
+      yield_pct: number | null
       ingredient_id: string
       ingredients: {
         id: string
         name: string
         category: string
+        default_yield_pct: number | null
       } | null
     }>
   } | null

@@ -1,4 +1,4 @@
-import { pgTable, index, foreignKey, pgPolicy, check, uuid, text, boolean, integer, timestamp, date, numeric, unique, smallint, uniqueIndex, jsonb, type AnyPgColumn, real, doublePrecision, bigint, time, bigserial, primaryKey, pgView, pgMaterializedView, pgSequence, pgEnum } from "drizzle-orm/pg-core"
+import { pgTable, index, foreignKey, pgPolicy, check, uuid, text, boolean, integer, timestamp, date, numeric, unique, smallint, uniqueIndex, jsonb, real, doublePrecision, bigint, time, type AnyPgColumn, bigserial, primaryKey, pgView, pgMaterializedView, pgSequence, pgEnum } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 export const bookingServiceMode = pgEnum("booking_service_mode", ['one_off', 'recurring', 'multi_day'])
@@ -51,7 +51,7 @@ export const eventSessionExecutionType = pgEnum("event_session_execution_type", 
 export const eventSessionMealSlot = pgEnum("event_session_meal_slot", ['breakfast', 'lunch', 'dinner', 'late_snack', 'dropoff', 'other'])
 export const eventShareInviteStatus = pgEnum("event_share_invite_status", ['active', 'consumed', 'revoked', 'expired'])
 export const eventStatus = pgEnum("event_status", ['draft', 'proposed', 'accepted', 'paid', 'confirmed', 'in_progress', 'completed', 'cancelled'])
-export const expenseCategory = pgEnum("expense_category", ['groceries', 'alcohol', 'specialty_items', 'gas_mileage', 'equipment', 'supplies', 'other', 'vehicle', 'venue_rental', 'subscriptions', 'marketing', 'labor', 'insurance_licenses', 'professional_services', 'education', 'uniforms', 'utilities'])
+export const expenseCategory = pgEnum("expense_category", ['groceries', 'alcohol', 'specialty_items', 'gas_mileage', 'equipment', 'supplies', 'other', 'vehicle', 'venue_rental', 'subscriptions', 'marketing', 'labor', 'insurance_licenses', 'professional_services', 'education', 'uniforms', 'utilities', 'platform_commission'])
 export const followUpTimerStatus = pgEnum("follow_up_timer_status", ['active', 'completed', 'dismissed'])
 export const guestAttendingStatus = pgEnum("guest_attending_status", ['yes', 'no'])
 export const guestCannabisParticipation = pgEnum("guest_cannabis_participation", ['participate', 'not_consume', 'undecided'])
@@ -82,7 +82,7 @@ export const ledgerEntryType = pgEnum("ledger_entry_type", ['payment', 'deposit'
 export const loyaltyRewardType = pgEnum("loyalty_reward_type", ['discount_fixed', 'discount_percent', 'free_course', 'free_dinner', 'upgrade'])
 export const loyaltyTier = pgEnum("loyalty_tier", ['bronze', 'silver', 'gold', 'platinum'])
 export const loyaltyTransactionType = pgEnum("loyalty_transaction_type", ['earned', 'redeemed', 'bonus', 'adjustment', 'expired'])
-export const menuApprovalStatus = pgEnum("menu_approval_status", ['not_sent', 'sent', 'approved', 'revision_requested'])
+export const menuApprovalStatus = pgEnum("menu_approval_status", ['not_sent', 'sent', 'approved', 'revision_requested', 'cancelled'])
 export const menuStatus = pgEnum("menu_status", ['draft', 'shared', 'locked', 'archived'])
 export const menuTemplateSeason = pgEnum("menu_template_season", ['spring', 'summer', 'fall', 'winter', 'all_season'])
 export const messageChannel = pgEnum("message_channel", ['text', 'email', 'instagram', 'take_a_chef', 'phone', 'internal_note'])
@@ -124,7 +124,7 @@ export const socialPostStatus = pgEnum("social_post_status", ['idea', 'draft', '
 export const specialCategory = pgEnum("special_category", ['appetizer', 'entree', 'dessert', 'drink', 'side'])
 export const spiceTolerance = pgEnum("spice_tolerance", ['none', 'mild', 'medium', 'hot', 'very_hot'])
 export const staffAssignmentStatus = pgEnum("staff_assignment_status", ['scheduled', 'confirmed', 'completed', 'no_show'])
-export const staffRole = pgEnum("staff_role", ['sous_chef', 'kitchen_assistant', 'service_staff', 'server', 'bartender', 'dishwasher', 'other'])
+export const staffRole = pgEnum("staff_role", ['sous_chef', 'kitchen_assistant', 'service_staff', 'server', 'bartender', 'dishwasher', 'other', 'kitchen_manager'])
 export const storageLocationType = pgEnum("storage_location_type", ['home_fridge', 'home_freezer', 'home_pantry', 'home_dry_storage', 'walk_in_cooler', 'walk_in_freezer', 'commercial_kitchen', 'vehicle', 'event_site', 'other'])
 export const substitutionReason = pgEnum("substitution_reason", ['unavailable', 'price', 'quality', 'preference', 'forgot', 'other'])
 export const suggestedLinkStatus = pgEnum("suggested_link_status", ['pending', 'accepted', 'rejected'])
@@ -509,6 +509,36 @@ export const copilotActions = pgTable("copilot_actions", {
 	check("copilot_actions_status_check", sql`status = ANY (ARRAY['success'::text, 'failed'::text, 'skipped'::text])`),
 ]);
 
+export const ingredientSubstitutes = pgTable("ingredient_substitutes", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	ingredientId: uuid("ingredient_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	substituteIngredientId: uuid("substitute_ingredient_id").notNull(),
+	rank: integer().notNull(),
+	reason: text(),
+	priceDifferencePct: numeric("price_difference_pct", { precision: 5, scale:  2 }),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("idx_substitutes_lookup").using("btree", table.ingredientId.asc().nullsLast().op("int4_ops"), table.tenantId.asc().nullsLast().op("uuid_ops"), table.rank.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.ingredientId],
+			foreignColumns: [ingredients.id],
+			name: "ingredient_substitutes_ingredient_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.substituteIngredientId],
+			foreignColumns: [ingredients.id],
+			name: "ingredient_substitutes_substitute_ingredient_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "ingredient_substitutes_tenant_id_fkey"
+		}).onDelete("cascade"),
+	unique("ingredient_substitutes_ingredient_id_tenant_id_substitute_i_key").on(table.ingredientId, table.tenantId, table.substituteIngredientId),
+	check("ingredient_substitutes_rank_check", sql`(rank >= 1) AND (rank <= 5)`),
+]);
+
 export const campaignTemplates = pgTable("campaign_templates", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	chefId: uuid("chef_id").notNull(),
@@ -674,24 +704,6 @@ export const clientInvitations = pgTable("client_invitations", {
 	unique("client_invitations_token_key").on(table.token),
 	pgPolicy("invitations_chef_all", { as: "permissive", for: "all", to: ["public"], using: sql`((get_current_user_role() = 'chef'::user_role) AND (tenant_id = get_current_tenant_id()))` }),
 	pgPolicy("invitations_public_select_by_token", { as: "permissive", for: "select", to: ["public"] }),
-]);
-
-export const userRoles = pgTable("user_roles", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	authUserId: uuid("auth_user_id").notNull(),
-	role: userRole().notNull(),
-	entityId: uuid("entity_id").notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	uniqueIndex("idx_user_roles_auth_user").using("btree", table.authUserId.asc().nullsLast().op("uuid_ops")),
-	index("idx_user_roles_entity").using("btree", table.entityId.asc().nullsLast().op("uuid_ops")),
-	foreignKey({
-			columns: [table.authUserId],
-			foreignColumns: [users.id],
-			name: "user_roles_auth_user_id_fkey"
-		}).onDelete("cascade"),
-	unique("user_roles_auth_user_id_key").on(table.authUserId),
-	pgPolicy("user_roles_self_select", { as: "permissive", for: "select", to: ["public"], using: sql`(auth.uid() = auth_user_id)` }),
 ]);
 
 export const integrationEvents = pgTable("integration_events", {
@@ -1082,62 +1094,6 @@ export const contractTemplates = pgTable("contract_templates", {
 	pgPolicy("ct_chef_delete", { as: "permissive", for: "delete", to: ["public"] }),
 ]);
 
-export const eventContracts = pgTable("event_contracts", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	eventId: uuid("event_id").notNull(),
-	chefId: uuid("chef_id").notNull(),
-	clientId: uuid("client_id").notNull(),
-	templateId: uuid("template_id"),
-	bodySnapshot: text("body_snapshot").notNull(),
-	status: contractStatus().default('draft').notNull(),
-	sentAt: timestamp("sent_at", { withTimezone: true, mode: 'string' }),
-	viewedAt: timestamp("viewed_at", { withTimezone: true, mode: 'string' }),
-	signedAt: timestamp("signed_at", { withTimezone: true, mode: 'string' }),
-	voidedAt: timestamp("voided_at", { withTimezone: true, mode: 'string' }),
-	voidReason: text("void_reason"),
-	signatureDataUrl: text("signature_data_url"),
-	signerIpAddress: text("signer_ip_address"),
-	signerUserAgent: text("signer_user_agent"),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	proposalTokenId: uuid("proposal_token_id"),
-}, (table) => [
-	index("idx_event_contracts_chef").using("btree", table.chefId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("uuid_ops")),
-	index("idx_event_contracts_client").using("btree", table.clientId.asc().nullsLast().op("uuid_ops")),
-	index("idx_event_contracts_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
-	foreignKey({
-			columns: [table.chefId],
-			foreignColumns: [chefs.id],
-			name: "event_contracts_chef_id_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.clientId],
-			foreignColumns: [clients.id],
-			name: "event_contracts_client_id_fkey"
-		}).onDelete("restrict"),
-	foreignKey({
-			columns: [table.eventId],
-			foreignColumns: [events.id],
-			name: "event_contracts_event_id_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.proposalTokenId],
-			foreignColumns: [proposalTokens.id],
-			name: "event_contracts_proposal_token_id_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.templateId],
-			foreignColumns: [contractTemplates.id],
-			name: "event_contracts_template_id_fkey"
-		}).onDelete("set null"),
-	pgPolicy("ec_chef_select", { as: "permissive", for: "select", to: ["public"], using: sql`((get_current_user_role() = 'chef'::user_role) AND (chef_id = get_current_tenant_id()))` }),
-	pgPolicy("ec_chef_insert", { as: "permissive", for: "insert", to: ["public"] }),
-	pgPolicy("ec_chef_update", { as: "permissive", for: "update", to: ["public"] }),
-	pgPolicy("ec_chef_delete", { as: "permissive", for: "delete", to: ["public"] }),
-	pgPolicy("ec_client_select", { as: "permissive", for: "select", to: ["public"] }),
-	pgPolicy("ec_client_update", { as: "permissive", for: "update", to: ["public"] }),
-]);
-
 export const eventTips = pgTable("event_tips", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	eventId: uuid("event_id").notNull(),
@@ -1427,51 +1383,6 @@ export const clientNotes = pgTable("client_notes", {
 	pgPolicy("client_notes_chef_all", { as: "permissive", for: "all", to: ["public"], using: sql`((get_current_user_role() = 'chef'::user_role) AND (tenant_id = get_current_tenant_id()))` }),
 ]);
 
-export const chefFeedback = pgTable("chef_feedback", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	tenantId: uuid("tenant_id").notNull(),
-	clientId: uuid("client_id"),
-	eventId: uuid("event_id"),
-	source: text().notNull(),
-	rating: integer(),
-	feedbackText: text("feedback_text").notNull(),
-	sourceUrl: text("source_url"),
-	feedbackDate: date("feedback_date").default(sql`CURRENT_DATE`).notNull(),
-	loggedBy: uuid("logged_by").notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	reviewerName: text("reviewer_name"),
-	publicDisplay: boolean("public_display").default(false).notNull(),
-}, (table) => [
-	index("idx_chef_feedback_client").using("btree", table.clientId.asc().nullsLast().op("uuid_ops")),
-	index("idx_chef_feedback_public_display").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")).where(sql`(public_display = true)`),
-	index("idx_chef_feedback_reviewer_name").using("btree", table.tenantId.asc().nullsLast().op("text_ops"), table.reviewerName.asc().nullsLast().op("text_ops")).where(sql`(reviewer_name IS NOT NULL)`),
-	index("idx_chef_feedback_source").using("btree", table.source.asc().nullsLast().op("text_ops")),
-	index("idx_chef_feedback_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
-	foreignKey({
-			columns: [table.clientId],
-			foreignColumns: [clients.id],
-			name: "chef_feedback_client_id_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.eventId],
-			foreignColumns: [events.id],
-			name: "chef_feedback_event_id_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.loggedBy],
-			foreignColumns: [users.id],
-			name: "chef_feedback_logged_by_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.tenantId],
-			foreignColumns: [chefs.id],
-			name: "chef_feedback_tenant_id_fkey"
-		}).onDelete("cascade"),
-	check("chef_feedback_rating_check", sql`(rating IS NULL) OR ((rating >= 1) AND (rating <= 5))`),
-	check("chef_feedback_source_check", sql`source = ANY (ARRAY['verbal'::text, 'google'::text, 'yelp'::text, 'email'::text, 'social_media'::text, 'text_message'::text, 'other'::text, 'airbnb'::text, 'facebook'::text, 'tripadvisor'::text, 'thumbtack'::text, 'bark'::text, 'gigsalad'::text, 'taskrabbit'::text, 'houzz'::text, 'angi'::text, 'nextdoor'::text, 'instagram'::text, 'yelp_guest'::text])`),
-]);
-
 export const activityEvents = pgTable("activity_events", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	tenantId: uuid("tenant_id").notNull(),
@@ -1548,7 +1459,7 @@ export const clientIntakeResponses = pgTable("client_intake_responses", {
 	responses: jsonb().default({}).notNull(),
 	appliedAt: timestamp("applied_at", { withTimezone: true, mode: 'string' }),
 	submittedAt: timestamp("submitted_at", { withTimezone: true, mode: 'string' }).defaultNow(),
-	shareToken: text("share_token").default(sql`encode(gen_random_bytes(32), 'hex')`),
+	shareToken: text("share_token").default(encode(extensions.gen_random_bytes(32), \'hex\'::text)),
 }, (table) => [
 	index("idx_intake_responses_client").using("btree", table.clientId.asc().nullsLast().op("uuid_ops")),
 	index("idx_intake_responses_form").using("btree", table.formId.asc().nullsLast().op("uuid_ops")),
@@ -1583,7 +1494,7 @@ export const clientIntakeShares = pgTable("client_intake_shares", {
 	clientId: uuid("client_id"),
 	clientEmail: text("client_email"),
 	clientName: text("client_name"),
-	shareToken: text("share_token").default(sql`encode(gen_random_bytes(32), 'hex')`),
+	shareToken: text("share_token").default(encode(extensions.gen_random_bytes(32), \'hex\'::text)),
 	responseId: uuid("response_id"),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	expiresAt: timestamp("expires_at", { withTimezone: true, mode: 'string' }).default(sql`(now() + '30 days'::interval)`),
@@ -1628,9 +1539,9 @@ export const chefJourneys = pgTable("chef_journeys", {
 	startedOn: date("started_on"),
 	endedOn: date("ended_on"),
 	status: chefJourneyStatus().default('planning').notNull(),
-	tripSummary: text("trip_summary").default('').notNull(),
-	favoriteMeal: text("favorite_meal").default('').notNull(),
-	favoriteExperience: text("favorite_experience").default('').notNull(),
+	tripSummary: text("trip_summary").default(').notNull(),
+	favoriteMeal: text("favorite_meal").default(').notNull(),
+	favoriteExperience: text("favorite_experience").default(').notNull(),
 	keyLearnings: text("key_learnings").array().default([""]).notNull(),
 	inspirationIdeas: text("inspiration_ideas").array().default([""]).notNull(),
 	culinaryFocusTags: text("culinary_focus_tags").array().default([""]).notNull(),
@@ -1689,9 +1600,9 @@ export const chefJournalMedia = pgTable("chef_journal_media", {
 	createdBy: uuid("created_by").notNull(),
 	mediaType: chefJournalMediaType("media_type").default('photo').notNull(),
 	mediaUrl: text("media_url").notNull(),
-	caption: text().default('').notNull(),
+	caption: text().default(').notNull(),
 	takenOn: date("taken_on"),
-	locationLabel: text("location_label").default('').notNull(),
+	locationLabel: text("location_label").default(').notNull(),
 	latitude: doublePrecision(),
 	longitude: doublePrecision(),
 	isCover: boolean("is_cover").default(false).notNull(),
@@ -1786,7 +1697,7 @@ export const chefGoals = pgTable("chef_goals", {
 export const chefAvailabilityShareTokens = pgTable("chef_availability_share_tokens", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	tenantId: uuid("tenant_id").notNull(),
-	token: text().default(sql`encode(gen_random_bytes(16), 'hex')`).notNull(),
+	token: text().default(encode(extensions.gen_random_bytes(16), \'hex\'::text)).notNull(),
 	isActive: boolean("is_active").default(true),
 	expiresAt: timestamp("expires_at", { withTimezone: true, mode: 'string' }),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
@@ -1801,6 +1712,32 @@ export const chefAvailabilityShareTokens = pgTable("chef_availability_share_toke
 	pgPolicy("availability_share_own_tenant", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id IN ( SELECT user_roles.entity_id
    FROM user_roles
   WHERE (user_roles.auth_user_id = auth.uid())))` }),
+]);
+
+export const ingredientShelfLife = pgTable("ingredient_shelf_life", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	systemIngredientId: uuid("system_ingredient_id"),
+	ingredientName: text("ingredient_name").notNull(),
+	category: text(),
+	pantryDaysMin: integer("pantry_days_min"),
+	pantryDaysMax: integer("pantry_days_max"),
+	fridgeDaysMin: integer("fridge_days_min"),
+	fridgeDaysMax: integer("fridge_days_max"),
+	freezerDaysMin: integer("freezer_days_min"),
+	freezerDaysMax: integer("freezer_days_max"),
+	storageTips: text("storage_tips"),
+	afterOpeningDays: integer("after_opening_days"),
+	source: text().default('usda_foodkeeper'),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("idx_shelf_life_category").using("btree", table.category.asc().nullsLast().op("text_ops")),
+	index("idx_shelf_life_name").using("gin", sql`to_tsvector('english'::regconfig, ingredient_name)`),
+	foreignKey({
+			columns: [table.systemIngredientId],
+			foreignColumns: [systemIngredients.id],
+			name: "ingredient_shelf_life_system_ingredient_id_fkey"
+		}).onDelete("cascade"),
+	unique("ingredient_shelf_life_system_ingredient_id_key").on(table.systemIngredientId),
 ]);
 
 export const dishAppearances = pgTable("dish_appearances", {
@@ -1901,7 +1838,7 @@ export const zapierWebhookSubscriptions = pgTable("zapier_webhook_subscriptions"
 	tenantId: uuid("tenant_id").notNull(),
 	targetUrl: text("target_url").notNull(),
 	eventTypes: text("event_types").array().default([""]).notNull(),
-	secret: text().default(sql`encode(gen_random_bytes(32), 'hex')`).notNull(),
+	secret: text().default(encode(extensions.gen_random_bytes(32), \'hex\'::text)).notNull(),
 	isActive: boolean("is_active").default(true).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
@@ -2162,6 +2099,32 @@ export const posMetricSnapshots = pgTable("pos_metric_snapshots", {
 	unique("pos_metric_snapshots_tenant_id_snapshot_date_key").on(table.tenantId, table.snapshotDate),
 	pgPolicy("pos_metric_snapshots_service_all", { as: "permissive", for: "all", to: ["public"], using: sql`(auth.role() = 'service_role'::text)` }),
 	pgPolicy("pos_metric_snapshots_chef_all", { as: "permissive", for: "all", to: ["public"] }),
+]);
+
+export const ingredientSeasonality = pgTable("ingredient_seasonality", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	systemIngredientId: uuid("system_ingredient_id"),
+	ingredientName: text("ingredient_name").notNull(),
+	region: text().default('northeast'),
+	peakMonths: integer("peak_months").array().notNull(),
+	availableMonths: integer("available_months").array().notNull(),
+	priceLowMonths: integer("price_low_months").array(),
+	priceHighMonths: integer("price_high_months").array(),
+	isYearRound: boolean("is_year_round").default(false),
+	notes: text(),
+	source: text().default('computed'),
+	confidence: numeric({ precision: 3, scale:  2 }),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("idx_seasonality_ingredient").using("btree", table.systemIngredientId.asc().nullsLast().op("uuid_ops")),
+	index("idx_seasonality_peak").using("gin", table.peakMonths.asc().nullsLast().op("array_ops")),
+	index("idx_seasonality_region").using("btree", table.region.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.systemIngredientId],
+			foreignColumns: [systemIngredients.id],
+			name: "ingredient_seasonality_system_ingredient_id_fkey"
+		}).onDelete("cascade"),
+	unique("ingredient_seasonality_system_ingredient_id_region_key").on(table.systemIngredientId, table.region),
 ]);
 
 export const availabilitySignalNotificationLog = pgTable("availability_signal_notification_log", {
@@ -2591,6 +2554,27 @@ export const contractorPayments = pgTable("contractor_payments", {
 	check("contractor_payments_payment_method_check", sql`payment_method = ANY (ARRAY['check'::text, 'venmo'::text, 'zelle'::text, 'cash'::text, 'direct_deposit'::text, 'other'::text])`),
 ]);
 
+export const ingredientWasteFactors = pgTable("ingredient_waste_factors", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	systemIngredientId: uuid("system_ingredient_id"),
+	ingredientName: text("ingredient_name").notNull(),
+	asPurchasedToEdiblePct: numeric("as_purchased_to_edible_pct", { precision: 5, scale:  2 }).notNull(),
+	wasteType: text("waste_type"),
+	prepMethod: text("prep_method"),
+	cookedYieldPct: numeric("cooked_yield_pct", { precision: 5, scale:  2 }),
+	notes: text(),
+	source: text().default('usda_yields'),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("idx_waste_factors_ingredient").using("btree", table.systemIngredientId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.systemIngredientId],
+			foreignColumns: [systemIngredients.id],
+			name: "ingredient_waste_factors_system_ingredient_id_fkey"
+		}).onDelete("cascade"),
+	unique("ingredient_waste_factors_system_ingredient_id_prep_method_key").on(table.systemIngredientId, table.prepMethod),
+]);
+
 export const clientProposals = pgTable("client_proposals", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	tenantId: uuid("tenant_id").notNull(),
@@ -2598,8 +2582,8 @@ export const clientProposals = pgTable("client_proposals", {
 	clientId: uuid("client_id"),
 	templateId: uuid("template_id"),
 	menuId: uuid("menu_id"),
-	shareToken: text("share_token").default(sql`encode(gen_random_bytes(32), 'hex')`).notNull(),
-	title: text().default('').notNull(),
+	shareToken: text("share_token").default(encode(extensions.gen_random_bytes(32), \'hex\'::text)).notNull(),
+	title: text().default(').notNull(),
 	personalNote: text("personal_note"),
 	coverPhotoUrl: text("cover_photo_url"),
 	totalPriceCents: integer("total_price_cents").default(0).notNull(),
@@ -2737,7 +2721,7 @@ export const staffEventTokens = pgTable("staff_event_tokens", {
 	tenantId: uuid("tenant_id").notNull(),
 	eventId: uuid("event_id").notNull(),
 	staffMemberId: uuid("staff_member_id").notNull(),
-	token: text().default(sql`encode(gen_random_bytes(32), 'hex')`).notNull(),
+	token: text().default(encode(extensions.gen_random_bytes(32), \'hex\'::text)).notNull(),
 	assignedTasks: jsonb("assigned_tasks").default([]).notNull(),
 	assignedStation: text("assigned_station"),
 	isRevoked: boolean("is_revoked").default(false).notNull(),
@@ -3036,7 +3020,7 @@ export const menuNutrition = pgTable("menu_nutrition", {
 	tenantId: uuid("tenant_id").notNull(),
 	menuId: uuid("menu_id").notNull(),
 	recipeId: uuid("recipe_id"),
-	dishName: text("dish_name").default('').notNull(),
+	dishName: text("dish_name").default(').notNull(),
 	calories: integer(),
 	proteinG: numeric("protein_g", { precision: 6, scale:  1 }),
 	carbsG: numeric("carbs_g", { precision: 6, scale:  1 }),
@@ -3119,6 +3103,23 @@ export const followUpSends = pgTable("follow_up_sends", {
 	pgPolicy("fus_chef_update", { as: "permissive", for: "update", to: ["public"] }),
 	pgPolicy("fus_chef_delete", { as: "permissive", for: "delete", to: ["public"] }),
 	check("follow_up_sends_status_check", sql`status = ANY (ARRAY['pending'::text, 'sent'::text, 'opened'::text, 'clicked'::text, 'bounced'::text, 'skipped'::text])`),
+]);
+
+export const storeAccuracyScores = pgTable("store_accuracy_scores", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	storeName: text("store_name").notNull(),
+	chainSlug: text("chain_slug"),
+	region: text(),
+	accuracyPct: numeric("accuracy_pct", { precision: 5, scale:  2 }),
+	avgDeviationPct: numeric("avg_deviation_pct", { precision: 5, scale:  2 }),
+	comparisonCount: integer("comparison_count").default(0),
+	lastComparedAt: timestamp("last_compared_at", { withTimezone: true, mode: 'string' }),
+	trend: text(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("idx_store_accuracy_chain").using("btree", table.chainSlug.asc().nullsLast().op("text_ops")),
+	index("idx_store_accuracy_region").using("btree", table.region.asc().nullsLast().op("text_ops")),
+	unique("store_accuracy_scores_store_name_region_key").on(table.storeName, table.region),
 ]);
 
 export const chefBackupContacts = pgTable("chef_backup_contacts", {
@@ -3342,7 +3343,7 @@ export const clientPhotos = pgTable("client_photos", {
 	tenantId: uuid("tenant_id").notNull(),
 	clientId: uuid("client_id").notNull(),
 	storagePath: text("storage_path").notNull(),
-	filenameOriginal: text("filename_original").default('').notNull(),
+	filenameOriginal: text("filename_original").default(').notNull(),
 	contentType: text("content_type").notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	sizeBytes: bigint("size_bytes", { mode: "number" }).default(0).notNull(),
@@ -3399,43 +3400,6 @@ export const favoriteChefs = pgTable("favorite_chefs", {
 	pgPolicy("fc_chef_insert", { as: "permissive", for: "insert", to: ["public"] }),
 	pgPolicy("fc_chef_update", { as: "permissive", for: "update", to: ["public"] }),
 	pgPolicy("fc_chef_delete", { as: "permissive", for: "delete", to: ["public"] }),
-]);
-
-export const systemIngredients = pgTable("system_ingredients", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	name: text().notNull(),
-	category: ingredientCategory().notNull(),
-	subcategory: text().default('').notNull(),
-	unitType: text("unit_type").default('weight').notNull(),
-	standardUnit: text("standard_unit").default('g').notNull(),
-	costPerUnitCents: integer("cost_per_unit_cents").default(0),
-	weightToVolumeRatio: numeric("weight_to_volume_ratio", { precision: 8, scale:  4 }).default('NULL'),
-	cupWeightGrams: numeric("cup_weight_grams", { precision: 8, scale:  2 }).default('NULL'),
-	tbspWeightGrams: numeric("tbsp_weight_grams", { precision: 8, scale:  2 }).default('NULL'),
-	allergenTags: text("allergen_tags").array().default([""]).notNull(),
-	commonPrepActions: jsonb("common_prep_actions").default([]).notNull(),
-	isActive: boolean("is_active").default(true).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	countUnit: text("count_unit"),
-	countWeightGrams: numeric("count_weight_grams", { precision: 8, scale:  2 }),
-	countNotes: text("count_notes"),
-	usdaFdcId: integer("usda_fdc_id"),
-	usdaNdbNumber: integer("usda_ndb_number"),
-	usdaFoodGroup: text("usda_food_group"),
-	slug: text(),
-	aliases: text().array().default([""]),
-}, (table) => [
-	index("idx_system_ingredients_active").using("btree", table.isActive.asc().nullsLast().op("bool_ops")).where(sql`(is_active = true)`),
-	index("idx_system_ingredients_aliases").using("gin", table.aliases.asc().nullsLast().op("array_ops")),
-	index("idx_system_ingredients_category").using("btree", table.category.asc().nullsLast().op("enum_ops")),
-	uniqueIndex("idx_system_ingredients_fdc_id").using("btree", table.usdaFdcId.asc().nullsLast().op("int4_ops")).where(sql`(usda_fdc_id IS NOT NULL)`),
-	index("idx_system_ingredients_name").using("gin", sql`to_tsvector('english'::regconfig, name)`),
-	index("idx_system_ingredients_name_trgm").using("gin", table.name.asc().nullsLast().op("gin_trgm_ops")),
-	uniqueIndex("idx_system_ingredients_slug").using("btree", table.slug.asc().nullsLast().op("text_ops")).where(sql`(slug IS NOT NULL)`),
-	pgPolicy("system_ingredients_read_all", { as: "permissive", for: "select", to: ["public"], using: sql`true` }),
-	check("system_ingredients_standard_unit_check", sql`standard_unit = ANY (ARRAY['g'::text, 'oz'::text, 'ml'::text, 'fl_oz'::text, 'each'::text, 'bunch'::text])`),
-	check("system_ingredients_unit_type_check", sql`unit_type = ANY (ARRAY['weight'::text, 'volume'::text, 'each'::text, 'bunch'::text])`),
 ]);
 
 export const chefCulinaryWords = pgTable("chef_culinary_words", {
@@ -3698,6 +3662,31 @@ export const eventReadinessGates = pgTable("event_readiness_gates", {
 	check("event_readiness_gates_status_check", sql`status = ANY (ARRAY['pending'::text, 'passed'::text, 'overridden'::text])`),
 ]);
 
+export const serviceLifecycleTemplates = pgTable("service_lifecycle_templates", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	chefId: uuid("chef_id").notNull(),
+	stageNumber: integer("stage_number").notNull(),
+	stageName: text("stage_name").notNull(),
+	checkpointKey: text("checkpoint_key").notNull(),
+	checkpointLabel: text("checkpoint_label").notNull(),
+	sortOrder: integer("sort_order").default(0).notNull(),
+	isActive: boolean("is_active").default(true).notNull(),
+	isRequired: boolean("is_required").default(false).notNull(),
+	autoDetectRule: text("auto_detect_rule"),
+	clientVisible: boolean("client_visible").default(false).notNull(),
+	clientLabel: text("client_label"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_slt_chef_stage").using("btree", table.chefId.asc().nullsLast().op("uuid_ops"), table.stageNumber.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.chefId],
+			foreignColumns: [chefs.id],
+			name: "service_lifecycle_templates_chef_id_fkey"
+		}).onDelete("cascade"),
+	unique("service_lifecycle_templates_chef_id_checkpoint_key_key").on(table.chefId, table.checkpointKey),
+]);
+
 export const featureVotes = pgTable("feature_votes", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	featureId: uuid("feature_id").notNull(),
@@ -3751,6 +3740,49 @@ export const deviceEvents = pgTable("device_events", {
 			name: "device_events_tenant_id_fkey"
 		}).onDelete("cascade"),
 	pgPolicy("device_events_chef_select", { as: "permissive", for: "select", to: ["public"], using: sql`((get_current_user_role() = 'chef'::user_role) AND (tenant_id = get_current_tenant_id()))` }),
+]);
+
+export const serviceLifecycleProgress = pgTable("service_lifecycle_progress", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	chefId: uuid("chef_id").notNull(),
+	inquiryId: uuid("inquiry_id"),
+	eventId: uuid("event_id"),
+	checkpointKey: text("checkpoint_key").notNull(),
+	stageNumber: integer("stage_number").notNull(),
+	status: text().default('not_started').notNull(),
+	detectedAt: timestamp("detected_at", { withTimezone: true, mode: 'string' }),
+	confirmedAt: timestamp("confirmed_at", { withTimezone: true, mode: 'string' }),
+	confirmedBy: text("confirmed_by"),
+	evidenceType: text("evidence_type"),
+	evidenceSource: text("evidence_source"),
+	evidenceExcerpt: text("evidence_excerpt"),
+	extractedData: jsonb("extracted_data"),
+	notes: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_slp_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")).where(sql`(event_id IS NOT NULL)`),
+	index("idx_slp_inquiry").using("btree", table.inquiryId.asc().nullsLast().op("uuid_ops")).where(sql`(inquiry_id IS NOT NULL)`),
+	index("idx_slp_status").using("btree", table.chefId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.chefId],
+			foreignColumns: [chefs.id],
+			name: "service_lifecycle_progress_chef_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "service_lifecycle_progress_event_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.inquiryId],
+			foreignColumns: [inquiries.id],
+			name: "service_lifecycle_progress_inquiry_id_fkey"
+		}).onDelete("cascade"),
+	unique("service_lifecycle_progress_chef_id_inquiry_id_checkpoint_ke_key").on(table.chefId, table.inquiryId, table.checkpointKey),
+	unique("service_lifecycle_progress_chef_id_event_id_checkpoint_key_key").on(table.chefId, table.eventId, table.checkpointKey),
+	check("one_context", sql`((inquiry_id IS NOT NULL) AND (event_id IS NULL)) OR ((inquiry_id IS NULL) AND (event_id IS NOT NULL)) OR ((inquiry_id IS NOT NULL) AND (event_id IS NOT NULL))`),
+	check("service_lifecycle_progress_status_check", sql`status = ANY (ARRAY['not_started'::text, 'auto_detected'::text, 'confirmed'::text, 'skipped'::text, 'not_applicable'::text])`),
 ]);
 
 export const haccpPlans = pgTable("haccp_plans", {
@@ -3833,7 +3865,7 @@ export const tipRequests = pgTable("tip_requests", {
 	tenantId: uuid("tenant_id").notNull(),
 	eventId: uuid("event_id").notNull(),
 	clientId: uuid("client_id").notNull(),
-	requestToken: text("request_token").default(sql`encode(gen_random_bytes(32), 'hex')`).notNull(),
+	requestToken: text("request_token").default(encode(extensions.gen_random_bytes(32), \'hex\'::text)).notNull(),
 	suggestedAmountsCents: integer("suggested_amounts_cents").array().default([1500, 2000, 2500, 0]).notNull(),
 	suggestedPercentages: integer("suggested_percentages").array().default([15, 18, 20, 0]).notNull(),
 	tipAmountCents: integer("tip_amount_cents"),
@@ -3977,144 +4009,6 @@ export const qolMetricEvents = pgTable("qol_metric_events", {
           WHERE ((c.id = ur.entity_id) AND (c.tenant_id = qol_metric_events.tenant_id))))))))))`  }),
 	pgPolicy("qol_metric_events_select_tenant", { as: "permissive", for: "select", to: ["authenticated"] }),
 	check("qol_metric_events_metric_key_check", sql`metric_key = ANY (ARRAY['draft_restored'::text, 'save_failed'::text, 'conflict_detected'::text, 'offline_replay_succeeded'::text, 'offline_replay_failed'::text, 'duplicate_create_prevented'::text])`),
-]);
-
-export const chefs = pgTable("chefs", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	authUserId: uuid("auth_user_id").notNull(),
-	businessName: text("business_name").notNull(),
-	email: text().notNull(),
-	phone: text(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	googleReviewUrl: text("google_review_url"),
-	displayName: text("display_name"),
-	bio: text(),
-	profileImageUrl: text("profile_image_url"),
-	slug: text(),
-	tagline: text(),
-	portalPrimaryColor: text("portal_primary_color"),
-	portalBackgroundColor: text("portal_background_color"),
-	portalBackgroundImageUrl: text("portal_background_image_url"),
-	websiteUrl: text("website_url"),
-	showWebsiteOnPublicProfile: boolean("show_website_on_public_profile").default(true).notNull(),
-	preferredInquiryDestination: text("preferred_inquiry_destination").default('both').notNull(),
-	cancellationCutoffDays: integer("cancellation_cutoff_days").default(15).notNull(),
-	depositRefundable: boolean("deposit_refundable").default(false).notNull(),
-	onboardingCompletedAt: timestamp("onboarding_completed_at", { withTimezone: true, mode: 'string' }),
-	stripeAccountId: text("stripe_account_id"),
-	stripeOnboardingComplete: boolean("stripe_onboarding_complete").default(false).notNull(),
-	logoUrl: text("logo_url"),
-	showAvailabilitySignals: boolean("show_availability_signals").default(false).notNull(),
-	accountStatus: text("account_status").default('active').notNull(),
-	currentClosureStreak: integer("current_closure_streak").default(0).notNull(),
-	longestClosureStreak: integer("longest_closure_streak").default(0).notNull(),
-	lastClosureDate: date("last_closure_date"),
-	bookingSlug: text("booking_slug"),
-	bookingEnabled: boolean("booking_enabled").default(false).notNull(),
-	bookingHeadline: text("booking_headline"),
-	bookingBioShort: text("booking_bio_short"),
-	bookingMinNoticeDays: integer("booking_min_notice_days").default(7).notNull(),
-	bookingDepositPercent: integer("booking_deposit_percent").default(0).notNull(),
-	timezone: text().default('America/New_York').notNull(),
-	portfolioEnabled: boolean("portfolio_enabled").default(false),
-	portfolioLayout: text("portfolio_layout").default('grid'),
-	bookingModel: text("booking_model").default('inquiry_first'),
-	bookingBasePriceCents: integer("booking_base_price_cents"),
-	bookingPricingType: text("booking_pricing_type").default('flat_rate'),
-	bookingDepositType: text("booking_deposit_type").default('percent'),
-	bookingDepositFixedCents: integer("booking_deposit_fixed_cents").default(0),
-	platformFeePercent: numeric("platform_fee_percent", { precision: 5, scale:  2 }).default('0.00').notNull(),
-	platformFeeFixedCents: integer("platform_fee_fixed_cents").default(0).notNull(),
-	gratuityMode: text("gratuity_mode").default('discretionary').notNull(),
-	gratuityServiceFeePct: numeric("gratuity_service_fee_pct", { precision: 5, scale:  2 }),
-	gratuityDisplayLabel: text("gratuity_display_label"),
-	stripeCustomerId: text("stripe_customer_id"),
-	stripeSubscriptionId: text("stripe_subscription_id"),
-	subscriptionStatus: text("subscription_status"),
-	trialEndsAt: timestamp("trial_ends_at", { withTimezone: true, mode: 'string' }),
-	subscriptionCurrentPeriodEnd: timestamp("subscription_current_period_end", { withTimezone: true, mode: 'string' }),
-	remyBlockedUntil: timestamp("remy_blocked_until", { withTimezone: true, mode: 'string' }),
-	maxEventsPerWeek: integer("max_events_per_week"),
-	maxEventsPerMonth: integer("max_events_per_month"),
-	maxConsecutiveWorkingDays: integer("max_consecutive_working_days").default(7),
-	minRestDaysPerWeek: integer("min_rest_days_per_week").default(1),
-	maxHoursPerWeek: integer("max_hours_per_week"),
-	offHoursStart: time("off_hours_start"),
-	offHoursEnd: time("off_hours_end"),
-	offDays: text("off_days").array().default([""]),
-	businessContinuityPlan: jsonb("business_continuity_plan").default({}),
-	directoryApproved: boolean("directory_approved").default(false).notNull(),
-	deletionRequestedAt: timestamp("deletion_requested_at", { withTimezone: true, mode: 'string' }),
-	deletionScheduledFor: timestamp("deletion_scheduled_for", { withTimezone: true, mode: 'string' }),
-	deletionReason: text("deletion_reason"),
-	deletionReactivationToken: uuid("deletion_reactivation_token"),
-	isDeleted: boolean("is_deleted").default(false).notNull(),
-	icalFeedToken: uuid("ical_feed_token").defaultRandom(),
-	icalFeedEnabled: boolean("ical_feed_enabled").default(false),
-	applePayEnabled: boolean("apple_pay_enabled").default(true),
-	googlePayEnabled: boolean("google_pay_enabled").default(true),
-	dismissedRecallIds: text("dismissed_recall_ids").array().default([""]),
-	prepTimelineVisibility: jsonb("prep_timeline_visibility").default({"setup":true,"travel":true,"cleanup":true,"cooking":true,"packing":true,"serving":true,"complete":true,"prep_work":true,"menu_planning":true,"ingredient_sourcing":true}).notNull(),
-	showDietaryConfirmation: boolean("show_dietary_confirmation").default(true).notNull(),
-	defaultShowCostBreakdown: boolean("default_show_cost_breakdown").default(false).notNull(),
-	defaultExclusionsNote: text("default_exclusions_note"),
-	liveTrackerVisibility: jsonb("live_tracker_visibility").default({"arrived":true,"cleanup":false,"dessert":true,"complete":true,"en_route":true,"setting_up":false,"main_course":true,"first_course":true,"prep_underway":false}).notNull(),
-	showGuestDetailsToHost: boolean("show_guest_details_to_host").default(true).notNull(),
-	featuredBookingMenuId: uuid("featured_booking_menu_id"),
-	featuredBookingBadge: text("featured_booking_badge"),
-	featuredBookingTitle: text("featured_booking_title"),
-	featuredBookingPitch: text("featured_booking_pitch"),
-	kdsPin: text("kds_pin"),
-	icalFeedExpiresAt: timestamp("ical_feed_expires_at", { withTimezone: true, mode: 'string' }).default(sql`(now() + '90 days'::interval)`),
-	icalFeedLastAccessedAt: timestamp("ical_feed_last_accessed_at", { withTimezone: true, mode: 'string' }),
-	cuisineSpecialties: text("cuisine_specialties").array().default([""]),
-	city: text(),
-	state: text(),
-	socialLinks: jsonb("social_links").default({}),
-	onboardingBannerDismissedAt: timestamp("onboarding_banner_dismissed_at", { withTimezone: true, mode: 'string' }),
-	onboardingRemindersDismissed: integer("onboarding_reminders_dismissed").default(0),
-}, (table) => [
-	index("idx_chefs_account_status").using("btree", table.accountStatus.asc().nullsLast().op("text_ops")),
-	index("idx_chefs_auth_user").using("btree", table.authUserId.asc().nullsLast().op("uuid_ops")),
-	uniqueIndex("idx_chefs_booking_slug").using("btree", table.bookingSlug.asc().nullsLast().op("text_ops")).where(sql`(booking_slug IS NOT NULL)`),
-	index("idx_chefs_deletion_scheduled").using("btree", table.deletionScheduledFor.asc().nullsLast().op("timestamptz_ops")).where(sql`((deletion_scheduled_for IS NOT NULL) AND (is_deleted = false))`),
-	index("idx_chefs_directory_approved").using("btree", table.directoryApproved.asc().nullsLast().op("bool_ops")).where(sql`(directory_approved = true)`),
-	index("idx_chefs_featured_booking_menu").using("btree", table.featuredBookingMenuId.asc().nullsLast().op("uuid_ops")).where(sql`(featured_booking_menu_id IS NOT NULL)`),
-	index("idx_chefs_ical_feed_token").using("btree", table.icalFeedToken.asc().nullsLast().op("uuid_ops")).where(sql`(ical_feed_enabled = true)`),
-	index("idx_chefs_stripe_account_id").using("btree", table.stripeAccountId.asc().nullsLast().op("text_ops")).where(sql`(stripe_account_id IS NOT NULL)`),
-	uniqueIndex("idx_chefs_stripe_customer_id").using("btree", table.stripeCustomerId.asc().nullsLast().op("text_ops")).where(sql`(stripe_customer_id IS NOT NULL)`),
-	uniqueIndex("idx_chefs_stripe_subscription_id").using("btree", table.stripeSubscriptionId.asc().nullsLast().op("text_ops")).where(sql`(stripe_subscription_id IS NOT NULL)`),
-	index("idx_chefs_subscription_status").using("btree", table.subscriptionStatus.asc().nullsLast().op("text_ops")).where(sql`(subscription_status IS NOT NULL)`),
-	foreignKey({
-			columns: [table.authUserId],
-			foreignColumns: [users.id],
-			name: "chefs_auth_user_id_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.featuredBookingMenuId],
-			foreignColumns: [menus.id],
-			name: "chefs_featured_booking_menu_id_fkey"
-		}).onDelete("set null"),
-	unique("chefs_auth_user_id_key").on(table.authUserId),
-	unique("chefs_email_key").on(table.email),
-	unique("chefs_slug_key").on(table.slug),
-	unique("chefs_booking_slug_key").on(table.bookingSlug),
-	pgPolicy("chefs_select", { as: "permissive", for: "select", to: ["public"], using: sql`(auth.uid() = auth_user_id)` }),
-	pgPolicy("chefs_update", { as: "permissive", for: "update", to: ["public"] }),
-	pgPolicy("chefs_network_discovery", { as: "permissive", for: "select", to: ["public"] }),
-	check("chefs_account_status_check", sql`account_status = ANY (ARRAY['active'::text, 'suspended'::text])`),
-	check("chefs_booking_deposit_pct_range", sql`(booking_deposit_percent >= 0) AND (booking_deposit_percent <= 100)`),
-	check("chefs_booking_deposit_type_check", sql`booking_deposit_type = ANY (ARRAY['percent'::text, 'fixed'::text])`),
-	check("chefs_booking_min_notice_range", sql`(booking_min_notice_days >= 0) AND (booking_min_notice_days <= 90)`),
-	check("chefs_booking_model_check", sql`booking_model = ANY (ARRAY['inquiry_first'::text, 'instant_book'::text])`),
-	check("chefs_booking_pricing_type_check", sql`booking_pricing_type = ANY (ARRAY['flat_rate'::text, 'per_person'::text])`),
-	check("chefs_booking_slug_format", sql`(booking_slug IS NULL) OR (booking_slug ~ '^[a-z0-9][a-z0-9\-]*[a-z0-9]$'::text)`),
-	check("chefs_platform_fee_fixed_cents_range", sql`platform_fee_fixed_cents >= 0`),
-	check("chefs_platform_fee_percent_range", sql`(platform_fee_percent >= (0)::numeric) AND (platform_fee_percent <= (100)::numeric)`),
-	check("chefs_portfolio_layout_check", sql`portfolio_layout = ANY (ARRAY['grid'::text, 'masonry'::text, 'carousel'::text])`),
-	check("chefs_preferred_inquiry_destination_check", sql`preferred_inquiry_destination = ANY (ARRAY['website_only'::text, 'chefflow_only'::text, 'both'::text])`),
-	check("chefs_timezone_nonempty", sql`timezone <> ''::text`),
 ]);
 
 export const clientMergeLog = pgTable("client_merge_log", {
@@ -4272,7 +4166,7 @@ export const chefPreferences = pgTable("chef_preferences", {
 	printPreferences: jsonb("print_preferences").default({"custom_footer":null,"attribution_name":null,"show_attribution":true,"default_print_mode":"standard"}).notNull(),
 	focusMode: boolean("focus_mode").default(false),
 	myDashboardWidgets: jsonb("my_dashboard_widgets").default([]).notNull(),
-	myDashboardNotes: text("my_dashboard_notes").default('').notNull(),
+	myDashboardNotes: text("my_dashboard_notes").default(').notNull(),
 	myDashboardPinnedMenuId: uuid("my_dashboard_pinned_menu_id"),
 	lockedEventId: uuid("locked_event_id"),
 	foodCostTargetPercent: integer("food_cost_target_percent").default(30),
@@ -4501,6 +4395,40 @@ export const commercePayments = pgTable("commerce_payments", {
 	pgPolicy("client_commerce_payments_read", { as: "permissive", for: "select", to: ["public"] }),
 	check("commerce_payments_amount_cents_check", sql`amount_cents > 0`),
 	check("commerce_payments_tip_cents_check", sql`tip_cents >= 0`),
+]);
+
+export const lifecycleDetectionLog = pgTable("lifecycle_detection_log", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	chefId: uuid("chef_id").notNull(),
+	inquiryId: uuid("inquiry_id"),
+	eventId: uuid("event_id"),
+	sourceType: text("source_type").notNull(),
+	sourceId: text("source_id"),
+	rawContent: text("raw_content"),
+	detectionMethod: text("detection_method").notNull(),
+	checkpointsDetected: jsonb("checkpoints_detected").notNull(),
+	checkpointsMissing: jsonb("checkpoints_missing"),
+	stageAssessment: integer("stage_assessment"),
+	processingTimeMs: integer("processing_time_ms"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_ldl_created").using("btree", table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
+	index("idx_ldl_inquiry").using("btree", table.inquiryId.asc().nullsLast().op("uuid_ops")).where(sql`(inquiry_id IS NOT NULL)`),
+	foreignKey({
+			columns: [table.chefId],
+			foreignColumns: [chefs.id],
+			name: "lifecycle_detection_log_chef_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "lifecycle_detection_log_event_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.inquiryId],
+			foreignColumns: [inquiries.id],
+			name: "lifecycle_detection_log_inquiry_id_fkey"
+		}).onDelete("cascade"),
 ]);
 
 export const inventoryTransactions = pgTable("inventory_transactions", {
@@ -4885,15 +4813,22 @@ export const charityHours = pgTable("charity_hours", {
 	notes: text(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	communityOrganizationId: uuid("community_organization_id"),
 }, (table) => [
 	index("idx_charity_hours_chef_date").using("btree", table.chefId.asc().nullsLast().op("date_ops"), table.serviceDate.desc().nullsFirst().op("date_ops")),
 	index("idx_charity_hours_chef_org").using("btree", table.chefId.asc().nullsLast().op("text_ops"), table.organizationName.asc().nullsLast().op("text_ops")),
+	index("idx_charity_hours_org_id").using("btree", table.communityOrganizationId.asc().nullsLast().op("uuid_ops")).where(sql`(community_organization_id IS NOT NULL)`),
 	index("idx_charity_hours_place_id").using("btree", table.googlePlaceId.asc().nullsLast().op("text_ops")).where(sql`(google_place_id IS NOT NULL)`),
 	foreignKey({
 			columns: [table.chefId],
 			foreignColumns: [chefs.id],
 			name: "charity_hours_chef_id_fkey"
 		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.communityOrganizationId],
+			foreignColumns: [communityOrganizations.id],
+			name: "charity_hours_community_organization_id_fkey"
+		}).onDelete("set null"),
 	pgPolicy("ch_chef_select", { as: "permissive", for: "select", to: ["public"], using: sql`((get_current_user_role() = 'chef'::user_role) AND (chef_id = get_current_tenant_id()))` }),
 	pgPolicy("ch_chef_insert", { as: "permissive", for: "insert", to: ["public"] }),
 	pgPolicy("ch_chef_update", { as: "permissive", for: "update", to: ["public"] }),
@@ -4922,6 +4857,8 @@ export const chefMarketplaceProfiles = pgTable("chef_marketplace_profiles", {
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => [
+	index("idx_chef_marketplace_profiles_active").using("btree", table.chefId.asc().nullsLast().op("uuid_ops"), table.acceptingInquiries.asc().nullsLast().op("bool_ops")),
+	index("idx_chef_marketplace_profiles_created").using("btree", table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
 	foreignKey({
 			columns: [table.chefId],
 			foreignColumns: [chefs.id],
@@ -5065,6 +5002,32 @@ export const eventJoinRequests = pgTable("event_join_requests", {
   WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))` }),
 	pgPolicy("event_join_requests_client_select", { as: "permissive", for: "select", to: ["public"] }),
 	pgPolicy("event_join_requests_client_update", { as: "permissive", for: "update", to: ["public"] }),
+]);
+
+export const chefCollabSpaces = pgTable("chef_collab_spaces", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	createdByChefId: uuid("created_by_chef_id").notNull(),
+	spaceType: text("space_type").notNull(),
+	name: text(),
+	description: text(),
+	directPairKey: text("direct_pair_key"),
+	isLocked: boolean("is_locked").default(false).notNull(),
+	lastMessageAt: timestamp("last_message_at", { withTimezone: true, mode: 'string' }),
+	lastMessagePreview: text("last_message_preview"),
+	isArchived: boolean("is_archived").default(false).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("idx_chef_collab_spaces_direct_pair").using("btree", table.directPairKey.asc().nullsLast().op("text_ops")).where(sql`((space_type = 'direct'::text) AND (is_archived = false))`),
+	index("idx_chef_collab_spaces_last_message").using("btree", table.lastMessageAt.desc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
+	foreignKey({
+			columns: [table.createdByChefId],
+			foreignColumns: [chefs.id],
+			name: "chef_collab_spaces_created_by_chef_id_fkey"
+		}).onDelete("cascade"),
+	check("chef_collab_spaces_direct_pair_check", sql`((space_type = 'direct'::text) AND (direct_pair_key IS NOT NULL)) OR ((space_type = 'workspace'::text) AND (direct_pair_key IS NULL))`),
+	check("chef_collab_spaces_space_type_check", sql`space_type = ANY (ARRAY['direct'::text, 'workspace'::text])`),
+	check("chef_collab_spaces_workspace_name_check", sql`((space_type = 'workspace'::text) AND (name IS NOT NULL) AND ((char_length(TRIM(BOTH FROM name)) >= 1) AND (char_length(TRIM(BOTH FROM name)) <= 120))) OR ((space_type = 'direct'::text) AND (name IS NULL))`),
 ]);
 
 export const eventStubs = pgTable("event_stubs", {
@@ -5309,6 +5272,27 @@ export const hubChefRecommendations = pgTable("hub_chef_recommendations", {
 	check("no_self_recommend", sql`from_profile_id <> to_profile_id`),
 ]);
 
+export const chefEmailChannels = pgTable("chef_email_channels", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	chefId: uuid("chef_id").notNull(),
+	inboundAlias: text("inbound_alias").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_chef_email_channels_alias").using("btree", table.inboundAlias.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.chefId],
+			foreignColumns: [chefs.id],
+			name: "chef_email_channels_chef_id_fkey"
+		}).onDelete("cascade"),
+	unique("uq_chef_email_channels_chef").on(table.chefId),
+	unique("uq_chef_email_channels_alias").on(table.inboundAlias),
+	pgPolicy("chef_email_channels_access", { as: "permissive", for: "all", to: ["public"], using: sql`(chef_id IN ( SELECT chefs.id
+   FROM chefs
+  WHERE (chefs.auth_user_id = auth.uid())))`, withCheck: sql`(chef_id IN ( SELECT chefs.id
+   FROM chefs
+  WHERE (chefs.auth_user_id = auth.uid())))`  }),
+]);
+
 export const ingredientAliases = pgTable("ingredient_aliases", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	tenantId: uuid("tenant_id").notNull(),
@@ -5316,7 +5300,7 @@ export const ingredientAliases = pgTable("ingredient_aliases", {
 	systemIngredientId: uuid("system_ingredient_id"),
 	matchMethod: text("match_method").default('manual').notNull(),
 	similarityScore: numeric("similarity_score", { precision: 4, scale:  3 }),
-	confirmedAt: timestamp("confirmed_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	confirmedAt: timestamp("confirmed_at", { withTimezone: true, mode: 'string' }),
 	confirmedBy: uuid("confirmed_by"),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
@@ -5339,23 +5323,7 @@ export const ingredientAliases = pgTable("ingredient_aliases", {
 			name: "ingredient_aliases_tenant_id_fkey"
 		}).onDelete("cascade"),
 	unique("ingredient_aliases_tenant_id_ingredient_id_key").on(table.tenantId, table.ingredientId),
-	check("ingredient_aliases_match_method_check", sql`match_method = ANY (ARRAY['manual'::text, 'trigram'::text, 'exact'::text, 'dismissed'::text])`),
-]);
-
-export const betaSurveyDefinitions = pgTable("beta_survey_definitions", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	slug: text().notNull(),
-	title: text().notNull(),
-	description: text(),
-	surveyType: text("survey_type").notNull(),
-	questions: jsonb().default([]).notNull(),
-	isActive: boolean("is_active").default(true).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("idx_beta_survey_defs_type_active").using("btree", table.surveyType.asc().nullsLast().op("text_ops"), table.isActive.asc().nullsLast().op("text_ops")).where(sql`(is_active = true)`),
-	unique("beta_survey_definitions_slug_key").on(table.slug),
-	check("beta_survey_definitions_survey_type_check", sql`survey_type = ANY (ARRAY['pre_beta'::text, 'post_beta'::text])`),
+	check("ingredient_aliases_match_method_check", sql`match_method = ANY (ARRAY['manual'::text, 'trigram'::text, 'exact'::text, 'dismissed'::text, 'semantic'::text])`),
 ]);
 
 export const betaSurveyInvites = pgTable("beta_survey_invites", {
@@ -5384,45 +5352,6 @@ export const betaSurveyInvites = pgTable("beta_survey_invites", {
 		}).onDelete("cascade"),
 	unique("beta_survey_invites_token_key").on(table.token),
 	check("beta_survey_invites_role_check", sql`role = ANY (ARRAY['chef'::text, 'client'::text, 'tester'::text])`),
-]);
-
-export const betaSurveyResponses = pgTable("beta_survey_responses", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	surveyId: uuid("survey_id").notNull(),
-	authUserId: uuid("auth_user_id"),
-	token: uuid().defaultRandom(),
-	respondentRole: text("respondent_role"),
-	respondentName: text("respondent_name"),
-	respondentEmail: text("respondent_email"),
-	npsScore: smallint("nps_score"),
-	overallSatisfaction: smallint("overall_satisfaction"),
-	wouldPay: boolean("would_pay"),
-	techComfort: smallint("tech_comfort"),
-	answers: jsonb().default({}).notNull(),
-	startedAt: timestamp("started_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	submittedAt: timestamp("submitted_at", { withTimezone: true, mode: 'string' }),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("idx_beta_survey_responses_role").using("btree", table.respondentRole.asc().nullsLast().op("text_ops")),
-	index("idx_beta_survey_responses_submitted").using("btree", table.submittedAt.asc().nullsLast().op("timestamptz_ops")).where(sql`(submitted_at IS NOT NULL)`),
-	index("idx_beta_survey_responses_survey").using("btree", table.surveyId.asc().nullsLast().op("uuid_ops")),
-	index("idx_beta_survey_responses_user").using("btree", table.authUserId.asc().nullsLast().op("uuid_ops")).where(sql`(auth_user_id IS NOT NULL)`),
-	foreignKey({
-			columns: [table.authUserId],
-			foreignColumns: [users.id],
-			name: "beta_survey_responses_auth_user_id_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.surveyId],
-			foreignColumns: [betaSurveyDefinitions.id],
-			name: "beta_survey_responses_survey_id_fkey"
-		}).onDelete("cascade"),
-	unique("beta_survey_one_per_user").on(table.surveyId, table.authUserId),
-	unique("beta_survey_responses_token_key").on(table.token),
-	check("beta_survey_responses_nps_score_check", sql`(nps_score >= 0) AND (nps_score <= 10)`),
-	check("beta_survey_responses_overall_satisfaction_check", sql`(overall_satisfaction >= 1) AND (overall_satisfaction <= 10)`),
-	check("beta_survey_responses_respondent_role_check", sql`respondent_role = ANY (ARRAY['chef'::text, 'client'::text, 'tester'::text, 'staff'::text, 'partner'::text])`),
-	check("beta_survey_responses_tech_comfort_check", sql`(tech_comfort >= 1) AND (tech_comfort <= 5)`),
 ]);
 
 export const chefHandoffRecipients = pgTable("chef_handoff_recipients", {
@@ -6554,10 +6483,10 @@ export const clientMealPrepPreferences = pgTable("client_meal_prep_preferences",
 	clientId: uuid("client_id").notNull(),
 	dietaryRestrictions: text("dietary_restrictions").array().default([""]).notNull(),
 	allergies: text().array().default([""]).notNull(),
-	dislikes: text().default('').notNull(),
+	dislikes: text().default(').notNull(),
 	spiceTolerance: text("spice_tolerance").default('medium').notNull(),
 	favoriteCuisines: text("favorite_cuisines").array().default([""]).notNull(),
-	dietaryProtocols: text("dietary_protocols").default('').notNull(),
+	dietaryProtocols: text("dietary_protocols").default(').notNull(),
 	householdSize: integer("household_size").default(1).notNull(),
 	adults: integer().default(1).notNull(),
 	children: integer().default(0).notNull(),
@@ -6566,13 +6495,13 @@ export const clientMealPrepPreferences = pgTable("client_meal_prep_preferences",
 	avoidProteins: text("avoid_proteins").array().default([""]).notNull(),
 	carbPreference: text("carb_preference").default('normal').notNull(),
 	portionSize: text("portion_size").default('regular').notNull(),
-	deliveryAddress: text("delivery_address").default('').notNull(),
-	deliveryInstructions: text("delivery_instructions").default('').notNull(),
+	deliveryAddress: text("delivery_address").default(').notNull(),
+	deliveryInstructions: text("delivery_instructions").default(').notNull(),
 	preferredDeliveryDay: integer("preferred_delivery_day").default(1).notNull(),
 	deliveryWindow: text("delivery_window").default('morning').notNull(),
 	containerPreference: text("container_preference").default('reusable').notNull(),
 	weeklyBudgetCents: integer("weekly_budget_cents"),
-	notes: text().default('').notNull(),
+	notes: text().default(').notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
@@ -6675,198 +6604,6 @@ export const containerTransactions = pgTable("container_transactions", {
 	pgPolicy("Chef inserts own container transactions", { as: "permissive", for: "insert", to: ["public"] }),
 	check("container_transactions_quantity_check", sql`quantity > 0`),
 	check("container_transactions_transaction_type_check", sql`transaction_type = ANY (ARRAY['purchase'::text, 'deploy'::text, 'return'::text, 'retire'::text, 'lost'::text])`),
-]);
-
-export const clients = pgTable("clients", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	authUserId: uuid("auth_user_id"),
-	tenantId: uuid("tenant_id"),
-	fullName: text("full_name").notNull(),
-	email: text().notNull(),
-	phone: text(),
-	preferredContactMethod: contactMethod("preferred_contact_method"),
-	referralSource: referralSource("referral_source"),
-	referralSourceDetail: text("referral_source_detail"),
-	partnerName: text("partner_name"),
-	children: text().array(),
-	regularGuests: jsonb("regular_guests").default([]),
-	dietaryRestrictions: text("dietary_restrictions").array(),
-	allergies: text().array(),
-	dislikes: text().array(),
-	spiceTolerance: spiceTolerance("spice_tolerance"),
-	favoriteCuisines: text("favorite_cuisines").array(),
-	favoriteDishes: text("favorite_dishes").array(),
-	wineBeveragePreferences: text("wine_beverage_preferences"),
-	address: text(),
-	parkingInstructions: text("parking_instructions"),
-	accessInstructions: text("access_instructions"),
-	kitchenSize: text("kitchen_size"),
-	kitchenConstraints: text("kitchen_constraints"),
-	houseRules: text("house_rules"),
-	equipmentAvailable: text("equipment_available").array(),
-	equipmentMustBring: text("equipment_must_bring").array(),
-	vibeNotes: text("vibe_notes"),
-	paymentBehavior: text("payment_behavior"),
-	tippingPattern: text("tipping_pattern"),
-	farewellStyle: text("farewell_style"),
-	whatTheyCareAbout: text("what_they_care_about"),
-	personalMilestones: jsonb("personal_milestones").default([]),
-	lifetimeValueCents: integer("lifetime_value_cents").default(0),
-	totalEventsCount: integer("total_events_count").default(0),
-	averageSpendCents: integer("average_spend_cents").default(0),
-	loyaltyPoints: integer("loyalty_points").default(0),
-	status: clientStatus().default('active').notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	totalPaymentsReceivedCents: integer("total_payments_received_cents").default(0),
-	firstEventDate: date("first_event_date"),
-	lastEventDate: date("last_event_date"),
-	totalGuestsServed: integer("total_guests_served").default(0),
-	totalEventsCompleted: integer("total_events_completed").default(0),
-	loyaltyTier: loyaltyTier("loyalty_tier").default('bronze').notNull(),
-	preferredName: text("preferred_name"),
-	partnerPreferredName: text("partner_preferred_name"),
-	additionalAddresses: jsonb("additional_addresses").default([]),
-	familyNotes: text("family_notes"),
-	funQaAnswers: jsonb("fun_qa_answers").default({}),
-	marketingUnsubscribed: boolean("marketing_unsubscribed").default(false).notNull(),
-	marketingUnsubscribedAt: timestamp("marketing_unsubscribed_at", { withTimezone: true, mode: 'string' }),
-	hasReceivedWelcomePoints: boolean("has_received_welcome_points").default(false).notNull(),
-	availabilitySignalNotifications: boolean("availability_signal_notifications").default(true).notNull(),
-	isDemo: boolean("is_demo").default(false).notNull(),
-	portalAccessToken: text("portal_access_token"),
-	portalTokenCreatedAt: timestamp("portal_token_created_at", { withTimezone: true, mode: 'string' }),
-	kitchenOvenNotes: text("kitchen_oven_notes"),
-	kitchenBurnerNotes: text("kitchen_burner_notes"),
-	kitchenCounterNotes: text("kitchen_counter_notes"),
-	kitchenRefrigerationNotes: text("kitchen_refrigeration_notes"),
-	kitchenPlatingNotes: text("kitchen_plating_notes"),
-	kitchenSinkNotes: text("kitchen_sink_notes"),
-	kitchenProfileUpdatedAt: timestamp("kitchen_profile_updated_at", { withTimezone: true, mode: 'string' }),
-	dietaryProtocols: text("dietary_protocols").array().default([""]),
-	ndaActive: boolean("nda_active").default(false),
-	ndaCoverage: text("nda_coverage"),
-	ndaEffectiveDate: date("nda_effective_date"),
-	ndaExpiryDate: date("nda_expiry_date"),
-	ndaDocumentUrl: text("nda_document_url"),
-	photoPermission: text("photo_permission").default('none'),
-	stripeCustomerId: text("stripe_customer_id"),
-	instagramHandle: text("instagram_handle"),
-	socialMediaLinks: jsonb("social_media_links").default([]),
-	occupation: text(),
-	companyName: text("company_name"),
-	birthday: date(),
-	anniversary: date(),
-	pets: jsonb().default([]),
-	gateCode: text("gate_code"),
-	wifiPassword: text("wifi_password"),
-	securityNotes: text("security_notes"),
-	preferredServiceStyle: text("preferred_service_style"),
-	typicalGuestCount: text("typical_guest_count"),
-	preferredEventDays: text("preferred_event_days").array().default([""]),
-	budgetRangeMinCents: integer("budget_range_min_cents"),
-	budgetRangeMaxCents: integer("budget_range_max_cents"),
-	cleanupExpectations: text("cleanup_expectations"),
-	leftoversPreference: text("leftovers_preference"),
-	hasDishwasher: boolean("has_dishwasher"),
-	outdoorCookingNotes: text("outdoor_cooking_notes"),
-	nearestGroceryStore: text("nearest_grocery_store"),
-	waterQualityNotes: text("water_quality_notes"),
-	availablePlaceSettings: integer("available_place_settings"),
-	formalityLevel: text("formality_level"),
-	communicationStyleNotes: text("communication_style_notes"),
-	complaintHandlingNotes: text("complaint_handling_notes"),
-	wowFactors: text("wow_factors"),
-	referralPotential: text("referral_potential"),
-	redFlags: text("red_flags"),
-	acquisitionCostCents: integer("acquisition_cost_cents"),
-	deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'string' }),
-	deletedBy: uuid("deleted_by"),
-	recurringPricingModel: text("recurring_pricing_model"),
-	recurringPriceCents: integer("recurring_price_cents"),
-	recurringPricingNotes: text("recurring_pricing_notes"),
-	isBetaTester: boolean("is_beta_tester").default(false),
-	betaEnrolledAt: timestamp("beta_enrolled_at", { withTimezone: true, mode: 'string' }),
-	betaDiscountPercent: integer("beta_discount_percent").default(30),
-	referredByClientId: uuid("referred_by_client_id"),
-	referredFromGroupId: uuid("referred_from_group_id"),
-	referralCode: text("referral_code"),
-	accountDeletionRequestedAt: timestamp("account_deletion_requested_at", { withTimezone: true, mode: 'string' }),
-	accountDeletionScheduledFor: timestamp("account_deletion_scheduled_for", { withTimezone: true, mode: 'string' }),
-	accountDeletionCancelledAt: timestamp("account_deletion_cancelled_at", { withTimezone: true, mode: 'string' }),
-	deletionReason: text("deletion_reason"),
-	importantDates: jsonb("important_dates").default([]),
-	portalAccessTokenHash: text("portal_access_token_hash"),
-	portalTokenExpiresAt: timestamp("portal_token_expires_at", { withTimezone: true, mode: 'string' }),
-	portalTokenLastUsedAt: timestamp("portal_token_last_used_at", { withTimezone: true, mode: 'string' }),
-	portalTokenRevokedAt: timestamp("portal_token_revoked_at", { withTimezone: true, mode: 'string' }),
-	onboardingCompletedAt: timestamp("onboarding_completed_at", { withTimezone: true, mode: 'string' }),
-	onboardingToken: text("onboarding_token"),
-	communicationPreference: jsonb("communication_preference").default({}),
-	automatedEmailsEnabled: boolean("automated_emails_enabled").default(true).notNull(),
-	dinnerCircleGroupId: uuid("dinner_circle_group_id"),
-	avatarUrl: text("avatar_url"),
-}, (table) => [
-	index("idx_clients_account_deletion_scheduled_for").using("btree", table.accountDeletionScheduledFor.asc().nullsLast().op("timestamptz_ops")).where(sql`(account_deletion_requested_at IS NOT NULL)`),
-	index("idx_clients_active_tenant_created_at").using("btree", table.tenantId.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("uuid_ops")).where(sql`(deleted_at IS NULL)`),
-	index("idx_clients_anniversary").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.anniversary.asc().nullsLast().op("uuid_ops")).where(sql`(anniversary IS NOT NULL)`),
-	index("idx_clients_auth_user").using("btree", table.authUserId.asc().nullsLast().op("uuid_ops")),
-	index("idx_clients_beta_tester").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")).where(sql`(is_beta_tester = true)`),
-	index("idx_clients_birthday").using("btree", table.tenantId.asc().nullsLast().op("date_ops"), table.birthday.asc().nullsLast().op("uuid_ops")).where(sql`(birthday IS NOT NULL)`),
-	index("idx_clients_dinner_circle").using("btree", table.dinnerCircleGroupId.asc().nullsLast().op("uuid_ops")).where(sql`(dinner_circle_group_id IS NOT NULL)`),
-	index("idx_clients_important_dates").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")).where(sql`(important_dates <> '[]'::jsonb)`),
-	index("idx_clients_is_demo").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")).where(sql`(is_demo = true)`),
-	index("idx_clients_loyalty_points").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.loyaltyPoints.asc().nullsLast().op("uuid_ops")),
-	index("idx_clients_loyalty_tier").using("btree", table.tenantId.asc().nullsLast().op("enum_ops"), table.loyaltyTier.asc().nullsLast().op("uuid_ops")),
-	index("idx_clients_photo_permission").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.photoPermission.asc().nullsLast().op("text_ops")),
-	index("idx_clients_portal_access_token").using("btree", table.portalAccessToken.asc().nullsLast().op("text_ops")).where(sql`(portal_access_token IS NOT NULL)`),
-	uniqueIndex("idx_clients_portal_access_token_hash").using("btree", table.portalAccessTokenHash.asc().nullsLast().op("text_ops")).where(sql`(portal_access_token_hash IS NOT NULL)`),
-	index("idx_clients_portal_token_expires_at").using("btree", table.portalTokenExpiresAt.asc().nullsLast().op("timestamptz_ops")).where(sql`(portal_token_expires_at IS NOT NULL)`),
-	index("idx_clients_recurring_pricing_model").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.recurringPricingModel.asc().nullsLast().op("text_ops")).where(sql`(recurring_pricing_model IS NOT NULL)`),
-	uniqueIndex("idx_clients_referral_code").using("btree", table.referralCode.asc().nullsLast().op("text_ops")).where(sql`(referral_code IS NOT NULL)`),
-	index("idx_clients_referral_potential").using("btree", table.tenantId.asc().nullsLast().op("text_ops"), table.referralPotential.asc().nullsLast().op("uuid_ops")).where(sql`(referral_potential IS NOT NULL)`),
-	index("idx_clients_referred_by").using("btree", table.referredByClientId.asc().nullsLast().op("uuid_ops")).where(sql`(referred_by_client_id IS NOT NULL)`),
-	index("idx_clients_status").using("btree", table.status.asc().nullsLast().op("enum_ops")),
-	index("idx_clients_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
-	index("idx_clients_tenant_status").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("uuid_ops")),
-	foreignKey({
-			columns: [table.authUserId],
-			foreignColumns: [users.id],
-			name: "clients_auth_user_id_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.dinnerCircleGroupId],
-			foreignColumns: [hubGroups.id],
-			name: "clients_dinner_circle_group_id_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.referredByClientId],
-			foreignColumns: [table.id],
-			name: "clients_referred_by_client_id_fkey"
-		}),
-	foreignKey({
-			columns: [table.referredFromGroupId],
-			foreignColumns: [hubGroups.id],
-			name: "clients_referred_from_group_id_fkey"
-		}),
-	foreignKey({
-			columns: [table.tenantId],
-			foreignColumns: [chefs.id],
-			name: "clients_tenant_id_fkey"
-		}).onDelete("cascade"),
-	unique("clients_auth_user_id_key").on(table.authUserId),
-	unique("clients_tenant_id_email_key").on(table.tenantId, table.email),
-	unique("clients_portal_access_token_key").on(table.portalAccessToken),
-	pgPolicy("clients_chef_select", { as: "permissive", for: "select", to: ["public"], using: sql`((get_current_user_role() = 'chef'::user_role) AND (tenant_id = get_current_tenant_id()))` }),
-	pgPolicy("clients_chef_insert", { as: "permissive", for: "insert", to: ["public"] }),
-	pgPolicy("clients_chef_update", { as: "permissive", for: "update", to: ["public"] }),
-	pgPolicy("clients_self_select", { as: "permissive", for: "select", to: ["public"] }),
-	pgPolicy("clients_self_update", { as: "permissive", for: "update", to: ["public"] }),
-	check("clients_formality_level_check", sql`(formality_level IS NULL) OR (formality_level = ANY (ARRAY['casual'::text, 'semi_formal'::text, 'formal'::text]))`),
-	check("clients_photo_permission_check", sql`photo_permission = ANY (ARRAY['none'::text, 'portfolio_only'::text, 'public_with_approval'::text, 'public_freely'::text])`),
-	check("clients_recurring_price_cents_check", sql`(recurring_price_cents IS NULL) OR (recurring_price_cents >= 0)`),
-	check("clients_recurring_pricing_model_check", sql`(recurring_pricing_model IS NULL) OR (recurring_pricing_model = ANY (ARRAY['none'::text, 'flat_rate'::text, 'per_person'::text]))`),
-	check("clients_referral_potential_check", sql`(referral_potential IS NULL) OR (referral_potential = ANY (ARRAY['low'::text, 'medium'::text, 'high'::text]))`),
 ]);
 
 export const dailySpecials = pgTable("daily_specials", {
@@ -7560,93 +7297,29 @@ export const documentIntelligenceItems = pgTable("document_intelligence_items", 
 	check("document_intelligence_items_suggested_destination_check", sql`suggested_destination = ANY (ARRAY['menu'::text, 'receipt'::text, 'client'::text, 'recipe'::text, 'document'::text])`),
 ]);
 
-export const chefDocuments = pgTable("chef_documents", {
+export const chefCollabSpaceMembers = pgTable("chef_collab_space_members", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
-	tenantId: uuid("tenant_id").notNull(),
-	title: text().notNull(),
-	documentType: text("document_type").default('general').notNull(),
-	contentText: text("content_text"),
-	summary: text(),
-	keyTerms: jsonb("key_terms").default([]),
-	sourceType: text("source_type").default('text_import').notNull(),
-	sourceFilename: text("source_filename"),
-	tags: text().array().default([""]),
-	eventId: uuid("event_id"),
-	clientId: uuid("client_id"),
-	isTemplate: boolean("is_template").default(false).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	createdBy: uuid("created_by"),
-	updatedBy: uuid("updated_by"),
-	folderId: uuid("folder_id"),
-	originalFilename: text("original_filename"),
-	storageBucket: text("storage_bucket"),
-	storagePath: text("storage_path"),
-	mimeType: text("mime_type"),
-	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	fileSizeBytes: bigint("file_size_bytes", { mode: "number" }),
-	fileHash: text("file_hash"),
-	entityType: text("entity_type"),
-	entityId: uuid("entity_id"),
-	sourceUrl: text("source_url"),
-	extractionStatus: text("extraction_status").default('not_requested').notNull(),
-	extractionConfidence: numeric("extraction_confidence", { precision: 5, scale:  2 }),
-	inquiryId: uuid("inquiry_id"),
+	spaceId: uuid("space_id").notNull(),
+	chefId: uuid("chef_id").notNull(),
+	role: text().default('member').notNull(),
+	notificationsMuted: boolean("notifications_muted").default(false).notNull(),
+	lastReadAt: timestamp("last_read_at", { withTimezone: true, mode: 'string' }),
+	joinedAt: timestamp("joined_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	index("idx_chef_documents_client").using("btree", table.clientId.asc().nullsLast().op("uuid_ops")).where(sql`(client_id IS NOT NULL)`),
-	index("idx_chef_documents_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")).where(sql`(event_id IS NOT NULL)`),
-	index("idx_chef_documents_folder").using("btree", table.folderId.asc().nullsLast().op("uuid_ops")),
-	index("idx_chef_documents_inquiry_id").using("btree", table.inquiryId.asc().nullsLast().op("uuid_ops")).where(sql`(inquiry_id IS NOT NULL)`),
-	index("idx_chef_documents_storage_path").using("btree", table.storagePath.asc().nullsLast().op("text_ops")).where(sql`(storage_path IS NOT NULL)`),
-	index("idx_chef_documents_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
-	index("idx_chef_documents_tenant_client").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.clientId.asc().nullsLast().op("uuid_ops")).where(sql`(client_id IS NOT NULL)`),
-	index("idx_chef_documents_tenant_entity").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.entityType.asc().nullsLast().op("text_ops"), table.entityId.asc().nullsLast().op("uuid_ops")).where(sql`((entity_type IS NOT NULL) AND (entity_id IS NOT NULL))`),
-	index("idx_chef_documents_tenant_event").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.eventId.asc().nullsLast().op("uuid_ops")).where(sql`(event_id IS NOT NULL)`),
-	index("idx_chef_documents_tenant_hash").using("btree", table.tenantId.asc().nullsLast().op("text_ops"), table.fileHash.asc().nullsLast().op("text_ops")).where(sql`(file_hash IS NOT NULL)`),
-	index("idx_chef_documents_type").using("btree", table.tenantId.asc().nullsLast().op("text_ops"), table.documentType.asc().nullsLast().op("uuid_ops")),
+	index("idx_chef_collab_space_members_chef").using("btree", table.chefId.asc().nullsLast().op("timestamptz_ops"), table.joinedAt.desc().nullsFirst().op("uuid_ops")),
+	index("idx_chef_collab_space_members_space").using("btree", table.spaceId.asc().nullsLast().op("uuid_ops"), table.joinedAt.asc().nullsLast().op("timestamptz_ops")),
 	foreignKey({
-			columns: [table.clientId],
-			foreignColumns: [clients.id],
-			name: "chef_documents_client_id_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.createdBy],
-			foreignColumns: [users.id],
-			name: "chef_documents_created_by_fkey"
-		}),
-	foreignKey({
-			columns: [table.eventId],
-			foreignColumns: [events.id],
-			name: "chef_documents_event_id_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.folderId],
-			foreignColumns: [chefFolders.id],
-			name: "chef_documents_folder_id_fkey"
-		}),
-	foreignKey({
-			columns: [table.inquiryId],
-			foreignColumns: [inquiries.id],
-			name: "chef_documents_inquiry_id_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.tenantId],
+			columns: [table.chefId],
 			foreignColumns: [chefs.id],
-			name: "chef_documents_tenant_id_fkey"
+			name: "chef_collab_space_members_chef_id_fkey"
 		}).onDelete("cascade"),
 	foreignKey({
-			columns: [table.updatedBy],
-			foreignColumns: [users.id],
-			name: "chef_documents_updated_by_fkey"
-		}),
-	pgPolicy("chef_documents_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = ( SELECT user_roles.entity_id
-   FROM user_roles
-  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))`, withCheck: sql`(tenant_id = ( SELECT user_roles.entity_id
-   FROM user_roles
-  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))`  }),
-	check("chef_documents_document_type_check", sql`document_type = ANY (ARRAY['contract'::text, 'template'::text, 'policy'::text, 'checklist'::text, 'note'::text, 'general'::text])`),
-	check("chef_documents_extraction_status_check", sql`extraction_status = ANY (ARRAY['not_requested'::text, 'completed'::text, 'failed'::text])`),
-	check("chef_documents_source_type_check", sql`source_type = ANY (ARRAY['text_import'::text, 'file_upload'::text, 'manual'::text])`),
+			columns: [table.spaceId],
+			foreignColumns: [chefCollabSpaces.id],
+			name: "chef_collab_space_members_space_id_fkey"
+		}).onDelete("cascade"),
+	unique("chef_collab_space_members_unique").on(table.spaceId, table.chefId),
+	check("chef_collab_space_members_role_check", sql`role = ANY (ARRAY['owner'::text, 'member'::text])`),
 ]);
 
 export const hubMealTemplates = pgTable("hub_meal_templates", {
@@ -7933,6 +7606,37 @@ export const tipPoolConfigs = pgTable("tip_pool_configs", {
 		}).onDelete("cascade"),
 	pgPolicy("tip_pool_configs_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = auth.uid())`, withCheck: sql`(tenant_id = auth.uid())`  }),
 	check("tip_pool_configs_pool_method_check", sql`pool_method = ANY (ARRAY['equal'::text, 'hours_based'::text, 'points_based'::text])`),
+]);
+
+export const chefCollabThreads = pgTable("chef_collab_threads", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	spaceId: uuid("space_id").notNull(),
+	createdByChefId: uuid("created_by_chef_id").notNull(),
+	threadType: text("thread_type").default('topic').notNull(),
+	starterKey: text("starter_key"),
+	title: text().notNull(),
+	isClosed: boolean("is_closed").default(false).notNull(),
+	lastMessageAt: timestamp("last_message_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("idx_chef_collab_threads_one_general").using("btree", table.spaceId.asc().nullsLast().op("uuid_ops")).where(sql`(thread_type = 'general'::text)`),
+	index("idx_chef_collab_threads_space_activity").using("btree", table.spaceId.asc().nullsLast().op("uuid_ops"), table.lastMessageAt.desc().nullsLast().op("timestamptz_ops"), table.createdAt.asc().nullsLast().op("uuid_ops")),
+	uniqueIndex("idx_chef_collab_threads_starter_key").using("btree", table.spaceId.asc().nullsLast().op("uuid_ops"), table.starterKey.asc().nullsLast().op("text_ops")).where(sql`(starter_key IS NOT NULL)`),
+	foreignKey({
+			columns: [table.createdByChefId],
+			foreignColumns: [chefs.id],
+			name: "chef_collab_threads_created_by_chef_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.spaceId],
+			foreignColumns: [chefCollabSpaces.id],
+			name: "chef_collab_threads_space_id_fkey"
+		}).onDelete("cascade"),
+	unique("chef_collab_threads_unique_title_per_space").on(table.spaceId, table.title),
+	check("chef_collab_threads_starter_key_check", sql`(starter_key IS NULL) OR (starter_key = ANY (ARRAY['general'::text, 'leads'::text, 'handoffs'::text, 'travel'::text, 'references'::text]))`),
+	check("chef_collab_threads_thread_type_check", sql`thread_type = ANY (ARRAY['general'::text, 'starter'::text, 'topic'::text])`),
+	check("chef_collab_threads_title_check", sql`(char_length(TRIM(BOTH FROM title)) >= 1) AND (char_length(TRIM(BOTH FROM title)) <= 120)`),
 ]);
 
 export const cancellationPolicies = pgTable("cancellation_policies", {
@@ -8534,6 +8238,62 @@ export const communityBenchmarks = pgTable("community_benchmarks", {
 	check("community_benchmarks_metric_type_check", sql`metric_type = ANY (ARRAY['avg_event_price'::text, 'events_per_month'::text, 'food_cost_pct'::text, 'client_retention_rate'::text, 'avg_party_size'::text])`),
 ]);
 
+export const ingredientPriceHistory = pgTable("ingredient_price_history", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	ingredientId: uuid("ingredient_id").notNull(),
+	expenseId: uuid("expense_id"),
+	storeName: text("store_name"),
+	priceCents: integer("price_cents").notNull(),
+	quantity: numeric().default('1').notNull(),
+	unit: text(),
+	pricePerUnitCents: integer("price_per_unit_cents"),
+	purchaseDate: date("purchase_date").default(sql`CURRENT_DATE`).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	source: text().default('manual'),
+	sourceId: uuid("source_id"),
+	vendorId: uuid("vendor_id"),
+	notes: text(),
+	sourceUrl: text("source_url"),
+}, (table) => [
+	index("idx_ingredient_price_history_ingredient").using("btree", table.ingredientId.asc().nullsLast().op("uuid_ops")),
+	index("idx_ingredient_price_history_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	index("idx_iph_ingredient_date").using("btree", table.tenantId.asc().nullsLast().op("date_ops"), table.ingredientId.asc().nullsLast().op("uuid_ops"), table.purchaseDate.desc().nullsFirst().op("date_ops")),
+	index("idx_iph_openclaw_date").using("btree", table.ingredientId.asc().nullsLast().op("date_ops"), table.purchaseDate.desc().nullsFirst().op("int4_ops"), table.pricePerUnitCents.asc().nullsLast().op("uuid_ops")).where(sql`(source ~~ 'openclaw_%'::text)`),
+	uniqueIndex("idx_iph_openclaw_dedup").using("btree", table.ingredientId.asc().nullsLast().op("uuid_ops"), table.tenantId.asc().nullsLast().op("text_ops"), table.source.asc().nullsLast().op("uuid_ops"), table.storeName.asc().nullsLast().op("uuid_ops"), table.purchaseDate.asc().nullsLast().op("uuid_ops")).where(sql`(source ~~ 'openclaw_%'::text)`),
+	index("idx_iph_openclaw_unit").using("btree", table.ingredientId.asc().nullsLast().op("text_ops"), table.unit.asc().nullsLast().op("uuid_ops")).where(sql`((source ~~ 'openclaw_%'::text) AND (price_per_unit_cents > 0))`),
+	index("idx_iph_seasonal").using("btree", sql`tenant_id`, sql`ingredient_id`, sql`EXTRACT(month FROM purchase_date)`),
+	index("idx_iph_source_lookup").using("btree", table.ingredientId.asc().nullsLast().op("text_ops"), table.tenantId.asc().nullsLast().op("uuid_ops"), table.source.asc().nullsLast().op("uuid_ops"), table.purchaseDate.desc().nullsFirst().op("uuid_ops")).where(sql`(source IS NOT NULL)`),
+	index("idx_iph_vendor_date").using("btree", table.vendorId.asc().nullsLast().op("uuid_ops"), table.purchaseDate.desc().nullsFirst().op("uuid_ops")).where(sql`(vendor_id IS NOT NULL)`),
+	foreignKey({
+			columns: [table.expenseId],
+			foreignColumns: [expenses.id],
+			name: "ingredient_price_history_expense_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.ingredientId],
+			foreignColumns: [ingredients.id],
+			name: "ingredient_price_history_ingredient_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "ingredient_price_history_tenant_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.vendorId],
+			foreignColumns: [vendors.id],
+			name: "ingredient_price_history_vendor_id_fkey"
+		}).onDelete("set null"),
+	pgPolicy("Chefs manage own ingredient price history", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = ( SELECT chefs.id
+   FROM chefs
+  WHERE (chefs.auth_user_id = auth.uid())))`, withCheck: sql`(tenant_id = ( SELECT chefs.id
+   FROM chefs
+  WHERE (chefs.auth_user_id = auth.uid())))`  }),
+	pgPolicy("iph_chef_insert", { as: "permissive", for: "insert", to: ["public"] }),
+	pgPolicy("iph_chef_delete", { as: "permissive", for: "delete", to: ["public"] }),
+]);
+
 export const giftCertificates = pgTable("gift_certificates", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	tenantId: uuid("tenant_id").notNull(),
@@ -8602,59 +8362,6 @@ export const grocerySpendEntries = pgTable("grocery_spend_entries", {
 		}).onDelete("cascade"),
 	pgPolicy("grocery_spend_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = auth.uid())` }),
 	check("grocery_spend_entries_amount_cents_check", sql`amount_cents >= 0`),
-]);
-
-export const ingredientPriceHistory = pgTable("ingredient_price_history", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	tenantId: uuid("tenant_id").notNull(),
-	ingredientId: uuid("ingredient_id").notNull(),
-	expenseId: uuid("expense_id"),
-	storeName: text("store_name"),
-	priceCents: integer("price_cents").notNull(),
-	quantity: numeric().default('1').notNull(),
-	unit: text(),
-	pricePerUnitCents: integer("price_per_unit_cents"),
-	purchaseDate: date("purchase_date").default(sql`CURRENT_DATE`).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	source: text().default('manual'),
-	sourceId: uuid("source_id"),
-	vendorId: uuid("vendor_id"),
-	notes: text(),
-}, (table) => [
-	index("idx_ingredient_price_history_ingredient").using("btree", table.ingredientId.asc().nullsLast().op("uuid_ops")),
-	index("idx_ingredient_price_history_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
-	index("idx_iph_ingredient_date").using("btree", table.tenantId.asc().nullsLast().op("date_ops"), table.ingredientId.asc().nullsLast().op("uuid_ops"), table.purchaseDate.desc().nullsFirst().op("date_ops")),
-	uniqueIndex("idx_iph_openclaw_dedup").using("btree", table.ingredientId.asc().nullsLast().op("text_ops"), table.tenantId.asc().nullsLast().op("uuid_ops"), table.source.asc().nullsLast().op("date_ops"), table.storeName.asc().nullsLast().op("uuid_ops"), table.purchaseDate.asc().nullsLast().op("date_ops")).where(sql`(source ~~ 'openclaw_%'::text)`),
-	index("idx_iph_seasonal").using("btree", sql`tenant_id`, sql`ingredient_id`, sql`EXTRACT(month FROM purchase_date)`),
-	index("idx_iph_source_lookup").using("btree", table.ingredientId.asc().nullsLast().op("text_ops"), table.tenantId.asc().nullsLast().op("text_ops"), table.source.asc().nullsLast().op("uuid_ops"), table.purchaseDate.desc().nullsFirst().op("uuid_ops")).where(sql`(source IS NOT NULL)`),
-	index("idx_iph_vendor_date").using("btree", table.vendorId.asc().nullsLast().op("uuid_ops"), table.purchaseDate.desc().nullsFirst().op("uuid_ops")).where(sql`(vendor_id IS NOT NULL)`),
-	foreignKey({
-			columns: [table.expenseId],
-			foreignColumns: [expenses.id],
-			name: "ingredient_price_history_expense_id_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.ingredientId],
-			foreignColumns: [ingredients.id],
-			name: "ingredient_price_history_ingredient_id_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.tenantId],
-			foreignColumns: [chefs.id],
-			name: "ingredient_price_history_tenant_id_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.vendorId],
-			foreignColumns: [vendors.id],
-			name: "ingredient_price_history_vendor_id_fkey"
-		}).onDelete("set null"),
-	pgPolicy("Chefs manage own ingredient price history", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = ( SELECT chefs.id
-   FROM chefs
-  WHERE (chefs.auth_user_id = auth.uid())))`, withCheck: sql`(tenant_id = ( SELECT chefs.id
-   FROM chefs
-  WHERE (chefs.auth_user_id = auth.uid())))`  }),
-	pgPolicy("iph_chef_insert", { as: "permissive", for: "insert", to: ["public"] }),
-	pgPolicy("iph_chef_delete", { as: "permissive", for: "delete", to: ["public"] }),
 ]);
 
 export const autoResponseConfig = pgTable("auto_response_config", {
@@ -8860,6 +8567,36 @@ export const directoryEmailPreferences = pgTable("directory_email_preferences", 
 	pgPolicy("directory_email_prefs_admin", { as: "permissive", for: "all", to: ["public"], using: sql`(auth.role() = 'service_role'::text)` }),
 ]);
 
+export const ingredientPortions = pgTable("ingredient_portions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	systemIngredientId: uuid("system_ingredient_id").notNull(),
+	measureDescription: text("measure_description").notNull(),
+	gramWeight: numeric("gram_weight", { precision: 10, scale:  2 }).notNull(),
+	sequenceNumber: integer("sequence_number"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("idx_portions_ingredient").using("btree", table.systemIngredientId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.systemIngredientId],
+			foreignColumns: [systemIngredients.id],
+			name: "ingredient_portions_system_ingredient_id_fkey"
+		}).onDelete("cascade"),
+	unique("ingredient_portions_system_ingredient_id_measure_descriptio_key").on(table.systemIngredientId, table.measureDescription),
+]);
+
+export const cookingRetentionFactors = pgTable("cooking_retention_factors", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	foodGroup: text("food_group").notNull(),
+	cookingMethod: text("cooking_method").notNull(),
+	nutrientName: text("nutrient_name").notNull(),
+	retentionPct: numeric("retention_pct", { precision: 5, scale:  2 }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("idx_retention_group").using("btree", table.foodGroup.asc().nullsLast().op("text_ops")),
+	index("idx_retention_method").using("btree", table.cookingMethod.asc().nullsLast().op("text_ops")),
+	unique("cooking_retention_factors_food_group_cooking_method_nutrien_key").on(table.foodGroup, table.cookingMethod, table.nutrientName),
+]);
+
 export const chefPricingConfig = pgTable("chef_pricing_config", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	chefId: uuid("chef_id").notNull(),
@@ -8918,6 +8655,7 @@ export const clientTasteProfiles = pgTable("client_taste_profiles", {
 	preferredProteins: text("preferred_proteins").array().default([""]).notNull(),
 	avoids: text().array().default([""]).notNull(),
 	specialOccasionsNotes: text("special_occasions_notes"),
+	ambiancePreferences: text("ambiance_preferences"),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
@@ -9727,7 +9465,7 @@ export const chefCulinaryProfiles = pgTable("chef_culinary_profiles", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	chefId: uuid("chef_id").notNull(),
 	questionKey: text("question_key").notNull(),
-	answer: text().default('').notNull(),
+	answer: text().default(').notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
@@ -9958,8 +9696,8 @@ export const chefJournalRecipeLinks = pgTable("chef_journal_recipe_links", {
 	tenantId: uuid("tenant_id").notNull(),
 	createdBy: uuid("created_by").notNull(),
 	recipeId: uuid("recipe_id").notNull(),
-	adaptationNotes: text("adaptation_notes").default('').notNull(),
-	outcomeNotes: text("outcome_notes").default('').notNull(),
+	adaptationNotes: text("adaptation_notes").default(').notNull(),
+	outcomeNotes: text("outcome_notes").default(').notNull(),
 	outcomeRating: smallint("outcome_rating"),
 	firstTestedOn: date("first_tested_on"),
 	wouldRepeat: boolean("would_repeat").default(true).notNull(),
@@ -10002,11 +9740,11 @@ export const chefJourneyEntries = pgTable("chef_journey_entries", {
 	createdBy: uuid("created_by").notNull(),
 	entryType: chefJourneyEntryType("entry_type").default('reflection').notNull(),
 	entryDate: date("entry_date").default(sql`CURRENT_DATE`).notNull(),
-	locationLabel: text("location_label").default('').notNull(),
+	locationLabel: text("location_label").default(').notNull(),
 	title: text().notNull(),
-	narrative: text().default('').notNull(),
-	favoriteMeal: text("favorite_meal").default('').notNull(),
-	favoriteExperience: text("favorite_experience").default('').notNull(),
+	narrative: text().default(').notNull(),
+	favoriteMeal: text("favorite_meal").default(').notNull(),
+	favoriteExperience: text("favorite_experience").default(').notNull(),
 	whatILearned: text("what_i_learned").array().default([""]).notNull(),
 	inspirationTaken: text("inspiration_taken").array().default([""]).notNull(),
 	dishesToExplore: text("dishes_to_explore").array().default([""]).notNull(),
@@ -10014,7 +9752,7 @@ export const chefJourneyEntries = pgTable("chef_journey_entries", {
 	isHighlight: boolean("is_highlight").default(false).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	formattedAddress: text("formatted_address").default('').notNull(),
+	formattedAddress: text("formatted_address").default(').notNull(),
 	latitude: doublePrecision(),
 	longitude: doublePrecision(),
 	mistakesMade: text("mistakes_made").array().default([""]).notNull(),
@@ -10050,12 +9788,12 @@ export const chefJourneyIdeas = pgTable("chef_journey_ideas", {
 	sourceEntryId: uuid("source_entry_id"),
 	createdBy: uuid("created_by").notNull(),
 	title: text().notNull(),
-	conceptNotes: text("concept_notes").default('').notNull(),
+	conceptNotes: text("concept_notes").default(').notNull(),
 	applicationArea: chefJourneyIdeaArea("application_area").default('menu').notNull(),
 	status: chefJourneyIdeaStatus().default('backlog').notNull(),
 	priority: smallint().default(3).notNull(),
-	expectedImpact: text("expected_impact").default('').notNull(),
-	testPlan: text("test_plan").default('').notNull(),
+	expectedImpact: text("expected_impact").default(').notNull(),
+	testPlan: text("test_plan").default(').notNull(),
 	firstTestDate: date("first_test_date"),
 	adoptedOn: date("adopted_on"),
 	adoptedRecipeId: uuid("adopted_recipe_id"),
@@ -10554,65 +10292,6 @@ export const chefSocialNotifications = pgTable("chef_social_notifications", {
 	check("chef_social_notifications_notification_type_check", sql`notification_type = ANY (ARRAY['new_follower'::text, 'post_reaction'::text, 'post_comment'::text, 'comment_reply'::text, 'comment_reaction'::text, 'post_share'::text, 'mention_post'::text, 'mention_comment'::text, 'channel_post'::text, 'story_reaction'::text, 'story_view'::text, 'connection_accepted'::text, 'collab_handoff_received'::text, 'collab_handoff_accepted'::text, 'collab_handoff_rejected'::text, 'collab_handoff_converted'::text, 'collab_handoff_cancelled'::text])`),
 ]);
 
-export const chefSocialPosts = pgTable("chef_social_posts", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	chefId: uuid("chef_id").notNull(),
-	content: text().notNull(),
-	mediaUrls: text("media_urls").array().default([""]).notNull(),
-	mediaTypes: text("media_types").array().default([""]).notNull(),
-	postType: text("post_type").default('text').notNull(),
-	visibility: text().default('public').notNull(),
-	channelId: uuid("channel_id"),
-	hashtags: text().array().default([""]).notNull(),
-	locationTag: text("location_tag"),
-	originalPostId: uuid("original_post_id"),
-	shareComment: text("share_comment"),
-	pollQuestion: text("poll_question"),
-	pollOptions: jsonb("poll_options"),
-	pollClosesAt: timestamp("poll_closes_at", { withTimezone: true, mode: 'string' }),
-	reactionsCount: integer("reactions_count").default(0).notNull(),
-	commentsCount: integer("comments_count").default(0).notNull(),
-	savesCount: integer("saves_count").default(0).notNull(),
-	sharesCount: integer("shares_count").default(0).notNull(),
-	isEdited: boolean("is_edited").default(false).notNull(),
-	editedAt: timestamp("edited_at", { withTimezone: true, mode: 'string' }),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("idx_chef_social_posts_channel").using("btree", table.channelId.asc().nullsLast().op("uuid_ops")).where(sql`(channel_id IS NOT NULL)`),
-	index("idx_chef_social_posts_chef_id").using("btree", table.chefId.asc().nullsLast().op("uuid_ops")),
-	index("idx_chef_social_posts_created_at").using("btree", table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
-	index("idx_chef_social_posts_hashtags").using("gin", table.hashtags.asc().nullsLast().op("array_ops")),
-	index("idx_chef_social_posts_original").using("btree", table.originalPostId.asc().nullsLast().op("uuid_ops")).where(sql`(original_post_id IS NOT NULL)`),
-	index("idx_chef_social_posts_visibility").using("btree", table.visibility.asc().nullsLast().op("text_ops")),
-	index("idx_owner_obs_social_posts_chef_created").using("btree", table.chefId.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
-	foreignKey({
-			columns: [table.channelId],
-			foreignColumns: [chefSocialChannels.id],
-			name: "chef_social_posts_channel_id_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.chefId],
-			foreignColumns: [chefs.id],
-			name: "chef_social_posts_chef_id_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.originalPostId],
-			foreignColumns: [table.id],
-			name: "chef_social_posts_original_post_id_fkey"
-		}).onDelete("set null"),
-	check("chef_social_posts_comments_count_check", sql`comments_count >= 0`),
-	check("chef_social_posts_content_check", sql`(char_length(content) >= 1) AND (char_length(content) <= 5000)`),
-	check("chef_social_posts_location_tag_check", sql`char_length(location_tag) <= 100`),
-	check("chef_social_posts_poll_question_check", sql`char_length(poll_question) <= 200`),
-	check("chef_social_posts_post_type_check", sql`post_type = ANY (ARRAY['text'::text, 'photo'::text, 'video'::text, 'reel'::text, 'poll'::text, 'share'::text])`),
-	check("chef_social_posts_reactions_count_check", sql`reactions_count >= 0`),
-	check("chef_social_posts_saves_count_check", sql`saves_count >= 0`),
-	check("chef_social_posts_share_comment_check", sql`char_length(share_comment) <= 1000`),
-	check("chef_social_posts_shares_count_check", sql`shares_count >= 0`),
-	check("chef_social_posts_visibility_check", sql`visibility = ANY (ARRAY['public'::text, 'followers'::text, 'connections'::text, 'private'::text])`),
-]);
-
 export const chefStoryReactions = pgTable("chef_story_reactions", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	storyId: uuid("story_id").notNull(),
@@ -10827,8 +10506,8 @@ export const clientGiftLog = pgTable("client_gift_log", {
 	chefId: uuid("chef_id").notNull(),
 	clientId: uuid("client_id").notNull(),
 	giftType: text("gift_type").notNull(),
-	occasion: text().default('').notNull(),
-	description: text().default('').notNull(),
+	occasion: text().default(').notNull(),
+	description: text().default(').notNull(),
 	costCents: integer("cost_cents").default(0).notNull(),
 	sentAt: timestamp("sent_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	deliveryMethod: text("delivery_method").notNull(),
@@ -11830,51 +11509,63 @@ export const chefTrustedCircle = pgTable("chef_trusted_circle", {
 	check("trusted_circle_no_self", sql`chef_id <> trusted_chef_id`),
 ]);
 
-export const communicationEvents = pgTable("communication_events", {
+export const chefSocialPosts = pgTable("chef_social_posts", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
-	tenantId: uuid("tenant_id").notNull(),
-	source: communicationSource().notNull(),
-	externalId: text("external_id"),
-	timestamp: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
-	senderIdentity: text("sender_identity").notNull(),
-	resolvedClientId: uuid("resolved_client_id"),
-	threadId: uuid("thread_id").notNull(),
-	rawContent: text("raw_content").notNull(),
-	normalizedContent: text("normalized_content").notNull(),
-	direction: communicationDirection().notNull(),
-	linkedEntityType: text("linked_entity_type"),
-	linkedEntityId: uuid("linked_entity_id"),
-	status: communicationEventStatus().default('unlinked').notNull(),
+	chefId: uuid("chef_id").notNull(),
+	content: text().notNull(),
+	mediaUrls: text("media_urls").array().default([""]).notNull(),
+	mediaTypes: text("media_types").array().default([""]).notNull(),
+	postType: text("post_type").default('text').notNull(),
+	visibility: text().default('public').notNull(),
+	channelId: uuid("channel_id"),
+	hashtags: text().array().default([""]).notNull(),
+	locationTag: text("location_tag"),
+	originalPostId: uuid("original_post_id"),
+	shareComment: text("share_comment"),
+	pollQuestion: text("poll_question"),
+	pollOptions: jsonb("poll_options"),
+	pollClosesAt: timestamp("poll_closes_at", { withTimezone: true, mode: 'string' }),
+	reactionsCount: integer("reactions_count").default(0).notNull(),
+	commentsCount: integer("comments_count").default(0).notNull(),
+	savesCount: integer("saves_count").default(0).notNull(),
+	sharesCount: integer("shares_count").default(0).notNull(),
+	isEdited: boolean("is_edited").default(false).notNull(),
+	editedAt: timestamp("edited_at", { withTimezone: true, mode: 'string' }),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	index("idx_comm_events_sender").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.senderIdentity.asc().nullsLast().op("uuid_ops")),
-	index("idx_comm_events_status").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("enum_ops"), table.timestamp.desc().nullsFirst().op("enum_ops")),
-	index("idx_comm_events_tenant_timestamp").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.timestamp.desc().nullsFirst().op("uuid_ops")),
-	index("idx_comm_events_thread").using("btree", table.tenantId.asc().nullsLast().op("timestamptz_ops"), table.threadId.asc().nullsLast().op("uuid_ops"), table.timestamp.desc().nullsFirst().op("timestamptz_ops")),
-	uniqueIndex("uq_comm_events_external").using("btree", table.tenantId.asc().nullsLast().op("text_ops"), table.source.asc().nullsLast().op("text_ops"), table.externalId.asc().nullsLast().op("text_ops")).where(sql`(external_id IS NOT NULL)`),
+	index("idx_chef_social_posts_channel").using("btree", table.channelId.asc().nullsLast().op("uuid_ops")).where(sql`(channel_id IS NOT NULL)`),
+	index("idx_chef_social_posts_chef_id").using("btree", table.chefId.asc().nullsLast().op("uuid_ops")),
+	index("idx_chef_social_posts_created_at").using("btree", table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
+	index("idx_chef_social_posts_hashtags").using("gin", table.hashtags.asc().nullsLast().op("array_ops")),
+	index("idx_chef_social_posts_original").using("btree", table.originalPostId.asc().nullsLast().op("uuid_ops")).where(sql`(original_post_id IS NOT NULL)`),
+	index("idx_chef_social_posts_visibility").using("btree", table.visibility.asc().nullsLast().op("text_ops")),
+	index("idx_owner_obs_social_posts_chef_created").using("btree", table.chefId.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
 	foreignKey({
-			columns: [table.resolvedClientId],
-			foreignColumns: [clients.id],
-			name: "communication_events_resolved_client_id_fkey"
+			columns: [table.channelId],
+			foreignColumns: [chefSocialChannels.id],
+			name: "chef_social_posts_channel_id_fkey"
 		}).onDelete("set null"),
 	foreignKey({
-			columns: [table.tenantId],
+			columns: [table.chefId],
 			foreignColumns: [chefs.id],
-			name: "communication_events_tenant_id_fkey"
+			name: "chef_social_posts_chef_id_fkey"
 		}).onDelete("cascade"),
 	foreignKey({
-			columns: [table.threadId],
-			foreignColumns: [conversationThreads.id],
-			name: "communication_events_thread_id_fkey"
-		}).onDelete("cascade"),
-	pgPolicy("communication_events_chef_all", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id IN ( SELECT user_roles.entity_id
-   FROM user_roles
-  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))`, withCheck: sql`(tenant_id IN ( SELECT user_roles.entity_id
-   FROM user_roles
-  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))`  }),
-	pgPolicy("communication_events_service_all", { as: "permissive", for: "all", to: ["public"] }),
-	check("communication_events_linked_entity_type_check", sql`(linked_entity_type = ANY (ARRAY['inquiry'::text, 'event'::text])) OR (linked_entity_type IS NULL)`),
+			columns: [table.originalPostId],
+			foreignColumns: [table.id],
+			name: "chef_social_posts_original_post_id_fkey"
+		}).onDelete("set null"),
+	check("chef_social_posts_comments_count_check", sql`comments_count >= 0`),
+	check("chef_social_posts_content_check", sql`(char_length(content) >= 1) AND (char_length(content) <= 5000)`),
+	check("chef_social_posts_location_tag_check", sql`char_length(location_tag) <= 100`),
+	check("chef_social_posts_poll_question_check", sql`char_length(poll_question) <= 200`),
+	check("chef_social_posts_post_type_check", sql`post_type = ANY (ARRAY['text'::text, 'photo'::text, 'video'::text, 'reel'::text, 'poll'::text, 'share'::text, 'opportunity'::text])`),
+	check("chef_social_posts_reactions_count_check", sql`reactions_count >= 0`),
+	check("chef_social_posts_saves_count_check", sql`saves_count >= 0`),
+	check("chef_social_posts_share_comment_check", sql`char_length(share_comment) <= 1000`),
+	check("chef_social_posts_shares_count_check", sql`shares_count >= 0`),
+	check("chef_social_posts_visibility_check", sql`visibility = ANY (ARRAY['public'::text, 'followers'::text, 'connections'::text, 'private'::text])`),
 ]);
 
 export const dailyReports = pgTable("daily_reports", {
@@ -12873,7 +12564,7 @@ export const eventPhotos = pgTable("event_photos", {
 	tenantId: uuid("tenant_id").notNull(),
 	eventId: uuid("event_id").notNull(),
 	storagePath: text("storage_path").notNull(),
-	filenameOriginal: text("filename_original").default('').notNull(),
+	filenameOriginal: text("filename_original").default(').notNull(),
 	contentType: text("content_type").notNull(),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	sizeBytes: bigint("size_bytes", { mode: "number" }).default(0).notNull(),
@@ -13628,6 +13319,55 @@ export const experiencePackages = pgTable("experience_packages", {
 	check("experience_packages_package_type_check", sql`package_type = ANY (ARRAY['dinner_party'::text, 'meal_prep'::text, 'cooking_class'::text, 'tasting_menu'::text, 'custom'::text])`),
 ]);
 
+export const communicationEvents = pgTable("communication_events", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	source: communicationSource().notNull(),
+	externalId: text("external_id"),
+	timestamp: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
+	senderIdentity: text("sender_identity").notNull(),
+	resolvedClientId: uuid("resolved_client_id"),
+	threadId: uuid("thread_id").notNull(),
+	rawContent: text("raw_content").notNull(),
+	normalizedContent: text("normalized_content").notNull(),
+	direction: communicationDirection().notNull(),
+	linkedEntityType: text("linked_entity_type"),
+	linkedEntityId: uuid("linked_entity_id"),
+	status: communicationEventStatus().default('unlinked').notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	isRawSignalOnly: boolean("is_raw_signal_only").default(false).notNull(),
+}, (table) => [
+	index("idx_comm_events_raw_signal").using("btree", table.tenantId.asc().nullsLast().op("bool_ops"), table.isRawSignalOnly.asc().nullsLast().op("bool_ops"), table.timestamp.desc().nullsFirst().op("timestamptz_ops")),
+	index("idx_comm_events_sender").using("btree", table.tenantId.asc().nullsLast().op("text_ops"), table.senderIdentity.asc().nullsLast().op("text_ops")),
+	index("idx_comm_events_status").using("btree", table.tenantId.asc().nullsLast().op("enum_ops"), table.status.asc().nullsLast().op("enum_ops"), table.timestamp.desc().nullsFirst().op("enum_ops")),
+	index("idx_comm_events_tenant_timestamp").using("btree", table.tenantId.asc().nullsLast().op("timestamptz_ops"), table.timestamp.desc().nullsFirst().op("uuid_ops")),
+	index("idx_comm_events_thread").using("btree", table.tenantId.asc().nullsLast().op("timestamptz_ops"), table.threadId.asc().nullsLast().op("timestamptz_ops"), table.timestamp.desc().nullsFirst().op("uuid_ops")),
+	uniqueIndex("uq_comm_events_external").using("btree", table.tenantId.asc().nullsLast().op("text_ops"), table.source.asc().nullsLast().op("enum_ops"), table.externalId.asc().nullsLast().op("uuid_ops")).where(sql`(external_id IS NOT NULL)`),
+	foreignKey({
+			columns: [table.resolvedClientId],
+			foreignColumns: [clients.id],
+			name: "communication_events_resolved_client_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "communication_events_tenant_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.threadId],
+			foreignColumns: [conversationThreads.id],
+			name: "communication_events_thread_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("communication_events_chef_all", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id IN ( SELECT user_roles.entity_id
+   FROM user_roles
+  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))`, withCheck: sql`(tenant_id IN ( SELECT user_roles.entity_id
+   FROM user_roles
+  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))`  }),
+	pgPolicy("communication_events_service_all", { as: "permissive", for: "all", to: ["public"] }),
+	check("communication_events_linked_entity_type_check", sql`(linked_entity_type = ANY (ARRAY['inquiry'::text, 'event'::text])) OR (linked_entity_type IS NULL)`),
+]);
+
 export const feedbackRequests = pgTable("feedback_requests", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	tenantId: uuid("tenant_id").notNull(),
@@ -14019,6 +13759,7 @@ export const groceryPriceQuoteItems = pgTable("grocery_price_quote_items", {
 	sourceLabel: text("source_label"),
 }, (table) => [
 	index("grocery_price_quote_items_quote_idx").using("btree", table.quoteId.asc().nullsLast().op("uuid_ops")),
+	index("idx_gqpi_ingredient").using("btree", table.ingredientId.asc().nullsLast().op("uuid_ops"), table.quoteId.asc().nullsLast().op("uuid_ops")),
 	foreignKey({
 			columns: [table.ingredientId],
 			foreignColumns: [ingredients.id],
@@ -16443,45 +16184,6 @@ export const mealPrepPrograms = pgTable("meal_prep_programs", {
 	check("meal_prep_programs_status_check", sql`status = ANY (ARRAY['active'::text, 'paused'::text, 'ended'::text])`),
 ]);
 
-export const loyaltyConfig = pgTable("loyalty_config", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	tenantId: uuid("tenant_id").notNull(),
-	pointsPerGuest: integer("points_per_guest").default(10).notNull(),
-	bonusLargePartyThreshold: integer("bonus_large_party_threshold").default(8),
-	bonusLargePartyPoints: integer("bonus_large_party_points").default(20),
-	milestoneBonuses: jsonb("milestone_bonuses").default([{"bonus":50,"events":5},{"bonus":100,"events":10}]).notNull(),
-	tierBronzeMin: integer("tier_bronze_min").default(0).notNull(),
-	tierSilverMin: integer("tier_silver_min").default(200).notNull(),
-	tierGoldMin: integer("tier_gold_min").default(500).notNull(),
-	tierPlatinumMin: integer("tier_platinum_min").default(1000).notNull(),
-	isActive: boolean("is_active").default(true).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	welcomePoints: integer("welcome_points").default(25).notNull(),
-	referralPoints: integer("referral_points").default(100).notNull(),
-	programMode: text("program_mode").default('full').notNull(),
-	earnMode: text("earn_mode").default('per_guest').notNull(),
-	pointsPerDollar: numeric("points_per_dollar", { precision: 5, scale:  2 }).default('1.0').notNull(),
-	pointsPerEvent: integer("points_per_event").default(100).notNull(),
-	tierPerks: jsonb("tier_perks").default({}),
-	guestMilestones: jsonb("guest_milestones").default([]),
-	basePointsPerEvent: integer("base_points_per_event").default(0),
-}, (table) => [
-	index("idx_loyalty_config_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
-	foreignKey({
-			columns: [table.tenantId],
-			foreignColumns: [chefs.id],
-			name: "loyalty_config_tenant_id_fkey"
-		}).onDelete("cascade"),
-	unique("loyalty_config_tenant_unique").on(table.tenantId),
-	pgPolicy("tenant_isolation_select_loyalty_config", { as: "permissive", for: "select", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())` }),
-	pgPolicy("tenant_isolation_insert_loyalty_config", { as: "permissive", for: "insert", to: ["public"] }),
-	pgPolicy("tenant_isolation_update_loyalty_config", { as: "permissive", for: "update", to: ["public"] }),
-	check("loyalty_config_earn_mode_check", sql`earn_mode = ANY (ARRAY['per_guest'::text, 'per_dollar'::text, 'per_event'::text])`),
-	check("loyalty_config_program_mode_check", sql`program_mode = ANY (ARRAY['full'::text, 'lite'::text, 'off'::text])`),
-	check("loyalty_config_thresholds_ascending", sql`(tier_bronze_min < tier_silver_min) AND (tier_silver_min < tier_gold_min) AND (tier_gold_min < tier_platinum_min)`),
-]);
-
 export const marketingSpendLog = pgTable("marketing_spend_log", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	chefId: uuid("chef_id").notNull(),
@@ -16503,122 +16205,6 @@ export const marketingSpendLog = pgTable("marketing_spend_log", {
 	pgPolicy("chef_msl_all", { as: "permissive", for: "all", to: ["public"], using: sql`((get_current_user_role() = 'chef'::user_role) AND (chef_id = get_current_tenant_id()))`, withCheck: sql`((get_current_user_role() = 'chef'::user_role) AND (chef_id = get_current_tenant_id()))`  }),
 	check("marketing_spend_log_amount_cents_check", sql`amount_cents > 0`),
 	check("marketing_spend_log_channel_check", sql`channel = ANY (ARRAY['instagram_ads'::text, 'google_ads'::text, 'facebook_ads'::text, 'tiktok_ads'::text, 'print'::text, 'event_sponsorship'::text, 'other'::text, 'thumbtack'::text, 'bark'::text, 'theknot'::text, 'cozymeal'::text, 'gigsalad'::text, 'yhangry'::text, 'take_a_chef'::text, 'google_business'::text, 'privatechefmanager'::text, 'hireachef'::text, 'cuisineistchef'::text])`),
-]);
-
-export const inquiries = pgTable("inquiries", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	tenantId: uuid("tenant_id").notNull(),
-	clientId: uuid("client_id"),
-	channel: inquiryChannel().notNull(),
-	status: inquiryStatus().default('new').notNull(),
-	sourceMessage: text("source_message"),
-	confirmedDate: timestamp("confirmed_date", { withTimezone: true, mode: 'string' }),
-	confirmedGuestCount: integer("confirmed_guest_count"),
-	confirmedLocation: text("confirmed_location"),
-	confirmedOccasion: text("confirmed_occasion"),
-	confirmedBudgetCents: integer("confirmed_budget_cents"),
-	confirmedDietaryRestrictions: text("confirmed_dietary_restrictions").array(),
-	confirmedServiceExpectations: text("confirmed_service_expectations"),
-	confirmedCannabisPreference: text("confirmed_cannabis_preference"),
-	unknownFields: jsonb("unknown_fields").default([]),
-	nextActionRequired: text("next_action_required"),
-	nextActionBy: text("next_action_by"),
-	followUpDueAt: timestamp("follow_up_due_at", { withTimezone: true, mode: 'string' }),
-	firstContactAt: timestamp("first_contact_at", { withTimezone: true, mode: 'string' }).notNull(),
-	lastResponseAt: timestamp("last_response_at", { withTimezone: true, mode: 'string' }),
-	convertedToEventId: uuid("converted_to_event_id"),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	referralPartnerId: uuid("referral_partner_id"),
-	partnerLocationId: uuid("partner_location_id"),
-	declineReason: text("decline_reason"),
-	ghostAt: timestamp("ghost_at", { withTimezone: true, mode: 'string' }),
-	isDemo: boolean("is_demo").default(false).notNull(),
-	budgetRange: text("budget_range"),
-	referralSource: text("referral_source"),
-	serviceStylePref: text("service_style_pref"),
-	externalInquiryId: text("external_inquiry_id"),
-	externalPlatform: text("external_platform"),
-	externalLink: text("external_link"),
-	chefLikelihood: text("chef_likelihood"),
-	utmSource: text("utm_source"),
-	utmMedium: text("utm_medium"),
-	utmCampaign: text("utm_campaign"),
-	deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'string' }),
-	deletedBy: uuid("deleted_by"),
-	serviceMode: bookingServiceMode("service_mode"),
-	scheduleRequestJsonb: jsonb("schedule_request_jsonb"),
-	contactName: text("contact_name"),
-	contactEmail: text("contact_email"),
-	contactPhone: text("contact_phone"),
-	selectedMenuId: uuid("selected_menu_id"),
-	autoRespondedAt: timestamp("auto_responded_at", { withTimezone: true, mode: 'string' }),
-	autoResponseTemplateId: uuid("auto_response_template_id"),
-	firstResponseAt: timestamp("first_response_at", { withTimezone: true, mode: 'string' }),
-}, (table) => [
-	index("idx_inquiries_active_tenant_created_at").using("btree", table.tenantId.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")).where(sql`(deleted_at IS NULL)`),
-	index("idx_inquiries_client").using("btree", table.clientId.asc().nullsLast().op("uuid_ops")),
-	index("idx_inquiries_client_status").using("btree", table.clientId.asc().nullsLast().op("enum_ops"), table.status.asc().nullsLast().op("enum_ops")).where(sql`(client_id IS NOT NULL)`),
-	index("idx_inquiries_converted").using("btree", table.convertedToEventId.asc().nullsLast().op("uuid_ops")).where(sql`(converted_to_event_id IS NOT NULL)`),
-	index("idx_inquiries_converted_to_event").using("btree", table.convertedToEventId.asc().nullsLast().op("uuid_ops")).where(sql`(converted_to_event_id IS NOT NULL)`),
-	index("idx_inquiries_decline_reason").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.declineReason.asc().nullsLast().op("uuid_ops")).where(sql`(decline_reason IS NOT NULL)`),
-	uniqueIndex("idx_inquiries_external_dedup").using("btree", table.tenantId.asc().nullsLast().op("text_ops"), table.externalPlatform.asc().nullsLast().op("uuid_ops"), table.externalInquiryId.asc().nullsLast().op("uuid_ops")).where(sql`(external_inquiry_id IS NOT NULL)`),
-	index("idx_inquiries_follow_up_due").using("btree", table.followUpDueAt.asc().nullsLast().op("timestamptz_ops")).where(sql`(follow_up_due_at IS NOT NULL)`),
-	index("idx_inquiries_ghost_at").using("btree", table.tenantId.asc().nullsLast().op("timestamptz_ops"), table.ghostAt.asc().nullsLast().op("uuid_ops")).where(sql`(ghost_at IS NOT NULL)`),
-	index("idx_inquiries_is_demo").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")).where(sql`(is_demo = true)`),
-	index("idx_inquiries_partner_location").using("btree", table.partnerLocationId.asc().nullsLast().op("uuid_ops")).where(sql`(partner_location_id IS NOT NULL)`),
-	index("idx_inquiries_referral_partner").using("btree", table.referralPartnerId.asc().nullsLast().op("uuid_ops")).where(sql`(referral_partner_id IS NOT NULL)`),
-	index("idx_inquiries_selected_menu").using("btree", table.selectedMenuId.asc().nullsLast().op("uuid_ops")).where(sql`(selected_menu_id IS NOT NULL)`),
-	index("idx_inquiries_status").using("btree", table.status.asc().nullsLast().op("enum_ops")),
-	index("idx_inquiries_tac_stagnancy").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("uuid_ops"), table.channel.asc().nullsLast().op("uuid_ops"), table.createdAt.asc().nullsLast().op("timestamptz_ops")).where(sql`((channel = 'take_a_chef'::inquiry_channel) AND (status = 'new'::inquiry_status))`),
-	index("idx_inquiries_take_a_chef_lookup").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.channel.asc().nullsLast().op("uuid_ops")).where(sql`(channel = 'take_a_chef'::inquiry_channel)`),
-	index("idx_inquiries_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
-	index("idx_inquiries_tenant_status").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("uuid_ops")),
-	index("idx_inquiries_utm_source").using("btree", table.utmSource.asc().nullsLast().op("text_ops")).where(sql`(utm_source IS NOT NULL)`),
-	index("inquiries_decline_reason_idx").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.declineReason.asc().nullsLast().op("uuid_ops")).where(sql`(decline_reason IS NOT NULL)`),
-	foreignKey({
-			columns: [table.convertedToEventId],
-			foreignColumns: [events.id],
-			name: "fk_inquiries_converted_to_event"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.autoResponseTemplateId],
-			foreignColumns: [responseTemplates.id],
-			name: "inquiries_auto_response_template_id_fkey"
-		}),
-	foreignKey({
-			columns: [table.clientId],
-			foreignColumns: [clients.id],
-			name: "inquiries_client_id_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.partnerLocationId],
-			foreignColumns: [partnerLocations.id],
-			name: "inquiries_partner_location_id_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.referralPartnerId],
-			foreignColumns: [referralPartners.id],
-			name: "inquiries_referral_partner_id_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.selectedMenuId],
-			foreignColumns: [menus.id],
-			name: "inquiries_selected_menu_id_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.tenantId],
-			foreignColumns: [chefs.id],
-			name: "inquiries_tenant_id_fkey"
-		}).onDelete("cascade"),
-	pgPolicy("inquiries_chef_select", { as: "permissive", for: "select", to: ["public"], using: sql`((get_current_user_role() = 'chef'::user_role) AND (tenant_id = get_current_tenant_id()))` }),
-	pgPolicy("inquiries_chef_insert", { as: "permissive", for: "insert", to: ["public"] }),
-	pgPolicy("inquiries_chef_update", { as: "permissive", for: "update", to: ["public"] }),
-	pgPolicy("inquiries_chef_delete", { as: "permissive", for: "delete", to: ["public"] }),
-	pgPolicy("inquiries_client_select", { as: "permissive", for: "select", to: ["public"] }),
-	check("inquiries_chef_likelihood_check", sql`chef_likelihood = ANY (ARRAY['hot'::text, 'warm'::text, 'cold'::text])`),
-	check("inquiries_decline_reason_check", sql`decline_reason = ANY (ARRAY['too_expensive'::text, 'wrong_date'::text, 'found_another_chef'::text, 'no_response'::text, 'location_too_far'::text, 'menu_mismatch'::text, 'other'::text])`),
-	check("inquiries_next_action_by_check", sql`next_action_by = ANY (ARRAY['chef'::text, 'client'::text])`),
 ]);
 
 export const ingredients = pgTable("ingredients", {
@@ -16662,17 +16248,33 @@ export const ingredients = pgTable("ingredients", {
 	priceTrendDirection: text("price_trend_direction"),
 	priceTrendPct: numeric("price_trend_pct", { precision: 5, scale:  2 }),
 	imageUrl: text("image_url"),
+	systemIngredientId: uuid("system_ingredient_id"),
+	priceVolatilityScore: numeric("price_volatility_score", { precision: 5, scale:  2 }),
+	priceVolatilityBand: text("price_volatility_band"),
+	volatilityUpdatedAt: timestamp("volatility_updated_at", { withTimezone: true, mode: 'string' }),
+	priceForecast30DCents: integer("price_forecast_30d_cents"),
+	priceForecastDirection: text("price_forecast_direction"),
+	priceForecastPct: numeric("price_forecast_pct", { precision: 5, scale:  2 }),
+	forecastUpdatedAt: timestamp("forecast_updated_at", { withTimezone: true, mode: 'string' }),
 }, (table) => [
 	index("idx_ingredients_archived").using("btree", table.archived.asc().nullsLast().op("bool_ops")),
 	index("idx_ingredients_category").using("btree", table.category.asc().nullsLast().op("enum_ops")),
+	index("idx_ingredients_forecast").using("btree", table.priceForecastDirection.asc().nullsLast().op("text_ops")).where(sql`(price_forecast_direction IS NOT NULL)`),
 	index("idx_ingredients_is_staple").using("btree", table.isStaple.asc().nullsLast().op("bool_ops")),
 	index("idx_ingredients_price_date").using("btree", table.lastPriceDate.asc().nullsLast().op("date_ops")).where(sql`(last_price_date IS NOT NULL)`),
+	index("idx_ingredients_system_link").using("btree", table.systemIngredientId.asc().nullsLast().op("uuid_ops")).where(sql`(system_ingredient_id IS NOT NULL)`),
 	index("idx_ingredients_tenant_id").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
-	index("idx_ingredients_tenant_name").using("btree", table.tenantId.asc().nullsLast().op("text_ops"), table.name.asc().nullsLast().op("text_ops")),
+	index("idx_ingredients_tenant_name").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.name.asc().nullsLast().op("uuid_ops")),
+	index("idx_ingredients_volatility").using("btree", table.priceVolatilityBand.asc().nullsLast().op("text_ops")).where(sql`(price_volatility_band IS NOT NULL)`),
 	foreignKey({
 			columns: [table.createdBy],
 			foreignColumns: [users.id],
 			name: "ingredients_created_by_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.systemIngredientId],
+			foreignColumns: [systemIngredients.id],
+			name: "ingredients_system_ingredient_id_fkey"
 		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.tenantId],
@@ -16691,6 +16293,46 @@ export const ingredients = pgTable("ingredients", {
 	check("ingredients_default_yield_pct_check", sql`(default_yield_pct IS NULL) OR ((default_yield_pct > 0) AND (default_yield_pct <= 100))`),
 	check("ingredients_last_price_cents_check", sql`(last_price_cents >= 0) OR (last_price_cents IS NULL)`),
 	check("ingredients_unit_type_check", sql`(unit_type IS NULL) OR (unit_type = ANY (ARRAY['weight'::text, 'volume'::text, 'each'::text, 'length'::text]))`),
+]);
+
+export const loyaltyConfig = pgTable("loyalty_config", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	pointsPerGuest: integer("points_per_guest").default(10).notNull(),
+	bonusLargePartyThreshold: integer("bonus_large_party_threshold").default(8),
+	bonusLargePartyPoints: integer("bonus_large_party_points").default(20),
+	milestoneBonuses: jsonb("milestone_bonuses").default([{"bonus":50,"events":5},{"bonus":100,"events":10}]).notNull(),
+	tierBronzeMin: integer("tier_bronze_min").default(0).notNull(),
+	tierSilverMin: integer("tier_silver_min").default(200).notNull(),
+	tierGoldMin: integer("tier_gold_min").default(500).notNull(),
+	tierPlatinumMin: integer("tier_platinum_min").default(1000).notNull(),
+	isActive: boolean("is_active").default(true).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	welcomePoints: integer("welcome_points").default(25).notNull(),
+	referralPoints: integer("referral_points").default(100).notNull(),
+	programMode: text("program_mode").default('full').notNull(),
+	earnMode: text("earn_mode").default('per_guest').notNull(),
+	pointsPerDollar: numeric("points_per_dollar", { precision: 5, scale:  2 }).default('1.0').notNull(),
+	pointsPerEvent: integer("points_per_event").default(100).notNull(),
+	tierPerks: jsonb("tier_perks").default({}),
+	guestMilestones: jsonb("guest_milestones").default([]),
+	basePointsPerEvent: integer("base_points_per_event").default(0),
+	triggerConfig: jsonb("trigger_config").default({}).notNull(),
+}, (table) => [
+	index("idx_loyalty_config_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "loyalty_config_tenant_id_fkey"
+		}).onDelete("cascade"),
+	unique("loyalty_config_tenant_unique").on(table.tenantId),
+	pgPolicy("tenant_isolation_select_loyalty_config", { as: "permissive", for: "select", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())` }),
+	pgPolicy("tenant_isolation_insert_loyalty_config", { as: "permissive", for: "insert", to: ["public"] }),
+	pgPolicy("tenant_isolation_update_loyalty_config", { as: "permissive", for: "update", to: ["public"] }),
+	check("loyalty_config_earn_mode_check", sql`earn_mode = ANY (ARRAY['per_guest'::text, 'per_dollar'::text, 'per_event'::text])`),
+	check("loyalty_config_program_mode_check", sql`program_mode = ANY (ARRAY['full'::text, 'lite'::text, 'off'::text])`),
+	check("loyalty_config_thresholds_ascending", sql`(tier_bronze_min < tier_silver_min) AND (tier_silver_min < tier_gold_min) AND (tier_gold_min < tier_platinum_min)`),
 ]);
 
 export const menuApprovalRequests = pgTable("menu_approval_requests", {
@@ -16826,7 +16468,7 @@ export const menuItems = pgTable("menu_items", {
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	index("idx_menu_items_active").using("btree", table.menuId.asc().nullsLast().op("bool_ops"), table.isActive.asc().nullsLast().op("uuid_ops")).where(sql`(is_active = true)`),
+	index("idx_menu_items_active").using("btree", table.menuId.asc().nullsLast().op("bool_ops"), table.isActive.asc().nullsLast().op("bool_ops")).where(sql`(is_active = true)`),
 	index("idx_menu_items_chef").using("btree", table.chefId.asc().nullsLast().op("uuid_ops")),
 	index("idx_menu_items_menu").using("btree", table.menuId.asc().nullsLast().op("uuid_ops")),
 	index("idx_menu_items_recipe").using("btree", table.recipeId.asc().nullsLast().op("uuid_ops")),
@@ -16845,6 +16487,7 @@ export const menuItems = pgTable("menu_items", {
 			foreignColumns: [recipes.id],
 			name: "menu_items_recipe_id_fkey"
 		}).onDelete("set null"),
+	unique("menu_items_chef_menu_name_unique").on(table.chefId, table.menuId, table.name),
 	pgPolicy("Chefs manage their own menu items", { as: "permissive", for: "all", to: ["public"], using: sql`(chef_id = auth.uid())`, withCheck: sql`(chef_id = auth.uid())`  }),
 ]);
 
@@ -17104,40 +16747,6 @@ export const menuUploadJobs = pgTable("menu_upload_jobs", {
   WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))` }),
 ]);
 
-export const paymentPlanInstallments = pgTable("payment_plan_installments", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	eventId: uuid("event_id").notNull(),
-	tenantId: uuid("tenant_id").notNull(),
-	installmentNum: integer("installment_num").notNull(),
-	label: text().notNull(),
-	amountCents: integer("amount_cents").notNull(),
-	dueDate: date("due_date").notNull(),
-	paidAt: timestamp("paid_at", { withTimezone: true, mode: 'string' }),
-	paymentMethod: text("payment_method"),
-	notes: text(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("idx_ppi_due_date").using("btree", table.dueDate.asc().nullsLast().op("date_ops")).where(sql`(paid_at IS NULL)`),
-	index("idx_ppi_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
-	index("idx_ppi_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
-	foreignKey({
-			columns: [table.eventId],
-			foreignColumns: [events.id],
-			name: "payment_plan_installments_event_id_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.tenantId],
-			foreignColumns: [chefs.id],
-			name: "payment_plan_installments_tenant_id_fkey"
-		}).onDelete("cascade"),
-	pgPolicy("Chefs manage own installments", { as: "permissive", for: "all", to: ["authenticated"], using: sql`(tenant_id = ( SELECT chefs.id
-   FROM chefs
-  WHERE (chefs.auth_user_id = auth.uid())))`, withCheck: sql`(tenant_id = ( SELECT chefs.id
-   FROM chefs
-  WHERE (chefs.auth_user_id = auth.uid())))`  }),
-	check("payment_plan_installments_amount_cents_check", sql`amount_cents > 0`),
-]);
-
 export const notificationDeliveryLog = pgTable("notification_delivery_log", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	notificationId: uuid("notification_id").notNull(),
@@ -17270,85 +16879,6 @@ export const onboardingProgress = pgTable("onboarding_progress", {
 			name: "onboarding_progress_chef_id_fkey"
 		}).onDelete("cascade"),
 	pgPolicy("chef_own_onboarding", { as: "permissive", for: "all", to: ["public"], using: sql`(chef_id = auth.uid())` }),
-]);
-
-export const openclawLeads = pgTable("openclaw_leads", {
-	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	id: bigint({ mode: "number" }).primaryKey().generatedAlwaysAsIdentity({ name: "openclaw_leads_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
-	osmId: text("osm_id"),
-	name: text().notNull(),
-	amenity: text(),
-	shop: text(),
-	cuisine: text(),
-	phone: text(),
-	email: text(),
-	website: text(),
-	street: text(),
-	housenumber: text(),
-	city: text(),
-	state: text(),
-	postcode: text(),
-	country: text().default('US'),
-	lat: doublePrecision(),
-	lon: doublePrecision(),
-	openingHours: text("opening_hours"),
-	outdoorSeating: boolean("outdoor_seating").default(false),
-	takeaway: boolean().default(false),
-	delivery: boolean().default(false),
-	dietVegan: boolean("diet_vegan").default(false),
-	dietVegetarian: boolean("diet_vegetarian").default(false),
-	dietGlutenFree: boolean("diet_gluten_free").default(false),
-	categories: text().array().default([""]),
-	leadScore: integer("lead_score").default(0),
-	chefRelevance: text("chef_relevance"),
-	businessType: text("business_type"),
-	aiNotes: text("ai_notes"),
-	enrichedAt: timestamp("enriched_at", { withTimezone: true, mode: 'string' }),
-	classifiedAt: timestamp("classified_at", { withTimezone: true, mode: 'string' }),
-	syncedAt: timestamp("synced_at", { withTimezone: true, mode: 'string' }).defaultNow(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
-	source: text().default('osm'),
-	sourceId: text("source_id"),
-	sourceUrl: text("source_url"),
-	licenseType: text("license_type"),
-	licenseStatus: text("license_status"),
-	ownerName: text("owner_name"),
-	dbaName: text("dba_name"),
-	rating: numeric({ precision: 2, scale:  1 }),
-	reviewCount: integer("review_count"),
-	lastInspectedAt: timestamp("last_inspected_at", { withTimezone: true, mode: 'string' }),
-}, (table) => [
-	index("idx_openclaw_leads_categories").using("gin", table.categories.asc().nullsLast().op("array_ops")),
-	index("idx_openclaw_leads_city").using("btree", table.city.asc().nullsLast().op("text_ops")),
-	uniqueIndex("idx_openclaw_leads_osm_id").using("btree", table.osmId.asc().nullsLast().op("text_ops")).where(sql`(osm_id IS NOT NULL)`),
-	index("idx_openclaw_leads_relevance").using("btree", table.chefRelevance.asc().nullsLast().op("text_ops")).where(sql`(chef_relevance IS NOT NULL)`),
-	index("idx_openclaw_leads_score").using("btree", table.leadScore.desc().nullsFirst().op("int4_ops")),
-	index("idx_openclaw_leads_source").using("btree", table.source.asc().nullsLast().op("text_ops")),
-	uniqueIndex("idx_openclaw_leads_source_id").using("btree", table.source.asc().nullsLast().op("text_ops"), table.sourceId.asc().nullsLast().op("text_ops")).where(sql`(source_id IS NOT NULL)`),
-	index("idx_openclaw_leads_state").using("btree", table.state.asc().nullsLast().op("text_ops")),
-	index("idx_openclaw_leads_state_score").using("btree", table.state.asc().nullsLast().op("text_ops"), table.leadScore.desc().nullsFirst().op("int4_ops")),
-	pgPolicy("Admins can read openclaw_leads", { as: "permissive", for: "select", to: ["public"], using: sql`(EXISTS ( SELECT 1
-   FROM user_roles
-  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))` }),
-	check("openclaw_leads_chef_relevance_check", sql`chef_relevance = ANY (ARRAY['high'::text, 'medium'::text, 'low'::text])`),
-]);
-
-export const openclawMarketStats = pgTable("openclaw_market_stats", {
-	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	id: bigint({ mode: "number" }).primaryKey().generatedAlwaysAsIdentity({ name: "openclaw_market_stats_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
-	stateCode: text("state_code").notNull(),
-	totalBusinesses: integer("total_businesses").default(0),
-	withPhone: integer("with_phone").default(0),
-	withEmail: integer("with_email").default(0),
-	withWebsite: integer("with_website").default(0),
-	categories: jsonb().default({}),
-	highValueCount: integer("high_value_count").default(0),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
-}, (table) => [
-	unique("openclaw_market_stats_state_code_key").on(table.stateCode),
-	pgPolicy("Admins can read openclaw_market_stats", { as: "permissive", for: "select", to: ["public"], using: sql`(EXISTS ( SELECT 1
-   FROM user_roles
-  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))` }),
 ]);
 
 export const opsLog = pgTable("ops_log", {
@@ -17979,90 +17509,6 @@ export const payrollW2Summaries = pgTable("payroll_w2_summaries", {
 	pgPolicy("w2_chef_delete", { as: "permissive", for: "delete", to: ["public"] }),
 ]);
 
-export const messages = pgTable("messages", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	tenantId: uuid("tenant_id").notNull(),
-	inquiryId: uuid("inquiry_id"),
-	eventId: uuid("event_id"),
-	clientId: uuid("client_id"),
-	channel: messageChannel().notNull(),
-	status: messageStatus().default('logged').notNull(),
-	direction: messageDirection().notNull(),
-	fromUserId: uuid("from_user_id"),
-	toUserId: uuid("to_user_id"),
-	subject: text(),
-	body: text().notNull(),
-	sentAt: timestamp("sent_at", { withTimezone: true, mode: 'string' }),
-	approvedAt: timestamp("approved_at", { withTimezone: true, mode: 'string' }),
-	approvedBy: uuid("approved_by"),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	gmailMessageId: text("gmail_message_id"),
-	gmailThreadId: text("gmail_thread_id"),
-	conversationThreadId: uuid("conversation_thread_id"),
-	recipientEmail: text("recipient_email"),
-	mailboxId: uuid("mailbox_id"),
-}, (table) => [
-	index("idx_messages_client").using("btree", table.clientId.asc().nullsLast().op("uuid_ops")),
-	index("idx_messages_conversation_thread").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.conversationThreadId.asc().nullsLast().op("uuid_ops")).where(sql`(conversation_thread_id IS NOT NULL)`),
-	index("idx_messages_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
-	uniqueIndex("idx_messages_gmail_mailbox_dedup").using("btree", table.mailboxId.asc().nullsLast().op("uuid_ops"), table.gmailMessageId.asc().nullsLast().op("uuid_ops")).where(sql`((mailbox_id IS NOT NULL) AND (gmail_message_id IS NOT NULL))`),
-	index("idx_messages_inquiry").using("btree", table.inquiryId.asc().nullsLast().op("uuid_ops")),
-	index("idx_messages_outbound_drafts").using("btree", table.tenantId.asc().nullsLast().op("timestamptz_ops"), table.status.asc().nullsLast().op("enum_ops"), table.channel.asc().nullsLast().op("timestamptz_ops"), table.direction.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")).where(sql`((direction = 'outbound'::message_direction) AND (channel = 'email'::message_channel) AND (status = 'draft'::message_status))`),
-	index("idx_messages_sent_at").using("btree", table.sentAt.desc().nullsFirst().op("timestamptz_ops")),
-	index("idx_messages_status").using("btree", table.status.asc().nullsLast().op("enum_ops")),
-	index("idx_messages_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
-	foreignKey({
-			columns: [table.eventId],
-			foreignColumns: [events.id],
-			name: "fk_messages_event"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.approvedBy],
-			foreignColumns: [users.id],
-			name: "messages_approved_by_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.clientId],
-			foreignColumns: [clients.id],
-			name: "messages_client_id_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.conversationThreadId],
-			foreignColumns: [conversationThreads.id],
-			name: "messages_conversation_thread_id_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.fromUserId],
-			foreignColumns: [users.id],
-			name: "messages_from_user_id_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.inquiryId],
-			foreignColumns: [inquiries.id],
-			name: "messages_inquiry_id_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.mailboxId],
-			foreignColumns: [googleMailboxes.id],
-			name: "messages_mailbox_id_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.tenantId],
-			foreignColumns: [chefs.id],
-			name: "messages_tenant_id_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.toUserId],
-			foreignColumns: [users.id],
-			name: "messages_to_user_id_fkey"
-		}).onDelete("set null"),
-	pgPolicy("messages_chef_select", { as: "permissive", for: "select", to: ["public"], using: sql`((get_current_user_role() = 'chef'::user_role) AND (tenant_id = get_current_tenant_id()))` }),
-	pgPolicy("messages_chef_insert", { as: "permissive", for: "insert", to: ["public"] }),
-	pgPolicy("messages_chef_update", { as: "permissive", for: "update", to: ["public"] }),
-	pgPolicy("messages_client_select", { as: "permissive", for: "select", to: ["public"] }),
-]);
-
 export const mileageLogs = pgTable("mileage_logs", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	chefId: uuid("chef_id").notNull(),
@@ -18350,6 +17796,208 @@ export const portfolioItems = pgTable("portfolio_items", {
 	pgPolicy("pi_chef_insert", { as: "permissive", for: "insert", to: ["public"] }),
 	pgPolicy("pi_chef_update", { as: "permissive", for: "update", to: ["public"] }),
 	pgPolicy("pi_chef_delete", { as: "permissive", for: "delete", to: ["public"] }),
+]);
+
+export const clients = pgTable("clients", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	authUserId: uuid("auth_user_id"),
+	tenantId: uuid("tenant_id"),
+	fullName: text("full_name").notNull(),
+	email: text().notNull(),
+	phone: text(),
+	preferredContactMethod: contactMethod("preferred_contact_method"),
+	referralSource: referralSource("referral_source"),
+	referralSourceDetail: text("referral_source_detail"),
+	partnerName: text("partner_name"),
+	children: text().array(),
+	regularGuests: jsonb("regular_guests").default([]),
+	dietaryRestrictions: text("dietary_restrictions").array(),
+	allergies: text().array(),
+	dislikes: text().array(),
+	spiceTolerance: spiceTolerance("spice_tolerance"),
+	favoriteCuisines: text("favorite_cuisines").array(),
+	favoriteDishes: text("favorite_dishes").array(),
+	wineBeveragePreferences: text("wine_beverage_preferences"),
+	address: text(),
+	parkingInstructions: text("parking_instructions"),
+	accessInstructions: text("access_instructions"),
+	kitchenSize: text("kitchen_size"),
+	kitchenConstraints: text("kitchen_constraints"),
+	houseRules: text("house_rules"),
+	equipmentAvailable: text("equipment_available").array(),
+	equipmentMustBring: text("equipment_must_bring").array(),
+	vibeNotes: text("vibe_notes"),
+	paymentBehavior: text("payment_behavior"),
+	tippingPattern: text("tipping_pattern"),
+	farewellStyle: text("farewell_style"),
+	whatTheyCareAbout: text("what_they_care_about"),
+	personalMilestones: jsonb("personal_milestones").default([]),
+	lifetimeValueCents: integer("lifetime_value_cents").default(0),
+	totalEventsCount: integer("total_events_count").default(0),
+	averageSpendCents: integer("average_spend_cents").default(0),
+	loyaltyPoints: integer("loyalty_points").default(0),
+	status: clientStatus().default('active').notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	totalPaymentsReceivedCents: integer("total_payments_received_cents").default(0),
+	firstEventDate: date("first_event_date"),
+	lastEventDate: date("last_event_date"),
+	totalGuestsServed: integer("total_guests_served").default(0),
+	totalEventsCompleted: integer("total_events_completed").default(0),
+	loyaltyTier: loyaltyTier("loyalty_tier").default('bronze').notNull(),
+	preferredName: text("preferred_name"),
+	partnerPreferredName: text("partner_preferred_name"),
+	additionalAddresses: jsonb("additional_addresses").default([]),
+	familyNotes: text("family_notes"),
+	funQaAnswers: jsonb("fun_qa_answers").default({}),
+	marketingUnsubscribed: boolean("marketing_unsubscribed").default(false).notNull(),
+	marketingUnsubscribedAt: timestamp("marketing_unsubscribed_at", { withTimezone: true, mode: 'string' }),
+	hasReceivedWelcomePoints: boolean("has_received_welcome_points").default(false).notNull(),
+	availabilitySignalNotifications: boolean("availability_signal_notifications").default(true).notNull(),
+	isDemo: boolean("is_demo").default(false).notNull(),
+	portalAccessToken: text("portal_access_token"),
+	portalTokenCreatedAt: timestamp("portal_token_created_at", { withTimezone: true, mode: 'string' }),
+	kitchenOvenNotes: text("kitchen_oven_notes"),
+	kitchenBurnerNotes: text("kitchen_burner_notes"),
+	kitchenCounterNotes: text("kitchen_counter_notes"),
+	kitchenRefrigerationNotes: text("kitchen_refrigeration_notes"),
+	kitchenPlatingNotes: text("kitchen_plating_notes"),
+	kitchenSinkNotes: text("kitchen_sink_notes"),
+	kitchenProfileUpdatedAt: timestamp("kitchen_profile_updated_at", { withTimezone: true, mode: 'string' }),
+	dietaryProtocols: text("dietary_protocols").array().default([""]),
+	ndaActive: boolean("nda_active").default(false),
+	ndaCoverage: text("nda_coverage"),
+	ndaEffectiveDate: date("nda_effective_date"),
+	ndaExpiryDate: date("nda_expiry_date"),
+	ndaDocumentUrl: text("nda_document_url"),
+	photoPermission: text("photo_permission").default('none'),
+	stripeCustomerId: text("stripe_customer_id"),
+	instagramHandle: text("instagram_handle"),
+	socialMediaLinks: jsonb("social_media_links").default([]),
+	occupation: text(),
+	companyName: text("company_name"),
+	birthday: date(),
+	anniversary: date(),
+	pets: jsonb().default([]),
+	gateCode: text("gate_code"),
+	wifiPassword: text("wifi_password"),
+	securityNotes: text("security_notes"),
+	preferredServiceStyle: text("preferred_service_style"),
+	typicalGuestCount: text("typical_guest_count"),
+	preferredEventDays: text("preferred_event_days").array().default([""]),
+	budgetRangeMinCents: integer("budget_range_min_cents"),
+	budgetRangeMaxCents: integer("budget_range_max_cents"),
+	cleanupExpectations: text("cleanup_expectations"),
+	leftoversPreference: text("leftovers_preference"),
+	hasDishwasher: boolean("has_dishwasher"),
+	outdoorCookingNotes: text("outdoor_cooking_notes"),
+	nearestGroceryStore: text("nearest_grocery_store"),
+	waterQualityNotes: text("water_quality_notes"),
+	availablePlaceSettings: integer("available_place_settings"),
+	formalityLevel: text("formality_level"),
+	communicationStyleNotes: text("communication_style_notes"),
+	complaintHandlingNotes: text("complaint_handling_notes"),
+	wowFactors: text("wow_factors"),
+	referralPotential: text("referral_potential"),
+	redFlags: text("red_flags"),
+	acquisitionCostCents: integer("acquisition_cost_cents"),
+	deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'string' }),
+	deletedBy: uuid("deleted_by"),
+	recurringPricingModel: text("recurring_pricing_model"),
+	recurringPriceCents: integer("recurring_price_cents"),
+	recurringPricingNotes: text("recurring_pricing_notes"),
+	isBetaTester: boolean("is_beta_tester").default(false),
+	betaEnrolledAt: timestamp("beta_enrolled_at", { withTimezone: true, mode: 'string' }),
+	betaDiscountPercent: integer("beta_discount_percent").default(30),
+	referredByClientId: uuid("referred_by_client_id"),
+	referredFromGroupId: uuid("referred_from_group_id"),
+	referralCode: text("referral_code"),
+	accountDeletionRequestedAt: timestamp("account_deletion_requested_at", { withTimezone: true, mode: 'string' }),
+	accountDeletionScheduledFor: timestamp("account_deletion_scheduled_for", { withTimezone: true, mode: 'string' }),
+	accountDeletionCancelledAt: timestamp("account_deletion_cancelled_at", { withTimezone: true, mode: 'string' }),
+	deletionReason: text("deletion_reason"),
+	importantDates: jsonb("important_dates").default([]),
+	portalAccessTokenHash: text("portal_access_token_hash"),
+	portalTokenExpiresAt: timestamp("portal_token_expires_at", { withTimezone: true, mode: 'string' }),
+	portalTokenLastUsedAt: timestamp("portal_token_last_used_at", { withTimezone: true, mode: 'string' }),
+	portalTokenRevokedAt: timestamp("portal_token_revoked_at", { withTimezone: true, mode: 'string' }),
+	onboardingCompletedAt: timestamp("onboarding_completed_at", { withTimezone: true, mode: 'string' }),
+	onboardingToken: text("onboarding_token"),
+	communicationPreference: jsonb("communication_preference").default({}),
+	automatedEmailsEnabled: boolean("automated_emails_enabled").default(true).notNull(),
+	dinnerCircleGroupId: uuid("dinner_circle_group_id"),
+	avatarUrl: text("avatar_url"),
+	loyaltyProfileCompleteAwarded: boolean("loyalty_profile_complete_awarded").default(false).notNull(),
+	loyaltyFunQaAwarded: boolean("loyalty_fun_qa_awarded").default(false).notNull(),
+	isStaged: boolean("is_staged").default(false).notNull(),
+	stagedFromSignalId: uuid("staged_from_signal_id"),
+}, (table) => [
+	index("idx_clients_account_deletion_scheduled_for").using("btree", table.accountDeletionScheduledFor.asc().nullsLast().op("timestamptz_ops")).where(sql`(account_deletion_requested_at IS NOT NULL)`),
+	index("idx_clients_active_tenant_created_at").using("btree", table.tenantId.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("uuid_ops")).where(sql`(deleted_at IS NULL)`),
+	index("idx_clients_anniversary").using("btree", table.tenantId.asc().nullsLast().op("date_ops"), table.anniversary.asc().nullsLast().op("date_ops")).where(sql`(anniversary IS NOT NULL)`),
+	index("idx_clients_auth_user").using("btree", table.authUserId.asc().nullsLast().op("uuid_ops")),
+	index("idx_clients_beta_tester").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")).where(sql`(is_beta_tester = true)`),
+	index("idx_clients_birthday").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.birthday.asc().nullsLast().op("uuid_ops")).where(sql`(birthday IS NOT NULL)`),
+	index("idx_clients_dinner_circle").using("btree", table.dinnerCircleGroupId.asc().nullsLast().op("uuid_ops")).where(sql`(dinner_circle_group_id IS NOT NULL)`),
+	index("idx_clients_important_dates").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")).where(sql`(important_dates <> '[]'::jsonb)`),
+	index("idx_clients_is_demo").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")).where(sql`(is_demo = true)`),
+	index("idx_clients_is_staged").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.isStaged.asc().nullsLast().op("uuid_ops")).where(sql`(is_staged = true)`),
+	index("idx_clients_loyalty_points").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.loyaltyPoints.asc().nullsLast().op("uuid_ops")),
+	index("idx_clients_loyalty_tier").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.loyaltyTier.asc().nullsLast().op("uuid_ops")),
+	index("idx_clients_photo_permission").using("btree", table.tenantId.asc().nullsLast().op("text_ops"), table.photoPermission.asc().nullsLast().op("uuid_ops")),
+	index("idx_clients_portal_access_token").using("btree", table.portalAccessToken.asc().nullsLast().op("text_ops")).where(sql`(portal_access_token IS NOT NULL)`),
+	uniqueIndex("idx_clients_portal_access_token_hash").using("btree", table.portalAccessTokenHash.asc().nullsLast().op("text_ops")).where(sql`(portal_access_token_hash IS NOT NULL)`),
+	index("idx_clients_portal_token_expires_at").using("btree", table.portalTokenExpiresAt.asc().nullsLast().op("timestamptz_ops")).where(sql`(portal_token_expires_at IS NOT NULL)`),
+	index("idx_clients_recurring_pricing_model").using("btree", table.tenantId.asc().nullsLast().op("text_ops"), table.recurringPricingModel.asc().nullsLast().op("text_ops")).where(sql`(recurring_pricing_model IS NOT NULL)`),
+	uniqueIndex("idx_clients_referral_code").using("btree", table.referralCode.asc().nullsLast().op("text_ops")).where(sql`(referral_code IS NOT NULL)`),
+	index("idx_clients_referral_potential").using("btree", table.tenantId.asc().nullsLast().op("text_ops"), table.referralPotential.asc().nullsLast().op("uuid_ops")).where(sql`(referral_potential IS NOT NULL)`),
+	index("idx_clients_referred_by").using("btree", table.referredByClientId.asc().nullsLast().op("uuid_ops")).where(sql`(referred_by_client_id IS NOT NULL)`),
+	index("idx_clients_status").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+	index("idx_clients_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	index("idx_clients_tenant_status").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("enum_ops")),
+	foreignKey({
+			columns: [table.authUserId],
+			foreignColumns: [users.id],
+			name: "clients_auth_user_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.dinnerCircleGroupId],
+			foreignColumns: [hubGroups.id],
+			name: "clients_dinner_circle_group_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.referredByClientId],
+			foreignColumns: [table.id],
+			name: "clients_referred_by_client_id_fkey"
+		}),
+	foreignKey({
+			columns: [table.referredFromGroupId],
+			foreignColumns: [hubGroups.id],
+			name: "clients_referred_from_group_id_fkey"
+		}),
+	foreignKey({
+			columns: [table.stagedFromSignalId],
+			foreignColumns: [communicationEvents.id],
+			name: "clients_staged_from_signal_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "clients_tenant_id_fkey"
+		}).onDelete("cascade"),
+	unique("clients_auth_user_id_key").on(table.authUserId),
+	unique("clients_tenant_id_email_key").on(table.tenantId, table.email),
+	unique("clients_portal_access_token_key").on(table.portalAccessToken),
+	pgPolicy("clients_chef_select", { as: "permissive", for: "select", to: ["public"], using: sql`((get_current_user_role() = 'chef'::user_role) AND (tenant_id = get_current_tenant_id()))` }),
+	pgPolicy("clients_chef_insert", { as: "permissive", for: "insert", to: ["public"] }),
+	pgPolicy("clients_chef_update", { as: "permissive", for: "update", to: ["public"] }),
+	pgPolicy("clients_self_select", { as: "permissive", for: "select", to: ["public"] }),
+	pgPolicy("clients_self_update", { as: "permissive", for: "update", to: ["public"] }),
+	check("clients_formality_level_check", sql`(formality_level IS NULL) OR (formality_level = ANY (ARRAY['casual'::text, 'semi_formal'::text, 'formal'::text]))`),
+	check("clients_photo_permission_check", sql`photo_permission = ANY (ARRAY['none'::text, 'portfolio_only'::text, 'public_with_approval'::text, 'public_freely'::text])`),
+	check("clients_recurring_price_cents_check", sql`(recurring_price_cents IS NULL) OR (recurring_price_cents >= 0)`),
+	check("clients_recurring_pricing_model_check", sql`(recurring_pricing_model IS NULL) OR (recurring_pricing_model = ANY (ARRAY['none'::text, 'flat_rate'::text, 'per_person'::text]))`),
+	check("clients_referral_potential_check", sql`(referral_potential IS NULL) OR (referral_potential = ANY (ARRAY['low'::text, 'medium'::text, 'high'::text]))`),
 ]);
 
 export const postEventSurveys = pgTable("post_event_surveys", {
@@ -20779,7 +20427,7 @@ export const responseTemplates = pgTable("response_templates", {
 	usageCount: integer("usage_count").default(0),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	subject: text().default('').notNull(),
+	subject: text().default(').notNull(),
 	mergeTags: text("merge_tags").array().default([""]).notNull(),
 	chefId: uuid("chef_id"),
 	body: text(),
@@ -21850,7 +21498,7 @@ export const socialMediaAssets = pgTable("social_media_assets", {
 	createdBy: uuid("created_by").notNull(),
 	updatedBy: uuid("updated_by"),
 	assetKind: socialAssetKind("asset_kind").notNull(),
-	assetName: text("asset_name").default('').notNull(),
+	assetName: text("asset_name").default(').notNull(),
 	originalFilename: text("original_filename").notNull(),
 	mimeType: text("mime_type").notNull(),
 	storagePath: text("storage_path").notNull(),
@@ -21861,7 +21509,7 @@ export const socialMediaAssets = pgTable("social_media_assets", {
 	widthPx: integer("width_px"),
 	heightPx: integer("height_px"),
 	assetTags: text("asset_tags").array().default([""]).notNull(),
-	usageContext: text("usage_context").default('').notNull(),
+	usageContext: text("usage_context").default(').notNull(),
 	isClientApproved: boolean("is_client_approved").default(false).notNull(),
 	isArchived: boolean("is_archived").default(false).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
@@ -22727,35 +22375,35 @@ export const socialPosts = pgTable("social_posts", {
 	pillar: socialPillar().notNull(),
 	status: socialPostStatus().default('idea').notNull(),
 	mediaType: socialMediaType("media_type").default('image').notNull(),
-	title: text().default('').notNull(),
-	captionMaster: text("caption_master").default('').notNull(),
-	captionInstagram: text("caption_instagram").default('').notNull(),
-	captionFacebook: text("caption_facebook").default('').notNull(),
-	captionTiktok: text("caption_tiktok").default('').notNull(),
-	captionLinkedin: text("caption_linkedin").default('').notNull(),
-	captionX: text("caption_x").default('').notNull(),
-	captionPinterest: text("caption_pinterest").default('').notNull(),
-	captionYoutubeShorts: text("caption_youtube_shorts").default('').notNull(),
+	title: text().default(').notNull(),
+	captionMaster: text("caption_master").default(').notNull(),
+	captionInstagram: text("caption_instagram").default(').notNull(),
+	captionFacebook: text("caption_facebook").default(').notNull(),
+	captionTiktok: text("caption_tiktok").default(').notNull(),
+	captionLinkedin: text("caption_linkedin").default(').notNull(),
+	captionX: text("caption_x").default(').notNull(),
+	captionPinterest: text("caption_pinterest").default(').notNull(),
+	captionYoutubeShorts: text("caption_youtube_shorts").default(').notNull(),
 	hashtags: text().array().default([""]).notNull(),
-	cta: text().default('').notNull(),
+	cta: text().default(').notNull(),
 	offerLink: text("offer_link"),
 	mediaUrl: text("media_url"),
 	platforms: socialPlatform().array().default(["instagram", "facebook", "tiktok", "linkedin", "pinterest", "youtube_shorts"]).notNull(),
-	campaign: text().default('').notNull(),
+	campaign: text().default(').notNull(),
 	seasonalFlag: boolean("seasonal_flag").default(false).notNull(),
 	hotSwapReady: boolean("hot_swap_ready").default(false).notNull(),
-	notes: text().default('').notNull(),
+	notes: text().default(').notNull(),
 	queuedToPlatforms: socialPlatform("queued_to_platforms").array().default([""]).notNull(),
 	publishedToPlatforms: socialPlatform("published_to_platforms").array().default([""]).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	mentionHandles: text("mention_handles").array().default([""]).notNull(),
 	collaboratorTags: text("collaborator_tags").array().default([""]).notNull(),
-	locationTag: text("location_tag").default('').notNull(),
-	altText: text("alt_text").default('').notNull(),
+	locationTag: text("location_tag").default(').notNull(),
+	altText: text("alt_text").default(').notNull(),
 	thumbnailTimeSeconds: integer("thumbnail_time_seconds"),
 	thumbnailUrl: text("thumbnail_url"),
-	publishChecklistNotes: text("publish_checklist_notes").default('').notNull(),
+	publishChecklistNotes: text("publish_checklist_notes").default(').notNull(),
 	preflightReady: boolean("preflight_ready").default(false).notNull(),
 	preflightMissingItems: text("preflight_missing_items").array().default([""]).notNull(),
 	publishAttempts: smallint("publish_attempts").default(0).notNull(),
@@ -24172,7 +23820,7 @@ export const testimonials = pgTable("testimonials", {
 	eventId: uuid("event_id"),
 	clientName: text("client_name").notNull(),
 	rating: integer(),
-	content: text().default('').notNull(),
+	content: text().default(').notNull(),
 	isApproved: boolean("is_approved").default(false).notNull(),
 	isFeatured: boolean("is_featured").default(false).notNull(),
 	isPublic: boolean("is_public").default(false).notNull(),
@@ -24380,95 +24028,6 @@ export const recipeFamilies = pgTable("recipe_families", {
 		}).onDelete("cascade"),
 ]);
 
-export const recipes = pgTable("recipes", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	tenantId: uuid("tenant_id").notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	name: text().notNull(),
-	category: recipeCategory().notNull(),
-	description: text(),
-	method: text().notNull(),
-	methodDetailed: text("method_detailed"),
-	yieldDescription: text("yield_description"),
-	yieldQuantity: numeric("yield_quantity", { precision: 8, scale:  2 }),
-	yieldUnit: text("yield_unit"),
-	prepTimeMinutes: integer("prep_time_minutes"),
-	cookTimeMinutes: integer("cook_time_minutes"),
-	totalTimeMinutes: integer("total_time_minutes"),
-	dietaryTags: text("dietary_tags").array().default([""]).notNull(),
-	notes: text(),
-	adaptations: text(),
-	timesCooked: integer("times_cooked").default(0).notNull(),
-	lastCookedAt: timestamp("last_cooked_at", { withTimezone: true, mode: 'string' }),
-	photoUrl: text("photo_url"),
-	archived: boolean().default(false).notNull(),
-	archivedAt: timestamp("archived_at", { withTimezone: true, mode: 'string' }),
-	createdBy: uuid("created_by"),
-	updatedBy: uuid("updated_by"),
-	servings: integer(),
-	caloriesPerServing: integer("calories_per_serving"),
-	difficulty: smallint(),
-	equipment: text().array().default([""]).notNull(),
-	caloriesTotal: integer("calories_total"),
-	proteinTotalG: numeric("protein_total_g", { precision: 10, scale:  2 }),
-	fatTotalG: numeric("fat_total_g", { precision: 10, scale:  2 }),
-	carbsTotalG: numeric("carbs_total_g", { precision: 10, scale:  2 }),
-	fiberTotalG: numeric("fiber_total_g", { precision: 10, scale:  2 }),
-	sodiumTotalMg: numeric("sodium_total_mg", { precision: 10, scale:  2 }),
-	proteinPerServingG: numeric("protein_per_serving_g", { precision: 10, scale:  2 }),
-	fatPerServingG: numeric("fat_per_serving_g", { precision: 10, scale:  2 }),
-	carbsPerServingG: numeric("carbs_per_serving_g", { precision: 10, scale:  2 }),
-	fiberPerServingG: numeric("fiber_per_serving_g", { precision: 10, scale:  2 }),
-	sodiumPerServingMg: numeric("sodium_per_serving_mg", { precision: 10, scale:  2 }),
-	nutritionSnapshotJson: jsonb("nutrition_snapshot_json"),
-	nutritionCalculatedAt: timestamp("nutrition_calculated_at", { withTimezone: true, mode: 'string' }),
-	cuisine: recipeCuisine(),
-	mealType: recipeMealType("meal_type"),
-	season: text().array().default([""]),
-	occasionTags: text("occasion_tags").array().default([""]),
-	totalCostCents: integer("total_cost_cents"),
-	costPerServingCents: integer("cost_per_serving_cents"),
-	familyId: uuid("family_id"),
-	variationLabel: text("variation_label"),
-}, (table) => [
-	index("idx_recipes_archived").using("btree", table.archived.asc().nullsLast().op("bool_ops")),
-	index("idx_recipes_category").using("btree", table.category.asc().nullsLast().op("enum_ops")),
-	index("idx_recipes_family").using("btree", table.familyId.asc().nullsLast().op("uuid_ops")).where(sql`(family_id IS NOT NULL)`),
-	index("idx_recipes_tenant_id").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
-	uniqueIndex("idx_recipes_tenant_name").using("btree", table.tenantId.asc().nullsLast().op("text_ops"), table.name.asc().nullsLast().op("text_ops")),
-	index("idx_recipes_times_cooked").using("btree", table.timesCooked.desc().nullsFirst().op("int4_ops")),
-	foreignKey({
-			columns: [table.createdBy],
-			foreignColumns: [users.id],
-			name: "recipes_created_by_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.familyId],
-			foreignColumns: [recipeFamilies.id],
-			name: "recipes_family_id_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.tenantId],
-			foreignColumns: [chefs.id],
-			name: "recipes_tenant_id_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.updatedBy],
-			foreignColumns: [users.id],
-			name: "recipes_updated_by_fkey"
-		}).onDelete("set null"),
-	pgPolicy("tenant_isolation_select_recipes", { as: "permissive", for: "select", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())` }),
-	pgPolicy("tenant_isolation_insert_recipes", { as: "permissive", for: "insert", to: ["public"] }),
-	pgPolicy("tenant_isolation_update_recipes", { as: "permissive", for: "update", to: ["public"] }),
-	check("recipes_cook_time_minutes_check", sql`(cook_time_minutes >= 0) OR (cook_time_minutes IS NULL)`),
-	check("recipes_difficulty_check", sql`(difficulty >= 1) AND (difficulty <= 5)`),
-	check("recipes_prep_time_minutes_check", sql`(prep_time_minutes >= 0) OR (prep_time_minutes IS NULL)`),
-	check("recipes_times_cooked_check", sql`times_cooked >= 0`),
-	check("recipes_total_time_minutes_check", sql`(total_time_minutes >= 0) OR (total_time_minutes IS NULL)`),
-	check("recipes_yield_quantity_check", sql`(yield_quantity > (0)::numeric) OR (yield_quantity IS NULL)`),
-]);
-
 export const aarIngredientIssues = pgTable("aar_ingredient_issues", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	aarId: uuid("aar_id").notNull(),
@@ -24570,77 +24129,1642 @@ export const workflowTemplates = pgTable("workflow_templates", {
 	check("workflow_templates_trigger_type_check", sql`trigger_type = ANY (ARRAY['event_stage_changed'::text, 'inquiry_created'::text, 'quote_sent'::text, 'quote_viewed'::text, 'contract_signed'::text, 'payment_received'::text, 'days_before_event'::text, 'days_after_event'::text])`),
 ]);
 
-export const menus = pgTable("menus", {
+export const workflowSteps = pgTable("workflow_steps", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
+	templateId: uuid("template_id").notNull(),
+	stepOrder: integer("step_order").notNull(),
+	delayHours: integer("delay_hours").default(0).notNull(),
+	condition: jsonb(),
+	actionType: text("action_type").notNull(),
+	actionConfig: jsonb("action_config").default({}).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_workflow_steps_template").using("btree", table.templateId.asc().nullsLast().op("int4_ops"), table.stepOrder.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.templateId],
+			foreignColumns: [workflowTemplates.id],
+			name: "workflow_steps_template_id_fkey"
+		}).onDelete("cascade"),
+	unique("workflow_steps_template_id_step_order_key").on(table.templateId, table.stepOrder),
+	pgPolicy("ws_chef_all", { as: "permissive", for: "all", to: ["public"], using: sql`(EXISTS ( SELECT 1
+   FROM workflow_templates t
+  WHERE ((t.id = workflow_steps.template_id) AND (t.chef_id IN ( SELECT user_roles.entity_id
+           FROM user_roles
+          WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role)))))))`, withCheck: sql`(EXISTS ( SELECT 1
+   FROM workflow_templates t
+  WHERE ((t.id = workflow_steps.template_id) AND (t.chef_id IN ( SELECT user_roles.entity_id
+           FROM user_roles
+          WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role)))))))`  }),
+	pgPolicy("ws_service_all", { as: "permissive", for: "all", to: ["public"] }),
+	check("workflow_steps_action_type_check", sql`action_type = ANY (ARRAY['send_email'::text, 'create_task'::text, 'create_notification'::text, 'update_event_status'::text, 'send_feedback_request'::text, 'send_payment_reminder'::text])`),
+]);
+
+export const workflowExecutions = pgTable("workflow_executions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	chefId: uuid("chef_id").notNull(),
+	templateId: uuid("template_id").notNull(),
+	entityType: text("entity_type").notNull(),
+	entityId: uuid("entity_id").notNull(),
+	currentStep: integer("current_step").default(0).notNull(),
+	status: text().default('active').notNull(),
+	nextStepAt: timestamp("next_step_at", { withTimezone: true, mode: 'string' }),
+	startedAt: timestamp("started_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	completedAt: timestamp("completed_at", { withTimezone: true, mode: 'string' }),
+	cancelledAt: timestamp("cancelled_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	index("idx_workflow_executions_chef").using("btree", table.chefId.asc().nullsLast().op("text_ops"), table.status.asc().nullsLast().op("uuid_ops")),
+	index("idx_workflow_executions_pending").using("btree", table.nextStepAt.asc().nullsLast().op("timestamptz_ops")).where(sql`((status = 'active'::text) AND (next_step_at IS NOT NULL))`),
+	foreignKey({
+			columns: [table.chefId],
+			foreignColumns: [chefs.id],
+			name: "workflow_executions_chef_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.templateId],
+			foreignColumns: [workflowTemplates.id],
+			name: "workflow_executions_template_id_fkey"
+		}).onDelete("cascade"),
+	unique("workflow_executions_template_id_entity_id_key").on(table.templateId, table.entityId),
+	pgPolicy("we_chef_all", { as: "permissive", for: "all", to: ["public"], using: sql`(chef_id IN ( SELECT user_roles.entity_id
+   FROM user_roles
+  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))`, withCheck: sql`(chef_id IN ( SELECT user_roles.entity_id
+   FROM user_roles
+  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))`  }),
+	pgPolicy("we_service_all", { as: "permissive", for: "all", to: ["public"] }),
+	check("workflow_executions_status_check", sql`status = ANY (ARRAY['active'::text, 'completed'::text, 'cancelled'::text, 'paused'::text])`),
+]);
+
+export const ingredientSaleCycles = pgTable("ingredient_sale_cycles", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	ingredientId: uuid("ingredient_id").notNull(),
 	tenantId: uuid("tenant_id").notNull(),
-	eventId: uuid("event_id"),
+	storeName: text("store_name").notNull(),
+	avgCycleDays: integer("avg_cycle_days"),
+	lastSaleDate: date("last_sale_date"),
+	predictedNextSale: date("predicted_next_sale"),
+	confidence: numeric({ precision: 3, scale:  2 }),
+	avgSaleDiscountPct: numeric("avg_sale_discount_pct", { precision: 5, scale:  2 }),
+	dataPoints: integer("data_points"),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("idx_sale_cycles_next").using("btree", table.predictedNextSale.asc().nullsLast().op("date_ops")).where(sql`(predicted_next_sale IS NOT NULL)`),
+	index("idx_sale_cycles_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.ingredientId],
+			foreignColumns: [ingredients.id],
+			name: "ingredient_sale_cycles_ingredient_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "ingredient_sale_cycles_tenant_id_fkey"
+		}).onDelete("cascade"),
+	unique("ingredient_sale_cycles_ingredient_id_tenant_id_store_name_key").on(table.ingredientId, table.tenantId, table.storeName),
+]);
+
+export const chefCollabMessages = pgTable("chef_collab_messages", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	threadId: uuid("thread_id").notNull(),
+	senderChefId: uuid("sender_chef_id").notNull(),
+	messageType: text("message_type").default('text').notNull(),
+	body: text(),
+	metadata: jsonb().default({}).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_chef_collab_messages_sender").using("btree", table.senderChefId.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("uuid_ops")),
+	index("idx_chef_collab_messages_thread").using("btree", table.threadId.asc().nullsLast().op("uuid_ops"), table.createdAt.asc().nullsLast().op("timestamptz_ops")),
+	foreignKey({
+			columns: [table.senderChefId],
+			foreignColumns: [chefs.id],
+			name: "chef_collab_messages_sender_chef_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.threadId],
+			foreignColumns: [chefCollabThreads.id],
+			name: "chef_collab_messages_thread_id_fkey"
+		}).onDelete("cascade"),
+	check("chef_collab_messages_content_check", sql`((message_type = 'text'::text) AND (body IS NOT NULL) AND ((char_length(TRIM(BOTH FROM body)) >= 1) AND (char_length(TRIM(BOTH FROM body)) <= 5000))) OR (message_type = ANY (ARRAY['system'::text, 'handoff_reference'::text]))`),
+	check("chef_collab_messages_message_type_check", sql`message_type = ANY (ARRAY['text'::text, 'system'::text, 'handoff_reference'::text])`),
+]);
+
+export const chefIntroBridges = pgTable("chef_intro_bridges", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	hubGroupId: uuid("hub_group_id").notNull(),
+	handoffId: uuid("handoff_id"),
+	sourceCircleGroupId: uuid("source_circle_group_id"),
+	targetCircleGroupId: uuid("target_circle_group_id"),
+	sourceChefId: uuid("source_chef_id").notNull(),
+	targetChefId: uuid("target_chef_id").notNull(),
+	initiatedByChefId: uuid("initiated_by_chef_id").notNull(),
+	primaryClientProfileId: uuid("primary_client_profile_id").notNull(),
+	introMode: text("intro_mode").default('shared').notNull(),
+	status: text().default('active').notNull(),
+	introMessage: text("intro_message"),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	name: text().notNull(),
-	description: text(),
+	completedAt: timestamp("completed_at", { withTimezone: true, mode: 'string' }),
+	sourceLeftAt: timestamp("source_left_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	uniqueIndex("idx_chef_intro_bridges_handoff_target").using("btree", table.handoffId.asc().nullsLast().op("uuid_ops"), table.targetChefId.asc().nullsLast().op("uuid_ops")).where(sql`(handoff_id IS NOT NULL)`),
+	index("idx_chef_intro_bridges_source").using("btree", table.sourceChefId.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
+	index("idx_chef_intro_bridges_status").using("btree", table.status.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
+	index("idx_chef_intro_bridges_target").using("btree", table.targetChefId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
+	foreignKey({
+			columns: [table.handoffId],
+			foreignColumns: [chefHandoffs.id],
+			name: "chef_intro_bridges_handoff_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.hubGroupId],
+			foreignColumns: [hubGroups.id],
+			name: "chef_intro_bridges_hub_group_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.initiatedByChefId],
+			foreignColumns: [chefs.id],
+			name: "chef_intro_bridges_initiated_by_chef_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.primaryClientProfileId],
+			foreignColumns: [hubGuestProfiles.id],
+			name: "chef_intro_bridges_primary_client_profile_id_fkey"
+		}).onDelete("restrict"),
+	foreignKey({
+			columns: [table.sourceChefId],
+			foreignColumns: [chefs.id],
+			name: "chef_intro_bridges_source_chef_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.sourceCircleGroupId],
+			foreignColumns: [hubGroups.id],
+			name: "chef_intro_bridges_source_circle_group_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.targetChefId],
+			foreignColumns: [chefs.id],
+			name: "chef_intro_bridges_target_chef_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.targetCircleGroupId],
+			foreignColumns: [hubGroups.id],
+			name: "chef_intro_bridges_target_circle_group_id_fkey"
+		}).onDelete("set null"),
+	unique("chef_intro_bridges_hub_group_id_key").on(table.hubGroupId),
+	check("chef_intro_bridges_intro_mode_check", sql`intro_mode = ANY (ARRAY['shared'::text, 'observer'::text, 'transfer'::text])`),
+	check("chef_intro_bridges_no_self", sql`source_chef_id <> target_chef_id`),
+	check("chef_intro_bridges_status_check", sql`status = ANY (ARRAY['active'::text, 'source_left'::text, 'completed'::text, 'cancelled'::text])`),
+]);
+
+export const chefOpportunityPosts = pgTable("chef_opportunity_posts", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	postId: uuid("post_id").notNull(),
+	chefId: uuid("chef_id").notNull(),
+	roleTitle: text("role_title").notNull(),
+	locationCity: text("location_city"),
+	locationState: text("location_state"),
+	compensationType: text("compensation_type").default('negotiable').notNull(),
+	compensationLowCents: integer("compensation_low_cents"),
+	compensationHighCents: integer("compensation_high_cents"),
+	durationType: text("duration_type").default('permanent').notNull(),
+	status: text().default('open').notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_opportunity_posts_chef").using("btree", table.chefId.asc().nullsLast().op("uuid_ops")),
+	index("idx_opportunity_posts_location").using("btree", table.locationState.asc().nullsLast().op("text_ops"), table.status.asc().nullsLast().op("text_ops")),
+	uniqueIndex("idx_opportunity_posts_post_id").using("btree", table.postId.asc().nullsLast().op("uuid_ops")),
+	index("idx_opportunity_posts_status").using("btree", table.status.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.chefId],
+			foreignColumns: [chefs.id],
+			name: "chef_opportunity_posts_chef_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.postId],
+			foreignColumns: [chefSocialPosts.id],
+			name: "chef_opportunity_posts_post_id_fkey"
+		}).onDelete("cascade"),
+	check("chef_opportunity_posts_compensation_type_check", sql`compensation_type = ANY (ARRAY['hourly'::text, 'salary'::text, 'day_rate'::text, 'negotiable'::text])`),
+	check("chef_opportunity_posts_duration_type_check", sql`duration_type = ANY (ARRAY['permanent'::text, 'seasonal'::text, 'per_event'::text, 'contract'::text])`),
+	check("chef_opportunity_posts_status_check", sql`status = ANY (ARRAY['open'::text, 'filled'::text, 'closed'::text])`),
+]);
+
+export const chefOpportunityInterests = pgTable("chef_opportunity_interests", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	opportunityId: uuid("opportunity_id").notNull(),
+	chefId: uuid("chef_id").notNull(),
+	message: text(),
+	status: text().default('expressed').notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_opportunity_interests_chef").using("btree", table.chefId.asc().nullsLast().op("uuid_ops")),
+	index("idx_opportunity_interests_opp").using("btree", table.opportunityId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.chefId],
+			foreignColumns: [chefs.id],
+			name: "chef_opportunity_interests_chef_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.opportunityId],
+			foreignColumns: [chefOpportunityPosts.id],
+			name: "chef_opportunity_interests_opportunity_id_fkey"
+		}).onDelete("cascade"),
+	unique("chef_opportunity_interests_opportunity_id_chef_id_key").on(table.opportunityId, table.chefId),
+	check("chef_opportunity_interests_status_check", sql`status = ANY (ARRAY['expressed'::text, 'viewed'::text, 'connected'::text, 'declined'::text])`),
+]);
+
+export const chefDocuments = pgTable("chef_documents", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	title: text().notNull(),
+	documentType: text("document_type").default('general').notNull(),
+	contentText: text("content_text"),
+	summary: text(),
+	keyTerms: jsonb("key_terms").default([]),
+	sourceType: text("source_type").default('text_import').notNull(),
+	sourceFilename: text("source_filename"),
+	tags: text().array().default([""]),
+	eventId: uuid("event_id"),
+	clientId: uuid("client_id"),
 	isTemplate: boolean("is_template").default(false).notNull(),
-	status: menuStatus().default('draft').notNull(),
-	cuisineType: text("cuisine_type"),
-	serviceStyle: eventServiceStyle("service_style"),
-	targetGuestCount: integer("target_guest_count"),
-	notes: text(),
-	sharedAt: timestamp("shared_at", { withTimezone: true, mode: 'string' }),
-	lockedAt: timestamp("locked_at", { withTimezone: true, mode: 'string' }),
-	archivedAt: timestamp("archived_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	createdBy: uuid("created_by"),
 	updatedBy: uuid("updated_by"),
-	pricePerPersonCents: integer("price_per_person_cents"),
-	simpleMode: boolean("simple_mode").default(false).notNull(),
-	simpleModeContent: text("simple_mode_content"),
-	deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'string' }),
-	deletedBy: uuid("deleted_by"),
-	isShowcase: boolean("is_showcase").default(false).notNull(),
-	timesUsed: integer("times_used").default(0).notNull(),
-	sceneType: text("scene_type"),
-	season: text(),
-	clientId: uuid("client_id"),
-	targetDate: date("target_date"),
+	folderId: uuid("folder_id"),
+	originalFilename: text("original_filename"),
+	storageBucket: text("storage_bucket"),
+	storagePath: text("storage_path"),
+	mimeType: text("mime_type"),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	fileSizeBytes: bigint("file_size_bytes", { mode: "number" }),
+	fileHash: text("file_hash"),
+	entityType: text("entity_type"),
+	entityId: uuid("entity_id"),
+	sourceUrl: text("source_url"),
+	extractionStatus: text("extraction_status").default('not_requested').notNull(),
+	extractionConfidence: numeric("extraction_confidence", { precision: 5, scale:  2 }),
+	inquiryId: uuid("inquiry_id"),
 }, (table) => [
-	index("idx_menus_active_tenant_created_at").using("btree", table.tenantId.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("uuid_ops")).where(sql`(deleted_at IS NULL)`),
-	index("idx_menus_client_id").using("btree", table.clientId.asc().nullsLast().op("uuid_ops")).where(sql`(client_id IS NOT NULL)`),
-	index("idx_menus_event_id").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
-	index("idx_menus_is_template").using("btree", table.isTemplate.asc().nullsLast().op("bool_ops")),
-	index("idx_menus_season").using("btree", table.tenantId.asc().nullsLast().op("text_ops"), table.season.asc().nullsLast().op("uuid_ops")).where(sql`(season IS NOT NULL)`),
-	index("idx_menus_showcase").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")).where(sql`(is_showcase = true)`),
-	index("idx_menus_status").using("btree", table.status.asc().nullsLast().op("enum_ops")),
-	index("idx_menus_tenant_id").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	index("idx_chef_documents_client").using("btree", table.clientId.asc().nullsLast().op("uuid_ops")).where(sql`(client_id IS NOT NULL)`),
+	index("idx_chef_documents_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")).where(sql`(event_id IS NOT NULL)`),
+	index("idx_chef_documents_folder").using("btree", table.folderId.asc().nullsLast().op("uuid_ops")),
+	index("idx_chef_documents_inquiry_id").using("btree", table.inquiryId.asc().nullsLast().op("uuid_ops")).where(sql`(inquiry_id IS NOT NULL)`),
+	index("idx_chef_documents_storage_path").using("btree", table.storagePath.asc().nullsLast().op("text_ops")).where(sql`(storage_path IS NOT NULL)`),
+	index("idx_chef_documents_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	index("idx_chef_documents_tenant_client").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.clientId.asc().nullsLast().op("uuid_ops")).where(sql`(client_id IS NOT NULL)`),
+	index("idx_chef_documents_tenant_entity").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.entityType.asc().nullsLast().op("text_ops"), table.entityId.asc().nullsLast().op("uuid_ops")).where(sql`((entity_type IS NOT NULL) AND (entity_id IS NOT NULL))`),
+	index("idx_chef_documents_tenant_event").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.eventId.asc().nullsLast().op("uuid_ops")).where(sql`(event_id IS NOT NULL)`),
+	index("idx_chef_documents_tenant_hash").using("btree", table.tenantId.asc().nullsLast().op("text_ops"), table.fileHash.asc().nullsLast().op("text_ops")).where(sql`(file_hash IS NOT NULL)`),
+	index("idx_chef_documents_type").using("btree", table.tenantId.asc().nullsLast().op("text_ops"), table.documentType.asc().nullsLast().op("uuid_ops")),
 	foreignKey({
 			columns: [table.clientId],
 			foreignColumns: [clients.id],
-			name: "menus_client_id_fkey"
+			name: "chef_documents_client_id_fkey"
 		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.createdBy],
 			foreignColumns: [users.id],
-			name: "menus_created_by_fkey"
-		}).onDelete("set null"),
+			name: "chef_documents_created_by_fkey"
+		}),
 	foreignKey({
 			columns: [table.eventId],
 			foreignColumns: [events.id],
-			name: "menus_event_id_fkey"
+			name: "chef_documents_event_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.folderId],
+			foreignColumns: [chefFolders.id],
+			name: "chef_documents_folder_id_fkey"
+		}),
+	foreignKey({
+			columns: [table.inquiryId],
+			foreignColumns: [inquiries.id],
+			name: "chef_documents_inquiry_id_fkey"
 		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.tenantId],
 			foreignColumns: [chefs.id],
-			name: "menus_tenant_id_fkey"
+			name: "chef_documents_tenant_id_fkey"
 		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.updatedBy],
 			foreignColumns: [users.id],
-			name: "menus_updated_by_fkey"
+			name: "chef_documents_updated_by_fkey"
+		}),
+	pgPolicy("chef_documents_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = ( SELECT user_roles.entity_id
+   FROM user_roles
+  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))`, withCheck: sql`(tenant_id = ( SELECT user_roles.entity_id
+   FROM user_roles
+  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))`  }),
+	check("chef_documents_document_type_check", sql`document_type = ANY (ARRAY['contract'::text, 'template'::text, 'policy'::text, 'checklist'::text, 'note'::text, 'general'::text, 'resume_private'::text])`),
+	check("chef_documents_extraction_status_check", sql`extraction_status = ANY (ARRAY['not_requested'::text, 'completed'::text, 'failed'::text])`),
+	check("chef_documents_source_type_check", sql`source_type = ANY (ARRAY['text_import'::text, 'file_upload'::text, 'manual'::text])`),
+]);
+
+export const betaSurveyDefinitions = pgTable("beta_survey_definitions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	slug: text().notNull(),
+	title: text().notNull(),
+	description: text(),
+	surveyType: text("survey_type").notNull(),
+	questions: jsonb().default([]).notNull(),
+	isActive: boolean("is_active").default(true).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_beta_survey_defs_type_active").using("btree", table.surveyType.asc().nullsLast().op("text_ops"), table.isActive.asc().nullsLast().op("text_ops")).where(sql`(is_active = true)`),
+	unique("beta_survey_definitions_slug_key").on(table.slug),
+	check("beta_survey_definitions_survey_type_check", sql`survey_type = ANY (ARRAY['pre_beta'::text, 'post_beta'::text, 'market_research_operator'::text, 'market_research_client'::text])`),
+]);
+
+export const betaSurveyResponses = pgTable("beta_survey_responses", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	surveyId: uuid("survey_id").notNull(),
+	authUserId: uuid("auth_user_id"),
+	token: uuid().defaultRandom(),
+	respondentRole: text("respondent_role"),
+	respondentName: text("respondent_name"),
+	respondentEmail: text("respondent_email"),
+	npsScore: smallint("nps_score"),
+	overallSatisfaction: smallint("overall_satisfaction"),
+	wouldPay: boolean("would_pay"),
+	techComfort: smallint("tech_comfort"),
+	answers: jsonb().default({}).notNull(),
+	startedAt: timestamp("started_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	submittedAt: timestamp("submitted_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_beta_survey_responses_role").using("btree", table.respondentRole.asc().nullsLast().op("text_ops")),
+	index("idx_beta_survey_responses_submitted").using("btree", table.submittedAt.asc().nullsLast().op("timestamptz_ops")).where(sql`(submitted_at IS NOT NULL)`),
+	index("idx_beta_survey_responses_survey").using("btree", table.surveyId.asc().nullsLast().op("uuid_ops")),
+	index("idx_beta_survey_responses_user").using("btree", table.authUserId.asc().nullsLast().op("uuid_ops")).where(sql`(auth_user_id IS NOT NULL)`),
+	foreignKey({
+			columns: [table.authUserId],
+			foreignColumns: [users.id],
+			name: "beta_survey_responses_auth_user_id_fkey"
 		}).onDelete("set null"),
-	pgPolicy("tenant_isolation_select_menus", { as: "permissive", for: "select", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())` }),
-	pgPolicy("tenant_isolation_insert_menus", { as: "permissive", for: "insert", to: ["public"] }),
-	pgPolicy("tenant_isolation_update_menus", { as: "permissive", for: "update", to: ["public"] }),
-	pgPolicy("client_can_view_own_event_menu", { as: "permissive", for: "select", to: ["public"] }),
-	pgPolicy("client_view_showcase_menus", { as: "permissive", for: "select", to: ["public"] }),
-	check("menus_price_per_person_cents_check", sql`price_per_person_cents > 0`),
-	check("menus_target_guest_count_check", sql`(target_guest_count > 0) OR (target_guest_count IS NULL)`),
+	foreignKey({
+			columns: [table.surveyId],
+			foreignColumns: [betaSurveyDefinitions.id],
+			name: "beta_survey_responses_survey_id_fkey"
+		}).onDelete("cascade"),
+	unique("beta_survey_one_per_user").on(table.surveyId, table.authUserId),
+	unique("beta_survey_responses_token_key").on(table.token),
+	check("beta_survey_responses_nps_score_check", sql`(nps_score >= 0) AND (nps_score <= 10)`),
+	check("beta_survey_responses_overall_satisfaction_check", sql`(overall_satisfaction >= 1) AND (overall_satisfaction <= 10)`),
+	check("beta_survey_responses_respondent_role_check", sql`respondent_role = ANY (ARRAY['chef'::text, 'client'::text, 'tester'::text, 'staff'::text, 'partner'::text, 'food_operator'::text, 'consumer'::text])`),
+	check("beta_survey_responses_tech_comfort_check", sql`(tech_comfort >= 1) AND (tech_comfort <= 5)`),
+]);
+
+export const openclawLeads = pgTable("openclaw_leads", {
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	id: bigint({ mode: "number" }).primaryKey().generatedAlwaysAsIdentity({ name: "openclaw_leads_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
+	osmId: text("osm_id"),
+	name: text().notNull(),
+	amenity: text(),
+	shop: text(),
+	cuisine: text(),
+	phone: text(),
+	email: text(),
+	website: text(),
+	street: text(),
+	housenumber: text(),
+	city: text(),
+	state: text(),
+	postcode: text(),
+	country: text().default('US'),
+	lat: doublePrecision(),
+	lon: doublePrecision(),
+	openingHours: text("opening_hours"),
+	outdoorSeating: boolean("outdoor_seating").default(false),
+	takeaway: boolean().default(false),
+	delivery: boolean().default(false),
+	dietVegan: boolean("diet_vegan").default(false),
+	dietVegetarian: boolean("diet_vegetarian").default(false),
+	dietGlutenFree: boolean("diet_gluten_free").default(false),
+	categories: text().array().default([""]),
+	leadScore: integer("lead_score").default(0),
+	chefRelevance: text("chef_relevance"),
+	businessType: text("business_type"),
+	aiNotes: text("ai_notes"),
+	enrichedAt: timestamp("enriched_at", { withTimezone: true, mode: 'string' }),
+	classifiedAt: timestamp("classified_at", { withTimezone: true, mode: 'string' }),
+	syncedAt: timestamp("synced_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	source: text().default('osm'),
+	sourceId: text("source_id"),
+	sourceUrl: text("source_url"),
+	licenseType: text("license_type"),
+	licenseStatus: text("license_status"),
+	ownerName: text("owner_name"),
+	dbaName: text("dba_name"),
+	rating: numeric({ precision: 2, scale:  1 }),
+	reviewCount: integer("review_count"),
+	lastInspectedAt: timestamp("last_inspected_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	index("idx_openclaw_leads_categories").using("gin", table.categories.asc().nullsLast().op("array_ops")),
+	index("idx_openclaw_leads_city").using("btree", table.city.asc().nullsLast().op("text_ops")),
+	uniqueIndex("idx_openclaw_leads_osm_id").using("btree", table.osmId.asc().nullsLast().op("text_ops")).where(sql`(osm_id IS NOT NULL)`),
+	index("idx_openclaw_leads_relevance").using("btree", table.chefRelevance.asc().nullsLast().op("text_ops")).where(sql`(chef_relevance IS NOT NULL)`),
+	index("idx_openclaw_leads_score").using("btree", table.leadScore.desc().nullsFirst().op("int4_ops")),
+	index("idx_openclaw_leads_source").using("btree", table.source.asc().nullsLast().op("text_ops")),
+	uniqueIndex("idx_openclaw_leads_source_id").using("btree", table.source.asc().nullsLast().op("text_ops"), table.sourceId.asc().nullsLast().op("text_ops")).where(sql`(source_id IS NOT NULL)`),
+	index("idx_openclaw_leads_state").using("btree", table.state.asc().nullsLast().op("text_ops")),
+	index("idx_openclaw_leads_state_score").using("btree", table.state.asc().nullsLast().op("text_ops"), table.leadScore.desc().nullsFirst().op("int4_ops")),
+	pgPolicy("Admins can read openclaw_leads", { as: "permissive", for: "select", to: ["public"], using: sql`(EXISTS ( SELECT 1
+   FROM user_roles
+  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))` }),
+	check("openclaw_leads_chef_relevance_check", sql`chef_relevance = ANY (ARRAY['high'::text, 'medium'::text, 'low'::text])`),
+]);
+
+export const chefWorkHistoryEntries = pgTable("chef_work_history_entries", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	chefId: uuid("chef_id").notNull(),
+	roleTitle: text("role_title").notNull(),
+	organizationName: text("organization_name").notNull(),
+	locationLabel: text("location_label"),
+	startDate: date("start_date"),
+	endDate: date("end_date"),
+	isCurrent: boolean("is_current").default(false).notNull(),
+	summary: text(),
+	notableCredits: text("notable_credits").array().default([""]).notNull(),
+	displayOrder: integer("display_order").default(0).notNull(),
+	isPublic: boolean("is_public").default(true).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_chef_work_history_entries_chef_order").using("btree", table.chefId.asc().nullsLast().op("int4_ops"), table.displayOrder.asc().nullsLast().op("int4_ops"), table.startDate.desc().nullsFirst().op("int4_ops")),
+	foreignKey({
+			columns: [table.chefId],
+			foreignColumns: [chefs.id],
+			name: "chef_work_history_entries_chef_id_fkey"
+		}).onDelete("cascade"),
+	check("chef_work_history_entries_date_order_check", sql`(start_date IS NULL) OR (end_date IS NULL) OR (end_date >= start_date)`),
+]);
+
+export const openclawMarketStats = pgTable("openclaw_market_stats", {
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	id: bigint({ mode: "number" }).primaryKey().generatedAlwaysAsIdentity({ name: "openclaw_market_stats_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
+	stateCode: text("state_code").notNull(),
+	totalBusinesses: integer("total_businesses").default(0),
+	withPhone: integer("with_phone").default(0),
+	withEmail: integer("with_email").default(0),
+	withWebsite: integer("with_website").default(0),
+	categories: jsonb().default({}),
+	highValueCount: integer("high_value_count").default(0),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	unique("openclaw_market_stats_state_code_key").on(table.stateCode),
+	pgPolicy("Admins can read openclaw_market_stats", { as: "permissive", for: "select", to: ["public"], using: sql`(EXISTS ( SELECT 1
+   FROM user_roles
+  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))` }),
+]);
+
+export const communityOrganizations = pgTable("community_organizations", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	chefId: uuid("chef_id").notNull(),
+	displayName: text("display_name").notNull(),
+	address: text(),
+	googlePlaceId: text("google_place_id"),
+	ein: text(),
+	websiteUrl: text("website_url"),
+	verificationSource: text("verification_source"),
+	verificationUrl: text("verification_url"),
+	isVerified501C: boolean("is_verified_501c").default(false).notNull(),
+	lastVerifiedAt: timestamp("last_verified_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("idx_community_orgs_chef_ein").using("btree", table.chefId.asc().nullsLast().op("text_ops"), table.ein.asc().nullsLast().op("uuid_ops")).where(sql`(ein IS NOT NULL)`),
+	uniqueIndex("idx_community_orgs_chef_name_address").using("btree", sql`chef_id`, sql`lower(TRIM(BOTH FROM display_name))`, sql`lower(TRIM(BOTH FROM COALESCE(address, ''::text)))`).where(sql`((google_place_id IS NULL) AND (ein IS NULL))`),
+	uniqueIndex("idx_community_orgs_chef_place").using("btree", table.chefId.asc().nullsLast().op("uuid_ops"), table.googlePlaceId.asc().nullsLast().op("uuid_ops")).where(sql`(google_place_id IS NOT NULL)`),
+	index("idx_community_orgs_chef_updated").using("btree", table.chefId.asc().nullsLast().op("timestamptz_ops"), table.updatedAt.desc().nullsFirst().op("timestamptz_ops")),
+	foreignKey({
+			columns: [table.chefId],
+			foreignColumns: [chefs.id],
+			name: "community_organizations_chef_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("community_orgs_chef_select", { as: "permissive", for: "select", to: ["public"], using: sql`((get_current_user_role() = 'chef'::user_role) AND (chef_id = get_current_tenant_id()))` }),
+	pgPolicy("community_orgs_chef_insert", { as: "permissive", for: "insert", to: ["public"] }),
+	pgPolicy("community_orgs_chef_update", { as: "permissive", for: "update", to: ["public"] }),
+	pgPolicy("community_orgs_chef_delete", { as: "permissive", for: "delete", to: ["public"] }),
+]);
+
+export const chefs = pgTable("chefs", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	authUserId: uuid("auth_user_id").notNull(),
+	businessName: text("business_name").notNull(),
+	email: text().notNull(),
+	phone: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	googleReviewUrl: text("google_review_url"),
+	displayName: text("display_name"),
+	bio: text(),
+	profileImageUrl: text("profile_image_url"),
+	slug: text(),
+	tagline: text(),
+	portalPrimaryColor: text("portal_primary_color"),
+	portalBackgroundColor: text("portal_background_color"),
+	portalBackgroundImageUrl: text("portal_background_image_url"),
+	websiteUrl: text("website_url"),
+	showWebsiteOnPublicProfile: boolean("show_website_on_public_profile").default(true).notNull(),
+	preferredInquiryDestination: text("preferred_inquiry_destination").default('both').notNull(),
+	cancellationCutoffDays: integer("cancellation_cutoff_days").default(15).notNull(),
+	depositRefundable: boolean("deposit_refundable").default(false).notNull(),
+	onboardingCompletedAt: timestamp("onboarding_completed_at", { withTimezone: true, mode: 'string' }),
+	stripeAccountId: text("stripe_account_id"),
+	stripeOnboardingComplete: boolean("stripe_onboarding_complete").default(false).notNull(),
+	logoUrl: text("logo_url"),
+	showAvailabilitySignals: boolean("show_availability_signals").default(false).notNull(),
+	accountStatus: text("account_status").default('active').notNull(),
+	currentClosureStreak: integer("current_closure_streak").default(0).notNull(),
+	longestClosureStreak: integer("longest_closure_streak").default(0).notNull(),
+	lastClosureDate: date("last_closure_date"),
+	bookingSlug: text("booking_slug"),
+	bookingEnabled: boolean("booking_enabled").default(false).notNull(),
+	bookingHeadline: text("booking_headline"),
+	bookingBioShort: text("booking_bio_short"),
+	bookingMinNoticeDays: integer("booking_min_notice_days").default(7).notNull(),
+	bookingDepositPercent: integer("booking_deposit_percent").default(0).notNull(),
+	timezone: text().default('America/New_York').notNull(),
+	portfolioEnabled: boolean("portfolio_enabled").default(false),
+	portfolioLayout: text("portfolio_layout").default('grid'),
+	bookingModel: text("booking_model").default('inquiry_first'),
+	bookingBasePriceCents: integer("booking_base_price_cents"),
+	bookingPricingType: text("booking_pricing_type").default('flat_rate'),
+	bookingDepositType: text("booking_deposit_type").default('percent'),
+	bookingDepositFixedCents: integer("booking_deposit_fixed_cents").default(0),
+	platformFeePercent: numeric("platform_fee_percent", { precision: 5, scale:  2 }).default('0.00').notNull(),
+	platformFeeFixedCents: integer("platform_fee_fixed_cents").default(0).notNull(),
+	gratuityMode: text("gratuity_mode").default('discretionary').notNull(),
+	gratuityServiceFeePct: numeric("gratuity_service_fee_pct", { precision: 5, scale:  2 }),
+	gratuityDisplayLabel: text("gratuity_display_label"),
+	stripeCustomerId: text("stripe_customer_id"),
+	stripeSubscriptionId: text("stripe_subscription_id"),
+	subscriptionStatus: text("subscription_status"),
+	trialEndsAt: timestamp("trial_ends_at", { withTimezone: true, mode: 'string' }),
+	subscriptionCurrentPeriodEnd: timestamp("subscription_current_period_end", { withTimezone: true, mode: 'string' }),
+	remyBlockedUntil: timestamp("remy_blocked_until", { withTimezone: true, mode: 'string' }),
+	maxEventsPerWeek: integer("max_events_per_week"),
+	maxEventsPerMonth: integer("max_events_per_month"),
+	maxConsecutiveWorkingDays: integer("max_consecutive_working_days").default(7),
+	minRestDaysPerWeek: integer("min_rest_days_per_week").default(1),
+	maxHoursPerWeek: integer("max_hours_per_week"),
+	offHoursStart: time("off_hours_start"),
+	offHoursEnd: time("off_hours_end"),
+	offDays: text("off_days").array().default([""]),
+	businessContinuityPlan: jsonb("business_continuity_plan").default({}),
+	directoryApproved: boolean("directory_approved").default(false).notNull(),
+	deletionRequestedAt: timestamp("deletion_requested_at", { withTimezone: true, mode: 'string' }),
+	deletionScheduledFor: timestamp("deletion_scheduled_for", { withTimezone: true, mode: 'string' }),
+	deletionReason: text("deletion_reason"),
+	deletionReactivationToken: uuid("deletion_reactivation_token"),
+	isDeleted: boolean("is_deleted").default(false).notNull(),
+	icalFeedToken: uuid("ical_feed_token").defaultRandom(),
+	icalFeedEnabled: boolean("ical_feed_enabled").default(false),
+	applePayEnabled: boolean("apple_pay_enabled").default(true),
+	googlePayEnabled: boolean("google_pay_enabled").default(true),
+	dismissedRecallIds: text("dismissed_recall_ids").array().default([""]),
+	prepTimelineVisibility: jsonb("prep_timeline_visibility").default({"setup":true,"travel":true,"cleanup":true,"cooking":true,"packing":true,"serving":true,"complete":true,"prep_work":true,"menu_planning":true,"ingredient_sourcing":true}).notNull(),
+	showDietaryConfirmation: boolean("show_dietary_confirmation").default(true).notNull(),
+	defaultShowCostBreakdown: boolean("default_show_cost_breakdown").default(false).notNull(),
+	defaultExclusionsNote: text("default_exclusions_note"),
+	liveTrackerVisibility: jsonb("live_tracker_visibility").default({"arrived":true,"cleanup":false,"dessert":true,"complete":true,"en_route":true,"setting_up":false,"main_course":true,"first_course":true,"prep_underway":false}).notNull(),
+	showGuestDetailsToHost: boolean("show_guest_details_to_host").default(true).notNull(),
+	featuredBookingMenuId: uuid("featured_booking_menu_id"),
+	featuredBookingBadge: text("featured_booking_badge"),
+	featuredBookingTitle: text("featured_booking_title"),
+	featuredBookingPitch: text("featured_booking_pitch"),
+	kdsPin: text("kds_pin"),
+	icalFeedExpiresAt: timestamp("ical_feed_expires_at", { withTimezone: true, mode: 'string' }).default(sql`(now() + '90 days'::interval)`),
+	icalFeedLastAccessedAt: timestamp("ical_feed_last_accessed_at", { withTimezone: true, mode: 'string' }),
+	cuisineSpecialties: text("cuisine_specialties").array().default([""]),
+	city: text(),
+	state: text(),
+	socialLinks: jsonb("social_links").default({}),
+	onboardingBannerDismissedAt: timestamp("onboarding_banner_dismissed_at", { withTimezone: true, mode: 'string' }),
+	onboardingRemindersDismissed: integer("onboarding_reminders_dismissed").default(0),
+	preferredRegion: text("preferred_region").default('haverhill-ma'),
+	publicCharityPercent: numeric("public_charity_percent", { precision: 5, scale:  2 }),
+	publicCharityNote: text("public_charity_note"),
+	showResumeAvailableNote: boolean("show_resume_available_note").default(false).notNull(),
+	showPublicCharity: boolean("show_public_charity").default(false).notNull(),
+	achEnabled: boolean("ach_enabled").default(false).notNull(),
+}, (table) => [
+	index("idx_chefs_account_status").using("btree", table.accountStatus.asc().nullsLast().op("text_ops")),
+	index("idx_chefs_auth_user").using("btree", table.authUserId.asc().nullsLast().op("uuid_ops")),
+	uniqueIndex("idx_chefs_booking_slug").using("btree", table.bookingSlug.asc().nullsLast().op("text_ops")).where(sql`(booking_slug IS NOT NULL)`),
+	index("idx_chefs_deletion_scheduled").using("btree", table.deletionScheduledFor.asc().nullsLast().op("timestamptz_ops")).where(sql`((deletion_scheduled_for IS NOT NULL) AND (is_deleted = false))`),
+	index("idx_chefs_directory_approved").using("btree", table.directoryApproved.asc().nullsLast().op("bool_ops")).where(sql`(directory_approved = true)`),
+	index("idx_chefs_featured_booking_menu").using("btree", table.featuredBookingMenuId.asc().nullsLast().op("uuid_ops")).where(sql`(featured_booking_menu_id IS NOT NULL)`),
+	index("idx_chefs_ical_feed_token").using("btree", table.icalFeedToken.asc().nullsLast().op("uuid_ops")).where(sql`(ical_feed_enabled = true)`),
+	index("idx_chefs_stripe_account_id").using("btree", table.stripeAccountId.asc().nullsLast().op("text_ops")).where(sql`(stripe_account_id IS NOT NULL)`),
+	uniqueIndex("idx_chefs_stripe_customer_id").using("btree", table.stripeCustomerId.asc().nullsLast().op("text_ops")).where(sql`(stripe_customer_id IS NOT NULL)`),
+	uniqueIndex("idx_chefs_stripe_subscription_id").using("btree", table.stripeSubscriptionId.asc().nullsLast().op("text_ops")).where(sql`(stripe_subscription_id IS NOT NULL)`),
+	index("idx_chefs_subscription_status").using("btree", table.subscriptionStatus.asc().nullsLast().op("text_ops")).where(sql`(subscription_status IS NOT NULL)`),
+	foreignKey({
+			columns: [table.authUserId],
+			foreignColumns: [users.id],
+			name: "chefs_auth_user_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.featuredBookingMenuId],
+			foreignColumns: [menus.id],
+			name: "chefs_featured_booking_menu_id_fkey"
+		}).onDelete("set null"),
+	unique("chefs_auth_user_id_key").on(table.authUserId),
+	unique("chefs_email_key").on(table.email),
+	unique("chefs_slug_key").on(table.slug),
+	unique("chefs_booking_slug_key").on(table.bookingSlug),
+	pgPolicy("chefs_select", { as: "permissive", for: "select", to: ["public"], using: sql`(auth.uid() = auth_user_id)` }),
+	pgPolicy("chefs_update", { as: "permissive", for: "update", to: ["public"] }),
+	pgPolicy("chefs_network_discovery", { as: "permissive", for: "select", to: ["public"] }),
+	check("chefs_account_status_check", sql`account_status = ANY (ARRAY['active'::text, 'suspended'::text])`),
+	check("chefs_booking_deposit_pct_range", sql`(booking_deposit_percent >= 0) AND (booking_deposit_percent <= 100)`),
+	check("chefs_booking_deposit_type_check", sql`booking_deposit_type = ANY (ARRAY['percent'::text, 'fixed'::text])`),
+	check("chefs_booking_min_notice_range", sql`(booking_min_notice_days >= 0) AND (booking_min_notice_days <= 90)`),
+	check("chefs_booking_model_check", sql`booking_model = ANY (ARRAY['inquiry_first'::text, 'instant_book'::text])`),
+	check("chefs_booking_pricing_type_check", sql`booking_pricing_type = ANY (ARRAY['flat_rate'::text, 'per_person'::text])`),
+	check("chefs_booking_slug_format", sql`(booking_slug IS NULL) OR (booking_slug ~ '^[a-z0-9][a-z0-9\-]*[a-z0-9]$'::text)`),
+	check("chefs_platform_fee_fixed_cents_range", sql`platform_fee_fixed_cents >= 0`),
+	check("chefs_platform_fee_percent_range", sql`(platform_fee_percent >= (0)::numeric) AND (platform_fee_percent <= (100)::numeric)`),
+	check("chefs_portfolio_layout_check", sql`portfolio_layout = ANY (ARRAY['grid'::text, 'masonry'::text, 'carousel'::text])`),
+	check("chefs_preferred_inquiry_destination_check", sql`preferred_inquiry_destination = ANY (ARRAY['website_only'::text, 'chefflow_only'::text, 'both'::text])`),
+	check("chefs_public_charity_percent_range_check", sql`(public_charity_percent IS NULL) OR ((public_charity_percent >= (0)::numeric) AND (public_charity_percent <= (100)::numeric))`),
+	check("chefs_timezone_nonempty", sql`timezone <> ''::text`),
+]);
+
+export const chefQuickNotes = pgTable("chef_quick_notes", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	chefId: uuid("chef_id").notNull(),
+	text: text().notNull(),
+	status: text().default('raw').notNull(),
+	triagedTo: text("triaged_to"),
+	triagedRefId: uuid("triaged_ref_id"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_quick_notes_chef").using("btree", table.chefId.asc().nullsLast().op("text_ops"), table.status.asc().nullsLast().op("text_ops"), table.createdAt.desc().nullsFirst().op("text_ops")),
+	foreignKey({
+			columns: [table.chefId],
+			foreignColumns: [chefs.id],
+			name: "chef_quick_notes_chef_id_fkey"
+		}),
+	check("chef_quick_notes_status_check", sql`status = ANY (ARRAY['raw'::text, 'triaged'::text, 'dismissed'::text])`),
+]);
+
+export const platformObservabilityEvents = pgTable("platform_observability_events", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	eventKey: text("event_key").notNull(),
+	severity: text().notNull(),
+	source: text().notNull(),
+	scope: text().notNull(),
+	summary: text().notNull(),
+	details: text(),
+	actorType: text("actor_type").notNull(),
+	actorId: text("actor_id"),
+	authUserId: uuid("auth_user_id"),
+	tenantId: uuid("tenant_id"),
+	subjectType: text("subject_type"),
+	subjectId: text("subject_id"),
+	metadata: jsonb().default({}).notNull(),
+	occurredAt: timestamp("occurred_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	realtimeAlertEnabled: boolean("realtime_alert_enabled").default(false).notNull(),
+	dailyDigestEnabled: boolean("daily_digest_enabled").default(true).notNull(),
+	alertDedupeKey: text("alert_dedupe_key"),
+	realtimeAlertSentAt: timestamp("realtime_alert_sent_at", { withTimezone: true, mode: 'string' }),
+	realtimeAlertStatus: text("realtime_alert_status").default('not_applicable').notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_platform_observability_events_alert_dedupe").using("btree", table.alertDedupeKey.asc().nullsLast().op("text_ops"), table.realtimeAlertSentAt.desc().nullsFirst().op("timestamptz_ops")).where(sql`(alert_dedupe_key IS NOT NULL)`),
+	index("idx_platform_observability_events_digest").using("btree", table.dailyDigestEnabled.asc().nullsLast().op("bool_ops"), table.occurredAt.desc().nullsFirst().op("timestamptz_ops")),
+	index("idx_platform_observability_events_event_key").using("btree", table.eventKey.asc().nullsLast().op("timestamptz_ops"), table.occurredAt.desc().nullsFirst().op("timestamptz_ops")),
+	index("idx_platform_observability_events_occurred_at").using("btree", table.occurredAt.desc().nullsFirst().op("timestamptz_ops")),
+	index("idx_platform_observability_events_source").using("btree", table.source.asc().nullsLast().op("timestamptz_ops"), table.occurredAt.desc().nullsFirst().op("timestamptz_ops")),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "platform_observability_events_tenant_id_fkey"
+		}).onDelete("set null"),
+	check("platform_observability_events_actor_type_check", sql`actor_type = ANY (ARRAY['anonymous'::text, 'auth_user'::text, 'chef'::text, 'client'::text, 'system'::text])`),
+	check("platform_observability_events_realtime_alert_status_check", sql`realtime_alert_status = ANY (ARRAY['not_applicable'::text, 'sent'::text, 'suppressed'::text, 'failed'::text])`),
+	check("platform_observability_events_scope_check", sql`scope = ANY (ARRAY['public'::text, 'private'::text, 'system'::text])`),
+	check("platform_observability_events_severity_check", sql`severity = ANY (ARRAY['info'::text, 'important'::text, 'critical'::text])`),
+]);
+
+export const systemIngredients = pgTable("system_ingredients", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	name: text().notNull(),
+	category: ingredientCategory().notNull(),
+	subcategory: text().default(').notNull(),
+	unitType: text("unit_type").default('weight').notNull(),
+	standardUnit: text("standard_unit").default('g').notNull(),
+	costPerUnitCents: integer("cost_per_unit_cents").default(0),
+	weightToVolumeRatio: numeric("weight_to_volume_ratio", { precision: 8, scale:  4 }).default('NULL'),
+	cupWeightGrams: numeric("cup_weight_grams", { precision: 8, scale:  2 }).default('NULL'),
+	tbspWeightGrams: numeric("tbsp_weight_grams", { precision: 8, scale:  2 }).default('NULL'),
+	allergenTags: text("allergen_tags").array().default([""]).notNull(),
+	commonPrepActions: jsonb("common_prep_actions").default([]).notNull(),
+	isActive: boolean("is_active").default(true).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	countUnit: text("count_unit"),
+	countWeightGrams: numeric("count_weight_grams", { precision: 8, scale:  2 }),
+	countNotes: text("count_notes"),
+	usdaFdcId: integer("usda_fdc_id"),
+	usdaNdbNumber: integer("usda_ndb_number"),
+	usdaFoodGroup: text("usda_food_group"),
+	slug: text(),
+	aliases: text().array().default([""]),
+	scalesLinearly: boolean("scales_linearly").default(true),
+	scalingNotes: text("scaling_notes"),
+	cookingYieldPct: numeric("cooking_yield_pct", { precision: 5, scale:  2 }),
+	servingSizeGrams: numeric("serving_size_grams", { precision: 8, scale:  2 }),
+	parentId: uuid("parent_id"),
+	hierarchyDepth: integer("hierarchy_depth").default(0).notNull(),
+	isLeaf: boolean("is_leaf").default(true).notNull(),
+	yieldPct: numeric("yield_pct", { precision: 5, scale:  4 }).default('1.0000'),
+	trimLossPct: numeric("trim_loss_pct", { precision: 5, scale:  4 }).default('0.0000'),
+	cookShrinkagePct: numeric("cook_shrinkage_pct", { precision: 5, scale:  4 }).default('0.0000'),
+	densityGPerMl: numeric("density_g_per_ml", { precision: 7, scale:  4 }),
+	wikidataQid: text("wikidata_qid"),
+	wikipediaSlug: text("wikipedia_slug"),
+	knowledgeEnrichedAt: timestamp("knowledge_enriched_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	index("idx_sys_ingredients_parent").using("btree", table.parentId.asc().nullsLast().op("uuid_ops")).where(sql`(parent_id IS NOT NULL)`),
+	index("idx_system_ingredients_active").using("btree", table.isActive.asc().nullsLast().op("bool_ops")).where(sql`(is_active = true)`),
+	index("idx_system_ingredients_aliases").using("gin", table.aliases.asc().nullsLast().op("array_ops")),
+	index("idx_system_ingredients_category").using("btree", table.category.asc().nullsLast().op("enum_ops")),
+	uniqueIndex("idx_system_ingredients_fdc_id").using("btree", table.usdaFdcId.asc().nullsLast().op("int4_ops")).where(sql`(usda_fdc_id IS NOT NULL)`),
+	index("idx_system_ingredients_name").using("gin", sql`to_tsvector('english'::regconfig, name)`),
+	index("idx_system_ingredients_name_trgm").using("gin", table.name.asc().nullsLast().op("gin_trgm_ops")),
+	uniqueIndex("idx_system_ingredients_slug").using("btree", table.slug.asc().nullsLast().op("text_ops")).where(sql`(slug IS NOT NULL)`),
+	index("idx_system_ingredients_wikidata_qid").using("btree", table.wikidataQid.asc().nullsLast().op("text_ops")).where(sql`(wikidata_qid IS NOT NULL)`),
+	index("idx_system_ingredients_wikipedia_slug").using("btree", table.wikipediaSlug.asc().nullsLast().op("text_ops")).where(sql`(wikipedia_slug IS NOT NULL)`),
+	foreignKey({
+			columns: [table.parentId],
+			foreignColumns: [table.id],
+			name: "system_ingredients_parent_id_fkey"
+		}),
+	pgPolicy("system_ingredients_read_all", { as: "permissive", for: "select", to: ["public"], using: sql`true` }),
+	check("system_ingredients_standard_unit_check", sql`standard_unit = ANY (ARRAY['g'::text, 'oz'::text, 'ml'::text, 'fl_oz'::text, 'each'::text, 'bunch'::text])`),
+	check("system_ingredients_unit_type_check", sql`unit_type = ANY (ARRAY['weight'::text, 'volume'::text, 'each'::text, 'bunch'::text])`),
+]);
+
+export const supplierCalls = pgTable("supplier_calls", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	chefId: uuid("chef_id").notNull(),
+	vendorId: uuid("vendor_id"),
+	vendorName: text("vendor_name").notNull(),
+	vendorPhone: text("vendor_phone").notNull(),
+	ingredientName: text("ingredient_name").notNull(),
+	callSid: text("call_sid"),
+	status: text().default('queued').notNull(),
+	result: text(),
+	durationSeconds: integer("duration_seconds"),
+	errorMessage: text("error_message"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	priceQuoted: text("price_quoted"),
+	quantityAvailable: text("quantity_available"),
+	speechTranscript: text("speech_transcript"),
+	recordingUrl: text("recording_url"),
+	aiCallId: uuid("ai_call_id"),
+}, (table) => [
+	index("supplier_calls_call_sid_idx").using("btree", table.callSid.asc().nullsLast().op("text_ops")),
+	index("supplier_calls_chef_id_idx").using("btree", table.chefId.asc().nullsLast().op("uuid_ops")),
+	index("supplier_calls_created_at_idx").using("btree", table.chefId.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("uuid_ops")),
+	foreignKey({
+			columns: [table.aiCallId],
+			foreignColumns: [aiCalls.id],
+			name: "supplier_calls_ai_call_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.chefId],
+			foreignColumns: [chefs.id],
+			name: "supplier_calls_chef_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.vendorId],
+			foreignColumns: [vendors.id],
+			name: "supplier_calls_vendor_id_fkey"
+		}).onDelete("set null"),
+	check("supplier_calls_result_check", sql`(result = ANY (ARRAY['yes'::text, 'no'::text])) OR (result IS NULL)`),
+	check("supplier_calls_status_check", sql`status = ANY (ARRAY['queued'::text, 'ringing'::text, 'in_progress'::text, 'completed'::text, 'failed'::text, 'no_answer'::text, 'busy'::text])`),
+]);
+
+export const accountingPeriodLocks = pgTable("accounting_period_locks", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	periodType: text("period_type").notNull(),
+	periodStart: date("period_start").notNull(),
+	periodEnd: date("period_end").notNull(),
+	lockedAt: timestamp("locked_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	lockedBy: uuid("locked_by"),
+	reason: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_accounting_period_locks_tenant_period").using("btree", table.tenantId.asc().nullsLast().op("date_ops"), table.periodStart.desc().nullsFirst().op("date_ops")),
+	foreignKey({
+			columns: [table.lockedBy],
+			foreignColumns: [users.id],
+			name: "accounting_period_locks_locked_by_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "accounting_period_locks_tenant_id_fkey"
+		}).onDelete("cascade"),
+	unique("accounting_period_locks_tenant_id_period_type_period_start__key").on(table.tenantId, table.periodType, table.periodStart, table.periodEnd),
+	check("accounting_period_locks_period_type_check", sql`period_type = 'tax_year'::text`),
+]);
+
+export const ownerDraws = pgTable("owner_draws", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	drawDate: date("draw_date").notNull(),
+	amountCents: integer("amount_cents").notNull(),
+	paymentMethod: paymentMethod("payment_method").notNull(),
+	description: text().notNull(),
+	notes: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	createdBy: uuid("created_by"),
+	updatedBy: uuid("updated_by"),
+}, (table) => [
+	index("idx_owner_draws_tenant_date").using("btree", table.tenantId.asc().nullsLast().op("date_ops"), table.drawDate.desc().nullsFirst().op("date_ops")),
+	foreignKey({
+			columns: [table.createdBy],
+			foreignColumns: [users.id],
+			name: "owner_draws_created_by_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "owner_draws_tenant_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.updatedBy],
+			foreignColumns: [users.id],
+			name: "owner_draws_updated_by_fkey"
+		}).onDelete("set null"),
+	check("owner_draws_amount_cents_check", sql`amount_cents > 0`),
+]);
+
+export const taxExportRuns = pgTable("tax_export_runs", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	taxYear: integer("tax_year").notNull(),
+	exportNumber: integer("export_number").notNull(),
+	schemaVersion: text("schema_version").notNull(),
+	lockedPeriodId: uuid("locked_period_id"),
+	checksum: text().notNull(),
+	filename: text().notNull(),
+	detailRowCount: integer("detail_row_count").default(0).notNull(),
+	summaryJson: jsonb("summary_json").default({}).notNull(),
+	generatedAt: timestamp("generated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	generatedBy: uuid("generated_by"),
+}, (table) => [
+	index("idx_tax_export_runs_tenant_year").using("btree", table.tenantId.asc().nullsLast().op("int4_ops"), table.taxYear.desc().nullsFirst().op("uuid_ops"), table.exportNumber.desc().nullsFirst().op("uuid_ops")),
+	foreignKey({
+			columns: [table.generatedBy],
+			foreignColumns: [users.id],
+			name: "tax_export_runs_generated_by_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.lockedPeriodId],
+			foreignColumns: [accountingPeriodLocks.id],
+			name: "tax_export_runs_locked_period_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "tax_export_runs_tenant_id_fkey"
+		}).onDelete("cascade"),
+	unique("tax_export_runs_tenant_id_tax_year_export_number_key").on(table.tenantId, table.taxYear, table.exportNumber),
+	check("tax_export_runs_export_number_check", sql`export_number > 0`),
+	check("tax_export_runs_tax_year_check", sql`(tax_year >= 2020) AND (tax_year <= 2035)`),
+]);
+
+export const userRoles = pgTable("user_roles", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	authUserId: uuid("auth_user_id").notNull(),
+	role: userRole().notNull(),
+	entityId: uuid("entity_id").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	tenantRole: text("tenant_role").default('team_member'),
+}, (table) => [
+	uniqueIndex("idx_user_roles_auth_user").using("btree", table.authUserId.asc().nullsLast().op("uuid_ops")),
+	index("idx_user_roles_entity").using("btree", table.entityId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.authUserId],
+			foreignColumns: [users.id],
+			name: "user_roles_auth_user_id_fkey"
+		}).onDelete("cascade"),
+	unique("user_roles_auth_user_id_key").on(table.authUserId),
+	pgPolicy("user_roles_self_select", { as: "permissive", for: "select", to: ["public"], using: sql`(auth.uid() = auth_user_id)` }),
+	check("user_roles_tenant_role_check", sql`tenant_role = ANY (ARRAY['tenant_owner'::text, 'manager'::text, 'team_member'::text, 'client'::text, 'partner'::text])`),
+]);
+
+export const rolePermissions = pgTable("role_permissions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	role: text().notNull(),
+	domain: text().notNull(),
+	actions: text().array().default([""]).notNull(),
+	scope: text().default('tenant').notNull(),
+}, (table) => [
+	unique("role_permissions_role_domain_key").on(table.role, table.domain),
+]);
+
+export const userPermissionOverrides = pgTable("user_permission_overrides", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	authUserId: uuid("auth_user_id").notNull(),
+	domain: text().notNull(),
+	actions: text().array().default([""]).notNull(),
+	grantedBy: uuid("granted_by").notNull(),
+	grantedAt: timestamp("granted_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_user_permission_overrides_lookup").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.authUserId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.authUserId],
+			foreignColumns: [users.id],
+			name: "user_permission_overrides_auth_user_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.grantedBy],
+			foreignColumns: [users.id],
+			name: "user_permission_overrides_granted_by_fkey"
+		}),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "user_permission_overrides_tenant_id_fkey"
+		}).onDelete("cascade"),
+	unique("user_permission_overrides_tenant_id_auth_user_id_domain_key").on(table.tenantId, table.authUserId, table.domain),
+]);
+
+export const permissionAuditLog = pgTable("permission_audit_log", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id"),
+	actorAuthUserId: uuid("actor_auth_user_id").notNull(),
+	targetAuthUserId: uuid("target_auth_user_id").notNull(),
+	action: text().notNull(),
+	domain: text(),
+	oldValue: jsonb("old_value"),
+	newValue: jsonb("new_value"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_permission_audit_log_tenant").using("btree", table.tenantId.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "permission_audit_log_tenant_id_fkey"
+		}).onDelete("set null"),
+]);
+
+export const ingredientKnowledge = pgTable("ingredient_knowledge", {
+	id: bigserial({ mode: "bigint" }).primaryKey().notNull(),
+	systemIngredientId: uuid("system_ingredient_id").notNull(),
+	wikidataQid: text("wikidata_qid"),
+	wikipediaSlug: text("wikipedia_slug"),
+	wikipediaUrl: text("wikipedia_url"),
+	wikiSummary: text("wiki_summary"),
+	wikiExtract: text("wiki_extract"),
+	originCountries: text("origin_countries").array().default([""]).notNull(),
+	flavorProfile: text("flavor_profile"),
+	culinaryUses: text("culinary_uses"),
+	typicalPairings: text("typical_pairings").array().default([""]).notNull(),
+	botanicalFamily: text("botanical_family"),
+	taxonName: text("taxon_name"),
+	dietaryFlags: text("dietary_flags").array().default([""]).notNull(),
+	allergenNotes: text("allergen_notes"),
+	enrichmentSource: text("enrichment_source").default('wikidata').notNull(),
+	enrichmentConfidence: numeric("enrichment_confidence", { precision: 3, scale:  2 }),
+	enrichedAt: timestamp("enriched_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	needsReview: boolean("needs_review").default(false).notNull(),
+	imageUrl: text("image_url"),
+	nutritionJson: jsonb("nutrition_json"),
+	culinarySection: text("culinary_section"),
+	historySection: text("history_section"),
+}, (table) => [
+	index("idx_ingredient_knowledge_has_image").using("btree", table.id.asc().nullsLast().op("int8_ops")).where(sql`(image_url IS NOT NULL)`),
+	index("idx_ingredient_knowledge_has_nutrition").using("btree", table.id.asc().nullsLast().op("int8_ops")).where(sql`(nutrition_json IS NOT NULL)`),
+	index("idx_ingredient_knowledge_qid").using("btree", table.wikidataQid.asc().nullsLast().op("text_ops")).where(sql`(wikidata_qid IS NOT NULL)`),
+	index("idx_ingredient_knowledge_review").using("btree", table.needsReview.asc().nullsLast().op("bool_ops")).where(sql`(needs_review = true)`),
+	index("idx_ingredient_knowledge_slug").using("btree", table.wikipediaSlug.asc().nullsLast().op("text_ops")).where(sql`(wikipedia_slug IS NOT NULL)`),
+	foreignKey({
+			columns: [table.systemIngredientId],
+			foreignColumns: [systemIngredients.id],
+			name: "ingredient_knowledge_system_ingredient_id_fkey"
+		}).onDelete("cascade"),
+	unique("ingredient_knowledge_system_ingredient_id_key").on(table.systemIngredientId),
+	pgPolicy("ingredient_knowledge_read_all", { as: "permissive", for: "select", to: ["public"], using: sql`true` }),
+	check("ingredient_knowledge_enrichment_confidence_check", sql`(enrichment_confidence >= (0)::numeric) AND (enrichment_confidence <= (1)::numeric)`),
+	check("ingredient_knowledge_enrichment_source_check", sql`enrichment_source = ANY (ARRAY['wikidata'::text, 'wikipedia'::text, 'manual'::text, 'partial'::text])`),
+]);
+
+export const ingredientKnowledgeSlugs = pgTable("ingredient_knowledge_slugs", {
+	slug: text().primaryKey().notNull(),
+	systemIngredientId: uuid("system_ingredient_id").notNull(),
+	isCanonical: boolean("is_canonical").default(false).notNull(),
+}, (table) => [
+	index("idx_ingredient_knowledge_slugs_si").using("btree", table.systemIngredientId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.systemIngredientId],
+			foreignColumns: [systemIngredients.id],
+			name: "ingredient_knowledge_slugs_system_ingredient_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("ingredient_slugs_read_all", { as: "permissive", for: "select", to: ["public"], using: sql`true` }),
+]);
+
+export const nationalVendors = pgTable("national_vendors", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	name: text().notNull(),
+	vendorType: text("vendor_type").notNull(),
+	address: text(),
+	city: text().notNull(),
+	state: text().notNull(),
+	zip: text(),
+	phone: text(),
+	website: text(),
+	lat: doublePrecision(),
+	lng: doublePrecision(),
+	osmId: text("osm_id"),
+	source: text().default('osm').notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_national_vendors_city_lower").using("btree", sql`lower(city)`),
+	index("idx_national_vendors_fts").using("gin", sql`to_tsvector('english'::regconfig, ((((name || ' '::text) || cit`),
+	index("idx_national_vendors_phone").using("btree", table.phone.asc().nullsLast().op("text_ops")).where(sql`(phone IS NOT NULL)`),
+	index("idx_national_vendors_state").using("btree", table.state.asc().nullsLast().op("text_ops")),
+	unique("national_vendors_osm_id_source_key").on(table.osmId, table.source),
+]);
+
+export const aiCalls = pgTable("ai_calls", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	chefId: uuid("chef_id").notNull(),
+	direction: text().default('outbound').notNull(),
+	role: text().default('vendor_availability').notNull(),
+	callSid: text("call_sid"),
+	callSidParent: text("call_sid_parent"),
+	contactPhone: text("contact_phone").notNull(),
+	contactName: text("contact_name"),
+	contactType: text("contact_type"),
+	vendorId: uuid("vendor_id"),
+	eventId: uuid("event_id"),
+	supplierCallId: uuid("supplier_call_id"),
+	subject: text(),
+	status: text().default('queued').notNull(),
+	durationSeconds: integer("duration_seconds"),
+	errorMessage: text("error_message"),
+	fullTranscript: text("full_transcript"),
+	extractedData: jsonb("extracted_data").default({}),
+	actionLog: jsonb("action_log").default([]),
+	recordingUrl: text("recording_url"),
+	voicemailLeft: boolean("voicemail_left").default(false),
+	triggeredBy: text("triggered_by").default('chef_manual'),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("ai_calls_call_sid_idx").using("btree", table.callSid.asc().nullsLast().op("text_ops")).where(sql`(call_sid IS NOT NULL)`),
+	index("ai_calls_chef_idx").using("btree", table.chefId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("uuid_ops")),
+	index("ai_calls_event_idx").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")).where(sql`(event_id IS NOT NULL)`),
+	index("ai_calls_role_idx").using("btree", table.chefId.asc().nullsLast().op("text_ops"), table.role.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
+	index("ai_calls_status_idx").using("btree", table.chefId.asc().nullsLast().op("text_ops"), table.status.asc().nullsLast().op("uuid_ops")).where(sql`(status <> ALL (ARRAY['completed'::text, 'failed'::text, 'no_answer'::text, 'busy'::text]))`),
+	index("ai_calls_vendor_idx").using("btree", table.vendorId.asc().nullsLast().op("uuid_ops")).where(sql`(vendor_id IS NOT NULL)`),
+	foreignKey({
+			columns: [table.chefId],
+			foreignColumns: [chefs.id],
+			name: "ai_calls_chef_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "ai_calls_event_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.supplierCallId],
+			foreignColumns: [supplierCalls.id],
+			name: "ai_calls_supplier_call_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.vendorId],
+			foreignColumns: [vendors.id],
+			name: "ai_calls_vendor_id_fkey"
+		}).onDelete("set null"),
+	check("ai_calls_contact_type_check", sql`contact_type = ANY (ARRAY['vendor'::text, 'venue'::text, 'unknown'::text])`),
+	check("ai_calls_direction_check", sql`direction = ANY (ARRAY['outbound'::text, 'inbound'::text])`),
+	check("ai_calls_role_check", sql`role = ANY (ARRAY['vendor_availability'::text, 'vendor_delivery'::text, 'venue_confirmation'::text, 'equipment_rental'::text, 'inbound_vendor_callback'::text, 'inbound_voicemail'::text, 'inbound_unknown'::text])`),
+	check("ai_calls_status_check", sql`status = ANY (ARRAY['queued'::text, 'ringing'::text, 'in_progress'::text, 'completed'::text, 'failed'::text, 'no_answer'::text, 'busy'::text, 'voicemail'::text])`),
+	check("ai_calls_triggered_by_check", sql`triggered_by = ANY (ARRAY['chef_manual'::text, 'auto_delivery_prep'::text, 'auto_event_prep'::text, 'cron'::text, 'inbound'::text])`),
+]);
+
+export const aiCallTranscripts = pgTable("ai_call_transcripts", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	aiCallId: uuid("ai_call_id").notNull(),
+	step: integer().default(1).notNull(),
+	speaker: text().notNull(),
+	content: text().notNull(),
+	confidence: numeric({ precision: 4, scale:  3 }),
+	inputType: text("input_type"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("ai_call_transcripts_call_idx").using("btree", table.aiCallId.asc().nullsLast().op("int4_ops"), table.step.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.aiCallId],
+			foreignColumns: [aiCalls.id],
+			name: "ai_call_transcripts_ai_call_id_fkey"
+		}).onDelete("cascade"),
+	check("ai_call_transcripts_input_type_check", sql`input_type = ANY (ARRAY['speech'::text, 'dtmf'::text, 'timeout'::text, 'ai_prompt'::text, 'voicemail'::text])`),
+	check("ai_call_transcripts_speaker_check", sql`speaker = ANY (ARRAY['ai'::text, 'caller'::text])`),
+]);
+
+export const aiCallRoutingRules = pgTable("ai_call_routing_rules", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	chefId: uuid("chef_id").notNull(),
+	inboundPhoneNumber: text("inbound_phone_number"),
+	activeHoursStart: time("active_hours_start").default('08:00:00'),
+	activeHoursEnd: time("active_hours_end").default('20:00:00'),
+	activeTimezone: text("active_timezone").default('America/New_York'),
+	aiVoice: text("ai_voice").default('Polly.Matthew-Neural'),
+	businessGreeting: text("business_greeting"),
+	enableInboundVoicemail: boolean("enable_inbound_voicemail").default(true),
+	enableVendorDelivery: boolean("enable_vendor_delivery").default(false),
+	enableVenueConfirmation: boolean("enable_venue_confirmation").default(false),
+	enableEquipmentRental: boolean("enable_equipment_rental").default(false),
+	dailyCallLimit: integer("daily_call_limit").default(20),
+	chefSmsNumber: text("chef_sms_number"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.chefId],
+			foreignColumns: [chefs.id],
+			name: "ai_call_routing_rules_chef_id_fkey"
+		}).onDelete("cascade"),
+	unique("ai_call_routing_rules_chef_id_key").on(table.chefId),
+]);
+
+export const inquiries = pgTable("inquiries", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	clientId: uuid("client_id"),
+	channel: inquiryChannel().notNull(),
+	status: inquiryStatus().default('new').notNull(),
+	sourceMessage: text("source_message"),
+	confirmedDate: timestamp("confirmed_date", { withTimezone: true, mode: 'string' }),
+	confirmedGuestCount: integer("confirmed_guest_count"),
+	confirmedLocation: text("confirmed_location"),
+	confirmedOccasion: text("confirmed_occasion"),
+	confirmedBudgetCents: integer("confirmed_budget_cents"),
+	confirmedDietaryRestrictions: text("confirmed_dietary_restrictions").array(),
+	confirmedServiceExpectations: text("confirmed_service_expectations"),
+	confirmedCannabisPreference: text("confirmed_cannabis_preference"),
+	unknownFields: jsonb("unknown_fields").default([]),
+	nextActionRequired: text("next_action_required"),
+	nextActionBy: text("next_action_by"),
+	followUpDueAt: timestamp("follow_up_due_at", { withTimezone: true, mode: 'string' }),
+	firstContactAt: timestamp("first_contact_at", { withTimezone: true, mode: 'string' }).notNull(),
+	lastResponseAt: timestamp("last_response_at", { withTimezone: true, mode: 'string' }),
+	convertedToEventId: uuid("converted_to_event_id"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	referralPartnerId: uuid("referral_partner_id"),
+	partnerLocationId: uuid("partner_location_id"),
+	declineReason: text("decline_reason"),
+	ghostAt: timestamp("ghost_at", { withTimezone: true, mode: 'string' }),
+	isDemo: boolean("is_demo").default(false).notNull(),
+	budgetRange: text("budget_range"),
+	referralSource: text("referral_source"),
+	serviceStylePref: text("service_style_pref"),
+	externalInquiryId: text("external_inquiry_id"),
+	externalPlatform: text("external_platform"),
+	externalLink: text("external_link"),
+	chefLikelihood: text("chef_likelihood"),
+	utmSource: text("utm_source"),
+	utmMedium: text("utm_medium"),
+	utmCampaign: text("utm_campaign"),
+	deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'string' }),
+	deletedBy: uuid("deleted_by"),
+	serviceMode: bookingServiceMode("service_mode"),
+	scheduleRequestJsonb: jsonb("schedule_request_jsonb"),
+	contactName: text("contact_name"),
+	contactEmail: text("contact_email"),
+	contactPhone: text("contact_phone"),
+	selectedMenuId: uuid("selected_menu_id"),
+	autoRespondedAt: timestamp("auto_responded_at", { withTimezone: true, mode: 'string' }),
+	autoResponseTemplateId: uuid("auto_response_template_id"),
+	firstResponseAt: timestamp("first_response_at", { withTimezone: true, mode: 'string' }),
+	discussedDishes: jsonb("discussed_dishes"),
+	selectedTier: text("selected_tier"),
+	consentAt: timestamp("consent_at", { withTimezone: true, mode: 'string' }),
+	consentVersion: text("consent_version"),
+	isStaged: boolean("is_staged").default(false).notNull(),
+	stagedFromSignalId: uuid("staged_from_signal_id"),
+}, (table) => [
+	index("idx_inquiries_active_tenant_created_at").using("btree", table.tenantId.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("uuid_ops")).where(sql`(deleted_at IS NULL)`),
+	index("idx_inquiries_client").using("btree", table.clientId.asc().nullsLast().op("uuid_ops")),
+	index("idx_inquiries_client_status").using("btree", table.clientId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("enum_ops")).where(sql`(client_id IS NOT NULL)`),
+	index("idx_inquiries_converted").using("btree", table.convertedToEventId.asc().nullsLast().op("uuid_ops")).where(sql`(converted_to_event_id IS NOT NULL)`),
+	index("idx_inquiries_converted_to_event").using("btree", table.convertedToEventId.asc().nullsLast().op("uuid_ops")).where(sql`(converted_to_event_id IS NOT NULL)`),
+	index("idx_inquiries_decline_reason").using("btree", table.tenantId.asc().nullsLast().op("text_ops"), table.declineReason.asc().nullsLast().op("uuid_ops")).where(sql`(decline_reason IS NOT NULL)`),
+	uniqueIndex("idx_inquiries_external_dedup").using("btree", table.tenantId.asc().nullsLast().op("text_ops"), table.externalPlatform.asc().nullsLast().op("text_ops"), table.externalInquiryId.asc().nullsLast().op("text_ops")).where(sql`(external_inquiry_id IS NOT NULL)`),
+	index("idx_inquiries_follow_up_due").using("btree", table.followUpDueAt.asc().nullsLast().op("timestamptz_ops")).where(sql`(follow_up_due_at IS NOT NULL)`),
+	index("idx_inquiries_ghost_at").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.ghostAt.asc().nullsLast().op("uuid_ops")).where(sql`(ghost_at IS NOT NULL)`),
+	index("idx_inquiries_is_demo").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")).where(sql`(is_demo = true)`),
+	index("idx_inquiries_is_staged").using("btree", table.tenantId.asc().nullsLast().op("bool_ops"), table.isStaged.asc().nullsLast().op("uuid_ops")).where(sql`(is_staged = true)`),
+	index("idx_inquiries_partner_location").using("btree", table.partnerLocationId.asc().nullsLast().op("uuid_ops")).where(sql`(partner_location_id IS NOT NULL)`),
+	index("idx_inquiries_referral_partner").using("btree", table.referralPartnerId.asc().nullsLast().op("uuid_ops")).where(sql`(referral_partner_id IS NOT NULL)`),
+	index("idx_inquiries_selected_menu").using("btree", table.selectedMenuId.asc().nullsLast().op("uuid_ops")).where(sql`(selected_menu_id IS NOT NULL)`),
+	index("idx_inquiries_status").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+	index("idx_inquiries_tac_stagnancy").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("timestamptz_ops"), table.channel.asc().nullsLast().op("timestamptz_ops"), table.createdAt.asc().nullsLast().op("enum_ops")).where(sql`((channel = 'take_a_chef'::inquiry_channel) AND (status = 'new'::inquiry_status))`),
+	index("idx_inquiries_take_a_chef_lookup").using("btree", table.tenantId.asc().nullsLast().op("enum_ops"), table.channel.asc().nullsLast().op("enum_ops")).where(sql`(channel = 'take_a_chef'::inquiry_channel)`),
+	index("idx_inquiries_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	index("idx_inquiries_tenant_status").using("btree", table.tenantId.asc().nullsLast().op("enum_ops"), table.status.asc().nullsLast().op("uuid_ops")),
+	index("idx_inquiries_utm_source").using("btree", table.utmSource.asc().nullsLast().op("text_ops")).where(sql`(utm_source IS NOT NULL)`),
+	index("inquiries_decline_reason_idx").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.declineReason.asc().nullsLast().op("text_ops")).where(sql`(decline_reason IS NOT NULL)`),
+	foreignKey({
+			columns: [table.convertedToEventId],
+			foreignColumns: [events.id],
+			name: "fk_inquiries_converted_to_event"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.autoResponseTemplateId],
+			foreignColumns: [responseTemplates.id],
+			name: "inquiries_auto_response_template_id_fkey"
+		}),
+	foreignKey({
+			columns: [table.clientId],
+			foreignColumns: [clients.id],
+			name: "inquiries_client_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.partnerLocationId],
+			foreignColumns: [partnerLocations.id],
+			name: "inquiries_partner_location_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.referralPartnerId],
+			foreignColumns: [referralPartners.id],
+			name: "inquiries_referral_partner_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.selectedMenuId],
+			foreignColumns: [menus.id],
+			name: "inquiries_selected_menu_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.stagedFromSignalId],
+			foreignColumns: [communicationEvents.id],
+			name: "inquiries_staged_from_signal_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "inquiries_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("inquiries_chef_select", { as: "permissive", for: "select", to: ["public"], using: sql`((get_current_user_role() = 'chef'::user_role) AND (tenant_id = get_current_tenant_id()))` }),
+	pgPolicy("inquiries_chef_insert", { as: "permissive", for: "insert", to: ["public"] }),
+	pgPolicy("inquiries_chef_update", { as: "permissive", for: "update", to: ["public"] }),
+	pgPolicy("inquiries_chef_delete", { as: "permissive", for: "delete", to: ["public"] }),
+	pgPolicy("inquiries_client_select", { as: "permissive", for: "select", to: ["public"] }),
+	check("inquiries_chef_likelihood_check", sql`chef_likelihood = ANY (ARRAY['hot'::text, 'warm'::text, 'cold'::text])`),
+	check("inquiries_decline_reason_check", sql`decline_reason = ANY (ARRAY['too_expensive'::text, 'wrong_date'::text, 'found_another_chef'::text, 'no_response'::text, 'location_too_far'::text, 'menu_mismatch'::text, 'other'::text])`),
+	check("inquiries_next_action_by_check", sql`next_action_by = ANY (ARRAY['chef'::text, 'client'::text])`),
+]);
+
+export const messages = pgTable("messages", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	inquiryId: uuid("inquiry_id"),
+	eventId: uuid("event_id"),
+	clientId: uuid("client_id"),
+	channel: messageChannel().notNull(),
+	status: messageStatus().default('logged').notNull(),
+	direction: messageDirection().notNull(),
+	fromUserId: uuid("from_user_id"),
+	toUserId: uuid("to_user_id"),
+	subject: text(),
+	body: text().notNull(),
+	sentAt: timestamp("sent_at", { withTimezone: true, mode: 'string' }),
+	approvedAt: timestamp("approved_at", { withTimezone: true, mode: 'string' }),
+	approvedBy: uuid("approved_by"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	gmailMessageId: text("gmail_message_id"),
+	gmailThreadId: text("gmail_thread_id"),
+	conversationThreadId: uuid("conversation_thread_id"),
+	recipientEmail: text("recipient_email"),
+	mailboxId: uuid("mailbox_id"),
+	clientReadAt: timestamp("client_read_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	index("idx_messages_client").using("btree", table.clientId.asc().nullsLast().op("uuid_ops")),
+	index("idx_messages_client_read_at").using("btree", table.tenantId.asc().nullsLast().op("timestamptz_ops"), table.direction.asc().nullsLast().op("enum_ops"), table.clientReadAt.asc().nullsLast().op("enum_ops")).where(sql`((direction = 'outbound'::message_direction) AND (client_read_at IS NULL))`),
+	index("idx_messages_conversation_thread").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.conversationThreadId.asc().nullsLast().op("uuid_ops")).where(sql`(conversation_thread_id IS NOT NULL)`),
+	index("idx_messages_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
+	uniqueIndex("idx_messages_gmail_mailbox_dedup").using("btree", table.mailboxId.asc().nullsLast().op("text_ops"), table.gmailMessageId.asc().nullsLast().op("uuid_ops")).where(sql`((mailbox_id IS NOT NULL) AND (gmail_message_id IS NOT NULL))`),
+	index("idx_messages_inquiry").using("btree", table.inquiryId.asc().nullsLast().op("uuid_ops")),
+	index("idx_messages_outbound_drafts").using("btree", table.tenantId.asc().nullsLast().op("timestamptz_ops"), table.status.asc().nullsLast().op("enum_ops"), table.channel.asc().nullsLast().op("uuid_ops"), table.direction.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("uuid_ops")).where(sql`((direction = 'outbound'::message_direction) AND (channel = 'email'::message_channel) AND (status = 'draft'::message_status))`),
+	index("idx_messages_sent_at").using("btree", table.sentAt.desc().nullsFirst().op("timestamptz_ops")),
+	index("idx_messages_status").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+	index("idx_messages_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "fk_messages_event"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.approvedBy],
+			foreignColumns: [users.id],
+			name: "messages_approved_by_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.clientId],
+			foreignColumns: [clients.id],
+			name: "messages_client_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.conversationThreadId],
+			foreignColumns: [conversationThreads.id],
+			name: "messages_conversation_thread_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.fromUserId],
+			foreignColumns: [users.id],
+			name: "messages_from_user_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.inquiryId],
+			foreignColumns: [inquiries.id],
+			name: "messages_inquiry_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.mailboxId],
+			foreignColumns: [googleMailboxes.id],
+			name: "messages_mailbox_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "messages_tenant_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.toUserId],
+			foreignColumns: [users.id],
+			name: "messages_to_user_id_fkey"
+		}).onDelete("set null"),
+	pgPolicy("messages_chef_select", { as: "permissive", for: "select", to: ["public"], using: sql`((get_current_user_role() = 'chef'::user_role) AND (tenant_id = get_current_tenant_id()))` }),
+	pgPolicy("messages_chef_insert", { as: "permissive", for: "insert", to: ["public"] }),
+	pgPolicy("messages_chef_update", { as: "permissive", for: "update", to: ["public"] }),
+	pgPolicy("messages_client_select", { as: "permissive", for: "select", to: ["public"] }),
+]);
+
+export const remyAlerts = pgTable("remy_alerts", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	alertType: text("alert_type").notNull(),
+	entityType: text("entity_type"),
+	entityId: uuid("entity_id"),
+	title: text().notNull(),
+	body: text().notNull(),
+	priority: text().default('normal').notNull(),
+	dismissedAt: timestamp("dismissed_at", { withTimezone: true, mode: 'string' }),
+	actedOnAt: timestamp("acted_on_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_remy_alerts_tenant_active").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")).where(sql`(dismissed_at IS NULL)`),
+	index("idx_remy_alerts_tenant_type").using("btree", table.tenantId.asc().nullsLast().op("timestamptz_ops"), table.alertType.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("uuid_ops")),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "remy_alerts_tenant_id_fkey"
+		}).onDelete("cascade"),
+	check("remy_alerts_priority_check", sql`priority = ANY (ARRAY['low'::text, 'normal'::text, 'high'::text, 'urgent'::text])`),
+]);
+
+export const eventContracts = pgTable("event_contracts", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	eventId: uuid("event_id").notNull(),
+	chefId: uuid("chef_id").notNull(),
+	clientId: uuid("client_id").notNull(),
+	templateId: uuid("template_id"),
+	bodySnapshot: text("body_snapshot").notNull(),
+	status: contractStatus().default('draft').notNull(),
+	sentAt: timestamp("sent_at", { withTimezone: true, mode: 'string' }),
+	viewedAt: timestamp("viewed_at", { withTimezone: true, mode: 'string' }),
+	signedAt: timestamp("signed_at", { withTimezone: true, mode: 'string' }),
+	voidedAt: timestamp("voided_at", { withTimezone: true, mode: 'string' }),
+	voidReason: text("void_reason"),
+	signatureDataUrl: text("signature_data_url"),
+	signerIpAddress: text("signer_ip_address"),
+	signerUserAgent: text("signer_user_agent"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	proposalTokenId: uuid("proposal_token_id"),
+	docusignEnvelopeId: text("docusign_envelope_id"),
+	docusignStatus: text("docusign_status"),
+	docusignSentAt: timestamp("docusign_sent_at", { withTimezone: true, mode: 'string' }),
+	docusignSignedAt: timestamp("docusign_signed_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	index("idx_event_contracts_chef").using("btree", table.chefId.asc().nullsLast().op("enum_ops"), table.status.asc().nullsLast().op("uuid_ops")),
+	index("idx_event_contracts_client").using("btree", table.clientId.asc().nullsLast().op("uuid_ops")),
+	index("idx_event_contracts_docusign_envelope").using("btree", table.docusignEnvelopeId.asc().nullsLast().op("text_ops")).where(sql`(docusign_envelope_id IS NOT NULL)`),
+	index("idx_event_contracts_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.chefId],
+			foreignColumns: [chefs.id],
+			name: "event_contracts_chef_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.clientId],
+			foreignColumns: [clients.id],
+			name: "event_contracts_client_id_fkey"
+		}).onDelete("restrict"),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "event_contracts_event_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.proposalTokenId],
+			foreignColumns: [proposalTokens.id],
+			name: "event_contracts_proposal_token_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.templateId],
+			foreignColumns: [contractTemplates.id],
+			name: "event_contracts_template_id_fkey"
+		}).onDelete("set null"),
+	pgPolicy("ec_chef_select", { as: "permissive", for: "select", to: ["public"], using: sql`((get_current_user_role() = 'chef'::user_role) AND (chef_id = get_current_tenant_id()))` }),
+	pgPolicy("ec_chef_insert", { as: "permissive", for: "insert", to: ["public"] }),
+	pgPolicy("ec_chef_update", { as: "permissive", for: "update", to: ["public"] }),
+	pgPolicy("ec_chef_delete", { as: "permissive", for: "delete", to: ["public"] }),
+	pgPolicy("ec_client_select", { as: "permissive", for: "select", to: ["public"] }),
+	pgPolicy("ec_client_update", { as: "permissive", for: "update", to: ["public"] }),
+]);
+
+export const remyOnboarding = pgTable("remy_onboarding", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	chefId: uuid("chef_id").notNull(),
+	stage: text().default('not_started').notNull(),
+	tourBeat: integer("tour_beat").default(0).notNull(),
+	skipped: boolean().default(false).notNull(),
+	startedAt: timestamp("started_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	completedAt: timestamp("completed_at", { withTimezone: true, mode: 'string' }),
+	lastCheckinAt: timestamp("last_checkin_at", { withTimezone: true, mode: 'string' }),
+	messageCount: integer("message_count").default(0).notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.chefId],
+			foreignColumns: [chefs.id],
+			name: "remy_onboarding_chef_id_fkey"
+		}).onDelete("cascade"),
+	unique("remy_onboarding_chef_id_key").on(table.chefId),
+	check("remy_onboarding_stage_check", sql`stage = ANY (ARRAY['not_started'::text, 'greeted'::text, 'toured'::text, 'first_interaction'::text, 'onboarded'::text])`),
+]);
+
+export const remyMilestones = pgTable("remy_milestones", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	chefId: uuid("chef_id").notNull(),
+	milestoneKey: text("milestone_key").notNull(),
+	celebratedAt: timestamp("celebrated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	data: jsonb(),
+}, (table) => [
+	foreignKey({
+			columns: [table.chefId],
+			foreignColumns: [chefs.id],
+			name: "remy_milestones_chef_id_fkey"
+		}).onDelete("cascade"),
+	unique("remy_milestones_chef_id_milestone_key_key").on(table.chefId, table.milestoneKey),
+]);
+
+export const chefTwilioCredentials = pgTable("chef_twilio_credentials", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	chefId: uuid("chef_id").notNull(),
+	accountSid: text("account_sid").notNull(),
+	authTokenEnc: text("auth_token_enc").notNull(),
+	phoneNumber: text("phone_number").notNull(),
+	isActive: boolean("is_active").default(true).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.chefId],
+			foreignColumns: [chefs.id],
+			name: "chef_twilio_credentials_chef_id_fkey"
+		}).onDelete("cascade"),
+	unique("uq_chef_twilio_creds_chef").on(table.chefId),
+	pgPolicy("chef_twilio_creds_access", { as: "permissive", for: "all", to: ["public"], using: sql`(chef_id IN ( SELECT chefs.id
+   FROM chefs
+  WHERE (chefs.auth_user_id = auth.uid())))`, withCheck: sql`(chef_id IN ( SELECT chefs.id
+   FROM chefs
+  WHERE (chefs.auth_user_id = auth.uid())))`  }),
+]);
+
+export const chefFeedback = pgTable("chef_feedback", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	clientId: uuid("client_id"),
+	eventId: uuid("event_id"),
+	source: text().notNull(),
+	rating: integer(),
+	feedbackText: text("feedback_text").notNull(),
+	sourceUrl: text("source_url"),
+	feedbackDate: date("feedback_date").default(sql`CURRENT_DATE`).notNull(),
+	loggedBy: uuid("logged_by").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	reviewerName: text("reviewer_name"),
+	publicDisplay: boolean("public_display").default(false).notNull(),
+}, (table) => [
+	index("idx_chef_feedback_client").using("btree", table.clientId.asc().nullsLast().op("uuid_ops")),
+	index("idx_chef_feedback_public_display").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")).where(sql`(public_display = true)`),
+	index("idx_chef_feedback_reviewer_name").using("btree", table.tenantId.asc().nullsLast().op("text_ops"), table.reviewerName.asc().nullsLast().op("text_ops")).where(sql`(reviewer_name IS NOT NULL)`),
+	index("idx_chef_feedback_source").using("btree", table.source.asc().nullsLast().op("text_ops")),
+	index("idx_chef_feedback_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.clientId],
+			foreignColumns: [clients.id],
+			name: "chef_feedback_client_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "chef_feedback_event_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.loggedBy],
+			foreignColumns: [users.id],
+			name: "chef_feedback_logged_by_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "chef_feedback_tenant_id_fkey"
+		}).onDelete("cascade"),
+	check("chef_feedback_rating_check", sql`(rating IS NULL) OR ((rating >= 1) AND (rating <= 5))`),
+	check("chef_feedback_source_check", sql`source = ANY (ARRAY['verbal'::text, 'google'::text, 'yelp'::text, 'yelp_guest'::text, 'email'::text, 'social_media'::text, 'text_message'::text, 'other'::text, 'airbnb'::text, 'facebook'::text, 'tripadvisor'::text, 'thumbtack'::text, 'bark'::text, 'gigsalad'::text, 'taskrabbit'::text, 'houzz'::text, 'angi'::text, 'nextdoor'::text, 'instagram'::text, 'take_a_chef'::text])`),
+]);
+
+export const ingredientAccuracyFlags = pgTable("ingredient_accuracy_flags", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	chefId: uuid("chef_id").notNull(),
+	ingredientName: text("ingredient_name").notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	storeProductId: bigint("store_product_id", { mode: "number" }),
+	vendorName: text("vendor_name"),
+	source: text().default('openclaw').notNull(),
+	reason: text(),
+	reviewed: boolean().default(false).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("ingredient_accuracy_flags_chef_ingredient").using("btree", table.chefId.asc().nullsLast().op("text_ops"), table.ingredientName.asc().nullsLast().op("text_ops")),
+	index("ingredient_accuracy_flags_store_product").using("btree", table.storeProductId.asc().nullsLast().op("int8_ops")).where(sql`(store_product_id IS NOT NULL)`),
+	foreignKey({
+			columns: [table.chefId],
+			foreignColumns: [chefs.id],
+			name: "ingredient_accuracy_flags_chef_id_fkey"
+		}).onDelete("cascade"),
+]);
+
+export const paymentPlanInstallments = pgTable("payment_plan_installments", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	eventId: uuid("event_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	installmentNum: integer("installment_num").notNull(),
+	label: text().notNull(),
+	amountCents: integer("amount_cents").notNull(),
+	dueDate: date("due_date").notNull(),
+	paidAt: timestamp("paid_at", { withTimezone: true, mode: 'string' }),
+	paymentMethod: text("payment_method"),
+	notes: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	cancelledAt: timestamp("cancelled_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	index("idx_ppi_due_date").using("btree", table.dueDate.asc().nullsLast().op("date_ops")).where(sql`(paid_at IS NULL)`),
+	index("idx_ppi_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
+	index("idx_ppi_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "payment_plan_installments_event_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "payment_plan_installments_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("Chefs manage own installments", { as: "permissive", for: "all", to: ["authenticated"], using: sql`(tenant_id = ( SELECT chefs.id
+   FROM chefs
+  WHERE (chefs.auth_user_id = auth.uid())))`, withCheck: sql`(tenant_id = ( SELECT chefs.id
+   FROM chefs
+  WHERE (chefs.auth_user_id = auth.uid())))`  }),
+	check("payment_plan_installments_amount_cents_check", sql`amount_cents > 0`),
 ]);
 
 export const events = pgTable("events", {
@@ -24770,7 +25894,7 @@ export const events = pgTable("events", {
 	scopeDriftAcknowledged: boolean("scope_drift_acknowledged").default(false),
 	scopeDriftAcknowledgedAt: timestamp("scope_drift_acknowledged_at", { withTimezone: true, mode: 'string' }),
 	convertingQuoteId: uuid("converting_quote_id"),
-	guestCode: text("guest_code").default(sql`left(replace(gen_random_uuid()::text, '-', ''), 12)`),
+	guestCode: text("guest_code").default("left"(replace((gen_random_uuid())::text, \'-\'::text, \'::text), 12)),
 	clientReminder30DSentAt: timestamp("client_reminder_30d_sent_at", { withTimezone: true, mode: 'string' }),
 	clientReminder14DSentAt: timestamp("client_reminder_14d_sent_at", { withTimezone: true, mode: 'string' }),
 	estimatedFoodCostCents: integer("estimated_food_cost_cents"),
@@ -24792,20 +25916,38 @@ export const events = pgTable("events", {
 	menuRevisionCount: integer("menu_revision_count").default(0),
 	menuLastClientFeedbackAt: timestamp("menu_last_client_feedback_at", { withTimezone: true, mode: 'string' }),
 	guestCountChangeLog: jsonb("guest_count_change_log").default([]),
+	loyaltyReviewAwarded: boolean("loyalty_review_awarded").default(false).notNull(),
+	loyaltyPublicConsentAwarded: boolean("loyalty_public_consent_awarded").default(false).notNull(),
+	loyaltyGoogleReviewAwarded: boolean("loyalty_google_review_awarded").default(false).notNull(),
+	loyaltyMenuApprovedAwarded: boolean("loyalty_menu_approved_awarded").default(false).notNull(),
+	loyaltyQuoteAcceptedAwarded: boolean("loyalty_quote_accepted_awarded").default(false).notNull(),
+	loyaltyTipAwarded: boolean("loyalty_tip_awarded").default(false).notNull(),
+	loyaltyOntimePaymentAwarded: boolean("loyalty_ontime_payment_awarded").default(false).notNull(),
+	loyaltyChatEngagementAwarded: boolean("loyalty_chat_engagement_awarded").default(false).notNull(),
+	midpointCheckinSentAt: timestamp("midpoint_checkin_sent_at", { withTimezone: true, mode: 'string' }),
+	aiConfirmedAt: timestamp("ai_confirmed_at", { withTimezone: true, mode: 'string' }),
+	aiDeliveryConfirmedAt: timestamp("ai_delivery_confirmed_at", { withTimezone: true, mode: 'string' }),
+	menuModifiedAfterApproval: boolean("menu_modified_after_approval").default(false).notNull(),
+	isStaged: boolean("is_staged").default(false).notNull(),
+	stagedFromSignalId: uuid("staged_from_signal_id"),
+	menuCostSnapshotCents: integer("menu_cost_snapshot_cents"),
+	menuCostSnapshotAt: timestamp("menu_cost_snapshot_at", { withTimezone: true, mode: 'string' }),
+	ambianceNotes: text("ambiance_notes"),
 }, (table) => [
-	index("events_inquiry_received_at_idx").using("btree", table.tenantId.asc().nullsLast().op("timestamptz_ops"), table.inquiryReceivedAt.asc().nullsLast().op("timestamptz_ops")).where(sql`(inquiry_received_at IS NOT NULL)`),
-	index("idx_events_active_tenant_created_at").using("btree", table.tenantId.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("uuid_ops")).where(sql`(deleted_at IS NULL)`),
+	index("events_inquiry_received_at_idx").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.inquiryReceivedAt.asc().nullsLast().op("uuid_ops")).where(sql`(inquiry_received_at IS NOT NULL)`),
+	index("idx_events_active_tenant_created_at").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("uuid_ops")).where(sql`(deleted_at IS NULL)`),
 	index("idx_events_client_id").using("btree", table.clientId.asc().nullsLast().op("uuid_ops")),
 	index("idx_events_converting_quote").using("btree", table.convertingQuoteId.asc().nullsLast().op("uuid_ops")).where(sql`(converting_quote_id IS NOT NULL)`),
 	index("idx_events_event_date").using("btree", table.eventDate.asc().nullsLast().op("date_ops")),
 	index("idx_events_event_series_id").using("btree", table.eventSeriesId.asc().nullsLast().op("uuid_ops")),
-	index("idx_events_financial_closed").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.financialClosed.asc().nullsLast().op("bool_ops")).where(sql`(financial_closed = true)`),
+	index("idx_events_financial_closed").using("btree", table.tenantId.asc().nullsLast().op("bool_ops"), table.financialClosed.asc().nullsLast().op("uuid_ops")).where(sql`(financial_closed = true)`),
 	index("idx_events_google_calendar_event_id").using("btree", table.googleCalendarEventId.asc().nullsLast().op("text_ops")).where(sql`(google_calendar_event_id IS NOT NULL)`),
 	uniqueIndex("idx_events_guest_code").using("btree", table.guestCode.asc().nullsLast().op("text_ops")),
 	index("idx_events_household").using("btree", table.householdId.asc().nullsLast().op("uuid_ops")).where(sql`(household_id IS NOT NULL)`),
 	index("idx_events_inquiry_id").using("btree", table.inquiryId.asc().nullsLast().op("uuid_ops")),
-	index("idx_events_invoice_number").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.invoiceNumber.asc().nullsLast().op("uuid_ops")).where(sql`(invoice_number IS NOT NULL)`),
+	index("idx_events_invoice_number").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.invoiceNumber.asc().nullsLast().op("text_ops")).where(sql`(invoice_number IS NOT NULL)`),
 	index("idx_events_is_demo").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")).where(sql`(is_demo = true)`),
+	index("idx_events_is_staged").using("btree", table.tenantId.asc().nullsLast().op("bool_ops"), table.isStaged.asc().nullsLast().op("bool_ops")).where(sql`(is_staged = true)`),
 	index("idx_events_menu_id").using("btree", table.menuId.asc().nullsLast().op("uuid_ops")),
 	index("idx_events_partner_location").using("btree", table.partnerLocationId.asc().nullsLast().op("uuid_ops")).where(sql`(partner_location_id IS NOT NULL)`),
 	index("idx_events_pre_event_checklist").using("btree", table.preEventChecklistConfirmedAt.asc().nullsLast().op("timestamptz_ops")).where(sql`(pre_event_checklist_confirmed_at IS NOT NULL)`),
@@ -24813,10 +25955,10 @@ export const events = pgTable("events", {
 	index("idx_events_retainer").using("btree", table.retainerId.asc().nullsLast().op("uuid_ops")).where(sql`(retainer_id IS NOT NULL)`),
 	index("idx_events_source_session_id").using("btree", table.sourceSessionId.asc().nullsLast().op("uuid_ops")),
 	index("idx_events_status").using("btree", table.status.asc().nullsLast().op("enum_ops")),
-	index("idx_events_tenant_date").using("btree", table.tenantId.asc().nullsLast().op("date_ops"), table.eventDate.asc().nullsLast().op("date_ops")),
+	index("idx_events_tenant_date").using("btree", table.tenantId.asc().nullsLast().op("date_ops"), table.eventDate.asc().nullsLast().op("uuid_ops")),
 	index("idx_events_tenant_id").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
-	index("idx_events_tenant_status").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("uuid_ops")),
-	index("idx_events_tenant_status_date").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("date_ops"), table.eventDate.asc().nullsLast().op("date_ops")),
+	index("idx_events_tenant_status").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("enum_ops")),
+	index("idx_events_tenant_status_date").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("uuid_ops"), table.eventDate.asc().nullsLast().op("enum_ops")),
 	foreignKey({
 			columns: [table.backupContactId],
 			foreignColumns: [chefBackupContacts.id],
@@ -24888,6 +26030,11 @@ export const events = pgTable("events", {
 			name: "events_source_session_id_fkey"
 		}).onDelete("set null"),
 	foreignKey({
+			columns: [table.stagedFromSignalId],
+			foreignColumns: [communicationEvents.id],
+			name: "events_staged_from_signal_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
 			columns: [table.tenantId],
 			foreignColumns: [chefs.id],
 			name: "events_tenant_id_fkey"
@@ -24917,69 +26064,175 @@ export const events = pgTable("events", {
 	check("events_tip_non_negative", sql`tip_amount_cents >= 0`),
 ]);
 
-export const workflowSteps = pgTable("workflow_steps", {
+export const menus = pgTable("menus", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
-	templateId: uuid("template_id").notNull(),
-	stepOrder: integer("step_order").notNull(),
-	delayHours: integer("delay_hours").default(0).notNull(),
-	condition: jsonb(),
-	actionType: text("action_type").notNull(),
-	actionConfig: jsonb("action_config").default({}).notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	eventId: uuid("event_id"),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	name: text().notNull(),
+	description: text(),
+	isTemplate: boolean("is_template").default(false).notNull(),
+	status: menuStatus().default('draft').notNull(),
+	cuisineType: text("cuisine_type"),
+	serviceStyle: eventServiceStyle("service_style"),
+	targetGuestCount: integer("target_guest_count"),
+	notes: text(),
+	sharedAt: timestamp("shared_at", { withTimezone: true, mode: 'string' }),
+	lockedAt: timestamp("locked_at", { withTimezone: true, mode: 'string' }),
+	archivedAt: timestamp("archived_at", { withTimezone: true, mode: 'string' }),
+	createdBy: uuid("created_by"),
+	updatedBy: uuid("updated_by"),
+	pricePerPersonCents: integer("price_per_person_cents"),
+	simpleMode: boolean("simple_mode").default(false).notNull(),
+	simpleModeContent: text("simple_mode_content"),
+	deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'string' }),
+	deletedBy: uuid("deleted_by"),
+	isShowcase: boolean("is_showcase").default(false).notNull(),
+	timesUsed: integer("times_used").default(0).notNull(),
+	sceneType: text("scene_type"),
+	season: text(),
+	clientId: uuid("client_id"),
+	targetDate: date("target_date"),
+	visibleToDinnerCircle: boolean("visible_to_dinner_circle").default(false).notNull(),
 }, (table) => [
-	index("idx_workflow_steps_template").using("btree", table.templateId.asc().nullsLast().op("int4_ops"), table.stepOrder.asc().nullsLast().op("uuid_ops")),
+	index("idx_menus_active_tenant_created_at").using("btree", table.tenantId.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("uuid_ops")).where(sql`(deleted_at IS NULL)`),
+	index("idx_menus_client_id").using("btree", table.clientId.asc().nullsLast().op("uuid_ops")).where(sql`(client_id IS NOT NULL)`),
+	index("idx_menus_event_id").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
+	index("idx_menus_is_template").using("btree", table.isTemplate.asc().nullsLast().op("bool_ops")),
+	index("idx_menus_season").using("btree", table.tenantId.asc().nullsLast().op("text_ops"), table.season.asc().nullsLast().op("text_ops")).where(sql`(season IS NOT NULL)`),
+	index("idx_menus_showcase").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")).where(sql`(is_showcase = true)`),
+	index("idx_menus_status").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+	index("idx_menus_tenant_id").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
 	foreignKey({
-			columns: [table.templateId],
-			foreignColumns: [workflowTemplates.id],
-			name: "workflow_steps_template_id_fkey"
+			columns: [table.clientId],
+			foreignColumns: [clients.id],
+			name: "menus_client_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.createdBy],
+			foreignColumns: [users.id],
+			name: "menus_created_by_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "menus_event_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "menus_tenant_id_fkey"
 		}).onDelete("cascade"),
-	unique("workflow_steps_template_id_step_order_key").on(table.templateId, table.stepOrder),
-	pgPolicy("ws_chef_all", { as: "permissive", for: "all", to: ["public"], using: sql`(EXISTS ( SELECT 1
-   FROM workflow_templates t
-  WHERE ((t.id = workflow_steps.template_id) AND (t.chef_id IN ( SELECT user_roles.entity_id
-           FROM user_roles
-          WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role)))))))`, withCheck: sql`(EXISTS ( SELECT 1
-   FROM workflow_templates t
-  WHERE ((t.id = workflow_steps.template_id) AND (t.chef_id IN ( SELECT user_roles.entity_id
-           FROM user_roles
-          WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role)))))))`  }),
-	pgPolicy("ws_service_all", { as: "permissive", for: "all", to: ["public"] }),
-	check("workflow_steps_action_type_check", sql`action_type = ANY (ARRAY['send_email'::text, 'create_task'::text, 'create_notification'::text, 'update_event_status'::text, 'send_feedback_request'::text, 'send_payment_reminder'::text])`),
+	foreignKey({
+			columns: [table.updatedBy],
+			foreignColumns: [users.id],
+			name: "menus_updated_by_fkey"
+		}).onDelete("set null"),
+	unique("menus_event_id_unique").on(table.eventId),
+	pgPolicy("tenant_isolation_select_menus", { as: "permissive", for: "select", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())` }),
+	pgPolicy("tenant_isolation_insert_menus", { as: "permissive", for: "insert", to: ["public"] }),
+	pgPolicy("tenant_isolation_update_menus", { as: "permissive", for: "update", to: ["public"] }),
+	pgPolicy("client_can_view_own_event_menu", { as: "permissive", for: "select", to: ["public"] }),
+	pgPolicy("client_view_showcase_menus", { as: "permissive", for: "select", to: ["public"] }),
+	check("menus_price_per_person_cents_check", sql`price_per_person_cents > 0`),
+	check("menus_target_guest_count_check", sql`(target_guest_count > 0) OR (target_guest_count IS NULL)`),
 ]);
 
-export const workflowExecutions = pgTable("workflow_executions", {
+export const recipes = pgTable("recipes", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
-	chefId: uuid("chef_id").notNull(),
-	templateId: uuid("template_id").notNull(),
-	entityType: text("entity_type").notNull(),
-	entityId: uuid("entity_id").notNull(),
-	currentStep: integer("current_step").default(0).notNull(),
-	status: text().default('active').notNull(),
-	nextStepAt: timestamp("next_step_at", { withTimezone: true, mode: 'string' }),
-	startedAt: timestamp("started_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	completedAt: timestamp("completed_at", { withTimezone: true, mode: 'string' }),
-	cancelledAt: timestamp("cancelled_at", { withTimezone: true, mode: 'string' }),
+	tenantId: uuid("tenant_id").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	name: text().notNull(),
+	category: recipeCategory().notNull(),
+	description: text(),
+	method: text().notNull(),
+	methodDetailed: text("method_detailed"),
+	yieldDescription: text("yield_description"),
+	yieldQuantity: numeric("yield_quantity", { precision: 8, scale:  2 }),
+	yieldUnit: text("yield_unit"),
+	prepTimeMinutes: integer("prep_time_minutes"),
+	cookTimeMinutes: integer("cook_time_minutes"),
+	totalTimeMinutes: integer("total_time_minutes"),
+	dietaryTags: text("dietary_tags").array().default([""]).notNull(),
+	notes: text(),
+	adaptations: text(),
+	timesCooked: integer("times_cooked").default(0).notNull(),
+	lastCookedAt: timestamp("last_cooked_at", { withTimezone: true, mode: 'string' }),
+	photoUrl: text("photo_url"),
+	archived: boolean().default(false).notNull(),
+	archivedAt: timestamp("archived_at", { withTimezone: true, mode: 'string' }),
+	createdBy: uuid("created_by"),
+	updatedBy: uuid("updated_by"),
+	servings: integer(),
+	caloriesPerServing: integer("calories_per_serving"),
+	difficulty: smallint(),
+	equipment: text().array().default([""]).notNull(),
+	caloriesTotal: integer("calories_total"),
+	proteinTotalG: numeric("protein_total_g", { precision: 10, scale:  2 }),
+	fatTotalG: numeric("fat_total_g", { precision: 10, scale:  2 }),
+	carbsTotalG: numeric("carbs_total_g", { precision: 10, scale:  2 }),
+	fiberTotalG: numeric("fiber_total_g", { precision: 10, scale:  2 }),
+	sodiumTotalMg: numeric("sodium_total_mg", { precision: 10, scale:  2 }),
+	proteinPerServingG: numeric("protein_per_serving_g", { precision: 10, scale:  2 }),
+	fatPerServingG: numeric("fat_per_serving_g", { precision: 10, scale:  2 }),
+	carbsPerServingG: numeric("carbs_per_serving_g", { precision: 10, scale:  2 }),
+	fiberPerServingG: numeric("fiber_per_serving_g", { precision: 10, scale:  2 }),
+	sodiumPerServingMg: numeric("sodium_per_serving_mg", { precision: 10, scale:  2 }),
+	nutritionSnapshotJson: jsonb("nutrition_snapshot_json"),
+	nutritionCalculatedAt: timestamp("nutrition_calculated_at", { withTimezone: true, mode: 'string' }),
+	cuisine: recipeCuisine(),
+	mealType: recipeMealType("meal_type"),
+	season: text().array().default([""]),
+	occasionTags: text("occasion_tags").array().default([""]),
+	totalCostCents: integer("total_cost_cents"),
+	costPerServingCents: integer("cost_per_serving_cents"),
+	familyId: uuid("family_id"),
+	variationLabel: text("variation_label"),
+	peakHoursMin: integer("peak_hours_min"),
+	peakHoursMax: integer("peak_hours_max"),
+	safetyHoursMax: integer("safety_hours_max"),
+	storageMethod: text("storage_method").default('fridge'),
+	freezable: boolean().default(false),
+	frozenExtendsHours: integer("frozen_extends_hours"),
 }, (table) => [
-	index("idx_workflow_executions_chef").using("btree", table.chefId.asc().nullsLast().op("text_ops"), table.status.asc().nullsLast().op("uuid_ops")),
-	index("idx_workflow_executions_pending").using("btree", table.nextStepAt.asc().nullsLast().op("timestamptz_ops")).where(sql`((status = 'active'::text) AND (next_step_at IS NOT NULL))`),
+	index("idx_recipes_archived").using("btree", table.archived.asc().nullsLast().op("bool_ops")),
+	index("idx_recipes_category").using("btree", table.category.asc().nullsLast().op("enum_ops")),
+	index("idx_recipes_family").using("btree", table.familyId.asc().nullsLast().op("uuid_ops")).where(sql`(family_id IS NOT NULL)`),
+	index("idx_recipes_tenant_id").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	uniqueIndex("idx_recipes_tenant_name").using("btree", table.tenantId.asc().nullsLast().op("text_ops"), table.name.asc().nullsLast().op("text_ops")),
+	index("idx_recipes_times_cooked").using("btree", table.timesCooked.desc().nullsFirst().op("int4_ops")),
 	foreignKey({
-			columns: [table.chefId],
+			columns: [table.createdBy],
+			foreignColumns: [users.id],
+			name: "recipes_created_by_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.familyId],
+			foreignColumns: [recipeFamilies.id],
+			name: "recipes_family_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.tenantId],
 			foreignColumns: [chefs.id],
-			name: "workflow_executions_chef_id_fkey"
+			name: "recipes_tenant_id_fkey"
 		}).onDelete("cascade"),
 	foreignKey({
-			columns: [table.templateId],
-			foreignColumns: [workflowTemplates.id],
-			name: "workflow_executions_template_id_fkey"
-		}).onDelete("cascade"),
-	unique("workflow_executions_template_id_entity_id_key").on(table.templateId, table.entityId),
-	pgPolicy("we_chef_all", { as: "permissive", for: "all", to: ["public"], using: sql`(chef_id IN ( SELECT user_roles.entity_id
-   FROM user_roles
-  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))`, withCheck: sql`(chef_id IN ( SELECT user_roles.entity_id
-   FROM user_roles
-  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))`  }),
-	pgPolicy("we_service_all", { as: "permissive", for: "all", to: ["public"] }),
-	check("workflow_executions_status_check", sql`status = ANY (ARRAY['active'::text, 'completed'::text, 'cancelled'::text, 'paused'::text])`),
+			columns: [table.updatedBy],
+			foreignColumns: [users.id],
+			name: "recipes_updated_by_fkey"
+		}).onDelete("set null"),
+	pgPolicy("tenant_isolation_select_recipes", { as: "permissive", for: "select", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())` }),
+	pgPolicy("tenant_isolation_insert_recipes", { as: "permissive", for: "insert", to: ["public"] }),
+	pgPolicy("tenant_isolation_update_recipes", { as: "permissive", for: "update", to: ["public"] }),
+	check("recipes_cook_time_minutes_check", sql`(cook_time_minutes >= 0) OR (cook_time_minutes IS NULL)`),
+	check("recipes_difficulty_check", sql`(difficulty >= 1) AND (difficulty <= 5)`),
+	check("recipes_prep_time_minutes_check", sql`(prep_time_minutes >= 0) OR (prep_time_minutes IS NULL)`),
+	check("recipes_storage_method_check", sql`storage_method = ANY (ARRAY['room_temp'::text, 'fridge'::text, 'freezer'::text])`),
+	check("recipes_times_cooked_check", sql`times_cooked >= 0`),
+	check("recipes_total_time_minutes_check", sql`(total_time_minutes >= 0) OR (total_time_minutes IS NULL)`),
+	check("recipes_yield_quantity_check", sql`(yield_quantity > (0)::numeric) OR (yield_quantity IS NULL)`),
 ]);
 
 export const chefPostHashtags = pgTable("chef_post_hashtags", {
@@ -25090,27 +26343,6 @@ export const activityEventsArchive = pgTable("activity_events_archive", {
   WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))` }),
 	pgPolicy("Service role manages archived activity", { as: "permissive", for: "all", to: ["public"] }),
 ]);
-export const eventFinancialSummary = pgView("event_financial_summary", {	eventId: uuid("event_id"),
-	tenantId: uuid("tenant_id"),
-	quotedPriceCents: integer("quoted_price_cents"),
-	paymentStatus: paymentStatus("payment_status"),
-	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	totalPaidCents: bigint("total_paid_cents", { mode: "number" }),
-	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	totalRefundedCents: bigint("total_refunded_cents", { mode: "number" }),
-	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	netRevenueCents: bigint("net_revenue_cents", { mode: "number" }),
-	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	totalExpensesCents: bigint("total_expenses_cents", { mode: "number" }),
-	tipAmountCents: integer("tip_amount_cents"),
-	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	profitCents: bigint("profit_cents", { mode: "number" }),
-	profitMargin: numeric("profit_margin"),
-	foodCostPercentage: numeric("food_cost_percentage"),
-	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	outstandingBalanceCents: bigint("outstanding_balance_cents", { mode: "number" }),
-}).as(sql`SELECT e.id AS event_id, e.tenant_id, e.quoted_price_cents, e.payment_status, COALESCE(sum(le.amount_cents) FILTER (WHERE le.is_refund = false), 0::bigint) AS total_paid_cents, COALESCE(sum(abs(le.amount_cents)) FILTER (WHERE le.is_refund = true), 0::bigint) AS total_refunded_cents, COALESCE(sum(le.amount_cents), 0::bigint) AS net_revenue_cents, COALESCE(sum(ex.amount_cents), 0::bigint) AS total_expenses_cents, e.tip_amount_cents, COALESCE(sum(le.amount_cents), 0::bigint) - COALESCE(sum(ex.amount_cents), 0::bigint) AS profit_cents, CASE WHEN COALESCE(sum(le.amount_cents), 0::bigint) > 0 THEN (COALESCE(sum(le.amount_cents), 0::bigint) - COALESCE(sum(ex.amount_cents), 0::bigint))::numeric / COALESCE(sum(le.amount_cents), 1::bigint)::numeric ELSE 0::numeric END AS profit_margin, CASE WHEN COALESCE(sum(le.amount_cents), 0::bigint) > 0 THEN COALESCE(sum(ex.amount_cents), 0::bigint)::numeric / COALESCE(sum(le.amount_cents), 1::bigint)::numeric ELSE 0::numeric END AS food_cost_percentage, e.quoted_price_cents - COALESCE(sum(le.amount_cents) FILTER (WHERE le.is_refund = false), 0::bigint) AS outstanding_balance_cents FROM events e LEFT JOIN ledger_entries le ON le.event_id = e.id LEFT JOIN expenses ex ON ex.event_id = e.id GROUP BY e.id`);
-
 export const eventTimeSummary = pgView("event_time_summary", {	eventId: uuid("event_id"),
 	tenantId: uuid("tenant_id"),
 	shoppingDurationMinutes: numeric("shopping_duration_minutes"),
@@ -25152,20 +26384,6 @@ export const ingredientUsageSummary = pgView("ingredient_usage_summary", {	ingre
 	recipesUsing: text("recipes_using"),
 	lastUsedInRecipeAt: timestamp("last_used_in_recipe_at", { withTimezone: true, mode: 'string' }),
 }).as(sql`SELECT i.id AS ingredient_id, i.tenant_id, i.name AS ingredient_name, i.category, ( SELECT count(*) AS count FROM recipe_ingredients WHERE recipe_ingredients.ingredient_id = i.id) AS times_used, ( SELECT array_agg(DISTINCT r.name) AS array_agg FROM recipe_ingredients ri JOIN recipes r ON r.id = ri.recipe_id WHERE ri.ingredient_id = i.id) AS recipes_using, ( SELECT max(r.last_cooked_at) AS max FROM recipe_ingredients ri JOIN recipes r ON r.id = ri.recipe_id WHERE ri.ingredient_id = i.id) AS last_used_in_recipe_at FROM ingredients i WHERE i.archived = false`);
-
-export const recipeCostSummary = pgView("recipe_cost_summary", {	recipeId: uuid("recipe_id"),
-	tenantId: uuid("tenant_id"),
-	recipeName: text("recipe_name"),
-	category: recipeCategory(),
-	totalIngredientCostCents: integer("total_ingredient_cost_cents"),
-	costPerPortionCents: integer("cost_per_portion_cents"),
-	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	ingredientCount: bigint("ingredient_count", { mode: "number" }),
-	hasAllPrices: boolean("has_all_prices"),
-	lastPriceUpdatedAt: date("last_price_updated_at"),
-	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	subRecipeCount: bigint("sub_recipe_count", { mode: "number" }),
-}).as(sql`SELECT r.id AS recipe_id, r.tenant_id, r.name AS recipe_name, r.category, COALESCE(r.total_cost_cents, compute_recipe_cost_cents(r.id)) AS total_ingredient_cost_cents, COALESCE(r.cost_per_serving_cents, CASE WHEN r.yield_quantity > 0::numeric THEN (compute_recipe_cost_cents(r.id)::numeric / r.yield_quantity)::integer ELSE NULL::integer END) AS cost_per_portion_cents, ( SELECT count(*) AS count FROM recipe_ingredients WHERE recipe_ingredients.recipe_id = r.id) AS ingredient_count, ( SELECT count(*) = count(COALESCE(i.cost_per_unit_cents, i.last_price_cents)) FROM recipe_ingredients ri JOIN ingredients i ON i.id = ri.ingredient_id WHERE ri.recipe_id = r.id) AS has_all_prices, ( SELECT max(i.last_price_date) AS max FROM recipe_ingredients ri JOIN ingredients i ON i.id = ri.ingredient_id WHERE ri.recipe_id = r.id) AS last_price_updated_at, ( SELECT count(*) AS count FROM recipe_sub_recipes WHERE recipe_sub_recipes.parent_recipe_id = r.id) AS sub_recipe_count FROM recipes r WHERE r.archived = false`);
 
 export const menuCostSummary = pgView("menu_cost_summary", {	menuId: uuid("menu_id"),
 	tenantId: uuid("tenant_id"),
@@ -25369,26 +26587,6 @@ export const eventRsvpSummary = pgView("event_rsvp_summary", {	eventId: uuid("ev
 	allAllergies: text("all_allergies"),
 }).as(sql`SELECT eg.event_id, eg.tenant_id, count(*)::integer AS total_guests, count(*) FILTER (WHERE eg.rsvp_status = 'attending'::rsvp_status)::integer AS attending_count, count(*) FILTER (WHERE eg.rsvp_status = 'declined'::rsvp_status)::integer AS declined_count, count(*) FILTER (WHERE eg.rsvp_status = 'maybe'::rsvp_status)::integer AS maybe_count, count(*) FILTER (WHERE eg.rsvp_status = 'pending'::rsvp_status AND COALESCE(eg.attendance_queue_status, 'none'::text) <> 'waitlisted'::text)::integer AS pending_count, count(*) FILTER (WHERE COALESCE(eg.attendance_queue_status, 'none'::text) = 'waitlisted'::text)::integer AS waitlisted_count, count(*) FILTER (WHERE eg.plus_one = true)::integer AS plus_one_count, ARRAY( SELECT DISTINCT unnest(eg2.dietary_restrictions) AS unnest FROM event_guests eg2 WHERE eg2.event_id = eg.event_id AND (eg2.rsvp_status = ANY (ARRAY['attending'::rsvp_status, 'maybe'::rsvp_status])) AND eg2.dietary_restrictions <> '{}'::text[]) AS all_dietary_restrictions, ARRAY( SELECT DISTINCT unnest(eg2.allergies) AS unnest FROM event_guests eg2 WHERE eg2.event_id = eg.event_id AND (eg2.rsvp_status = ANY (ARRAY['attending'::rsvp_status, 'maybe'::rsvp_status])) AND eg2.allergies <> '{}'::text[]) AS all_allergies FROM event_guests eg GROUP BY eg.event_id, eg.tenant_id`);
 
-export const regionalPriceAverages = pgMaterializedView("regional_price_averages", {	ingredientId: uuid("ingredient_id"),
-	ingredientName: text("ingredient_name"),
-	category: ingredientCategory(),
-	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	storeCount: bigint("store_count", { mode: "number" }),
-	avgPricePerUnitCents: numeric("avg_price_per_unit_cents"),
-	minPricePerUnitCents: integer("min_price_per_unit_cents"),
-	maxPricePerUnitCents: integer("max_price_per_unit_cents"),
-	mostCommonUnit: text("most_common_unit"),
-	mostRecentDate: date("most_recent_date"),
-}).as(sql`SELECT iph.ingredient_id, i.name AS ingredient_name, i.category, count(DISTINCT iph.store_name) AS store_count, round(avg(iph.price_per_unit_cents)) AS avg_price_per_unit_cents, min(iph.price_per_unit_cents) AS min_price_per_unit_cents, max(iph.price_per_unit_cents) AS max_price_per_unit_cents, mode() WITHIN GROUP (ORDER BY iph.unit) AS most_common_unit, max(iph.purchase_date) AS most_recent_date FROM ingredient_price_history iph JOIN ingredients i ON i.id = iph.ingredient_id WHERE iph.source ~~ 'openclaw_%'::text AND iph.purchase_date > (CURRENT_DATE - '60 days'::interval) AND iph.price_per_unit_cents > 0 AND iph.price_per_unit_cents < 50000 GROUP BY iph.ingredient_id, i.name, i.category HAVING count(DISTINCT iph.store_name) >= 2`);
-
-export const categoryPriceBaselines = pgMaterializedView("category_price_baselines", {	category: ingredientCategory(),
-	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	ingredientCount: bigint("ingredient_count", { mode: "number" }),
-	avgCentsPerUnit: numeric("avg_cents_per_unit"),
-	medianCentsPerUnit: doublePrecision("median_cents_per_unit"),
-	mostCommonUnit: text("most_common_unit"),
-}).as(sql`SELECT i.category, count(DISTINCT iph.ingredient_id) AS ingredient_count, round(avg(iph.price_per_unit_cents)) AS avg_cents_per_unit, percentile_cont(0.5::double precision) WITHIN GROUP (ORDER BY (iph.price_per_unit_cents::double precision)) AS median_cents_per_unit, mode() WITHIN GROUP (ORDER BY iph.unit) AS most_common_unit FROM ingredient_price_history iph JOIN ingredients i ON i.id = iph.ingredient_id WHERE iph.source ~~ 'openclaw_%'::text AND iph.purchase_date > (CURRENT_DATE - '90 days'::interval) AND iph.price_per_unit_cents > 0 AND iph.price_per_unit_cents < 50000 GROUP BY i.category HAVING count(DISTINCT iph.ingredient_id) >= 5`);
-
 export const ingredientMonthlyPriceAvg = pgView("ingredient_monthly_price_avg", {	tenantId: uuid("tenant_id"),
 	ingredientId: uuid("ingredient_id"),
 	year: integer(),
@@ -25411,3 +26609,62 @@ export const ingredientBestVendorPrice = pgView("ingredient_best_vendor_price", 
 	minOrderUnit: text("min_order_unit"),
 	isPreferred: boolean("is_preferred"),
 }).as(sql`SELECT DISTINCT ON (vendor_preferred_ingredients.chef_id, vendor_preferred_ingredients.ingredient_name) vendor_preferred_ingredients.chef_id, vendor_preferred_ingredients.ingredient_name, vendor_preferred_ingredients.ingredient_id, vendor_preferred_ingredients.vendor_id, vendor_preferred_ingredients.unit_price_cents, vendor_preferred_ingredients.price_unit, vendor_preferred_ingredients.lead_time_days, vendor_preferred_ingredients.min_order_qty, vendor_preferred_ingredients.min_order_unit, vendor_preferred_ingredients.is_preferred FROM vendor_preferred_ingredients WHERE vendor_preferred_ingredients.unit_price_cents IS NOT NULL ORDER BY vendor_preferred_ingredients.chef_id, vendor_preferred_ingredients.ingredient_name, vendor_preferred_ingredients.unit_price_cents`);
+
+export const recipeCostSummary = pgView("recipe_cost_summary", {	recipeId: uuid("recipe_id"),
+	tenantId: uuid("tenant_id"),
+	recipeName: text("recipe_name"),
+	category: recipeCategory(),
+	totalIngredientCostCents: integer("total_ingredient_cost_cents"),
+	costPerPortionCents: integer("cost_per_portion_cents"),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	ingredientCount: bigint("ingredient_count", { mode: "number" }),
+	hasAllPrices: boolean("has_all_prices"),
+	lastPriceUpdatedAt: date("last_price_updated_at"),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	subRecipeCount: bigint("sub_recipe_count", { mode: "number" }),
+	avgPriceConfidence: numeric("avg_price_confidence"),
+	minPriceConfidence: numeric("min_price_confidence"),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	lowConfidenceCount: bigint("low_confidence_count", { mode: "number" }),
+}).as(sql`SELECT r.id AS recipe_id, r.tenant_id, r.name AS recipe_name, r.category, COALESCE(r.total_cost_cents, compute_recipe_cost_cents(r.id)) AS total_ingredient_cost_cents, COALESCE(r.cost_per_serving_cents, CASE WHEN r.yield_quantity > 0::numeric THEN (compute_recipe_cost_cents(r.id)::numeric / r.yield_quantity)::integer ELSE NULL::integer END) AS cost_per_portion_cents, ( SELECT count(*) AS count FROM recipe_ingredients WHERE recipe_ingredients.recipe_id = r.id) AS ingredient_count, ( SELECT count(*) = count(COALESCE(i.cost_per_unit_cents, i.last_price_cents)) FROM recipe_ingredients ri JOIN ingredients i ON i.id = ri.ingredient_id WHERE ri.recipe_id = r.id) AS has_all_prices, ( SELECT max(i.last_price_date) AS max FROM recipe_ingredients ri JOIN ingredients i ON i.id = ri.ingredient_id WHERE ri.recipe_id = r.id) AS last_price_updated_at, ( SELECT count(*) AS count FROM recipe_sub_recipes WHERE recipe_sub_recipes.parent_recipe_id = r.id) AS sub_recipe_count, ( SELECT round(avg(i.last_price_confidence), 2) AS round FROM recipe_ingredients ri JOIN ingredients i ON i.id = ri.ingredient_id WHERE ri.recipe_id = r.id AND i.last_price_confidence IS NOT NULL) AS avg_price_confidence, ( SELECT min(i.last_price_confidence) AS min FROM recipe_ingredients ri JOIN ingredients i ON i.id = ri.ingredient_id WHERE ri.recipe_id = r.id AND i.last_price_confidence IS NOT NULL) AS min_price_confidence, ( SELECT count(*) AS count FROM recipe_ingredients ri JOIN ingredients i ON i.id = ri.ingredient_id WHERE ri.recipe_id = r.id AND i.last_price_confidence IS NOT NULL AND i.last_price_confidence < 0.5) AS low_confidence_count FROM recipes r WHERE r.archived = false`);
+
+export const regionalPriceAverages = pgMaterializedView("regional_price_averages", {	ingredientId: uuid("ingredient_id"),
+	ingredientName: text("ingredient_name"),
+	category: ingredientCategory(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	storeCount: bigint("store_count", { mode: "number" }),
+	avgPricePerUnitCents: numeric("avg_price_per_unit_cents"),
+	minPricePerUnitCents: integer("min_price_per_unit_cents"),
+	maxPricePerUnitCents: integer("max_price_per_unit_cents"),
+	mostCommonUnit: text("most_common_unit"),
+	mostRecentDate: date("most_recent_date"),
+}).as(sql`SELECT iph.ingredient_id, i.name AS ingredient_name, i.category, count(DISTINCT iph.store_name) AS store_count, round(avg(iph.price_per_unit_cents)) AS avg_price_per_unit_cents, min(iph.price_per_unit_cents) AS min_price_per_unit_cents, max(iph.price_per_unit_cents) AS max_price_per_unit_cents, mode() WITHIN GROUP (ORDER BY iph.unit) AS most_common_unit, max(iph.purchase_date) AS most_recent_date FROM ingredient_price_history iph JOIN ingredients i ON i.id = iph.ingredient_id WHERE iph.source ~~ 'openclaw_%'::text AND iph.purchase_date > (CURRENT_DATE - '60 days'::interval) AND iph.price_per_unit_cents > 0 AND iph.price_per_unit_cents < 50000 GROUP BY iph.ingredient_id, i.name, i.category HAVING count(DISTINCT iph.store_name) >= 2`);
+
+export const categoryPriceBaselines = pgMaterializedView("category_price_baselines", {	category: ingredientCategory(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	ingredientCount: bigint("ingredient_count", { mode: "number" }),
+	avgCentsPerUnit: numeric("avg_cents_per_unit"),
+	medianCentsPerUnit: doublePrecision("median_cents_per_unit"),
+	mostCommonUnit: text("most_common_unit"),
+}).as(sql`SELECT combined.category, count(DISTINCT combined.ingredient_id) AS ingredient_count, round(avg(combined.price_cents)) AS avg_cents_per_unit, percentile_cont(0.5::double precision) WITHIN GROUP (ORDER BY (combined.price_cents::double precision)) AS median_cents_per_unit, mode() WITHIN GROUP (ORDER BY combined.unit) AS most_common_unit FROM ( SELECT i.category, iph.ingredient_id, iph.price_per_unit_cents AS price_cents, iph.unit FROM ingredient_price_history iph JOIN ingredients i ON i.id = iph.ingredient_id WHERE iph.source ~~ 'openclaw_%'::text AND iph.purchase_date > (CURRENT_DATE - '90 days'::interval) AND iph.price_per_unit_cents > 0 AND iph.price_per_unit_cents < 50000 UNION ALL SELECT si.category, si.id AS ingredient_id, sip.median_price_cents AS price_cents, sip.price_unit AS unit FROM system_ingredients si JOIN openclaw.system_ingredient_prices sip ON sip.system_ingredient_id = si.id WHERE sip.median_price_cents > 0 AND sip.median_price_cents < 50000) combined GROUP BY combined.category HAVING count(DISTINCT combined.ingredient_id) >= 3`);
+
+export const eventFinancialSummary = pgView("event_financial_summary", {	eventId: uuid("event_id"),
+	tenantId: uuid("tenant_id"),
+	quotedPriceCents: integer("quoted_price_cents"),
+	paymentStatus: paymentStatus("payment_status"),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	totalPaidCents: bigint("total_paid_cents", { mode: "number" }),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	totalRefundedCents: bigint("total_refunded_cents", { mode: "number" }),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	netRevenueCents: bigint("net_revenue_cents", { mode: "number" }),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	totalExpensesCents: bigint("total_expenses_cents", { mode: "number" }),
+	tipAmountCents: integer("tip_amount_cents"),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	profitCents: bigint("profit_cents", { mode: "number" }),
+	profitMargin: numeric("profit_margin"),
+	foodCostPercentage: numeric("food_cost_percentage"),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	outstandingBalanceCents: bigint("outstanding_balance_cents", { mode: "number" }),
+}).as(sql`SELECT base.event_id, base.tenant_id, base.quoted_price_cents, base.payment_status, base.total_paid_cents, base.total_refunded_cents, base.net_revenue_cents, base.total_expenses_cents, base.tip_amount_cents, base.net_revenue_cents - base.total_expenses_cents AS profit_cents, CASE WHEN base.net_revenue_cents > 0 THEN (base.net_revenue_cents - base.total_expenses_cents)::numeric / base.net_revenue_cents::numeric ELSE 0::numeric END AS profit_margin, CASE WHEN base.net_revenue_cents > 0 THEN base.total_expenses_cents::numeric / base.net_revenue_cents::numeric ELSE 0::numeric END AS food_cost_percentage, base.quoted_price_cents - base.total_paid_cents AS outstanding_balance_cents FROM ( SELECT e.id AS event_id, e.tenant_id, e.quoted_price_cents, e.payment_status, e.tip_amount_cents, COALESCE(( SELECT sum(le.amount_cents) AS sum FROM ledger_entries le WHERE le.event_id = e.id AND le.is_refund = false AND le.entry_type <> 'tip'::ledger_entry_type), 0::bigint) AS total_paid_cents, COALESCE(( SELECT sum(abs(le.amount_cents)) AS sum FROM ledger_entries le WHERE le.event_id = e.id AND le.is_refund = true), 0::bigint) AS total_refunded_cents, COALESCE(( SELECT sum(le.amount_cents) AS sum FROM ledger_entries le WHERE le.event_id = e.id), 0::bigint) AS net_revenue_cents, COALESCE(( SELECT sum(ex.amount_cents) AS sum FROM expenses ex WHERE ex.event_id = e.id), 0::bigint) AS total_expenses_cents FROM events e WHERE e.deleted_at IS NULL) base`);
