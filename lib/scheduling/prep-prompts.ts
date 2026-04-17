@@ -5,18 +5,8 @@
 
 import type { PrepPrompt, SchedulingEvent, ChefPreferences } from './types'
 import type { PrepTimeline } from '@/lib/prep-timeline/compute-timeline'
+import { daysUntilDate } from '@/lib/utils/format'
 import { format } from 'date-fns'
-
-// ============================================
-// HELPERS
-// ============================================
-
-function daysUntil(dateStr: string): number {
-  const eventDate = new Date(dateStr + 'T00:00:00')
-  const now = new Date()
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  return Math.ceil((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-}
 
 /** Get component names scheduled for a specific day offset from the timeline */
 function getComponentsForDay(timeline: PrepTimeline, daysBeforeService: number): string[] {
@@ -60,7 +50,7 @@ export function getActivePrompts(
     // Only active events (not cancelled, not completed)
     if (event.status === 'cancelled' || event.status === 'completed') continue
 
-    const days = daysUntil(event.event_date)
+    const days = daysUntilDate(event.event_date)
     if (days < -1) continue // Past events
 
     const clientName = event.client?.full_name ?? 'Unknown Client'
@@ -72,7 +62,7 @@ export function getActivePrompts(
     if (timeline) {
       // Grocery deadline prompt
       if (timeline.groceryDeadline && !event.shopping_completed_at) {
-        const groceryDaysUntil = daysUntil(format(timeline.groceryDeadline, 'yyyy-MM-dd'))
+        const groceryDaysUntil = daysUntilDate(format(timeline.groceryDeadline, 'yyyy-MM-dd'))
         if (groceryDaysUntil === 0) {
           prompts.push({
             eventId: event.id,
@@ -119,7 +109,7 @@ export function getActivePrompts(
       for (const day of timeline.days) {
         if (day.items.length === 0 || day.isServiceDay) continue
 
-        const dayDaysUntil = daysUntil(format(day.date, 'yyyy-MM-dd'))
+        const dayDaysUntil = daysUntilDate(format(day.date, 'yyyy-MM-dd'))
         const componentNames = day.items.map((i) => i.recipeName)
 
         if (dayDaysUntil === 0) {

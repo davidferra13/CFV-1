@@ -206,3 +206,14 @@ export function todayWeekday(
 ): string {
   return formatWeekday(new Date(), opts)
 }
+
+/**
+ * Calendar days from today until a date string (YYYY-MM-DD).
+ * Positive = future, negative = past, 0 = today.
+ */
+export function daysUntilDate(dateStr: string): number {
+  const target = new Date(dateStr + 'T00:00:00')
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+}

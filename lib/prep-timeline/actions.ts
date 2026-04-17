@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { createServerClient } from '@/lib/db/server'
 import {
   computePrepTimeline,
@@ -64,6 +64,9 @@ export async function updateRecipePeakWindow(input: {
 
     revalidatePath('/recipes')
     revalidatePath(`/recipes/${input.recipeId}`)
+    // Bust event pages + cached prep timelines that use this recipe's peak window data
+    revalidatePath('/events', 'layout')
+    revalidateTag(`prep-timeline-${user.tenantId}`)
     return { success: true }
   } catch (err: any) {
     console.error('[updateRecipePeakWindow]', err)
