@@ -782,3 +782,23 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: 17595351b, 0795d4dad, 7c69dd368
 - Build state on departure: not verified (doc-only + label changes, no structural code changes)
 - Notes: Found 6 stale verdicts across specs (features already built, verdicts not updated). FQ27 was the only real code change (UI label fixes). Remaining 18 PARTIALs are genuine gaps. Best candidates for next session: FQ9 (commerce-to-ledger), Q20 (client auto-invite), FQ11 (tip auto-sync).
+
+## 2026-04-17 ~04:00 EST
+
+- Agent: Builder (Opus 4.6)
+- Task: Cross-Boundary Flow Interrogation - full 57-question audit + priority fixes
+- Status: completed
+- Files touched:
+  - docs/specs/cross-boundary-flow-interrogation.md (NEW - full spec, 57 questions graded)
+  - lib/events/transitions.ts (Q19: guest cancellation email notification)
+  - lib/email/templates/contract-signed-client.tsx (NEW - Q10: client signature confirmation template)
+  - lib/email/notifications.ts (Q10: sendContractSignedClientEmail function)
+  - lib/contracts/actions.ts (Q10: wire client email after contract sign)
+  - app/api/webhooks/resend/route.ts (Q55: bounce/spam -> email_suppressions upsert)
+  - lib/sharing/actions.ts (Q48: return eventTimezone in share data)
+  - app/(client)/my-events/[id]/page.tsx (Q48: timezone display)
+  - app/(public)/share/[token]/page.tsx (Q48: timezone display)
+  - docs/session-digests/2026-04-17-cross-boundary-interrogation.md (NEW)
+- Commits: d12e2090b
+- Build state on departure: tsc has 6 pre-existing errors (none from this session)
+- Notes: Scorecard 43/57 Working, 12 Partial, 2 Missing, 0 Broken (75%). 4 fixes shipped. 12 Partial items documented in spec Gap Inventory with severity ranking. Highest remaining: Q9 (contract merge fields), Q28 (guest dietary -> menu editor). Session digest written.
