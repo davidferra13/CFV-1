@@ -882,6 +882,46 @@ export async function transitionEvent({
           reason: (metadata.reason as string) || null,
         })
       }
+
+      // Q19 fix: Notify RSVP'd guests on cancellation (non-blocking)
+      // Guests who RSVP'd via share links need to know the event is cancelled
+      // so they don't show up. Safety-critical notification.
+      if (toStatus === 'cancelled') {
+        try {
+          const dbAdmin = createServerClient({ admin: true })
+          const { data: rsvpGuests } = await dbAdmin
+            .from('event_guests')
+            .select('email, full_name')
+            .eq('event_id', eventId)
+            .in('rsvp_status', ['attending', 'maybe'])
+
+          if (rsvpGuests && rsvpGuests.length > 0) {
+            const cancelledBy = actor?.role === 'chef' ? chefName : client.full_name || 'the host'
+            for (const guest of rsvpGuests) {
+              if (!guest.email) continue
+              try {
+                await sendEventCancelledEmail({
+                  recipientEmail: guest.email,
+                  recipientName: guest.full_name || 'Guest',
+                  occasion,
+                  eventDate: dateToDateString(event.event_date as Date | string),
+                  cancelledBy,
+                  reason: (metadata.reason as string) || null,
+                })
+              } catch (guestEmailErr) {
+                log.events.warn('Guest cancellation email failed (non-blocking)', {
+                  context: { guestEmail: guest.email },
+                  error: guestEmailErr,
+                })
+              }
+            }
+          }
+        } catch (guestNotifyErr) {
+          log.events.warn('Guest cancellation notification failed (non-blocking)', {
+            error: guestNotifyErr,
+          })
+        }
+      }
     }
   } catch (emailErr) {
     log.events.warn('Email send failed (non-blocking)', { error: emailErr })

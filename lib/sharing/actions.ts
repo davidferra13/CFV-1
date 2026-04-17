@@ -139,6 +139,33 @@ const ViewerIntentSchema = z.object({
   captcha_token: z.string().max(4096).optional().or(z.literal('')),
 })
 
+/**
+ * Sync event guest_count from confirmed RSVP data.
+ * Counts attending guests + their plus-ones. Only increases guest_count
+ * (never decreases, to preserve chef's original estimate as a floor).
+ */
+async function syncGuestCountFromRSVPs(db: any, eventId: string) {
+  const { data: guests } = await db
+    .from('event_guests')
+    .select('rsvp_status, plus_one')
+    .eq('event_id', eventId)
+
+  if (!guests || guests.length === 0) return
+
+  const attendingCount = guests.filter((g: any) => g.rsvp_status === 'attending').length
+  const plusOneCount = guests.filter(
+    (g: any) => g.rsvp_status === 'attending' && g.plus_one === true
+  ).length
+  const rsvpTotal = attendingCount + plusOneCount
+
+  // Only increase, never decrease (chef's original count is the floor)
+  const { data: event } = await db.from('events').select('guest_count').eq('id', eventId).single()
+
+  if (event && rsvpTotal > (event.guest_count || 0)) {
+    await db.from('events').update({ guest_count: rsvpTotal }).eq('id', eventId)
+  }
+}
+
 async function ensureDinnerCircleForEventNonBlocking(input: {
   eventId: string
   tenantId: string
@@ -2426,7 +2453,7 @@ export async function getEventShareByToken(token: string) {
     .select(
       `
       id, tenant_id, event_date, serve_time, arrival_time,
-      guest_count, occasion, service_style,
+      guest_count, occasion, service_style, event_timezone,
       location_address, location_city, location_state, location_zip,
       location_notes, dietary_restrictions, allergies,
       special_requests, status
@@ -2495,6 +2522,7 @@ export async function getEventShareByToken(token: string) {
     eventDate: visibility.show_date_time ? event.event_date : null,
     serveTime: visibility.show_date_time ? event.serve_time : null,
     arrivalTime: visibility.show_date_time ? event.arrival_time : null,
+    eventTimezone: visibility.show_date_time ? event.event_timezone || null : null,
     guestCount: event.guest_count,
     location: visibility.show_location
       ? {
@@ -2757,6 +2785,13 @@ export async function submitRSVP(input: SubmitRSVPInput) {
     console.error('[submitRSVP] Non-blocking hub sync failed:', err)
   }
 
+  // Non-blocking: sync guest count from confirmed RSVPs (attending + plus-ones)
+  try {
+    await syncGuestCountFromRSVPs(db, share.event_id)
+  } catch (err) {
+    console.error('[submitRSVP] Guest count sync failed (non-blocking):', err)
+  }
+
   // Loyalty trigger: RSVP collected (awards points to event OWNER, not guest)
   // Non-blocking, public context, admin client
   try {
@@ -2955,6 +2990,13 @@ export async function updateRSVP(input: UpdateRSVPInput) {
     },
     dietaryItems,
   })
+
+  // Non-blocking: sync guest count from confirmed RSVPs (attending + plus-ones)
+  try {
+    await syncGuestCountFromRSVPs(db, guestRow.event_id)
+  } catch (err) {
+    console.error('[updateRSVP] Guest count sync failed (non-blocking):', err)
+  }
 
   // Cache invalidation - both portals read guest data
   revalidatePath(`/events/${guestRow.event_id}`)

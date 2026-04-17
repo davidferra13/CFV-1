@@ -49,6 +49,7 @@ import { PostEventThankYouEmail } from './templates/post-event-thank-you'
 import { PostEventReviewRequestEmail } from './templates/post-event-review-request'
 import { PostEventReferralAskEmail } from './templates/post-event-referral-ask'
 import { ContractSignedChefEmail } from './templates/contract-signed-chef'
+import { ContractSignedClientEmail } from './templates/contract-signed-client'
 import { MenuApprovedChefEmail } from './templates/menu-approved-chef'
 import { MenuRevisionChefEmail } from './templates/menu-revision-chef'
 import { AvailabilitySignalEmail } from './templates/availability-signal'
@@ -893,7 +894,7 @@ export async function sendNewInquiryChefEmail(params: {
   occasion: string | null
   eventDate: string | null
   guestCount: number | null
-  source: 'portal' | 'wix' | 'gmail' | 'manual'
+  source: 'portal' | 'wix' | 'gmail' | 'manual' | 'website'
   inquiryId: string
 }) {
   await sendEmail({
@@ -1331,6 +1332,31 @@ export async function sendContractSignedChefEmail(params: {
       occasion: params.occasion,
       eventDate: params.eventDate ? formatDate(params.eventDate) : 'TBD',
       eventUrl: `${APP_URL}/events/${params.eventId}`,
+    }),
+  })
+}
+
+// ─── Contract Signed - Client Confirmation ──────────────────────────────────
+
+export async function sendContractSignedClientEmail(params: {
+  clientEmail: string
+  clientName: string
+  chefName: string
+  occasion: string
+  eventDate: string
+  signedAt: string
+  eventId: string
+}) {
+  await sendEmail({
+    to: params.clientEmail,
+    subject: `Contract signed - ${params.occasion}`,
+    react: createElement(ContractSignedClientEmail, {
+      clientName: params.clientName,
+      chefName: params.chefName,
+      occasion: params.occasion,
+      eventDate: params.eventDate ? formatDate(params.eventDate) : 'TBD',
+      signedAt: params.signedAt,
+      eventUrl: `${APP_URL}/my-events/${params.eventId}`,
     }),
   })
 }

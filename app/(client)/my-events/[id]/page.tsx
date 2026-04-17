@@ -87,9 +87,10 @@ export default async function EventDetailPage({
   }
 
   const financial = event.financial
+  const financialAvailable = financial != null
   const totalPaidCents = financial?.totalPaidCents ?? 0
   const quotedPriceCents = financial?.quotedPriceCents ?? event.quoted_price_cents ?? 0
-  const outstandingBalanceCents = financial?.outstandingBalanceCents ?? quotedPriceCents
+  const outstandingBalanceCents = financialAvailable ? (financial?.outstandingBalanceCents ?? 0) : 0
 
   // Fetch sharing and RSVP data
   const [
@@ -102,19 +103,25 @@ export default async function EventDetailPage({
     observability,
     communicationLogs,
   ] = await Promise.all([
-    getEventShares(params.id),
-    getEventGuests(params.id),
-    getEventRSVPSummary(params.id),
-    getEventJoinRequests(params.id),
-    getEventShareInvites(params.id),
-    getEventInviteAnalytics(params.id),
-    getEventRSVPObservabilitySignals(params.id),
-    getGuestCommunicationLogs(params.id),
+    getEventShares(params.id).catch(() => []),
+    getEventGuests(params.id).catch(() => []),
+    getEventRSVPSummary(params.id).catch(() => ({
+      attending: 0,
+      declined: 0,
+      pending: 0,
+      total: 0,
+    })),
+    getEventJoinRequests(params.id).catch(() => []),
+    getEventShareInvites(params.id).catch(() => []),
+    getEventInviteAnalytics(params.id).catch(() => null),
+    getEventRSVPObservabilitySignals(params.id).catch(() => null),
+    getGuestCommunicationLogs(params.id).catch(() => []),
   ])
   const activeShare = shares.find((s: any) => s.is_active) || null
 
   // Dinner Circle is the canonical guest coordination surface once the event is live.
-  const circleToken = event.status !== 'cancelled' ? await getCircleTokenForEvent(params.id) : null
+  const circleToken =
+    event.status !== 'cancelled' ? await getCircleTokenForEvent(params.id).catch(() => null) : null
 
   // Fetch review data and photos for completed events
   let existingReview = null
@@ -122,9 +129,9 @@ export default async function EventDetailPage({
   let eventPhotos: Awaited<ReturnType<typeof getEventPhotosForClient>> = []
   if (event.status === 'completed') {
     ;[existingReview, googleReviewUrl, eventPhotos] = await Promise.all([
-      getClientReviewForEvent(params.id),
-      getGoogleReviewUrlForTenant(event.tenant_id),
-      getEventPhotosForClient(params.id),
+      getClientReviewForEvent(params.id).catch(() => null),
+      getGoogleReviewUrlForTenant(event.tenant_id).catch(() => null),
+      getEventPhotosForClient(params.id).catch(() => []),
     ])
   }
 
@@ -282,6 +289,11 @@ export default async function EventDetailPage({
               <div className="text-sm text-stone-400 mb-1">Date & Time</div>
               <div className="font-medium text-stone-100">
                 {format(new Date(event.event_date), 'PPP')}
+                {(event as any).event_timezone && (
+                  <span className="ml-2 text-xs text-stone-400 font-normal">
+                    {(event as any).event_timezone.replace('America/', '').replace('_', ' ')}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -337,64 +349,72 @@ export default async function EventDetailPage({
           <CardTitle>Payment Summary</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-stone-400">Total</span>
-              <span className="text-base font-semibold text-stone-100">
-                {formatCurrency(quotedPriceCents)}
-              </span>
+          {!financialAvailable ? (
+            <div className="rounded-lg border border-amber-800/50 bg-amber-950/30 p-3 text-center">
+              <p className="text-sm text-amber-400">
+                Payment information is temporarily unavailable. Please refresh the page.
+              </p>
             </div>
-            {(event as any).price_per_person_cents != null && event.guest_count != null && (
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-stone-500">Per person</span>
-                <span className="text-stone-400">
-                  {formatCurrency((event as any).price_per_person_cents)} x {event.guest_count}
-                </span>
-              </div>
-            )}
-
-            <div className="flex justify-between items-center">
-              <span className="text-stone-400">Amount Paid</span>
-              <span className="font-semibold text-emerald-600">
-                {formatCurrency(totalPaidCents)}
-              </span>
-            </div>
-
-            <div className="pt-3 border-t">
+          ) : (
+            <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-lg font-semibold text-stone-100">Balance Due</span>
-                <span
-                  className={`text-2xl font-bold ${outstandingBalanceCents > 0 ? 'text-red-700' : 'text-stone-100'}`}
-                >
-                  {formatCurrency(outstandingBalanceCents)}
+                <span className="text-stone-400">Total</span>
+                <span className="text-base font-semibold text-stone-100">
+                  {formatCurrency(quotedPriceCents)}
                 </span>
               </div>
-              {outstandingBalanceCents > 0 &&
-                ['paid', 'confirmed', 'in_progress', 'completed'].includes(event.status) && (
-                  <div className="mt-3">
-                    <Link
-                      href={`/my-events/${event.id}/pay`}
-                      className="block w-full bg-red-600 text-white px-4 py-2.5 rounded-lg font-semibold hover:bg-red-700 transition text-sm text-center"
-                    >
-                      Pay Remaining Balance
-                    </Link>
-                  </div>
-                )}
-            </div>
+              {(event as any).price_per_person_cents != null && event.guest_count != null && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-stone-500">Per person</span>
+                  <span className="text-stone-400">
+                    {formatCurrency((event as any).price_per_person_cents)} x {event.guest_count}
+                  </span>
+                </div>
+              )}
 
-            {(event.deposit_amount_cents ?? 0) > 0 && (
-              <div className="mt-3 pt-3 border-t">
-                <div className="text-sm text-stone-400">
-                  <div className="flex justify-between">
-                    <span>Deposit Amount</span>
-                    <span className="font-medium">
-                      {formatCurrency(event.deposit_amount_cents ?? 0)}
-                    </span>
+              <div className="flex justify-between items-center">
+                <span className="text-stone-400">Amount Paid</span>
+                <span className="font-semibold text-emerald-600">
+                  {formatCurrency(totalPaidCents)}
+                </span>
+              </div>
+
+              <div className="pt-3 border-t">
+                <div className="flex justify-between items-center">
+                  <span className="text-lg font-semibold text-stone-100">Balance Due</span>
+                  <span
+                    className={`text-2xl font-bold ${outstandingBalanceCents > 0 ? 'text-red-700' : 'text-stone-100'}`}
+                  >
+                    {formatCurrency(outstandingBalanceCents)}
+                  </span>
+                </div>
+                {outstandingBalanceCents > 0 &&
+                  ['paid', 'confirmed', 'in_progress', 'completed'].includes(event.status) && (
+                    <div className="mt-3">
+                      <Link
+                        href={`/my-events/${event.id}/pay`}
+                        className="block w-full bg-red-600 text-white px-4 py-2.5 rounded-lg font-semibold hover:bg-red-700 transition text-sm text-center"
+                      >
+                        Pay Remaining Balance
+                      </Link>
+                    </div>
+                  )}
+              </div>
+
+              {(event.deposit_amount_cents ?? 0) > 0 && (
+                <div className="mt-3 pt-3 border-t">
+                  <div className="text-sm text-stone-400">
+                    <div className="flex justify-between">
+                      <span>Deposit Amount</span>
+                      <span className="font-medium">
+                        {formatCurrency(event.deposit_amount_cents ?? 0)}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 

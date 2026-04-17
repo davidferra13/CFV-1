@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
   }
 
-  let event: { type: string; data: { email_id?: string; created_at?: string } }
+  let event: { type: string; data: { email_id?: string; created_at?: string; to?: string[] } }
   try {
     event = JSON.parse(body)
   } catch {
@@ -130,6 +130,23 @@ export async function POST(req: NextRequest) {
       payloadSizeBytes: body.length,
     })
     return NextResponse.json({ ok: false, error: 'Database update failed' }, { status: 500 })
+  }
+
+  // Q55 fix: Cross-populate email_suppressions on bounce/spam
+  // Prevents future transactional emails to addresses that hard-bounced
+  if ((type === 'email.bounced' || type === 'email.spam_complaint') && data.to?.length) {
+    for (const recipientEmail of data.to) {
+      try {
+        const normalized = recipientEmail.toLowerCase().trim()
+        const reason = type === 'email.bounced' ? 'hard_bounce' : 'spam_complaint'
+        await db
+          .from('email_suppressions' as any)
+          .upsert({ email: normalized, reason, source: 'resend_webhook' }, { onConflict: 'email' })
+        console.log(`[resend-webhook] Suppressed ${normalized} (${reason})`)
+      } catch (suppressErr) {
+        console.error('[resend-webhook] Suppression insert failed (non-blocking):', suppressErr)
+      }
+    }
   }
 
   await logWebhookEvent({

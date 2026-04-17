@@ -76,6 +76,11 @@ export default async function SharePage({ params }: { params: { token: string } 
                   <div className="text-sm text-stone-500 mb-1">Date</div>
                   <div className="font-medium text-stone-100">
                     {format(new Date(eventData.eventDate), 'EEEE, MMMM do, yyyy')}
+                    {eventData.eventTimezone && (
+                      <span className="ml-2 text-xs text-stone-400 font-normal">
+                        {eventData.eventTimezone.replace('America/', '').replace('_', ' ')}
+                      </span>
+                    )}
                   </div>
                 </div>
               )}

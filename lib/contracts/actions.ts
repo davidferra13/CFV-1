@@ -13,7 +13,10 @@ import { ContractSentEmail } from '@/lib/email/templates/contract-sent'
 import React from 'react'
 import { format } from 'date-fns'
 import { createNotification, getChefAuthUserId, getChefProfile } from '@/lib/notifications/actions'
-import { sendContractSignedChefEmail } from '@/lib/email/notifications'
+import {
+  sendContractSignedChefEmail,
+  sendContractSignedClientEmail,
+} from '@/lib/email/notifications'
 
 // ============================================
 // SCHEMAS
@@ -520,6 +523,34 @@ export async function signContract(input: SignContractInput) {
           eventDate: eventData.event_date ?? 'TBD',
           eventId: contract.event_id,
         })
+      }
+
+      // Q10 fix: Send client a confirmation email of their signature
+      const clientEmail = user.email
+      if (clientEmail && eventData) {
+        try {
+          await sendContractSignedClientEmail({
+            clientEmail,
+            clientName: eventData.clients?.full_name ?? 'there',
+            chefName: chef?.name || 'your chef',
+            occasion: eventData.occasion ?? 'your event',
+            eventDate: eventData.event_date ?? 'TBD',
+            signedAt: new Date().toLocaleDateString('en-US', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              hour: 'numeric',
+              minute: '2-digit',
+            }),
+            eventId: contract.event_id,
+          })
+        } catch (clientEmailErr) {
+          console.error(
+            '[signContract] Client confirmation email failed (non-blocking):',
+            clientEmailErr
+          )
+        }
       }
     }
   } catch (err) {
