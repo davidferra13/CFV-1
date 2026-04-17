@@ -46,7 +46,7 @@ All 29 routes report to `cron_executions` table. 21 use `runMonitoredCronJob` wr
 
 ### SQ3: Per-Item Failure Recording
 
-**Verdict: PARTIAL (4/29)**
+**Verdict: PARTIAL (12/29)**
 
 12 routes now use `recordSideEffectFailure` for per-item errors: `follow-ups`, `stale-leads`, `lifecycle`, `inquiry-client-followup`, `client-reengagement`, `daily-report`, `call-reminders`, `rsvp-reminders`, `messages`, `waitlist-sweep`, `campaigns`, `sequences`. The remaining 17 routes either have no per-item side effects (cleanup/retention/computation routes) or delegate to engines with their own error tracking.
 

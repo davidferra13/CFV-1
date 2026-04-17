@@ -27,7 +27,7 @@
 | FQ13 | Register Session Race Conditions         | Register       | P1       | **PASS**                   |
 | FQ14 | Daily Reconciliation Flag Integrity      | Reconciliation | P1       | **PASS** (fixed)           |
 | FQ15 | Tax Class Coverage and Rate Resolution   | Tax            | P0       | **PASS** (fixed)           |
-| FQ16 | Tax Reporting Exportability              | Tax/Export     | P1       | **PARTIAL**                |
+| FQ16 | Tax Reporting Exportability              | Tax/Export     | P1       | **PASS**                   |
 | FQ17 | Terminal Payment Failure Recovery        | Terminal       | P1       | **PASS**                   |
 | FQ18 | Promotion Discount Penny Distribution    | Promotions     | P2       | **PASS**                   |
 | FQ19 | Sale FSM Guard Completeness              | State Machine  | P1       | **PASS**                   |
@@ -568,7 +568,7 @@ N/A:       2/30  (7%)    [not applicable - already counted in PASS]
 **By priority:**
 
 - P0 (10 questions): 7 PASS, 1 PARTIAL, 2 FAIL (FQ5 overpayment, FQ6 refund FSM, FQ15 tax)
-- P1 (13 questions): 9 PASS, 2 PARTIAL, 2 FAIL (FQ14 flag integrity, FQ20 void reversal)
+- P1 (13 questions): 10 PASS, 1 PARTIAL, 2 FAIL (FQ14 flag integrity, FQ20 void reversal)
 - P2 (4 questions): 2 PASS, 0 PARTIAL, 2 FAIL (FQ21 receipt audit, FQ28 carry-forward)
 
 ### Verdict Details
@@ -589,8 +589,8 @@ N/A:       2/30  (7%)    [not applicable - already counted in PASS]
 | FQ12 | **PASS**    | `closeRegister` computes expected cash from `cash_drawer_movements`. Cash movements recorded for every cash sale via `computeCashDrawerSaleMovementCents`. Variance flagged with configurable threshold.                                                                                                     |
 | FQ13 | **PASS**    | `openRegister` has `reconcileActiveRegisterSessionsAfterOpen` that auto-closes stale sessions. Race resolution via unique constraint. Auto-closed sessions get reconciliation attempt.                                                                                                                       |
 | FQ14 | **FAIL**    | `resolveReconciliationFlag` targets flags by array index in a JSON column. If flags are regenerated or reordered between read and resolve, wrong flag is resolved. No CAS guard. No stable flag ID.                                                                                                          |
-| FQ15 | **FAIL**    | Tax amount is passed from client (`rawItem.taxCents`). No server-side tax rate lookup or computation. If frontend sends 0, tax is 0. Seven tax classes defined but no rate resolution.                                                                                                                       |
-| FQ16 | **PARTIAL** | `exportTaxSummaryCsv` exists with jurisdiction breakdown. But since tax collection is client-supplied (FQ15), export accuracy depends entirely on frontend correctness. Structure is good, data may be wrong.                                                                                                |
+| FQ15 | **PASS**    | Fixed: `getTenantTaxRateBps` reads from `sales_tax_settings`. Checkout uses `computeLineTaxCents` server-side. Seven tax classes defined with proper rate resolution.                                                                                                                                        |
+| FQ16 | **PASS**    | `exportTaxSummaryCsv` exists with jurisdiction breakdown. FQ15 now fixed: tax is server-computed via `getTenantTaxRateBps` + `computeLineTaxCents`. Export data is now accurate.                                                                                                                             |
 | FQ17 | **PASS**    | Stripe adapter returns structured result (never throws). Circuit breaker wraps all Stripe calls. Status check via PaymentIntent. Unresolved payments return `failed` status with error context.                                                                                                              |
 | FQ18 | **PASS**    | `evaluatePromotionForLines` uses proportional distribution with largest-first remainder. Sum of line discounts equals total discount. Clamped to never exceed eligible subtotal.                                                                                                                             |
 | FQ19 | **PASS**    | `voidSale` uses `canVoid()`. Payment path uses `computeSaleStatus`. Checkout uses `markSaleAsCheckoutFailed` which sets voided directly (valid for unfinished sales). All status writes use CAS guards (`.eq('status', current)`).                                                                           |
@@ -628,4 +628,3 @@ N/A:       2/30  (7%)    [not applicable - already counted in PASS]
 
 10. FQ9 - commerce-to-ledger: add real-time drift detection
 11. FQ25 - cross-report consistency: add reconciliation check between P&L and daily reports
-12. FQ16 - tax export: depends on FQ15 (server-side rates)
