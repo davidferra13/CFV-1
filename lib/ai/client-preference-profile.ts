@@ -48,7 +48,7 @@ export async function buildClientPreferenceProfile(
     db
       .from('events')
       .select(
-        'occasion, guest_count, event_date, status, quoted_price_cents, dietary_restrictions, allergies, special_requests, service_style'
+        'occasion, guest_count, event_date, status, quoted_price_cents, dietary_restrictions, allergies, special_requests, service_style, ambiance_notes'
       )
       .eq('client_id', clientId)
       .eq('tenant_id', user.tenantId!)

@@ -119,9 +119,11 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   // Search events (occasion, notes, address, status - scoped by tenant_id).
   const { data: events } = await db
     .from('events')
-    .select('id, occasion, event_date, status, location_address, special_requests')
+    .select('id, occasion, event_date, status, location_address, special_requests, ambiance_notes')
     .eq('tenant_id', chef.tenantId!)
-    .or(`occasion.ilike.${q},location_address.ilike.${q},special_requests.ilike.${q}`)
+    .or(
+      `occasion.ilike.${q},location_address.ilike.${q},special_requests.ilike.${q},ambiance_notes.ilike.${q}`
+    )
     .limit(8)
 
   if (events) {

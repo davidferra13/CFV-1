@@ -265,7 +265,7 @@ export async function getEventBriefPrintData(eventId: string) {
       guest_count, occasion, service_style,
       location_address, location_city, location_state, location_zip,
       location_notes, access_instructions, kitchen_notes, site_notes,
-      special_requests, dietary_restrictions, allergies,
+      special_requests, dietary_restrictions, allergies, ambiance_notes,
       menu_id, client_id, status,
       clients(full_name, phone, email, allergies, dietary_restrictions, equipment_available, kitchen_constraints, parking_instructions, house_rules)
     `
@@ -337,6 +337,7 @@ export async function getEventBriefPrintData(eventId: string) {
       specialRequests: event.special_requests,
       dietaryRestrictions: event.dietary_restrictions,
       allergies: event.allergies,
+      ambianceNotes: event.ambiance_notes ?? null,
       status: event.status,
     },
     client: client

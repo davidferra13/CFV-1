@@ -20,6 +20,7 @@ export type ExecutionSheetData = {
     dietary_restrictions: string[]
     allergies: string[]
     special_requests: string | null
+    ambiance_notes: string | null
     service_style: string
     location_address: string | null
     location_city: string | null
@@ -71,7 +72,7 @@ export async function fetchExecutionSheetData(eventId: string): Promise<Executio
     .select(
       `
       occasion, event_date, serve_time, arrival_time, guest_count,
-      dietary_restrictions, allergies, special_requests, service_style,
+      dietary_restrictions, allergies, special_requests, ambiance_notes, service_style,
       location_address, location_city, location_state,
       client:clients(full_name, dietary_restrictions, allergies)
     `
@@ -270,6 +271,7 @@ export async function fetchExecutionSheetData(eventId: string): Promise<Executio
       dietary_restrictions: event.dietary_restrictions ?? [],
       allergies: event.allergies ?? [],
       special_requests: event.special_requests,
+      ambiance_notes: (event as any).ambiance_notes ?? null,
       service_style: event.service_style,
       location_address: event.location_address ?? null,
       location_city: event.location_city ?? null,

@@ -1546,6 +1546,7 @@ async function loadEventEntity(
          quoted_price_cents, payment_status, kitchen_notes,
          prep_list_ready, grocery_list_ready, timeline_ready,
          menu_approval_status, menu_sent_at, menu_approved_at, menu_revision_notes,
+         ambiance_notes,
          client:clients(full_name, email, phone, dietary_restrictions, allergies, vibe_notes, loyalty_tier, loyalty_points)`
       )
       .eq('id', eventId)

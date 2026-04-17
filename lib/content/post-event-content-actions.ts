@@ -155,7 +155,7 @@ export async function generateContentDraft(
     .select(
       `
       id, occasion, event_date, guest_count, service_style, location_city,
-      special_requests, course_count, client_id, status,
+      special_requests, course_count, client_id, status, ambiance_notes,
       clients(full_name, nda_active, nda_coverage, photo_permission)
     `
     )

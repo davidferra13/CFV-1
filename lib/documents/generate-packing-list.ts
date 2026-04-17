@@ -92,7 +92,7 @@ export async function fetchPackingListData(eventId: string): Promise<PackingList
       occasion, event_date, departure_time,
       location_address, location_city, location_state,
       access_instructions, service_style, special_requests,
-      allergies,
+      allergies, ambiance_notes,
       client:clients(
         full_name, equipment_must_bring, kitchen_notes, house_rules, allergies
       )

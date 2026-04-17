@@ -165,7 +165,7 @@ export async function generateCaption(
     .select(
       `
       occasion, event_date, guest_count, service_style, location_city,
-      special_requests, course_count, client_id
+      special_requests, course_count, client_id, ambiance_notes
     `
     )
     .eq('id', eventId)

@@ -56,7 +56,7 @@ export async function generateServiceTimeline(eventId: string): Promise<ServiceT
     db
       .from('events')
       .select(
-        'occasion, guest_count, event_date, serve_time, arrival_time, location_address, service_style, dietary_restrictions, allergies, special_requests'
+        'occasion, guest_count, event_date, serve_time, arrival_time, location_address, service_style, dietary_restrictions, allergies, special_requests, ambiance_notes'
       )
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)

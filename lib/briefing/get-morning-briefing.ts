@@ -147,7 +147,7 @@ export async function getMorningBriefing(): Promise<MorningBriefing> {
     db
       .from('events')
       .select(
-        'id, occasion, event_date, serve_time, departure_time, guest_count, location_address, status, dietary_restrictions, client_id'
+        'id, occasion, event_date, serve_time, departure_time, guest_count, location_address, status, dietary_restrictions, ambiance_notes, client_id'
       )
       .eq('tenant_id', tenantId)
       .eq('event_date', today)

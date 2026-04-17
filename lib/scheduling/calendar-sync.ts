@@ -126,7 +126,7 @@ export async function syncEventToGoogleCalendar(
     const { data: event } = await db
       .from('events')
       .select(
-        'id, occasion, event_date, serve_time, guest_count, location_address, location_city, location_state, special_requests, google_calendar_event_id'
+        'id, occasion, event_date, serve_time, guest_count, location_address, location_city, location_state, special_requests, ambiance_notes, google_calendar_event_id'
       )
       .eq('id', eventId)
       .eq('tenant_id', chef.tenantId!)
@@ -149,6 +149,7 @@ export async function syncEventToGoogleCalendar(
 
     const description = [
       event.special_requests ? `Notes: ${event.special_requests}` : '',
+      (event as any).ambiance_notes ? `Atmosphere: ${(event as any).ambiance_notes}` : '',
       event.guest_count ? `Guests: ${event.guest_count}` : '',
       `ChefFlow Event ID: ${event.id}`,
     ]

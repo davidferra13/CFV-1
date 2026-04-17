@@ -61,7 +61,7 @@ export async function generateAIStaffBriefing(eventId: string): Promise<AIStaffB
     db
       .from('events')
       .select(
-        'occasion, guest_count, event_date, serve_time, arrival_time, location_address, service_style, dietary_restrictions, allergies, special_requests, kitchen_notes'
+        'occasion, guest_count, event_date, serve_time, arrival_time, location_address, service_style, dietary_restrictions, allergies, special_requests, kitchen_notes, ambiance_notes'
       )
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)

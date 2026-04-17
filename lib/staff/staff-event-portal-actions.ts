@@ -36,6 +36,7 @@ export type StaffEventData = {
     kitchenNotes: string | null
     siteNotes: string | null
     specialRequests: string | null
+    ambianceNotes: string | null
   }
   dietaryAlerts: {
     allergies: string[]
@@ -299,7 +300,8 @@ export async function getStaffEventView(
         id, occasion, event_date, serve_time, arrival_time, guest_count,
         service_style, location_address, location_city, location_state,
         location_zip, location_notes, access_instructions, kitchen_notes,
-        site_notes, special_requests, dietary_restrictions, allergies
+        site_notes, special_requests, dietary_restrictions, allergies,
+        ambiance_notes
       `
       )
       .eq('id', t.event_id)
@@ -369,6 +371,7 @@ export async function getStaffEventView(
         kitchenNotes: e.kitchen_notes,
         siteNotes: e.site_notes,
         specialRequests: e.special_requests,
+        ambianceNotes: e.ambiance_notes ?? null,
       },
       dietaryAlerts: {
         allergies: e.allergies ?? [],
