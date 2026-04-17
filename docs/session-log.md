@@ -803,6 +803,28 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on departure: tsc has 6 pre-existing errors (none from this session)
 - Notes: Scorecard 43/57 Working, 12 Partial, 2 Missing, 0 Broken (75%). 4 fixes shipped. 12 Partial items documented in spec Gap Inventory with severity ranking. Highest remaining: Q9 (contract merge fields), Q28 (guest dietary -> menu editor). Session digest written.
 
+## 2026-04-17 ~06:00 EST
+
+- Agent: Builder (Opus 4.6)
+- Task: L10/L11 Cross-Actor Cohesiveness Audit - stale verdict sweep + code fixes
+- Status: completed
+- Files touched:
+  - lib/commerce/register-actions.ts (FQ11 tip auto-sync on register close)
+  - app/(chef)/events/[id]/page.tsx (Q49 multi-menu query refactor)
+  - app/(chef)/events/[id]/\_components/event-detail-money-tab.tsx (Q49 type + FQ27 labels)
+  - app/(chef)/events/[id]/\_components/event-detail-overview-tab.tsx (Q49 type)
+  - app/(chef)/events/[id]/\_components/event-detail-ops-tab.tsx (Q49 type)
+  - components/finance/ProfitAndLossReport.tsx (FQ27 net revenue label)
+  - components/commerce/shift-report.tsx (FQ27 gross revenue label)
+  - app/(chef)/dashboard/\_sections/restaurant-metrics.tsx (FQ27 subtitle)
+  - docs/specs/chef-user-journey-interrogation.md (Q7/Q19/Q41/Q49 verdicts + scorecard)
+  - docs/specs/commerce-financial-integrity-interrogation.md (FQ11/FQ15/FQ16/FQ27 + scorecard corrected 17/2/7 -> 28/2/0)
+  - docs/specs/restaurant-adoption-interrogation.md (RQ13 missing from scorecard)
+  - docs/specs/scheduled-jobs-integrity-interrogation.md (SQ3 count fix)
+- Commits: 17595351b, 0795d4dad, 7c69dd368, 3b9e1befd, fc444088b, a5c8af3fb
+- Build state on departure: not verified (no structural changes, business logic + labels only)
+- Notes: 6 stale verdicts corrected (features existed, verdicts not updated). 3 scorecard counting errors fixed. 3 code fixes shipped (FQ11 tip sync, FQ27 gross/net labels, Q49 multi-menu). Final tally: 179 PASS, 17 PARTIAL, 1 FAIL across all 6 specs. 17 remaining PARTIALs are genuine gaps. Session digest written.
+
 ## 2026-04-17 (tsc sweep)
 
 - Agent: Builder (Opus)
