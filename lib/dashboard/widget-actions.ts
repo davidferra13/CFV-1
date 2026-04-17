@@ -290,6 +290,8 @@ export interface ShoppingWindowItem {
   daysUntil: number
   hasGroceryList: boolean
   status: string
+  /** Computed grocery deadline from peak windows (when available) */
+  groceryDeadline: string | null
 }
 
 export async function getShoppingWindowItems(daysAhead = 3): Promise<ShoppingWindowItem[]> {
@@ -300,6 +302,7 @@ export async function getShoppingWindowItems(daysAhead = 3): Promise<ShoppingWin
   const cutoff = new Date()
   cutoff.setDate(cutoff.getDate() + daysAhead)
 
+  // Query events within the direct window (0-N days)
   const { data: events } = await db
     .from('events')
     .select('id, occasion, event_date, status, client:clients(id, full_name)')
@@ -309,24 +312,73 @@ export async function getShoppingWindowItems(daysAhead = 3): Promise<ShoppingWin
     .in('status', ['accepted', 'paid', 'confirmed'])
     .order('event_date', { ascending: true })
 
-  if (!events || events.length === 0) return []
+  // Also query events 4-7 days out (may have grocery deadlines within the window)
+  const extendedCutoff = new Date()
+  extendedCutoff.setDate(extendedCutoff.getDate() + 7)
+  const dayAfterCutoff = new Date(cutoff)
+  dayAfterCutoff.setDate(dayAfterCutoff.getDate() + 1)
 
-  // Check which events have grocery lists
-  const eventIds = events.map((e: any) => e.id)
+  const { data: extendedEvents } = await db
+    .from('events')
+    .select('id, occasion, event_date, status, client:clients(id, full_name)')
+    .eq('tenant_id', user.tenantId!)
+    .gte('event_date', _liso(dayAfterCutoff))
+    .lte('event_date', _liso(extendedCutoff))
+    .in('status', ['accepted', 'paid', 'confirmed'])
+    .order('event_date', { ascending: true })
+
+  const directEvents: any[] = events || []
+  const farEvents: any[] = extendedEvents || []
+
+  if (directEvents.length === 0 && farEvents.length === 0) return []
+
+  // Check grocery lists for all events
+  const allEventIds = [...directEvents, ...farEvents].map((e: any) => e.id)
   const { data: groceryLists } = await db
     .from('grocery_lists')
     .select('event_id')
-    .in('event_id', eventIds)
-
+    .in('event_id', allEventIds)
   const eventsWithLists = new Set((groceryLists || []).map((g: any) => g.event_id))
 
-  return events.map((e: any) => {
+  // Compute prep timelines for far events to check grocery deadlines
+  // Import dynamically to avoid circular deps (getEventPrepTimeline is a server action)
+  const { getEventPrepTimeline } = await import('@/lib/prep-timeline/actions')
+  const farTimelines = await Promise.all(
+    farEvents.map(async (e: any) => {
+      try {
+        const result = await getEventPrepTimeline(e.id)
+        return { eventId: e.id, groceryDeadline: result.timeline?.groceryDeadline ?? null }
+      } catch {
+        return { eventId: e.id, groceryDeadline: null }
+      }
+    })
+  )
+  const farDeadlineMap = new Map(farTimelines.map((t) => [t.eventId, t.groceryDeadline]))
+
+  // Also compute timelines for direct events (to show grocery deadline info)
+  const directTimelines = await Promise.all(
+    directEvents.map(async (e: any) => {
+      try {
+        const result = await getEventPrepTimeline(e.id)
+        return { eventId: e.id, groceryDeadline: result.timeline?.groceryDeadline ?? null }
+      } catch {
+        return { eventId: e.id, groceryDeadline: null }
+      }
+    })
+  )
+  const directDeadlineMap = new Map(directTimelines.map((t) => [t.eventId, t.groceryDeadline]))
+
+  // Build result: direct events always included, far events only if groceryDeadline is within window
+  const items: ShoppingWindowItem[] = []
+
+  for (const e of directEvents) {
     const eventDate = new Date(dateToDateString(e.event_date as Date | string) + 'T00:00:00')
     const daysUntil = Math.max(
       0,
       Math.ceil((eventDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
     )
-    return {
+    const gd = directDeadlineMap.get(e.id)
+    items.push({
       eventId: e.id,
       occasion: e.occasion || 'Untitled Event',
       eventDate: e.event_date,
@@ -334,8 +386,43 @@ export async function getShoppingWindowItems(daysAhead = 3): Promise<ShoppingWin
       daysUntil,
       hasGroceryList: eventsWithLists.has(e.id),
       status: e.status,
-    }
+      groceryDeadline: gd ? _liso(gd) : null,
+    })
+  }
+
+  for (const e of farEvents) {
+    const gd = farDeadlineMap.get(e.id)
+    if (!gd) continue // No timeline or no grocery deadline; skip
+    const gdStr = _liso(gd)
+    const gdDate = new Date(gdStr + 'T00:00:00')
+    const gdDaysUntil = Math.ceil((gdDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    if (gdDaysUntil > daysAhead) continue // Grocery deadline is beyond window; skip
+
+    const eventDate = new Date(dateToDateString(e.event_date as Date | string) + 'T00:00:00')
+    const daysUntil = Math.max(
+      0,
+      Math.ceil((eventDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    )
+    items.push({
+      eventId: e.id,
+      occasion: e.occasion || 'Untitled Event',
+      eventDate: e.event_date,
+      clientName: e.client?.full_name ?? 'Unknown',
+      daysUntil,
+      hasGroceryList: eventsWithLists.has(e.id),
+      status: e.status,
+      groceryDeadline: gdStr,
+    })
+  }
+
+  // Sort by earliest actionable date (grocery deadline or event date)
+  items.sort((a, b) => {
+    const aDate = a.groceryDeadline || a.eventDate
+    const bDate = b.groceryDeadline || b.eventDate
+    return aDate.localeCompare(bDate)
   })
+
+  return items
 }
 
 // ============================================
@@ -652,14 +739,14 @@ export async function getBookedDates(): Promise<{ booked: string[]; tentative: s
 
 export async function getUnreadHubMessages(limit = 5): Promise<UnreadHubGroup[]> {
   const user = await requireChef()
-  const db: any = createServerClient()
+  const db: any = createServerClient({ admin: true })
 
   // Get hub profile for this user
   const { data: profile } = await db
-    .from('hub_profiles')
+    .from('hub_guest_profiles')
     .select('id')
-    .eq('user_id', user.id)
-    .single()
+    .eq('auth_user_id', user.userId)
+    .maybeSingle()
 
   if (!profile) return []
 
@@ -679,10 +766,11 @@ export async function getUnreadHubMessages(limit = 5): Promise<UnreadHubGroup[]>
 
     // Count messages after last_read_at
     let query = db
-      .from('hub_group_messages')
-      .select('id, content, created_at', { count: 'exact' })
+      .from('hub_messages')
+      .select('id, body, created_at', { count: 'exact' })
       .eq('group_id', m.group_id)
-      .neq('sender_id', profile.id)
+      .neq('author_profile_id', profile.id)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .limit(1)
 
@@ -699,7 +787,7 @@ export async function getUnreadHubMessages(limit = 5): Promise<UnreadHubGroup[]>
         groupName: group.name ?? 'Unnamed Group',
         unreadCount: count,
         lastMessageAt: latest?.created_at ?? '',
-        lastMessagePreview: (latest?.content ?? '').slice(0, 80),
+        lastMessagePreview: (latest?.body ?? '').slice(0, 80),
       })
     }
   }

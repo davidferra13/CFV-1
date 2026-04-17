@@ -62,11 +62,11 @@
 
 ## Domain 6: Social Feed Integration
 
-| #   | Question                                                     | Answer                                                                                                                                              | Status                 |
-| --- | ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| 31  | Do community circle messages appear in the chef social feed? | Yes. `getChefSocialFeed()` -> `getSocialFeed()` queries by membership. No tenant/type filter.                                                       | BUILT                  |
-| 32  | Do community circle messages appear in the client feed?      | Yes. Same `getSocialFeed()` path via client hub profile.                                                                                            | BUILT                  |
-| 33  | Is the dashboard unread hub widget working?                  | **No.** `getUnreadHubMessages()` references wrong tables (`hub_profiles`, `hub_group_messages`). Pre-existing bug, not caused by community circles. | **GAP** (pre-existing) |
+| #   | Question                                                     | Answer                                                                                                                                                                   | Status |
+| --- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
+| 31  | Do community circle messages appear in the chef social feed? | Yes. `getChefSocialFeed()` -> `getSocialFeed()` queries by membership. No tenant/type filter.                                                                            | BUILT  |
+| 32  | Do community circle messages appear in the client feed?      | Yes. Same `getSocialFeed()` path via client hub profile.                                                                                                                 | BUILT  |
+| 33  | Is the dashboard unread hub widget working?                  | Fixed. `getUnreadHubMessages()` corrected: `hub_profiles` -> `hub_guest_profiles`, `hub_group_messages` -> `hub_messages`, wrong column names fixed, admin client added. | BUILT  |
 
 ## Domain 7: Cross-System Connections
 
@@ -119,8 +119,8 @@
 
 | Status | Count |
 | ------ | ----- |
-| BUILT  | 46    |
-| GAP    | 3     |
+| BUILT  | 47    |
+| GAP    | 2     |
 | N/A    | 5     |
 
 ### Resolved GAPs (first sweep)
@@ -144,4 +144,4 @@
 
 1. **Q10: Platform-wide moderation** - Circle owners can moderate their own circles. No admin-level moderation tool for platform abuse. Acceptable at current scale.
 2. **Q40: Content moderation on circle names** - No automated filtering. Acceptable at current scale; add report mechanism when needed.
-3. **Q33: Dashboard unread widget** - Pre-existing bug (wrong table refs: `hub_profiles` instead of `hub_guest_profiles`). Not caused by community circles.
+3. ~~**Q33: Dashboard unread widget**~~ - Fixed. Was pre-existing bug (wrong table refs). Corrected all 5 column/table names + added admin client.
