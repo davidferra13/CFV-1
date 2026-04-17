@@ -498,6 +498,14 @@ export async function closeRegister(
     })
   }
 
+  // Auto-sync commerce tips to tip_entries ledger (non-blocking)
+  try {
+    const { importTipsFromRegister } = await import('@/lib/staff/tip-actions')
+    await importTipsFromRegister(closedAtIso.slice(0, 10))
+  } catch (error) {
+    console.error('[non-blocking] Failed to auto-import tips after register close:', error)
+  }
+
   revalidatePath('/commerce')
   return {
     expectedCash,

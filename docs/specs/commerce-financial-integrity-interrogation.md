@@ -559,9 +559,9 @@
 ## Investigation Results
 
 ```
-PASS:     17/30  (57%)
-PARTIAL:   2/30  (7%)
-FAIL:      7/30  (23%)   [real money bugs]
+PASS:     28/30  (93%)
+PARTIAL:   2/30  (7%)    [FQ9 commerce-to-ledger, FQ25 P&L report divergence]
+FAIL:      0/30  (0%)
 N/A:       2/30  (7%)    [not applicable - already counted in PASS]
 ```
 
@@ -610,20 +610,15 @@ N/A:       2/30  (7%)    [not applicable - already counted in PASS]
 
 ## Execution Strategy
 
-### Sprint 1 (P0 money bugs - fix immediately)
+### Sprint 1 (P0 money bugs) - DONE
 
-1. FQ5 - overpayment guard: subtract already-paid before comparing
-2. FQ6 - refund FSM: replace hardcoded status with `computeSaleStatus`
-3. FQ20 - void reversal: call `reverseSaleDeduction` + reverse product stock on void
-4. FQ15 - tax rate: add configurable tax rate table (server-side computation)
-5. FQ28 - carry-forward: rewrite to derive from ledger entries
+All 5 items fixed: FQ5, FQ6, FQ15, FQ20, FQ28.
 
-### Sprint 2 (P1 operational integrity)
+### Sprint 2 (P1 operational integrity) - DONE
 
-6. FQ14 - reconciliation flags: add stable flag IDs, replace array index targeting
-7. FQ21 - receipt audit: persist delivery records
+All items fixed: FQ14, FQ21, FQ11, FQ16, FQ27.
 
-### Sprint 3 (P2 polish + remaining partials)
+### Remaining (2 PARTIALs)
 
-10. FQ9 - commerce-to-ledger: add real-time drift detection
-11. FQ25 - cross-report consistency: add reconciliation check between P&L and daily reports
+1. FQ9 - commerce-to-ledger: add real-time drift detection (currently batch-only via daily reconciliation)
+2. FQ25 - cross-report consistency: add reconciliation check between P&L and daily reports
