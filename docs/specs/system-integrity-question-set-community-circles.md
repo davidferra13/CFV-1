@@ -113,35 +113,83 @@
 | 52  | Does `HubGroupCard` default emoji (🍽️) make sense for community circles?               | Fixed. Default emoji is now 💬 for `group_type === 'community'`, 🍽️ for dinner circles.                                               | BUILT           |
 | 53  | Can partner/staff roles create or join community circles?                              | No. `requireAuth()` accepts chef/client only. Partners/staff are excluded by design. Documented, not a gap.                           | N/A (by design) |
 
+## Domain 12: Chef UI Label Cohesiveness (Third Sweep)
+
+| #   | Question                                                                   | Answer                                                                                         | Status |
+| --- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------ |
+| 54  | Does chef nav say "Dinner Circles" when it now includes community circles? | Fixed. Label changed to "Circles". Added "Browse Community" submenu linking to `/hub/circles`. | BUILT  |
+| 55  | Does chef `/circles` page say "Dinner Circles"?                            | Fixed. Title: "Circles". Subtitle: "Dinner circles, community groups, and social feed".        | BUILT  |
+| 56  | Does chef dashboard section say "Dinner Circles"?                          | Fixed. Label: "Circles". Empty state: "No active circles yet" + "browse community circles".    | BUILT  |
+
+## Domain 13: Client UI Label Cohesiveness (Third Sweep)
+
+| #   | Question                                                              | Answer                                                                               | Status |
+| --- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ------ |
+| 57  | Does `/my-hub/notifications` title say "Dinner Circle Notifications"? | Fixed. Title: "Circle Notifications". Subtitle: "Unread updates from your circles."  | BUILT  |
+| 58  | Does `/my-hub/friends` title say "Dinner Circle"?                     | Fixed. Title: "My Circle". Subtitle: "Friends you connect with across your circles." | BUILT  |
+
+## Domain 14: Cross-System Data Flows (Third Sweep)
+
+| #   | Question                                                               | Answer                                                                                                                         | Status |
+| --- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------ |
+| 59  | Does `processDigests()` include community circles?                     | Yes. Queries `hub_group_members` by `digest_mode`. No tenant_id or group_type filter.                                          | BUILT  |
+| 60  | Do polls work in community circles?                                    | Yes. `poll-actions.ts` uses `groupId` + `profileToken` only. No tenant dependency.                                             | BUILT  |
+| 61  | Does `getHubUnreadCounts()` include community circles for clients?     | Yes. Queries `hub_group_members` by `profile_id`. No tenant filter.                                                            | BUILT  |
+| 62  | Does push notification subscription work for community circle members? | Yes. `hub-push-subscriptions.ts` uses `profileId` only.                                                                        | BUILT  |
+| 63  | Does `circle-lookup.ts` crash on community circles?                    | No. Guards on `tenant_id` being truthy (lines 39, 54). Returns null for community circles. All callers handle null gracefully. | BUILT  |
+| 64  | Does meal board work in community circles?                             | Yes. Uses `group_id` only. Food-topic community circles may find this useful.                                                  | BUILT  |
+| 65  | Does email-to-circle routing affect community circles?                 | No. Routes via tenant-specific reply-to address lookup. Community circles have no email routing.                               | N/A    |
+| 66  | Can admin panel see community circles?                                 | Yes. `getGlobalHubGroups()` queries all hub_groups. Community circles show with `tenant_id: null`.                             | BUILT  |
+
+## Domain 15: System Boundaries (Third Sweep)
+
+| #   | Question                                                              | Answer                                                                                                                                            | Status                 |
+| --- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| 67  | Does account deletion clean up community circle memberships?          | **No.** `account-deletion-actions.ts` does not touch `hub_group_members` or `hub_guest_profiles`. Orphaned memberships and owned circles persist. | **GAP**                |
+| 68  | Does Remy know about community circles?                               | No. No `/hub/circles` in Remy's navigation options. Clients cannot discover community circles via Remy.                                           | **GAP** (low severity) |
+| 69  | Do community circle pages have Open Graph metadata for link previews? | No. `page.tsx` uses static `metadata` with `robots: noindex`. No dynamic OG title/description from circle name. Sharing a link shows no preview.  | **GAP** (low severity) |
+| 70  | Is community circles in the feature classification map?               | No entry. Per monetization policy (all features free), no classification needed.                                                                  | N/A (correct)          |
+| 71  | Does the public `/hub` landing page mention community circles?        | No. Only describes event-based Dinner Circles. Separate entry at `/hub/circles`.                                                                  | N/A (separate entry)   |
+| 72  | Does ticket webhook auto-join affect community circles?               | No. Ticket webhooks look up event-linked circles only. Community circles have no events.                                                          | N/A (correct)          |
+| 73  | Does the embed widget relate to community circles?                    | No. Embed handles inquiry capture. Separate system.                                                                                               | N/A (separate)         |
+
 ---
 
 ## Summary
 
 | Status | Count |
 | ------ | ----- |
-| BUILT  | 47    |
-| GAP    | 2     |
-| N/A    | 5     |
+| BUILT  | 58    |
+| GAP    | 5     |
+| N/A    | 10    |
 
 ### Resolved GAPs (first sweep)
 
-1. **Q16: Guest Status Banner** - Skip lifecycle queries for community circles. No misleading data.
-2. **Q28: Chef circles page** - `getChefCircles()` now merges community circles via membership lookup.
-3. **Q44: Archive action** - New `archiveCommunityCircle()` uses universal auth + owner verification.
+1. **Q16: Guest Status Banner** - Skip lifecycle queries for community circles.
+2. **Q28: Chef circles page** - `getChefCircles()` merges community circles via membership lookup.
+3. **Q44: Archive action** - `archiveCommunityCircle()` uses universal auth + owner verification.
 4. **Q38/39: Rate limiting** - Creation: 5/hour per user. Discovery: 60/15min per IP.
 5. **Q17/18: Welcome card + join prompt** - Conditional text for community vs dinner circles.
 6. **Q41: SEO** - Page-level `robots: index: true` overrides hub layout noindex.
 
 ### Resolved GAPs (second sweep)
 
-7. **Q47: Nav badge undercount** - `getCirclesUnreadCount()` now merges community circles via membership.
+7. **Q47: Nav badge undercount** - `getCirclesUnreadCount()` merges community circles via membership.
 8. **Q48: Join system message** - Conditional text for community vs dinner circles.
-9. **Q49: Join confirmation email** - Subject, body, and CTA all conditional on group_type.
-10. **Q50/51: Email templates** - Removed "Dinner Circle" from circle-message.tsx and circle-digest.tsx.
-11. **Q52: Default emoji** - Community circles default to 💬 instead of 🍽️.
+9. **Q49: Join confirmation email** - Subject, body, CTA all conditional on group_type.
+10. **Q50/51: Email templates** - Neutral language in circle-message and circle-digest.
+11. **Q52: Default emoji** - 💬 for community, 🍽️ for dinner.
 
-### Remaining GAPs (low severity, future work)
+### Resolved GAPs (third sweep)
 
-1. **Q10: Platform-wide moderation** - Circle owners can moderate their own circles. No admin-level moderation tool for platform abuse. Acceptable at current scale.
-2. **Q40: Content moderation on circle names** - No automated filtering. Acceptable at current scale; add report mechanism when needed.
-3. ~~**Q33: Dashboard unread widget**~~ - Fixed. Was pre-existing bug (wrong table refs). Corrected all 5 column/table names + added admin client.
+12. **Q33: Dashboard unread widget** - Fixed 5 wrong table/column refs in `getUnreadHubMessages()`.
+13. **Q54-56: Chef UI labels** - "Dinner Circles" -> "Circles" across nav, page, dashboard.
+14. **Q57-58: Client UI labels** - "Dinner Circle Notifications" -> "Circle Notifications", "Dinner Circle" -> "My Circle".
+
+### Remaining GAPs
+
+1. **Q10: Platform-wide moderation** - Circle owners moderate their own. No admin-level abuse tools. Acceptable at current scale.
+2. **Q40: Content moderation on circle names** - No automated filtering. Add report mechanism when needed.
+3. **Q67: Account deletion orphans** - Memberships and owned circles persist after deletion. Needs cleanup in `account-deletion-actions.ts`.
+4. **Q68: Remy awareness** - Remy cannot navigate to or suggest community circles. Low severity (clients have direct access via `/my-hub` and `/hub/circles`).
+5. **Q69: OG metadata** - No link preview when sharing community circle URLs. Needs dynamic `generateMetadata` on group page.

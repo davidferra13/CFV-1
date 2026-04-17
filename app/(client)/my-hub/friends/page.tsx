@@ -9,7 +9,7 @@ import { FriendsList } from '@/components/hub/friends-list'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { ArrowLeft } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'Dinner Circle' }
+export const metadata: Metadata = { title: 'My Circle' }
 
 export default async function MyFriendsPage() {
   await requireClient()
@@ -31,10 +31,8 @@ export default async function MyFriendsPage() {
       </Link>
 
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-stone-100">Dinner Circle</h1>
-        <p className="mt-1 text-stone-400">
-          Private, invite-only circle for people you already know and plan dinners with.
-        </p>
+        <h1 className="text-3xl font-bold text-stone-100">My Circle</h1>
+        <p className="mt-1 text-stone-400">Friends you connect with across your circles.</p>
       </div>
 
       <FriendsList

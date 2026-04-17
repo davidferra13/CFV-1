@@ -20,7 +20,7 @@ export async function DinnerCirclesSection() {
     return (
       <section>
         <div className="flex items-center justify-between mb-4">
-          <div className="section-label">Dinner Circles</div>
+          <div className="section-label">Circles</div>
           <Link
             href="/circles"
             className="inline-flex items-center gap-1.5 text-xs font-medium text-brand-400 hover:text-brand-300 transition-colors"
@@ -31,9 +31,9 @@ export async function DinnerCirclesSection() {
         </div>
         <div className="rounded-2xl border border-stone-800 bg-stone-900/50 p-8 text-center">
           <MessagesSquare className="mx-auto h-8 w-8 text-stone-600 mb-3" />
-          <p className="text-sm font-medium text-stone-400">No active Dinner Circles yet</p>
+          <p className="text-sm font-medium text-stone-400">No active circles yet</p>
           <p className="mt-1 text-xs text-stone-500">
-            Create one for your next event to keep guests in the loop.
+            Create one for your next event or browse community circles.
           </p>
           <Link
             href="/circles"
@@ -50,7 +50,7 @@ export async function DinnerCirclesSection() {
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
-        <div className="section-label">Dinner Circles</div>
+        <div className="section-label">Circles</div>
         <div className="flex items-center gap-3">
           <Link
             href="/circles"

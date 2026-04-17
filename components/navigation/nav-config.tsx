@@ -168,13 +168,14 @@ export const standaloneTop: NavItem[] = [
   },
   {
     href: '/circles',
-    label: 'Dinner Circles',
+    label: 'Circles',
     icon: MessagesSquare,
     coreFeature: true,
     tier: 'primary',
     subMenu: [
       { href: '/circles', label: 'All Circles' },
       { href: '/circles?tab=feed', label: 'Social Feed' },
+      { href: '/hub/circles', label: 'Browse Community' },
     ],
   },
   {
@@ -1045,9 +1046,19 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
-        href: '/community/templates',
-        label: 'Community Templates',
+        href: '/community',
+        label: 'Community',
         icon: FileText,
+        children: [
+          { href: '/community/directory', label: 'Chef Directory' },
+          { href: '/community/mentorship', label: 'Mentorship' },
+          { href: '/community/subcontracts', label: 'Subcontracts' },
+          { href: '/community/messaging', label: 'Messaging' },
+          { href: '/community/benchmarks', label: 'Benchmarks' },
+          { href: '/community/templates', label: 'Templates' },
+          { href: '/community/roadmap', label: 'Feature Board' },
+          { href: '/community/profile', label: 'My Profile' },
+        ],
       },
       {
         href: '/wix-submissions',

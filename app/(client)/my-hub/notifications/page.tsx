@@ -7,7 +7,7 @@ import { getHubUnreadCounts } from '@/lib/hub/notification-actions'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { NotificationsPanel } from './notifications-panel'
 
-export const metadata: Metadata = { title: 'Dinner Circle Notifications' }
+export const metadata: Metadata = { title: 'Circle Notifications' }
 
 export default async function MyHubNotificationsPage() {
   await requireClient()
@@ -25,8 +25,8 @@ export default async function MyHubNotificationsPage() {
       </Link>
 
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-stone-100">Dinner Circle Notifications</h1>
-        <p className="mt-1 text-stone-400">Private unread updates from your own dinner groups.</p>
+        <h1 className="text-3xl font-bold text-stone-100">Circle Notifications</h1>
+        <p className="mt-1 text-stone-400">Unread updates from your circles.</p>
       </div>
 
       <NotificationsPanel initialUnread={unread} />
