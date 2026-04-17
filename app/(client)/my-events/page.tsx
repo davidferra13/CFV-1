@@ -265,11 +265,31 @@ function ComingSoonWidget({ id }: { id: ClientDashboardWidgetId }) {
 }
 
 export default async function MyEventsPage() {
-  const [data, preferences, betaData] = await Promise.all([
-    getClientDashboardData(),
-    getClientDashboardPreferences(),
-    syncBetaChecklistProgress().catch(() => null),
-  ])
+  let data: Awaited<ReturnType<typeof getClientDashboardData>>
+  let preferences: Awaited<ReturnType<typeof getClientDashboardPreferences>>
+  let betaData: any
+  try {
+    ;[data, preferences, betaData] = await Promise.all([
+      getClientDashboardData(),
+      getClientDashboardPreferences(),
+      syncBetaChecklistProgress().catch(() => null),
+    ])
+  } catch (err) {
+    console.error('[MyEventsPage] Failed to load dashboard:', err)
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-stone-100">My Events</h1>
+          <p className="text-stone-400 mt-1">Your upcoming and past events</p>
+        </div>
+        <div className="rounded-xl border border-red-800/50 bg-red-950/30 p-6 text-center">
+          <p className="text-sm text-red-400">
+            Could not load your dashboard. Please refresh the page or try again later.
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   // Also fetch full beta checklist info for the component
   const betaChecklist = await getMyBetaChecklist().catch(() => null)
