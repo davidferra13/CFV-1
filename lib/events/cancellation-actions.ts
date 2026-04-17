@@ -384,8 +384,9 @@ export async function getCancellationHistory(): Promise<{
       .select(
         `
         id,
-        title,
+        occasion,
         event_date,
+        cancelled_at,
         updated_at,
         client_id,
         clients!inner(full_name)
@@ -393,7 +394,7 @@ export async function getCancellationHistory(): Promise<{
       )
       .eq('tenant_id', tenantId)
       .eq('status', 'cancelled')
-      .order('updated_at', { ascending: false })
+      .order('cancelled_at', { ascending: false })
       .limit(100)
 
     if (eventsErr) return { data: [], error: eventsErr.message }
@@ -411,8 +412,9 @@ export async function getCancellationHistory(): Promise<{
       const totalPaidCents = financials?.totalPaidCents ?? 0
       const totalRefundedCents = financials?.totalRefundedCents ?? 0
 
-      // Determine how many days before event it was cancelled
-      const cancelDate = new Date(event.updated_at)
+      // Use cancelled_at (set atomically during cancellation) instead of updated_at
+      // which can drift if the event row is touched by migrations or admin fixes
+      const cancelDate = new Date(event.cancelled_at || event.updated_at)
       const eventDate = new Date(event.event_date)
       const daysBeforeEvent = daysBetween(cancelDate, eventDate)
 
@@ -427,7 +429,7 @@ export async function getCancellationHistory(): Promise<{
         eventTitle: event.occasion,
         eventDate: event.event_date,
         clientName,
-        cancelledAt: event.updated_at,
+        cancelledAt: event.cancelled_at || event.updated_at,
         totalPaidCents,
         refundAmountCents: totalRefundedCents,
         feeRetainedCents,

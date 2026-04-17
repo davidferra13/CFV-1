@@ -38,8 +38,12 @@ export type NotificationAction =
   | 'refund_processed'
   | 'dispute_created'
   | 'gift_card_purchased'
+  | 'ticket_purchased'
+  | 'payment_amount_mismatch'
   | 'payment_due_approaching'
   | 'payment_overdue'
+  | 'cancellation_pending_refund'
+  | 'full_refund_active_event'
   // Chat
   | 'new_message'
   // Clients
@@ -188,8 +192,12 @@ export const NOTIFICATION_CONFIG: Record<
   refund_processed: { category: 'payment', icon: 'RotateCcw', toastByDefault: true },
   dispute_created: { category: 'payment', icon: 'ShieldAlert', toastByDefault: true },
   gift_card_purchased: { category: 'payment', icon: 'Gift', toastByDefault: true },
+  ticket_purchased: { category: 'payment', icon: 'Ticket', toastByDefault: true },
   payment_due_approaching: { category: 'payment', icon: 'Bell', toastByDefault: false },
   payment_overdue: { category: 'payment', icon: 'AlertCircle', toastByDefault: true },
+  payment_amount_mismatch: { category: 'payment', icon: 'AlertTriangle', toastByDefault: true },
+  cancellation_pending_refund: { category: 'payment', icon: 'RotateCcw', toastByDefault: true },
+  full_refund_active_event: { category: 'payment', icon: 'AlertCircle', toastByDefault: true },
 
   // Chat - silent by default (has its own unread system)
   new_message: { category: 'chat', icon: 'MessageCircle', toastByDefault: false },

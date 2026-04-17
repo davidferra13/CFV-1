@@ -23,7 +23,7 @@ const RECIPE_CATEGORIES = [
 
 const ParsedIngredientSchema = z.object({
   name: z.string().min(1),
-  quantity: z.number().default(1),
+  quantity: z.number().positive().default(1),
   unit: z.string().default('unit'),
   preparation_notes: z.string().nullable().default(null),
   is_optional: z.boolean().default(false),
@@ -61,7 +61,7 @@ export const ParsedRecipeSchema = z.object({
     method: z.string().min(1),
     method_detailed: z.string().nullable().default(null),
     ingredients: z.array(ParsedIngredientSchema).default([]),
-    yield_quantity: z.number().nullable().default(null),
+    yield_quantity: z.number().positive().nullable().default(null),
     yield_unit: z.string().nullable().default(null),
     yield_description: z.string().nullable().default(null),
     prep_time_minutes: z.number().nullable().default(null),

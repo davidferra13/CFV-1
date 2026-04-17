@@ -10,6 +10,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { revalidatePath } from 'next/cache'
 import type { Database } from '@/types/database'
 import { appendLedgerEntryInternal } from './append-internal'
 
@@ -46,11 +47,19 @@ export async function appendLedgerEntryForChef(
 ) {
   const user = await requireChef()
 
-  return appendLedgerEntryInternal({
+  const result = await appendLedgerEntryInternal({
     ...input,
     tenant_id: user.tenantId!,
     created_by: user.id,
   })
+
+  // Bust cached pages that display financial data
+  if (input.event_id) revalidatePath(`/events/${input.event_id}`)
+  revalidatePath('/events')
+  revalidatePath('/dashboard')
+  revalidatePath('/finance')
+
+  return result
 }
 
 /**
@@ -88,22 +97,27 @@ export async function createAdjustment({
   }
 
   // Generate a transaction_reference for idempotency - prevents double-click double-entry.
-  // If the caller provides an idempotency_key, use it; otherwise generate one from inputs.
+  // Deterministic key: same event + amount + description = same reference.
   const transaction_reference = idempotency_key
     ? `adj_${idempotency_key}`
-    : `adj_${event_id}_${amount_cents}_${Date.now()}`
+    : `adj_${event_id}_${amount_cents}_${description.slice(0, 32).replace(/\s+/g, '_')}`
 
+  // Handle negative adjustments (discounts, credits): the ledger requires
+  // is_refund=true for negative amounts. We route negative adjustments through
+  // the 'credit' entry type with is_refund=true so the sign guard is satisfied.
+  const isNegative = amount_cents < 0
   const result = await appendLedgerEntryInternal({
     tenant_id: user.tenantId!,
     client_id: event.client_id,
-    entry_type: 'adjustment',
-    amount_cents,
+    entry_type: isNegative ? 'credit' : 'adjustment',
+    amount_cents: isNegative ? amount_cents : amount_cents, // negative stays negative
     payment_method,
     description,
     event_id,
     transaction_reference,
     internal_notes: internal_notes || `Adjusted by ${user.email} at ${new Date().toISOString()}`,
     created_by: user.id,
+    is_refund: isNegative ? true : undefined,
   })
 
   // Log chef activity (non-blocking, captured in side_effect_failures)
@@ -141,6 +155,12 @@ export async function createAdjustment({
       }
     )
   }
+
+  // Bust cached pages that display financial data
+  revalidatePath(`/events/${event_id}`)
+  revalidatePath('/events')
+  revalidatePath('/dashboard')
+  revalidatePath('/finance')
 
   return result
 }

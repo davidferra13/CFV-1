@@ -8,7 +8,7 @@ import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import type { SaleChannel, TaxClass } from './constants'
-import { canVoid } from './sale-fsm'
+import { canVoid, computeSaleStatus } from './sale-fsm'
 import { appendPosAuditLog } from './pos-audit-log'
 import { assertPosManagerAccess, assertPosRoleAccess } from './pos-authorization'
 import { normalizeManualReason } from './mutation-reason'
@@ -306,6 +306,15 @@ export async function voidSale(saleId: string, reason: string) {
       sale_number: (sale as any).sale_number ?? null,
     },
   })
+
+  // Reverse inventory deductions (non-blocking side effects)
+  try {
+    const { reverseSaleDeduction, reverseProductStock } = await import('./inventory-bridge')
+    await reverseSaleDeduction(saleId)
+    await reverseProductStock(saleId)
+  } catch (err) {
+    console.error('[voidSale] Inventory reversal failed (non-blocking):', err)
+  }
 
   revalidatePath('/commerce')
 }

@@ -130,6 +130,15 @@ describe('isActorPermitted — chef permissions', () => {
   it('chef can cancel from accepted', () => {
     assert.equal(isActorPermitted('accepted', 'cancelled', 'chef'), true)
   })
+  it('chef can accept on behalf (proposed → accepted)', () => {
+    assert.equal(isActorPermitted('proposed', 'accepted', 'chef'), true)
+  })
+  it('chef can mark paid offline (accepted → paid)', () => {
+    assert.equal(isActorPermitted('accepted', 'paid', 'chef'), true)
+  })
+  it('chef can mark paid offline from draft (draft → paid)', () => {
+    assert.equal(isActorPermitted('draft', 'paid', 'chef'), true)
+  })
 })
 
 describe('isActorPermitted — client permissions', () => {
@@ -207,10 +216,9 @@ describe('validateTransition — returns { valid: false } for invalid paths', ()
     if (!result.valid) assert.ok(result.reason.includes('chef'))
   })
 
-  it('chef trying to pay (system-only action)', () => {
+  it('chef can mark paid offline (accepted → paid)', () => {
     const result = validateTransition('accepted', 'paid', 'chef')
-    assert.equal(result.valid, false)
-    if (!result.valid) assert.ok(result.reason.toLowerCase().includes('system'))
+    assert.equal(result.valid, true)
   })
 
   it('transitioning from terminal state (completed → anything)', () => {

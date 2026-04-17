@@ -1,122 +1,181 @@
 # ChefFlow AI Simulation Report
 
-_Auto-generated - last run: 2026-04-15T17:34:15.431Z_
-_Run ID: 771b4a9d-7024-4210-a34b-90b57c43a285_
+_Auto-generated - last run: 2026-04-16T03:28:09.422Z_
+_Run ID: 0e770ae9-1b62-4a91-bd2d-7e2db5f2f53d_
 
 ---
 
-We are given the latest run results (2026-04-15T17:34:15.431Z) and the prior run history.
+We are given the latest run results (2026-04-16T03:28:09.422Z) and the history of runs.
 
 Key points from the latest run:
 
 - Overall pass rate: 67%
-- Passing modules: inquiry_parse (100%), correspondence (100%), quote_draft (100%)
-- Failing modules: client_parse (0%), allergen_risk (100%), menu_suggestions (0%)
+- Failing modules: client_parse (0%), menu_suggestions (0%)
+- Passing modules: inquiry_parse (100%), allergen_risk (100%), correspondence (100%), quote_draft (100%)
 
-Wait, note: the problem says "Failing modules and sample failure reasons" for client_parse and menu_suggestions. But in the latest run, allergen_risk is 100% (passing).
+From the history (prior runs) we see that:
 
-However, the prior run history (from the provided history) shows that in the run on 2026-04-15 09:11 UTC (Run e77d7a44) we had:
-Passing: inquiry_parse, correspondence
-Failing: client_parse (0%), allergen_risk (0%), menu_suggestions (0%), quote_draft (0%)
+- In the run on 2026-04-15 09:11 UTC (Run e77d7a44) we had 40% pass rate and failing modules: client_parse (0%), allergen_risk (0%), menu_suggestions (0%), quote_draft (0%)
+- Then in the next run (2026-04-15 09:11 UTC - Run 108733c5) we had 67% pass rate and failing modules: allergen_risk (0%), menu_suggestions (0%)
+- Then in the run on 2026-04-15 17:34 UTC (Run 771b4a9d) and 2026-04-16 03:26 UTC (Run 363b59bb) we have 67% pass rate and failing modules: client_parse (0%), menu_suggestions (0%)
 
-But in the latest run (2026-04-15T17:34:15.431Z) we have:
-Passing: inquiry_parse, client_parse, correspondence, quote_draft
-Failing: allergen_risk (0%)? Wait, no: the latest run says "allergen_risk: 100% (1/1)".
+Important: The problem states that we should only recommend fixes for modules that are CURRENTLY failing (in this run). So we focus on client_parse and menu_suggestions.
 
-Wait, the problem states:
-"Per-module: inquiry_parse: 100% (1/1), client_parse: 0% (0/1), allergen_risk: 100% (1/1), correspondence: 100% (1/1), menu_suggestions: 0% (0/1), quote_draft: 100% (1/1)"
+Also note: The history shows that in the run on 2026-04-15 09:11 UTC (Run e77d7a44) we had client_parse failing (0%) and then in the next run (Run 108733c5) client_parse passed (100%)? Actually, let's check:
 
-So in the latest run, client_parse is failing (0%) and menu_suggestions is failing (0%), but allergen_risk is passing (100%).
+From the provided history:
 
-But note: the prior run history (the long list of runs) shows that from 2026-04-06 to 2026-04-15, the allergen_risk module was failing (0%) in all runs until the run on 2026-04-15 09:11 UTC (Run 108733c5) where it passed (100%)? Actually, the run on 2026-04-15 09:11 UTC (Run 108733c5) is listed as having:
-Passing: inquiry_parse, client_parse, correspondence, quote_draft
-Failing: allergen_risk (0%), menu_suggestions (0%)
+- 2026-04-15 09:11 UTC - 40% pass rate - Run e77d7a44: Failing: client_parse (0%), allergen_risk (0%), menu_suggestions (0%), quote_draft (0%)
+- 2026-04-15 09:11 UTC - 67% pass rate - Run 108733c5: Failing: allergen_risk (0%), menu_suggestions (0%) -> so client_parse and quote_draft passed (100%)
+- Then 2026-04-15 17:34 UTC - 67% pass rate - Run 771b4a9d: Failing: client_parse (0%), menu_suggestions (0%) -> so allergen_risk and quote_draft passed (100%)
 
-Wait, the problem says:
-"## 2026-04-15 09:11 UTC - 67% pass rate - Run 108733c5
-Passing: inquiry_parse, client_parse, correspondence, quote_draft
-Failing: allergen_risk (0%), menu_suggestions (0%)"
-
-So in the run that is 67% pass rate (Run 108733c5) we had allergen_risk failing (0%) and menu_suggestions failing (0%).
-
-But the latest run (2026-04-15T17:34:15.431Z) is a new run that we are given. The problem says:
-"Here are the results from the latest automated simulation run (2026-04-15T17:34:15.431Z)"
-
-So we are to focus on the latest run.
-
-In the latest run (2026-04-15T17:34:15.431Z):
+So in the latest run (2026-04-16 03:26 UTC) we have:
 
 - client_parse: 0% (failing)
 - menu_suggestions: 0% (failing)
-- allergen_risk: 100% (passing)
 
-Therefore, the only failing modules in this run are client_parse and menu_suggestions.
+Therefore, we are currently failing on client_parse and menu_suggestions.
 
 We must write a report that:
 
-- Only includes fixes for modules that are CURRENTLY failing (so client_parse and menu_suggestions)
-- Acknowledge improvements: in the prior run (Run 108733c5) allergen_risk was failing (0%) but now in the latest run it's passing (100%). So we note that allergen_risk has improved.
+- Does not re-diagnose already-fixed issues (so we don't talk about the past failures that were fixed in the meantime? Actually, the problem says: "If the history below shows a module was previously failing and is now passing, acknowledge the improvement. Do not repeat recommendations for issues that have already been fixed." But note: in the latest run, client_parse is failing again? So we have to be careful.
 
-But note: the problem says: "If the history below shows a module was previously failing and is now passing, acknowledge the improvement. Do not repeat recommendations for issues that have already been fixed."
+However, the problem states: "Only recommend fixes for modules that are CURRENTLY failing in this run."
 
-So for allergen_risk: it was failing (0%) in the run on 2026-04-15 09:11 UTC (Run 108733c5) but now in the latest run it's passing (100%). So we can say: "Allergen risk module has improved from failing to passing in the latest run."
+So for the report:
 
-However, the problem says: "Only recommend fixes for modules that are CURRENTLY failing in this run." So we don't write a fix for allergen_risk because it's passing.
-
-Let's structure the report:
-
-1. ## Summary
-   - Overall health: 67% pass rate (good, but two modules failing)
+1. Summary:
+   - Overall health: 67% pass rate (good but not perfect)
    - Modules needing attention: client_parse and menu_suggestions (both 0%)
-   - Improvement: allergen_risk has moved from failing (0%) in the previous run (Run 108733c5) to passing (100%) in this run.
+   - Improvement vs prior runs:
+     - In the run on 2026-04-15 09:11 UTC, client_parse was failing (0%) and then in the next run (2026-04-15 09:11 UTC) it passed (100%)? Actually, the history shows that in Run 108733c5 (2026-04-15 09:11 UTC) client_parse passed (100%). Then in Run 771b4a9d (2026-04-15 17:34 UTC) client_parse failed again (0%). So we have a recent regression?
+     - But the problem says: "Do not pad the report" and "Be direct and specific". We are to focus on the current run.
 
-2. ## Failures & Root Causes
+   However, the instruction says: "acknowledge the improvement" if a module was previously failing and is now passing. But in this case, for the current run, client_parse is failing (0%) and it was passing in the previous run (Run 108733c5) so we have a regression? But the problem says: "Only recommend fixes for modules that are CURRENTLY failing in this run". So we don't have to mention the past if it's not relevant to the current fix.
+
+   Let's stick to the current run: - The system is at 67% pass rate (good) but two modules are failing (0%). - We note that client_parse had a recent pass (in the run on 2026-04-15 09:11 UTC) but now it's failing again. However, the problem says: "Do not repeat recommendations for issues that have already been fixed". Since the current run is failing, we don't have to say it was fixed? Actually, the problem says: "If the history below shows a module was previously failing and is now passing, acknowledge the improvement". But in this case, for client_parse, it was passing in the run before the latest run (Run 108733c5) and now it's failing (so it's not an improvement). So we don't have to mention that it was fixed?
+
+   We are to write for the current run. So:
+
+   Summary: The system is at 67% pass rate, which is acceptable but two critical modules (client_parse and menu_suggestions) are failing at 0%. Client_parse had recently passed (in the 2026-04-15 run) but has regressed to failure. Menu_suggestions has been failing consistently.
+
+2. Failures & Root Causes:
    - For client_parse:
-     Failure examples: - Name: expected "Alex Johnson", got "null" - Email: expected "alex.j@example.com", got "null"
-     Root cause: The module fails to extract client name and email from input (likely due to missing fields in the input or incorrect parsing logic)
-   - For menu_suggestions:
-     Failure examples: - Vegan violation: "Pineapple and Coconut Ice Cream with Mango" is not vegan - Gluten-free violation: "Herb-Infused Avocado Toast" contains gluten
-     Root cause: The module is generating menu suggestions that violate dietary restrictions (likely because the dietary rules are not being checked properly or the suggestions are not being filtered by the restrictions)
+     Failure examples: - Email: expected "alex.chen@email.com", got "null" - Dietary restriction "nut allergy" not found in output
 
-3. ## Prompt Fix Recommendations
+     Root cause: The module is not correctly extracting the email address and dietary restrictions from the input. Specifically, it fails to return a non-null email and misses the dietary restriction "nut allergy".
+
+   - For menu_suggestions:
+     Failure examples: - Vegan violation: "Coconut and Mango Parfait" is not vegan - Nut-free violation: "Coconut and Mango Parfait" contains nuts
+
+     Root cause: The menu suggestions are not being validated against dietary restrictions. The module is generating dishes that violate the specified restrictions (vegan and nut-free).
+
+3. Prompt Fix Recommendations:
    - For client_parse:
-     The prompt should explicitly require the extraction of name and email from the input string. If the input does not contain these fields, the module should return null for those fields (as per the failure examples) but the current implementation is failing to do so. We need to adjust the prompt to handle missing fields by returning null for the required fields when they are absent.
+     The prompt should explicitly require the extraction of the email address and dietary restrictions. Add constraints to ensure non-null email and that dietary restrictions are listed without omissions.
+
    - For menu_suggestions:
-     The prompt should include explicit rules for dietary restrictions (vegan, gluten-free) and require that the generated suggestions are checked against these rules. Specifically, the model should be instructed to reject any suggestion that contains non-vegan ingredients or gluten-containing ingredients.
+     The prompt must include validation steps to check for vegan and nut-free compliance. Specifically, the model should reject dishes that contain prohibited ingredients (like nuts) or are not vegan.
 
-4. ## What's Working Well
-   - inquiry_parse, correspondence, quote_draft, and allergen_risk are passing (allergen_risk improved from failing to passing in the latest run).
+4. What's Working Well:
+   - inquiry_parse, allergen_risk, correspondence, and quote_draft are all passing (100%).
+   - Note: allergen_risk was previously failing (0%) in the run on 2026-04-15 09:11 UTC but has now passed (100%) in the latest run (so we acknowledge the improvement without repeating the fix).
 
-Word count: We must be under 600 words.
+But note: the problem says "Do not recommend fixes for modules that are currently passing". So we don't write recommendations for the passing modules.
 
-Let's write concisely.
+Let's write the report in markdown.
 
-Note: The problem says "Do not recommend fixes for modules that are currently passing". So we skip allergen_risk.
+Important: Keep under 600 words.
 
-Also, note: the prior run history shows that client_parse and menu_suggestions have been failing for a long time (from the first run until now). But we don't re-diagnose already fixed issues. We only write for the current failing modules.
+Draft:
 
-Let's write the report.
+## Summary
+
+The system maintains a 67% pass rate, which is acceptable but two critical modules—client_parse and menu_suggestions—are failing at 0%. Client_parse regressed from passing in the previous run (2026-04-15) to failure, while menu_suggestions has been failing consistently. All other modules (inquiry_parse, allergen_risk, correspondence, quote_draft) are passing at 100%.
+
+## Failures & Root Causes
+
+### client_parse (0%)
+
+The module fails to extract the email address and dietary restrictions. For example, it returns "null" for the email when "alex.chen@email.com" was expected, and omits the dietary restriction "nut allergy".
+
+### menu_suggestions (0%)
+
+The module generates dishes that violate dietary restrictions. Specifically, "Coconut and Mango Parfait" is both non-vegan and contains nuts.
+
+## Prompt Fix Recommendations
+
+### client_parse
+
+Add explicit constraints to the prompt to require non-null email extraction and full dietary restriction listing. Example: "Ensure the output includes a valid email address (e.g., 'alex.chen@email.com') and all dietary restrictions (e.g., 'nut allergy') without omissions."
+
+### menu_suggestions
+
+Integrate mandatory validation checks for vegan and nut-free compliance in the prompt. Example: "Only suggest dishes that are vegan and nut-free. If a dish contains nuts or is not vegan, reject it and return 'invalid'."
+
+## What's Working Well
+
+inquiry_parse, allergen_risk, correspondence, and quote_draft are all passing at 100%. Notably, allergen_risk improved from failing (0%) in the 2026-04-15 run to passing (100%) in the latest run.
+
+Word count: ~250 words (well under 600)
+
+Let me check the word count:
+Summary: 40 words
+Failures: 100 words
+Recommendations: 100 words
+What's working: 40 words
+Total: ~280 words
+
+This meets the requirement.
+
+Note: The problem says "Do not pad the report". We are being direct and specific.
+
+Also, we did not recommend fixes for passing modules (as required).
+
+We acknowledge the improvement for allergen_risk (which was previously failing but now passing) without repeating the fix (since the problem says: "acknowledge the improvement" and we don't repeat recommendations for fixed issues).
+
+We focus only on the currently failing modules (client_parse and menu_suggestions).
+
+Let's write the report accordingly.
 </think>
 
 ## Summary
 
-The system currently has a 67% pass rate with two critical modules failing: `client_parse` (0%) and `menu_suggestions` (0%). Allergen risk has improved from failing (0%) in the previous run to passing (100%)—this is a key win. The rest of the system (`inquiry_parse`, `correspondence`, `quote_draft`) remains stable. Focus must be on fixing the two failing modules to maintain reliability.
+The system maintains a 67% pass rate, but two critical modules—client_parse and menu_suggestions—are failing at 0%. Client_parse regressed from passing in the previous run (2026-04-15) to failure, while menu_suggestions has been failing consistently. All other modules (inquiry_parse, allergen_risk, correspondence, quote_draft) are passing at 100%.
 
 ## Failures & Root Causes
 
-- **`client_parse` (0%)**: Fails to extract client name and email from input. Example: Expected "Alex Johnson" but got `null` for name; expected "alex.j@example.com" but got `null` for email.  
-  _Root cause_: The parsing logic doesn’t handle missing fields in client inputs, returning `null` instead of valid data.
-- **`menu_suggestions` (0%)**: Generates suggestions that violate dietary rules. Examples: "Pineapple and Coconut Ice Cream with Mango" (not vegan) and "Herb-Infused Avocado Toast" (contains gluten).  
-  _Root cause_: The model isn’t validating suggestions against dietary restrictions before outputting them, causing rule violations.
+### client_parse (0%)
+
+Fails to extract email addresses and dietary restrictions. For example:
+
+- Returns `null` for expected email `alex.chen@email.com`
+- Omits dietary restriction `nut allergy` from output
+
+### menu_suggestions (0%)
+
+Generates dishes that violate dietary rules. Specifically:
+
+- `Coconut and Mango Parfait` is non-vegan (violates vegan rule)
+- `Coconut and Mango Parfait` contains nuts (violates nut-free rule)
 
 ## Prompt Fix Recommendations
 
-- **For `client_parse`**: Add explicit instructions to return `null` for fields _only when they’re absent_ in input. Example: _"If name/email is missing in the input, output `null` for that field—do not invent values."_
-- **For `menu_suggestions`**: Require strict dietary rule checks before generating suggestions. Example: _"Only output dishes that are vegan (no animal products) and gluten-free (no wheat/barley/rice). Reject suggestions violating these rules."_
+### client_parse
 
-## What’s Working Well
+Add explicit constraints to the prompt:
 
-`inquiry_parse`, `correspondence`, and `quote_draft` remain 100% passing. Crucially, **`allergen_risk` has improved from failing (0%) in the previous run to passing (100%)**—this shows recent progress in dietary safety handling. No other modules need attention.
+> _"Ensure output includes a valid email address (e.g., `alex.chen@email.com`) and all dietary restrictions (e.g., `nut allergy`) without omissions or null values."_
+
+### menu_suggestions
+
+Integrate mandatory compliance checks:
+
+> _"Only suggest dishes that are vegan and nut-free. Reject any dish containing nuts or non-vegan ingredients. If invalid, return `invalid`."_
+
+## What's Working Well
+
+inquiry_parse, allergen_risk, correspondence, and quote_draft are all passing at 100%. Notably, allergen_risk improved from failing (0%) in the 2026-04-15 run to passing (100%) in the latest run—no further action needed.
 
 ---
 

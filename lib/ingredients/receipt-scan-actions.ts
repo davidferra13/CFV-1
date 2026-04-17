@@ -142,6 +142,20 @@ export async function importReceiptPrices(params: {
   }
 
   if (imported > 0) {
+    // Propagate price changes to recipe costs (non-blocking)
+    const importedIds = params.items
+      .filter((item) => item.ingredientId && item.priceCents)
+      .map((item) => item.ingredientId)
+
+    if (importedIds.length > 0) {
+      try {
+        const { propagatePriceChange } = await import('@/lib/pricing/cost-refresh-actions')
+        await propagatePriceChange(importedIds)
+      } catch (err) {
+        console.error('[non-blocking] Recipe cost cascade failed after receipt import:', err)
+      }
+    }
+
     revalidatePath('/ingredients')
     revalidatePath('/recipes')
     revalidateTag('ingredient-prices')

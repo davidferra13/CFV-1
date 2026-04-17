@@ -174,6 +174,108 @@ export default function ForOperatorsPage() {
         </div>
       </section>
 
+      {/* See it in action - feature proof */}
+      <section className="border-t border-stone-800/40 bg-stone-950/40">
+        <div className="mx-auto w-full max-w-4xl px-4 py-16 sm:px-6 md:py-24 lg:px-8">
+          <h2 className="font-display text-2xl font-bold tracking-tight text-stone-100 md:text-3xl">
+            See it in action
+          </h2>
+          <p className="mt-3 text-sm text-stone-400">
+            This is not a concept or a waitlist. ChefFlow is live and operators are using it today.
+          </p>
+          <div className="mt-10 grid gap-6 sm:grid-cols-3">
+            <div className="rounded-2xl border border-stone-800/60 bg-stone-900/40 p-5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-950/60 border border-brand-800/30 mb-4">
+                <svg
+                  className="h-5 w-5 text-brand-400"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-sm font-semibold text-stone-200">Dashboard</h3>
+              <p className="mt-1.5 text-xs leading-relaxed text-stone-500">
+                Revenue, upcoming events, pipeline status, recent activity. Everything you need at a
+                glance when you open the app.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-stone-800/60 bg-stone-900/40 p-5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-950/60 border border-brand-800/30 mb-4">
+                <svg
+                  className="h-5 w-5 text-brand-400"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-sm font-semibold text-stone-200">Menu costing</h3>
+              <p className="mt-1.5 text-xs leading-relaxed text-stone-500">
+                Build menus from your recipe book. See per-plate food cost with yield factors and
+                Q-factor. Know your margin before you quote.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-stone-800/60 bg-stone-900/40 p-5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-950/60 border border-brand-800/30 mb-4">
+                <svg
+                  className="h-5 w-5 text-brand-400"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-sm font-semibold text-stone-200">Event lifecycle</h3>
+              <p className="mt-1.5 text-xs leading-relaxed text-stone-500">
+                8 stages from inquiry to post-event. Prep lists, packing checklists, staff
+                coordination, and post-event reconciliation.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How is this free? */}
+      <section className="mx-auto w-full max-w-4xl px-4 py-16 sm:px-6 md:py-24 lg:px-8">
+        <div className="rounded-2xl border border-stone-800/60 bg-stone-900/40 p-6 sm:p-8">
+          <h2 className="font-display text-xl font-bold tracking-tight text-stone-100 md:text-2xl">
+            How is this free?
+          </h2>
+          <p className="mt-4 text-sm leading-relaxed text-stone-400">
+            Most platforms take 15-20% of every transaction. A chef earning $5,000 on an event loses
+            $750-$1,000 to the platform before paying for groceries, staff, or gas.
+          </p>
+          <p className="mt-3 text-sm leading-relaxed text-stone-400">
+            ChefFlow is funded by voluntary supporter contributions from operators who find value in
+            the platform. There is no paywall, no commission, and no feature locked behind a
+            subscription. Every capability listed above is available the moment you sign up.
+          </p>
+          <p className="mt-3 text-sm leading-relaxed text-stone-400">
+            If ChefFlow saves you time and helps you run a better business, you can choose to
+            support the project in settings. That is the entire business model.
+          </p>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="border-t border-stone-800/40">
         <div className="mx-auto flex w-full max-w-3xl flex-col items-center px-4 py-16 text-center sm:px-6 md:py-20 lg:px-8">

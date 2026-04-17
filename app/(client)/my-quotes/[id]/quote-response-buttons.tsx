@@ -15,9 +15,11 @@ import { formatCurrency } from '@/lib/utils/currency'
 export default function QuoteResponseButtons({
   quoteId,
   totalCents,
+  eventId,
 }: {
   quoteId: string
   totalCents: number
+  eventId?: string
 }) {
   const router = useRouter()
   const [showAcceptConfirm, setShowAcceptConfirm] = useState(false)
@@ -32,7 +34,8 @@ export default function QuoteResponseButtons({
 
     try {
       await acceptQuote(quoteId)
-      router.push('/my-quotes')
+      // Redirect to event payment page if linked, otherwise quotes list
+      router.push(eventId ? `/my-events/${eventId}` : '/my-quotes')
       router.refresh()
     } catch (err: any) {
       setError(err.message || 'Failed to accept quote')

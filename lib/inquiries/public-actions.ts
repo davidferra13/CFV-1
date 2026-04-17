@@ -140,7 +140,9 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       id: string
       business_name: string | null
       email: string | null
-    }>(db, validated.chef_slug, 'id, business_name, email')
+      account_status: string | null
+      deletion_scheduled_for: string | null
+    }>(db, validated.chef_slug, 'id, business_name, email, account_status, deletion_scheduled_for')
     chef = lookup.data
     chefError = lookup.error
   } else {
@@ -148,13 +150,15 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     if (ownerChefId) {
       const lookup = await db
         .from('chefs')
-        .select('id, business_name, email')
+        .select('id, business_name, email, account_status, deletion_scheduled_for')
         .eq('id', ownerChefId)
         .single()
       chef = lookup.data as {
         id: string
         business_name: string | null
         email: string | null
+        account_status: string | null
+        deletion_scheduled_for: string | null
       } | null
       chefError = lookup.error
     }
@@ -162,13 +166,15 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     if (!chef) {
       const founderLookup = await db
         .from('chefs')
-        .select('id, business_name, email')
+        .select('id, business_name, email, account_status, deletion_scheduled_for')
         .ilike('email', DEFAULT_BOOKING_CHEF_EMAIL)
         .single()
       chef = founderLookup.data as {
         id: string
         business_name: string | null
         email: string | null
+        account_status: string | null
+        deletion_scheduled_for: string | null
       } | null
       chefError = founderLookup.error
     }
@@ -176,6 +182,16 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
 
   if (chefError || !chef) {
     throw new Error('Chef not found')
+  }
+
+  // Guard: reject inquiries for suspended or pending-deletion accounts
+  const chefStatus = (chef as any).account_status as string | null
+  const chefDeletion = (chef as any).deletion_scheduled_for as string | null
+  if (chefStatus === 'suspended') {
+    throw new Error('This chef is not currently accepting inquiries.')
+  }
+  if (chefDeletion) {
+    throw new Error('This chef is not currently accepting inquiries.')
   }
 
   const tenantId = chef.id as string

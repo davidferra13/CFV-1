@@ -128,9 +128,57 @@ export async function generateAndPersistDietaryAlerts(eventId: string): Promise<
   const restrictions: string[] = (event.dietary_restrictions as string[]) || []
   const allergies: string[] = (event.allergies as string[]) || []
   const guestName = (event.client as any)?.full_name ?? 'Guest'
-  const allConcerns = [...restrictions, ...allergies]
 
-  if (allConcerns.length === 0) {
+  // Also pull dietary data from RSVP guests (event_guests table)
+  const { data: rsvpGuests } = await db
+    .from('event_guests')
+    .select(
+      'full_name, dietary_restrictions, allergies, plus_one_dietary, plus_one_allergies, plus_one_name, rsvp_status'
+    )
+    .eq('event_id', validatedEventId)
+
+  // Build per-guest concern maps for attribution
+  type GuestConcern = { guestName: string; concern: string }
+  const guestConcerns: GuestConcern[] = []
+
+  // Event-level concerns (from client record)
+  for (const c of [...restrictions, ...allergies]) {
+    guestConcerns.push({ guestName, concern: c })
+  }
+
+  // RSVP guest concerns
+  if (rsvpGuests) {
+    for (const g of rsvpGuests) {
+      if (g.rsvp_status !== 'attending') continue
+      const name = g.full_name || 'Guest'
+      for (const c of (g.dietary_restrictions as string[]) || []) {
+        guestConcerns.push({ guestName: name, concern: c })
+      }
+      for (const c of (g.allergies as string[]) || []) {
+        guestConcerns.push({ guestName: name, concern: c })
+      }
+      // Plus-one dietary data
+      if (g.plus_one_name || g.plus_one_dietary?.length || g.plus_one_allergies?.length) {
+        const plusName = g.plus_one_name || `${name}'s guest`
+        for (const c of (g.plus_one_dietary as string[]) || []) {
+          guestConcerns.push({ guestName: plusName, concern: c })
+        }
+        for (const c of (g.plus_one_allergies as string[]) || []) {
+          guestConcerns.push({ guestName: plusName, concern: c })
+        }
+      }
+    }
+  }
+
+  const allConcerns = [...restrictions, ...allergies]
+  // Add RSVP-sourced concerns to allConcerns for backward compat
+  for (const gc of guestConcerns) {
+    if (!allConcerns.includes(gc.concern)) {
+      allConcerns.push(gc.concern)
+    }
+  }
+
+  if (allConcerns.length === 0 && guestConcerns.length === 0) {
     return []
   }
 
@@ -187,14 +235,19 @@ export async function generateAndPersistDietaryAlerts(eventId: string): Promise<
     severity: DietaryConflictSeverity
   }> = []
 
-  for (const concern of allConcerns) {
-    const concernLower = concern.toLowerCase().trim()
+  // Use per-guest concerns for attribution (includes event-level + RSVP guests)
+  const seenConflicts = new Set<string>()
+  for (const gc of guestConcerns) {
+    const concernLower = gc.concern.toLowerCase().trim()
     if (!concernLower) continue
 
     // Check if this concern maps to a recognized dietary rule set
     const dietId = matchDietId(concernLower)
 
     for (const dish of dishes) {
+      const conflictKey = `${gc.guestName}:${concernLower}:${dish.name}`
+      if (seenConflicts.has(conflictKey)) continue
+
       const dishNameLower = (dish.name || '').toLowerCase()
       const dishDescLower = (dish.description || '').toLowerCase()
       const dishText = `${dishNameLower} ${dishDescLower}`
@@ -216,9 +269,10 @@ export async function generateAndPersistDietaryAlerts(eventId: string): Promise<
           matched = true
         } else if (hasCaution) {
           // Caution-level: still flag but as info severity
+          seenConflicts.add(conflictKey)
           conflicts.push({
-            guestName,
-            allergy: concern,
+            guestName: gc.guestName,
+            allergy: gc.concern,
             conflictingDish: dish.name,
             severity: 'info',
           })
@@ -235,11 +289,12 @@ export async function generateAndPersistDietaryAlerts(eventId: string): Promise<
       }
 
       if (matched) {
+        seenConflicts.add(conflictKey)
         conflicts.push({
-          guestName,
-          allergy: concern,
+          guestName: gc.guestName,
+          allergy: gc.concern,
           conflictingDish: dish.name,
-          severity: classifySeverity(concern),
+          severity: classifySeverity(gc.concern),
         })
       }
     }

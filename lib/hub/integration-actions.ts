@@ -10,6 +10,8 @@ import { createServerClient } from '@/lib/db/server'
 /**
  * Auto-create or match a hub guest profile when someone RSVPs.
  * Called from submitRSVP flow (non-blocking).
+ * SECURITY (Q4): Validates that the event actually exists and belongs to
+ * the tenant before creating profiles or joining groups.
  */
 export async function syncRSVPToHubProfile(input: {
   email: string | null
@@ -23,6 +25,15 @@ export async function syncRSVPToHubProfile(input: {
   const db = createServerClient({ admin: true })
 
   try {
+    // SECURITY (Q4): Verify event exists and belongs to this tenant
+    const { data: event } = await db
+      .from('events')
+      .select('id')
+      .eq('id', input.eventId)
+      .eq('tenant_id', input.tenantId)
+      .single()
+    if (!event) return // Silently exit - event doesn't exist or wrong tenant
+
     let profileId: string | null = null
 
     // Try to find existing profile by email

@@ -1,4 +1,4 @@
-﻿import Link from 'next/link'
+import Link from 'next/link'
 import { format } from 'date-fns'
 import type { EventDetailTab } from '@/components/events/event-detail-mobile-nav'
 import { EventDetailSection } from '@/components/events/event-detail-mobile-nav'
@@ -7,6 +7,7 @@ import { MenuApprovalStatus } from '@/components/events/menu-approval-status'
 import { EventExportButton } from '@/components/exports/event-export-button'
 import { PricingIntelligencePanel } from '@/components/ai/pricing-intelligence-panel'
 import { RecordPaymentPanel, ProcessRefundPanel } from '@/components/events/payment-actions-panel'
+import { VoidPaymentPanel } from '@/components/events/void-payment-panel'
 import { PaymentPlanPanel } from '@/components/finance/payment-plan-panel'
 import { MileageLogPanel } from '@/components/finance/mileage-log-panel'
 import { TipLogPanel } from '@/components/finance/tip-log-panel'
@@ -45,6 +46,16 @@ type EventDetailMoneyTabProps = {
   costForecast?: CostForecast | null
   menuCostSummary?: MenuCostData | null
   chefArchetype?: string | null
+  ledgerEntries?: Array<{
+    id: string
+    entry_type: string
+    amount_cents: number
+    payment_method: string
+    description: string
+    is_refund: boolean
+    received_at: string | null
+    created_at: string
+  }>
 }
 
 export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
@@ -69,11 +80,12 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
     costForecast,
     menuCostSummary,
     chefArchetype,
+    ledgerEntries,
   } = props
 
   return (
     <EventDetailSection tab="money" activeTab={activeTab}>
-      {/* Menu Library Picker â€” shown when no menu is attached or to swap */}
+      {/* Menu Library Picker â€" shown when no menu is attached or to swap */}
       {event.status !== 'cancelled' && (menuLibraryData as any)?.menus?.length > 0 && (
         <MenuLibraryPicker
           eventId={event.id}
@@ -218,7 +230,7 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
         <PricingIntelligencePanel eventId={event.id} />
       )}
 
-      {/* Record Payment â€” for accepted events with outstanding balance */}
+      {/* Record Payment â€" for accepted events with outstanding balance */}
       {['accepted', 'paid'].includes(event.status) && outstandingBalance > 0 && (
         <RecordPaymentPanel
           eventId={event.id}
@@ -228,7 +240,12 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
         />
       )}
 
-      {/* Payment Plan â€” installment schedule */}
+      {/* Void Payment - show recorded offline payments with void option */}
+      {ledgerEntries && ledgerEntries.length > 0 && totalPaid > 0 && (
+        <VoidPaymentPanel eventId={event.id} entries={ledgerEntries} />
+      )}
+
+      {/* Payment Plan â€" installment schedule */}
       {event.status !== 'cancelled' && (
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Payment Plan</h2>
@@ -256,7 +273,7 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
         </Card>
       )}
 
-      {/* Process Refund â€” for cancelled events with prior payments */}
+      {/* Process Refund â€" for cancelled events with prior payments */}
       {event.status === 'cancelled' && totalPaid > 0 && refundRecommendationData && (
         <ProcessRefundPanel
           eventId={event.id}
@@ -267,12 +284,12 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
         />
       )}
 
-      {/* Budget Tracker â€” shows budget vs. actual spend, lets chef set a custom budget */}
+      {/* Budget Tracker â€" shows budget vs. actual spend, lets chef set a custom budget */}
       {budgetGuardrail.quotedPriceCents > 0 && (
         <BudgetTracker eventId={event.id} guardrail={budgetGuardrail} />
       )}
 
-      {/* Quick Receipt Capture â€” shown for active/confirmed events */}
+      {/* Quick Receipt Capture â€" shown for active/confirmed events */}
       {['confirmed', 'in_progress'].includes(event.status) && (
         <QuickReceiptCapture eventId={event.id} />
       )}
@@ -352,7 +369,17 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
         </Card>
       )}
 
-      {/* Profit Summary â€” when both revenue and expenses exist */}
+      {/* Profit Summary - show when revenue exists; guide when expenses missing */}
+      {profitSummary.revenue.totalPaidCents > 0 &&
+        profitSummary.expenses.totalBusinessCents === 0 && (
+          <Card className="p-6 border-dashed border-stone-700">
+            <h2 className="text-xl font-semibold mb-2">Profit Summary</h2>
+            <p className="text-stone-400 text-sm">
+              Log your expenses (groceries, supplies, travel) to see your true profit margin for
+              this event.
+            </p>
+          </Card>
+        )}
       {profitSummary.expenses.totalBusinessCents > 0 &&
         profitSummary.revenue.totalPaidCents > 0 && (
           <Card className="p-6">
@@ -414,7 +441,7 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
                       {profitSummary.profit.foodCostPercent >
                       profitSummary.profit.chefAvgFoodCostPercent
                         ? 'â†‘'
-                        : 'â†“'}{' '}
+                        : 'â†"'}{' '}
                       avg {profitSummary.profit.chefAvgFoodCostPercent}%)
                     </span>
                   )}

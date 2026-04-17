@@ -15,7 +15,7 @@ import {
   buildCheckoutPaymentIdempotencyKey,
   CHECKOUT_IDEMPOTENCY_KEY_MAX,
 } from './checkout-idempotency'
-import { hasTaxableItems } from './tax-policy'
+import { hasTaxableItems, isTaxableTaxClass } from './tax-policy'
 import { appendPosAuditLog } from './pos-audit-log'
 import {
   normalizeTaxClass,
@@ -1031,6 +1031,21 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
     }
   }
 
+  // Resolve tax rate server-side from ZIP code (never trust client-supplied tax)
+  let zipTaxRate = 0
+  if (input.taxZipCode?.trim()) {
+    try {
+      const { calculateSalesTax: calcTax } = await import('@/lib/tax/api-ninjas')
+      const probe = await calcTax(10000, input.taxZipCode)
+      if (probe) zipTaxRate = probe.taxRate
+    } catch {
+      // Tax service unavailable - fall back to tenant's configured rate
+      const { getTenantTaxRateBps } = await import('./tax-policy')
+      const bps = await getTenantTaxRateBps(db, user.tenantId!)
+      zipTaxRate = bps / 10000
+    }
+  }
+
   const itemRows = normalizedItems.map((item, i) => {
     const line = lineComputations[i]
     const discountCents = Math.max(
@@ -1038,6 +1053,11 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
       Math.min(line.lineSubtotalCents, lineDiscountsByKey[line.key] ?? 0)
     )
     const lineTotalCents = line.lineSubtotalCents - discountCents
+
+    // Server-computed tax: apply ZIP rate to post-discount total for taxable items
+    const serverTaxCents = isTaxableTaxClass(item.taxClass)
+      ? Math.round(lineTotalCents * zipTaxRate)
+      : 0
 
     return {
       sale_id: sale.id,
@@ -1049,7 +1069,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
       discount_cents: discountCents,
       line_total_cents: lineTotalCents,
       tax_class: item.taxClass ?? 'standard',
-      tax_cents: item.taxCents ?? 0,
+      tax_cents: serverTaxCents,
       modifiers_applied: item.modifiersApplied ?? [],
       unit_cost_cents: item.unitCostCents ?? null,
       sort_order: i,

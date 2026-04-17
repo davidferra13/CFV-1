@@ -137,7 +137,7 @@ export default async function ClientInsightsPage() {
                   Active on Portal Today
                 </p>
                 <p className="text-2xl font-bold text-stone-100">
-                  {engagementStats != null ? engagementStats.activeToday : '—'}
+                  {engagementStats != null ? engagementStats.activeToday : '-'}
                 </p>
                 <p className="text-sm text-stone-500 mt-0.5">
                   {engagementStats != null

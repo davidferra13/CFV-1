@@ -322,6 +322,20 @@ export const CRON_MONITOR_DEFINITIONS: CronMonitorDefinition[] = [
     cadence: 'daily',
     description: 'Sweep waitlist entries and notify newly open dates',
   },
+  {
+    cronName: 'client-reengagement',
+    routePath: '/api/scheduled/client-reengagement',
+    maxExpectedMinutes: 5,
+    cadence: 'daily',
+    description: 'Weekly re-engagement emails for dormant clients (60-90 day window)',
+  },
+  {
+    cronName: 'inquiry-client-followup',
+    routePath: '/api/scheduled/inquiry-client-followup',
+    maxExpectedMinutes: 5,
+    cadence: '6h',
+    description: 'Follow-up email to clients with 48h+ unanswered inquiries',
+  },
 ]
 
 export const CRON_MONITOR_DEFINITION_MAP = new Map(

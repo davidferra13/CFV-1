@@ -138,13 +138,13 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     clientPhotos,
     tasteProfile,
   ] = await Promise.all([
-    getClientWithStats(params.id),
-    getMessageThread('client', params.id),
-    getResponseTemplates(),
+    getClientWithStats(params.id).catch(() => null),
+    getMessageThread('client', params.id).catch(() => []),
+    getResponseTemplates().catch(() => []),
     getClientLoyaltyProfile(params.id).catch(() => null),
-    getClientNotes(params.id),
-    getClientConnections(params.id),
-    getClients(),
+    getClientNotes(params.id).catch(() => []),
+    getClientConnections(params.id).catch(() => []),
+    getClients().catch(() => []),
     getClientChefActivity(params.id).catch(() => []),
     getClientTimeline(params.id).catch(() => []),
     getClientFinancialDetail(params.id).catch(() => null),
@@ -260,7 +260,9 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             <Button variant="secondary">Recurring Planning</Button>
           </Link>
           <Link href={`/events/new?client_id=${client.id}`}>
-            <Button>Create Event for Client</Button>
+            <Button>
+              {(client as any).completedEvents > 0 ? 'Rebook Client' : 'Create Event'}
+            </Button>
           </Link>
         </div>
       </div>

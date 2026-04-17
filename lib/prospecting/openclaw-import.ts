@@ -123,7 +123,7 @@ export async function getOpenClawLeads(
   ])
 
   if (error) {
-    throw new Error(`Failed to fetch OpenClaw leads: ${error.message}`)
+    throw new Error(`Failed to fetch directory leads: ${error.message}`)
   }
 
   return {

@@ -53,7 +53,9 @@ export async function createPaymentIntent(eventId: string): Promise<CreatePaymen
   }
 
   // Verify event is in correct status for payment
-  if (event.status !== 'accepted') {
+  // Allow: accepted (initial/deposit), paid/confirmed/in_progress (balance payments)
+  const payableStatuses = ['accepted', 'paid', 'confirmed', 'in_progress']
+  if (!payableStatuses.includes(event.status)) {
     return { success: false as const, error: 'Event is not ready for payment' }
   }
 

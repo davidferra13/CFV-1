@@ -106,7 +106,7 @@ export default async function CharityHubPage() {
           <Link href="/charity/hours" className="block">
             <Card className="h-full p-4 text-center transition-colors hover:bg-stone-800/50">
               <p className="text-2xl font-bold text-stone-100">
-                {hoursSummary != null ? hoursSummary.totalHours : '—'}
+                {hoursSummary != null ? hoursSummary.totalHours : '-'}
               </p>
               <p className="mt-1 text-xs text-stone-500">Volunteer hours</p>
             </Card>

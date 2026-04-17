@@ -16,6 +16,8 @@ import {
   startEvent,
   completeEvent,
   cancelEvent,
+  acceptOnBehalf,
+  markEventPaid,
 } from '@/lib/events/transitions'
 import type { ReadinessResult, GateResult } from '@/lib/events/readiness'
 import { trackAction } from '@/lib/ai/remy-activity-tracker'
@@ -126,7 +128,7 @@ export function EventTransitions({
           router.refresh()
         }
       } else {
-        throw new Error('Transition failed')
+        throw new Error(result.error || 'Transition failed')
       }
     } catch (err) {
       console.error('Transition error:', err)
@@ -237,6 +239,40 @@ export function EventTransitions({
             </Button>
           )}
 
+          {event.status === 'proposed' && (
+            <Button
+              variant="secondary"
+              onClick={() =>
+                handleTransition(
+                  () => acceptOnBehalf(event.id),
+                  undefined,
+                  'Accepted event on behalf of client'
+                )
+              }
+              loading={loading}
+              disabled={loading}
+            >
+              Accept on Behalf
+            </Button>
+          )}
+
+          {(event.status === 'accepted' || event.status === 'draft') && (
+            <Button
+              variant="secondary"
+              onClick={() =>
+                handleTransition(
+                  () => markEventPaid(event.id),
+                  undefined,
+                  'Marked event paid offline'
+                )
+              }
+              loading={loading}
+              disabled={loading}
+            >
+              Mark Paid (Offline)
+            </Button>
+          )}
+
           {event.status === 'paid' && (
             <Button
               onClick={() =>
@@ -298,14 +334,13 @@ export function EventTransitions({
           )}
           {event.status === 'proposed' && (
             <p>
-              Waiting for client to accept the proposal. The event will automatically move to
-              &ldquo;Paid&rdquo; status once payment is received.
+              Waiting for client response, or accept on their behalf if they confirmed verbally.
             </p>
           )}
           {event.status === 'accepted' && (
             <p>
-              Client has accepted. Waiting for payment to be processed. The event will automatically
-              move to &ldquo;Paid&rdquo; status once payment succeeds.
+              Client accepted. Awaiting payment via Stripe, or mark paid if payment was received
+              offline (cash, Venmo, Zelle, check).
             </p>
           )}
           {event.status === 'paid' && (

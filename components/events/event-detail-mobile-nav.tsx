@@ -1,13 +1,14 @@
 'use client'
 
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
-import { Info, DollarSign, ClipboardList, CheckSquare } from '@/components/ui/icons'
+import { Info, DollarSign, ClipboardList, CheckSquare, Ticket } from '@/components/ui/icons'
 
-export type EventDetailTab = 'overview' | 'money' | 'ops' | 'wrap'
+export type EventDetailTab = 'overview' | 'money' | 'tickets' | 'ops' | 'wrap'
 
 const TABS: { id: EventDetailTab; label: string; icon: React.ReactNode }[] = [
   { id: 'overview', label: 'Overview', icon: <Info className="h-4 w-4" /> },
   { id: 'money', label: 'Money', icon: <DollarSign className="h-4 w-4" /> },
+  { id: 'tickets', label: 'Tickets', icon: <Ticket className="h-4 w-4" /> },
   { id: 'ops', label: 'Ops', icon: <ClipboardList className="h-4 w-4" /> },
   { id: 'wrap', label: 'Wrap-up', icon: <CheckSquare className="h-4 w-4" /> },
 ]

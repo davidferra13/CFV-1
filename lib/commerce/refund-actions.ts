@@ -8,7 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
-import { canRefund } from './sale-fsm'
+import { canRefund, computeSaleStatus, canTransition } from './sale-fsm'
 import { appendPosAuditLog } from './pos-audit-log'
 import { assertPosManagerAccess } from './pos-authorization'
 import { normalizeManualReason } from './mutation-reason'
@@ -223,18 +223,21 @@ async function updateSaleStatusAfterRefund(saleId: string, tenantId: string) {
     .filter((r: any) => r.status === 'processed')
     .reduce((sum: number, r: any) => sum + r.amount_cents, 0)
 
-  // Determine new status
-  let newStatus = (sale as any).status
-  if (totalRefunded >= totalPaid && totalPaid > 0) {
-    newStatus = 'fully_refunded'
-  } else if (totalRefunded > 0) {
-    newStatus = 'partially_refunded'
-  }
+  // Derive status from FSM (single source of truth, no hardcoded strings)
+  const desiredStatus = computeSaleStatus({
+    currentStatus: (sale as any).status,
+    totalCents: (sale as any).total_cents,
+    totalPaidCents: totalPaid,
+    totalRefundedCents: totalRefunded,
+  })
 
-  if (newStatus !== (sale as any).status) {
+  if (
+    desiredStatus !== (sale as any).status &&
+    canTransition((sale as any).status, desiredStatus as any)
+  ) {
     await db
       .from('sales')
-      .update({ status: newStatus } as any)
+      .update({ status: desiredStatus } as any)
       .eq('id', saleId)
       .eq('tenant_id', tenantId)
   }

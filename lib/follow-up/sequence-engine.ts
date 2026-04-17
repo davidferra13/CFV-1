@@ -302,25 +302,35 @@ export async function processPendingSend(sendId: string): Promise<boolean> {
     })
 
     if (sent) {
-      await db
+      // I4 fix: CAS guard prevents double-send from concurrent cron runs
+      const { data: updated } = await db
         .from('follow_up_sends')
         .update({ status: 'sent', sent_at: new Date().toISOString() })
         .eq('id', sendId)
-      console.info(`[follow-up] Sent step ${typedSend.step_number} to ${clientName}`)
+        .eq('status', 'pending')
+        .select('id')
+        .single()
+      if (!updated) {
+        console.info('[follow-up] CAS conflict (another process sent this), skipping:', sendId)
+      } else {
+        console.info(`[follow-up] Sent step ${typedSend.step_number} to ${clientName}`)
+      }
       return true
     } else {
       await db
         .from('follow_up_sends')
-        .update({ status: 'bounced', cancel_reason: 'Email send failed' })
+        .update({ status: 'failed', cancel_reason: 'Email send failed' })
         .eq('id', sendId)
+        .eq('status', 'pending')
       return false
     }
   } catch (err) {
     console.error('[follow-up] Email send error (non-blocking):', err)
     await db
       .from('follow_up_sends')
-      .update({ status: 'bounced', cancel_reason: 'Email send exception' })
+      .update({ status: 'failed', cancel_reason: 'Email send exception' })
       .eq('id', sendId)
+      .eq('status', 'pending')
     return false
   }
 }

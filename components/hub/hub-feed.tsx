@@ -22,12 +22,19 @@ import { HubCreatePoll } from './hub-create-poll'
 
 interface HubFeedProps {
   groupId: string
+  groupToken?: string
   profileToken: string | null
   currentProfileId: string | null
   isOwnerOrAdmin?: boolean
 }
 
-export function HubFeed({ groupId, profileToken, currentProfileId, isOwnerOrAdmin }: HubFeedProps) {
+export function HubFeed({
+  groupId,
+  groupToken,
+  profileToken,
+  currentProfileId,
+  isOwnerOrAdmin,
+}: HubFeedProps) {
   const [messages, setMessages] = useState<HubMessage[]>([])
   const [loading, setLoading] = useState(true)
   const [nextCursor, setNextCursor] = useState<string | null>(null)
@@ -63,7 +70,7 @@ export function HubFeed({ groupId, profileToken, currentProfileId, isOwnerOrAdmi
     let cancelled = false
     async function load() {
       try {
-        const result = await getHubMessages({ groupId, limit: 50 })
+        const result = await getHubMessages({ groupId, groupToken, limit: 50 })
         if (!cancelled) {
           setMessages(result.messages.reverse()) // oldest first
           setNextCursor(result.nextCursor)
@@ -118,7 +125,7 @@ export function HubFeed({ groupId, profileToken, currentProfileId, isOwnerOrAdmi
     const handleVisibility = async () => {
       if (document.visibilityState !== 'visible') return
       try {
-        const result = await getHubMessages({ groupId, limit: 20 })
+        const result = await getHubMessages({ groupId, groupToken, limit: 20 })
         const latest = result.messages.reverse() // oldest first
         setMessages((prev) => {
           const existingIds = new Set(prev.map((m) => m.id))
@@ -169,7 +176,7 @@ export function HubFeed({ groupId, profileToken, currentProfileId, isOwnerOrAdmi
     if (!nextCursor || loadingMore) return
     setLoadingMore(true)
     try {
-      const result = await getHubMessages({ groupId, cursor: nextCursor, limit: 50 })
+      const result = await getHubMessages({ groupId, groupToken, cursor: nextCursor, limit: 50 })
       setMessages((prev) => [...result.messages.reverse(), ...prev])
       setNextCursor(result.nextCursor)
     } catch {

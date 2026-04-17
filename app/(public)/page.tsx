@@ -355,6 +355,51 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Operator band - above the fold for chefs scanning the page */}
+      <section className="mx-auto w-full max-w-5xl px-4 pt-2 pb-6 sm:px-6 lg:px-8">
+        <Link
+          href="/for-operators"
+          className="group flex items-center justify-between gap-4 rounded-2xl border border-stone-700/50 bg-stone-900/50 px-5 py-4 transition-all hover:border-brand-700/40 hover:bg-stone-900/80"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-950/60 border border-brand-800/30">
+              <svg
+                className="h-4.5 w-4.5 text-brand-400"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.8}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"
+                />
+              </svg>
+            </span>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-stone-200">
+                Are you a chef or food operator?
+              </p>
+              <p className="text-xs text-stone-500 truncate">
+                Free back-office software: clients, events, menus, food costing, finances, recipes.
+              </p>
+            </div>
+          </div>
+          <span className="hidden sm:inline-flex shrink-0 items-center gap-1 rounded-lg border border-stone-600 px-3 py-1.5 text-xs font-medium text-stone-300 transition-colors group-hover:border-brand-600 group-hover:text-brand-300">
+            Learn more
+            <svg
+              className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </span>
+        </Link>
+      </section>
+
       {/* What to expect */}
       <section className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-6 sm:grid-cols-3">

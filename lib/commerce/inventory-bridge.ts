@@ -381,3 +381,49 @@ export async function deductProductStock(saleId: string) {
       .eq('tenant_id', user.tenantId!) as any)
   }
 }
+
+// ─── Reverse Non-Recipe Product Stock ────────────────────────────
+
+/**
+ * Reverse product stock deductions for a voided sale.
+ * Adds back the quantity that was deducted by deductProductStock.
+ */
+export async function reverseProductStock(saleId: string) {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data: saleItems } = await (db
+    .from('sale_items')
+    .select('product_projection_id, quantity')
+    .eq('sale_id', saleId)
+    .eq('tenant_id', user.tenantId!) as any)
+
+  if (!saleItems || saleItems.length === 0) return
+
+  const ppIds = saleItems.map((si: any) => si.product_projection_id).filter(Boolean)
+  if (ppIds.length === 0) return
+
+  const { data: products } = await (db
+    .from('product_projections')
+    .select('id, track_inventory, available_qty, recipe_id')
+    .in('id', ppIds)
+    .eq('tenant_id', user.tenantId!) as any)
+
+  if (!products) return
+
+  for (const product of products) {
+    if (!(product as any).track_inventory || (product as any).recipe_id) continue
+
+    const saleItem = saleItems.find((si: any) => si.product_projection_id === product.id)
+    if (!saleItem) continue
+
+    const currentQty = (product as any).available_qty ?? 0
+    const restoredQty = currentQty + ((saleItem as any).quantity ?? 0)
+
+    await (db
+      .from('product_projections')
+      .update({ available_qty: restoredQty } as any)
+      .eq('id', product.id)
+      .eq('tenant_id', user.tenantId!) as any)
+  }
+}

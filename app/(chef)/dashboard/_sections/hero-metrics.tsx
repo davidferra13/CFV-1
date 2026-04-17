@@ -5,6 +5,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { HeroMetricsClient } from './hero-metrics-client'
 import { dateToDateString } from '@/lib/utils/format'
+import type { ArchetypeId } from '@/lib/archetypes/presets'
 
 type HeroMetric = {
   label: string
@@ -57,8 +58,8 @@ async function getHeroMetrics(): Promise<HeroMetric[]> {
       .select('total_paid_cents')
       .eq('tenant_id', tenantId)
       .then(({ data, error }: any) => {
-        if (error || !data) return 0
-        // Sum all payments this month by joining with events
+        if (error) throw new Error(`Revenue query failed: ${error.message ?? error}`)
+        if (!data) return 0
         return data.reduce((sum: number, row: any) => sum + (row.total_paid_cents || 0), 0)
       }),
 
@@ -85,7 +86,8 @@ async function getHeroMetrics(): Promise<HeroMetric[]> {
       .eq('tenant_id', tenantId)
       .gt('outstanding_balance_cents', 0)
       .then(({ data, error }: any) => {
-        if (error || !data) return 0
+        if (error) throw new Error(`Outstanding query failed: ${error.message ?? error}`)
+        if (!data) return 0
         return data.reduce((sum: number, row: any) => sum + (row.outstanding_balance_cents || 0), 0)
       }),
 
@@ -178,13 +180,106 @@ async function getHeroMetrics(): Promise<HeroMetric[]> {
   ]
 }
 
-export async function HeroMetrics() {
+const RESTAURANT_ARCHETYPES = new Set<ArchetypeId>(['restaurant', 'food-truck', 'bakery'])
+
+async function getRestaurantHeroMetrics(): Promise<HeroMetric[]> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+  const tenantId = user.tenantId!
+
+  const now = new Date()
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
+
+  const [salesToday, salesMonth, clockedIn, openChecks] = await Promise.all([
+    // Today's sales revenue
+    db
+      .from('sales')
+      .select('total_cents')
+      .eq('tenant_id', tenantId)
+      .in('status', ['captured', 'settled'])
+      .gte('created_at', `${today}T00:00:00Z`)
+      .lte('created_at', `${today}T23:59:59Z`)
+      .then(({ data }: any) =>
+        (data ?? []).reduce((sum: number, r: any) => sum + (r.total_cents ?? 0), 0)
+      ),
+
+    // Month-to-date sales
+    db
+      .from('sales')
+      .select('total_cents')
+      .eq('tenant_id', tenantId)
+      .in('status', ['captured', 'settled'])
+      .gte('created_at', `${monthStart}T00:00:00Z`)
+      .then(({ data }: any) =>
+        (data ?? []).reduce((sum: number, r: any) => sum + (r.total_cents ?? 0), 0)
+      ),
+
+    // Staff currently clocked in
+    db
+      .from('staff_clock_entries')
+      .select('id', { count: 'exact', head: true })
+      .eq('chef_id', tenantId)
+      .eq('status', 'clocked_in'),
+
+    // Open dining checks (if table service active)
+    db
+      .from('commerce_dining_checks' as any)
+      .select('id', { count: 'exact', head: true })
+      .eq('tenant_id', tenantId)
+      .eq('status', 'open')
+      .then((r: any) => r)
+      .catch(() => ({ count: 0 })),
+  ])
+
+  const fmtDollars = (cents: number) =>
+    `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+
+  return [
+    {
+      label: "Today's revenue",
+      value: fmtDollars(salesToday),
+      href: '/commerce',
+      tier: 'hero',
+    },
+    {
+      label: 'Staff on clock',
+      value: String(clockedIn?.count ?? 0),
+      href: '/staff',
+      tier: 'hero',
+    },
+    {
+      label: 'Month-to-date',
+      value: fmtDollars(salesMonth),
+      href: '/finance',
+      tier: 'supporting',
+    },
+    {
+      label: 'Open checks',
+      value: String(openChecks?.count ?? 0),
+      href: '/commerce/table-service',
+      tier: 'supporting',
+    },
+  ]
+}
+
+export async function HeroMetrics({ archetype }: { archetype?: ArchetypeId | null } = {}) {
   let metrics: HeroMetric[]
   try {
-    metrics = await getHeroMetrics()
+    if (archetype && RESTAURANT_ARCHETYPES.has(archetype)) {
+      metrics = await getRestaurantHeroMetrics()
+    } else {
+      metrics = await getHeroMetrics()
+    }
   } catch (err) {
     console.error('[HeroMetrics] Failed to load:', err)
-    return null
+    return (
+      <div className="rounded-xl border border-red-800/50 bg-red-950/30 p-4 text-center">
+        <p className="text-sm text-red-400">
+          Could not load dashboard metrics. Please refresh the page.
+        </p>
+      </div>
+    )
   }
 
   return <HeroMetricsClient metrics={metrics} />

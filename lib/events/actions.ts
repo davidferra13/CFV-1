@@ -27,12 +27,12 @@ const CreateEventSchema = z.object({
     .string()
     .min(1, 'Event date required')
     .refine((v) => !isNaN(Date.parse(v)), { message: 'Event date must be a valid date string' }),
-  serve_time: z.string().min(1, 'Serve time required'),
-  guest_count: z.number().int().positive(),
-  location_address: z.string().min(1, 'Address required'),
-  location_city: z.string().min(1, 'City required'),
+  serve_time: z.string().optional().default(''),
+  guest_count: z.number().int().positive().optional().default(1),
+  location_address: z.string().optional().default('TBD'),
+  location_city: z.string().optional().default('TBD'),
   location_state: z.string().optional(),
-  location_zip: z.string().min(1, 'ZIP required'),
+  location_zip: z.string().optional().default('TBD'),
   occasion: z.string().max(255).optional(),
   service_style: z
     .enum(['plated', 'family_style', 'buffet', 'cocktail', 'tasting_menu', 'other'])

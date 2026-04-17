@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation'
+import { headers } from 'next/headers'
 import { getGroupByToken, getGroupMemberCount } from '@/lib/hub/group-actions'
+import { checkRateLimit } from '@/lib/rateLimit'
 import { JoinGroupForm } from './join-form'
 
 interface Props {
@@ -7,6 +9,19 @@ interface Props {
 }
 
 export default async function JoinGroupPage({ params }: Props) {
+  // SECURITY (Q9): Rate limit join page to prevent bot-driven mass profile creation
+  const h = await headers()
+  const ip = h.get('x-forwarded-for')?.split(',')[0]?.trim() || h.get('x-real-ip') || 'unknown'
+  try {
+    await checkRateLimit(`hub-join:${ip}`, 15, 15 * 60 * 1000)
+  } catch {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-4 bg-stone-950">
+        <p className="text-stone-400 text-sm">Too many requests. Please try again later.</p>
+      </div>
+    )
+  }
+
   const { groupToken } = await params
   const group = await getGroupByToken(groupToken)
 

@@ -547,6 +547,9 @@ export async function receivePOItems(
     throw new Error('Cannot receive items on a cancelled PO')
   }
 
+  // Track ingredient IDs whose prices changed (for recipe cost cascade)
+  const priceChangedIngredientIds: string[] = []
+
   // Process each item
   for (const item of parsedItems) {
     // Get the PO item details
@@ -619,6 +622,8 @@ export async function receivePOItems(
           .update({ last_price_cents: item.actualUnitPriceCents } as any)
           .eq('id', (poItem as any).ingredient_id)
 
+        priceChangedIngredientIds.push((poItem as any).ingredient_id)
+
         // Record price history entry (non-blocking)
         await db.from('ingredient_price_history').insert({
           chef_id: user.tenantId!,
@@ -672,6 +677,16 @@ export async function receivePOItems(
 
   if (poUpdateError)
     throw new Error(`Failed to update PO status: ${(poUpdateError as any).message}`)
+
+  // Propagate price changes to recipe costs (non-blocking)
+  if (priceChangedIngredientIds.length > 0) {
+    try {
+      const { propagatePriceChange } = await import('@/lib/pricing/cost-refresh-actions')
+      await propagatePriceChange(priceChangedIngredientIds)
+    } catch (err) {
+      console.error('[non-blocking] Recipe cost cascade failed after PO receive:', err)
+    }
+  }
 
   revalidatePath('/inventory')
   revalidatePath('/inventory/purchase-orders')

@@ -7,6 +7,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { revalidatePath } from 'next/cache'
 import {
   computeCancellationRefund,
   DEFAULT_POLICY,
@@ -198,7 +199,7 @@ export async function initiateRefund(input: InitiateRefundInput): Promise<Refund
         payment_method: 'cash', // Offline refunds default to cash
         description: `Offline refund issued by chef`,
         event_id: eventId,
-        transaction_reference: null,
+        transaction_reference: `offline_refund_${eventId}_${Date.now()}`,
         is_refund: true,
         refund_reason: reason,
         internal_notes: `Manual refund by ${user.email} on ${new Date().toISOString()}. Reason: ${reason}`,
@@ -270,6 +271,14 @@ export async function initiateRefund(input: InitiateRefundInput): Promise<Refund
   } catch (activityErr) {
     console.error('[initiateRefund] Activity log failed (non-blocking):', activityErr)
   }
+
+  // Bust cached pages that display financial data
+  revalidatePath(`/events/${eventId}`)
+  revalidatePath('/events')
+  revalidatePath('/dashboard')
+  revalidatePath('/finance')
+  revalidatePath(`/my-events/${eventId}`)
+  revalidatePath('/my-events')
 
   return {
     success: true,

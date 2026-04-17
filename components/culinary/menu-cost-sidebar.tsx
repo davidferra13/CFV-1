@@ -48,6 +48,7 @@ export function MenuCostSidebar({
     foodCostPercent: number | null
     hasAllPrices: boolean
     componentCount: number
+    oldestPriceDaysAgo: number | null
   } | null>(null)
   const [alerts, setAlerts] = useState<MarginAlert[]>([])
   const [vendorHints, setVendorHints] = useState<MenuVendorHint[]>([])
@@ -115,6 +116,18 @@ export function MenuCostSidebar({
 
   if (!costData) return null
 
+  // Empty menu: show guidance instead of $0.00 values
+  if (costData.componentCount === 0) {
+    return (
+      <div className={`rounded-lg border border-stone-700 bg-stone-800/50 p-4 ${className}`}>
+        <h3 className="text-sm font-medium text-stone-300 mb-2">Cost Summary</h3>
+        <p className="text-xs text-stone-500">
+          Add dishes and link recipes to see live cost tracking, food cost %, and margin alerts.
+        </p>
+      </div>
+    )
+  }
+
   const foodCostColor = getFoodCostColor(costData.foodCostPercent)
 
   return (
@@ -130,9 +143,15 @@ export function MenuCostSidebar({
       <div className="text-center py-2">
         <p className="text-xs text-stone-500 uppercase tracking-wider mb-1">Food Cost</p>
         <p className={`text-3xl font-bold ${foodCostColor}`}>
-          {costData.foodCostPercent !== null ? `${costData.foodCostPercent.toFixed(1)}%` : 'N/A'}
+          {costData.foodCostPercent !== null
+            ? `${!costData.hasAllPrices ? '≥ ' : ''}${costData.foodCostPercent.toFixed(1)}%`
+            : 'N/A'}
         </p>
-        <p className="text-xs text-stone-500 mt-1">Target: 25-30%</p>
+        <p className="text-xs text-stone-500 mt-1">
+          {costData.foodCostPercent !== null && !costData.hasAllPrices
+            ? 'Minimum estimate (missing prices)'
+            : 'Target: 25-30%'}
+        </p>
       </div>
 
       {/* Cost metrics grid */}
@@ -140,20 +159,28 @@ export function MenuCostSidebar({
         <div className="bg-stone-900/50 rounded-lg p-3">
           <p className="text-xs text-stone-500">Total Cost</p>
           <p className="text-sm font-medium text-stone-200">
+            {!costData.hasAllPrices && costData.totalCostCents !== null ? '≥ ' : ''}
             {formatCents(costData.totalCostCents)}
           </p>
+          {!costData.hasAllPrices && costData.totalCostCents !== null && (
+            <p className="text-xxs text-amber-400/70 mt-0.5">minimum (gaps below)</p>
+          )}
         </div>
         <div className="bg-stone-900/50 rounded-lg p-3">
           <p className="text-xs text-stone-500">Per Guest</p>
           <p className="text-sm font-medium text-stone-200">
+            {!costData.hasAllPrices && costData.costPerGuestCents !== null ? '≥ ' : ''}
             {formatCents(costData.costPerGuestCents)}
           </p>
         </div>
       </div>
 
-      {/* Component count */}
+      {/* Component count + price freshness */}
       <div className="flex items-center justify-between text-xs text-stone-500">
         <span>{costData.componentCount} components</span>
+        {costData.oldestPriceDaysAgo !== null && costData.oldestPriceDaysAgo > 90 && (
+          <span className="text-amber-400/80">prices up to {costData.oldestPriceDaysAgo}d old</span>
+        )}
       </div>
 
       {/* A2: Components with no recipe - cost excluded silently without this warning */}

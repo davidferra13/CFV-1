@@ -62,12 +62,23 @@ export async function recordPayment(input: RecordPaymentInput) {
 
   if (saleErr || !sale) throw new Error('Sale not found')
 
-  // Guard against overpayment: payment amount must not exceed sale total + tip.
-  // This catches fat-finger errors (e.g. entering $1,000 for a $10 sale).
+  // Guard against overpayment: payment amount must not exceed remaining balance.
+  // Subtracts already-captured/settled payments so split-tender can't overshoot.
+  const { data: priorPayments } = await db
+    .from('commerce_payments')
+    .select('amount_cents, status')
+    .eq('sale_id', input.saleId)
+    .eq('tenant_id', user.tenantId!)
+
+  const alreadyPaid = (priorPayments ?? [])
+    .filter((p: any) => ['captured', 'settled'].includes(p.status))
+    .reduce((sum: number, p: any) => sum + (p.amount_cents ?? 0), 0)
+
   const saleTotal = ((sale as any).total_cents ?? 0) + (input.tipCents ?? 0)
-  if (input.amountCents > saleTotal) {
+  const remaining = saleTotal - alreadyPaid
+  if (input.amountCents > remaining) {
     throw new Error(
-      `Payment amount ($${(input.amountCents / 100).toFixed(2)}) exceeds sale total ($${(saleTotal / 100).toFixed(2)})`
+      `Payment amount ($${(input.amountCents / 100).toFixed(2)}) exceeds remaining balance ($${(remaining / 100).toFixed(2)})`
     )
   }
 

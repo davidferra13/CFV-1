@@ -76,7 +76,7 @@ export async function ingestOpenClawPackage(pkg: OpenClawSocialPackage): Promise
   if (error || !data?.id) {
     return {
       success: false,
-      error: error?.message ?? 'Failed to create post from OpenClaw package',
+      error: error?.message ?? 'Failed to create post from data package',
     }
   }
 

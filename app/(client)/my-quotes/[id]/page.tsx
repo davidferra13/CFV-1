@@ -222,7 +222,11 @@ export default async function ClientQuoteDetailPage({ params }: { params: { id: 
 
       {/* Response Buttons */}
       {isPending && (
-        <QuoteResponseButtons quoteId={quote.id} totalCents={quote.total_quoted_cents} />
+        <QuoteResponseButtons
+          quoteId={quote.id}
+          totalCents={quote.total_quoted_cents}
+          eventId={quote.event_id ?? undefined}
+        />
       )}
 
       {/* Message chef about this quote */}

@@ -1,10 +1,13 @@
-'use server'
+// SECURITY (Q3): Removed 'use server' directive. These are internal-only hooks,
+// not browser-callable server actions. All lifecycle posting now uses
+// circleFirstNotify (lib/hub/circle-first-notify.ts) in production code.
+// Only postArrivalToCircle is still called (from AI agent actions, server-side).
 
 import { createServerClient } from '@/lib/db/server'
 import { getCircleForContext, getCircleForEvent, getChefHubProfileId } from './circle-lookup'
 
 // ---------------------------------------------------------------------------
-// Circle Lifecycle Hooks
+// Circle Lifecycle Hooks (LEGACY - see circleFirstNotify for production use)
 // Posts structured messages to the Dinner Circle at key lifecycle transitions.
 // All functions are non-blocking side effects: wrap in try/catch at call site.
 // ---------------------------------------------------------------------------

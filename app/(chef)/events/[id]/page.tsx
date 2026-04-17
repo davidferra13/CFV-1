@@ -124,8 +124,10 @@ import { getQrCodeUrl } from '@/lib/qr/qr-code'
 import { shortenUrl } from '@/lib/links/url-shortener'
 import { EventHubLinkPanel } from '@/components/hub/event-hub-link-panel'
 import { getEventHubGroupToken } from '@/lib/hub/integration-actions'
+import { getEventTicketTypes, getEventTickets, getEventTicketSummary } from '@/lib/tickets/actions'
 import { EventDetailOverviewTab } from './_components/event-detail-overview-tab'
 import { EventDetailMoneyTab } from './_components/event-detail-money-tab'
+import { EventDetailTicketsTab } from './_components/event-detail-tickets-tab'
 import { forecastMenuCost, type CostForecast } from '@/lib/openclaw/cost-forecast-actions'
 import { EventDetailOpsTab } from './_components/event-detail-ops-tab'
 import { EventDetailWrapTab } from './_components/event-detail-wrap-tab'
@@ -261,7 +263,12 @@ export default async function EventDetailPage({
   params: { id: string }
   searchParams?: { tab?: string }
 }) {
-  const activeTab = (searchParams?.tab ?? 'overview') as 'overview' | 'money' | 'ops' | 'wrap'
+  const activeTab = (searchParams?.tab ?? 'overview') as
+    | 'overview'
+    | 'money'
+    | 'tickets'
+    | 'ops'
+    | 'wrap'
   const user = await requireChef()
 
   const event = await getEventById(params.id)
@@ -300,6 +307,7 @@ export default async function EventDetailPage({
     lifecycleProgress,
     menuCostSummary,
     chefArchetype,
+    ledgerEntries,
   ] = await Promise.all([
     getEventFinancialSummary(params.id),
     getEventTransitions(params.id),
@@ -343,6 +351,9 @@ export default async function EventDetailPage({
     getLifecycleProgress(event.inquiry_id ?? undefined, params.id).catch(() => null),
     getEventMenuCostSummary(params.id).catch(() => null),
     getChefArchetype().catch(() => null),
+    import('@/lib/events/offline-payment-actions')
+      .then((m) => m.getEventLedgerEntries(params.id))
+      .catch(() => []),
   ])
 
   const eventLoyaltyPoints = (eventLoyaltyTxs as { points: number }[]).reduce(
@@ -485,6 +496,13 @@ export default async function EventDetailPage({
     ['confirmed', 'in_progress'].includes(event.status) && isEventWithinDays(event.event_date, 7)
       ? getParAlerts().catch(() => [])
       : Promise.resolve([]),
+  ])
+
+  // Ticket sales data
+  const [ticketTypes, ticketList, ticketSummary] = await Promise.all([
+    getEventTicketTypes(params.id).catch(() => []),
+    getEventTickets(params.id).catch(() => []),
+    getEventTicketSummary(params.id).catch(() => null),
   ])
 
   // Cost forecast for future events with menus
@@ -869,6 +887,19 @@ export default async function EventDetailPage({
         costForecast={costForecast}
         menuCostSummary={menuCostSummary}
         chefArchetype={chefArchetype}
+        ledgerEntries={ledgerEntries as any[]}
+      />
+
+      {/* TAB: TICKETS - Ticket sales and management   */}
+      {/* ============================================ */}
+      <EventDetailTicketsTab
+        activeTab={activeTab}
+        eventId={event.id}
+        eventStatus={event.status}
+        ticketTypes={ticketTypes as any[]}
+        tickets={ticketList as any[]}
+        summary={ticketSummary}
+        shareToken={(activeShare as any)?.share_token ?? null}
       />
 
       {/* ============================================ */}

@@ -40,6 +40,11 @@ export async function register() {
     const { scheduleSimulation } = await import('./lib/simulation/auto-schedule')
     scheduleSimulation()
 
+    // Self-hosted cron ticker: fires all scheduled API routes at their defined cadences.
+    // Replaces the need for an external scheduler (Vercel cron, Windows Task Scheduler, etc.)
+    const { startCronTicker } = await import('./lib/cron/ticker')
+    startCronTicker()
+
     // Warm up critical pages so the first real user doesn't hit cold-start latency.
     // Each dynamic page requires loading its server-side module graph on first hit.
     // This takes 5-15s cold but <0.5s warm. We pay the cost once at startup.

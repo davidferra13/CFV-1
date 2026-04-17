@@ -3,6 +3,21 @@
 import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
 import type { Json } from '@/types/database'
+
+// SECURITY (Q7): Verify group token matches groupId before returning data.
+// Prevents IDOR where attacker calls server action with arbitrary groupId.
+// groupToken is REQUIRED - the previous early-return on !groupToken was a bypass vulnerability.
+async function verifyGroupAccess(groupId: string, groupToken: string): Promise<void> {
+  if (!groupToken) throw new Error('Access denied: group token required')
+  const db: any = createServerClient({ admin: true })
+  const { data } = await db
+    .from('hub_groups')
+    .select('id')
+    .eq('id', groupId)
+    .eq('group_token', groupToken)
+    .single()
+  if (!data) throw new Error('Access denied')
+}
 import type { HubMessage, HubPinnedNote } from './types'
 
 // ---------------------------------------------------------------------------
@@ -14,8 +29,8 @@ const PostMessageSchema = z.object({
   profileToken: z.string().uuid(),
   body: z.string().min(1).max(2000),
   reply_to_message_id: z.string().uuid().optional().nullable(),
-  media_urls: z.array(z.string()).optional(),
-  media_captions: z.array(z.string()).optional(),
+  media_urls: z.array(z.string().url()).max(10).optional(),
+  media_captions: z.array(z.string().max(500)).max(10).optional(),
 })
 
 /**
@@ -113,8 +128,12 @@ export async function postHubMessage(
 
 /**
  * Post a system message to a hub group thread. Internal use only.
+ * SECURITY (Q2): NOT exported - must not be browser-callable.
+ * Other server files import this via: import { postSystemMessage } from './message-actions'
+ * But since this file is 'use server', only exported functions become server actions.
+ * Removing 'export' prevents direct browser invocation while keeping module-level imports.
  */
-export async function postSystemMessage(input: {
+async function postSystemMessage(input: {
   groupId: string
   authorProfileId: string
   systemEventType: string
@@ -169,9 +188,11 @@ export async function postSystemMessage(input: {
  */
 export async function getHubMessages(input: {
   groupId: string
+  groupToken?: string
   cursor?: string
   limit?: number
 }): Promise<{ messages: HubMessage[]; nextCursor: string | null }> {
+  await verifyGroupAccess(input.groupId, input.groupToken)
   const db: any = createServerClient({ admin: true })
   const limit = input.limit ?? 50
 
@@ -602,7 +623,7 @@ export async function editHubMessage(input: {
 
   const { data: message } = await db
     .from('hub_messages')
-    .select('author_profile_id')
+    .select('author_profile_id, group_id')
     .eq('id', input.messageId)
     .single()
 
@@ -624,10 +645,11 @@ export async function editHubMessage(input: {
   if (error) throw new Error(`Failed to edit message: ${error.message}`)
 
   // Non-blocking: broadcast edit to open circle views
+  // Q52 fix: use editedMsg.group_id (message.group_id also works now that we select it)
   try {
     const { broadcast } = await import('@/lib/realtime/sse-server')
     if (editedMsg) {
-      broadcast(`hub_messages_updates:${message.group_id}`, 'UPDATE', { new: editedMsg })
+      broadcast(`hub_messages_updates:${editedMsg.group_id}`, 'UPDATE', { new: editedMsg })
     }
   } catch {
     // Non-blocking
@@ -639,9 +661,11 @@ export async function editHubMessage(input: {
  */
 export async function searchHubMessages(input: {
   groupId: string
+  groupToken?: string
   query: string
   limit?: number
 }): Promise<HubMessage[]> {
+  await verifyGroupAccess(input.groupId, input.groupToken)
   const db: any = createServerClient({ admin: true })
   const limit = input.limit ?? 20
   const q = input.query.trim()

@@ -160,6 +160,7 @@ export async function checkMenuMargins(menuId: string): Promise<{
     foodCostPercent: number | null
     hasAllPrices: boolean
     componentCount: number
+    oldestPriceDaysAgo: number | null
   }
 }> {
   const user = await requireChef()
@@ -177,6 +178,27 @@ export async function checkMenuMargins(menuId: string): Promise<{
   if (error) {
     console.error('[checkMenuMargins] Error:', error)
     throw new UnknownAppError('Failed to check menu margins')
+  }
+
+  // Check price staleness: oldest price date across all ingredients in this menu
+  let oldestPriceDaysAgo: number | null = null
+  try {
+    const { pgClient: pg } = await import('@/lib/db/index')
+    const [staleRow] = await pg`
+      SELECT MIN(i.last_price_date) AS oldest_price_date
+      FROM dishes d
+      JOIN components c ON c.dish_id = d.id
+      JOIN recipe_ingredients ri ON ri.recipe_id = c.recipe_id
+      JOIN ingredients i ON i.id = ri.ingredient_id
+      WHERE d.menu_id = ${menuId}
+        AND i.last_price_date IS NOT NULL
+    `
+    if (staleRow?.oldest_price_date) {
+      const oldest = new Date(staleRow.oldest_price_date)
+      oldestPriceDaysAgo = Math.floor((Date.now() - oldest.getTime()) / (1000 * 60 * 60 * 24))
+    }
+  } catch {
+    // Non-critical - staleness is advisory
   }
 
   const alerts: MarginAlert[] = []
@@ -209,6 +231,16 @@ export async function checkMenuMargins(menuId: string): Promise<{
     })
   }
 
+  // Stale price warning (>90 days)
+  if (oldestPriceDaysAgo !== null && oldestPriceDaysAgo > 90) {
+    alerts.push({
+      level: 'warning',
+      message: `Some ingredient prices are ${oldestPriceDaysAgo} days old. Costs may have shifted.`,
+      foodCostPercent: foodCostPct ?? 0,
+      targetPercent: 30,
+    })
+  }
+
   return {
     alerts,
     costBreakdown: {
@@ -217,6 +249,7 @@ export async function checkMenuMargins(menuId: string): Promise<{
       foodCostPercent: foodCostPct,
       hasAllPrices: data?.has_all_recipe_costs ?? false,
       componentCount: data?.total_component_count ?? 0,
+      oldestPriceDaysAgo,
     },
   }
 }

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import { checkRateLimit } from '@/lib/rateLimit'
@@ -64,12 +65,12 @@ export default async function HubGroupPage({ params }: Props) {
     guestStatus,
     lifecycleClient,
   ] = await Promise.all([
-    getGroupMembers(group.id),
-    getGroupNotes(group.id),
-    getGroupMedia({ groupId: group.id }),
-    getGroupAvailability(group.id),
-    getGroupEvents(group.id),
-    getMealBoard({ groupId: group.id }),
+    getGroupMembers(group.id).catch(() => []),
+    getGroupNotes(group.id).catch(() => []),
+    getGroupMedia({ groupId: group.id }).catch(() => []),
+    getGroupAvailability(group.id).catch(() => []),
+    getGroupEvents(group.id).catch(() => []),
+    getMealBoard({ groupId: group.id }).catch(() => []),
     getCriticalPathForGuest(groupToken).catch(() => null),
     getLifecycleProgressForClient(groupToken).catch(() => null),
   ])
@@ -109,6 +110,11 @@ export default async function HubGroupPage({ params }: Props) {
       linkedEventId={groupEvents[0]?.event_id ?? null}
     />
   )
+}
+
+// L4 fix: Private dinner circle data must never be indexed by search engines
+export const metadata: Metadata = {
+  robots: { index: false, follow: false, nocache: true },
 }
 
 export const dynamic = 'force-dynamic'

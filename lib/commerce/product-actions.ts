@@ -239,6 +239,71 @@ export async function toggleProductActive(productId: string, isActive: boolean) 
   revalidatePath('/commerce/products')
 }
 
+// ─── 86 Toggle (temporary unavailability during service) ─────────
+
+/**
+ * Mark a product as 86'd (unavailable) or restore it.
+ * Uses track_inventory + available_qty to block checkout without
+ * permanently deactivating the product. Stored previous qty
+ * in low_stock_threshold as a restore hint (non-destructive reuse).
+ *
+ * Unlike toggleProductActive, this does NOT check for existing sale items
+ * and is designed for rapid mid-service use.
+ */
+export async function toggleProduct86(productId: string, is86d: boolean) {
+  const user = await requireChef()
+  await requirePro('commerce')
+  const db: any = createServerClient()
+
+  if (is86d) {
+    // 86 the item: save current available_qty as restore hint, then zero it out
+    const { data: product } = await (db
+      .from('product_projections')
+      .select('available_qty')
+      .eq('id', productId)
+      .eq('tenant_id', user.tenantId!)
+      .single() as any)
+
+    const prevQty = product?.available_qty ?? 100
+
+    const { error } = await (db
+      .from('product_projections')
+      .update({
+        track_inventory: true,
+        available_qty: 0,
+        low_stock_threshold: prevQty, // stash previous qty for restore
+      } as any)
+      .eq('id', productId)
+      .eq('tenant_id', user.tenantId!) as any)
+
+    if (error) throw new Error(`Failed to 86 product: ${error.message}`)
+  } else {
+    // Restore: use low_stock_threshold as the previous qty
+    const { data: product } = await (db
+      .from('product_projections')
+      .select('low_stock_threshold')
+      .eq('id', productId)
+      .eq('tenant_id', user.tenantId!)
+      .single() as any)
+
+    const restoreQty = product?.low_stock_threshold ?? 100
+
+    const { error } = await (db
+      .from('product_projections')
+      .update({
+        available_qty: restoreQty,
+      } as any)
+      .eq('id', productId)
+      .eq('tenant_id', user.tenantId!) as any)
+
+    if (error) throw new Error(`Failed to restore product: ${error.message}`)
+  }
+
+  revalidatePath('/commerce/register')
+  revalidatePath('/commerce/products')
+  revalidatePath('/stations')
+}
+
 // ─── List Products ────────────────────────────────────────────────
 
 export async function listProducts(filters?: {

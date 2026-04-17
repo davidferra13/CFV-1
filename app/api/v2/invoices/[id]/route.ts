@@ -7,6 +7,7 @@
 
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
+import { revalidatePath } from 'next/cache'
 import { withApiAuth, apiSuccess, apiNotFound, apiValidationError, apiError } from '@/lib/api/v2'
 import { appendLedgerEntryInternal } from '@/lib/ledger/append-internal'
 
@@ -126,6 +127,10 @@ export const PATCH = withApiAuth(
           transaction_reference: `invoice_paid_${id}`,
           created_by: null,
         })
+        // Bust financial caches after ledger write
+        revalidatePath('/dashboard')
+        revalidatePath('/finance')
+        revalidatePath(`/events/${id}`)
       } catch (ledgerErr: any) {
         // Only throw if it's not a duplicate (idempotent re-call is fine)
         if (!ledgerErr?.message?.includes('duplicate')) {

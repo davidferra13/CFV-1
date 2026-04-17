@@ -232,50 +232,88 @@ export async function getLaborRevenueRatio(
   DateRangeSchema.parse({ startDate, endDate })
   const db: any = createServerClient()
 
-  // Get events in the date range with their revenue
-  const { data: events, error: eventsError } = await db
-    .from('events')
-    .select('id, quoted_price_cents')
-    .eq('tenant_id', user.tenantId!)
-    .gte('event_date', startDate)
-    .lte('event_date', endDate)
+  // Parallel: ALL revenue sources + ALL labor from clock entries
+  const [eventRes, commerceRes, salesRes, clockRes] = await Promise.all([
+    // Event revenue (billing)
+    db
+      .from('ledger_entries')
+      .select('amount_cents, is_refund, entry_type')
+      .eq('tenant_id', user.tenantId!)
+      .gte('created_at', `${startDate}T00:00:00Z`)
+      .lte('created_at', `${endDate}T23:59:59Z`),
+    // Commerce register revenue
+    db
+      .from('commerce_payments')
+      .select('amount_cents, ledger_entry_id')
+      .eq('tenant_id', user.tenantId!)
+      .in('status', ['captured', 'settled'])
+      .gte('created_at', `${startDate}T00:00:00Z`)
+      .lte('created_at', `${endDate}T23:59:59Z`),
+    // Direct sales revenue
+    db
+      .from('sales')
+      .select('id, total_cents')
+      .eq('tenant_id', user.tenantId!)
+      .in('status', ['captured', 'settled', 'partially_refunded'])
+      .gte('created_at', `${startDate}T00:00:00Z`)
+      .lte('created_at', `${endDate}T23:59:59Z`),
+    // Labor from clock entries (all staff, not just event-assigned)
+    db
+      .from('staff_clock_entries')
+      .select('total_minutes, staff_members (hourly_rate_cents)')
+      .eq('chef_id', user.tenantId!)
+      .gte('clock_in_at', `${startDate}T00:00:00Z`)
+      .lte('clock_in_at', `${endDate}T23:59:59Z`),
+  ])
 
-  if (eventsError) throw new Error(`Failed to load events: ${eventsError.message}`)
+  if (eventRes.error) throw new Error(`Failed to load billing: ${eventRes.error.message}`)
+  if (commerceRes.error) throw new Error(`Failed to load commerce: ${commerceRes.error.message}`)
+  if (salesRes.error) throw new Error(`Failed to load sales: ${salesRes.error.message}`)
+  if (clockRes.error) throw new Error(`Failed to load labor: ${clockRes.error.message}`)
 
-  if (!events || events.length === 0) {
-    return {
-      startDate,
-      endDate,
-      totalLaborCostCents: 0,
-      totalRevenueCents: 0,
-      ratioPercent: 0,
-      eventCount: 0,
+  // Billing revenue (excluding tips and refunds)
+  let billingRevenue = 0
+  for (const row of eventRes.data ?? []) {
+    if (row.is_refund || row.entry_type === 'refund') {
+      billingRevenue -= Math.abs(row.amount_cents)
+    } else if (row.entry_type === 'tip') {
+      continue
+    } else {
+      billingRevenue += row.amount_cents
     }
   }
 
-  const totalRevenueCents = events.reduce(
-    (sum: number, e: any) => sum + (e.quoted_price_cents ?? 0),
+  // Commerce revenue (exclude entries already in ledger to avoid double-count)
+  const commerceRevenue = (commerceRes.data ?? [])
+    .filter((row: any) => !row.ledger_entry_id)
+    .reduce((sum: number, row: any) => sum + (row.amount_cents ?? 0), 0)
+
+  // Direct sales revenue
+  const salesRevenue = (salesRes.data ?? []).reduce(
+    (sum: number, row: any) => sum + (row.total_cents ?? 0),
     0
   )
 
-  const eventIds = events.map((e: any) => e.id)
+  const totalRevenueCents = billingRevenue + commerceRevenue + salesRevenue
 
-  // Get labor cost for these events
-  const { data: assignments, error: assignError } = await db
-    .from('event_staff_assignments')
-    .select('pay_amount_cents')
-    .eq('chef_id', user.tenantId!)
-    .in('event_id', eventIds)
-
-  if (assignError) throw new Error(`Failed to load labor data: ${assignError.message}`)
-
-  const totalLaborCostCents = (assignments || []).reduce(
-    (sum: number, a: any) => sum + (a.pay_amount_cents ?? 0),
-    0
-  )
+  // Labor cost from actual clock entries (works for event AND non-event shifts)
+  let totalLaborCostCents = 0
+  for (const row of clockRes.data ?? []) {
+    const minutes = row.total_minutes ?? 0
+    const rateCents = (row as any).staff_members?.hourly_rate_cents ?? 0
+    totalLaborCostCents += Math.round((minutes / 60) * rateCents)
+  }
 
   const ratioPercent =
     totalRevenueCents > 0 ? Math.round((totalLaborCostCents / totalRevenueCents) * 10000) / 100 : 0
+
+  // Count events in range for backward compat
+  const { count: eventCount } = await db
+    .from('events')
+    .select('id', { count: 'exact', head: true })
+    .eq('tenant_id', user.tenantId!)
+    .gte('event_date', startDate)
+    .lte('event_date', endDate)
 
   return {
     startDate,
@@ -283,6 +321,6 @@ export async function getLaborRevenueRatio(
     totalLaborCostCents,
     totalRevenueCents,
     ratioPercent,
-    eventCount: events.length,
+    eventCount: eventCount ?? 0,
   }
 }

@@ -48,6 +48,16 @@ export async function postGuestCountUpdate(
 
   if (!membership?.can_post) throw new Error('Not authorized to post')
 
+  // L2 fix: Verify event is linked to this group (prevents IDOR on arbitrary events)
+  const { data: groupEvent } = await db
+    .from('hub_group_events')
+    .select('event_id')
+    .eq('group_id', validated.groupId)
+    .eq('event_id', validated.eventId)
+    .single()
+
+  if (!groupEvent) throw new Error('Event not linked to this group')
+
   // Get current guest count for the notification card
   const { data: event } = await db
     .from('events')

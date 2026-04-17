@@ -40,6 +40,7 @@ export async function sendSms(to: string, body: string): Promise<SmsResult> {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: params.toString(),
+      signal: AbortSignal.timeout(10_000),
     })
 
     if (response.ok) {

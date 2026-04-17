@@ -144,7 +144,7 @@ export async function parseVendorPriceList(formData: FormData): Promise<ParseRes
       matched: 0,
       unmatched: 0,
       items: [],
-      error: 'Cannot reach OpenClaw Pi. Ensure Pi is online.',
+      error: 'Cannot reach data engine. Ensure the service is online.',
     }
   }
 }
@@ -188,6 +188,10 @@ export async function confirmVendorImport(payload: {
     }
   } catch {
     clearTimeout(timeout)
-    return { success: false, imported: 0, error: 'Cannot reach OpenClaw Pi. Ensure Pi is online.' }
+    return {
+      success: false,
+      imported: 0,
+      error: 'Cannot reach data engine. Ensure the service is online.',
+    }
   }
 }

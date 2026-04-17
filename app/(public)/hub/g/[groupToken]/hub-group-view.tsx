@@ -390,8 +390,12 @@ export function HubGroupView({
                   disabled={recoveryPending || !recoveryEmail.includes('@')}
                   onClick={() => {
                     startRecoveryTransition(async () => {
-                      await sendCircleRecoveryEmail(recoveryEmail, group.group_token)
-                      setRecoverySent(true)
+                      try {
+                        await sendCircleRecoveryEmail(recoveryEmail, group.group_token)
+                        setRecoverySent(true)
+                      } catch {
+                        alert('Could not send recovery email. Please try again.')
+                      }
                     })
                   }}
                   className="shrink-0 rounded-lg bg-stone-700 px-3 py-2 text-sm text-stone-200 hover:bg-stone-600 disabled:opacity-50"
@@ -450,6 +454,7 @@ export function HubGroupView({
             {profileToken && <HubPushPrompt profileToken={profileToken} />}
             <HubFeed
               groupId={group.id}
+              groupToken={group.group_token}
               profileToken={profileToken}
               currentProfileId={currentProfileId}
               isOwnerOrAdmin={isOwnerOrAdmin}
@@ -460,6 +465,7 @@ export function HubGroupView({
         {activeTab === 'meals' && (
           <WeeklyMealBoard
             groupId={group.id}
+            groupToken={group.group_token}
             initialEntries={mealBoardEntries}
             profileToken={profileToken}
             isChefOrAdmin={isOwnerOrAdmin}
@@ -529,7 +535,9 @@ export function HubGroupView({
           />
         )}
 
-        {activeTab === 'search' && <HubMessageSearch groupId={group.id} />}
+        {activeTab === 'search' && (
+          <HubMessageSearch groupId={group.id} groupToken={group.group_token} />
+        )}
 
         {activeTab === 'settings' && isOwnerOrAdmin && profileToken && (
           <div className="p-4">

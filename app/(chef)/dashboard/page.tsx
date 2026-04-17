@@ -42,6 +42,7 @@ import { PipelineStatusBadge } from '@/components/pricing/pipeline-status-badge'
 import { DashboardHeartbeat } from '@/components/dashboard/dashboard-heartbeat'
 import { RemyAlertsWidget } from '@/components/dashboard/remy-alerts-widget'
 import { getActiveAlerts } from '@/lib/ai/remy-proactive-alerts'
+import { RestaurantMetricsSection, RestaurantMetricsSkeleton } from './_sections/restaurant-metrics'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -394,6 +395,18 @@ export default async function ChefDashboard() {
       )}
 
       {/* ============================================ */}
+      {/* RESTAURANT DAILY OPS - prime cost, labor %  */}
+      {/* Shows for restaurant/food-truck/bakery only */}
+      {/* ============================================ */}
+      {archetype && ['restaurant', 'food-truck', 'bakery'].includes(archetype) && (
+        <WidgetErrorBoundary name="Restaurant Metrics" compact>
+          <Suspense fallback={<RestaurantMetricsSkeleton />}>
+            <RestaurantMetricsSection />
+          </Suspense>
+        </WidgetErrorBoundary>
+      )}
+
+      {/* ============================================ */}
       {/* TODAY & THIS WEEK - first thing a chef needs */}
       {/* ============================================ */}
       <section>
@@ -484,7 +497,7 @@ export default async function ChefDashboard() {
           <div className="section-label mb-4">Business Overview</div>
           <WidgetErrorBoundary name="Hero Metrics" compact>
             <Suspense fallback={<HeroMetricsSkeleton />}>
-              <HeroMetrics />
+              <HeroMetrics archetype={archetype} />
             </Suspense>
           </WidgetErrorBoundary>
         </section>

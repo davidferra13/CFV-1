@@ -43,10 +43,10 @@ export function ReconciliationActions({ reportId, reviewed, flags }: Props) {
     })
   }
 
-  function handleResolveFlag(flagIndex: number, resolution: 'resolved' | 'ignored') {
+  function handleResolveFlag(flagType: string, resolution: 'resolved' | 'ignored') {
     startTransition(async () => {
       try {
-        await resolveReconciliationFlag(reportId, flagIndex, resolution)
+        await resolveReconciliationFlag(reportId, flagType, resolution)
         toast.success(`Flag ${resolution}`)
         router.refresh()
       } catch (err) {
@@ -70,9 +70,9 @@ export function ReconciliationActions({ reportId, reviewed, flags }: Props) {
         <Card>
           <CardContent className="p-4 space-y-3">
             <h3 className="text-stone-200 font-medium">Flags ({flags.length})</h3>
-            {flags.map((flag, idx) => (
+            {flags.map((flag) => (
               <div
-                key={idx}
+                key={flag.type}
                 className={`flex items-center justify-between p-3 rounded-lg ${
                   flag.severity === 'error'
                     ? 'bg-red-500/10'
@@ -112,7 +112,7 @@ export function ReconciliationActions({ reportId, reviewed, flags }: Props) {
                   <div className="flex gap-1">
                     <Button
                       variant="ghost"
-                      onClick={() => handleResolveFlag(idx, 'resolved')}
+                      onClick={() => handleResolveFlag(flag.type, 'resolved')}
                       disabled={isPending}
                       className="text-emerald-400 hover:text-emerald-300"
                     >
@@ -121,7 +121,7 @@ export function ReconciliationActions({ reportId, reviewed, flags }: Props) {
                     </Button>
                     <Button
                       variant="ghost"
-                      onClick={() => handleResolveFlag(idx, 'ignored')}
+                      onClick={() => handleResolveFlag(flag.type, 'ignored')}
                       disabled={isPending}
                       className="text-stone-400"
                     >

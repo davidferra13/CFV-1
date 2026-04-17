@@ -67,6 +67,24 @@
 | Q55 | Loyalty Table Tenant Scoping  | q55-loyalty-table-scoping.spec.ts      | BUILT  | Struct |
 | Q56 | Admin Self-Promotion Block    | q56-admin-self-promotion.spec.ts       | BUILT  | Struct |
 | Q57 | Remy Admin Action Boundary    | q57-remy-admin-action-boundary.spec.ts | BUILT  | Struct |
+| Q58 | Pricing Silent Zero Guard     | q58-pricing-silent-zero.spec.ts        | SPEC   | DB     |
+| Q59 | Embed Chef Notification       | q59-embed-chef-notification.spec.ts    | SPEC   | Struct |
+| Q60 | Embed Email Rate Limit        | q60-embed-email-rate-limit.spec.ts     | SPEC   | API    |
+| Q61 | Stripe Webhook Ledger Safety  | q61-stripe-webhook-ledger.spec.ts      | SPEC   | Struct |
+| Q62 | Menu Lock Enforcement         | q62-menu-lock-enforcement.spec.ts      | SPEC   | Struct |
+| Q63 | Ingredient Dedup Guard        | q63-ingredient-dedup.spec.ts           | SPEC   | DB     |
+| Q64 | Follow-Up Send CAS Guard      | q64-followup-cas-guard.spec.ts         | SPEC   | Struct |
+| Q65 | Notification Non-Blocking     | q65-notification-non-blocking.spec.ts  | SPEC   | Struct |
+| Q66 | Offline Refund Idempotency    | q66-offline-refund-idempotency.spec.ts | SPEC   | Struct |
+| Q67 | Public Storage Bucket Gate    | q67-storage-bucket-gate.spec.ts        | SPEC   | API    |
+| Q68 | Hub Read Action Auth          | q68-hub-read-auth.spec.ts              | SPEC   | API    |
+| Q69 | Hub Guest Count IDOR          | q69-hub-guest-count-idor.spec.ts       | SPEC   | API    |
+| Q70 | Hub Noindex Meta              | q70-hub-noindex.spec.ts                | SPEC   | Struct |
+| Q71 | Email Suppression List        | q71-email-suppression.spec.ts          | SPEC   | Struct |
+| Q72 | Email Retry on Transient      | q72-email-retry.spec.ts                | SPEC   | Struct |
+| Q73 | Over-Refund Guard             | q73-over-refund-guard.spec.ts          | SPEC   | Struct |
+| Q74 | Cancel Expires Stripe Session | q74-cancel-stripe-expire.spec.ts       | SPEC   | Struct |
+| Q75 | File Upload Type Validation   | q75-upload-type-validation.spec.ts     | SPEC   | API    |
 
 ---
 
@@ -252,6 +270,114 @@
 **Hypothesis:** Remy's action registry does not import from `lib/admin/`. Remy calls `requireChef()` not `requireAdmin()`. Recipe generation, modification, and ingredient addition are permanently restricted via `restricted-actions.ts` and `remy-input-validation.ts`.  
 **Failure:** A chef uses natural language to trigger an admin server action through Remy, or Remy generates recipe content.  
 **Scope:** `lib/ai/remy-actions.ts`, `lib/ai/agent-actions/`, `lib/ai/restricted-actions.ts`, `lib/ai/remy-input-validation.ts`.
+
+### Q58: Pricing Silent Zero Guard
+
+**Hypothesis:** `compute_recipe_cost_cents()` returns NULL (not 0) when any ingredient has no pricing. `event_inventory_variance.variance_cost_cents` is NULL when `last_price_cents` is NULL. Shopping list does not add $0 for unpriced ingredients.
+**Failure:** A recipe with unpriced ingredients shows an understated cost. Inventory variance shows $0 cost impact for unpriced ingredients.
+**Scope:** `compute_recipe_cost_cents()` DB function, `event_inventory_variance` view, `lib/menus/actions.ts` shopping list.
+
+### Q59: Embed Chef Notification
+
+**Hypothesis:** When a client submits the embed inquiry widget, the chef receives an email notification via `sendNewInquiryChefEmail()` with `source: 'website'`.
+**Failure:** Chef never gets notified of embed widget inquiries. Must manually check dashboard.
+**Scope:** `app/api/embed/inquiry/route.ts`, `lib/email/notifications.ts`.
+
+### Q60: Embed Email Rate Limit
+
+**Hypothesis:** The embed inquiry route enforces both IP-based (10/5min) and email-based (3/hour) rate limits. Repeated submissions from the same email are blocked regardless of IP.
+**Failure:** A spammer with rotating IPs floods a chef with fake inquiries from the same email.
+**Scope:** `app/api/embed/inquiry/route.ts`, `lib/rateLimit.ts`.
+
+### Q61: Stripe Webhook Ledger Safety
+
+**Hypothesis:** Stripe webhook handlers for payment_failed, payment_canceled, and dispute_created do NOT attempt zero-amount ledger entries. Refund handlers pass negative `amount_cents` matching the DB constraint `(is_refund=true AND amount_cents < 0)`. All webhook types return 200 so Stripe does not retry.
+**Failure:** Zero-amount or wrong-sign ledger entries throw, return 500, trigger infinite Stripe retries. Chef never notified.
+**Scope:** `app/api/webhooks/stripe/route.ts`, `lib/ledger/append-internal.ts`.
+
+### Q62: Menu Lock Enforcement
+
+**Hypothesis:** When a menu's status is `locked`, all mutations on its dishes and components are rejected. This includes `updateDish`, `deleteDish`, `addComponentToDish`, `updateComponent`, `deleteComponent`. The lock check covers both UI and server action paths.
+**Failure:** A locked menu's content changes after client approval. Client sees different food than approved.
+**Scope:** `lib/menus/actions.ts` dish and component CRUD functions.
+
+### Q63: Ingredient Dedup Guard
+
+**Hypothesis:** The `ingredients` table has a unique constraint on `(tenant_id, lower(name))`. Concurrent `findOrCreateIngredient` calls for the same name cannot create duplicates.
+**Failure:** Duplicate ingredients per tenant cause split cost data and inconsistent shopping lists.
+**Scope:** `database/migrations/20260415000015`, `lib/recipes/actions.ts`.
+
+### Q64: Follow-Up Send CAS Guard
+
+**Hypothesis:** `processPendingSend` uses a CAS guard (`.eq('status', 'pending')`) on the status update. Concurrent cron runs cannot double-send the same follow-up email. Send failures use `'failed'` status, not `'bounced'`.
+**Failure:** Client receives duplicate follow-up emails.
+**Scope:** `lib/follow-up/sequence-engine.ts`.
+
+### Q65: Notification Non-Blocking Contract
+
+**Hypothesis:** `createNotification()` never throws on DB insert failure. It returns null or `{ success: false }` and logs the error. Parent operations (webhooks, transitions) are never crashed by notification failures.
+**Failure:** DB hiccup during notification insert crashes payment webhook handler.
+**Scope:** `lib/notifications/actions.ts`.
+
+### Q66: Offline Refund Idempotency
+
+**Hypothesis:** Offline refund ledger entries have a deterministic `transaction_reference` that prevents duplicate entries via the UNIQUE constraint. Double-click or network retry cannot create two refund records.
+**Failure:** Double refund in ledger, corrupting financial reports.
+**Scope:** `lib/cancellation/refund-actions.ts`.
+
+### Q67: Public Storage Bucket Gate
+
+**Hypothesis:** The public storage route (`/api/storage/public/`) only serves files from explicitly allowlisted buckets. Private buckets (receipts, chat-attachments, client-photos) return 404.
+**Failure:** Private files accessible without authentication via the public route.
+**Scope:** `app/api/storage/public/[...path]/route.ts`.
+
+### Q68: Hub Read Action Auth
+
+**Hypothesis:** Hub read server actions (`getHubMessages`, `searchHubMessages`) verify `groupToken` matches `groupId` when called from client code. Providing an arbitrary `groupId` without a valid `groupToken` is rejected.
+**Failure:** IDOR - any browser can call server actions with arbitrary group UUIDs and read private dinner circle data.
+**Scope:** `lib/hub/message-actions.ts`.
+
+### Q69: Hub Guest Count IDOR
+
+**Hypothesis:** `postGuestCountUpdate` verifies the `eventId` is linked to the `groupId` via `hub_group_events`. Providing an unrelated `eventId` is rejected.
+**Failure:** Any circle member can modify guest count on any event in the database.
+**Scope:** `lib/hub/client-quick-actions.ts`.
+
+### Q70: Hub Noindex Meta
+
+**Hypothesis:** Public hub group pages (`/hub/g/[groupToken]`) include `robots: { index: false }` metadata. Private dinner circle data is never indexed by search engines.
+**Failure:** Search engines index private dinner circle conversations, dietary info, and member names.
+**Scope:** `app/(public)/hub/g/[groupToken]/page.tsx`.
+
+### Q71: Email Suppression List
+
+**Hypothesis:** `sendEmail()` checks the `email_suppressions` table before sending. Bounced/invalid addresses are skipped. Hard bounce errors from Resend automatically add the address to the suppression list.
+**Failure:** Repeated sends to dead addresses degrade sender reputation and waste API quota.
+**Scope:** `lib/email/send.ts`, `database/migrations/20260415000019_email_suppression_list.sql`.
+
+### Q72: Email Retry on Transient
+
+**Hypothesis:** `sendEmail()` retries once with 1s backoff on transient failures (5xx, timeout, network error). Non-retryable errors (4xx) are not retried.
+**Failure:** Transient API blip permanently loses payment confirmations and event invitations.
+**Scope:** `lib/email/send.ts`.
+
+### Q73: Over-Refund Guard
+
+**Hypothesis:** `initiateRefund` checks cumulative refunds against total paid before issuing. For offline refunds, `amountCents > netRefundableCents` is rejected server-side.
+**Failure:** Chef refunds more than client paid. Negative ledger balance corrupts financial reports.
+**Scope:** `lib/cancellation/refund-actions.ts`.
+
+### Q74: Cancel Expires Stripe Session
+
+**Hypothesis:** When an event transitions to `cancelled`, any active Stripe Checkout Sessions for that event are expired via `stripe.checkout.sessions.expire()`. Client cannot complete payment on a cancelled event.
+**Failure:** Money captured for cancelled event with no automatic refund.
+**Scope:** `lib/events/transitions.ts`, `lib/stripe/checkout.ts`.
+
+### Q75: File Upload Type Validation
+
+**Hypothesis:** Guest photo uploads and hub media uploads validate file MIME type against an allowlist. Only image types (JPEG, PNG, HEIC, HEIF, WebP) are accepted. File extension is derived from MIME type, not filename.
+**Failure:** Arbitrary file types (.exe, .html, .js) uploaded by unauthenticated users.
+**Scope:** `lib/guest-photos/actions.ts`, `lib/hub/media-actions.ts`.
 
 ---
 

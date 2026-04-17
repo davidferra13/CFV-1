@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -34,13 +34,9 @@ export function CateringBidSummary({
   onQuoteCreated?: (quoteId: string) => void
 }) {
   const [error, setError] = useState<string | null>(null)
-  const [isPending, startTransition] = useTransition()
   const [saved, setSaved] = useState(false)
 
-  const foodCostRating = getFoodCostRating(
-    result.foodCostCents,
-    result.totalCents
-  )
+  const foodCostRating = getFoodCostRating(result.foodCostCents, result.totalCents)
 
   const handlePrint = () => {
     window.print()
@@ -51,12 +47,9 @@ export function CateringBidSummary({
       {/* Header */}
       <div className="flex items-center justify-between print:block">
         <div>
-          <h2 className="text-xl font-semibold">
-            {bidName || 'Catering Bid'}
-          </h2>
+          <h2 className="text-xl font-semibold">{bidName || 'Catering Bid'}</h2>
           <p className="text-sm text-gray-500">
-            {guestCount} guests - Generated{' '}
-            {new Date().toLocaleDateString()}
+            {guestCount} guests - Generated {new Date().toLocaleDateString()}
           </p>
         </div>
         <div className="flex gap-2 print:hidden">
@@ -80,12 +73,8 @@ export function CateringBidSummary({
       {/* Per-person highlight */}
       <Card>
         <CardContent className="py-6 text-center">
-          <p className="text-sm text-gray-500 uppercase tracking-wide">
-            Total bid
-          </p>
-          <p className="text-3xl font-bold mt-1">
-            {formatCents(result.totalCents)}
-          </p>
+          <p className="text-sm text-gray-500 uppercase tracking-wide">Total bid</p>
+          <p className="text-3xl font-bold mt-1">{formatCents(result.totalCents)}</p>
           <p className="text-lg text-gray-600 mt-1">
             {formatCents(result.perPersonCents)} per person
           </p>
@@ -114,19 +103,13 @@ export function CateringBidSummary({
                   <p className="font-medium text-sm">{item.recipeName}</p>
                   <p className="text-xs text-gray-500">
                     {item.servings} servings
-                    {item.yieldQuantity
-                      ? ` (recipe yields ${item.yieldQuantity})`
-                      : ''}
+                    {item.yieldQuantity ? ` (recipe yields ${item.yieldQuantity})` : ''}
                     {!item.hasAllPrices && (
-                      <span className="ml-1 text-amber-600">
-                        * incomplete pricing
-                      </span>
+                      <span className="ml-1 text-amber-600">* incomplete pricing</span>
                     )}
                   </p>
                 </div>
-                <span className="font-medium text-sm">
-                  {formatCents(item.scaledCostCents)}
-                </span>
+                <span className="font-medium text-sm">{formatCents(item.scaledCostCents)}</span>
               </div>
             ))}
             <div className="flex items-center justify-between pt-2 font-semibold text-sm">
@@ -154,20 +137,11 @@ export function CateringBidSummary({
             )}
             <LineItem label="Overhead" amount={result.overheadCents} />
             <div className="border-t pt-2">
-              <LineItem
-                label="Subtotal"
-                amount={result.subtotalCents}
-                bold
-              />
+              <LineItem label="Subtotal" amount={result.subtotalCents} bold />
             </div>
             <LineItem label="Profit" amount={result.profitCents} />
             <div className="border-t pt-2">
-              <LineItem
-                label="Total"
-                amount={result.totalCents}
-                bold
-                large
-              />
+              <LineItem label="Total" amount={result.totalCents} bold large />
             </div>
             <div className="text-right text-sm text-gray-500">
               {formatCents(result.perPersonCents)} per person

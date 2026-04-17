@@ -16,6 +16,7 @@ import { createConflictError } from '@/lib/mutations/conflict'
 import { UnknownAppError } from '@/lib/errors/app-error'
 import { isMissingSoftDeleteColumn } from '@/lib/mutations/soft-delete-compat'
 import { getDuplicateCourseError } from '@/lib/menus/course-utils'
+import { normalizeUnit } from '@/lib/units/conversion-engine'
 
 type MenuStatus = Database['public']['Enums']['menu_status']
 // 'draft' | 'shared' | 'locked' | 'archived'
@@ -58,6 +59,7 @@ const UpdateMenuSchema = z.object({
   season: z.enum(['spring', 'summer', 'fall', 'winter']).nullable().optional(),
   client_id: z.string().uuid().nullable().optional(),
   target_date: z.string().nullable().optional(),
+  visible_to_dinner_circle: z.boolean().optional(),
   expected_updated_at: z.union([z.string(), z.date().transform((d) => d.toISOString())]).optional(),
   idempotency_key: z.string().optional(),
 })
@@ -2247,12 +2249,15 @@ export async function getMenuCostingGaps(menuId: string): Promise<CostingGap> {
       missingCount: Number(r.missing_count),
       totalIngredients: Number(r.total_ingredients),
     })),
-    unitMismatches: unitMismatchRows.map((r: UnitMismatchRow) => ({
-      ingredientName: r.ingredient_name,
-      recipeName: r.recipe_name,
-      recipeUnit: r.recipe_unit,
-      priceUnit: r.price_unit,
-    })),
+    unitMismatches: unitMismatchRows
+      // Filter out false positives: "lb" vs "pound" normalize to same canonical unit
+      .filter((r: UnitMismatchRow) => normalizeUnit(r.recipe_unit) !== normalizeUnit(r.price_unit))
+      .map((r: UnitMismatchRow) => ({
+        ingredientName: r.ingredient_name,
+        recipeName: r.recipe_name,
+        recipeUnit: r.recipe_unit,
+        priceUnit: r.price_unit,
+      })),
   }
 }
 

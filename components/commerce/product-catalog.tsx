@@ -18,7 +18,7 @@ import { Search, Pencil } from '@/components/ui/icons'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { toggleProductActive } from '@/lib/commerce/product-actions'
+import { toggleProductActive, toggleProduct86 } from '@/lib/commerce/product-actions'
 import { PRODUCT_CATEGORY_LABELS } from '@/lib/commerce/constants'
 import type { ProductCategory } from '@/lib/commerce/constants'
 
@@ -31,6 +31,7 @@ export function ProductCatalog({ products }: Props) {
   const [search, setSearch] = useState('')
   const [isPending, startTransition] = useTransition()
   const [togglingId, setTogglingId] = useState<string | null>(null)
+  const [eightySixingId, setEightySixingId] = useState<string | null>(null)
 
   const filtered = useMemo(() => {
     if (!search) return products
@@ -54,6 +55,21 @@ export function ProductCatalog({ products }: Props) {
         toast.error(err instanceof Error ? err.message : 'Failed to toggle product')
       } finally {
         setTogglingId(null)
+      }
+    })
+  }
+
+  function handleEightySix(productId: string, currentlyEightySixed: boolean) {
+    setEightySixingId(productId)
+    startTransition(async () => {
+      try {
+        await toggleProduct86(productId, !currentlyEightySixed)
+        toast.success(currentlyEightySixed ? 'Item restored' : "Item 86'd")
+        router.refresh()
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to toggle 86'd status")
+      } finally {
+        setEightySixingId(null)
       }
     })
   }
@@ -93,6 +109,7 @@ export function ProductCatalog({ products }: Props) {
               <TableHead>Cost</TableHead>
               <TableHead>Margin</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>86</TableHead>
               <TableHead className="w-20"></TableHead>
             </TableRow>
           </TableHeader>
@@ -164,6 +181,34 @@ export function ProductCatalog({ products }: Props) {
                             : 'Inactive'}
                       </Badge>
                     </button>
+                  </TableCell>
+                  <TableCell>
+                    {product.is_active && (
+                      <button
+                        onClick={() =>
+                          handleEightySix(
+                            product.id,
+                            product.track_inventory && product.available_qty === 0
+                          )
+                        }
+                        disabled={isPending && eightySixingId === product.id}
+                        className="cursor-pointer"
+                      >
+                        <Badge
+                          variant={
+                            product.track_inventory && product.available_qty === 0
+                              ? 'error'
+                              : 'default'
+                          }
+                        >
+                          {isPending && eightySixingId === product.id
+                            ? '...'
+                            : product.track_inventory && product.available_qty === 0
+                              ? "86'd"
+                              : 'In Stock'}
+                        </Badge>
+                      </button>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Link href={`/commerce/products/${product.id}`}>

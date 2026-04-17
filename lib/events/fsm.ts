@@ -50,11 +50,11 @@ export type TransitionActor = 'chef' | 'client' | 'system'
 /** Who is allowed to trigger each transition */
 export const TRANSITION_PERMISSIONS: Record<string, TransitionActor | TransitionActor[]> = {
   'draft->proposed': 'chef',
-  'proposed->accepted': 'client',
+  'proposed->accepted': ['client', 'chef'], // Chef can accept on behalf (verbal confirmation)
   'proposed->cancelled': ['chef', 'client'],
   'accepted->cancelled': ['chef', 'client'],
-  'accepted->paid': 'system', // Stripe webhook only
-  'draft->paid': 'system', // Instant-book: Stripe webhook
+  'accepted->paid': ['system', 'chef'], // Stripe webhook or chef marks paid offline
+  'draft->paid': ['system', 'chef'], // Instant-book: Stripe webhook or chef marks paid offline
   'paid->confirmed': 'chef',
   'confirmed->in_progress': 'chef',
   'in_progress->completed': 'chef',

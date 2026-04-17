@@ -122,6 +122,21 @@ export async function POST(request: NextRequest) {
     }
 
     if (chefsToNotify.length === 0) {
+      // Save to waitlist so we can notify them when coverage expands
+      try {
+        const waitlistDb: any = createAdminClient()
+        await waitlistDb.from('directory_waitlist').upsert(
+          {
+            email: data.email.toLowerCase().trim(),
+            location: resolvedLocation.displayLabel || data.location.trim(),
+          },
+          { onConflict: 'lower(email), lower(location)' }
+        )
+      } catch (waitlistErr) {
+        // Duplicate or DB error - non-blocking, lead saved is best-effort
+        console.error('[open-booking] Waitlist save failed (non-blocking):', waitlistErr)
+      }
+
       return NextResponse.json({
         success: true,
         matched_count: 0,

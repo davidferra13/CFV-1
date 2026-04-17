@@ -17,6 +17,14 @@ const CreateProfileSchema = z.object({
 /**
  * Get or create a guest profile. Deduplicates by email when provided.
  * Public - no auth required.
+ *
+ * SECURITY (Q1): For existing profiles found by email dedup, profile_token
+ * is stripped from the return value. This prevents impersonation: knowing
+ * someone's email must NOT grant access to their hub identity. New profiles
+ * return the full token since the caller just created it.
+ *
+ * The `is_existing` flag tells callers whether this was an existing profile
+ * (token stripped) or a new one (token present).
  */
 export async function getOrCreateProfile(input: {
   display_name?: string
@@ -24,7 +32,7 @@ export async function getOrCreateProfile(input: {
   email?: string | null
   auth_user_id?: string | null
   authUserId?: string | null
-}): Promise<HubGuestProfile> {
+}): Promise<HubGuestProfile & { is_existing?: boolean }> {
   const validated = CreateProfileSchema.parse({
     display_name: input.display_name ?? input.displayName,
     email: input.email ?? null,
@@ -43,20 +51,22 @@ export async function getOrCreateProfile(input: {
 
     if (existing) {
       if (validated.auth_user_id && !existing.auth_user_id) {
-        const { data: linked } = await db
+        await db
           .from('hub_guest_profiles')
           .update({
             auth_user_id: validated.auth_user_id,
             updated_at: new Date().toISOString(),
           })
           .eq('id', existing.id)
-          .select('*')
-          .single()
-
-        return (linked ?? existing) as HubGuestProfile
       }
 
-      return existing as HubGuestProfile
+      // SECURITY: Strip profile_token for existing profiles.
+      // Caller must use recovery flow to get the token.
+      return {
+        ...(existing as HubGuestProfile),
+        profile_token: '',
+        is_existing: true,
+      }
     }
   }
 

@@ -61,6 +61,7 @@ export async function sendPushToUser(
         url: notification.url,
         data: notification.data,
       }),
+      signal: AbortSignal.timeout(10_000),
     })
     return res.ok
   } catch (err) {
@@ -89,6 +90,7 @@ export async function sendPushToAll(notification: PushNotification): Promise<boo
         url: notification.url,
         data: notification.data,
       }),
+      signal: AbortSignal.timeout(10_000),
     })
     return res.ok
   } catch (err) {

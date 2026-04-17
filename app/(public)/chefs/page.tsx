@@ -6,23 +6,13 @@ import Link from 'next/link'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import {
   DISCOVERY_SERVICE_TYPE_OPTIONS,
-  getDiscoveryCuisineLabel,
   getDiscoveryPriceRangeLabel,
   getDiscoveryServiceTypeLabel,
 } from '@/lib/discovery/constants'
-import {
-  getDiscoveryAvailabilityLabel,
-  getDiscoveryGuestCountLabel,
-  getDiscoveryLocationLabel,
-} from '@/lib/discovery/profile'
-import {
-  getDiscoverableChefs,
-  type DirectoryChef,
-  type DirectoryPartner,
-} from '@/lib/directory/actions'
+import { getDiscoveryAvailabilityLabel, getDiscoveryGuestCountLabel } from '@/lib/discovery/profile'
+import { getDiscoverableChefs, type DirectoryChef } from '@/lib/directory/actions'
 import {
   DIRECTORY_SORT_OPTIONS,
-  PARTNER_TYPE_LABELS,
   buildCuisineFacets,
   buildPartnerTypeFacets,
   buildServiceTypeFacets,
@@ -45,6 +35,7 @@ import { PUBLIC_PRIMARY_CONSUMER_CTA } from '@/lib/public/public-surface-config'
 import { ChefHero } from './_components/chef-hero'
 import { DirectoryFiltersForm } from './_components/directory-filters-form'
 import { DirectoryResultsTracker } from './_components/directory-results-tracker'
+import { WaitlistCapture } from '@/components/directory/waitlist-capture'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 const MAX_QUERY_LENGTH = 80
@@ -105,54 +96,6 @@ function parseDirectoryLocationSource(value: string): DirectoryLocationSource {
   return 'manual'
 }
 
-function PartnerPill({ partner }: { partner: DirectoryPartner }) {
-  const firstLocation = partner.partner_locations[0]
-  const cityState = [firstLocation?.city, firstLocation?.state].filter(Boolean).join(', ')
-
-  return (
-    <div className="flex items-center gap-2.5 rounded-lg bg-stone-800 px-3 py-2">
-      {partner.cover_image_url ? (
-        <Image
-          src={partner.cover_image_url}
-          alt={partner.name}
-          width={32}
-          height={32}
-          className="h-8 w-8 rounded-md object-cover flex-shrink-0"
-        />
-      ) : (
-        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-stone-700 flex-shrink-0">
-          <svg
-            className="h-4 w-4 text-stone-300"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-            />
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-            />
-          </svg>
-        </div>
-      )}
-      <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold text-stone-200 truncate">{partner.name}</p>
-        {cityState && <p className="text-xs-tight text-stone-300 truncate">{cityState}</p>}
-      </div>
-      <span className="flex-shrink-0 rounded-full bg-stone-700/70 px-2 py-0.5 text-xxs font-medium text-stone-300">
-        {PARTNER_TYPE_LABELS[normalizeDirectoryValue(partner.partner_type)] || 'Partner'}
-      </span>
-    </div>
-  )
-}
-
 function DiscoveryChip({ label }: { label: string }) {
   return (
     <span className="rounded-full border border-stone-700 bg-stone-950 px-2.5 py-1 text-xs-tight font-medium text-stone-300">
@@ -162,22 +105,19 @@ function DiscoveryChip({ label }: { label: string }) {
 }
 
 function ChefTile({ chef }: { chef: DirectoryChef }) {
-  const hasPartners = chef.partners.length > 0
   const visiblePartners = chef.partners.slice(0, 3)
+  const hasPartners = visiblePartners.length > 0
   const extraCount = chef.partners.length - visiblePartners.length
   const coverage = getChefCoverage(chef)
   const heroImage = chef.discovery.hero_image_url || chef.profile_image_url
   const availabilityLabel = getDiscoveryAvailabilityLabel(chef.discovery)
   const guestCountLabel = getDiscoveryGuestCountLabel(chef.discovery)
-  const locationLabel = getDiscoveryLocationLabel(chef.discovery)
-  const primaryCuisines = chef.discovery.cuisine_types.slice(0, 2).map(getDiscoveryCuisineLabel)
   const primaryServices = chef.discovery.service_types.slice(0, 2).map(getDiscoveryServiceTypeLabel)
   const priceRangeLabel = chef.discovery.price_range
     ? getDiscoveryPriceRangeLabel(chef.discovery.price_range)
     : null
   const distanceLabel =
     typeof chef.distance_miles === 'number' ? `${chef.distance_miles} mi away` : null
-  const summary = chef.discovery.highlight_text || chef.bio
   const primaryHref = chef.discovery.accepting_inquiries
     ? `/chef/${chef.slug}/inquire`
     : `/chef/${chef.slug}`
@@ -238,73 +178,42 @@ function ChefTile({ chef }: { chef: DirectoryChef }) {
       </div>
 
       <div className="flex flex-1 flex-col p-5">
-        {summary && (
-          <p className="text-sm leading-relaxed text-stone-300 line-clamp-3">{summary}</p>
-        )}
-
-        {(primaryCuisines.length > 0 || primaryServices.length > 0) && (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {primaryCuisines.map((label) => (
-              <DiscoveryChip key={`cuisine-${label}`} label={label} />
-            ))}
+        {primaryServices.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
             {primaryServices.map((label) => (
               <DiscoveryChip key={`service-${label}`} label={label} />
             ))}
           </div>
         )}
 
-        {(locationLabel || guestCountLabel || priceRangeLabel || distanceLabel) && (
-          <div className="mt-4 grid gap-2 text-xs text-stone-400 sm:grid-cols-2">
-            {locationLabel && (
-              <div className="rounded-xl border border-stone-800 bg-stone-950 px-3 py-2">
-                <p className="font-medium text-stone-200">Service area</p>
-                <p className="mt-1">{locationLabel}</p>
-              </div>
-            )}
-            {distanceLabel && (
-              <div className="rounded-xl border border-stone-800 bg-stone-950 px-3 py-2">
-                <p className="font-medium text-stone-200">Distance</p>
-                <p className="mt-1">{distanceLabel}</p>
-              </div>
-            )}
-            {guestCountLabel && (
-              <div className="rounded-xl border border-stone-800 bg-stone-950 px-3 py-2">
-                <p className="font-medium text-stone-200">Guest range</p>
-                <p className="mt-1">{guestCountLabel}</p>
-              </div>
-            )}
-            {priceRangeLabel && (
-              <div className="rounded-xl border border-stone-800 bg-stone-950 px-3 py-2">
-                <p className="font-medium text-stone-200">Positioning</p>
-                <p className="mt-1">{priceRangeLabel}</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {coverage.length > 0 && (
-          <p className="mt-3 text-xs text-stone-500">
-            Serves {coverage.slice(0, 2).join(', ')}
-            {coverage.length > 2 ? ` +${coverage.length - 2} more` : ''}
-          </p>
-        )}
+        {/* Compact detail line: location, distance, price */}
+        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-stone-400">
+          {distanceLabel && <span>{distanceLabel}</span>}
+          {!distanceLabel && coverage.length > 0 && (
+            <span>
+              Serves {coverage.slice(0, 2).join(', ')}
+              {coverage.length > 2 ? ` +${coverage.length - 2}` : ''}
+            </span>
+          )}
+          {priceRangeLabel && (
+            <>
+              <span className="text-stone-600">·</span>
+              <span>{priceRangeLabel}</span>
+            </>
+          )}
+          {guestCountLabel && (
+            <>
+              <span className="text-stone-600">·</span>
+              <span>{guestCountLabel}</span>
+            </>
+          )}
+        </div>
 
         {hasPartners && (
-          <div className="mt-4">
-            <p className="mb-2 text-xs-tight font-semibold uppercase tracking-wider text-stone-300">
-              Where I Cook
-            </p>
-            <div className="space-y-1.5">
-              {visiblePartners.map((partner) => (
-                <PartnerPill key={partner.id} partner={partner} />
-              ))}
-              {extraCount > 0 && (
-                <p className="text-center text-xs-tight text-stone-300">
-                  + {extraCount} more venue{extraCount !== 1 ? 's' : ''}
-                </p>
-              )}
-            </div>
-          </div>
+          <p className="mt-2 text-xs text-stone-500">
+            Cooks at {visiblePartners.map((p) => p.name).join(', ')}
+            {extraCount > 0 ? ` +${extraCount} more` : ''}
+          </p>
         )}
 
         <div className="flex-1" />
@@ -324,14 +233,12 @@ function ChefTile({ chef }: { chef: DirectoryChef }) {
             {primaryLabel}
           </TrackedLink>
           <TrackedLink
-            href={chef.discovery.accepting_inquiries ? `/chef/${chef.slug}` : '/contact'}
-            analyticsName={
-              chef.discovery.accepting_inquiries ? 'directory_profile_view' : 'directory_contact'
-            }
+            href={`/chef/${chef.slug}`}
+            analyticsName="directory_profile_view"
             analyticsProps={{ chef_slug: chef.slug }}
             className="rounded-xl border border-stone-700 px-4 py-3 text-center text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800 hover:text-stone-100 hover:border-stone-600"
           >
-            {chef.discovery.accepting_inquiries ? 'Profile' : 'Contact'}
+            Profile
           </TrackedLink>
         </div>
       </div>
@@ -571,6 +478,12 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
                 ? 'Tell us what you are planning and ChefFlow can route your request to matched chefs while the public directory expands.'
                 : 'Try a broader occasion, reset the filters, or book a chef and let matched chefs come to you.'}
             </p>
+            {allChefs.length > 0 && (
+              <p className="mt-1 text-xs text-stone-600">
+                {allChefs.length} chef{allChefs.length !== 1 ? 's' : ''} on ChefFlow, expanding to
+                new areas.
+              </p>
+            )}
             <div className="mt-6 flex items-center justify-center gap-4">
               <Link
                 href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
@@ -585,6 +498,7 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
                 Reset filters
               </Link>
             </div>
+            <WaitlistCapture location={activeLocationLabel || requestedLocation || undefined} />
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               {ZERO_RESULT_SUGGESTIONS.map((option) => (
                 <Link

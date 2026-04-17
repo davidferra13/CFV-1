@@ -9,6 +9,7 @@ import { createServerClient } from '@/lib/db/server'
 import { appendLedgerEntryForChef } from '@/lib/ledger/append'
 import type { PaymentMethod } from '@/lib/ledger/append'
 import { differenceInDays, subDays, format } from 'date-fns'
+import { revalidatePath } from 'next/cache'
 import { log } from '@/lib/logger'
 import { dateToDateString } from '@/lib/utils/format'
 
@@ -213,6 +214,11 @@ export async function recordDeposit(
     transaction_reference: `dep_${eventId}_${Date.now()}`,
   })
 
+  // Bust financial caches so dashboard shows updated balance
+  revalidatePath('/dashboard')
+  revalidatePath('/finance')
+  revalidatePath(`/events/${eventId}`)
+
   // Log activity (non-blocking)
   try {
     const { logChefActivity } = await import('@/lib/activity/log-chef')
@@ -277,6 +283,11 @@ export async function recordBalancePayment(
     event_id: eventId,
     transaction_reference: `bal_${eventId}_${Date.now()}`,
   })
+
+  // Bust financial caches so dashboard shows updated balance
+  revalidatePath('/dashboard')
+  revalidatePath('/finance')
+  revalidatePath(`/events/${eventId}`)
 
   // Log activity (non-blocking)
   try {

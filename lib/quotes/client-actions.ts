@@ -176,6 +176,35 @@ export async function acceptQuote(quoteId: string) {
     revalidatePath('/events')
   }
 
+  // PL5: Auto-transition linked event from proposed -> accepted
+  // Collapses the dual accept path so the client does not need to accept
+  // both a quote AND a proposal separately.
+  if (quote.event_id) {
+    try {
+      const adminDb = createAdminClient()
+      const { data: linkedEvent } = await adminDb
+        .from('events')
+        .select('status')
+        .eq('id', quote.event_id)
+        .single()
+
+      if (linkedEvent?.status === 'proposed') {
+        await adminDb.rpc('transition_event_atomic', {
+          p_event_id: quote.event_id,
+          p_from_status: 'proposed',
+          p_to_status: 'accepted',
+          p_actor_id: user.id,
+          p_metadata: { triggered_by: 'quote_acceptance', quote_id: quoteId },
+        })
+        revalidatePath(`/events/${quote.event_id}`)
+        revalidatePath(`/my-events/${quote.event_id}`)
+      }
+    } catch (transitionErr) {
+      // Non-blocking: event may already be in accepted or later status
+      console.error('[acceptQuote] Event auto-transition failed (non-blocking):', transitionErr)
+    }
+  }
+
   // Circle-first: post quote accepted notification (non-blocking)
   if (quote.tenant_id) {
     try {

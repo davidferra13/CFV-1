@@ -12,7 +12,7 @@ type Props = {
   occasion: string | null
   eventDate: string | null // Already formatted or null
   guestCount: number | null
-  source: 'portal' | 'wix' | 'gmail' | 'manual'
+  source: 'portal' | 'wix' | 'gmail' | 'manual' | 'website'
   inquiryUrl: string
 }
 
@@ -21,6 +21,7 @@ const SOURCE_LABELS: Record<Props['source'], string> = {
   wix: 'your Wix website',
   gmail: 'your Gmail inbox',
   manual: 'manual entry',
+  website: 'your embedded website form',
 }
 
 export function NewInquiryChefEmail({

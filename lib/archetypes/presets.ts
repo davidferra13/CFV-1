@@ -98,15 +98,15 @@ export const ARCHETYPES: ArchetypeDefinition[] = [
     enabledModules: [...ALWAYS_ON, 'culinary', 'clients', 'commerce'],
     primaryNavHrefs: [
       '/dashboard',
-      '/inbox',
       '/commerce/register',
       '/staff',
       '/stations',
+      '/inventory',
       '/tasks',
       '/schedule',
-      '/chat',
+      '/vendors',
     ],
-    mobileTabHrefs: ['/dashboard', '/commerce/register', '/stations', '/staff', '/schedule'],
+    mobileTabHrefs: ['/dashboard', '/commerce/register', '/stations', '/inventory', '/staff'],
   },
   {
     id: 'food-truck',

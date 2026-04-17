@@ -46,6 +46,7 @@ async function requireChefOrAdmin(db: any, groupId: string, profileId: string) {
 
 const GetMealBoardSchema = z.object({
   groupId: z.string().uuid(),
+  groupToken: z.string().optional(), // SECURITY (Q6): Required for browser callers
   startDate: z.string().optional(), // ISO date
   endDate: z.string().optional(),
 })
@@ -53,8 +54,19 @@ const GetMealBoardSchema = z.object({
 export async function getMealBoard(
   input: z.infer<typeof GetMealBoardSchema>
 ): Promise<MealBoardEntry[]> {
-  const { groupId, startDate, endDate } = GetMealBoardSchema.parse(input)
+  const { groupId, groupToken, startDate, endDate } = GetMealBoardSchema.parse(input)
   const db: any = createServerClient({ admin: true })
+
+  // SECURITY (Q6): Verify group access when called with a token
+  if (groupToken) {
+    const { data: group } = await db
+      .from('hub_groups')
+      .select('id')
+      .eq('id', groupId)
+      .eq('group_token', groupToken)
+      .single()
+    if (!group) throw new Error('Access denied')
+  }
 
   let query = db
     .from('hub_meal_board')

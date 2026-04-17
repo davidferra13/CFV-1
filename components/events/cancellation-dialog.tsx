@@ -72,8 +72,12 @@ export function CancellationDialog({ eventId, open, onClose, onConfirm }: Cancel
       toast.error('Please confirm you understand the cancellation terms.')
       return
     }
-    startTransition(() => {
-      onConfirm()
+    startTransition(async () => {
+      try {
+        await onConfirm()
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Cancellation failed. Please try again.')
+      }
     })
   }
 

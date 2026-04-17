@@ -6,9 +6,10 @@ import { searchHubMessages } from '@/lib/hub/message-actions'
 
 interface HubMessageSearchProps {
   groupId: string
+  groupToken?: string
 }
 
-export function HubMessageSearch({ groupId }: HubMessageSearchProps) {
+export function HubMessageSearch({ groupId, groupToken }: HubMessageSearchProps) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<HubMessage[]>([])
   const [searched, setSearched] = useState(false)
@@ -24,7 +25,7 @@ export function HubMessageSearch({ groupId }: HubMessageSearchProps) {
       }
       startTransition(async () => {
         try {
-          const msgs = await searchHubMessages({ groupId, query: q })
+          const msgs = await searchHubMessages({ groupId, groupToken, query: q })
           setResults(msgs)
           setSearched(true)
         } catch {

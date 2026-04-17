@@ -17,6 +17,7 @@ import { sendSms } from '@/lib/sms/send'
 import { formatCurrency } from '@/lib/utils/currency'
 import { SALE_CHANNEL_LABELS } from './constants'
 import type { SaleChannel } from './constants'
+import { appendPosAuditLog } from './pos-audit-log'
 
 type SaleContactSnapshot = {
   saleId: string
@@ -284,6 +285,20 @@ export async function sendReceiptByEmail(input: {
     throw new Error('Failed to send email receipt')
   }
 
+  try {
+    await appendPosAuditLog({
+      tenantId: user.tenantId!,
+      action: 'receipt_emailed',
+      tableName: 'sales',
+      recordId: input.saleId,
+      changedBy: user.id,
+      summary: `Receipt emailed for sale ${snapshot.saleNumber}`,
+      afterValues: { to_email: toEmail, sale_number: snapshot.saleNumber },
+    })
+  } catch (err) {
+    console.error('[non-blocking] Receipt audit log failed:', err)
+  }
+
   return { sent: true, toEmail }
 }
 
@@ -309,5 +324,20 @@ export async function sendReceiptBySms(input: {
   ].join(' - ')
 
   const status = await sendSms(toPhone, message.slice(0, 320))
+
+  try {
+    await appendPosAuditLog({
+      tenantId: user.tenantId!,
+      action: 'receipt_sms_sent',
+      tableName: 'sales',
+      recordId: input.saleId,
+      changedBy: user.id,
+      summary: `Receipt SMS ${status} for sale ${snapshot.saleNumber}`,
+      afterValues: { to_phone: toPhone, sms_status: status, sale_number: snapshot.saleNumber },
+    })
+  } catch (err) {
+    console.error('[non-blocking] Receipt SMS audit log failed:', err)
+  }
+
   return { status, toPhone }
 }

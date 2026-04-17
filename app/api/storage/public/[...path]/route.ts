@@ -3,6 +3,17 @@ import { promises as fs } from 'fs'
 import { getContentType, getStorageRoot } from '@/lib/storage'
 import path from 'path'
 
+// K1 fix: Only these buckets are served without authentication.
+// Private buckets (receipts, chat-attachments, client-photos, etc.) require signed URLs.
+const PUBLIC_BUCKETS = new Set([
+  'dish-photos',
+  'chef-logos',
+  'chef-profile-images',
+  'event-photos',
+  'guest-photos',
+  'menu-photos',
+])
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
@@ -27,6 +38,11 @@ export async function GET(
 
   // Normalize bucket through basename to prevent encoding-based traversal
   const bucket = path.basename(segments[0])
+
+  // K1 fix: Reject requests to private buckets via the public route
+  if (!PUBLIC_BUCKETS.has(bucket)) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
   const filePath = segments.slice(1).join('/')
 
   try {

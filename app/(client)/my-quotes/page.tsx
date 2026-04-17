@@ -20,12 +20,31 @@ const STATUS_DISPLAY: Record<
   sent: { label: 'Pending Review', variant: 'info' },
   accepted: { label: 'Accepted', variant: 'success' },
   rejected: { label: 'Declined', variant: 'error' },
+  expired: { label: 'Expired', variant: 'warning' },
 }
 
 export default async function ClientQuotesPage() {
   await requireClient()
 
-  const quotes = await getClientQuotes()
+  let quotes: any[]
+  try {
+    quotes = await getClientQuotes()
+  } catch (err) {
+    console.error('[ClientQuotesPage] Failed to load quotes:', err)
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-stone-100">My Quotes</h1>
+          <p className="text-stone-400 mt-1">Review and respond to pricing quotes from your chef</p>
+        </div>
+        <div className="rounded-xl border border-red-800/50 bg-red-950/30 p-6 text-center">
+          <p className="text-sm text-red-400">
+            Could not load your quotes. Please refresh the page or try again later.
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   const pendingQuotes = quotes.filter((q: any) => q.status === 'sent')
   const resolvedQuotes = quotes.filter((q: any) => q.status !== 'sent')

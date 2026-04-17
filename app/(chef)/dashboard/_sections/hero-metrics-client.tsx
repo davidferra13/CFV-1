@@ -21,6 +21,41 @@ export function HeroMetricsClient({ metrics }: { metrics: HeroMetric[] }) {
   const supportingMetrics = metrics.filter((metric) => metric.tier === 'supporting')
   const surgeMetric = heroMetrics.find((m) => m.isSurge)
 
+  // Fresh account: all metrics are zero
+  const isNewAccount = metrics.every((m) => m.value === '0' || m.value === '$0')
+
+  if (isNewAccount) {
+    return (
+      <div className="rounded-2xl border border-brand-800/40 bg-gradient-to-r from-brand-950/40 to-stone-900/60 p-6">
+        <h2 className="text-lg font-semibold text-stone-100">Welcome to ChefFlow</h2>
+        <p className="text-sm text-stone-400 mt-1 max-w-lg">
+          Your dashboard fills up as you work. Start by adding your first client, creating an event,
+          or setting up your embed widget to receive inquiries.
+        </p>
+        <div className="flex flex-wrap gap-2 mt-4">
+          <Link
+            href="/clients/new"
+            className="inline-flex items-center px-3 py-1.5 rounded-lg border border-stone-700 text-sm text-stone-300 hover:bg-stone-800 transition-colors"
+          >
+            Add a client
+          </Link>
+          <Link
+            href="/events/new"
+            className="inline-flex items-center px-3 py-1.5 rounded-lg border border-stone-700 text-sm text-stone-300 hover:bg-stone-800 transition-colors"
+          >
+            Create an event
+          </Link>
+          <Link
+            href="/settings/embed"
+            className="inline-flex items-center px-3 py-1.5 rounded-lg border border-stone-700 text-sm text-stone-300 hover:bg-stone-800 transition-colors"
+          >
+            Set up inquiry widget
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-5">
       {surgeMetric && (

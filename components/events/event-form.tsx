@@ -32,6 +32,8 @@ type Client = {
   id: string
   full_name: string
   email: string
+  dietary_restrictions?: string[] | null
+  allergies?: string[] | null
 }
 
 type Partner = {
@@ -368,16 +370,8 @@ export function EventForm({
       throw new ValidationError('Deposit cannot exceed total amount')
     }
 
-    // Validate date is not in the past - use local date to avoid UTC shift
-    const _today = new Date()
-    const todayStr = [
-      _today.getFullYear(),
-      String(_today.getMonth() + 1).padStart(2, '0'),
-      String(_today.getDate()).padStart(2, '0'),
-    ].join('-')
-    if (eventDate < todayStr) {
-      throw new ValidationError('Event date must be in the future')
-    }
+    // Past dates allowed for historical event backfill.
+    // Events created with past dates start in 'completed' status via the UI.
 
     return {
       // Keep as YYYY-MM-DD string - toISOString() shifts dates by timezone offset
@@ -483,6 +477,7 @@ export function EventForm({
   }
 
   // Step 1 validation before advancing (async - checks availability conflicts)
+  // Only client + date are hard requirements. Everything else can be TBD for drafts.
   const handleContinue = async () => {
     setError(null)
     if (!clientId) {
@@ -493,26 +488,6 @@ export function EventForm({
       setError('Event date & time is required')
       return
     }
-    if (!serveTime) {
-      setError('Serve time is required')
-      return
-    }
-    if (!guestCount || parseInt(guestCount) <= 0) {
-      setError('Guest count must be a positive number')
-      return
-    }
-    if (!locationAddress) {
-      setError('Address is required')
-      return
-    }
-    if (!locationCity) {
-      setError('City is required')
-      return
-    }
-    if (!locationZip) {
-      setError('ZIP code is required')
-      return
-    }
 
     // If user already acknowledged conflicts, advance
     if (conflictWarnings !== null && conflictOverride) {
@@ -521,21 +496,23 @@ export function EventForm({
       return
     }
 
-    // Check for scheduling conflicts
-    const dateOnly = eventDate.slice(0, 10) // YYYY-MM-DD
-    setConflictChecking(true)
-    try {
-      const result = await checkDateConflicts(dateOnly, mode === 'edit' ? event?.id : undefined)
-      setConflictChecking(false)
+    // Check for scheduling conflicts (only if we have a date)
+    if (eventDate) {
+      const dateOnly = eventDate.slice(0, 10) // YYYY-MM-DD
+      setConflictChecking(true)
+      try {
+        const result = await checkDateConflicts(dateOnly, mode === 'edit' ? event?.id : undefined)
+        setConflictChecking(false)
 
-      if (result.warnings.length > 0) {
-        setConflictWarnings(result.warnings)
-        setConflictOverride(false)
-        return // Stay on step 1 until user acknowledges
+        if (result.warnings.length > 0) {
+          setConflictWarnings(result.warnings)
+          setConflictOverride(false)
+          return // Stay on step 1 until user acknowledges
+        }
+      } catch {
+        setConflictChecking(false)
+        // Non-blocking: if conflict check fails, still allow advance
       }
-    } catch {
-      setConflictChecking(false)
-      // Non-blocking: if conflict check fails, still allow advance
     }
 
     setConflictWarnings(null)
@@ -581,28 +558,20 @@ export function EventForm({
         throw new ValidationError('Deposit cannot exceed total amount')
       }
 
-      // Validate date is not in the past - use local date to avoid UTC shift
-      const _today2 = new Date()
-      const todayStr2 = [
-        _today2.getFullYear(),
-        String(_today2.getMonth() + 1).padStart(2, '0'),
-        String(_today2.getDate()).padStart(2, '0'),
-      ].join('-')
-      if (eventDate < todayStr2) {
-        throw new ValidationError('Event date must be in the future')
-      }
+      // Past dates allowed for historical event backfill.
 
       if (mode === 'create') {
+        const guestCountSafe = guestCountNum > 0 ? guestCountNum : 1
         const input: CreateEventInput & { idempotency_key?: string } = {
           client_id: clientId,
           // Keep as YYYY-MM-DD string - toISOString() shifts dates by timezone offset
           event_date: eventDate,
-          serve_time: serveTime,
-          guest_count: guestCountNum,
-          location_address: locationAddress,
-          location_city: locationCity,
+          serve_time: serveTime || '',
+          guest_count: guestCountSafe,
+          location_address: locationAddress || 'TBD',
+          location_city: locationCity || 'TBD',
           location_state: locationState || undefined,
-          location_zip: locationZip,
+          location_zip: locationZip || 'TBD',
           occasion: occasion || undefined,
           special_requests: specialRequests || undefined,
           quoted_price_cents: totalAmountCents,
@@ -727,6 +696,21 @@ export function EventForm({
               }
             />
 
+            {/* Dietary/allergy alert when a client is selected */}
+            {(() => {
+              const selectedClient = clients.find((c) => c.id === clientId)
+              const dietaryItems = [
+                ...(selectedClient?.dietary_restrictions ?? []),
+                ...(selectedClient?.allergies ?? []),
+              ].filter(Boolean)
+              if (!dietaryItems.length) return null
+              return (
+                <div className="rounded-md bg-amber-950/30 border border-amber-800/40 px-3 py-2 text-sm text-amber-200">
+                  <span className="font-medium">Dietary notes:</span> {dietaryItems.join(', ')}
+                </div>
+              )
+            })()}
+
             <Input
               label="Occasion"
               placeholder="e.g., Wedding Reception, Corporate Dinner"
@@ -750,10 +734,9 @@ export function EventForm({
             <Input
               label="Serve Time"
               type="time"
-              required
               value={serveTime}
               onChange={(e) => setServeTime(e.target.value)}
-              helperText="When food should be served"
+              helperText="When food should be served (can set later)"
             />
 
             <Select
@@ -768,7 +751,6 @@ export function EventForm({
               label="Number of Guests"
               type="number"
               inputMode="numeric"
-              required
               min="1"
               placeholder="e.g., 8"
               value={guestCount}
@@ -782,17 +764,15 @@ export function EventForm({
 
             <AddressAutocomplete
               label="Address"
-              required
               placeholder="e.g., 123 Main St"
               value={locationAddress}
               onChange={(val) => setLocationAddress(val)}
               onPlaceSelect={handlePlaceSelect}
-              helperText="Start typing for Google address suggestions"
+              helperText="Start typing for Google address suggestions (can set later)"
             />
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <Input
                 label="City"
-                required
                 placeholder="City"
                 value={locationCity}
                 onChange={(e) => setLocationCity(e.target.value)}
@@ -805,7 +785,6 @@ export function EventForm({
               />
               <Input
                 label="ZIP"
-                required
                 placeholder="ZIP"
                 value={locationZip}
                 onChange={(e) => setLocationZip(e.target.value)}

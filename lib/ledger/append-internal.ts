@@ -20,14 +20,22 @@ export async function appendLedgerEntryInternal(input: AppendLedgerEntryInput) {
     throw new Error('Amount must be in minor units (cents, integer only)')
   }
 
-  if (input.amount_cents <= 0) {
-    throw new Error('Ledger entry amount must be positive (use is_refund=true for refunds)')
+  // H2 fix: Discriminated sign check - refunds must be negative, non-refunds must be positive.
+  // The DB constraint enforces: (is_refund=true AND amount_cents < 0) OR (is_refund=false AND amount_cents > 0)
+  if (input.is_refund) {
+    if (input.amount_cents >= 0) {
+      throw new Error('Refund ledger entry amount must be negative')
+    }
+  } else {
+    if (input.amount_cents <= 0) {
+      throw new Error('Ledger entry amount must be positive (use is_refund=true for refunds)')
+    }
   }
 
   // Cap at $999,999.99 per entry. Prevents fat-finger data corruption and
   // stays well within PostgreSQL INTEGER range (max ~$21.4M).
   const MAX_ENTRY_CENTS = 99_999_999
-  if (input.amount_cents > MAX_ENTRY_CENTS) {
+  if (Math.abs(input.amount_cents) > MAX_ENTRY_CENTS) {
     throw new Error('Amount exceeds the maximum allowed per ledger entry ($999,999.99)')
   }
 

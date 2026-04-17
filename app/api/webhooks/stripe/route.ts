@@ -119,9 +119,18 @@ export async function POST(req: Request) {
   try {
     // Route to appropriate handler
     switch (event.type) {
-      case 'checkout.session.completed':
-        await handleGiftCardPurchaseCompleted(event, db)
+      case 'checkout.session.completed': {
+        const checkoutSession = event.data.object as Stripe.Checkout.Session
+        const checkoutType = checkoutSession.metadata?.type
+
+        if (checkoutType === 'event_ticket') {
+          const { handleTicketPurchaseCompleted } = await import('@/lib/tickets/webhook-handler')
+          await handleTicketPurchaseCompleted(checkoutSession)
+        } else {
+          await handleGiftCardPurchaseCompleted(event, db)
+        }
         break
+      }
 
       case 'payment_intent.succeeded': {
         // Route: Commerce payments (sale_id in metadata) go through commerce_payments table.

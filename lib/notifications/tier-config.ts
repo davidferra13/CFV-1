@@ -76,11 +76,15 @@ export const DEFAULT_TIER_MAP: Record<NotificationAction, NotificationTier> = {
   // Payments
   payment_received: 'critical',
   payment_failed: 'critical',
+  payment_amount_mismatch: 'critical',
   refund_processed: 'info',
   dispute_created: 'critical',
   gift_card_purchased: 'critical',
+  ticket_purchased: 'critical',
   payment_due_approaching: 'alert',
   payment_overdue: 'alert',
+  cancellation_pending_refund: 'critical',
+  full_refund_active_event: 'critical',
   dispute_funds_withdrawn: 'critical',
   refund_processed_to_client: 'info',
 

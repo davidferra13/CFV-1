@@ -411,7 +411,7 @@ export async function reviewReconciliationReport(reportId: string, notes?: strin
 
 export async function resolveReconciliationFlag(
   reportId: string,
-  flagIndex: number,
+  flagType: string,
   resolution: 'resolved' | 'ignored'
 ) {
   const user = await requireChef()
@@ -428,8 +428,9 @@ export async function resolveReconciliationFlag(
   if (fetchErr || !report) throw new Error('Report not found')
 
   const flags = parseFlags((report as any).flags)
-  if (flagIndex < 0 || flagIndex >= flags.length) {
-    throw new Error('Invalid flag index')
+  const flagIndex = flags.findIndex((f) => f.type === flagType && f.status === 'open')
+  if (flagIndex === -1) {
+    throw new Error(`No open flag with type "${flagType}" found`)
   }
 
   const targetFlag = flags[flagIndex]

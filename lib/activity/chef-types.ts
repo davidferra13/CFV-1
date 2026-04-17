@@ -79,6 +79,7 @@ export type ChefActivityAction =
   | 'client_rewarmed'
   // Financial
   | 'ledger_entry_created'
+  | 'ledger_entry_voided'
   | 'expense_created'
   | 'expense_updated'
   | 'expense_deleted'

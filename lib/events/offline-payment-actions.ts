@@ -10,6 +10,26 @@ import { transitionEvent } from '@/lib/events/transitions'
 import { revalidatePath } from 'next/cache'
 import type { PaymentMethod, LedgerEntryType } from '@/lib/ledger/append'
 
+/**
+ * Fetch ledger entries for an event (chef-only).
+ * Used by VoidPaymentPanel to show voidable payments.
+ */
+export async function getEventLedgerEntries(eventId: string) {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data: entries } = await db
+    .from('ledger_entries')
+    .select(
+      'id, entry_type, amount_cents, payment_method, description, is_refund, received_at, created_at, refunded_entry_id'
+    )
+    .eq('event_id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .order('created_at', { ascending: false })
+
+  return entries ?? []
+}
+
 export type RecordOfflinePaymentInput = {
   eventId: string
   amountCents: number
@@ -240,4 +260,116 @@ export async function recordOfflinePayment(input: RecordOfflinePaymentInput) {
   revalidatePath('/my-events')
 
   return { success: true, entryId: ledgerEntry?.id }
+}
+
+// ── Void an offline payment ─────────────────────────────────────────────────
+// Creates a reversal entry (negative amount) referencing the original.
+// The ledger is immutable: voiding = appending a counter-entry, not deleting.
+
+export type VoidOfflinePaymentInput = {
+  entryId: string
+  reason: string
+}
+
+export async function voidOfflinePayment(input: VoidOfflinePaymentInput) {
+  const { entryId, reason } = input
+
+  if (!reason || reason.trim().length === 0) {
+    throw new Error('A reason is required to void a payment')
+  }
+
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  // Fetch original entry + verify ownership
+  const { data: original, error: fetchError } = await db
+    .from('ledger_entries')
+    .select(
+      'id, tenant_id, event_id, client_id, amount_cents, entry_type, payment_method, is_refund, transaction_reference'
+    )
+    .eq('id', entryId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (fetchError || !original) {
+    throw new Error('Ledger entry not found or does not belong to your account')
+  }
+
+  if (original.is_refund) {
+    throw new Error('Cannot void a refund entry (already a reversal)')
+  }
+
+  // Check not already voided (look for existing reversal referencing this entry)
+  const { data: existingVoid } = await db
+    .from('ledger_entries')
+    .select('id')
+    .eq('refunded_entry_id', entryId)
+    .eq('is_refund', true)
+    .limit(1)
+
+  if (existingVoid && existingVoid.length > 0) {
+    throw new Error('This payment has already been voided')
+  }
+
+  // Create reversal entry
+  const dbAdmin = createServerClient({ admin: true })
+  const voidRef = `void_${entryId}_${Date.now()}`
+
+  const { data: voidEntry, error: voidError } = await dbAdmin
+    .from('ledger_entries')
+    .insert({
+      tenant_id: original.tenant_id,
+      client_id: original.client_id,
+      entry_type: 'adjustment' as const,
+      amount_cents: original.amount_cents, // same amount
+      payment_method: original.payment_method,
+      description: `Voided: ${reason}`,
+      event_id: original.event_id,
+      transaction_reference: voidRef,
+      internal_notes: `Void of entry ${entryId}. Reason: ${reason}. Voided by ${user.email} on ${new Date().toISOString()}`,
+      is_refund: true,
+      refund_reason: reason,
+      refunded_entry_id: entryId,
+      received_at: new Date().toISOString(),
+      created_by: user.id,
+    })
+    .select('id')
+    .single()
+
+  if (voidError) {
+    console.error('[voidOfflinePayment] Ledger error:', voidError)
+    throw new Error('Failed to void payment')
+  }
+
+  // Log activity (non-blocking)
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    await logChefActivity({
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      action: 'ledger_entry_voided',
+      domain: 'financial',
+      entityType: 'ledger_entry',
+      entityId: voidEntry?.id,
+      summary: `Voided $${(original.amount_cents / 100).toFixed(2)} ${original.payment_method} payment: ${reason}`,
+      context: {
+        original_entry_id: entryId,
+        amount_cents: original.amount_cents,
+        payment_method: original.payment_method,
+        reason,
+      },
+      clientId: original.client_id,
+    })
+  } catch (err) {
+    console.error('[voidOfflinePayment] Activity log failed (non-blocking):', err)
+  }
+
+  if (original.event_id) {
+    revalidatePath(`/events/${original.event_id}`)
+    revalidatePath(`/my-events/${original.event_id}`)
+  }
+  revalidatePath('/events')
+  revalidatePath('/finance')
+
+  return { success: true, voidEntryId: voidEntry?.id }
 }

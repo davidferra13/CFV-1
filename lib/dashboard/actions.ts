@@ -408,7 +408,7 @@ export async function getNextUpcomingEvent() {
     .select('id, occasion, event_date, serve_time, guest_count, client:clients(full_name)')
     .eq('tenant_id', user.tenantId!)
     .eq('is_demo', false)
-    .gt('event_date', today)
+    .gte('event_date', today)
     .not('status', 'in', '("cancelled","completed")')
     .order('event_date', { ascending: true })
     .limit(1)

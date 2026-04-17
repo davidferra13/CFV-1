@@ -22,10 +22,30 @@ const CreateGroupSchema = z.object({
 
 /**
  * Create a new hub group.
+ * SECURITY (Q5): Validates that created_by_profile_id exists and, if
+ * tenant_id is provided, that the tenant actually exists in the chefs table.
  */
 export async function createHubGroup(input: z.infer<typeof CreateGroupSchema>): Promise<HubGroup> {
   const validated = CreateGroupSchema.parse(input)
   const db = createServerClient({ admin: true })
+
+  // SECURITY (Q5): Verify profile exists (prevents arbitrary profile spoofing)
+  const { data: creatorProfile } = await db
+    .from('hub_guest_profiles')
+    .select('id')
+    .eq('id', validated.created_by_profile_id)
+    .single()
+  if (!creatorProfile) throw new Error('Invalid profile')
+
+  // SECURITY (Q5): If tenant_id provided, verify it exists
+  if (validated.tenant_id) {
+    const { data: tenant } = await db
+      .from('chefs')
+      .select('id')
+      .eq('id', validated.tenant_id)
+      .single()
+    if (!tenant) validated.tenant_id = null
+  }
 
   const { data: group, error } = await db.from('hub_groups').insert(validated).select('*').single()
 

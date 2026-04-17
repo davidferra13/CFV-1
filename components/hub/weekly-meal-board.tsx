@@ -118,6 +118,7 @@ const MEAL_EMOJI: Record<MealType, string> = {
 
 interface WeeklyMealBoardProps {
   groupId: string
+  groupToken?: string
   initialEntries: MealBoardEntry[]
   profileToken: string | null
   isChefOrAdmin: boolean
@@ -129,6 +130,7 @@ interface WeeklyMealBoardProps {
 
 export function WeeklyMealBoard({
   groupId,
+  groupToken,
   initialEntries,
   profileToken,
   isChefOrAdmin,
@@ -365,7 +367,7 @@ export function WeeklyMealBoard({
         })
         if (result.success) {
           setWeekOffset((w) => w + (direction === 'next' ? 1 : -1))
-          const fresh = await getMealBoard({ groupId })
+          const fresh = await getMealBoard({ groupId, groupToken })
           setEntries(fresh)
         } else {
           setError(result.error ?? 'Failed to clone')
@@ -416,7 +418,7 @@ export function WeeklyMealBoard({
           targetWeekStart: formatDateISO(currentMonday),
         })
         if (result.success) {
-          const fresh = await getMealBoard({ groupId })
+          const fresh = await getMealBoard({ groupId, groupToken })
           setEntries(fresh)
         } else {
           setError(result.error ?? 'Failed to load template')
@@ -666,7 +668,7 @@ export function WeeklyMealBoard({
           profileToken={profileToken}
           currentWeekStart={weekStart}
           onMealsApplied={async () => {
-            const fresh = await getMealBoard({ groupId })
+            const fresh = await getMealBoard({ groupId, groupToken })
             setEntries(fresh)
           }}
         />

@@ -2,7 +2,11 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { getOrCreateProfile, updateProfile } from '@/lib/hub/profile-actions'
+import {
+  getOrCreateProfile,
+  updateProfile,
+  sendCircleRecoveryEmail,
+} from '@/lib/hub/profile-actions'
 import { joinHubGroup } from '@/lib/hub/group-actions'
 
 interface JoinGroupFormProps {
@@ -18,6 +22,7 @@ export function JoinGroupForm({ groupToken, isBridge }: JoinGroupFormProps) {
   const [allergyText, setAllergyText] = useState('')
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [recoverySent, setRecoverySent] = useState(false)
 
   const handleJoin = () => {
     if (!name.trim()) return
@@ -29,9 +34,23 @@ export function JoinGroupForm({ groupToken, isBridge }: JoinGroupFormProps) {
           email: email.trim() || null,
         })
 
+        // SECURITY (Q1): Existing profiles don't return profile_token.
+        // The user must verify ownership via recovery email.
+        if (profile.is_existing) {
+          await joinHubGroup({ groupToken, profileId: profile.id })
+          // Send recovery email so they can reclaim their identity
+          if (email.trim()) {
+            await sendCircleRecoveryEmail(email.trim(), groupToken).catch(() => {})
+            setRecoverySent(true)
+          }
+          // Redirect to circle in view-only mode (no cookie = can read but not post)
+          router.push(`/hub/g/${groupToken}`)
+          return
+        }
+
         await joinHubGroup({ groupToken, profileId: profile.id })
 
-        // Set profile cookie (persistent, 1 year)
+        // Set profile cookie (persistent, 1 year) - only for NEW profiles
         document.cookie = `hub_profile_token=${profile.profile_token}; path=/; max-age=${365 * 24 * 60 * 60}; samesite=lax`
 
         // Persist allergy/dietary info if provided
@@ -125,6 +144,12 @@ export function JoinGroupForm({ groupToken, isBridge }: JoinGroupFormProps) {
         </div>
       </div>
 
+      {recoverySent && (
+        <p className="mt-2 rounded-lg border border-amber-500/30 bg-amber-950/50 p-3 text-xs text-amber-300">
+          Welcome back! We sent an access link to your email. Check your inbox to unlock full
+          access.
+        </p>
+      )}
       {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
 
       <button

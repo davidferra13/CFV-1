@@ -41,13 +41,11 @@ export async function runPreDeletionChecks(chefId: string): Promise<DeletionBloc
   try {
     const { data: unpaidEvents } = await db
       .from('event_financial_summary')
-      .select('event_id, total_quoted, total_paid')
+      .select('event_id, quoted_price_cents, total_paid_cents, outstanding_balance_cents')
       .eq('tenant_id', chefId)
 
     if (unpaidEvents) {
-      const withBalance = unpaidEvents.filter(
-        (e: any) => (e.total_quoted || 0) > (e.total_paid || 0) && (e.total_quoted || 0) > 0
-      )
+      const withBalance = unpaidEvents.filter((e: any) => (e.outstanding_balance_cents || 0) > 0)
       if (withBalance.length > 0) {
         blockers.push({
           type: 'outstanding_payments',
