@@ -11,14 +11,14 @@
 
 ## Scorecard
 
-| Domain                             | Questions | PASS  | WASTE  | PARTIAL | FIXED |
-| ---------------------------------- | --------- | ----- | ------ | ------- | ----- |
-| T1: Session Context Tax            | 8         | 1     | 4      | 2       | 1     |
-| T2: Mechanical Work Displacement   | 8         | 2     | 3      | 1       | 2     |
-| T3: Hook & Automation Gaps         | 8         | 3     | 2      | 2       | 1     |
-| T4: Mission Control Utility        | 8         | 2     | 4      | 2       | 0     |
-| T5: Instruction Bloat & Redundancy | 8         | 1     | 3      | 3       | 1     |
-| **Total**                          | **40**    | **9** | **16** | **10**  | **5** |
+| Domain                             | Questions | PASS  | WASTE | PARTIAL | FIXED  |
+| ---------------------------------- | --------- | ----- | ----- | ------- | ------ |
+| T1: Session Context Tax            | 8         | 1     | 1     | 2       | 4      |
+| T2: Mechanical Work Displacement   | 8         | 2     | 2     | 1       | 3      |
+| T3: Hook & Automation Gaps         | 8         | 3     | 0     | 2       | 3      |
+| T4: Mission Control Utility        | 8         | 2     | 4     | 2       | 0      |
+| T5: Instruction Bloat & Redundancy | 8         | 1     | 1     | 3       | 3      |
+| **Total**                          | **40**    | **9** | **8** | **10**  | **13** |
 
 ---
 
@@ -433,14 +433,14 @@ How many CLAUDE.md rules could be enforced by hooks/scripts instead of burning t
 5. **T2-7:** `scripts/session-close.sh` - generates digest template from git
 6. **T4-1/T4-2:** Mission Control Quick Actions overhaul (remove stale, add token-saving)
 
-### P1 Fixes (Next Session)
+### P1 Fixes (Completed 2026-04-17)
 
-1. **T1-1/T5-1:** CLAUDE.md prune - target 4,000 words (from 7,799)
-2. **T1-3:** Session log auto-trim (keep last 10 entries)
-3. **T3-1:** Git pre-commit hook for compliance
-4. **T3-2:** PostToolUse compliance check on edited files
-5. **T3-3:** SessionEnd hook writes to build-state.md
-6. **T5-6:** Memory file archive (prune completed audits)
+1. **T1-1/T5-1:** CLAUDE.md pruned from 7,799 to 2,134 words (73% reduction, ~7,500 tokens/session saved)
+2. **T1-3:** Session log auto-trim added to session-close.sh (keeps last 10 entries, trimmed 54 old entries)
+3. **T3-1:** Git pre-commit hook now runs compliance-scan.sh --staged (em dash + OpenClaw + @ts-nocheck)
+4. **T3-2:** Skipped - pre-commit hook is the real gate; PostToolUse would be noisy on existing files
+5. **T3-3:** SessionEnd hook auto-updates docs/build-state.md from tsc results (green/broken + commit hash)
+6. **T5-6:** Memory files pruned (4 completed audits condensed from 8,360 bytes to ~1,200 bytes)
 
 ### P2 Fixes (V1.1)
 
