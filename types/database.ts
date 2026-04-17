@@ -40201,6 +40201,8 @@ export type Database = {
           fat_total_g: number | null
           fiber_per_serving_g: number | null
           fiber_total_g: number | null
+          freezable: boolean
+          frozen_extends_hours: number | null
           id: string
           last_cooked_at: string | null
           meal_type: Database["public"]["Enums"]["recipe_meal_type"] | null
@@ -40211,14 +40213,18 @@ export type Database = {
           nutrition_calculated_at: string | null
           nutrition_snapshot_json: Json | null
           occasion_tags: string[] | null
+          peak_hours_max: number | null
+          peak_hours_min: number | null
           photo_url: string | null
           prep_time_minutes: number | null
           protein_per_serving_g: number | null
           protein_total_g: number | null
+          safety_hours_max: number | null
           season: string[] | null
           servings: number | null
           sodium_per_serving_mg: number | null
           sodium_total_mg: number | null
+          storage_method: string | null
           tenant_id: string
           times_cooked: number
           total_cost_cents: number | null
@@ -40253,6 +40259,8 @@ export type Database = {
           fat_total_g?: number | null
           fiber_per_serving_g?: number | null
           fiber_total_g?: number | null
+          freezable?: boolean
+          frozen_extends_hours?: number | null
           id?: string
           last_cooked_at?: string | null
           meal_type?: Database["public"]["Enums"]["recipe_meal_type"] | null
@@ -40263,14 +40271,18 @@ export type Database = {
           nutrition_calculated_at?: string | null
           nutrition_snapshot_json?: Json | null
           occasion_tags?: string[] | null
+          peak_hours_max?: number | null
+          peak_hours_min?: number | null
           photo_url?: string | null
           prep_time_minutes?: number | null
           protein_per_serving_g?: number | null
           protein_total_g?: number | null
+          safety_hours_max?: number | null
           season?: string[] | null
           servings?: number | null
           sodium_per_serving_mg?: number | null
           sodium_total_mg?: number | null
+          storage_method?: string | null
           tenant_id: string
           times_cooked?: number
           total_cost_cents?: number | null
@@ -40305,6 +40317,8 @@ export type Database = {
           fat_total_g?: number | null
           fiber_per_serving_g?: number | null
           fiber_total_g?: number | null
+          freezable?: boolean
+          frozen_extends_hours?: number | null
           id?: string
           last_cooked_at?: string | null
           meal_type?: Database["public"]["Enums"]["recipe_meal_type"] | null
@@ -40315,14 +40329,18 @@ export type Database = {
           nutrition_calculated_at?: string | null
           nutrition_snapshot_json?: Json | null
           occasion_tags?: string[] | null
+          peak_hours_max?: number | null
+          peak_hours_min?: number | null
           photo_url?: string | null
           prep_time_minutes?: number | null
           protein_per_serving_g?: number | null
           protein_total_g?: number | null
+          safety_hours_max?: number | null
           season?: string[] | null
           servings?: number | null
           sodium_per_serving_mg?: number | null
           sodium_total_mg?: number | null
+          storage_method?: string | null
           tenant_id?: string
           times_cooked?: number
           total_cost_cents?: number | null

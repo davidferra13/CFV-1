@@ -24,9 +24,9 @@ const CATEGORY_DEFAULTS: Record<string, PeakWindow> = {
   },
   protein: {
     peakHoursMin: 0,
-    peakHoursMax: 1,
-    safetyHoursMax: 2,
-    storageMethod: 'room_temp',
+    peakHoursMax: 48,
+    safetyHoursMax: 72,
+    storageMethod: 'fridge',
     freezable: false,
   },
   starch: {
@@ -154,4 +154,10 @@ export function hasExplicitPeakWindow(recipe: {
   peak_hours_max?: number | null
 }): boolean {
   return recipe.peak_hours_min != null && recipe.peak_hours_max != null
+}
+
+// Whether a category has specific defaults (not the generic fallback)
+export function hasCategoryDefaults(category: string | null): boolean {
+  if (!category) return false
+  return category.toLowerCase() in CATEGORY_DEFAULTS
 }

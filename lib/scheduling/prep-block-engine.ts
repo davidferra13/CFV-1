@@ -168,6 +168,24 @@ function suggestComponentBlocks(
       const daysBefore = Math.ceil(comp.make_ahead_window_hours / 24)
       blockDate = addDays(eventDate, -daysBefore)
       reason = `${comp.make_ahead_window_hours}h lead time (${daysBefore} day${daysBefore > 1 ? 's' : ''} before).`
+    } else if (comp.recipe_peak_hours_max != null && comp.recipe_peak_hours_max > 0) {
+      // Peak window from recipe: use optimal prep day (prefer 1 day before if in range)
+      const safetyCeiling = comp.recipe_safety_hours_max ?? comp.recipe_peak_hours_max
+      const effectiveCeiling = Math.min(comp.recipe_peak_hours_max, safetyCeiling)
+      const earliestDaysBefore = Math.floor(effectiveCeiling / 24)
+      const latestDaysBefore = Math.floor((comp.recipe_peak_hours_min ?? 0) / 24)
+      let optimalDay: number
+      if (earliestDaysBefore === latestDaysBefore) {
+        optimalDay = earliestDaysBefore
+      } else if (latestDaysBefore <= 1 && earliestDaysBefore >= 1) {
+        optimalDay = 1
+      } else {
+        optimalDay = Math.floor((earliestDaysBefore + latestDaysBefore) / 2)
+      }
+      if (optimalDay > 0) {
+        blockDate = addDays(eventDate, -optimalDay)
+        reason = `Peak quality ${optimalDay} day${optimalDay > 1 ? 's' : ''} before service.`
+      }
     }
 
     // Skip components with no scheduling data (they're day-of, handled by Main Prep Session)

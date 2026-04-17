@@ -10,7 +10,7 @@ import {
   isSameDay,
   format,
 } from 'date-fns'
-import { resolvePeakWindow, hasExplicitPeakWindow } from './peak-defaults'
+import { resolvePeakWindow, hasExplicitPeakWindow, hasCategoryDefaults } from './peak-defaults'
 import type { StorageMethod } from './peak-defaults'
 
 // --- Types ---
@@ -29,6 +29,7 @@ export interface PrepItem {
   effectiveCeiling: number // min(peakHoursMax, safetyHoursMax)
   storageMethod: StorageMethod
   freezable: boolean
+  frozenExtendsHours: number | null
   prepTimeMinutes: number
   usingDefaults: boolean
   symbols: PrepSymbol[]
@@ -69,6 +70,7 @@ export interface TimelineRecipeInput {
   safetyHoursMax: number | null
   storageMethod: string | null
   freezable: boolean | null
+  frozenExtendsHours: number | null
   prepTimeMinutes: number
   allergenFlags: string[]
   // Fallback from components table
@@ -135,6 +137,7 @@ export function computePrepTimeline(
       effectiveCeiling: effectiveCeiling,
       storageMethod: resolved.storageMethod,
       freezable: resolved.freezable,
+      frozenExtendsHours: item.frozenExtendsHours ?? null,
       prepTimeMinutes: item.prepTimeMinutes,
       usingDefaults,
       symbols,
@@ -142,11 +145,31 @@ export function computePrepTimeline(
     }
   })
 
-  // Place each item on its optimal prep day
+  // Separate items with explicit/category windows from those using generic fallback.
+  // Truly "untimed" = no recipe peak fields, no component make-ahead, AND no category-specific defaults.
+  // Items with a known category (sauce, protein, etc.) use meaningful defaults and ARE timed.
+  const timedItems: PrepItem[] = []
+  const untimedItems: PrepItem[] = []
+
+  for (let idx = 0; idx < prepItems.length; idx++) {
+    const item = prepItems[idx]
+    const input = items[idx]
+    const hasExplicit = !item.usingDefaults
+    const hasMakeAhead = input.makeAheadWindowHours != null
+    const hasCategoryMatch = hasCategoryDefaults(input.category)
+
+    if (hasExplicit || hasMakeAhead || hasCategoryMatch) {
+      timedItems.push(item)
+    } else {
+      untimedItems.push(item)
+    }
+  }
+
+  // Place each timed item on its optimal prep day
   // Optimal day = middle of the peak window, converted to calendar days before service
   const dayMap = new Map<number, PrepItem[]>() // key = days before service
 
-  for (const item of prepItems) {
+  for (const item of timedItems) {
     // Convert hours to days before service
     // The item should be prepped between (service - effectiveCeiling) and (service - peakHoursMin)
     const earliestDaysBefore = Math.floor(item.effectiveCeiling / 24)
@@ -173,7 +196,7 @@ export function computePrepTimeline(
   const allDayOffsets = Array.from(dayMap.keys()).sort((a, b) => b - a) // descending (farthest first)
 
   // Ensure service day (0) is always included if there are any items
-  if (prepItems.length > 0 && !dayMap.has(0)) {
+  if (timedItems.length > 0 && !dayMap.has(0)) {
     dayMap.set(0, [])
     if (!allDayOffsets.includes(0)) allDayOffsets.push(0)
     allDayOffsets.sort((a, b) => b - a)
@@ -245,7 +268,7 @@ export function computePrepTimeline(
     groceryDeadline,
     prepDeadline,
     serviceDate: serviceDateTime,
-    untimedItems: [], // all items get at least category defaults
+    untimedItems,
   }
 }
 

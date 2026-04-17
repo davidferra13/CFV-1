@@ -1,8 +1,11 @@
 // Progressive Preparation Prompts
 // Time-aware nudges that surface BEFORE the chef is under pressure.
 // Pure computation - no DB calls.
+// When prep timeline data is available, uses real component names + computed prep days.
 
 import type { PrepPrompt, SchedulingEvent, ChefPreferences } from './types'
+import type { PrepTimeline } from '@/lib/prep-timeline/compute-timeline'
+import { format } from 'date-fns'
 
 // ============================================
 // HELPERS
@@ -15,6 +18,28 @@ function daysUntil(dateStr: string): number {
   return Math.ceil((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 }
 
+/** Get component names scheduled for a specific day offset from the timeline */
+function getComponentsForDay(timeline: PrepTimeline, daysBeforeService: number): string[] {
+  const day = timeline.days.find((d) => d.daysBeforeService === daysBeforeService)
+  if (!day || day.items.length === 0) return []
+  return day.items.map((item) => item.recipeName)
+}
+
+/** Get the earliest prep day (most days before service) that has items */
+function getEarliestPrepDay(timeline: PrepTimeline): number | null {
+  for (const day of timeline.days) {
+    if (day.items.length > 0 && !day.isServiceDay) return day.daysBeforeService
+  }
+  return null
+}
+
+/** Format a list of component names for display (max 4, then "+N more") */
+function formatComponentList(names: string[]): string {
+  if (names.length === 0) return ''
+  if (names.length <= 4) return names.join(', ')
+  return names.slice(0, 3).join(', ') + ` +${names.length - 3} more`
+}
+
 // ============================================
 // PROMPT GENERATOR
 // ============================================
@@ -22,10 +47,12 @@ function daysUntil(dateStr: string): number {
 /**
  * Scan events and return time-aware prep prompts.
  * These are visibility - not guilt trips. Factual tone.
+ * When timelineMap is provided, uses real component names and computed prep days.
  */
 export function getActivePrompts(
   events: SchedulingEvent[],
-  prefs: ChefPreferences | null
+  prefs: ChefPreferences | null,
+  timelineMap?: Record<string, PrepTimeline>
 ): PrepPrompt[] {
   const prompts: PrepPrompt[] = []
 
@@ -38,10 +65,153 @@ export function getActivePrompts(
 
     const clientName = event.client?.full_name ?? 'Unknown Client'
     const occasion = event.occasion ?? 'Event'
+    const timeline = timelineMap?.[event.id] ?? null
+
+    // ---- TIMELINE-DRIVEN PREP PROMPTS ----
+    // When we have timeline data, generate prompts based on real computed prep days
+    if (timeline) {
+      // Grocery deadline prompt
+      if (timeline.groceryDeadline && !event.shopping_completed_at) {
+        const groceryDaysUntil = daysUntil(format(timeline.groceryDeadline, 'yyyy-MM-dd'))
+        if (groceryDaysUntil === 0) {
+          prompts.push({
+            eventId: event.id,
+            eventOccasion: occasion,
+            eventDate: event.event_date,
+            clientName,
+            urgency: 'actionable',
+            message: `Grocery deadline for ${occasion} is today.`,
+            action: 'View grocery list',
+            actionUrl: `/events/${event.id}?tab=prep`,
+            daysUntilEvent: days,
+            category: 'shopping',
+          })
+        } else if (groceryDaysUntil === 1) {
+          prompts.push({
+            eventId: event.id,
+            eventOccasion: occasion,
+            eventDate: event.event_date,
+            clientName,
+            urgency: 'upcoming',
+            message: `Shop by tomorrow for ${occasion}.`,
+            action: 'View grocery list',
+            actionUrl: `/events/${event.id}?tab=prep`,
+            daysUntilEvent: days,
+            category: 'shopping',
+          })
+        } else if (groceryDaysUntil < 0 && !event.shopping_completed_at) {
+          prompts.push({
+            eventId: event.id,
+            eventOccasion: occasion,
+            eventDate: event.event_date,
+            clientName,
+            urgency: 'overdue',
+            message: `Grocery deadline for ${occasion} was ${Math.abs(groceryDaysUntil)} day${Math.abs(groceryDaysUntil) !== 1 ? 's' : ''} ago.`,
+            action: 'Shopping needed',
+            actionUrl: `/events/${event.id}?tab=prep`,
+            daysUntilEvent: days,
+            category: 'shopping',
+          })
+        }
+      }
+
+      // Per-day prep prompts based on real component names
+      for (const day of timeline.days) {
+        if (day.items.length === 0 || day.isServiceDay) continue
+
+        const dayDaysUntil = daysUntil(format(day.date, 'yyyy-MM-dd'))
+        const componentNames = day.items.map((i) => i.recipeName)
+
+        if (dayDaysUntil === 0) {
+          // Today: specific actionable prompt
+          prompts.push({
+            eventId: event.id,
+            eventOccasion: occasion,
+            eventDate: event.event_date,
+            clientName,
+            urgency: 'actionable',
+            message: `Start today for ${occasion}: ${formatComponentList(componentNames)}.`,
+            action: 'View prep timeline',
+            actionUrl: `/events/${event.id}?tab=prep`,
+            daysUntilEvent: days,
+            category: 'prep',
+            components: componentNames,
+          })
+        } else if (dayDaysUntil === 1) {
+          // Tomorrow
+          prompts.push({
+            eventId: event.id,
+            eventOccasion: occasion,
+            eventDate: event.event_date,
+            clientName,
+            urgency: 'upcoming',
+            message: `Prep tomorrow for ${occasion}: ${formatComponentList(componentNames)}.`,
+            action: 'View prep timeline',
+            actionUrl: `/events/${event.id}?tab=prep`,
+            daysUntilEvent: days,
+            category: 'prep',
+            components: componentNames,
+          })
+        } else if (dayDaysUntil < 0) {
+          // Overdue prep day
+          prompts.push({
+            eventId: event.id,
+            eventOccasion: occasion,
+            eventDate: event.event_date,
+            clientName,
+            urgency: 'overdue',
+            message: `Prep was scheduled ${Math.abs(dayDaysUntil)} day${Math.abs(dayDaysUntil) !== 1 ? 's' : ''} ago for ${occasion}: ${formatComponentList(componentNames)}.`,
+            action: 'View prep timeline',
+            actionUrl: `/events/${event.id}?tab=prep`,
+            daysUntilEvent: days,
+            category: 'prep',
+            components: componentNames,
+          })
+        }
+      }
+
+      // Service day components (day-of items from timeline)
+      const serviceDayItems = timeline.days.find((d) => d.isServiceDay)?.items ?? []
+      if (serviceDayItems.length > 0 && days === 0) {
+        const serviceNames = serviceDayItems.map((i) => i.recipeName)
+        prompts.push({
+          eventId: event.id,
+          eventOccasion: occasion,
+          eventDate: event.event_date,
+          clientName,
+          urgency: 'actionable',
+          message: `Day-of prep for ${occasion}: ${formatComponentList(serviceNames)}.`,
+          action: 'View prep timeline',
+          actionUrl: `/events/${event.id}?tab=prep`,
+          daysUntilEvent: 0,
+          category: 'prep',
+          components: serviceNames,
+        })
+      }
+
+      // Untimed items nudge (BH14): encourage setting peak windows
+      if (timeline.untimedItems.length > 0 && days >= 2) {
+        prompts.push({
+          eventId: event.id,
+          eventOccasion: occasion,
+          eventDate: event.event_date,
+          clientName,
+          urgency: 'upcoming',
+          message: `${timeline.untimedItems.length} component${timeline.untimedItems.length !== 1 ? 's' : ''} for ${occasion} need freshness windows for smarter prep timing.`,
+          action: 'Set peak windows',
+          actionUrl: `/events/${event.id}?tab=prep`,
+          daysUntilEvent: days,
+          category: 'prep',
+        })
+      }
+    }
+
+    // ---- FALLBACK: NON-TIMELINE PROMPTS ----
+    // These fire when no timeline data exists, or for non-prep concerns
 
     // ---- 5+ DAYS BEFORE ----
     if (days >= 5) {
-      if (event.grocery_list_ready && !event.shopping_completed_at) {
+      if (event.grocery_list_ready && !event.shopping_completed_at && !timeline?.groceryDeadline) {
         prompts.push({
           eventId: event.id,
           eventOccasion: occasion,
@@ -63,7 +233,7 @@ export function getActivePrompts(
           eventDate: event.event_date,
           clientName,
           urgency: 'upcoming',
-          message: `Menu is confirmed - all documents are available to review for ${occasion}.`,
+          message: `Menu is confirmed, all documents ready to review for ${occasion}.`,
           action: 'Review documents',
           actionUrl: `/events/${event.id}`,
           daysUntilEvent: days,
@@ -73,20 +243,25 @@ export function getActivePrompts(
     }
 
     // ---- 48 HOURS (2 DAYS) BEFORE ----
-    if (days === 2) {
+    // Only show hardcoded prep prompt if we have NO timeline data
+    if (days === 2 && !timeline) {
+      // No timeline = no real component names. Show generic prep nudge.
       prompts.push({
         eventId: event.id,
         eventOccasion: occasion,
         eventDate: event.event_date,
         clientName,
         urgency: 'actionable',
-        message: `These prep items are safe to do now for ${occasion}: pasta dough, ice cream base, vinaigrette, marinades.`,
+        message: `Prep day for ${occasion}. Check your prep list for make-ahead items.`,
         action: 'View prep list',
-        actionUrl: `/events/${event.id}`,
+        actionUrl: `/events/${event.id}?tab=prep`,
         daysUntilEvent: days,
         category: 'prep',
       })
+    }
 
+    // Shopping fallback (only when no timeline grocery deadline is driving prompts)
+    if (days === 2 && !timeline?.groceryDeadline) {
       if (prefs?.shop_day_before !== false && !event.shopping_completed_at) {
         prompts.push({
           eventId: event.id,
@@ -120,7 +295,11 @@ export function getActivePrompts(
         })
       }
 
-      if (prefs?.shop_day_before !== false && !event.shopping_completed_at) {
+      if (
+        !timeline?.groceryDeadline &&
+        prefs?.shop_day_before !== false &&
+        !event.shopping_completed_at
+      ) {
         prompts.push({
           eventId: event.id,
           eventOccasion: occasion,
@@ -185,8 +364,13 @@ export function getActivePrompts(
       })
     }
 
-    // Shopping was expected yesterday but not done
-    if (days === 0 && prefs?.shop_day_before !== false && !event.shopping_completed_at) {
+    // Shopping was expected yesterday but not done (fallback only)
+    if (
+      days === 0 &&
+      !timeline?.groceryDeadline &&
+      prefs?.shop_day_before !== false &&
+      !event.shopping_completed_at
+    ) {
       prompts.push({
         eventId: event.id,
         eventOccasion: occasion,

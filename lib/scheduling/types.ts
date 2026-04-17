@@ -980,6 +980,8 @@ export interface PrepPrompt {
   actionUrl: string
   daysUntilEvent: number
   category: PromptCategory
+  /** Real component names from the prep timeline (when available) */
+  components?: string[]
 }
 
 // ============================================
@@ -1133,6 +1135,10 @@ export interface MenuComponent {
   prep_station: string | null
   storage_notes: string | null
   recipe_prep_time_minutes: number | null // from linked recipe, null if no recipe
+  // Peak window fields from linked recipe (backward compatible - null if not set)
+  recipe_peak_hours_min: number | null
+  recipe_peak_hours_max: number | null
+  recipe_safety_hours_max: number | null
 }
 
 // An event with one or more required prep blocks missing

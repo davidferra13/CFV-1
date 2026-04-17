@@ -198,11 +198,42 @@ export async function getEventDOPProgress(
 
 /**
  * Get all active prep prompts across upcoming events.
+ * Computes prep timelines for events within 7 days to power data-driven nudges.
  */
 export async function getAllPrepPrompts(): Promise<PrepPrompt[]> {
   const events = await fetchUpcomingSchedulingEvents()
   const prefs = await getChefPreferences()
-  return getActivePrompts(events, prefs)
+
+  // Compute timelines for events within 7 days (performance: skip distant events)
+  const { getEventPrepTimeline } = await import('@/lib/prep-timeline/actions')
+  const timelineMap: Record<string, import('@/lib/prep-timeline/compute-timeline').PrepTimeline> =
+    {}
+
+  const now = new Date()
+  const nearTermEvents = events.filter((e) => {
+    if (e.status === 'cancelled' || e.status === 'completed') return false
+    const eventDate = new Date(e.event_date + 'T00:00:00')
+    const daysUntil = Math.ceil((eventDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    return daysUntil >= -1 && daysUntil <= 7
+  })
+
+  // Compute timelines in parallel (max 5 to avoid query explosion)
+  const timelineResults = await Promise.all(
+    nearTermEvents.slice(0, 5).map(async (e) => {
+      try {
+        const result = await getEventPrepTimeline(e.id)
+        return { eventId: e.id, timeline: result.timeline }
+      } catch {
+        return { eventId: e.id, timeline: null }
+      }
+    })
+  )
+
+  for (const r of timelineResults) {
+    if (r.timeline) timelineMap[r.eventId] = r.timeline
+  }
+
+  return getActivePrompts(events, prefs, timelineMap)
 }
 
 /**

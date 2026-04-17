@@ -12,10 +12,10 @@ Last known state of the app. Updated after every successful type check and build
 
 ## Current State
 
-| Check                                    | Status | Last Verified | Commit    | Agent                         |
-| ---------------------------------------- | ------ | ------------- | --------- | ----------------------------- |
-| `npx tsc --noEmit --skipLibCheck`        | green  | 2026-04-15    | 38d61135b | Sonnet (5-question audit)     |
-| `npm run build -- --no-lint` (12GB heap) | green  | 2026-04-15    | 38d61135b | Sonnet (PWA activation build) |
+| Check                                    | Status | Last Verified | Commit    | Agent                  |
+| ---------------------------------------- | ------ | ------------- | --------- | ---------------------- |
+| `npx tsc --noEmit --skipLibCheck`        | green  | 2026-04-17    | 3bf14be22 | Opus (prep push layer) |
+| `npm run build -- --no-lint` (12GB heap) | green  | 2026-04-17    | 3bf14be22 | Opus (prep push layer) |
 
 **Green note (2026-04-12, dead-zone session):** tsc remains green after: (1) financials/page.tsx cash-flow tile gating via getFinanceSurfaceAvailability, (2) remy-personality-engine.ts sync export -> async fix (Next.js build requirement), (3) cron definitions for proactive-alerts and scheduled-messages. No new TS errors introduced. tsc not re-run (changes are type-safe: async wrappers over same return types, filtered array map, object literal additions).
 

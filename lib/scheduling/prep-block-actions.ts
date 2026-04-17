@@ -180,7 +180,7 @@ async function fetchMenuComponents(
       id, name, prep_day_offset, make_ahead_window_hours,
       prep_time_of_day, prep_station, storage_notes, recipe_id,
       dish:dishes!inner(menu:menus!inner(event_id)),
-      recipe:recipes(prep_time_minutes)
+      recipe:recipes(prep_time_minutes, peak_hours_min, peak_hours_max, safety_hours_max)
     `
     )
     .eq('tenant_id', tenantId)
@@ -199,6 +199,9 @@ async function fetchMenuComponents(
     prep_station: c.prep_station ?? null,
     storage_notes: c.storage_notes ?? null,
     recipe_prep_time_minutes: c.recipe?.prep_time_minutes ?? null,
+    recipe_peak_hours_min: c.recipe?.peak_hours_min ?? null,
+    recipe_peak_hours_max: c.recipe?.peak_hours_max ?? null,
+    recipe_safety_hours_max: c.recipe?.safety_hours_max ?? null,
   }))
 }
 

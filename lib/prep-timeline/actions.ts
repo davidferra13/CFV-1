@@ -34,6 +34,18 @@ export async function updateRecipePeakWindow(input: {
     return { success: false, error: 'Peak hours cannot be negative.' }
   }
 
+  if (
+    input.safetyHoursMax != null &&
+    input.peakHoursMin != null &&
+    input.safetyHoursMax < input.peakHoursMin
+  ) {
+    return {
+      success: false,
+      error:
+        'Safety ceiling is shorter than earliest peak time. This recipe cannot reach peak quality within its safety window.',
+    }
+  }
+
   try {
     const db: any = createServerClient()
     await db
@@ -56,37 +68,6 @@ export async function updateRecipePeakWindow(input: {
   } catch (err: any) {
     console.error('[updateRecipePeakWindow]', err)
     return { success: false, error: 'Failed to save peak window.' }
-  }
-}
-
-// --- Bulk update peak windows ---
-
-export async function bulkSetPeakWindows(
-  updates: { recipeId: string; peakHoursMin: number; peakHoursMax: number }[]
-): Promise<{ success: boolean; updated: number; error?: string }> {
-  const user = await requireChef()
-
-  try {
-    const db: any = createServerClient()
-    let updated = 0
-    for (const u of updates) {
-      if (u.peakHoursMin > u.peakHoursMax) continue
-      await db
-        .from('recipes')
-        .update({
-          peak_hours_min: u.peakHoursMin,
-          peak_hours_max: u.peakHoursMax,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', u.recipeId)
-        .eq('tenant_id', user.tenantId!)
-      updated++
-    }
-    revalidatePath('/recipes')
-    return { success: true, updated }
-  } catch (err: any) {
-    console.error('[bulkSetPeakWindows]', err)
-    return { success: false, updated: 0, error: 'Failed to update peak windows.' }
   }
 }
 
@@ -168,7 +149,7 @@ export async function getEventPrepTimeline(eventId: string): Promise<{
       const { data: recipeData } = await db
         .from('recipes')
         .select(
-          'id, name, category, peak_hours_min, peak_hours_max, safety_hours_max, storage_method, freezable, prep_time_minutes, dietary_tags'
+          'id, name, category, peak_hours_min, peak_hours_max, safety_hours_max, storage_method, freezable, frozen_extends_hours, prep_time_minutes, dietary_tags'
         )
         .in('id', recipeIds)
       recipes = recipeData ?? []
@@ -225,6 +206,7 @@ export async function getEventPrepTimeline(eventId: string): Promise<{
         safetyHoursMax: recipe?.safety_hours_max ?? null,
         storageMethod: recipe?.storage_method ?? null,
         freezable: recipe?.freezable ?? null,
+        frozenExtendsHours: recipe?.frozen_extends_hours ?? null,
         prepTimeMinutes: recipe?.prep_time_minutes ?? 30,
         allergenFlags: allergenMap[recipe?.id] ?? [],
         makeAheadWindowHours: comp.make_ahead_window_hours ?? null,

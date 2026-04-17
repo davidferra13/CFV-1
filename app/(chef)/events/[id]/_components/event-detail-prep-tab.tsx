@@ -24,7 +24,7 @@ import type {
   PrepItem,
   PrepSymbol,
 } from '@/lib/prep-timeline/compute-timeline'
-import { formatPrepTime } from '@/lib/prep-timeline/compute-timeline'
+import { formatPrepTime, formatHoursAsReadable } from '@/lib/prep-timeline/compute-timeline'
 
 type EventDetailPrepTabProps = {
   activeTab: EventDetailTab
@@ -34,8 +34,8 @@ type EventDetailPrepTabProps = {
 }
 
 // localStorage key for checkbox state
-function checkKey(eventId: string, itemId: string, componentName: string) {
-  return `cf-prep-${eventId}-${itemId}-${componentName}`
+function checkKey(eventId: string, itemId: string, componentName: string, dishName: string) {
+  return `cf-prep-${eventId}-${itemId}-${componentName}-${dishName}`
 }
 
 function SymbolIcon({ symbol }: { symbol: PrepSymbol }) {
@@ -89,11 +89,15 @@ function PrepItemRow({
       <button
         type="button"
         onClick={onToggle}
-        className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-          checked ? 'bg-brand-600 border-brand-600' : 'border-stone-600 hover:border-stone-400'
-        }`}
+        className="flex-shrink-0 p-2 -m-2 flex items-center justify-center"
       >
-        {checked && <Check className="h-3 w-3 text-white" />}
+        <span
+          className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+            checked ? 'bg-brand-600 border-brand-600' : 'border-stone-600 hover:border-stone-400'
+          }`}
+        >
+          {checked && <Check className="h-3 w-3 text-white" />}
+        </span>
       </button>
 
       <div className="flex-1 min-w-0">
@@ -110,9 +114,18 @@ function PrepItemRow({
       <div className="flex items-center gap-1.5 flex-shrink-0">
         {item.symbols
           .filter((s) => s !== 'allergen')
-          .map((symbol) => (
-            <SymbolIcon key={symbol} symbol={symbol} />
-          ))}
+          .map((symbol) =>
+            symbol === 'freezable' && item.frozenExtendsHours ? (
+              <span
+                key={symbol}
+                title={`Freezable (+${formatHoursAsReadable(item.frozenExtendsHours)})`}
+              >
+                <Snowflake className="h-3.5 w-3.5 text-sky-400" />
+              </span>
+            ) : (
+              <SymbolIcon key={symbol} symbol={symbol} />
+            )
+          )}
         {item.allergenFlags.length > 0 && (
           <div className="flex items-center gap-0.5" title={item.allergenFlags.join(', ')}>
             {item.allergenFlags.slice(0, 3).map((flag) => (
@@ -142,7 +155,7 @@ function DayCard({
   toggleItem: (key: string) => void
 }) {
   const completedCount = day.items.filter((item) =>
-    checkedItems.has(checkKey(eventId, item.recipeId, item.componentName))
+    checkedItems.has(checkKey(eventId, item.recipeId, item.componentName, item.dishName))
   ).length
 
   // Card style based on state
@@ -197,7 +210,7 @@ function DayCard({
       {day.items.length > 0 ? (
         <div className="divide-y divide-stone-800/50">
           {day.items.map((item) => {
-            const key = checkKey(eventId, item.recipeId, item.componentName)
+            const key = checkKey(eventId, item.recipeId, item.componentName, item.dishName)
             return (
               <PrepItemRow
                 key={key}
@@ -258,7 +271,24 @@ export function EventDetailPrepTab({
       <div className="space-y-4 mt-6">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-stone-200">Prep Timeline</h2>
-          <SymbolKeyTrigger />
+          <div className="flex items-center gap-2">
+            {checkedItems.size > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (!confirm('Clear all checked items?')) return
+                  for (const key of checkedItems) {
+                    localStorage.removeItem(key)
+                  }
+                  setCheckedItems(new Set())
+                }}
+                className="text-xs text-stone-500 hover:text-stone-300 transition-colors"
+              >
+                Clear all
+              </button>
+            )}
+            <SymbolKeyTrigger />
+          </div>
         </div>
 
         {/* No menu */}
@@ -277,6 +307,42 @@ export function EventDetailPrepTab({
             </p>
           </Card>
         )}
+
+        {/* Timeline summary */}
+        {timeline &&
+          (() => {
+            const totalItems =
+              timeline.days.reduce((s, d) => s + d.items.length, 0) + timeline.untimedItems.length
+            const totalMinutes =
+              timeline.days.reduce((s, d) => s + d.totalPrepMinutes, 0) +
+              timeline.untimedItems.reduce((s, i) => s + i.prepTimeMinutes, 0)
+            const timedCount = timeline.days.reduce((s, d) => s + d.items.length, 0)
+            const prepDays = timeline.days.filter(
+              (d) => d.items.length > 0 && !d.isServiceDay
+            ).length
+
+            return totalItems > 0 ? (
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-stone-500">
+                <span>
+                  {totalItems} component{totalItems !== 1 ? 's' : ''}
+                </span>
+                <span>{formatPrepTime(totalMinutes)} total prep</span>
+                {prepDays > 0 && (
+                  <span>
+                    {prepDays} prep day{prepDays !== 1 ? 's' : ''}
+                  </span>
+                )}
+                {timeline.untimedItems.length > 0 && (
+                  <span className="text-amber-500">
+                    {timeline.untimedItems.length} need peak windows
+                  </span>
+                )}
+                {timeline.groceryDeadline && (
+                  <span>Shop by {format(timeline.groceryDeadline, 'EEE, MMM d')}</span>
+                )}
+              </div>
+            ) : null
+          })()}
 
         {/* Timeline */}
         {timeline && (

@@ -86,6 +86,14 @@
 | Q74 | Cancel Expires Stripe Session | q74-cancel-stripe-expire.spec.ts       | SPEC   | Struct |
 | Q75 | File Upload Type Validation   | q75-upload-type-validation.spec.ts     | SPEC   | API    |
 
+**Extended question sets (separate files):**
+
+- **PT1-PT25:** Prep Timeline & Peak Windows (25 questions) - `system-integrity-question-set-prep-timeline.md`
+- **PI1-PI20:** Prep Timeline Integration (20 questions) - `system-integrity-question-set-prep-timeline-integration.md`
+- **RC1-RC20:** Prep Timeline Chaos & Real-World (20 questions) - `system-integrity-question-set-prep-timeline-chaos.md`
+- **BH1-BH15:** Prep Push Layer / Behavioral (15 questions) - `system-integrity-question-set-prep-push.md`
+- **IL1-IL20:** Ingredient Quantity Lifecycle (20 questions) - `ingredient-lifecycle-question-set.md`
+
 ---
 
 ## Question Definitions

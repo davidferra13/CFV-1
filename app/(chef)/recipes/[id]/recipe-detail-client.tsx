@@ -40,6 +40,9 @@ import { format, isPast, isBefore, addDays } from 'date-fns'
 import { CostingHelpPopover } from '@/components/costing/costing-help-popover'
 import { CostingWarningList } from '@/components/costing/costing-warning-detail'
 import { generateRecipeWarnings } from '@/lib/costing/generate-warnings'
+import { formatHoursAsReadable } from '@/lib/prep-timeline/compute-timeline'
+import { updateRecipePeakWindow } from '@/lib/prep-timeline/actions'
+import { Snowflake } from '@/components/ui/icons'
 
 const CATEGORY_COLORS: Record<string, 'default' | 'success' | 'warning' | 'info' | 'error'> = {
   sauce: 'warning',
@@ -296,6 +299,19 @@ export function RecipeDetailClient({ recipe }: Props) {
         season: recipe.season?.length ? recipe.season : undefined,
         occasion_tags: recipe.occasion_tags?.length ? recipe.occasion_tags : undefined,
       })
+
+      // Copy peak window fields
+      if ((recipe as any).peak_hours_min != null || (recipe as any).peak_hours_max != null) {
+        await updateRecipePeakWindow({
+          recipeId: result.recipe.id,
+          peakHoursMin: (recipe as any).peak_hours_min ?? null,
+          peakHoursMax: (recipe as any).peak_hours_max ?? null,
+          safetyHoursMax: (recipe as any).safety_hours_max ?? null,
+          storageMethod: (recipe as any).storage_method ?? null,
+          freezable: (recipe as any).freezable ?? false,
+          frozenExtendsHours: (recipe as any).frozen_extends_hours ?? null,
+        }).catch(() => null)
+      }
 
       // Copy ingredients
       for (let i = 0; i < recipe.ingredients.length; i++) {
@@ -657,6 +673,40 @@ export function RecipeDetailClient({ recipe }: Props) {
               <div>
                 <dt className="text-sm font-medium text-stone-500">Cook Time</dt>
                 <dd className="text-stone-100 mt-1">{recipe.cook_time_minutes} min</dd>
+              </div>
+            )}
+            {((recipe as any).peak_hours_min != null || (recipe as any).peak_hours_max != null) && (
+              <div>
+                <dt className="text-sm font-medium text-stone-500">Peak Window</dt>
+                <dd className="text-stone-100 mt-1">
+                  {(recipe as any).peak_hours_min != null && (recipe as any).peak_hours_max != null
+                    ? `${formatHoursAsReadable((recipe as any).peak_hours_min)} - ${formatHoursAsReadable((recipe as any).peak_hours_max)}`
+                    : (recipe as any).peak_hours_max != null
+                      ? `Up to ${formatHoursAsReadable((recipe as any).peak_hours_max)}`
+                      : `From ${formatHoursAsReadable((recipe as any).peak_hours_min)}`}
+                </dd>
+              </div>
+            )}
+            {(recipe as any).storage_method && (recipe as any).storage_method !== 'fridge' && (
+              <div>
+                <dt className="text-sm font-medium text-stone-500">Storage</dt>
+                <dd className="text-stone-100 mt-1 capitalize">
+                  {(recipe as any).storage_method === 'room_temp'
+                    ? 'Room temp'
+                    : (recipe as any).storage_method}
+                </dd>
+              </div>
+            )}
+            {(recipe as any).freezable && (
+              <div>
+                <dt className="text-sm font-medium text-stone-500 flex items-center gap-1">
+                  <Snowflake className="h-3.5 w-3.5 text-sky-400" /> Freezable
+                </dt>
+                <dd className="text-stone-100 mt-1">
+                  {(recipe as any).frozen_extends_hours
+                    ? `+${formatHoursAsReadable((recipe as any).frozen_extends_hours)}`
+                    : 'Yes'}
+                </dd>
               </div>
             )}
             {(recipe as any).calories_per_serving && (
