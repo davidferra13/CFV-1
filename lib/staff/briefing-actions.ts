@@ -74,7 +74,7 @@ export async function generateStaffBriefing(eventId: string): Promise<StaffBrief
     .select(
       `
       id, occasion, event_date, serve_time, guest_count,
-      location_address, special_requests, notes,
+      location_address, special_requests, notes, ambiance_notes,
       clients (
         id, full_name,
         kitchen_constraints, kitchen_oven_notes, kitchen_burner_notes,

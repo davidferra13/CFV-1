@@ -38,11 +38,12 @@ const ParsedEventSchema = z.object({
   special_requests: z.string().optional(),
   quoted_price_cents: z.number().optional(),
   notes: z.string().optional(),
+  ambiance_notes: z.string().optional(),
 })
 
 async function parseEventFromNL(description: string) {
   const systemPrompt = `You extract structured event data from natural language descriptions.
-Extract any of: client_name, event_date (YYYY-MM-DD), serve_time (HH:MM 24h), guest_count (number), occasion, service_style (plated/family_style/buffet/cocktail/tasting_menu/other), location_address, location_city, location_state, location_zip, dietary_restrictions (array), allergies (array), special_requests, quoted_price_cents (convert dollars to cents, e.g. $50 → 5000), notes.
+Extract any of: client_name, event_date (YYYY-MM-DD), serve_time (HH:MM 24h), guest_count (number), occasion, service_style (plated/family_style/buffet/cocktail/tasting_menu/other), location_address, location_city, location_state, location_zip, dietary_restrictions (array), allergies (array), special_requests, quoted_price_cents (convert dollars to cents, e.g. $50 -> 5000), notes, ambiance_notes (atmosphere details: music, lighting, table setting, mood, service pace).
 Return ONLY valid JSON. Omit fields not mentioned.`
 
   return parseWithOllama(systemPrompt, description, ParsedEventSchema, { modelTier: 'standard' })
@@ -66,13 +67,14 @@ const ParsedEventUpdateSchema = z.object({
     allergies: z.array(z.string()).optional(),
     special_requests: z.string().optional(),
     quoted_price_cents: z.number().optional(),
+    ambiance_notes: z.string().optional(),
   }),
 })
 
 async function parseEventUpdateFromNL(description: string) {
   const systemPrompt = `You extract an event identifier and the fields to update.
 Return JSON with "eventIdentifier" (the event occasion, client name, or description to find it) and "updates" (only the fields being changed).
-Available fields: event_date (YYYY-MM-DD), serve_time (HH:MM), guest_count, occasion, service_style, location_address, location_city, dietary_restrictions (array), allergies (array), special_requests, quoted_price_cents (dollars→cents).
+Available fields: event_date (YYYY-MM-DD), serve_time (HH:MM), guest_count, occasion, service_style, location_address, location_city, dietary_restrictions (array), allergies (array), special_requests, quoted_price_cents (dollars->cents), ambiance_notes (atmosphere: music, lighting, table setting, mood).
 Return ONLY valid JSON.`
 
   return parseWithOllama(systemPrompt, description, ParsedEventUpdateSchema, {

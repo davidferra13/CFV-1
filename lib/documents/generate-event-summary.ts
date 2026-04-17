@@ -69,6 +69,7 @@ export type EventSummaryData = {
     location_zip: string | null
     access_instructions: string | null
     kitchen_notes: string | null
+    ambiance_notes: string | null
     quoted_price_cents: number | null
     pricing_model: string | null
     payment_status: string | null
@@ -136,7 +137,7 @@ export async function fetchEventSummaryData(eventId: string): Promise<EventSumma
       id, event_date, serve_time, arrival_time, guest_count, status, occasion,
       allergies, dietary_restrictions, special_requests,
       location_address, location_city, location_state, location_zip,
-      access_instructions, kitchen_notes,
+      access_instructions, kitchen_notes, ambiance_notes,
       quoted_price_cents, pricing_model, payment_status, payment_method_primary,
       tip_amount_cents, created_at,
       client:clients(
@@ -285,6 +286,7 @@ export async function fetchEventSummaryData(eventId: string): Promise<EventSumma
       location_zip: event.location_zip ?? null,
       access_instructions: event.access_instructions ?? null,
       kitchen_notes: event.kitchen_notes ?? null,
+      ambiance_notes: (event as any).ambiance_notes ?? null,
       quoted_price_cents: event.quoted_price_cents ?? null,
       pricing_model: event.pricing_model ?? null,
       payment_status: event.payment_status ?? null,

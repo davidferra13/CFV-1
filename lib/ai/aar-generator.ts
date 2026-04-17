@@ -45,7 +45,7 @@ export async function generateAARDraft(eventId: string): Promise<AARDraft> {
       `
       occasion, guest_count, event_date, serve_time, status,
       quoted_price_cents, service_style,
-      dietary_restrictions, allergies, special_requests, kitchen_notes,
+      dietary_restrictions, allergies, special_requests, kitchen_notes, ambiance_notes,
       client_id, clients(full_name)
     `
     )

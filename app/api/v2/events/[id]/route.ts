@@ -46,6 +46,7 @@ const UpdateEventBody = z
     location_lat: z.number().optional(),
     location_lng: z.number().optional(),
     event_timezone: z.string().optional(),
+    ambiance_notes: z.string().max(5000).nullable().optional(),
   })
   .strict()
 

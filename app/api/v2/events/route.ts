@@ -46,6 +46,7 @@ const CreateEventBody = z.object({
   location_lat: z.number().optional(),
   location_lng: z.number().optional(),
   event_timezone: z.string().optional(),
+  ambiance_notes: z.string().max(5000).optional(),
 })
 
 export const GET = withApiAuth(
@@ -143,6 +144,24 @@ export const POST = withApiAuth(
       location_lat: input.location_lat,
       location_lng: input.location_lng,
       event_timezone: input.event_timezone ?? null,
+      ambiance_notes: input.ambiance_notes ?? null,
+    }
+
+    // Seed ambiance from client taste profile if not explicitly provided
+    if (!insertPayload.ambiance_notes) {
+      try {
+        const { data: tp } = await ctx.db
+          .from('client_taste_profiles')
+          .select('ambiance_preferences')
+          .eq('client_id', input.client_id)
+          .eq('tenant_id', ctx.tenantId)
+          .maybeSingle()
+        if ((tp as any)?.ambiance_preferences) {
+          insertPayload.ambiance_notes = (tp as any).ambiance_preferences
+        }
+      } catch {
+        /* non-blocking */
+      }
     }
 
     const { data: event, error } = await ctx.db

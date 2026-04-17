@@ -86,6 +86,7 @@ export const POST = withApiAuth(
       access_instructions: src.access_instructions,
       kitchen_notes: src.kitchen_notes,
       location_notes: src.location_notes,
+      ambiance_notes: src.ambiance_notes,
       arrival_time: src.arrival_time,
       departure_time: src.departure_time,
       // Reset all readiness flags

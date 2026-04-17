@@ -50,6 +50,28 @@ export const POST = withApiAuth(
       .select()
       .single()
 
+    // Seed ambiance from client taste profile (non-blocking)
+    if (event && inq.client_id) {
+      try {
+        const { data: tp } = await ctx.db
+          .from('client_taste_profiles')
+          .select('ambiance_preferences')
+          .eq('client_id', inq.client_id)
+          .eq('tenant_id', ctx.tenantId)
+          .maybeSingle()
+        const ambiance = (tp as any)?.ambiance_preferences
+        if (ambiance) {
+          await ctx.db
+            .from('events')
+            .update({ ambiance_notes: ambiance })
+            .eq('id', (event as any).id)
+            .eq('tenant_id', ctx.tenantId)
+        }
+      } catch {
+        /* non-blocking */
+      }
+    }
+
     if (error) {
       console.error('[api/v2/inquiries/convert] Error:', error)
       return apiError('convert_failed', 'Failed to convert inquiry to event', 500)

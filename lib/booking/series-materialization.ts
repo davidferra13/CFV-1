@@ -179,6 +179,20 @@ export async function materializeSeriesEvents(params: {
     cannabisPreference,
   } = params
 
+  // Seed ambiance from client taste profile (best-effort)
+  let clientAmbiance: string | null = null
+  try {
+    const { data: tp } = await db
+      .from('client_taste_profiles')
+      .select('ambiance_preferences')
+      .eq('client_id', inquiry.client_id)
+      .eq('tenant_id', tenantId)
+      .maybeSingle()
+    clientAmbiance = (tp as any)?.ambiance_preferences ?? null
+  } catch {
+    /* non-blocking */
+  }
+
   const { data: existingEvents } = await db
     .from('events')
     .select('*')
@@ -240,6 +254,7 @@ export async function materializeSeriesEvents(params: {
           session.notes
         ),
         cannabis_preference: cannabisPreference,
+        ambiance_notes: clientAmbiance,
         created_by: actorId || null,
         updated_by: actorId || null,
       }

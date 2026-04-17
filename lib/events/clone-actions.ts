@@ -91,6 +91,7 @@ export async function cloneEvent(
     access_instructions: source.access_instructions,
     kitchen_notes: source.kitchen_notes,
     location_notes: source.location_notes,
+    ambiance_notes: source.ambiance_notes,
     arrival_time: source.arrival_time,
     departure_time: source.departure_time,
     // Reset all readiness flags

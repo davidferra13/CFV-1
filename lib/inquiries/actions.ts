@@ -294,6 +294,20 @@ async function materializeSeriesEvents(params: {
 
   const cannabisBoolean = mapCannabisPreferenceToBoolean(inquiry.confirmed_cannabis_preference)
 
+  // Seed ambiance from client taste profile (best-effort)
+  let clientAmbiance: string | null = null
+  try {
+    const { data: tp } = await db
+      .from('client_taste_profiles')
+      .select('ambiance_preferences')
+      .eq('client_id', inquiry.client_id)
+      .eq('tenant_id', tenantId)
+      .maybeSingle()
+    clientAmbiance = (tp as any)?.ambiance_preferences ?? null
+  } catch {
+    /* non-blocking */
+  }
+
   const { data: existingEvents } = await db
     .from('events')
     .select('*')
@@ -350,6 +364,7 @@ async function materializeSeriesEvents(params: {
           session.notes
         ),
         cannabis_preference: cannabisBoolean,
+        ambiance_notes: clientAmbiance,
         created_by: actorId,
         updated_by: actorId,
       }
