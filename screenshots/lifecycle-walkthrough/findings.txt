@@ -1,0 +1,16 @@
+[PASS] Auth: Signed in, landed at http://localhost:3000/dashboard
+[FAIL] clients: Failed to load: page.goto: Timeout 15000ms exceeded.
+Call log:
+[2m  - navigating to "http://loc
+[PASS] client-form: Page loaded
+[PASS] events: Page loaded
+[PASS] event-form: Page loaded
+[PASS] recipes: Page loaded
+[PASS] recipe-form: Page loaded
+[PASS] menus: Page loaded
+[PASS] menu-form: Page loaded
+[PASS] quotes: Page loaded
+[PASS] calendar: Page loaded
+[PASS] financials: Page loaded
+[PASS] culinary: Page loaded
+[PARTIAL] Client Creation: Submit clicked but URL is http://localhost:3000/clients/new
