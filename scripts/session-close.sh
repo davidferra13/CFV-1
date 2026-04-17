@@ -87,6 +87,25 @@ Build state on departure: $BUILD_STATE
 Last tsc: $LAST_TSC
 DIGEST
 
+# ── Auto-trim session log (keep last 10 entries) ────────────────
+
+SESSION_LOG="$PROJECT_ROOT/docs/session-log.md"
+if [ -f "$SESSION_LOG" ]; then
+  ENTRY_COUNT=$(grep -c '^## ' "$SESSION_LOG" || echo 0)
+  if [ "$ENTRY_COUNT" -gt 10 ]; then
+    # Find the line number of the 10th-from-last "## " heading
+    KEEP_FROM=$(grep -n '^## ' "$SESSION_LOG" | tail -10 | head -1 | cut -d: -f1)
+    # Preserve the title (first line) + blank line, then last 10 entries
+    HEADER=$(head -2 "$SESSION_LOG")
+    TRIMMED=$(tail -n +"$KEEP_FROM" "$SESSION_LOG")
+    echo "$HEADER" > "$SESSION_LOG"
+    echo "" >> "$SESSION_LOG"
+    echo "$TRIMMED" >> "$SESSION_LOG"
+    TRIMMED_COUNT=$((ENTRY_COUNT - 10))
+    echo "  Trimmed $TRIMMED_COUNT old session log entries (kept last 10)"
+  fi
+fi
+
 # ── Session Log Entry ────────────────────────────────────────────
 
 echo ""

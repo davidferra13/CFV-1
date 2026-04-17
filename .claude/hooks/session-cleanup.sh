@@ -60,12 +60,42 @@ if [ -f "$DIRTY_FILE" ]; then
   echo "[$(timestamp)] Running tsc check ($DIRTY_COUNT unique TS files modified)" >> "$LOG_FILE"
   TSC_OUTPUT=$(cd "$PROJECT_DIR" && npx tsc --noEmit --skipLibCheck 2>&1)
   TSC_EXIT=$?
+  BUILD_STATE_FILE="$PROJECT_DIR/docs/build-state.md"
+  COMMIT_HASH=$(cd "$PROJECT_DIR" && git rev-parse --short HEAD 2>/dev/null || echo "unknown")
   if [ $TSC_EXIT -eq 0 ]; then
     echo "[$(timestamp)] tsc: CLEAN - no type errors" >> "$LOG_FILE"
+    # Auto-update build-state.md
+    if [ -f "$BUILD_STATE_FILE" ]; then
+      cat > "$BUILD_STATE_FILE" << EOF
+# Build State
+
+**Status:** green
+**Last verified:** $(date '+%Y-%m-%d %H:%M') EST
+**Commit:** \`$COMMIT_HASH\`
+**Check:** \`tsc --noEmit --skipLibCheck\` passed (0 errors)
+
+- If you break the build and can't fix it, update this to \`broken\` with details.
+EOF
+      echo "[$(timestamp)] build-state.md updated: green ($COMMIT_HASH)" >> "$LOG_FILE"
+    fi
   else
     ERROR_COUNT=$(echo "$TSC_OUTPUT" | grep -c "error TS" || true)
     echo "[$(timestamp)] tsc: $ERROR_COUNT ERROR(S) FOUND:" >> "$LOG_FILE"
     echo "$TSC_OUTPUT" >> "$LOG_FILE"
+    # Auto-update build-state.md to broken
+    if [ -f "$BUILD_STATE_FILE" ]; then
+      cat > "$BUILD_STATE_FILE" << EOF
+# Build State
+
+**Status:** broken
+**Last verified:** $(date '+%Y-%m-%d %H:%M') EST
+**Commit:** \`$COMMIT_HASH\`
+**Check:** \`tsc --noEmit --skipLibCheck\` FAILED ($ERROR_COUNT errors)
+
+Fix type errors before starting new work.
+EOF
+      echo "[$(timestamp)] build-state.md updated: broken ($ERROR_COUNT errors)" >> "$LOG_FILE"
+    fi
   fi
   rm -f "$DIRTY_FILE"
 fi

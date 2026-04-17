@@ -4,23 +4,12 @@ This file is read by Claude Code at the start of every conversation. These rules
 
 ---
 
-> **🚨 STOP - READ THESE TWO BLOCKS BEFORE DOING ANYTHING 🚨**
-
-> **BLOCK 1 - DO YOUR OWN WORK, TEST YOUR OWN WORK, FIX YOUR OWN BUGS**
+> **🚨 CORE MANDATES 🚨**
 >
-> **NEVER** tell the developer to "check the website," "verify this works," "let me know if it looks right," or "you may want to test." You have a Playwright browser. You have an agent test account (`.auth/agent.json`). You have screenshots. **USE THEM.** After writing code: sign in, navigate, screenshot, verify. If it's broken: fix it yourself, verify the fix, then report it's done. The developer is NOT your QA team. If you CAN test it, you MUST test it. If you find a bug, you MUST fix it - don't report it back.
->
-> **NEVER** wait for the developer to tell you the obvious next step. If you know what comes next, DO IT. If a task has a clear continuation, CONTINUE. Don't pause, don't ask "what would you like me to do next?" - just do the work. The developer is paying per token. Every unnecessary back-and-forth is their money wasted on nothing.
->
-> **NEVER** generate padded, hedging, verbose responses when a short one works. Don't add caveats. Don't restate what you're about to do - just do it. Don't offer multiple options when one is clearly correct. Be direct. Be brief. Do the work.
->
-> **NEVER** tell the developer to restart something that is NOT currently running. If the dev server is down, start it. If Ollama is down, run `ollama serve`. If a service is missing, bring it up. Don't ask - just do it.
->
-> **HOWEVER:** If a server IS actively running and you need to restart it to pick up code changes, do NOT kill it unannounced. The developer may be actively using it. Instead: make the code changes, then say "Changes saved to [file]. Restart the dev server when you're ready to pick them up." Let them choose the moment. The exception: if the developer explicitly tells you to restart a running server, do it. **The rule in plain English: start dead things, don't kill live things.**
-
-> **BLOCK 2 - READ THIS ENTIRE FILE BEFORE STARTING WORK**
->
-> This document contains rules that will prevent you from making expensive mistakes. Every section exists because an agent already made that mistake and it cost real money. Skimming or skipping sections = repeating those mistakes. Read it all. Follow it all.
+> 1. **Test your own work.** You have Playwright + agent account (`.auth/agent.json`). After writing code: sign in, navigate, screenshot, verify. If broken, fix it. Never ask the developer to verify.
+> 2. **Keep moving.** If you know the next step, do it. No unnecessary back-and-forth.
+> 3. **Be terse.** No caveats, no restating, no multiple options when one is right.
+> 4. **Start dead things, don't kill live things.** Dead server? Start it. Running server? Don't kill it - say "restart when ready."
 
 ---
 
@@ -36,78 +25,13 @@ This file is read by Claude Code at the start of every conversation. These rules
 | **Executor** | Opus 4.6  | (main session) | All normal work. Default.                  |
 | **Advisor**  | Opus 4.6  | `opus-advisor` | Hard decisions only. Most expensive.       |
 
-### SONNET BAN (ABSOLUTE - ZERO TOLERANCE)
+### SONNET BAN (ABSOLUTE)
 
-**Sonnet is NOT part of our tier system. Never use it.** Claude Code's built-in agent types (`Explore`, `Plan`, `general-purpose`) default to Sonnet when no model is specified. This drains a separate Sonnet token bucket. When that bucket empties, the entire session locks out, even with Opus tokens remaining.
+**EVERY `Agent` tool call MUST include `model: "haiku"` or `model: "opus"`.** Omitting it defaults to Sonnet, which drains a separate token bucket and has locked the developer out before. Prefer direct Grep/Glob/Read over spawning agents.
 
-**Rules:**
+**Haiku** (`model: "haiku"`): mechanical tasks only (file scanning, compliance checks, boilerplate, data extraction). No judgment, no architecture.
 
-1. **EVERY `Agent` tool call MUST include an explicit `model` parameter.** No exceptions. Use `"haiku"` for mechanical tasks, `"opus"` for everything else.
-2. **Prefer direct tool calls over subagents.** Use `Grep`, `Glob`, `Read` directly instead of spawning an `Explore` agent. Use the main session for planning instead of a `Plan` agent. Only spawn agents when the task genuinely benefits from isolation or parallelism.
-3. **Never omit the `model` parameter.** Omitting it lets the system default to Sonnet, which burns a token budget we don't use and can lock us out.
-4. **If you need an Explore-type search:** do it yourself with Grep/Glob/Read. If you must spawn an agent, pass `model: "haiku"` (search is mechanical) or `model: "opus"` (if it requires judgment).
-
-**Why this matters:** The Max plan has separate rate limits per model. Burning Sonnet tokens starves the session even though Opus and Haiku budgets are untouched. This has already locked the developer out of their own tool.
-
----
-
-### Tier 1: Haiku Worker (cheapest - call first for bulk tasks)
-
-Call `haiku-worker` via `Agent` tool with `subagent_type: "haiku-worker"` when the task is mechanical and requires no judgment.
-
-**Good reasons to call Haiku:**
-
-- Scanning 10+ files for a pattern (compliance check, symbol search, audit)
-- Extracting structured data from a large document
-- Writing boilerplate code from a template you specify exactly
-- Running a compliance check: em dash scan, OpenClaw surface scan, `@ts-nocheck` audit
-- Drafting a session digest from structured input you provide
-- Formatting raw data into a markdown report matching a template
-
-**Do NOT call Haiku for:**
-
-- Any task requiring understanding of the project architecture
-- Code that ships without the main session reviewing the output
-- Anything where a wrong answer causes a regression
-- Anything requiring judgment, context, or tradeoff analysis
-
-**Rule of thumb:** if a human intern could do it correctly from a checklist alone, Haiku can do it. If it requires knowing the codebase, keep it on the main session.
-
----
-
-### Tier 2: Opus Executor (default - handles everything else)
-
-Opus runs the session end-to-end: reads files, edits code, runs commands, implements features, ships. This is the default tier. Do not delegate to Haiku unless there is a clear reason.
-
----
-
-### Tier 3: Opus Advisor (most expensive - last resort for hard decisions)
-
-Call `opus-advisor` via `Agent` tool with `subagent_type: "opus-advisor"` only when the main session is genuinely stuck or the decision has long-term consequences.
-
-**Good reasons to call Opus:**
-
-- Architecture tradeoffs with non-obvious implications
-- Debugging where you have already tried 2+ fixes without progress
-- Security-sensitive design (auth, tenant scoping, data exposure)
-- Spec review, multi-file refactor planning
-- Ambiguous requirements that need a judgment call
-- You are about to do something that might violate a CLAUDE.md rule
-
-**Do NOT call Opus for:**
-
-- Simple edits, renames, or syntax fixes
-- File or symbol lookups (use Grep or Glob directly)
-- Straightforward implementation where the path is clear
-- Anything you already know the answer to
-
-**Rule of thumb:** if you can solve it in under 3 tool calls without guessing, do not call Opus. If you are stuck, going in circles, or the decision has lasting consequences, call Opus and get one clear recommendation back.
-
-**Extended Thinking on Opus (use it):** When calling `opus-advisor` for architectural decisions, explicitly tell it to use extended thinking. Add this to your prompt: `"Think deeply and use extended thinking to work through this."` Extended thinking makes Opus reason step-by-step through complex tradeoffs before answering. It costs 5-10x more tokens per response but produces significantly better decisions on hard problems. Only enable it for Opus, never Haiku.
-
----
-
-**Switching models mid-session:** Use `/model opus` in Claude Code if the current session did not start on Opus. The default-on-start comes from `.claude/settings.json`.
+**Opus Advisor** (`model: "opus"`, `subagent_type: "opus-advisor"`): last resort for hard decisions (architecture tradeoffs, security design, stuck after 2+ failed fixes). Tell it to use extended thinking.
 
 ---
 
@@ -130,63 +54,13 @@ Call `opus-advisor` via `Agent` tool with `subagent_type: "opus-advisor"` only w
 
 The developer sends prompts through a refinement pipeline before they reach Claude Code. Prompts are well-formulated and intentional. Treat them at face value. Never second-guess the developer's intent or assume the prompt means something other than what it says.
 
-### NO EM DASHES (ABSOLUTE RULE - ZERO TOLERANCE)
+### NO EM DASHES (ABSOLUTE)
 
-**Never use em dashes ( -) anywhere. Not in code, not in UI text, not in emails, not in AI responses, not in comments, not in docs that users see. NOWHERE.**
+**Never use em dashes anywhere.** Use commas, semicolons, parentheses, colons, or separate sentences instead. Replace em dashes when editing existing files. Automated check: `bash scripts/compliance-scan.sh`.
 
-Em dashes are the #1 tell that text was written by AI. Using them destroys credibility instantly. Real people don't write with em dashes. AI does. We are not going to look like AI.
+### NO "OpenClaw" IN PUBLIC SURFACES (ABSOLUTE)
 
-**What to use instead:**
-
-- A comma, period, or semicolon (restructure the sentence)
-- Parentheses (for asides)
-- A colon (for explanations)
-- Two separate sentences
-- A hyphen with spaces ( - ) if you absolutely need a break
-
-**Enforcement:**
-
-- Every piece of text Claude generates (UI copy, emails, Remy responses, notifications, error messages) must be em-dash-free
-- When editing existing files, replace any em dashes you encounter
-- This applies to ALL agent output: Claude Code, Remy, Gustav, any AI in the system
-
-**This is not a style preference. This is a hard rule. Em dashes = instant credibility loss.**
-
-### NO "OpenClaw" IN PUBLIC SURFACES (ABSOLUTE RULE - ZERO TOLERANCE)
-
-**"OpenClaw" is forbidden from all user-facing surfaces.** No user (chef, client, or visitor) should ever see or infer this term. Internal tools stay internal.
-
-**Banned surfaces:**
-
-- UI text, labels, headings, descriptions, tooltips
-- Error messages, toast notifications, empty states
-- Page titles and metadata
-- API responses surfaced to frontend
-- localStorage keys (use `cf-` prefix instead)
-- Embedded content, emails, Remy responses
-
-**What to use instead:**
-
-- Nothing (preferred; just remove the reference)
-- "system", "engine", "platform", "price engine", "data engine" (when a noun is needed)
-
-**What is allowed:**
-
-- Internal variable names, type names, function names, import paths (code-only, never rendered)
-- Comments and docstrings (developer-only)
-- File names in `lib/openclaw/`, `scripts/openclaw-*`, `.openclaw-deploy/`, `.openclaw-build/`
-- Internal docs (`docs/specs/`, `docs/research/`)
-- Database schema names (`openclaw.*` tables)
-- CLAUDE.md itself
-
-**Enforcement:**
-
-- When writing new UI text, error messages, or user-visible strings: never include "OpenClaw"
-- When editing existing files: replace any user-visible "OpenClaw" you encounter
-- When adding new features that use data from the engine: present outcomes, not tooling
-- This applies to admin pages too (browser tab titles, headings, descriptions)
-
-**This is a product boundary, not a cosmetic change.**
+**"OpenClaw" is forbidden from all user-facing surfaces** (UI, errors, emails, localStorage, metadata). Use "system", "engine", or nothing instead. Allowed only in: internal code (variables, imports, comments), internal docs, DB schema names, file paths. Automated check: `bash scripts/compliance-scan.sh`.
 
 ### Brand Names - What Things Are Currently Called
 
@@ -205,49 +79,11 @@ Different names are used in different places. This is intentional - don't "fix" 
 
 ---
 
-## ANTI-LOOP RULE (MANDATORY - READ THIS)
+## ANTI-LOOP RULE (MANDATORY)
 
-**Agents looping for an hour costs real money and produces nothing. These rules are hard stops.**
+**3-Strike Rule:** If the same approach fails 3 times, STOP. Commit partial progress, report what failed and what you tried, let the user decide. Continue other tasks.
 
-### The 3-Strike Rule
-
-If you attempt something and it fails, you get **at most 2 more attempts** (3 total). On the 3rd failure, you **STOP and report to the user.** No exceptions.
-
-This applies to ALL repeated actions, not just builds:
-
-| Loop type              | Example                                                                | What to do after 3 failures                                                  |
-| ---------------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| **Fix-retry**          | Fix a type error → build fails → fix again → fails again               | Stop. Report the error and what you tried. Let the user decide.              |
-| **Search loops**       | Can't find a file/function → search different paths → still can't find | Stop. Tell the user what you searched for and ask where it is.               |
-| **Permission denied**  | Command blocked → tweak command → blocked again                        | Stop. Ask the user to adjust permissions or tell you an alternative.         |
-| **API/network**        | External call fails → retry → fails again                              | Stop. Report the failure. Do not retry network calls more than once.         |
-| **Install/dependency** | Package install fails → try different version → fails                  | Stop. Report the error.                                                      |
-| **Test failures**      | Fix test → run → new failure → fix → run → new failure                 | Stop. You're chasing your tail. Report all failures and let the user assess. |
-
-### What Counts as a "Strike" (and What Doesn't)
-
-**Strikes = repeating the same approach to the same problem:**
-
-- Fix a type error on line 42 → build → same error → fix line 42 differently → build → same error = 3 strikes, stop
-- Run `npm install foo` → fails → run `npm install foo` again = 2 strikes immediately (you know it will fail)
-- Try to fix error A → it creates error B → fix B → it re-creates A → you're going in circles = stop
-
-**NOT strikes = genuinely different approaches, forward progress, normal work:**
-
-- Fix error A → build → error A gone but new error B on a different file → fix B → build → error C → fix C = this is **normal forward progress**, keep going
-- Try approach X → doesn't work → try completely different approach Y → doesn't work → try approach Z = different strategies, keep going (but if Z also fails, stop and report)
-- Reading multiple files to understand a problem = not looping, that's research
-- Making 10 edits across 10 files for one feature = not looping, that's implementation
-
-**The test: "Am I making forward progress or am I going in circles?"** If you're seeing the same errors come back, undoing your own fixes, or re-trying commands you know failed - you're looping. If each attempt moves you closer to the goal or reveals new information - you're working.
-
-### What "STOP" Means
-
-1. **Do not make another attempt at the thing that's failing**
-2. **Commit whatever work you've done so far** (partial progress is better than lost progress)
-3. **Report clearly:** what you were trying to do, what failed, what you tried, and what the error was
-4. **Let the user decide** the next step
-5. **Continue working on OTHER tasks** if you have them - stopping on one problem doesn't mean stopping everything
+**What counts:** same fix on same error = strike. Forward progress (error A fixed, new error B appears) = not a strike, keep going. The test: "Am I making progress or going in circles?"
 
 ---
 
@@ -266,19 +102,11 @@ These rules exist because this is a **live production app with real client data*
 - Before creating any migration file, **explain in plain English** what it will do to the database.
 - **Show the user the full SQL** before writing the migration file.
 - Remind the user to **back up their database** before applying migrations with real data.
-- **NEVER** run `drizzle-kit push` or apply migrations without explicit user approval.
-- **Before every `drizzle-kit push`**, remind the user to run a backup first:
+- **NEVER** run `drizzle-kit push` or apply migrations without explicit user approval. Remind user to back up first.
 
-  ```bash
-  database db dump --linked > backup-$(date +%Y%m%d).sql
-  ```
+### Migration Timestamp Collisions
 
-### Migration Timestamp Collisions (CRITICAL - Multi-Agent Safety)
-
-- **Before creating ANY migration file**, you MUST run `glob database/migrations/*.sql` to see all existing migration files.
-- Pick a timestamp that is **strictly higher** than the highest existing one. For example, if the highest is `20260221000002`, your new file must be `20260221000003` or later.
-- **NEVER** reuse or guess a timestamp. Always check first.
-- This rule exists because multiple Claude Code agents may run concurrently. Without checking, two agents can generate the same timestamp, causing migration collisions that corrupt the schema.
+Before creating ANY migration file, glob `database/migrations/*.sql` and pick a timestamp strictly higher than the highest existing one. Never reuse or guess.
 
 ### Server Actions & Queries
 
@@ -287,193 +115,45 @@ These rules exist because this is a **live production app with real client data*
 
 ---
 
-## ZERO HALLUCINATION RULE (MANDATORY - READ THIS)
+## ZERO HALLUCINATION RULE (MANDATORY)
 
-**The app must never display information that isn't true.** Every piece of data a user sees must be real, current, and verified - or explicitly marked as unavailable. Silent lies are worse than visible errors.
+**The app must never display information that isn't true.** Three laws:
 
-This rule exists because a February 2026 audit found 25+ places where the app displayed fake, stale, or unverified information to users as if it were real. **This must never happen again.**
+1. **Never show success without confirmation.** Every `startTransition`/optimistic update MUST have `try/catch` with rollback + toast on failure.
+2. **Never hide failure as zero.** If data fails to load, show an error state, not `$0.00` or empty arrays that look like real data.
+3. **Never render non-functional features as functional.** No clickable buttons that do nothing, no `return { success: true }` on no-ops. Hide or gate unfinished features.
 
-### The Three Laws
+**Flag during normal work:** `startTransition` without try/catch, catch blocks returning zeros, empty onClick handlers, hardcoded financial figures, `return { success: true }` on no-ops.
 
-**Law 1: Never show success without confirmation.**
+### Cache Invalidation
 
-Every UI update that assumes a server action succeeded MUST have error handling and rollback. No exceptions.
+When you mutate data, bust every cache that reads it. `revalidatePath` does NOT bust `unstable_cache` tags; use `revalidateTag`. When adding a new `unstable_cache` or mutation, search for all related caches and bust them.
 
-```tsx
-// CORRECT  - rollback on failure
-const previous = items
-setItems(optimisticUpdate)
-startTransition(async () => {
-  try {
-    await serverAction(...)
-  } catch (err) {
-    setItems(previous) // rollback
-    toast.error('Failed to save')
-  }
-})
+### Server Action Quality Checklist
 
-// WRONG  - assumes success, never checks
-setItems(optimisticUpdate)
-startTransition(async () => {
-  await serverAction(...) // no try/catch, no rollback
-})
-```
+Every new `'use server'` export must have: (1) auth gate, (2) tenant scoping, (3) input validation, (4) error propagation (never silent zero), (5) mutation feedback (`{ success, error? }`), (6) idempotency guards where needed, (7) cache busting, (8) internal-only functions in non-`'use server'` files. Reference: `docs/function-evaluation-surface.md`.
 
-**This applies to every `startTransition`, every optimistic update, every client-side state change that calls a server action.** If the server can fail, the UI must handle it.
+### `@ts-nocheck` = No Exports
 
-**Law 2: Never hide failure as zero.**
+Never create `@ts-nocheck` files. Existing ones must not export callable functions. Fix types or remove exports. Automated check: `bash scripts/compliance-scan.sh`.
 
-If data fails to load, show an error state - never substitute zeros, empty arrays, or default values that look like real data.
+### Hallucination Scan
 
-```tsx
-// CORRECT  - user sees that data failed to load
-if (fetchFailed) return <DataError message="Could not load revenue data" />
-
-// WRONG  - user sees $0.00 and thinks they have no revenue
-if (fetchFailed) return { totalRevenueCents: 0, totalExpenseCents: 0 }
-```
-
-A chef seeing "$0.00 revenue" when the database is unreachable will make wrong business decisions. A chef seeing "Could not load data" will refresh the page. **Visible errors are always better than invisible lies.**
-
-**Law 3: Never render a non-functional feature as functional.**
-
-If a button doesn't work, a route isn't implemented, or a feature isn't finished - it must be visibly gated, not silently broken.
-
-| Situation                   | Correct                                        | Wrong                                       |
-| --------------------------- | ---------------------------------------------- | ------------------------------------------- |
-| Backend not built yet       | Hide the button or show "Coming soon" badge    | Render a clickable button that does nothing |
-| Action returns fake success | Don't ship it                                  | `return { success: true }` on a no-op       |
-| Data source doesn't exist   | Show "N/A" or "Not available"                  | Show `$0.00` or `0`                         |
-| Feature is a placeholder    | Remove from nav/UI or gate behind feature flag | Leave a live route with "coming soon" text  |
-
-### What Agents Must Do (Enforcement)
-
-**When writing new code:**
-
-1. Every `startTransition` or optimistic update MUST have a `try/catch` with rollback and user-visible error feedback (toast, inline error, etc.)
-2. Every data fetch MUST distinguish between "no data exists" (show empty state) and "fetch failed" (show error state) - these are NOT the same thing
-3. Every button MUST do what it says. If the backend isn't ready, don't render the button. If you must render it, disable it with a tooltip explaining why
-4. Every displayed number MUST come from a real data source. Never hardcode financial figures, counts, or metrics. Extract prices/rates to a single shared constant at minimum
-5. Demo/sample data MUST be visually distinguished from real data everywhere it appears - badges, labels, or filtered out of production views entirely
-
-**When reviewing existing code:**
-
-If you encounter any of these patterns during normal work, **flag them to the developer immediately:**
-
-- A `startTransition` without `try/catch`
-- A catch block that returns zero/default values without any UI indicator
-- A button with an empty `onClick` or a `// placeholder` comment
-- A `return { success: true }` on a function that doesn't actually do anything
-- A hardcoded number displayed as if it came from the database
-- Demo/sample records with no visual distinction from real data
-
-### Placeholders vs. Hallucinations - Both Require Action
-
-**Hallucination:** The app displays something that is **actively false** - fake success, wrong numbers, fabricated data shown as real. **These must be fixed immediately.**
-
-**Placeholder:** A feature stub, "coming soon" text, a no-op button, or a hardcoded value awaiting real data. **These are not lies, but they must be reported to the developer** so they can decide to ship, hide, or finish them. Never leave a placeholder in the app without the developer knowing it's there.
-
-When you find either during normal work, add it to your session report. Don't wait to be asked.
-
-### Cache Invalidation - Write It, Bust It
-
-**When you mutate data, you MUST invalidate every cache that reads that data.** Stale cache = stale UI = hallucination.
-
-- If a server action writes to the `chefs` table and the layout uses `unstable_cache` with tag `chef-layout-{chefId}`, the action MUST call `revalidateTag('chef-layout-{chefId}')`.
-- `revalidatePath` does NOT bust `unstable_cache` tags. You must use `revalidateTag` for tagged caches.
-- When adding a new `unstable_cache`, document which mutations should bust it - don't leave it for "later."
-- When adding a new mutation on cached data, search for `unstable_cache` and `revalidateTag` in the codebase to find all caches that read the data you're writing. Bust every one.
-
-### Server Action Quality Checklist (Apply to All New Server Actions)
-
-Every new exported `async function` in a `'use server'` file must pass these checks before being committed. Reference: `docs/function-evaluation-surface.md`.
-
-1. **Auth** - Starts with `requireChef()`, `requireClient()`, `requireAdmin()`, or is intentionally public (document why)
-2. **Tenant scoping** - Every DB query includes `.eq('tenant_id', user.tenantId!)` or `.eq('chef_id', user.entityId)` as appropriate
-3. **Input validation** - Empty/invalid inputs rejected before any DB call (throw or return error, never silently return)
-4. **Error propagation** - DB errors throw or return `{ success: false, error }`. Never silently return empty/zero on failure.
-5. **Mutation feedback** - Mutations return `{ success, error? }` or the created/updated record. Never `Promise<void>` for mutations.
-6. **Idempotency** - State-changing updates use CAS guards (`.eq('status', expectedStatus)`) where double-execution would cause harm
-7. **Cache busting** - After mutating data, call `revalidatePath` or `revalidateTag` for every cache that reads the affected data
-8. **Non-server-action internals** - Functions called only by other server code (webhooks, workers) go in non-`'use server'` files to prevent direct client invocation
-
-### `@ts-nocheck` Files Must Not Export Callable Actions
-
-Files with `// @ts-nocheck` reference nonexistent tables, use wrong column names, or have unresolved type errors. **They will crash at runtime.** These files must NOT export server actions or functions that other code can import and call.
-
-- If you encounter a `@ts-nocheck` file that exports server actions: either fix the types and remove `@ts-nocheck`, or remove the exports and add a comment explaining why the file is deferred.
-- Never create a new file with `@ts-nocheck`. Fix the types or don't write the file.
-- When reviewing code, flag any `@ts-nocheck` file that has `export async function` - it's a crash waiting to happen.
-
-### Hallucination Scan - On-Demand Audit
-
-When the developer says **"run hallucination scan"**, **"audit for hallucinations"**, **"check for lies"**, or any variation, run the full Zero Hallucination audit:
-
-1. **Optimistic updates** - search all `startTransition` and `useTransition` calls for missing `try/catch` + rollback
-2. **Silent failures** - search for catch blocks that return zero/default/empty without UI feedback
-3. **No-op handlers** - search for `onClick` with empty bodies, `// placeholder`, `// TODO`, `return { success: true }` on functions that don't persist
-4. **Hardcoded display values** - search for dollar amounts, counts, or metrics that aren't from a query or constant
-5. **Stale cache** - check that every `unstable_cache` tag has matching `revalidateTag` calls in all relevant mutations
-6. **`@ts-nocheck` exports** - find files with both `@ts-nocheck` and `export` that could crash on call
-7. **Demo/sample data visibility** - check that `is_demo` or equivalent flags are consumed by the UI
-
-Report findings in the same format as `docs/zero-hallucination-audit.md`. Update that file with any new findings.
+Run `bash scripts/hallucination-scan.sh` for the full 7-pattern audit. Report format: `docs/zero-hallucination-audit.md`.
 
 ---
 
-## AGGRESSIVE DEFINITION OF DONE
+## DEFINITION OF DONE
 
-`docs/definition-of-done.md` is the repo-wide quality bar. Agents must follow it by default.
+`built` is not `done`. A feature requires: (1) verified in real app, (2) failure handled honestly, (3) automated drift protection, (4) UI matches reality, (5) complies with `docs/specs/universal-interface-philosophy.md`. Full criteria: `docs/definition-of-done.md`.
 
-Hard rule: `built` is not `done`.
-
-A feature is not done unless all of the following are true:
-
-- It was verified in the real app after implementation.
-- It handles failure honestly instead of faking success or falling back to misleading UI.
-- It has automated protection against likely drift points.
-- The visible UI, copy, guidance, and progress states match reality exactly.
-- It complies with the Universal Interface Philosophy (`docs/specs/universal-interface-philosophy.md`): anti-pattern checklist (Section 11), cognitive load limits (Section 6), five mandatory states (Section 7), and one primary action per screen (Section 5).
-
-Special rule for onboarding, tours, and guided overlays:
-
-- Every configured step must point to a real element that exists on the actual page.
-- Missing targets must fail closed for the team, not degrade into fake guidance for the user.
-- Visiting a route is not proof that a user completed the step.
-- A tour is not done without an automated target-existence check and a full manual walkthrough pass.
-
-If the system can quietly lie, drift, or mark progress complete without proof, it is not done.
+Tours/onboarding: every step must target a real element. Missing targets fail closed. Visiting a route is not proof of completion.
 
 ---
 
 ## SELF-MAINTAINING DOCUMENT
 
-This document must stay current. Claude is responsible for keeping it updated - the developer should never have to ask.
-
-### When to update this file
-
-Update `CLAUDE.md` immediately whenever any of the following happen:
-
-- A pattern or rule gets established during a session (e.g. "always use X", "never do Y")
-- The developer has to ask Claude for the same thing more than once - that's a missing rule
-- A new architectural decision is made that affects how future agents should behave
-- A bug or mistake is traced back to a missing or unclear rule
-- A new file location, migration, or system component is added that agents need to know about
-
-**Do not wait to be asked.** If something belongs in this document, add it in the same session it was discovered.
-
-### When to prune this file
-
-**Monthly (or when the file exceeds ~5,000 words):** Review every rule and ask: "Would Claude make this mistake without this instruction?" If Claude already does something correctly on its own, the instruction is noise. Remove it. Every unnecessary line dilutes the ones that matter.
-
-**Alternative:** Run this prompt: "Update my CLAUDE.md to remove anything that's no longer needed, contradictory, duplicate information, or unnecessary bloat impacting effectiveness."
-
-### How to update
-
-1. Edit `CLAUDE.md` directly with the new rule in the appropriate section
-2. Also update `MEMORY.md` if the rule belongs in persistent memory. `MEMORY.md` at the repo root is the canonical durable memory file. The `memory/` directory is for project-scoped briefs, runtime notes, and working memory artifacts.
-3. Commit both files with a clear message like `docs(rules): add X rule`
-4. Push - this is part of the standard session close-out
+Keep this file current. Add new rules when patterns are established or mistakes repeat. Prune when it exceeds ~5,000 words: remove anything Claude already does correctly without instruction. Also update `MEMORY.md` when adding durable context.
 
 ---
 
@@ -494,220 +174,39 @@ These workflows are now available as `/slash-commands`. Type the command name to
 
 ---
 
-## POWER TOOLS (Use These - They Are Paid For)
+## POWER TOOLS
 
-### LSP - Code Intelligence (Use Before Grep for Navigation)
+All configured in `.claude/mcp.json`. Use them.
 
-The **LSP** tool gives you IDE-grade code intelligence without reading files manually. Use it instead of Grep when navigating code relationships.
-
-**When to use LSP instead of Grep/Read:**
-
-- "Where is this function defined?" - use `LSP go_to_definition`
-- "What calls this function?" - use `LSP find_references`
-- "What type is this variable?" - use `LSP hover`
-- "What symbols are in this file?" - use `LSP document_symbols`
-
-**When to still use Grep/Glob:** finding text patterns across many files, searching for strings, finding files by name. LSP is for code structure; Grep is for text search.
-
-**Rule:** when you need to navigate TO something in the codebase, try LSP first. It's faster and more precise than recursive Grep.
-
----
-
-### Worktrees - Parallel Isolated Sessions
-
-The **EnterWorktree** / **ExitWorktree** tools create a temporary git worktree - an isolated copy of the repo on a new branch. Use this when you need to work on two things simultaneously without one interfering with the other.
-
-**When to use worktrees:**
-
-- A subagent needs to experiment with risky changes while you keep the main session clean
-- You want to prototype an approach before committing to it
-- You are doing a large refactor and want the main branch to stay green
-
-**How it works:** `EnterWorktree` creates a new git worktree at a temp path on a new branch. The agent works there. `ExitWorktree` cleans it up if nothing was committed, or returns the branch path if changes were made (so you can review and merge).
-
-**Parallel builds are forbidden** (see ANTI-LOOP RULE), but **parallel research and planning worktrees are fine.** Use worktrees when a subagent is doing exploration, not when it's writing production code.
+- **LSP** - code navigation (go_to_definition, find_references, hover). Use before Grep for "where is X defined?" or "what calls X?"
+- **Worktrees** - isolated git worktree for risky experiments or parallel research. No parallel builds.
+- **Agent Teams** - bidirectional `SendMessage` between named agents (experimental, enabled in settings.json)
+- **CronCreate** - schedule recurring prompts within a session (polling builds, monitoring logs)
+- **Playwright MCP** - direct browser control for quick UI verification. Use qa-tester agent for full test suites.
+- **GitHub MCP** - create issues, check PRs, read files from other branches (requires `GITHUB_PERSONAL_ACCESS_TOKEN`)
+- **Postgres MCP** - read-only DB queries (inspect data, check schema, verify migrations). No writes.
+- **MemPalace MCP** - search 535+ indexed conversations. Backlog: `memory/project_mempalace_backlog.md`
+- **`/batch`** - parallel worktree agents for large refactors (symbol renames, compliance sweeps). Not for builds.
+- **`/security-review`** - scan uncommitted changes for vulnerabilities before committing
+- **Session hygiene:** `/context` (start), `/rewind` (before risky ops), `/compact [focus]` (high context), `/btw` (side questions)
 
 ---
 
-### Agent Teams - Multiple Agents in One Session
+## FEATURE LOOKUP
 
-Agent Teams (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` - already enabled in settings.json) allow multiple named agents to collaborate in a single session. This is distinct from spawning subagents with `Agent` - teams can communicate bidirectionally via `SendMessage`.
-
-**How to use:** when spawning agents for parallel research tasks, use `SendMessage` to pass results between them instead of waiting for each to finish sequentially.
-
-**Current status:** experimental. If it causes unexpected behavior, remove the env var from `.claude/settings.json`.
+**Three-tier lookup:** (1) `project-map/` for orientation, (2) `docs/product-blueprint.md` for scope/progress, (3) `docs/app-complete-audit.md` for exact components. Don't guess file paths; read docs first.
 
 ---
 
-### CronCreate - Scheduled Prompts Within a Session
+## SESSION AWARENESS (MANDATORY)
 
-`CronCreate` schedules a prompt to run on a recurring interval within the current session. Use this for long-running monitoring tasks.
+### On Start
 
-**When to use:**
+Run `bash scripts/session-briefing.sh` then read `docs/.session-briefing.md`. If build state is broken, fix it before new work.
 
-- Poll a build status every 2 minutes while working on something else
-- Check a log file for errors every 30 seconds during a deployment
-- Remind yourself to run tests after a certain interval
+### On End
 
-**How to use:** call `CronCreate` with an interval (e.g., `"*/2 * * * *"` for every 2 minutes) and a prompt string. Call `CronList` to see active crons. `CronDelete` cancels one.
-
-**For scheduled agents that run between sessions** (nightly digests, build checks), use the `/schedule` skill instead - it creates remote triggers that persist across sessions.
-
----
-
-### Playwright MCP - Direct Browser Control (Computer Use)
-
-The Playwright MCP server is now configured in `.claude/mcp.json`. This gives Claude Code direct browser control without spawning a qa-tester subagent. Use it for quick UI verification tasks.
-
-**Available via MCP after restarting Claude Code.** You will see Playwright tools in your tool list (navigate, click, type, screenshot, etc.).
-
-**When to use Playwright MCP (not qa-tester):** single-step verification (does this page load?), quick screenshot, filling a form. For full test suites or multi-step flows, still use the `qa-tester` agent.
-
----
-
-### GitHub MCP - Repository Operations
-
-The GitHub MCP server is now configured in `.claude/mcp.json`. It requires `GITHUB_PERSONAL_ACCESS_TOKEN` to be set in your system environment.
-
-**To activate:** set `GITHUB_PERSONAL_ACCESS_TOKEN` in your Windows environment variables (System Properties > Environment Variables), then restart Claude Code. You will see GitHub tools in your tool list (create issue, list PRs, get file contents, etc.).
-
-**When to use:** creating issues directly from bugs found during development, checking PR status, reading files from other branches without switching.
-
----
-
-### Postgres MCP - Direct Database Queries
-
-The Postgres MCP server is configured in `.claude/mcp.json` with the local Docker connection string.
-
-**Use this instead of writing throwaway scripts** when you need to inspect live data, count rows, check schema state, or verify a migration applied correctly.
-
-**When to use Postgres MCP:**
-
-- "How many events are in status X?" - query directly, no script needed
-- "Did this migration add the column?" - check information_schema
-- "What does this record look like?" - SELECT and read it
-- "Is this foreign key set up correctly?" - inspect constraints
-
-**Do NOT use for:** writes, migrations, drops. Read-only inspection only. All mutations go through server actions and Drizzle ORM.
-
----
-
-### MemPalace MCP - Search 535 Indexed Conversations
-
-The MemPalace MCP server is configured in `.claude/mcp.json`. It indexes all Claude Code conversations in `c:/Users/david/Documents/CFv1`.
-
-**Use this when:** you need to find how something was decided or built in a past session. Faster than re-reading session digests.
-
-**When to use MemPalace:**
-
-- "How did we implement X?" - search for it across all past sessions
-- "Why did we abandon approach Y?" - find the session where that decision was made
-- "Has this bug come up before?" - search for the error string
-
-**The 40-item backlog** (mined 2026-04-11) is in `memory/project_mempalace_backlog.md`. Work from that list before opening new investigations.
-
----
-
-### /batch - Parallel Worktree Agents for Large Refactors
-
-`/batch <instruction>` spawns 5-30 isolated worktree agents working in parallel. Each gets its own git worktree so they don't conflict.
-
-**This is NOT a parallel build** (which is forbidden). Each agent works in isolation. Only ONE does a final build at the end.
-
-**When to use /batch:**
-
-- Renaming a symbol across 20+ files
-- Applying the same pattern fix across many components
-- Large-scale compliance sweep (em dash, OpenClaw scan, @ts-nocheck audit)
-- Any task that is embarrassingly parallel with no inter-agent dependency
-
-**Do NOT use /batch for:** anything where agents need to coordinate mid-task, sequential migrations, or builds.
-
----
-
-### /security-review - Scan Pending Changes
-
-`/security-review` analyzes uncommitted changes for security vulnerabilities before committing.
-
-**Make this a habit before any commit that touches:** auth, billing, server actions, API routes, or anything that handles user input.
-
----
-
-### Session Hygiene Commands (Use These Every Session)
-
-These commands are available but underused. Build them into your workflow:
-
-| Command            | When to use                                                                                                     |
-| ------------------ | --------------------------------------------------------------------------------------------------------------- |
-| `/context`         | Start of any long session - visualize context usage before it becomes a problem                                 |
-| `/rewind`          | Before any migration, destructive op, or risky experiment - create a checkpoint                                 |
-| `/compact [focus]` | When context is high - use focus param (e.g., `/compact focus on billing changes`) to preserve relevant context |
-| `/btw <question>`  | Quick side questions without polluting conversation context. Use constantly.                                    |
-
-**`Alt+T` habit:** When calling the `opus-advisor` agent for architectural decisions, ALWAYS press `Alt+T` first to enable extended thinking. CLAUDE.md says to do this - now it's enforced as a keyboard habit.
-
----
-
-## FEATURE LOOKUP (How to Find What You're Looking For)
-
-**Three-tier lookup, in order:**
-
-1. **`project-map/`** - Quick orientation. Browse the folder like Google Drive. Each file is a short card describing one product area (routes, files, status, open items). Start here for "what does this area do?"
-2. **`docs/product-blueprint.md`** - V1 scope, progress, exit criteria, queue, known issues. Start here for "is this done?" or "what's next?"
-3. **`docs/app-complete-audit.md`** - Deep dive. 265 pages mapped with every button, tab, form, modal, and component. Start here for "what exact component renders this?"
-
-When the developer describes a feature by what it does (not by file path), check the project map first, then the audit if you need implementation details.
-
-**Do not guess file paths. Do not search the codebase blindly. Read the docs first.**
-
-**Developer:** you don't need to know file names. Describe what you want in plain English. The agent will look it up. Examples of valid prompts:
-
-- "The widget on the dashboard that shows today's schedule"
-- "The page where I manage staff members"
-- "The form for creating a new quote"
-- "The settings page for email"
-
----
-
-## SESSION AWARENESS (EVERY AGENT - MANDATORY)
-
-**Every agent (planner, builder, research) must do these things at the start and end of every session. No exceptions.**
-
-This exists because agents operate blind. Without session awareness, an agent has no idea what the last agent did, whether the build is broken, or what files are hot. This causes regressions, wasted work, and collisions.
-
-### On Session Start (Before Doing Anything Else)
-
-1. **Read `docs/product-blueprint.md`** - know the V1 scope, progress, exit criteria, and known issues.
-2. **Read the last 3 files in `docs/session-digests/`** - know what previous agents discussed and decided.
-3. **Read `docs/build-state.md`** - know whether the app is green or broken right now.
-4. **If build state is broken:** STOP. Do not start new work on a broken foundation. Report what's broken and fix it first, or ask the developer for direction.
-5. **Log your arrival** - append an entry to `docs/session-log.md`:
-   ```
-   ## YYYY-MM-DD HH:MM EST
-   - Agent: [Planner | Builder | Research | General]
-   - Task: [what you're here to do]
-   - Status: started
-   - Build state on arrival: [green | broken] (commit [hash])
-   ```
-
-### On Session End (Before Signing Off)
-
-1. **Log your departure** - append to `docs/session-log.md`:
-   ```
-   ## YYYY-MM-DD HH:MM EST
-   - Agent: [type]
-   - Task: [what you did]
-   - Status: completed | partial | blocked
-   - Files touched: [list every file you modified]
-   - Commits: [commit hashes]
-   - Build state on departure: [green | broken]
-   - Notes: [anything the next agent needs to know]
-   ```
-2. **Write a session digest** to `docs/session-digests/` (see format in `docs/session-digests/README.md`). Capture: what was discussed, what changed, decisions made, unresolved items, context for next agent.
-3. **Update `docs/build-state.md`** if you ran a build or type check.
-4. **Update `docs/product-blueprint.md`** if you completed work that affects any feature checkbox or progress percentage.
-5. **Update the relevant `project-map/` file** if you built, changed, or broke something in that area.
-6. **Commit the session log, digest, and doc updates** with your other commits.
+Run `bash scripts/session-close.sh` to generate digest template and session log entry. Fill in judgment parts. Update `docs/build-state.md`, `docs/product-blueprint.md`, and relevant `project-map/` file if applicable. Commit everything + push.
 
 ---
 
@@ -725,148 +224,36 @@ Full gate procedures are available as skills. They load automatically when relev
 
 ## DEVELOPMENT WORKFLOW
 
-### Before Making Changes
+### Before Changes
 
-- **Explain what you're about to do in plain terms** before making changes, especially for anything touching the database, authentication, or financial logic.
-- When in doubt, **ask - don't assume**.
+Explain what you're about to do for DB, auth, or financial changes. When in doubt, ask.
 
-### Documentation
+### Living Documents (update incrementally with every change)
 
-- **Always create a follow-up `.md` document for every code change.** Every implementation should have a reflecting document that explains what changed, why, and how it connects to the system. No code-only changes.
+- **`docs/USER_MANUAL.md`** - user-facing manual. Update when UI, workflow, or behavior changes. Edit in-place, not append.
+- **`docs/app-complete-audit.md`** - master registry of every page/button/form/modal. Update when adding/removing/renaming UI elements. Skip backend-only or styling-only changes.
+- **Follow-up `.md`** - every code change needs a reflecting document explaining what, why, and how.
 
-### User Manual - Living Document (MANDATORY)
+### Commits & Git
 
-**`docs/USER_MANUAL.md` is a required, living part of the product.** It is written for real users (chefs and clients), not developers. No change is complete unless the user manual is updated.
+- Spec-tied commits: `feat(spec-name): description`. Standard: `feat`, `fix`, `docs`, `chore`, `refactor`.
+- Push to GitHub at end of every session. Commit to `main` unless asked for a feature branch.
 
-**When to update:**
+### Health Checks (before merging to main)
 
-- New feature added
-- UI changed (labels, buttons, navigation, workflows)
-- Workflow behavior changed
-- Role or permission changes
-- Bug fix that alters user-visible behavior
+- `npx tsc --noEmit --skipLibCheck` + `npx next build --no-lint` must exit 0
+- Auth/layout/navigation changes: `npm run test:experiential` (all 9 suites pass)
+- AI/queue changes: `npm run test:stress:ollama` (all 3 variants PRODUCTION READY)
+- `types/database.ts` current. Merge to main only with explicit user approval.
 
-**How to update:**
+### Agent Testing Account
 
-1. Find the relevant section in `docs/USER_MANUAL.md`
-2. Edit in-place (not append-only). Integrate changes into the correct section.
-3. If adding a new feature, add a new section where it logically belongs
-4. If removing a feature, remove or rewrite the section
-5. Keep language user-facing: describe what users see and do, not internal code
+Credentials in `.auth/agent.json`. Sign in via `POST http://localhost:3100/api/e2e/auth`. Chef role + admin. If missing, run `npm run agent:setup`. Test, find bugs, fix bugs, verify fixes. Full loop, no handoffs.
 
-**Quality bar:**
+### Reference Docs
 
-- A new user could follow the manual without confusion
-- No outdated instructions remain
-- The manual matches actual system behavior exactly
-
-**This is not optional.** If code ships without a manual update, that is incomplete work.
-
-### Commit Message Convention
-
-All commits tied to a spec must reference the spec name in the commit message:
-
-```
-feat(spec-name): description
-fix(spec-name): description
-```
-
-This creates traceability from git history back to the spec that drove the work. For non-spec work, use standard prefixes: `feat`, `fix`, `docs`, `chore`, `refactor`.
-
-### Living App Audit - `docs/app-complete-audit.md` (MANDATORY)
-
-This file is the **master registry of every page, button, tab, form, modal, overlay, and navigation path** in ChefFlow. It must always reflect the current state of the app.
-
-**When to update it:**
-
-- You **add a new page** → add its entry (route, what it shows, every button/form/tab on it)
-- You **add or remove a button, tab, link, modal, or form field** on any page → update that page's section
-- You **rename or move a page** → update the route and any cross-references
-- You **add a new feature** (panel, widget, overlay, AI feature) → document it under the relevant page
-- You **delete or disable a feature** → remove or mark it in the audit
-
-**How to update it:**
-
-- Find the relevant section by page name
-- Add/edit/remove the specific element - keep the same format as surrounding entries
-- If adding a whole new page, add it under the correct section heading with the same structure (route, what's displayed, buttons, forms, tabs, modals, navigation)
-
-**When NOT to update it:**
-
-- Pure backend changes (new server action, migration, refactored logic) that don't change what the user sees or clicks - skip it
-- Styling-only changes (color, font, spacing) - skip it
-
-**This rule exists because:** a full re-audit of ~265 pages takes an entire session and costs real money. Keeping this file current incrementally is free. The developer relies on this as their "ultimate manual" for understanding what the app does.
-
-### Git Workflow
-
-- **ALWAYS `git push` to GitHub at the end of every session.** This is the off-machine backup. Do not wait to be asked.
-- Pushing to `main` is fine. Commit directly to `main` unless the developer asks for a feature branch.
-
-### Feature Close-Out (run when user asks to close out a feature)
-
-Run these in order - stop and report any failure before continuing:
-
-1. `npx tsc --noEmit --skipLibCheck` → must exit 0
-2. `npx next build --no-lint` → must exit 0
-3. `git add` relevant files + `git commit` with a clear message
-4. `git push origin <current-branch>` - push the feature branch to GitHub (backup, $0 cost)
-5. Confirm branch is clean and ready - do **NOT** merge to `main` or deploy to production
-
-### Health Checks (run before merging to main)
-
-- `npx tsc --noEmit --skipLibCheck` → must exit 0, zero errors
-- `npx next build --no-lint` → must exit 0
-- **Experiential verification** (if any auth, layout, loading, or navigation changes):
-  - `npm run test:experiential` → all 9 suites must pass
-  - Catches blank screens, missing loading states, broken cross-boundary transitions
-  - Full docs: `docs/experiential-verification.md`
-- **Stress test AI queue** (if any AI/queue changes):
-  - `npm run test:stress:ollama` - basic load → must show PRODUCTION READY
-  - `npm run test:stress:ollama:high` - high load → must show PRODUCTION READY
-  - `npm run test:stress:ollama:failure` - failure recovery → must show PRODUCTION READY
-  - Full docs: `docs/ollama-stress-testing.md`
-- All work committed and pushed to the feature branch on GitHub
-- `types/database.ts` current with remote schema
-- Only after all of the above: merge to `main` with explicit user approval
-
-### Agent Testing Account - Details (see BLOCK 2 above for the mandate)
-
-There are **two admin accounts**:
-
-1. **Developer's account** - theirs, for their own use. Don't touch it.
-2. **Agent account** - YOURS. Use it every time you need to see, test, or verify anything in the app.
-
-- **Credentials:** Read from `.auth/agent.json` (or `.env.local`: `AGENT_EMAIL` / `AGENT_PASSWORD`)
-- **Sign in:** `POST http://localhost:3100/api/e2e/auth` with `{ "email", "password" }` from the credentials
-- **Access:** Chef role + admin access (full app)
-- **Setup:** If `.auth/agent.json` doesn't exist, run `npm run agent:setup` first
-
-**The full loop - test AND fix:**
-
-1. Ensure dev server is running on port 3100 (ask the user to start it if needed)
-2. Launch Playwright, sign in with your agent credentials
-3. Navigate to the relevant page, interact, take screenshots
-4. If something is broken - **fix it right now.** You have the code and the browser. Close the loop.
-5. After fixing, sign in again and verify the fix actually works
-6. Only report back when it's DONE and WORKING
-
-**Never say any of these:**
-
-- "Please verify X on the website" - YOU verify it
-- "Can you check if this looks correct?" - YOU check it
-- "Let me know if the fix works" - YOU test if it works
-- "You may want to test..." - YOU test it
-
-**The only exception:** Playwright literally cannot do it (OAuth popups, mobile-specific gestures, native device features). Everything else - you handle it end to end.
-
-### Full Workflow Reference
-
-**`docs/AGENT-WORKFLOW.md`** - complete step-by-step playbook: health checks, migration safety, parallel agent rules, merge procedure. Covers what to do before, during, and after every session. Read it before starting significant work.
-
-**`docs/AI_POLICY.md`** - governs all AI feature work. AI assists drafting only, never owns canonical state. Hard restrictions: no lifecycle transitions, no ledger writes, no silent automation. All AI output requires chef confirmation before becoming canonical.
-
-**Chef's irreducible core:** creative decisions, physical cooking, relationship moments, final approval on all client-facing comms.
+- **`docs/AGENT-WORKFLOW.md`** - full playbook (health checks, migration safety, parallel agent rules)
+- **`docs/AI_POLICY.md`** - AI assists drafting only, never owns canonical state. Chef's irreducible core: creative decisions, physical cooking, relationship moments, final approval on comms.
 
 ---
 
