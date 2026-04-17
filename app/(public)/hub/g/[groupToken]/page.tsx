@@ -11,6 +11,7 @@ import { getCriticalPathForGuest } from '@/lib/lifecycle/critical-path'
 import { getLifecycleProgressForClient } from '@/lib/lifecycle/actions'
 import { HubGroupView } from './hub-group-view'
 import { HubBridgeView } from '@/components/hub/hub-bridge-view'
+import { CircleArchiveView } from '@/components/hub/circle-archive-view'
 
 interface Props {
   params: Promise<{ groupToken: string }>
@@ -37,19 +38,36 @@ export default async function HubGroupPage({ params }: Props) {
     notFound()
   }
 
-  // Circle was archived (event completed or manually closed)
+  // Circle was archived (event completed or manually closed): show archive timeline
   if (!group.is_active) {
+    const archiveEvents = await getGroupEvents(group.id).catch(() => [])
+    const archiveEvent = archiveEvents[0] as any | undefined
+
     return (
-      <div className="min-h-screen bg-stone-950 flex items-center justify-center p-6">
-        <div className="text-center max-w-sm">
-          <div className="text-4xl mb-4">🍽️</div>
-          <h1 className="text-xl font-semibold text-stone-200 mb-2">
-            This dinner circle has ended
-          </h1>
-          <p className="text-stone-400 text-sm">
-            The event is complete. Thanks for being part of it. Your messages and memories are
-            preserved here.
-          </p>
+      <div className="min-h-screen bg-stone-950 p-6 space-y-6">
+        <div className="max-w-2xl mx-auto">
+          {archiveEvent ? (
+            <CircleArchiveView
+              groupId={group.id}
+              eventId={archiveEvent.event_id}
+              eventStatus={archiveEvent.status ?? 'completed'}
+              eventDate={archiveEvent.event_date ?? null}
+              occasion={archiveEvent.occasion ?? null}
+              location={archiveEvent.location ?? null}
+              guestCount={archiveEvent.guest_count ?? null}
+              chefName={null}
+              profileToken={groupToken}
+            />
+          ) : (
+            <div className="text-center py-12">
+              <h1 className="text-xl font-semibold text-stone-200 mb-2">
+                This dinner circle has ended
+              </h1>
+              <p className="text-stone-400 text-sm">
+                The event is complete. Thanks for being part of it.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     )
@@ -71,8 +89,13 @@ export default async function HubGroupPage({ params }: Props) {
     getGroupAvailability(group.id).catch(() => []),
     getGroupEvents(group.id).catch(() => []),
     getMealBoard({ groupId: group.id }).catch(() => []),
-    getCriticalPathForGuest(groupToken).catch(() => null),
-    getLifecycleProgressForClient(groupToken).catch(() => null),
+    // Skip event lifecycle queries for community circles (no event, no tenant)
+    group.group_type === 'community'
+      ? Promise.resolve(null)
+      : getCriticalPathForGuest(groupToken).catch(() => null),
+    group.group_type === 'community'
+      ? Promise.resolve(null)
+      : getLifecycleProgressForClient(groupToken).catch(() => null),
   ])
 
   // Branch: bridge groups get the slim intro view, not the full Dinner Circle

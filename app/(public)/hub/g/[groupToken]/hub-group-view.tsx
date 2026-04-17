@@ -354,7 +354,9 @@ export function HubGroupView({
             {!showRecovery ? (
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm text-stone-400">
-                  Join this circle to chat, update your details, and see the full plan.
+                  {group.group_type === 'community'
+                    ? 'Join this circle to chat with the community and share your perspective.'
+                    : 'Join this circle to chat, update your details, and see the full plan.'}
                 </p>
                 <div className="flex shrink-0 items-center gap-2">
                   <button
@@ -421,7 +423,9 @@ export function HubGroupView({
           <div className="m-4 rounded-xl border border-stone-700 bg-stone-800/80 p-4">
             <div className="flex items-start justify-between">
               <h3 className="text-sm font-semibold text-stone-200">
-                Welcome to your dinner circle
+                {group.group_type === 'community'
+                  ? 'Welcome to this community circle'
+                  : 'Welcome to your dinner circle'}
               </h3>
               <button
                 type="button"
@@ -441,10 +445,21 @@ export function HubGroupView({
               </button>
             </div>
             <ul className="mt-2 space-y-1 text-xs text-stone-400">
-              <li>💬 Chat with your group and the chef</li>
-              <li>📸 Share and browse photos from events</li>
-              <li>🥗 Update your dietary needs so the chef can plan</li>
-              <li>👥 See who else is in your dinner circle</li>
+              {group.group_type === 'community' ? (
+                <>
+                  <li>💬 Chat with the community about shared interests</li>
+                  <li>📸 Share photos and inspiration</li>
+                  <li>📝 Post notes and resources for the group</li>
+                  <li>👥 See who else is part of this circle</li>
+                </>
+              ) : (
+                <>
+                  <li>💬 Chat with your group and the chef</li>
+                  <li>📸 Share and browse photos from events</li>
+                  <li>🥗 Update your dietary needs so the chef can plan</li>
+                  <li>👥 See who else is in your dinner circle</li>
+                </>
+              )}
             </ul>
           </div>
         )}

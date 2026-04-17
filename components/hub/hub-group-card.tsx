@@ -30,7 +30,9 @@ export function HubGroupCard({ group }: { group: ClientHubGroup }) {
 
       {/* Header: emoji + name */}
       <div className="flex items-start gap-3">
-        <span className="text-3xl">{group.emoji || '🍽️'}</span>
+        <span className="text-3xl">
+          {group.emoji || (group.group_type === 'community' ? '💬' : '🍽️')}
+        </span>
         <div className="min-w-0 flex-1">
           <h3 className="truncate text-lg font-semibold text-stone-100 group-hover:text-brand-400 transition-colors">
             {group.name}

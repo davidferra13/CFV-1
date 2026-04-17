@@ -51,7 +51,7 @@ export function CircleMessageEmail({
       </div>
 
       <Text style={muted}>
-        You&apos;re receiving this because you&apos;re a member of this Dinner Circle. You can mute
+        You&apos;re receiving this because you&apos;re a member of this circle. You can mute
         notifications from the circle settings.
       </Text>
     </BaseLayout>

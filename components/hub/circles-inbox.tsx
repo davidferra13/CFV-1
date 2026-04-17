@@ -59,13 +59,21 @@ export function CirclesInbox({ circles }: CirclesInboxProps) {
             Unread ({totalUnread})
           </button>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowCreate(true)}
-          className="rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-600"
-        >
-          + Dinner Club
-        </button>
+        <div className="flex gap-2">
+          <Link
+            href="/hub/circles"
+            className="rounded-lg bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-300 hover:bg-stone-600"
+          >
+            Browse Circles
+          </Link>
+          <button
+            type="button"
+            onClick={() => setShowCreate(true)}
+            className="rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-600"
+          >
+            + Dinner Club
+          </button>
+        </div>
       </div>
 
       {showCreate && (

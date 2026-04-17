@@ -43,7 +43,7 @@ export async function getChefCircles(options?: { limit?: number }): Promise<Chef
     .eq('auth_user_id', user.userId)
     .maybeSingle()
 
-  // Get groups for this tenant
+  // Get tenant-scoped circles (business circles)
   let groupQuery = db
     .from('hub_groups')
     .select(
@@ -57,9 +57,50 @@ export async function getChefCircles(options?: { limit?: number }): Promise<Chef
     groupQuery = groupQuery.limit(options.limit)
   }
 
-  const { data: groups } = await groupQuery
+  const { data: tenantGroups } = await groupQuery
 
-  if (!groups || groups.length === 0) return []
+  // Also get community circles the chef is a member of (tenant_id=null)
+  let communityGroups: any[] = []
+  if (chefProfile) {
+    const { data: communityMemberships } = await db
+      .from('hub_group_members')
+      .select('group_id')
+      .eq('profile_id', chefProfile.id)
+
+    if (communityMemberships?.length) {
+      const memberGroupIds = communityMemberships.map((m: any) => m.group_id)
+      const { data: cGroups } = await db
+        .from('hub_groups')
+        .select(
+          'id, name, emoji, group_token, group_type, event_id, inquiry_id, last_message_at, last_message_preview, message_count, is_active, created_at'
+        )
+        .in('id', memberGroupIds)
+        .eq('is_active', true)
+        .is('tenant_id', null)
+        .order('last_message_at', { ascending: false, nullsFirst: false })
+
+      if (cGroups) communityGroups = cGroups
+    }
+  }
+
+  // Merge and deduplicate, sort by last_message_at
+  const allGroups = [...(tenantGroups ?? []), ...communityGroups]
+  const seen = new Set<string>()
+  const groups = allGroups
+    .filter((g: any) => {
+      if (seen.has(g.id)) return false
+      seen.add(g.id)
+      return true
+    })
+    .sort((a: any, b: any) => {
+      const aTime = a.last_message_at ? new Date(a.last_message_at).getTime() : 0
+      const bTime = b.last_message_at ? new Date(b.last_message_at).getTime() : 0
+      return bTime - aTime
+    })
+
+  if (options?.limit) groups.splice(options.limit)
+
+  if (groups.length === 0) return []
 
   // Get member counts + chef's last_read_at for each group
   const groupIds = groups.map((g: any) => g.id)
@@ -151,15 +192,44 @@ export async function getCirclesUnreadCount(): Promise<number> {
 
   if (!chefProfile) return 0
 
-  // Get groups with activity
-  const { data: groups } = await db
+  // Get tenant-scoped groups with activity
+  const { data: tenantGroups } = await db
     .from('hub_groups')
     .select('id, last_message_at, message_count')
     .eq('tenant_id', tenantId)
     .eq('is_active', true)
     .not('last_message_at', 'is', null)
 
-  if (!groups || groups.length === 0) return 0
+  // Also get community circles chef is a member of
+  let communityGroups: any[] = []
+  const { data: communityMemberships } = await db
+    .from('hub_group_members')
+    .select('group_id')
+    .eq('profile_id', chefProfile.id)
+
+  if (communityMemberships?.length) {
+    const memberGroupIds = communityMemberships.map((m: any) => m.group_id)
+    const { data: cGroups } = await db
+      .from('hub_groups')
+      .select('id, last_message_at, message_count')
+      .in('id', memberGroupIds)
+      .eq('is_active', true)
+      .is('tenant_id', null)
+      .not('last_message_at', 'is', null)
+    communityGroups = cGroups ?? []
+  }
+
+  // Merge and deduplicate
+  const seen = new Set<string>()
+  const groups: any[] = []
+  for (const g of [...(tenantGroups ?? []), ...communityGroups]) {
+    if (!seen.has(g.id)) {
+      seen.add(g.id)
+      groups.push(g)
+    }
+  }
+
+  if (groups.length === 0) return 0
 
   const groupIds = groups.map((g: any) => g.id)
 
@@ -539,6 +609,38 @@ export async function ensureCircleForEvent(
         .maybeSingle()
 
       if (inquiryCircle) return { groupToken: inquiryCircle.group_token }
+    }
+
+    // Check for bridge-created circles (from Introduction Bridge handoff flow)
+    // If target chef created a circle via a bridge, adopt it for this event
+    try {
+      const { data: bridge } = await db
+        .from('chef_intro_bridges')
+        .select('target_circle_group_id')
+        .eq('target_chef_id', tenantId)
+        .not('target_circle_group_id', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      if (bridge?.target_circle_group_id) {
+        // Check if bridge circle has no event_id yet (available for adoption)
+        const { data: bridgeCircle } = await db
+          .from('hub_groups')
+          .select('id, group_token, event_id')
+          .eq('id', bridge.target_circle_group_id)
+          .is('event_id', null)
+          .maybeSingle()
+
+        if (bridgeCircle) {
+          // Adopt: link the bridge circle to this event
+          await db.from('hub_groups').update({ event_id: eventId }).eq('id', bridgeCircle.id)
+          return { groupToken: bridgeCircle.group_token }
+        }
+      }
+    } catch (err) {
+      // Bridge adoption is non-blocking; fall through to create new circle
+      console.error('[ensureCircleForEvent] bridge adoption failed (non-blocking)', err)
     }
 
     // Fetch event for naming

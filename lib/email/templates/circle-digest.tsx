@@ -29,7 +29,7 @@ export function CircleDigestEmail({ recipientName, groupName, messages, circleUr
         {count} new {noun} in {groupName}
       </Text>
       <Text style={paragraph}>Hi {recipientName},</Text>
-      <Text style={paragraph}>Here&apos;s what you missed in your Dinner Circle:</Text>
+      <Text style={paragraph}>Here&apos;s what you missed in your circle:</Text>
 
       <div style={messageList}>
         {messages.slice(0, 10).map((msg, i) => (
@@ -64,7 +64,7 @@ export function CircleDigestEmail({ recipientName, groupName, messages, circleUr
             textDecoration: 'none',
           }}
         >
-          Open Dinner Circle
+          Open Circle
         </Link>
       </div>
 

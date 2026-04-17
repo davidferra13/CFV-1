@@ -73,6 +73,12 @@ export default async function MyHubPage() {
               )}
             </Button>
           </Link>
+          <Link href="/hub/circles">
+            <Button variant="secondary">
+              <Users className="mr-2 h-4 w-4" />
+              Browse Circles
+            </Button>
+          </Link>
           <Link href="/my-hub/create">
             <Button variant="primary">
               <CalendarPlus className="mr-2 h-4 w-4" />

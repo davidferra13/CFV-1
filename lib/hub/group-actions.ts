@@ -17,7 +17,9 @@ const CreateGroupSchema = z.object({
   event_stub_id: z.string().uuid().optional().nullable(),
   tenant_id: z.string().uuid().optional().nullable(),
   created_by_profile_id: z.string().uuid(),
-  group_type: z.enum(['circle', 'dinner_club', 'planning', 'bridge']).optional(),
+  group_type: z.enum(['circle', 'dinner_club', 'planning', 'bridge', 'community']).optional(),
+  visibility: z.enum(['public', 'private', 'secret']).optional(),
+  display_vibe: z.array(z.string()).optional().nullable(),
 })
 
 /**
@@ -207,7 +209,10 @@ export async function joinHubGroup(input: {
       author_profile_id: input.profileId,
       message_type: 'system',
       system_event_type: 'member_joined',
-      body: `${profile?.display_name ?? 'Someone'} joined! Welcome to the dinner circle. Chat with the group, share photos, update dietary needs, and stay in the loop on all event details here.`,
+      body:
+        group.group_type === 'community'
+          ? `${profile?.display_name ?? 'Someone'} joined! Welcome to the circle. Chat with the community and share your perspective.`
+          : `${profile?.display_name ?? 'Someone'} joined! Welcome to the dinner circle. Chat with the group, share photos, update dietary needs, and stay in the loop on all event details here.`,
       system_metadata: { display_name: profile?.display_name ?? 'Someone' },
     })
   } catch {
@@ -225,12 +230,16 @@ export async function joinHubGroup(input: {
         await import('@/lib/email/templates/notification-generic')
       await sendEmail({
         to: profile.email,
-        subject: `You joined ${group.name || 'the dinner circle'}`,
+        subject: `You joined ${group.name || 'the circle'}`,
         react: createElement(NotificationGenericEmail, {
           title: `You are in the circle`,
-          body: `Bookmark this link so you can always find your way back. This is where you can chat with the chef, share photos, and track everything leading up to the event.`,
+          body:
+            group.group_type === 'community'
+              ? `Bookmark this link so you can always find your way back. This is where you can chat with the community, share photos, and connect with fellow food lovers.`
+              : `Bookmark this link so you can always find your way back. This is where you can chat with the chef, share photos, and track everything leading up to the event.`,
           actionUrl: circleUrl,
-          actionLabel: 'Open Your Dinner Circle',
+          actionLabel:
+            group.group_type === 'community' ? 'Open Your Circle' : 'Open Your Dinner Circle',
         }),
       })
     } catch {
