@@ -84,7 +84,7 @@ Added `recordSideEffectFailure` to 7 additional email/notification-sending crons
 
 **Before fixes:** 8 PASS, 6 PARTIAL, 1 FAIL
 **After Sprint 1+2:** 9 PASS, 6 PARTIAL, 0 FAIL (SQ3 upgraded from 4/29 to 12/29, SQ5 FAIL->PASS)
-**After Sprint 3 (idempotency):** 12 PASS, 3 PARTIAL, 0 FAIL
+**After Sprint 3 (idempotency):** 13 PASS, 2 PARTIAL, 0 FAIL
 
 Sprint 3 fixes:
 

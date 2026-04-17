@@ -4,7 +4,7 @@
 > Each question targets real code, real flows, real gaps.
 > Organized by lifecycle phase. Each question must be answerable with evidence from the running app.
 >
-> **Scored: 2026-04-16** | **48 PASS, 11 PARTIAL, 1 FAIL**
+> **Scored: 2026-04-17** | **51 PASS, 8 PARTIAL, 1 FAIL**
 
 ---
 
@@ -224,7 +224,7 @@ This is not a feature wishlist. Every question maps to something a real chef wou
 | Q#  | Question                 | Verdict     | Evidence                                                                                                                  |
 | --- | ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------------------------- |
 | Q6  | Post-login landing       | **PASS**    | Auth config redirects to `/dashboard`. Onboarding banner is dismissible, not a gate                                       |
-| Q7  | Dashboard with zero data | **PARTIAL** | Hero metrics show "$0 Revenue (all time)" - accurate but no "welcome" treatment. Business cards conditionally hide (good) |
+| Q7  | Dashboard with zero data | **PASS**    | `HeroMetricsClient` shows welcome card with CTAs when all metrics zero. Schedule has friendly empty state. Biz cards hide |
 | Q8  | Onboarding wizard        | **PASS**    | 6 steps, all skippable. `handleSkipAll()` sends to dashboard                                                              |
 | Q9  | Skip All behavior        | **PASS**    | `onboarding-wizard.tsx:64-89` - fail-open design, catches errors, always navigates                                        |
 | Q10 | Banner persistence       | **PASS**    | `onboarding_banner_dismissed_at` on chefs table, checked on load                                                          |
@@ -246,7 +246,7 @@ This is not a feature wishlist. Every question maps to something a real chef wou
 | Q16 | Client creation without inquiry | **PASS**    | `/clients/new` requires only `full_name`. Email and phone optional                                                                        |
 | Q17 | Embed widget setup              | **PASS**    | Works immediately with just `chefId`. No profile fields needed                                                                            |
 | Q18 | Inquiry notifications           | **PASS**    | `sendNewInquiryChefEmail` called at embed route line 398. Chef emailed on every embed inquiry. In-app notification via automations engine |
-| Q19 | Inquiry to event conversion     | **PARTIAL** | Draft events auto-create from inquiries, but no manual "convert inquiry" UI with pre-populated data                                       |
+| Q19 | Inquiry to event conversion     | **PASS**    | `InquiryTransitions` has "Convert to Event" button. Pre-populates date, guests, occasion, dietary, pricing                                |
 | Q20 | Client portal access            | **PARTIAL** | Client creation and portal invitation are separate steps. Not automatic                                                                   |
 
 ### Phase 4: First Menu and Recipe Entry
@@ -291,13 +291,13 @@ This is not a feature wishlist. Every question maps to something a real chef wou
 
 ### Phase 8: Growth and Repeat Business
 
-| Q#  | Question                     | Verdict     | Evidence                                                                                                                 |
-| --- | ---------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Q41 | Rebooking past client        | **PARTIAL** | Rebooking predictions exist but no "Rebook" button. Chef must create new event manually                                  |
-| Q42 | Client dietary memory        | **PASS**    | Banner shows dietary data on client select (line 699). Server action auto-populates event from client profile (line 172) |
-| Q43 | Recurring service setup      | **PASS**    | Full recurring service management with frequency, planning board, recommendations                                        |
-| Q44 | Client communication history | **PASS**    | Unified timeline: events, emails, notes, quotes, payments, referrals. Comprehensive                                      |
-| Q45 | Referral tracking            | **PASS**    | Referral source on clients, client-to-client referral records, dedicated referrals page                                  |
+| Q#  | Question                     | Verdict  | Evidence                                                                                                                 |
+| --- | ---------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Q41 | Rebooking past client        | **PASS** | Client detail shows "Rebook Client" button (links to `/events/new?client_id=`). `RebookingBar` on clients list page      |
+| Q42 | Client dietary memory        | **PASS** | Banner shows dietary data on client select (line 699). Server action auto-populates event from client profile (line 172) |
+| Q43 | Recurring service setup      | **PASS** | Full recurring service management with frequency, planning board, recommendations                                        |
+| Q44 | Client communication history | **PASS** | Unified timeline: events, emails, notes, quotes, payments, referrals. Comprehensive                                      |
+| Q45 | Referral tracking            | **PASS** | Referral source on clients, client-to-client referral records, dedicated referrals page                                  |
 
 ### Phase 9: Scale and Multi-Event Management
 
@@ -354,14 +354,11 @@ This is not a feature wishlist. Every question maps to something a real chef wou
 
 **Medium impact (friction but workaround exists):**
 
-| Q#      | Issue                                                         | Fix                                                                       |
-| ------- | ------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| **Q7**  | Dashboard shows "$0 Revenue" with no welcome treatment        | Add first-visit detection, show "Welcome to ChefFlow" instead of metrics  |
-| **Q11** | Full sidebar shown regardless of account state                | Progressive disclosure: dim/badge sections based on what's configured     |
-| **Q13** | Profile completeness dies with onboarding banner              | Surface completeness indicator in settings or dashboard beyond the banner |
-| **Q19** | No manual inquiry-to-event conversion with pre-populated data | Add "Create Event from Inquiry" button on inquiry detail page             |
-| **Q20** | Client creation and portal invitation are separate steps      | Add "Create and Invite" mode or prompt after creation                     |
-| **Q41** | No "Rebook" button despite rebooking prediction engine        | Add rebook CTA on client detail and past event pages                      |
+| Q#      | Issue                                                    | Fix                                                                       |
+| ------- | -------------------------------------------------------- | ------------------------------------------------------------------------- |
+| **Q11** | Full sidebar shown regardless of account state           | Progressive disclosure: dim/badge sections based on what's configured     |
+| **Q13** | Profile completeness dies with onboarding banner         | Surface completeness indicator in settings or dashboard beyond the banner |
+| **Q20** | Client creation and portal invitation are separate steps | Add "Create and Invite" mode or prompt after creation                     |
 
 **Low impact (polish):**
 
