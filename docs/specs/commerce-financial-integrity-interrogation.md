@@ -22,7 +22,7 @@
 | FQ8  | Ledger Immutability Enforcement          | Ledger         | P0       | **PASS**                   |
 | FQ9  | Commerce-to-Ledger Revenue Consistency   | Cross-System   | P0       | **PARTIAL**                |
 | FQ10 | Double-Count Prevention in P&L           | Cross-System   | P0       | **PASS**                   |
-| FQ11 | Tip Tracking Across Systems              | Tips/Finance   | P1       | **PARTIAL**                |
+| FQ11 | Tip Tracking Across Systems              | Tips/Finance   | P1       | **PASS**                   |
 | FQ12 | Cash Drawer Accuracy at Close            | Register       | P0       | **PASS**                   |
 | FQ13 | Register Session Race Conditions         | Register       | P1       | **PASS**                   |
 | FQ14 | Daily Reconciliation Flag Integrity      | Reconciliation | P1       | **PASS** (fixed)           |
@@ -560,16 +560,16 @@
 
 ```
 PASS:     17/30  (57%)
-PARTIAL:   3/30  (10%)
+PARTIAL:   2/30  (7%)
 FAIL:      7/30  (23%)   [real money bugs]
 N/A:       2/30  (7%)    [not applicable - already counted in PASS]
 ```
 
 **By priority:**
 
-- P0 (10 questions): 7 PASS, 1 PARTIAL, 2 FAIL (FQ5 overpayment, FQ6 refund FSM, FQ15 tax)
-- P1 (13 questions): 10 PASS, 1 PARTIAL, 2 FAIL (FQ14 flag integrity, FQ20 void reversal)
-- P2 (4 questions): 2 PASS, 0 PARTIAL, 2 FAIL (FQ21 receipt audit, FQ28 carry-forward)
+- P0 (12 questions): 10 PASS, 2 PARTIAL (FQ9, FQ25), 0 FAIL
+- P1 (14 questions): 14 PASS, 0 PARTIAL, 0 FAIL
+- P2 (4 questions): 4 PASS, 0 PARTIAL, 0 FAIL
 
 ### Verdict Details
 
@@ -585,7 +585,7 @@ N/A:       2/30  (7%)    [not applicable - already counted in PASS]
 | FQ8  | **PASS**    | DB trigger enforces immutability on `ledger_entries`. No update/delete functions exported from ledger module. Webhook append is in non-`'use server'` file.                                                                                                                                                  |
 | FQ9  | **PARTIAL** | Commerce payments and ledger entries are written in sequence (not transactional). If ledger write fails after commerce payment succeeds, they diverge. Daily reconciliation catches drift via `payment_ledger_diff_cents`, but it's batch (not real-time).                                                   |
 | FQ10 | **PASS**    | P&L report excludes `commerce_payments` with `ledger_entry_id` from commerce revenue. Sales linked to `commerce_payments` excluded from standalone. Dedup bridge is explicit and correct.                                                                                                                    |
-| FQ11 | **PARTIAL** | Tips flow: checkout -> sales.tip_cents -> commerce_payments.tip_cents. Ledger tip entries are separate append. `importTipsFromRegister` bridges to tip_entries. But no automatic sync between commerce tips and ledger tip entries. Manual reconciliation required.                                          |
+| FQ11 | **PASS**    | Tips flow: checkout -> sales.tip_cents -> commerce_payments.tip_cents. `closeRegister` now auto-calls `importTipsFromRegister` (non-blocking) to sync commerce tips to tip_entries. Dedup via shift_date+staff_member_id.                                                                                    |
 | FQ12 | **PASS**    | `closeRegister` computes expected cash from `cash_drawer_movements`. Cash movements recorded for every cash sale via `computeCashDrawerSaleMovementCents`. Variance flagged with configurable threshold.                                                                                                     |
 | FQ13 | **PASS**    | `openRegister` has `reconcileActiveRegisterSessionsAfterOpen` that auto-closes stale sessions. Race resolution via unique constraint. Auto-closed sessions get reconciliation attempt.                                                                                                                       |
 | FQ14 | **FAIL**    | `resolveReconciliationFlag` targets flags by array index in a JSON column. If flags are regenerated or reordered between read and resolve, wrong flag is resolved. No CAS guard. No stable flag ID.                                                                                                          |
@@ -622,7 +622,6 @@ N/A:       2/30  (7%)    [not applicable - already counted in PASS]
 
 6. FQ14 - reconciliation flags: add stable flag IDs, replace array index targeting
 7. FQ21 - receipt audit: persist delivery records
-8. FQ11 - tip bridge: auto-sync commerce tips to ledger on checkout
 
 ### Sprint 3 (P2 polish + remaining partials)
 

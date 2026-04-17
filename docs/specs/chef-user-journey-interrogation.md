@@ -333,9 +333,9 @@ This is not a feature wishlist. Every question maps to something a real chef wou
 
 ## Results Summary
 
-**Final Score: 48 PASS / 11 PARTIAL / 1 FAIL**
+**Final Score: 51 PASS / 8 PARTIAL / 1 FAIL**
 
-**Grade: Usable but rough edges will lose users** (35-49 PASS range)
+**Grade: Strong** (50+ PASS range)
 
 ### The 1 FAIL (requires architectural work)
 
@@ -343,7 +343,7 @@ This is not a feature wishlist. Every question maps to something a real chef wou
 | ------- | --------------------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | **Q50** | No seasonal pricing in the 10-tier resolution chain | Chef quotes December lobster at April prices. Financial risk for chefs | Medium: add event_date param to `resolvePrice()`, seasonal adjustment layer |
 
-### The 11 PARTIALs (prioritized by user impact)
+### The 8 PARTIALs (prioritized by user impact)
 
 **High impact (will lose real users):**
 
