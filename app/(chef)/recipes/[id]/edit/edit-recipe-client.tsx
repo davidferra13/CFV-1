@@ -20,6 +20,10 @@ import { NutritionalCalculator } from '@/components/recipes/NutritionalCalculato
 import { recalculateAndSaveRecipeNutrition } from '@/lib/recipes/nutritional-calculator-actions'
 import { useProtectedForm } from '@/lib/qol/use-protected-form'
 import { FormShield } from '@/components/forms/form-shield'
+import { updateRecipePeakWindow } from '@/lib/prep-timeline/actions'
+import { getCategoryDefault } from '@/lib/prep-timeline/peak-defaults'
+import { formatHoursAsReadable } from '@/lib/prep-timeline/compute-timeline'
+import { ChevronDown, ChevronUp, Snowflake } from '@/components/ui/icons'
 
 const RECIPE_CATEGORIES = [
   'sauce',
@@ -106,6 +110,25 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
   const [season, setSeason] = useState<string[]>(recipe.season || [])
   const [occasionTags, setOccasionTags] = useState<string[]>(recipe.occasion_tags || [])
   const [customOccasion, setCustomOccasion] = useState('')
+
+  // Peak freshness state
+  const [peakHoursMin, setPeakHoursMin] = useState((recipe as any).peak_hours_min?.toString() || '')
+  const [peakHoursMax, setPeakHoursMax] = useState((recipe as any).peak_hours_max?.toString() || '')
+  const [safetyHoursMax, setSafetyHoursMax] = useState(
+    (recipe as any).safety_hours_max?.toString() || ''
+  )
+  const [storageMethod, setStorageMethod] = useState<string>(
+    (recipe as any).storage_method || 'fridge'
+  )
+  const [freezable, setFreezable] = useState<boolean>((recipe as any).freezable || false)
+  const [frozenExtendsHours, setFrozenExtendsHours] = useState(
+    (recipe as any).frozen_extends_hours?.toString() || ''
+  )
+  const [peakSectionOpen, setPeakSectionOpen] = useState(
+    (recipe as any).peak_hours_min != null || (recipe as any).peak_hours_max != null
+  )
+  const [advancedOpen, setAdvancedOpen] = useState(false)
+  const categoryDefaults = getCategoryDefault(category)
 
   // Ingredients state
   const [existingIngredients, setExistingIngredients] = useState<ExistingIngredient[]>(
@@ -359,6 +382,17 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
       }
 
       await recalculateAndSaveRecipeNutrition(recipe.id).catch(() => null)
+
+      // Save peak window (non-blocking, parallel with nutrition)
+      await updateRecipePeakWindow({
+        recipeId: recipe.id,
+        peakHoursMin: peakHoursMin ? parseInt(peakHoursMin) : null,
+        peakHoursMax: peakHoursMax ? parseInt(peakHoursMax) : null,
+        safetyHoursMax: safetyHoursMax ? parseInt(safetyHoursMax) : null,
+        storageMethod,
+        freezable,
+        frozenExtendsHours: frozenExtendsHours ? parseInt(frozenExtendsHours) : null,
+      }).catch(() => null)
 
       protection.markCommitted()
       router.push(`/recipes/${recipe.id}`)
@@ -706,6 +740,158 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
               <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} />
             </div>
           </CardContent>
+        </Card>
+
+        {/* Peak Freshness */}
+        <Card>
+          <CardHeader>
+            <button
+              type="button"
+              onClick={() => setPeakSectionOpen(!peakSectionOpen)}
+              className="flex items-center justify-between w-full text-left"
+            >
+              <CardTitle className="flex items-center gap-2">
+                Peak Freshness
+                {!peakHoursMin && !peakHoursMax && (
+                  <span className="text-xs font-normal text-stone-500">
+                    (using default: {formatHoursAsReadable(categoryDefaults.peakHoursMax)})
+                  </span>
+                )}
+              </CardTitle>
+              {peakSectionOpen ? (
+                <ChevronUp className="h-4 w-4 text-stone-500" />
+              ) : (
+                <ChevronDown className="h-4 w-4 text-stone-500" />
+              )}
+            </button>
+          </CardHeader>
+          {peakSectionOpen && (
+            <CardContent className="space-y-4">
+              <p className="text-xs text-stone-500">
+                How far ahead can you make this? Set the window for optimal quality.
+              </p>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-stone-300 mb-1">
+                    Earliest (hours before service)
+                  </label>
+                  <Input
+                    type="number"
+                    value={peakHoursMax}
+                    onChange={(e) => setPeakHoursMax(e.target.value)}
+                    placeholder={categoryDefaults.peakHoursMax.toString()}
+                    min={0}
+                  />
+                  <span className="text-xs text-stone-600 mt-0.5 block">
+                    e.g. 72 = can make 3 days ahead
+                  </span>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-300 mb-1">
+                    Latest (hours before service)
+                  </label>
+                  <Input
+                    type="number"
+                    value={peakHoursMin}
+                    onChange={(e) => setPeakHoursMin(e.target.value)}
+                    placeholder={categoryDefaults.peakHoursMin.toString()}
+                    min={0}
+                  />
+                  <span className="text-xs text-stone-600 mt-0.5 block">
+                    e.g. 0 = can make day-of
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-stone-300 mb-1">Storage</label>
+                <div className="flex gap-2">
+                  {(['room_temp', 'fridge', 'freezer'] as const).map((method) => (
+                    <button
+                      key={method}
+                      type="button"
+                      onClick={() => setStorageMethod(method)}
+                      className={`px-3 py-1.5 text-sm rounded-md border transition-colors ${
+                        storageMethod === method
+                          ? 'border-brand-500 bg-brand-950 text-brand-400 font-medium'
+                          : 'border-stone-600 text-stone-400 hover:bg-stone-800'
+                      }`}
+                    >
+                      {method === 'room_temp'
+                        ? 'Room temp'
+                        : method === 'fridge'
+                          ? 'Fridge'
+                          : 'Freezer'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setFreezable(!freezable)}
+                  className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded-md border transition-colors ${
+                    freezable
+                      ? 'border-sky-500 bg-sky-950 text-sky-400'
+                      : 'border-stone-600 text-stone-400 hover:bg-stone-800'
+                  }`}
+                >
+                  <Snowflake className="h-3.5 w-3.5" />
+                  Can be frozen
+                </button>
+                {freezable && (
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm text-stone-400">adds</label>
+                    <Input
+                      type="number"
+                      value={frozenExtendsHours}
+                      onChange={(e) => setFrozenExtendsHours(e.target.value)}
+                      placeholder="hours"
+                      className="w-24"
+                      min={0}
+                    />
+                    <span className="text-sm text-stone-400">hours</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Advanced (safety) */}
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setAdvancedOpen(!advancedOpen)}
+                  className="text-xs text-stone-600 hover:text-stone-400 flex items-center gap-1"
+                >
+                  {advancedOpen ? (
+                    <ChevronUp className="h-3 w-3" />
+                  ) : (
+                    <ChevronDown className="h-3 w-3" />
+                  )}
+                  Advanced
+                </button>
+                {advancedOpen && (
+                  <div className="mt-2">
+                    <label className="block text-sm font-medium text-stone-300 mb-1">
+                      Safety ceiling (hours)
+                    </label>
+                    <Input
+                      type="number"
+                      value={safetyHoursMax}
+                      onChange={(e) => setSafetyHoursMax(e.target.value)}
+                      placeholder={categoryDefaults.safetyHoursMax.toString()}
+                      min={0}
+                      className="w-32"
+                    />
+                    <span className="text-xs text-stone-600 mt-0.5 block">
+                      Hard limit. System won't schedule prep earlier than this.
+                    </span>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          )}
         </Card>
 
         {/* Existing Ingredients */}

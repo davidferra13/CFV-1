@@ -9,6 +9,22 @@ import { dateToDateString } from '@/lib/utils/format'
 // Advances events through the FSM based on wall-clock time:
 //   confirmed  -> in_progress : when event_date has arrived (date <= today)
 //   in_progress -> completed  : when departure_time has passed, or event_date is past
+// Also detects stuck events and creates chef_todos as nudges.
+
+// Days allowed in each state before flagged as stuck
+const STUCK_THRESHOLDS_DAYS: Record<string, number> = {
+  draft: 7,
+  proposed: 14,
+  accepted: 7,
+  paid: 7,
+}
+
+const STUCK_LABELS: Record<string, string> = {
+  draft: 'Send proposal',
+  proposed: 'Follow up with client',
+  accepted: 'Collect deposit',
+  paid: 'Confirm event',
+}
 
 const db = createAdminClient()
 
@@ -101,10 +117,58 @@ export async function GET(request: Request) {
         )
       }
 
+      // ── Stuck-event detection: create chef_todos for events stuck too long ──
+      let stuckNudges = 0
+      try {
+        const stuckStatuses = Object.keys(STUCK_THRESHOLDS_DAYS)
+        const { data: stuckCandidates } = await db
+          .from('events')
+          .select('id, tenant_id, occasion, status, updated_at')
+          .in('status', stuckStatuses)
+          .order('updated_at', { ascending: true })
+          .limit(200)
+
+        const nowMs = Date.now()
+        for (const row of stuckCandidates ?? []) {
+          const ev = row as any
+          const threshold = STUCK_THRESHOLDS_DAYS[ev.status]
+          if (!threshold) continue
+          const daysStuck = Math.floor((nowMs - new Date(ev.updated_at).getTime()) / 86400000)
+          if (daysStuck < threshold) continue
+
+          // Check if todo already exists for this event (dedup by event id in text)
+          const { data: existing } = await db
+            .from('chef_todos')
+            .select('id')
+            .eq('chef_id', ev.tenant_id)
+            .ilike('text', `%${ev.id}%`)
+            .eq('completed', false)
+            .limit(1)
+
+          if (existing && existing.length > 0) continue
+
+          const label = STUCK_LABELS[ev.status] || 'Take action'
+          const occasion = ev.occasion || 'Untitled event'
+          const todoText = `${label}: "${occasion}" has been in ${ev.status} for ${daysStuck} days → /events/${ev.id}`
+
+          await db.from('chef_todos').insert({
+            chef_id: ev.tenant_id,
+            text: todoText,
+            completed: false,
+            created_by: 'system',
+            sort_order: 0,
+          })
+          stuckNudges++
+        }
+      } catch (stuckErr) {
+        console.error('[event-progression] Stuck-event scan failed (non-blocking):', stuckErr)
+      }
+
       return {
         started,
         completed,
         failed,
+        stuckNudges,
         durationMs: Date.now() - start,
       }
     })

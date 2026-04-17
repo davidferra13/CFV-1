@@ -9,8 +9,12 @@ import { useState, useEffect, useTransition } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { autoSuggestEventBlocks, getEventPrepBlocks } from '@/lib/scheduling/prep-block-actions'
-import type { PrepBlockSuggestion, PrepBlock } from '@/lib/scheduling/types'
+import {
+  autoSuggestEventBlocks,
+  getEventPrepBlocks,
+  createPrepBlock,
+} from '@/lib/scheduling/prep-block-actions'
+import type { PrepBlockSuggestion, PrepBlock, PrepBlockType } from '@/lib/scheduling/types'
 
 type PrepPlanPanelProps = {
   eventId: string
@@ -358,6 +362,150 @@ export function PrepPlanPanel({ eventId, eventDate, eventStatus, hasMenu }: Prep
           </Button>
         </div>
       )}
+
+      {/* Add custom prep task */}
+      <AddPrepTaskInline eventId={eventId} eventDate={eventDate} onAdded={loadPrepPlan} />
     </Card>
+  )
+}
+
+// ── Inline Add Task Form ──────────────────────────────────────────────────────
+
+function AddPrepTaskInline({
+  eventId,
+  eventDate,
+  onAdded,
+}: {
+  eventId: string
+  eventDate: string
+  onAdded: () => void
+}) {
+  const [open, setOpen] = useState(false)
+  const [title, setTitle] = useState('')
+  const [blockType, setBlockType] = useState<PrepBlockType>('custom')
+  const [daysOffset, setDaysOffset] = useState('-1')
+  const [duration, setDuration] = useState('30')
+  const [notes, setNotes] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  function computeDate(offset: number): string {
+    const [y, m, d] = eventDate.split('-').map(Number)
+    const date = new Date(y, m - 1, d + offset)
+    return [
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, '0'),
+      String(date.getDate()).padStart(2, '0'),
+    ].join('-')
+  }
+
+  async function handleAdd() {
+    if (!title.trim()) {
+      setError('Task name required')
+      return
+    }
+    setSaving(true)
+    setError(null)
+    try {
+      await createPrepBlock({
+        event_id: eventId,
+        block_date: computeDate(parseInt(daysOffset)),
+        block_type: blockType,
+        title: title.trim(),
+        notes: notes.trim() || null,
+        estimated_duration_minutes: parseInt(duration) || 30,
+        is_system_generated: false,
+      })
+      setTitle('')
+      setNotes('')
+      setOpen(false)
+      onAdded()
+    } catch (err) {
+      setError((err as Error).message || 'Failed to add task')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (!open) {
+    return (
+      <div className="mt-4 pt-3 border-t border-stone-800">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="text-sm text-stone-500 hover:text-brand-400 flex items-center gap-1.5"
+        >
+          <span className="text-lg leading-none">+</span> Add custom task
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mt-4 pt-3 border-t border-stone-800 space-y-3">
+      <p className="text-sm font-medium text-stone-300">Add prep task</p>
+      <input
+        type="text"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="e.g., Prep lobster stock, Pick up wine"
+        className="w-full px-3 py-1.5 text-sm border border-stone-700 rounded bg-stone-800 text-stone-100 placeholder-stone-500"
+        autoFocus
+      />
+      <div className="flex gap-2">
+        <select
+          value={blockType}
+          onChange={(e) => setBlockType(e.target.value as PrepBlockType)}
+          title="Task type"
+          className="flex-1 px-2 py-1.5 text-sm border border-stone-700 rounded bg-stone-800 text-stone-100"
+        >
+          <option value="custom">Custom</option>
+          <option value="prep_session">Prep Session</option>
+          <option value="grocery_run">Grocery Run</option>
+          <option value="specialty_sourcing">Specialty Sourcing</option>
+          <option value="packing">Packing</option>
+          <option value="equipment_prep">Equipment Prep</option>
+          <option value="admin">Admin</option>
+          <option value="cleanup">Cleanup</option>
+        </select>
+        <select
+          value={daysOffset}
+          onChange={(e) => setDaysOffset(e.target.value)}
+          title="When"
+          className="w-32 px-2 py-1.5 text-sm border border-stone-700 rounded bg-stone-800 text-stone-100"
+        >
+          <option value="-3">3 days before</option>
+          <option value="-2">2 days before</option>
+          <option value="-1">Day before</option>
+          <option value="0">Event day</option>
+        </select>
+        <input
+          type="number"
+          value={duration}
+          onChange={(e) => setDuration(e.target.value)}
+          min="5"
+          step="5"
+          className="w-20 px-2 py-1.5 text-sm border border-stone-700 rounded bg-stone-800 text-stone-100"
+          title="Duration (minutes)"
+        />
+        <span className="text-xs text-stone-500 self-center">min</span>
+      </div>
+      <textarea
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        placeholder="Notes (optional)"
+        rows={2}
+        className="w-full px-3 py-1.5 text-sm border border-stone-700 rounded bg-stone-800 text-stone-100 placeholder-stone-500 resize-none"
+      />
+      {error && <p className="text-xs text-red-400">{error}</p>}
+      <div className="flex gap-2">
+        <Button size="sm" onClick={handleAdd} disabled={saving}>
+          {saving ? 'Adding...' : 'Add'}
+        </Button>
+        <Button size="sm" variant="ghost" onClick={() => setOpen(false)} disabled={saving}>
+          Cancel
+        </Button>
+      </div>
+    </div>
   )
 }

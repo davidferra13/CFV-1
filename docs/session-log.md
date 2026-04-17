@@ -802,3 +802,13 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: d12e2090b
 - Build state on departure: tsc has 6 pre-existing errors (none from this session)
 - Notes: Scorecard 43/57 Working, 12 Partial, 2 Missing, 0 Broken (75%). 4 fixes shipped. 12 Partial items documented in spec Gap Inventory with severity ranking. Highest remaining: Q9 (contract merge fields), Q28 (guest dietary -> menu editor). Session digest written.
+
+## 2026-04-17 (tsc sweep)
+
+- Agent: Builder (Opus)
+- Task: Fix all 17 tsc errors to reach 0-error build state
+- Status: completed
+- Files touched: components/ui/icons.ts, lib/events/transitions.ts, lib/hub/integration-actions.ts, lib/hub/message-actions.ts, lib/prep-timeline/actions.ts, app/(chef)/events/[id]/\_components/event-detail-prep-tab.tsx
+- Commits: 7fbb222c3
+- Build state on departure: green (tsc 0 errors)
+- Notes: 6 files fixed. Icon imports, log types, redeclared vars, optional params, wrong DB API, icon props. Session digest written.

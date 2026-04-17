@@ -150,9 +150,7 @@ export async function getEventPrepTimeline(eventId: string): Promise<{
     // Get all components for these dishes
     const { data: components } = await db
       .from('components')
-      .select(
-        'id, name, dish_id, recipe_id, is_make_ahead, make_ahead_window_hours, sort_order'
-      )
+      .select('id, name, dish_id, recipe_id, is_make_ahead, make_ahead_window_hours, sort_order')
       .in('dish_id', dishIds)
       .order('sort_order', { ascending: true })
 
@@ -162,9 +160,7 @@ export async function getEventPrepTimeline(eventId: string): Promise<{
 
     // Get linked recipes
     const recipeIds = [
-      ...new Set(
-        components.filter((c: any) => c.recipe_id).map((c: any) => c.recipe_id)
-      ),
+      ...new Set(components.filter((c: any) => c.recipe_id).map((c: any) => c.recipe_id)),
     ]
 
     let recipes: any[] = []
@@ -189,10 +185,9 @@ export async function getEventPrepTimeline(eventId: string): Promise<{
         .select('recipe_id, ingredient_id')
         .in('recipe_id', recipeIds)
 
-      if (riData && riData.length > 0) {
-        const ingredientIds = [
-          ...new Set(riData.map((ri: any) => ri.ingredient_id)),
-        ]
+      const riArr = riData as any[]
+      if (riArr && riArr.length > 0) {
+        const ingredientIds = [...new Set(riArr.map((ri: any) => ri.ingredient_id))]
         const { data: ingredients } = await db
           .from('ingredients')
           .select('id, allergen_flags')
@@ -200,9 +195,9 @@ export async function getEventPrepTimeline(eventId: string): Promise<{
 
         if (ingredients) {
           const ingMap = new Map(
-            ingredients.map((i: any) => [i.id, i.allergen_flags ?? []])
+            (ingredients as any[]).map((i: any) => [i.id, i.allergen_flags ?? []])
           )
-          for (const ri of riData) {
+          for (const ri of riArr) {
             const flags = ingMap.get(ri.ingredient_id) ?? []
             if (flags.length > 0) {
               const existing = allergenMap[ri.recipe_id] ?? []
@@ -215,8 +210,8 @@ export async function getEventPrepTimeline(eventId: string): Promise<{
 
     // Build timeline items
     const timelineItems: TimelineRecipeInput[] = components.map((comp: any) => {
-      const recipe = comp.recipe_id ? recipeMap.get(comp.recipe_id) : null
-      const dish = dishMap.get(comp.dish_id)
+      const recipe: any = comp.recipe_id ? recipeMap.get(comp.recipe_id) : null
+      const dish: any = dishMap.get(comp.dish_id)
 
       return {
         recipeId: recipe?.id ?? comp.id,

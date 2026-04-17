@@ -27,6 +27,7 @@ import {
 } from '@/lib/chef/layout-data-cache'
 import { TestAccountBanner } from '@/components/dev/test-account-banner'
 import { CommandPalette } from '@/components/search/command-palette'
+import { SymbolKeyTrigger } from '@/components/ui/symbol-key'
 import { NavigationPendingProvider } from '@/components/navigation/navigation-pending-provider'
 import { AppContextProvider } from '@/lib/context/app-context'
 import { PermissionProvider } from '@/lib/context/permission-context'
@@ -200,6 +201,11 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                       />
                       {children}
                     </ChefMainContent>
+
+                    {/* Global symbol key - accessible from every page */}
+                    <div className="fixed bottom-4 left-4 z-40 hidden md:block">
+                      <SymbolKeyTrigger />
+                    </div>
 
                     {/* Feedback nudge - slide-in card, idle-detected, queued behind onboarding */}
                     <FeedbackNudgeCard daysSinceCreation={daysSinceCreation} />
