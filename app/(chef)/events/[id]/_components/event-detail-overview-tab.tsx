@@ -41,7 +41,7 @@ type EventDetailOverviewTabProps = {
   activeShare: any
   shortShareUrl: string | null
   fullShareUrl: string | null
-  eventMenus: string | false | null
+  eventMenus: string[] | null
   hubGroupToken: string | null
   guestList: any[]
   rsvpSummary: any
@@ -88,14 +88,30 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
             <div>
               <dt className="text-sm font-medium text-stone-500">Location</dt>
               <dd className="text-sm text-stone-100 mt-1">
-                {[
-                  event.location_address,
-                  event.location_city,
-                  event.location_state,
-                  event.location_zip,
-                ]
-                  .filter(Boolean)
-                  .join(', ') || 'Not set'}
+                {(() => {
+                  const parts = [
+                    event.location_address,
+                    event.location_city,
+                    event.location_state,
+                    event.location_zip,
+                  ].filter((v) => v && v !== 'TBD')
+                  if (parts.length === 0) {
+                    return (
+                      <span className="text-amber-400 font-medium">
+                        TBD
+                        {event.status === 'draft' && (
+                          <Link
+                            href={`/events/${event.id}/edit`}
+                            className="ml-2 text-xs text-brand-500 hover:underline font-normal"
+                          >
+                            Set location
+                          </Link>
+                        )}
+                      </span>
+                    )
+                  }
+                  return parts.join(', ')
+                })()}
               </dd>
               {(event as any).location_lat && (event as any).location_lng ? (
                 <div className="mt-2 space-y-2">
@@ -164,8 +180,42 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
               </div>
             )}
             <div>
+              <dt className="text-sm font-medium text-stone-500">Serve Time</dt>
+              <dd className="text-sm text-stone-100 mt-1">
+                {event.serve_time ? (
+                  event.serve_time
+                ) : (
+                  <span className="text-amber-400 font-medium">
+                    TBD
+                    {event.status === 'draft' && (
+                      <Link
+                        href={`/events/${event.id}/edit`}
+                        className="ml-2 text-xs text-brand-500 hover:underline font-normal"
+                      >
+                        Set time
+                      </Link>
+                    )}
+                  </span>
+                )}
+              </dd>
+            </div>
+            <div>
               <dt className="text-sm font-medium text-stone-500">Number of Guests</dt>
-              <dd className="text-sm text-stone-100 mt-1">{event.guest_count}</dd>
+              <dd className="text-sm text-stone-100 mt-1">
+                {event.guest_count <= 1 && event.status === 'draft' ? (
+                  <span className="text-amber-400 font-medium">
+                    TBD
+                    <Link
+                      href={`/events/${event.id}/edit`}
+                      className="ml-2 text-xs text-brand-500 hover:underline font-normal"
+                    >
+                      Set count
+                    </Link>
+                  </span>
+                ) : (
+                  event.guest_count
+                )}
+              </dd>
             </div>
             {event.special_requests && (
               <div>

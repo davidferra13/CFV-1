@@ -55,7 +55,7 @@ type EventDetailOpsTabProps = {
   closureStatus: any
   aar: any
   eventPhotos: any[]
-  eventMenus: string | false | null
+  eventMenus: string[] | null
   unrecordedComponents: any[]
   aiConfigured: boolean
   hasAllergyData: boolean

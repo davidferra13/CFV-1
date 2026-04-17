@@ -29,7 +29,7 @@ type EventDetailMoneyTabProps = {
   activeTab: EventDetailTab
   event: any
   menuLibraryData: any
-  eventMenus: string | false | null
+  eventMenus: string[] | null
   menuApprovalData: any
   totalPaid: number
   outstandingBalance: number
@@ -99,10 +99,10 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">Menu Approval</h2>
-            {typeof eventMenus === 'string' && (
-              <Link href={`/menus/${eventMenus}/editor`}>
+            {eventMenus && eventMenus.length > 0 && (
+              <Link href={`/menus/${eventMenus[0]}/editor`}>
                 <Button variant="secondary" size="sm">
-                  Edit Menu
+                  {eventMenus.length > 1 ? `Edit Menus (${eventMenus.length})` : 'Edit Menu'}
                 </Button>
               </Link>
             )}

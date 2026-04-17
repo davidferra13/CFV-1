@@ -219,12 +219,13 @@ async function getEventTransitions(eventId: string) {
   return transitions || []
 }
 
-async function getEventMenusForCheck(eventId: string): Promise<string | false> {
+async function getEventMenusForCheck(eventId: string): Promise<string[] | null> {
   const db: any = createServerClient()
 
-  const { data: menus } = await db.from('menus').select('id').eq('event_id', eventId).limit(1)
+  const { data: menus } = await db.from('menus').select('id, name').eq('event_id', eventId)
 
-  return menus && menus.length > 0 ? menus[0].id : false
+  if (!menus || menus.length === 0) return null
+  return menus.map((m: any) => m.id)
 }
 
 /**
@@ -268,6 +269,7 @@ export default async function EventDetailPage({
   const activeTab = (searchParams?.tab ?? 'overview') as
     | 'overview'
     | 'money'
+    | 'prep'
     | 'tickets'
     | 'ops'
     | 'wrap'
@@ -507,12 +509,17 @@ export default async function EventDetailPage({
     getEventTicketSummary(params.id).catch(() => null),
   ])
 
+  // Prep timeline
+  const { timeline: prepTimeline } = await getEventPrepTimeline(params.id).catch(() => ({
+    timeline: null,
+  }))
+
   // Cost forecast for future events with menus
   let costForecast: CostForecast | null = null
-  if (eventMenus && typeof eventMenus === 'string' && event.event_date) {
+  if (eventMenus && eventMenus.length > 0 && event.event_date) {
     const eventDay = new Date(event.event_date)
     if (eventDay > new Date()) {
-      costForecast = await forecastMenuCost(eventMenus, event.event_date).catch(() => null)
+      costForecast = await forecastMenuCost(eventMenus[0], event.event_date).catch(() => null)
     }
   }
 
@@ -598,7 +605,12 @@ export default async function EventDetailPage({
             <EventRiskBadge result={eventRisk} />
           </div>
           <p className="text-stone-300 mt-1">
-            {format(new Date(event.event_date), "EEEE, MMMM d, yyyy 'at' h:mm a")}
+            {format(new Date(event.event_date), 'EEEE, MMMM d, yyyy')}
+            {(event as any).serve_time ? (
+              <> at {(event as any).serve_time}</>
+            ) : (
+              <span className="ml-1 text-amber-400 font-medium text-sm">(time TBD)</span>
+            )}
             {(event as any).event_timezone && (
               <span className="ml-2 text-xs text-stone-300 font-normal">
                 {(event as any).event_timezone.replace('America/', '').replace('_', ' ')}
@@ -854,7 +866,7 @@ export default async function EventDetailPage({
         activeShare={activeShare}
         shortShareUrl={shortShareUrl}
         fullShareUrl={fullShareUrl}
-        eventMenus={eventMenus}
+        eventMenus={eventMenus as any}
         hubGroupToken={hubGroupToken as string | null}
         guestList={guestList as any[]}
         rsvpSummary={rsvpSummary as any}
@@ -872,7 +884,7 @@ export default async function EventDetailPage({
         activeTab={activeTab}
         event={event}
         menuLibraryData={menuLibraryData}
-        eventMenus={eventMenus}
+        eventMenus={eventMenus as any}
         menuApprovalData={menuApprovalData}
         totalPaid={totalPaid}
         outstandingBalance={outstandingBalance}
@@ -890,6 +902,15 @@ export default async function EventDetailPage({
         menuCostSummary={menuCostSummary}
         chefArchetype={chefArchetype}
         ledgerEntries={ledgerEntries as any[]}
+      />
+
+      {/* TAB: PREP - Peak window prep timeline         */}
+      {/* ============================================ */}
+      <EventDetailPrepTab
+        activeTab={activeTab}
+        timeline={prepTimeline}
+        eventId={event.id}
+        hasMenu={!!eventMenus}
       />
 
       {/* TAB: TICKETS - Ticket sales and management   */}
@@ -932,7 +953,7 @@ export default async function EventDetailPage({
         closureStatus={closureStatus}
         aar={aar}
         eventPhotos={eventPhotos}
-        eventMenus={eventMenus}
+        eventMenus={eventMenus as any}
         unrecordedComponents={unrecordedComponents}
         aiConfigured={aiConfigured}
         hasAllergyData={eventHasAllergyData as boolean}

@@ -4,7 +4,7 @@
 > Each question targets real code, real flows, real gaps.
 > Organized by lifecycle phase. Each question must be answerable with evidence from the running app.
 >
-> **Scored: 2026-04-17** | **51 PASS, 8 PARTIAL, 1 FAIL**
+> **Scored: 2026-04-17** | **52 PASS, 7 PARTIAL, 1 FAIL**
 
 ---
 
@@ -301,13 +301,13 @@ This is not a feature wishlist. Every question maps to something a real chef wou
 
 ### Phase 9: Scale and Multi-Event Management
 
-| Q#  | Question                    | Verdict     | Evidence                                                                          |
-| --- | --------------------------- | ----------- | --------------------------------------------------------------------------------- |
-| Q46 | Concurrent event management | **PASS**    | Kanban board, week planner, dashboard schedule cards. Multiple surfaces           |
-| Q47 | Staff assignment to events  | **PASS**    | Full assignment, conflict detection, hours tracking. Pro-gated                    |
-| Q48 | Equipment tracking + events | **PASS**    | Standalone inventory + event-linked rentals + per-event equipment checklists      |
-| Q49 | Multi-menu events           | **PARTIAL** | DB supports 1-to-many, but event detail UI treats it as single-menu (`.limit(1)`) |
-| Q50 | Seasonal pricing            | **FAIL**    | Zero seasonal logic in price resolution. No month/season/event-date awareness     |
+| Q#  | Question                    | Verdict  | Evidence                                                                                                               |
+| --- | --------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Q46 | Concurrent event management | **PASS** | Kanban board, week planner, dashboard schedule cards. Multiple surfaces                                                |
+| Q47 | Staff assignment to events  | **PASS** | Full assignment, conflict detection, hours tracking. Pro-gated                                                         |
+| Q48 | Equipment tracking + events | **PASS** | Standalone inventory + event-linked rentals + per-event equipment checklists                                           |
+| Q49 | Multi-menu events           | **PASS** | `.limit(1)` removed. `getEventMenusForCheck` returns all menu IDs as array. UI shows menu count when multiple attached |
+| Q50 | Seasonal pricing            | **FAIL** | Zero seasonal logic in price resolution. No month/season/event-date awareness                                          |
 
 ### Phase 10: System Resilience
 
@@ -362,8 +362,7 @@ This is not a feature wishlist. Every question maps to something a real chef wou
 
 **Low impact (polish):**
 
-| Q#      | Issue                                                | Fix                                            |
-| ------- | ---------------------------------------------------- | ---------------------------------------------- |
-| **Q49** | Multi-menu events: DB supports it, UI doesn't        | Allow multiple menu attachment in event detail |
-| **Q51** | PWA disabled, offline = fallback page                | Enable PWA build, cache critical routes        |
-| **Q55** | No system-wide conflict resolution beyond event form | Extend CAS pattern to other forms              |
+| Q#      | Issue                                                | Fix                                     |
+| ------- | ---------------------------------------------------- | --------------------------------------- |
+| **Q51** | PWA disabled, offline = fallback page                | Enable PWA build, cache critical routes |
+| **Q55** | No system-wide conflict resolution beyond event form | Extend CAS pattern to other forms       |
