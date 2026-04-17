@@ -2255,15 +2255,40 @@ body {
         <!-- ── One-Click Pipelines ── -->
         <div class="home-section-title">&#x1F680; One-Click Pipelines</div>
         <div class="mega-grid">
-          <button class="mega-btn ship-it" id="mega-ship-it" onclick="megaShipIt()" title="Saves all your changes, backs them up to GitHub, and updates the beta website — all in one click">
+          <button class="mega-btn ship-it" id="mega-ship-it" onclick="megaShipIt()" title="Stage all changes, commit with auto-message, push to GitHub">
             <span class="mega-icon">&#x1F680;</span>
             <span class="mega-label">Ship It</span>
-            <span class="mega-desc">Save changes → Back up to GitHub → Update beta website</span>
+            <span class="mega-desc">Save changes &#x2192; Commit &#x2192; Push to GitHub</span>
           </button>
-          <button class="mega-btn close-out" id="mega-close-out" onclick="megaCloseOut()" title="Checks code for errors, builds the app, saves changes, and backs up to GitHub">
+          <button class="mega-btn close-out" id="mega-close-out" onclick="megaCloseOut()" title="Typecheck + build + commit + push. Full pre-merge pipeline.">
             <span class="mega-icon">&#x2705;</span>
             <span class="mega-label">Close Out Feature</span>
-            <span class="mega-desc">Check for errors → Build app → Save → Back up to GitHub</span>
+            <span class="mega-desc">Typecheck &#x2192; Build &#x2192; Commit &#x2192; Push</span>
+          </button>
+        </div>
+
+        <!-- ── Token Savers (free - no AI tokens used) ── -->
+        <div class="home-section-title">&#x1F4B0; Token Savers (runs FREE, no AI cost)</div>
+        <div class="mega-grid">
+          <button class="mega-btn" id="mega-compliance" onclick="megaAction('scan/compliance')" title="Em dash + OpenClaw + @ts-nocheck + server action scan. Zero tokens.">
+            <span class="mega-icon">&#x1F6E1;&#xFE0F;</span>
+            <span class="mega-label">Compliance Scan</span>
+            <span class="mega-desc">Em dashes, OpenClaw leaks, @ts-nocheck exports</span>
+          </button>
+          <button class="mega-btn" id="mega-hallu-scan" onclick="megaAction('scan/hallucination')" title="7-pattern scan: optimistic updates, silent failures, no-ops, stale cache. Zero tokens.">
+            <span class="mega-icon">&#x1F441;&#xFE0F;</span>
+            <span class="mega-label">Hallucination Scan</span>
+            <span class="mega-desc">Fake success, silent failures, stale cache, no-ops</span>
+          </button>
+          <button class="mega-btn" id="mega-briefing" onclick="megaAction('session/briefing')" title="Compress 6 startup files into one 500-word briefing. Saves ~15K tokens per session.">
+            <span class="mega-icon">&#x1F4CB;</span>
+            <span class="mega-label">Session Briefing</span>
+            <span class="mega-desc">Generate compressed startup context (saves ~15K tokens)</span>
+          </button>
+          <button class="mega-btn" id="mega-session-close" onclick="megaAction('session/close')" title="Generate session digest + log template from git. Only judgment parts need filling.">
+            <span class="mega-icon">&#x1F4DD;</span>
+            <span class="mega-label">Session Close-Out</span>
+            <span class="mega-desc">Auto-generate digest template from git history</span>
           </button>
         </div>
 
@@ -2277,25 +2302,25 @@ body {
           </button>
           <button class="mega-btn" id="mega-push" onclick="megaAction('git/push')" title="Sends saved changes to GitHub for safe backup">
             <span class="mega-icon">&#x2601;&#xFE0F;</span>
-            <span class="mega-label">Back Up to GitHub</span>
+            <span class="mega-label">Push to GitHub</span>
             <span class="mega-desc">Push current branch to GitHub (free, safe)</span>
-          </button>
-          <button class="mega-btn" id="mega-deploy" onclick="confirmAction('deploy')" title="Updates the beta preview website (takes 8-10 min)">
-            <span class="mega-icon">&#x1F4E1;</span>
-            <span class="mega-label">Deploy to Beta</span>
-            <span class="mega-desc">Build and push to beta.cheflowhq.com</span>
           </button>
           <button class="mega-btn" id="mega-typecheck" onclick="megaAction('build/typecheck')" title="Quick check for code errors without building">
             <span class="mega-icon">&#x1F50D;</span>
             <span class="mega-label">Check for Errors</span>
             <span class="mega-desc">Run TypeScript type check (fast)</span>
           </button>
+          <button class="mega-btn" id="mega-health-check" onclick="megaAction('health/check')" title="Run typecheck + build without committing. See if code is ready to merge.">
+            <span class="mega-icon">&#x1F3E5;</span>
+            <span class="mega-label">Health Check</span>
+            <span class="mega-desc">Typecheck + build (no commit). Merge ready?</span>
+          </button>
         </div>
 
         <!-- ── Maintenance ── -->
         <div class="home-section-title">&#x1F9F9; Maintenance</div>
         <div class="mega-grid">
-          <button class="mega-btn" id="mega-clear-cache" onclick="megaAction('cache/clear')" title="Clears old build files — fixes most weird build errors">
+          <button class="mega-btn" id="mega-clear-cache" onclick="megaAction('cache/clear')" title="Clears old build files. Fixes most weird build errors.">
             <span class="mega-icon">&#x1F5D1;&#xFE0F;</span>
             <span class="mega-label">Clear Build Cache</span>
             <span class="mega-desc">Delete .next/ folder to fix build errors</span>
@@ -2305,10 +2330,10 @@ body {
             <span class="mega-label">Install Dependencies</span>
             <span class="mega-desc">Run npm install to update packages</span>
           </button>
-          <button class="mega-btn" id="mega-gen-types" onclick="megaAction('db/gen-types')" title="Regenerate TypeScript types from the database schema">
+          <button class="mega-btn" id="mega-gen-types" onclick="megaAction('db/gen-types')" title="Regenerate TypeScript types from the local PostgreSQL database schema">
             <span class="mega-icon">&#x1F4CA;</span>
             <span class="mega-label">Update DB Types</span>
-            <span class="mega-desc">Regenerate types/database.ts from Supabase</span>
+            <span class="mega-desc">Regenerate types/database.ts from local PostgreSQL</span>
           </button>
           <button class="mega-btn" id="mega-db-backup" onclick="megaAction('db/backup')" title="Download a backup of the entire database">
             <span class="mega-icon">&#x1F4BE;</span>
@@ -2320,32 +2345,32 @@ body {
         <!-- ── Testing & QA ── -->
         <div class="home-section-title">&#x1F9EA; Testing &amp; QA</div>
         <div class="mega-grid">
-          <button class="mega-btn" id="mega-soak-quick" onclick="megaAction('test/soak-quick')" title="Run 10 memory leak iterations — catches leaks fast (~2-3 min including build)">
-            <span class="mega-icon">&#x1F4A7;</span>
-            <span class="mega-label">Quick Soak Test</span>
-            <span class="mega-desc">Check for memory leaks (10 iterations)</span>
-          </button>
-          <button class="mega-btn" id="mega-soak-full" onclick="megaAction('test/soak-full')" title="Run 100 memory leak iterations — full pre-merge confidence (~15 min)">
-            <span class="mega-icon">&#x1F30A;</span>
-            <span class="mega-label">Full Soak Test</span>
-            <span class="mega-desc">Thorough memory leak check (100 iterations)</span>
-          </button>
-          <button class="mega-btn" id="mega-e2e-smoke" onclick="megaActionWithBody('test/e2e', {project:'smoke'})" title="Quick smoke test — checks key pages load correctly">
+          <button class="mega-btn" id="mega-e2e-smoke" onclick="megaActionWithBody('test/e2e', {project:'smoke'})" title="Quick smoke test. Checks key pages load correctly.">
             <span class="mega-icon">&#x1F6A8;</span>
             <span class="mega-label">Smoke Test</span>
             <span class="mega-desc">Run quick E2E smoke tests</span>
           </button>
-          <button class="mega-btn" id="mega-health-check" onclick="megaAction('health/check')" title="Run typecheck + build without committing — see if code is ready to merge">
-            <span class="mega-icon">&#x1F3E5;</span>
-            <span class="mega-label">Health Check</span>
-            <span class="mega-desc">Typecheck + build (no commit) — merge ready?</span>
+          <button class="mega-btn" id="mega-soak-quick" onclick="megaAction('test/soak-quick')" title="Run 10 memory leak iterations. Catches leaks fast (~2-3 min).">
+            <span class="mega-icon">&#x1F4A7;</span>
+            <span class="mega-label">Quick Soak Test</span>
+            <span class="mega-desc">Check for memory leaks (10 iterations)</span>
+          </button>
+          <button class="mega-btn" id="mega-soak-full" onclick="megaAction('test/soak-full')" title="Run 100 memory leak iterations. Full pre-merge confidence (~15 min).">
+            <span class="mega-icon">&#x1F30A;</span>
+            <span class="mega-label">Full Soak Test</span>
+            <span class="mega-desc">Thorough memory leak check (100 iterations)</span>
+          </button>
+          <button class="mega-btn" id="mega-test-report" onclick="openUrl('http://localhost:9323')" title="Opens the Playwright HTML test report in your browser">
+            <span class="mega-icon">&#x1F4CA;</span>
+            <span class="mega-label">View Test Report</span>
+            <span class="mega-desc">Open last Playwright test report</span>
           </button>
         </div>
 
-        <!-- ── Demo & Setup ── -->
-        <div class="home-section-title">&#x1F4CB; Demo &amp; Setup</div>
+        <!-- ── Setup & Data ── -->
+        <div class="home-section-title">&#x1F4CB; Setup &amp; Data</div>
         <div class="mega-grid">
-          <button class="mega-btn" id="mega-demo-reset" onclick="megaAction('demo/reset')" title="Clears all demo data and reloads fresh — good for testing from a clean state">
+          <button class="mega-btn" id="mega-demo-reset" onclick="megaAction('demo/reset')" title="Clears all demo data and reloads fresh. Good for testing from clean state.">
             <span class="mega-icon">&#x1F504;</span>
             <span class="mega-label">Reset Demo Data</span>
             <span class="mega-desc">Clear old demo data and load fresh</span>
@@ -2359,11 +2384,6 @@ body {
             <span class="mega-icon">&#x1F4C4;</span>
             <span class="mega-label">List Migrations</span>
             <span class="mega-desc">View all DB migrations &amp; latest timestamp</span>
-          </button>
-          <button class="mega-btn" id="mega-test-report" onclick="openUrl('http://localhost:9323')" title="Opens the Playwright HTML test report in your browser">
-            <span class="mega-icon">&#x1F4CA;</span>
-            <span class="mega-label">View Test Report</span>
-            <span class="mega-desc">Open last Playwright test report</span>
           </button>
         </div>
 
@@ -2386,17 +2406,16 @@ body {
         <!-- ── Quick Links ── -->
         <div class="home-section-title">&#x1F517; Open In Browser</div>
         <div class="quick-links">
-          <button class="quick-link" onclick="openUrl('http://localhost:3100')">&#x1F4BB; Dev App</button>
-          <button class="quick-link" onclick="openUrl('http://localhost:3100/dashboard')">&#x1F4CA; Dashboard</button>
-          <button class="quick-link" onclick="openUrl('http://localhost:3100/events')">&#x1F4C5; Events</button>
-          <button class="quick-link" onclick="openUrl('http://localhost:3100/clients')">&#x1F465; Clients</button>
-          <button class="quick-link" onclick="openUrl('http://localhost:3100/recipes')">&#x1F373; Recipes</button>
-          <button class="quick-link" onclick="openUrl('http://localhost:3100/settings')">&#x2699;&#xFE0F; Settings</button>
-          <button class="quick-link" onclick="openUrl('https://beta.cheflowhq.com')">&#x1F310; Beta Site</button>
-          <button class="quick-link" onclick="openUrl('https://cheflowhq.com')">&#x1F680; Production</button>
-          <button class="quick-link" onclick="openUrl('https://vercel.com/dashboard')">&#x25B2; Vercel</button>
-          <button class="quick-link" onclick="openUrl('https://supabase.com/dashboard')">&#x1F4BE; Supabase</button>
-          <button class="quick-link" onclick="openUrl('https://github.com')">&#x1F4E6; GitHub</button>
+          <button class="quick-link" onclick="openUrl('https://app.cheflowhq.com')">&#x1F680; Live App</button>
+          <button class="quick-link" onclick="openUrl('https://app.cheflowhq.com/dashboard')">&#x1F4CA; Dashboard</button>
+          <button class="quick-link" onclick="openUrl('https://app.cheflowhq.com/events')">&#x1F4C5; Events</button>
+          <button class="quick-link" onclick="openUrl('https://app.cheflowhq.com/clients')">&#x1F465; Clients</button>
+          <button class="quick-link" onclick="openUrl('https://app.cheflowhq.com/recipes')">&#x1F373; Recipes</button>
+          <button class="quick-link" onclick="openUrl('https://app.cheflowhq.com/settings')">&#x2699;&#xFE0F; Settings</button>
+          <button class="quick-link" onclick="openUrl('http://localhost:3100')">&#x1F4BB; Dev Server</button>
+          <button class="quick-link" onclick="openUrl('https://github.com/davidferra13/CFV1')">&#x1F4E6; GitHub</button>
+          <button class="quick-link" onclick="openUrl('https://dash.cloudflare.com')">&#x2601;&#xFE0F; Cloudflare</button>
+          <button class="quick-link" onclick="openUrl('https://resend.com')">&#x1F4E7; Resend</button>
         </div>
 
         <!-- ── Prompt Queue ── -->
@@ -2499,7 +2518,7 @@ body {
       <!-- ─── Production Panel ─── -->
       <div class="panel" id="panel-prod">
         <div class="panel-header">
-          <h2 class="panel-title">Production (Vercel)</h2>
+          <h2 class="panel-title">Production (Cloudflare Tunnel)</h2>
           <span class="status-badge offline" id="badge-prod">
             <span class="dot checking"></span>
             <span>Checking...</span>

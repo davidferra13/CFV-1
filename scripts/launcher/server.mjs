@@ -2866,6 +2866,75 @@ function setupAgentAccount() {
   return { ok: true, message: 'Setting up agent test account...' }
 }
 
+// ── Token-Saving Scripts (zero-cost developer tools) ────────────
+
+async function runComplianceScan() {
+  log('scan', 'Running compliance scan...', 'info')
+  try {
+    const { stdout, stderr } = await execAsync(
+      'bash scripts/compliance-scan.sh 2>&1',
+      { cwd: PROJECT_ROOT, timeout: 30000 }
+    )
+    const output = stdout || stderr || 'No output'
+    const passed = output.includes('ALL CLEAR')
+    log('scan', passed ? 'Compliance scan: ALL CLEAR' : 'Compliance scan: VIOLATIONS FOUND', passed ? 'success' : 'error')
+    return { ok: true, passed, output }
+  } catch (err) {
+    const output = err.stdout || err.stderr || err.message
+    log('scan', 'Compliance scan: VIOLATIONS FOUND', 'error')
+    return { ok: true, passed: false, output }
+  }
+}
+
+async function runHallucinationShellScan() {
+  log('scan', 'Running hallucination scan...', 'info')
+  try {
+    const { stdout, stderr } = await execAsync(
+      'bash scripts/hallucination-scan.sh 2>&1',
+      { cwd: PROJECT_ROOT, timeout: 60000 }
+    )
+    const output = stdout || stderr || 'No output'
+    const clean = output.includes('CLEAN')
+    log('scan', clean ? 'Hallucination scan: CLEAN' : 'Hallucination scan: FINDINGS', clean ? 'success' : 'warning')
+    return { ok: true, clean, output }
+  } catch (err) {
+    return { ok: true, clean: false, output: err.stdout || err.stderr || err.message }
+  }
+}
+
+async function generateSessionBriefing() {
+  log('session', 'Generating session briefing...', 'info')
+  try {
+    const { stdout } = await execAsync(
+      'bash scripts/session-briefing.sh 2>&1',
+      { cwd: PROJECT_ROOT, timeout: 15000 }
+    )
+    // Read the generated briefing
+    const briefingPath = join(PROJECT_ROOT, 'docs', '.session-briefing.md')
+    const briefing = await readFile(briefingPath, 'utf-8')
+    log('session', 'Session briefing generated', 'success')
+    return { ok: true, output: stdout, briefing }
+  } catch (err) {
+    log('session', 'Session briefing failed', 'error')
+    return { ok: false, error: err.message }
+  }
+}
+
+async function generateSessionCloseOut() {
+  log('session', 'Generating session close-out...', 'info')
+  try {
+    const { stdout } = await execAsync(
+      'bash scripts/session-close.sh 2>&1',
+      { cwd: PROJECT_ROOT, timeout: 15000 }
+    )
+    log('session', 'Session close-out template generated', 'success')
+    return { ok: true, output: stdout }
+  } catch (err) {
+    log('session', 'Session close-out failed', 'error')
+    return { ok: false, error: err.message }
+  }
+}
+
 // ── Health Check Only (typecheck + build, no commit) ────────────
 
 async function healthCheckOnly() {
@@ -7575,6 +7644,20 @@ async function handleRequest(req, res) {
   }
   if (path === '/api/db/migrations' && method === 'GET') {
     return json(res, await listMigrations())
+  }
+
+  // ── Token-Saving Scripts (zero-cost developer tools) ─────────────
+  if (path === '/api/scan/compliance' && method === 'POST') {
+    return json(res, await runComplianceScan())
+  }
+  if (path === '/api/scan/hallucination' && method === 'POST') {
+    return json(res, await runHallucinationShellScan())
+  }
+  if (path === '/api/session/briefing' && method === 'POST') {
+    return json(res, await generateSessionBriefing())
+  }
+  if (path === '/api/session/close' && method === 'POST') {
+    return json(res, await generateSessionCloseOut())
   }
 
   // ── Infrastructure info (Pi health, ports, quick links) ──────────
