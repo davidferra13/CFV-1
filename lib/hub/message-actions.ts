@@ -7,7 +7,7 @@ import type { Json } from '@/types/database'
 // SECURITY (Q7): Verify group token matches groupId before returning data.
 // Prevents IDOR where attacker calls server action with arbitrary groupId.
 // groupToken is REQUIRED - the previous early-return on !groupToken was a bypass vulnerability.
-async function verifyGroupAccess(groupId: string, groupToken: string): Promise<void> {
+async function verifyGroupAccess(groupId: string, groupToken: string | undefined): Promise<void> {
   if (!groupToken) throw new Error('Access denied: group token required')
   const db: any = createServerClient({ admin: true })
   const { data } = await db

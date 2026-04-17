@@ -307,5 +307,5 @@ export { SpeakerHigh as Volume2 } from '@phosphor-icons/react/ssr'
 export { SpeakerX as VolumeX } from '@phosphor-icons/react/ssr'
 
 // Prep timeline icons (not in SSR barrel export, imported directly)
-export { Snowflake } from '@phosphor-icons/react/dist/ssr/Snowflake.es.js'
-export { Key } from '@phosphor-icons/react/dist/ssr/Key.es.js'
+export { Snowflake } from '@phosphor-icons/react/dist/ssr/Snowflake'
+export { Key } from '@phosphor-icons/react/dist/ssr/Key'

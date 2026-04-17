@@ -201,10 +201,7 @@ export async function transitionEvent({
             .filter((b) => b.isHardBlock)
             .map((b) => b.details || b.label)
           log.events.warn('System transition bypassed hard readiness blocks', {
-            eventId,
-            fromStatus,
-            toStatus,
-            hardBlocks: hardBlockLabels,
+            context: { eventId, fromStatus, toStatus, hardBlocks: hardBlockLabels },
           })
           readinessWarnings.push(...hardBlockLabels.map((l) => `[SYSTEM BYPASS] ${l}`))
         } else {
@@ -229,9 +226,7 @@ export async function transitionEvent({
       // so the failure is visible, but don't hard-block on temporary DB blips (Q17 fix)
       log.events.error('Readiness evaluator crashed - transition proceeding without verification', {
         error: readinessErr,
-        eventId,
-        fromStatus,
-        toStatus,
+        context: { eventId, fromStatus, toStatus },
       })
       readinessWarnings.push('Readiness check failed: gates could not be verified')
     }

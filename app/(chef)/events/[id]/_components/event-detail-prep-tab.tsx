@@ -1,0 +1,321 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { format } from 'date-fns'
+import type { EventDetailTab } from '@/components/events/event-detail-mobile-nav'
+import { EventDetailSection } from '@/components/events/event-detail-mobile-nav'
+import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import {
+  Snowflake,
+  Flame,
+  Leaf,
+  AlertTriangle,
+  Clock,
+  Check,
+  ShoppingCart,
+  ListChecks,
+  Calendar,
+} from '@/components/ui/icons'
+import { SymbolKeyTrigger } from '@/components/ui/symbol-key'
+import type {
+  PrepTimeline,
+  PrepDay,
+  PrepItem,
+  PrepSymbol,
+} from '@/lib/prep-timeline/compute-timeline'
+import { formatPrepTime } from '@/lib/prep-timeline/compute-timeline'
+
+type EventDetailPrepTabProps = {
+  activeTab: EventDetailTab
+  timeline: PrepTimeline | null
+  eventId: string
+  hasMenu: boolean
+}
+
+// localStorage key for checkbox state
+function checkKey(eventId: string, itemId: string, componentName: string) {
+  return `cf-prep-${eventId}-${itemId}-${componentName}`
+}
+
+function SymbolIcon({ symbol }: { symbol: PrepSymbol }) {
+  switch (symbol) {
+    case 'freezable':
+      return (
+        <span title="Freezable">
+          <Snowflake className="h-3.5 w-3.5 text-sky-400" />
+        </span>
+      )
+    case 'day_of':
+      return (
+        <span title="Day-of only">
+          <Flame className="h-3.5 w-3.5 text-orange-400" />
+        </span>
+      )
+    case 'fresh':
+      return (
+        <span title="Short window">
+          <Leaf className="h-3.5 w-3.5 text-emerald-400" />
+        </span>
+      )
+    case 'safety_warning':
+      return (
+        <span title="Safety note">
+          <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
+        </span>
+      )
+    default:
+      return null
+  }
+}
+
+function PrepItemRow({
+  item,
+  eventId,
+  checked,
+  onToggle,
+}: {
+  item: PrepItem
+  eventId: string
+  checked: boolean
+  onToggle: () => void
+}) {
+  return (
+    <div
+      className={`flex items-center gap-3 py-2 px-3 rounded-lg transition-colors ${
+        checked ? 'bg-stone-800/50 opacity-60' : 'hover:bg-stone-800/30'
+      }`}
+    >
+      <button
+        type="button"
+        onClick={onToggle}
+        className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+          checked ? 'bg-brand-600 border-brand-600' : 'border-stone-600 hover:border-stone-400'
+        }`}
+      >
+        {checked && <Check className="h-3 w-3 text-white" />}
+      </button>
+
+      <div className="flex-1 min-w-0">
+        <div
+          className={`text-sm font-medium ${checked ? 'line-through text-stone-500' : 'text-stone-200'}`}
+        >
+          {item.recipeName}
+        </div>
+        {item.componentName !== item.recipeName && (
+          <div className="text-xs text-stone-500">{item.dishName}</div>
+        )}
+      </div>
+
+      <div className="flex items-center gap-1.5 flex-shrink-0">
+        {item.symbols
+          .filter((s) => s !== 'allergen')
+          .map((symbol) => (
+            <SymbolIcon key={symbol} symbol={symbol} />
+          ))}
+        {item.allergenFlags.length > 0 && (
+          <div className="flex items-center gap-0.5" title={item.allergenFlags.join(', ')}>
+            {item.allergenFlags.slice(0, 3).map((flag) => (
+              <span key={flag} className="w-2 h-2 rounded-full bg-red-500" title={flag} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center gap-1 text-xs text-stone-500 flex-shrink-0">
+        <Clock className="h-3 w-3" />
+        {formatPrepTime(item.prepTimeMinutes)}
+      </div>
+    </div>
+  )
+}
+
+function DayCard({
+  day,
+  eventId,
+  checkedItems,
+  toggleItem,
+}: {
+  day: PrepDay
+  eventId: string
+  checkedItems: Set<string>
+  toggleItem: (key: string) => void
+}) {
+  const completedCount = day.items.filter((item) =>
+    checkedItems.has(checkKey(eventId, item.recipeId, item.componentName))
+  ).length
+
+  // Card style based on state
+  let borderClass = 'border-stone-700'
+  let bgClass = ''
+  if (day.isServiceDay) {
+    borderClass = 'border-brand-700'
+    bgClass = 'bg-brand-950/30'
+  } else if (day.isToday) {
+    borderClass = 'border-blue-700'
+    bgClass = 'bg-blue-950/20'
+  } else if (day.isPast) {
+    borderClass = 'border-stone-800'
+    bgClass = 'opacity-60'
+  }
+
+  const isDeadline = day.deadlineType != null
+
+  return (
+    <Card className={`${borderClass} ${bgClass} overflow-hidden`}>
+      {/* Day header */}
+      <div className={`px-4 py-3 border-b border-stone-800 ${isDeadline ? 'bg-stone-800/60' : ''}`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {day.deadlineType === 'grocery' && <ShoppingCart className="h-4 w-4 text-green-400" />}
+            {day.deadlineType === 'prep' && <ListChecks className="h-4 w-4 text-orange-400" />}
+            {day.isServiceDay && <Calendar className="h-4 w-4 text-brand-400" />}
+            <div>
+              <div className="text-sm font-medium text-stone-200">
+                {format(day.date, 'EEEE, MMM d')}
+              </div>
+              <div className="text-xs text-stone-500">
+                {day.isServiceDay ? 'Service day' : day.label}
+                {day.deadlineType === 'grocery' && ' - Grocery deadline'}
+                {day.deadlineType === 'prep' && ' - Prep deadline'}
+              </div>
+            </div>
+          </div>
+
+          {day.items.length > 0 && (
+            <div className="text-right text-xs text-stone-500">
+              {completedCount}/{day.items.length} done
+              {day.totalPrepMinutes > 0 && (
+                <span className="ml-2">{formatPrepTime(day.totalPrepMinutes)} total</span>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Items */}
+      {day.items.length > 0 ? (
+        <div className="divide-y divide-stone-800/50">
+          {day.items.map((item) => {
+            const key = checkKey(eventId, item.recipeId, item.componentName)
+            return (
+              <PrepItemRow
+                key={key}
+                item={item}
+                eventId={eventId}
+                checked={checkedItems.has(key)}
+                onToggle={() => toggleItem(key)}
+              />
+            )
+          })}
+        </div>
+      ) : (
+        day.deadlineType === 'grocery' && (
+          <div className="px-4 py-3 text-sm text-stone-500">Buy everything for this event</div>
+        )
+      )}
+    </Card>
+  )
+}
+
+export function EventDetailPrepTab({
+  activeTab,
+  timeline,
+  eventId,
+  hasMenu,
+}: EventDetailPrepTabProps) {
+  // Checkbox state persisted in localStorage
+  const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    // Load checked state from localStorage
+    const loaded = new Set<string>()
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key?.startsWith(`cf-prep-${eventId}-`) && localStorage.getItem(key) === '1') {
+        loaded.add(key)
+      }
+    }
+    setCheckedItems(loaded)
+  }, [eventId])
+
+  function toggleItem(key: string) {
+    setCheckedItems((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) {
+        next.delete(key)
+        localStorage.removeItem(key)
+      } else {
+        next.add(key)
+        localStorage.setItem(key, '1')
+      }
+      return next
+    })
+  }
+
+  return (
+    <EventDetailSection tab="prep" activeTab={activeTab}>
+      <div className="space-y-4 mt-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-stone-200">Prep Timeline</h2>
+          <SymbolKeyTrigger />
+        </div>
+
+        {/* No menu */}
+        {!hasMenu && (
+          <Card className="border-stone-700 p-6 text-center">
+            <p className="text-stone-500">Add a menu to see your prep timeline.</p>
+          </Card>
+        )}
+
+        {/* Menu but no timeline (no components) */}
+        {hasMenu && !timeline && (
+          <Card className="border-stone-700 p-6 text-center">
+            <p className="text-stone-500">
+              No components found on this menu. Add dishes and components to generate a prep
+              timeline.
+            </p>
+          </Card>
+        )}
+
+        {/* Timeline */}
+        {timeline && (
+          <div className="space-y-3">
+            {timeline.days.map((day) => (
+              <DayCard
+                key={day.date.toISOString()}
+                day={day}
+                eventId={eventId}
+                checkedItems={checkedItems}
+                toggleItem={toggleItem}
+              />
+            ))}
+
+            {/* Untimed items */}
+            {timeline.untimedItems.length > 0 && (
+              <Card className="border-stone-700 border-dashed">
+                <div className="px-4 py-3 border-b border-stone-800">
+                  <div className="text-sm font-medium text-stone-400">Not yet timed</div>
+                  <div className="text-xs text-stone-600">
+                    Set peak windows on these recipes to place them on the timeline
+                  </div>
+                </div>
+                <div className="divide-y divide-stone-800/50">
+                  {timeline.untimedItems.map((item) => (
+                    <PrepItemRow
+                      key={`${item.recipeId}-${item.componentName}`}
+                      item={item}
+                      eventId={eventId}
+                      checked={false}
+                      onToggle={() => {}}
+                    />
+                  ))}
+                </div>
+              </Card>
+            )}
+          </div>
+        )}
+      </div>
+    </EventDetailSection>
+  )
+}

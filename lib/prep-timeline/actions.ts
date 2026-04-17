@@ -2,7 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
-import { db } from '@/lib/db'
+import { createServerClient } from '@/lib/db/server'
 import {
   computePrepTimeline,
   type TimelineRecipeInput,
@@ -22,7 +22,6 @@ export async function updateRecipePeakWindow(input: {
 }): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
 
-  // Validate: peakHoursMin must be <= peakHoursMax when both are set
   if (
     input.peakHoursMin != null &&
     input.peakHoursMax != null &&
@@ -36,27 +35,20 @@ export async function updateRecipePeakWindow(input: {
   }
 
   try {
-    await db.query(
-      `UPDATE recipes SET
-        peak_hours_min = $1,
-        peak_hours_max = $2,
-        safety_hours_max = $3,
-        storage_method = $4,
-        freezable = $5,
-        frozen_extends_hours = $6,
-        updated_at = now()
-      WHERE id = $7 AND tenant_id = $8`,
-      [
-        input.peakHoursMin,
-        input.peakHoursMax,
-        input.safetyHoursMax,
-        input.storageMethod ?? 'fridge',
-        input.freezable,
-        input.frozenExtendsHours,
-        input.recipeId,
-        user.tenantId!,
-      ]
-    )
+    const db: any = createServerClient()
+    await db
+      .from('recipes')
+      .update({
+        peak_hours_min: input.peakHoursMin,
+        peak_hours_max: input.peakHoursMax,
+        safety_hours_max: input.safetyHoursMax,
+        storage_method: input.storageMethod ?? 'fridge',
+        freezable: input.freezable,
+        frozen_extends_hours: input.frozenExtendsHours,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', input.recipeId)
+      .eq('tenant_id', user.tenantId!)
 
     revalidatePath('/recipes')
     revalidatePath(`/recipes/${input.recipeId}`)
@@ -75,14 +67,19 @@ export async function bulkSetPeakWindows(
   const user = await requireChef()
 
   try {
+    const db: any = createServerClient()
     let updated = 0
     for (const u of updates) {
       if (u.peakHoursMin > u.peakHoursMax) continue
-      await db.query(
-        `UPDATE recipes SET peak_hours_min = $1, peak_hours_max = $2, updated_at = now()
-         WHERE id = $3 AND tenant_id = $4`,
-        [u.peakHoursMin, u.peakHoursMax, u.recipeId, user.tenantId!]
-      )
+      await db
+        .from('recipes')
+        .update({
+          peak_hours_min: u.peakHoursMin,
+          peak_hours_max: u.peakHoursMax,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', u.recipeId)
+        .eq('tenant_id', user.tenantId!)
       updated++
     }
     revalidatePath('/recipes')
@@ -102,94 +99,142 @@ export async function getEventPrepTimeline(eventId: string): Promise<{
   const user = await requireChef()
 
   try {
+    const db: any = createServerClient()
+
     // Get event with service date
-    const eventRows = await db.query(
-      `SELECT id, event_date, event_time, status FROM events WHERE id = $1 AND tenant_id = $2`,
-      [eventId, user.tenantId!]
-    )
-    const event = eventRows.rows?.[0] ?? eventRows[0]
+    const { data: event } = await db
+      .from('events')
+      .select('id, event_date, event_time, serve_time, status')
+      .eq('id', eventId)
+      .eq('tenant_id', user.tenantId!)
+      .single()
+
     if (!event) return { timeline: null, error: 'Event not found.' }
 
     // Build service datetime
     const eventDate = new Date(event.event_date)
-    if (event.event_time) {
-      const [h, m] = event.event_time.split(':').map(Number)
+    const timeStr = event.serve_time || event.event_time
+    if (timeStr) {
+      const [h, m] = timeStr.split(':').map(Number)
       eventDate.setHours(h, m, 0, 0)
     } else {
       eventDate.setHours(18, 0, 0, 0) // default 6pm
     }
 
-    // Get all menu components with their linked recipes
-    const componentRows = await db.query(
-      `SELECT
-        c.id AS component_id,
-        c.name AS component_name,
-        c.is_make_ahead,
-        c.make_ahead_window_hours,
-        c.recipe_id,
-        d.course_name AS dish_name,
-        d.course_name,
-        r.id AS recipe_id,
-        r.name AS recipe_name,
-        r.category AS recipe_category,
-        r.peak_hours_min,
-        r.peak_hours_max,
-        r.safety_hours_max,
-        r.storage_method,
-        r.freezable,
-        r.prep_time_minutes,
-        r.dietary_tags
-      FROM menus m
-      JOIN dishes d ON d.menu_id = m.id
-      JOIN components c ON c.dish_id = d.id
-      LEFT JOIN recipes r ON r.id = c.recipe_id
-      WHERE m.event_id = $1 AND m.tenant_id = $2
-      ORDER BY d.course_number, d.sort_order, c.sort_order`,
-      [eventId, user.tenantId!]
-    )
+    // Get menus for this event
+    const { data: menus } = await db
+      .from('menus')
+      .select('id')
+      .eq('event_id', eventId)
+      .eq('tenant_id', user.tenantId!)
 
-    const rows = componentRows.rows ?? componentRows
-
-    if (rows.length === 0) {
+    if (!menus || menus.length === 0) {
       return { timeline: null }
     }
 
-    // Get allergen flags for recipes that have them
-    const recipeIds = [
-      ...new Set(rows.filter((r: any) => r.recipe_id).map((r: any) => r.recipe_id)),
-    ]
-    let allergenMap: Record<string, string[]> = {}
+    const menuIds = menus.map((m: any) => m.id)
 
-    if (recipeIds.length > 0) {
-      const allergenRows = await db.query(
-        `SELECT ri.recipe_id, i.allergen_flags
-         FROM recipe_ingredients ri
-         JOIN ingredients i ON i.id = ri.ingredient_id
-         WHERE ri.recipe_id = ANY($1) AND i.allergen_flags IS NOT NULL AND array_length(i.allergen_flags, 1) > 0`,
-        [recipeIds]
+    // Get all dishes for these menus
+    const { data: dishes } = await db
+      .from('dishes')
+      .select('id, course_name, course_number, sort_order, menu_id')
+      .in('menu_id', menuIds)
+      .order('course_number', { ascending: true })
+
+    if (!dishes || dishes.length === 0) {
+      return { timeline: null }
+    }
+
+    const dishIds = dishes.map((d: any) => d.id)
+
+    // Get all components for these dishes
+    const { data: components } = await db
+      .from('components')
+      .select(
+        'id, name, dish_id, recipe_id, is_make_ahead, make_ahead_window_hours, sort_order'
       )
-      for (const row of allergenRows.rows ?? allergenRows) {
-        const existing = allergenMap[row.recipe_id] ?? []
-        allergenMap[row.recipe_id] = [...new Set([...existing, ...row.allergen_flags])]
+      .in('dish_id', dishIds)
+      .order('sort_order', { ascending: true })
+
+    if (!components || components.length === 0) {
+      return { timeline: null }
+    }
+
+    // Get linked recipes
+    const recipeIds = [
+      ...new Set(
+        components.filter((c: any) => c.recipe_id).map((c: any) => c.recipe_id)
+      ),
+    ]
+
+    let recipes: any[] = []
+    if (recipeIds.length > 0) {
+      const { data: recipeData } = await db
+        .from('recipes')
+        .select(
+          'id, name, category, peak_hours_min, peak_hours_max, safety_hours_max, storage_method, freezable, prep_time_minutes, dietary_tags'
+        )
+        .in('id', recipeIds)
+      recipes = recipeData ?? []
+    }
+
+    const recipeMap = new Map(recipes.map((r: any) => [r.id, r]))
+    const dishMap = new Map(dishes.map((d: any) => [d.id, d]))
+
+    // Get allergen flags for recipes
+    const allergenMap: Record<string, string[]> = {}
+    if (recipeIds.length > 0) {
+      const { data: riData } = await db
+        .from('recipe_ingredients')
+        .select('recipe_id, ingredient_id')
+        .in('recipe_id', recipeIds)
+
+      if (riData && riData.length > 0) {
+        const ingredientIds = [
+          ...new Set(riData.map((ri: any) => ri.ingredient_id)),
+        ]
+        const { data: ingredients } = await db
+          .from('ingredients')
+          .select('id, allergen_flags')
+          .in('id', ingredientIds)
+
+        if (ingredients) {
+          const ingMap = new Map(
+            ingredients.map((i: any) => [i.id, i.allergen_flags ?? []])
+          )
+          for (const ri of riData) {
+            const flags = ingMap.get(ri.ingredient_id) ?? []
+            if (flags.length > 0) {
+              const existing = allergenMap[ri.recipe_id] ?? []
+              allergenMap[ri.recipe_id] = [...new Set([...existing, ...flags])]
+            }
+          }
+        }
       }
     }
 
-    const timelineItems: TimelineRecipeInput[] = rows.map((row: any) => ({
-      recipeId: row.recipe_id ?? row.component_id,
-      recipeName: row.recipe_name ?? row.component_name,
-      componentName: row.component_name,
-      dishName: row.dish_name,
-      courseName: row.course_name,
-      category: row.recipe_category ?? null,
-      peakHoursMin: row.peak_hours_min ?? null,
-      peakHoursMax: row.peak_hours_max ?? null,
-      safetyHoursMax: row.safety_hours_max ?? null,
-      storageMethod: row.storage_method ?? null,
-      freezable: row.freezable ?? null,
-      prepTimeMinutes: row.prep_time_minutes ?? 30, // fallback 30min if not set
-      allergenFlags: allergenMap[row.recipe_id] ?? [],
-      makeAheadWindowHours: row.make_ahead_window_hours ?? null,
-    }))
+    // Build timeline items
+    const timelineItems: TimelineRecipeInput[] = components.map((comp: any) => {
+      const recipe = comp.recipe_id ? recipeMap.get(comp.recipe_id) : null
+      const dish = dishMap.get(comp.dish_id)
+
+      return {
+        recipeId: recipe?.id ?? comp.id,
+        recipeName: recipe?.name ?? comp.name,
+        componentName: comp.name,
+        dishName: dish?.course_name ?? 'Unknown',
+        courseName: dish?.course_name ?? 'Unknown',
+        category: recipe?.category ?? null,
+        peakHoursMin: recipe?.peak_hours_min ?? null,
+        peakHoursMax: recipe?.peak_hours_max ?? null,
+        safetyHoursMax: recipe?.safety_hours_max ?? null,
+        storageMethod: recipe?.storage_method ?? null,
+        freezable: recipe?.freezable ?? null,
+        prepTimeMinutes: recipe?.prep_time_minutes ?? 30,
+        allergenFlags: allergenMap[recipe?.id] ?? [],
+        makeAheadWindowHours: comp.make_ahead_window_hours ?? null,
+      }
+    })
 
     const timeline = computePrepTimeline(timelineItems, eventDate)
     return { timeline }

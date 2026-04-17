@@ -80,7 +80,7 @@ export async function syncRSVPToHubProfile(input: {
     if (!profileId) return
 
     // Upsert event history entry
-    const { data: event } = await db
+    const { data: eventDetails } = await db
       .from('events')
       .select('occasion, event_date')
       .eq('id', input.eventId)
@@ -102,8 +102,8 @@ export async function syncRSVPToHubProfile(input: {
         tenant_id: input.tenantId,
         rsvp_status: input.rsvpStatus,
         chef_name: chefName,
-        event_date: event?.event_date ?? null,
-        occasion: event?.occasion ?? null,
+        event_date: eventDetails?.event_date ?? null,
+        occasion: eventDetails?.occasion ?? null,
       },
       { onConflict: 'profile_id,event_id' }
     )
