@@ -381,9 +381,9 @@ export async function sendCircleRecoveryEmail(
 
     await sendEmail({
       to: email,
-      subject: `Your link to rejoin ${group.name || 'the dinner circle'}`,
+      subject: `Your link to rejoin ${group.name || 'the circle'}`,
       react: createElement(NotificationGenericEmail, {
-        title: 'Rejoin your dinner circle',
+        title: 'Rejoin your circle',
         body: `Here is your access link to rejoin ${group.name || 'the circle'}. Click below to continue where you left off.`,
         actionUrl: recoveryUrl,
         actionLabel: 'Rejoin Circle',

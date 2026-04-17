@@ -13,7 +13,7 @@ import { Alert } from '@/components/ui/alert'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { Bell, CalendarPlus, Users, Utensils, Share2 } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'My Dinner Circle' }
+export const metadata: Metadata = { title: 'My Circles' }
 
 export default async function MyHubPage() {
   await requireClient()
@@ -45,9 +45,9 @@ export default async function MyHubPage() {
       {/* Header */}
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-stone-100">My Dinner Circle</h1>
+          <h1 className="text-3xl font-bold text-stone-100">My Circles</h1>
           <p className="mt-1 text-stone-400">
-            Private planning space for your dinners, updates, and trusted invite-only circle.
+            Your dinner circles, community groups, and trusted invite-only spaces.
           </p>
         </div>
         <div className="flex gap-2">

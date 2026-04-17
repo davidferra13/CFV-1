@@ -144,6 +144,7 @@ Build relationships, understand the business, get visible.
 - [x] Ingredient knowledge encyclopedia (4K+ enriched pages, 15 category landing pages, JSON-LD, booking CTA funnel)
 - [x] AI-assisted social media orchestration
 - [x] Client portal (events, RSVP, dietary, feedback, rewards)
+- [x] Universal community circles (any user, topic-based, public/private, discovery page, rate limited)
 - [x] Gift cards and vouchers
 - [ ] **User acquisition strategy** - ZERO (no channels, no marketing, no growth plan)
 - [ ] **Survey validation** - designed and ready, not launched

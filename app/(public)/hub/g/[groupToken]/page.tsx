@@ -60,12 +60,8 @@ export default async function HubGroupPage({ params }: Props) {
             />
           ) : (
             <div className="text-center py-12">
-              <h1 className="text-xl font-semibold text-stone-200 mb-2">
-                This dinner circle has ended
-              </h1>
-              <p className="text-stone-400 text-sm">
-                The event is complete. Thanks for being part of it.
-              </p>
+              <h1 className="text-xl font-semibold text-stone-200 mb-2">This circle has ended</h1>
+              <p className="text-stone-400 text-sm">Thanks for being part of it.</p>
             </div>
           )}
         </div>

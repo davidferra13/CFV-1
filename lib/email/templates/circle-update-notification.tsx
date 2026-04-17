@@ -49,13 +49,13 @@ export function CircleUpdateNotificationEmail({
             textDecoration: 'none',
           }}
         >
-          View in Dinner Circle
+          View in Circle
         </Link>
       </div>
 
       <Text style={muted}>
-        You&apos;re receiving this because you&apos;re a member of this Dinner Circle. You can
-        adjust notification settings from your circle.
+        You&apos;re receiving this because you&apos;re a member of this circle. You can adjust
+        notification settings from your circle.
       </Text>
     </BaseLayout>
   )
