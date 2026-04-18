@@ -7,7 +7,11 @@ import { NextRequest } from 'next/server'
 import { Ollama } from 'ollama'
 import { isOllamaEnabled, getOllamaConfig, getOllamaModel } from '@/lib/ai/providers'
 import { validateRemyInput } from '@/lib/ai/remy-guardrails'
-import { validateRemyRequestBody, validateHistory } from '@/lib/ai/remy-input-validation'
+import {
+  validateRemyRequestBody,
+  validateHistory,
+  checkRecipeGenerationBlock,
+} from '@/lib/ai/remy-input-validation'
 import { buildLandingSystemPrompt } from '@/lib/ai/remy-landing-personality'
 import { checkRateLimit } from '@/lib/rateLimit'
 import {
@@ -97,6 +101,14 @@ export async function POST(req: NextRequest) {
       })
     }
 
+    // Recipe generation is banned on ALL surfaces (CLAUDE.md: "not ever")
+    const recipeBlock = checkRecipeGenerationBlock(message)
+    if (recipeBlock) {
+      return new Response(encodeSSE({ type: 'error', data: recipeBlock }), {
+        headers: sseHeaders(),
+      })
+    }
+
     // Check Ollama availability
     if (!isOllamaEnabled()) {
       return new Response(
@@ -146,7 +158,6 @@ export async function POST(req: NextRequest) {
               num_predict: tokenBudget,
             },
             keep_alive: '30m',
-            think: false,
           } as any)
 
           for await (const chunk of ollamaStream) {

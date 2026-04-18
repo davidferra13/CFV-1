@@ -151,7 +151,7 @@ export async function triggerAutoResponse(
     .single()
 
   // 6. Render template
-  const rendered = renderTemplateVariables(template.body, {
+  let rendered = renderTemplateVariables(template.body, {
     client_name: extractFirstName(client.full_name),
     occasion: inquiry.confirmed_occasion ?? 'your event',
     event_date: inquiry.confirmed_date ?? '',
@@ -166,6 +166,36 @@ export async function triggerAutoResponse(
     chef_name: chef?.business_name ?? 'Your Chef',
     business_name: chef?.business_name ?? 'ChefFlow',
   })
+
+  // 6b. AI personalization (if enabled and runtime available)
+  if (config.personalize_with_ai) {
+    try {
+      const { parseWithOllama } = await import('@/lib/ai/parse-ollama')
+      const result = await parseWithOllama(
+        `You personalize auto-response emails from a private chef to potential clients.
+Make the email warmer and more personal based on inquiry details.
+Keep the same structure, tone, and approximate length.
+Do not add new information, promises, or formatting (bold, headers).
+Return JSON with a single "text" field containing the personalized email body.`,
+        `Inquiry details:
+- Client: ${extractFirstName(client.full_name)}
+- Occasion: ${inquiry.confirmed_occasion ?? 'not specified'}
+- Date: ${inquiry.confirmed_date ?? 'not specified'}
+- Channel: ${inquiry.channel ?? 'direct'}
+
+Template email to personalize:
+${rendered}`,
+        z.object({ text: z.string() }),
+        { temperature: 0.7 }
+      )
+      if (result?.text && result.text.length > 20) {
+        rendered = result.text
+      }
+    } catch (err) {
+      // Non-blocking: AI personalization failure falls back to template
+      console.error('[auto-response] AI personalization failed, using template:', err)
+    }
+  }
 
   // 7. Send email (non-blocking import to avoid circular deps)
   try {
