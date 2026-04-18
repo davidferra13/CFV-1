@@ -7,6 +7,9 @@
 > flowing between two or more subsystems and asks: does it arrive intact?
 >
 > **Scorecard: 11 BUILT, 29 GAP (12 CRITICAL, 11 MEDIUM, 6 LOW)**
+>
+> **Post-sweep fixes applied:** 8 gaps resolved (Q1, Q2, Q5, Q6, Q7, Q8, Q17, Q18, Q28, Q32, Q40 improved)
+> See "Fixes Applied" section at bottom for details.
 
 **Principle:** A system achieves full cohesiveness when every user action
 propagates correctly to every downstream consumer. A client updating their

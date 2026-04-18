@@ -24,6 +24,8 @@ interface ConnectGmailStepProps {
   onSkip: () => void
   gmailAlreadyConnected?: boolean
   oauthError?: string | null
+  /** When true, chef said they use Gmail; show enhanced messaging */
+  priority?: boolean
 }
 
 export function ConnectGmailStep({
