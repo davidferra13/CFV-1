@@ -14,7 +14,7 @@
 
 import { unstable_cache } from 'next/cache'
 import { createAdminClient } from '@/lib/db/admin'
-import { hasPersistedAdminAccessForAuthUser } from '@/lib/auth/admin-access'
+import { hasAdminAccess, hasPrivilegedAccess } from '@/lib/auth/admin-access'
 import { ARCHETYPE_IDS } from '@/lib/archetypes/presets'
 import type { ArchetypeId } from '@/lib/archetypes/presets'
 
@@ -115,14 +115,29 @@ export function getCachedDeletionStatus(chefId: string): Promise<CachedDeletionS
 
 // ─── Admin Check (cached 60s) ────────────────────────────────────────────
 // Note: admin status is managed directly in the platform_admins table (no server action).
-// The 60s TTL is the only revalidation path, which is acceptable for rare manual changes.────
+// The 60s TTL is the only revalidation path, which is acceptable for rare manual changes.
+// isAdmin = admin + owner only (admin panel access). VIP excluded.
 
 export function getCachedIsAdmin(authUserId: string): Promise<boolean> {
   return unstable_cache(
     async (): Promise<boolean> => {
-      return hasPersistedAdminAccessForAuthUser(authUserId)
+      return hasAdminAccess(authUserId)
     },
     [`is-admin-${authUserId}`],
     { revalidate: 60, tags: [`is-admin-${authUserId}`] }
+  )()
+}
+
+// ─── Privileged Check (cached 60s) ──────────────────────────────────────
+// isPrivileged = vip + admin + owner (focus mode bypass, all modules visible).
+// Separate from admin check because VIP gets feature access but NOT admin panel.
+
+export function getCachedIsPrivileged(authUserId: string): Promise<boolean> {
+  return unstable_cache(
+    async (): Promise<boolean> => {
+      return hasPrivilegedAccess(authUserId)
+    },
+    [`is-privileged-${authUserId}`],
+    { revalidate: 60, tags: [`is-privileged-${authUserId}`] }
   )()
 }

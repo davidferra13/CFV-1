@@ -98,6 +98,7 @@ const AdminNavGroupSection = memo(function AdminNavGroupSection({
             <ChevronDown className={`h-3 w-3 transition-transform ${isOpen ? '' : '-rotate-90'}`} />
           </>
         )}
+        type="button"
         {collapsed && <span className="mx-auto h-px w-4 bg-stone-700" />}
       </button>
       {(isOpen || collapsed) && (
@@ -147,6 +148,7 @@ export function AdminSidebar({ userId }: { userId: string }) {
           </div>
         )}
         <button
+          type="button"
           onClick={() => setCollapsed(!collapsed)}
           className="rounded-md p-1.5 text-stone-500 hover:bg-white/5 hover:text-stone-300"
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
