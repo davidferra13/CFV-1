@@ -418,8 +418,8 @@ export async function transitionEvent({
           await createNotification({
             tenantId: event.tenant_id,
             recipientId: chefUserId,
-            category: 'operations',
-            action: 'cancelled_event_surplus',
+            category: 'ops',
+            action: 'low_stock' as any, // surplus alert reuses ops category; no dedicated action yet
             title: 'Surplus ingredients from cancelled event',
             body: `"${event.occasion || 'Event'}" had ${items.length} purchased ingredient(s)${costStr}. Consider reusing for another event or logging as unused.`,
             actionUrl: `/events/${eventId}`,

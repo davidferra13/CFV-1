@@ -270,4 +270,62 @@ Automated systems must react to client state changes correctly.
 | Q11 | Shopping list has zero dietary awareness                  | **OPERATIONAL**  | Medium (add flagging)    |
 | Q17 | Health score engagement dimension broken (`is_active`)    | **DATA QUALITY** | Low (fix column name)    |
 | Q30 | `last_event_date` never updated on completion             | **DATA QUALITY** | Low (add update)         |
-| Q28 | CSV LTV reads stale column vs view                        | **DATA QUALITY** | Low (use view)           |
+
+---
+
+## Fixes Applied (this session)
+
+### 1. Allergy Bidirectional Sync (`lib/dietary/allergy-sync.ts`) - NEW FILE
+
+Created `syncFlatToStructured()` and `syncStructuredToFlat()` utilities. Every allergy write path now keeps both stores in lockstep. Wired into:
+
+- `lib/clients/actions.ts` `updateClient` (flat -> structured)
+- `lib/clients/actions.ts` `createClient` (flat -> structured)
+- `lib/clients/onboarding-actions.ts` (structured -> flat)
+- `lib/booking/instant-book-actions.ts` (structured -> flat)
+- `lib/clients/intake-actions.ts` (flat -> structured)
+- `lib/insights/actions.ts` AI detection (structured -> flat)
+- `lib/events/readiness.ts` `addAllergyRecord` (structured -> flat)
+
+**Resolves:** Q5, Q6, Q7, Q32, Q40 (partial)
+
+### 2. Inquiry-to-Client Dietary Handoff (`lib/clients/actions.ts` `addClientFromInquiry`)
+
+Now reads inquiry record to copy `confirmed_dietary_restrictions` to new client. Runs allergy sync after creation.
+
+**Resolves:** Q1, Q2
+
+### 3. Health Score Broken Columns (`lib/clients/health-score.ts`)
+
+- Fixed `dietary_preferences` -> `dietary_restrictions` (correct column name)
+- Fixed `.eq('is_active', true)` -> `.is('deleted_at', null)` (correct filter)
+  Engagement dimension now actually scores all active clients.
+
+**Resolves:** Q17
+
+### 4. NBA Birthday Detection (`lib/clients/next-best-action.ts`)
+
+Replaced fragile `personal_milestones` regex parsing with direct `birthday` + `anniversary` column lookup. Same approach as the follow-up rules system (aligned, no longer duplicated logic).
+
+**Resolves:** Q18
+
+### 5. Remy Context Allergy Visibility (`lib/ai/remy-context.ts`)
+
+Removed `.not('vibe_notes', 'is', null)` filter that excluded clients with allergies but no vibe notes. Increased limit from 10 to 20. Clients with dietary data are now always visible to Remy regardless of vibe notes.
+
+**Resolves:** Q8 (partial; severity data still requires structured record integration)
+
+### 6. CSV Export LTV Source (`app/(chef)/clients/csv-export/route.ts`)
+
+Changed from stale `clients.lifetime_value_cents` column to `client_financial_summary` view (ledger-derived, always current). CSV and detail page now show identical LTV.
+
+**Resolves:** Q28
+
+### Remaining gaps (not fixed this session)
+
+- **Q36**: Allergy change -> menu re-evaluation pipeline (needs new cron/consumer)
+- **Q11**: Shopping list dietary awareness (needs UI + flagging design)
+- **Q30**: `last_event_date` update on event completion
+- **Q38**: Cooling alert checking deleted clients
+- **Q9**: Dietary change logging from all paths (only chef-side fires currently)
+  | Q28 | CSV LTV reads stale column vs view | **DATA QUALITY** | Low (use view) |
