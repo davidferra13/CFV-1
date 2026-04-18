@@ -376,11 +376,6 @@ export interface RemyContext {
     amountCents: number
     dueDate: string | null
   }>
-  /** Auto-response configuration status */
-  autoResponseStatus?: {
-    enabled: boolean
-    templateCount: number
-  }
   /** Food costing context (operator-specific targets and current performance) */
   costingContext?: {
     operationType: string

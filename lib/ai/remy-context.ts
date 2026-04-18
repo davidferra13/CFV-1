@@ -54,7 +54,6 @@ interface CachedContext {
     | 'serviceConfigPrompt'
     | 'recentSurveyFeedback'
     | 'pendingMilestones'
-    | 'autoResponseStatus'
   >
   expiresAt: number
 }
@@ -216,13 +215,11 @@ export async function loadRemyContext(
   let emailDigest: Awaited<ReturnType<typeof loadEmailDigest>> | undefined
   let recentSurveyFeedback: any
   let pendingMilestones: any
-  let autoResponseStatus: any
 
   if (isMinimal) {
     emailDigest = undefined
     recentSurveyFeedback = undefined
     pendingMilestones = undefined
-    autoResponseStatus = undefined
   } else {
     emailDigest =
       (await withContextFallback(
@@ -277,25 +274,6 @@ export async function loadRemyContext(
           amountCents: m.amount_cents ?? 0,
           dueDate: m.due_date,
         }))
-      }
-    )
-
-    autoResponseStatus = await withContextFallback(
-      tenantId,
-      'load_auto_response_status',
-      undefined,
-      async () => {
-        const [configResult, templateCountResult] = await Promise.all([
-          db.from('auto_response_config').select('enabled').eq('chef_id', tenantId).single(),
-          db
-            .from('response_templates')
-            .select('id', { count: 'exact', head: true })
-            .eq('chef_id', tenantId),
-        ])
-        return {
-          enabled: configResult.data?.enabled ?? false,
-          templateCount: templateCountResult.count ?? 0,
-        }
       }
     )
   }
@@ -353,8 +331,6 @@ export async function loadRemyContext(
     recentSurveyFeedback: recentSurveyFeedback ?? undefined,
     // Payment milestones
     pendingMilestones: pendingMilestones ?? undefined,
-    // Auto-response config
-    autoResponseStatus: autoResponseStatus ?? undefined,
     // Food costing targets (operator-specific)
     costingContext: (() => {
       const opType = archetypeToOperatorType(archetype)

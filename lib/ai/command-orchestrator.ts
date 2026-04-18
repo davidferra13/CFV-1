@@ -2848,28 +2848,38 @@ export async function runCommand(rawInput: string): Promise<CommandRun> {
     // Each pattern maps directly to a PlannedTask, saving 2-5s of Ollama latency.
     const fastPlan = tryDeterministicCommandPlan(rawInput)
     if (fastPlan) {
-      const rounds = buildExecutionRounds(fastPlan.tasks)
-      const allResults: TaskResult[] = []
-      const resultsByType = new Map<string, unknown>()
-      for (const round of rounds) {
-        const roundResults = await Promise.all(
-          round.map((task) => {
-            const resolvedDeps: Record<string, unknown> = {}
-            for (const depId of task.dependsOn) {
-              const depTask = fastPlan.tasks.find((t) => t.id === depId)
-              if (depTask && resultsByType.has(depTask.taskType)) {
-                resolvedDeps[depTask.taskType] = resultsByType.get(depTask.taskType)
+      // Focus Mode enforcement: verify fast-path tasks are allowed
+      const fastTaskTypes = fastPlan.tasks.map((t) => t.taskType)
+      const allowed = await getAvailableActions(fastTaskTypes)
+      if (allowed.length === 0) {
+        // All tasks blocked by Focus Mode, fall through to LLM parser
+        // (which will also be filtered, giving user feedback)
+      } else {
+        // Filter to only allowed tasks
+        fastPlan.tasks = fastPlan.tasks.filter((t) => allowed.includes(t.taskType))
+        const rounds = buildExecutionRounds(fastPlan.tasks)
+        const allResults: TaskResult[] = []
+        const resultsByType = new Map<string, unknown>()
+        for (const round of rounds) {
+          const roundResults = await Promise.all(
+            round.map((task) => {
+              const resolvedDeps: Record<string, unknown> = {}
+              for (const depId of task.dependsOn) {
+                const depTask = fastPlan.tasks.find((t) => t.id === depId)
+                if (depTask && resultsByType.has(depTask.taskType)) {
+                  resolvedDeps[depTask.taskType] = resultsByType.get(depTask.taskType)
+                }
               }
-            }
-            return executeSingleTask(task, resolvedDeps, tenantId, approvalPolicyMap)
-          })
-        )
-        for (const result of roundResults) {
-          allResults.push(result)
-          if (result.data !== undefined) resultsByType.set(result.taskType, result.data)
+              return executeSingleTask(task, resolvedDeps, tenantId, approvalPolicyMap)
+            })
+          )
+          for (const result of roundResults) {
+            allResults.push(result)
+            if (result.data !== undefined) resultsByType.set(result.taskType, result.data)
+          }
         }
+        return { runId, rawInput, startedAt, results: allResults }
       }
-      return { runId, rawInput, startedAt, results: allResults }
     }
 
     let plan = await parseCommandIntent(rawInput)

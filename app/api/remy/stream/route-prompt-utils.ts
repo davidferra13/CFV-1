@@ -56,8 +56,8 @@ AVAILABLE PAGES (suggest these when relevant):
 export type ContextScope = 'full' | 'minimal' | 'focused'
 
 // ─── Memory Relevance Filter ───────────────────────────────────────────────
-// Instead of dumping all memories into the prompt (wastes tokens on a 4B model),
-// keep only memories whose content shares keywords with the user's message.
+// Instead of dumping all memories into the prompt, keep only memories whose
+// content shares keywords with the user's message.
 // Always keeps high-priority categories (allergies, dietary) regardless of match.
 
 const ALWAYS_INCLUDE_CATEGORIES = new Set([
@@ -328,8 +328,12 @@ export function buildRemySystemPrompt(
   }
   parts.push(`\nCURRENT TIME: ${timeStr} on ${dayNames[now.getDay()]}, ${dateStr}${timeOfDayNote}`)
 
+  const locationLine =
+    context.chefCity && context.chefState
+      ? `\n- Location: ${context.chefCity}, ${context.chefState}`
+      : ''
   parts.push(`\nBUSINESS CONTEXT:
-- Business: ${context.businessName ?? 'Your business'}${context.tagline ? ` - "${context.tagline}"` : ''}
+- Business: ${context.businessName ?? 'Your business'}${context.tagline ? ` - "${context.tagline}"` : ''}${locationLine}
 - Clients: ${context.clientCount} total
 - Upcoming events: ${context.upcomingEventCount}
 - Open inquiries: ${context.openInquiryCount}${context.pendingQuoteCount ? `\n- Pending quotes: ${context.pendingQuoteCount}` : ''}${context.monthRevenueCents !== undefined ? `\n- Month revenue: $${(context.monthRevenueCents / 100).toFixed(2)}` : ''}`)
@@ -662,6 +666,64 @@ Reference these when relevant - help the chef avoid past mistakes and repeat suc
     parts.push(`\n[ACTION NEEDED] PROACTIVE ALERTS (${nudgeLines.length}):
 ${nudgeLines.map((l) => `- ${l}`).join('\n')}
 Mention the most urgent items naturally when relevant - especially if the chef asks "what should I focus on?" or during a morning briefing. Don't dump all at once unless asked.`)
+  }
+
+  // Recent survey feedback - client satisfaction signals
+  if (
+    includeOperationalContext &&
+    context.recentSurveyFeedback &&
+    context.recentSurveyFeedback.length > 0
+  ) {
+    const surveys = context.recentSurveyFeedback as Array<{
+      clientName: string
+      overallRating: number
+      wouldBookAgain: boolean
+    }>
+    const avgRating = (
+      surveys.reduce((sum: number, s: { overallRating: number }) => sum + s.overallRating, 0) /
+      surveys.length
+    ).toFixed(1)
+    const rebookRate = Math.round(
+      (surveys.filter((s: { wouldBookAgain: boolean }) => s.wouldBookAgain).length /
+        surveys.length) *
+        100
+    )
+    parts.push(
+      `\nCLIENT FEEDBACK: ${surveys.length} recent surveys, avg rating ${avgRating}/5, ${rebookRate}% would rebook.`
+    )
+  }
+
+  // Pending payment milestones - upcoming money owed
+  if (
+    includeOperationalContext &&
+    context.pendingMilestones &&
+    context.pendingMilestones.length > 0
+  ) {
+    const milestones = context.pendingMilestones as Array<{
+      clientName: string
+      occasion: string
+      milestoneName: string
+      amountCents: number
+      dueDate: string
+    }>
+    const totalCents = milestones.reduce(
+      (sum: number, m: { amountCents: number }) => sum + m.amountCents,
+      0
+    )
+    parts.push(
+      `\nPENDING MILESTONES: ${milestones.length} payments ($${(totalCents / 100).toFixed(2)} total) - ${milestones
+        .slice(0, 3)
+        .map(
+          (m: {
+            clientName: string
+            milestoneName: string
+            amountCents: number
+            dueDate: string
+          }) =>
+            `${m.clientName}: $${(m.amountCents / 100).toFixed(0)} (${m.milestoneName}, due ${m.dueDate})`
+        )
+        .join('; ')}`
+    )
   }
 
   // Revenue pattern + seasonal awareness - busy/slow months with time-of-year context
