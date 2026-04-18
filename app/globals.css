@@ -79,6 +79,10 @@
   --scrollbar-thumb-hover: rgb(var(--stone-500));
   --ring-offset-surface: rgb(var(--surface-0-rgb));
 
+  /* Focus ring uses brand-600 in light mode for contrast on white backgrounds
+     (Saffron brand-500 is yellow #F59E0B which fails WCAG on white) */
+  --focus-ring-color: rgb(var(--brand-600));
+
   --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
   --duration-fast: 100ms;
@@ -138,6 +142,9 @@
   --scrollbar-track: rgb(var(--stone-900));
   --scrollbar-thumb: rgb(var(--stone-700));
   --scrollbar-thumb-hover: rgb(var(--stone-600));
+
+  /* Dark backgrounds provide enough contrast for brand-500 focus rings */
+  --focus-ring-color: rgb(var(--brand-500));
 }
 
 /* ============================================
@@ -208,6 +215,22 @@ html {
       disabled:cursor-not-allowed disabled:bg-stone-900 disabled:text-stone-500;
     /* 16px minimum prevents iOS auto-zoom; 15px is our new text-sm */
     font-size: max(16px, 0.9375rem);
+  }
+
+  /* Native <select> polish: custom arrow, consistent height, cursor */
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a8a29e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+    padding-right: 2.5rem;
+    cursor: pointer;
+    min-height: 44px;
+  }
+
+  select::-ms-expand {
+    display: none;
   }
 
   /* Eliminate 300ms tap delay on interactive elements */
@@ -384,6 +407,8 @@ html {
     line-height: 1;
     letter-spacing: -0.02em;
     color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
   }
   .metric-display-sm {
     font-family: var(--font-display), Georgia, 'Times New Roman', serif;
@@ -391,6 +416,8 @@ html {
     font-weight: 700;
     line-height: 1;
     letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
     color: var(--text-primary);
   }
 
@@ -865,18 +892,21 @@ html {
   background-image: linear-gradient(180deg, rgb(var(--brand-500) / 0.03) 0%, transparent 30%);
 }
 
-/* Reduced motion - respect user preferences */
+/* Reduced motion - respect user preferences (WCAG 2.1 SC 2.3.3)
+   Disables ALL non-essential animations. Only scroll-behavior and
+   route-progress feedback are exempt. */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
 
-  .loading-spinner,
-  .loading-bone::after,
-  .skeleton::after,
-  .loading-progress-indeterminate,
-  .loading-pulse-ring {
-    animation: none !important;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
@@ -1306,7 +1336,7 @@ html {
   [role='menuitem']:focus-visible,
   [role='checkbox']:focus-visible,
   [role='radio']:focus-visible {
-    outline: 3px solid rgb(var(--brand-500));
+    outline: 3px solid var(--focus-ring-color);
     outline-offset: 2px;
     border-radius: 0; /* Per WCAG guidelines: outline should not be rounded */
   }
@@ -1317,7 +1347,7 @@ html {
   }
 
   main:focus-visible {
-    outline: 3px solid rgb(var(--brand-500));
+    outline: 3px solid var(--focus-ring-color);
     outline-offset: 2px;
   }
 
@@ -1325,7 +1355,7 @@ html {
   input:focus-visible,
   textarea:focus-visible,
   select:focus-visible {
-    outline: 2px solid rgb(var(--brand-500));
+    outline: 2px solid var(--focus-ring-color);
     outline-offset: 1px;
   }
 }

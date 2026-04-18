@@ -44,6 +44,9 @@ Every UI change must comply with the Universal Interface Philosophy (`docs/specs
 - No anti-patterns from the banned list: cluttered dashboards, vanity metrics, redundant controls, competing CTAs, hidden critical actions, empty feature shells (Section 11)
 - Every new widget passes the vanity metric test: "What decision would I make differently based on this number?" (Section 11)
 - Every routine data entry task passes the notepad test: completable in under 10 seconds (Section 9)
+- All clickable elements have `cursor-pointer` (buttons get it by default; custom clickables need it explicitly)
+- All animations respect `prefers-reduced-motion` (no decorative motion for users who opt out)
+- Responsive layout verified at 375px, 768px, 1024px, and 1440px (no horizontal scroll, no content behind fixed navbars)
 
 ## Release Blockers
 

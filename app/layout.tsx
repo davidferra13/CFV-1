@@ -11,6 +11,7 @@ const DeferredRootRuntime = dynamic(
   { ssr: false }
 )
 
+// Legacy variable name (was Inter, migrated to DM Sans). Keep as-is to avoid diff noise.
 const dmSans = DM_Sans({
   subsets: ['latin'],
   variable: '--font-inter',

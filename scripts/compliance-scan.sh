@@ -14,6 +14,7 @@
 #   2. "OpenClaw" in user-facing files (banned)
 #   3. @ts-nocheck files that export functions (crash risk)
 #   4. 'use server' files exporting non-async (will fail at runtime)
+#   5. Raw styled elements bypassing design system (ratcheting ceiling)
 # ═══════════════════════════════════════════════════════════════════
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -154,6 +155,46 @@ else
     fail "$CONST_COUNT 'use server' file(s) export non-async values:"
     echo -e "$CONST_EXPORTS" | head -10 | sed 's/^/    /'
   fi
+fi
+
+# ── Check 5: Raw styled elements bypassing design system ────────
+# Counts raw <button>, <input>, <select> with inline Tailwind styling
+# outside components/ui/. Ratchet ceiling down over time.
+
+header "RAW STYLED ELEMENTS (design system bypass)"
+
+RAW_BUTTON_COUNT=0
+RAW_INPUT_COUNT=0
+RAW_SELECT_COUNT=0
+
+  # Count files where a raw element has inline Tailwind on the SAME line
+  # (stricter than separate grep -l passes which match any bg- anywhere in file)
+if [ "$STAGED_ONLY" = true ]; then
+  RAW_BUTTON_COUNT=$(git diff --cached --name-only -- '*.tsx' | xargs grep -n '<button' 2>/dev/null | grep -v 'components/ui/' | grep -v 'error.tsx' | grep 'className' | wc -l)
+  RAW_INPUT_COUNT=$(git diff --cached --name-only -- '*.tsx' | xargs grep -n '<input' 2>/dev/null | grep -v 'components/ui/' | grep 'className' | wc -l)
+  RAW_SELECT_COUNT=$(git diff --cached --name-only -- '*.tsx' | xargs grep -n '<select' 2>/dev/null | grep -v 'components/ui/' | grep 'className' | wc -l)
+else
+  RAW_BUTTON_COUNT=$(grep -rn '<button' --include='*.tsx' app/ components/ 2>/dev/null | grep -v 'components/ui/' | grep -v 'error.tsx' | grep 'className' | wc -l)
+  RAW_INPUT_COUNT=$(grep -rn '<input' --include='*.tsx' app/ components/ 2>/dev/null | grep -v 'components/ui/' | grep 'className' | wc -l)
+  RAW_SELECT_COUNT=$(grep -rn '<select' --include='*.tsx' app/ components/ 2>/dev/null | grep -v 'components/ui/' | grep 'className' | wc -l)
+fi
+
+RAW_TOTAL=$((RAW_BUTTON_COUNT + RAW_INPUT_COUNT + RAW_SELECT_COUNT))
+RAW_CEILING=500
+
+echo "  Raw styled <button>: $RAW_BUTTON_COUNT files"
+echo "  Raw styled <input>:  $RAW_INPUT_COUNT files"
+echo "  Raw styled <select>: $RAW_SELECT_COUNT files"
+echo "  Total: $RAW_TOTAL (ceiling: $RAW_CEILING)"
+echo ""
+
+if [ "$RAW_TOTAL" -gt "$RAW_CEILING" ]; then
+  echo "  WARNING: Raw styled elements exceed ceiling ($RAW_TOTAL > $RAW_CEILING)"
+  echo "  Migrate to <Button>, <Input>, <Select> from components/ui/"
+  # Informational only, not a blocking violation (yet)
+else
+  echo "  OK: Within ceiling"
+  PASS_COUNT=$((PASS_COUNT + 1))
 fi
 
 # ── Summary ──────────────────────────────────────────────────────
