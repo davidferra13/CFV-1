@@ -16,6 +16,8 @@
 import { createServerClient } from '@/lib/db/server'
 import { resolveChannels } from './resolve-preferences'
 import type { NotificationAction } from './types'
+import { DEFAULT_TIER_MAP } from './tier-config'
+import { isOffHours, BYPASS_ACTIONS } from './off-hours-check'
 import { sendPushNotification } from '@/lib/push/send'
 import {
   getActiveSubscriptions,
@@ -55,6 +57,45 @@ export async function routeNotification(input: RouteInput): Promise<void> {
     }
 
     const channels = await resolveChannels(tenantId, recipientId, action)
+
+    // F1: Check quiet hours - suppress non-critical out-of-app delivery during quiet window
+    const tier = DEFAULT_TIER_MAP[action]
+    const isBypass = tier === 'critical' || (BYPASS_ACTIONS as readonly string[]).includes(action)
+    if (!isBypass) {
+      try {
+        const db = createServerClient({ admin: true })
+        const { data: prefs } = await (db as any)
+          .from('chef_preferences')
+          .select(
+            'notification_quiet_hours_enabled, notification_quiet_hours_start, notification_quiet_hours_end'
+          )
+          .eq('tenant_id', tenantId)
+          .single()
+
+        if (prefs?.notification_quiet_hours_enabled) {
+          const quietActive = isOffHours(
+            {
+              off_hours_start: prefs.notification_quiet_hours_start ?? null,
+              off_hours_end: prefs.notification_quiet_hours_end ?? null,
+              off_days: null,
+            },
+            new Date()
+          )
+          if (quietActive) {
+            // Suppress all out-of-app channels; in-app notification already created
+            await Promise.allSettled([
+              logDelivery(notificationId, tenantId, 'email', 'skipped', 'Quiet hours active'),
+              logDelivery(notificationId, tenantId, 'push', 'skipped', 'Quiet hours active'),
+              logDelivery(notificationId, tenantId, 'sms', 'skipped', 'Quiet hours active'),
+            ])
+            return
+          }
+        }
+      } catch (err) {
+        // Non-blocking: if quiet hours check fails, deliver normally
+        console.error('[routeNotification] quiet hours check failed (non-blocking):', err)
+      }
+    }
 
     // Fire all enabled channels in parallel, log each result
     const sends: Promise<void>[] = []

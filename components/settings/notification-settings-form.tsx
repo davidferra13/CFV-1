@@ -285,13 +285,10 @@ export function NotificationSettingsForm({
 
       {/* ─── In-App Attention Controls ─────────────────── */}
       <section className="rounded-xl border border-stone-700 bg-stone-900 p-5">
-        <h2 className="text-base font-semibold text-stone-100">
-          In-App Attention Controls{' '}
-          <span className="text-xs font-normal text-amber-500">(coming soon)</span>
-        </h2>
+        <h2 className="text-base font-semibold text-stone-100">Notification Timing</h2>
         <p className="mt-1 text-sm text-stone-500">
-          Reduce alert noise with quiet windows and digest batching. Critical notifications always
-          interrupt immediately. Settings are saved and will take effect once the backend is wired.
+          Reduce alert noise with quiet windows. Critical notifications (payments, allergies, new
+          inquiries) always deliver immediately regardless of quiet hours.
         </p>
 
         <div className="mt-4 space-y-4">
@@ -328,30 +325,8 @@ export function NotificationSettingsForm({
             </label>
           </div>
 
-          <label className="flex items-start gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={digestEnabled}
-              onChange={(e) => setDigestEnabled(e.target.checked)}
-              className="mt-0.5 rounded border-stone-600 accent-stone-900"
-            />
-            <span className="text-sm text-stone-300">
-              Batch non-critical notifications into a digest
-            </span>
-          </label>
-
-          <label className="text-sm text-stone-300 block max-w-xs">
-            Digest interval (minutes)
-            <input
-              type="number"
-              min={5}
-              max={120}
-              value={digestIntervalMinutes}
-              disabled={!digestEnabled}
-              onChange={(e) => setDigestIntervalMinutes(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-stone-600 px-3 py-2 text-sm disabled:opacity-50"
-            />
-          </label>
+          {/* Digest batching: settings saved to DB, processor not yet built */}
+          {/* Hidden until backend cron processor exists to avoid zero-hallucination violation */}
 
           <div className="flex items-center gap-3">
             <button
