@@ -294,7 +294,7 @@ These scenarios cross multiple system boundaries. Each one exposes cascading fai
 
 **Crosses:** API isolation (D) + cache invalidation + SSE + UI staleness
 
-**Status:** **PARTIAL** - `adjustClientLoyaltyForTenant` does NOT broadcast via SSE (the original action only called `revalidatePath`). The chef's browser will show stale data until refresh. Consider adding SSE broadcast to store functions for mutations.
+**Status:** **PASS (fixed 2026-04-18)** - All 5 mutating store functions now broadcast via SSE: `updateLoyaltyConfigForTenant` (config_updated), `createRewardForTenant` (reward_created), `updateRewardForTenant` (reward_updated), `deactivateRewardForTenant` (reward_deactivated), `adjustClientLoyaltyForTenant` (loyalty_adjusted). Chef's browser receives live updates when API callers mutate data.
 
 ### RW19. Gift card redeemed via API while client is on payment page - does outstanding balance update?
 
@@ -405,11 +405,11 @@ These scenarios cross multiple system boundaries. Each one exposes cascading fai
 
 ## Defects Found
 
-| ID   | Severity           | Description                                       | Fix                                                                                              |
-| ---- | ------------------ | ------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| CB27 | Low                | `isAdminRoutePath` not called in middleware       | Add to middleware for defense-in-depth                                                           |
-| RW16 | ~~High~~ **Fixed** | Loyalty point award race condition (double-award) | Fixed 2026-04-18: atomic claim in both `actions.ts` and `store.ts`                               |
-| RW18 | Medium             | Store mutation functions don't broadcast SSE      | Add `broadcastUpdate` calls to `adjustClientLoyaltyForTenant` and other mutating store functions |
+| ID   | Severity             | Description                                       | Fix                                                                |
+| ---- | -------------------- | ------------------------------------------------- | ------------------------------------------------------------------ |
+| CB27 | Low                  | `isAdminRoutePath` not called in middleware       | Add to middleware for defense-in-depth                             |
+| RW16 | ~~High~~ **Fixed**   | Loyalty point award race condition (double-award) | Fixed 2026-04-18: atomic claim in both `actions.ts` and `store.ts` |
+| RW18 | ~~Medium~~ **Fixed** | Store mutation functions missing SSE broadcasts   | Fixed 2026-04-18: all 5 mutating store functions now broadcast     |
 
 ## Verification Needed (12 TBD items)
 
