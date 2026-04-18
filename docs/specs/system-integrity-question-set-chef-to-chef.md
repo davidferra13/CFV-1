@@ -137,24 +137,81 @@ Chef B had 5 active handoffs, 3 collab spaces, 2 event collaborations, and was i
 
 ## Scorecard
 
-| Domain                  | Questions | PASS | PARTIAL | FAIL | UNTESTED |
-| ----------------------- | --------- | ---- | ------- | ---- | -------- |
-| A. Discovery & Trust    | Q1-Q4     |      |         |      |          |
-| B. Lead & Opportunity   | Q5-Q8     |      |         |      |          |
-| C. Event Collaboration  | Q9-Q12    |      |         |      |          |
-| D. Persistent Spaces    | Q13-Q15   |      |         |      |          |
-| E. Community & Growth   | Q16-Q19   |      |         |      |          |
-| F. Cross-System Data    | Q20-Q23   |      |         |      |          |
-| G. Partner Transparency | Q24-Q26   |      |         |      |          |
-| H. Edge Cases           | Q27-Q30   |      |         |      |          |
-| **Total**               | **30**    |      |         |      |          |
+| Domain                  | Questions | PASS  | PARTIAL | FAIL   |
+| ----------------------- | --------- | ----- | ------- | ------ |
+| A. Discovery & Trust    | Q1-Q4     | 2     | 1       | 1      |
+| B. Lead & Opportunity   | Q5-Q8     | 2     | 2       | 0      |
+| C. Event Collaboration  | Q9-Q12    | 2     | 2       | 0      |
+| D. Persistent Spaces    | Q13-Q15   | 1     | 2       | 0      |
+| E. Community & Growth   | Q16-Q19   | 1     | 0       | 3      |
+| F. Cross-System Data    | Q20-Q23   | 0     | 0       | 4      |
+| G. Partner Transparency | Q24-Q26   | 0     | 0       | 3      |
+| H. Edge Cases           | Q27-Q30   | 1     | 1       | 2      |
+| **Total**               | **30**    | **9** | **8**   | **13** |
+
+**Score: 9/30 PASS, 8 PARTIAL, 13 FAIL (30%/27%/43%)**
+
+---
+
+## Per-Question Verdicts (2026-04-18)
+
+| Q   | Verdict | Summary                                                                                                                                    |
+| --- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Q1  | PASS    | Pre-connection profile shows name, bio, city, posts, followers via `getPublicChefSocialProfile` (`lib/social/chef-social-actions.ts:1617`) |
+| Q2  | PARTIAL | Trust tiers unlock features but no UI communicates "connect to unlock X" (`lib/network/collab-actions.ts:532`)                             |
+| Q3  | PASS    | Profile shows live posts, follower counts, connection status (`app/(chef)/network/[chefId]/page.tsx:50`)                                   |
+| Q4  | FAIL    | No aggregated reputation or cross-system activity visible on profile; every interaction starts from zero context                           |
+| Q5  | PASS    | Full handoff journey with client_context transfer and recipient scoring (`lib/network/collab-actions.ts:939, :1383`)                       |
+| Q6  | PASS    | Handoff conversion tracked with event/inquiry IDs, timeline, notifications (`lib/network/collab-actions.ts:1314`)                          |
+| Q7  | PARTIAL | Opportunity interest has no conversion path to handoff/collaboration/subcontract (`lib/network/opportunity-actions.ts:181`)                |
+| Q8  | PARTIAL | Interested chefs shown with profile data but no availability/history/reviews (`lib/network/opportunity-actions.ts:310`)                    |
+| Q9  | PASS    | Full collaboration lifecycle: email invite, accept/decline, role-based permissions (`lib/collaboration/actions.ts:122, :215`)              |
+| Q10 | PARTIAL | Recipe sharing forks completely; provenance tracked but no update propagation (`lib/collaboration/actions.ts:656, :822`)                   |
+| Q11 | PASS    | Cross-chef prep block visibility for shared events, merged and sorted (`lib/scheduling/prep-block-actions.ts:284`)                         |
+| Q12 | PARTIAL | Settlement computes splits but no ledger entries or per-chef financial dashboard (`lib/collaboration/settlement-actions.ts:52`)            |
+| Q13 | PASS    | 1:1 Collab Spaces with 5 starter threads for persistent collaboration context (`lib/network/collab-space-actions.ts:62, :355`)             |
+| Q14 | PARTIAL | Only handoff_reference supported; no event/recipe/client references in threads (`lib/network/collab-space-actions.ts:663`)                 |
+| Q15 | PARTIAL | `removeConnection()` does NOT cascade to trusted circle, collab spaces, or recipe shares (`lib/network/actions.ts:1015`)                   |
+| Q16 | PASS    | Onboarding network step + discover tab with search by name/city/state (`lib/network/actions.ts:362`)                                       |
+| Q17 | FAIL    | Mentorship is purely social with zero operational feature bridge (`lib/community/mentorship-actions.ts`)                                   |
+| Q18 | FAIL    | Templates fork on download with no versioning or update propagation (`lib/community/template-sharing.ts:79`)                               |
+| Q19 | FAIL    | COI tracking and event collaboration are completely separate with no cross-validation                                                      |
+| Q20 | FAIL    | Contact share acceptance does NOT auto-create client record (`lib/network/actions.ts:1340` only updates status)                            |
+| Q21 | FAIL    | Social availability posts and collab availability signals are disconnected systems                                                         |
+| Q22 | FAIL    | Introduction Bridge hub group has no auto-link to event or client creation                                                                 |
+| Q23 | FAIL    | No `network` category in NotificationCategory type or settings form (`lib/notifications/types.ts:4`)                                       |
+| Q24 | FAIL    | No partner calendar view exists; `getCalendarEvents` is single-tenant only (`lib/scheduling/actions.ts:748`)                               |
+| Q25 | FAIL    | No per-partner financial aggregation; only global collab totals (`lib/analytics/collaboration-analytics.ts`)                               |
+| Q26 | FAIL    | No persistent cross-chef permission set; only per-event via `event_collaborators`                                                          |
+| Q27 | FAIL    | No referral dispute detection or resolution mechanism                                                                                      |
+| Q28 | PARTIAL | Handoff expiration + status visibility exist but no reclaim path or ghosting penalty (`lib/network/collab-actions.ts:420`)                 |
+| Q29 | FAIL    | No cancellation safeguard for collaborators; primary has unilateral control                                                                |
+| Q30 | PASS    | Account deletion explicitly cleans 20+ cross-chef tables (`lib/compliance/account-deletion-actions.ts:407`)                                |
+
+---
+
+## Classification Note (2026-04-18 audit)
+
+All 13 FAIL and 8 PARTIAL verdicts are **chef-to-chef network feature gaps**, not data integrity or zero-hallucination violations. The chef-to-chef network is a V2 feature layer; core operational systems (events, recipes, financials, client management) are unaffected. Domains E-G (Community, Cross-System Data, Partner Transparency) represent unbuilt cross-boundary wiring. Per anti-clutter rule, these are documented but not scheduled for V1 fixes.
 
 ---
 
 ## Gap Inventory
 
-> Populated after investigation. Ranked by severity.
+> All gaps are feature-level, not data integrity. Ranked by operational impact.
 
-| #   | Gap | Severity | Domain | Fix Approach |
-| --- | --- | -------- | ------ | ------------ |
-|     |     |          |        |              |
+| #   | Gap                                                  | Severity | Domain | Fix Approach                                            |
+| --- | ---------------------------------------------------- | -------- | ------ | ------------------------------------------------------- |
+| G1  | Contact share acceptance does not auto-create client | P1       | F      | Create client from share data on accept                 |
+| G2  | removeConnection() does not cascade                  | P1       | D      | Cascade to trusted circle, collab spaces, recipe shares |
+| G3  | No `network` NotificationCategory                    | P1       | F      | Add category, wire 12 network action types              |
+| G4  | Social posts and availability signals disconnected   | P2       | F      | Bridge or unify systems                                 |
+| G5  | No reputation score on chef profiles                 | P2       | A      | Aggregate handoff/collab/mentorship stats               |
+| G6  | Opportunity interest has no conversion path          | P2       | B      | Bridge to handoff/collaboration/subcontract             |
+| G7  | Mentorship is purely social                          | P2       | E      | Add operational access (recipes, prep, events)          |
+| G8  | Templates fork with no versioning                    | P2       | E      | Add linked copies + update notification                 |
+| G9  | COI not checked on event collaboration invite        | P2       | E      | Cross-validate subcontract COI on invite                |
+| G10 | Settlement splits are informational only             | P2       | C      | Create per-chef ledger entries from splits              |
+| G11 | No partner calendar view                             | P2       | G      | Show trusted circle partners' events (with consent)     |
+| G12 | No per-partner financial aggregation                 | P2       | G      | Add partnership breakdown to collaboration stats        |
+| G13 | No cancellation safeguard for collaborators          | P2       | H      | Notify co-hosts before cancellation                     |
