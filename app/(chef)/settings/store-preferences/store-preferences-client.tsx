@@ -11,7 +11,7 @@ import {
   Star,
   Store,
   Trash2,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {

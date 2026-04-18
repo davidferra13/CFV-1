@@ -14,6 +14,7 @@ import { executeWithIdempotency } from '@/lib/mutations/idempotency'
 import { createConflictError } from '@/lib/mutations/conflict'
 import { UnknownAppError, ValidationError } from '@/lib/errors/app-error'
 import { isMissingSoftDeleteColumn } from '@/lib/mutations/soft-delete-compat'
+import { invalidateRemyContextCache } from '@/lib/ai/remy-context'
 
 const InviteClientSchema = z.object({
   email: z.string().email('Valid email required'),
@@ -460,6 +461,7 @@ export async function createClient(input: CreateClientInput) {
 
       // Revalidate clients list
       revalidatePath('/clients')
+      invalidateRemyContextCache(user.tenantId!)
       return { success: true, client }
     },
   })
@@ -754,6 +756,7 @@ export async function updateClient(clientId: string, input: UpdateClientInput) {
 
       revalidatePath('/clients')
       revalidatePath(`/clients/${clientId}`)
+      invalidateRemyContextCache(user.tenantId!)
       return { success: true, client }
     },
   })
@@ -804,6 +807,29 @@ export async function updateClient(clientId: string, input: UpdateClientInput) {
     console.error('[updateClient] Webhook dispatch failed (non-blocking):', err)
   }
 
+  // Log dietary changes for the alert pipeline (non-blocking)
+  try {
+    const dietaryFields = ['allergies', 'dietary_restrictions'] as const
+    const changedDietaryFields = dietaryFields.filter((field) => field in updateFields)
+    if (changedDietaryFields.length > 0) {
+      const { logDietaryChange } = await import('@/lib/clients/dietary-alert-actions')
+      for (const field of changedDietaryFields) {
+        const oldVal = currentClient[field]
+        const newVal = (updateFields as Record<string, unknown>)[field]
+        const oldStr = Array.isArray(oldVal) ? oldVal.join(', ') : String(oldVal ?? '')
+        const newStr = Array.isArray(newVal)
+          ? (newVal as string[]).join(', ')
+          : String(newVal ?? '')
+        if (oldStr !== newStr) {
+          const changeType = field === 'allergies' ? 'allergy_added' : 'restriction_added'
+          await logDietaryChange(clientId, changeType, field, oldStr || null, newStr || null)
+        }
+      }
+    }
+  } catch (err) {
+    console.error('[updateClient] Dietary change log failed (non-blocking):', err)
+  }
+
   return result
 }
 
@@ -825,7 +851,7 @@ export async function deleteClient(clientId: string) {
     throw new ValidationError('Client not found')
   }
 
-  // Prevent deletion when active events exist — deleting would orphan them
+  // Prevent deletion when active events exist - deleting would orphan them
   const { data: activeEvents } = await (db
     .from('events')
     .select('id')
@@ -858,6 +884,7 @@ export async function deleteClient(clientId: string) {
 
   revalidatePath('/clients')
   revalidatePath(`/clients/${clientId}`)
+  invalidateRemyContextCache(user.tenantId!)
   return { success: true }
 }
 
@@ -1153,6 +1180,7 @@ export async function updateClientStatus(clientId: string, status: string) {
   }
 
   revalidatePath(`/clients/${clientId}`)
+  revalidatePath('/clients')
   return { success: true }
 }
 

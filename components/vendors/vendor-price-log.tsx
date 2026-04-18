@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState, useTransition } from 'react'
 import { getPriceHistory, addPriceEntry } from '@/lib/vendors/vendor-actions'
 import { Button } from '@/components/ui/button'
-import { TrendingUp, TrendingDown, Minus, Plus } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus, Plus } from '@/components/ui/icons'
 
 type PriceEntry = {
   id: string

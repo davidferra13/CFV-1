@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { AlertTriangle, ChevronRight } from 'lucide-react'
+import { AlertTriangle, ChevronRight } from '@/components/ui/icons'
 import type { StalledDraft } from '@/lib/dashboard/widget-actions'
 
 interface Props {

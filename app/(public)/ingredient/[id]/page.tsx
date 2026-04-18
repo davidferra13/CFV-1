@@ -13,7 +13,7 @@
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowLeft, ExternalLink, Globe, Leaf, Utensils } from 'lucide-react'
+import { ArrowLeft, ExternalLink, Globe, Leaf, Utensils } from '@/components/ui/icons'
 import {
   getPublicIngredientDetail,
   getPublicAlternatives,

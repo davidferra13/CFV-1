@@ -49,7 +49,7 @@ import {
   ListChecks,
   TrendingUp,
   TrendingDown,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 
 const CATEGORIES = [
   'Beef',

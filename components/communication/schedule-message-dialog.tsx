@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Clock } from 'lucide-react'
+import { Clock } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { ScheduleMessageForm } from './schedule-message-form'
 

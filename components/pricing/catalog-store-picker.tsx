@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Search, Star, MapPin, Clock } from 'lucide-react'
+import { Search, Star, MapPin, Clock } from '@/components/ui/icons'
 import type { CatalogStore } from '@/lib/openclaw/catalog-actions'
 import type { PreferredStore } from '@/lib/grocery/store-shopping-actions'
 

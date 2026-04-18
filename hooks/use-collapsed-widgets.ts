@@ -22,7 +22,7 @@ export function useCollapsedWidgets(storageKey: string = STORAGE_KEY) {
         }
       }
     } catch {
-      // Ignore parse errors — start with all expanded
+      // Ignore parse errors - start with all expanded
     }
   }, [storageKey])
 
@@ -31,7 +31,7 @@ export function useCollapsedWidgets(storageKey: string = STORAGE_KEY) {
       try {
         localStorage.setItem(storageKey, JSON.stringify(ids))
       } catch {
-        // localStorage full or unavailable — ignore
+        // localStorage full or unavailable - ignore
       }
     },
     [storageKey]

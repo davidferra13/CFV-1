@@ -15,7 +15,7 @@
  */
 
 import { useState, useEffect } from 'react'
-import { ExternalLink, Loader2 } from 'lucide-react'
+import { ExternalLink, Loader2 } from '@/components/ui/icons'
 import { searchIngredientOnline, type SourcingResult } from '@/lib/pricing/web-sourcing-actions'
 
 const STATIC_RETAILERS = [

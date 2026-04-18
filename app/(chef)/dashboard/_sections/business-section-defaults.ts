@@ -15,7 +15,7 @@ import type { PipelineRevenueForecast } from '@/lib/pipeline/forecast'
 import type { YoYData } from '@/lib/analytics/year-over-year'
 import type { ProspectStats } from '@/lib/prospecting/types'
 
-// Safe wrapper — records failures so callers can surface an error indicator
+// Safe wrapper - records failures so callers can surface an error indicator
 // instead of silently showing zeros as if they were real data.
 export async function safe<T>(
   label: string,

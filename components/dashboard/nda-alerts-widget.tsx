@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useTransition } from 'react'
-import { Lock, AlertTriangle, ArrowRight } from 'lucide-react'
+import { Lock, AlertTriangle, ArrowRight } from '@/components/ui/icons'
 import Link from 'next/link'
 import type { NdaDashboardSummary } from '@/lib/clients/nda-management-actions'
 import { getNdaDashboard } from '@/lib/clients/nda-management-actions'

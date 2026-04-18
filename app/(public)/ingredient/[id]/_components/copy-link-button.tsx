@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Copy, Check } from 'lucide-react'
+import { Copy, Check } from '@/components/ui/icons'
 
 interface CopyLinkButtonProps {
   path: string

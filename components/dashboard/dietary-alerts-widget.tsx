@@ -4,7 +4,7 @@ import { useState, useEffect, useTransition } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { getDietaryAlerts, getAlertStats } from '@/lib/clients/dietary-alert-actions'
 import type { DietaryAlert, AlertStats } from '@/lib/clients/dietary-alert-actions'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle } from '@/components/ui/icons'
 
 const severityBadge = {
   critical: 'error' as const,

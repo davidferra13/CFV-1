@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, X, ChevronDown, ChevronRight, Zap } from 'lucide-react'
+import { Check, X, ChevronDown, ChevronRight, Zap } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { confirmMatchAction, dismissMatchAction } from '@/lib/pricing/ingredient-matching-actions'

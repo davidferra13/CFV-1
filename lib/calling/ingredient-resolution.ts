@@ -361,7 +361,7 @@ export async function resolveIngredientAvailability(
     // Skip if we already have a data signal
     if (partialVendorIds.has(v.id)) return false
     if (partialVendorNames.has(v.name.toLowerCase())) return false
-    // Fix #9: phone-based dedup — don't re-call a vendor we already have a result for
+    // Fix #9: phone-based dedup - don't re-call a vendor we already have a result for
     if (v.phone && partialVendorPhones.has(v.phone)) return false
 
     return true

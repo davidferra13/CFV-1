@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
       .single()
     aiCall = data
   } catch (err) {
-    console.error('[voicemail] ai_calls update failed — voicemail transcript not persisted:', err)
+    console.error('[voicemail] ai_calls update failed - voicemail transcript not persisted:', err)
     return NextResponse.json({ ok: true }) // 200 so Twilio does not retry
   }
 

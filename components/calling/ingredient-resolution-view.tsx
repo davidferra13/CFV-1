@@ -47,7 +47,7 @@ import {
   Flag,
   ExternalLink,
   WifiOff,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 
 // ---------------------------------------------------------------------------
 // Shared formatting helpers
@@ -97,7 +97,7 @@ function ResolvedPanel({
       vendorName: store.chainName,
       source: 'openclaw',
     }).catch((err) => {
-      console.error('[ingredient-resolution] flagIngredientEntry failed — flag not persisted:', err)
+      console.error('[ingredient-resolution] flagIngredientEntry failed - flag not persisted:', err)
     })
   }
 

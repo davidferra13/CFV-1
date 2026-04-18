@@ -363,7 +363,7 @@ async function handleVendorAvailability(
         .single()
       if (newCall) {
         callId = newCall.id
-        // Fix #8: bi-directional link — ai_calls already has supplier_call_id = null
+        // Fix #8: bi-directional link - ai_calls already has supplier_call_id = null
         // at this point (call was initiated before a supplier_calls record existed).
         // Stamp it so queryAiCallFeedback and call sheet lookups can navigate both ways.
         await db
@@ -372,7 +372,7 @@ async function handleVendorAvailability(
           .eq('id', aiCallId)
           .catch((err: unknown) => {
             console.error(
-              '[calling/gather] ai_calls.supplier_call_id backfill failed — bi-directional link broken:',
+              '[calling/gather] ai_calls.supplier_call_id backfill failed - bi-directional link broken:',
               err
             )
           })
@@ -449,7 +449,7 @@ async function handleVendorAvailability(
         if (savedVendor) effectiveVendorId = savedVendor.id
       } catch (err) {
         console.error(
-          '[calling/gather] vendor phone lookup for effectiveVendorId failed — sentinel/price write skipped:',
+          '[calling/gather] vendor phone lookup for effectiveVendorId failed - sentinel/price write skipped:',
           err
         )
       }
@@ -478,7 +478,7 @@ async function handleVendorAvailability(
         pricePointAlreadyExists = !!existing
       } catch (err) {
         console.error(
-          '[calling/gather] price-point existence check failed — duplicate write guard disabled for this webhook:',
+          '[calling/gather] price-point existence check failed - duplicate write guard disabled for this webhook:',
           err
         )
       }
@@ -531,7 +531,7 @@ async function handleVendorAvailability(
       }
 
       // Record auto-actions in ai_calls.action_log for auditability.
-      // Read existing array first so we append rather than overwrite — a single
+      // Read existing array first so we append rather than overwrite - a single
       // call can have multiple action entries (price + sentinel on separate retries).
       if (aiCallId && actionTaken) {
         try {
@@ -745,7 +745,7 @@ async function handleVendorDelivery(
     if (speech) await logTranscript(db, aiCallId, 2, 'caller', speech, inputType as any, confidence)
 
     // Merge step-2 contact/notes into extracted_data.
-    // If the read fails, log it — step-1 delivery_window will be overwritten with
+    // If the read fails, log it - step-1 delivery_window will be overwritten with
     // just contact_notes and lost permanently. Fall back to empty object.
     let existingCallData: Record<string, any> = {}
     try {
@@ -757,7 +757,7 @@ async function handleVendorDelivery(
       existingCallData = (existingCall?.extracted_data as Record<string, any>) ?? {}
     } catch (err) {
       console.error(
-        '[calling/gather] vendor_delivery step2 existingCall read failed — step-1 delivery_window lost:',
+        '[calling/gather] vendor_delivery step2 existingCall read failed - step-1 delivery_window lost:',
         err
       )
     }
@@ -838,7 +838,7 @@ async function handleVenueConfirmation(
     if (speech) await logTranscript(db, aiCallId, 2, 'caller', speech, inputType as any, confidence)
 
     // Merge step-2 kitchen restrictions into extracted_data.
-    // If the read fails, log it — step-1 access_window will be overwritten with
+    // If the read fails, log it - step-1 access_window will be overwritten with
     // just kitchen_notes and lost permanently. Fall back to empty object.
     let existingVenueData: Record<string, any> = {}
     try {
@@ -850,7 +850,7 @@ async function handleVenueConfirmation(
       existingVenueData = (existingCall?.extracted_data as Record<string, any>) ?? {}
     } catch (err) {
       console.error(
-        '[calling/gather] venue_confirmation step2 existingCall read failed — step-1 access_window lost:',
+        '[calling/gather] venue_confirmation step2 existingCall read failed - step-1 access_window lost:',
         err
       )
     }
@@ -956,7 +956,7 @@ async function handleInboundVendorCallback(
 </Response>`)
   }
 
-  // Vendor declined or wrong number — mark the ai_calls record completed so it
+  // Vendor declined or wrong number - mark the ai_calls record completed so it
   // doesn't show as permanently in_progress in Call Sheet.
   await db
     .from('ai_calls')

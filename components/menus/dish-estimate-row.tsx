@@ -1,6 +1,6 @@
 'use client'
 
-import { CheckCircle, AlertTriangle, XCircle, HelpCircle } from 'lucide-react'
+import { CheckCircle, AlertTriangle, XCircle, HelpCircle } from '@/components/ui/icons'
 import Link from 'next/link'
 import type { DishEstimate } from '@/lib/menus/estimate-actions'
 

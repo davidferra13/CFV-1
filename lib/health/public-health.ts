@@ -131,7 +131,7 @@ export async function buildPublicHealthSnapshot(
   const backgroundJobs = options.includeBackgroundJobs ? await getBackgroundJobSummary() : null
 
   // Real DB connectivity check: a failing SELECT 1 means the pool is exhausted,
-  // the container is down, or the connection string is wrong — all critical.
+  // the container is down, or the connection string is wrong - all critical.
   let dbHealthy = true
   try {
     const { pgClient } = await import('@/lib/db')

@@ -27,7 +27,7 @@ import {
   Rocket,
   ClipboardList,
   ShieldAlert,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { signOut } from '@/lib/auth/actions'
 
 const navItems = [

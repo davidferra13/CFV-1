@@ -306,6 +306,17 @@ export { ToggleRight } from '@phosphor-icons/react/ssr'
 export { SpeakerHigh as Volume2 } from '@phosphor-icons/react/ssr'
 export { SpeakerX as VolumeX } from '@phosphor-icons/react/ssr'
 
+// Additional icons (batch 3 - lucide migration stragglers)
+export { Bag as ShoppingBag } from '@phosphor-icons/react/ssr'
+export { MapTrifold as Map } from '@phosphor-icons/react/ssr'
+export { Images } from '@phosphor-icons/react/ssr'
+export { Suitcase as Briefcase } from '@phosphor-icons/react/ssr'
+export { BellSimpleRinging as ConciergeBell } from '@phosphor-icons/react/ssr'
+export { Bread as Croissant } from '@phosphor-icons/react/ssr'
+export { RocketLaunch as Rocket } from '@phosphor-icons/react/ssr'
+export { Flag } from '@phosphor-icons/react/ssr'
+export { GitMerge } from '@phosphor-icons/react/ssr'
+
 // Prep timeline icons (not in SSR barrel export, imported directly)
 export { Snowflake } from '@phosphor-icons/react/dist/ssr/Snowflake'
 export { Key } from '@phosphor-icons/react/dist/ssr/Key'

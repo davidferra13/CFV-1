@@ -20,7 +20,7 @@ interface UseDeferredActionOptions {
  * Deferred destructive action with undo support.
  *
  * Flow:
- * 1. Call `execute()` — action is SCHEDULED, not run
+ * 1. Call `execute()` - action is SCHEDULED, not run
  * 2. Undo toast appears for `delay` ms
  * 3. If user clicks Undo → `onUndo()` is called, action is cancelled
  * 4. If toast expires → `onExecute()` runs the real destructive action

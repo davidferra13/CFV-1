@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Calculator, Loader2 } from 'lucide-react'
+import { Calculator, Loader2 } from '@/components/ui/icons'
 import { estimateMenuCost } from '@/lib/menus/estimate-actions'
 import type { MenuEstimate } from '@/lib/menus/estimate-actions'
 import { DishEstimateRow } from './dish-estimate-row'

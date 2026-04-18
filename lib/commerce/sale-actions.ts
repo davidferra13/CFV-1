@@ -263,7 +263,7 @@ export async function voidSale(saleId: string, reason: string) {
     throw new Error(`Cannot void a sale in ${(sale as any).status} status`)
   }
 
-  // Block void if processed refunds already exist — voiding after a refund
+  // Block void if processed refunds already exist - voiding after a refund
   // creates an inconsistent financial state (money returned + sale cancelled).
   const { data: existingRefunds } = await (db
     .from('commerce_refunds')

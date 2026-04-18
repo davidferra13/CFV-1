@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { markEventCostReviewedAction } from '@/lib/pricing/cost-refresh-actions'
 

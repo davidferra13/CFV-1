@@ -4,7 +4,7 @@ import { useState, useEffect, useTransition } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { getDietaryTrends } from '@/lib/clients/dietary-alert-actions'
 import type { DietaryTrend } from '@/lib/clients/dietary-alert-actions'
-import { TrendingUp, AlertTriangle, ShieldAlert } from 'lucide-react'
+import { TrendingUp, AlertTriangle, ShieldAlert } from '@/components/ui/icons'
 
 type TrendData = {
   commonAllergies: DietaryTrend[]

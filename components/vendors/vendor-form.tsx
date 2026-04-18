@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState, useTransition } from 'react'
 import { createVendor, updateVendor } from '@/lib/vendors/vendor-actions'
 import type { VendorInput, VendorCategory } from '@/lib/vendors/vendor-actions'
 import { Button } from '@/components/ui/button'
-import { Star } from 'lucide-react'
+import { Star } from '@/components/ui/icons'
 import { useProtectedForm } from '@/lib/qol/use-protected-form'
 import { FormShield } from '@/components/forms/form-shield'
 

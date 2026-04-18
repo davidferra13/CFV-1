@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { MapPin, Utensils, ArrowRight, Globe, ShieldCheck, Zap } from 'lucide-react'
+import { MapPin, Utensils, ArrowRight, Globe, ShieldCheck, Zap } from '@/components/ui/icons'
 
 const VALUE_PROPS = [
   {

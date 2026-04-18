@@ -40,7 +40,7 @@ export interface HouseholdDietarySummary {
 export async function getHouseholdMembers(profileToken: string): Promise<HouseholdMember[]> {
   const db: any = createServerClient({ admin: true })
 
-  // Resolve profileId from token — token acts as the auth credential for this profile
+  // Resolve profileId from token - token acts as the auth credential for this profile
   const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')

@@ -9,7 +9,7 @@ import {
   Flame,
   Store,
   type LucideIcon,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 
 type CategoryConfig = {
   icon: LucideIcon

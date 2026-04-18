@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Lock, Plus, Trash2, Check, AlertTriangle } from 'lucide-react'
+import { Lock, Plus, Trash2, Check, AlertTriangle } from '@/components/ui/icons'
 import { todayLocalDateString } from '@/lib/utils/format'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { NdaBadge, getNdaBadgeStatus } from './nda-badge'

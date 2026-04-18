@@ -42,7 +42,7 @@ import {
   Briefcase,
   GitMerge,
   Keyboard,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 
 export const metadata: Metadata = {
   title: 'All Features',

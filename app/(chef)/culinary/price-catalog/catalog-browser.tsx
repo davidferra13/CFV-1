@@ -51,7 +51,7 @@ import {
   Copy,
   CheckCheck,
   Store,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import type { PriceHistoryPoint } from '@/lib/openclaw/price-intelligence-actions'
 import { getVendorCallQueue, type VendorCallCandidate } from '@/lib/vendors/sourcing-actions'
 import {

@@ -3,6 +3,19 @@
 @tailwind utilities;
 
 /* ============================================
+   GLOBAL INTERACTIVE ELEMENT DEFAULTS
+   ============================================ */
+
+/* All clickable elements get pointer cursor by default.
+   Browsers set cursor:default on buttons which feels broken to users. */
+button:not(:disabled),
+[role='button']:not(:disabled),
+summary,
+label[for] {
+  cursor: pointer;
+}
+
+/* ============================================
    DESIGN TOKENS - CSS Custom Properties
    ============================================ */
 :root {

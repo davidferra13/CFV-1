@@ -196,6 +196,29 @@ export async function POST(req: Request) {
         await handlePayoutEvent(event)
         break
 
+      // FC-G14: Handle subscription payment failures
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object as Stripe.Invoice
+        const customerId =
+          typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id
+        if (customerId && (invoice as any).subscription) {
+          console.warn('[Stripe Webhook] Invoice payment failed for customer:', customerId)
+          // Notify chef about failed payment (non-blocking)
+          try {
+            const { sendDeveloperAlert } = await import('@/lib/email/developer-alerts')
+            await sendDeveloperAlert({
+              system: 'stripe',
+              title: 'Subscription payment failed',
+              description: `Customer ${customerId} payment failed. Stripe will retry. Invoice: ${invoice.id}`,
+              severity: 'warning',
+            })
+          } catch (alertErr) {
+            console.error('[Stripe Webhook] Alert failed (non-blocking):', alertErr)
+          }
+        }
+        break
+      }
+
       default:
         console.info('[Stripe Webhook] Unhandled event type:', event.type)
     }
@@ -604,7 +627,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
   const isDuplicateLedger = result.duplicate
   if (isDuplicateLedger) {
     console.info(
-      '[handlePaymentSucceeded] Duplicate ledger entry — skipping transfer recording, still checking transition'
+      '[handlePaymentSucceeded] Duplicate ledger entry - skipping transfer recording, still checking transition'
     )
   }
 

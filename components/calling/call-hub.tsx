@@ -31,7 +31,7 @@ import {
   getCallStatus,
 } from '@/lib/calling/twilio-actions'
 import { useSSE } from '@/lib/realtime/sse-client'
-import { Phone, Search, Loader2, X, Mic, ChevronRight, ChevronUp } from 'lucide-react'
+import { Phone, Search, Loader2, X, Mic, ChevronRight, ChevronUp } from '@/components/ui/icons'
 import { toast } from 'sonner'
 import { IngredientResolutionView } from '@/components/calling/ingredient-resolution-view'
 
@@ -166,7 +166,7 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
         setSelected(autoSelected)
         setCallStates({})
       } catch (err) {
-        // Q59: Was silent — Zero Hallucination violation.
+        // Q59: Was silent - Zero Hallucination violation.
         console.error('[call-hub] ingredient resolution failed:', err)
         setResolution(null)
       } finally {
@@ -234,7 +234,7 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
         } catch (err) {
           // Network/auth error on poll - don't kill the interval, let it retry.
           // Attempts still increments so the loop eventually exhausts gracefully.
-          // Q59: Was silent catch {} — Zero Hallucination violation.
+          // Q59: Was silent catch {} - Zero Hallucination violation.
           console.error('[call-hub] placeCall poll error:', err)
         }
         if (attempts >= 22) {

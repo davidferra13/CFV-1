@@ -35,7 +35,7 @@ export function generateICS(
 
   // When a timezone is known, emit TZID so calendar apps show the correct local time
   // regardless of the viewer's own timezone. Without TZID, the time is "floating" and
-  // renders in the recipient's local timezone — wrong for cross-timezone scheduling.
+  // renders in the recipient's local timezone - wrong for cross-timezone scheduling.
   const dtStart = event.timezone
     ? `DTSTART;TZID=${event.timezone}:${startLocal}`
     : `DTSTART:${startLocal}`

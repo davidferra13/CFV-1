@@ -1,7 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, Clock, AlertTriangle, CheckCircle2, MessageSquare } from 'lucide-react'
+import {
+  ArrowRight,
+  Clock,
+  AlertTriangle,
+  CheckCircle2,
+  MessageSquare,
+} from '@/components/ui/icons'
 import type { NextActionResult } from '@/lib/lifecycle/next-action'
 
 const TYPE_STYLES = {

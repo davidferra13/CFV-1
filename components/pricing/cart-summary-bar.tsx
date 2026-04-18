@@ -1,6 +1,6 @@
 'use client'
 
-import { ShoppingCart } from 'lucide-react'
+import { ShoppingCart } from '@/components/ui/icons'
 
 function formatCurrency(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`

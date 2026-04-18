@@ -185,7 +185,7 @@ export async function POST(request: NextRequest) {
     })
   } catch (err) {
     console.error('[twilio-webhook] Error processing inbound message:', err)
-    // Return 500 so Twilio retries — a 200 here would silently drop the message
+    // Return 500 so Twilio retries - a 200 here would silently drop the message
     return new NextResponse('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {
       headers: { 'Content-Type': 'text/xml' },
       status: 500,

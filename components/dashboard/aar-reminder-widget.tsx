@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { scanPendingAARs } from '@/lib/automations/aar-scan'
 import { triggerAARReminders } from '@/lib/automations/aar-trigger'
 import { toast } from 'sonner'
-import { ClipboardCheck, ArrowRight } from 'lucide-react'
+import { ClipboardCheck, ArrowRight } from '@/components/ui/icons'
 
 type PendingEvent = {
   id: string

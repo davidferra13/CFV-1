@@ -122,7 +122,7 @@ export async function getVendorCallQueue(ingredientName: string): Promise<Vendor
       .neq('phone', '')
     savedVendors = data || []
   } catch (err) {
-    console.error('[sourcing] saved vendors query failed — showing national only:', err)
+    console.error('[sourcing] saved vendors query failed - showing national only:', err)
   }
 
   const savedCandidates: VendorCallCandidate[] = savedVendors.map((v: any) => {
@@ -170,7 +170,7 @@ export async function getVendorCallQueue(ingredientName: string): Promise<Vendor
     const { data } = await nationalQuery.order('name', { ascending: true }).limit(50)
     nationalVendors = data || []
   } catch (err) {
-    console.error('[sourcing] national vendors query failed — showing saved only:', err)
+    console.error('[sourcing] national vendors query failed - showing saved only:', err)
   }
 
   // Deduplicate by phone - saved vendors take priority

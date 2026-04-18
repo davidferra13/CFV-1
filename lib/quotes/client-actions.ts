@@ -120,7 +120,7 @@ export async function acceptQuote(quoteId: string) {
 
   if (preCheck) {
     // Only quotes in 'sent' status can be accepted. Guard here to fail fast
-    // before the atomic RPC — the RPC enforces this too, but an early check
+    // before the atomic RPC - the RPC enforces this too, but an early check
     // returns a clearer error message to the client.
     if (preCheck.status !== 'sent') {
       throw new Error('This quote is no longer available for acceptance.')
@@ -303,9 +303,36 @@ export async function rejectQuote(quoteId: string, reason?: string) {
   revalidatePath(`/my-quotes/${quoteId}`)
   revalidatePath('/my-events')
 
+  // Revert inquiry from 'quoted' to 'awaiting_chef' so chef knows to re-quote (non-blocking)
+  if (quote.inquiry_id) {
+    try {
+      const { data: inq } = await db
+        .from('inquiries')
+        .select('status')
+        .eq('id', quote.inquiry_id)
+        .single()
+      if (inq && (inq as any).status === 'quoted') {
+        await db
+          .from('inquiries')
+          .update({ status: 'awaiting_chef', updated_at: new Date().toISOString() })
+          .eq('id', quote.inquiry_id)
+        await db.from('inquiry_state_transitions').insert({
+          tenant_id: quote.tenant_id,
+          inquiry_id: quote.inquiry_id,
+          from_status: 'quoted',
+          to_status: 'awaiting_chef',
+          reason: `Quote rejected by client${reason ? `: ${reason}` : ''}`,
+        })
+      }
+    } catch (err) {
+      console.error('[rejectQuote] Inquiry status revert failed (non-blocking):', err)
+    }
+  }
+
   // Chef-side cache invalidation
   revalidatePath('/quotes')
   revalidatePath(`/quotes/${quoteId}`)
+  revalidatePath('/dashboard')
   if (quote.inquiry_id) {
     revalidatePath(`/inquiries/${quote.inquiry_id}`)
     revalidatePath('/inquiries')

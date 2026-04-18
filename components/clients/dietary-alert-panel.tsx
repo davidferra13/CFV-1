@@ -9,7 +9,7 @@ import {
   acknowledgeAllAlerts,
 } from '@/lib/clients/dietary-alert-actions'
 import type { DietaryAlert } from '@/lib/clients/dietary-alert-actions'
-import { AlertTriangle, Check, CheckCheck, Filter } from 'lucide-react'
+import { AlertTriangle, Check, CheckCheck, Filter } from '@/components/ui/icons'
 import { toast } from 'sonner'
 
 type SeverityFilter = 'all' | 'critical' | 'warning' | 'info'

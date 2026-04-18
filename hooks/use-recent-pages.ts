@@ -1,4 +1,4 @@
-// Recently visited pages hook — tracks last 8 page visits in localStorage
+// Recently visited pages hook - tracks last 8 page visits in localStorage
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
@@ -16,7 +16,7 @@ export type RecentPage = {
   visitedAt: string
 }
 
-/** UUID v4 pattern — matches 8-4-4-4-12 hex strings */
+/** UUID v4 pattern - matches 8-4-4-4-12 hex strings */
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 /**
@@ -45,7 +45,7 @@ function deriveLabel(pathname: string): string {
   }
 
   // Static path label derivation
-  // If path has a final "action" segment like /new, /edit — use "Action Parent"
+  // If path has a final "action" segment like /new, /edit - use "Action Parent"
   const actionSegments = ['new', 'edit', 'create']
   if (segments.length >= 2 && actionSegments.includes(lastSegment)) {
     const parent = segments[segments.length - 2]
@@ -84,7 +84,7 @@ function writeToStorage(pages: RecentPage[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(pages))
   } catch {
-    // localStorage full or unavailable — silently ignore
+    // localStorage full or unavailable - silently ignore
   }
 }
 

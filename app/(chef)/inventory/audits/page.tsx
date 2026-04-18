@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getAudits } from '@/lib/inventory/audit-actions'
 import { AuditsClient } from './audits-client'
+import { Button } from '@/components/ui/button'
 
 export const metadata: Metadata = { title: 'Inventory Audits' }
 
@@ -27,11 +28,9 @@ export default async function AuditsPage() {
               Physical count audits to verify stock levels match your records.
             </p>
           </div>
-          <Link href="/inventory/audits/new">
-            <button className="inline-flex items-center justify-center font-medium bg-brand-600 text-white hover:bg-brand-700 h-10 px-4 py-2 text-sm rounded-lg">
-              + New Audit
-            </button>
-          </Link>
+          <Button href="/inventory/audits/new" size="sm">
+            + New Audit
+          </Button>
         </div>
       </div>
 

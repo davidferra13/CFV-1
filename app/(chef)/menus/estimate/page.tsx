@@ -1,5 +1,5 @@
 import { MenuCostEstimator } from '@/components/menus/menu-cost-estimator'
-import { Calculator } from 'lucide-react'
+import { Calculator } from '@/components/ui/icons'
 
 export default function MenuEstimatePage() {
   return (

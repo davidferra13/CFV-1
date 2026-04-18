@@ -7,7 +7,7 @@ import {
   type ShoppingOptResult,
 } from '@/lib/openclaw/catalog-actions'
 import { formatCurrency } from '@/lib/utils/currency'
-import { ListChecks, X, Check } from 'lucide-react'
+import { ListChecks, X, Check } from '@/components/ui/icons'
 
 interface BulkPriceCheckerProps {
   onFilterByIngredient?: (name: string) => void

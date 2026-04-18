@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
-import { Search, SlidersHorizontal, X } from 'lucide-react'
+import { Search, SlidersHorizontal, X } from '@/components/ui/icons'
 import {
   BUSINESS_TYPES,
   CUISINE_CATEGORIES,

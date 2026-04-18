@@ -51,7 +51,7 @@ export function CallSettingsForm({ initialRules }: Props) {
     setSaved(false)
     setError(null)
 
-    // Q9: client-side guard — start >= end causes upsertRoutingRules to reject,
+    // Q9: client-side guard - start >= end causes upsertRoutingRules to reject,
     // but catching it here avoids an unnecessary server round-trip and gives
     // immediate feedback before the transition begins.
     if (activeStart >= activeEnd) {

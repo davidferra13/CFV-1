@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { comparePrices } from '@/lib/vendors/vendor-actions'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Search, Star, Plus } from 'lucide-react'
+import { Search, Star, Plus } from '@/components/ui/icons'
 import Link from 'next/link'
 
 type ComparisonEntry = {

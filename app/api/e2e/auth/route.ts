@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Defense-in-depth: only accept from loopback even when the flag is set.
-  // E2E tests always run on the same machine — external IPs never need this route.
+  // E2E tests always run on the same machine - external IPs never need this route.
   const forwardedFor = req.headers.get('x-forwarded-for')
   const realIp = req.headers.get('x-real-ip')
   const remoteIp = forwardedFor?.split(',')[0]?.trim() ?? realIp ?? ''

@@ -9,7 +9,7 @@
  */
 
 import { useState } from 'react'
-import { Phone, Check, Loader2, Mic, DollarSign, Clock } from 'lucide-react'
+import { Phone, Check, Loader2, Mic, DollarSign, Clock } from '@/components/ui/icons'
 import { requestCallingAccess } from '@/lib/calling/twilio-actions'
 
 export function CallAccessRequest() {

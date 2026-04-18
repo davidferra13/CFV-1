@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
       const { data: firstChef } = await db.from('chefs').select('id').limit(1).single()
       chefId = firstChef?.id ?? null
     }
-    // If multiple chefs: inbound number not configured — drop the call.
+    // If multiple chefs: inbound number not configured - drop the call.
     // The caller will hear a disconnect rather than being routed to the wrong chef.
   }
 
@@ -158,7 +158,7 @@ export async function POST(req: NextRequest) {
 
   const role = isKnownVendor ? 'inbound_vendor_callback' : 'inbound_unknown'
 
-  // If insert fails, log it — the call gets no transcript, result, or Tier 2 signal.
+  // If insert fails, log it - the call gets no transcript, result, or Tier 2 signal.
   const { data: aiCallRecord, error: aiCallInsertError } = await db
     .from('ai_calls')
     .insert({
@@ -178,7 +178,7 @@ export async function POST(req: NextRequest) {
 
   if (aiCallInsertError || !aiCallRecord) {
     console.error(
-      '[calling/inbound] ai_calls insert failed — call will have no transcript or result:',
+      '[calling/inbound] ai_calls insert failed - call will have no transcript or result:',
       aiCallInsertError
     )
   }

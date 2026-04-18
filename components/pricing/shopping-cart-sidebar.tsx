@@ -24,7 +24,7 @@ import {
   ChevronLeft,
   Check,
   Loader2,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 
 function formatCurrency(cents: number | null): string {
   if (cents == null) return 'N/A'

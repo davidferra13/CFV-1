@@ -64,7 +64,7 @@ export const SNOOZE_OPTIONS: { value: SnoozeDuration; label: string }[] = [
 
 /**
  * Hook for snoozing queue items.
- * Stores snooze state in localStorage — no migration needed.
+ * Stores snooze state in localStorage - no migration needed.
  */
 export function useQueueSnooze() {
   const [snoozedMap, setSnoozedMap] = useState<SnoozedMap>({})
