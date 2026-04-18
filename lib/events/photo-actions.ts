@@ -425,6 +425,7 @@ export async function getPortfolioPhotos(): Promise<PortfolioPhoto[]> {
     .eq('tenant_id', user.tenantId!)
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
+    .limit(500)
 
   if (error) {
     console.error('[getPortfolioPhotos] Error:', error)
@@ -657,6 +658,7 @@ export async function getPublicPortfolio(chefId: string): Promise<PublicPortfoli
     .eq('is_portfolio', true)
     .is('deleted_at', null)
     .order('display_order', { ascending: true })
+    .limit(100)
 
   if (error || !photos?.length) {
     if (error) console.error('[getPublicPortfolio] Error:', error)

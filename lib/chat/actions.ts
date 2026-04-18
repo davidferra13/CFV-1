@@ -260,6 +260,7 @@ export async function getConversationInbox(): Promise<ConversationWithDetails[]>
     )
     .in('id', conversationIds)
     .order('last_message_at', { ascending: false, nullsFirst: false })
+    .limit(100)
 
   if (convError || !conversations) {
     console.error('[getConversationInbox] Error:', convError)

@@ -109,6 +109,7 @@ export async function getDiscoverableChefs(): Promise<DirectoryChef[]> {
     .not('slug', 'is', null)
     .eq('chef_preferences.network_discoverable', true)
     .order('created_at', { ascending: false })
+    .limit(200)
 
   if (error) {
     console.error('[getDiscoverableChefs]', error)

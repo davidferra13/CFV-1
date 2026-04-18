@@ -442,7 +442,8 @@ export async function getUnifiedChefReviewFeed(): Promise<UnifiedChefReviewItem[
       `
       )
       .eq('tenant_id', user.tenantId)
-      .order('created_at', { ascending: false }),
+      .order('created_at', { ascending: false })
+      .limit(100),
     db
       .from('chef_feedback')
       .select(
@@ -460,7 +461,8 @@ export async function getUnifiedChefReviewFeed(): Promise<UnifiedChefReviewItem[
       `
       )
       .eq('tenant_id', user.tenantId)
-      .order('created_at', { ascending: false }),
+      .order('created_at', { ascending: false })
+      .limit(100),
     db
       .from('external_reviews')
       .select(
@@ -478,7 +480,8 @@ export async function getUnifiedChefReviewFeed(): Promise<UnifiedChefReviewItem[
       )
       .eq('tenant_id', user.tenantId)
       .order('review_date', { ascending: false })
-      .order('created_at', { ascending: false }),
+      .order('created_at', { ascending: false })
+      .limit(100),
   ])
 
   if (clientReviewsResult.error) {

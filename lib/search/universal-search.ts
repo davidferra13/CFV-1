@@ -21,6 +21,11 @@ export interface SearchResult {
     | 'note'
     | 'message'
     | 'conversation'
+    | 'connection'
+    | 'handoff'
+    | 'collab_space'
+    | 'hub_message'
+    | 'contract'
   title: string
   snippet?: string
   url: string
@@ -359,6 +364,225 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     }
   }
 
+  // Search chef connections (both directions - scoped by tenant_id).
+  const { data: connectionsOut } = await db
+    .from('chef_connections')
+    .select(
+      'id, connected_chef_id, status, chefs!chef_connections_connected_chef_id_fkey(business_name)'
+    )
+    .eq('chef_id', chef.tenantId!)
+    .eq('status', 'accepted')
+    .limit(8)
+
+  const { data: connectionsIn } = await db
+    .from('chef_connections')
+    .select('id, chef_id, status, chefs!chef_connections_chef_id_fkey(business_name)')
+    .eq('connected_chef_id', chef.tenantId!)
+    .eq('status', 'accepted')
+    .limit(8)
+
+  for (const conn of connectionsOut || []) {
+    const name = conn.chefs?.business_name || 'Connected Chef'
+    if (!name.toLowerCase().includes(needle)) continue
+    results.push({
+      id: makeId('connection', conn.id),
+      type: 'connection',
+      title: name,
+      snippet: 'Connected Chef',
+      url: '/network?tab=connections',
+      metadata: { badge: conn.status },
+    })
+  }
+  for (const conn of connectionsIn || []) {
+    const name = conn.chefs?.business_name || 'Connected Chef'
+    if (!name.toLowerCase().includes(needle)) continue
+    results.push({
+      id: makeId('connection', conn.id),
+      type: 'connection',
+      title: name,
+      snippet: 'Connected Chef',
+      url: '/network?tab=connections',
+      metadata: { badge: conn.status },
+    })
+  }
+
+  // Search handoffs (sent by this chef - by title/occasion).
+  const { data: handoffsSent } = await db
+    .from('chef_handoffs')
+    .select('id, title, occasion, status, created_at')
+    .eq('sender_chef_id', chef.tenantId!)
+    .or(`title.ilike.${q},occasion.ilike.${q}`)
+    .limit(8)
+
+  for (const h of handoffsSent || []) {
+    results.push({
+      id: makeId('handoff', h.id),
+      type: 'handoff',
+      title: h.title || h.occasion || 'Handoff',
+      snippet: `Sent - ${h.status}`,
+      url: '/network?tab=handoffs',
+      metadata: { badge: h.status },
+    })
+  }
+
+  // Search handoffs received by this chef.
+  const { data: handoffsReceived } = await db
+    .from('chef_collab_handoff_recipients')
+    .select('id, handoff_id, status, chef_handoffs(title, occasion)')
+    .eq('recipient_chef_id', chef.tenantId!)
+    .limit(8)
+
+  for (const hr of handoffsReceived || []) {
+    const title = hr.chef_handoffs?.title || hr.chef_handoffs?.occasion || 'Handoff'
+    if (!title.toLowerCase().includes(needle)) continue
+    results.push({
+      id: makeId('handoff', hr.handoff_id),
+      type: 'handoff',
+      title,
+      snippet: `Received - ${hr.status}`,
+      url: '/network?tab=handoffs',
+      metadata: { badge: hr.status },
+    })
+  }
+
+  // Search collab spaces (by name, where chef is a member).
+  const { data: collabSpaces } = await db
+    .from('chef_collab_space_members')
+    .select('collab_space_id, chef_collab_spaces(id, name, description)')
+    .eq('chef_id', chef.tenantId!)
+    .limit(20)
+
+  for (const csm of collabSpaces || []) {
+    const space = csm.chef_collab_spaces
+    if (!space) continue
+    const hay = [space.name, space.description || ''].join(' ').toLowerCase()
+    if (!hay.includes(needle)) continue
+    results.push({
+      id: makeId('collab_space', space.id),
+      type: 'collab_space',
+      title: space.name,
+      snippet: space.description || 'Collaboration Space',
+      url: `/network/spaces/${space.id}`,
+    })
+  }
+
+  // Search hub circle messages (body - scoped to groups chef is a member of).
+  try {
+    const { data: hubProfile } = await db
+      .from('hub_guest_profiles')
+      .select('id')
+      .eq('auth_user_id', chef.userId)
+      .maybeSingle()
+
+    if (hubProfile) {
+      const { data: memberGroups } = await db
+        .from('hub_group_members')
+        .select('group_id')
+        .eq('profile_id', hubProfile.id)
+
+      if (memberGroups?.length) {
+        const groupIds = memberGroups.map((m: any) => m.group_id)
+        const { data: hubMessages } = await db
+          .from('hub_messages')
+          .select('id, body, group_id, created_at, hub_groups(name, group_token)')
+          .in('group_id', groupIds)
+          .ilike('body', q)
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .limit(8)
+
+        for (const msg of hubMessages ?? []) {
+          const group = msg.hub_groups
+          results.push({
+            id: makeId('hub_message', msg.id),
+            type: 'hub_message',
+            title: group?.name || 'Circle Message',
+            snippet: msg.body?.slice(0, 120) || undefined,
+            url: group?.group_token ? `/hub/g/${group.group_token}` : '/circles',
+          })
+        }
+      }
+    }
+  } catch {
+    // Non-blocking: hub message search failure doesn't break main search
+  }
+
+  // Search contracts (body_snapshot - scoped by chef_id).
+  try {
+    const { data: contracts } = await db
+      .from('event_contracts')
+      .select('id, event_id, status, body_snapshot, clients(full_name), events(occasion)')
+      .eq('chef_id', chef.tenantId!)
+      .ilike('body_snapshot', q)
+      .order('created_at', { ascending: false })
+      .limit(8)
+
+    for (const contract of contracts ?? []) {
+      const clientName = contract.clients?.full_name || 'Client'
+      const occasion = contract.events?.occasion || ''
+      // Extract a snippet around the match
+      const bodyText = (contract.body_snapshot || '').replace(/<[^>]*>/g, '')
+      const matchIdx = bodyText.toLowerCase().indexOf(safeQuery.toLowerCase())
+      const snippetStart = Math.max(0, matchIdx - 40)
+      const snippetText = bodyText.slice(snippetStart, snippetStart + 120)
+      results.push({
+        id: makeId('contract', contract.id),
+        type: 'contract',
+        title: `Contract: ${clientName}${occasion ? ` (${occasion})` : ''}`,
+        snippet: snippetText || undefined,
+        url: `/events/${contract.event_id}`,
+        metadata: { badge: contract.status },
+      })
+    }
+  } catch {
+    // Non-blocking: contract search failure doesn't break main search
+  }
+
+  // Search recipes by ingredient name (find recipes containing matching ingredients).
+  try {
+    const { data: matchingIngredients } = await db
+      .from('ingredients')
+      .select('id, name')
+      .eq('tenant_id', chef.tenantId!)
+      .ilike('name', q)
+      .limit(20)
+
+    if (matchingIngredients?.length) {
+      const ingredientIds = matchingIngredients.map((i: any) => i.id)
+      const ingredientNames = new Map(matchingIngredients.map((i: any) => [i.id, i.name]))
+
+      const { data: recipeIngredients } = await db
+        .from('recipe_ingredients')
+        .select('recipe_id, ingredient_id, recipes(id, name)')
+        .in('ingredient_id', ingredientIds)
+        .limit(20)
+
+      if (recipeIngredients) {
+        const existingRecipeIds = new Set(
+          results.filter((r) => r.type === 'recipe').map((r) => r.id)
+        )
+        const seen = new Set<string>()
+        for (const ri of recipeIngredients) {
+          const recipe = ri.recipes
+          if (!recipe || seen.has(recipe.id)) continue
+          seen.add(recipe.id)
+          // Skip if recipe already found by name search
+          if (existingRecipeIds.has(makeId('recipe', recipe.id))) continue
+          const ingName = ingredientNames.get(ri.ingredient_id)
+          results.push({
+            id: makeId('recipe', recipe.id),
+            type: 'recipe',
+            title: recipe.name,
+            snippet: `Contains: ${ingName}`,
+            url: `/recipes/${recipe.id}`,
+          })
+        }
+      }
+    }
+  } catch {
+    // Non-blocking: ingredient search failure doesn't break main search
+  }
+
   const sectionLabels: Record<SearchResult['type'], string> = {
     page: 'Pages',
     client: 'Clients',
@@ -373,6 +597,11 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     note: 'Notes',
     message: 'Messages',
     conversation: 'Conversations',
+    connection: 'Chef Network',
+    handoff: 'Chef Network',
+    collab_space: 'Chef Network',
+    hub_message: 'Circle Messages',
+    contract: 'Contracts',
   }
 
   const grouped: Record<string, SearchResult[]> = {}
