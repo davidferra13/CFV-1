@@ -11,7 +11,12 @@ export default function Error({
     <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
       <h2 className="text-xl font-semibold">Could not load dashboard</h2>
       <p className="text-sm text-muted-foreground">
-        {error.message || 'An unexpected error occurred'}
+        Something went wrong loading the dashboard.
+        {error.digest && (
+          <span className="block text-xs text-muted-foreground/60 mt-1">
+            Reference: {error.digest}
+          </span>
+        )}
       </p>
       <button
         onClick={reset}
