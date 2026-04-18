@@ -1289,8 +1289,16 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'My Circles',
     description:
-      'List all dinner circles/hub groups with member count, unread messages, and activity.',
+      'List all circles (dinner circles and community circles) with member count, unread messages, and activity.',
     inputSchema: '{}',
+  },
+  {
+    type: 'circles.discover',
+    tier: 1,
+    name: 'Browse Community Circles',
+    description:
+      'Discover public community circles. Navigate to /hub/circles to browse, search, and join topic-based circles like "All Things Japanese Food" or "Gluten-Free Foodies".',
+    inputSchema: '{ "search": "string? - optional search term" }',
   },
   {
     type: 'circles.unread',

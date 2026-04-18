@@ -106,6 +106,8 @@ AVAILABLE PAGES (suggest these when relevant):
 /loyalty - Loyalty program
 /goals - Business goals
 /remy - Remy history (everything Remy has saved)
+/circles - Your circles (dinner + community)
+/hub/circles - Browse community circles (topic-based groups anyone can join)
 `.trim()
 
 // Scoped route map for Focus Mode - only core workflows
@@ -132,6 +134,8 @@ AVAILABLE PAGES (suggest these when relevant):
 /chat - Client messaging
 /settings - Account settings
 /goals - Business goals
+/circles - Your circles (dinner + community)
+/hub/circles - Browse community circles (topic-based groups anyone can join)
 `.trim()
 
 // ─── System Prompt Builder ──────────────────────────────────────────────────

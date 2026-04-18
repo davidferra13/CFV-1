@@ -1890,6 +1890,14 @@ async function executeSingleTask(
       case 'circles.events':
         data = await executeCircleEvents(task.inputs)
         break
+      case 'circles.discover':
+        data = {
+          route: '/hub/circles',
+          navigated: true,
+          message:
+            'Opening community circles discovery page. You can browse, search, and join public circles.',
+        }
+        break
 
       // Rate Card
       case 'rate_card.summary':
