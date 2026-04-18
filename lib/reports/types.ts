@@ -103,6 +103,9 @@ export type DailyReportContent = {
 
   // Metadata
   generatedAt: string
+
+  // AI-generated narrative summary (non-blocking, may be null if AI unavailable)
+  aiNarrative?: string | null
 }
 
 export type DailyReport = {

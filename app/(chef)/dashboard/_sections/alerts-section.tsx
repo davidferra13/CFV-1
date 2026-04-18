@@ -24,6 +24,7 @@ import { getStuckEvents } from '@/lib/pipeline/stuck-events'
 import { getNextBestActions } from '@/lib/clients/next-best-action'
 import { getCoolingClients } from '@/lib/clients/cooling-actions'
 import { getActiveAlerts } from '@/lib/ai/remy-proactive-alerts'
+import { generateAlertDigest } from '@/lib/ai/alert-digest'
 import { getSubscriptionStatus, type SubscriptionStatus } from '@/lib/stripe/subscription'
 import { ResponseTimeWidget } from '@/components/dashboard/response-time-widget'
 import { PendingFollowUpsWidget } from '@/components/inquiries/pending-follow-ups-widget'
@@ -215,6 +216,13 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
   const urgentRemyAlerts = remyAlerts.filter(
     (a) => a.priority === 'urgent' || a.priority === 'high'
   )
+
+  // AI digest: summarize batch of alerts into one sentence (non-blocking)
+  const alertDigest =
+    urgentRemyAlerts.length >= 2
+      ? await safe('alertDigest', () => generateAlertDigest(urgentRemyAlerts), null)
+      : null
+
   const isPaymentFailed =
     subscriptionStatus?.status === 'past_due' || subscriptionStatus?.status === 'unpaid'
 
@@ -247,6 +255,7 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
 
       {urgentRemyAlerts.length > 0 && (
         <section className="col-span-full" style={{ order: -1 }}>
+          {alertDigest && <p className="text-xs text-stone-400 italic mb-2 px-1">{alertDigest}</p>}
           <RemyAlertsWidget alerts={urgentRemyAlerts} />
         </section>
       )}

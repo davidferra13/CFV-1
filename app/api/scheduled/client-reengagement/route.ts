@@ -8,6 +8,7 @@ import { createServerClient } from '@/lib/db/server'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { runMonitoredCronJob } from '@/lib/cron/monitor'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
+import { generateReengagementDraft } from '@/lib/ai/reengagement-draft'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
 
@@ -75,6 +76,36 @@ async function handleReengagement(request: NextRequest): Promise<NextResponse> {
 
         const clientName = client.preferred_name || client.full_name || 'there'
         const chefName = chef.display_name || chef.business_name || 'your chef'
+        const daysSince = Math.floor(
+          (Date.now() - new Date(client.last_event_date + 'T00:00:00Z').getTime()) /
+            (1000 * 60 * 60 * 24)
+        )
+
+        // Fetch last event details for AI personalization
+        const { data: lastEvents } = await db
+          .from('events')
+          .select('occasion, guest_count')
+          .eq('tenant_id', client.tenant_id)
+          .eq('client_id', client.id)
+          .eq('status', 'completed')
+          .order('event_date', { ascending: false })
+          .limit(1)
+        const lastEvent = lastEvents?.[0]
+
+        // AI: generate personalized email copy (non-blocking, falls back to static)
+        const aiDraft = await generateReengagementDraft({
+          clientName,
+          chefName,
+          daysSinceLastEvent: daysSince,
+          lastOccasion: lastEvent?.occasion,
+          lastGuestCount: lastEvent?.guest_count,
+        })
+
+        const greeting = aiDraft?.greeting || `Hi ${clientName},`
+        const body =
+          aiDraft?.body ||
+          `It has been a while since your last experience with ${chefName}, and we wanted to check in. Whether you are planning a celebration, a quiet dinner, or just craving a memorable meal, ${chefName} would be happy to hear from you.`
+        const ctaText = aiDraft?.cta || 'Plan Your Next Event'
 
         try {
           await sendEmail({
@@ -88,12 +119,12 @@ async function handleReengagement(request: NextRequest): Promise<NextResponse> {
                 createElement(
                   Text,
                   { style: { fontSize: 15, color: '#374151', marginBottom: 16 } },
-                  `Hi ${clientName},`
+                  greeting
                 ),
                 createElement(
                   Text,
                   { style: { fontSize: 15, color: '#374151', marginBottom: 16 } },
-                  `It has been a while since your last experience with ${chefName}, and we wanted to check in. Whether you are planning a celebration, a quiet dinner, or just craving a memorable meal, ${chefName} would be happy to hear from you.`
+                  body
                 ),
                 createElement(
                   Text,
@@ -127,7 +158,7 @@ async function handleReengagement(request: NextRequest): Promise<NextResponse> {
                               textDecoration: 'none',
                             },
                           },
-                          'Plan Your Next Event'
+                          ctaText
                         )
                       )
                     )

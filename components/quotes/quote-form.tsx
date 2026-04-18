@@ -22,6 +22,7 @@ import {
   updateQuote,
   type CreateQuoteInput,
 } from '@/lib/quotes/actions'
+import { generateQuoteDraft } from '@/lib/ai/quote-draft'
 import {
   getQuotePriceFreshnessSummary,
   type QuotePriceFreshnessSummary,
@@ -159,6 +160,7 @@ export function QuoteForm({
   const [conflictError, setConflictError] = useState<ConflictErrorPayload | null>(null)
   const [latestConflictData, setLatestConflictData] = useState<QuoteFormData | null>(null)
   const isEditing = !!existingQuote
+  const [aiDrafting, setAiDrafting] = useState(false)
 
   useEffect(() => {
     setActiveForm(isEditing ? 'Edit Quote' : 'New Quote')
@@ -264,6 +266,26 @@ export function QuoteForm({
   const [internalNotes, setInternalNotes] = useState(
     existingQuote?.internal_notes || prefilledInternalNotes || ''
   )
+
+  // AI Draft: auto-fill form fields from inquiry context
+  const handleAiDraft = async () => {
+    if (!prefilledInquiryId || aiDrafting) return
+    setAiDrafting(true)
+    try {
+      const draft = await generateQuoteDraft(prefilledInquiryId)
+      if (draft) {
+        if (draft.title && !quoteName) setQuoteName(draft.title)
+        if (draft.totalCents > 0) setTotalAmount((draft.totalCents / 100).toFixed(2))
+        if (draft.notes) setPricingNotes(draft.notes)
+        if (draft.description)
+          setInternalNotes((prev) => (prev ? `${prev}\n\n${draft.description}` : draft.description))
+      }
+    } catch (err) {
+      console.error('[QuoteForm] AI draft failed:', err)
+    } finally {
+      setAiDrafting(false)
+    }
+  }
 
   const selectedClient = useMemo(
     () => clients.find((client) => client.id === clientId) ?? null,
@@ -785,6 +807,29 @@ export function QuoteForm({
         suggestion={pricingSuggestion ?? null}
         benchmarkHint={benchmarkHint}
       />
+
+      {/* ── AI Quote Draft ──────────────────────────────────────────────── */}
+      {prefilledInquiryId && !isEditing && (
+        <Card className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-stone-100">AI Quote Draft</p>
+              <p className="text-xs text-stone-500">
+                Auto-fill pricing, notes, and line items from inquiry context
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={handleAiDraft}
+              disabled={aiDrafting}
+            >
+              {aiDrafting ? 'Drafting...' : 'Generate Draft'}
+            </Button>
+          </div>
+        </Card>
+      )}
 
       {/* ── Smart Pricing (Intelligence Engine) ──────────────────────────── */}
       <SmartPricingHint

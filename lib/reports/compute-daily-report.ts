@@ -5,6 +5,7 @@
 //   - The app page server action (via requireChef + admin client)
 
 import type { DailyReportContent, HighIntentVisit, DailyReportEvent } from './types'
+import { generateDailyNarrative } from '@/lib/ai/daily-narrative'
 
 // Accept any client with a database-compatible query builder API
 type AdminClient = { from: (table: string) => any; rpc: (fn: string, params?: any) => any }
@@ -596,7 +597,7 @@ export async function computeDailyReport(
     0
   )
 
-  return {
+  const reportData: DailyReportContent = {
     eventsToday: eventsTodayMapped,
     upcomingEventsNext7d: upcomingEvents,
     newInquiriesToday,
@@ -624,4 +625,9 @@ export async function computeDailyReport(
     openClosureTasks: closureTasks,
     generatedAt: now.toISOString(),
   }
+
+  // AI narrative: non-blocking, falls back to null if AI unavailable
+  reportData.aiNarrative = await safe('aiNarrative', () => generateDailyNarrative(reportData), null)
+
+  return reportData
 }

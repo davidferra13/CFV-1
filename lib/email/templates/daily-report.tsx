@@ -39,6 +39,16 @@ export function DailyReportEmail({ chefName, reportDate, content, reportUrl }: P
       <Text style={heading}>Good morning, {chefName}</Text>
       <Text style={subheading}>{formatDate(reportDate)}</Text>
 
+      {/* ─── AI Narrative Summary ──────────────────────────── */}
+      {content.aiNarrative && (
+        <>
+          <div style={narrativeBox}>
+            <Text style={narrativeText}>{content.aiNarrative}</Text>
+          </div>
+          <Hr style={divider} />
+        </>
+      )}
+
       {/* ─── Today's Schedule ──────────────────────────────── */}
       <Text style={sectionTitle}>Today&apos;s Schedule</Text>
       {hasEvents ? (
@@ -345,4 +355,18 @@ const metricLabel = {
   textTransform: 'uppercase' as const,
   letterSpacing: '0.05em',
   margin: '0',
+}
+const narrativeBox = {
+  padding: '16px',
+  backgroundColor: '#f0fdf4',
+  borderRadius: '8px',
+  borderLeft: '3px solid #22c55e',
+  margin: '0 0 4px',
+}
+const narrativeText = {
+  fontSize: '15px',
+  lineHeight: '1.7',
+  color: '#1e3a2f',
+  margin: '0',
+  fontStyle: 'italic' as const,
 }

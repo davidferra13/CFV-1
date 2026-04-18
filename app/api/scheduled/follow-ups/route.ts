@@ -6,10 +6,11 @@
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/db/server'
-import { getAutomationSettingsForTenant } from '@/lib/automations/settings-actions'
+import { getAutomationSettingsForTenant } from '@/lib/automations/settings-internal'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 import { runMonitoredCronJob } from '@/lib/cron/monitor'
+import { generateFollowUpSuggestion } from '@/lib/ai/follow-up-draft'
 
 async function handleFollowUps(request: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(request.headers.get('authorization'))
@@ -69,6 +70,20 @@ async function handleFollowUps(request: NextRequest): Promise<NextResponse> {
           const clientName =
             (inquiry.client as { full_name: string } | null)?.full_name ?? 'Unknown contact'
           const occasion = inquiry.confirmed_occasion || 'inquiry'
+          const daysOverdue = Math.floor(
+            (Date.now() - new Date(inquiry.follow_up_due_at!).getTime()) / (1000 * 60 * 60 * 24)
+          )
+
+          // AI: generate contextual follow-up suggestion (non-blocking)
+          const aiSuggestion = await generateFollowUpSuggestion({
+            clientName,
+            occasion: inquiry.confirmed_occasion,
+            daysOverdue,
+          })
+
+          const notifBody = aiSuggestion?.suggestion
+            ? `${aiSuggestion.suggestion}`
+            : `Time to follow up with ${clientName} about their ${occasion}`
 
           await createNotification({
             tenantId: inquiry.tenant_id,
@@ -76,7 +91,7 @@ async function handleFollowUps(request: NextRequest): Promise<NextResponse> {
             category: 'inquiry',
             action: 'follow_up_due',
             title: 'Follow-up due',
-            body: `Time to follow up with ${clientName} about their ${occasion}`,
+            body: notifBody,
             actionUrl: `/inquiries/${inquiry.id}`,
             inquiryId: inquiry.id,
             clientId: (inquiry.client as { id: string } | null)?.id || undefined,
@@ -86,15 +101,12 @@ async function handleFollowUps(request: NextRequest): Promise<NextResponse> {
             const chefProfile = await getChefProfile(inquiry.tenant_id)
             if (chefProfile) {
               const { sendFollowUpDueChefEmail } = await import('@/lib/email/notifications')
-              const daysOverdue = Math.floor(
-                (Date.now() - new Date(inquiry.follow_up_due_at!).getTime()) / (1000 * 60 * 60 * 24)
-              )
               await sendFollowUpDueChefEmail({
                 chefEmail: chefProfile.email,
                 chefName: chefProfile.name,
                 clientName,
                 occasion: inquiry.confirmed_occasion,
-                followUpNote: null,
+                followUpNote: aiSuggestion?.suggestion || null,
                 daysOverdue,
                 inquiryId: inquiry.id,
               })

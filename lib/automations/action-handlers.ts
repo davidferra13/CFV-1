@@ -6,6 +6,7 @@
 import { createServerClient } from '@/lib/db/server'
 import { createNotification, getChefAuthUserId } from '@/lib/notifications/actions'
 import type { AutomationRule, AutomationContext } from './types'
+import { personalizeAutomationMessage } from '@/lib/ai/automation-personalize'
 
 type ActionResult = {
   success: boolean
@@ -87,18 +88,19 @@ async function handleCreateFollowUpTask(
   const db = createServerClient({ admin: true })
   const dueHours = config.due_hours || 48
 
+  const dueAt = new Date(Date.now() + dueHours * 60 * 60 * 1000).toISOString()
+  const description = interpolate(
+    config.description || 'Follow up (auto-scheduled)',
+    context.fields
+  )
+
   // Set follow_up_due_at on the inquiry
   if (context.entityType === 'inquiry' && context.entityId) {
-    const dueAt = new Date(Date.now() + dueHours * 60 * 60 * 1000).toISOString()
-
     await db
       .from('inquiries')
       .update({
         follow_up_due_at: dueAt,
-        next_action_required: interpolate(
-          config.description || 'Follow up (auto-scheduled)',
-          context.fields
-        ),
+        next_action_required: description,
         next_action_by: 'chef',
       })
       .eq('id', context.entityId)
@@ -107,7 +109,32 @@ async function handleCreateFollowUpTask(
     return { success: true, details: { due_at: dueAt, description: config.description } }
   }
 
-  return { success: false, error: 'Follow-up task requires an inquiry context' }
+  // Create a chef_todos entry for event-context automations
+  if (context.entityType === 'event' && context.entityId) {
+    const chefUserId = await getChefAuthUserId(context.tenantId)
+    if (!chefUserId) return { success: false, error: 'Chef user ID not found for todo creation' }
+
+    const todoText = description.length > 490 ? description.slice(0, 490) + '...' : description
+
+    const { error: todoError } = await db.from('chef_todos').insert({
+      chef_id: context.tenantId,
+      text: todoText,
+      completed: false,
+      created_by: chefUserId,
+      sort_order: 0,
+    })
+
+    if (todoError) {
+      return { success: false, error: `Todo creation failed: ${todoError.message}` }
+    }
+
+    return {
+      success: true,
+      details: { due_at: dueAt, description: todoText, entity: 'chef_todos' },
+    }
+  }
+
+  return { success: false, error: 'Follow-up task requires an inquiry or event context' }
 }
 
 // ─── Send Template Message (as DRAFT) ────────────────────────────────────
@@ -141,6 +168,10 @@ async function handleSendTemplateMessage(
     return { success: false, error: 'Template not found' }
   }
 
+  // Interpolate template, then AI-personalize (non-blocking, falls back to interpolated)
+  const interpolatedBody = interpolate(template.template_text, context.fields)
+  const personalizedBody = await personalizeAutomationMessage(interpolatedBody, context.fields)
+
   // Create a draft message (NOT sent - chef must approve)
   const { error: msgError } = await db.from('messages').insert({
     tenant_id: context.tenantId,
@@ -149,7 +180,7 @@ async function handleSendTemplateMessage(
     channel: (config.channel || 'email') as 'email',
     direction: 'outbound' as const,
     status: 'draft' as const,
-    body: interpolate(template.template_text, context.fields),
+    body: personalizedBody,
     subject: `Re: ${interpolate(template.name, context.fields)}`,
   })
 
@@ -170,8 +201,11 @@ async function handleSendTemplateMessage(
       actionUrl:
         context.entityType === 'inquiry' && context.entityId
           ? `/inquiries/${context.entityId}`
-          : undefined,
+          : context.entityType === 'event' && context.entityId
+            ? `/events/${context.entityId}`
+            : undefined,
       inquiryId: context.entityType === 'inquiry' ? context.entityId : undefined,
+      eventId: context.entityType === 'event' ? context.entityId : undefined,
     })
   }
 

@@ -117,6 +117,9 @@ export function BookDinnerForm() {
   const [result, setResult] = useState<SubmitResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [emailSuggestion, setEmailSuggestion] = useState<string | null>(null)
+  const [nlText, setNlText] = useState('')
+  const [nlParsing, setNlParsing] = useState(false)
+  const [nlUsed, setNlUsed] = useState(false)
 
   // Restore draft on mount
   useEffect(() => {
@@ -132,6 +135,39 @@ export function BookDinnerForm() {
       saveDraft(next)
       return next
     })
+  }
+
+  async function handleNlParse() {
+    if (!nlText.trim() || nlText.length < 10) return
+    setNlParsing(true)
+    try {
+      const res = await fetch('/api/book/parse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: nlText }),
+      })
+      if (!res.ok) return
+      const fields = await res.json()
+      setForm((prev) => {
+        const next = { ...prev }
+        if (fields.occasion) next.occasion = fields.occasion
+        if (fields.service_type) next.service_type = fields.service_type
+        if (fields.guest_count) next.guest_count = fields.guest_count
+        if (fields.event_date) next.event_date = fields.event_date
+        if (fields.serve_time) next.serve_time = fields.serve_time
+        if (fields.location) next.location = fields.location
+        if (fields.budget_range) next.budget_range = fields.budget_range
+        if (fields.dietary_restrictions) next.dietary_restrictions = fields.dietary_restrictions
+        if (fields.additional_notes) next.additional_notes = fields.additional_notes
+        saveDraft(next)
+        return next
+      })
+      setNlUsed(true)
+    } catch {
+      // Non-fatal, user can fill manually
+    } finally {
+      setNlParsing(false)
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -289,6 +325,55 @@ export function BookDinnerForm() {
           onChange={(e) => updateField('website_url', e.target.value)}
         />
       </div>
+
+      {/* NL Quick Fill */}
+      {!nlUsed && (
+        <div className="rounded-2xl border border-stone-700/60 bg-stone-900/40 p-5 sm:p-6 space-y-3">
+          <div>
+            <p className="text-sm font-medium text-stone-200">Describe your event</p>
+            <p className="text-xs text-stone-500 mt-0.5">
+              Tell us what you're looking for and we'll fill the form for you.
+            </p>
+          </div>
+          <textarea
+            value={nlText}
+            onChange={(e) => setNlText(e.target.value)}
+            placeholder={
+              'e.g. "Birthday dinner for 8 in Boston on July 12, a few guests are vegetarian, looking for Italian food"'
+            }
+            rows={2}
+            className={`${inputClass} resize-none`}
+          />
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleNlParse}
+              disabled={nlParsing || nlText.length < 10}
+              className="px-4 py-2 text-sm font-medium rounded-xl bg-brand-600 text-white hover:bg-brand-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              {nlParsing ? 'Reading...' : 'Fill form'}
+            </button>
+            <span className="text-xs text-stone-600">or fill out the fields below</span>
+          </div>
+        </div>
+      )}
+
+      {nlUsed && (
+        <div className="flex items-center gap-2 px-1">
+          <svg
+            className="w-4 h-4 text-emerald-400 shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2.5}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+          <p className="text-xs text-stone-400">
+            Form filled from your description. Review and adjust below.
+          </p>
+        </div>
+      )}
 
       {/* Section 1: Your event */}
       <div className="rounded-2xl border border-stone-700 bg-stone-900/60 p-5 sm:p-6 space-y-5">

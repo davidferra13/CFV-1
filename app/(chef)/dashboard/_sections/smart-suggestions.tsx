@@ -5,6 +5,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { pgClient } from '@/lib/db'
 import { StatCard } from '@/components/dashboard/widget-cards/stat-card'
 import { ListCard, type ListCardItem } from '@/components/dashboard/widget-cards/list-card'
+import { generateSuggestionPriority } from '@/lib/ai/suggestion-prioritizer'
 
 async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promise<T> {
   try {
@@ -240,8 +241,47 @@ export async function SmartSuggestions() {
       ? Math.round((ingredientGaps.withPrice / ingredientGaps.total) * 100)
       : null
 
+  // AI: prioritize suggestions by business impact (non-blocking)
+  const aiPriority = await safe(
+    'aiPriority',
+    () =>
+      generateSuggestionPriority({
+        recipeGapsCount: recipeGaps.length,
+        clientGapsCount: clientGaps.length,
+        ingredientCoverage:
+          ingredientGaps.total > 0
+            ? Math.round((ingredientGaps.withPrice / ingredientGaps.total) * 100)
+            : 100,
+        neverPricedCount: ingredientGaps.neverPriced,
+        staleCount: ingredientGaps.stale,
+        menuGapsCount: menuGaps.length,
+      }),
+    null
+  )
+
   return (
     <>
+      {/* AI Priority Insight */}
+      {aiPriority && (
+        <div className="col-span-full flex items-start gap-3 py-4 px-4 rounded-xl border border-amber-900/30 bg-amber-950/20">
+          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-amber-900/40 shrink-0 mt-0.5">
+            <svg
+              className="w-4 h-4 text-amber-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </span>
+          <div>
+            <p className="text-sm font-medium text-amber-300">Priority</p>
+            <p className="text-xs text-stone-400">{aiPriority}</p>
+          </div>
+        </div>
+      )}
+
       {/* Ingredient pricing coverage */}
       {hasIngredientGaps && (
         <StatCard

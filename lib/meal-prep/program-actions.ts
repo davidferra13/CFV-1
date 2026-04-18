@@ -530,7 +530,50 @@ export async function suggestNextWeekMenu(
 
   const menus = allMenus as { id: string; title: string }[]
 
-  // Prefer menus not in the recent window
+  // AI-enhanced rotation: considers client prefs, season, variety (non-blocking)
+  try {
+    const { suggestMealPrepRotation } = await import('@/lib/ai/meal-prep-rotation')
+
+    // Fetch client details for AI context
+    const { data: program } = await db
+      .from('meal_prep_programs')
+      .select('client_id')
+      .eq('id', programId)
+      .eq('tenant_id', user.tenantId!)
+      .single()
+
+    if (program?.client_id) {
+      const { data: client } = await db
+        .from('clients')
+        .select('full_name, dietary_restrictions, allergies')
+        .eq('id', program.client_id)
+        .eq('tenant_id', user.tenantId!)
+        .single()
+
+      if (client) {
+        const recentMenuTitles = menus.filter((m) => recentMenuIds.has(m.id)).map((m) => m.title)
+
+        const aiResult = await suggestMealPrepRotation({
+          clientName: client.full_name ?? 'Client',
+          dietaryRestrictions: (client.dietary_restrictions as string[]) ?? [],
+          allergies: (client.allergies as string[]) ?? [],
+          recentMenuTitles,
+          availableMenus: menus,
+        })
+
+        if (aiResult) {
+          const match = menus.find((m) => m.id === aiResult.menuId)
+          if (match) {
+            return { menuId: match.id, menuTitle: match.title, reason: aiResult.reason }
+          }
+        }
+      }
+    }
+  } catch {
+    // AI unavailable, fall through to deterministic logic
+  }
+
+  // Deterministic fallback: prefer menus not in the recent window
   const unused = menus.filter((m) => !recentMenuIds.has(m.id))
   if (unused.length > 0) {
     return {

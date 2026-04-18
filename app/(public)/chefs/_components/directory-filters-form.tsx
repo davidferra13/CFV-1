@@ -64,6 +64,7 @@ export function DirectoryFiltersForm({
       : null
   )
   const [isLocating, setIsLocating] = useState(false)
+  const [isSmartSearching, setIsSmartSearching] = useState(false)
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     const form = event.currentTarget
@@ -109,6 +110,48 @@ export function DirectoryFiltersForm({
     trackEvent(ANALYTICS_EVENTS.FEATURE_USED, {
       feature: 'chef_directory_filters_reset',
     })
+  }
+
+  const handleSmartSearch = async () => {
+    const form = formRef.current
+    if (!form) return
+    const qInput = form.querySelector<HTMLInputElement>('input[name="q"]')
+    const text = qInput?.value?.trim()
+    if (!text || text.length < 5) return
+
+    setIsSmartSearching(true)
+    try {
+      const res = await fetch('/api/chefs/parse-search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      })
+      if (!res.ok) return
+
+      const filters = await res.json()
+
+      // Build URL params from parsed filters
+      const params = new URLSearchParams()
+      if (filters.query) params.set('q', filters.query)
+      if (filters.cuisine) params.set('cuisine', filters.cuisine)
+      if (filters.serviceType) params.set('serviceType', filters.serviceType)
+      if (filters.location) params.set('location', filters.location)
+      if (filters.priceRange) params.set('priceRange', filters.priceRange)
+      if (filters.dietary) params.set('dietary', filters.dietary)
+
+      trackEvent(ANALYTICS_EVENTS.FEATURE_USED, {
+        feature: 'chef_directory_smart_search',
+        original_query: text,
+        parsed_filters: JSON.stringify(filters),
+      })
+
+      window.location.href = `/chefs?${params.toString()}`
+    } catch {
+      // Fall through to normal search
+      form.requestSubmit()
+    } finally {
+      setIsSmartSearching(false)
+    }
   }
 
   const submitResolvedLocation = (nextLocation: string, nextSource: DirectoryLocationSource) => {
@@ -217,19 +260,30 @@ export function DirectoryFiltersForm({
       onSubmit={handleSubmit}
       className="grid gap-3 md:grid-cols-2 xl:grid-cols-4"
     >
-      <label className="md:col-span-2 xl:col-span-2">
+      <div className="md:col-span-2 xl:col-span-2">
         <span className="text-xs font-semibold uppercase tracking-wide text-stone-400">
           Search chefs
         </span>
-        <input
-          type="text"
-          name="q"
-          defaultValue={query}
-          placeholder="Name, cuisine, service type, city, venue"
-          maxLength={maxQueryLength}
-          className="mt-1 block w-full rounded-xl border border-stone-600 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-        />
-      </label>
+        <div className="mt-1 flex gap-2">
+          <input
+            type="text"
+            name="q"
+            defaultValue={query}
+            placeholder={'"Italian chef for a wedding near Boston" or just a name'}
+            maxLength={maxQueryLength}
+            className="block w-full rounded-xl border border-stone-600 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+          />
+          <button
+            type="button"
+            onClick={handleSmartSearch}
+            disabled={isSmartSearching}
+            title="AI-powered natural language search"
+            className="shrink-0 rounded-xl border border-stone-600 px-3 py-2.5 text-xs font-medium text-stone-300 transition-colors hover:border-brand-500 hover:text-brand-300 disabled:opacity-50 disabled:cursor-wait"
+          >
+            {isSmartSearching ? '...' : 'Smart'}
+          </button>
+        </div>
+      </div>
 
       <label className="md:col-span-2 xl:col-span-2">
         <span className="text-xs font-semibold uppercase tracking-wide text-stone-400">
