@@ -11,6 +11,30 @@ The classifier must answer four questions for every feature:
 3. Which roles should use it?
 4. What is the exposure level?
 
+## Type Contract
+
+The canonical shared types live in `types/system.ts`. The classifier produces values that conform to these types:
+
+```ts
+type Surface = 'public' | 'chef' | 'client' | 'admin' | 'partner'
+type Role = 'chef' | 'staff' | 'client' | 'partner' | 'admin'
+type Exposure = 'visible' | 'hidden' | 'gated' | 'internal'
+
+type FeaturePlacement = {
+  featureId: string
+  currentSurface?: Surface
+  correctSurface: Surface
+  roles: Role[]
+  exposure: Exposure
+  notes?: string
+}
+```
+
+- `Surface`: where an interaction belongs architecturally.
+- `Role`: who is allowed to use it. Not every role that can indirectly observe a side effect.
+- `Exposure`: how reachable the feature is within its owning surface (`visible` = normal nav, `gated` = token/module/invite, `hidden` = deep-link only, `internal` = platform-only).
+- `FeaturePlacement`: the canonical output of classification.
+
 ## Classification Inputs
 
 Each inventory item should collect these signals when possible:
@@ -394,55 +418,208 @@ Recommended phrases:
 - `preview route owned by source actor`
 - `split required: operator setup and external approval are mixed`
 
-## Example Placements
+## Worked Examples
+
+Each example shows the full classification for a specific feature pattern.
+
+### 1. Authenticated chef page (e.g. `/events/[id]`)
 
 ```ts
-;[
-  {
-    featureId: 'public.discovery.directory',
-    currentSurface: 'public',
-    correctSurface: 'public',
-    roles: [],
-    exposure: 'visible',
-  },
-  {
-    featureId: 'client.quote-approval.token',
-    currentSurface: 'public',
-    correctSurface: 'client',
-    roles: ['client'],
-    exposure: 'gated',
-    notes: 'public delivery for client-owned workflow',
-  },
-  {
-    featureId: 'staff.event-briefing.link',
-    currentSurface: 'public',
-    correctSurface: 'chef',
-    roles: ['staff'],
-    exposure: 'gated',
-    notes: 'staff execution inside chef surface',
-  },
-  {
-    featureId: 'chef.partner-management',
-    currentSurface: 'chef',
-    correctSurface: 'chef',
-    roles: ['chef'],
-    exposure: 'visible',
-    notes: 'chef-side partner CRM, not partner self-service',
-  },
-  {
-    featureId: 'partner.performance-report',
-    currentSurface: 'public',
-    correctSurface: 'partner',
-    roles: ['partner'],
-    exposure: 'gated',
-    notes: 'public delivery for partner-owned workflow',
-  },
-  {
-    featureId: 'admin.command-center',
-    currentSurface: 'admin',
-    correctSurface: 'admin',
-    roles: ['admin'],
-    exposure: 'internal',
-  },
-]
+{
+  featureId: 'chef.event-detail',
+  currentSurface: 'chef',
+  correctSurface: 'chef',
+  roles: ['chef'],
+  exposure: 'visible',
+}
 ```
+
+Route is `app/(chef)/events/[id]`, auth guard is `requireChef()`, primary actor is chef, business outcome is event management. Straightforward.
+
+### 2. Authenticated client page (e.g. `/my-events`)
+
+```ts
+{
+  featureId: 'client.my-events',
+  currentSurface: 'client',
+  correctSurface: 'client',
+  roles: ['client'],
+  exposure: 'visible',
+}
+```
+
+Route is `app/(client)/my-events`, auth guard is `requireClient()`, primary actor is client viewing their bookings.
+
+### 3. Authenticated partner page (e.g. `/partner/dashboard`)
+
+```ts
+{
+  featureId: 'partner.dashboard',
+  currentSurface: 'partner',
+  correctSurface: 'partner',
+  roles: ['partner'],
+  exposure: 'visible',
+}
+```
+
+Route is `app/(partner)/partner/dashboard`, auth guard is `requirePartner()`, primary actor is partner viewing referral performance.
+
+### 4. Staff portal page (e.g. `/staff-portal/[id]`)
+
+```ts
+{
+  featureId: 'staff.event-briefing.link',
+  currentSurface: 'public',
+  correctSurface: 'chef',
+  roles: ['staff'],
+  exposure: 'gated',
+  notes: 'staff execution inside chef surface, delivered via public token route',
+}
+```
+
+Route is `app/(public)/staff-portal/[id]` (public delivery), but the feature is staff operational briefing owned by the chef tenant. Token gated.
+
+### 5. Public client token page (e.g. `/client/[token]`)
+
+```ts
+{
+  featureId: 'client.portal.token-access',
+  currentSurface: 'public',
+  correctSurface: 'client',
+  roles: ['client'],
+  exposure: 'gated',
+  notes: 'public delivery for client-owned workflow',
+}
+```
+
+Route is `app/client/[token]` (public, unauthenticated), but the feature is client portal access. Token gated delivery does not change ownership.
+
+### 6. Public staff briefing link
+
+```ts
+{
+  featureId: 'staff.event-packet',
+  currentSurface: 'public',
+  correctSurface: 'chef',
+  roles: ['staff'],
+  exposure: 'gated',
+  notes: 'chef-generated staff briefing delivered via public link',
+}
+```
+
+Chef generates a link that staff opens. Public delivery, chef ownership, staff role.
+
+### 7. Public partner report (e.g. `/partner-report/[token]`)
+
+```ts
+{
+  featureId: 'partner.performance-report',
+  currentSurface: 'public',
+  correctSurface: 'partner',
+  roles: ['partner'],
+  exposure: 'gated',
+  notes: 'public delivery for partner-owned reporting workflow',
+}
+```
+
+### 8. Chef-side client preview (e.g. `/settings/client-preview`)
+
+```ts
+{
+  featureId: 'chef.client-preview',
+  currentSurface: 'chef',
+  correctSurface: 'chef',
+  roles: ['chef'],
+  exposure: 'visible',
+  notes: 'preview route owned by source actor (chef), not the audience (client)',
+}
+```
+
+Chef is the actor. Chef is previewing what client would see. Ownership stays with the actor, not the audience.
+
+### 9. Admin tool rendered through chef shell (e.g. admin pages in chef nav)
+
+```ts
+{
+  featureId: 'admin.feature-flags',
+  currentSurface: 'chef',
+  correctSurface: 'admin',
+  roles: ['admin'],
+  exposure: 'internal',
+  notes: 'admin capability leaking through chef shell; misplaced',
+}
+```
+
+Currently lives in chef navigation with `adminOnly: true` gating. The feature is cross-tenant or platform-level, so `correctSurface` is admin. This is a misplacement.
+
+### 10. Public directory / discovery
+
+```ts
+{
+  featureId: 'public.discovery.directory',
+  currentSurface: 'public',
+  correctSurface: 'public',
+  roles: [],
+  exposure: 'visible',
+}
+```
+
+### 11. Chef-side partner management
+
+```ts
+{
+  featureId: 'chef.partner-management',
+  currentSurface: 'chef',
+  correctSurface: 'chef',
+  roles: ['chef'],
+  exposure: 'visible',
+  notes: 'chef-side partner CRM, not partner self-service',
+}
+```
+
+## Companion Workflow: How the Inventory Agent Uses This Classifier
+
+When the inventory agent discovers a feature, apply this workflow:
+
+1. **Collect signals**: route path, auth guard, layout shell, data tables, actor, business outcome.
+2. **Determine `currentSurface`**: use route/folder rules (Section 1), then shell/layout rules if ambiguous.
+3. **Determine candidate roles**: use auth guard mapping (Section 2). For no-auth routes, use behavior signals.
+4. **Determine `correctSurface`**: apply Rules 1-6 in precedence order (Section 3). Use the first matching rule.
+5. **Determine `exposure`**: use navigability, gating, and internal-only signals (Section 4).
+6. **Check for misplacement**: compare `currentSurface` vs `correctSurface`. If different, flag and record why.
+7. **Check for duplication**: scan for same capability in multiple surfaces without clear owner split.
+8. **Check for split need**: does one feature mix operator + customer + oversight concerns? Split if so.
+9. **Record the `FeaturePlacement`**: populate all fields. Use `notes` for any non-obvious classification reasoning.
+
+The inventory agent should not invent policy. If a feature does not clearly match any rule, record it with `notes: 'unclassifiable; needs manual review'` and move on.
+
+## Lifecycle Splitting
+
+One named business workflow often requires multiple `FeaturePlacement` records because ownership shifts across surfaces as the workflow progresses.
+
+### Example: Inquiry -> Quote -> Booking
+
+| Stage                 | Feature ID                | Surface  | Roles        | Notes                            |
+| --------------------- | ------------------------- | -------- | ------------ | -------------------------------- |
+| Public inquiry form   | `public.inquiry-form`     | `public` | `[]`         | Anonymous intake                 |
+| Chef receives inquiry | `chef.inquiry-triage`     | `chef`   | `['chef']`   | Operator triages and responds    |
+| Chef drafts quote     | `chef.quote-drafting`     | `chef`   | `['chef']`   | Internal pricing and proposal    |
+| Client reviews quote  | `client.quote-approval`   | `client` | `['client']` | May be delivered via token       |
+| Client pays deposit   | `client.payment`          | `client` | `['client']` | Payment and booking confirmation |
+| Chef confirms booking | `chef.event-confirmation` | `chef`   | `['chef']`   | Event enters confirmed state     |
+
+### Example: Partner referral attribution
+
+| Stage                  | Feature ID                   | Surface   | Roles         | Notes                      |
+| ---------------------- | ---------------------------- | --------- | ------------- | -------------------------- |
+| Chef creates partner   | `chef.partner-management`    | `chef`    | `['chef']`    | Chef-side CRM              |
+| Partner claims profile | `partner.claim-flow`         | `partner` | `['partner']` | Gated claim from invite    |
+| Partner views report   | `partner.performance-report` | `partner` | `['partner']` | May be delivered via token |
+
+### Rules for lifecycle splitting
+
+1. Each actor-owned stage gets its own `FeaturePlacement`.
+2. If two stages share the same actor and surface, they can be one placement.
+3. Token delivery shifts `currentSurface` but not `correctSurface`.
+4. Staff participation in chef-owned stages does not create a separate placement; add `'staff'` to the `roles` array of the chef placement.
+5. Admin observation of any stage is a separate admin placement only if a distinct admin UI exists for it. Passive DB access does not create a placement.

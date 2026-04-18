@@ -1,6 +1,6 @@
 # Spec: Request Trust and API Tenant Boundary Hardening
 
-> **Status:** ready
+> **Status:** in-progress
 > **Priority:** P0 (blocking)
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)

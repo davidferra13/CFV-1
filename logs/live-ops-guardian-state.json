@@ -1,9 +1,9 @@
 {
-  "lastEvaluatedFingerprint": "572a13ee0243837caf5bcd30587ac4eb195fc4eac8db77916c25dcbedbb95dde",
-  "lastRunId": "live-ops-176964-1776449701",
-  "lastStatus": "ok",
-  "lastFailedSteps": [],
+  "lastEvaluatedFingerprint": "4c2e0155e05bed7466c45a5d0ff9b3f688b08d2248264dd13056b982d7aede57",
+  "lastRunId": "live-ops-50396-1776474902",
+  "lastStatus": "needs-attention",
+  "lastFailedSteps": ["unit-canary", "launch-public", "launch-public-inquiry"],
   "lastBaseUrl": "http://localhost:3000",
-  "lastCheckedAt": "2026-04-17T18:15:41.9549212Z",
-  "lastTestSweepAt": "2026-04-17T18:15:41.9581987Z"
+  "lastCheckedAt": "2026-04-18T01:16:45.8480410Z",
+  "lastTestSweepAt": "2026-04-18T01:16:45.8502378Z"
 }

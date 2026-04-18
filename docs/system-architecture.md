@@ -332,6 +332,46 @@ Public routing currently delivers client, partner, and staff artifacts. Those ro
 
 Internal observability, flags, support, and reconciliation exist, but the information architecture still feels partially embedded in operator space instead of operating as a clean mission-control layer.
 
+### 8. Auth-context mismatch
+
+Middleware request auth context (`lib/auth/request-auth-context.ts`) currently only carries chef/client roles. Staff, partner, and admin are resolved downstream via separate helpers (`requireStaff`, `requirePartner`, `isAdmin`). This means surface-level middleware cannot make staff/partner/admin routing decisions. The middleware knows about staff and admin route families but cannot verify the role in the shared auth context header.
+
+### 9. Terminology drift
+
+Navigation and UI labels are inconsistent across surfaces:
+
+- "Finance" vs "Money" vs "Financials" in different nav sections and page titles
+- "My Profile" (chef settings) vs "Network Profile" (public chef profile)
+- "Prospecting" vs "Leads" vs "Pipeline" in different contexts
+- "Events" (operator view) vs "Bookings" (client view) for the same underlying entity
+- "Culinary" (nav section) vs "Kitchen" (some page headers) for recipe/ingredient features
+
+These are not bugs; they are classification signals. When a builder sees conflicting labels, the correct response is to record the label discrepancy in the feature placement, not to rename things in this spec.
+
+## Lifecycle Ownership
+
+One named business workflow spans multiple surfaces. The lifecycle stages are not owned by a single surface; ownership shifts as the workflow progresses:
+
+| Lifecycle Stage      | Primary Surface | Roles Involved    | Notes                                             |
+| -------------------- | --------------- | ----------------- | ------------------------------------------------- |
+| Discovery            | public          | anonymous         | Chef profiles, directory, marketing pages         |
+| Intake / Inquiry     | public -> chef  | anonymous -> chef | Public form submits; chef receives and triages    |
+| Proposal / Quote     | chef -> client  | chef, client      | Chef drafts; client reviews and approves          |
+| Booking / Payment    | client          | client, chef      | Client pays; chef confirms                        |
+| Planning             | chef            | chef, staff       | Menus, recipes, prep timelines, shopping lists    |
+| Execution            | chef            | chef, staff       | Day-of production, station assignments, temp logs |
+| Close-out / AAR      | chef            | chef              | Financials, after-action review, leftover logging |
+| Post-event follow-up | client          | client, chef      | Surveys, reviews, rebook prompts                  |
+| Partner attribution  | partner         | partner           | Referral tracking, partner reporting              |
+
+Key rules:
+
+- A single feature like "quote" has at least two placements: chef (drafting) and client (review/approval).
+- Staff participates in planning and execution but never owns those stages; the chef surface owns them with staff as a restricted role.
+- Partner only appears for attribution and scoped reporting; partners never enter the core event lifecycle.
+- Admin can observe any stage but does not own any lifecycle stage; admin ownership is cross-tenant oversight, not event execution.
+- Token-delivered artifacts (proposal links, approval pages) shift `currentSurface` to public but `correctSurface` stays with the owning actor (chef for proposal drafting, client for approval).
+
 ## Target Architecture
 
 ### Public Surface

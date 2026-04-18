@@ -1,15 +1,18 @@
 # Spec: Ingredient Quantity Lifecycle
 
-> **Status:** ready
+> **Status:** verified
 > **Priority:** P0 (blocking)
 > **Depends on:** none
 > **Estimated complexity:** medium (5-7 files)
+> **Built by:** Opus 4.6 (builder gate session 2026-04-17)
 
 ## Timeline
 
-| Event   | Date             | Agent/Session | Commit |
-| ------- | ---------------- | ------------- | ------ |
-| Created | 2026-04-17 14:00 | Opus session  |        |
+| Event            | Date             | Agent/Session           | Commit    |
+| ---------------- | ---------------- | ----------------------- | --------- |
+| Created          | 2026-04-17 14:00 | Opus session            |           |
+| Data layer built | 2026-04-17       | Prior session           |           |
+| Verified         | 2026-04-17 19:55 | Opus 4.6 (builder gate) | 3561ba738 |
 
 ---
 

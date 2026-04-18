@@ -180,7 +180,7 @@ Every client has a detailed profile covering:
 
 ### Search, Filter, and Bulk Actions
 
-Search by name, email, or phone. Filter by status (Active, Inactive, VIP, Duplicates, Segments). Bulk operations available: archive, delete, tag, or export to CSV.
+Search by name, email, or phone. Filter by status (Active, Inactive, VIP, Duplicates, Segments). Bulk archive is available for multiple clients. CSV export downloads all active clients.
 
 ### Duplicate Detection
 

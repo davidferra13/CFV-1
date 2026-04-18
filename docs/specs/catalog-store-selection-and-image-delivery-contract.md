@@ -1,16 +1,19 @@
 # Spec: Catalog Store Selection And Image Delivery Contract
 
-> **Status:** ready
+> **Status:** verified
 > **Priority:** P0 (blocking)
 > **Depends on:** none
 > **Estimated complexity:** small (3-5 files)
+> **Built by:** Opus 4.6 (builder gate session 2026-04-17)
 
 ## Timeline
 
-| Event         | Date             | Agent/Session | Commit |
-| ------------- | ---------------- | ------------- | ------ |
-| Created       | 2026-04-02 13:33 | Planner       |        |
-| Status: ready | 2026-04-02 13:33 | Planner       |        |
+| Event         | Date             | Agent/Session           | Commit |
+| ------------- | ---------------- | ----------------------- | ------ |
+| Created       | 2026-04-02 13:33 | Planner                 |        |
+| Status: ready | 2026-04-02 13:33 | Planner                 |        |
+| Build start   | 2026-04-17       | Opus 4.6 (builder gate) |        |
+| Verified      | 2026-04-17       | Opus 4.6 (builder gate) | dirty  |
 
 ---
 
