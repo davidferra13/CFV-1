@@ -4,6 +4,7 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { withApiAuth, apiSuccess, apiNotFound, apiValidationError, apiError } from '@/lib/api/v2'
+import { markNotificationReadForTenant } from '@/lib/notifications/store'
 
 const UpdateNotificationBody = z
   .object({
@@ -26,26 +27,11 @@ export const PATCH = withApiAuth(
     const parsed = UpdateNotificationBody.safeParse(body)
     if (!parsed.success) return apiValidationError(parsed.error)
 
-    // Verify the notification belongs to this tenant before updating.
-    // Do NOT delegate to markAsRead() (session-based) from an API key context.
-    const { data: notification } = await ctx.db
-      .from('notifications')
-      .select('id')
-      .eq('id', id)
-      .eq('recipient_id', ctx.tenantId)
-      .single()
+    const result = await markNotificationReadForTenant(ctx.tenantId, id)
 
-    if (!notification) return apiNotFound('Notification')
-
-    const { error } = await ctx.db
-      .from('notifications')
-      .update({ read_at: new Date().toISOString() } as any)
-      .eq('id', id)
-      .eq('recipient_id', ctx.tenantId)
-      .is('read_at', null)
-
-    if (error) {
-      console.error('[api/v2/notifications] PATCH error:', error)
+    if (result.error === 'not_found') return apiNotFound('Notification')
+    if (result.error) {
+      console.error('[api/v2/notifications] PATCH error:', result.error)
       return apiError('update_failed', 'Failed to mark notification as read', 500)
     }
 

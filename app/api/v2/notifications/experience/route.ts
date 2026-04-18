@@ -6,9 +6,9 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { withApiAuth, apiSuccess, apiValidationError, apiError } from '@/lib/api/v2'
 import {
-  getNotificationExperienceSettings,
-  updateNotificationExperienceSettings,
-} from '@/lib/notifications/settings-actions'
+  getExperienceSettingsForTenant,
+  updateExperienceSettingsForTenant,
+} from '@/lib/notifications/store'
 
 const UpdateBody = z
   .object({
@@ -16,14 +16,14 @@ const UpdateBody = z
     quietHoursStart: z.string().optional(),
     quietHoursEnd: z.string().optional(),
     digestEnabled: z.boolean().optional(),
-    digestFrequency: z.enum(['daily', 'weekly']).optional(),
+    digestIntervalMinutes: z.number().min(5).max(120).optional(),
   })
   .passthrough()
 
 export const GET = withApiAuth(
-  async (_req, _ctx) => {
+  async (_req, ctx) => {
     try {
-      const settings = await getNotificationExperienceSettings()
+      const settings = await getExperienceSettingsForTenant(ctx.tenantId)
       return apiSuccess(settings)
     } catch (err: any) {
       return apiError('fetch_failed', err.message ?? 'Failed to fetch experience settings', 500)
@@ -33,7 +33,7 @@ export const GET = withApiAuth(
 )
 
 export const PATCH = withApiAuth(
-  async (req: NextRequest, _ctx) => {
+  async (req: NextRequest, ctx) => {
     let body: unknown
     try {
       body = await req.json()
@@ -45,7 +45,13 @@ export const PATCH = withApiAuth(
     if (!parsed.success) return apiValidationError(parsed.error)
 
     try {
-      const result = await updateNotificationExperienceSettings(parsed.data as any)
+      const result = await updateExperienceSettingsForTenant(ctx.tenantId, {
+        quiet_hours_enabled: parsed.data.quietHoursEnabled ?? false,
+        quiet_hours_start: parsed.data.quietHoursStart ?? null,
+        quiet_hours_end: parsed.data.quietHoursEnd ?? null,
+        digest_enabled: parsed.data.digestEnabled ?? false,
+        digest_interval_minutes: parsed.data.digestIntervalMinutes ?? 15,
+      })
       if (result.error) return apiError('update_failed', result.error, 500)
       return apiSuccess({ updated: true })
     } catch (err: any) {

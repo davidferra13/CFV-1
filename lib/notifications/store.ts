@@ -6,9 +6,6 @@
 // to these helpers after calling requireChef().
 
 import { createServerClient } from '@/lib/db/server'
-import { chefs, clients } from '@/lib/db/migrations/schema'
-import { eq, and } from 'drizzle-orm'
-import { db as drizzleDb } from '@/lib/db'
 import { DEFAULT_TIER_MAP, type NotificationTier } from './tier-config'
 import { NOTIFICATION_CONFIG, type NotificationAction, type NotificationCategory } from './types'
 import type {
@@ -25,14 +22,11 @@ import type { TierMapEntry } from './tier-actions'
  * This is the correct value for notifications.recipient_id (FK to users.id).
  */
 export async function resolveChefAuthUserId(tenantId: string): Promise<string> {
-  const [chef] = await drizzleDb
-    .select({ authUserId: chefs.authUserId })
-    .from(chefs)
-    .where(eq(chefs.id, tenantId))
-    .limit(1)
+  const db: any = createServerClient({ admin: true })
+  const { data: chef } = await db.from('chefs').select('auth_user_id').eq('id', tenantId).single()
 
   if (!chef) throw new Error(`Chef not found for tenant ${tenantId}`)
-  return chef.authUserId
+  return chef.auth_user_id
 }
 
 /**
@@ -43,14 +37,16 @@ export async function resolveClientAuthUserId(
   tenantId: string,
   clientId: string
 ): Promise<string | null> {
-  const [client] = await drizzleDb
-    .select({ authUserId: clients.authUserId, tenantId: clients.tenantId })
-    .from(clients)
-    .where(and(eq(clients.id, clientId), eq(clients.tenantId, tenantId)))
-    .limit(1)
+  const db: any = createServerClient({ admin: true })
+  const { data: client } = await db
+    .from('clients')
+    .select('auth_user_id')
+    .eq('id', clientId)
+    .eq('tenant_id', tenantId)
+    .single()
 
   if (!client) return null
-  return client.authUserId
+  return client.auth_user_id
 }
 
 // ── Notification CRUD ──────────────────────────────────────────────────────

@@ -4,14 +4,14 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { withApiAuth, apiSuccess, apiValidationError, apiError } from '@/lib/api/v2'
-import { resetNotificationTier, resetAllNotificationTiers } from '@/lib/notifications/tier-actions'
+import { resetTierForTenant, resetAllTiersForTenant } from '@/lib/notifications/store'
 
 const ResetBody = z.object({
   action: z.string().optional(),
 })
 
 export const POST = withApiAuth(
-  async (req: NextRequest, _ctx) => {
+  async (req: NextRequest, ctx) => {
     let body: unknown
     try {
       body = await req.json()
@@ -24,10 +24,10 @@ export const POST = withApiAuth(
 
     try {
       if (parsed.data.action) {
-        const result = await resetNotificationTier(parsed.data.action)
+        const result = await resetTierForTenant(ctx.tenantId, parsed.data.action)
         if (result.error) return apiError('reset_failed', result.error, 500)
       } else {
-        const result = await resetAllNotificationTiers()
+        const result = await resetAllTiersForTenant(ctx.tenantId)
         if (result.error) return apiError('reset_failed', result.error, 500)
       }
       return apiSuccess({ reset: true })

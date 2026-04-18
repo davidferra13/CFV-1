@@ -4,7 +4,7 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { withApiAuth, apiSuccess, apiNotFound, apiValidationError, apiError } from '@/lib/api/v2'
-import { bulkAssignEventsToPartner } from '@/lib/partners/actions'
+import { bulkAssignEventsForTenant } from '@/lib/partners/store'
 
 const AssignBody = z.object({
   locationId: z.string().uuid().nullable(),
@@ -12,7 +12,7 @@ const AssignBody = z.object({
 })
 
 export const POST = withApiAuth(
-  async (req: NextRequest, _ctx, params) => {
+  async (req: NextRequest, ctx, params) => {
     const partnerId = params?.id
     if (!partnerId) return apiNotFound('Partner')
 
@@ -26,12 +26,18 @@ export const POST = withApiAuth(
     const parsed = AssignBody.safeParse(body)
     if (!parsed.success) return apiValidationError(parsed.error)
 
-    try {
-      await bulkAssignEventsToPartner(partnerId, parsed.data.locationId, parsed.data.eventIds)
-      return apiSuccess({ assigned: true })
-    } catch (err: any) {
-      return apiError('assign_failed', err.message ?? 'Failed to assign events', 500)
+    const result = await bulkAssignEventsForTenant(
+      ctx.tenantId,
+      partnerId,
+      parsed.data.locationId,
+      parsed.data.eventIds
+    )
+
+    if (result.error) {
+      return apiError('assign_failed', result.error, 500)
     }
+
+    return apiSuccess({ assigned: true, count: result.count })
   },
   { scopes: ['partners:write'] }
 )

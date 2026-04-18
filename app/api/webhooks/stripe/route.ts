@@ -445,6 +445,14 @@ async function handleGiftCardPurchaseCompleted(event: Stripe.Event, db: any) {
       console.error('[handleGiftCardPurchaseCompleted] Chef email failed (non-blocking):', emailErr)
     }
   }
+
+  // FC-G13: Bust cache for gift card pages
+  try {
+    const { revalidatePath } = await import('next/cache')
+    revalidatePath('/clients/gift-cards')
+  } catch {
+    // non-blocking
+  }
 }
 
 /**

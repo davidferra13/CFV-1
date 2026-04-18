@@ -5,7 +5,7 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { withApiAuth, apiSuccess, apiValidationError, apiError } from '@/lib/api/v2'
-import { getNotificationTierMap, updateNotificationTier } from '@/lib/notifications/tier-actions'
+import { getTierMapForTenant, updateTierForTenant } from '@/lib/notifications/store'
 
 const UpdateTierBody = z.object({
   action: z.string().min(1),
@@ -13,9 +13,9 @@ const UpdateTierBody = z.object({
 })
 
 export const GET = withApiAuth(
-  async (_req, _ctx) => {
+  async (_req, ctx) => {
     try {
-      const tiers = await getNotificationTierMap()
+      const tiers = await getTierMapForTenant(ctx.tenantId)
       return apiSuccess({ tiers })
     } catch (err: any) {
       return apiError('fetch_failed', err.message ?? 'Failed to fetch tiers', 500)
@@ -25,7 +25,7 @@ export const GET = withApiAuth(
 )
 
 export const PATCH = withApiAuth(
-  async (req: NextRequest, _ctx) => {
+  async (req: NextRequest, ctx) => {
     let body: unknown
     try {
       body = await req.json()
@@ -37,7 +37,7 @@ export const PATCH = withApiAuth(
     if (!parsed.success) return apiValidationError(parsed.error)
 
     try {
-      const result = await updateNotificationTier(parsed.data.action, parsed.data.tier)
+      const result = await updateTierForTenant(ctx.tenantId, parsed.data.action, parsed.data.tier)
       if (result.error) return apiError('update_failed', result.error, 500)
       return apiSuccess({ updated: true })
     } catch (err: any) {

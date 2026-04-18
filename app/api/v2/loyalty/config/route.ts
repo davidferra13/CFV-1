@@ -4,12 +4,12 @@
 
 import { NextRequest } from 'next/server'
 import { withApiAuth, apiSuccess, apiError } from '@/lib/api/v2'
-import { getLoyaltyConfig, updateLoyaltyConfig } from '@/lib/loyalty/actions'
+import { getLoyaltyConfigForTenant, updateLoyaltyConfigForTenant } from '@/lib/loyalty/store'
 
 export const GET = withApiAuth(
-  async (_req, _ctx) => {
+  async (_req, ctx) => {
     try {
-      const config = await getLoyaltyConfig()
+      const config = await getLoyaltyConfigForTenant(ctx.tenantId)
       return apiSuccess(config)
     } catch (err) {
       console.error('[api/v2/loyalty/config] GET error:', err)
@@ -20,7 +20,7 @@ export const GET = withApiAuth(
 )
 
 export const PATCH = withApiAuth(
-  async (req: NextRequest, _ctx) => {
+  async (req: NextRequest, ctx) => {
     let body: unknown
     try {
       body = await req.json()
@@ -29,8 +29,9 @@ export const PATCH = withApiAuth(
     }
 
     try {
-      const result = await updateLoyaltyConfig(body as any)
-      return apiSuccess(result)
+      const result = await updateLoyaltyConfigForTenant(ctx.tenantId, body as any)
+      if (result.error) return apiError('update_failed', result.error, 500)
+      return apiSuccess(result.config ?? { updated: true })
     } catch (err) {
       console.error('[api/v2/loyalty/config] PATCH error:', err)
       return apiError('update_failed', 'Failed to update loyalty config', 500)

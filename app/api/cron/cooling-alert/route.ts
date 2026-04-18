@@ -89,19 +89,24 @@ export async function GET(request: Request) {
       }
 
       const clientIds = Array.from(new Set(candidates.map((row) => row.client_id)))
+      // Q38: Filter out soft-deleted clients so cooling alerts don't fire for them
       const { data: clients } = await dbAdmin
         .from('clients')
         .select('id, full_name')
         .in('id', clientIds)
+        .is('deleted_at', null)
 
       const clientNameById = new Map(
         (clients ?? []).map((client: any) => [client.id, client.full_name])
       )
+      // Q38: Skip deleted clients (not in the filtered result set)
+      const activeClientIds = new Set(clientNameById.keys())
+      const activeCandidates = candidates.filter((c) => activeClientIds.has(c.client_id))
 
       let notified = 0
       let skipped = 0
 
-      for (const pair of candidates) {
+      for (const pair of activeCandidates) {
         const cached = recipientCache.get(pair.tenant_id)
         const recipientId =
           cached !== undefined
@@ -154,7 +159,7 @@ export async function GET(request: Request) {
       }
 
       return {
-        detected: candidates.length,
+        detected: activeCandidates.length,
         notified,
         skipped,
       }

@@ -6,9 +6,11 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { withApiAuth, apiSuccess, apiValidationError, apiError } from '@/lib/api/v2'
 import {
-  getNotificationPreferences,
-  upsertCategoryPreference,
-} from '@/lib/notifications/settings-actions'
+  resolveChefAuthUserId,
+  getPreferencesForTenant,
+  upsertPreferenceForTenant,
+} from '@/lib/notifications/store'
+import type { NotificationCategory } from '@/lib/notifications/types'
 
 const UpdatePrefBody = z.object({
   category: z.string().min(1),
@@ -20,9 +22,10 @@ const UpdatePrefBody = z.object({
 })
 
 export const GET = withApiAuth(
-  async (_req, _ctx) => {
+  async (_req, ctx) => {
     try {
-      const prefs = await getNotificationPreferences()
+      const authUserId = await resolveChefAuthUserId(ctx.tenantId)
+      const prefs = await getPreferencesForTenant(authUserId)
       return apiSuccess({ preferences: prefs })
     } catch (err: any) {
       return apiError('fetch_failed', err.message ?? 'Failed to fetch preferences', 500)
@@ -32,7 +35,7 @@ export const GET = withApiAuth(
 )
 
 export const PATCH = withApiAuth(
-  async (req: NextRequest, _ctx) => {
+  async (req: NextRequest, ctx) => {
     let body: unknown
     try {
       body = await req.json()
@@ -44,8 +47,11 @@ export const PATCH = withApiAuth(
     if (!parsed.success) return apiValidationError(parsed.error)
 
     try {
-      const result = await upsertCategoryPreference(
-        parsed.data.category as any,
+      const authUserId = await resolveChefAuthUserId(ctx.tenantId)
+      const result = await upsertPreferenceForTenant(
+        ctx.tenantId,
+        authUserId,
+        parsed.data.category as NotificationCategory,
         parsed.data.channels
       )
       if (result.error) return apiError('update_failed', result.error, 500)

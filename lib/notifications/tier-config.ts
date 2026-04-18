@@ -152,6 +152,9 @@ export const DEFAULT_TIER_MAP: Record<NotificationAction, NotificationTier> = {
   loyalty_trigger: 'info',
   loyalty_adjustment: 'alert',
 
+  // Dietary safety
+  dietary_menu_conflict: 'alert',
+
   // System
   system_alert: 'critical',
   account_access_alert: 'critical',

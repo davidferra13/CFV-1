@@ -145,6 +145,8 @@ export type NotificationAction =
   | 'proposal_declined'
   // Client follow-up rules
   | 'followup_rule_triggered'
+  // Dietary safety
+  | 'dietary_menu_conflict'
 
 export type Notification = {
   id: string
@@ -348,6 +350,9 @@ export const NOTIFICATION_CONFIG: Record<
 
   // Client follow-up rules
   followup_rule_triggered: { category: 'client', icon: 'Bell', toastByDefault: false },
+
+  // Dietary safety
+  dietary_menu_conflict: { category: 'event', icon: 'AlertTriangle', toastByDefault: true },
 }
 
 // Category display names for preferences UI

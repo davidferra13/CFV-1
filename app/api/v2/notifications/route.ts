@@ -7,9 +7,10 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { withApiAuth, apiCreated, apiValidationError, apiError } from '@/lib/api/v2'
+import { createNotificationForTenant } from '@/lib/notifications/store'
 
 const SendNotificationBody = z.object({
-  // Recipient targeting - recipient_id is always derived from the authenticated session,
+  // Recipient targeting - recipient_id is always derived server-side,
   // never accepted from caller input (prevents cross-tenant notification injection)
   client_id: z.string().uuid().optional(),
   recipient_role: z.enum(['chef', 'client']).default('chef'),
@@ -44,31 +45,21 @@ export const POST = withApiAuth(
 
     const input = parsed.data
 
-    // recipient_id is always the authenticated tenant - never accept from caller input
-    const insertPayload: Record<string, unknown> = {
-      tenant_id: ctx.tenantId,
-      recipient_id: ctx.tenantId,
-      recipient_role: input.recipient_role,
+    const { data, error } = await createNotificationForTenant(ctx.tenantId, {
+      recipientRole: input.recipient_role,
+      clientId: input.client_id,
       title: input.title,
       body: input.body,
       category: input.category,
-    }
-
-    if (input.client_id) insertPayload.client_id = input.client_id
-    if (input.event_id) insertPayload.event_id = input.event_id
-    if (input.action) insertPayload.action = input.action
-    if (input.action_url) insertPayload.action_url = input.action_url
-    if (input.metadata) insertPayload.metadata = input.metadata
-
-    const { data, error } = await (ctx.db as any)
-      .from('notifications')
-      .insert(insertPayload)
-      .select()
-      .single()
+      action: input.action,
+      actionUrl: input.action_url,
+      eventId: input.event_id,
+      metadata: input.metadata,
+    })
 
     if (error) {
       console.error('[api/v2/notifications] Send error:', error)
-      return apiError('create_failed', 'Failed to send notification', 500)
+      return apiError('create_failed', error, 500)
     }
 
     return apiCreated(data)
