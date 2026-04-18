@@ -359,7 +359,7 @@
 
 ---
 
-## Priority Gaps (40 Total, 30 Resolved, 3 Deferred, 7 Remaining)
+## Priority Gaps (40 Total, 31 Resolved, 3 Deferred, 6 Remaining)
 
 ### CRITICAL (Must Fix Before Launch) - 3 gaps, ALL RESOLVED
 
@@ -404,20 +404,20 @@
 | ~~FC-G33~~ | FC83 | ~~Search query not pre-filled in quick-create~~ | RESOLVED: append `?q=` param after stripping keywords                           |
 | ~~FC-G34~~ | FC87 | ~~No fuzzy search matching~~                    | RESOLVED: order-preserved character matching with 70% threshold                 |
 
-### LOW (Polish) - 13 gaps, 5 RESOLVED
+### LOW (Polish) - 13 gaps, 6 RESOLVED
 
-| Gap        | Q     | Issue                                                 | Status                                                               |
-| ---------- | ----- | ----------------------------------------------------- | -------------------------------------------------------------------- |
-| FC-G12     | FC27  | Token-gated pages need consistent expiry audit        |                                                                      |
-| ~~FC-G13~~ | FC28  | ~~Gift card post-purchase chain~~                     | RESOLVED: chain verified complete; `revalidatePath` added to webhook |
-| FC-G26     | FC53  | No transactional vs marketing suppression distinction |                                                                      |
-| FC-G27     | FC65  | Dashboard layout customization may be cosmetic        |                                                                      |
-| ~~FC-G28~~ | FC66  | ~~Automation settings may not wire to triggers~~      | RESOLVED: verified fully wired (3 crons + 7 callsites)               |
-| FC-G29     | FC72  | Settings use requireChef not RBAC                     |                                                                      |
-| FC-G30     | FC74  | Staff portal doesn't use RBAC permissions             |                                                                      |
-| FC-G31     | FC78  | No immediate session invalidation on deactivation     |                                                                      |
-| FC-G32     | FC80  | No cross-staff visibility for same event              |                                                                      |
-| ~~FC-G35~~ | FC90  | ~~No cross-type relevance ranking in search~~         | RESOLVED: fuzzy scoring applied to all results, sorted by relevance  |
-| ~~FC-G37~~ | FC103 | ~~PIN uniqueness needs DB constraint verification~~   | RESOLVED: partial unique index `idx_staff_pin_per_tenant` exists     |
-| FC-G38     | FC104 | Kiosk checkout chain needs end-to-end verification    |                                                                      |
-| ~~FC-G43~~ | FC130 | RESOLVED - paywall intentional                        |                                                                      |
+| Gap        | Q     | Issue                                                 | Status                                                                                                                                                         |
+| ---------- | ----- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FC-G12     | FC27  | Token-gated pages need consistent expiry audit        |                                                                                                                                                                |
+| ~~FC-G13~~ | FC28  | ~~Gift card post-purchase chain~~                     | RESOLVED: chain verified complete; `revalidatePath` added to webhook                                                                                           |
+| FC-G26     | FC53  | No transactional vs marketing suppression distinction |                                                                                                                                                                |
+| FC-G27     | FC65  | Dashboard layout customization may be cosmetic        |                                                                                                                                                                |
+| ~~FC-G28~~ | FC66  | ~~Automation settings may not wire to triggers~~      | RESOLVED: verified fully wired (3 crons + 7 callsites)                                                                                                         |
+| FC-G29     | FC72  | Settings use requireChef not RBAC                     |                                                                                                                                                                |
+| FC-G30     | FC74  | Staff portal doesn't use RBAC permissions             |                                                                                                                                                                |
+| ~~FC-G31~~ | FC78  | ~~No immediate session invalidation on deactivation~~ | RESOLVED: `revokeAllSessionsForUser()` called on deactivation (both server action + API v2); `requireStaff()` checks `status === 'active'` as defense-in-depth |
+| FC-G32     | FC80  | No cross-staff visibility for same event              |                                                                                                                                                                |
+| ~~FC-G35~~ | FC90  | ~~No cross-type relevance ranking in search~~         | RESOLVED: fuzzy scoring applied to all results, sorted by relevance                                                                                            |
+| ~~FC-G37~~ | FC103 | ~~PIN uniqueness needs DB constraint verification~~   | RESOLVED: partial unique index `idx_staff_pin_per_tenant` exists                                                                                               |
+| FC-G38     | FC104 | Kiosk checkout chain needs end-to-end verification    |                                                                                                                                                                |
+| ~~FC-G43~~ | FC130 | RESOLVED - paywall intentional                        |                                                                                                                                                                |

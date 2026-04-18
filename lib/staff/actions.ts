@@ -5,6 +5,10 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { db } from '@/lib/db'
+import { userRoles } from '@/lib/db/schema/schema'
+import { eq, and } from 'drizzle-orm'
+import { revokeAllSessionsForUser } from '@/lib/auth/account-access'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -110,15 +114,31 @@ export async function updateStaffMember(id: string, input: UpdateStaffInput) {
 
 export async function deactivateStaffMember(id: string) {
   const user = await requireChef()
-  const db: any = createServerClient()
+  const compat: any = createServerClient()
 
-  const { error } = await db
+  const { error } = await compat
     .from('staff_members')
     .update({ status: 'inactive' })
     .eq('id', id)
     .eq('chef_id', user.tenantId!)
 
   if (error) throw new Error('Failed to deactivate staff member')
+
+  // Revoke active JWT sessions so deactivated staff cannot continue accessing the portal
+  try {
+    const [roleRow] = await db
+      .select({ authUserId: userRoles.authUserId })
+      .from(userRoles)
+      .where(and(eq(userRoles.entityId, id), eq(userRoles.role, 'staff')))
+      .limit(1)
+
+    if (roleRow?.authUserId) {
+      await revokeAllSessionsForUser(roleRow.authUserId)
+    }
+  } catch (err) {
+    console.error('[non-blocking] Failed to revoke staff sessions on deactivation', err)
+  }
+
   revalidatePath('/staff')
 }
 

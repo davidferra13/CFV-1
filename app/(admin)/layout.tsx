@@ -1,12 +1,17 @@
 // Admin Portal Layout
 // Requires persisted platform admin access.
-// Uses chef portal shell so admin pages match the standard chef experience.
+// Uses admin-owned shell components for navigation and content,
+// NOT chef shell components. This is an enforced runtime boundary.
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { redirect } from 'next/navigation'
 import dynamic from 'next/dynamic'
-import { SidebarProvider, ChefSidebar, ChefMobileNav } from '@/components/navigation/chef-nav'
-import { ChefMainContent } from '@/components/navigation/chef-main-content'
+import {
+  AdminSidebarProvider,
+  AdminSidebar,
+  AdminMobileNav,
+  AdminMainContent,
+} from '@/components/navigation/admin-shell'
 import { NotificationProvider } from '@/components/notifications/notification-provider'
 import { ToastProvider } from '@/components/notifications/toast-provider'
 import { OfflineProvider } from '@/components/offline/offline-provider'
@@ -35,21 +40,21 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <OfflineProvider>
-      <SidebarProvider>
+      <AdminSidebarProvider>
         <NotificationProvider userId={admin.id}>
           <ToastProvider />
           <TestAccountBanner email={admin.email} />
           <div className="min-h-screen bg-stone-900 text-stone-100" data-cf-portal="admin">
-            <ChefSidebar isAdmin userId={admin.id} tenantId={admin.id} />
-            <ChefMobileNav isAdmin userId={admin.id} tenantId={admin.id} />
-            <ChefMainContent>{children}</ChefMainContent>
+            <AdminSidebar userId={admin.id} />
+            <AdminMobileNav userId={admin.id} />
+            <AdminMainContent>{children}</AdminMainContent>
             {isFounderEmail(admin.email) && <RemyWrapper />}
             <AnalyticsIdentify userId={admin.id} email={admin.email} role="admin" />
             <PresenceBeacon userId={admin.id} email={admin.email} />
             <PageInfoButton />
           </div>
         </NotificationProvider>
-      </SidebarProvider>
+      </AdminSidebarProvider>
     </OfflineProvider>
   )
 }

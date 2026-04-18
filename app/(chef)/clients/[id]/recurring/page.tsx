@@ -5,6 +5,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { requireChef } from '@/lib/auth/get-user'
+import { notFound } from 'next/navigation'
 import {
   getRecurringPlanningSnapshot,
   getServedHistoryForClient,
@@ -13,6 +14,7 @@ import {
   listRecurringRecommendationsForClient,
   listRecurringServices,
 } from '@/lib/recurring/actions'
+import { getClientById } from '@/lib/clients/actions'
 import { SERVICE_TYPE_LABELS, REACTION_LABELS } from '@/lib/recurring/constants'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -25,6 +27,9 @@ export const metadata: Metadata = { title: 'Recurring Service' }
 
 export default async function ClientRecurringPage({ params }: { params: { id: string } }) {
   await requireChef()
+
+  const client = await getClientById(params.id)
+  if (!client) notFound()
 
   const [services, history, suggestions, planning, mealRequests, recommendations] =
     await Promise.all([

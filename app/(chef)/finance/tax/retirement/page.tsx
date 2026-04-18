@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { requireChef } from '@/lib/auth/get-user'
 import {
   getRetirementContributions,
   getHealthInsurancePremiums,
@@ -13,6 +14,7 @@ export default async function RetirementPage({
 }: {
   searchParams: { year?: string }
 }) {
+  await requireChef()
   const currentYear = new Date().getFullYear()
   const taxYear = searchParams.year ? parseInt(searchParams.year, 10) : currentYear
 

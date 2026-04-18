@@ -4,6 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { getOnboardingProgress } from '@/lib/onboarding/progress-actions'
 import { getChefArchetype } from '@/lib/archetypes/actions'
+import { getOnboardingProgress as getWizardStepProgress } from '@/lib/onboarding/onboarding-actions'
 
 export const metadata = { title: 'Setup' }
 
@@ -20,8 +21,12 @@ export default async function OnboardingPage() {
 
   if (chef?.onboarding_completed_at || chef?.onboarding_banner_dismissed_at) {
     // Wizard already done (or skipped), show the post-wizard hub
-    const [progress, archetype] = await Promise.all([getOnboardingProgress(), getChefArchetype()])
-    return <OnboardingHub progress={progress} archetype={archetype} />
+    const [progress, archetype, wizardSteps] = await Promise.all([
+      getOnboardingProgress(),
+      getChefArchetype(),
+      getWizardStepProgress(),
+    ])
+    return <OnboardingHub progress={progress} archetype={archetype} wizardSteps={wizardSteps} />
   }
 
   // Wizard not completed yet, show the wizard

@@ -382,12 +382,29 @@ export async function uploadPortfolioPhotos(
       continue
     }
 
-    const ext = file.type.split('/')[1]?.replace('jpeg', 'jpg') || 'jpg'
+    // Convert HEIC/HEIF to JPEG for universal browser support
+    let uploadBuffer: Buffer | File = file
+    let uploadContentType = file.type
+    let ext = file.type.split('/')[1]?.replace('jpeg', 'jpg') || 'jpg'
+
+    if (file.type === 'image/heic' || file.type === 'image/heif') {
+      try {
+        const sharp = (await import('sharp')).default
+        const arrayBuf = await file.arrayBuffer()
+        uploadBuffer = await sharp(Buffer.from(arrayBuf)).jpeg({ quality: 85 }).toBuffer()
+        uploadContentType = 'image/jpeg'
+        ext = 'jpg'
+      } catch (convErr) {
+        console.error('[onboarding] HEIC conversion failed, storing raw', convErr)
+        // Fall through: store raw HEIC as fallback
+      }
+    }
+
     const storagePath = `${tenantId}/${Date.now()}-${crypto.randomUUID()}.${ext}`
 
     const uploadFn = async () =>
-      db.storage.from('portfolio-photos').upload(storagePath, file, {
-        contentType: file.type,
+      db.storage.from('portfolio-photos').upload(storagePath, uploadBuffer, {
+        contentType: uploadContentType,
         upsert: false,
       })
 

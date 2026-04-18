@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { requireChef } from '@/lib/auth/get-user'
 import { getHomeOfficeDeduction } from '@/lib/tax/home-office-actions'
 import { HomeOfficeForm } from '@/components/finance/home-office-form'
 import { Card, CardContent } from '@/components/ui/card'
@@ -12,6 +13,7 @@ export default async function HomeOfficePage({
 }: {
   searchParams: { year?: string }
 }) {
+  await requireChef()
   const currentYear = new Date().getFullYear()
   const taxYear = searchParams.year ? parseInt(searchParams.year, 10) : currentYear
 

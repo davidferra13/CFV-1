@@ -4,7 +4,12 @@
 
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import { getPersistedAdminAccessForAuthUser, type AdminAccessLevel } from '@/lib/auth/admin-access'
+import {
+  getPersistedAdminAccessForAuthUser,
+  hasAdminAccess,
+  hasPrivilegedAccess,
+  type AdminAccessLevel,
+} from '@/lib/auth/admin-access'
 
 export type AdminUser = {
   id: string
@@ -14,7 +19,8 @@ export type AdminUser = {
 
 /**
  * Resolve the current authenticated admin from the persisted platform_admins table.
- * Returns null for unauthenticated users and authenticated non-admins.
+ * Returns null for unauthenticated users, non-admins, and VIP users.
+ * VIP users have feature access but NOT admin panel access.
  */
 export async function getCurrentAdminUser(): Promise<AdminUser | null> {
   const session = await auth()
@@ -25,6 +31,11 @@ export async function getCurrentAdminUser(): Promise<AdminUser | null> {
 
   const access = await getPersistedAdminAccessForAuthUser(session.user.id)
   if (!access) {
+    return null
+  }
+
+  // VIP is not admin - they don't get admin panel access
+  if (access.accessLevel === 'vip') {
     return null
   }
 
@@ -49,12 +60,27 @@ export async function requireAdmin(): Promise<AdminUser> {
 }
 
 /**
- * Non-throwing check â€” use to conditionally render admin links in shared layouts.
+ * Non-throwing check for admin-panel-level access (admin + owner only).
+ * VIP returns false. Use to conditionally render admin links in shared layouts.
  */
 export async function isAdmin(): Promise<boolean> {
   try {
     const admin = await getCurrentAdminUser()
     return admin !== null
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Non-throwing check for VIP-or-above access (vip, admin, owner).
+ * Use for: focus mode bypass, billing bypass, all-modules visibility.
+ */
+export async function isVIPOrAbove(): Promise<boolean> {
+  try {
+    const session = await auth()
+    if (!session?.user?.id) return false
+    return hasPrivilegedAccess(session.user.id)
   } catch {
     return false
   }

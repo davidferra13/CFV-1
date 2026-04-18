@@ -14,9 +14,14 @@ import { WebSourcingPanel } from '@/components/pricing/web-sourcing-panel'
 interface SubstitutionLookupProps {
   className?: string
   initialQuery?: string
+  clientId?: string // Q14: when provided, substitutes are cross-referenced against client allergies
 }
 
-export function SubstitutionLookup({ className = '', initialQuery = '' }: SubstitutionLookupProps) {
+export function SubstitutionLookup({
+  className = '',
+  initialQuery = '',
+  clientId,
+}: SubstitutionLookupProps) {
   const [query, setQuery] = useState(initialQuery)
   const [result, setResult] = useState<SubstitutionSearchResult | null>(null)
   const [searched, setSearched] = useState(false)
@@ -29,7 +34,7 @@ export function SubstitutionLookup({ className = '', initialQuery = '' }: Substi
     setError(null)
     startTransition(async () => {
       try {
-        const data = await searchSubstitutions(query.trim())
+        const data = await searchSubstitutions(query.trim(), clientId)
         setResult(data)
         setSearched(true)
       } catch (err) {
@@ -123,6 +128,25 @@ export function SubstitutionLookup({ className = '', initialQuery = '' }: Substi
                       <Badge key={diet} variant="success">
                         {diet}
                       </Badge>
+                    ))}
+                  </div>
+                )}
+
+                {sub.allergyConflicts && sub.allergyConflicts.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {sub.allergyConflicts.map((c, i) => (
+                      <span
+                        key={i}
+                        className={`inline-flex items-center text-[10px] px-1.5 py-0.5 rounded font-medium ${
+                          c.severity === 'anaphylaxis'
+                            ? 'bg-red-900/60 text-red-200'
+                            : c.severity === 'allergy'
+                              ? 'bg-amber-900/50 text-amber-200'
+                              : 'bg-stone-800 text-stone-400'
+                        }`}
+                      >
+                        Conflicts: {c.allergen}
+                      </span>
                     ))}
                   </div>
                 )}

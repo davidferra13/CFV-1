@@ -15,7 +15,7 @@ export async function acknowledgeCOC(assignmentId: string) {
       coc_acknowledged_at: new Date().toISOString(),
     })
     .eq('id', assignmentId)
-  // Verify tenant owns via the event join
+    .eq('chef_id', chef.tenantId!)
   if (error) throw new Error(error.message)
   revalidatePath('/events')
 }
@@ -28,6 +28,7 @@ export async function getCOCStatus(eventId: string) {
     .from('event_staff_assignments')
     .select('id, staff_member_id, coc_acknowledged, coc_acknowledged_at, staff_members(full_name)')
     .eq('event_id', eventId)
+    .eq('chef_id', chef.tenantId!)
 
   if (error) return []
   return (data ?? []).map((a: any) => ({

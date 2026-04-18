@@ -263,13 +263,18 @@ export async function requireStaff(): Promise<StaffAuthUser> {
 
   // Look up chef_id (tenant) from the staff member record (direct DB query, no RLS needed)
   const [staffMember] = await db
-    .select({ chefId: staffMembers.chefId })
+    .select({ chefId: staffMembers.chefId, status: staffMembers.status })
     .from(staffMembers)
     .where(eq(staffMembers.id, roleData.entityId))
     .limit(1)
 
   if (!staffMember) {
     throw new Error('Staff member record not found')
+  }
+
+  // Block inactive staff (defense-in-depth alongside session revocation on deactivation)
+  if (staffMember.status !== 'active') {
+    redirect(SESSION_EXPIRED_URL)
   }
 
   return {

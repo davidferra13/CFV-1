@@ -92,12 +92,26 @@ const PHASES: Phase[] = [
   },
 ]
 
+type WizardStep = { step_key: string; completed_at: string | null; skipped: boolean }
+
+const WIZARD_STEP_LABELS: Record<string, string> = {
+  profile: 'Profile',
+  portfolio: 'Portfolio photos',
+  first_menu: 'Menu',
+  pricing: 'Pricing',
+  connect_gmail: 'Gmail sync',
+  first_event: 'First booking',
+  chef_network: 'Chef network',
+}
+
 export function OnboardingHub({
   progress,
   archetype,
+  wizardSteps = [],
 }: {
   progress: OnboardingProgress
   archetype?: ArchetypeId | null
+  wizardSteps?: WizardStep[]
 }) {
   // Filter phases by archetype
   const visiblePhases = PHASES.filter((phase) => {
@@ -146,6 +160,33 @@ export function OnboardingHub({
             />
           </div>
         </div>
+
+        {/* Wizard summary - acknowledge what was already configured */}
+        {wizardSteps.length > 0 &&
+          (() => {
+            const completed = wizardSteps.filter(
+              (s) => s.completed_at && !s.skipped && WIZARD_STEP_LABELS[s.step_key]
+            )
+            if (completed.length === 0) return null
+            return (
+              <div className="rounded-lg border border-stone-700 bg-stone-900 px-4 py-3">
+                <p className="text-xs font-medium text-stone-400 uppercase tracking-wide mb-2">
+                  Already configured during setup
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {completed.map((s) => (
+                    <span
+                      key={s.step_key}
+                      className="inline-flex items-center gap-1 rounded-full bg-green-950 border border-green-800 px-2.5 py-0.5 text-xs text-green-400"
+                    >
+                      <CheckCircle2 className="h-3 w-3" />
+                      {WIZARD_STEP_LABELS[s.step_key]}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )
+          })()}
 
         {/* Phase cards */}
         <div className="space-y-4">

@@ -3,6 +3,7 @@
 
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { notFound } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 import { getStaffMember, checkStaffHasLogin } from '@/lib/staff/actions'
@@ -55,6 +56,7 @@ export default async function StaffDetailPage({ params }: { params: { id: string
       .eq('staff_member_id', params.id)
       .limit(1),
   ])
+  if (!member) notFound()
   const locations = (locRows ?? []) as { id: string; name: string; location_type: string }[]
 
   // If staff member is linked to an employee, fetch payroll records

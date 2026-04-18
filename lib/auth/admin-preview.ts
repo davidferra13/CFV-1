@@ -5,7 +5,7 @@
 // Does NOT affect security gates (requireAdmin, admin pages).
 
 import { cookies } from 'next/headers'
-import { isAdmin } from '@/lib/auth/admin'
+import { isAdmin, isVIPOrAbove } from '@/lib/auth/admin'
 
 const PREVIEW_COOKIE = 'chefflow-admin-preview'
 
@@ -30,5 +30,16 @@ export function isAdminPreviewActive(): boolean {
 export async function isEffectiveAdmin(): Promise<boolean> {
   const admin = await isAdmin().catch(() => false)
   if (!admin) return false
+  return !isAdminPreviewActive()
+}
+
+/**
+ * Effective privileged check for UI bypass (Focus Mode, all modules, billing bypass).
+ * Returns true for VIP, Admin, or Owner - unless admin preview mode is active.
+ * VIP users don't get admin panel access, but DO bypass focus mode and billing.
+ */
+export async function isEffectivePrivileged(): Promise<boolean> {
+  const privileged = await isVIPOrAbove().catch(() => false)
+  if (!privileged) return false
   return !isAdminPreviewActive()
 }

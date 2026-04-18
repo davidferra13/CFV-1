@@ -13,6 +13,10 @@ import {
   apiValidationError,
   apiError,
 } from '@/lib/api/v2'
+import { db } from '@/lib/db'
+import { userRoles } from '@/lib/db/schema/schema'
+import { eq, and } from 'drizzle-orm'
+import { revokeAllSessionsForUser } from '@/lib/auth/account-access'
 
 const UpdateStaffBody = z
   .object({
@@ -111,6 +115,21 @@ export const DELETE = withApiAuth(
     if (error) {
       console.error('[api/v2/staff] Deactivate error:', error)
       return apiError('delete_failed', 'Failed to deactivate staff member', 500)
+    }
+
+    // Revoke active JWT sessions so deactivated staff cannot continue accessing the portal
+    try {
+      const [roleRow] = await db
+        .select({ authUserId: userRoles.authUserId })
+        .from(userRoles)
+        .where(and(eq(userRoles.entityId, id), eq(userRoles.role, 'staff')))
+        .limit(1)
+
+      if (roleRow?.authUserId) {
+        await revokeAllSessionsForUser(roleRow.authUserId)
+      }
+    } catch (err) {
+      console.error('[non-blocking] Failed to revoke staff sessions on deactivation', err)
     }
 
     return apiNoContent()

@@ -231,111 +231,13 @@ export const standaloneTop: NavItem[] = [
       { href: '/analytics', label: 'Analytics' },
     ],
   },
-  { href: '/admin', label: 'Admin', icon: ShieldAlert, adminOnly: true, tier: 'secondary' },
-  { href: '/admin/pulse', label: 'Pulse', icon: ShieldAlert, adminOnly: true, tier: 'secondary' },
-  {
-    href: '/admin/inquiries',
-    label: 'All Inquiries',
-    icon: ShieldAlert,
-    adminOnly: true,
-    tier: 'secondary',
-  },
 ]
 
 // ─── NAV GROUPS ─────────────────────────────────────────────────
 // Groups are sorted alphabetically at runtime (see sort block after array).
-// Admin stays last. Items and children within each group are also sorted A-Z at runtime.
+// Items and children within each group are also sorted A-Z at runtime.
+// Admin nav group moved to components/navigation/admin-nav-config.ts (admin-owned).
 export const navGroups: NavGroup[] = [
-  {
-    id: 'admin',
-    label: 'Admin',
-    icon: ShieldAlert,
-    items: [
-      { href: '/admin/events', label: 'All Events', icon: CalendarDays, adminOnly: true },
-      { href: '/admin/analytics', label: 'Analytics', icon: BarChart3, adminOnly: true },
-      { href: '/admin/audit', label: 'Audit Log', icon: NotebookIcon, adminOnly: true },
-      {
-        href: '/admin/openclaw/health',
-        label: 'Data Engine Health',
-        icon: Activity,
-        adminOnly: true,
-      },
-      // Hidden: { href: '/admin/cannabis', label: 'Cannabis Tier', icon: SealCheck, adminOnly: true },
-      {
-        href: '/admin/cannabis',
-        label: 'Cannabis Tier',
-        icon: SealCheck,
-        adminOnly: true,
-      },
-      { href: '/admin/users', label: 'Chefs', icon: Users, adminOnly: true },
-      { href: '/admin/clients', label: 'Clients', icon: Contact, adminOnly: true },
-      {
-        href: '/admin/command-center',
-        label: 'Command Center',
-        icon: Broadcast,
-        adminOnly: true,
-      },
-      {
-        href: '/admin/communications',
-        label: 'Communications',
-        icon: Mail,
-        adminOnly: true,
-      },
-      {
-        href: '/admin/conversations',
-        label: 'Conversations',
-        icon: ChatDots,
-        adminOnly: true,
-      },
-      { href: '/admin/hub', label: 'Dinner Circle Groups', icon: Users, adminOnly: true },
-      { href: '/admin/directory', label: 'Directory', icon: TreeStructure, adminOnly: true },
-      {
-        href: '/admin/directory-listings',
-        label: 'Directory Listings',
-        icon: List,
-        adminOnly: true,
-      },
-      { href: '/admin/beta', label: 'Early Signups', icon: Star, adminOnly: true },
-      { href: '/admin/flags', label: 'Feature Flags', icon: FlagBanner, adminOnly: true },
-      { href: '/admin/feedback', label: 'Feedback', icon: Star, adminOnly: true },
-      { href: '/admin/financials', label: 'Financials', icon: DollarSign, adminOnly: true },
-      { href: '/admin/presence', label: 'Live Presence', icon: WifiHigh, adminOnly: true },
-      {
-        href: '/admin/notifications',
-        label: 'Notifications',
-        icon: BellRing,
-        adminOnly: true,
-      },
-      { href: '/admin', label: 'Overview', icon: LayoutDashboard, adminOnly: true },
-      { href: '/admin/reconciliation', label: 'Reconciliation', icon: Scales, adminOnly: true },
-      {
-        href: '/admin/referral-partners',
-        label: 'Referral Partners',
-        icon: Handshake,
-        adminOnly: true,
-      },
-      {
-        href: '/admin/silent-failures',
-        label: 'Silent Failures',
-        icon: AlertTriangle,
-        adminOnly: true,
-      },
-      { href: '/admin/social', label: 'Social Feed', icon: MessagesSquare, adminOnly: true },
-      {
-        href: '/admin/beta-surveys',
-        label: 'Surveys',
-        icon: ClipboardCheck,
-        adminOnly: true,
-      },
-      { href: '/admin/system', label: 'System Health', icon: ShieldCheck, adminOnly: true },
-      {
-        href: '/admin/system/payments',
-        label: 'System Payments',
-        icon: CreditCard,
-        adminOnly: true,
-      },
-    ],
-  },
   {
     id: 'analytics',
     label: 'Analytics',

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { requireChef } from '@/lib/auth/get-user'
 import { generate1099NECReports, get1099NECFilingSummary } from '@/lib/finance/1099-actions'
 import { Form1099NecPanel } from '@/components/finance/form-1099-nec-panel'
 
@@ -10,6 +11,7 @@ export default async function Form1099NECPage({
 }: {
   searchParams: { year?: string }
 }) {
+  await requireChef()
   const currentYear = new Date().getFullYear()
   const taxYear = searchParams.year ? parseInt(searchParams.year, 10) : currentYear
 
