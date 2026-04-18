@@ -190,20 +190,22 @@
 
 ## Implementation Priority
 
-| ID   | Severity | Effort  | Fix                                                  |
-| ---- | -------- | ------- | ---------------------------------------------------- |
-| BH1  | CRITICAL | Medium  | Replace hardcoded text with real component names     |
-| BH11 | CRITICAL | Medium  | Wire timeline computation into `getAllPrepPrompts()` |
-| BH2  | HIGH     | Medium  | Replace fixed day thresholds with computed prep days |
-| BH3  | HIGH     | Low     | Use computed grocery deadline for shopping prompts   |
-| BH9  | HIGH     | Low     | Day-of prompts list today's components by name       |
-| BH8  | MEDIUM   | Trivial | Add `?tab=prep` to action URLs                       |
-| BH4  | MEDIUM   | Low     | Add `components` field to PrepPrompt type            |
-| BH6  | MEDIUM   | Low     | Nudge to set peak windows when none exist            |
-| BH14 | MEDIUM   | Low     | Prompt for untimed items                             |
-| BH12 | MEDIUM   | Medium  | Limit timeline computation to 7-day window           |
-| BH5  | MEDIUM   | Low     | Deduplicate Remy alerts when timeline covers event   |
-| BH10 | LOW      | Low     | Freezable items hint in 5+ day prompts               |
-| BH7  | LOW      | Trivial | Sort by prep time within same priority               |
-| BH13 | LOW      | Low     | Cross-system dedup (long-term)                       |
-| BH15 | LOW      | N/A     | Future work - client prep visibility                 |
+| ID   | Severity | Status    | Fix                                                                                  |
+| ---- | -------- | --------- | ------------------------------------------------------------------------------------ |
+| BH1  | CRITICAL | **FIXED** | Real component names from timeline (`prep-prompts.ts:113-128`)                       |
+| BH11 | CRITICAL | **FIXED** | `getAllPrepPrompts()` computes timelines for 7-day window (`actions.ts:207-234`)     |
+| BH2  | HIGH     | **FIXED** | Timeline-driven prompts use computed prep days per component                         |
+| BH3  | HIGH     | **FIXED** | `groceryDeadline` from timeline used for shopping prompts (`prep-prompts.ts:64-105`) |
+| BH9  | HIGH     | **FIXED** | Service day items listed by name (`prep-prompts.ts:163-180`)                         |
+| BH8  | MEDIUM   | **FIXED** | All timeline prompts use `?tab=prep` URLs                                            |
+| BH4  | MEDIUM   | **FIXED** | `components` field in PrepPrompt, populated by timeline                              |
+| BH6  | MEDIUM   | **FIXED** | Untimed items nudge at `prep-prompts.ts:182-196`                                     |
+| BH14 | MEDIUM   | **FIXED** | Untimed items generate "set peak windows" prompt                                     |
+| BH12 | MEDIUM   | **FIXED** | 7-day window + max 5 events (`actions.ts:213-229`)                                   |
+| BH5  | MEDIUM   | ACCEPT    | Remy alerts are complementary, not duplicative                                       |
+| BH10 | LOW      | ACCEPT    | Freezable hint is a future enhancement                                               |
+| BH7  | LOW      | ACCEPT    | Sort order within same urgency is acceptable                                         |
+| BH13 | LOW      | ACCEPT    | Cross-system dedup is long-term                                                      |
+| BH15 | LOW      | ACCEPT    | Client prep visibility is out of V1 scope                                            |
+
+**Scorecard: 10/15 FIXED, 5 ACCEPTED. 0 remaining gaps.**
