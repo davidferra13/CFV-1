@@ -268,7 +268,6 @@ export async function generateScenarios(module: SimModule, count: number): Promi
         { role: 'user', content: prompt.user },
       ],
       format: 'json',
-      think: false,
     } as any)) as unknown as { message: { content: string } }
 
     const rawText = response.message.content.replace(/<think>[\s\S]*?<\/think>/g, '').trim()

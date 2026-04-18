@@ -18,16 +18,20 @@ export async function analyzeSeasonality(region: string = 'northeast'): Promise<
   const sql = pgClient
 
   // Get ingredients with 6+ months of price history
+  // Bridge through ingredient_aliases since ingredient_price_history.ingredient_id
+  // references ingredients(id), not system_ingredients(id)
   const candidates = await sql`
     SELECT
-      iph.ingredient_id,
+      ia.system_ingredient_id as ingredient_id,
       si.name as ingredient_name,
       count(DISTINCT extract(month from iph.purchase_date)) as months_with_data,
       count(*) as total_records
     FROM ingredient_price_history iph
-    JOIN system_ingredients si ON si.id = iph.ingredient_id
+    JOIN ingredient_aliases ia ON ia.ingredient_id = iph.ingredient_id
+      AND ia.confirmed_at IS NOT NULL
+    JOIN system_ingredients si ON si.id = ia.system_ingredient_id
     WHERE iph.purchase_date >= now() - interval '12 months'
-    GROUP BY iph.ingredient_id, si.name
+    GROUP BY ia.system_ingredient_id, si.name
     HAVING count(DISTINCT extract(month from iph.purchase_date)) >= 6
   `
 
@@ -38,16 +42,18 @@ export async function analyzeSeasonality(region: string = 'northeast'): Promise<
     const ingredientId = candidate.ingredient_id as string
     const ingredientName = candidate.ingredient_name as string
 
-    // Get monthly price averages
+    // Get monthly price averages via alias bridge (ingredientId is system_ingredient_id here)
     const monthlyPrices = await sql`
       SELECT
-        extract(month from purchase_date)::integer as month,
-        avg(price_cents) as avg_price,
+        extract(month from iph.purchase_date)::integer as month,
+        avg(iph.price_cents) as avg_price,
         count(*) as data_points
-      FROM ingredient_price_history
-      WHERE ingredient_id = ${ingredientId}
-      AND purchase_date >= now() - interval '12 months'
-      GROUP BY extract(month from purchase_date)
+      FROM ingredient_price_history iph
+      JOIN ingredient_aliases ia ON ia.ingredient_id = iph.ingredient_id
+        AND ia.confirmed_at IS NOT NULL
+      WHERE ia.system_ingredient_id = ${ingredientId}
+      AND iph.purchase_date >= now() - interval '12 months'
+      GROUP BY extract(month from iph.purchase_date)
       ORDER BY month
     `
 

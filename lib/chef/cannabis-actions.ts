@@ -7,6 +7,7 @@ import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { isAdmin } from '@/lib/auth/admin'
 import { revalidatePath } from 'next/cache'
+import { logCannabisAudit } from '@/lib/admin/audit'
 import { z } from 'zod'
 import { dateToDateString } from '@/lib/utils/format'
 
@@ -122,6 +123,7 @@ export async function getCannabisEvents() {
     .eq('tenant_id', user.tenantId!)
     .eq('cannabis_preference', true)
     .order('event_date', { ascending: false })
+    .limit(100)
 
   if (error) throw new Error('Failed to fetch cannabis events: ' + error.message)
 
@@ -220,27 +222,28 @@ export async function getCannabisLedger() {
     .eq('tenant_id', user.tenantId!)
     .in('event_id', eventIds)
     .order('received_at', { ascending: false })
+    .limit(500)
 
   if (ledgerError) throw new Error('Failed to fetch cannabis ledger entries')
 
+  // Fetch expenses from expenses table (matches event_financial_summary view)
+  const { data: expenseRows } = await db
+    .from('expenses')
+    .select('amount_cents')
+    .in('event_id', eventIds)
+
   const allEntries = entries ?? []
 
-  // Compute totals
-  const revenue = allEntries
-    .filter(
-      (e: any) =>
-        !e.is_refund &&
-        ['payment', 'deposit', 'installment', 'final_payment', 'tip'].includes(e.entry_type)
-    )
-    .reduce((sum: number, e: any) => sum + (e.amount_cents ?? 0), 0)
+  // Compute totals aligned with event_financial_summary DB view:
+  // net_revenue = SUM of ALL ledger entries (payments, tips, refunds all included;
+  // refunds are negative so they subtract naturally)
+  const netRevenue = allEntries.reduce((sum: number, e: any) => sum + (e.amount_cents ?? 0), 0)
 
-  const expenses = allEntries
-    .filter((e: any) => e.entry_type === 'adjustment' && e.amount_cents < 0)
-    .reduce((sum: number, e: any) => sum + Math.abs(e.amount_cents ?? 0), 0)
-
-  const refunds = allEntries
-    .filter((e: any) => e.is_refund)
-    .reduce((sum: number, e: any) => sum + (e.amount_cents ?? 0), 0)
+  // Expenses from expenses table (same source as main financial view)
+  const expenses = (expenseRows ?? []).reduce(
+    (sum: number, e: any) => sum + (e.amount_cents ?? 0),
+    0
+  )
 
   const eventMap = Object.fromEntries((cannabisEvents ?? []).map((e: any) => [e.id, e]))
 
@@ -251,9 +254,9 @@ export async function getCannabisLedger() {
       event_info: eventMap[e.event_id] ?? null,
     })),
     totals: {
-      revenue,
+      revenue: netRevenue,
       expenses,
-      profit: revenue - expenses - refunds,
+      profit: netRevenue - expenses,
     },
   }
 }
@@ -329,6 +332,7 @@ export async function getMySentCannabisInvites() {
     .select('*')
     .eq('invited_by_auth_user_id', user.id)
     .order('created_at', { ascending: false })
+    .limit(100)
 
   if (error) throw new Error('Failed to fetch sent invites')
   return (data ?? []) as {
@@ -638,14 +642,47 @@ export async function updateChefCannabisGuestProfile(
     transportation_acknowledgment: existingProfile?.transportation_acknowledgment ?? false,
   }
 
-  const { error: profileError } = await (db
-    .from('guest_event_profile' as any)
-    .upsert(profilePayload, { onConflict: 'event_id,guest_token' }) as any)
+  // Optimistic locking: if profile already exists, use UPDATE with updated_at
+  // check to detect concurrent edits (e.g., guest submitting RSVP at the same time)
+  if (existingProfile) {
+    const { data: updated, error: profileError } = await (db
+      .from('guest_event_profile' as any)
+      .update(profilePayload)
+      .eq('event_id', validated.eventId)
+      .eq('guest_token', guest.guest_token)
+      .eq('updated_at', existingProfile.updated_at)
+      .select('id') as any)
 
-  if (profileError) {
-    throw new Error('Failed to update guest intake profile')
+    if (profileError) {
+      throw new Error('Failed to update guest intake profile')
+    }
+    if (!updated || updated.length === 0) {
+      throw createConflictError(
+        'guest_event_profile',
+        'This guest profile was modified by another user. Please reload and try again.'
+      )
+    }
+  } else {
+    const { error: profileError } = await (db
+      .from('guest_event_profile' as any)
+      .insert(profilePayload) as any)
+
+    if (profileError) {
+      throw new Error('Failed to create guest intake profile')
+    }
   }
 
   revalidatePath('/cannabis/rsvps')
+
+  try {
+    await logCannabisAudit({
+      actorUserId: user.id,
+      actionType: 'cannabis_guest_profile_updated',
+      targetId: validated.guestId,
+      targetType: 'guest_event_profile',
+      details: { eventId: validated.eventId },
+    })
+  } catch {}
+
   return { success: true }
 }

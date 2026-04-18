@@ -3,14 +3,8 @@
 // Covers: RQ3 (Daily P&L), RQ24 (Prime Cost), RQ27 (Rev/Labor Hour), RQ19 (Dashboard)
 
 import { getDailyRestaurantSnapshot } from '@/lib/analytics/restaurant-metrics-actions'
+import { formatCurrency } from '@/lib/utils/currency'
 import Link from 'next/link'
-
-/** Format cents as dollar string: 1500 -> "$15.00", -300 -> "-$3.00" */
-function fmtCents(cents: number): string {
-  const abs = Math.abs(cents)
-  const formatted = `$${(abs / 100).toFixed(2)}`
-  return cents < 0 ? `-${formatted}` : formatted
-}
 
 function StatusDot({ status }: { status: 'healthy' | 'warning' | 'critical' }) {
   const colors = {
@@ -87,8 +81,8 @@ export async function RestaurantMetricsSection() {
         {/* Net Profit Today */}
         <MetricCard
           label="Net Today"
-          value={fmtCents(kpis.netProfitCents)}
-          subtitle={`${fmtCents(revenue.totalCents)} net revenue, ${kpis.profitMarginPercent}% margin`}
+          value={formatCurrency(kpis.netProfitCents)}
+          subtitle={`${formatCurrency(revenue.totalCents)} net revenue, ${kpis.profitMarginPercent}% margin`}
           status={kpis.netProfitCents >= 0 ? 'healthy' : 'critical'}
           href="/finance"
         />
@@ -96,8 +90,8 @@ export async function RestaurantMetricsSection() {
         {/* Revenue Per Labor Hour */}
         <MetricCard
           label="Rev / Labor Hr"
-          value={fmtCents(kpis.revenuePerLaborHour)}
-          subtitle={`${kpis.laborHours}h logged (target: ${fmtCents(benchmarks.revPerLaborHourTarget)}/hr)`}
+          value={formatCurrency(kpis.revenuePerLaborHour)}
+          subtitle={`${kpis.laborHours}h logged (target: ${formatCurrency(benchmarks.revPerLaborHourTarget)}/hr)`}
           status={benchmarks.revPerLaborHourStatus}
           href="/staff/live"
         />
@@ -108,13 +102,13 @@ export async function RestaurantMetricsSection() {
             label="Covers"
             value={String(kpis.coverCount)}
             subtitle={
-              kpis.revenuePerCover ? `${fmtCents(kpis.revenuePerCover)} per cover` : undefined
+              kpis.revenuePerCover ? `${formatCurrency(kpis.revenuePerCover)} per cover` : undefined
             }
           />
         ) : (
           <MetricCard
             label="COGS"
-            value={fmtCents(costs.cogsCents)}
+            value={formatCurrency(costs.cogsCents)}
             subtitle={`${kpis.foodCostPercent}% of revenue (target: <${benchmarks.foodCostTarget}%)`}
             status={benchmarks.foodCostStatus}
           />

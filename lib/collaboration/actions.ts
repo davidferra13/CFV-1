@@ -177,6 +177,33 @@ export async function inviteChefToEvent(input: {
   revalidatePath(`/events/${input.eventId}`)
   revalidatePath('/dashboard') // clears invited chef's dashboard cache so they see the pending invitation on next visit
 
+  // Fire-and-forget in-app notification to the invited chef (CS-G13 fix)
+  ;(async () => {
+    try {
+      const { createChefNotification } = await import('@/lib/notifications/chef-actions')
+      const { data: invitingChef } = await db
+        .from('chefs')
+        .select('display_name, business_name')
+        .eq('id', user.entityId)
+        .single()
+      const inviterName =
+        invitingChef?.display_name || invitingChef?.business_name || 'A connected chef'
+
+      await createChefNotification({
+        tenantId: input.targetChefId,
+        category: 'event',
+        action: 'event_collaboration_invite',
+        title: `${inviterName} invited you to collaborate`,
+        body: `You've been invited as ${input.role} on ${event.occasion || 'an event'}${event.event_date ? ` (${event.event_date})` : ''}.`,
+        actionUrl: `/dashboard`,
+        eventId: input.eventId,
+        metadata: { role: input.role, invitedBy: user.entityId },
+      })
+    } catch (err) {
+      console.error('[inviteChefToEvent] in-app notification error:', err)
+    }
+  })()
+
   // Fire-and-forget email notification to the invited chef
   ;(async () => {
     try {

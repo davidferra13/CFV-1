@@ -1,9 +1,9 @@
 {
-  "last_sync": "2026-04-18T16:47:11.966Z",
+  "last_sync": "2026-04-18T20:49:31.337Z",
   "status": "failed",
-  "next_sync": "2026-04-18T18:47:11.967Z",
+  "next_sync": "2026-04-18T22:49:31.337Z",
   "interval_hours": 2,
-  "consecutive_failures": 1,
+  "consecutive_failures": 7,
   "last_error": "Command failed: node \"C:\\Users\\david\\Documents\\CFv1\\scripts\\openclaw-pull\\sync-all.mjs\"",
   "last_sync_type": "full"
 }

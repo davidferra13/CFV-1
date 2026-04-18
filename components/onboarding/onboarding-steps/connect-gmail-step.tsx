@@ -121,8 +121,8 @@ export function ConnectGmailStep({
 
       {/* Privacy note */}
       <div className="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 px-4 py-3 text-sm text-blue-800 dark:text-blue-300">
-        <strong>Your data stays on your device.</strong> You can disconnect anytime from Settings.
-        Your email data is never sent to third parties.
+        <strong>Your data stays private.</strong> You can disconnect anytime from Settings. Your
+        email data is never sent to third-party AI services.
       </div>
 
       {error && (

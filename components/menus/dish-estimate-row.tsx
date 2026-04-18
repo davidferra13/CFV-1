@@ -3,13 +3,10 @@
 import { CheckCircle, AlertTriangle, XCircle, HelpCircle } from '@/components/ui/icons'
 import Link from 'next/link'
 import type { DishEstimate } from '@/lib/menus/estimate-actions'
+import { formatCurrency } from '@/lib/utils/currency'
 
 interface DishEstimateRowProps {
   dish: DishEstimate
-}
-
-function formatCents(cents: number): string {
-  return `$${(cents / 100).toFixed(2)}`
 }
 
 function StatusBadge({ status }: { status: DishEstimate['status'] }) {
@@ -98,11 +95,11 @@ export function DishEstimateRow({ dish }: DishEstimateRowProps) {
           {dish.costCents !== null ? (
             <>
               <div className="text-sm font-semibold text-stone-200">
-                {formatCents(dish.costCents)}
+                {formatCurrency(dish.costCents)}
               </div>
               {dish.costPerGuestCents !== null && (
                 <div className="text-xs text-stone-500">
-                  {formatCents(dish.costPerGuestCents)}/guest
+                  {formatCurrency(dish.costPerGuestCents)}/guest
                 </div>
               )}
             </>

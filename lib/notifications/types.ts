@@ -149,6 +149,10 @@ export type NotificationAction =
   | 'followup_rule_triggered'
   // Dietary safety
   | 'dietary_menu_conflict'
+  // Partner referrals
+  | 'referral_booking_converted'
+  // Collaboration
+  | 'event_collaboration_invite'
 
 export type Notification = {
   id: string
@@ -357,6 +361,12 @@ export const NOTIFICATION_CONFIG: Record<
 
   // Dietary safety
   dietary_menu_conflict: { category: 'event', icon: 'AlertTriangle', toastByDefault: true },
+
+  // Partner referrals
+  referral_booking_converted: { category: 'event', icon: 'CalendarPlus', toastByDefault: true },
+
+  // Collaboration
+  event_collaboration_invite: { category: 'event', icon: 'Users', toastByDefault: true },
 }
 
 // Category display names for preferences UI

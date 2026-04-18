@@ -8,6 +8,7 @@
  */
 
 import { requireChef } from '@/lib/auth/get-user'
+import { createServerClient } from '@/lib/db/server'
 
 const OPENCLAW_API = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
 
@@ -380,7 +381,7 @@ export type PriceIntelligenceSummary = {
  * Consolidates price drops, spikes, freshness, and stock data into one call.
  */
 export async function getPriceIntelligenceSummary(): Promise<PriceIntelligenceSummary> {
-  await requireChef()
+  const user = await requireChef()
 
   const empty: PriceIntelligenceSummary = {
     drops: [],
@@ -392,6 +393,21 @@ export async function getPriceIntelligenceSummary(): Promise<PriceIntelligenceSu
   }
 
   try {
+    // Load chef's ingredient names for personalized cost-impact analysis
+    let chefIngredientNames: string[] = []
+    try {
+      const db: any = createServerClient()
+      const { data: ings } = await db
+        .from('ingredients')
+        .select('name')
+        .eq('tenant_id', user.tenantId!)
+        .eq('archived', false)
+        .limit(200)
+      chefIngredientNames = (ings || []).map((i: any) => i.name)
+    } catch {
+      // Non-blocking: fall back to empty (global data)
+    }
+
     const [dropsRes, freshnessRes, costRes, stockRes] = await Promise.all([
       fetch(`${OPENCLAW_API}/api/alerts/price-drops?limit=5`, {
         signal: AbortSignal.timeout(5000),
@@ -404,7 +420,7 @@ export async function getPriceIntelligenceSummary(): Promise<PriceIntelligenceSu
       fetch(`${OPENCLAW_API}/api/prices/cost-impact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: [], days: 7 }),
+        body: JSON.stringify({ items: chefIngredientNames, days: 7 }),
         signal: AbortSignal.timeout(5000),
         cache: 'no-store',
       }).catch(() => null),

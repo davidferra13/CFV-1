@@ -385,6 +385,13 @@ export interface RemyContext {
     qFactorDefault: number
     recostFrequency: string
   }
+  /** Price intelligence from Pi (recent drops, spikes, stock alerts) */
+  priceContext?: {
+    drops: Array<{ name: string; priceCents: number; dropPct: number; store: string }>
+    spikes: Array<{ name: string; priceCents: number; spikePct: number; store: string }>
+    stockAlerts: number
+    freshnessPct: number
+  }
 }
 
 // ─── Page Entity Context ────────────────────────────────────────────────────

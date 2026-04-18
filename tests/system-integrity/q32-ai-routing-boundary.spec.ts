@@ -1,13 +1,11 @@
 /**
- * Q32: AI Routing Boundary
+ * Q32: AI Routing Boundary (Single-Provider Enforcement)
  *
- * ChefFlow uses two AI backends with a hard boundary:
- *   - Ollama-compatible (cloud/local): all private data (PII, financials, client info)
- *   - Gemini: generic non-PII tasks only (technique lookups, kitchen specs)
+ * ChefFlow uses a single AI backend: Ollama-compatible (Gemma 4, cloud/local).
+ * All AI modules must route through parseWithOllama. No second provider exists.
  *
- * If a PII file routes through Gemini, client data leaks to a third-party
- * cloud service. This test verifies the boundary is structurally enforced
- * by inspecting which parse functions each file imports.
+ * This test verifies that no AI file accidentally imports a removed provider
+ * (gemini-service, parseWithAI) and that all files use the canonical gateway.
  *
  * Tests:
  *
@@ -22,11 +20,11 @@
  * 4. CONTRACT GENERATOR: lib/ai/contract-generator.ts uses parseWithOllama
  *    (client PII, event details, pricing).
  *
- * 5. CAMPAIGN OUTREACH PII PATH: lib/ai/campaign-outreach.ts uses Ollama
+ * 5. CAMPAIGN OUTREACH: lib/ai/campaign-outreach.ts uses Ollama
  *    for draftPersonalizedOutreach (client names, dietary prefs).
  *
- * 6. PARSE-OLLAMA IS THE CORRECT IMPORT: PII files import from
- *    lib/ai/parse-ollama.ts, not from lib/ai/gemini-service.ts.
+ * 6. PARSE-OLLAMA IS THE CORRECT IMPORT: AI files import from
+ *    lib/ai/parse-ollama.ts. No other AI provider exists.
  *
  * Run: npx playwright test -c playwright.system-integrity.config.ts tests/system-integrity/q32-ai-routing-boundary.spec.ts
  */

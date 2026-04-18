@@ -3463,30 +3463,12 @@ body {
                   <span style="width:8px;height:8px;border-radius:50%;background:var(--success);flex-shrink:0;"></span>
                   <span style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">Fast</span>
                 </div>
-                <div style="font-size:14px;font-weight:600;font-family:monospace;">qwen3:4b</div>
-                <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">2.5 GB &middot; 40-60 tok/s</div>
-                <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Classification &middot; Triage</div>
-              </div>
-              <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                  <span style="width:8px;height:8px;border-radius:50%;background:var(--brand);flex-shrink:0;"></span>
-                  <span style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">Standard</span>
-                </div>
-                <div style="font-size:14px;font-weight:600;font-family:monospace;">qwen3-coder:30b</div>
-                <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">18 GB MoE &middot; 12-15 tok/s</div>
-                <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">JSON extraction &middot; 30+ files</div>
-              </div>
-              <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                  <span style="width:8px;height:8px;border-radius:50%;background:var(--info);flex-shrink:0;"></span>
-                  <span style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">Complex</span>
-                </div>
-                <div style="font-size:14px;font-weight:600;font-family:monospace;">qwen3:30b</div>
-                <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">18 GB MoE &middot; 12-15 tok/s</div>
-                <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Prose &middot; Creative &middot; AARs</div>
+                <div style="font-size:14px;font-weight:600;font-family:monospace;">gemma4</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">128K context &middot; 1-6s responses</div>
+                <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">All tiers: classification, streaming, JSON extraction, prose</div>
               </div>
             </div>
-            <div style="font-size:11px;color:var(--text-muted);margin-top:6px;text-align:center;">All 3 loaded = ~38.5 GB &middot; Minimum for standard tier = 20 GB+ GPU-accessible memory</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:6px;text-align:center;">Single unified model &middot; Gemma 4 E4B</div>
           </div>
 
           <!-- Options Grid -->
@@ -7143,9 +7125,9 @@ function updateChatFabStatus() {
   const subtitle = document.getElementById('chat-status')
   if (subtitle) {
     if (statusData.ollamaPc?.online) {
-      subtitle.textContent = `PC \u2022 ${statusData.ollamaPc.configured || 'qwen3-coder:30b'}`
+      subtitle.textContent = `PC \u2022 ${statusData.ollamaPc.configured || 'gemma4'}`
     } else if (statusData.ollamaPi?.online) {
-      subtitle.textContent = `Pi \u2022 ${statusData.ollamaPi.configured || 'qwen3:8b'}`
+      subtitle.textContent = `Pi \u2022 ${statusData.ollamaPi.configured || 'gemma4'}`
     } else {
       subtitle.textContent = 'Ollama offline'
     }

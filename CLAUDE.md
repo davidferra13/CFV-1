@@ -58,7 +58,7 @@ Requires: Ollama running locally (`ollama serve`). If Ollama is down, fall back 
 - **Stack:** Next.js · PostgreSQL (Drizzle ORM via postgres.js) · Auth.js v5 · Stripe · Local FS storage · SSE realtime
 - **Data safety first:** all migrations are additive, all destructive ops require explicit approval
 - **End every session:** commit everything → push the feature branch → write a session digest → update this file if new rules were found
-- **Cloud AI:** production AI routes through a cloud Ollama-compatible endpoint (OLLAMA_BASE_URL). Gemini is used only for non-PII tasks. Conversation content is never stored server-side.
+- **Cloud AI:** all AI routes through a single Ollama-compatible endpoint (OLLAMA_BASE_URL, Gemma 4). No second provider. Conversation content is never stored server-side.
 - **Never:** run `drizzle-kit push` without explicit user approval
 
 ---

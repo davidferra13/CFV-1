@@ -125,5 +125,5 @@ Tone: ${toneGuide}`
     temperature: 0.8,
     maxTokens: 1024,
   })
-  return { ...parsed, generatedAt: new Date().toISOString() }
+  return { ...parsed, generatedAt: new Date().toISOString() } as SocialCaptionsResult
 }

@@ -27,13 +27,9 @@ export const PRIVACY_ONELINER =
 
 /** Speed + privacy note (for chat surfaces) */
 export const SPEED_PRIVACY = 'Remy runs on private AI. Your data never leaves ChefFlow.'
-/** @deprecated Use SPEED_PRIVACY */
-export const SPEED_TRADEOFF = SPEED_PRIVACY
 
 /** Speed + privacy, shorter variant (for footers) */
 export const SPEED_PRIVACY_SHORT = 'Private AI. Your data stays yours.'
-/** @deprecated Use SPEED_PRIVACY_SHORT */
-export const SPEED_TRADEOFF_SHORT = SPEED_PRIVACY_SHORT
 
 /** What "private AI" means, expanded (for onboarding, trust center) */
 export const PRIVATE_AI_EXPLAINED =

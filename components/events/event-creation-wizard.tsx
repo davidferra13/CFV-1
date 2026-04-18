@@ -13,7 +13,7 @@ import { Alert } from '@/components/ui/alert'
 import { TagInput } from '@/components/ui/tag-input'
 import { createEvent, type CreateEventInput } from '@/lib/events/actions'
 import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
-import { parseCurrencyToCents } from '@/lib/utils/currency'
+import { formatCurrency, parseCurrencyToCents } from '@/lib/utils/currency'
 import { toast } from 'sonner'
 import { AddressAutocomplete } from '@/components/ui/address-autocomplete'
 
@@ -230,7 +230,7 @@ export function EventCreationWizard({ clients }: EventCreationWizardProps) {
   const formatDollars = (val: string): string => {
     if (!val) return 'Not set'
     const cents = parseCurrencyToCents(val)
-    return `$${(cents / 100).toFixed(2)}`
+    return formatCurrency(cents)
   }
 
   return (

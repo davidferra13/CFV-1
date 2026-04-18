@@ -13,10 +13,11 @@ import { toast } from 'sonner'
 import type { ReceiptPhoto, ReceiptLineItemRecord } from '@/lib/receipts/actions'
 import { updateLineItem, approveReceiptSummary, processReceiptOCR } from '@/lib/receipts/actions'
 import { format } from 'date-fns'
+import { formatCurrency } from '@/lib/utils/currency'
 
-function formatCents(cents: number | null | undefined): string {
+function formatCentsDisplay(cents: number | null | undefined): string {
   if (!cents && cents !== 0) return '-'
-  return `$${(cents / 100).toFixed(2)}`
+  return formatCurrency(cents)
 }
 
 function ConfidenceBadge({ score }: { score: number | null }) {
@@ -77,7 +78,7 @@ function LineItemRow({
         )}
       </td>
       <td className="py-1.5 pr-3 text-sm text-stone-300 text-right whitespace-nowrap">
-        {formatCents(item.priceCents)}
+        {formatCentsDisplay(item.priceCents)}
       </td>
       <td className="py-1.5 pr-3">
         <select
@@ -240,12 +241,12 @@ function ReceiptBlock({ receipt: initialReceipt }: { receipt: ReceiptPhoto }) {
             </div>
             <div className="text-right shrink-0 ml-4">
               <div className="text-sm font-bold text-stone-100">
-                {formatCents(extraction?.totalCents ?? null)}
+                {formatCentsDisplay(extraction?.totalCents ?? null)}
               </div>
               {extraction?.subtotalCents !== null && extraction?.subtotalCents !== undefined && (
                 <div className="text-xs text-stone-400">
-                  subtotal {formatCents(extraction.subtotalCents)}
-                  {extraction.taxCents ? ` + ${formatCents(extraction.taxCents)} tax` : ''}
+                  subtotal {formatCentsDisplay(extraction.subtotalCents)}
+                  {extraction.taxCents ? ` + ${formatCentsDisplay(extraction.taxCents)} tax` : ''}
                 </div>
               )}
             </div>
@@ -288,12 +289,16 @@ function ReceiptBlock({ receipt: initialReceipt }: { receipt: ReceiptPhoto }) {
             <div className="flex gap-4 text-xs text-stone-500 mb-3">
               <span>
                 Business:{' '}
-                <span className="font-semibold text-stone-300">{formatCents(businessTotal)}</span>
+                <span className="font-semibold text-stone-300">
+                  {formatCentsDisplay(businessTotal)}
+                </span>
               </span>
               {personalTotal > 0 && (
                 <span>
                   Personal:{' '}
-                  <span className="font-semibold text-stone-500">{formatCents(personalTotal)}</span>
+                  <span className="font-semibold text-stone-500">
+                    {formatCentsDisplay(personalTotal)}
+                  </span>
                 </span>
               )}
             </div>
@@ -385,7 +390,7 @@ export function ReceiptSummaryClient({ receipts, eventId }: Props) {
           )}
           {totalBusinessCents > 0 && (
             <span className="ml-auto">
-              Total business spend: <strong>${(totalBusinessCents / 100).toFixed(2)}</strong>
+              Total business spend: <strong>{formatCurrency(totalBusinessCents)}</strong>
             </span>
           )}
         </div>

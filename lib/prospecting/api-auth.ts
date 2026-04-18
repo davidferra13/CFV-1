@@ -7,6 +7,7 @@
 // It always resolves to the admin chef's tenant ID (PROSPECTING_TENANT_ID in .env.local).
 
 import { validateApiKey, type ApiKeyContext } from '@/lib/api/auth-api-key'
+import { timingSafeEqual } from 'crypto'
 
 export interface ProspectingAuthContext {
   tenantId: string
@@ -28,8 +29,12 @@ export async function validateProspectingAuth(
   const expectedKey = process.env.PROSPECTING_API_KEY
   const tenantId = process.env.PROSPECTING_TENANT_ID
 
-  if (pipelineKey && expectedKey && tenantId && pipelineKey === expectedKey) {
-    return { tenantId, source: 'pipeline_key' }
+  if (pipelineKey && expectedKey && tenantId) {
+    const a = Buffer.from(pipelineKey)
+    const b = Buffer.from(expectedKey)
+    if (a.length === b.length && timingSafeEqual(a, b)) {
+      return { tenantId, source: 'pipeline_key' }
+    }
   }
 
   return null

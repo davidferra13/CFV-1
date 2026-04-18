@@ -57,9 +57,9 @@ echo "  ✓ Ollama running"
 
 # Pre-warm 30b model ONCE (used for both classification and streaming)
 # No Ollama restart between runs — keep the model loaded throughout.
-echo "  Warming up qwen3-coder:30b..."
-curl -s --max-time 120 http://localhost:11434/api/generate -d '{"model":"qwen3-coder:30b","prompt":"hi","stream":false,"options":{"num_predict":2},"keep_alive":"30m"}' > /dev/null 2>&1
-echo "  ✓ qwen3-coder:30b warm (keep_alive: 30m)"
+echo "  Warming up gemma4..."
+curl -s --max-time 120 http://localhost:11434/api/generate -d '{"model":"gemma4","prompt":"hi","stream":false,"options":{"num_predict":2},"keep_alive":"30m"}' > /dev/null 2>&1
+echo "  ✓ gemma4 warm (keep_alive: 30m)"
 
 echo ""
 echo "Starting $RUNS eval runs..."
@@ -85,7 +85,7 @@ for i in $(seq 1 $RUNS); do
   # Re-ping model between runs to keep keep_alive fresh (no restart needed)
   if [ $i -gt 1 ]; then
     echo "  Refreshing model keep_alive..."
-    curl -s --max-time 30 http://localhost:11434/api/generate -d '{"model":"qwen3-coder:30b","prompt":"ok","stream":false,"options":{"num_predict":1},"keep_alive":"30m"}' > /dev/null 2>&1
+    curl -s --max-time 30 http://localhost:11434/api/generate -d '{"model":"gemma4","prompt":"ok","stream":false,"options":{"num_predict":1},"keep_alive":"30m"}' > /dev/null 2>&1
     echo "  ✓ Model still warm"
   fi
 

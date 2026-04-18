@@ -12,6 +12,7 @@ import {
   getOtherChannelDigest,
 } from '@/lib/ai/remy-activity-tracker'
 import { extractSurveyAnswer } from '@/lib/ai/remy-survey-extraction'
+import { OllamaLocalProvider } from '@/lib/ai/local-ai-provider'
 import type { BodyEvent } from '@/lib/ai/remy-body-state'
 import type { RemyMessage, RemyTaskResult, NavigationSuggestion } from '@/lib/ai/remy-types'
 
@@ -55,6 +56,8 @@ export interface UseRemyMascotSendConfig {
   surveyActive?: boolean
   /** Current survey question info - used for post-response extraction */
   currentSurveyQuestion?: { key: string; prompt: string } | null
+  /** Local AI config (opt-in) - Q1 fix: mascot now supports local AI routing */
+  localAi?: { enabled: boolean; url: string; model: string } | null
 }
 
 export function useRemyMascotSend(config: UseRemyMascotSendConfig) {
@@ -70,11 +73,13 @@ export function useRemyMascotSend(config: UseRemyMascotSendConfig) {
     drawerBusy,
     surveyActive = false,
     currentSurveyQuestion = null,
+    localAi = null,
   } = config
 
   const [input, setInput] = useState('')
   const [loading, setLoadingInternal] = useState(false)
   const [streamingContent, setStreamingContent] = useState('')
+  const [localAiMode, setLocalAiMode] = useState<'local' | 'cloud' | 'fallback'>('cloud')
   const abortControllerRef = useRef<AbortController | null>(null)
 
   const setLoading = useCallback(
@@ -147,6 +152,139 @@ export function useRemyMascotSend(config: UseRemyMascotSendConfig) {
 
         const activity = getSessionActivity()
         const otherDigest = getOtherChannelDigest('mascot')
+
+        // ─── Try local AI first (opt-in, Q1 fix) ───────────────
+        if (localAi?.enabled) {
+          try {
+            const contextRes = await fetch('/api/remy/context', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                message,
+                history: messages.slice(-10),
+                currentPage: pathname,
+                recentPages: activity.recentPages,
+                recentActions: activity.recentActions,
+                recentErrors: activity.recentErrors,
+                sessionMinutes: activity.sessionMinutes,
+                activeForm: surveyActive ? 'remy-survey' : activity.activeForm,
+                ...(otherDigest && { otherChannelDigest: otherDigest }),
+              }),
+              signal: controller.signal,
+            })
+
+            if (contextRes.ok) {
+              const ctx = await contextRes.json()
+
+              // Instant responses (greeting, guardrail blocks)
+              if (!ctx.blocked && ctx.instantResponse) {
+                setLocalAiMode('cloud')
+                const instantMsg: RemyMessage = {
+                  id: generateId(),
+                  role: 'remy',
+                  content: ctx.instantResponse,
+                  timestamp: new Date().toISOString(),
+                  navSuggestions: ctx.navSuggestions,
+                }
+                setMessages((prev) => [...prev, instantMsg])
+                setStreamingContent('')
+                lipSyncStop()
+                updateChannelDigest('mascot', message, ctx.instantResponse)
+                dispatchBody({ type: 'RESPONSE_ENDED' })
+                return
+              }
+
+              // Commands executed server-side
+              if (!ctx.blocked && ctx.intent === 'command' && ctx.commandResult) {
+                setLocalAiMode('cloud')
+                const cmdMsg: RemyMessage = {
+                  id: generateId(),
+                  role: 'remy',
+                  content: ctx.commandResult,
+                  timestamp: new Date().toISOString(),
+                  tasks: ctx.tasks,
+                }
+                setMessages((prev) => [...prev, cmdMsg])
+                setStreamingContent('')
+                lipSyncStop()
+                updateChannelDigest('mascot', message, ctx.commandResult)
+                dispatchBody({
+                  type: ctx.tasks?.some((t: RemyTaskResult) => t.status === 'done')
+                    ? 'SUCCESS'
+                    : 'RESPONSE_ENDED',
+                })
+                return
+              }
+
+              // Question/mixed intent: stream from local Ollama
+              if (!ctx.blocked && ctx.systemPrompt && ctx.userMessage) {
+                const provider = new OllamaLocalProvider(localAi.url)
+                const available = await provider.detect()
+                if (available) {
+                  setLocalAiMode('local')
+                  let content = ''
+                  let hasFirstToken = false
+
+                  await provider.chat(
+                    ctx.systemPrompt,
+                    [{ role: 'user', content: ctx.userMessage }],
+                    ctx.model || localAi.model,
+                    (token) => {
+                      if (!hasFirstToken) {
+                        hasFirstToken = true
+                        dispatchBody({ type: 'FIRST_TOKEN' })
+                      }
+                      content += token
+                      setStreamingContent(content)
+                      feedText(token)
+                    },
+                    ctx.options,
+                    controller.signal
+                  )
+
+                  if (ctx.intent === 'mixed' && ctx.commandResult) {
+                    content = content + '\n\n' + ctx.commandResult
+                  }
+
+                  const cleanContent = content
+                    .replace(/\nNAV_SUGGESTIONS:\s*\[[\s\S]*\]/, '')
+                    .trim()
+                  const localMsg: RemyMessage = {
+                    id: generateId(),
+                    role: 'remy',
+                    content: cleanContent,
+                    timestamp: new Date().toISOString(),
+                    tasks: ctx.tasks,
+                  }
+                  setMessages((prev) => [...prev, localMsg])
+                  setStreamingContent('')
+                  lipSyncStop()
+                  updateChannelDigest('mascot', message, cleanContent)
+                  dispatchBody({
+                    type: ctx.tasks?.some((t: RemyTaskResult) => t.status === 'done')
+                      ? 'SUCCESS'
+                      : 'RESPONSE_ENDED',
+                  })
+                  return
+                }
+                // Ollama unreachable: confirm before cloud fallback (Q19/Q20)
+                setLocalAiMode('fallback')
+                const proceed = window.confirm(
+                  "Local AI is unavailable. Send this message via ChefFlow's server AI instead?"
+                )
+                if (!proceed) {
+                  setLoading(false)
+                  dispatchBody({ type: 'RESPONSE_ENDED' })
+                  return
+                }
+              }
+            }
+          } catch (err) {
+            console.warn('[remy-mascot-local-ai] Local AI failed, falling back to server:', err)
+            setLocalAiMode('fallback')
+          }
+        }
+
         const response = await fetch('/api/remy/stream', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -270,6 +408,7 @@ export function useRemyMascotSend(config: UseRemyMascotSendConfig) {
       setLoading,
       surveyActive,
       currentSurveyQuestion,
+      localAi,
     ]
   )
 
@@ -277,6 +416,7 @@ export function useRemyMascotSend(config: UseRemyMascotSendConfig) {
     input,
     setInput,
     loading,
+    localAiMode,
     streamingContent,
     handleSend,
     handleCancel,

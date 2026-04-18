@@ -10,6 +10,7 @@ import { checkMenuMargins, getMenuVendorHints } from '@/lib/menus/menu-intellige
 import type { MarginAlert, MenuVendorHint } from '@/lib/menus/menu-intelligence-actions'
 import { getMenuCostingGaps } from '@/lib/menus/actions'
 import type { CostingGap } from '@/lib/menus/actions'
+import { formatCurrency } from '@/lib/utils/currency'
 
 interface MenuCostSidebarProps {
   menuId: string
@@ -17,9 +18,9 @@ interface MenuCostSidebarProps {
   vendorHintsEnabled?: boolean
 }
 
-function formatCents(cents: number | null): string {
+function formatCentsOrNA(cents: number | null): string {
   if (cents === null) return 'N/A'
-  return `$${(cents / 100).toFixed(2)}`
+  return formatCurrency(cents)
 }
 
 function getAlertBadgeVariant(level: string): 'success' | 'warning' | 'error' {
@@ -160,7 +161,7 @@ export function MenuCostSidebar({
           <p className="text-xs text-stone-500">Total Cost</p>
           <p className="text-sm font-medium text-stone-200">
             {!costData.hasAllPrices && costData.totalCostCents !== null ? '≥ ' : ''}
-            {formatCents(costData.totalCostCents)}
+            {formatCentsOrNA(costData.totalCostCents)}
           </p>
           {!costData.hasAllPrices && costData.totalCostCents !== null && (
             <p className="text-xxs text-amber-400/70 mt-0.5">minimum (gaps below)</p>
@@ -170,7 +171,7 @@ export function MenuCostSidebar({
           <p className="text-xs text-stone-500">Per Guest</p>
           <p className="text-sm font-medium text-stone-200">
             {!costData.hasAllPrices && costData.costPerGuestCents !== null ? '≥ ' : ''}
-            {formatCents(costData.costPerGuestCents)}
+            {formatCentsOrNA(costData.costPerGuestCents)}
           </p>
         </div>
       </div>
@@ -294,8 +295,8 @@ export function MenuCostSidebar({
                   </span>
                 </div>
                 <p className="text-stone-500">
-                  {hint.bestVendorName}: ${(hint.bestPriceCents / 100).toFixed(2)} (vs $
-                  {(hint.currentPriceCents / 100).toFixed(2)})
+                  {hint.bestVendorName}: {formatCurrency(hint.bestPriceCents)} (vs{' '}
+                  {formatCurrency(hint.currentPriceCents)})
                 </p>
               </div>
             ))}

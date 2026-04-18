@@ -147,7 +147,6 @@ export async function parseWithOllama<T>(
       ...(options?.temperature !== undefined ? { temperature: options.temperature } : {}),
     },
     keep_alive: '30m',
-    think: false,
   } as any
   try {
     let response: ChatResponse
@@ -265,7 +264,6 @@ export async function parseWithOllama<T>(
           format: 'json',
           options: { num_predict: options?.maxTokens ?? DEFAULT_MAX_TOKENS },
           keep_alive: '30m',
-          think: false,
         } as any) as unknown as Promise<ChatResponse>,
         timeoutMs,
         'repair'

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { PublicPageView } from '@/components/analytics/public-page-view'
 import { TrackedLink } from '@/components/analytics/tracked-link'
+import { FAQ_PRIVACY } from '@/lib/ai/privacy-narrative'
 import { LAUNCH_MODE, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
 import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 
@@ -136,8 +137,7 @@ const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         question: 'Is my data private?',
-        answer:
-          "Yes. Client data, financials, recipes, and conversations are processed by ChefFlow's own private AI infrastructure. We do not store conversation content on our servers. Your recipes are your intellectual property. We never use your data to train AI models or share it with third parties. The Trust Center has the full breakdown.",
+        answer: FAQ_PRIVACY,
       },
       {
         question: 'How does Remy compare to other AI tools?',

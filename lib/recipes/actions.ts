@@ -1062,6 +1062,19 @@ export async function createIngredient(input: CreateIngredientInput) {
     throw new Error('Failed to create ingredient')
   }
 
+  // Auto-match to system_ingredients + resolve price (non-blocking)
+  // Same enrichment as findOrCreateIngredient() so library-added ingredients get pricing
+  try {
+    await autoMatchToSystemIngredient(db, user.tenantId!, ingredient.id, validated.name)
+  } catch (err) {
+    console.error('[createIngredient] Auto-match failed (non-blocking):', err)
+  }
+  try {
+    await ensureIngredientHasPrice(db, user.tenantId!, ingredient.id)
+  } catch (err) {
+    console.error('[createIngredient] Price resolution failed (non-blocking):', err)
+  }
+
   revalidatePath('/recipes/ingredients')
   return { success: true, ingredient, existed: false }
 }
@@ -1099,6 +1112,24 @@ export async function updateIngredient(ingredientId: string, input: UpdateIngred
   if (error) {
     console.error('[updateIngredient] Error:', error)
     throw new Error('Failed to update ingredient')
+  }
+
+  // Re-enrich if name changed: clear stale alias and re-match + re-price
+  if (validated.name !== undefined) {
+    try {
+      // Remove old auto-generated alias so fresh match can run
+      await db
+        .from('ingredient_aliases')
+        .delete()
+        .eq('ingredient_id', ingredientId)
+        .eq('tenant_id', user.tenantId!)
+        .eq('match_method', 'trigram')
+        .is('confirmed_at', null)
+      await autoMatchToSystemIngredient(db, user.tenantId!, ingredientId, validated.name)
+      await ensureIngredientHasPrice(db, user.tenantId!, ingredientId)
+    } catch (err) {
+      console.error('[updateIngredient] Re-enrichment failed (non-blocking):', err)
+    }
   }
 
   revalidatePath('/recipes/ingredients')

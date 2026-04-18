@@ -1,21 +1,13 @@
 /**
- * Receipt OCR - Extract grocery prices from receipt photos using Ollama-compatible runtime.
+ * Receipt OCR - Extract grocery prices from receipt photos.
  *
- * Routes through the configured Ollama-compatible endpoint (cloud in production).
- * The chef's purchase prices are the highest-confidence data source (tier 1).
- *
- * Flow:
- *   1. Chef uploads receipt photo
- *   2. AI vision model extracts line items
- *   3. Each item is fuzzy-matched to canonical ingredients
- *   4. Chef confirms/edits matches
- *   5. Prices logged to ingredient_price_history as source='receipt'
+ * Delegates to parse-receipt.ts (Gemma 4 + parseWithOllama + Zod validation).
+ * This file adapts the richer ReceiptExtraction shape into the legacy
+ * ReceiptParseResult/ReceiptLineItem types consumed by existing callers.
  */
 
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
-import { getOllamaConfig } from '@/lib/ai/providers'
-
-const OLLAMA_URL = process.env.OLLAMA_URL || getOllamaConfig().baseUrl
+import { parseReceiptImage as extractReceipt } from '@/lib/ai/parse-receipt'
 
 export interface ReceiptLineItem {
   rawText: string
@@ -38,126 +30,39 @@ export interface ReceiptParseResult {
   total: number | null // cents
 }
 
+const CONFIDENCE_MAP = { high: 0.95, medium: 0.75, low: 0.4 } as const
+
 /**
- * Parse a grocery receipt image using Ollama's vision model.
- * Returns structured line items with product names and prices.
+ * Parse a grocery receipt image. Delegates to the canonical parse-receipt.ts
+ * and adapts the result into the legacy ReceiptParseResult shape.
  */
 export async function parseReceiptImage(
   imageBase64: string,
-  mimeType: string = 'image/jpeg'
+  _mimeType: string = 'image/jpeg'
 ): Promise<ReceiptParseResult> {
-  // Check if Ollama is running
   try {
-    const health = await fetch(`${OLLAMA_URL}/api/tags`, {
-      signal: AbortSignal.timeout(5000),
-    })
-    if (!health.ok) throw new Error('Ollama not responding')
-  } catch {
-    throw new OllamaOfflineError()
-  }
+    const extraction = await extractReceipt(imageBase64)
 
-  const prompt = `You are analyzing a grocery store receipt image. Extract ALL line items with their prices.
+    const baseConfidence = CONFIDENCE_MAP[extraction.confidence] ?? 0.75
 
-Return a JSON object with this EXACT structure (no markdown, no explanation, just JSON):
-{
-  "store_name": "Store Name or null",
-  "date": "YYYY-MM-DD or null",
-  "items": [
-    {
-      "raw_text": "exact text from receipt",
-      "product_name": "cleaned product name",
-      "quantity": 1,
-      "unit_price_cents": 299,
-      "total_price_cents": 299,
-      "unit": "each",
-      "confidence": 0.9
-    }
-  ],
-  "subtotal_cents": null,
-  "tax_cents": null,
-  "total_cents": null
-}
-
-Rules:
-- Convert all prices to cents (integers). $2.99 = 299
-- "unit" should be: "lb", "oz", "each", "gallon", "dozen", or the unit shown
-- If an item shows weight pricing (e.g., "2.31 LB @ $4.99/LB"), set unit to "lb" and unit_price to the per-lb price
-- If quantity > 1 (e.g., "2 @ $1.99"), set quantity and unit_price accordingly
-- Skip non-food items (bags, coupons, discounts, tax lines)
-- confidence: 0.9+ if clearly readable, 0.5-0.8 if partially obscured
-- Return ONLY valid JSON, nothing else`
-
-  try {
-    const response = await fetch(`${OLLAMA_URL}/api/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'gemma4',
-        prompt,
-        images: [imageBase64],
-        stream: false,
-        options: {
-          temperature: 0.1,
-          num_predict: 4096,
-        },
-      }),
-      signal: AbortSignal.timeout(30000), // 30s timeout for vision (Gemma 4 is fast)
-    })
-
-    if (!response.ok) {
-      const err = await response.text()
-      return {
-        success: false,
-        error: `Ollama error: ${err}`,
-        storeName: null,
-        date: null,
-        items: [],
-        subtotal: null,
-        tax: null,
-        total: null,
-      }
-    }
-
-    const data = await response.json()
-    const text = data.response || ''
-
-    // Extract JSON from response (may have markdown wrapping)
-    const jsonMatch = text.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) {
-      return {
-        success: false,
-        error: 'Could not parse Ollama response as JSON',
-        storeName: null,
-        date: null,
-        items: [],
-        subtotal: null,
-        tax: null,
-        total: null,
-      }
-    }
-
-    const parsed = JSON.parse(jsonMatch[0])
-
-    const items: ReceiptLineItem[] = (parsed.items || [])
-      .map((item: any) => ({
-        rawText: item.raw_text || '',
-        productName: item.product_name || item.raw_text || '',
-        quantity: item.quantity || 1,
-        unitPrice: item.unit_price_cents || 0,
-        totalPrice: item.total_price_cents || 0,
-        unit: item.unit || 'each',
-        confidence: item.confidence || 0.5,
-      }))
-      .filter((item: ReceiptLineItem) => item.unitPrice > 0 || item.totalPrice > 0)
+    const items: ReceiptLineItem[] = extraction.lineItems.map((li) => ({
+      rawText: li.description,
+      productName: li.description,
+      quantity: li.quantity,
+      unitPrice: li.unitPriceCents,
+      totalPrice: li.totalPriceCents,
+      unit: li.unit,
+      confidence: baseConfidence,
+    }))
 
     return {
       success: true,
-      storeName: parsed.store_name || null,
-      date: parsed.date || null,
+      storeName: extraction.storeName,
+      date: extraction.purchaseDate,
       items,
-      subtotal: parsed.subtotal_cents || null,
-      tax: parsed.tax_cents || null,
-      total: parsed.total_cents || null,
+      subtotal: extraction.subtotalCents,
+      tax: extraction.taxCents,
+      total: extraction.totalCents,
     }
   } catch (err) {
     if (err instanceof OllamaOfflineError) throw err

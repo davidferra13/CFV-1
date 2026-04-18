@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { getExpenses, deleteExpense } from '@/lib/finance/expense-actions'
 import type { Expense, ExpenseCategory, ExpenseFilters } from '@/lib/finance/expense-actions'
+import { formatCurrency } from '@/lib/utils/currency'
 
 const CATEGORY_LABELS: Record<ExpenseCategory, string> = {
   food: 'Food',
@@ -56,10 +57,6 @@ const CATEGORY_OPTIONS = [
 
 type SortField = 'date' | 'amount_cents'
 type SortDir = 'asc' | 'desc'
-
-function formatCents(cents: number): string {
-  return `$${(cents / 100).toFixed(2)}`
-}
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00')
@@ -283,7 +280,7 @@ export function ExpenseList({ onEdit }: ExpenseListProps) {
                   </TableCell>
                   <TableCell className="text-stone-500">{expense.vendor || '-'}</TableCell>
                   <TableCell className="font-mono font-medium">
-                    {formatCents(expense.amount_cents)}
+                    {formatCurrency(expense.amount_cents)}
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
@@ -312,7 +309,9 @@ export function ExpenseList({ onEdit }: ExpenseListProps) {
           <div className="flex justify-end border-t border-stone-200 pt-3">
             <div className="text-sm text-stone-500">
               {displayed.length} expense{displayed.length !== 1 ? 's' : ''} totaling{' '}
-              <span className="font-semibold text-stone-900 font-mono">{formatCents(total)}</span>
+              <span className="font-semibold text-stone-900 font-mono">
+                {formatCurrency(total)}
+              </span>
             </div>
           </div>
         </>

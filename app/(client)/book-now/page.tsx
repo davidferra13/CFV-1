@@ -7,7 +7,12 @@ export const metadata: Metadata = {
   title: 'Book Now',
 }
 
-export default async function BookNowPage() {
+export default async function BookNowPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ circleId?: string }>
+}) {
+  const params = await searchParams
   const user = await requireClient()
   const db: any = createServerClient()
 
@@ -25,7 +30,12 @@ export default async function BookNowPage() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <PublicInquiryForm chefSlug={chefSlug} chefName={chefName} primaryColor="#1c1917" />
+      <PublicInquiryForm
+        chefSlug={chefSlug}
+        chefName={chefName}
+        primaryColor="#1c1917"
+        circleId={params.circleId}
+      />
     </div>
   )
 }

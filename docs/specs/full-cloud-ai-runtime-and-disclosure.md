@@ -61,6 +61,22 @@ The current runtime is split between existing cloud Gemini features and a large 
 - The baseline disclosure meaning is locked. Every user-facing trust surface must communicate the equivalent of: "ChefFlow uses cloud AI processing for AI features. Inputs and outputs may be processed by secure third-party AI infrastructure. Product surfaces must not promise local-only, browser-only, or no-third-party-AI handling unless that is still literally true."
 - Rollout is not complete until local Ollama can be fully stopped and the verification sweep still passes across former-Ollama features and disclosure surfaces.
 
+### Amendment: Client-Side Opt-In Local AI (2026-04-18)
+
+The prohibitions above (lines 59-60, 178) target a specific failure mode: the **server** silently falling back to a developer's localhost Ollama when the cloud runtime is unavailable. That is what "silent or automatic local fallback" means in context. The server must never route production inference to local hardware without the operator knowing.
+
+The opt-in local AI feature (introduced via the Gemma 4 expansion) is architecturally different and is **not** in conflict with these prohibitions:
+
+1. **Server-side prohibitions remain absolute.** The ChefFlow server never falls back to localhost Ollama in production. If the cloud runtime is down, server-side AI features (parseWithOllama, structured parsing, server actions) fail clearly. Nothing in this amendment changes that.
+
+2. **Client-side opt-in local AI is a separate path.** When a user explicitly enables local AI in their settings, their browser connects directly to their own machine's Ollama instance for Remy chat. The server builds the prompt; the client streams locally. This is not a fallback; it is an intentional user choice that bypasses the server's AI runtime entirely.
+
+3. **The distinction:** Server-side fallback is invisible to the user and masks infrastructure failures. Client-side opt-in is visible, deliberate, and controlled by the user. The spec prohibits the former. The latter is a feature, not a workaround.
+
+4. **Cloud fallback confirmation.** When a user has local AI enabled but their local Ollama is unreachable, the system presents an explicit confirmation dialog before falling back to cloud processing. This ensures even the local-to-cloud direction is never silent.
+
+The locked decisions above apply exclusively to server-side runtime behavior. Client-side opt-in local inference, where the user's own browser talks to the user's own Ollama, is permitted and does not violate any prohibition in this spec.
+
 ---
 
 ## Files to Create

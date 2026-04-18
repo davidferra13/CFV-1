@@ -15,6 +15,7 @@ import {
 } from '@/lib/staff/actions'
 import { createTaskFromEvent } from '@/lib/tasks/actions'
 import { todayLocalDateString } from '@/lib/utils/format'
+import { formatCurrency } from '@/lib/utils/currency'
 
 const ROLE_LABELS: Record<string, string> = {
   sous_chef: 'Sous Chef',
@@ -52,7 +53,7 @@ type Props = {
 }
 
 function formatRate(cents: number) {
-  return `$${(cents / 100).toFixed(2)}/hr`
+  return `${formatCurrency(cents)}/hr`
 }
 
 type TaskDraft = {
@@ -224,7 +225,7 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
                       {role} · {member ? formatRate(member.hourly_rate_cents) : ''}
                       {a.scheduled_hours ? ` · ${a.scheduled_hours}h scheduled` : ''}
                       {a.actual_hours ? ` · ${a.actual_hours}h worked` : ''}
-                      {a.pay_amount_cents ? ` · $${(a.pay_amount_cents / 100).toFixed(2)}` : ''}
+                      {a.pay_amount_cents ? ` · ${formatCurrency(a.pay_amount_cents)}` : ''}
                     </p>
                   </div>
                   <div className="flex items-center gap-1">
@@ -345,7 +346,7 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
 
           {totalLaborCents > 0 && (
             <p className="text-xs text-stone-500 pt-1">
-              Total labor: <strong>${(totalLaborCents / 100).toFixed(2)}</strong>
+              Total labor: <strong>{formatCurrency(totalLaborCents)}</strong>
               {laborIsEstimated && <span className="text-stone-600 font-normal"> (est.)</span>}
             </p>
           )}

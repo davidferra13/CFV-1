@@ -17,7 +17,7 @@ import {
   FLOW_BULLETS,
 } from '@/lib/ai/privacy-narrative'
 
-export function DataFlowAnimated() {
+export function DataFlowAnimated({ localAiEnabled = false }: { localAiEnabled?: boolean } = {}) {
   return (
     <div className="space-y-8">
       {/* Title */}
@@ -124,6 +124,29 @@ export function DataFlowAnimated() {
           </div>
         </div>
       </div>
+
+      {/* Local AI path note (Q13 fix) */}
+      {localAiEnabled && (
+        <div className="rounded-xl border-2 border-violet-200 bg-violet-950/50 p-4 space-y-2">
+          <div className="flex items-center gap-2">
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-900 text-xs">
+              🖥️
+            </div>
+            <div className="text-sm font-semibold text-violet-300">Your Local AI is Active</div>
+          </div>
+          <div className="text-xs text-violet-400 leading-relaxed">
+            With local AI enabled, Remy&apos;s conversational responses are generated on your own
+            machine. ChefFlow&apos;s server assembles the context (your business data), then your
+            browser streams directly from your local AI. Conversation content never reaches
+            ChefFlow&apos;s servers for AI processing.
+          </div>
+          <div className="flex items-center gap-3 text-xxs text-violet-500 pt-1">
+            <span>Your Browser → Your Local AI (inference)</span>
+            <span>|</span>
+            <span>ChefFlow Server → Context only (no inference)</span>
+          </div>
+        </div>
+      )}
 
       {/* What Remy CAN and CANNOT do - preserved from original */}
       <div className="rounded-xl border border-stone-700 bg-stone-900 p-5">

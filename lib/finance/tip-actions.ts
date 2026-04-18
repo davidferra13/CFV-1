@@ -139,6 +139,18 @@ export async function deleteTip(
   const user = await requireChef()
   const db: any = createServerClient()
 
+  // Read tip before deleting so we can create a reversing ledger entry
+  const { data: tip } = await db
+    .from('event_tips' as any)
+    .select('id, amount_cents, method, tenant_id')
+    .eq('id', id)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!tip) {
+    return { success: false, error: 'Tip not found' }
+  }
+
   const { error } = await db
     .from('event_tips' as any)
     .delete()
@@ -148,6 +160,31 @@ export async function deleteTip(
   if (error) {
     log.error('Failed to delete tip', { error })
     return { success: false, error: 'Failed to delete tip' }
+  }
+
+  // Create reversing ledger entry so ledger stays accurate
+  try {
+    const { data: evt } = await db
+      .from('events')
+      .select('client_id')
+      .eq('id', eventId)
+      .eq('tenant_id', user.tenantId!)
+      .single()
+
+    if (evt?.client_id) {
+      await appendLedgerEntryForChef({
+        client_id: evt.client_id,
+        entry_type: 'tip',
+        amount_cents: -(tip as any).amount_cents,
+        description: `Tip deleted (reversal)`,
+        event_id: eventId,
+        transaction_reference: `tip_reversal_${id}_${Date.now()}`,
+        payment_method: 'other' as any,
+        is_refund: true,
+      })
+    }
+  } catch (err) {
+    log.error('Failed to append tip reversal to ledger (tip still deleted)', { error: err })
   }
 
   revalidatePath(`/events/${eventId}`)
@@ -310,6 +347,7 @@ export async function getTipRequests(dateRange?: {
 export async function getTipRequestByToken(token: string): Promise<{
   request: TipRequest
   chefName: string
+  chefSlug: string | null
   eventDate: string | null
   eventOccasion: string | null
   eventTotalCents: number | null
@@ -321,7 +359,7 @@ export async function getTipRequestByToken(token: string): Promise<{
     .select(
       `
       *,
-      chef:chefs!tenant_id(business_name, full_name),
+      chef:chefs!tenant_id(business_name, full_name, booking_slug),
       event:events!event_id(event_date, occasion, quoted_total_cents)
     `
     )
@@ -345,6 +383,7 @@ export async function getTipRequestByToken(token: string): Promise<{
   return {
     request: mapTipRequest(data),
     chefName: chef?.business_name || chef?.full_name || 'Your Chef',
+    chefSlug: chef?.booking_slug || null,
     eventDate: event?.event_date || null,
     eventOccasion: event?.occasion || null,
     eventTotalCents: event?.quoted_total_cents || null,

@@ -784,7 +784,7 @@ ADMIN_EMAILS=admin@example.com
 ## Non-Negotiable Rules (Summary)
 
 1. **Recipes = NEVER.** AI never generates, suggests, or creates recipes. Only searches chef's own recipe book (read-only).
-2. **Privacy = Local only.** Conversations in IndexedDB, LLM via Ollama, nothing on servers.
+2. **Privacy = no server storage.** Conversations in IndexedDB (browser-local). LLM runs via cloud Ollama endpoint by default (`OLLAMA_BASE_URL`), or via the user's own local Ollama instance if they opt in. Conversation content is never stored server-side.
 3. **Drafts only.** Remy drafts emails/comms but never auto-sends. Chef reviews and sends.
 4. **Ledger = immutable.** AI cannot write to ledger. Suggest only.
 5. **Lifecycle = manual.** AI cannot transition event states without chef confirmation.

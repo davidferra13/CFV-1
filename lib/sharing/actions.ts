@@ -3493,7 +3493,7 @@ export async function getGuestFeedbackByToken(token: string) {
       `
       id, token, event_id, guest_id, overall_rating, food_rating, experience_rating,
       highlight_text, suggestion_text, testimonial_consent, submitted_at, sent_at,
-      event:events!guest_feedback_event_id_fkey(occasion, event_date),
+      event:events!guest_feedback_event_id_fkey(occasion, event_date, tenant_id),
       guest:event_guests!guest_feedback_guest_id_fkey(full_name)
     `
     )
@@ -3511,11 +3511,29 @@ export async function getGuestFeedbackByToken(token: string) {
     }
   }
 
+  // Get chef slug for forward path
+  let chefSlug: string | null = null
+  let chefName: string | null = null
+  const tenantId = (data as any).event?.tenant_id
+  if (tenantId) {
+    const { data: chef } = await (db as any)
+      .from('chefs')
+      .select('booking_slug, business_name')
+      .eq('id', tenantId)
+      .single()
+    if (chef) {
+      chefSlug = chef.booking_slug ?? null
+      chefName = chef.business_name ?? null
+    }
+  }
+
   return {
     ...(data as any),
     eventTitle: (data as any).event?.occasion || 'Private Dinner',
     eventDate: (data as any).event?.event_date,
     guestName: (data as any).guest?.full_name || 'Guest',
+    chefSlug,
+    chefName,
   }
 }
 

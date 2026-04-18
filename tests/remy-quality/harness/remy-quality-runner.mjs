@@ -15,6 +15,11 @@
  *   - Dev server running on port 3100
  *   - Ollama running with gemma4 loaded
  *   - Agent test account exists
+ *
+ * NOTE (Q38, 2026-04-18): This harness tests only the /api/remy/stream endpoint
+ * (server-side inference). The /api/remy/context endpoint (local AI path) and
+ * client-side Ollama streaming are NOT covered. Local AI response quality depends
+ * on the user's local model capabilities and is untested by this suite.
  */
 
 import fs from 'fs'

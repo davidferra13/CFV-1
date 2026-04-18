@@ -4,6 +4,7 @@ import { createHash } from 'crypto'
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { createServerClient } from '@/lib/db/server'
+import { logCannabisAudit } from '@/lib/admin/audit'
 import {
   CANNABIS_HOST_AGREEMENT_TEXT_SNAPSHOT,
   CANNABIS_HOST_AGREEMENT_VERSION,
@@ -98,6 +99,16 @@ export async function signCannabisHostAgreement(
   revalidatePath('/cannabis/hub')
   revalidatePath('/cannabis/unlock')
   revalidatePath('/cannabis/agreement')
+
+  try {
+    await logCannabisAudit({
+      actorUserId: user.id,
+      actionType: 'cannabis_agreement_signed',
+      targetId: data?.id,
+      targetType: 'cannabis_host_agreement',
+      details: { version: CANNABIS_HOST_AGREEMENT_VERSION },
+    })
+  } catch {}
 
   return { status: 'success' }
 }

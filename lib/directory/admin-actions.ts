@@ -5,7 +5,7 @@
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { createServerClient } from '@/lib/db/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 
 export type DirectoryCandidate = {
   id: string
@@ -65,6 +65,7 @@ export async function approveChefForDirectory(chefId: string): Promise<void> {
     throw new Error('Failed to approve chef')
   }
 
+  revalidateTag('directory-chefs')
   revalidatePath('/chefs')
   revalidatePath('/admin/directory')
 }
@@ -84,6 +85,7 @@ export async function revokeChefFromDirectory(chefId: string): Promise<void> {
     throw new Error('Failed to revoke chef listing')
   }
 
+  revalidateTag('directory-chefs')
   revalidatePath('/chefs')
   revalidatePath('/admin/directory')
 }

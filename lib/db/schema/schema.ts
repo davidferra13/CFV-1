@@ -11649,6 +11649,10 @@ export const aiPreferences = pgTable("ai_preferences", {
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	remyArchetype: text("remy_archetype"),
 	surveyState: jsonb("survey_state"),
+	localAiEnabled: boolean("local_ai_enabled").default(false).notNull(),
+	localAiUrl: text("local_ai_url").default('http://localhost:11434').notNull(),
+	localAiModel: text("local_ai_model").default('gemma4').notNull(),
+	localAiVerifiedAt: timestamp("local_ai_verified_at", { withTimezone: true, mode: 'string' }),
 }, (table) => [
 	foreignKey({
 			columns: [table.tenantId],

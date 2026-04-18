@@ -190,7 +190,7 @@ export async function POST(req: NextRequest) {
 
     // Stream response
     const abortController = new AbortController()
-    const timeout = setTimeout(() => abortController.abort(), 180_000) // 3 min - 30b model can be slow
+    const timeout = setTimeout(() => abortController.abort(), 30_000) // 30s
 
     const encoder = new TextEncoder()
     const stream = new ReadableStream({
@@ -208,7 +208,6 @@ export async function POST(req: NextRequest) {
               num_predict: tokenBudget,
             },
             keep_alive: '30m',
-            think: false,
           } as any)
 
           for await (const chunk of ollamaStream) {

@@ -84,6 +84,14 @@ const FREE_FEATURES: FeatureDefinition[] = [
     tier: 'free',
     category: 'core',
   },
+  {
+    slug: 'local-ai',
+    label: 'Local AI (Opt-In)',
+    description:
+      'Route Remy conversations to a local Ollama instance for maximum privacy and zero server compute',
+    tier: 'free',
+    category: 'core',
+  },
 
   // --- Menu + Recipe System ---
   {

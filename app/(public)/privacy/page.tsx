@@ -207,6 +207,16 @@ export default function PrivacyPage() {
           </p>
 
           <p className="mt-4 leading-relaxed">
+            Users may opt into local AI processing by configuring a local AI instance (such as
+            Ollama) in their settings. When local AI is enabled, conversation inference runs
+            entirely on the user&apos;s own device and never reaches ChefFlow&apos;s servers for AI
+            processing. Context assembly (looking up your business data to build prompts) still
+            requires a server round-trip, but the AI inference itself stays local. If local AI is
+            unavailable, users are prompted before any message is routed through ChefFlow&apos;s
+            cloud AI.
+          </p>
+
+          <p className="mt-4 leading-relaxed">
             Each provider listed above is contractually or operationally required to protect your
             information and use it only for the purpose of delivering their services to us.
           </p>

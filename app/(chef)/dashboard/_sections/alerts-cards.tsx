@@ -12,6 +12,7 @@ import { getCoolingClients } from '@/lib/clients/cooling-actions'
 import { getUpcomingPaymentsDue, getExpiringQuotes } from '@/lib/dashboard/widget-actions'
 import { getOnboardingProgress, type OnboardingProgress } from '@/lib/onboarding/progress-actions'
 import { getPriceIntelligenceSummary } from '@/lib/openclaw/price-intelligence-actions'
+import { getWaitlistStats } from '@/lib/scheduling/waitlist-actions'
 import { StatCard } from '@/components/dashboard/widget-cards/stat-card'
 import { ListCard, type ListCardItem } from '@/components/dashboard/widget-cards/list-card'
 import { formatCurrency } from '@/lib/utils/currency'
@@ -55,6 +56,7 @@ export async function AlertCards() {
     schedulingGaps,
     onboardingProgress,
     priceIntelligence,
+    waitlistStats,
   ] = await Promise.all([
     safe('responseTimeSummary', getResponseTimeSummary, emptyResponseTimeSummary),
     safe('pendingFollowUps', () => getStaleInquiries(5), []),
@@ -71,6 +73,14 @@ export async function AlertCards() {
       topSavingsStore: null,
       stockAlerts: 0,
       error: null,
+    }),
+    safe('waitlistStats', getWaitlistStats, {
+      total: 0,
+      waiting: 0,
+      contacted: 0,
+      booked: 0,
+      expired: 0,
+      conversionRate: 0,
     }),
   ])
 
@@ -217,6 +227,19 @@ export async function AlertCards() {
           trendDirection={onboardingProgress.completedPhases > 0 ? 'up' : 'flat'}
           trend={`${Math.round((onboardingProgress.completedPhases / onboardingProgress.totalPhases) * 100)}% done`}
           href="/settings"
+        />
+      )}
+
+      {/* Waitlist - stat card */}
+      {waitlistStats.waiting > 0 && (
+        <StatCard
+          widgetId="waitlist_waiting"
+          title="Waitlist"
+          value={String(waitlistStats.waiting)}
+          subtitle={`waiting for availability${waitlistStats.total > waitlistStats.waiting ? ` (${waitlistStats.total} total)` : ''}`}
+          trendDirection={waitlistStats.booked > 0 ? 'up' : 'flat'}
+          trend={waitlistStats.booked > 0 ? `${waitlistStats.booked} booked` : 'Review waitlist'}
+          href="/waitlist"
         />
       )}
 

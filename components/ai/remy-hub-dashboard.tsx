@@ -9,6 +9,7 @@ import { DataFlowAnimated } from '@/components/ai-privacy/data-flow-animated'
 import {
   getAiPreferences,
   getAiDataSummary,
+  getLocalAiPreferences,
   type AiPreferences,
   type AiDataSummary,
 } from '@/lib/ai/privacy-actions'
@@ -149,13 +150,19 @@ function MemoryTab() {
 function SettingsTab() {
   const [prefs, setPrefs] = useState<AiPreferences | null>(null)
   const [summary, setSummary] = useState<AiDataSummary | null>(null)
+  const [localAiEnabled, setLocalAiEnabled] = useState(false)
   const [loading, setLoading] = useState(true)
 
   const load = useCallback(async () => {
     try {
-      const [p, s] = await Promise.all([getAiPreferences(), getAiDataSummary()])
+      const [p, s, localPrefs] = await Promise.all([
+        getAiPreferences(),
+        getAiDataSummary(),
+        getLocalAiPreferences(),
+      ])
       setPrefs(p)
       setSummary(s)
+      setLocalAiEnabled(localPrefs.enabled)
     } catch {
       toast.error('Failed to load settings')
     } finally {
@@ -209,7 +216,9 @@ function SettingsTab() {
             className={`text-xs mt-0.5 ${prefs.remy_enabled ? 'text-emerald-700' : 'text-stone-500'}`}
           >
             {prefs.remy_enabled
-              ? "AI features run on ChefFlow's private infrastructure. Conversation content is not stored on our servers."
+              ? localAiEnabled
+                ? 'AI features run on your own machine. Conversation content never leaves your device.'
+                : "AI features run on ChefFlow's private infrastructure. Conversation content is not stored on our servers."
               : 'Your existing AI data is preserved. Enable Remy from the controls below.'}
           </p>
         </div>
@@ -240,9 +249,10 @@ function SettingsTab() {
             delete your data.
           </p>
           <p>
-            <strong>We will always:</strong> Process AI on ChefFlow&apos;s own servers, give you
-            complete visibility into what Remy knows, let you delete any or all data instantly, and
-            respect your choice to opt out entirely.
+            <strong>We will always:</strong> Process AI on{' '}
+            {localAiEnabled ? 'your own machine' : "ChefFlow's own servers"}, give you complete
+            visibility into what Remy knows, let you delete any or all data instantly, and respect
+            your choice to opt out entirely.
           </p>
         </div>
       </div>

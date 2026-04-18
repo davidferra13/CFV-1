@@ -10,6 +10,7 @@ import { recordOfflinePayment } from '@/lib/events/offline-payment-actions'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { trackAction } from '@/lib/ai/remy-activity-tracker'
+import { formatCurrency } from '@/lib/utils/currency'
 
 const PAYMENT_METHODS = [
   { value: 'venmo', label: 'Venmo' },
@@ -82,7 +83,7 @@ export function RecordPaymentModal({
           paidAt,
           notes: notes.trim() || undefined,
         })
-        trackAction('Recorded payment', `$${dollars.toFixed(2)} via ${paymentMethod}`)
+        trackAction('Recorded payment', `${formatCurrency(amountCents)} via ${paymentMethod}`)
         setSuccess(true)
         setTimeout(() => {
           onClose()

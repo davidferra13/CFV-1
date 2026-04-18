@@ -31,17 +31,21 @@ import { DataFlowAnimated } from '@/components/ai-privacy/data-flow-animated'
 import { DataControls } from '@/components/ai-privacy/data-controls'
 
 import { RemyArchetypeSelector } from '@/components/ai-privacy/remy-archetype-selector'
+import { LocalAiSettings } from '@/components/ai/local-ai-settings'
 import {
   getAiPreferences,
   getAiDataSummary,
+  getLocalAiPreferences,
   type AiPreferences,
   type AiDataSummary,
+  type LocalAiPreferences,
 } from '@/lib/ai/privacy-actions'
 import { getRemyMetricsSummary } from '@/lib/ai/remy-metrics'
 
 export default function AiPrivacyPage() {
   const [prefs, setPrefs] = useState<AiPreferences | null>(null)
   const [summary, setSummary] = useState<AiDataSummary | null>(null)
+  const [localAiPrefs, setLocalAiPrefs] = useState<LocalAiPreferences | null>(null)
   const [metrics, setMetrics] = useState<{
     totalConversations: number
     totalMessages: number
@@ -52,14 +56,16 @@ export default function AiPrivacyPage() {
 
   const load = useCallback(async () => {
     try {
-      const [p, s, m] = await Promise.all([
+      const [p, s, m, lap] = await Promise.all([
         getAiPreferences(),
         getAiDataSummary(),
         getRemyMetricsSummary(),
+        getLocalAiPreferences(),
       ])
       setPrefs(p)
       setSummary(s)
       setMetrics(m)
+      setLocalAiPrefs(lap)
     } catch (err) {
       console.error('Failed to load AI preferences:', err)
     } finally {
@@ -135,6 +141,9 @@ export default function AiPrivacyPage() {
         </div>
       )}
 
+      {/* ─── Local AI (Optional) ──────────────────────────────── */}
+      {prefs.remy_enabled && <LocalAiSettings initialPrefs={localAiPrefs} />}
+
       {/* ─── Section 1: How It Works ─────────────────────────── */}
       <div className="rounded-xl border border-stone-700 bg-stone-900 p-6 space-y-4">
         <div className="flex items-center gap-2">
@@ -142,12 +151,29 @@ export default function AiPrivacyPage() {
           <h2 className="text-lg font-semibold text-stone-100">How it works</h2>
         </div>
         <div className="text-sm text-stone-300 space-y-3 leading-relaxed">
-          <p>
-            Remy runs on ChefFlow&apos;s own private AI infrastructure to process your requests and
-            generate responses. When you talk to Remy, your message is processed by ChefFlow&apos;s
-            AI runtime, not by third-party services like OpenAI or Google. The response is returned
-            directly to you.
-          </p>
+          {localAiPrefs?.enabled ? (
+            <>
+              <p>
+                You have local AI enabled. When you talk to Remy, your message context is assembled
+                by ChefFlow&apos;s server, then inference runs on your own machine via your local AI
+                setup. Your conversations never leave your device for AI processing.
+              </p>
+              <p>
+                If your local AI is unavailable, you will be asked before any message is sent to
+                ChefFlow&apos;s server AI instead. Commands (scheduling, emails, lookups) always run
+                server-side because they need database access.
+              </p>
+            </>
+          ) : (
+            <>
+              <p>
+                Remy runs on ChefFlow&apos;s own private AI infrastructure to process your requests
+                and generate responses. When you talk to Remy, your message is processed by
+                ChefFlow&apos;s AI runtime, not by third-party services like OpenAI or Google. The
+                response is returned directly to you.
+              </p>
+            </>
+          )}
           <p>
             We do not store conversation content on our servers. Your conversation history lives in
             your browser. If you switch browsers or clear your browser data, your local history goes
@@ -303,7 +329,7 @@ export default function AiPrivacyPage() {
           </p>
         </summary>
         <div className="border-t border-stone-700 p-5">
-          <DataFlowAnimated />
+          <DataFlowAnimated localAiEnabled={localAiPrefs?.enabled ?? false} />
         </div>
       </details>
 

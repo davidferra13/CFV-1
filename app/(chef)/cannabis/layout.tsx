@@ -1,11 +1,12 @@
 import { redirect } from 'next/navigation'
-import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { hasCannabisAccess } from '@/lib/chef/cannabis-actions'
 
-// Cannabis portal: invitation-only, admin-gated tier.
-// Layout is the single access gate for all /cannabis/* pages.
+// Cannabis portal: dual-gated.
+// 1. requirePro('cannabis-portal') checks billing tier (redirects to billing if unpaid)
+// 2. hasCannabisAccess() checks cannabis_tier_users table (invitation-only)
 export default async function CannabisLayout({ children }: { children: React.ReactNode }) {
-  const user = await requireChef()
+  const user = await requirePro('cannabis-portal')
   const hasAccess = await hasCannabisAccess(user.id)
 
   if (!hasAccess) {

@@ -336,6 +336,48 @@ export const CRON_MONITOR_DEFINITIONS: CronMonitorDefinition[] = [
     cadence: '6h',
     description: 'Follow-up email to clients with 48h+ unanswered inquiries',
   },
+  {
+    cronName: 'email-retry',
+    routePath: '/api/cron/email-retry',
+    maxExpectedMinutes: 15,
+    cadence: '5m',
+    description: 'Retry failed emails from the dead-letter queue',
+  },
+  {
+    cronName: 'client-followup-rules',
+    routePath: '/api/scheduled/client-followup-rules',
+    maxExpectedMinutes: 2880,
+    cadence: 'daily',
+    description: 'Evaluate chef-configured follow-up rules (birthday, dormancy)',
+  },
+  {
+    cronName: 'dormancy-nudge',
+    routePath: '/api/scheduled/dormancy-nudge',
+    maxExpectedMinutes: 2880,
+    cadence: 'daily',
+    description: 'Re-engagement emails for chefs inactive 30+ days',
+  },
+  {
+    cronName: 'monitor',
+    routePath: '/api/scheduled/monitor',
+    maxExpectedMinutes: 120,
+    cadence: 'hourly',
+    description: 'Cron health monitor: staleness, error rates, alerts',
+  },
+  {
+    cronName: 'simulation',
+    routePath: '/api/scheduled/simulation',
+    maxExpectedMinutes: 720,
+    cadence: '6h',
+    description: 'Run tenant simulation scenarios via AI',
+  },
+  {
+    cronName: 'waitlist-directory-sweep',
+    routePath: '/api/scheduled/waitlist-directory-sweep',
+    maxExpectedMinutes: 2880,
+    cadence: 'daily',
+    description: 'Match directory waitlist entries to discoverable chefs',
+  },
 ]
 
 export const CRON_MONITOR_DEFINITION_MAP = new Map(

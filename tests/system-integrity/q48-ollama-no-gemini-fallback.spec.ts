@@ -1,24 +1,24 @@
 /**
- * Q48: Ollama Never Falls Back to Gemini
+ * Q48: Ollama Fail-Closed (No Silent Fallback)
  *
- * The AI privacy boundary is absolute: PII files use Ollama, never Gemini.
- * The most dangerous failure mode is a "fallback" pattern where code catches
- * an OllamaOfflineError and retries with Gemini. This would silently route
- * client names, dietary restrictions, and financial data to a cloud AI.
+ * All AI routes through a single Ollama-compatible endpoint (Gemma 4).
+ * When the runtime is offline, features must fail closed (OllamaOfflineError),
+ * never silently degrade or fall back to a removed provider.
  *
  * lib/ai/parse-ollama.ts must:
  *   1. Throw OllamaOfflineError when the runtime is unavailable
- *   2. NEVER import or call gemini-service as a fallback
- *   3. Let callers fail hard (so the feature fails closed, not open)
+ *   2. Never import or reference any alternative AI provider
+ *   3. Let callers fail hard (feature fails closed, not open)
  *
- * OllamaOfflineError callers must re-throw it (not swallow it and use Gemini).
+ * OllamaOfflineError callers must re-throw it, not swallow it.
  *
  * Tests:
  *
  * 1. THROWS ON OFFLINE: parse-ollama.ts throws OllamaOfflineError when
  *    OLLAMA_BASE_URL is not configured.
  *
- * 2. NO GEMINI IMPORT: parse-ollama.ts does not import gemini-service.
+ * 2. NO ALTERNATE PROVIDER: parse-ollama.ts does not import any
+ *    alternative AI service.
  *
  * 3. TIMEOUT THROWS: parse-ollama.ts throws OllamaOfflineError on timeout
  *    (not silently returns empty/null).
@@ -29,9 +29,9 @@
  * 5. OLLAMA_OFFLINE_ERROR CLASS: lib/ai/ollama-errors.ts exports
  *    OllamaOfflineError for callers to import and re-throw.
  *
- * 6. PII FILES DON'T CATCH OLLAMA ERRORS WITH GEMINI: Key PII files
+ * 6. AI FILES DON'T CATCH WITH ALTERNATE FALLBACK: Key AI files
  *    (parse-recipe.ts, parse-brain-dump.ts) do not have catch blocks
- *    that import gemini-service.
+ *    that reference a removed provider.
  *
  * Run: npx playwright test -c playwright.system-integrity.config.ts tests/system-integrity/q48-ollama-no-gemini-fallback.spec.ts
  */
@@ -44,7 +44,7 @@ const OLLAMA_ERRORS = resolve(process.cwd(), 'lib/ai/ollama-errors.ts')
 const PARSE_RECIPE = resolve(process.cwd(), 'lib/ai/parse-recipe.ts')
 const PARSE_BRAIN_DUMP = resolve(process.cwd(), 'lib/ai/parse-brain-dump.ts')
 
-test.describe('Q48: Ollama never falls back to Gemini', () => {
+test.describe('Q48: Ollama fail-closed (no silent fallback)', () => {
   // -------------------------------------------------------------------------
   // Test 1: parse-ollama.ts throws OllamaOfflineError when unconfigured
   // -------------------------------------------------------------------------
@@ -62,12 +62,12 @@ test.describe('Q48: Ollama never falls back to Gemini', () => {
   // -------------------------------------------------------------------------
   // Test 2: parse-ollama.ts does NOT import gemini-service
   // -------------------------------------------------------------------------
-  test('parse-ollama.ts does not import gemini-service (no Gemini fallback path)', () => {
+  test('parse-ollama.ts does not import any alternative AI provider', () => {
     const src = readFileSync(PARSE_OLLAMA, 'utf-8')
 
     expect(
       !src.includes('gemini-service') && !src.includes('gemini'),
-      'parse-ollama.ts must NOT import gemini-service (there is no fallback to Gemini for PII data)'
+      'parse-ollama.ts must NOT reference any alternative AI provider'
     ).toBe(true)
   })
 
@@ -116,16 +116,16 @@ test.describe('Q48: Ollama never falls back to Gemini', () => {
   })
 
   // -------------------------------------------------------------------------
-  // Test 6: PII files do not catch OllamaOfflineError and retry with Gemini
+  // Test 6: AI files do not catch OllamaOfflineError with alternate fallback
   // -------------------------------------------------------------------------
-  test('PII files do not have catch blocks that fall back to gemini-service', () => {
+  test('AI files do not have catch blocks referencing a removed provider', () => {
     const piiFiles = [PARSE_RECIPE, PARSE_BRAIN_DUMP].filter(existsSync)
     const violations: string[] = []
 
     for (const filePath of piiFiles) {
       const src = readFileSync(filePath, 'utf-8')
 
-      // A catch block that imports or calls gemini would be a violation
+      // A catch block that references a removed provider would be a violation
       if (src.includes('catch') && src.includes('gemini')) {
         violations.push(filePath.replace(process.cwd(), '').replace(/\\/g, '/'))
       }
@@ -133,7 +133,7 @@ test.describe('Q48: Ollama never falls back to Gemini', () => {
 
     expect(
       violations,
-      `PII files must not fall back to Gemini in catch blocks: ${violations.join(', ')}`
+      `AI files must not reference removed providers in catch blocks: ${violations.join(', ')}`
     ).toHaveLength(0)
   })
 })

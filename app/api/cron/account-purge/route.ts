@@ -4,8 +4,6 @@ import { executeFinalPurge } from '@/lib/compliance/account-deletion-actions'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { runMonitoredCronJob } from '@/lib/cron/monitor'
 
-const dbAdmin = createAdminClient()
-
 /**
  * Daily cron endpoint to purge accounts past their 30-day grace period.
  * Handles both chef and client deletions:
@@ -18,6 +16,8 @@ export async function GET(request: Request) {
 
   try {
     const result = await runMonitoredCronJob('account-purge', async () => {
+      const dbAdmin = createAdminClient()
+
       // --- Chef account purges ---
       const { data: pendingChefDeletions, error } = await dbAdmin
         .from('chefs')

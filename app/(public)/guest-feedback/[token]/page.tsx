@@ -5,6 +5,7 @@ import { headers } from 'next/headers'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { getGuestFeedbackByToken } from '@/lib/sharing/actions'
 import { TokenExpiredPage } from '@/components/ui/token-expired-page'
+import { PostActionFooter } from '@/components/public/post-action-footer'
 import { GuestFeedbackForm } from './guest-feedback-form'
 
 export const metadata = { title: 'Guest Feedback' }
@@ -31,11 +32,14 @@ export default async function GuestFeedbackPage({ params }: { params: { token: s
   if (feedback.submitted_at) {
     return (
       <div className="min-h-screen bg-stone-800 flex items-center justify-center p-4">
-        <div className="bg-stone-900 rounded-2xl shadow-sm border border-stone-700 p-8 max-w-md w-full text-center">
-          <h1 className="text-2xl font-bold text-stone-100 mb-2">Thank you!</h1>
-          <p className="text-stone-400">
-            Your feedback has already been submitted. We really appreciate it!
-          </p>
+        <div className="max-w-md w-full">
+          <div className="bg-stone-900 rounded-2xl shadow-sm border border-stone-700 p-8 text-center">
+            <h1 className="text-2xl font-bold text-stone-100 mb-2">Thank you!</h1>
+            <p className="text-stone-400">
+              Your feedback has already been submitted. We really appreciate it!
+            </p>
+          </div>
+          <PostActionFooter chefSlug={feedback.chefSlug} chefName={feedback.chefName} />
         </div>
       </div>
     )
@@ -62,6 +66,7 @@ export default async function GuestFeedbackPage({ params }: { params: { token: s
         </div>
 
         <GuestFeedbackForm token={params.token} />
+        <PostActionFooter chefSlug={feedback.chefSlug} chefName={feedback.chefName} />
       </div>
     </div>
   )

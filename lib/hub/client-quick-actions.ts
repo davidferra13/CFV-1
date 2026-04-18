@@ -243,6 +243,24 @@ export async function postDietaryUpdate(
     // Non-blocking
   }
 
+  // CS-G14 fix: recheck upcoming menus for allergy conflicts when dietary data changes via portal
+  try {
+    const { data: guestProfile } = await db
+      .from('hub_guest_profiles')
+      .select('client_id')
+      .eq('id', profile.id)
+      .single()
+
+    if (guestProfile?.client_id) {
+      const { recheckUpcomingMenusForClient } = await import('@/lib/dietary/menu-recheck')
+      void recheckUpcomingMenusForClient(guestProfile.client_id).catch((err: unknown) => {
+        console.error('[postDietaryUpdate] menu recheck failed (non-blocking):', err)
+      })
+    }
+  } catch {
+    // Non-blocking
+  }
+
   return { success: true }
 }
 

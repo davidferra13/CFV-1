@@ -369,13 +369,39 @@ export function extractCannabisMentions(text: string): string[] {
   const results: string[] = []
   const lower = text.toLowerCase()
 
+  // Strong signals: unambiguous cannabis terms
   if (/\bcannabis\b/i.test(lower)) results.push('cannabis')
   if (/\bthc\b/i.test(lower)) results.push('THC')
+  if (/\bmarijuana\b/i.test(lower)) results.push('marijuana')
   if (/\binfused\b/i.test(lower) && /\b(?:meal|dinner|food|course|edible)\b/i.test(lower)) {
     results.push('infused meal')
   }
-  if (/\bedible/i.test(lower)) results.push('edible')
-  if (/\b(?:marijuana|420)\b/i.test(lower)) results.push('marijuana/420')
+
+  // "edible" disambiguation: common culinary word.
+  // "edibles" (plural) is almost always cannabis. Singular "edible" only counts
+  // if a strong cannabis signal is already present in the text.
+  const hasStrongSignal = results.length > 0
+  if (/\bedibles\b/i.test(lower)) {
+    results.push('edible')
+  } else if (/\bedible\b/i.test(lower) && hasStrongSignal) {
+    // Only flag singular "edible" when other cannabis terms confirm context
+    // Avoids false positives on "edible flowers", "edible gold leaf", etc.
+    results.push('edible')
+  }
+
+  // "420" disambiguation: can be addresses, dollar amounts, guest counts, dates.
+  // Only match when NOT preceded by $ or # and NOT followed by common non-cannabis context.
+  if (/\b420\b/i.test(lower)) {
+    const isFalsePositive =
+      /\$\s*420\b/.test(text) ||
+      /#\s*420\b/.test(text) ||
+      /\b420\s+(?:guests?|people|pax|sq\s*ft|main|street|st|ave|avenue|blvd|rd|road|drive|dr|lane|ln)\b/i.test(
+        text
+      )
+    if (!isFalsePositive) {
+      results.push('420')
+    }
+  }
 
   // Try to extract specifics like "cannabis meal for 1 guest"
   const specificMatch = text.match(/cannabis\s+(?:meal|dinner|course)\s+(?:for\s+)?(\d+)/i)

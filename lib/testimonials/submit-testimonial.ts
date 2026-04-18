@@ -100,12 +100,14 @@ export async function getReviewRequestByToken(token: string): Promise<{
   clientName: string
   eventType: string | null
   eventDate: string | null
+  chefSlug: string | null
+  chefName: string | null
 } | null> {
   const db: any = createServerClient({ admin: true })
 
   const { data, error } = await db
     .from('testimonials' as any)
-    .select('id, client_name, event_type, submitted_at, event_id')
+    .select('id, client_name, event_type, submitted_at, event_id, tenant_id')
     .eq('request_token', token)
     .single()
 
@@ -124,11 +126,28 @@ export async function getReviewRequestByToken(token: string): Promise<{
     if (event) eventDate = (event as any).event_date
   }
 
+  // Get chef slug for forward path
+  let chefSlug: string | null = null
+  let chefName: string | null = null
+  if (row.tenant_id) {
+    const { data: chef } = await db
+      .from('chefs')
+      .select('booking_slug, business_name')
+      .eq('id', row.tenant_id)
+      .single()
+    if (chef) {
+      chefSlug = (chef as any).booking_slug ?? null
+      chefName = (chef as any).business_name ?? null
+    }
+  }
+
   return {
     found: true,
     alreadySubmitted: row.submitted_at !== null,
     clientName: row.client_name,
     eventType: row.event_type,
     eventDate,
+    chefSlug,
+    chefName,
   }
 }

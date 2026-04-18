@@ -95,9 +95,9 @@ test.describe('Remy Drawer — Input Field', () => {
     const input = page.locator('[data-remy-input]')
     await input.fill('Test message')
 
-    // Look for character count (e.g., "12/2000")
+    // Look for character count (e.g., "12/8000")
     const charCount = page
-      .getByText(/\/2000/)
+      .getByText(/\/8000/)
       .first()
       .or(page.getByText(/\d+\/\d+/).first())
     const hasCharCount = await charCount.isVisible().catch(() => false)
@@ -105,16 +105,16 @@ test.describe('Remy Drawer — Input Field', () => {
     expect(hasCharCount || true).toBeTruthy()
   })
 
-  test('input field enforces max length of 2000', async ({ page }) => {
+  test('input field enforces max length of 8000', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
     await page.waitForLoadState('domcontentloaded')
     await openRemyDrawer(page)
 
     const input = page.locator('[data-remy-input]')
     const maxLength = await input.getAttribute('maxlength')
-    // maxLength should be 2000 or the input should enforce it
+    // maxLength should be 8000 or the input should enforce it
     if (maxLength) {
-      expect(parseInt(maxLength)).toBe(2000)
+      expect(parseInt(maxLength)).toBe(8000)
     }
   })
 })

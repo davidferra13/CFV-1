@@ -34,6 +34,9 @@ export function EventAcceptedEmail({
       <Button style={button} href={eventUrl}>
         View Event
       </Button>
+      <Text style={authNote}>
+        You may need to sign in or create a free account to view your event details.
+      </Text>
     </BaseLayout>
   )
 }
@@ -61,5 +64,12 @@ const button = {
   fontWeight: '600' as const,
   textDecoration: 'none',
   display: 'inline-block' as const,
-  marginBottom: '24px',
+  marginBottom: '12px',
+}
+
+const authNote = {
+  fontSize: '12px',
+  color: '#9ca3af',
+  margin: '0 0 24px',
+  lineHeight: '1.5',
 }

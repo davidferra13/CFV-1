@@ -18,6 +18,7 @@ import { classifyEmail } from './classify'
 import { parseInquiryFromText } from '@/lib/ai/parse-inquiry'
 import { extractAndScoreEmail, scoreInquiryFields } from './extract-inquiry-fields'
 import { createClientFromLead } from '@/lib/clients/actions'
+import { mapCannabisPreferenceToBoolean } from '@/lib/inquiries/cannabis-preference'
 import { createNotification, getChefAuthUserId, getChefProfile } from '@/lib/notifications/actions'
 import { isCommTriageEnabled } from '@/lib/features'
 import { isTakeAChefEmail, parseTakeAChefEmail } from './take-a-chef-parser'
@@ -81,11 +82,6 @@ const PLATFORM_DOMAINS = [
 function asUnknownFieldsRecord(value: Json | null | undefined): Record<string, unknown> | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null
   return value as Record<string, unknown>
-}
-
-function mapCannabisPreferenceToBoolean(value?: string | null): boolean | null {
-  if (!value) return null
-  return ['yes', 'true', 'open'].some((option) => value.toLowerCase().includes(option))
 }
 
 // ─── Main Sync Function ─────────────────────────────────────────────────────

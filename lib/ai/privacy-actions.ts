@@ -14,6 +14,10 @@ export type AiPreferences = {
   allow_suggestions: boolean
   allow_document_drafts: boolean
   remy_archetype: string | null
+  local_ai_enabled: boolean
+  local_ai_url: string
+  local_ai_model: string
+  local_ai_verified_at: string | null
 }
 
 export type AiDataSummary = {
@@ -46,6 +50,10 @@ export async function getAiPreferences(): Promise<AiPreferences> {
       allow_suggestions: true,
       allow_document_drafts: true,
       remy_archetype: null,
+      local_ai_enabled: false,
+      local_ai_url: 'http://localhost:11434',
+      local_ai_model: 'gemma4',
+      local_ai_verified_at: null,
     }
   }
 
@@ -58,6 +66,10 @@ export async function getAiPreferences(): Promise<AiPreferences> {
     allow_suggestions: data.allow_suggestions,
     allow_document_drafts: data.allow_document_drafts,
     remy_archetype: data.remy_archetype ?? null,
+    local_ai_enabled: data.local_ai_enabled ?? false,
+    local_ai_url: data.local_ai_url ?? 'http://localhost:11434',
+    local_ai_model: data.local_ai_model ?? 'gemma4',
+    local_ai_verified_at: data.local_ai_verified_at ?? null,
   }
 }
 
@@ -275,6 +287,94 @@ export async function deleteAllArtifacts(): Promise<{ success: boolean; deleted:
 
   return { success: true, deleted: data?.length ?? 0 }
 }
+
+// ─── Local AI ───────────────────────────────────────────────────────────────
+
+export type LocalAiPreferences = {
+  enabled: boolean
+  url: string
+  model: string
+  verifiedAt: string | null
+}
+
+export async function getLocalAiPreferences(): Promise<LocalAiPreferences> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data } = await db
+    .from('ai_preferences')
+    .select('local_ai_enabled, local_ai_url, local_ai_model, local_ai_verified_at')
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  return {
+    enabled: data?.local_ai_enabled ?? false,
+    url: data?.local_ai_url ?? 'http://localhost:11434',
+    model: data?.local_ai_model ?? 'gemma4',
+    verifiedAt: data?.local_ai_verified_at ?? null,
+  }
+}
+
+const LocalAiUpdateSchema = z.object({
+  enabled: z.boolean().optional(),
+  url: z.string().url().max(500).optional(),
+  model: z.string().min(1).max(200).optional(),
+})
+
+export async function saveLocalAiPreferences(input: {
+  enabled?: boolean
+  url?: string
+  model?: string
+}): Promise<{ success: boolean; error?: string }> {
+  const parsed = LocalAiUpdateSchema.safeParse(input)
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.message }
+  }
+
+  const user = await requireChef()
+  const db: any = createServerClient()
+  const tenantId = user.tenantId!
+
+  const updates: Record<string, unknown> = {
+    tenant_id: tenantId,
+    updated_at: new Date().toISOString(),
+  }
+  if (parsed.data.enabled !== undefined) updates.local_ai_enabled = parsed.data.enabled
+  if (parsed.data.url !== undefined) updates.local_ai_url = parsed.data.url
+  if (parsed.data.model !== undefined) updates.local_ai_model = parsed.data.model
+
+  const { error } = await db.from('ai_preferences').upsert(updates, { onConflict: 'tenant_id' })
+
+  if (error) {
+    console.error('[ai-privacy] Failed to save local AI preferences:', error)
+    return { success: false, error: 'Failed to save' }
+  }
+
+  return { success: true }
+}
+
+export async function markLocalAiVerified(): Promise<{ success: boolean }> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { error } = await db.from('ai_preferences').upsert(
+    {
+      tenant_id: user.tenantId!,
+      local_ai_verified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'tenant_id' }
+  )
+
+  if (error) {
+    console.error('[ai-privacy] Failed to mark local AI verified:', error)
+    return { success: false }
+  }
+
+  return { success: true }
+}
+
+// ─── Delete ──────────────────────────────────────────────────────────────────
 
 export async function deleteAllAiData(): Promise<{
   success: boolean

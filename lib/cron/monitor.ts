@@ -115,7 +115,9 @@ export async function buildCronHealthReport(
   const { data, error } = await db
     .from('cron_executions')
     .select('cron_name, executed_at, status, duration_ms, error_text, result')
+    .gte('executed_at', new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString())
     .order('executed_at', { ascending: false })
+    .limit(5000)
 
   if (error) {
     throw new Error(`Failed to query cron execution log: ${error.message}`)

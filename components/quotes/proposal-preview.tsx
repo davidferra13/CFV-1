@@ -5,12 +5,9 @@ import { createQuoteFromProposal } from '@/lib/quotes/quick-proposal-actions'
 import type { ProposalData, ProposalOverrides } from '@/lib/quotes/quick-proposal-actions'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
+import { formatCurrency } from '@/lib/utils/currency'
 
 const DEFAULT_TERMS_KEY = 'chefflow-default-proposal-terms'
-
-function formatCents(cents: number): string {
-  return `$${(cents / 100).toFixed(2)}`
-}
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00')
@@ -280,8 +277,8 @@ export function ProposalPreview({ proposal, onQuoteCreated, onClose }: ProposalP
                 />
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                {proposal.guestCount} guests x {formatCents(perPersonCents)} ={' '}
-                {formatCents(perPersonCents * proposal.guestCount)}
+                {proposal.guestCount} guests x {formatCurrency(perPersonCents)} ={' '}
+                {formatCurrency(perPersonCents * proposal.guestCount)}
               </p>
             </div>
           )}
@@ -316,7 +313,7 @@ export function ProposalPreview({ proposal, onQuoteCreated, onClose }: ProposalP
                   <span className="text-sm text-gray-500">%</span>
                   {depositAmountCents !== null && (
                     <span className="text-sm text-gray-500">
-                      ({formatCents(depositAmountCents)})
+                      ({formatCurrency(depositAmountCents)})
                     </span>
                   )}
                 </div>

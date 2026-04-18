@@ -6,10 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert } from '@/components/ui/alert'
 import type { BidResult } from '@/lib/finance/catering-bid-actions'
-
-function formatCents(cents: number): string {
-  return `$${(cents / 100).toFixed(2)}`
-}
+import { formatCurrency } from '@/lib/utils/currency'
 
 function getFoodCostRating(
   foodCostCents: number,
@@ -74,9 +71,9 @@ export function CateringBidSummary({
       <Card>
         <CardContent className="py-6 text-center">
           <p className="text-sm text-gray-500 uppercase tracking-wide">Total bid</p>
-          <p className="text-3xl font-bold mt-1">{formatCents(result.totalCents)}</p>
+          <p className="text-3xl font-bold mt-1">{formatCurrency(result.totalCents)}</p>
           <p className="text-lg text-gray-600 mt-1">
-            {formatCents(result.perPersonCents)} per person
+            {formatCurrency(result.perPersonCents)} per person
           </p>
           <div className="mt-3 inline-flex items-center gap-2">
             <span className="text-sm text-gray-500">Food cost ratio:</span>
@@ -109,12 +106,12 @@ export function CateringBidSummary({
                     )}
                   </p>
                 </div>
-                <span className="font-medium text-sm">{formatCents(item.scaledCostCents)}</span>
+                <span className="font-medium text-sm">{formatCurrency(item.scaledCostCents)}</span>
               </div>
             ))}
             <div className="flex items-center justify-between pt-2 font-semibold text-sm">
               <span>Total Food Cost</span>
-              <span>{formatCents(result.foodCostCents)}</span>
+              <span>{formatCurrency(result.foodCostCents)}</span>
             </div>
           </div>
         </CardContent>
@@ -144,7 +141,7 @@ export function CateringBidSummary({
               <LineItem label="Total" amount={result.totalCents} bold large />
             </div>
             <div className="text-right text-sm text-gray-500">
-              {formatCents(result.perPersonCents)} per person
+              {formatCurrency(result.perPersonCents)} per person
             </div>
           </div>
         </CardContent>
@@ -185,7 +182,7 @@ function LineItem({
       } ${large ? 'text-lg' : 'text-sm'}`}
     >
       <span>{label}</span>
-      <span>{formatCents(amount)}</span>
+      <span>{formatCurrency(amount)}</span>
     </div>
   )
 }

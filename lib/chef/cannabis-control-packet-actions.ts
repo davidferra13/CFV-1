@@ -1045,6 +1045,17 @@ export async function deleteControlPacketEvidence(evidenceId: string) {
   }
 
   revalidatePath(`/cannabis/events/${evidence.event_id}/control-packet`)
+
+  try {
+    await logCannabisAudit({
+      actorUserId: user.id,
+      actionType: 'cannabis_evidence_deleted',
+      targetId: evidenceId,
+      targetType: 'control_packet_evidence',
+      details: { snapshotId: evidence.snapshot_id, eventId: evidence.event_id },
+    })
+  } catch {}
+
   return { success: true }
 }
 
@@ -1195,6 +1206,21 @@ export async function upsertControlPacketReconciliation(
   }
 
   revalidatePath(`/cannabis/events/${validated.eventId}/control-packet`)
+
+  try {
+    await logCannabisAudit({
+      actorUserId: user.id,
+      actionType: 'cannabis_reconciliation_saved',
+      targetId: validated.snapshotId,
+      targetType: 'control_packet_reconciliation',
+      details: {
+        eventId: validated.eventId,
+        isUpdate: !!existing,
+        hasMismatches: !!(mismatchSummary as any)?.hasIssues,
+      },
+    })
+  } catch {}
+
   return {
     success: true,
     mismatchSummary,
@@ -1280,6 +1306,16 @@ export async function finalizeControlPacket(input: z.infer<typeof FinalizePacket
   }
 
   revalidatePath(`/cannabis/events/${validated.eventId}/control-packet`)
+
+  try {
+    await logCannabisAudit({
+      actorUserId: user.id,
+      actionType: 'cannabis_packet_finalized',
+      targetId: snapshot.id,
+      targetType: 'control_packet_snapshot',
+      details: { eventId: validated.eventId, finalizedAt },
+    })
+  } catch {}
 
   return {
     success: true,

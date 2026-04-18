@@ -9,6 +9,7 @@ import {
   postEventReviewRequest,
   postEventReferralAsk,
   postEventGuestFeedback,
+  postEventTipPrompt,
 } from '@/lib/jobs/post-event-jobs'
 import {
   commerceDayCloseout,
@@ -23,6 +24,7 @@ export const { GET, POST, PUT } = serve({
     postEventThankYou,
     postEventReviewRequest,
     postEventReferralAsk,
+    postEventTipPrompt,
     commerceDayCloseout,
     commercePaymentReconciliation,
     commerceSettlementMapping,

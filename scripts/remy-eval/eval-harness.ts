@@ -122,7 +122,7 @@ async function sendToRemy(
   currentPage?: string
 ): Promise<{ response: string; timeMs: number }> {
   const start = Date.now()
-  const TIMEOUT_MS = 300_000 // 5 minutes per test (includes 30b model swap + cold start)
+  const TIMEOUT_MS = 60_000 // 60s per test
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
 
@@ -267,9 +267,7 @@ function gradeByRules(test: TestCase, response: string): RuleScore {
 // ─── LLM-Based Grading ──────────────────────────────────────────────────────
 
 async function gradeWithLLMOnce(test: TestCase, response: string): Promise<LLMGrade | undefined> {
-  // /no_think prefix prevents qwen3 from entering thinking mode which breaks JSON output
-  const prompt = `/no_think
-You are grading an AI chef assistant called "Remy" that helps private chefs manage their business.
+  const prompt = `You are grading an AI chef assistant called "Remy" that helps private chefs manage their business.
 
 QUERY FROM CHEF: "${test.query}"
 
@@ -315,7 +313,7 @@ Return ONLY valid JSON, no markdown, no extra text:
     const data = await res.json()
     const responseText = data.response ?? ''
 
-    // Extract JSON from response (qwen3 sometimes wraps in markdown)
+    // Extract JSON from response (model sometimes wraps in markdown)
     const jsonMatch = responseText.match(/\{[\s\S]*\}/)
     if (!jsonMatch) return undefined
 
@@ -453,7 +451,7 @@ async function main() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: STREAM_MODEL,
-        prompt: '/no_think\nSay OK.',
+        prompt: 'Say OK.',
         stream: false,
         options: { num_predict: 3 },
         keep_alive: '30m',
@@ -461,17 +459,16 @@ async function main() {
       signal: AbortSignal.timeout(MODEL_TIMEOUT_MS),
     })
     if (warmRes.ok) {
-      console.log(`  ✅ ${STREAM_MODEL} warm (keep_alive: 30m)`)
+      console.log(`  ${STREAM_MODEL} warm (keep_alive: 30m)`)
     } else {
-      console.log(`  ⚠️ ${STREAM_MODEL} failed to warm: ${warmRes.status}`)
+      console.log(`  ${STREAM_MODEL} failed to warm: ${warmRes.status}`)
     }
   } catch (err) {
     console.log(`  ⚠️ ${STREAM_MODEL} warmup error: ${(err as Error).message}`)
   }
 
-  // ── Phase 1: Collect all Remy responses (keeps 30b model loaded) ──
-  console.log('\n🧪 Phase 1/2 - Collecting Remy responses...\n')
-  console.log('  (30b model stays loaded - no model swaps between tests)\n')
+  // ── Phase 1: Collect all Remy responses ──
+  console.log('\n Phase 1/2 - Collecting Remy responses...\n')
   const pendingResults: Array<{
     test: TestCase
     response: string
@@ -540,12 +537,12 @@ async function main() {
     pendingResults.push({ test, response, timeMs, errors, ruleScore })
   }
 
-  // ── Phase 2: Batch-grade with LLM (loads 4b model once) ──
+  // ── Phase 2: Batch-grade with LLM ──
   console.log('\n📊 Phase 2/2 - LLM grading all responses...\n')
   const results: TestResult[] = []
 
   if (!noGrade) {
-    // Warm up 4b for grading
+    // Warm up grader model
     console.log(`  Warming up ${GRADER_MODEL} for grading...`)
     try {
       await fetch(`${OLLAMA_URL}/api/generate`, {
@@ -553,7 +550,7 @@ async function main() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: GRADER_MODEL,
-          prompt: '/no_think\nSay OK.',
+          prompt: 'Say OK.',
           stream: false,
           options: { num_predict: 3 },
           keep_alive: '30m',

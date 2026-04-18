@@ -197,5 +197,21 @@ export async function checkPriceWatchAlerts(): Promise<PriceWatchAlert[]> {
     // Pi offline
   }
 
+  // Stamp last_alerted_at on triggered watches to prevent duplicate alerts
+  if (alerts.length > 0) {
+    const alertedIds = alerts.map((a) => a.watchId)
+    try {
+      for (const id of alertedIds) {
+        await db
+          .from('price_watch_list')
+          .update({ last_alerted_at: new Date().toISOString() })
+          .eq('id', id)
+          .eq('chef_id', user.entityId)
+      }
+    } catch (err) {
+      console.error('[checkPriceWatchAlerts] Failed to stamp last_alerted_at:', err)
+    }
+  }
+
   return alerts
 }

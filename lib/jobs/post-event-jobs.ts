@@ -235,7 +235,86 @@ export const postEventReferralAsk = inngest.createFunction(
   }
 )
 
-// ─── Job 4: Guest Feedback Request (1 day after completion) ─────────────────
+// ─── Job 4: Tip Prompt (2 days after completion) ──────────────────────────
+//
+// Auto-creates a tip_request row (Uber-style) and emails the client a link
+// to the public /tip/[token] page. Skips if a tip request already exists.
+
+export const postEventTipPrompt = inngest.createFunction(
+  {
+    id: 'post-event-tip-prompt',
+    name: 'Post-Event Tip Prompt Email',
+    retries: 2,
+  },
+  { event: 'chefflow/event.completed' },
+  async ({ event, step }) => {
+    // Wait 2 days
+    await step.sleep('wait-2-days', '2d')
+
+    const result = await step.run('create-tip-request-and-send', async () => {
+      const ctx = await getPostEventContext(
+        event.data.eventId,
+        event.data.tenantId,
+        event.data.clientId
+      )
+      if (!ctx) return { skipped: true, reason: 'context unavailable or opted out' }
+
+      const db: any = createAdminClient()
+
+      // Check if tip request already exists (chef may have manually created one)
+      const { data: existing } = await db
+        .from('tip_requests')
+        .select('id')
+        .eq('event_id', event.data.eventId)
+        .eq('tenant_id', event.data.tenantId)
+        .maybeSingle()
+
+      if (existing) {
+        return { skipped: true, reason: 'tip request already exists' }
+      }
+
+      // Create tip request row
+      const { data: tipRequest, error: tipError } = await db
+        .from('tip_requests')
+        .insert({
+          tenant_id: event.data.tenantId,
+          event_id: event.data.eventId,
+          client_id: event.data.clientId,
+          status: 'sent',
+          sent_at: new Date().toISOString(),
+        })
+        .select('request_token')
+        .single()
+
+      if (tipError || !tipRequest?.request_token) {
+        log.warn('Failed to create tip request (non-blocking)', {
+          context: { eventId: event.data.eventId, error: tipError },
+        })
+        return { skipped: true, reason: 'tip request creation failed' }
+      }
+
+      const { sendPostEventTipEmail } = await import('@/lib/email/notifications')
+
+      await sendPostEventTipEmail({
+        clientEmail: ctx.client.email,
+        clientName: ctx.client.name,
+        chefName: ctx.chefName,
+        occasion: ctx.occasion,
+        tipUrl: `${APP_URL}/tip/${tipRequest.request_token}`,
+      })
+
+      log.info('Post-event tip prompt sent', {
+        context: { eventId: event.data.eventId, clientEmail: ctx.client.email },
+      })
+
+      return { sent: true, to: ctx.client.email }
+    })
+
+    return result
+  }
+)
+
+// ─── Job 5: Guest Feedback Request (1 day after completion) ─────────────────
 //
 // Unlike jobs 1-3 which target the host client, this job targets the event
 // guests. It creates guest_feedback rows (with unique tokens) for all

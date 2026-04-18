@@ -16,10 +16,7 @@ import {
   matchLineItemToIngredient,
   applyLineItemPrices,
 } from '@/lib/finance/expense-line-item-actions'
-
-function formatCents(cents: number): string {
-  return `$${(cents / 100).toFixed(2)}`
-}
+import { formatCurrency } from '@/lib/utils/currency'
 
 function MatchBadge({ matchedBy, confidence }: { matchedBy: string; confidence: number | null }) {
   if (!confidence) return <span className="text-xs text-stone-500">Unmatched</span>
@@ -249,7 +246,7 @@ export function ExpenseLineItemsPanel({ expenseId, eventId }: Props) {
             </div>
             <div className="flex items-center gap-3 shrink-0">
               <span className="text-sm font-medium text-stone-100">
-                {formatCents(li.amountCents)}
+                {formatCurrency(li.amountCents)}
               </span>
               <IngredientSelector
                 lineItemId={li.id}

@@ -18,6 +18,7 @@ import { dateToDateString } from '@/lib/utils/format'
 import { validateEmailLocal, suggestEmailCorrection } from '@/lib/email/email-validator'
 import { ScheduleRequestSchema } from '@/lib/booking/schedule-schema'
 import { checkSeriesSessionConflicts } from '@/lib/availability/actions'
+import { mapCannabisPreferenceToBoolean } from '@/lib/inquiries/cannabis-preference'
 import {
   buildSeriesSchedulePlan,
   getDefaultServeTimeForMealSlot,
@@ -151,11 +152,6 @@ function inferComponentCategoryFromDishName(
   if (/\b(condiment|mustard|ketchup|relish)\b/.test(value)) return 'condiment'
   if (/\b(drink|cocktail|wine|beverage)\b/.test(value)) return 'beverage'
   return 'other'
-}
-
-function mapCannabisPreferenceToBoolean(value?: string | null): boolean | null {
-  if (!value) return null
-  return ['yes', 'true', 'open'].some((option) => value.toLowerCase().includes(option))
 }
 
 function buildSessionIdentityKey(session: {
@@ -1884,6 +1880,36 @@ export async function convertInquiryToEvent(inquiryId: string) {
     })
   } catch (err) {
     console.error('[convertInquiryToEvent] Circle-event link failed (non-blocking):', err)
+  }
+
+  // CS-G9 fix: notify referral partner when their referral converts to a booked event
+  if (inquiry.referral_partner_id) {
+    ;(async () => {
+      try {
+        const { data: partner } = await db
+          .from('referral_partners')
+          .select('id, name, auth_user_id')
+          .eq('id', inquiry.referral_partner_id)
+          .single()
+
+        if (partner?.auth_user_id) {
+          const { createNotification } = await import('@/lib/notifications/actions')
+          await createNotification({
+            tenantId: user.tenantId!,
+            recipientId: partner.auth_user_id,
+            category: 'event',
+            action: 'referral_booking_converted',
+            title: 'Your referral booked an event!',
+            body: `The referral for "${inquiry.confirmed_occasion || 'an event'}" has been converted to a confirmed booking.`,
+            actionUrl: `/partner-report/${partner.id}`,
+            eventId: event.id,
+            inquiryId: inquiry.id,
+          })
+        }
+      } catch (err) {
+        console.error('[convertInquiryToEvent] Partner notification failed (non-blocking):', err)
+      }
+    })()
   }
 
   return { success: true, event }

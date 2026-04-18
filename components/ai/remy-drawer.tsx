@@ -68,6 +68,8 @@ import {
 } from '@/lib/hooks/use-message-actions'
 import { useConversationManagement } from '@/lib/hooks/use-conversation-management'
 import { useRemySend } from '@/lib/hooks/use-remy-send'
+import { getLocalAiPreferences, type LocalAiPreferences } from '@/lib/ai/privacy-actions'
+import { LocalAiIndicator } from '@/components/ai/local-ai-indicator'
 import { useKitchenMode } from '@/lib/hooks/use-kitchen-mode'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -104,6 +106,14 @@ export function RemyDrawer() {
   const [curatedQuickReplies, setCuratedQuickReplies] = useState<string[]>([])
   const [lastCuratedMsgId, setLastCuratedMsgId] = useState<string | null>(null)
   const [curatedGreetingLoaded, setCuratedGreetingLoaded] = useState(false)
+  const [localAiConfig, setLocalAiConfig] = useState<LocalAiPreferences | null>(null)
+
+  // Load local AI preferences once on mount
+  useEffect(() => {
+    getLocalAiPreferences()
+      .then(setLocalAiConfig)
+      .catch(() => {})
+  }, [])
 
   const drawerResizingRef = useRef<{ startX: number; startW: number } | null>(null)
   const drawerDragCleanupRef = useRef<(() => void) | null>(null)
@@ -169,6 +179,7 @@ export function RemyDrawer() {
     setProjectSuggestion,
     pathname,
     soundEnabled,
+    localAi: localAiConfig,
     feedText,
     lipSyncStop,
     resetLipSync,
@@ -181,6 +192,7 @@ export function RemyDrawer() {
     streamingContent,
     streamingIntent,
     elapsedSec,
+    localAiMode,
     handleSend,
     handleCancel,
     handleApproveTask,
@@ -1521,6 +1533,7 @@ export function RemyDrawer() {
                       <Globe className="h-3 w-3" />
                       Remy can make mistakes. Please double-check important info.
                     </p>
+                    {localAiConfig?.enabled && <LocalAiIndicator mode={localAiMode} />}
                   </div>
                   <span
                     className={`text-xxs tabular-nums ${input.length >= 7500 ? (input.length >= 8000 ? 'text-red-500 font-medium' : 'text-amber-500') : 'text-stone-400'}`}

@@ -22,7 +22,7 @@ export async function POST() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model,
-        prompt: '/no_think\nOK',
+        prompt: 'OK',
         stream: false,
         keep_alive: '30m',
         options: { num_predict: 1 },

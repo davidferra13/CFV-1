@@ -11,7 +11,7 @@ import { RemyAvatar } from '@/components/ai/remy-avatar'
 import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 import { getStarterPainPoints } from '@/lib/ai/chefflow-feature-map'
 import { useRemyDisplayMode } from '@/lib/hooks/use-remy-display-mode'
-import { SPEED_TRADEOFF } from '@/lib/ai/privacy-narrative'
+import { SPEED_PRIVACY } from '@/lib/ai/privacy-narrative'
 
 const DEFAULT_WIDTH = 380
 const DEFAULT_HEIGHT = 520
@@ -497,7 +497,7 @@ export function RemyConciergeWidget() {
                 {input.length}/500
               </span>
             </div>
-            <p className="text-xxs text-stone-500 italic">{SPEED_TRADEOFF}</p>
+            <p className="text-xxs text-stone-500 italic">{SPEED_PRIVACY}</p>
           </div>
         </div>
       </div>

@@ -49,6 +49,7 @@ import { ReviewSubmittedChefEmail } from './templates/review-submitted-chef'
 import { PostEventThankYouEmail } from './templates/post-event-thank-you'
 import { PostEventReviewRequestEmail } from './templates/post-event-review-request'
 import { PostEventReferralAskEmail } from './templates/post-event-referral-ask'
+import { PostEventTipPromptEmail } from './templates/post-event-tip-prompt'
 import { ContractSignedChefEmail } from './templates/contract-signed-chef'
 import { ContractSignedClientEmail } from './templates/contract-signed-client'
 import { MenuApprovedChefEmail } from './templates/menu-approved-chef'
@@ -1318,6 +1319,27 @@ export async function sendPostEventReferralAskEmail(params: {
       chefName: params.chefName,
       occasion: params.occasion,
       bookingUrl: params.bookingUrl,
+    }),
+  })
+}
+
+// ─── Post-Event Tip Prompt (2 days after completion) ──────────────────────
+
+export async function sendPostEventTipEmail(params: {
+  clientEmail: string
+  clientName: string
+  chefName: string
+  occasion: string
+  tipUrl: string
+}) {
+  await sendEmail({
+    to: params.clientEmail,
+    subject: `Leave a tip for ${params.chefName}`,
+    react: createElement(PostEventTipPromptEmail, {
+      clientName: params.clientName,
+      chefName: params.chefName,
+      occasion: params.occasion,
+      tipUrl: params.tipUrl,
     }),
   })
 }

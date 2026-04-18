@@ -197,6 +197,24 @@ function SignUpForm() {
           <p className="text-stone-400 mt-2">Manage your chef work, your way</p>
         </div>
 
+        {/* Role selector: clear equal choice between chef and client */}
+        <div className="mb-4 rounded-xl border border-stone-700 bg-stone-900/60 p-4 text-center">
+          <p className="text-sm text-stone-400 mb-3">What brings you to ChefFlow?</p>
+          <div className="flex gap-3">
+            <div className="flex-1 rounded-lg border-2 border-brand-600 bg-brand-950/30 px-3 py-2">
+              <p className="text-sm font-semibold text-brand-400">I'm a Chef</p>
+              <p className="text-xs text-stone-500 mt-0.5">Manage my business</p>
+            </div>
+            <Link
+              href="/auth/client-signup"
+              className="flex-1 rounded-lg border border-stone-600 px-3 py-2 transition-colors hover:border-brand-600 hover:bg-brand-950/20"
+            >
+              <p className="text-sm font-semibold text-stone-300">I'm a Client</p>
+              <p className="text-xs text-stone-500 mt-0.5">Hired a chef</p>
+            </Link>
+          </div>
+        </div>
+
         <Card>
           <form onSubmit={handleChefSubmit}>
             <CardHeader>

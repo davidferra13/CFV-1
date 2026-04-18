@@ -23,8 +23,8 @@
  * 5. NOTIFICATION EMAIL CHANNEL: lib/notifications/channel-router.ts routes
  *    to the email service — notifications deliver via email as one channel.
  *
- * 6. NO PII TO GEMINI IN EMAIL: Files that compose emails using AI must use
- *    parseWithOllama (not parseWithAI/Gemini) when personalizing with client data.
+ * 6. SINGLE-PROVIDER IN EMAIL: Files that compose emails using AI must use
+ *    parseWithOllama (the only AI provider) when personalizing with client data.
  *
  * Run: npx playwright test -c playwright.system-integrity.config.ts tests/system-integrity/q29-email-delivery-gate.spec.ts
  */
@@ -119,9 +119,9 @@ test.describe('Q29: Email delivery gate', () => {
   })
 
   // -------------------------------------------------------------------------
-  // Test 6: Personalized email outreach uses Ollama (not Gemini) for PII content
+  // Test 6: Personalized email outreach uses parseWithOllama (single provider)
   // -------------------------------------------------------------------------
-  test('personalized email AI uses parseWithOllama (PII stays off Gemini)', () => {
+  test('personalized email AI uses parseWithOllama (single provider)', () => {
     if (!existsSync(CAMPAIGN_OUTREACH)) return
 
     const src = readFileSync(CAMPAIGN_OUTREACH, 'utf-8')
@@ -133,13 +133,13 @@ test.describe('Q29: Email delivery gate', () => {
 
       expect(
         fnBody.includes('parseWithOllama') || fnBody.includes('Ollama'),
-        'draftPersonalizedOutreach must use parseWithOllama (client names/dietary prefs are PII)'
+        'draftPersonalizedOutreach must use parseWithOllama'
       ).toBe(true)
 
-      // Must NOT use parseWithAI/Gemini for personalized content
+      // Must NOT use removed provider
       expect(
         !fnBody.includes('parseWithAI') && !fnBody.includes('Gemini'),
-        'draftPersonalizedOutreach must NOT use parseWithAI/Gemini for content containing client PII'
+        'draftPersonalizedOutreach must NOT use removed parseWithAI provider'
       ).toBe(true)
     }
   })

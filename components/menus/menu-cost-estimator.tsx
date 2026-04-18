@@ -5,10 +5,7 @@ import { Calculator, Loader2 } from '@/components/ui/icons'
 import { estimateMenuCost } from '@/lib/menus/estimate-actions'
 import type { MenuEstimate } from '@/lib/menus/estimate-actions'
 import { DishEstimateRow } from './dish-estimate-row'
-
-function formatCents(cents: number): string {
-  return `$${(cents / 100).toFixed(2)}`
-}
+import { formatCurrency } from '@/lib/utils/currency'
 
 interface MenuCostEstimatorProps {
   /** If provided, pre-populates the dish names textarea */
@@ -186,7 +183,7 @@ export function MenuCostEstimator({
             {/* Big number */}
             <div>
               <div className="text-3xl font-bold text-stone-100">
-                {formatCents(estimate.totalCostCents)}
+                {formatCurrency(estimate.totalCostCents)}
               </div>
               <div className="text-xs text-stone-500">estimated total (costed dishes only)</div>
             </div>
@@ -196,7 +193,7 @@ export function MenuCostEstimator({
               <div className="flex items-baseline justify-between border-t border-stone-800 pt-3">
                 <span className="text-sm text-stone-400">Per guest</span>
                 <span className="text-lg font-semibold text-stone-200">
-                  {formatCents(estimate.costPerGuestCents)}
+                  {formatCurrency(estimate.costPerGuestCents)}
                 </span>
               </div>
             )}

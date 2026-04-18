@@ -1067,6 +1067,7 @@ export async function toggleNetworkDiscoverable(discoverable: boolean) {
     if (error) throw new Error('Failed to save discoverability')
   }
 
+  revalidateTag('directory-chefs')
   revalidatePath('/network')
   revalidatePath('/settings')
   return { success: true }

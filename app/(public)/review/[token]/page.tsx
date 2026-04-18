@@ -5,6 +5,7 @@ import { headers } from 'next/headers'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { getReviewRequestByToken } from '@/lib/testimonials/submit-testimonial'
 import { TokenExpiredPage } from '@/components/ui/token-expired-page'
+import { PostActionFooter } from '@/components/public/post-action-footer'
 import { ReviewForm } from './review-form'
 
 export const metadata = { title: 'Leave a Review' }
@@ -30,11 +31,14 @@ export default async function ReviewPage({ params }: { params: { token: string }
   if (request.alreadySubmitted) {
     return (
       <div className="min-h-screen bg-stone-800 flex items-center justify-center p-4">
-        <div className="bg-stone-900 rounded-2xl shadow-sm border border-stone-700 p-8 max-w-md w-full text-center">
-          <h1 className="text-2xl font-bold text-stone-100 mb-2">Thank you!</h1>
-          <p className="text-stone-400">
-            Your review has already been submitted. We really appreciate your feedback!
-          </p>
+        <div className="max-w-md w-full">
+          <div className="bg-stone-900 rounded-2xl shadow-sm border border-stone-700 p-8 text-center">
+            <h1 className="text-2xl font-bold text-stone-100 mb-2">Thank you!</h1>
+            <p className="text-stone-400">
+              Your review has already been submitted. We really appreciate your feedback!
+            </p>
+          </div>
+          <PostActionFooter chefSlug={request.chefSlug} chefName={request.chefName} />
         </div>
       </div>
     )
@@ -67,6 +71,7 @@ export default async function ReviewPage({ params }: { params: { token: string }
         </div>
 
         <ReviewForm token={params.token} defaultName={request.clientName} />
+        <PostActionFooter chefSlug={request.chefSlug} chefName={request.chefName} />
       </div>
     </div>
   )

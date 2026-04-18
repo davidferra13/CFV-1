@@ -14,6 +14,7 @@ import {
   type BidResult,
 } from '@/lib/finance/catering-bid-actions'
 import { CateringBidSummary } from './catering-bid-summary'
+import { formatCurrency } from '@/lib/utils/currency'
 
 type SelectedRecipe = {
   recipeId: string
@@ -42,10 +43,6 @@ const STEPS = [
 ] as const
 
 const DRAFT_STORAGE_KEY = 'chefflow-bid-draft'
-
-function formatCents(cents: number): string {
-  return `$${(cents / 100).toFixed(2)}`
-}
 
 export function CateringBidCalculator({
   onQuoteCreated,
@@ -274,10 +271,10 @@ export function CateringBidCalculator({
         <div className="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3 border">
           <span className="text-sm text-gray-600">Running estimate</span>
           <div className="text-right">
-            <span className="text-lg font-semibold">{formatCents(runningTotal)}</span>
+            <span className="text-lg font-semibold">{formatCurrency(runningTotal)}</span>
             {guestCount > 0 && (
               <span className="ml-2 text-sm text-gray-500">
-                ({formatCents(Math.round(runningTotal / guestCount))}/person)
+                ({formatCurrency(Math.round(runningTotal / guestCount))}/person)
               </span>
             )}
           </div>
@@ -370,7 +367,7 @@ export function CateringBidCalculator({
                       </div>
                       {result.costPerPortionCents != null && (
                         <span className="text-gray-500">
-                          {formatCents(result.costPerPortionCents)}/portion
+                          {formatCurrency(result.costPerPortionCents)}/portion
                         </span>
                       )}
                       {!result.hasAllPrices && <Badge variant="warning">Incomplete pricing</Badge>}
@@ -393,7 +390,7 @@ export function CateringBidCalculator({
                       <p className="text-xs text-gray-500">
                         {recipe.category}
                         {recipe.costPerPortionCents != null &&
-                          ` - ${formatCents(recipe.costPerPortionCents)}/portion`}
+                          ` - ${formatCurrency(recipe.costPerPortionCents)}/portion`}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -467,7 +464,7 @@ export function CateringBidCalculator({
                 />
               </div>
             </div>
-            <p className="text-sm text-gray-500">Labor cost: {formatCents(laborCostCents)}</p>
+            <p className="text-sm text-gray-500">Labor cost: {formatCurrency(laborCostCents)}</p>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="overhead-pct">Overhead %</Label>
@@ -525,7 +522,7 @@ export function CateringBidCalculator({
               <p className="text-xs text-gray-400 mt-1">
                 Reimbursed at 72.5 cents/mile (2026 IRS rate)
                 {travelMiles > 0 && (
-                  <span className="ml-1 font-medium">= {formatCents(travelCostCents)}</span>
+                  <span className="ml-1 font-medium">= {formatCurrency(travelCostCents)}</span>
                 )}
               </p>
             </div>

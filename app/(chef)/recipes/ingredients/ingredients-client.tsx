@@ -45,6 +45,12 @@ type Ingredient = {
   category: string
   default_unit: string
   average_price_cents: number | null
+  last_price_cents: number | null
+  last_price_source: string | null
+  last_price_store: string | null
+  last_price_confidence: number | null
+  price_trend_direction: string | null
+  price_trend_pct: number | null
   is_staple: boolean
   usage_count: number
   [key: string]: unknown
@@ -187,7 +193,9 @@ export function IngredientsClient({ ingredients }: Props) {
                   <TableHead>Name</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Default Unit</TableHead>
-                  <TableHead>Avg. Price</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead>Source</TableHead>
+                  <TableHead>Trend</TableHead>
                   <TableHead>Used In</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -233,6 +241,8 @@ export function IngredientsClient({ ingredients }: Props) {
                             placeholder="0.00"
                           />
                         </TableCell>
+                        <TableCell />
+                        <TableCell />
                         <TableCell>
                           {ing.usage_count} recipe{ing.usage_count !== 1 ? 's' : ''}
                         </TableCell>
@@ -260,10 +270,48 @@ export function IngredientsClient({ ingredients }: Props) {
                         </TableCell>
                         <TableCell>{ing.default_unit}</TableCell>
                         <TableCell>
-                          {ing.average_price_cents != null ? (
-                            `$${(ing.average_price_cents / 100).toFixed(2)}`
+                          {ing.last_price_cents != null ? (
+                            <span className="text-stone-100">
+                              ${(ing.last_price_cents / 100).toFixed(2)}
+                            </span>
+                          ) : ing.average_price_cents != null ? (
+                            <span className="text-stone-400" title="Manual entry">
+                              ${(ing.average_price_cents / 100).toFixed(2)}
+                            </span>
                           ) : (
-                            <span className="text-stone-400">--</span>
+                            <span className="text-stone-500">--</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {ing.last_price_source ? (
+                            <span
+                              className="text-xs text-stone-400"
+                              title={ing.last_price_store || ''}
+                            >
+                              {ing.last_price_store
+                                ? ing.last_price_store.split(' ').slice(0, 2).join(' ')
+                                : ing.last_price_source.replace('openclaw_', '').replace('_', ' ')}
+                            </span>
+                          ) : ing.average_price_cents != null ? (
+                            <span className="text-xs text-stone-500">manual</span>
+                          ) : null}
+                        </TableCell>
+                        <TableCell>
+                          {ing.price_trend_direction && ing.price_trend_pct != null ? (
+                            <span
+                              className={`text-xs ${
+                                ing.price_trend_direction === 'down'
+                                  ? 'text-green-400'
+                                  : ing.price_trend_direction === 'up'
+                                    ? 'text-red-400'
+                                    : 'text-stone-500'
+                              }`}
+                            >
+                              {ing.price_trend_direction === 'up' ? '+' : ''}
+                              {ing.price_trend_pct.toFixed(0)}%
+                            </span>
+                          ) : (
+                            <span className="text-stone-500">--</span>
                           )}
                         </TableCell>
                         <TableCell>

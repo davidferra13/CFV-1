@@ -64,8 +64,8 @@ ChefFlow is a **chef-first operating system for independent and small culinary b
 | **Styling**         | Tailwind CSS                    | 3.4.17                  |
 | **Icons**           | Lucide React, Phosphor Icons    | Latest                  |
 | **Email**           | Resend + React Email            | 6.9.2                   |
-| **AI (Local)**      | Ollama                          | 0.6.3 (qwen3 models)    |
-| **AI (Cloud)**      | Google Gemini, Groq             | Via `@google/genai`     |
+| **AI**              | Ollama-compatible endpoint      | Gemma 4 (cloud default) |
+| **AI (local)**      | Ollama                          | Opt-in, Remy chat only  |
 | **Charts**          | Recharts                        | 3.7.0                   |
 | **Calendar**        | FullCalendar                    | 6.1.20                  |
 | **Forms**           | Zod validation + Server Actions | Zod 4.3.6               |
@@ -759,9 +759,10 @@ Defined in `lib/auth/route-policy.ts`:
 
 ### Privacy Architecture
 
-- **Ollama-only for private data** - client PII, financials, allergies never leave the local machine
+- **Single AI provider (Gemma 4 via Ollama)** - all server-side AI routes through `OLLAMA_BASE_URL`. No second provider
+- **Opt-in local AI** - users can enable local Ollama to route Remy chat to their own machine; commands always run server-side
 - **IndexedDB for Remy conversations** - chat history stays in browser, never on server
-- **No cloud LLM fallback** for private data - `OllamaOfflineError` thrown, feature hard-fails
+- **No silent degradation** - if the AI endpoint is unreachable, `OllamaOfflineError` is thrown and the feature hard-fails
 - **GOLDMINE email data** processed locally via Ollama
 
 ---

@@ -5,6 +5,7 @@ import { headers } from 'next/headers'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { getTipRequestByToken } from '@/lib/finance/tip-actions'
 import { TokenExpiredPage } from '@/components/ui/token-expired-page'
+import { PostActionFooter } from '@/components/public/post-action-footer'
 import { TipForm } from './tip-form'
 
 export const metadata = { title: 'Leave a Tip' }
@@ -27,18 +28,21 @@ export default async function TipPage({ params }: { params: { token: string } })
 
   if (!data) return <TokenExpiredPage reason="expired" noun="tip" />
 
-  const { request, chefName, eventDate, eventOccasion, eventTotalCents } = data
+  const { request, chefName, chefSlug, eventDate, eventOccasion, eventTotalCents } = data
 
   // Already completed
   if (request.status === 'completed') {
     return (
       <div className="min-h-screen bg-stone-800 flex items-center justify-center p-4">
-        <div className="bg-stone-900 rounded-2xl shadow-sm border border-stone-700 p-8 max-w-md w-full text-center">
-          <div className="text-4xl mb-4">🙏</div>
-          <h1 className="text-2xl font-bold text-stone-100 mb-2">Thank you!</h1>
-          <p className="text-stone-400">
-            Your tip has been received. {chefName} appreciates your generosity!
-          </p>
+        <div className="max-w-md w-full">
+          <div className="bg-stone-900 rounded-2xl shadow-sm border border-stone-700 p-8 text-center">
+            <div className="text-4xl mb-4">🙏</div>
+            <h1 className="text-2xl font-bold text-stone-100 mb-2">Thank you!</h1>
+            <p className="text-stone-400">
+              Your tip has been received. {chefName} appreciates your generosity!
+            </p>
+          </div>
+          <PostActionFooter chefSlug={chefSlug} chefName={chefName} />
         </div>
       </div>
     )
@@ -48,11 +52,14 @@ export default async function TipPage({ params }: { params: { token: string } })
   if (request.status === 'declined') {
     return (
       <div className="min-h-screen bg-stone-800 flex items-center justify-center p-4">
-        <div className="bg-stone-900 rounded-2xl shadow-sm border border-stone-700 p-8 max-w-md w-full text-center">
-          <h1 className="text-xl font-bold text-stone-100 mb-2">No worries!</h1>
-          <p className="text-stone-400">
-            Thank you for your time. We hope you enjoyed the experience!
-          </p>
+        <div className="max-w-md w-full">
+          <div className="bg-stone-900 rounded-2xl shadow-sm border border-stone-700 p-8 text-center">
+            <h1 className="text-xl font-bold text-stone-100 mb-2">No worries!</h1>
+            <p className="text-stone-400">
+              Thank you for your time. We hope you enjoyed the experience!
+            </p>
+          </div>
+          <PostActionFooter chefSlug={chefSlug} chefName={chefName} />
         </div>
       </div>
     )
@@ -91,7 +98,7 @@ export default async function TipPage({ params }: { params: { token: string } })
           chefName={chefName}
         />
 
-        <p className="text-center text-xs text-stone-600 mt-8">Powered by ChefFlow</p>
+        <PostActionFooter chefSlug={chefSlug} chefName={chefName} />
       </div>
     </div>
   )

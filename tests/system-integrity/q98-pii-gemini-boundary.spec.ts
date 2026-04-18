@@ -1,13 +1,13 @@
 /**
- * Q98: PII/Gemini Boundary Enforcement (Q47)
+ * Q98: Single-Provider Enforcement (No parseWithAI calls)
  *
- * PII must never route through Gemini (parseWithAI). All private data
- * must use parseWithOllama. Gemini is a separate cloud service.
+ * All AI routes through parseWithOllama (Gemma 4). The legacy parseWithAI
+ * function (former Gemini gateway) must not be called anywhere in production.
  *
  * What we check:
  *   1. No production file calls parseWithAI() (the function, not the type)
  *   2. Files importing from parse.ts only import types, not the function
- *   3. parseWithAI definition exists only in lib/ai/parse.ts
+ *   3. parseWithAI definition exists only in lib/ai/parse.ts (legacy, unused)
  *
  * Run: npx playwright test -c playwright.system-integrity.config.ts tests/system-integrity/q98-pii-gemini-boundary.spec.ts
  */
@@ -34,7 +34,7 @@ function scanDir(dir: string, ext: string): string[] {
   return results
 }
 
-test.describe('Q98: PII/Gemini boundary', () => {
+test.describe('Q98: Single-provider enforcement', () => {
   const libFiles = scanDir(resolve(ROOT, 'lib'), '.ts')
   const appFiles = scanDir(resolve(ROOT, 'app'), '.ts')
   const allProdFiles = [...libFiles, ...appFiles]
@@ -79,14 +79,14 @@ test.describe('Q98: PII/Gemini boundary', () => {
 
     if (violations.length > 0) {
       console.warn(
-        `Production files calling parseWithAI (Gemini) directly:\n${violations.join('\n')}\n` +
-          'Fix: Use parseWithOllama instead. PII must never route through Gemini.'
+        `Production files calling parseWithAI (removed provider) directly:\n${violations.join('\n')}\n` +
+          'Fix: Use parseWithOllama instead. All AI routes through Ollama.'
       )
     }
 
     expect(
       violations.length,
-      `${violations.length} file(s) call parseWithAI, violating the PII/Gemini boundary`
+      `${violations.length} file(s) call parseWithAI (removed provider, must use parseWithOllama)`
     ).toBe(0)
   })
 })

@@ -151,7 +151,6 @@ Do not recommend fixes for modules that are currently passing.`
         { role: 'user', content: userPrompt },
       ],
       options: { temperature: 0.3 },
-      think: false,
     } as any)) as unknown as { message: { content: string } }
 
     reportContent = response.message.content.trim()

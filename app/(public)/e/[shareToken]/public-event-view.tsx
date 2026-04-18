@@ -87,6 +87,27 @@ export function PublicEventView({ event, shareToken, justPurchased, purchaseCanc
               })}
             </p>
           )}
+          {/* Forward paths */}
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            {event.chefSlug && (
+              <a
+                href={`/chef/${event.chefSlug}`}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-stone-600 px-4 py-2 text-sm font-medium text-stone-300 transition-colors hover:border-stone-500 hover:text-stone-100"
+              >
+                {event.chefName ? `View ${event.chefName}'s Profile` : 'View Chef Profile'}
+              </a>
+            )}
+          </div>
+          <div className="pt-2">
+            <a
+              href="https://cheflowhq.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-stone-500 hover:text-stone-400 transition-colors"
+            >
+              Powered by <span className="font-semibold">ChefFlow</span>
+            </a>
+          </div>
         </div>
       </div>
     )

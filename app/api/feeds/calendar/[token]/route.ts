@@ -55,6 +55,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
       'in_progress',
       'completed',
     ])
+    .is('deleted_at', null)
     .order('event_date', { ascending: true })
     .limit(500) as any)
 

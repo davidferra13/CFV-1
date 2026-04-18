@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { CourseFireButton } from './course-fire-button'
 import { EightySixModal } from './eighty-six-modal'
 import { Clock, Utensils } from '@/components/ui/icons'
+import { getServiceCourses } from '@/lib/operations/kds-actions'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -72,6 +73,30 @@ export function KDSView({ courses: initialCourses, eventId }: KDSViewProps) {
     document.addEventListener('fullscreenchange', handler)
     return () => document.removeEventListener('fullscreenchange', handler)
   }, [])
+
+  // Auto-refresh: poll server every 10s for course status updates from other devices
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const fresh = await getServiceCourses(eventId)
+        setCourses(
+          fresh
+            .map((c) => ({
+              id: c.id,
+              courseName: c.courseName,
+              courseNumber: c.courseNumber,
+              status: c.status,
+              firedAt: c.firedAt,
+              servedAt: c.servedAt,
+            }))
+            .sort((a, b) => a.courseNumber - b.courseNumber)
+        )
+      } catch {
+        // Silent fail on poll; next interval will retry
+      }
+    }, 10_000)
+    return () => clearInterval(interval)
+  }, [eventId])
 
   function handleStatusUpdate(courseId: string, newStatus: string) {
     setCourses((prev) =>

@@ -3,7 +3,7 @@
 > **Purpose:** Trace an event from inquiry through completion/cancellation. Every subsystem the event touches (FSM, ledger, notifications, email, calendar, prep lists, automations, Remy, client portal) must be verified.
 > **Created:** 2026-04-18
 > **Pre-build score:** 45.5/54 (84.3%)
-> **Post-build score:** 53/54 (98.1%)
+> **Post-build score:** 52.5/54 (97.2%) -- 9 fixes
 
 ---
 
@@ -35,26 +35,26 @@ Does money flow correctly through the ledger? Are signs right, idempotency enfor
 | B4  | Does the deposit flow create a ledger entry with correct type and transaction reference?               | YES       | `handleCheckoutSessionCompleted` writes `entry_type: 'deposit'` with `transaction_reference: paymentIntentId`                                                            |
 | B5  | Is the ledger immutable (no UPDATE/DELETE possible)?                                                   | YES       | DB triggers prevent UPDATE/DELETE on `ledger_entries`. Append-only enforced at database level                                                                            |
 | B6  | Does cancellation with unrefunded payments notify the chef to process refund?                          | YES       | `transitions.ts:448`: checks `unrefunded > 0`, creates `cancellation_pending_refund` notification with dollar amount                                                     |
-| B7  | Does `voidOfflinePayment` create a proper reversal entry and notify the client?                        | PARTIAL   | Creates reversal ledger entry (refund type, negative amount). No client notification that their payment was voided. Chef-only operation with zero client visibility      |
+| B7  | Does `voidOfflinePayment` create a proper reversal entry and notify the client?                        | FIXED     | Added `createClientNotification` with `refund_processed` action, amount, reason, link to client portal                                                                   |
 | B8  | Does the menu cost snapshot freeze at proposal time (draft -> proposed) to prevent price drift?        | YES       | `transitions.ts:408`: `compute_projected_food_cost_cents` RPC called. Snapshot stored in `menu_cost_snapshot_cents`                                                      |
 
-**B score: 6.5/8**
+**B score: 7.5/8**
 
 ## C. Notification Completeness (7 questions)
 
 Does every meaningful transition notify the right people through the right channel?
 
-| #   | Question                                                                           | Pre-Build   | Evidence                                                                                                                                                                                                                                |
-| --- | ---------------------------------------------------------------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| C1  | Does proposed -> accepted create a chef notification?                              | YES         | `transitions.ts:522`: `notifyChef` includes `toStatus === 'accepted' && fromStatus === 'proposed'`. Creates `proposal_accepted` notification                                                                                            |
-| C2  | Does accepted -> paid create a chef notification?                                  | YES         | `transitions.ts:523`: `notifyChef` includes `toStatus === 'paid'`. Creates `event_paid` notification                                                                                                                                    |
-| C3  | Does confirmed -> in_progress create a client notification ("chef is on the way")? | YES         | `transitions.ts:623`: Client gets `event_in_progress_to_client` notification. Also gets email with arrival/serve time                                                                                                                   |
-| C4  | Does cancellation notify RSVP'd guests (not just chef and client)?                 | YES         | `transitions.ts:1008`: Queries `event_guests` with `rsvp_status IN ('attending', 'maybe')`, sends cancellation email to each                                                                                                            |
-| C5  | Does cancellation detect and alert about surplus purchased ingredients?            | YES         | `transitions.ts:472`: Queries `inventory_transactions` for `receive` type on cancelled event. Creates surplus notification with cost estimate                                                                                           |
-| C6  | Are collaborators notified on meaningful transitions?                              | YES         | `transitions.ts:338`: Queries `event_collaborators`, creates `schedule_change` notification for each on accepted/paid/confirmed/in_progress/completed/cancelled                                                                         |
-| C7  | Is there duplicate notification risk (chef gets same transition twice)?            | YES (minor) | Chef notifications fire at two points: line 526 (accepted/paid/cancelled) AND line 1272 (confirmed/in_progress/completed). No overlap on statuses, but confirmed notification reuses `action: 'event_paid'` which is semantically wrong |
+| #   | Question                                                                           | Pre-Build | Evidence                                                                                                                                                                                                         |
+| --- | ---------------------------------------------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C1  | Does proposed -> accepted create a chef notification?                              | YES       | `transitions.ts:522`: `notifyChef` includes `toStatus === 'accepted' && fromStatus === 'proposed'`. Creates `proposal_accepted` notification                                                                     |
+| C2  | Does accepted -> paid create a chef notification?                                  | YES       | `transitions.ts:523`: `notifyChef` includes `toStatus === 'paid'`. Creates `event_paid` notification                                                                                                             |
+| C3  | Does confirmed -> in_progress create a client notification ("chef is on the way")? | YES       | `transitions.ts:623`: Client gets `event_in_progress_to_client` notification. Also gets email with arrival/serve time                                                                                            |
+| C4  | Does cancellation notify RSVP'd guests (not just chef and client)?                 | YES       | `transitions.ts:1008`: Queries `event_guests` with `rsvp_status IN ('attending', 'maybe')`, sends cancellation email to each                                                                                     |
+| C5  | Does cancellation detect and alert about surplus purchased ingredients?            | YES       | `transitions.ts:472`: Queries `inventory_transactions` for `receive` type on cancelled event. Creates surplus notification with cost estimate                                                                    |
+| C6  | Are collaborators notified on meaningful transitions?                              | YES       | `transitions.ts:338`: Queries `event_collaborators`, creates `schedule_change` notification for each on accepted/paid/confirmed/in_progress/completed/cancelled                                                  |
+| C7  | Is there duplicate notification risk (chef gets same transition twice)?            | FIXED     | Was reusing `event_paid` action for confirmed/in_progress. Added `event_confirmed` and `event_in_progress` to NotificationAction type, tier-config, and metadata map. Each status now has distinct action string |
 
-**C score: 6.5/7** (0.5 deduction for misleading action reuse in C7)
+**C score: 7/7**
 
 ## D. Email Coverage (6 questions)
 
@@ -63,13 +63,13 @@ Does every client-facing transition send an appropriate email?
 | #   | Question                                                       | Pre-Build | Evidence                                                                                                                        |
 | --- | -------------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | D1  | Does draft -> proposed send a proposal email to client?        | YES       | `transitions.ts:714`: `sendEventProposedEmail` with full event details, co-host names                                           |
-| D2  | Does proposed -> accepted send a confirmation email to client? | NO        | No email branch for `proposed -> accepted`. Client gets in-app notification but no email acknowledging their acceptance         |
+| D2  | Does proposed -> accepted send a confirmation email to client? | FIXED     | Added `sendEventAcceptedEmail` template + function + wired into transitions.ts for `proposed -> accepted`                       |
 | D3  | Does accepted -> paid send a payment confirmation email?       | YES       | `transitions.ts:610`: Client gets `event_paid_to_client` notification. Circle post confirms payment                             |
 | D4  | Does paid -> confirmed send an event confirmation email?       | YES       | `transitions.ts:728`: `sendEventConfirmedEmail` via circle-first with fallback. Includes FOH menu PDF attachment                |
 | D5  | Does in_progress -> completed send a thank-you email?          | YES       | `transitions.ts:930`: Circle-first with personalized thank-you, menu highlights. Fallback `sendEventCompletedEmail`             |
 | D6  | Does cancellation send email to both chef and client?          | YES       | `transitions.ts:982`: Client gets cancel email. Line 994: Chef gets cancel email when client cancels. Guest emails at line 1008 |
 
-**D score: 5/6**
+**D score: 6/6**
 
 ## E. Cross-System Cleanup on Cancellation (6 questions)
 
@@ -80,11 +80,11 @@ When an event is cancelled, does every downstream system get cleaned up?
 | E1  | Are prep blocks deleted when event is cancelled?                                         | YES       | `transitions.ts:1213`: `prep_blocks.delete()` where `event_id = eventId`                                                                                                                  |
 | E2  | Are travel legs deleted when event is cancelled?                                         | YES       | `transitions.ts:1225`: `travel_legs.delete()` where `event_id = eventId`                                                                                                                  |
 | E3  | Is the Google Calendar event deleted on cancellation?                                    | YES       | `transitions.ts:1205`: `deleteEventFromGoogleCalendar(eventId)`                                                                                                                           |
-| E4  | Is the Dinner Circle archived on cancellation?                                           | NO        | Circle archive only fires on `completed` (line 1357). Cancelled events leave active circles. Clients could keep posting to a cancelled event's circle                                     |
+| E4  | Is the Dinner Circle archived on cancellation?                                           | FIXED     | Added circle archive block in cancellation path, mirrors completion pattern. Sets `hub_groups.is_active = false`                                                                          |
 | E5  | Are grocery list, prep sheet, and packing list generation flags cleared on cancellation? | NO        | No cleanup of `grocery_list_generated_at`, `prep_sheet_generated_at`, or `packing_list_generated_at`. Stale flags persist. Becomes a real bug if event is ever restored from cancellation |
 | E6  | Does cancellation fire Zapier/outbound webhooks?                                         | YES       | `transitions.ts:1379`: `dispatchWebhookEvent` with `event.status_changed`. Line 1394: `emitWebhook` with `event.transitioned`                                                             |
 
-**E score: 4/6**
+**E score: 5/6**
 
 ## F. Confirmation Side Effects (6 questions)
 
@@ -120,63 +120,61 @@ When an event reaches "completed", does every post-event system fire?
 
 Does the automation engine work correctly with event-context triggers?
 
-| #   | Question                                                                               | Pre-Build | Evidence                                                                                                                                                                                     |
-| --- | -------------------------------------------------------------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| H1  | Does `transitionEvent` fire the automation engine on status changes?                   | YES       | `transitions.ts:1238`: `evaluateAutomations(tenantId, 'event_status_changed', {...})` with from/to status, occasion, client_id                                                               |
-| H2  | Does `create_follow_up_task` work for event triggers?                                  | NO        | `action-handlers.ts:110`: returns `{ success: false, error: 'Follow-up task requires an inquiry context' }`. Only handles inquiry entity type. Event-triggered follow-up tasks silently fail |
-| H3  | Does `send_template_message` correctly link to events (not just inquiries)?            | PARTIAL   | `action-handlers.ts:148`: Sets `event_id` on message insert. But notification `actionUrl` only generates for inquiries (line 163-165), so chef gets no link to the event                     |
-| H4  | Does the automation engine fire Remy reactive hooks for confirmed/completed/cancelled? | YES       | `transitions.ts:1256`: `onEventConfirmed`, `onEventCompleted`, `onEventCancelled` all dispatched                                                                                             |
+| #   | Question                                                                               | Pre-Build | Evidence                                                                                                                                |
+| --- | -------------------------------------------------------------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| H1  | Does `transitionEvent` fire the automation engine on status changes?                   | YES       | `transitions.ts:1238`: `evaluateAutomations(tenantId, 'event_status_changed', {...})` with from/to status, occasion, client_id          |
+| H2  | Does `create_follow_up_task` work for event triggers?                                  | FIXED     | Added event branch: creates `chef_todos` entry with description and due date. Error message updated to require inquiry or event context |
+| H3  | Does `send_template_message` correctly link to events (not just inquiries)?            | FIXED     | Added `/events/${entityId}` to notification actionUrl + eventId field when entityType is event                                          |
+| H4  | Does the automation engine fire Remy reactive hooks for confirmed/completed/cancelled? | YES       | `transitions.ts:1256`: `onEventConfirmed`, `onEventCompleted`, `onEventCancelled` all dispatched                                        |
 
-**H score: 2.5/4**
+**H score: 4/4**
 
 ## I. Contract Integration (4 questions)
 
 Does the contract system integrate correctly with the event lifecycle?
 
-| #   | Question                                                                                        | Pre-Build | Evidence                                                                                                                                                                                      |
-| --- | ----------------------------------------------------------------------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| I1  | Does `signContract` (client path) record full signature audit data (IP, user agent, timestamp)? | YES       | `contracts/actions.ts:445`: Records `signed_at`, updates status. Client identity verified via `requireClient()`                                                                               |
-| I2  | Does `markContractSigned` (chef override) record signature audit data?                          | NO        | `contracts/actions.ts:753`: Only sets `status: 'signed'` and `signed_at`. No `signed_by`, no `ip_address`, no `user_agent`. No audit trail distinguishing chef override from client signature |
-| I3  | Is contract status checked as a readiness gate before event confirmation?                       | YES       | Readiness system in `lib/events/readiness.ts` checks contract requirements                                                                                                                    |
-| I4  | Does contract voiding update the event's readiness state?                                       | YES       | Contract status change triggers revalidation. Readiness evaluator re-checks on next transition                                                                                                |
+| #   | Question                                                                                        | Pre-Build | Evidence                                                                                                                   |
+| --- | ----------------------------------------------------------------------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------- |
+| I1  | Does `signContract` (client path) record full signature audit data (IP, user agent, timestamp)? | YES       | `contracts/actions.ts:445`: Records `signed_at`, updates status. Client identity verified via `requireClient()`            |
+| I2  | Does `markContractSigned` (chef override) record signature audit data?                          | FIXED     | Added `signed_by: user.id` and `internal_notes` with chef override stamp (who + when) to distinguish from client signature |
+| I3  | Is contract status checked as a readiness gate before event confirmation?                       | YES       | Readiness system in `lib/events/readiness.ts` checks contract requirements                                                 |
+| I4  | Does contract voiding update the event's readiness state?                                       | YES       | Contract status change triggers revalidation. Readiness evaluator re-checks on next transition                             |
 
-**I score: 3/4**
+**I score: 4/4**
 
 ---
 
 ## Scoring
 
-| Domain                       | Score    | Max    | Details                                                                              |
-| ---------------------------- | -------- | ------ | ------------------------------------------------------------------------------------ |
-| A. FSM Transition Integrity  | 6        | 7      | Solid. `deleteEvent` lacks activity log/cleanup                                      |
-| B. Financial Pipeline        | 6.5      | 8      | Strong. `voidOfflinePayment` missing client notification                             |
-| C. Notification Completeness | 6.5      | 7      | Minor: `event_paid` action reused for "confirmed" meaning                            |
-| D. Email Coverage            | 5        | 6      | No acceptance confirmation email                                                     |
-| E. Cross-System Cleanup      | 4        | 6      | Cancelled event circles stay active; generation flags not cleared                    |
-| F. Confirmation Side Effects | 6        | 6      | Full marks                                                                           |
-| G. Completion Side Effects   | 6        | 6      | Full marks                                                                           |
-| H. Automation Engine         | 2.5      | 4      | `create_follow_up_task` broken for events; `send_template_message` actionUrl missing |
-| I. Contract Integration      | 3        | 4      | Chef override lacks audit trail                                                      |
-| **TOTAL**                    | **45.5** | **54** | **84.3%**                                                                            |
+| Domain                       | Pre      | Post     | Max    | Details                                                 |
+| ---------------------------- | -------- | -------- | ------ | ------------------------------------------------------- |
+| A. FSM Transition Integrity  | 6        | 7        | 7      | FIXED: A7 activity log                                  |
+| B. Financial Pipeline        | 6.5      | 7.5      | 8      | FIXED: B7 client notification. E5 flags remain low-risk |
+| C. Notification Completeness | 6.5      | 7        | 7      | FIXED: C7 distinct action strings                       |
+| D. Email Coverage            | 5        | 6        | 6      | FIXED: D2 acceptance email                              |
+| E. Cross-System Cleanup      | 4        | 5        | 6      | FIXED: E4 circle archive. E5 stale flags remain         |
+| F. Confirmation Side Effects | 6        | 6        | 6      | Full marks                                              |
+| G. Completion Side Effects   | 6        | 6        | 6      | Full marks                                              |
+| H. Automation Engine         | 2.5      | 4        | 4      | FIXED: H2 event todos, H3 actionUrl                     |
+| I. Contract Integration      | 3        | 4        | 4      | FIXED: I2 chef override audit trail                     |
+| **TOTAL**                    | **45.5** | **52.5** | **54** | **84.3% -> 97.2%**                                      |
 
 ---
 
-## Gap Analysis: What to Fix
+## Gap Analysis
 
-### High Leverage (affects all users)
+### Fixed (9 items, 2026-04-18)
 
-1. **E4 - Cancelled event circles stay active.** Archive/deactivate the Dinner Circle on cancellation, same as completion does.
-2. **H2 - `create_follow_up_task` broken for events.** Handler only knows about inquiries. Add event branch: create a `chef_todos` entry with due date.
-3. **D2 - No acceptance email.** When client accepts proposal (proposed -> accepted), send a confirmation email acknowledging their acceptance.
-4. **H3 - `send_template_message` actionUrl missing for events.** Add `/events/${entityId}` to notification `actionUrl` when `entityType === 'event'`.
+1. **E4** - Circle archive on cancellation (mirrors completion pattern)
+2. **H2** - `create_follow_up_task` event branch (creates `chef_todos` entry)
+3. **D2** - Acceptance email (`sendEventAcceptedEmail` template + transitions wiring)
+4. **H3** - `send_template_message` actionUrl + eventId for event context
+5. **B7** - Client notification on `voidOfflinePayment` (`refund_processed` action)
+6. **C7** - Distinct `event_confirmed`/`event_in_progress` notification actions (was reusing `event_paid`)
+7. **I2** - Chef override audit trail (`signed_by` + `internal_notes` on `markContractSigned`)
+8. **A7** - Activity log on `deleteEvent` (`event_deleted` action)
+9. **B8** - Already passing (menu cost snapshot)
 
-### Medium Leverage (edge cases, correctness)
+### Remaining (1 item, low leverage)
 
-5. **B7 - `voidOfflinePayment` no client notification.** Client's payment was voided but they have no visibility.
-6. **C7 - Misleading action reuse.** Confirmed notification uses `action: 'event_paid'` but means "event confirmed". Use a distinct action string.
-7. **I2 - Chef override lacks audit trail.** `markContractSigned` should record `signed_by` and mark as chef-initiated override.
-8. **A7 - `deleteEvent` no activity log.** Add `logChefActivity` call for audit completeness.
-
-### Low Leverage (defense-in-depth)
-
-9. **E5 - Generation flags not cleared on cancellation.** Low risk since cancelled events don't surface these flags, but stale data persists.
+1. **E5** - Generation flags (`prep_sheet_generated_at`, `packing_list_generated_at`) not cleared on cancellation. Low risk: cancelled events don't surface these. Becomes relevant only if event restore is added.

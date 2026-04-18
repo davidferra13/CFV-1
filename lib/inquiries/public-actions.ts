@@ -46,6 +46,7 @@ const PublicInquirySchema = z.object({
   additional_notes: z.string().optional().or(z.literal('')),
   referral_source: z.string().max(200).optional().or(z.literal('')),
   referral_partner_id: z.string().uuid().optional().nullable(),
+  existing_circle_id: z.string().uuid().optional(),
   service_mode: BookingServiceModeSchema.optional(),
   recurring_frequency: z.enum(['weekly', 'biweekly', 'monthly']).optional(),
   recurring_duration_weeks: z.number().int().min(1).max(52).optional(),
@@ -356,22 +357,33 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     })
   }
 
-  // Auto-create Dinner Circle (non-blocking)
+  // Auto-create Dinner Circle OR link to existing one (non-blocking)
   let circleGroupToken: string | null = null
+  let rebookCircleId: string | null = null
   try {
-    const { createInquiryCircle } = await import('@/lib/hub/inquiry-circle-actions')
-    const { postFirstCircleMessage } = await import('@/lib/hub/inquiry-circle-first-message')
-    const circle = await createInquiryCircle({
-      inquiryId: inquiry.id,
-      clientName: validated.full_name.trim(),
-      clientEmail: validated.email.toLowerCase().trim(),
-      occasion: validated.occasion.trim(),
-    })
-    circleGroupToken = circle.groupToken
-    await postFirstCircleMessage({
-      groupId: circle.groupId,
-      inquiryId: inquiry.id,
-    })
+    if (validated.existing_circle_id) {
+      // Rebook: reuse existing circle instead of creating a new one
+      const { getGroupById } = await import('@/lib/hub/group-actions')
+      const existingGroup = await getGroupById(validated.existing_circle_id)
+      if (existingGroup) {
+        circleGroupToken = existingGroup.group_token
+        rebookCircleId = existingGroup.id
+      }
+    } else {
+      const { createInquiryCircle } = await import('@/lib/hub/inquiry-circle-actions')
+      const { postFirstCircleMessage } = await import('@/lib/hub/inquiry-circle-first-message')
+      const circle = await createInquiryCircle({
+        inquiryId: inquiry.id,
+        clientName: validated.full_name.trim(),
+        clientEmail: validated.email.toLowerCase().trim(),
+        occasion: validated.occasion.trim(),
+      })
+      circleGroupToken = circle.groupToken
+      await postFirstCircleMessage({
+        groupId: circle.groupId,
+        inquiryId: inquiry.id,
+      })
+    }
   } catch (circleErr) {
     console.error('[submitPublicInquiry] Circle creation failed (non-blocking):', circleErr)
   }
@@ -513,6 +525,16 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   // 6. Link inquiry to the created event
   await db.from('inquiries').update({ converted_to_event_id: event.id }).eq('id', inquiry.id)
 
+  // 6b. Link event to existing circle (rebook flow)
+  if (rebookCircleId) {
+    try {
+      const { addEventToGroup } = await import('@/lib/hub/group-actions')
+      await addEventToGroup({ groupId: rebookCircleId, eventId: event.id })
+    } catch (linkErr) {
+      console.error('[submitPublicInquiry] Circle-event link failed (non-blocking):', linkErr)
+    }
+  }
+
   await recordPlatformEvent({
     eventKey: 'conversion.public_inquiry_converted_to_draft_event',
     source: 'public_booking',
@@ -604,4 +626,33 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   }
 
   return { success: true, inquiryCreated: true, eventCreated: true }
+}
+
+/**
+ * Public date availability check.
+ * Returns whether a chef already has events on a given date.
+ * No auth required (public surface). Returns only a boolean for privacy.
+ */
+export async function checkPublicDateAvailability(
+  chefSlug: string,
+  date: string
+): Promise<{ busy: boolean }> {
+  if (!chefSlug || !date) return { busy: false }
+
+  try {
+    const db = createServerClient({ admin: true })
+    const chefLookup = await findChefByPublicSlug<{ id: string }>(db, chefSlug, 'id')
+    if (!chefLookup.data) return { busy: false }
+
+    const { count } = await db
+      .from('events')
+      .select('id', { count: 'exact', head: true })
+      .eq('tenant_id', chefLookup.data.id)
+      .eq('event_date', date)
+      .neq('status', 'cancelled')
+
+    return { busy: (count ?? 0) > 0 }
+  } catch {
+    return { busy: false }
+  }
 }

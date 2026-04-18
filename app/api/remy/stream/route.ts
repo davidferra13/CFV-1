@@ -708,7 +708,7 @@ export async function POST(req: NextRequest) {
             return new Response(
               encodeSSE({
                 type: 'error',
-                data: "I'm offline right now - Ollama needs to be running for me to help. Start it up and try again!",
+                data: "I'm offline right now. The AI runtime isn't reachable - please try again in a moment.",
               }),
               { headers: sseHeaders() }
             )
@@ -754,7 +754,7 @@ export async function POST(req: NextRequest) {
         return new Response(
           encodeSSE({
             type: 'error',
-            data: "I'm offline right now - Ollama needs to be running for me to help. Start it up and try again!",
+            data: "I'm offline right now. The AI runtime isn't reachable - please try again in a moment.",
           }),
           { headers: sseHeaders() }
         )
@@ -969,7 +969,7 @@ export async function POST(req: NextRequest) {
               encodeSSE({
                 type: 'error',
                 data: isOllamaDown
-                  ? "I'm offline right now - Ollama needs to be running for me to help. Start it up and try again!"
+                  ? "I'm offline right now. The AI runtime isn't reachable - please try again in a moment."
                   : sanitizeErrorForClient(err),
               })
             )

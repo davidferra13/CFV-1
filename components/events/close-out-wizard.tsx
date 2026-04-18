@@ -402,7 +402,7 @@ function MileageStep({ data, onNext }: { data: CloseOutData; onNext: () => void 
   const [error, setError] = useState<string | null>(null)
 
   const milesNum = parseFloat(miles) || 0
-  const deductionDollars = (milesNum * IRS_RATE).toFixed(2)
+  const deductionCents = Math.round(milesNum * IRS_RATE * 100)
 
   const handleSave = async () => {
     if (!miles || milesNum < 0) {
@@ -451,7 +451,7 @@ function MileageStep({ data, onNext }: { data: CloseOutData; onNext: () => void 
         <div className="rounded-lg bg-stone-800 border border-stone-700 p-4 mb-6">
           <div className="flex justify-between text-sm">
             <span className="text-stone-400">IRS deduction ({milesNum.toFixed(1)} mi × $0.70)</span>
-            <span className="font-semibold text-stone-100">${deductionDollars}</span>
+            <span className="font-semibold text-stone-100">{formatCurrency(deductionCents)}</span>
           </div>
         </div>
       )}
@@ -1018,8 +1018,7 @@ function CloseStep({ data }: { data: CloseOutData }) {
           <div className="flex justify-between items-center px-5 py-3">
             <span className="text-sm text-stone-400">Mileage deduction</span>
             <span className="font-semibold text-stone-400">
-              {event.mileageMiles?.toFixed(1)} mi → $
-              {(financial.deductionValueCents / 100).toFixed(2)}
+              {event.mileageMiles?.toFixed(1)} mi → {formatCurrency(financial.deductionValueCents)}
             </span>
           </div>
         )}

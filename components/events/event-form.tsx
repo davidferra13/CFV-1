@@ -18,7 +18,7 @@ import { AddressAutocomplete, type AddressData } from '@/components/ui/address-a
 import { PartnerSelect } from '@/components/partners/partner-select'
 import { createEvent, getEventById, updateEvent, type CreateEventInput } from '@/lib/events/actions'
 import { checkDateConflicts, convertWaitlistEntry } from '@/lib/availability/actions'
-import { parseCurrencyToCents } from '@/lib/utils/currency'
+import { formatCurrency, parseCurrencyToCents } from '@/lib/utils/currency'
 import { useDurableDraft } from '@/lib/drafts/use-durable-draft'
 import { useUnsavedChangesGuard } from '@/lib/navigation/use-unsaved-changes-guard'
 import { useIdempotentMutation } from '@/lib/offline/use-idempotent-mutation'
@@ -911,7 +911,7 @@ export function EventForm({
                   <p className="text-sm text-brand-600">
                     {depositDefaults.type === 'percentage'
                       ? `Auto-filled from your defaults (${depositDefaults.percentage}%)`
-                      : `Auto-filled from your defaults ($${(depositDefaults.amountCents / 100).toFixed(2)})`}
+                      : `Auto-filled from your defaults (${formatCurrency(depositDefaults.amountCents)})`}
                   </p>
                   <button
                     type="button"

@@ -346,54 +346,67 @@ export async function refreshCartPrices(
     `)
     if (!cart) return { success: false, updated: 0, error: 'Cart not found' }
 
-    // Get all items with canonical IDs
+    // Get all items with canonical IDs and ingredient names
     const items = await db.execute(sql`
-      SELECT id, canonical_ingredient_id FROM shopping_cart_items
-      WHERE cart_id = ${cartId} AND canonical_ingredient_id IS NOT NULL
+      SELECT sci.id, sci.canonical_ingredient_id, sci.ingredient_name
+      FROM shopping_cart_items sci
+      WHERE sci.cart_id = ${cartId} AND sci.canonical_ingredient_id IS NOT NULL
     `)
 
     if (items.length === 0) return { success: true, updated: 0 }
 
-    // Fetch latest prices from Pi for each item
+    // Batch fetch prices from Pi in a single call
     const OPENCLAW_API = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
     let updated = 0
+    const names = items.map((item: any) => item.ingredient_name).filter(Boolean)
 
-    for (const item of items) {
-      try {
-        const controller = new AbortController()
-        const timeout = setTimeout(() => controller.abort(), 10000)
-        const res = await fetch(
-          `${OPENCLAW_API}/api/ingredients/detail/${item.canonical_ingredient_id}`,
-          { signal: controller.signal, cache: 'no-store' }
-        )
-        clearTimeout(timeout)
+    try {
+      const res = await fetch(`${OPENCLAW_API}/api/lookup/batch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: names }),
+        signal: AbortSignal.timeout(15000),
+        cache: 'no-store',
+      })
 
-        if (!res.ok) continue
-        const data = await res.json()
+      if (!res.ok) return { success: true, updated: 0 }
+      const data = await res.json()
+      const results = data.results || {}
+      const storeFilter = cart.store_filter as string | null
 
-        // Find price for the cart's store, or cheapest
-        let price = null
-        const storeFilter = cart.store_filter as string | null
-        if (storeFilter && data.prices) {
-          price = data.prices.find((p: any) =>
+      for (const item of items) {
+        const piResult = results[(item as any).ingredient_name]
+        if (!piResult) continue
+
+        // Find price for the cart's store, or use bestPrice
+        let priceCents = null
+        let priceStore = null
+
+        if (storeFilter && piResult.prices) {
+          const storeMatch = piResult.prices.find((p: any) =>
             p.store?.toLowerCase().includes(storeFilter.toLowerCase())
           )
+          if (storeMatch) {
+            priceCents = storeMatch.cents || storeMatch.priceCents
+            priceStore = storeMatch.store
+          }
         }
-        if (!price && data.prices?.length > 0) {
-          price = data.prices[0]
+        if (priceCents == null && piResult.bestPrice) {
+          priceCents = piResult.bestPrice.cents
+          priceStore = piResult.bestPrice.store || ''
         }
 
-        if (price) {
+        if (priceCents != null) {
           await db.execute(sql`
             UPDATE shopping_cart_items
-            SET price_cents = ${price.priceCents}, price_source = ${price.store}
-            WHERE id = ${item.id} AND tenant_id = ${tenantId}
+            SET price_cents = ${priceCents}, price_source = ${priceStore}
+            WHERE id = ${(item as any).id} AND tenant_id = ${tenantId}
           `)
           updated++
         }
-      } catch {
-        // Skip individual item failures
       }
+    } catch {
+      // Pi offline; prices unchanged
     }
 
     return { success: true, updated }

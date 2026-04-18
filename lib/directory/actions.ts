@@ -8,6 +8,7 @@
 // The founder (davidferra13@gmail.com) is always included regardless.
 // Other chefs must be approved by the admin to appear in the public listing.
 
+import { unstable_cache } from 'next/cache'
 import {
   computeDiscoveryCompleteness,
   directoryListingToDiscoveryProfile,
@@ -80,7 +81,13 @@ function isRelationMissingError(error: any) {
  * Also fetches each chef's showcase-visible partners and their locations.
  * Safe to call from public (no-auth) server components.
  */
-export async function getDiscoverableChefs(): Promise<DirectoryChef[]> {
+export const getDiscoverableChefs = unstable_cache(
+  getDiscoverableChefsUncached,
+  ['discoverable-chefs'],
+  { revalidate: 300, tags: ['directory-chefs'] }
+)
+
+async function getDiscoverableChefsUncached(): Promise<DirectoryChef[]> {
   const db = createServerClient({ admin: true })
 
   // Query all chefs who have a slug and are network-discoverable.

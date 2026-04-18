@@ -23,6 +23,7 @@ async function handleFollowUpRules(request: NextRequest): Promise<NextResponse> 
         .from('client_followup_rules')
         .select('*')
         .eq('enabled', true)
+        .limit(500)
 
       if (rulesError || !rules || rules.length === 0) {
         return { evaluated: 0, triggered: 0, errors: [] }
@@ -48,6 +49,7 @@ async function handleFollowUpRules(request: NextRequest): Promise<NextResponse> 
             .select('id, full_name, birthday, anniversary, last_event_date, created_at')
             .eq('tenant_id', chefId)
             .is('deleted_at', null)
+            .limit(1000)
 
           if (!clients || clients.length === 0) continue
 

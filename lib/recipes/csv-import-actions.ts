@@ -391,5 +391,14 @@ async function findOrCreateIngredient(
     .single()
 
   if (error || !created) throw new Error(`Failed to create ingredient "${normalized}"`)
+
+  // Auto-match + price enrichment (non-blocking, same as recipe-context path)
+  try {
+    const { autoEnrichNewIngredient } = await import('@/lib/openclaw/auto-enrich')
+    await autoEnrichNewIngredient(db, tenantId, created.id, normalized)
+  } catch (err) {
+    console.error('[findOrCreateIngredient] Enrichment failed (non-blocking):', err)
+  }
+
   return created.id
 }

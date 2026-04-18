@@ -468,7 +468,7 @@ function getHTML() {
   <div id="toast" class="toast hidden"></div>
 
   <div class="footer">
-    <p>Private AI - data stays on your machine</p>
+    <p>Private AI - your data never leaves ChefFlow</p>
     <p style="margin-top:0.25rem">Ollama: <a href="${PC_URL}" target="_blank">${PC_URL}</a></p>
     <p style="margin-top:0.25rem">Auto-refreshes every 15s &nbsp;|&nbsp; Port ${PORT}</p>
   </div>

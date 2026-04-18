@@ -32,7 +32,7 @@ import { completeOnboarding } from '@/lib/ai/privacy-actions'
 import {
   ONBOARDING_HOW_IT_WORKS,
   ONBOARDING_RECAP_PRIVATE,
-  SPEED_TRADEOFF_SHORT,
+  SPEED_PRIVACY_SHORT,
 } from '@/lib/ai/privacy-narrative'
 
 type OnboardingStep = {
@@ -150,7 +150,7 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                 <h2 className="text-2xl font-bold text-stone-100">Meet Remy</h2>
                 <p className="text-stone-500 mt-2 max-w-lg mx-auto">
                   Remy is your AI sous chef. It helps you draft emails, plan menus, manage prep
-                  timelines, and run your business more efficiently. {SPEED_TRADEOFF_SHORT}
+                  timelines, and run your business more efficiently. {SPEED_PRIVACY_SHORT}
                 </p>
               </div>
 
@@ -182,6 +182,11 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                   </div>
                 ))}
               </div>
+
+              <p className="text-xs text-stone-600 mt-2">
+                Advanced: If you run your own AI (Ollama), you can route Remy to your local machine
+                in Settings. Inference stays on your device.
+              </p>
             </div>
           )}
 

@@ -60,7 +60,6 @@ async function generateText(
           temperature,
         },
         keep_alive: '30m',
-        think: false,
       } as any) as unknown as Promise<ChatResponse>,
       DEFAULT_TIMEOUT_MS,
       'ace-draft'

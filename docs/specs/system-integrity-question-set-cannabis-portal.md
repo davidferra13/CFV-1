@@ -7,7 +7,8 @@
 > **Investigator:** Claude Opus 4.6 (main session, direct code investigation)
 > **Method:** Source code tracing, grep, file reads. No runtime testing.
 > **Pre-fix score:** 13.5 / 40 (33.8%)
-> **Post-fix score:** 23.0 / 40 (57.5%)
+> **Post-fix score (pass 1):** 23.0 / 40 (57.5%)
+> **Post-fix score (pass 2):** 30.5 / 40 (76.3%)
 
 ---
 
@@ -17,36 +18,36 @@
 | --- | ---------------------------------------------------------------------------------------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | A1  | Does every page under `/cannabis/*` enforce cannabis-tier membership before rendering content? | **PASS**             | **FIXED 2026-04-18.** Layout (`app/(chef)/cannabis/layout.tsx`) now calls `requireChef()` + `hasCannabisAccess(user.id)` and redirects non-members to `/dashboard`. This is the single gate for all 13 cannabis pages. Server actions additionally call `requireChef()` with tenant scoping. Direct API calls to server actions still require chef auth + tenant match. |
 | A2  | Does the middleware enforce cannabis-tier access for `/cannabis/*` routes?                     | **PASS (by design)** | Middleware at `middleware.ts` treats `/cannabis` as a chef-protected route (checks `role === 'chef'`). Cannabis-tier enforcement is delegated to the layout, which is the correct Next.js pattern. Middleware does role-level gating; layout does feature-level gating.                                                                                                 |
-| A3  | Is cannabis classified in `lib/billing/feature-classification.ts` with a defined tier?         | **FAIL**             | Zero mentions of "cannabis" in `feature-classification.ts`. No billing tier, no feature slug, no upgrade trigger. When the feature goes live, there is no mechanism to restrict it by subscription plan.                                                                                                                                                                |
+| A3  | Is cannabis classified in `lib/billing/feature-classification.ts` with a defined tier?         | **PASS**             | **FIXED 2026-04-18.** `cannabis-portal` slug added to `PAID_FEATURES` map (line 692) with `tier: 'paid'`, `category: 'compliance'`, `upgrade_trigger` moment: "Chef enables cannabis_preference on an event".                                                                                                                                                           |
 | A4  | Does the nav config correctly show/hide the cannabis section based on tier access?             | **PARTIAL**          | `chef-nav-config.ts` exports `cannabisSectionItems` as an empty array (line 17). The layout data cache (`lib/chef/layout-data-cache.ts`) calls `hasCannabisAccess()` and passes it to the sidebar. The plumbing exists but the nav items are empty, so nothing renders. When re-enabled, both the array AND the layout access check must be restored simultaneously.    |
 
-**Score: 1.5 PASS, 1 PARTIAL, 1 FAIL** = 2.0 / 4
+**Score: 2.5 PASS, 1 PARTIAL, 0 FAIL** = 3.0 / 4
 
 ---
 
 ## B. Invitation Lifecycle (4 questions)
 
-| #   | Question                                                                                                        | Verdict  | Evidence                                                                                                                                                                                                                                                                                                                                                        |
-| --- | --------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| B1  | Is the invite claim flow protected against race conditions where two users claim the same token simultaneously? | **PASS** | **FIXED 2026-04-18.** `claimCannabisInvite()` now returns `.select('id')` after the update and checks `claimResult.length === 0` to detect lost races. If zero rows matched (already claimed or expired), returns generic error. Second claimer is rejected.                                                                                                    |
-| B2  | Does invite approval actually deliver the invitation to the recipient?                                          | **FAIL** | `approveInvite()` in `lib/admin/cannabis-actions.ts` generates a token and sets `sent_at` timestamp, but the comment says "The calling code is responsible for triggering the email send." No email integration exists. The token is returned in the response body (`{ success: true, token }`) and displayed in the admin UI. No automated delivery mechanism. |
-| B3  | Is invite expiration enforced at claim-write time, not just at validation-read time?                            | **PASS** | **FIXED 2026-04-18.** Claim update now includes `.gt('expires_at', now)` in the WHERE clause. If invite expires between validation read and claim write, update matches zero rows and claim is rejected.                                                                                                                                                        |
-| B4  | Can the admin revoke an unclaimed approved invite or regenerate an expired token?                               | **FAIL** | No `revokeInvite()` or `regenerateInviteToken()` function exists in `lib/admin/cannabis-actions.ts`. Once approved, the invite lives until expiration or claim. Admin can only `rejectInvite()` pending invites, not approved ones.                                                                                                                             |
+| #   | Question                                                                                                        | Verdict  | Evidence                                                                                                                                                                                                                                                                                                                                      |
+| --- | --------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| B1  | Is the invite claim flow protected against race conditions where two users claim the same token simultaneously? | **PASS** | **FIXED 2026-04-18.** `claimCannabisInvite()` now returns `.select('id')` after the update and checks `claimResult.length === 0` to detect lost races. If zero rows matched (already claimed or expired), returns generic error. Second claimer is rejected.                                                                                  |
+| B2  | Does invite approval actually deliver the invitation to the recipient?                                          | **PASS** | **FIXED 2026-04-18.** `approveInvite()` now sends a transactional email via Resend after approval succeeds. Fetches invitee email/name, resolves inviter display name, sends `CannabisInviteApprovedEmail` template with claim URL (`/cannabis-invite/{token}`). Non-blocking: wrapped in try/catch, failure does not roll back approval.     |
+| B3  | Is invite expiration enforced at claim-write time, not just at validation-read time?                            | **PASS** | **FIXED 2026-04-18.** Claim update now includes `.gt('expires_at', now)` in the WHERE clause. If invite expires between validation read and claim write, update matches zero rows and claim is rejected.                                                                                                                                      |
+| B4  | Can the admin revoke an unclaimed approved invite or regenerate an expired token?                               | **PASS** | **FIXED 2026-04-18.** `revokeApprovedInvite(inviteId)` and `regenerateInviteToken(inviteId)` added to `lib/admin/cannabis-actions.ts`. Revoke sets status to 'revoked' for approved+unclaimed invites. Regenerate creates new 32-byte token with 30-day expiry. Both require admin auth, audit-logged, guard against already-claimed invites. |
 
-**Score: 2 PASS, 0 PARTIAL, 2 FAIL** = 2.0 / 4
+**Score: 4 PASS, 0 PARTIAL, 0 FAIL** = 4.0 / 4
 
 ---
 
 ## C. Host Agreement & Legal Compliance (4 questions)
 
-| #   | Question                                                                                                                  | Verdict     | Evidence                                                                                                                                                                                                                                                                                                                                                                                       |
-| --- | ------------------------------------------------------------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| C1  | Is a signed host agreement required before a chef can create cannabis events, generate control packets, or manage dosing? | **PARTIAL** | **FIXED 2026-04-18.** `requireCannabisAgreementSigned(user.id)` now enforced in `generateCannabisControlPacketSnapshot`, `upsertControlPacketReconciliation`, and `finalizeControlPacket`. Redirects to `/cannabis/unlock` if unsigned. Event creation and basic event listing do NOT require agreement (intentional: chef should see the portal before signing). Dosing operations are gated. |
-| C2  | Is the host agreement's `immutable_hash` verified on read to detect tampering?                                            | **FAIL**    | `signCannabisHostAgreement()` in `lib/chef/cannabis-host-agreement-actions.ts` computes SHA-256 hash on sign (line 60). `getCannabisHostAgreement()` in `cannabis-access-guards.ts` reads the row but never recomputes or verifies the hash. If the `agreement_text_snapshot` column were modified in the database, the hash mismatch would go undetected.                                     |
-| C3  | Are cannabis operations audit-logged for compliance traceability?                                                         | **FAIL**    | No audit logging in any cannabis server action. Compare with admin actions that use `logAdminAction()`. Control packet creation, reconciliation saves, finalization, evidence uploads, guest profile edits, tier grants/revocations produce no audit trail. For a controlled-substance management system, this is a critical compliance gap.                                                   |
-| C4  | Does the compliance page provide actionable regulatory guidance, or is it a placeholder?                                  | **PARTIAL** | `app/(chef)/cannabis/compliance/page.tsx` renders a `CompliancePlaceholderClient` component. The page acknowledges it is a placeholder (acknowledged via `compliance_placeholder_acknowledged` boolean in `cannabis_event_details`). It is honest about being incomplete, but provides no real regulatory value.                                                                               |
+| #   | Question                                                                                                                  | Verdict     | Evidence                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| --- | ------------------------------------------------------------------------------------------------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C1  | Is a signed host agreement required before a chef can create cannabis events, generate control packets, or manage dosing? | **PARTIAL** | **FIXED 2026-04-18.** `requireCannabisAgreementSigned(user.id)` now enforced in `generateCannabisControlPacketSnapshot`, `upsertControlPacketReconciliation`, and `finalizeControlPacket`. Redirects to `/cannabis/unlock` if unsigned. Event creation and basic event listing do NOT require agreement (intentional: chef should see the portal before signing). Dosing operations are gated.                             |
+| C2  | Is the host agreement's `immutable_hash` verified on read to detect tampering?                                            | **PASS**    | **FIXED 2026-04-18.** `getCannabisHostAgreement()` in `cannabis-access-guards.ts` now recomputes SHA-256 from `agreement_text_snapshot` and compares to stored `immutable_hash`. On mismatch, logs warning and returns null (treats tampered agreement as unsigned). Chef must re-sign.                                                                                                                                    |
+| C3  | Are cannabis operations audit-logged for compliance traceability?                                                         | **PASS**    | **FIXED 2026-04-18.** `logCannabisAudit()` added to `lib/admin/audit.ts` (non-admin variant, no requireAdmin). 7 new audit action types. Calls added to: snapshot generation, evidence upload/delete, reconciliation save, packet finalization, agreement signing, guest profile update. All wrapped in try/catch (non-blocking). Admin actions (tier grant/revoke, invite approve/reject) already had `logAdminAction()`. |
+| C4  | Does the compliance page provide actionable regulatory guidance, or is it a placeholder?                                  | **PARTIAL** | `app/(chef)/cannabis/compliance/page.tsx` renders a `CompliancePlaceholderClient` component. The page acknowledges it is a placeholder (acknowledged via `compliance_placeholder_acknowledged` boolean in `cannabis_event_details`). It is honest about being incomplete, but provides no real regulatory value.                                                                                                           |
 
-**Score: 0 PASS, 1.5 PARTIAL, 2.5 FAIL** = 1.0 / 4 (C1 improved from FAIL to PARTIAL)
+**Score: 2 PASS, 1 PARTIAL, 0 FAIL** = 3.0 / 4 (C2, C3 FIXED this pass; C1 improved prior pass)
 
 ---
 
@@ -55,11 +56,11 @@
 | #   | Question                                                                                                                       | Verdict  | Evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | --- | ------------------------------------------------------------------------------------------------------------------------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | D1  | Does finalization enforce all prerequisites (reconciliation completed, evidence uploaded, operator identified) before locking? | **PASS** | `finalizeControlPacket()` in `cannabis-control-packet-actions.ts` (lines 1090-1173) checks: reconciliation exists (line 1125), evidence count >= 1 (line 1129), `service_operator` and `extract_label_strength` present (line 1133). Sets `finalization_locked = true`, `finalized_at`, `finalized_by`. Post-finalization, `uploadControlPacketEvidence` rejects uploads (line 922), `upsertControlPacketReconciliation` rejects edits (line 991). Solid. |
-| D2  | Is the reconciliation save protected against concurrent writes (optimistic locking or conflict detection)?                     | **FAIL** | `upsertControlPacketReconciliation()` uses `onConflict: 'snapshot_id'` (line 1077). Two simultaneous saves: last write wins silently. No version counter, no `updated_at` comparison, no optimistic locking. For a legal accountability document, silent data loss is unacceptable.                                                                                                                                                                       |
+| D2  | Is the reconciliation save protected against concurrent writes (optimistic locking or conflict detection)?                     | **PASS** | **FIXED 2026-04-18.** `upsertControlPacketReconciliation()` now uses select-then-insert-or-update pattern. On update, compares `expectedUpdatedAt` against `existing.updated_at`. Mismatch returns conflict error. No migration needed (uses existing `updated_at` column). New inserts unaffected.                                                                                                                                                       |
 | D3  | Can evidence be deleted before finalization if uploaded in error?                                                              | **PASS** | **FIXED 2026-04-18.** `deleteControlPacketEvidence(evidenceId)` added to `cannabis-control-packet-actions.ts`. Checks tenant ownership, verifies snapshot not finalized, deletes DB record, then cleans storage (non-blocking). Rejects deletion after finalization.                                                                                                                                                                                      |
 | D4  | Does the snapshot alert the chef when guest RSVPs change after the snapshot was generated?                                     | **PASS** | `getCannabisControlPacketData()` computes `alertRsvpUpdatedAfterSnapshot` (line 664) by comparing `sourceGuestUpdatedAt` against `snapshot.generated_at`. If any guest profile or RSVP was updated after the snapshot, the flag is true. UI can display a "stale snapshot" warning.                                                                                                                                                                       |
 
-**Score: 3 PASS, 0 PARTIAL, 1 FAIL** = 3.0 / 4
+**Score: 4 PASS, 0 PARTIAL, 0 FAIL** = 4.0 / 4
 
 ---
 
@@ -96,9 +97,9 @@
 | G1  | Does the cannabis ledger derive financial totals from ledger entries (not stored balances), consistent with ChefFlow's ledger-first model? | **PASS** | `getCannabisLedger()` (lines 199-259) queries `ledger_entries` for cannabis event IDs, then computes revenue/expenses/profit from entry types. Uses `filter` + `reduce` over raw entries. No stored balance columns. Matches architecture rule #3.                                                                                                         |
 | G2  | Does the ledger correctly handle refunds in profit calculation?                                                                            | **PASS** | Line 241-243: `const refunds = allEntries.filter((e: any) => e.is_refund).reduce(...)`. Line 257: `profit: revenue - expenses - refunds`. Refunds are subtracted from profit independently of revenue/expenses. Correct.                                                                                                                                   |
 | G3  | Does the ledger page handle the zero-events case without showing misleading $0.00?                                                         | **PASS** | Line 213-214: if `eventIds.length === 0`, returns `{ events: [], entries: [], totals: { revenue: 0, expenses: 0, profit: 0 } }`. This is a genuine zero, not a failed-load zero. The distinction matters: a chef with no cannabis events truly has $0 revenue. However, the page should differentiate "no events yet" from "events exist but no payments." |
-| G4  | Does the ledger page handle database errors without silently showing zeros?                                                                | **FAIL** | `app/(chef)/cannabis/ledger/page.tsx` calls `getCannabisLedger()` without `.catch()`. If the function throws (lines 210, 224), the page crashes with an unhandled server error. Other cannabis pages use `.catch(() => [])` which silently swallows errors into empty arrays. Neither approach is correct: the first crashes, the second lies.             |
+| G4  | Does the ledger page handle database errors without silently showing zeros?                                                                | **PASS** | **FIXED 2026-04-18.** Ledger page wraps `getCannabisLedger()` in try/catch. On error, renders explicit error state card ("Failed to load ledger data") with red-tinted styling matching cannabis portal aesthetic. No silent zeros, no crash.                                                                                                              |
 
-**Score: 3 PASS, 0 PARTIAL, 1 FAIL** = 3.0 / 4
+**Score: 4 PASS, 0 PARTIAL, 0 FAIL** = 4.0 / 4
 
 ---
 
@@ -130,32 +131,32 @@
 
 ## J. Operational Resilience & Scale (4 questions)
 
-| #   | Question                                                                                | Verdict  | Evidence                                                                                                                                                                                                                                                             |
-| --- | --------------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| J1  | Does `adminGrantTierByEmail` scale to thousands of users?                               | **PASS** | **FIXED 2026-04-18.** Replaced `listUsers()` + `.find()` with direct email query attempt first, falling back to paginated scan (50/page, max 100 pages = 5000 users safety cap). No more full user table load.                                                       |
-| J2  | Is there pagination on cannabis events, ledger entries, and invite history?             | **FAIL** | `getCannabisEvents()`: no limit/offset. `getCannabisLedger()`: no limit/offset. `getMySentCannabisInvites()`: no limit/offset. `getCannabisRSVPDashboardData()`: loads all events. A chef with years of cannabis event history loads everything on every page visit. |
-| J3  | Does the control packet template page protect against denial-of-service via seat count? | **PASS** | **FIXED 2026-04-18.** `generateSeatBlueprint()` now applies `Math.min(safeSeatCount, MAX_SEAT_COUNT)` where `MAX_SEAT_COUNT = 300` for ALL layout types (linear, grid, custom). Requests with `?seats=999999` produce max 300 seats.                                 |
-| J4  | Is invite submission rate-limited to prevent admin queue flooding?                      | **PASS** | **FIXED 2026-04-18.** `sendCannabisInvite()` now counts today's invites per chef (`DAILY_INVITE_LIMIT = 10`). Throws "Daily invite limit reached" if exceeded. Query uses `gte('created_at', dayStart)` scoped to the inviting user.                                 |
+| #   | Question                                                                                | Verdict     | Evidence                                                                                                                                                                                                                                                        |
+| --- | --------------------------------------------------------------------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| J1  | Does `adminGrantTierByEmail` scale to thousands of users?                               | **PASS**    | **FIXED 2026-04-18.** Replaced `listUsers()` + `.find()` with direct email query attempt first, falling back to paginated scan (50/page, max 100 pages = 5000 users safety cap). No more full user table load.                                                  |
+| J2  | Is there pagination on cannabis events, ledger entries, and invite history?             | **PARTIAL** | **PARTIALLY FIXED 2026-04-18.** Added `.limit(100)` to `getCannabisEvents()`, `.limit(500)` to ledger entries, `.limit(100)` to `getMySentCannabisInvites()`. Prevents unbounded loads. No offset/cursor pagination UI yet; chef sees most recent N items only. |
+| J3  | Does the control packet template page protect against denial-of-service via seat count? | **PASS**    | **FIXED 2026-04-18.** `generateSeatBlueprint()` now applies `Math.min(safeSeatCount, MAX_SEAT_COUNT)` where `MAX_SEAT_COUNT = 300` for ALL layout types (linear, grid, custom). Requests with `?seats=999999` produce max 300 seats.                            |
+| J4  | Is invite submission rate-limited to prevent admin queue flooding?                      | **PASS**    | **FIXED 2026-04-18.** `sendCannabisInvite()` now counts today's invites per chef (`DAILY_INVITE_LIMIT = 10`). Throws "Daily invite limit reached" if exceeded. Query uses `gte('created_at', dayStart)` scoped to the inviting user.                            |
 
-**Score: 3 PASS, 0 PARTIAL, 1 FAIL** = 3.0 / 4
+**Score: 3 PASS, 1 PARTIAL, 0 FAIL** = 3.5 / 4
 
 ---
 
 ## Score Summary
 
-| Domain                          | Pre-Fix               | Post-Fix              | Change   | Details                                                  |
-| ------------------------------- | --------------------- | --------------------- | -------- | -------------------------------------------------------- |
-| A. Access Control & Tier Gating | 1.0 / 4               | 2.0 / 4               | +1.0     | A1 FIXED: layout now checks `hasCannabisAccess()`        |
-| B. Invitation Lifecycle         | 0.0 / 4               | 2.0 / 4               | +2.0     | B1, B3 FIXED: race condition + expiration at write time  |
-| C. Host Agreement & Legal       | 0.5 / 4               | 1.0 / 4               | +0.5     | C1 improved: agreement enforced on control packet ops    |
-| D. Control Packet Integrity     | 2.0 / 4               | 3.0 / 4               | +1.0     | D3 FIXED: evidence deletion added                        |
-| E. Guest Intake & Consent       | 3.0 / 4               | 3.0 / 4               | --       | No change this pass                                      |
-| F. Data Isolation & Tenant      | 1.0 / 4               | 2.0 / 4               | +1.0     | F3 FIXED: token lookup uses admin client                 |
-| G. Financial Tracking           | 3.0 / 4               | 3.0 / 4               | --       | No change this pass                                      |
-| H. UI Completeness              | 1.5 / 4               | 2.5 / 4               | +1.0     | H1 FIXED: error handling. H4 PARTIAL: event link updated |
-| I. Public Surface Security      | 1.5 / 4               | 1.5 / 4               | --       | No change this pass                                      |
-| J. Operational Resilience       | 0.0 / 4               | 3.0 / 4               | +3.0     | J1, J3, J4 FIXED: user listing, seat cap, rate limit     |
-| **TOTAL**                       | **13.5 / 40 (33.8%)** | **23.0 / 40 (57.5%)** | **+9.5** | 10 questions improved                                    |
+| Domain                          | Pre-Fix               | Pass 1                | Pass 2                | Details (pass 2)                                        |
+| ------------------------------- | --------------------- | --------------------- | --------------------- | ------------------------------------------------------- |
+| A. Access Control & Tier Gating | 1.0 / 4               | 2.0 / 4               | 3.0 / 4               | A3 FIXED: cannabis-portal in feature-classification     |
+| B. Invitation Lifecycle         | 0.0 / 4               | 2.0 / 4               | 4.0 / 4               | B2 FIXED: email delivery. B4 FIXED: revoke + regenerate |
+| C. Host Agreement & Legal       | 0.5 / 4               | 1.0 / 4               | 3.0 / 4               | C2 FIXED: hash verification. C3 FIXED: audit logging    |
+| D. Control Packet Integrity     | 2.0 / 4               | 3.0 / 4               | 4.0 / 4               | D2 FIXED: optimistic locking on reconciliation          |
+| E. Guest Intake & Consent       | 3.0 / 4               | 3.0 / 4               | 3.0 / 4               | No change                                               |
+| F. Data Isolation & Tenant      | 1.0 / 4               | 2.0 / 4               | 2.0 / 4               | No change (F1, F4 remain: RLS disabled)                 |
+| G. Financial Tracking           | 3.0 / 4               | 3.0 / 4               | 4.0 / 4               | G4 FIXED: ledger error handling                         |
+| H. UI Completeness              | 1.5 / 4               | 2.5 / 4               | 2.5 / 4               | No change                                               |
+| I. Public Surface Security      | 1.5 / 4               | 1.5 / 4               | 1.5 / 4               | No change (I2 remains: RLS/anon policy)                 |
+| J. Operational Resilience       | 0.0 / 4               | 3.0 / 4               | 3.5 / 4               | J2 PARTIAL: limits added, no offset pagination yet      |
+| **TOTAL**                       | **13.5 / 40 (33.8%)** | **23.0 / 40 (57.5%)** | **30.5 / 40 (76.3%)** | 8 questions improved this pass (+7.5)                   |
 
 ---
 
@@ -179,16 +180,16 @@
 11. ~~**J3: Cap seat count at 300 for all layout types**~~ **DONE 2026-04-18**
 12. ~~**H4: Pass `?cannabis=true` to `/events/new`**~~ **DONE 2026-04-18** (form still needs to read param)
 13. ~~**J4: Rate-limit invite submissions**~~ **DONE 2026-04-18** (10/day/chef)
-14. **B2: Build email delivery for approved invites** (or document that admin manually shares the claim URL)
-15. **C3: Add audit logging to cannabis operations** (control packet create/edit/finalize, tier grant/revoke, agreement sign)
-16. **D2: Add optimistic locking to reconciliation** (version counter or `updated_at` comparison)
+14. ~~**B2: Build email delivery for approved invites**~~ **DONE 2026-04-18** (Resend transactional email with claim URL)
+15. ~~**C3: Add audit logging to cannabis operations**~~ **DONE 2026-04-18** (`logCannabisAudit()` + 7 action types)
+16. ~~**D2: Add optimistic locking to reconciliation**~~ **DONE 2026-04-18** (`updated_at` comparison)
 
 ### P2: Fix Before Scale
 
-17. **J2: Add pagination to events, ledger, invites**
-18. **A3: Classify cannabis in `feature-classification.ts`**
-19. **B4: Build invite revocation and token regeneration**
-20. **C2: Add hash verification on agreement read**
+17. ~~**J2: Add pagination to events, ledger, invites**~~ **PARTIAL 2026-04-18** (limits added, no offset UI)
+18. ~~**A3: Classify cannabis in `feature-classification.ts`**~~ **DONE 2026-04-18**
+19. ~~**B4: Build invite revocation and token regeneration**~~ **DONE 2026-04-18**
+20. ~~**C2: Add hash verification on agreement read**~~ **DONE 2026-04-18**
 
 ---
 
@@ -203,3 +204,22 @@ When a builder agent addresses items from the critical path:
 5. Test invitation flow end-to-end: send invite -> admin approve -> claim -> verify tier access.
 6. Test control packet flow: create event with cannabis_preference -> attach menu -> generate snapshot -> reconcile -> upload evidence -> finalize -> verify lock.
 7. Recompute score. Target: 32/40 (80%) before re-enabling, 36/40 (90%) before production use.
+
+---
+
+## Remaining FAILs (9.5 points to recover)
+
+| #   | Verdict | Points | What's needed                                                                  |
+| --- | ------- | ------ | ------------------------------------------------------------------------------ |
+| A4  | PARTIAL | 0.5    | Restore `cannabisSectionItems` array in nav config                             |
+| C1  | PARTIAL | 0.5    | Gate event creation on agreement (not just control packet ops)                 |
+| C4  | PARTIAL | 0.5    | Replace compliance placeholder with real regulatory guidance                   |
+| E1  | FAIL    | 1.0    | Build guest-facing cannabis intake form in public RSVP flow                    |
+| F1  | FAIL    | 1.0    | Re-enable RLS on cannabis tables or document server-action-only as intentional |
+| F4  | FAIL    | 1.0    | Fix `guest_event_profile` RLS policies (anon SELECT/UPDATE too permissive)     |
+| H3  | PARTIAL | 0.5    | Add `<Suspense>` boundaries to control packet page for progressive loading     |
+| H4  | PARTIAL | 0.5    | Wire `?cannabis=true` query param into event creation form                     |
+| I1  | PARTIAL | 0.5    | Unify all claim error responses into single generic "invalid"                  |
+| I2  | FAIL    | 1.0    | Fix anon RLS policy on `guest_event_profile` (health/consumption data exposed) |
+| I3  | PARTIAL | 0.5    | Audit `cannabis-control-packets` storage bucket access policy                  |
+| J2  | PARTIAL | 0.5    | Add offset/cursor pagination UI to events, ledger, invites                     |

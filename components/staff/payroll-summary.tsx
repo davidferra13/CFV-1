@@ -8,6 +8,7 @@ import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { getPayrollSummary } from '@/lib/staff/staff-scheduling-actions'
+import { formatCurrency } from '@/lib/utils/currency'
 
 type PayrollRow = {
   staffId: string
@@ -18,10 +19,6 @@ type PayrollRow = {
   hourlyRateCents: number
   totalEarningsCents: number
   shiftCount: number
-}
-
-function formatCents(cents: number): string {
-  return `$${(cents / 100).toFixed(2)}`
 }
 
 function formatHours(hours: number): string {
@@ -173,10 +170,10 @@ export function PayrollSummary() {
                         : '-'}
                     </td>
                     <td className="px-4 py-2 text-sm text-stone-600 text-right">
-                      {formatCents(row.hourlyRateCents)}/hr
+                      {formatCurrency(row.hourlyRateCents)}/hr
                     </td>
                     <td className="px-4 py-2 text-sm font-medium text-stone-800 text-right">
-                      {formatCents(row.totalEarningsCents)}
+                      {formatCurrency(row.totalEarningsCents)}
                     </td>
                   </tr>
                 )
@@ -196,7 +193,7 @@ export function PayrollSummary() {
                 <td className="px-4 py-2"></td>
                 <td className="px-4 py-2"></td>
                 <td className="px-4 py-2 text-sm text-stone-800 text-right">
-                  {formatCents(totalEarningsCents)}
+                  {formatCurrency(totalEarningsCents)}
                 </td>
               </tr>
             </tfoot>

@@ -290,9 +290,13 @@ async function polishUnits(dryRun: boolean): Promise<{ normalized: number }> {
   if (dryRun) return { normalized: 0 }
 
   // Fill price_per_unit_cents where it's null but price_cents and unit exist
+  // Divide by quantity when available to get correct per-unit price
   const updated = await db.execute(sql`
     UPDATE ingredient_price_history
-    SET price_per_unit_cents = price_cents
+    SET price_per_unit_cents = CASE
+      WHEN quantity IS NOT NULL AND quantity > 0 THEN ROUND(price_cents::numeric / quantity)
+      ELSE price_cents
+    END
     WHERE price_per_unit_cents IS NULL
       AND price_cents IS NOT NULL
       AND price_cents > 0
@@ -302,7 +306,6 @@ async function polishUnits(dryRun: boolean): Promise<{ normalized: number }> {
   const countResult = (await db.execute(sql`
     SELECT count(*) as c FROM ingredient_price_history
     WHERE price_per_unit_cents IS NOT NULL
-      AND price_per_unit_cents = price_cents
       AND created_at > now() - INTERVAL '2 minutes'
   `)) as unknown as Array<{ c: string }>
 

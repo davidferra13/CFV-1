@@ -29,8 +29,6 @@ const STUCK_LABELS: Record<string, string> = {
   paid: 'Confirm event',
 }
 
-const db = createAdminClient()
-
 export async function GET(request: Request) {
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
@@ -39,6 +37,7 @@ export async function GET(request: Request) {
 
   try {
     const result = await runMonitoredCronJob('event-progression', async () => {
+      const db = createAdminClient()
       const now = new Date().toISOString()
       const today = now.slice(0, 10)
 
@@ -78,6 +77,7 @@ export async function GET(request: Request) {
         .from('events')
         .select('id, tenant_id, event_date, departure_time')
         .eq('status', 'in_progress')
+        .limit(500)
 
       if (completeErr) {
         console.error('[event-progression] Query in_progress failed:', completeErr)

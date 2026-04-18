@@ -22,13 +22,21 @@ export async function sendSms(to: string, body: string): Promise<SmsResult> {
     return 'not_configured'
   }
 
+  // Normalize to E.164 and validate before hitting Twilio API
+  const { normalizePhone, isValidE164 } = await import('@/lib/calling/phone-utils')
+  const normalized = normalizePhone(to)
+  if (!isValidE164(normalized)) {
+    console.warn(`[sendSms] Invalid phone number format, skipping: ${to.slice(0, 4)}***`)
+    return 'failed'
+  }
+
   const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`
 
   // Twilio uses basic auth + form-encoded body
   const credentials = Buffer.from(`${accountSid}:${authToken}`).toString('base64')
 
   const params = new URLSearchParams()
-  params.set('To', to)
+  params.set('To', normalized)
   params.set('From', fromNumber)
   params.set('Body', body)
 

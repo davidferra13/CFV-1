@@ -77,12 +77,23 @@ export async function getCurrentSales(
     storeFilter = preferred.map((s) => s.store_name)
   }
 
+  const storeKey = (storeFilter || []).sort().join(',')
+
+  const fetchSales = unstable_cache(
+    async (storeParam: string) => {
+      const result = await fetchPi<{ sales: any[]; count: number }>(
+        `/api/sales/current${storeParam}`
+      )
+      if (!result.data) return { sales: [] as SaleItem[], error: result.error }
+      return { sales: mapSaleItems(result.data.sales || []), error: null }
+    },
+    ['sale-calendar', storeKey],
+    { revalidate: 3600, tags: ['sale-calendar'] }
+  )
+
   const storeParam =
     storeFilter.length > 0 ? `?stores=${encodeURIComponent(storeFilter.join(','))}` : ''
-  const result = await fetchPi<{ sales: any[]; count: number }>(`/api/sales/current${storeParam}`)
-
-  if (!result.data) return { sales: [], error: result.error }
-  return { sales: mapSaleItems(result.data.sales || []), error: null }
+  return fetchSales(storeParam)
 }
 
 export async function getSalesByCategory(

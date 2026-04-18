@@ -101,7 +101,9 @@ export async function createClientWorksheet(
 /**
  * Fetch a worksheet by its public token (no auth required).
  */
-export async function getWorksheetByToken(token: string): Promise<WorksheetData | null> {
+export async function getWorksheetByToken(
+  token: string
+): Promise<(WorksheetData & { chefSlug: string | null; chefName: string | null }) | null> {
   const db: any = createServerClient()
 
   const { data, error } = await db.from('client_worksheets').select('*').eq('token', token).single()
@@ -111,6 +113,21 @@ export async function getWorksheetByToken(token: string): Promise<WorksheetData 
   // Check expiration
   if (data.expires_at && new Date(data.expires_at) < new Date()) {
     return null
+  }
+
+  // Get chef slug for forward path
+  let chefSlug: string | null = null
+  let chefName: string | null = null
+  if (data.tenant_id) {
+    const { data: chef } = await db
+      .from('chefs')
+      .select('booking_slug, business_name')
+      .eq('id', data.tenant_id)
+      .single()
+    if (chef) {
+      chefSlug = chef.booking_slug ?? null
+      chefName = chef.business_name ?? null
+    }
   }
 
   return {
@@ -131,6 +148,8 @@ export async function getWorksheetByToken(token: string): Promise<WorksheetData 
     specialRequests: data.special_requests,
     completedAt: data.completed_at,
     createdAt: data.created_at,
+    chefSlug,
+    chefName,
   }
 }
 

@@ -97,6 +97,7 @@ import { listReservations } from '@/lib/guests/reservation-actions'
 import { getGuestFrequencyStats } from '@/lib/guest-analytics/actions'
 import { getGuestLeadStats } from '@/lib/guest-leads/actions'
 import { getAllReceiptsForChef } from '@/lib/receipts/library-actions'
+import { getWaitlistStats } from '@/lib/scheduling/waitlist-actions'
 import { listReconciliationReports } from '@/lib/commerce/reconciliation-actions'
 import { getSocialPlannerData } from '@/lib/social/actions'
 import { getSocialConnections } from '@/lib/social/oauth-actions'
@@ -469,10 +470,22 @@ export async function loadBusinessSectionData({
       allow_suggestions: true,
       allow_document_drafts: true,
       remy_archetype: null as string | null,
+      local_ai_enabled: false,
+      local_ai_url: 'http://localhost:11434',
+      local_ai_model: 'gemma4',
+      local_ai_verified_at: null as string | null,
     }),
     safe('remyAuditSummary', () => getRemyActionAuditSummary(14), emptyRemyAuditSummary),
     safe('remyApprovalPolicies', listRemyApprovalPolicies, [] as any[]),
     safe('remyMetrics', getRemyMetricsSummary, emptyRemyMetrics),
+    safe('waitlistStats', getWaitlistStats, {
+      total: 0,
+      waiting: 0,
+      contacted: 0,
+      booked: 0,
+      expired: 0,
+      conversionRate: 0,
+    }),
     isAdmin(),
   ])
 
@@ -593,6 +606,7 @@ export async function loadBusinessSectionData({
     remyAuditSummary,
     remyApprovalPolicies,
     remyMetrics,
+    waitlistStats,
     userIsAdmin,
   }
 }

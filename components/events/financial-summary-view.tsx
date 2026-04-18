@@ -12,10 +12,7 @@ import { Button } from '@/components/ui/button'
 import type { EventFinancialSummaryData } from '@/lib/events/financial-summary-actions'
 import { markFinancialClosed, updateMileage } from '@/lib/events/financial-summary-actions'
 import { format } from 'date-fns'
-
-function formatCents(cents: number): string {
-  return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-}
+import { formatCurrency } from '@/lib/utils/currency'
 
 function formatMinutes(minutes: number | null): string {
   if (!minutes || minutes === 0) return '-'
@@ -139,20 +136,20 @@ export function FinancialSummaryView({ data }: Props) {
 
       {/* ── Section 2: Revenue ── */}
       <SectionCard title="Revenue">
-        <DataRow label="Quoted price" value={formatCents(revenue.quotedPriceCents)} />
+        <DataRow label="Quoted price" value={formatCurrency(revenue.quotedPriceCents)} />
         <DataRow
           label="Service payment received"
-          value={formatCents(revenue.basePaymentReceivedCents)}
+          value={formatCurrency(revenue.basePaymentReceivedCents)}
         />
         <DataRow
           label="Tip / gratuity"
-          value={revenue.tipCents > 0 ? formatCents(revenue.tipCents) : '-'}
+          value={revenue.tipCents > 0 ? formatCurrency(revenue.tipCents) : '-'}
         />
-        <DataRow label="Total received" value={formatCents(revenue.totalReceivedCents)} />
+        <DataRow label="Total received" value={formatCurrency(revenue.totalReceivedCents)} />
         {revenue.varianceCents !== 0 && (
           <DataRow
             label="Variance"
-            value={`${revenue.varianceCents > 0 ? '+' : ''}${formatCents(revenue.varianceCents)}`}
+            value={`${revenue.varianceCents > 0 ? '+' : ''}${formatCurrency(revenue.varianceCents)}`}
             sub={revenue.varianceCents > 0 ? 'overpayment / gratuity' : 'underpaid'}
           />
         )}
@@ -163,7 +160,7 @@ export function FinancialSummaryView({ data }: Props) {
         title="Costs"
         badge={
           costs.projectedFoodCostCents
-            ? `Projected: ${formatCents(costs.projectedFoodCostCents)}`
+            ? `Projected: ${formatCurrency(costs.projectedFoodCostCents)}`
             : undefined
         }
       >
@@ -171,32 +168,32 @@ export function FinancialSummaryView({ data }: Props) {
           label="Grocery & ingredient spend"
           value={
             costs.actualGrocerySpendCents > 0
-              ? formatCents(costs.actualGrocerySpendCents)
+              ? formatCurrency(costs.actualGrocerySpendCents)
               : 'Pending'
           }
         />
         {costs.leftoverCreditInCents && costs.leftoverCreditInCents > 0 && (
           <DataRow
             label="Leftover credit received (from prior event)"
-            value={`−${formatCents(costs.leftoverCreditInCents)}`}
+            value={`−${formatCurrency(costs.leftoverCreditInCents)}`}
             sub="ingredients carried in"
           />
         )}
         {costs.leftoverCreditOutCents && costs.leftoverCreditOutCents > 0 && (
           <DataRow
             label="Leftover carried to next event"
-            value={`−${formatCents(costs.leftoverCreditOutCents)}`}
+            value={`−${formatCurrency(costs.leftoverCreditOutCents)}`}
             sub="surplus applied forward"
           />
         )}
-        <DataRow label="Net food cost" value={formatCents(costs.netFoodCostCents)} />
+        <DataRow label="Net food cost" value={formatCurrency(costs.netFoodCostCents)} />
         {costs.additionalExpensesCents > 0 && (
           <DataRow
             label="Additional expenses (gas, etc.)"
-            value={formatCents(costs.additionalExpensesCents)}
+            value={formatCurrency(costs.additionalExpensesCents)}
           />
         )}
-        <DataRow label="Total cost" value={formatCents(costs.totalCostCents)} />
+        <DataRow label="Total cost" value={formatCurrency(costs.totalCostCents)} />
       </SectionCard>
 
       {/* ── Section 4: Margins ── */}
@@ -206,9 +203,12 @@ export function FinancialSummaryView({ data }: Props) {
           value={`${margins.foodCostPercent}%`}
           sub="target: under 30%"
         />
-        <DataRow label="Gross profit" value={formatCents(margins.grossProfitCents)} />
+        <DataRow label="Gross profit" value={formatCurrency(margins.grossProfitCents)} />
         <DataRow label="Gross margin %" value={`${margins.grossMarginPercent}%`} />
-        <DataRow label="Net profit (with tip)" value={formatCents(margins.netProfitWithTipCents)} />
+        <DataRow
+          label="Net profit (with tip)"
+          value={formatCurrency(margins.netProfitWithTipCents)}
+        />
       </SectionCard>
 
       {/* ── Section 5: Time Investment ── */}
@@ -230,7 +230,7 @@ export function FinancialSummaryView({ data }: Props) {
                     Effective hourly rate
                   </span>
                   <span className="text-lg font-bold text-stone-100">
-                    {formatCents(time.effectiveHourlyRateCents)}/hr
+                    {formatCurrency(time.effectiveHourlyRateCents)}/hr
                   </span>
                 </div>
               </div>
@@ -244,7 +244,7 @@ export function FinancialSummaryView({ data }: Props) {
       {/* ── Section 6: Mileage ── */}
       <SectionCard
         title="Mileage"
-        badge={`$${(mileage.irsMileageRateCentsPerMile / 100).toFixed(2)}/mi IRS rate`}
+        badge={`${formatCurrency(mileage.irsMileageRateCentsPerMile)}/mi IRS rate`}
       >
         <div className="flex gap-2 mb-3">
           <input
@@ -269,8 +269,10 @@ export function FinancialSummaryView({ data }: Props) {
             <DataRow label="Miles driven" value={`${mileage.miles} mi`} />
             <DataRow
               label="IRS deduction value"
-              value={mileage.deductionValueCents ? formatCents(mileage.deductionValueCents) : '-'}
-              sub={`${mileage.miles} mi × $${(mileage.irsMileageRateCentsPerMile / 100).toFixed(2)}`}
+              value={
+                mileage.deductionValueCents ? formatCurrency(mileage.deductionValueCents) : '-'
+              }
+              sub={`${mileage.miles} mi × ${formatCurrency(mileage.irsMileageRateCentsPerMile)}`}
             />
           </>
         )}

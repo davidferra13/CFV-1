@@ -10,12 +10,10 @@
 | Event                 | Date             | Agent/Session     | Commit |
 | --------------------- | ---------------- | ----------------- | ------ |
 | Created               | 2026-04-18 22:00 | opus main session |        |
-| Status: ready         |                  |                   |        |
-| Claimed (in-progress) |                  |                   |        |
-| Spike completed       |                  |                   |        |
-| Pre-flight passed     |                  |                   |        |
-| Build completed       |                  |                   |        |
-| Type check passed     |                  |                   |        |
+| Status: ready         | 2026-04-18 22:00 | opus main session |        |
+| Claimed (in-progress) | 2026-04-18       | opus main session |        |
+| Build completed       | 2026-04-18       | opus main session |        |
+| Type check passed     | 2026-04-18       | opus main session |        |
 | Build check passed    |                  |                   |        |
 | Playwright verified   |                  |                   |        |
 | Status: verified      |                  |                   |        |
@@ -79,18 +77,21 @@ No new entities. The feature reads from existing tables organized into export ca
 
 ### Export Categories
 
-| Category               | Source Tables                                                                              | Output Format                                | Notes                                                                                                    |
-| ---------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| **Recipes**            | `recipes`, `recipe_ingredients`, `components`, `recipe_tags`                               | JSON + optional PDF (recipe cards)           | Chef IP. Most important category. JSON includes full ingredient lists, instructions, tags, yield, timing |
-| **Clients**            | `clients`, `client_preferences`, `client_allergy_records`, `client_taste_profiles`         | CSV (primary) + JSON (full)                  | Reuses existing `/clients/csv-export` logic. JSON adds preferences/allergies/taste profiles              |
-| **Events**             | `events`, `event_guests`, `event_staff_assignments`, `event_state_transitions`             | CSV (summary) + JSON (full) + ICS (calendar) | Reuses existing `/events/csv-export` + `generateICS`. JSON includes guest lists, staff, state history    |
-| **Financials**         | `ledger_entries`, `expenses`, `commerce_payments`, `event_financial_summary` view          | CSV (ledger + expenses) + JSON               | Reuses existing `lib/exports/actions.ts` + CPA export patterns. Ledger-derived, always accurate          |
-| **Menus**              | `menus`, `menu_sections`, `menu_items`                                                     | JSON + optional PDF                          | Reuses `generate-menu-pdf.ts` for PDFs                                                                   |
-| **Documents**          | `chef_documents`, stored files in `./storage/`                                             | Original files (PDF, images)                 | Copies stored files as-is. Includes contracts, invoices, generated PDFs                                  |
-| **Conversations**      | `conversations`, `chat_messages`                                                           | JSON                                         | Client conversation history. Messages grouped by conversation thread                                     |
-| **Photos**             | `entity_photos`, `event_photos`, `client_photos`                                           | Original image files                         | Largest category by size. Organized into subfolders by entity                                            |
-| **Profile & Settings** | `chefs`, `chef_profiles`, `chef_preferences`, `chef_service_config`, `chef_pricing_config` | JSON                                         | Business name, bio, service types, pricing rules, preferences. Portable config                           |
-| **Ingredients**        | `ingredients`, `ingredient_prices`                                                         | CSV + JSON                                   | Chef's ingredient catalog with price history                                                             |
+| Category               | Source Tables                                                                                                                                                                                                     | Output Format                                | Notes                                                                                                                                                                   |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Recipes**            | `recipes` (tags from `recipes.tags` column), `recipe_ingredients`, `recipe_sub_recipes`, `recipe_families`                                                                                                        | JSON + optional PDF (recipe cards)           | Chef IP. Most important category. JSON includes full ingredient lists, instructions, tags, yield, timing. Sub-recipes and families preserve hierarchical relationships  |
+| **Clients**            | `clients`, `client_preferences`, `client_allergy_records`, `client_taste_profiles`                                                                                                                                | CSV (primary) + JSON (full)                  | Reuses existing `/clients/csv-export` logic. JSON adds preferences/allergies/taste profiles. Includes soft-deleted clients marked `archived: true`                      |
+| **Events**             | `events`, `event_guests`, `event_staff_assignments`, `event_state_transitions`, `inquiries`, `inquiry_notes`, `inquiry_state_transitions`, `after_action_reviews`, `aar_recipe_feedback`, `aar_ingredient_issues` | CSV (summary) + JSON (full) + ICS (calendar) | Includes full inquiry-to-event pipeline. AARs folded in per-event. Includes soft-deleted events marked `archived: true`. Staff/client names resolved inline             |
+| **Financials**         | `ledger_entries`, `expenses`, `commerce_payments`, `event_financial_summary` view, `sales`, `sale_items`, `register_sessions`, `daily_reconciliation_reports`, `commerce_refunds`                                 | CSV (ledger + expenses + commerce) + JSON    | Reuses CPA export patterns. Includes Commerce/POS transactions. Event/client names resolved inline. Always complete (includes records from soft-deleted events/clients) |
+| **Quotes & Proposals** | `quotes`, `quote_line_items`, `quote_state_transitions`, `quote_addons`, `client_proposals`, `proposal_sections`                                                                                                  | JSON + optional PDF                          | Business-critical pricing history. Each quote references client + event by name (resolved inline). Reuses `generate-quote.ts` for PDFs                                  |
+| **Menus**              | `menus`, `dishes`, `menu_items`, `components`, `tasting_menus`, `tasting_menu_courses`                                                                                                                            | JSON + optional PDF                          | Full hierarchy: menus -> dishes -> components -> recipes. Recipe names resolved inline. Tasting menus included. Reuses `generate-menu-pdf.ts`                           |
+| **Documents**          | `chef_documents`, `event_contracts`, `event_contract_versions`, `event_contract_signers`, `document_intelligence_items`, stored files in `./storage/`                                                             | Original files + JSON metadata               | Copies stored files as-is. Contract structured data (signers, versions, status) exported as JSON alongside PDFs. Includes invoices, contracts, generated docs           |
+| **Communications**     | `conversations`, `chat_messages`, `messages`, `communication_events`, `conversation_threads`, `remy_conversations`, `remy_messages`                                                                               | JSON                                         | All channels: client conversations, email/SMS records, Remy AI chat. Grouped by thread. Excludes soft-deleted messages. Client/event names resolved inline              |
+| **Photos**             | `entity_photos`, `event_photos`, `client_photos`, `recipe_step_photos`, `plating_guides`                                                                                                                          | Original image files                         | Largest category by size. Organized into subfolders by entity. Includes recipe visual documentation. Excludes soft-deleted photos                                       |
+| **Profile & Settings** | `chefs`, `chef_profiles`, `chef_preferences`, `chef_service_config`, `chef_pricing_config`, `chef_tax_config`, `chef_certifications`                                                                              | JSON                                         | Business name, bio, service types, pricing rules, tax config, certifications. Portable config. Internal IDs (`tenant_id`, `auth_user_id`) stripped                      |
+| **Ingredients**        | `ingredients`, `ingredient_price_history`, `ingredient_aliases`, `ingredient_substitutions`                                                                                                                       | CSV + JSON                                   | Chef's ingredient catalog with vendor price history, aliases, and substitution relationships                                                                            |
+| **Vendors**            | `vendors`, `vendor_items`, `vendor_invoices`, `vendor_invoice_items`, `vendor_preferred_ingredients`, `vendor_event_assignments`, `purchase_orders`, `purchase_order_items`                                       | CSV + JSON                                   | Vendor directory, pricing, invoices, purchase orders. Event assignments resolved inline. Sourcing relationships preserved                                               |
+| **Staff**              | `staff_members`, `staff_availability`, `staff_clock_entries`, `staff_performance_scores`, `employees`, `payroll_records`, `contractor_payments`                                                                   | CSV + JSON                                   | Team roster, availability, time tracking, payroll, contractor payments. Event assignments are in Events category                                                        |
 
 ---
 
@@ -113,8 +114,39 @@ type TakeoutManifest = {
   categories: string[] // which categories were selected
   counts: Record<string, number> // e.g. { recipes: 47, clients: 23, events: 112 }
   format: 'chefflow-takeout-v1'
+  relationships: Array<{
+    from: string // e.g. "events/events.json:menu_id"
+    to: string // e.g. "menus/menus.json:id"
+    description: string // e.g. "Event references its assigned menu"
+  }>
+  errors?: { category: string; file: string; message: string }[]
 }
 ```
+
+### Soft-Delete Policy
+
+| Category       | Include soft-deleted?        | Rationale                                                   |
+| -------------- | ---------------------------- | ----------------------------------------------------------- |
+| Financials     | ALWAYS                       | Tax records cannot have holes. Ledger is immutable          |
+| Clients        | YES, marked `archived: true` | Financial/event references would dangle otherwise           |
+| Events         | YES, marked `archived: true` | Real events that happened; financial records reference them |
+| Communications | NO                           | Chef deliberately removed messages                          |
+| Photos         | NO                           | Chef deliberately removed photos                            |
+| All others     | NO                           | Respect user intent on deletions                            |
+
+### FK Inline Resolution Strategy
+
+When a category is exported alone, foreign keys to OTHER categories are resolved inline:
+
+- `client_id` -> include `client_name` alongside the ID
+- `event_id` -> include `event_occasion` and `event_date` alongside the ID
+- `recipe_id` -> include `recipe_name` alongside the ID
+- `menu_id` -> include `menu_name` alongside the ID
+- `vendor_id` -> include `vendor_name` alongside the ID
+- `staff_member_id` -> include `staff_name` alongside the ID
+- `tenant_id`, `auth_user_id` -> STRIP from export (internal-only)
+
+This ensures every exported file is self-contained and human-readable, regardless of which other categories were selected.
 
 ---
 
@@ -124,35 +156,43 @@ type TakeoutManifest = {
 
 `/settings/data-export` -- single-page, no tabs.
 
-```
-+--------------------------------------------------+
-|  Data Export                                      |
-|  Download a copy of your ChefFlow data.           |
-|  Nothing is deleted. This is a copy.             |
-|                                                  |
-|  [ ] Select All                                  |
-|  ------------------------------------------------|
-|  [x] Recipes (47 recipes)              ~2 MB     |
-|  [x] Clients (23 clients)              ~1 MB     |
-|  [x] Events (112 events)               ~3 MB     |
-|  [ ] Financials (ledger + expenses)     ~1 MB     |
-|  [ ] Menus (8 menus)                    ~500 KB   |
-|  [ ] Documents (contracts, invoices)    ~12 MB    |
-|  [ ] Conversations (31 threads)         ~4 MB     |
-|  [ ] Photos (245 photos)               ~890 MB   |
-|  [ ] Ingredients (156 items)            ~200 KB   |
-|  [ ] Profile & Settings                 ~50 KB    |
-|  ------------------------------------------------|
-|  Options:                                        |
-|  [x] Include PDFs (recipe cards, menus)          |
-|  [ ] Include original photos                     |
-|                                                  |
-|  Estimated size: ~6 MB                           |
-|                                                  |
-|  [ Download My Data ]                            |
-|                                                  |
-|  Last export: April 12, 2026                     |
-+--------------------------------------------------+
+```text
++-------------------------------------------------------+
+|  Data Export                                          |
+|  Download a copy of your ChefFlow data.                |
+|  Nothing is deleted. This is a copy.                  |
+|                                                       |
+|  [ ] Select All                                       |
+|  -----------------------------------------------------|
+|  CORE DATA                                            |
+|  [x] Recipes (47 recipes)                    ~2 MB    |
+|  [x] Clients (23 clients)                    ~1 MB    |
+|  [x] Events + Inquiries (112 events)         ~3 MB    |
+|  [ ] Quotes & Proposals (45 quotes)          ~500 KB  |
+|  [ ] Menus (8 menus)                         ~500 KB  |
+|  [ ] Ingredients (156 items)                 ~200 KB  |
+|                                                       |
+|  BUSINESS                                             |
+|  [ ] Financials + Commerce (ledger, POS)     ~2 MB    |
+|  [ ] Vendors (5 vendors, 23 POs)             ~300 KB  |
+|  [ ] Staff (3 members, payroll)              ~200 KB  |
+|  [ ] Documents (contracts, invoices)         ~12 MB   |
+|                                                       |
+|  OTHER                                                |
+|  [ ] Communications (31 threads)             ~4 MB    |
+|  [ ] Photos (245 photos)                     ~890 MB  |
+|  [ ] Profile & Settings                      ~50 KB   |
+|  -----------------------------------------------------|
+|  Options:                                             |
+|  [x] Include PDFs (recipe cards, menus, quotes)       |
+|  [ ] Include original photos                          |
+|                                                       |
+|  Estimated size: ~6 MB                                |
+|                                                       |
+|  [ Download My Data ]                                 |
+|                                                       |
+|  Last export: April 12, 2026                          |
++-------------------------------------------------------+
 ```
 
 ### States
@@ -175,47 +215,71 @@ type TakeoutManifest = {
 
 ## ZIP Structure
 
-```
+```text
 chefflow-export-2026-04-18/
-  manifest.json
+  manifest.json                 # receipt: counts, relationships, errors
   recipes/
-    recipes.json              # all recipes as JSON array
-    recipe-cards/             # optional PDFs, one per recipe
+    recipes.json                # all recipes with ingredients inline
+    recipe-cards/               # optional PDFs, one per recipe
       mushroom-risotto.pdf
-      grilled-salmon.pdf
   clients/
-    clients.csv               # spreadsheet-ready
-    clients.json              # full data with preferences
+    clients.csv                 # spreadsheet-ready (name, email, dietary, LTV)
+    clients.json                # full data with preferences, allergies, taste
   events/
-    events.csv                # summary spreadsheet
-    events.json               # full data with guests, staff, transitions
-    events.ics                # importable calendar file (all events)
+    events.csv                  # summary spreadsheet
+    events.json                 # full: guests, staff, transitions, AARs
+    inquiries.json              # full inquiry pipeline with notes, transitions
+    events.ics                  # single multi-VEVENT calendar file
+  quotes/
+    quotes.json                 # all quotes with line items, transitions
+    proposals.json              # proposals with sections
+    quote-pdfs/                 # optional
+      smith-dinner-quote.pdf
   financials/
-    ledger.csv                # all ledger entries
-    expenses.csv              # all expenses
-    financials.json           # combined with computed summaries
+    ledger.csv                  # all ledger entries (event/client names inline)
+    expenses.csv                # all expenses
+    commerce-sales.csv          # POS transactions with items
+    commerce-sessions.json      # register sessions, reconciliation
+    financials.json             # combined with computed summaries
   menus/
-    menus.json
-    menu-pdfs/                # optional
+    menus.json                  # full hierarchy: menus->dishes->components
+    tasting-menus.json          # tasting menu courses
+    menu-pdfs/                  # optional
       tasting-menu-march.pdf
   documents/
-    contracts/
+    contracts/                  # stored PDFs
+    contracts-metadata.json     # structured: signers, versions, status
     invoices/
     generated/
-  conversations/
-    conversations.json        # all threads with messages
+  communications/
+    conversations.json          # client conversations grouped by thread
+    email-sms.json              # email/SMS records from messages table
+    remy-conversations.json     # AI assistant chat history
   photos/
     events/
       [event-name]/
         photo1.jpg
     clients/
     recipes/
+    plating-guides/
   ingredients/
-    ingredients.csv
-    ingredients.json
+    ingredients.csv             # catalog with current prices
+    ingredients.json            # full: aliases, substitutions
+    price-history.json          # vendor price history over time
+  vendors/
+    vendors.csv                 # directory with contact info
+    vendors.json                # full: items, preferred ingredients
+    purchase-orders.json        # POs with line items
+    vendor-invoices.json        # invoices with items
+  staff/
+    staff.csv                   # roster with contact info
+    staff.json                  # full: availability, clock entries, performance
+    payroll.json                # payroll + contractor payments
   profile/
-    profile.json              # chef profile, preferences, config
-    services.json             # service types and pricing rules
+    profile.json                # chef profile, preferences, config
+    services.json               # service types and pricing rules
+    tax-config.json             # tax settings
+    certifications.json         # professional certifications
 ```
 
 ---
@@ -270,24 +334,34 @@ chefflow-export-2026-04-18/
 ## Notes for Builder Agent
 
 1. **Reuse everything.** The hard work is done:
-   - `fflate` (`zipSync`) already handles ZIP creation (see `lib/finance/cpa-export-actions.ts`)
+   - `fflate` (`zipSync`) for small exports; fflate streaming `Zip` class for large exports (see below)
    - `csvRowSafe` / `buildCsvSafe` from `lib/security/csv-sanitize.ts` for all CSV output
    - `generateICS` from `lib/scheduling/generate-ics.ts` for calendar export
    - 20+ PDF generators in `lib/documents/generate-*.ts`
-   - Client CSV export logic in `app/(chef)/clients/csv-export/route.ts`
-   - Event CSV export logic in `app/(chef)/events/csv-export/route.ts`
+   - Client CSV logic in `app/(chef)/clients/csv-export/route.ts`
+   - Event CSV logic in `app/(chef)/events/csv-export/route.ts`
    - Financial export logic in `lib/exports/actions.ts` and `lib/finance/cpa-export-actions.ts`
 
 2. **Tenant scoping is critical.** Every query must filter by `tenant_id` from session. Never accept tenant from client input.
 
-3. **CSV sanitization is mandatory.** All string values through `csvRowSafe` before writing to CSV. Formula injection protection is not optional.
+3. **CSV sanitization is MANDATORY (not optional).** Every string field in every CSV goes through `csvRowSafe`. Formula injection protection is a hard requirement, not a suggestion.
 
-4. **Photos are the size problem.** Everything else combined is likely < 50MB. Photos can be gigabytes. Keep photo export opt-in and separate from the size estimate.
+4. **Photos are the size problem.** Everything else combined is likely < 20MB. Photos can be gigabytes. Keep photo export opt-in and separate from the size estimate. For photo size estimates, sum actual file sizes from DB metadata or `fs.stat`, not row count heuristics.
 
-5. **For large exports**, consider streaming the ZIP via a Route Handler (`app/api/exports/takeout/route.ts`) rather than returning base64 from a server action. Server actions have response size limits. The CPA export uses base64 because it is small; a full takeout with photos will not fit.
+5. **Two ZIP paths (CRITICAL architecture decision):**
+   - **< 20MB estimated (no photos, no PDFs):** `zipSync` in server action, return base64. Fast, simple.
+   - **>= 20MB (photos, PDFs, or large data):** Streaming ZIP via Route Handler at `app/api/exports/takeout/route.ts`. Uses fflate's async `Zip` class to avoid loading everything into memory. `zipSync` will crash Node.js on 4GB of photos.
 
-6. **`manifest.json` is the receipt.** Always include it. It proves what was exported, when, and how much. Useful for the chef, useful for debugging.
+6. **`manifest.json` is the receipt.** Always include it. `relationships` array documents FK links between files so the ZIP is self-documenting. `errors` array documents any skipped files.
 
 7. **Free tier.** Register in `lib/billing/feature-classification.ts` as `tier: 'free'`. Data portability is not a paid feature. It is a right.
 
-8. **Interface philosophy.** One primary button (Download). Max 7 visible toggles without scrolling (10 categories is OK because it is a checklist, not action buttons). All 5 data states covered. Progress feedback during export.
+8. **Interface philosophy.** One primary button (Download). Categories grouped into 3 sections (Core, Business, Other) for visual hierarchy. All 5 data states covered. Progress feedback during export.
+
+9. **ICS: single file, multiple events.** Generate one VCALENDAR with multiple VEVENT blocks, not one .ics per event. Call `generateICS` per-event and concatenate within a single VCALENDAR wrapper.
+
+10. **Refactor CSV builders.** Extract shared CSV-generation logic into `lib/exports/csv-builders/` so both standalone route handlers and the Takeout consume the same code. Do not duplicate and do not HTTP self-call.
+
+11. **Strip internal IDs, resolve foreign keys.** Every JSON export strips `tenant_id` and `auth_user_id`. Every foreign key to another category resolves the human-readable name inline (see FK Inline Resolution Strategy above). Financial amounts include both `_cents` and computed `_dollars` fields.
+
+12. **Question set:** Full 40-question integrity audit at `docs/specs/system-integrity-question-set-data-export.md`. Builder must review Q32 (zipSync memory limit) and Q34 (CSV builder refactor) before implementation.

@@ -7,7 +7,7 @@ import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { AddressAutocomplete } from '@/components/ui/address-autocomplete'
-import { submitPublicInquiry } from '@/lib/inquiries/public-actions'
+import { submitPublicInquiry, checkPublicDateAvailability } from '@/lib/inquiries/public-actions'
 import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 import {
   DietaryIntakeFields,
@@ -20,6 +20,7 @@ interface Props {
   chefName: string
   primaryColor: string
   referralPartnerId?: string | null
+  circleId?: string | null
 }
 
 interface FormData {
@@ -132,7 +133,13 @@ function clearDraft(slug: string) {
   }
 }
 
-export function PublicInquiryForm({ chefSlug, chefName, primaryColor, referralPartnerId }: Props) {
+export function PublicInquiryForm({
+  chefSlug,
+  chefName,
+  primaryColor,
+  referralPartnerId,
+  circleId,
+}: Props) {
   const [formData, setFormData] = useState<FormData>({
     full_name: '',
     address: '',
@@ -158,6 +165,26 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor, referralPa
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [returningClient, setReturningClient] = useState(false)
   const [lookupDone, setLookupDone] = useState(false)
+  const [dateBusy, setDateBusy] = useState(false)
+
+  // Check date availability when date fields change
+  useEffect(() => {
+    const m = Number(formData.month)
+    const d = Number(formData.day)
+    const y = Number(formData.year)
+    if (!m || !d || !y || y < 2020) {
+      setDateBusy(false)
+      return
+    }
+    const dateStr = `${String(y).padStart(4, '0')}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+    let cancelled = false
+    checkPublicDateAvailability(chefSlug, dateStr).then((result) => {
+      if (!cancelled) setDateBusy(result.busy)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [formData.month, formData.day, formData.year, chefSlug])
 
   // Restore draft from sessionStorage on mount
   useEffect(() => {
@@ -319,6 +346,7 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor, referralPa
         referral_source: formData.referral_source.trim() || undefined,
         website_url: formData.website_url,
         referral_partner_id: referralPartnerId || undefined,
+        existing_circle_id: circleId || undefined,
       })
 
       trackEvent(ANALYTICS_EVENTS.INQUIRY_SUBMITTED, {
@@ -535,6 +563,12 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor, referralPa
               />
             </div>
             <p className="text-sm text-amber-700">Chef typically arrives 2 hours before service.</p>
+            {dateBusy && (
+              <p className="text-sm text-amber-600 mt-1">
+                {chefName} may already have an event on this date. You can still submit your
+                inquiry; the chef will confirm availability.
+              </p>
+            )}
           </div>
 
           <Input

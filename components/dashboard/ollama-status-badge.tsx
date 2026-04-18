@@ -244,7 +244,7 @@ export function OllamaStatusBadge() {
   if (pcHealthy) {
     badgeClass = 'border-emerald-200 bg-emerald-950 text-emerald-700'
     badgeDot = 'bg-emerald-500 animate-pulse'
-    badgeLabel = `Local · ${pcEndpoint.latencyMs ?? '?'}ms`
+    badgeLabel = `Server AI · ${pcEndpoint.latencyMs ?? '?'}ms`
   } else if (pcEndpoint?.online) {
     badgeClass = 'border-amber-200 bg-amber-950 text-amber-700'
     badgeDot = 'bg-amber-500 animate-pulse'
@@ -392,7 +392,7 @@ export function OllamaStatusBadge() {
           </div>
 
           <div className="px-4 py-2 border-t border-stone-800 bg-stone-950/50">
-            <div className="text-xxs text-stone-600">Private AI - data stays on your PC</div>
+            <div className="text-xxs text-stone-600">ChefFlow Server AI Status</div>
           </div>
         </div>
       )}

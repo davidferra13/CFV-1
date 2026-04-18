@@ -8,6 +8,7 @@ import type { Metadata } from 'next'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { getWorksheetByToken } from '@/lib/marketplace/worksheet-actions'
 import { TokenExpiredPage } from '@/components/ui/token-expired-page'
+import { PostActionFooter } from '@/components/public/post-action-footer'
 import { ClientWorksheetForm } from './worksheet-form'
 
 type Props = { params: { token: string } }
@@ -79,7 +80,29 @@ export default async function WorksheetPage({ params }: Props) {
           />
         )}
 
-        <p className="mt-8 text-center text-xs text-stone-400">Powered by ChefFlow</p>
+        {/* Forward paths: chef profile + branding link */}
+        <div className="mt-8 space-y-4">
+          {worksheet.chefSlug && (
+            <div className="flex justify-center">
+              <a
+                href={`/chef/${worksheet.chefSlug}`}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-stone-600 transition-colors hover:border-stone-400 hover:text-stone-800"
+              >
+                {worksheet.chefName ? `View ${worksheet.chefName}'s Profile` : 'View Chef Profile'}
+              </a>
+            </div>
+          )}
+          <div className="text-center">
+            <a
+              href="https://cheflowhq.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-stone-400 hover:text-stone-500 transition-colors"
+            >
+              Powered by <span className="font-semibold">ChefFlow</span>
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   )

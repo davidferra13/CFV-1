@@ -126,6 +126,19 @@ export async function recordSuccessfulAccountAccess(input: {
       console.error('[account-access] Failed to update auth.users.last_sign_in_at:', updateError)
     })
 
+  // Also stamp chefs.last_login_at for dormancy detection
+  if (input.tenantId) {
+    const dbAdmin: any = createServerClient({ admin: true })
+    await dbAdmin
+      .from('chefs')
+      .update({ last_login_at: event.occurredAt })
+      .eq('id', input.tenantId)
+      .then(() => {})
+      .catch((chefErr: unknown) => {
+        console.error('[account-access] Failed to update chefs.last_login_at:', chefErr)
+      })
+  }
+
   if (event.riskLevel !== 'normal' && input.tenantId) {
     const alert = buildAccessAlertCopy(event)
     const { createNotification } = await import('@/lib/notifications/actions')

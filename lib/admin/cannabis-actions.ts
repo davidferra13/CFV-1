@@ -9,6 +9,8 @@ import { createAdminClient } from '@/lib/db/admin'
 import { requireAdmin } from '@/lib/auth/admin'
 import { logAdminAction } from './audit'
 import { randomBytes } from 'crypto'
+import { sendEmail } from '@/lib/email/send'
+import { CannabisInviteApprovedEmail } from '@/lib/email/templates/cannabis-invite-approved'
 
 // ─── Fetch All Cannabis Tier Users ───────────────────────────────────────────
 
@@ -194,6 +196,52 @@ export async function approveInvite(inviteId: string) {
     targetType: 'cannabis_invitation',
     details: { expires_at: expiresAt },
   })
+
+  // Non-blocking: send claim email to invitee
+  try {
+    const { data: invite } = await db
+      .from('cannabis_tier_invitations')
+      .select('invitee_email, invitee_name, invited_by_auth_user_id')
+      .eq('id', inviteId)
+      .single()
+
+    if (invite?.invitee_email) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
+      const claimUrl = `${appUrl}/cannabis-invite/${token}`
+
+      // Try to get inviter name
+      let inviterName: string | null = null
+      try {
+        const { data: inviterRole } = await db
+          .from('user_roles')
+          .select('entity_id')
+          .eq('auth_user_id', invite.invited_by_auth_user_id)
+          .single()
+        if (inviterRole?.entity_id) {
+          const { data: chef } = await db
+            .from('chefs')
+            .select('display_name')
+            .eq('id', inviterRole.entity_id)
+            .single()
+          inviterName = chef?.display_name ?? null
+        }
+      } catch {}
+
+      await sendEmail({
+        to: invite.invitee_email,
+        subject: 'Your Cannabis Dining Invitation Has Been Approved',
+        react: CannabisInviteApprovedEmail({
+          inviteeName: invite.invitee_name ?? null,
+          inviterName,
+          claimUrl,
+          expiresInDays: 30,
+        }),
+        isTransactional: true,
+      })
+    }
+  } catch (emailErr) {
+    console.error('[CANNABIS] Non-blocking: invite approval email failed:', emailErr)
+  }
 
   return { success: true, token }
 }

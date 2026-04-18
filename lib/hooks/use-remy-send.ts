@@ -40,6 +40,7 @@ import {
   shouldGenerateSummary,
 } from '@/lib/ai/remy-conversation-summary'
 import { saveSummary, getRecentSummaries } from '@/lib/ai/remy-local-storage'
+import { OllamaLocalProvider } from '@/lib/ai/local-ai-provider'
 import type {
   RemyMessage,
   RemyTaskResult,
@@ -91,6 +92,8 @@ export interface UseRemySendConfig {
   setProjectSuggestion: (s: { name: string; icon: string } | null) => void
   pathname: string | null
   soundEnabled: boolean
+  // Local AI config (opt-in)
+  localAi?: { enabled: boolean; url: string; model: string } | null
   // Remy context callbacks
   feedText: (text: string) => void
   lipSyncStop: () => void
@@ -121,14 +124,30 @@ export function useRemySend(config: UseRemySendConfig) {
     dispatchBody,
     setContextLoading,
     closeDrawer,
+    localAi,
   } = config
 
   const [loadingInternal, setLoadingInternal] = useState(false)
+  const [localAiMode, setLocalAiMode] = useState<'local' | 'cloud' | 'fallback'>('cloud')
   const [streamingContent, setStreamingContent] = useState('')
   const [streamingIntent, setStreamingIntent] = useState<string | undefined>()
   const [elapsedSec, setElapsedSec] = useState(0)
   const abortControllerRef = useRef<AbortController | null>(null)
   const router = useRouter()
+
+  // Proactive detect: check local Ollama on mount when enabled (Q28 fix)
+  useEffect(() => {
+    if (!localAi?.enabled) return
+    const provider = new OllamaLocalProvider(localAi.url)
+    provider
+      .detect()
+      .then((ok) => {
+        setLocalAiMode(ok ? 'local' : 'fallback')
+      })
+      .catch(() => {
+        setLocalAiMode('fallback')
+      })
+  }, [localAi?.enabled, localAi?.url]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Coreference resolution - track entities across conversation turns
   const entityContextRef = useRef<EntityContext>(createEntityContext())
@@ -235,6 +254,120 @@ export function useRemySend(config: UseRemySendConfig) {
     dispatchBody({ type: 'RESPONSE_ENDED' })
     toast.success('Request cancelled')
   }, [resetLipSync, setLoading, dispatchBody])
+
+  // ─── Local AI streaming ─────���───────────────────────────────────────────
+  // Returns { handled: true, content, tasks?, navSuggestions? } if local AI handled the request.
+  // Returns { handled: false } if should fall through to server.
+  const tryLocalAi = useCallback(
+    async (
+      resolvedMessage: string,
+      history: RemyMessage[],
+      activity: {
+        recentPages: any[]
+        recentActions: any[]
+        recentErrors: any[]
+        sessionMinutes: number
+        activeForm: string | null | undefined
+      },
+      otherDigest: string | null,
+      lastSessionSummary: any,
+      recentSummaries: any[],
+      controller: AbortController,
+      onToken: (token: string) => void
+    ): Promise<{
+      handled: boolean
+      fallback?: boolean
+      content?: string
+      tasks?: RemyTaskResult[]
+      navSuggestions?: NavigationSuggestion[]
+    }> => {
+      if (!localAi?.enabled) return { handled: false }
+
+      try {
+        // Step 1: Get context from server (system prompt + intent classification)
+        const contextRes = await fetch('/api/remy/context', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: resolvedMessage,
+            history: history.slice(-30),
+            currentPage: pathname,
+            recentPages: activity.recentPages,
+            recentActions: activity.recentActions,
+            recentErrors: activity.recentErrors,
+            sessionMinutes: activity.sessionMinutes,
+            activeForm: activity.activeForm,
+            ...(otherDigest && { otherChannelDigest: otherDigest }),
+            ...(lastSessionSummary && { previousSessionTopics: lastSessionSummary }),
+            ...(recentSummaries.length > 0 && { recentConversationSummaries: recentSummaries }),
+          }),
+          signal: controller.signal,
+        })
+
+        if (!contextRes.ok) return { handled: false }
+
+        const ctx = await contextRes.json()
+
+        // Blocked or error from server
+        if (ctx.blocked) return { handled: false }
+
+        // Instant responses (greeting, guardrail blocks, instant answers)
+        if (ctx.instantResponse) {
+          setLocalAiMode('cloud') // instant answers come from server
+          return { handled: true, content: ctx.instantResponse, navSuggestions: ctx.navSuggestions }
+        }
+
+        // Server-only paths (memory, commands)
+        if (ctx.serverOnly || ctx.intent === 'memory') return { handled: false }
+
+        // Commands executed server-side
+        if (ctx.intent === 'command' && ctx.commandResult) {
+          setLocalAiMode('cloud')
+          return { handled: true, content: ctx.commandResult, tasks: ctx.tasks }
+        }
+
+        // Question or mixed intent with system prompt - stream from local Ollama
+        if (ctx.systemPrompt && ctx.userMessage) {
+          const provider = new OllamaLocalProvider(localAi.url)
+          const available = await provider.detect()
+          if (!available) {
+            setLocalAiMode('fallback')
+            return { handled: false, fallback: true }
+          }
+
+          setLocalAiMode('local')
+          let content = ''
+
+          await provider.chat(
+            ctx.systemPrompt,
+            [{ role: 'user', content: ctx.userMessage }],
+            ctx.model || localAi.model,
+            (token) => {
+              content += token
+              onToken(token)
+            },
+            ctx.options,
+            controller.signal
+          )
+
+          // For mixed intent, prepend command results
+          if (ctx.intent === 'mixed' && ctx.commandResult) {
+            content = content + '\n\n' + ctx.commandResult
+          }
+
+          return { handled: true, content, tasks: ctx.tasks }
+        }
+
+        return { handled: false }
+      } catch (err) {
+        // Local AI failed, fall back to server
+        console.warn('[remy-local-ai] Local AI failed, falling back to server:', err)
+        setLocalAiMode('fallback')
+        return { handled: false, fallback: true }
+      }
+    },
+    [localAi, pathname]
+  )
 
   const handleSend = useCallback(
     async (
@@ -479,6 +612,126 @@ export function useRemySend(config: UseRemySendConfig) {
 
         const activity = getSessionActivity()
         const otherDigest = getOtherChannelDigest('drawer')
+
+        // ─── Try local AI first (opt-in) ───────────────────────
+        if (localAi?.enabled) {
+          let localStreamAccum = ''
+          let localHasFirstToken = false
+          const localResult = await tryLocalAi(
+            resolvedMessage,
+            messages,
+            activity,
+            otherDigest,
+            lastSessionSummary,
+            recentSummaries,
+            controller,
+            (token) => {
+              if (!localHasFirstToken) {
+                localHasFirstToken = true
+                dispatchBody({ type: 'FIRST_TOKEN' })
+              }
+              localStreamAccum += token
+              setStreamingContent(localStreamAccum)
+              feedText(token)
+            }
+          )
+
+          if (localResult.handled) {
+            const cleanContent = (localResult.content ?? '')
+              .replace(/\nNAV_SUGGESTIONS:\s*\[[\s\S]*\]/, '')
+              .trim()
+            const remyMsg: RemyMessage = {
+              id: generateId(),
+              role: 'remy',
+              content: cleanContent,
+              timestamp: new Date().toISOString(),
+              tasks: localResult.tasks,
+              navSuggestions: localResult.navSuggestions,
+            }
+            setMessages((prev) => [...prev, remyMsg])
+            setStreamingContent('')
+            setStreamingIntent(undefined)
+            lipSyncStop()
+
+            const remyEntities = extractEntities(cleanContent, turnIndex + 1)
+            entityContextRef.current = updateEntityContext(entityContextRef.current, remyEntities)
+            updateChannelDigest('drawer', message, cleanContent)
+
+            const hasTasks = localResult.tasks?.some((t) => t.status === 'done')
+            dispatchBody({ type: hasTasks ? 'SUCCESS' : 'RESPONSE_ENDED' })
+            playNotificationSound()
+
+            saveLocalMessage(convId, 'remy', cleanContent, {
+              tasks: localResult.tasks,
+              navSuggestions: localResult.navSuggestions,
+            })
+              .then(() => trimConversationMessages(convId).catch(() => {}))
+              .catch((err) => console.error('[non-blocking] Save remy msg failed', err))
+
+            if (localResult.tasks?.length) {
+              for (const task of localResult.tasks) {
+                logAction({
+                  conversationId: convId,
+                  messageId: null,
+                  action: task.taskType,
+                  params: task.data ? JSON.stringify(task.data).slice(0, 500) : null,
+                  status: task.status === 'done' || task.status === 'pending' ? 'success' : 'error',
+                  result:
+                    task.error ?? (task.data ? JSON.stringify(task.data).slice(0, 200) : null),
+                  duration: 0,
+                }).catch(() => {})
+              }
+            }
+
+            // Auto-generate conversation summary for local AI path (Q7/Q36 fix)
+            const updatedLocalMessages = [...messages, userMsg, remyMsg]
+            if (shouldGenerateSummary(updatedLocalMessages) && currentConversationId) {
+              try {
+                const summary = generateConversationSummary(updatedLocalMessages)
+                saveSummary(currentConversationId, summary)
+                persistConversationSummary({
+                  conversationId: currentConversationId,
+                  summary: summary.summary,
+                  topics: summary.topics,
+                  entities: summary.entities,
+                  messageCount: summary.messageCount,
+                }).catch(() => {})
+              } catch {
+                // Non-blocking
+              }
+            }
+
+            if (isFirstExchange) {
+              setIsFirstExchange(false)
+              const title = autoTitle(message)
+              updateLocalConversation(convId, { title })
+                .then(() => {
+                  setConversations((prev) =>
+                    prev.map((c) => (c.id === convId ? { ...c, title } : c))
+                  )
+                })
+                .catch(() => {})
+              const suggestion = autoSuggestProject(message)
+              if (suggestion) setProjectSuggestion(suggestion)
+            }
+
+            autoSave(message, remyMsg)
+            return // Local AI handled it, skip server path
+          }
+          // Local AI didn't handle it. If Ollama was unreachable, confirm before cloud fallback (Q19/Q20 fix).
+          if (localResult.fallback) {
+            const proceed = window.confirm(
+              "Local AI is unavailable. Send this message via ChefFlow's server AI instead?"
+            )
+            if (!proceed) {
+              setLoading(false)
+              dispatchBody({ type: 'RESPONSE_ENDED' })
+              toast.info('Message not sent. Check your local AI connection.')
+              return
+            }
+          }
+        }
+
         const response = await fetch('/api/remy/stream', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -702,6 +955,8 @@ export function useRemySend(config: UseRemySendConfig) {
       setLoading,
       closeDrawer,
       router,
+      localAi,
+      tryLocalAi,
     ]
   )
 
@@ -782,6 +1037,7 @@ export function useRemySend(config: UseRemySendConfig) {
     streamingContent,
     streamingIntent,
     elapsedSec,
+    localAiMode,
     handleSend,
     handleCancel,
     handleApproveTask,

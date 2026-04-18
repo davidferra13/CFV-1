@@ -32,6 +32,99 @@ import { getInquiryConversionContext } from '@/lib/intelligence/inquiry-conversi
 import { getServiceConfigForTenant } from '@/lib/chef-services/service-config-internal'
 import { formatServiceConfigForPrompt } from '@/lib/chef-services/service-config-actions'
 
+const OPENCLAW_API = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
+
+/** Load price intelligence from Pi for Remy prompt (3s timeout, non-blocking) */
+async function loadPriceContext(
+  db: any,
+  tenantId: string
+): Promise<RemyContext['priceContext'] | null> {
+  // Load chef's ingredient names for personalized data
+  let ingredientNames: string[] = []
+  try {
+    const { data } = await db
+      .from('ingredients')
+      .select('name')
+      .eq('tenant_id', tenantId)
+      .eq('archived', false)
+      .limit(200)
+    ingredientNames = (data || []).map((i: any) => i.name)
+  } catch {
+    return null
+  }
+
+  const [dropsRes, costRes, stockRes, freshnessRes] = await Promise.all([
+    fetch(`${OPENCLAW_API}/api/alerts/price-drops?limit=5`, {
+      signal: AbortSignal.timeout(3000),
+      cache: 'no-store',
+    }).catch(() => null),
+    ingredientNames.length > 0
+      ? fetch(`${OPENCLAW_API}/api/prices/cost-impact`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: ingredientNames, days: 7 }),
+          signal: AbortSignal.timeout(3000),
+          cache: 'no-store',
+        }).catch(() => null)
+      : Promise.resolve(null),
+    fetch(`${OPENCLAW_API}/api/stock/summary`, {
+      signal: AbortSignal.timeout(3000),
+      cache: 'no-store',
+    }).catch(() => null),
+    fetch(`${OPENCLAW_API}/api/freshness`, {
+      signal: AbortSignal.timeout(3000),
+      cache: 'no-store',
+    }).catch(() => null),
+  ])
+
+  const drops: Array<{ name: string; priceCents: number; dropPct: number; store: string }> = []
+  const spikes: Array<{ name: string; priceCents: number; spikePct: number; store: string }> = []
+  let stockAlerts = 0
+  let freshnessPct = 0
+
+  if (dropsRes?.ok) {
+    const data = await dropsRes.json()
+    for (const a of (data.alerts || data.drops || []).slice(0, 5)) {
+      drops.push({
+        name: a.ingredient_name || a.name || '',
+        priceCents: a.current_price_cents || a.best_price_cents || 0,
+        dropPct: a.drop_pct || a.percent_drop || 0,
+        store: a.store || a.best_store || '',
+      })
+    }
+  }
+
+  if (costRes?.ok) {
+    const data = await costRes.json()
+    for (const i of (data.impacts || []).filter((x: any) => x.direction === 'up').slice(0, 5)) {
+      spikes.push({
+        name: i.name || '',
+        priceCents: i.newCents || 0,
+        spikePct: Math.abs(i.changePct || 0),
+        store: i.store || '',
+      })
+    }
+  }
+
+  if (stockRes?.ok) {
+    const data = await stockRes.json()
+    stockAlerts = data.outOfStock || 0
+  }
+
+  if (freshnessRes?.ok) {
+    const data = await freshnessRes.json()
+    const breakdown = data.breakdown || []
+    const current = breakdown.find((b: any) => b.freshness === 'current')?.count || 0
+    const total = data.total || 0
+    freshnessPct = total > 0 ? Math.round((current / total) * 100) : 0
+  }
+
+  // Only return if we got any meaningful data
+  if (drops.length === 0 && spikes.length === 0 && stockAlerts === 0) return null
+
+  return { drops, spikes, stockAlerts, freshnessPct }
+}
+
 // ─── In-Memory Cache (per-tenant, 5-min TTL) ────────────────────────────────
 
 interface CachedContext {
@@ -54,6 +147,7 @@ interface CachedContext {
     | 'serviceConfigPrompt'
     | 'recentSurveyFeedback'
     | 'pendingMilestones'
+    | 'priceContext'
   >
   expiresAt: number
 }
@@ -215,11 +309,13 @@ export async function loadRemyContext(
   let emailDigest: Awaited<ReturnType<typeof loadEmailDigest>> | undefined
   let recentSurveyFeedback: any
   let pendingMilestones: any
+  let priceContext: RemyContext['priceContext'] | undefined
 
   if (isMinimal) {
     emailDigest = undefined
     recentSurveyFeedback = undefined
     pendingMilestones = undefined
+    priceContext = undefined
   } else {
     emailDigest =
       (await withContextFallback(
@@ -276,6 +372,11 @@ export async function loadRemyContext(
         }))
       }
     )
+
+    priceContext =
+      (await withContextFallback(tenantId, 'load_price_context', undefined, () =>
+        loadPriceContext(db, tenantId)
+      )) ?? undefined
   }
 
   // Tier 3: Page-specific entity context - always load (cheap and useful even for minimal)
@@ -344,6 +445,8 @@ export async function loadRemyContext(
         recostFrequency: targets.recostFrequency,
       }
     })(),
+    // Price intelligence from Pi
+    priceContext: priceContext ?? undefined,
   }
 }
 

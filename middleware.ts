@@ -8,6 +8,7 @@ import {
   isClientRoutePath,
   isPublicUnauthenticatedPath,
   isStaffRoutePath,
+  isPartnerRoutePath,
 } from '@/lib/auth/route-policy'
 import {
   setPathnameHeader,
@@ -180,6 +181,13 @@ export default auth(async (request) => {
   }
 
   if (isStaffRoutePath(pathname) && role !== 'staff') {
+    return withRequestId(
+      NextResponse.redirect(buildRedirectUrl(request, getHomePathForRole(role))),
+      requestId
+    )
+  }
+
+  if (isPartnerRoutePath(pathname) && role !== 'partner') {
     return withRequestId(
       NextResponse.redirect(buildRedirectUrl(request, getHomePathForRole(role))),
       requestId

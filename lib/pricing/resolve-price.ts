@@ -322,11 +322,12 @@ export async function resolvePrice(
   }
 
   // Tier 2.5: WHOLESALE (openclaw_wholesale) within 30 days
+  // Wholesale prices are shared (tenant_id NULL from wholesale-handler), so include both
   const wholesale = (await db.execute(sql`
     SELECT price_per_unit_cents, unit, store_name, purchase_date
     FROM ingredient_price_history
     WHERE ingredient_id = ${ingredientId}
-      AND tenant_id = ${tenantId}
+      AND (tenant_id = ${tenantId} OR (tenant_id IS NULL AND source = 'openclaw_wholesale'))
       AND source = 'openclaw_wholesale'
       AND purchase_date > CURRENT_DATE - INTERVAL '30 days'
     ORDER BY purchase_date DESC
@@ -680,7 +681,7 @@ export async function resolvePricesBatch(
     SELECT ingredient_id, price_per_unit_cents, unit, store_name, purchase_date, source
     FROM ingredient_price_history
     WHERE ingredient_id = ANY(${ingredientIds})
-      AND tenant_id = ${tenantId}
+      AND (tenant_id = ${tenantId} OR (tenant_id IS NULL AND source = 'openclaw_wholesale'))
       AND source IN ('openclaw_scrape', 'openclaw_flyer', 'openclaw_instacart', 'openclaw_government', 'openclaw_wholesale')
     ORDER BY ingredient_id, source, purchase_date DESC
   `)) as unknown as BatchRow[]

@@ -50,22 +50,36 @@ export async function createStripeRefund(
     throw new Error(`PaymentIntent ${paymentIntentId} has already been fully refunded`)
   }
 
+  // Validate refund amount does not exceed what's refundable
+  const refundableAmount = charge.amount - (charge.amount_refunded || 0)
+  if (amountCents > refundableAmount) {
+    throw new Error(
+      `Refund amount (${amountCents}) exceeds refundable amount (${refundableAmount}) for PaymentIntent ${paymentIntentId}`
+    )
+  }
+
   // For destination charges (transferred payments), reverse the transfer
   // and refund the application fee so the connected account is properly debited.
   const hasTransfer = !!(charge as any).transfer
 
+  // Idempotency key prevents duplicate refunds on retry/double-click
+  const idempotencyKey = `refund_${charge.id}_${amountCents}`
+
   const refund = await breakers.stripe.execute(() =>
-    stripe.refunds.create({
-      charge: charge.id,
-      amount: amountCents,
-      reason: (reason as Stripe.RefundCreateParams.Reason) || 'requested_by_customer',
-      ...(hasTransfer
-        ? {
-            reverse_transfer: true,
-            refund_application_fee: true,
-          }
-        : {}),
-    })
+    stripe.refunds.create(
+      {
+        charge: charge.id,
+        amount: amountCents,
+        reason: (reason as Stripe.RefundCreateParams.Reason) || 'requested_by_customer',
+        ...(hasTransfer
+          ? {
+              reverse_transfer: true,
+              refund_application_fee: true,
+            }
+          : {}),
+      },
+      { idempotencyKey }
+    )
   )
 
   return {

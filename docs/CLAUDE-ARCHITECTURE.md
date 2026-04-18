@@ -207,48 +207,36 @@ These are the established patterns. Follow them - don't reinvent.
 
 ### Cloud AI Runtime (Production)
 
-**Production AI uses a cloud Ollama-compatible endpoint.** Any function that handles client PII, financials, allergies, messages, or internal business data uses `parseWithOllama` - not `parseWithAI` (Gemini).
+**All AI inference routes through a single Ollama-compatible endpoint (Gemma 4).** Cloud in production (`OLLAMA_BASE_URL`), localhost in dev. There is no second AI provider.
 
-- `parseWithOllama` routes through `OLLAMA_BASE_URL` (cloud endpoint in production, localhost fallback in dev).
-- `parseWithOllama` throws `OllamaOfflineError` if the runtime is unreachable. It **never** falls back to Gemini.
-- **Never** add `parseWithAI` as a fallback in any file that calls `parseWithOllama`.
-- If the AI runtime is unavailable, the feature hard-fails with a provider-agnostic error message. Data is not leaked.
-- The `OllamaOfflineError` class lives in `lib/ai/ollama-errors.ts` (no `'use server'` - class exports are not allowed in server action files). Import it from there: `import { OllamaOfflineError } from '@/lib/ai/ollama-errors'`. Callers that catch errors **must** re-throw it: `if (err instanceof OllamaOfflineError) throw err`.
+- `parseWithOllama` is the central inference gateway: structured prompts in, Zod-validated JSON out, with automatic repair pass.
+- `parseWithOllama` throws `OllamaOfflineError` if the runtime is unreachable. No fallback. No silent degradation.
+- The `OllamaOfflineError` class lives in `lib/ai/ollama-errors.ts` (no `'use server'`; class exports are not allowed in server action files). Import it from there: `import { OllamaOfflineError } from '@/lib/ai/ollama-errors'`. Callers that catch errors **must** re-throw it: `if (err instanceof OllamaOfflineError) throw err`.
 - Heuristic/regex fallbacks (no LLM call) are acceptable.
-- Production has NO silent fallback to a local machine. If the cloud runtime is down, the product fails clearly.
+- If the cloud runtime is down, the product fails clearly. No silent fallback to a local machine in production.
 
-Private data categories that route through the Ollama-compatible runtime (never Gemini):
+### Single-Provider Architecture (Gemma 4 via Ollama)
 
-- Client names, contact info, dietary restrictions, allergies, messages
-- Budget amounts, quotes, payment history, revenue, expenses
-- Business analytics, insights, lead scores, pricing history
-- Temperature logs, staff data, event operational details
+**All AI modules route through Ollama.** Gemini was removed as of April 2026. `gemini-service.ts` is deleted. The `AIProvider` type is `'ollama'` only.
 
-### Gemini/Ollama Boundary
+| File                                         | Purpose                                           |
+| -------------------------------------------- | ------------------------------------------------- |
+| `lib/ai/campaign-outreach.ts`                | Campaign concepts + personalized outreach         |
+| `lib/ai/parse-recipe.ts`                     | Recipe text extraction (chef IP)                  |
+| `lib/ai/parse-receipt.ts`                    | Receipt OCR (canonical, Zod-validated)            |
+| `lib/ai/receipt-ocr.ts`                      | Legacy adapter, delegates to parse-receipt.ts     |
+| `lib/ai/parse-brain-dump.ts`                 | Brain dump parsing (client names, notes, recipes) |
+| `lib/ai/aar-generator.ts`                    | After-action reports (financials, temp logs)      |
+| `lib/ai/contingency-ai.ts`                   | Contingency plans (location, allergies)           |
+| `lib/ai/grocery-consolidation.ts`            | Grocery list consolidation (dietary, allergies)   |
+| `lib/ai/equipment-depreciation-explainer.ts` | Equipment depreciation explanations               |
+| `lib/ai/chef-bio.ts`                         | Chef bio generation                               |
+| `lib/ai/contract-generator.ts`               | Contract generation (client PII, pricing)         |
+| `lib/ai/remy-actions.ts`                     | All Remy conversational AI                        |
+| `lib/ai/social-captions.ts`                  | Social media caption drafts                       |
+| `lib/ai/parse-recipe-vision.ts`              | Recipe photo OCR                                  |
 
-Two AI backends, each with a clear purpose. Do not cross the boundary.
-
-| Backend                       | Purpose                                              | Privacy                         |
-| ----------------------------- | ---------------------------------------------------- | ------------------------------- |
-| **Ollama-compat (cloud/dev)** | Private data (client PII, financials, allergies)     | Conversation content not stored |
-| **Gemini**                    | Generic cloud tasks (technique lists, kitchen specs) | No PII allowed                  |
-
-| File                                                        | AI Backend | Why                                                    |
-| ----------------------------------------------------------- | ---------- | ------------------------------------------------------ |
-| `lib/ai/gemini-service.ts`                                  | **Gemini** | Generic tasks, technique lists, kitchen specs (no PII) |
-| `lib/ai/campaign-outreach.ts` (`draftCampaignConcept` only) | **Gemini** | Generic themes/occasions (no client data)              |
-| `lib/ai/campaign-outreach.ts` (`draftPersonalizedOutreach`) | **Ollama** | Client names, dietary prefs, event history             |
-| `lib/ai/parse-recipe.ts`                                    | **Ollama** | Chef IP (recipe text)                                  |
-| `lib/ai/parse-brain-dump.ts`                                | **Ollama** | Client names, notes, recipes                           |
-| `lib/ai/aar-generator.ts`                                   | **Ollama** | Client names, financials, temp logs                    |
-| `lib/ai/contingency-ai.ts`                                  | **Ollama** | Location, dietary restrictions, allergies              |
-| `lib/ai/grocery-consolidation.ts`                           | **Ollama** | Dietary restrictions, allergies, guest count           |
-| `lib/ai/equipment-depreciation-explainer.ts`                | **Ollama** | Equipment prices, depreciation schedules               |
-| `lib/ai/chef-bio.ts`                                        | **Ollama** | Chef name, business name, event history                |
-| `lib/ai/contract-generator.ts`                              | **Ollama** | Client PII, event details, pricing                     |
-| `lib/ai/remy-actions.ts`                                    | **Ollama** | All client/chef conversational data                    |
-
-**Rule:** If a new AI file handles ANY private data category listed above, it MUST use `parseWithOllama`. No exceptions. Gemini is a separate cloud service; private data must not route through it.
+**Rule:** All new AI files MUST use `parseWithOllama`. No exceptions. No second provider.
 
 ---
 

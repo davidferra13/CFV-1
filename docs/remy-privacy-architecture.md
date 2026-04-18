@@ -25,9 +25,11 @@ Chef types message in Remy drawer
         ↓
 Browser sends request to ChefFlow API
         ↓
-API routes to Ollama on localhost (local PC)
+API routes to cloud Ollama endpoint (OLLAMA_BASE_URL, Gemma 4)
+  — OR, if user enabled local AI —
+Browser streams directly from user's local Ollama instance
         ↓
-Ollama processes locally, generates response
+LLM processes and generates response
         ↓
 Response streams back to browser
         ↓
@@ -130,13 +132,13 @@ The existing `remy_conversations` and `remy_messages` tables are NOT dropped. Th
 
 ## What Makes This Best-in-Class
 
-| What the best companies do               | How ChefFlow does it                                |
-| ---------------------------------------- | --------------------------------------------------- |
-| Proton Lumo: Zero-access encryption      | ChefFlow: No conversation storage on servers at all |
-| Apple PCC: Stateless computation         | ChefFlow: Conversations processed and discarded     |
-| Ollama/llamafile: 100% local             | ChefFlow: Ollama on local PC infrastructure         |
-| Brave Leo: IP stripping, no cloud AI     | ChefFlow: Private infrastructure only               |
-| DuckDuckGo AI Chat: Anonymous by default | ChefFlow: Privacy is structural, not configurable   |
+| What the best companies do               | How ChefFlow does it                                                                     |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Proton Lumo: Zero-access encryption      | ChefFlow: No conversation storage on servers at all                                      |
+| Apple PCC: Stateless computation         | ChefFlow: Conversations processed and discarded                                          |
+| Ollama/llamafile: 100% local             | ChefFlow: Cloud Ollama by default; opt-in local AI routes Remy chat to user's own Ollama |
+| Brave Leo: IP stripping, no cloud AI     | ChefFlow: Self-hosted cloud infrastructure; local option available                       |
+| DuckDuckGo AI Chat: Anonymous by default | ChefFlow: No conversation storage on servers regardless of AI routing                    |
 
 ---
 

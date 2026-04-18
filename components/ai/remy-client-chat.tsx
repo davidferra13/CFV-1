@@ -9,7 +9,7 @@ import { X, Send, Loader2, ChevronDown, Minus } from '@/components/ui/icons'
 import { RemyMascotButton } from '@/components/ai/remy-mascot-button'
 import { RemyAvatar } from '@/components/ai/remy-avatar'
 import { useRemyDisplayMode } from '@/lib/hooks/use-remy-display-mode'
-import { SPEED_TRADEOFF_SHORT } from '@/lib/ai/privacy-narrative'
+import { SPEED_PRIVACY_SHORT } from '@/lib/ai/privacy-narrative'
 
 interface Message {
   id: string
@@ -329,7 +329,7 @@ export function RemyClientChat() {
             )}
           </button>
         </div>
-        <p className="mt-1.5 text-center text-xxs text-stone-500">{SPEED_TRADEOFF_SHORT}</p>
+        <p className="mt-1.5 text-center text-xxs text-stone-500">{SPEED_PRIVACY_SHORT}</p>
       </div>
     </div>
   )

@@ -1,6 +1,6 @@
 # Spec: Opt-In Local AI Integration
 
-> **Status:** draft
+> **Status:** built
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** medium (3-8 files)
@@ -49,7 +49,7 @@ ChefFlow's AI runs server-side (server actions, API routes). The server cannot r
 
 ### Solution: Split Prompt Assembly from Inference
 
-```
+```text
 ┌─────────────────────────────────────────────────┐
 │                  CURRENT FLOW                    │
 │  Browser → /api/remy/stream → Server Ollama      │

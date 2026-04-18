@@ -259,7 +259,8 @@ export function buildRemySystemPrompt(
   previousSessionTopics?: { title: string; topics: string[]; lastActiveAt: string } | null,
   userMessage?: string,
   _contextScope?: ContextScope,
-  recentConversationSummaries?: Array<{ summary: string; generatedAt: string }> | null
+  recentConversationSummaries?: Array<{ summary: string; generatedAt: string }> | null,
+  isLocalAi?: boolean
 ): string {
   const parts: string[] = []
   const contextScope: ContextScope = _contextScope ?? 'focused'
@@ -277,7 +278,13 @@ export function buildRemySystemPrompt(
   parts.push(REMY_FEW_SHOT_EXAMPLES)
 
   parts.push(REMY_DRAFT_INSTRUCTIONS)
-  parts.push(REMY_PRIVACY_NOTE)
+  if (isLocalAi) {
+    parts.push(
+      `\nPRIVACY: You are running on the chef's own machine via their local AI setup. Chat history lives in the browser only. Conversations never touch ChefFlow's servers. You serve this chef exclusively.`
+    )
+  } else {
+    parts.push(REMY_PRIVACY_NOTE)
+  }
   // Speed explanation only when the chef asks about latency
   if (
     userMessage &&
@@ -666,6 +673,35 @@ Reference these when relevant - help the chef avoid past mistakes and repeat suc
     parts.push(`\n[ACTION NEEDED] PROACTIVE ALERTS (${nudgeLines.length}):
 ${nudgeLines.map((l) => `- ${l}`).join('\n')}
 Mention the most urgent items naturally when relevant - especially if the chef asks "what should I focus on?" or during a morning briefing. Don't dump all at once unless asked.`)
+  }
+
+  // Price intelligence from Pi - ingredient price changes, stock alerts
+  if (includeOperationalContext && context.priceContext) {
+    const pc = context.priceContext
+    const priceLines: string[] = []
+    if (pc.drops.length > 0) {
+      priceLines.push(
+        `Price drops this week: ${pc.drops.map((d) => `${d.name} down ${d.dropPct}% at ${d.store} ($${(d.priceCents / 100).toFixed(2)})`).join('; ')}`
+      )
+    }
+    if (pc.spikes.length > 0) {
+      priceLines.push(
+        `Price increases: ${pc.spikes.map((s) => `${s.name} up ${s.spikePct}% at ${s.store} ($${(s.priceCents / 100).toFixed(2)})`).join('; ')}`
+      )
+    }
+    if (pc.stockAlerts > 0) {
+      priceLines.push(
+        `${pc.stockAlerts} ingredient${pc.stockAlerts !== 1 ? 's' : ''} currently out of stock at tracked stores`
+      )
+    }
+    if (pc.freshnessPct > 0) {
+      priceLines.push(`Price data freshness: ${pc.freshnessPct}% of tracked prices are current`)
+    }
+    if (priceLines.length > 0) {
+      parts.push(`\nINGREDIENT PRICE INTELLIGENCE (live market data):
+${priceLines.map((l) => `- ${l}`).join('\n')}
+Mention price drops when the chef asks about shopping, ingredient costs, or food cost. Flag spikes when discussing event costing or menu pricing. This is real market data, not estimates.`)
+    }
   }
 
   // Recent survey feedback - client satisfaction signals
