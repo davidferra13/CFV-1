@@ -144,6 +144,7 @@ export async function sendEmail({
   from,
   replyTo,
   attachments,
+  isTransactional,
 }: SendEmailParams): Promise<boolean> {
   // Guard against header injection via newline characters in email fields
   const hasNewline = (v: string) => /[\r\n]/.test(v)
@@ -160,8 +161,9 @@ export async function sendEmail({
   }
 
   // I2: Check suppression list - skip bounced/invalid addresses
+  // Transactional emails bypass complaint-only suppressions but still honor hard bounces
   for (const addr of recipients) {
-    if (await isEmailSuppressed(addr)) {
+    if (await isEmailSuppressed(addr, isTransactional)) {
       console.info(`[sendEmail] Suppressed (bounced/invalid): "${subject}" skipped`)
       return false
     }

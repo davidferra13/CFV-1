@@ -542,6 +542,7 @@ export function ChefSidebar({
   primaryNavHrefs,
   enabledModules,
   isAdmin,
+  isPrivileged,
   focusMode,
   userId,
   tenantId,
@@ -549,6 +550,7 @@ export function ChefSidebar({
   primaryNavHrefs?: string[]
   enabledModules?: string[]
   isAdmin?: boolean
+  isPrivileged?: boolean
   focusMode?: boolean
   userId: string
   tenantId: string
@@ -594,14 +596,15 @@ export function ChefSidebar({
       }))
       .filter((group) => group.items.length > 0)
 
-    if (!focusMode) return baseGroups
+    // VIP/Admin/Owner bypass focus mode entirely (see all groups)
+    if (!focusMode || isPrivileged) return baseGroups
     const strictGroups = baseGroups.filter((group) =>
       isStrictFocusGroupVisible(group.id, Boolean(isAdmin))
     )
     return strictGroups.sort(
       (a, b) => getStrictFocusGroupRank(a.id) - getStrictFocusGroupRank(b.id)
     )
-  }, [isAdmin, focusMode, enabledSet])
+  }, [isAdmin, isPrivileged, focusMode, enabledSet])
   const groupEntries = useMemo(
     () => accessibleGroups.map((group) => ({ group, isLocked: false })),
     [accessibleGroups]
