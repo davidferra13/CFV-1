@@ -559,13 +559,14 @@ async function loadDetailedContext(db: any, tenantId: string) {
     db.from('recipes').select('id, category').eq('tenant_id', tenantId).limit(200),
 
     // Client vibe notes + dietary/allergy data (safety-critical)
+    // No vibe_notes filter: clients with allergies but no vibe notes must still be visible
     db
       .from('clients')
       .select('full_name, vibe_notes, dietary_restrictions, allergies')
       .eq('tenant_id', tenantId)
-      .not('vibe_notes', 'is', null)
+      .is('deleted_at', null)
       .order('updated_at', { ascending: false })
-      .limit(10),
+      .limit(20),
 
     // Recent after-action reviews (lessons learned)
     db

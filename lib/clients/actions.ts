@@ -1430,21 +1430,50 @@ export async function addClientFromInquiry(input: {
       return { success: true, clientId: existing.id }
     }
 
+    // Read inquiry record to copy dietary/preference data
+    const { data: inquiry } = await db
+      .from('inquiries')
+      .select(
+        'confirmed_dietary_restrictions, confirmed_guest_count, confirmed_occasion, confirmed_budget_cents, service_style_pref, source_message'
+      )
+      .eq('id', input.inquiryId)
+      .eq('tenant_id', user.tenantId!)
+      .single()
+
+    // Build insert payload with dietary data from inquiry
+    const insertPayload: Record<string, unknown> = {
+      tenant_id: user.tenantId!,
+      full_name: input.full_name.trim(),
+      email: input.email.trim().toLowerCase(),
+      phone: input.phone?.trim() || null,
+    }
+
+    if (inquiry?.confirmed_dietary_restrictions?.length) {
+      insertPayload.dietary_restrictions = inquiry.confirmed_dietary_restrictions
+    }
+
     // Create the client record
     const { data: client, error: clientErr } = await db
       .from('clients')
-      .insert({
-        tenant_id: user.tenantId!,
-        full_name: input.full_name.trim(),
-        email: input.email.trim().toLowerCase(),
-        phone: input.phone?.trim() || null,
-      } as any)
+      .insert(insertPayload as any)
       .select('id')
       .single()
 
     if (clientErr || !client) {
       console.error('[addClientFromInquiry] Insert error:', clientErr)
       return { success: false, error: 'Failed to create client record' }
+    }
+
+    // Migrate any client_allergy_records that were created during inquiry submission
+    // (submitPublicInquiry writes structured records keyed to inquiry context)
+    try {
+      const { syncAllergyStores } = await import('@/lib/dietary/allergy-sync')
+      // If dietary restrictions were copied, sync flat -> structured
+      if (inquiry?.confirmed_dietary_restrictions?.length) {
+        await syncAllergyStores({ tenantId: user.tenantId!, clientId: client.id, db })
+      }
+    } catch (syncErr) {
+      console.error('[addClientFromInquiry] Allergy sync failed (non-blocking):', syncErr)
     }
 
     // Link inquiry to new client

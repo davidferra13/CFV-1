@@ -36,6 +36,8 @@ import {
   checkRemyRateLimit,
 } from '@/lib/ai/remy-guardrails'
 import { isFocusModeEnabled } from '@/lib/billing/focus-mode-actions'
+import { REMY_ARCHETYPES, type RemyArchetypeId } from '@/lib/ai/remy-archetypes'
+import { getRemyArchetype } from '@/lib/ai/privacy-actions'
 import { logRemyAbuse, isRemyBlocked, isRemyAdmin } from '@/lib/ai/remy-abuse-actions'
 import {
   loadRelevantMemories,
@@ -500,12 +502,19 @@ function buildRemySystemPrompt(
   userMessage?: string,
   isFirstMessage: boolean = false,
   conversationHistory: RemyMessage[] = [],
-  dynamicPersonalityBlock: string = ''
+  dynamicPersonalityBlock: string = '',
+  remyArchetypeModifier: string = ''
 ): string {
   const parts: string[] = []
 
   // Full personality guide
   parts.push(REMY_PERSONALITY)
+
+  // Archetype personality modifier (overrides default tone if chef selected one)
+  if (remyArchetypeModifier) {
+    parts.push(remyArchetypeModifier)
+  }
+
   parts.push(REMY_KITCHEN_PHRASES)
   // Few-shot examples - show Remy how to respond, not just what to be
   parts.push(REMY_FEW_SHOT_EXAMPLES)
@@ -1155,12 +1164,18 @@ export async function sendRemyMessage(
     // (the user taps the X button next to a specific memory)
 
     // Run context loading, intent classification, memory loading, and focus mode check in parallel
-    const [context, classification, memories, focusMode] = await Promise.all([
+    const [context, classification, memories, focusMode, remyArchetypeId] = await Promise.all([
       loadRemyContext(currentPage),
       classifyIntent(userMessage),
       loadRelevantMemories(userMessage, undefined, undefined),
       isFocusModeEnabled().catch(() => false),
+      getRemyArchetype().catch(() => null),
     ])
+
+    // Resolve Remy personality modifier from saved archetype
+    const remyArchetypeModifier = remyArchetypeId
+      ? (REMY_ARCHETYPES.find((a) => a.id === remyArchetypeId)?.promptModifier ?? '')
+      : ''
 
     // Dynamic personality block (tenure, empty states, motivational context)
     const dynamicPersonalityBlock = await buildDynamicPersonalityBlock({
@@ -1223,7 +1238,8 @@ export async function sendRemyMessage(
             questionInput,
             conversationHistory.length === 0,
             conversationHistory,
-            dynamicPersonalityBlock
+            dynamicPersonalityBlock,
+            remyArchetypeModifier
           )
           const history = formatConversationHistory(conversationHistory)
           return parseWithOllama(
@@ -1276,7 +1292,8 @@ export async function sendRemyMessage(
       userMessage,
       conversationHistory.length === 0,
       conversationHistory,
-      dynamicPersonalityBlock
+      dynamicPersonalityBlock,
+      remyArchetypeModifier
     )
     const history = formatConversationHistory(conversationHistory)
     const result = await parseWithOllama(

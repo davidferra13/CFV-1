@@ -97,50 +97,30 @@ export async function getNextBestActions(limit = 10): Promise<NextBestAction[]> 
     }
   }
 
-  // Fetch upcoming milestones (next 14 days) - using personal_milestones field
-  const { data: milestonesData } = await db
+  // Fetch upcoming birthdays and anniversaries (next 14 days)
+  // Uses the dedicated birthday/anniversary columns (not personal_milestones regex)
+  const { data: dateClients } = await db
     .from('clients')
-    .select('id, personal_milestones')
+    .select('id, birthday, anniversary')
     .eq('tenant_id', user.tenantId!)
-    .not('personal_milestones', 'is', null)
+    .is('deleted_at', null)
 
   const upcomingBirthdays = new Set<string>()
   const today = new Date()
   const twoWeeks = new Date(today)
   twoWeeks.setDate(twoWeeks.getDate() + 14)
+  const todayMMDD = `${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
 
-  for (const c of milestonesData ?? []) {
-    // personal_milestones may be a string or array (text[] column)
-    const raw = c.personal_milestones
-    const text = (Array.isArray(raw) ? raw.join(' ') : String(raw ?? '')).toLowerCase()
-    // Simple year-agnostic check: look for month/day patterns
-    const months = [
-      ['january', 1],
-      ['february', 2],
-      ['march', 3],
-      ['april', 4],
-      ['may', 5],
-      ['june', 6],
-      ['july', 7],
-      ['august', 8],
-      ['september', 9],
-      ['october', 10],
-      ['november', 11],
-      ['december', 12],
-    ] as [string, number][]
-
-    for (const [monthName, monthNum] of months) {
-      const regex = new RegExp(`${monthName}\\s+(\\d{1,2})`)
-      const match = text.match(regex)
-      if (match) {
-        const day = parseInt(match[1], 10)
-        const candidate = new Date(today.getFullYear(), monthNum - 1, day)
-        // Also check next year if already passed
-        if (candidate < today) candidate.setFullYear(today.getFullYear() + 1)
-        if (candidate <= twoWeeks) {
-          upcomingBirthdays.add(c.id)
-          break
-        }
+  for (const c of dateClients ?? []) {
+    for (const dateField of [c.birthday, c.anniversary]) {
+      if (!dateField) continue
+      const d = new Date(dateField)
+      if (isNaN(d.getTime())) continue
+      const candidate = new Date(today.getFullYear(), d.getMonth(), d.getDate())
+      if (candidate < today) candidate.setFullYear(today.getFullYear() + 1)
+      if (candidate <= twoWeeks) {
+        upcomingBirthdays.add(c.id)
+        break
       }
     }
   }

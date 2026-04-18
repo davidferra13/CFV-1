@@ -29,7 +29,11 @@ import {
 } from '@/components/ui/icons'
 import { DataFlowAnimated } from './data-flow-animated'
 import { completeOnboarding } from '@/lib/ai/privacy-actions'
-import { ONBOARDING_HOW_IT_WORKS, ONBOARDING_RECAP_PRIVATE } from '@/lib/ai/privacy-narrative'
+import {
+  ONBOARDING_HOW_IT_WORKS,
+  ONBOARDING_RECAP_PRIVATE,
+  SPEED_TRADEOFF_SHORT,
+} from '@/lib/ai/privacy-narrative'
 
 type OnboardingStep = {
   id: string
@@ -146,7 +150,7 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                 <h2 className="text-2xl font-bold text-stone-100">Meet Remy</h2>
                 <p className="text-stone-500 mt-2 max-w-lg mx-auto">
                   Remy is your AI sous chef. It helps you draft emails, plan menus, manage prep
-                  timelines, and run your business more efficiently.
+                  timelines, and run your business more efficiently. {SPEED_TRADEOFF_SHORT}
                 </p>
               </div>
 

@@ -267,6 +267,34 @@ export async function updateClientDietary(
     throw new Error(`Failed to update dietary info: ${error.message}`)
   }
 
+  // EC-G7 fix: propagate dietary changes to all active events for this client.
+  // Events copy dietary_restrictions at inquiry conversion; updates must cascade.
+  try {
+    const { data: activeEvents } = await db
+      .from('events')
+      .select('id')
+      .eq('tenant_id', user.tenantId!)
+      .eq('client_id', clientId)
+      .in('status', ['draft', 'proposed', 'accepted', 'paid', 'confirmed'])
+
+    if (activeEvents && activeEvents.length > 0) {
+      for (const ev of activeEvents) {
+        await db
+          .from('events')
+          .update({ dietary_restrictions: parsed.dietaryRestrictions })
+          .eq('id', ev.id)
+          .eq('tenant_id', user.tenantId!)
+      }
+      // Revalidate affected event pages
+      for (const ev of activeEvents) {
+        revalidatePath(`/events/${ev.id}`)
+        revalidatePath(`/my-events/${ev.id}`)
+      }
+    }
+  } catch (err) {
+    console.error('[non-blocking] Dietary cascade to events failed', err)
+  }
+
   revalidatePath(`/clients/${clientId}`)
   return { success: true }
 }

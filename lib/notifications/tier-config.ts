@@ -166,18 +166,39 @@ export const TIER_CHANNEL_DEFAULTS: Record<NotificationTier, ChannelSet> = {
 
 // These action types never trigger an email via the generic notification router.
 // Intent signals are real-time nudges where email would be noise.
-// Event reminders are suppressed here because the lifecycle route sends a rich
-// dedicated template directly - the router only handles push and SMS for these.
+// Actions with rich email templates are suppressed here to prevent double-emailing:
+// the rich email fires directly from the server action, while the notification
+// pipeline still delivers push and SMS normally.
 export const EMAIL_SUPPRESSED_ACTIONS = new Set<NotificationAction>([
+  // Intent signals (real-time nudges, email would be noise)
   'client_on_payment_page',
   'client_viewed_quote',
   'quote_viewed_after_delay',
   'client_viewed_proposal',
   'client_portal_visit',
-  // Reminders use dedicated rich email from lifecycle route, not the generic router template
+  // Reminders use dedicated rich email from lifecycle route
   'event_reminder_1d',
   'event_reminder_2d',
   'event_reminder_7d',
+  // Event transitions: rich emails sent directly from transitions.ts
+  'proposal_accepted',
+  'event_paid',
+  'event_completed',
+  'event_cancelled',
+  'event_proposed_to_client',
+  'event_confirmed_to_client',
+  'event_in_progress_to_client',
+  'event_completed_to_client',
+  'event_cancelled_to_client',
+  'event_paid_to_client',
+  // Payments: rich emails sent directly from Stripe webhook / offline-payment-actions
+  'payment_received',
+  'payment_failed',
+  'refund_processed',
+  'gift_card_purchased',
+  // Inquiries: rich emails sent directly from inquiry actions
+  'new_inquiry',
+  'inquiry_declined_to_client',
 ])
 
 export const TIER_LABELS: Record<NotificationTier, string> = {

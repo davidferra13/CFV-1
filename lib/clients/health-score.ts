@@ -98,14 +98,13 @@ export async function getClientHealthScores(): Promise<ClientHealthSummary> {
     .eq('tenant_id', user.tenantId!)
 
   // Fetch client profile completeness indicators
-  // cast as any - some columns may not be in generated types yet
   const { data: clients } = await db
     .from('clients')
     .select(
-      'id, allergies, dietary_preferences, kitchen_constraints, what_they_care_about, personal_milestones'
+      'id, allergies, dietary_restrictions, kitchen_constraints, what_they_care_about, personal_milestones'
     )
     .eq('tenant_id', user.tenantId!)
-    .eq('is_active', true)
+    .is('deleted_at', null)
 
   // Fetch referral counts per client (how many new clients they've referred)
   // cast as any - referred_by_client_id not in generated types yet
@@ -157,7 +156,7 @@ export async function getClientHealthScores(): Promise<ClientHealthSummary> {
     let engagementScore = 0
     if (client) {
       if (client.allergies) engagementScore += 4
-      if (client.dietary_preferences) engagementScore += 3
+      if (client.dietary_restrictions) engagementScore += 3
       if (client.kitchen_constraints) engagementScore += 3
       if (client.what_they_care_about) engagementScore += 3
       if (client.personal_milestones) engagementScore += 2

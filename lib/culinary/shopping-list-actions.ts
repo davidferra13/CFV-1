@@ -25,6 +25,7 @@ export type ShoppingListItem = {
   toBuy: number
   estimatedCostCents: number
   eventCount: number
+  allergenFlags: string[] // EC-G8: allergen flags from ingredient for safety cross-reference
 }
 
 export type ShoppingListResult = {
@@ -219,7 +220,9 @@ export async function generateShoppingList(input: {
   const [ingredientRows, stockRows, vendorItemsRows, vendorRows] = await Promise.all([
     db
       .from('ingredients')
-      .select('id, name, category, last_price_cents, preferred_vendor, default_yield_pct')
+      .select(
+        'id, name, category, last_price_cents, preferred_vendor, default_yield_pct, allergen_flags'
+      )
       .eq('tenant_id', user.tenantId!)
       .in('id', ingredientIds),
     db
@@ -320,6 +323,7 @@ export async function generateShoppingList(input: {
         toBuy: 0,
         estimatedCostCents: 0,
         eventCount: events.length,
+        allergenFlags: (ingredient.allergen_flags as string[]) ?? [],
         _recipeAccum: [{ qty: recipeQty, unit: normUnit }],
         _buyAccum: [{ qty: buyQty, unit: normUnit }],
       })

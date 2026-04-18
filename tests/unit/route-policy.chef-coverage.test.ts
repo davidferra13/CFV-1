@@ -65,7 +65,13 @@ function discoverChefRoutePaths(): string[] {
 describe('Chef Route Policy Coverage', () => {
   it('covers every app/(chef) route file path', () => {
     const routePaths = discoverChefRoutePaths()
-    const uncovered = routePaths.filter((route) => !isChefRoutePath(route))
+    // Exclude routes also in PUBLIC_UNAUTHENTICATED_PATHS; middleware handles
+    // those before the chef-protection check runs, so they don't need to be
+    // in CHEF_PROTECTED_PATHS (e.g. /availability, /feedback serve both public
+    // and chef layout groups depending on auth state).
+    const uncovered = routePaths.filter(
+      (route) => !isChefRoutePath(route) && !isPublicUnauthenticatedPath(route)
+    )
 
     assert.equal(routePaths.length > 0, true, 'No chef route paths discovered under app/(chef)')
     assert.deepEqual(

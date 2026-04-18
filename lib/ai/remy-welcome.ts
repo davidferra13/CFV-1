@@ -4,7 +4,9 @@
 
 export const REMY_WELCOME_MESSAGE = `Welcome to ChefFlow! I'm Remy - your AI sous chef.
 
-I'm here to help you get set up and running. Here are some things I can help with right now:
+I run on ChefFlow's own private AI, so your data stays yours. Responses may take a moment longer than cloud AI services, but nothing leaves ChefFlow.
+
+Here are some things I can help with right now:
 
 - **Import your clients** - paste names, upload a CSV, or just tell me about them
 - **Log a past event** - seed your financials with real data from day one

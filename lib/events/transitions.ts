@@ -392,6 +392,45 @@ export async function transitionEvent({
     } catch (err) {
       log.events.warn('Cancellation refund notification failed (non-blocking)', { error: err })
     }
+
+    // FC-G22: Detect already-purchased ingredients that are now surplus
+    try {
+      const adminDb = createServerClient({ admin: true })
+      const { data: purchasedItems } = await adminDb
+        .from('inventory_transactions')
+        .select('ingredient_id, quantity, cost_cents')
+        .eq('chef_id', event.tenant_id)
+        .eq('event_id', eventId)
+        .eq('transaction_type', 'receive')
+
+      const items = (purchasedItems ?? []) as any[]
+      if (items.length > 0) {
+        const totalCostCents = items.reduce(
+          (sum: number, r: any) => sum + Math.abs(Number(r.cost_cents) || 0),
+          0
+        )
+        const costStr = totalCostCents > 0 ? ` (~$${(totalCostCents / 100).toFixed(2)} spent)` : ''
+
+        const { createNotification, getChefAuthUserId } =
+          await import('@/lib/notifications/actions')
+        const chefUserId = await getChefAuthUserId(event.tenant_id)
+        if (chefUserId) {
+          await createNotification({
+            tenantId: event.tenant_id,
+            recipientId: chefUserId,
+            category: 'operations',
+            action: 'cancelled_event_surplus',
+            title: 'Surplus ingredients from cancelled event',
+            body: `"${event.occasion || 'Event'}" had ${items.length} purchased ingredient(s)${costStr}. Consider reusing for another event or logging as unused.`,
+            actionUrl: `/events/${eventId}`,
+            eventId,
+            clientId: event.client_id,
+          })
+        }
+      }
+    } catch (err) {
+      log.events.warn('Surplus ingredient detection failed (non-blocking)', { error: err })
+    }
   }
 
   // Post system message to linked chat conversation (non-blocking)
