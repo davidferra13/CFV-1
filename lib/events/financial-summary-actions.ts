@@ -154,6 +154,20 @@ export async function getEventFinancialSummaryFull(
 
   if (actualGrocerySpendCents === 0) pendingItems.push('Receipts not uploaded')
 
+  // EC-G1 fix: compute projected food cost from recipe book via DB function
+  let projectedFoodCostCents: number | null = null
+  try {
+    const { data: costRow } = await (db as any).rpc('compute_projected_food_cost_cents', {
+      p_event_id: eventId,
+    })
+    if (costRow != null) {
+      projectedFoodCostCents = Number(costRow) || null
+    }
+  } catch (err) {
+    // Non-blocking: function may not exist or event may lack menu
+    console.error('[non-blocking] compute_projected_food_cost_cents failed', err)
+  }
+
   // Margins
   const grossProfitCents = quotedPriceCents - totalCostCents
   const grossMarginPercent =
@@ -232,7 +246,7 @@ export async function getEventFinancialSummaryFull(
       varianceCents,
     },
     costs: {
-      projectedFoodCostCents: null, // future: derive from recipe book
+      projectedFoodCostCents,
       actualGrocerySpendCents,
       leftoverCreditInCents,
       leftoverCreditOutCents,

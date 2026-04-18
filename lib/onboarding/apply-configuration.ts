@@ -41,10 +41,8 @@ async function applyConfiguration(config: SystemConfiguration) {
   // 3. ai_preferences (upsert)
   await upsertAiPreferences(db, tenantId, config)
 
-  // 4. event_templates (insert if none exist, new maturity only)
-  if (config.starter_template) {
-    await insertStarterTemplate(db, tenantId, config.starter_template)
-  }
+  // 4. event_templates: skipped until event creation UI supports template selection
+  // (see system-integrity-question-set-configuration-engine.md C8)
 
   // 5. HACCP plan (non-blocking)
   try {
@@ -170,29 +168,4 @@ async function upsertAiPreferences(db: any, tenantId: string, config: SystemConf
     })
     if (error) console.error('[non-blocking] ai_preferences insert error:', error)
   }
-}
-
-async function insertStarterTemplate(
-  db: any,
-  tenantId: string,
-  template: NonNullable<SystemConfiguration['starter_template']>
-) {
-  // Only create if no templates exist yet
-  const { data: existing } = await fromTable(db, 'event_templates')
-    .select('id')
-    .eq('tenant_id', tenantId)
-    .limit(1)
-
-  if (existing && (existing as any[]).length > 0) return // chef already has templates
-
-  const { error } = await fromTable(db, 'event_templates').insert({
-    tenant_id: tenantId,
-    name: template.name,
-    occasion: template.occasion,
-    service_style: template.service_style,
-    guest_count: template.guest_count,
-    is_default: true,
-  })
-
-  if (error) console.error('[non-blocking] event_templates insert error:', error)
 }

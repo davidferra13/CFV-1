@@ -10,7 +10,7 @@ import { useState, useEffect } from 'react'
 import { Shield, ArrowRight, Bot } from '@/components/ui/icons'
 import Link from 'next/link'
 import { getAiPreferences } from '@/lib/ai/privacy-actions'
-import { GATE_DESCRIPTION } from '@/lib/ai/privacy-narrative'
+import { GATE_DESCRIPTION, SPEED_TRADEOFF_SHORT } from '@/lib/ai/privacy-narrative'
 
 export function RemyGate({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<'loading' | 'gated' | 'allowed'>('loading')
@@ -51,7 +51,8 @@ export function RemyGate({ children }: { children: React.ReactNode }) {
       <div className="space-y-2">
         <h2 className="text-xl font-bold text-stone-100">Set Up Remy</h2>
         <p className="text-stone-500 text-sm leading-relaxed">
-          Before using Remy, take a quick look at how it works. {GATE_DESCRIPTION}
+          Before using Remy, take a quick look at how it works. {GATE_DESCRIPTION}{' '}
+          {SPEED_TRADEOFF_SHORT}
         </p>
       </div>
 

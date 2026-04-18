@@ -22,11 +22,12 @@ type InterviewProps = {
     inputs: ConfigurationInputs,
     hints: ConfigurationInputs extends never ? never : Record<string, boolean>
   ) => void
+  onSkip?: () => void
 }
 
 type PartialInputs = Partial<ConfigurationInputs>
 
-export function OnboardingInterview({ onComplete }: InterviewProps) {
+export function OnboardingInterview({ onComplete, onSkip }: InterviewProps) {
   const [screenIndex, setScreenIndex] = useState(0)
   const [inputs, setInputs] = useState<PartialInputs>({})
   const [isPending, startTransition] = useTransition()
