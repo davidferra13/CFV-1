@@ -200,8 +200,10 @@ export function AdminSidebar({ userId }: { userId: string }) {
           <AdminNavLink key={item.href} item={item} collapsed={collapsed} isActive={false} />
         ))}
         <button
+          type="button"
           onClick={() => signOut()}
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-stone-400 hover:bg-white/5 hover:text-stone-200 transition-colors"
+          title="Sign Out"
         >
           <LogOut className="h-4 w-4 shrink-0" />
           {!collapsed && <span>Sign Out</span>}
@@ -228,6 +230,7 @@ export function AdminMobileNav({ userId }: { userId: string }) {
         <div className="flex items-center gap-2">
           <NotificationBell />
           <button
+            type="button"
             onClick={() => setOpen(!open)}
             className="rounded-md p-1.5 text-stone-400 hover:text-stone-200"
             aria-label={open ? 'Close menu' : 'Open menu'}

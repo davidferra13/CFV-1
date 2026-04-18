@@ -24,6 +24,7 @@ import {
   getCachedCannabisAccess,
   getCachedDeletionStatus,
   getCachedIsAdmin,
+  getCachedIsPrivileged,
 } from '@/lib/chef/layout-data-cache'
 import { TestAccountBanner } from '@/components/dev/test-account-banner'
 import { CommandPalette } from '@/components/search/command-palette'
@@ -91,6 +92,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     announcement,
     _unusedCannabisTier,
     userIsAdmin,
+    userIsPrivileged,
     deletionStatus,
     permissionSet,
     remyEnabled,
@@ -101,8 +103,10 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     getAnnouncement().catch(() => null),
     // Cannabis tier check - kept in Promise.all to avoid reindexing, but unused (cannabis is admin-only now)
     getCachedCannabisAccess(user.id).catch(() => false),
-    // Admin check - cached 60s against persisted platform_admins access
+    // Admin check (admin + owner only, NOT vip) - cached 60s
     getCachedIsAdmin(user.id).catch(() => false),
+    // Privileged check (vip + admin + owner) - cached 60s, controls focus mode bypass + all modules
+    getCachedIsPrivileged(user.id).catch(() => false),
     // Deletion status - cached 60s, non-fatal, fail closed (no banner)
     getCachedDeletionStatus(user.entityId).catch(() => ({
       isPending: false,
@@ -117,6 +121,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     isAiEnabledForTenant(user.entityId).catch(() => false),
   ])
   const effectiveAdmin = userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true'
+  const effectivePrivileged = userIsPrivileged || process.env.DEMO_MODE_ENABLED === 'true'
 
   const profile = layoutData
   const primaryNavHrefs = layoutData.primary_nav_hrefs
