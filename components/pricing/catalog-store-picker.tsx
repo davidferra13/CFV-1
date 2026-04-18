@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { Search, Star, MapPin, Clock } from '@/components/ui/icons'
 import type { CatalogStore } from '@/lib/openclaw/catalog-actions'
 import type { PreferredStore } from '@/lib/grocery/store-shopping-actions'
+import { canonicalizeStoreName } from '@/lib/openclaw/catalog-store-selection'
 
 // Store branding - consistent colors for known chains
 const STORE_BRANDING: Record<string, { color: string; initials: string }> = {
@@ -20,9 +21,9 @@ const STORE_BRANDING: Record<string, { color: string; initials: string }> = {
   'trader joe': { color: '#ba2225', initials: 'TJ' },
 }
 
-// Strip source jargon like "(via Flipp)", "(via Instacart)" from store names
+// Canonicalize store names: strip "(via X)", map slug forms to display names
 function cleanStoreName(name: string): string {
-  return name.replace(/\s*\(via\s+[^)]+\)/gi, '').trim()
+  return canonicalizeStoreName(name)
 }
 
 function getStoreBrand(name: string) {
@@ -160,7 +161,10 @@ export function CatalogStorePicker({
                 store={store}
                 displayName={cleanStoreName(store.name)}
                 isPreferred
-                onClick={() => onSelectStore(store.id, cleanStoreName(store.name))}
+                onClick={() => {
+                  const displayName = cleanStoreName(store.name)
+                  onSelectStore(displayName, displayName)
+                }}
               />
             ))}
           </div>
@@ -181,7 +185,10 @@ export function CatalogStorePicker({
                 key={store.id}
                 store={store}
                 displayName={cleanStoreName(store.name)}
-                onClick={() => onSelectStore(store.id, cleanStoreName(store.name))}
+                onClick={() => {
+                  const displayName = cleanStoreName(store.name)
+                  onSelectStore(displayName, displayName)
+                }}
               />
             ))}
           </div>

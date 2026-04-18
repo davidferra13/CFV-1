@@ -56,6 +56,7 @@ export default async function InvoicesPage() {
   ])
 
   const now = new Date()
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
   const refundedEventIds = new Set(refundEntries.map((e: any) => e.event_id).filter(Boolean))
 
   const counts = {
@@ -65,7 +66,7 @@ export default async function InvoicesPage() {
       ['paid', 'confirmed', 'in_progress', 'completed'].includes(e.status)
     ).length,
     overdue: events.filter(
-      (e: any) => !['completed', 'cancelled'].includes(e.status) && new Date(e.event_date) < now
+      (e: any) => !['completed', 'cancelled'].includes(e.status) && (e.event_date ?? '') < todayStr
     ).length,
     refunded: events.filter((e: any) => refundedEventIds.has(e.id)).length,
     cancelled: events.filter((e: any) => e.status === 'cancelled').length,

@@ -52,15 +52,17 @@ async function getHeroMetrics(): Promise<HeroMetric[]> {
     recentInquiryDates,
     upcomingEventDates,
   ] = await Promise.all([
-    // This month's revenue from ledger
+    // All-time revenue from ledger (aligned with getTenantFinancialSummary)
     db
-      .from('event_financial_summary')
-      .select('total_paid_cents')
+      .from('ledger_entries')
+      .select('amount_cents')
       .eq('tenant_id', tenantId)
+      .eq('is_refund', false)
+      .not('entry_type', 'eq', 'tip')
       .then(({ data, error }: any) => {
         if (error) throw new Error(`Revenue query failed: ${error.message ?? error}`)
         if (!data) return 0
-        return data.reduce((sum: number, row: any) => sum + (row.total_paid_cents || 0), 0)
+        return data.reduce((sum: number, row: any) => sum + (row.amount_cents || 0), 0)
       }),
 
     // Events this week

@@ -928,10 +928,10 @@ export function PushDinnerBuilder() {
             <div className="bg-amber-950 border border-amber-200 rounded-lg p-3 flex items-start gap-2.5">
               <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
               <div>
-                <p className="text-sm font-medium text-amber-800">Ollama is not running</p>
+                <p className="text-sm font-medium text-amber-800">AI temporarily unavailable</p>
                 <p className="text-xs text-amber-700 mt-0.5">
-                  Start Ollama to generate personalised drafts. Or write each message manually below
-                  - click Edit on any card.
+                  AI drafting is temporarily unavailable. You can write each message manually below
+                  by clicking Edit on any card.
                 </p>
               </div>
             </div>

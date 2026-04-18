@@ -143,6 +143,8 @@ export type NotificationAction =
   // Marketplace
   | 'marketplace_lead_stale'
   | 'proposal_declined'
+  // Client follow-up rules
+  | 'followup_rule_triggered'
 
 export type Notification = {
   id: string
@@ -343,6 +345,9 @@ export const NOTIFICATION_CONFIG: Record<
 
   // Marketplace
   marketplace_lead_stale: { category: 'lead', icon: 'AlertTriangle', toastByDefault: true },
+
+  // Client follow-up rules
+  followup_rule_triggered: { category: 'client', icon: 'Bell', toastByDefault: false },
 }
 
 // Category display names for preferences UI

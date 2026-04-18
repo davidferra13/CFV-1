@@ -90,7 +90,7 @@ const CAPABILITIES = [
   {
     title: 'AI Assistant',
     detail:
-      'Remy helps with break-even analysis, portion calculations, client communication drafts, and more. Secure cloud AI that never stores conversation content.',
+      'Remy helps with break-even analysis, portion calculations, client communication drafts, and more. Private AI that never stores conversation content.',
   },
 ]
 

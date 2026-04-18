@@ -137,7 +137,7 @@ const FAQ_CATEGORIES: FaqCategory[] = [
       {
         question: 'Is my data private?',
         answer:
-          'Yes. Client data, financials, recipes, and conversations are processed through a secure cloud AI runtime that does not store conversation content. Your recipes are your intellectual property. We never use your data to train AI models or share it with third parties. The Trust Center has the full breakdown.',
+          "Yes. Client data, financials, recipes, and conversations are processed by ChefFlow's own private AI infrastructure. We do not store conversation content on our servers. Your recipes are your intellectual property. We never use your data to train AI models or share it with third parties. The Trust Center has the full breakdown.",
       },
       {
         question: 'How long does setup take?',

@@ -10,7 +10,7 @@ import { createServerClient } from '@/lib/db/server'
 export const metadata: Metadata = { title: 'Payment Plan' }
 
 export default async function PaymentPlanPage({ params }: { params: { id: string } }) {
-  await requireClient()
+  const user = await requireClient()
   const db: any = createServerClient()
 
   let eventResult: {
@@ -24,6 +24,7 @@ export default async function PaymentPlanPage({ params }: { params: { id: string
       .from('events')
       .select('id, quoted_price_cents, event_date, occasion')
       .eq('id', params.id)
+      .eq('client_id', user.entityId)
       .single()
     eventResult = data
   } catch {

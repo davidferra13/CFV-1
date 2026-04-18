@@ -276,8 +276,8 @@ export default async function ProspectingPage({
             <div className="rounded-lg bg-brand-950 border border-brand-200 p-4">
               <h4 className="font-medium text-brand-900 text-sm mb-2">AI Scrub</h4>
               <p className="text-xs text-brand-700">
-                AI Scrub uses cloud AI to research prospects. AI features require the AI runtime to
-                be configured and available.
+                AI Scrub uses ChefFlow&apos;s private AI to research prospects. AI features require
+                the AI runtime to be configured and available.
               </p>
             </div>
           </CardContent>

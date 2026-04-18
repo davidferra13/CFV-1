@@ -145,6 +145,9 @@ export const DEFAULT_TIER_MAP: Record<NotificationAction, NotificationTier> = {
   // Marketplace
   marketplace_lead_stale: 'alert',
 
+  // Client follow-up rules
+  followup_rule_triggered: 'info',
+
   // Loyalty
   loyalty_trigger: 'info',
   loyalty_adjustment: 'alert',

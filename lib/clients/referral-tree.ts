@@ -25,13 +25,25 @@ export async function getClientReferralTree(clientId: string): Promise<ReferralN
   const client = clientRaw as any
   if (!client) throw new Error('Client not found')
 
-  // Get clients this person referred - using referral_source matching by name as fallback
-  // (referred_by_client_id is not in schema; use referral_source text match)
-  const { data: referredClientsRaw } = await db
+  // Get clients this person referred via FK, with text match fallback
+  const { data: referredByFk } = await db
     .from('clients')
     .select('id, full_name')
     .eq('tenant_id', user.entityId)
-    .eq('referral_source', client.full_name)
+    .eq('referred_by_client_id', clientId)
+    .is('deleted_at', null)
+
+  // Fallback: text match for legacy data without FK set
+  let referredClientsRaw = referredByFk || []
+  if (referredClientsRaw.length === 0 && client.full_name) {
+    const { data: referredByName } = await db
+      .from('clients')
+      .select('id, full_name')
+      .eq('tenant_id', user.entityId)
+      .eq('referral_source', client.full_name)
+      .is('deleted_at', null)
+    referredClientsRaw = referredByName || []
+  }
 
   const referredClients = (referredClientsRaw as any[]) || []
 

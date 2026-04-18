@@ -1,6 +1,8 @@
+import { headers } from 'next/headers'
 import { createServerClient } from '@/lib/db/server'
 import { Card, CardContent } from '@/components/ui/card'
 import { dateToDateString } from '@/lib/utils/format'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 export default async function PublicAvailabilityPage({
   params,
@@ -8,6 +10,21 @@ export default async function PublicAvailabilityPage({
   params: Promise<{ token: string }>
 }) {
   const { token } = await params
+
+  const ip = (await headers()).get('x-forwarded-for') ?? 'unknown'
+  try {
+    await checkRateLimit(`availability:${ip}`, 30, 15 * 60 * 1000)
+  } catch {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center px-4">
+        <div className="max-w-md text-center">
+          <h2 className="text-xl font-semibold text-stone-100 mb-2">Too many requests</h2>
+          <p className="text-stone-400">Please wait a moment and try again.</p>
+        </div>
+      </div>
+    )
+  }
+
   const db: any = createServerClient()
 
   const { data: shareToken } = await db

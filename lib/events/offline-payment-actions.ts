@@ -238,26 +238,36 @@ export async function recordOfflinePayment(input: RecordOfflinePaymentInput) {
     console.error('[recordOfflinePayment] Activity log failed (non-blocking):', activityErr)
   }
 
-  // ── 7. Push notification - payment received (non-blocking) ──────────────
+  // ── 7. Notification - payment received (non-blocking) ──────────────
   try {
-    const { notifyPaymentReceived } = await import('@/lib/notifications/onesignal')
+    const { createNotification } = await import('@/lib/notifications/actions')
     const amountFormatted = `$${(amountCents / 100).toFixed(2)}`
-    // Fetch client name for the push message
     const { data: pushClient } = await dbAdmin
       .from('clients')
       .select('full_name')
       .eq('id', event.client_id)
       .single()
     const clientName = pushClient?.full_name || 'Client'
-    await notifyPaymentReceived(user.id, amountFormatted, clientName)
+    await createNotification({
+      tenantId: user.tenantId!,
+      recipientId: user.id,
+      category: 'payment',
+      action: 'payment_received',
+      title: `Payment received: ${amountFormatted}`,
+      body: `${clientName} paid ${amountFormatted}`,
+      eventId,
+      clientId: event.client_id,
+    })
   } catch (pushErr) {
-    console.error('[recordOfflinePayment] Push notification failed (non-blocking):', pushErr)
+    console.error('[recordOfflinePayment] Notification failed (non-blocking):', pushErr)
   }
 
   revalidatePath(`/events/${eventId}`)
   revalidatePath(`/my-events/${eventId}`)
   revalidatePath('/events')
   revalidatePath('/my-events')
+  revalidatePath('/dashboard')
+  revalidatePath('/finance')
 
   return { success: true, entryId: ledgerEntry?.id }
 }

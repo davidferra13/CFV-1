@@ -170,6 +170,13 @@ export async function createInstantBookingCheckout(
         onConflict: 'client_id,allergen',
         ignoreDuplicates: true,
       })
+      // Sync structured records -> flat array so document generators see them
+      try {
+        const { syncStructuredToFlat } = await import('@/lib/dietary/allergy-sync')
+        await syncStructuredToFlat({ tenantId, clientId: client.id, db })
+      } catch (syncErr) {
+        console.error('[instant-book] Allergy sync to flat failed (non-blocking):', syncErr)
+      }
     } catch (err) {
       console.error('[instant-book] Allergy record upsert failed (non-blocking):', err)
       dietarySaveFailed = true

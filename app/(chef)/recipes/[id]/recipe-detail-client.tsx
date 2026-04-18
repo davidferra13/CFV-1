@@ -61,12 +61,20 @@ type RecipeDetail = NonNullable<
   Awaited<ReturnType<typeof import('@/lib/recipes/actions').getRecipeById>>
 >
 
+type RecipeProvenance = {
+  fromChefId: string
+  fromChefName: string
+  sharedAt: string
+  originalRecipeId: string
+} | null
+
 type Props = {
   recipe: RecipeDetail
   initialCompletion?: CompletionResult | null
+  provenance?: RecipeProvenance
 }
 
-export function RecipeDetailClient({ recipe, initialCompletion }: Props) {
+export function RecipeDetailClient({ recipe, initialCompletion, provenance }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -347,6 +355,7 @@ export function RecipeDetailClient({ recipe, initialCompletion }: Props) {
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold text-stone-100">{recipe.name}</h1>
             <Badge variant={CATEGORY_COLORS[recipe.category] || 'default'}>{recipe.category}</Badge>
+            {provenance && <Badge variant="info">Shared by {provenance.fromChefName}</Badge>}
           </div>
           {recipe.description && <p className="text-stone-400 mt-1">{recipe.description}</p>}
         </div>

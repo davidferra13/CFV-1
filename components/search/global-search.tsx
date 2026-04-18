@@ -259,9 +259,16 @@ export function GlobalSearch({ userId, tenantId }: { userId: string; tenantId: s
                   role="option"
                   aria-selected="false"
                   onClick={() => {
+                    const trimmed = query.trim()
+                    // Pre-fill query on quick-create form (strip keywords like "new"/"create")
+                    const cleanQuery = trimmed.replace(/\b(new|create|add)\b/gi, '').trim()
+                    const targetHref =
+                      cleanQuery.length >= 2
+                        ? `${action.href}${action.href.includes('?') ? '&' : '?'}q=${encodeURIComponent(cleanQuery)}`
+                        : action.href
                     setOpen(false)
                     setQuery('')
-                    router.push(action.href)
+                    router.push(targetHref)
                   }}
                   className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-stone-800 transition-colors text-left cursor-pointer"
                 >

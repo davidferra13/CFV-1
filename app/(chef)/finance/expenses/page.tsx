@@ -55,9 +55,16 @@ const SECTIONS = [
   {
     href: '/finance/expenses/miscellaneous',
     label: 'Miscellaneous',
-    categories: ['insurance_licenses', 'professional_services', 'education', 'utilities', 'other'],
+    categories: [
+      'insurance_licenses',
+      'professional_services',
+      'education',
+      'utilities',
+      'platform_commission',
+      'other',
+    ],
     icon: '📦',
-    description: 'Insurance, professional services, education, utilities, and other',
+    description: 'Insurance, professional services, education, utilities, platform fees, and other',
   },
 ]
 

@@ -18,6 +18,7 @@ export type QueueDomain =
   | 'post_event'
   | 'client'
   | 'culinary'
+  | 'network'
 
 /**
  * Urgency tiers for visual treatment and filtering.

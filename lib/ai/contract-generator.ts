@@ -35,7 +35,7 @@ export async function generateContract(eventId: string): Promise<GeneratedContra
     db
       .from('events')
       .select(
-        'occasion, guest_count, event_date, serve_time, arrival_time, location_address, service_style, dietary_restrictions, allergies, special_requests, quoted_price_cents, client_id'
+        'occasion, guest_count, event_date, serve_time, arrival_time, location_address, service_style, dietary_restrictions, allergies, special_requests, quoted_price_cents, deposit_amount_cents, client_id'
       )
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
@@ -60,9 +60,19 @@ export async function generateContract(eventId: string): Promise<GeneratedContra
   const quotedPrice = event.quoted_price_cents
     ? '$' + (event.quoted_price_cents / 100).toFixed(2)
     : 'TBD'
-  const depositAmount = event.quoted_price_cents
-    ? '$' + ((event.quoted_price_cents * 0.5) / 100).toFixed(2) + ' (50%)'
+  // Use event's deposit_amount_cents if set, otherwise default to 50%
+  const depositCents =
+    event.deposit_amount_cents ??
+    (event.quoted_price_cents ? Math.round(event.quoted_price_cents * 0.5) : null)
+  const depositPercent =
+    event.quoted_price_cents && depositCents
+      ? Math.round((depositCents / event.quoted_price_cents) * 100)
+      : 50
+  const depositAmount = depositCents
+    ? '$' + (depositCents / 100).toFixed(2) + ` (${depositPercent}%)`
     : 'TBD'
+  const balanceCents =
+    event.quoted_price_cents && depositCents ? event.quoted_price_cents - depositCents : null
 
   const systemPrompt = `You are a legal document drafter for a private chef business.
 Draft a professional service agreement. Use clear, plain English.
@@ -91,7 +101,7 @@ Event Details:
 Financial:
   Total fee: ${quotedPrice}
   Deposit (due at signing): ${depositAmount}
-  Balance due: ${event.quoted_price_cents ? '$' + ((event.quoted_price_cents * 0.5) / 100).toFixed(2) + ' (due 48 hours before event)' : 'TBD'}
+  Balance due: ${balanceCents ? '$' + (balanceCents / 100).toFixed(2) + ' (due 48 hours before event)' : 'TBD'}
 
 Required contract sections:
 1. Services Provided
@@ -132,6 +142,7 @@ Return JSON: {
         allergies: (event.allergies as string[] | null) ?? undefined,
         specialRequests: event.special_requests ?? undefined,
         quotedPriceCents: event.quoted_price_cents ?? 0,
+        depositAmountCents: event.deposit_amount_cents ?? undefined,
       }),
     // AI: enhanced contract with personalized language (when Ollama is online)
     async () => {

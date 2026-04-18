@@ -8,14 +8,17 @@ export type Role = (typeof SYSTEM_ROLES)[number]
 
 export const FEATURE_EXPOSURES = ['visible', 'hidden', 'gated', 'internal'] as const
 
-export type FeatureExposure = (typeof FEATURE_EXPOSURES)[number]
+export type Exposure = (typeof FEATURE_EXPOSURES)[number]
+
+/** @deprecated Use Exposure instead */
+export type FeatureExposure = Exposure
 
 export type FeaturePlacement = {
   featureId: string
   currentSurface?: Surface
   correctSurface: Surface
   roles: Role[]
-  exposure: FeatureExposure
+  exposure: Exposure
   notes?: string
 }
 

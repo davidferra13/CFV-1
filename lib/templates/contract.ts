@@ -34,6 +34,7 @@ export type ContractVars = {
   allergies?: string[]
   specialRequests?: string
   quotedPriceCents: number
+  depositAmountCents?: number
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -67,7 +68,7 @@ function formatCents(cents: number): string {
  * Returns the exact same type as the AI version for drop-in compatibility.
  */
 export function generateContractTemplate(v: ContractVars): GeneratedContract {
-  const deposit = Math.round(v.quotedPriceCents * 0.5)
+  const deposit = v.depositAmountCents ?? Math.round(v.quotedPriceCents * 0.5)
   const balance = v.quotedPriceCents - deposit
 
   const sections: Array<{ heading: string; content: string }> = [

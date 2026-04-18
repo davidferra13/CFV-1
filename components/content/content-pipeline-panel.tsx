@@ -97,7 +97,7 @@ export default function ContentPipelinePanel({
         // OllamaOfflineError surfaces as a serialized error from the server action
         const msg = err?.message ?? String(err)
         if (msg.includes('Ollama') || msg.includes('offline') || msg.includes('Local AI')) {
-          setError('Start Ollama to generate content drafts.')
+          setError('AI content generation is unavailable right now. Please try again shortly.')
         } else {
           setError('Failed to generate draft. Please try again.')
         }

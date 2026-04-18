@@ -102,6 +102,14 @@ export function TaxCenterClient({ year, mileage, quarterlyEstimates, exportReady
       </div>
 
       {/* Quarterly estimates */}
+      {quarterlyEstimates.every((q) => q.grossIncomeCents === 0) && mileage.totalMiles === 0 && (
+        <div className="rounded-lg border border-stone-700 bg-stone-800/50 p-4 text-center">
+          <p className="text-sm text-stone-400">
+            No income or mileage recorded for {year}. Estimates below will update as you record
+            payments and expenses.
+          </p>
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {quarterlyEstimates.map((q) => (
           <Card key={q.quarter}>

@@ -10,6 +10,7 @@ import { pgClient } from '@/lib/db/index'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { Database } from '@/types/database'
+import { invalidateRemyContextCache } from '@/lib/ai/remy-context'
 import type { ComponentCategory } from './constants'
 import { executeWithIdempotency } from '@/lib/mutations/idempotency'
 import { createConflictError } from '@/lib/mutations/conflict'
@@ -245,6 +246,7 @@ export async function createMenu(input: CreateMenuInput) {
       }
 
       revalidatePath('/menus')
+      invalidateRemyContextCache(user.tenantId!)
       return { success: true, menu }
     },
   })
@@ -542,6 +544,7 @@ export async function updateMenu(menuId: string, input: UpdateMenuInput) {
 
       revalidatePath('/menus')
       revalidatePath(`/menus/${menuId}`)
+      invalidateRemyContextCache(user.tenantId!)
 
       // Log chef activity (non-blocking)
       try {
@@ -647,6 +650,7 @@ export async function deleteMenu(menuId: string) {
   }
 
   revalidatePath('/menus')
+  invalidateRemyContextCache(user.tenantId!)
   return { success: true }
 }
 

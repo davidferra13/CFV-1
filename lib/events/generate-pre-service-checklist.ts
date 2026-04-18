@@ -101,51 +101,68 @@ export async function generatePreServiceChecklist(eventId: string): Promise<PreS
   // SAFETY ITEMS (CRITICAL - always first)
   // ============================================
 
-  // Dietary restrictions from client
+  // Merge dietary/allergy data from BOTH client profile AND event record.
+  // Either source may have data the other lacks (client profile updated after
+  // event creation, or inquiry dietary not on client profile). Union them.
   const clientDietary = Array.isArray(client?.dietary_restrictions)
     ? client.dietary_restrictions.filter(Boolean)
     : []
-  if (clientDietary.length > 0) {
+  const eventDietary = Array.isArray(event.dietary_restrictions)
+    ? event.dietary_restrictions.filter(Boolean)
+    : []
+  const allDietary = [...new Set([...clientDietary, ...eventDietary])]
+
+  const clientAllergies = Array.isArray(client?.allergies) ? client.allergies.filter(Boolean) : []
+  const eventAllergies = Array.isArray(event.allergies) ? event.allergies.filter(Boolean) : []
+  const allAllergies = [...new Set([...clientAllergies, ...eventAllergies])]
+
+  // Also pull guest-level dietary data (Q20 fix: include RSVP dietary in prep sheet)
+  const { data: guestDietaryItems } = await db
+    .from('event_guest_dietary_items' as any)
+    .select('dietary_type, severity')
+    .eq('event_id', eventId)
+
+  const guestDietaryTypes = (guestDietaryItems ?? [])
+    .map((g: any) => g.dietary_type)
+    .filter(Boolean)
+  const guestAnaphylaxis = (guestDietaryItems ?? [])
+    .filter((g: any) => g.severity === 'anaphylaxis')
+    .map((g: any) => g.dietary_type)
+    .filter(Boolean)
+
+  // Merge guest dietary into unified set
+  const allDietaryWithGuests = [...new Set([...allDietary, ...guestDietaryTypes])]
+
+  if (allDietaryWithGuests.length > 0) {
     items.push({
       id: `safety-dietary-${eventId}`,
       category: 'safety',
       title: 'Verify dietary restrictions are accommodated',
-      detail: `Restrictions: ${clientDietary.join(', ')}`,
+      detail: `Restrictions: ${allDietaryWithGuests.join(', ')}`,
       completed: false,
       source: 'auto',
       priority: 'critical',
     })
   }
 
-  // Allergies from client
-  const clientAllergies = Array.isArray(client?.allergies) ? client.allergies.filter(Boolean) : []
-  if (clientAllergies.length > 0) {
+  if (allAllergies.length > 0) {
     items.push({
       id: `safety-allergy-${eventId}`,
       category: 'safety',
       title: 'Confirm allergy-safe preparation',
-      detail: `Allergies: ${clientAllergies.join(', ')}. Cross-contamination check required.`,
+      detail: `Allergies: ${allAllergies.join(', ')}. Cross-contamination check required.`,
       completed: false,
       source: 'auto',
       priority: 'critical',
     })
   }
 
-  // Dietary restrictions from event itself
-  const eventDietary = Array.isArray(event.dietary_restrictions)
-    ? event.dietary_restrictions.filter(Boolean)
-    : []
-  const eventAllergies = Array.isArray(event.allergies) ? event.allergies.filter(Boolean) : []
-  if (eventDietary.length > 0 || eventAllergies.length > 0) {
-    const parts = [
-      eventDietary.length > 0 ? `Dietary: ${eventDietary.join(', ')}` : null,
-      eventAllergies.length > 0 ? `Allergies: ${eventAllergies.join(', ')}` : null,
-    ].filter(Boolean)
+  if (guestAnaphylaxis.length > 0) {
     items.push({
-      id: `safety-event-dietary-${eventId}`,
+      id: `safety-anaphylaxis-${eventId}`,
       category: 'safety',
-      title: 'Review event dietary and allergy notes',
-      detail: parts.join(' | '),
+      title: 'ANAPHYLAXIS RISK: verify menu is safe',
+      detail: `Guest(s) reported anaphylaxis-level sensitivity: ${guestAnaphylaxis.join(', ')}`,
       completed: false,
       source: 'auto',
       priority: 'critical',

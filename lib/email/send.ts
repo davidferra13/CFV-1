@@ -192,6 +192,30 @@ export async function sendEmail({
   if (!result.sent) {
     console.error('[sendEmail] Failed:', result.error)
 
+    // FC-G25: Queue failed emails for retry (dead-letter queue)
+    // Transient failures (circuit breaker, 5xx, network) get queued for later retry.
+    // Hard bounces do NOT get queued (they get suppressed instead).
+    if (result.error && isTransientError(result.error) && !isBounceError(result.error)) {
+      try {
+        const { createAdminClient } = await import('@/lib/db/admin')
+        const db: any = createAdminClient()
+        await db.from('email_dead_letter_queue').insert({
+          to_addresses: recipients,
+          subject,
+          template_name: (typeof react?.type === 'function' ? react.type.name : null) || 'unknown',
+          from_address: from || `${FROM_NAME} <${FROM_EMAIL}>`,
+          reply_to: replyTo || null,
+          error_message: result.error?.message || 'Unknown transient error',
+          retry_count: 0,
+          max_retries: 3,
+          next_retry_at: new Date(Date.now() + 5 * 60_000).toISOString(), // 5 min
+        })
+        console.info(`[sendEmail] Queued for retry: "${subject}"`)
+      } catch (queueErr) {
+        console.error('[sendEmail] Dead-letter queue insert failed (non-blocking):', queueErr)
+      }
+    }
+
     // I2: If bounce/invalid error, suppress future sends to this address
     if (result.error && isBounceError(result.error)) {
       for (const addr of recipients) {

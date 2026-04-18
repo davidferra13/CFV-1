@@ -10,6 +10,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { Database } from '@/types/database'
 import type { PricingInput } from '@/lib/pricing/compute'
+import { invalidateRemyContextCache } from '@/lib/ai/remy-context'
 import type { PricingDecision } from '@/lib/pricing/pricing-decision'
 import { validatePricingDecision } from '@/lib/pricing/pricing-decision'
 import { executeWithIdempotency } from '@/lib/mutations/idempotency'
@@ -185,6 +186,7 @@ export async function createQuote(input: CreateQuoteInput) {
       }
 
       revalidatePath('/quotes')
+      invalidateRemyContextCache(user.tenantId!)
       return { success: true, quote }
     },
   })
@@ -467,6 +469,7 @@ export async function updateQuote(id: string, input: UpdateQuoteInput) {
 
       revalidatePath('/quotes')
       revalidatePath(`/quotes/${id}`)
+      invalidateRemyContextCache(user.tenantId!)
       return { success: true, quote }
     },
   })
@@ -758,6 +761,7 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
 
   revalidatePath('/quotes')
   revalidatePath(`/quotes/${id}`)
+  revalidatePath('/dashboard')
 
   // Client-side cache invalidation
   revalidatePath('/my-quotes')
@@ -948,6 +952,7 @@ export async function deleteQuote(id: string) {
   }
 
   revalidatePath('/quotes')
+  invalidateRemyContextCache(user.tenantId!)
   return { success: true }
 }
 

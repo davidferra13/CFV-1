@@ -26,6 +26,8 @@ export type ProfitAndLossReportData = {
   operatingExpenses: {
     expenseTableCents: number
     laborFromPayrollCents: number
+    subcontractCostsCents: number
+    processingFeesCents: number
     totalOperatingExpensesCents: number
   }
   totals: {
@@ -51,6 +53,7 @@ export async function getProfitAndLossReport(
     poResult,
     expenseResult,
     payroll,
+    subcontractResult,
   ] = await Promise.all([
     db
       .from('ledger_entries')
@@ -60,7 +63,7 @@ export async function getProfitAndLossReport(
       .lte('created_at', `${parsed.endDate}T23:59:59Z`),
     db
       .from('commerce_payments')
-      .select('amount_cents, status, sale_id, ledger_entry_id')
+      .select('amount_cents, fee_cents, status, sale_id, ledger_entry_id')
       .eq('tenant_id', user.tenantId!)
       .gte('created_at', `${parsed.startDate}T00:00:00Z`)
       .lte('created_at', `${parsed.endDate}T23:59:59Z`)
@@ -108,6 +111,14 @@ export async function getProfitAndLossReport(
       .gte('expense_date', parsed.startDate)
       .lte('expense_date', parsed.endDate),
     getPayrollReportForPeriod(parsed.startDate, parsed.endDate),
+    // Subcontract costs: completed agreements within date range
+    db
+      .from('subcontract_agreements')
+      .select('rate_type, rate_cents, estimated_hours')
+      .eq('hiring_chef_id', user.tenantId!)
+      .in('status', ['completed', 'active'])
+      .gte('created_at', `${parsed.startDate}T00:00:00Z`)
+      .lte('created_at', `${parsed.endDate}T23:59:59Z`),
   ])
 
   if (ledgerResult.error)
@@ -140,6 +151,12 @@ export async function getProfitAndLossReport(
     .filter((row: any) => !row.ledger_entry_id)
     .reduce((sum: any, row: any) => sum + (row.amount_cents ?? 0), 0)
 
+  // Payment processing fees (Stripe fees from commerce payments)
+  const processingFeesCents = (commerceResult.data ?? []).reduce(
+    (sum: any, row: any) => sum + (row.fee_cents ?? 0),
+    0
+  )
+
   const linkedSaleIds = new Set(
     (commerceSalesLinks.data ?? []).map((row: any) => row.sale_id).filter(Boolean)
   )
@@ -159,7 +176,17 @@ export async function getProfitAndLossReport(
     0
   )
   const laborFromPayrollCents = payroll.totalLaborCostCents
-  const totalOperatingExpensesCents = expenseTableCents + laborFromPayrollCents
+
+  // Subcontract costs: flat = rate_cents, hourly = rate_cents * estimated_hours
+  const subcontractCostsCents = (subcontractResult?.data ?? []).reduce((sum: any, row: any) => {
+    if (row.rate_type === 'flat') return sum + (row.rate_cents ?? 0)
+    if (row.rate_type === 'hourly') return sum + (row.rate_cents ?? 0) * (row.estimated_hours ?? 0)
+    // percentage: skip for now (would need event quoted_price to compute)
+    return sum
+  }, 0)
+
+  const totalOperatingExpensesCents =
+    expenseTableCents + laborFromPayrollCents + subcontractCostsCents + processingFeesCents
 
   const grossProfitCents = totalRevenueCents - purchaseOrdersCents
   const netProfitLossCents = totalRevenueCents - (purchaseOrdersCents + totalOperatingExpensesCents)
@@ -181,6 +208,8 @@ export async function getProfitAndLossReport(
     operatingExpenses: {
       expenseTableCents,
       laborFromPayrollCents,
+      subcontractCostsCents,
+      processingFeesCents,
       totalOperatingExpensesCents,
     },
     totals: {

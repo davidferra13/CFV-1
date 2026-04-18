@@ -1,34 +1,77 @@
 /**
- * Verifies every top-level app/(chef) route family is protected by chef route policy.
+ * Verifies every app/(chef) route file is protected by chef route policy.
  *
- * If this fails, add the missing root to CHEF_PROTECTED_PATHS in lib/auth/route-policy.ts.
+ * Discovers actual page.tsx / route.ts files and derives their URL paths,
+ * so directories like /chef (which hosts public /chef/[slug] AND protected
+ * /chef/cannabis/*) are tested at the actual route level, not the root level.
+ *
+ * If this fails, add the missing path to CHEF_PROTECTED_PATHS in lib/auth/route-policy.ts.
  */
 
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { readdirSync } from 'node:fs'
+import { readdirSync, existsSync } from 'node:fs'
 import path from 'node:path'
-import { isChefRoutePath } from '../../lib/auth/route-policy'
+import { isChefRoutePath, isPublicUnauthenticatedPath } from '../../lib/auth/route-policy'
 
 const CHEF_APP_ROOT = path.join(process.cwd(), 'app', '(chef)')
 
-function listChefRouteRoots(): string[] {
-  return readdirSync(CHEF_APP_ROOT, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => `/${entry.name}`)
-    .sort()
+/**
+ * Recursively find all page.tsx / route.ts files under app/(chef) and
+ * derive their URL paths. Strips Next.js layout groups like (chef) from
+ * the path segments. Dynamic segments like [id] are preserved as-is for
+ * prefix matching.
+ */
+function discoverChefRoutePaths(): string[] {
+  const routePaths: string[] = []
+
+  function walk(dir: string, urlSegments: string[]) {
+    if (!existsSync(dir)) return
+    const entries = readdirSync(dir, { withFileTypes: true })
+
+    // Check if this directory has a route file
+    const hasRoute = entries.some(
+      (e) =>
+        !e.isDirectory() &&
+        (e.name === 'page.tsx' ||
+          e.name === 'page.ts' ||
+          e.name === 'route.ts' ||
+          e.name === 'route.tsx')
+    )
+
+    if (hasRoute && urlSegments.length > 0) {
+      routePaths.push('/' + urlSegments.join('/'))
+    }
+
+    // Recurse into subdirectories
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue
+      // Skip Next.js internal dirs
+      if (entry.name.startsWith('_')) continue
+
+      // Strip layout groups like (chef), (public) from URL
+      if (entry.name.startsWith('(') && entry.name.endsWith(')')) {
+        walk(path.join(dir, entry.name), urlSegments)
+      } else {
+        walk(path.join(dir, entry.name), [...urlSegments, entry.name])
+      }
+    }
+  }
+
+  walk(CHEF_APP_ROOT, [])
+  return routePaths.sort()
 }
 
 describe('Chef Route Policy Coverage', () => {
-  it('covers every top-level app/(chef) route family', () => {
-    const chefRoots = listChefRouteRoots()
-    const uncoveredRoots = chefRoots.filter((route) => !isChefRoutePath(route))
+  it('covers every app/(chef) route file path', () => {
+    const routePaths = discoverChefRoutePaths()
+    const uncovered = routePaths.filter((route) => !isChefRoutePath(route))
 
-    assert.equal(chefRoots.length > 0, true, 'No chef route roots discovered under app/(chef)')
+    assert.equal(routePaths.length > 0, true, 'No chef route paths discovered under app/(chef)')
     assert.deepEqual(
-      uncoveredRoots,
+      uncovered,
       [],
-      `Missing route roots in CHEF_PROTECTED_PATHS:\n${uncoveredRoots.join('\n')}`
+      `Missing route paths in CHEF_PROTECTED_PATHS:\n${uncovered.join('\n')}`
     )
   })
 })

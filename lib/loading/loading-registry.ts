@@ -873,7 +873,7 @@ const ERROR_MESSAGES: Record<string, { title: string; description: string }> = {
   // AI
   'ai-remy-thinking': {
     title: 'Remy could not respond',
-    description: 'The AI assistant encountered an error. Make sure Ollama is running.',
+    description: 'The AI assistant encountered an error. Please try again.',
   },
   'ai-remy-command': {
     title: 'Command failed',
@@ -881,7 +881,7 @@ const ERROR_MESSAGES: Record<string, { title: string; description: string }> = {
   },
   'ai-business-insights': {
     title: 'Could not generate insights',
-    description: 'Business analysis failed. Ensure Ollama is running and try again.',
+    description: 'Business analysis is temporarily unavailable. Please try again.',
   },
   'ai-aar-generation': {
     title: 'Could not generate review',
@@ -897,7 +897,7 @@ const ERROR_MESSAGES: Record<string, { title: string; description: string }> = {
   },
   'ai-chef-bio': {
     title: 'Could not generate bio',
-    description: 'Bio generation failed. Ensure Ollama is running.',
+    description: 'Bio generation is temporarily unavailable. Please try again.',
   },
   'ai-campaign-draft': {
     title: 'Could not draft campaign',
@@ -992,7 +992,7 @@ const ERROR_MESSAGES: Record<string, { title: string; description: string }> = {
   },
   'gen-contract': {
     title: 'Contract draft failed',
-    description: 'The contract could not be generated. Ensure Ollama is running.',
+    description: 'Contract generation is temporarily unavailable. Please try again.',
   },
 
   // Import
@@ -1025,7 +1025,7 @@ const CATEGORY_ERROR_FALLBACKS: Record<LoadingCategory, { title: string; descrip
   },
   ai: {
     title: 'AI operation failed',
-    description: 'The AI could not complete this task. Ensure Ollama is running.',
+    description: 'AI features are temporarily unavailable. Please try again in a moment.',
   },
   data: { title: 'Save failed', description: 'Your changes could not be saved. Please try again.' },
   upload: { title: 'Upload failed', description: 'The file could not be uploaded.' },

@@ -152,6 +152,14 @@ export async function submitOnboarding(
       onConflict: 'client_id,allergen',
       ignoreDuplicates: true,
     })
+
+    // Sync structured records -> flat array so document generators see them
+    try {
+      const { syncStructuredToFlat } = await import('@/lib/dietary/allergy-sync')
+      await syncStructuredToFlat({ tenantId, clientId, db })
+    } catch (syncErr) {
+      console.error('[onboarding] Allergy sync to flat failed (non-blocking):', syncErr)
+    }
   }
 
   try {

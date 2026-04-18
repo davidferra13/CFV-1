@@ -139,7 +139,7 @@ export async function generateStaffBriefing(eventId: string): Promise<StaffBrief
     formattedDate = event.event_date
   }
 
-  // Build staff list
+  // Build staff list from assignments
   const staff: StaffBriefingMember[] = (assignments ?? []).map((a: any) => {
     const member = a.staff_members
     const role = ROLE_LABELS[a.role_override ?? member?.role ?? 'other'] ?? 'Other'
@@ -150,6 +150,32 @@ export async function generateStaffBriefing(eventId: string): Promise<StaffBrief
       scheduledHours: a.scheduled_hours ?? null,
     }
   })
+
+  // Include collaborating chefs as briefing members
+  try {
+    const { data: collabs } = await db
+      .from('event_collaborators')
+      .select('role, chefs(business_name, phone)')
+      .eq('event_id', eventId)
+      .neq('chef_id', user.tenantId!)
+    if (collabs) {
+      for (const c of collabs as any[]) {
+        staff.push({
+          name: c.chefs?.business_name || 'Collaborating Chef',
+          role:
+            c.role === 'co_host'
+              ? 'Co-Host Chef'
+              : c.role === 'subcontractor'
+                ? 'Subcontractor Chef'
+                : 'Collaborator',
+          phone: c.chefs?.phone ?? null,
+          scheduledHours: null,
+        })
+      }
+    }
+  } catch (err) {
+    console.error('[non-blocking] Collaborator lookup for briefing failed', err)
+  }
 
   // Build dietary restrictions list
   const dietaryRaw =

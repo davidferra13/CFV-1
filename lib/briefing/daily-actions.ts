@@ -168,19 +168,23 @@ export async function generateDailyBriefing(date?: string): Promise<DailyBriefin
     .lte('event_date', weekEndStr)
     .not('status', 'eq', 'cancelled')
 
+  // Revenue this week: use canonical ledger filter (is_refund=false, entry_type != tip)
+  // Scoped to events this week via event_id join, matching finance hub computation
   let revenueThisWeekCents = 0
 
   if (weekEvents && weekEvents.length > 0) {
     const weekEventIds = weekEvents.map((e: any) => e.id)
 
-    const { data: summaries } = await db
-      .from('event_financial_summary')
-      .select('total_paid_cents')
+    const { data: ledgerRows } = await db
+      .from('ledger_entries')
+      .select('amount_cents')
       .eq('tenant_id', user.tenantId!)
+      .eq('is_refund', false)
+      .not('entry_type', 'eq', 'tip')
       .in('event_id', weekEventIds)
 
-    for (const s of summaries || []) {
-      revenueThisWeekCents += s.total_paid_cents ?? 0
+    for (const r of ledgerRows || []) {
+      revenueThisWeekCents += r.amount_cents ?? 0
     }
   }
 

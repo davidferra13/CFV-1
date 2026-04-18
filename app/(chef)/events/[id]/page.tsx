@@ -320,26 +320,34 @@ export default async function EventDetailPage({
     chefArchetype,
     ledgerEntries,
   ] = await Promise.all([
-    getEventFinancialSummary(params.id),
-    getEventTransitions(params.id),
+    getEventFinancialSummary(params.id).catch(() => ({
+      totalPaid: 0,
+      totalRefunded: 0,
+      outstandingBalance: 0,
+    })),
+    getEventTransitions(params.id).catch(() => []),
     isCompletedOrBeyond
       ? getEventClosureStatus(params.id).catch(() => null)
       : Promise.resolve(null),
     isCompletedOrBeyond ? getAARByEventId(params.id) : Promise.resolve(null),
-    getDocumentReadiness(params.id),
+    getDocumentReadiness(params.id).catch(() => ({
+      prepSheet: false,
+      packingList: false,
+      fohMenu: false,
+    })),
     getBusinessDocInfo(params.id).catch(() => null),
-    getEventMenusForCheck(params.id),
-    getEventExpenses(params.id),
-    getEventProfitSummary(params.id),
-    getBudgetGuardrail(params.id),
+    getEventMenusForCheck(params.id).catch(() => []),
+    getEventExpenses(params.id).catch(() => ({ expenses: [], totalCents: 0 })),
+    getEventProfitSummary(params.id).catch(() => null),
+    getBudgetGuardrail(params.id).catch(() => null),
     isCompletedOrBeyond ? getUnrecordedComponentsForEvent(params.id) : Promise.resolve([]),
-    isAIConfigured(),
-    getEventDOPProgress(params.id),
+    isAIConfigured().catch(() => false),
+    getEventDOPProgress(params.id).catch(() => null),
     getMessageThread('event', params.id, {
       includeInquiryMessages: !!event.inquiry_id,
       inquiryId: event.inquiry_id ?? undefined,
-    }),
-    getResponseTemplates(),
+    }).catch(() => []),
+    getResponseTemplates().catch(() => []),
     event.status === 'completed' && event.client_id
       ? getLoyaltyTransactions(event.client_id)
           .then((txs) => txs.filter((tx) => tx.event_id === params.id))
@@ -356,9 +364,9 @@ export default async function EventDetailPage({
       : Promise.resolve(null),
     isCompletedOrBeyond ? getEventModifications(params.id) : Promise.resolve([]),
     isCompletedOrBeyond ? getUnusedIngredients(params.id) : Promise.resolve([]),
-    getSubstitutions(params.id),
+    getSubstitutions(params.id).catch(() => []),
     getEventReadiness(params.id).catch(() => null),
-    getEntityActivityTimeline('event', params.id),
+    getEntityActivityTimeline('event', params.id).catch(() => []),
     getLifecycleProgress(event.inquiry_id ?? undefined, params.id).catch(() => null),
     getEventMenuCostSummary(params.id).catch(() => null),
     getChefArchetype().catch(() => null),
@@ -426,9 +434,14 @@ export default async function EventDetailPage({
       ? getMarketplaceConversionData(params.id).catch(() => null)
       : Promise.resolve(null),
     // Guest & sharing data
-    getEventShares(params.id),
-    getEventGuests(params.id),
-    getEventRSVPSummary(params.id),
+    getEventShares(params.id).catch(() => []),
+    getEventGuests(params.id).catch(() => []),
+    getEventRSVPSummary(params.id).catch(() => ({
+      attending: 0,
+      maybe: 0,
+      declined: 0,
+      pending: 0,
+    })),
     isCompletedOrBeyond ? getEventPhotosForChef(params.id) : Promise.resolve([]),
     event.status !== 'cancelled'
       ? getAvailableCarryForwardItems(params.id).catch(() => [])

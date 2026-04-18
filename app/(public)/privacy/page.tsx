@@ -202,8 +202,8 @@ export default function PrivacyPage() {
             to generate responses. This processing happens in real time and conversation content is
             not stored on the AI provider&apos;s servers after the response is generated. AI
             features that handle private data (client names, dietary restrictions, financials) use a
-            dedicated AI endpoint separate from any general-purpose cloud AI service. You can use
-            the Service without engaging AI features.
+            dedicated private AI endpoint separate from third-party AI services. You can use the
+            Service without engaging AI features.
           </p>
 
           <p className="mt-4 leading-relaxed">

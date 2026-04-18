@@ -178,7 +178,7 @@ export async function captureTakeAChefBooking(
         guest_count: validated.guest_count,
         location_address: validated.location.trim(),
         location_city: 'TBD',
-        location_zip: 'TBD',
+        location_zip: /\b(\d{5}(?:-\d{4})?)\b/.exec(validated.location.trim())?.[1] || 'TBD',
         occasion: validated.occasion.trim(),
         quoted_price_cents: validated.total_price_cents ?? null,
         special_requests: sourceMessage || null,

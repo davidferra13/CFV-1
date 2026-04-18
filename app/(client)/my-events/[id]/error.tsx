@@ -11,7 +11,7 @@ export default function Error({
     <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
       <h2 className="text-xl font-semibold">Something went wrong</h2>
       <p className="text-muted-foreground text-sm">
-        {error.message || 'An unexpected error occurred'}
+        An unexpected error occurred. Please try again.
       </p>
       <button
         onClick={reset}

@@ -269,6 +269,17 @@ async function autoEscalateAllergyInsight({
     console.error('[autoEscalateAllergyInsight] Upsert error:', upsertError)
   }
 
+  // Sync structured records -> flat array so document generators see AI-detected allergies
+  try {
+    const { syncStructuredToFlat } = await import('@/lib/dietary/allergy-sync')
+    await syncStructuredToFlat({ tenantId, clientId, db })
+  } catch (syncErr) {
+    console.error(
+      '[autoEscalateAllergyInsight] Allergy sync to flat failed (non-blocking):',
+      syncErr
+    )
+  }
+
   // 2. Create a pinned dietary note (always creates - notes are a log, not deduplicated)
   const noteEmoji =
     severity === 'anaphylaxis'

@@ -30,7 +30,8 @@ export default async function ClientPortalPage({ params }: { params: { token: st
     notFound()
   }
 
-  const { clientName, upcomingEvents, pastEvents, activeQuotes, pendingPayments } = portal
+  const { clientName, upcomingEvents, pastEvents, activeQuotes, pendingPayments, paymentHistory } =
+    portal
 
   return (
     <div className="min-h-screen bg-stone-800">
@@ -170,6 +171,36 @@ export default async function ClientPortalPage({ params }: { params: { token: st
                     </p>
                   </div>
                   <EventStatusBadge status={ev.status as any} />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Payment History */}
+        {paymentHistory.length > 0 && (
+          <section>
+            <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-3">
+              Payment History
+            </h2>
+            <div className="space-y-2">
+              {paymentHistory.map((p) => (
+                <div
+                  key={p.id}
+                  className="flex items-center justify-between rounded-lg border border-stone-800 bg-stone-900 px-4 py-3"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-green-600">
+                      {formatCurrency(p.amountCents)}
+                    </p>
+                    <p className="text-xs text-stone-400">
+                      {p.type.replace(/_/g, ' ')}
+                      {p.eventOccasion ? ` for ${p.eventOccasion}` : ''}
+                    </p>
+                  </div>
+                  <p className="text-xs text-stone-500">
+                    {format(new Date(p.date), 'MMM d, yyyy')}
+                  </p>
                 </div>
               ))}
             </div>

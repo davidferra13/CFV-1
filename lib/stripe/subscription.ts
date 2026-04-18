@@ -210,6 +210,45 @@ export async function handleSubscriptionUpdated(subscription: Stripe.Subscriptio
     const { revalidateTag } = await import('next/cache')
     revalidateTag(`chef-layout-${chef.id}`)
   }
+
+  // FC-G18: Auto-log subscription payment as a business expense.
+  // Only on active status (payment succeeded) to avoid duplicate entries.
+  if (subscription.status === 'active' && chef?.id) {
+    try {
+      const amountCents =
+        (subscription as any).plan?.amount ??
+        (subscription as any).items?.data?.[0]?.price?.unit_amount ??
+        0
+      if (amountCents > 0) {
+        const today = new Date().toISOString().slice(0, 10)
+        // Idempotency: check if we already logged this billing period
+        const periodKey = `chefflow-sub-${subscription.id}-${(subscription as any).current_period_start}`
+        const { data: existingExpense } = await db
+          .from('expenses')
+          .select('id')
+          .eq('tenant_id', chef.id)
+          .eq('description', periodKey)
+          .maybeSingle()
+
+        if (!existingExpense) {
+          await db.from('expenses').insert({
+            tenant_id: chef.id,
+            expense_date: today,
+            category: 'software',
+            amount_cents: amountCents,
+            description: periodKey,
+            vendor: 'ChefFlow',
+            payment_method: 'card',
+            is_business: true,
+            is_reimbursable: false,
+            notes: 'Auto-logged from subscription payment',
+          })
+        }
+      }
+    } catch (expenseErr) {
+      console.error('[stripe] Auto-expense logging failed (non-blocking):', expenseErr)
+    }
+  }
 }
 
 /**
@@ -228,12 +267,19 @@ export async function handleSubscriptionDeleted(subscription: Stripe.Subscriptio
     .eq('stripe_customer_id' as any, customerId)
     .single()
 
+  // Preserve the period end so paid features remain accessible until the period expires.
+  // Stripe fires subscription.deleted at cancellation time, but the chef already paid
+  // through current_period_end. Clearing it would revoke access they paid for.
+  const periodEnd = (subscription as any).current_period_end
+    ? new Date((subscription as any).current_period_end * 1000).toISOString()
+    : null
+
   const { error } = await db
     .from('chefs')
     .update({
       subscription_status: 'canceled',
       stripe_subscription_id: null,
-      subscription_current_period_end: null,
+      subscription_current_period_end: periodEnd,
     } as any)
     .eq('stripe_customer_id' as any, customerId)
 

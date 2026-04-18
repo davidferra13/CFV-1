@@ -46,6 +46,13 @@ export type ClientPortalData = {
     outstandingCents: number
     paymentUrl: string
   }>
+  paymentHistory: Array<{
+    id: string
+    date: string
+    amountCents: number
+    type: string
+    eventOccasion: string | null
+  }>
 }
 
 export type ClientPortalTokenState = {
@@ -274,6 +281,28 @@ export async function getClientPortalData(token: string): Promise<ClientPortalDa
     }
   }
 
+  // Fetch payment history from ledger (payments client has made)
+  let paymentHistory: ClientPortalData['paymentHistory'] = []
+  if (eventIds.length > 0) {
+    const { data: payments } = await db
+      .from('ledger_entries')
+      .select('id, amount_cents, entry_type, created_at, event_id')
+      .in('event_id', eventIds)
+      .eq('is_refund', false)
+      .not('entry_type', 'eq', 'tip')
+      .order('created_at', { ascending: false })
+      .limit(20)
+
+    const eventMap = new Map((events ?? []).map((e: any) => [e.id, e]))
+    paymentHistory = (payments ?? []).map((p: any) => ({
+      id: p.id,
+      date: p.created_at,
+      amountCents: p.amount_cents ?? 0,
+      type: p.entry_type ?? 'payment',
+      eventOccasion: (eventMap.get(p.event_id) as any)?.occasion ?? null,
+    }))
+  }
+
   return {
     clientId,
     clientName,
@@ -281,6 +310,7 @@ export async function getClientPortalData(token: string): Promise<ClientPortalDa
     pastEvents: past,
     pendingPayments,
     activeQuotes,
+    paymentHistory,
   }
 }
 

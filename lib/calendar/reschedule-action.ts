@@ -2,11 +2,12 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { log } from '@/lib/logger' // events namespace covers calendar operations
 import { revalidatePath } from 'next/cache'
 
-// Statuses that allow rescheduling - events that are confirmed, in-progress,
+// Statuses that allow rescheduling - confirmed, in-progress,
 // completed, or cancelled are locked and cannot be moved.
-const RESCHEDULABLE_STATUSES = ['draft', 'proposed', 'accepted']
+const RESCHEDULABLE_STATUSES = ['draft', 'proposed', 'accepted', 'paid']
 
 export async function rescheduleEvent(
   eventId: string,
@@ -58,7 +59,17 @@ export async function rescheduleEvent(
     return { success: false, error: 'Failed to update event date' }
   }
 
-  // 6. Revalidate calendar pages
+  // 6. Re-sync Google Calendar if a linked entry exists (non-blocking)
+  try {
+    const { syncEventToGoogleCalendar } = await import('@/lib/scheduling/calendar-sync')
+    await syncEventToGoogleCalendar(eventId)
+  } catch (err) {
+    log.events.warn('Google Calendar re-sync after reschedule failed (non-blocking)', {
+      error: err,
+    })
+  }
+
+  // 7. Revalidate calendar pages
   revalidatePath('/calendar')
   revalidatePath(`/events/${eventId}`)
 

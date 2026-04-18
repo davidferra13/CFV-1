@@ -81,12 +81,22 @@ export async function getCashFlowForecast(days: 30 | 60 | 90 = 30): Promise<Cash
     .lte('next_send_date', endDate)
 
   // Get upcoming expenses (from expenses table)
-  const { data: expenses } = await db
-    .from('expenses')
-    .select('amount_cents, expense_date')
-    .eq('tenant_id', user.tenantId!)
-    .gte('expense_date', today)
-    .lte('expense_date', endDate)
+  const [{ data: expenses }, { data: installments }] = await Promise.all([
+    db
+      .from('expenses')
+      .select('amount_cents, expense_date')
+      .eq('tenant_id', user.tenantId!)
+      .gte('expense_date', today)
+      .lte('expense_date', endDate),
+    // Payment plan installments due (expected income)
+    db
+      .from('payment_plan_installments')
+      .select('amount_cents, due_date, paid')
+      .eq('tenant_id', user.tenantId!)
+      .eq('paid', false)
+      .gte('due_date', today)
+      .lte('due_date', endDate),
+  ])
 
   // Build periods (divide into weeks for 30 days, bi-weekly for 60/90)
   const periodDays = days <= 30 ? 7 : 14
@@ -117,12 +127,16 @@ export async function getCashFlowForecast(days: 30 | 60 | 90 = 30): Promise<Cash
       .filter((r: any) => r.next_send_date >= cursor && r.next_send_date <= periodEnd)
       .reduce((sum: number, r: any) => sum + (r.amount_cents || 0), 0)
 
+    const periodInstallments = (installments || [])
+      .filter((i: any) => i.due_date >= cursor && i.due_date <= periodEnd)
+      .reduce((sum: number, i: any) => sum + (i.amount_cents || 0), 0)
+
     const periodExpenses = (expenses || [])
       .filter((e: any) => (e as any).expense_date >= cursor && (e as any).expense_date <= periodEnd)
       .reduce((sum: number, e: any) => sum + ((e as any).amount_cents || 0), 0)
 
     const confirmedIn = periodConfirmedIncome + periodRecurring
-    const projectedIn = periodProjectedIncome
+    const projectedIn = periodProjectedIncome + periodInstallments
     const confirmedOut = periodExpenses
     const projectedOut = 0
 

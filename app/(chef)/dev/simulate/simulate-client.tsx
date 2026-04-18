@@ -55,7 +55,7 @@ export function SimulateClient({ summary, recentRuns, latestRun, latestResults }
           setRunSuccess(true)
           router.refresh()
         } else {
-          setRunError(result.error ?? 'Simulation failed - check that Ollama is running.')
+          setRunError(result.error ?? 'Simulation failed. AI may be temporarily unavailable.')
         }
       } catch (err) {
         toast.error('Simulation failed unexpectedly')
@@ -225,7 +225,7 @@ export function SimulateClient({ summary, recentRuns, latestRun, latestResults }
 
           {isPending && (
             <p className="text-xs text-stone-500 animate-pulse">
-              Ollama is generating scenarios and evaluating outputs. This may take several minutes…
+              AI is generating scenarios and evaluating outputs. This may take several minutes…
             </p>
           )}
         </CardContent>

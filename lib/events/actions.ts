@@ -11,6 +11,7 @@ import { executeWithIdempotency } from '@/lib/mutations/idempotency'
 import { createConflictError } from '@/lib/mutations/conflict'
 import { AuthError, UnknownAppError, ValidationError } from '@/lib/errors/app-error'
 import { isMissingSoftDeleteColumn } from '@/lib/mutations/soft-delete-compat'
+import { invalidateRemyContextCache } from '@/lib/ai/remy-context'
 import {
   EVENT_TIME_ACTIVITY_TYPES,
   EVENT_TIME_ACTIVITY_CONFIG,
@@ -232,6 +233,7 @@ export async function createEvent(input: CreateEventInput) {
       revalidatePath('/events')
       revalidatePath('/dashboard')
       revalidatePath('/my-events')
+      invalidateRemyContextCache(user.tenantId!)
       return { success: true, event }
     },
   })
@@ -546,6 +548,7 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
       revalidatePath(`/events/${eventId}`)
       revalidatePath('/my-events')
       revalidatePath(`/my-events/${eventId}`)
+      invalidateRemyContextCache(user.tenantId!)
 
       // Log chef activity (non-blocking)
       try {
@@ -639,6 +642,7 @@ export async function deleteEvent(eventId: string) {
   }
 
   revalidatePath('/events')
+  invalidateRemyContextCache(user.tenantId!)
   return { success: true }
 }
 

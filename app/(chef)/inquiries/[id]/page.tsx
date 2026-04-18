@@ -77,6 +77,7 @@ import { LifecycleProgressPanel } from '@/components/lifecycle/lifecycle-progres
 import { getNextActions } from '@/lib/lifecycle/next-action'
 import { NextActionBanner } from '@/components/lifecycle/next-action-banner'
 import { RepeatClientPanel } from '@/components/clients/repeat-client-panel'
+import { getHandoffForInquiry } from '@/lib/network/collab-actions'
 
 function getDisplayName(inquiry: {
   client: { id: string; full_name: string; email: string; phone: string | null } | null
@@ -182,6 +183,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
     snapshotData,
     lifecycleProgress,
     nextActions,
+    handoffInfo,
   ] = await Promise.all([
     getInquiryById(params.id),
     getQuotesForInquiry(params.id),
@@ -199,6 +201,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
     getEmailSnapshot(params.id).catch(() => null),
     getLifecycleProgress(params.id).catch(() => null),
     getNextActions(params.id).catch(() => null),
+    getHandoffForInquiry(params.id).catch(() => null),
   ])
 
   if (!inquiry) {
@@ -326,6 +329,13 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
             )}
             {bookingScore && <BookingScoreBadge score={bookingScore} />}
             {leadScore ? <LeadScoreBadge score={leadScore} /> : null}
+            {handoffInfo && (
+              <Link href={`/network?tab=handoffs`}>
+                <Badge variant="info">
+                  Referred ({handoffInfo.conversions}/{handoffInfo.recipientCount} converted)
+                </Badge>
+              </Link>
+            )}
             {inquiry.channel === 'take_a_chef' && (
               <LikelihoodToggle
                 inquiryId={inquiry.id}

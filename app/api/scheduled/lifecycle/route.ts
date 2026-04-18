@@ -372,6 +372,21 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
               .eq('id', event.tenant_id)
               .single()
 
+            // Non-blocking: fetch co-host names
+            let coHostNames: string[] = []
+            try {
+              const { data: collabs } = await db
+                .from('event_collaborators')
+                .select('chef_id, chefs(business_name)')
+                .eq('event_id', event.id)
+                .neq('chef_id', event.tenant_id)
+              if (collabs) {
+                coHostNames = collabs.map((c: any) => c.chefs?.business_name).filter(Boolean)
+              }
+            } catch (err) {
+              console.error('[non-blocking] Collaborator lookup for reminder failed', err)
+            }
+
             await sendEventReminderEmail({
               clientEmail: client.email,
               clientName: client.full_name,
@@ -383,6 +398,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
               location: buildLocation(event),
               guestCount: event.guest_count,
               specialRequests: event.special_requests,
+              coHostNames,
             })
 
             // Also fire push + SMS via notification system (email suppressed in tier-config
@@ -683,6 +699,21 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
             const occasion5 = event.occasion || 'your event'
             const location5 = buildLocation(event)
 
+            // Non-blocking: fetch co-host names for email
+            let coHostNames5: string[] = []
+            try {
+              const { data: collabs5 } = await db
+                .from('event_collaborators')
+                .select('chef_id, chefs(business_name)')
+                .eq('event_id', event.id)
+                .neq('chef_id', event.tenant_id)
+              if (collabs5) {
+                coHostNames5 = collabs5.map((c: any) => c.chefs?.business_name).filter(Boolean)
+              }
+            } catch (err) {
+              console.error('[non-blocking] Collaborator lookup for pre-event reminder failed', err)
+            }
+
             const eventDateMs5 = new Date(event.event_date).getTime()
             const daysUntilEvent5 = Math.round(
               (eventDateMs5 - today5.getTime()) / (1000 * 60 * 60 * 24)
@@ -762,6 +793,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
                   location: location5,
                   guestCount: event.guest_count ?? null,
                   specialRequests: event.special_requests ?? null,
+                  coHostNames: coHostNames5,
                 })
               }
 

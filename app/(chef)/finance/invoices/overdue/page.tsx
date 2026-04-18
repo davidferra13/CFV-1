@@ -21,11 +21,15 @@ export default async function OverdueInvoicesPage() {
   const events = await getEvents()
 
   const now = new Date()
+  // Compare date strings only (YYYY-MM-DD) to avoid timezone issues where
+  // today's event shows as overdue because new Date('2026-04-17') is midnight UTC
+  // but new Date() is local time ahead of UTC.
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
   const overdue = events
     .filter(
-      (e: any) => new Date(e.event_date) < now && !['completed', 'cancelled'].includes(e.status)
+      (e: any) => (e.event_date ?? '') < todayStr && !['completed', 'cancelled'].includes(e.status)
     )
-    .sort((a: any, b: any) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
+    .sort((a: any, b: any) => (a.event_date ?? '').localeCompare(b.event_date ?? ''))
 
   const totalValue = overdue.reduce((s: any, e: any) => s + (e.quoted_price_cents ?? 0), 0)
   const criticalCount = overdue.filter(

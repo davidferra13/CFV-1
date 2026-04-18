@@ -50,7 +50,7 @@ export function StaffEventView({ eventData, token }: Props) {
   const [hoursError, setHoursError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
-  const { event, dietaryAlerts, schedule, chefName, chefPhone } = eventData
+  const { event, dietaryAlerts, schedule, chefName, chefPhone, collaborators } = eventData
 
   const fullAddress = [
     event.locationAddress,
@@ -394,6 +394,23 @@ export function StaffEventView({ eventData, token }: Props) {
               >
                 Call
               </a>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Collaborating Chefs */}
+      {collaborators && collaborators.length > 0 && (
+        <Card>
+          <CardContent className="py-4">
+            <p className="text-xs text-stone-500 mb-2">Also working this event</p>
+            <div className="space-y-1.5">
+              {collaborators.map((c, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-stone-100">{c.name}</p>
+                  <p className="text-xs text-stone-400 capitalize">{c.role}</p>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>

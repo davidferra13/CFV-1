@@ -322,9 +322,24 @@ export async function applyResponseToClient(responseId: string, clientId: string
   if (formError || !form) throw new Error('Form not found')
 
   // Build update payload from responses
-  // Map known field labels to client table columns
+  // Map known field labels to client table columns (non-destructive merge)
   const responseData = response.responses as Record<string, unknown>
   const clientUpdate: Record<string, unknown> = {}
+
+  // Fetch existing client data so we can merge, not overwrite
+  const { data: existingClient } = await (db as any)
+    .from('clients')
+    .select('allergies, dietary_restrictions, notes, unknown_fields')
+    .eq('id', clientId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  const existingAllergies: string[] = Array.isArray(existingClient?.allergies)
+    ? existingClient.allergies
+    : []
+  const existingDietary: string[] = Array.isArray(existingClient?.dietary_restrictions)
+    ? existingClient.dietary_restrictions
+    : []
 
   const fields = form.fields as IntakeFormField[]
   for (const field of fields) {
@@ -333,24 +348,38 @@ export async function applyResponseToClient(responseId: string, clientId: string
 
     const label = field.label.toLowerCase()
     if (label.includes('allerg')) {
-      clientUpdate.allergies = Array.isArray(value) ? value : [value]
+      const incoming = Array.isArray(value) ? value : [value]
+      // Merge with existing, deduplicate (case-insensitive)
+      const merged = [...existingAllergies]
+      for (const item of incoming) {
+        const normalized = String(item).trim().toLowerCase()
+        if (!merged.some((e) => String(e).trim().toLowerCase() === normalized)) {
+          merged.push(String(item).trim())
+        }
+      }
+      clientUpdate.allergies = merged
     } else if (
       label.includes('dietary') &&
       (label.includes('restrict') || label.includes('preference'))
     ) {
-      clientUpdate.dietary_restrictions = Array.isArray(value) ? value : [value]
+      const incoming = Array.isArray(value) ? value : [value]
+      const merged = [...existingDietary]
+      for (const item of incoming) {
+        const normalized = String(item).trim().toLowerCase()
+        if (!merged.some((e) => String(e).trim().toLowerCase() === normalized)) {
+          merged.push(String(item).trim())
+        }
+      }
+      clientUpdate.dietary_restrictions = merged
     } else if (label.includes('note')) {
-      clientUpdate.notes = String(value)
+      // Append to existing notes instead of overwriting
+      const existingNotes = existingClient?.notes ? String(existingClient.notes) : ''
+      const newNote = String(value).trim()
+      clientUpdate.notes = existingNotes
+        ? `${existingNotes}\n\n[Intake form ${new Date().toLocaleDateString()}]\n${newNote}`
+        : newNote
     }
   }
-
-  // Store full responses in client's unknown_fields for reference
-  const { data: existingClient } = await (db as any)
-    .from('clients')
-    .select('unknown_fields')
-    .eq('id', clientId)
-    .eq('tenant_id', tenantId)
-    .single()
 
   const existingUnknown = (existingClient?.unknown_fields as Record<string, unknown>) || {}
   clientUpdate.unknown_fields = {
@@ -387,6 +416,45 @@ export async function applyResponseToClient(responseId: string, clientId: string
     .eq('tenant_id', tenantId)
 
   if (applyError) throw new Error(`Failed to mark response as applied: ${applyError.message}`)
+
+  // Sync allergy flat array -> structured records so readiness gates see them (non-blocking)
+  try {
+    if (clientUpdate.allergies) {
+      const { syncFlatToStructured } = await import('@/lib/dietary/allergy-sync')
+      await syncFlatToStructured({ tenantId, clientId, db: db as any })
+    }
+  } catch (err) {
+    console.error('[applyResponseToClient] Allergy sync failed (non-blocking):', err)
+  }
+
+  // Log dietary changes from intake response (non-blocking)
+  try {
+    if (clientUpdate.allergies || clientUpdate.dietary_restrictions) {
+      const { logDietaryChange } = await import('@/lib/clients/dietary-alert-actions')
+      if (clientUpdate.allergies) {
+        const oldStr = existingAllergies.join(', ')
+        const newStr = (clientUpdate.allergies as string[]).join(', ')
+        if (oldStr !== newStr) {
+          await logDietaryChange(clientId, 'allergy_added', 'allergies', oldStr || null, newStr)
+        }
+      }
+      if (clientUpdate.dietary_restrictions) {
+        const oldStr = existingDietary.join(', ')
+        const newStr = (clientUpdate.dietary_restrictions as string[]).join(', ')
+        if (oldStr !== newStr) {
+          await logDietaryChange(
+            clientId,
+            'restriction_added',
+            'dietary_restrictions',
+            oldStr || null,
+            newStr
+          )
+        }
+      }
+    }
+  } catch (err) {
+    console.error('[applyResponseToClient] Dietary change log failed (non-blocking):', err)
+  }
 
   revalidatePath('/clients/intake')
   revalidatePath(`/clients/${clientId}`)

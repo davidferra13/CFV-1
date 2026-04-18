@@ -209,7 +209,7 @@ function SettingsTab() {
             className={`text-xs mt-0.5 ${prefs.remy_enabled ? 'text-emerald-700' : 'text-stone-500'}`}
           >
             {prefs.remy_enabled
-              ? 'AI features use secure cloud processing. Conversation content is not stored on our servers.'
+              ? "AI features run on ChefFlow's private infrastructure. Conversation content is not stored on our servers."
               : 'Your existing AI data is preserved. Enable Remy from the controls below.'}
           </p>
         </div>

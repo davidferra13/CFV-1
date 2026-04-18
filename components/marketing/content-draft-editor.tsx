@@ -282,8 +282,7 @@ export function ContentDraftEditor({
       {ollamaOffline && (
         <div className="rounded-lg border border-red-700/50 bg-red-900/20 px-4 py-3">
           <p className="text-sm text-red-400">
-            Start Ollama to use AI drafting. Run <code className="font-mono">ollama serve</code> in
-            a terminal.
+            AI drafting is temporarily unavailable. You can write manually instead.
           </p>
         </div>
       )}

@@ -50,6 +50,7 @@ export type StaffEventData = {
   }
   chefName: string
   chefPhone: string | null
+  collaborators: { name: string; role: string }[]
 }
 
 export type StaffEventTask = {
@@ -341,6 +342,24 @@ export async function getStaffEventView(
 
     const ch = chef as any
 
+    // Fetch collaborators (other chefs working this event)
+    let collaborators: { name: string; role: string }[] = []
+    try {
+      const { data: collabs } = await admin
+        .from('event_collaborators' as any)
+        .select('role, chefs(business_name)')
+        .eq('event_id', t.event_id)
+        .neq('chef_id', t.tenant_id)
+      if (collabs) {
+        collaborators = (collabs as any[]).map((c) => ({
+          name: c.chefs?.business_name || 'Collaborator',
+          role: c.role || 'collaborator',
+        }))
+      }
+    } catch (err) {
+      console.error('[non-blocking] Collaborator lookup for staff view failed', err)
+    }
+
     // Build tasks from assigned_tasks JSONB
     const rawTasks = (t.assigned_tasks ?? []) as Array<{ label: string; completed?: boolean }>
     const tasks: StaffEventTask[] = rawTasks.map((task, i) => ({
@@ -385,6 +404,7 @@ export async function getStaffEventView(
       },
       chefName: ch?.business_name ?? 'Chef',
       chefPhone: ch?.phone ?? null,
+      collaborators,
     }
 
     return { state: 'ready', data }

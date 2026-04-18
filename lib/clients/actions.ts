@@ -468,6 +468,16 @@ export async function createClient(input: CreateClientInput) {
 
   const client = result.client
 
+  // Sync allergy flat array -> structured records if allergies were provided (non-blocking)
+  try {
+    if (validated.allergies && (validated.allergies as string[]).length > 0) {
+      const { syncFlatToStructured } = await import('@/lib/dietary/allergy-sync')
+      await syncFlatToStructured({ tenantId: user.tenantId!, clientId: client.id, db })
+    }
+  } catch (err) {
+    console.error('[createClient] Allergy sync failed (non-blocking):', err)
+  }
+
   // Append a zero-dollar ledger entry to record client creation (audit)
   try {
     await appendLedgerEntryForChef({
@@ -828,6 +838,40 @@ export async function updateClient(clientId: string, input: UpdateClientInput) {
     }
   } catch (err) {
     console.error('[updateClient] Dietary change log failed (non-blocking):', err)
+  }
+
+  // Sync allergy stores bidirectionally (non-blocking)
+  // Ensures client_allergy_records (readiness gates, menu checks) stays in sync
+  // with clients.allergies (documents, Remy, staff briefings)
+  try {
+    if ('allergies' in updateFields) {
+      const { syncFlatToStructured } = await import('@/lib/dietary/allergy-sync')
+      await syncFlatToStructured({ tenantId: user.tenantId!, clientId, db })
+    }
+  } catch (err) {
+    console.error('[updateClient] Allergy sync failed (non-blocking):', err)
+  }
+
+  // Propagate dietary/allergy changes to active events (non-blocking)
+  // Ensures prep sheets and event detail show current data, not stale copy-at-creation data
+  try {
+    const dietaryFields = ['allergies', 'dietary_restrictions'] as const
+    const changedDietaryForPropagation = dietaryFields.filter((field) => field in updateFields)
+    if (changedDietaryForPropagation.length > 0) {
+      const activeStatuses = ['accepted', 'paid', 'confirmed', 'in_progress']
+      const propagateFields: Record<string, unknown> = {}
+      for (const field of changedDietaryForPropagation) {
+        propagateFields[field] = (updateFields as Record<string, unknown>)[field] ?? []
+      }
+      await db
+        .from('events')
+        .update(propagateFields)
+        .eq('client_id', clientId)
+        .eq('tenant_id', user.tenantId!)
+        .in('status', activeStatuses)
+    }
+  } catch (err) {
+    console.error('[updateClient] Dietary propagation to events failed (non-blocking):', err)
   }
 
   return result

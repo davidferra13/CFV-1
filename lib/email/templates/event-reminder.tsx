@@ -15,6 +15,7 @@ type EventReminderProps = {
   location: string | null
   guestCount: number | null
   specialRequests: string | null
+  coHostNames?: string[]
 }
 
 export function EventReminderEmail({
@@ -27,6 +28,7 @@ export function EventReminderEmail({
   location,
   guestCount,
   specialRequests,
+  coHostNames,
 }: EventReminderProps) {
   return (
     <BaseLayout preview={`Reminder: ${occasion} tomorrow`}>
@@ -70,6 +72,12 @@ export function EventReminderEmail({
             <tr>
               <td style={detailLabel}>Notes</td>
               <td style={detailValue}>{specialRequests}</td>
+            </tr>
+          )}
+          {coHostNames && coHostNames.length > 0 && (
+            <tr>
+              <td style={detailLabel}>Co-hosted with</td>
+              <td style={detailValue}>{coHostNames.join(', ')}</td>
             </tr>
           )}
         </tbody>

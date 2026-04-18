@@ -33,7 +33,7 @@ export const getTierForChef = cache(async (chefId: string): Promise<TierStatus> 
   const db: any = createAdminClient()
   const { data } = await db
     .from('chefs')
-    .select('subscription_status, trial_ends_at')
+    .select('subscription_status, trial_ends_at, subscription_current_period_end')
     .eq('id', chefId)
     .single()
 
@@ -55,7 +55,16 @@ export const getTierForChef = cache(async (chefId: string): Promise<TierStatus> 
     }
   }
 
-  // Everything else (canceled, unpaid, expired trial, null) → Free
+  // Canceled: honor the remaining paid period before downgrading.
+  // Chef already paid through current_period_end; revoking early is unfair.
+  if (status === 'canceled' && chef?.subscription_current_period_end) {
+    const periodEnd = new Date(chef.subscription_current_period_end)
+    if (periodEnd > new Date()) {
+      return { tier: 'pro', isGrandfathered: false, subscriptionStatus: status }
+    }
+  }
+
+  // Everything else (canceled past period, unpaid, expired trial, null) → Free
   return { tier: 'free', isGrandfathered, subscriptionStatus: status }
 })
 

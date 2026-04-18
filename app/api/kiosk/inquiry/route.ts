@@ -196,16 +196,23 @@ export async function POST(request: Request) {
       console.error('[kiosk/inquiry] Event log failed (non-blocking):', e)
     }
 
-    // 5. Push notification (non-blocking)
+    // 5. Notification (non-blocking)
     try {
-      const { getChefAuthUserId } = await import('@/lib/notifications/actions')
+      const { getChefAuthUserId, createNotification } = await import('@/lib/notifications/actions')
       const chefUserId = await getChefAuthUserId(tenantId)
       if (chefUserId) {
-        const { notifyNewInquiry } = await import('@/lib/notifications/onesignal')
-        await notifyNewInquiry(chefUserId, parsed.full_name, parsed.event_date || 'date TBD')
+        await createNotification({
+          tenantId,
+          recipientId: chefUserId,
+          category: 'inquiry',
+          action: 'new_inquiry',
+          title: `New kiosk inquiry from ${parsed.full_name}`,
+          body: `${parsed.full_name} is interested in booking ${parsed.event_date || 'date TBD'}`,
+          inquiryId: inquiry.id,
+        })
       }
     } catch (err) {
-      console.error('[kiosk/inquiry] Push notification failed (non-blocking):', err)
+      console.error('[kiosk/inquiry] Notification failed (non-blocking):', err)
     }
 
     return NextResponse.json({ success: true, inquiry_id: inquiry.id })

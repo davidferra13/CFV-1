@@ -70,24 +70,33 @@ export default async function PaymentsPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        <Card className="p-4">
-          <p className="text-2xl font-bold text-green-700">{formatCurrency(totalReceived)}</p>
+      {allInbound.length === 0 && refunds.length === 0 ? (
+        <div className="rounded-lg border border-stone-700 bg-stone-800/50 p-6 text-center">
+          <p className="text-stone-400">No payment activity yet.</p>
           <p className="text-sm text-stone-500 mt-1">
-            Total received ({allInbound.length} entries)
+            Payments will appear here once you record your first event payment or deposit.
           </p>
-        </Card>
-        <Card className="p-4">
-          <p className="text-2xl font-bold text-red-600">{formatCurrency(totalRefunded)}</p>
-          <p className="text-sm text-stone-500 mt-1">Total refunded ({refunds.length})</p>
-        </Card>
-        <Card className="p-4">
-          <p className="text-2xl font-bold text-stone-100">
-            {formatCurrency(totalReceived - totalRefunded)}
-          </p>
-          <p className="text-sm text-stone-500 mt-1">Net received</p>
-        </Card>
-      </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-3 gap-4">
+          <Card className="p-4">
+            <p className="text-2xl font-bold text-green-700">{formatCurrency(totalReceived)}</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Total received ({allInbound.length} entries)
+            </p>
+          </Card>
+          <Card className="p-4">
+            <p className="text-2xl font-bold text-red-600">{formatCurrency(totalRefunded)}</p>
+            <p className="text-sm text-stone-500 mt-1">Total refunded ({refunds.length})</p>
+          </Card>
+          <Card className="p-4">
+            <p className="text-2xl font-bold text-stone-100">
+              {formatCurrency(totalReceived - totalRefunded)}
+            </p>
+            <p className="text-sm text-stone-500 mt-1">Net received</p>
+          </Card>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         {VIEWS.map((view) => (

@@ -1289,6 +1289,27 @@ export async function redeemReward(clientId: string, rewardId: string, eventId?:
     }
   }
 
+  // FC-G10: Create ledger entry when reward has monetary value (discount/credit)
+  // This ensures chef's financial summary reflects loyalty discounts.
+  if (reward.reward_value_cents && reward.reward_value_cents > 0 && eventId) {
+    try {
+      const { appendLedgerEntryInternal } = await import('@/lib/ledger/append-internal')
+      await appendLedgerEntryInternal({
+        tenant_id: user.tenantId!,
+        client_id: clientId,
+        event_id: eventId,
+        entry_type: 'credit',
+        amount_cents: -reward.reward_value_cents,
+        payment_method: 'cash',
+        description: `Loyalty reward: ${reward.name}`,
+        internal_notes: `Redeemed ${reward.points_required} points (transaction: ${txData?.id})`,
+        created_by: user.id,
+      })
+    } catch (ledgerErr) {
+      console.error('[redeemReward] Ledger entry failed (non-blocking):', ledgerErr)
+    }
+  }
+
   // SSE real-time broadcast (non-blocking)
   try {
     const { broadcastUpdate } = await import('@/lib/realtime/broadcast')
@@ -1305,6 +1326,7 @@ export async function redeemReward(clientId: string, rewardId: string, eventId?:
 
   revalidatePath(`/clients/${clientId}`)
   revalidatePath('/loyalty')
+  if (eventId) revalidatePath(`/events/${eventId}`)
 
   return {
     success: true,

@@ -12,6 +12,7 @@ const DOMAIN_LABELS: Record<QueueDomain, string> = {
   post_event: 'Post-Event',
   client: 'Client',
   culinary: 'Culinary',
+  network: 'Network',
 }
 
 const URGENCY_LABELS: Record<QueueUrgency, string> = {

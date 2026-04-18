@@ -72,6 +72,14 @@ export function setRequestAuthContext(
 }
 
 export function readRequestAuthContext(headers: HeaderReader): RequestPortalAuthContext | null {
+  // Require middleware-set pathname sentinel before trusting auth headers.
+  // Middleware strips all x-cf-* AND x-pathname headers, then re-sets them only
+  // on authenticated paths. Without the sentinel, spoofed headers on public or
+  // skip-auth paths could fool downstream getCurrentUser() into trusting them.
+  if (!headers.get(PATHNAME_HEADER)) {
+    return null
+  }
+
   if (headers.get(AUTHENTICATED_HEADER) !== '1') {
     return null
   }

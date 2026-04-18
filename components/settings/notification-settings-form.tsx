@@ -285,10 +285,13 @@ export function NotificationSettingsForm({
 
       {/* ─── In-App Attention Controls ─────────────────── */}
       <section className="rounded-xl border border-stone-700 bg-stone-900 p-5">
-        <h2 className="text-base font-semibold text-stone-100">In-App Attention Controls</h2>
+        <h2 className="text-base font-semibold text-stone-100">
+          In-App Attention Controls{' '}
+          <span className="text-xs font-normal text-amber-500">(coming soon)</span>
+        </h2>
         <p className="mt-1 text-sm text-stone-500">
           Reduce alert noise with quiet windows and digest batching. Critical notifications always
-          interrupt immediately.
+          interrupt immediately. Settings are saved and will take effect once the backend is wired.
         </p>
 
         <div className="mt-4 space-y-4">

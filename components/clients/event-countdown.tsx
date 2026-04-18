@@ -19,9 +19,20 @@ type Props = {
   accessInstructions?: string | null
 }
 
-function computeCountdown(eventDate: string) {
+function computeCountdown(eventDate: string, serveTime?: string, arrivalTime?: string | null) {
   const now = new Date()
-  const target = new Date(eventDate)
+  // Build target in local timezone using date parts to avoid UTC midnight offset.
+  // Use arrivalTime or serveTime to pinpoint the event moment.
+  const [year, month, day] = eventDate.split('-').map(Number)
+  let targetHour = 18,
+    targetMin = 0 // default 6 PM if no time provided
+  const timeStr = arrivalTime || serveTime
+  if (timeStr) {
+    const [h, m] = timeStr.split(':').map(Number)
+    targetHour = h
+    targetMin = m
+  }
+  const target = new Date(year, month - 1, day, targetHour, targetMin)
   const diff = target.getTime() - now.getTime()
 
   if (diff <= 0) return { days: 0, hours: 0, minutes: 0, isPast: true }
@@ -54,19 +65,21 @@ export function EventCountdown({
   specialRequests,
   accessInstructions,
 }: Props) {
-  const [countdown, setCountdown] = useState(computeCountdown(eventDate))
+  const [countdown, setCountdown] = useState(computeCountdown(eventDate, serveTime, arrivalTime))
 
   useEffect(() => {
     if (!countdownEnabled) return
     const interval = setInterval(() => {
-      setCountdown(computeCountdown(eventDate))
+      setCountdown(computeCountdown(eventDate, serveTime, arrivalTime))
     }, 60000) // Update every minute
     return () => clearInterval(interval)
-  }, [eventDate, countdownEnabled])
+  }, [eventDate, serveTime, arrivalTime, countdownEnabled])
 
   if (!countdownEnabled) return null
 
-  const formattedDate = new Date(eventDate).toLocaleDateString('en-US', {
+  // Parse as local date parts to avoid UTC offset shifting the displayed day
+  const [yr, mo, dy] = eventDate.split('-').map(Number)
+  const formattedDate = new Date(yr, mo - 1, dy).toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',

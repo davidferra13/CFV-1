@@ -813,3 +813,106 @@ export async function getOutgoingRecipeShares(recipeId?: string): Promise<Recipe
 
   return (data || []) as RecipeShare[]
 }
+
+// ─── Recipe Provenance ──────────────────────────────
+
+/**
+ * Check if a recipe was received from another chef via recipe sharing.
+ * Returns the sharing chef's info, or null if the recipe is original.
+ */
+export async function getRecipeProvenance(recipeId: string): Promise<{
+  fromChefId: string
+  fromChefName: string
+  sharedAt: string
+  originalRecipeId: string
+} | null> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data: share } = await db
+    .from('recipe_shares')
+    .select(
+      `from_chef_id, created_at, original_recipe_id, from_chef:chefs!recipe_shares_from_chef_id_fkey(business_name)`
+    )
+    .eq('created_recipe_id', recipeId)
+    .eq('to_chef_id', user.entityId)
+    .eq('status', 'accepted')
+    .limit(1)
+    .single()
+
+  if (!share) return null
+
+  return {
+    fromChefId: share.from_chef_id,
+    fromChefName: (share as any).from_chef?.business_name || 'Another Chef',
+    sharedAt: share.created_at,
+    originalRecipeId: share.original_recipe_id,
+  }
+}
+
+// ─── Permission Checks ─────────────────────────────
+
+/**
+ * Check if a chef has a specific collaborator permission on an event.
+ * Returns true if the chef is the event's tenant owner (always has all permissions)
+ * or an accepted collaborator with the requested permission.
+ */
+export async function hasCollaboratorPermission(
+  eventId: string,
+  chefId: string,
+  permission: keyof CollaboratorPermissions
+): Promise<boolean> {
+  const db: any = createServerClient()
+
+  // Check if chef is the event owner
+  const { data: event } = await db.from('events').select('tenant_id').eq('id', eventId).single()
+
+  if (!event) return false
+  if (event.tenant_id === chefId) return true
+
+  // Check collaborator permission
+  const { data: collabRow } = await db
+    .from('event_collaborators')
+    .select('permissions')
+    .eq('event_id', eventId)
+    .eq('chef_id', chefId)
+    .eq('status', 'accepted')
+    .single()
+
+  if (!collabRow) return false
+
+  const permissions = collabRow.permissions as CollaboratorPermissions | null
+  if (!permissions) return false
+
+  return permissions[permission] === true
+}
+
+/**
+ * Check if a chef can modify a menu linked to an event.
+ * If menu is not linked to any event, returns true only for the menu's tenant owner.
+ */
+export async function canModifyEventMenu(menuId: string, chefId: string): Promise<boolean> {
+  const db: any = createServerClient()
+
+  // Check menu ownership
+  const { data: menu } = await db.from('menus').select('id, tenant_id').eq('id', menuId).single()
+
+  if (!menu) return false
+  if (menu.tenant_id === chefId) return true
+
+  // Menu belongs to another chef. Check if linked to an event where we're a collaborator
+  const { data: eventMenuLinks } = await (db as any)
+    .from('event_menus')
+    .select('event_id')
+    .eq('menu_id', menuId)
+
+  if (!eventMenuLinks || eventMenuLinks.length === 0) return false
+
+  // Check if chef has can_modify_menu on any linked event
+  for (const link of eventMenuLinks) {
+    const allowed = await hasCollaboratorPermission(link.event_id, chefId, 'can_modify_menu')
+    if (allowed) return true
+  }
+
+  return false
+}

@@ -13,6 +13,7 @@ type EventProposedProps = {
   guestCount: number | null
   location: string | null
   eventUrl: string
+  coHostNames?: string[]
 }
 
 export function EventProposedEmail({
@@ -23,6 +24,7 @@ export function EventProposedEmail({
   guestCount,
   location,
   eventUrl,
+  coHostNames,
 }: EventProposedProps) {
   return (
     <BaseLayout preview={`${chefName} sent you an event proposal`}>
@@ -52,6 +54,12 @@ export function EventProposedEmail({
             <tr>
               <td style={detailLabel}>Location</td>
               <td style={detailValue}>{location}</td>
+            </tr>
+          )}
+          {coHostNames && coHostNames.length > 0 && (
+            <tr>
+              <td style={detailLabel}>Co-hosted with</td>
+              <td style={detailValue}>{coHostNames.join(', ')}</td>
             </tr>
           )}
         </tbody>

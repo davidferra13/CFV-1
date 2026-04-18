@@ -11,7 +11,7 @@ export const CHEF_PROTECTED_PATHS = [
   '/cannabis',
   '/charity',
   '/chat',
-  '/chef',
+  '/chef/cannabis',
   '/circles',
   '/clients',
   '/commands',

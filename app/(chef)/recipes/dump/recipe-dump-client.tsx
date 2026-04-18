@@ -102,7 +102,7 @@ export function RecipeDumpClient({ existingFamilies }: Props) {
         }
         setStep('review')
       } catch (err: any) {
-        setError(err.message || 'Failed to parse recipe. Is Ollama running?')
+        setError(err.message || 'Failed to parse recipe. AI may be temporarily unavailable.')
         setStep('input')
       }
     })
@@ -327,7 +327,7 @@ Ingredients, method, times, yield, dietary notes - whatever you remember. Ollama
             <div className="flex items-center justify-between">
               <p className="text-xs text-zinc-500">Ctrl+Enter to parse</p>
               <Button onClick={handleParse} disabled={!rawText.trim() || step === 'parsing'}>
-                {step === 'parsing' ? 'Parsing with Ollama...' : 'Parse Recipe'}
+                {step === 'parsing' ? 'Parsing recipe...' : 'Parse Recipe'}
               </Button>
             </div>
           </CardContent>

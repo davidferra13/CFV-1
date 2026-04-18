@@ -65,6 +65,44 @@ export async function updateNDA(clientId: string, input: NDAUpdateInput) {
 
   if (error) throw new Error(`Failed to update NDA: ${error.message}`)
 
+  // Sync to client_ndas table so the management system stays consistent (non-blocking)
+  try {
+    if (
+      validated.nda_active !== undefined ||
+      validated.nda_effective_date ||
+      validated.nda_expiry_date
+    ) {
+      const ndaSync: Record<string, unknown> = {
+        tenant_id: tenantId,
+        client_id: clientId,
+        nda_type: 'standard',
+        status: validated.nda_active ? 'signed' : 'draft',
+      }
+      if (validated.nda_effective_date) ndaSync.signed_date = validated.nda_effective_date
+      if (validated.nda_expiry_date) ndaSync.expiry_date = validated.nda_expiry_date
+      if (validated.nda_document_url) ndaSync.document_url = validated.nda_document_url
+      if (validated.nda_coverage) ndaSync.notes = validated.nda_coverage
+
+      // Upsert: if a standard NDA already exists for this client, update it
+      const { data: existing } = await db
+        .from('client_ndas')
+        .select('id')
+        .eq('client_id', clientId)
+        .eq('tenant_id', tenantId)
+        .eq('nda_type', 'standard')
+        .limit(1)
+        .maybeSingle()
+
+      if (existing) {
+        await db.from('client_ndas').update(ndaSync).eq('id', existing.id)
+      } else if (validated.nda_active) {
+        await db.from('client_ndas').insert(ndaSync)
+      }
+    }
+  } catch (syncErr) {
+    console.error('[updateNDA] NDA management sync failed (non-blocking):', syncErr)
+  }
+
   revalidatePath(`/clients/${clientId}`)
   return data
 }

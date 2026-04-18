@@ -9,6 +9,7 @@ import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { Database } from '@/types/database'
+import { invalidateRemyContextCache } from '@/lib/ai/remy-context'
 
 type RecipeCategory = Database['public']['Enums']['recipe_category']
 type RecipeCuisine = Database['public']['Enums']['recipe_cuisine']
@@ -255,6 +256,7 @@ export async function createRecipe(input: CreateRecipeInput) {
   }
 
   revalidatePath('/recipes')
+  invalidateRemyContextCache(user.tenantId!)
   return { success: true, recipe }
 }
 
@@ -687,6 +689,7 @@ export async function updateRecipe(recipeId: string, input: UpdateRecipeInput) {
 
   revalidatePath('/recipes')
   revalidatePath(`/recipes/${recipeId}`)
+  invalidateRemyContextCache(user.tenantId!)
   return { success: true, recipe }
 }
 
@@ -725,6 +728,7 @@ export async function deleteRecipe(recipeId: string) {
   }
 
   revalidatePath('/recipes')
+  invalidateRemyContextCache(user.tenantId!)
   return { success: true }
 }
 

@@ -1,6 +1,12 @@
 // API v2: Inquiries - List & Create
 // GET  /api/v2/inquiries?status=new&page=1&per_page=50
 // POST /api/v2/inquiries
+//
+// NOTE: V2 POST creates the inquiry record with validation but does NOT fire
+// the full side-effect pipeline (notifications, GOLDMINE scoring, automations,
+// Dinner Circle creation, Remy reactive AI). Those trigger when the chef
+// interacts with the inquiry in the app UI. Use this route for lightweight
+// integrations (Zapier, CRM sync, etc.) where side effects are unwanted.
 
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
@@ -14,20 +20,50 @@ import {
   paginationMeta,
 } from '@/lib/api/v2'
 
+const VALID_CHANNELS = [
+  'text',
+  'email',
+  'instagram',
+  'take_a_chef',
+  'yhangry',
+  'phone',
+  'website',
+  'referral',
+  'walk_in',
+  'other',
+  'kiosk',
+  'thumbtack',
+  'theknot',
+  'bark',
+  'cozymeal',
+  'google_business',
+  'gigsalad',
+  'privatechefmanager',
+  'hireachef',
+  'cuisineistchef',
+  'campaign_response',
+  'outbound_prospecting',
+  'wix',
+] as const
+
 const CreateInquiryBody = z.object({
   client_name: z.string().min(1),
   client_email: z.string().email().optional(),
   client_phone: z.string().optional(),
-  event_date: z.string().optional(),
-  guest_count: z.number().int().positive().optional(),
-  occasion: z.string().optional(),
-  message: z.string().optional(),
-  source: z.string().optional(),
-  budget_cents: z.number().int().nonnegative().optional(),
-  dietary_restrictions: z.array(z.string()).optional(),
-  allergies: z.array(z.string()).optional(),
+  channel: z.enum(VALID_CHANNELS).optional().default('other'),
+  confirmed_date: z.string().optional(),
+  confirmed_guest_count: z.number().int().positive().optional(),
+  confirmed_occasion: z.string().optional(),
+  confirmed_location: z.string().optional(),
+  confirmed_budget_cents: z.number().int().nonnegative().optional(),
+  confirmed_dietary_restrictions: z.array(z.string()).optional(),
+  confirmed_service_expectations: z.string().optional(),
+  source_message: z.string().optional(),
+  notes: z.string().optional(),
+  referral_source: z.string().optional(),
   location_city: z.string().optional(),
   location_state: z.string().optional(),
+  idempotency_key: z.string().optional(),
 })
 
 export const GET = withApiAuth(
@@ -39,7 +75,7 @@ export const GET = withApiAuth(
     let query = ctx.db
       .from('inquiries')
       .select(
-        'id, tenant_id, client_name, client_email, client_phone, event_date, guest_count, occasion, message, source, budget_cents, dietary_restrictions, allergies, location_city, location_state, status, created_at, updated_at',
+        'id, tenant_id, contact_name, contact_email, contact_phone, confirmed_date, confirmed_guest_count, confirmed_occasion, confirmed_location, confirmed_budget_cents, channel, source_message, confirmed_dietary_restrictions, location_city, location_state, status, created_at, updated_at',
         { count: 'exact' }
       )
       .eq('tenant_id', ctx.tenantId)
@@ -74,23 +110,45 @@ export const POST = withApiAuth(
 
     const input = parsed.data
 
+    // Idempotency guard
+    if (input.idempotency_key) {
+      const { data: existing } = await ctx.db
+        .from('inquiries')
+        .select('id')
+        .eq('tenant_id', ctx.tenantId)
+        .eq('idempotency_key' as any, input.idempotency_key)
+        .maybeSingle()
+      if (existing) {
+        const { data: full } = await ctx.db
+          .from('inquiries')
+          .select('*')
+          .eq('id', (existing as any).id)
+          .single()
+        return apiCreated(full)
+      }
+    }
+
     const { data: inquiry, error } = await ctx.db
       .from('inquiries')
       .insert({
         tenant_id: ctx.tenantId,
-        client_name: input.client_name,
-        client_email: input.client_email,
-        client_phone: input.client_phone,
-        event_date: input.event_date,
-        guest_count: input.guest_count,
-        occasion: input.occasion,
-        message: input.message,
-        source: input.source ?? 'api',
-        budget_cents: input.budget_cents,
-        dietary_restrictions: input.dietary_restrictions,
-        allergies: input.allergies,
+        contact_name: input.client_name,
+        contact_email: input.client_email,
+        contact_phone: input.client_phone,
+        channel: input.channel,
+        confirmed_date: input.confirmed_date,
+        confirmed_guest_count: input.confirmed_guest_count,
+        confirmed_occasion: input.confirmed_occasion,
+        confirmed_location: input.confirmed_location,
+        confirmed_budget_cents: input.confirmed_budget_cents,
+        confirmed_dietary_restrictions: input.confirmed_dietary_restrictions,
+        confirmed_service_expectations: input.confirmed_service_expectations,
+        source_message: input.source_message,
+        notes: input.notes,
+        referral_source: input.referral_source,
         location_city: input.location_city,
         location_state: input.location_state,
+        idempotency_key: input.idempotency_key,
         status: 'new',
       } as any)
       .select()

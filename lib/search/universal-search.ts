@@ -37,6 +37,29 @@ export interface SearchResponse {
   grouped: Record<string, SearchResult[]>
 }
 
+/**
+ * Simple fuzzy match: checks if all characters of the needle appear in order
+ * within the haystack. Returns a score (0 = no match, higher = better).
+ * Exact substring match scores highest; fuzzy order-preserved match scores lower.
+ */
+function fuzzyScore(haystack: string, needle: string): number {
+  if (haystack.includes(needle)) return 100
+  let hi = 0
+  let matched = 0
+  for (let ni = 0; ni < needle.length; ni++) {
+    while (hi < haystack.length) {
+      if (haystack[hi] === needle[ni]) {
+        matched++
+        hi++
+        break
+      }
+      hi++
+    }
+  }
+  if (matched < needle.length * 0.7) return 0 // require at least 70% character match in order
+  return Math.round((matched / needle.length) * 50)
+}
+
 export async function universalSearch(query: string): Promise<SearchResponse> {
   if (!query || query.length < 2) return { results: [], grouped: {} }
 
@@ -87,17 +110,27 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   addPage('/privacy', 'Privacy', 'Public website', ['policy'])
   addPage('/terms', 'Terms', 'Public website', ['terms of service'])
 
+  // Fuzzy page matching: score each page, include if score > 0, sort by score
+  const pageHits: Array<{
+    href: string
+    page: typeof pageMap extends Map<string, infer V> ? V : never
+    score: number
+  }> = []
   for (const [href, page] of pageMap.entries()) {
     const haystack = [page.title, page.snippet || '', href, ...Array.from(page.keywords)]
       .join(' ')
       .toLowerCase()
-    if (!haystack.includes(needle)) continue
+    const score = fuzzyScore(haystack, needle)
+    if (score > 0) pageHits.push({ href, page, score })
+  }
+  pageHits.sort((a, b) => b.score - a.score)
+  for (const hit of pageHits.slice(0, 15)) {
     results.push({
-      id: makeId('page', href),
+      id: makeId('page', hit.href),
       type: 'page',
-      title: page.title,
-      snippet: page.snippet,
-      url: href,
+      title: hit.page.title,
+      snippet: hit.page.snippet,
+      url: hit.href,
     })
   }
 

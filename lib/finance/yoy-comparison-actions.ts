@@ -116,12 +116,13 @@ export async function getYoyRevenue(year1: number, year2: number): Promise<YoyRe
   const tenantId = user.tenantId!
   const db: any = createServerClient()
 
-  // Fetch ledger entries for both years (revenue = payments received, not refunds)
+  // Fetch ledger entries for both years (revenue = payments received, not refunds, not tips)
   const { data: entries, error } = await db
     .from('ledger_entries')
     .select('amount_cents, is_refund, created_at')
     .eq('tenant_id', tenantId)
     .eq('is_refund', false)
+    .not('entry_type', 'eq', 'tip')
     .gte('created_at', `${Math.min(year1, year2)}-01-01`)
     .lt('created_at', `${Math.max(year1, year2) + 1}-01-01`)
 
@@ -400,12 +401,13 @@ export async function getSeasonalTrends(yearsBack: number = 3): Promise<Seasonal
 
   if (evtError) throw new Error(`Failed to fetch seasonal event data: ${evtError.message}`)
 
-  // Fetch revenue
+  // Fetch revenue (exclude tips to match canonical filter)
   const { data: ledger, error: ledgerError } = await db
     .from('ledger_entries')
     .select('amount_cents, is_refund, created_at')
     .eq('tenant_id', tenantId)
     .eq('is_refund', false)
+    .not('entry_type', 'eq', 'tip')
     .gte('created_at', `${startYear}-01-01`)
     .lte('created_at', `${currentYear}-12-31`)
 
@@ -478,12 +480,13 @@ export async function getGrowthMetrics(year: number): Promise<GrowthMetricsResul
   const db: any = createServerClient()
   const previousYear = year - 1
 
-  // Fetch revenue for both years
+  // Fetch revenue for both years (exclude tips to match canonical filter)
   const { data: ledger, error: ledgerError } = await db
     .from('ledger_entries')
     .select('amount_cents, is_refund, created_at')
     .eq('tenant_id', tenantId)
     .eq('is_refund', false)
+    .not('entry_type', 'eq', 'tip')
     .gte('created_at', `${previousYear}-01-01`)
     .lt('created_at', `${year + 1}-01-01`)
 

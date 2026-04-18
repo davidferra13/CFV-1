@@ -258,7 +258,7 @@ export async function POST(req: NextRequest) {
           encodeSSE({
             type: 'error',
             data: isOllama
-              ? 'Vision analysis requires Ollama with the LLaVA model. Make sure Ollama is running with `ollama pull llava:7b`.'
+              ? 'Vision analysis is temporarily unavailable. Try again in a moment, or describe what you see instead.'
               : 'Failed to analyze the image. Try again or describe what you see instead.',
           }),
           { headers: sseHeaders() }
@@ -583,7 +583,7 @@ export async function POST(req: NextRequest) {
         encodeSSE({
           type: 'error',
           data: isOllama
-            ? 'Ollama is loading the AI model - this can take a minute on the first request. Hit retry and I should be ready!'
+            ? 'The AI model is loading, which can take a minute on the first request. Hit retry and I should be ready!'
             : sanitizeErrorForClient(setupErr, 'Setup failed - please try again in a moment.'),
         }),
         { headers: sseHeaders() }
@@ -949,7 +949,7 @@ export async function POST(req: NextRequest) {
       return new Response(
         encodeSSE({
           type: 'error',
-          data: "I'm offline right now - no Ollama endpoints are reachable. Start Ollama and try again!",
+          data: "I'm offline right now. The AI runtime isn't reachable. Please try again in a moment!",
         }),
         { headers: sseHeaders() }
       )

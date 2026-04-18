@@ -215,6 +215,7 @@ export async function sendEventProposedEmail(params: {
   eventDate: string
   guestCount: number | null
   location: string | null
+  coHostNames?: string[]
 }) {
   await sendEmail({
     to: params.clientEmail,
@@ -227,6 +228,7 @@ export async function sendEventProposedEmail(params: {
       guestCount: params.guestCount,
       location: params.location,
       eventUrl: `${APP_URL}/my-events/${params.eventId}`,
+      coHostNames: params.coHostNames,
     }),
   })
 }
@@ -297,6 +299,7 @@ export async function sendEventConfirmedEmail(params: {
   guestCount: number | null
   eventId: string
   circleUrl?: string
+  coHostNames?: string[]
 }) {
   await sendEmail({
     to: params.clientEmail,
@@ -311,6 +314,7 @@ export async function sendEventConfirmedEmail(params: {
       guestCount: params.guestCount,
       calendarUrl: `${APP_URL}/api/calendar/event/${params.eventId}`,
       circleUrl: params.circleUrl,
+      coHostNames: params.coHostNames,
     }),
   })
 }
@@ -375,6 +379,7 @@ export async function sendEventReminderEmail(params: {
   location: string | null
   guestCount: number | null
   specialRequests: string | null
+  coHostNames?: string[]
 }) {
   await sendEmail({
     to: params.clientEmail,
@@ -389,6 +394,7 @@ export async function sendEventReminderEmail(params: {
       location: params.location,
       guestCount: params.guestCount,
       specialRequests: params.specialRequests,
+      coHostNames: params.coHostNames,
     }),
   })
 }

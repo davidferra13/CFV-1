@@ -122,7 +122,7 @@ export function ReceiptScanClient() {
         setStep('review')
       } catch (err: any) {
         if (err?.message?.includes('Ollama') || err?.name === 'OllamaOfflineError') {
-          setError('Ollama is not running. Start Ollama to use receipt scanning.')
+          setError('AI parsing is temporarily unavailable. Please try again in a moment.')
         } else {
           setError(err?.message || 'Failed to scan receipt')
         }
@@ -291,7 +291,7 @@ export function ReceiptScanClient() {
         <Card>
           <CardContent className="py-12 text-center">
             <div className="animate-pulse">
-              <p className="text-lg text-stone-300">Scanning receipt with Ollama...</p>
+              <p className="text-lg text-stone-300">Scanning receipt...</p>
               <p className="text-sm text-stone-500 mt-2">
                 This may take up to 2 minutes for large receipts
               </p>

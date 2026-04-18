@@ -18,6 +18,7 @@ import {
   type CatalogIngredientKnowledge,
 } from '@/lib/openclaw/catalog-actions'
 import { getPriceHistory } from '@/lib/openclaw/price-intelligence-actions'
+import { canonicalizeStoreName } from '@/lib/openclaw/catalog-store-selection'
 import { getPreferredStores } from '@/lib/grocery/store-shopping-actions'
 import { classifyFromCatalogDetail, classifyFromItemData } from '@/lib/pricing/sourceability'
 import { AvailabilityBadge, AvailabilityDetail } from '@/components/pricing/availability-badge'
@@ -528,10 +529,11 @@ export function CatalogBrowser({ initialSearch = '' }: { initialSearch?: string 
               ))
         )
         if (matched) {
-          setSelectedStore(matched.id)
-          setActiveStoreName(defaultPreferred.store_name)
+          const canonicalName = canonicalizeStoreName(matched.name)
+          setSelectedStore(canonicalName)
+          setActiveStoreName(canonicalName)
           setActiveStoreId(matched.id)
-          setAutoSelectedStoreName(defaultPreferred.store_name)
+          setAutoSelectedStoreName(canonicalName)
           setCatalogView('browsing')
         }
       }
@@ -819,10 +821,10 @@ export function CatalogBrowser({ initialSearch = '' }: { initialSearch?: string 
   }, [])
 
   // Store picker handlers
-  const handleSelectStore = useCallback((storeId: string, storeName: string) => {
-    setSelectedStore(storeId)
+  const handleSelectStore = useCallback((queryValue: string, storeName: string) => {
+    setSelectedStore(queryValue)
     setActiveStoreName(storeName)
-    setActiveStoreId(storeId)
+    setActiveStoreId(null)
     setCatalogView('browsing')
   }, [])
 

@@ -147,7 +147,7 @@ export function InquiryImport({ aiConfigured }: Props) {
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to parse text'
       if (msg.includes('Ollama') || msg.includes('OLLAMA')) {
-        setError('Ollama is not running. Start Ollama to use AI parsing, or switch to CSV mode.')
+        setError('AI parsing is temporarily unavailable. You can switch to CSV mode instead.')
       } else {
         setError(msg)
       }

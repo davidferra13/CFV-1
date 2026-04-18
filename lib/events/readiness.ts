@@ -638,6 +638,14 @@ export async function addAllergyRecord(
     throw new Error('Failed to add allergy record')
   }
 
+  // Sync structured -> flat so document generators see chef-entered allergies
+  try {
+    const { syncStructuredToFlat } = await import('@/lib/dietary/allergy-sync')
+    await syncStructuredToFlat({ tenantId: user.tenantId!, clientId, db })
+  } catch (syncErr) {
+    console.error('[addAllergyRecord] Allergy sync to flat failed (non-blocking):', syncErr)
+  }
+
   revalidatePath(`/clients/${clientId}`)
   return { success: true }
 }

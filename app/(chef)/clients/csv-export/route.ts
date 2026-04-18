@@ -11,11 +11,30 @@ export async function GET() {
 
   const { data: clients } = await db
     .from('clients')
-    .select('full_name, email, phone, created_at, status, is_active')
+    .select(
+      'full_name, email, phone, created_at, status, is_active, dietary_restrictions, allergies, preferred_contact_method, referral_source, occupation, company, lifetime_value_cents, loyalty_tier, notes'
+    )
     .eq('tenant_id', user.tenantId!)
+    .is('deleted_at', null)
     .order('full_name')
 
-  const header = row(['Name', 'Email', 'Phone', 'Client Since', 'Status', 'Active'])
+  const header = row([
+    'Name',
+    'Email',
+    'Phone',
+    'Client Since',
+    'Status',
+    'Active',
+    'Dietary Restrictions',
+    'Allergies',
+    'Preferred Contact',
+    'Referral Source',
+    'Occupation',
+    'Company',
+    'Lifetime Value',
+    'Loyalty Tier',
+    'Notes',
+  ])
   const body = (clients ?? []).map((c: any) =>
     row([
       c.full_name,
@@ -24,6 +43,15 @@ export async function GET() {
       c.created_at ? new Date(c.created_at).toLocaleDateString('en-US') : '',
       c.status ?? 'active',
       c.is_active ? 'Yes' : 'No',
+      Array.isArray(c.dietary_restrictions) ? c.dietary_restrictions.join('; ') : '',
+      Array.isArray(c.allergies) ? c.allergies.join('; ') : '',
+      c.preferred_contact_method ?? '',
+      c.referral_source ?? '',
+      c.occupation ?? '',
+      c.company ?? '',
+      c.lifetime_value_cents != null ? `$${(c.lifetime_value_cents / 100).toFixed(2)}` : '',
+      c.loyalty_tier ?? '',
+      c.notes ?? '',
     ])
   )
 

@@ -22,6 +22,7 @@ const CATEGORIES = [
   'professional_services',
   'education',
   'utilities',
+  'platform_commission',
   'other',
 ] as const
 

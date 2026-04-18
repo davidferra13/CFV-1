@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { StaffMemberForm } from '@/components/staff/staff-member-form'
 import { CreateStaffLoginForm } from '@/components/staff/create-staff-login-form'
 import { EntityPhotoUpload } from '@/components/entities/entity-photo-upload'
+import { formatCurrency } from '@/lib/utils/currency'
 
 export const metadata: Metadata = { title: 'Staff Profile' }
 
@@ -37,7 +38,7 @@ export default async function StaffDetailPage({ params }: { params: { id: string
   const user = await requireChef()
   await requirePro('staff-management')
   const db: any = createServerClient()
-  const [member, hasLogin, { data: locRows }] = await Promise.all([
+  const [member, hasLogin, { data: locRows }, { data: linkedEmployee }] = await Promise.all([
     getStaffMember(params.id),
     checkStaffHasLogin(params.id),
     db
@@ -46,8 +47,30 @@ export default async function StaffDetailPage({ params }: { params: { id: string
       .eq('tenant_id', user.tenantId!)
       .eq('is_active', true)
       .order('name'),
+    db
+      .from('employees')
+      .select('id')
+      .eq('chef_id', user.tenantId!)
+      .eq('staff_member_id', params.id)
+      .limit(1),
   ])
   const locations = (locRows ?? []) as { id: string; name: string; location_type: string }[]
+
+  // If staff member is linked to an employee, fetch payroll records
+  const employeeId = linkedEmployee?.[0]?.id as string | undefined
+  let payrollRecords: any[] = []
+  if (employeeId) {
+    const { data: pr } = await db
+      .from('payroll_records')
+      .select(
+        'id, pay_period_start, pay_period_end, pay_date, regular_hours, overtime_hours, gross_pay_cents, net_pay_cents'
+      )
+      .eq('chef_id', user.tenantId!)
+      .eq('employee_id', employeeId)
+      .order('pay_date', { ascending: false })
+      .limit(20)
+    payrollRecords = pr ?? []
+  }
 
   const onboardingComplete = member.onboarding.filter((i: any) => i.status === 'complete').length
   const onboardingTotal = member.onboarding.length
@@ -262,6 +285,54 @@ export default async function StaffDetailPage({ params }: { params: { id: string
                 </div>
               ))}
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Payroll History */}
+      {employeeId && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">
+              Payroll History
+              <span className="ml-2 text-sm font-normal text-stone-500">(last 20)</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {payrollRecords.length === 0 ? (
+              <p className="text-sm text-stone-500">No payroll records yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {payrollRecords.map((pr: any) => {
+                  const totalHours = (pr.regular_hours ?? 0) + (pr.overtime_hours ?? 0)
+                  return (
+                    <div
+                      key={pr.id}
+                      className="flex items-center justify-between text-sm border-b border-stone-800 pb-2"
+                    >
+                      <div>
+                        <span className="text-stone-200">
+                          {new Date(pr.pay_period_start).toLocaleDateString()} -{' '}
+                          {new Date(pr.pay_period_end).toLocaleDateString()}
+                        </span>
+                        <span className="text-stone-500 ml-2">
+                          paid {new Date(pr.pay_date).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-stone-400">{totalHours.toFixed(1)}h</span>
+                        <span className="text-stone-300 font-medium">
+                          {formatCurrency(pr.gross_pay_cents ?? 0)} gross
+                        </span>
+                        <span className="text-green-600 font-medium">
+                          {formatCurrency(pr.net_pay_cents ?? 0)} net
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

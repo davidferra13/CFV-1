@@ -87,6 +87,14 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     inputSchema: '{ "eventName": "string - event occasion or description to search for" }',
   },
   {
+    type: 'event.readiness',
+    tier: 1,
+    name: 'Event Readiness Check',
+    description:
+      'Check if an event is ready using the deterministic completion contract engine. Returns exact score, missing items, and next action. Use this when the chef asks "is X ready?" or "what am I missing for X?".',
+    inputSchema: '{ "eventName": "string - event occasion or client name to check readiness for" }',
+  },
+  {
     type: 'event.list_by_status',
     tier: 1,
     name: 'Events by Status',

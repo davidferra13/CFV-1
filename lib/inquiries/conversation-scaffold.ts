@@ -299,6 +299,16 @@ export function parseCityStateFromConversation(
   return { city: null, state: normalizeState(confirmedLocation ?? null) }
 }
 
+/**
+ * Extract US zip code from freeform address text.
+ * Matches 5-digit or ZIP+4 format (e.g. "01830" or "01830-1234").
+ */
+export function parseZipFromAddress(address: string | null | undefined): string | null {
+  if (!address) return null
+  const match = /\b(\d{5}(?:-\d{4})?)\b/.exec(address.trim())
+  return match ? match[1] : null
+}
+
 export function extractSelectedDishNamesFromConversation(conversationText: string): string[] {
   const conversation = normalizeWhitespace(conversationText)
   const selectionSnippet = extractSelectionSnippet(conversation)

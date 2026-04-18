@@ -13,6 +13,7 @@ import { getPostEventQueueItems } from './providers/post-event'
 import { getClientQueueItems } from './providers/client'
 import { getCulinaryQueueItems } from './providers/culinary'
 import { getContactQueueItems } from './providers/contact'
+import { getNetworkQueueItems } from './providers/network'
 
 /**
  * Build the complete priority queue.
@@ -54,6 +55,7 @@ export async function buildPriorityQueue(
     clientItems,
     culinaryItems,
     contactItems,
+    networkItems,
   ] = await Promise.all([
     safeProvider('inquiry', () => getInquiryQueueItems(db, tenantId)),
     safeProvider('message', () => getMessageQueueItems(db, tenantId)),
@@ -63,6 +65,7 @@ export async function buildPriorityQueue(
     safeProvider('client', () => getClientQueueItems(db, tenantId)),
     safeProvider('culinary', () => getCulinaryQueueItems(db, tenantId)),
     safeProvider('contact', () => getContactQueueItems(db, tenantId)),
+    safeProvider('network', () => getNetworkQueueItems(db, tenantId)),
   ])
 
   // Merge all items
@@ -76,6 +79,7 @@ export async function buildPriorityQueue(
     ...clientItems,
     ...culinaryItems,
     ...contactItems,
+    ...networkItems,
   ]
 
   // Deduplicate by ID (first occurrence wins)
@@ -126,6 +130,7 @@ function selectNextAction(items: QueueItem[], now: Date): QueueItem | null {
     timeWeights.message = 1.3
     timeWeights.client = 1.2
     timeWeights.financial = 1.2
+    timeWeights.network = 1.1
   } else if (hour >= 17) {
     // Evening: next-day prep and post-event follow-ups
     timeWeights.event = 1.3
@@ -158,6 +163,7 @@ function computeSummary(items: QueueItem[]): QueueSummary {
     post_event: 0,
     client: 0,
     culinary: 0,
+    network: 0,
   }
   const byUrgency: Record<QueueUrgency, number> = {
     critical: 0,

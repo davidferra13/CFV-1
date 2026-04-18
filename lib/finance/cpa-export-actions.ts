@@ -182,7 +182,7 @@ export async function buildCpaExportDataset(year: number): Promise<CpaExportData
     db
       .from('expenses')
       .select(
-        'id, amount_cents, category, expense_date, vendor_name, description, is_business, event_id, receipt_photo_url, receipt_uploaded'
+        'id, amount_cents, category, expense_date, vendor_name, description, is_business, tax_deductible, event_id, receipt_photo_url, receipt_uploaded'
       )
       .eq('tenant_id', tenantId)
       .gte('expense_date', yearStart)
@@ -561,10 +561,16 @@ export async function buildCpaExportDataset(year: number): Promise<CpaExportData
     const scheduleLine =
       taxCatByExpenseId.get(exp.id) ?? DETERMINISTIC_CATEGORY_MAP[exp.category] ?? 'line_27a'
 
-    if (scheduleLine === 'cogs') {
-      cogsExpensesCents += exp.amount_cents ?? 0
-    } else {
-      otherBusinessExpensesCents += exp.amount_cents ?? 0
+    // Only count toward deductible totals if tax_deductible is true (default).
+    // Non-deductible business expenses still appear in the detail rows for
+    // accounting completeness but are excluded from Schedule C deductions.
+    const isDeductible = exp.tax_deductible !== false
+    if (isDeductible) {
+      if (scheduleLine === 'cogs') {
+        cogsExpensesCents += exp.amount_cents ?? 0
+      } else {
+        otherBusinessExpensesCents += exp.amount_cents ?? 0
+      }
     }
 
     detailRows.push({

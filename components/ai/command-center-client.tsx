@@ -170,8 +170,9 @@ export function CommandCenterClient() {
       {/* Ollama offline */}
       {currentRun?.ollamaOffline && (
         <div className="rounded-lg border border-red-200 bg-red-950 p-4 text-sm text-red-700">
-          <span className="font-medium">Ollama is offline.</span> Start Ollama to use the Command
-          Center. Your conversations are processed privately and never stored on our servers.
+          <span className="font-medium">AI is temporarily unavailable.</span> The Command Center
+          needs the AI runtime to process commands. Your conversations are processed privately and
+          never stored on our servers.
         </div>
       )}
 

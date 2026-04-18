@@ -15,6 +15,7 @@ type EventConfirmedProps = {
   guestCount: number | null
   calendarUrl: string
   circleUrl?: string
+  coHostNames?: string[]
 }
 
 export function EventConfirmedEmail({
@@ -27,6 +28,7 @@ export function EventConfirmedEmail({
   guestCount,
   calendarUrl,
   circleUrl,
+  coHostNames,
 }: EventConfirmedProps) {
   return (
     <BaseLayout preview={`Your ${occasion} event is confirmed!`}>
@@ -62,6 +64,12 @@ export function EventConfirmedEmail({
             <tr>
               <td style={detailLabel}>Location</td>
               <td style={detailValue}>{location}</td>
+            </tr>
+          )}
+          {coHostNames && coHostNames.length > 0 && (
+            <tr>
+              <td style={detailLabel}>Co-hosted with</td>
+              <td style={detailValue}>{coHostNames.join(', ')}</td>
             </tr>
           )}
         </tbody>

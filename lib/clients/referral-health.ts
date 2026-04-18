@@ -57,13 +57,23 @@ export function computeReferralHealth(
     childMap.get(parentId)!.push(client.id)
   }
 
-  function maxDepth(nodeId: string | null, currentDepth: number): number {
+  function maxDepth(
+    nodeId: string | null,
+    currentDepth: number,
+    visited: Set<string> = new Set()
+  ): number {
     const children = childMap.get(nodeId) || []
     if (children.length === 0) return currentDepth
-    return Math.max(...children.map((childId) => maxDepth(childId, currentDepth + 1)))
+    return Math.max(
+      ...children.map((childId) => {
+        if (visited.has(childId)) return currentDepth // cycle detected, stop
+        visited.add(childId)
+        return maxDepth(childId, currentDepth + 1, visited)
+      })
+    )
   }
 
-  const chainDepth = maxDepth(null, 0)
+  const chainDepth = maxDepth(null, 0, new Set())
 
   // Determine health level
   let healthLevel: 'thriving' | 'stable' | 'cooling'

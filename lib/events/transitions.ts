@@ -9,44 +9,18 @@ import { log } from '@/lib/logger'
 import { revalidatePath } from 'next/cache'
 import { TransitionEventInputSchema, type TransitionActorContext } from '@/lib/validation/schemas'
 import { dateToDateString } from '@/lib/utils/format'
+import {
+  type EventStatus,
+  TRANSITION_RULES,
+  TRANSITION_PERMISSIONS,
+  type TransitionActor,
+} from './fsm'
 
-export type EventStatus =
-  | 'draft'
-  | 'proposed'
-  | 'accepted'
-  | 'paid'
-  | 'confirmed'
-  | 'in_progress'
-  | 'completed'
-  | 'cancelled'
+// Re-export EventStatus so existing consumers that import from transitions.ts still work
+export type { EventStatus }
 
-// Valid state transitions (from -> to[])
-const TRANSITION_RULES: Record<EventStatus, EventStatus[]> = {
-  draft: ['proposed', 'paid', 'cancelled'],
-  proposed: ['accepted', 'cancelled'],
-  accepted: ['paid', 'cancelled'],
-  paid: ['confirmed', 'cancelled'],
-  confirmed: ['in_progress', 'cancelled'],
-  in_progress: ['completed', 'cancelled'],
-  completed: [], // Terminal state
-  cancelled: [], // Terminal state
-}
-
-// Who can trigger each transition
-type TransitionPermission = 'chef' | 'client' | 'system'
-
-const TRANSITION_PERMISSIONS: Record<string, TransitionPermission | TransitionPermission[]> = {
-  'draft->proposed': 'chef',
-  'proposed->accepted': ['client', 'chef'], // Chef can accept on behalf (verbal confirmation)
-  'proposed->cancelled': ['chef', 'client'],
-  'accepted->cancelled': ['chef', 'client'],
-  'accepted->paid': ['system', 'chef'], // Stripe webhook or chef marks paid offline
-  'draft->paid': ['system', 'chef'], // Instant-book: Stripe webhook or chef marks paid offline
-  'paid->confirmed': 'chef',
-  'confirmed->in_progress': 'chef',
-  'in_progress->completed': 'chef',
-  '*->cancelled': 'chef', // Chef can cancel anytime
-}
+// Local alias for permission type used in this file
+type TransitionPermission = TransitionActor
 
 async function runCompletedEventPostProcessing(eventId: string, tenantId: string) {
   try {
@@ -608,6 +582,21 @@ export async function transitionEvent({
       const occasion = event.occasion || 'Untitled event'
       const location = buildLocation(event)
 
+      // Non-blocking: fetch co-host names for email context
+      let coHostNames: string[] = []
+      try {
+        const { data: collabs } = await db
+          .from('event_collaborators')
+          .select('chef_id, chefs(business_name)')
+          .eq('event_id', eventId)
+          .neq('chef_id', event.tenant_id)
+        if (collabs) {
+          coHostNames = collabs.map((c: any) => c.chefs?.business_name).filter(Boolean)
+        }
+      } catch (err) {
+        console.error('[non-blocking] Collaborator lookup for email failed', err)
+      }
+
       if (toStatus === 'proposed' && fromStatus === 'draft') {
         await sendEventProposedEmail({
           clientEmail: client.email,
@@ -618,6 +607,7 @@ export async function transitionEvent({
           eventDate: dateToDateString(event.event_date as Date | string),
           guestCount: event.guest_count,
           location,
+          coHostNames,
         })
       }
 
@@ -684,6 +674,7 @@ export async function transitionEvent({
             guestCount: event.guest_count,
             eventId,
             circleUrl: fallbackCircleUrl,
+            coHostNames,
           })
         }
 
@@ -1089,6 +1080,30 @@ export async function transitionEvent({
     } catch (err) {
       log.events.warn('Google Calendar delete failed (non-blocking)', { error: err })
     }
+
+    // Clean up prep blocks linked to this event (non-blocking)
+    try {
+      const adminDb = createServerClient({ admin: true })
+      await adminDb
+        .from('prep_blocks')
+        .delete()
+        .eq('event_id', eventId)
+        .eq('tenant_id', event.tenant_id)
+    } catch (err) {
+      log.events.warn('Prep block cleanup on cancellation failed (non-blocking)', { error: err })
+    }
+
+    // Clean up travel legs linked to this event (non-blocking)
+    try {
+      const adminDb = createServerClient({ admin: true })
+      await adminDb
+        .from('travel_legs')
+        .delete()
+        .eq('event_id', eventId)
+        .eq('chef_id', event.tenant_id)
+    } catch (err) {
+      log.events.warn('Travel leg cleanup on cancellation failed (non-blocking)', { error: err })
+    }
   }
 
   // Fire automations (non-blocking)
@@ -1125,40 +1140,47 @@ export async function transitionEvent({
     log.events.warn('Remy reactive enqueue failed (non-blocking)', { error: err })
   }
 
-  // Push notification to chef when proposal accepted (non-blocking)
-  if (toStatus === 'accepted' && fromStatus === 'proposed') {
-    try {
-      const { getChefAuthUserId } = await import('@/lib/notifications/actions')
-      const chefUserId = await getChefAuthUserId(event.tenant_id)
-      if (chefUserId) {
-        const { notifyProposalAccepted } = await import('@/lib/notifications/onesignal')
-        await notifyProposalAccepted(chefUserId, event.occasion || 'Untitled event', eventId)
-      }
-    } catch (err) {
-      log.events.warn('Push notification for accepted failed (non-blocking)', { error: err })
-    }
-  }
-
-  // Push notification for confirmed / in_progress / completed events (non-blocking)
+  // Notification for confirmed / in_progress / completed events (non-blocking)
+  // (accepted/paid/cancelled already handled by createNotification above)
   if (toStatus === 'confirmed' || toStatus === 'in_progress' || toStatus === 'completed') {
     try {
-      const { getChefAuthUserId } = await import('@/lib/notifications/actions')
+      const { getChefAuthUserId, createNotification: createNotif } =
+        await import('@/lib/notifications/actions')
       const chefUserId = await getChefAuthUserId(event.tenant_id)
       if (chefUserId) {
         const eventTitle = event.occasion || 'Untitled event'
-        if (toStatus === 'confirmed') {
-          const { notifyEventConfirmed } = await import('@/lib/notifications/onesignal')
-          await notifyEventConfirmed(chefUserId, eventTitle, eventId)
-        } else if (toStatus === 'in_progress') {
-          const { notifyEventInProgress } = await import('@/lib/notifications/onesignal')
-          await notifyEventInProgress(chefUserId, eventTitle, eventId)
-        } else {
-          const { notifyEventCompleted } = await import('@/lib/notifications/onesignal')
-          await notifyEventCompleted(chefUserId, eventTitle, eventId)
+        const actionMap = {
+          confirmed: {
+            action: 'event_paid' as const,
+            title: 'Event confirmed',
+            body: `"${eventTitle}" is now confirmed`,
+          },
+          in_progress: {
+            action: 'event_paid' as const,
+            title: 'Event in progress',
+            body: `"${eventTitle}" is now in progress`,
+          },
+          completed: {
+            action: 'event_completed' as const,
+            title: 'Event complete',
+            body: `"${eventTitle}" marked complete`,
+          },
         }
+        const notif = actionMap[toStatus]
+        await createNotif({
+          tenantId: event.tenant_id,
+          recipientId: chefUserId,
+          category: 'event',
+          action: notif.action,
+          title: notif.title,
+          body: notif.body,
+          actionUrl: `/events/${eventId}`,
+          eventId,
+          clientId: event.client_id,
+        })
       }
     } catch (err) {
-      log.events.warn('Push notification failed (non-blocking)', { error: err })
+      log.events.warn('Notification failed (non-blocking)', { error: err })
     }
   }
 

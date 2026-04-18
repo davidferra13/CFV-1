@@ -68,10 +68,19 @@ async function resolveRoleAndTenant(authUserId: string) {
     tenantId = roleRow.entityId
   } else if (roleRow.role === 'client') {
     const [clientRow] = await db
-      .select({ tenantId: clients.tenantId })
+      .select({
+        tenantId: clients.tenantId,
+        deletedAt: clients.deletedAt,
+        deletionScheduledFor: clients.accountDeletionScheduledFor,
+      })
       .from(clients)
       .where(eq(clients.id, roleRow.entityId))
       .limit(1)
+    // Block auth for soft-deleted or GDPR-deletion-scheduled clients past grace period
+    if (clientRow?.deletedAt) return null
+    if (clientRow?.deletionScheduledFor && new Date(clientRow.deletionScheduledFor) <= new Date()) {
+      return null
+    }
     tenantId = clientRow?.tenantId ?? null
   } else if (roleRow.role === 'staff') {
     const [staffRow] = await db

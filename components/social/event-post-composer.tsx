@@ -104,7 +104,7 @@ export function EventPostComposer({
       if (result.success) {
         setCaption(result.caption)
         if (!result.aiGenerated) {
-          setAiNote('Ollama is offline. Here is a template you can edit.')
+          setAiNote('AI is temporarily unavailable. Here is a template you can edit.')
         }
       } else {
         setError(result.error)

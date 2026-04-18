@@ -82,6 +82,7 @@ export type UnifiedCalendarItem = {
   status?: string // event/call status
   subType?: string // prep_block_type, calendar entry_type, etc.
   isMultiDay: boolean // convenience: endDate !== startDate
+  paymentStatus?: string // event payment status (unpaid, partial, paid)
 }
 
 // CalendarFilters type and DEFAULT_CALENDAR_FILTERS live in lib/calendar/constants.ts
@@ -112,7 +113,7 @@ export async function getUnifiedCalendar(
     // 1. Events
     db
       .from('events')
-      .select('id, occasion, event_date, serve_time, status, location_city')
+      .select('id, occasion, event_date, serve_time, status, location_city, payment_status')
       .eq('tenant_id', chefId)
       .gte('event_date', startDate)
       .lte('event_date', endDate)
@@ -194,6 +195,7 @@ export async function getUnifiedCalendar(
       status: event.status,
       subType,
       isMultiDay: false,
+      paymentStatus: event.payment_status ?? undefined,
     })
   }
 

@@ -76,30 +76,41 @@ export default async function PayrollPage() {
       </div>
 
       {/* YTD Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="pt-4">
-            <p className="text-xs text-stone-500 uppercase font-medium">YTD Gross Wages</p>
-            <p className="text-2xl font-bold text-stone-100 mt-1">{formatCurrency(ytdWages)}</p>
-            <p className="text-xs text-stone-400 mt-1">{records.length} pay runs</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4">
-            <p className="text-xs text-stone-500 uppercase font-medium">YTD Net Pay</p>
-            <p className="text-2xl font-bold text-emerald-700 mt-1">{formatCurrency(ytdNetPay)}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4">
-            <p className="text-xs text-stone-500 uppercase font-medium">Employer Tax Cost</p>
-            <p className="text-2xl font-bold text-stone-100 mt-1">
-              {formatCurrency(ytdEmployerTaxes)}
-            </p>
-            <p className="text-xs text-stone-400 mt-1">SS + Medicare + FUTA (deductible)</p>
-          </CardContent>
-        </Card>
-      </div>
+      {records.length === 0 ? (
+        <div className="rounded-lg border border-stone-700 bg-stone-800/50 p-6 text-center">
+          <p className="text-stone-400">No payroll recorded yet for {currentYear}.</p>
+          <p className="text-sm text-stone-500 mt-1">
+            Add employees and run your first payroll to see YTD stats here.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Card>
+            <CardContent className="pt-4">
+              <p className="text-xs text-stone-500 uppercase font-medium">YTD Gross Wages</p>
+              <p className="text-2xl font-bold text-stone-100 mt-1">{formatCurrency(ytdWages)}</p>
+              <p className="text-xs text-stone-400 mt-1">{records.length} pay runs</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4">
+              <p className="text-xs text-stone-500 uppercase font-medium">YTD Net Pay</p>
+              <p className="text-2xl font-bold text-emerald-700 mt-1">
+                {formatCurrency(ytdNetPay)}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4">
+              <p className="text-xs text-stone-500 uppercase font-medium">Employer Tax Cost</p>
+              <p className="text-2xl font-bold text-stone-100 mt-1">
+                {formatCurrency(ytdEmployerTaxes)}
+              </p>
+              <p className="text-xs text-stone-400 mt-1">SS + Medicare + FUTA (deductible)</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Quick Links */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

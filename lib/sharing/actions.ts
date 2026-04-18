@@ -2613,12 +2613,12 @@ export async function submitRSVP(input: SubmitRSVPInput) {
     source: 'submitRSVP',
   })
 
-  // Check for duplicate email if provided
+  // Check for duplicate email if provided (cross-share: check ALL share links for this event)
   if (normalizedEmail) {
     const { data: existing } = await db
       .from('event_guests')
-      .select('id, guest_token')
-      .eq('event_share_id', share.id)
+      .select('id, guest_token, event_share_id')
+      .eq('event_id', share.event_id)
       .eq('email', normalizedEmail)
       .maybeSingle()
 

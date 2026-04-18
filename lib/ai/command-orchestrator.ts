@@ -466,6 +466,65 @@ async function executeEventDetails(inputs: Record<string, unknown>, tenantId: st
   }
 }
 
+// FC-G41: Event readiness via deterministic completion contract engine
+async function executeEventReadiness(inputs: Record<string, unknown>, tenantId: string) {
+  const eventName = String(inputs.eventName ?? '')
+  const db: any = createServerClient()
+
+  // Find event by occasion or client name
+  const { data } = await db
+    .from('events')
+    .select('id, occasion, event_date, status, client:clients(full_name)')
+    .eq('tenant_id', tenantId)
+    .or(`occasion.ilike.%${eventName}%,clients.full_name.ilike.%${eventName}%`)
+    .order('event_date', { ascending: false })
+    .limit(1)
+
+  if (!data || data.length === 0) return { found: false, query: eventName }
+
+  const event = data[0] as Record<string, unknown>
+  const eventId = event.id as string
+
+  try {
+    const { evaluateCompletion } = await import('@/lib/completion/engine')
+    const result = await evaluateCompletion('event', eventId, tenantId, { shallow: false })
+
+    if (!result) {
+      return {
+        found: true,
+        eventName: event.occasion,
+        readiness: 'Unable to evaluate',
+      }
+    }
+
+    return {
+      found: true,
+      eventName: event.occasion,
+      eventDate: event.event_date,
+      clientName:
+        ((event.client as Record<string, unknown> | null)?.full_name as string) ?? 'Unknown',
+      readiness: {
+        score: result.score,
+        status: result.status,
+        missingItems:
+          result.missingRequirements?.map((r) => ({
+            label: r.label,
+            category: r.category,
+            blocking: r.blocking,
+          })) ?? [],
+        nextAction: result.nextAction,
+      },
+    }
+  } catch (err) {
+    console.error('[Remy/event.readiness] Completion eval failed:', err)
+    return {
+      found: true,
+      eventName: event.occasion,
+      readiness: 'Evaluation failed; try checking the event page directly.',
+    }
+  }
+}
+
 async function executeEventListByStatus(inputs: Record<string, unknown>, tenantId: string) {
   const status = String(inputs.status ?? 'confirmed') as
     | 'draft'
@@ -1318,6 +1377,9 @@ async function executeSingleTask(
         break
       case 'event.details':
         data = await executeEventDetails(task.inputs, tenantId)
+        break
+      case 'event.readiness':
+        data = await executeEventReadiness(task.inputs, tenantId)
         break
       case 'event.list_by_status':
         data = await executeEventListByStatus(task.inputs, tenantId)

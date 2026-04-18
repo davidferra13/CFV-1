@@ -251,6 +251,7 @@ export async function updateChefFullProfile(input: UpdateChefFullProfileInput) {
   revalidatePath('/settings/my-profile')
   revalidatePath('/settings/public-profile')
   revalidatePath('/settings/profile')
+  revalidatePath('/chef', 'layout') // FC-G11: bust public chef profile pages
   revalidateTag(`chef-layout-${user.entityId}`)
   revalidateTag('chef-booking-profile')
 

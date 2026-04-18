@@ -13,6 +13,7 @@ import { executeWithIdempotency } from '@/lib/mutations/idempotency'
 import { createConflictError } from '@/lib/mutations/conflict'
 import { UnknownAppError, ValidationError } from '@/lib/errors/app-error'
 import { isMissingSoftDeleteColumn } from '@/lib/mutations/soft-delete-compat'
+import { invalidateRemyContextCache } from '@/lib/ai/remy-context'
 import { dateToDateString } from '@/lib/utils/format'
 import { validateEmailLocal, suggestEmailCorrection } from '@/lib/email/email-validator'
 import { ScheduleRequestSchema } from '@/lib/booking/schedule-schema'
@@ -25,6 +26,7 @@ import {
   resolveInquiryDateForEvent,
   inferEventTimesFromConversation,
   parseCityStateFromConversation,
+  parseZipFromAddress,
   buildAutoMenuCourseNamesFromConversation,
 } from '@/lib/inquiries/conversation-scaffold'
 
@@ -201,8 +203,20 @@ async function materializeSeriesSessions(params: {
     sort_order: number
   }>
   parsedLocation: { city: string | null; state: string | null }
+  chefHomeState?: string
+  chefHomeCity?: string
 }): Promise<EventSessionRow[]> {
-  const { db, tenantId, actorId, series, inquiry, plannedSessions, parsedLocation } = params
+  const {
+    db,
+    tenantId,
+    actorId,
+    series,
+    inquiry,
+    plannedSessions,
+    parsedLocation,
+    chefHomeState,
+    chefHomeCity,
+  } = params
 
   const { data: existingSessions } = await db
     .from('event_service_sessions')
@@ -232,9 +246,9 @@ async function materializeSeriesSessions(params: {
       guest_count: session.guest_count,
       service_style: 'plated',
       location_address: inquiry.confirmed_location || null,
-      location_city: parsedLocation.city || 'TBD',
-      location_state: parsedLocation.state || 'MA',
-      location_zip: 'TBD',
+      location_city: parsedLocation.city || chefHomeCity || 'TBD',
+      location_state: parsedLocation.state || chefHomeState || '',
+      location_zip: parseZipFromAddress(inquiry.confirmed_location) || 'TBD',
       status: 'draft',
       sort_order: session.sort_order,
       notes: session.notes,
@@ -276,6 +290,7 @@ async function materializeSeriesEvents(params: {
   quotedPriceCents: number | null
   depositAmountCents: number | null
   pricingModel: Database['public']['Enums']['pricing_model'] | null
+  chefHomeState?: string
 }): Promise<EventRow[]> {
   const {
     db,
@@ -290,6 +305,7 @@ async function materializeSeriesEvents(params: {
     quotedPriceCents,
     depositAmountCents,
     pricingModel,
+    chefHomeState,
   } = params
 
   const cannabisBoolean = mapCannabisPreferenceToBoolean(inquiry.confirmed_cannabis_preference)
@@ -347,7 +363,7 @@ async function materializeSeriesEvents(params: {
         guest_count: session.guest_count || inquiry.confirmed_guest_count || 1,
         location_address: session.location_address || inquiry.confirmed_location || 'TBD',
         location_city: session.location_city || parsedLocation.city || 'TBD',
-        location_state: session.location_state || parsedLocation.state || 'MA',
+        location_state: session.location_state || parsedLocation.state || chefHomeState || '',
         location_zip: session.location_zip || 'TBD',
         occasion: buildSessionOccasionLabel({
           baseOccasion: inquiry.confirmed_occasion,
@@ -514,6 +530,8 @@ export async function createInquiry(input: CreateInquiryInput) {
       }
 
       revalidatePath('/inquiries')
+      revalidatePath('/dashboard')
+      invalidateRemyContextCache(user.tenantId!)
       return { success: true, inquiry }
     },
   })
@@ -581,12 +599,21 @@ export async function createInquiry(input: CreateInquiryInput) {
     console.error('[createInquiry] Remy reactive enqueue failed (non-blocking):', err)
   }
 
-  // Push notification - new inquiry (non-blocking)
+  // Notification - new inquiry (non-blocking)
   try {
-    const { notifyNewInquiry } = await import('@/lib/notifications/onesignal')
-    await notifyNewInquiry(user.id, validated.client_name, validated.confirmed_date || 'date TBD')
+    const { createNotification } = await import('@/lib/notifications/actions')
+    await createNotification({
+      tenantId: user.tenantId!,
+      recipientId: user.id,
+      category: 'inquiry',
+      action: 'new_inquiry',
+      title: `New inquiry from ${validated.client_name}`,
+      body: `${validated.client_name} is interested in booking ${validated.confirmed_date || 'date TBD'}`,
+      inquiryId: inquiry.id,
+      clientId: clientId || undefined,
+    })
   } catch (err) {
-    console.error('[createInquiry] Push notification failed (non-blocking):', err)
+    console.error('[createInquiry] Notification failed (non-blocking):', err)
   }
 
   // Zapier/Make webhook dispatch (non-blocking)
@@ -816,6 +843,20 @@ export async function updateInquiry(id: string, input: UpdateInquiryInput) {
   if (client_phone !== undefined) updatedUnknown.client_phone = client_phone ?? undefined
   if (notes !== undefined) updatedUnknown.notes = notes ?? undefined
 
+  // Sync budget in unknown_fields when confirmed_budget_cents changes (prevent data silo)
+  if (dbFields.confirmed_budget_cents !== undefined) {
+    const budgetCents = dbFields.confirmed_budget_cents
+    if (budgetCents != null) {
+      updatedUnknown.budget_exact_cents = String(budgetCents)
+      updatedUnknown.budget_mode = 'exact'
+      // Clear stale range if switching to exact
+      delete updatedUnknown.budget_range
+    } else {
+      updatedUnknown.budget_exact_cents = undefined
+      updatedUnknown.budget_mode = undefined
+    }
+  }
+
   // Clean out undefined values
   const cleanedUnknown: Record<string, string> = {}
   for (const [k, v] of Object.entries(updatedUnknown)) {
@@ -891,6 +932,7 @@ export async function updateInquiry(id: string, input: UpdateInquiryInput) {
 
       revalidatePath('/inquiries')
       revalidatePath(`/inquiries/${id}`)
+      invalidateRemyContextCache(user.tenantId!)
       return { success: true, inquiry }
     },
   })
@@ -1093,6 +1135,12 @@ export async function transitionInquiry(id: string, newStatus: InquiryStatus) {
         string,
         { action: string; title: string; body: string; actionUrl: string }
       > = {
+        awaiting_client: {
+          action: 'inquiry_awaiting_client',
+          title: 'Your chef has responded',
+          body: 'Your inquiry has an update - please review and respond',
+          actionUrl: `/my-inquiries/${id}`,
+        },
         quoted: {
           action: 'inquiry_quoted_to_client',
           title: 'Your quote is ready',
@@ -1159,6 +1207,15 @@ export async function transitionInquiry(id: string, newStatus: InquiryStatus) {
 export async function createSeriesFromBookingRequest(inquiryId: string) {
   const user = await requireChef()
   const db: any = createServerClient()
+
+  // Fetch chef's home location for fallback defaults
+  const { data: chefProfile } = await db
+    .from('chefs')
+    .select('home_city, home_state')
+    .eq('id', user.tenantId!)
+    .single()
+  const chefHomeState = (chefProfile as any)?.home_state || ''
+  const chefHomeCity = (chefProfile as any)?.home_city || 'TBD'
 
   const { data: inquiry } = await db
     .from('inquiries')
@@ -1281,6 +1338,8 @@ export async function createSeriesFromBookingRequest(inquiryId: string) {
             inquiry,
             plannedSessions: schedulePlan.sessions,
             parsedLocation,
+            chefHomeState,
+            chefHomeCity,
           })
 
     const existingEvents = (eventsResponse.data || []) as EventRow[]
@@ -1322,6 +1381,7 @@ export async function createSeriesFromBookingRequest(inquiryId: string) {
             quotedPriceCents,
             depositAmountCents,
             pricingModel,
+            chefHomeState,
           })
 
     const primaryEvent = events[0] || null
@@ -1391,9 +1451,9 @@ export async function createSeriesFromBookingRequest(inquiryId: string) {
       end_date: schedulePlan.end_date,
       base_guest_count: inquiry.confirmed_guest_count ?? null,
       location_address: inquiry.confirmed_location || null,
-      location_city: parsedLocation.city || 'TBD',
-      location_state: parsedLocation.state || 'MA',
-      location_zip: 'TBD',
+      location_city: parsedLocation.city || chefHomeCity || 'TBD',
+      location_state: parsedLocation.state || chefHomeState || '',
+      location_zip: parseZipFromAddress(inquiry.confirmed_location) || 'TBD',
       pricing_model: pricingModel,
       quoted_total_cents: quotedPriceCents,
       deposit_total_cents: depositAmountCents,
@@ -1420,6 +1480,8 @@ export async function createSeriesFromBookingRequest(inquiryId: string) {
     inquiry,
     plannedSessions: schedulePlan.sessions,
     parsedLocation,
+    chefHomeState,
+    chefHomeCity,
   })
 
   const events = await materializeSeriesEvents({
@@ -1435,6 +1497,7 @@ export async function createSeriesFromBookingRequest(inquiryId: string) {
     quotedPriceCents,
     depositAmountCents,
     pricingModel,
+    chefHomeState,
   })
 
   const primaryEvent = events[0] || null
@@ -1460,9 +1523,11 @@ export async function createSeriesFromBookingRequest(inquiryId: string) {
   revalidatePath('/inquiries')
   revalidatePath(`/inquiries/${inquiryId}`)
   revalidatePath('/events')
+  revalidatePath('/dashboard')
   revalidatePath('/my-inquiries')
   revalidatePath(`/my-inquiries/${inquiryId}`)
   revalidatePath('/my-events')
+  invalidateRemyContextCache(user.tenantId!)
 
   try {
     if (inquiry.client_id) {
@@ -1507,6 +1572,14 @@ export async function createSeriesFromBookingRequest(inquiryId: string) {
 export async function convertInquiryToEvent(inquiryId: string) {
   const user = await requireChef()
   const db: any = createServerClient()
+
+  // Fetch chef's home location for fallback defaults
+  const { data: chefProfile } = await db
+    .from('chefs')
+    .select('home_city, home_state')
+    .eq('id', user.tenantId!)
+    .single()
+  const chefHomeState = (chefProfile as any)?.home_state || ''
 
   const { data: inquiry } = await db
     .from('inquiries')
@@ -1559,7 +1632,12 @@ export async function convertInquiryToEvent(inquiryId: string) {
     throw new ValidationError('Confirmed date could not be resolved to a calendar day')
   }
 
-  const { serveTime, arrivalTime } = inferEventTimesFromConversation(conversationText)
+  // Serve time: prefer form value from unknown_fields, fall back to conversation inference
+  const formServeTime = (inquiry.unknown_fields as any)?.serve_time || null
+  const inferred = inferEventTimesFromConversation(conversationText)
+  const serveTime = formServeTime || inferred.serveTime
+  const arrivalTime = inferred.arrivalTime
+
   const parsedLocation = parseCityStateFromConversation(
     inquiry.confirmed_location,
     conversationText
@@ -1600,8 +1678,8 @@ export async function convertInquiryToEvent(inquiryId: string) {
       guest_count: inquiry.confirmed_guest_count || 1,
       location_address: inquiry.confirmed_location || 'TBD',
       location_city: parsedLocation.city || 'TBD',
-      location_state: parsedLocation.state || 'MA',
-      location_zip: 'TBD',
+      location_state: parsedLocation.state || chefHomeState || '',
+      location_zip: parseZipFromAddress(inquiry.confirmed_location) || 'TBD',
       occasion: inquiry.confirmed_occasion,
       quoted_price_cents: quotedPriceCents,
       deposit_amount_cents: depositAmountCents,
@@ -1758,6 +1836,7 @@ export async function convertInquiryToEvent(inquiryId: string) {
   revalidatePath('/inquiries')
   revalidatePath(`/inquiries/${inquiryId}`)
   revalidatePath('/events')
+  revalidatePath('/dashboard')
   revalidatePath('/my-inquiries')
   revalidatePath(`/my-inquiries/${inquiryId}`)
   revalidatePath('/my-events')

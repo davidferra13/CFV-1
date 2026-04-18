@@ -3,8 +3,10 @@
 
 import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
+import { Suspense } from 'react'
 import { requireChef } from '@/lib/auth/get-user'
 import { UpgradePrompt } from '@/components/billing/upgrade-prompt'
+import { CollaborationRevenueCard } from './_sections/collaboration-revenue'
 
 const AnalyticsHub = dynamic(
   () => import('@/components/analytics/analytics-hub-client').then((m) => m.AnalyticsHub),
@@ -556,6 +558,10 @@ export default async function AnalyticsHubPage() {
           'culinary'
         )}
       />
+
+      <Suspense fallback={null}>
+        <CollaborationRevenueCard />
+      </Suspense>
     </div>
   )
 }

@@ -81,7 +81,7 @@ export function PlatformResponseDrafter({
 
         {!draft ? (
           <Button onClick={handleGenerate} disabled={loading} variant="secondary">
-            {loading ? 'Drafting with Ollama...' : 'Generate draft response'}
+            {loading ? 'Drafting response...' : 'Generate draft response'}
           </Button>
         ) : (
           <>

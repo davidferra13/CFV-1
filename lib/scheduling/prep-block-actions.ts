@@ -24,11 +24,80 @@ import type {
   UpdatePrepBlockInput,
   SchedulingEvent,
   MenuComponent,
+  PrepBlockConflict,
 } from './types'
 
 // ============================================
 // INTERNAL HELPERS
 // ============================================
+
+/**
+ * Detect overlapping prep blocks on the same date.
+ * Two blocks conflict when their time windows overlap.
+ * Blocks without start/end times (date-only) are treated as
+ * spanning the whole day, so they conflict with everything on that date.
+ */
+function detectTimeOverlap(
+  aStart: string | null,
+  aEnd: string | null,
+  bStart: string | null,
+  bEnd: string | null
+): boolean {
+  // If either block is date-only (no times), they overlap by definition
+  if (!aStart || !aEnd || !bStart || !bEnd) return true
+  // HH:MM string comparison works for time overlap check
+  return aStart < bEnd && bStart < aEnd
+}
+
+async function detectPrepBlockConflicts(
+  db: ReturnType<typeof createServerClient>,
+  chefId: string,
+  blockDate: string,
+  startTime: string | null,
+  endTime: string | null,
+  excludeBlockId?: string
+): Promise<PrepBlockConflict[]> {
+  // Fetch all blocks on this date
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let query = (db as any)
+    .from('event_prep_blocks')
+    .select('id, title, event_id, block_date, start_time, end_time')
+    .eq('chef_id', chefId)
+    .eq('block_date', blockDate)
+
+  if (excludeBlockId) {
+    query = query.neq('id', excludeBlockId)
+  }
+
+  const { data: existing } = await query
+  if (!existing || existing.length === 0) return []
+
+  const conflicts: PrepBlockConflict[] = []
+  for (const block of existing as any[]) {
+    if (detectTimeOverlap(startTime, endTime, block.start_time, block.end_time)) {
+      // Look up event occasion if the conflicting block has an event_id
+      let eventOccasion: string | null = null
+      if (block.event_id) {
+        const { data: ev } = await db
+          .from('events')
+          .select('occasion')
+          .eq('id', block.event_id)
+          .maybeSingle()
+        eventOccasion = (ev as any)?.occasion ?? null
+      }
+      conflicts.push({
+        blockId: block.id,
+        blockTitle: block.title,
+        eventId: block.event_id,
+        eventOccasion,
+        blockDate: block.block_date,
+        startTime: block.start_time,
+        endTime: block.end_time,
+      })
+    }
+  }
+  return conflicts
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapEventToScheduling(event: Record<string, any>): SchedulingEvent {
@@ -215,7 +284,32 @@ async function fetchMenuComponents(
 export async function getEventPrepBlocks(eventId: string): Promise<PrepBlock[]> {
   const user = await requireChef()
   const db: any = createServerClient()
-  return fetchPrepBlocks(db, user.tenantId!, { eventId })
+  const ownBlocks = await fetchPrepBlocks(db, user.tenantId!, { eventId })
+
+  // Also fetch collaborator chef blocks for this event (non-blocking)
+  try {
+    const { data: collabs } = await db
+      .from('event_collaborators')
+      .select('chef_id')
+      .eq('event_id', eventId)
+      .neq('chef_id', user.tenantId!)
+    if (collabs && collabs.length > 0) {
+      const collabBlocks = await Promise.all(
+        collabs.map((c: any) => fetchPrepBlocks(db, c.chef_id, { eventId }))
+      )
+      const merged = [...ownBlocks, ...collabBlocks.flat()]
+      merged.sort((a, b) => {
+        const dateCompare = a.block_date.localeCompare(b.block_date)
+        if (dateCompare !== 0) return dateCompare
+        return (a.start_time || '').localeCompare(b.start_time || '')
+      })
+      return merged
+    }
+  } catch (err) {
+    console.error('[non-blocking] Collaborator prep block lookup failed', err)
+  }
+
+  return ownBlocks
 }
 
 /**
@@ -331,9 +425,23 @@ export async function getSchedulingGaps(): Promise<SchedulingGap[]> {
  */
 export async function createPrepBlock(
   input: CreatePrepBlockInput
-): Promise<{ success: boolean; block?: PrepBlock; error?: string }> {
+): Promise<{
+  success: boolean
+  block?: PrepBlock
+  conflicts?: PrepBlockConflict[]
+  error?: string
+}> {
   const user = await requireChef()
   const db: any = createServerClient()
+
+  // Check for cross-event conflicts before creating (advisory, not blocking)
+  const conflicts = await detectPrepBlockConflicts(
+    db,
+    user.tenantId!,
+    input.block_date,
+    input.start_time ?? null,
+    input.end_time ?? null
+  )
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await (db as any)
@@ -362,7 +470,53 @@ export async function createPrepBlock(
   revalidatePath('/calendar/year')
   if (input.event_id) revalidatePath(`/events/${input.event_id}`)
 
-  return { success: true, block: data as PrepBlock }
+  return {
+    success: true,
+    block: data as PrepBlock,
+    conflicts: conflicts.length > 0 ? conflicts : undefined,
+  }
+}
+
+/**
+ * Check all prep blocks within a date range for cross-event time conflicts.
+ * Returns a flat list of conflicts (each pair reported once).
+ * Useful for the calendar/week view to highlight overlapping blocks.
+ */
+export async function getPrepBlockConflicts(
+  dateStart: string,
+  dateEnd: string
+): Promise<PrepBlockConflict[]> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+  const blocks = await fetchPrepBlocks(db, user.tenantId!, { dateStart, dateEnd })
+
+  const conflicts: PrepBlockConflict[] = []
+  const seen = new Set<string>()
+
+  for (let i = 0; i < blocks.length; i++) {
+    for (let j = i + 1; j < blocks.length; j++) {
+      const a = blocks[i]
+      const b = blocks[j]
+      if (a.block_date !== b.block_date) continue
+      if (!detectTimeOverlap(a.start_time, a.end_time, b.start_time, b.end_time)) continue
+
+      const pairKey = [a.id, b.id].sort().join(':')
+      if (seen.has(pairKey)) continue
+      seen.add(pairKey)
+
+      // Report the second block as the conflicting one
+      conflicts.push({
+        blockId: b.id,
+        blockTitle: b.title,
+        eventId: b.event_id,
+        eventOccasion: null, // caller can enrich if needed
+        blockDate: b.block_date,
+        startTime: b.start_time,
+        endTime: b.end_time,
+      })
+    }
+  }
+  return conflicts
 }
 
 /**

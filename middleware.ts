@@ -74,12 +74,22 @@ export default auth(async (request) => {
     return NextResponse.next()
   }
 
+  // Strip internal auth headers on public and skip-auth paths so spoofed
+  // x-cf-* values never reach downstream helpers like getCurrentUser().
+  // Note: x-pathname is intentionally NOT set here, which means the
+  // readRequestAuthContext sentinel check will also reject these paths.
   if (isApiSkipAuthPath(pathname)) {
-    return NextResponse.next()
+    const sanitized = new Headers(request.headers)
+    stripInternalRequestHeaders(sanitized)
+    sanitized.set('x-request-id', requestId)
+    return withRequestId(NextResponse.next({ request: { headers: sanitized } }), requestId)
   }
 
   if (isPublicUnauthenticatedPath(pathname)) {
-    return NextResponse.next()
+    const sanitized = new Headers(request.headers)
+    stripInternalRequestHeaders(sanitized)
+    sanitized.set('x-request-id', requestId)
+    return withRequestId(NextResponse.next({ request: { headers: sanitized } }), requestId)
   }
 
   const requestHeaders = new Headers(request.headers)

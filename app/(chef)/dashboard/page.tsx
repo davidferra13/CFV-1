@@ -45,6 +45,8 @@ import { getActiveAlerts } from '@/lib/ai/remy-proactive-alerts'
 import { RestaurantMetricsSection, RestaurantMetricsSkeleton } from './_sections/restaurant-metrics'
 import { CompletionSummaryWidgetServer } from '@/components/completion/completion-summary-server'
 import { NetworkActivitySection } from './_sections/network-activity'
+import { OnboardingChecklistWidget } from '@/components/dashboard/onboarding-checklist-widget'
+import { getOnboardingProgress } from '@/lib/onboarding/progress-actions'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -319,16 +321,16 @@ async function QuickNotesLoader() {
 export default async function ChefDashboard() {
   const user = await requireChef()
 
-  // Onboarding redirect is handled by the chef layout gate (layout.tsx)
-  // so no duplicate redirect needed here.
-
   const hour = new Date().getHours()
   const timeOfDay = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening'
   const firstName = (user.email ?? '').split('@')[0].split('.')[0]
 
-  const archetype = await safe('archetype', () => getCachedChefArchetype(user.entityId), null)
+  const [archetype, onboardingProgress, remyAlerts] = await Promise.all([
+    safe('archetype', () => getCachedChefArchetype(user.entityId), null),
+    safe('onboardingProgress', () => getOnboardingProgress(), null),
+    safe('remyAlerts', () => getActiveAlerts(10), []),
+  ])
   const primaryAction = getDashboardPrimaryAction(archetype)
-  const remyAlerts = await safe('remyAlerts', () => getActiveAlerts(10), [])
 
   // Time-aware greeting
   const greeting =
@@ -388,6 +390,9 @@ export default async function ChefDashboard() {
 
       {/* Onboarding banner - shows until setup is complete, then auto-hides */}
       <OnboardingBanner />
+
+      {/* Onboarding checklist widget - shows setup progress until all phases complete */}
+      {onboardingProgress && <OnboardingChecklistWidget progress={onboardingProgress} />}
 
       {/* Remy proactive alerts - urgent/high priority items needing attention */}
       {remyAlerts.length > 0 && (

@@ -38,6 +38,7 @@ const DOMAIN_LABELS: Record<QueueDomain, string> = {
   post_event: 'Post-Event',
   client: 'Client',
   culinary: 'Culinary',
+  network: 'Network',
 }
 
 const INLINE_ACTION_LABELS: Record<InlineActionType, string> = {

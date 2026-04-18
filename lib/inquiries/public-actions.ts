@@ -486,9 +486,9 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       guest_count: validated.guest_count,
       location_address: validated.address.trim(),
       location_city: 'TBD',
-      location_zip: 'TBD',
+      location_zip: /\b(\d{5}(?:-\d{4})?)\b/.exec(validated.address.trim())?.[1] || 'TBD',
       occasion: validated.occasion.trim(),
-      quoted_price_cents: budgetCents,
+      quoted_price_cents: null, // Client budget is not a quote; real price set when chef quote is accepted
       special_requests: sourceMessage || null,
     })
     .select('id')
@@ -573,16 +573,24 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     console.error('[submitPublicInquiry] Remy reactive enqueue failed (non-blocking):', err)
   }
 
-  // 8. Push notification - new inquiry from website (non-blocking)
+  // 8. Notification - new inquiry from website (non-blocking)
   try {
-    const { getChefAuthUserId } = await import('@/lib/notifications/actions')
+    const { getChefAuthUserId, createNotification } = await import('@/lib/notifications/actions')
     const chefUserId = await getChefAuthUserId(tenantId)
     if (chefUserId) {
-      const { notifyNewInquiry } = await import('@/lib/notifications/onesignal')
-      await notifyNewInquiry(chefUserId, validated.full_name, validated.event_date || 'date TBD')
+      await createNotification({
+        tenantId,
+        recipientId: chefUserId,
+        category: 'inquiry',
+        action: 'new_inquiry',
+        title: `New inquiry from ${validated.full_name}`,
+        body: `${validated.full_name} is interested in booking ${validated.event_date || 'date TBD'}`,
+        inquiryId: inquiry.id,
+        clientId: client.id,
+      })
     }
   } catch (err) {
-    console.error('[submitPublicInquiry] Push notification failed (non-blocking):', err)
+    console.error('[submitPublicInquiry] Notification failed (non-blocking):', err)
   }
 
   // 9. Chef auto-response to client (non-blocking) - uses chef's configured template

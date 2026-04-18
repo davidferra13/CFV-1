@@ -1110,6 +1110,17 @@ export interface PrepBlock {
   updated_at: string
 }
 
+/** Cross-event prep block overlap detected during scheduling. */
+export interface PrepBlockConflict {
+  blockId: string
+  blockTitle: string
+  eventId: string | null
+  eventOccasion: string | null
+  blockDate: string
+  startTime: string | null
+  endTime: string | null
+}
+
 // Engine output - not yet saved to DB. Shown to chef for review before confirming.
 export interface PrepBlockSuggestion {
   block_type: PrepBlockType

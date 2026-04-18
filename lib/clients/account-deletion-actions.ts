@@ -143,7 +143,7 @@ export async function exportClientData(): Promise<{ data: Record<string, any> }>
     .eq('client_id', user.entityId)
     .order('created_at', { ascending: false })
 
-  // Fetch conversations
+  // Fetch conversations + messages
   const { data: conversations } = await db
     .from('conversations')
     .select('id, created_at')
@@ -160,6 +160,68 @@ export async function exportClientData(): Promise<{ data: Record<string, any> }>
     messages = msgs || []
   }
 
+  // Fetch allergy records
+  const { data: allergyRecords } = await db
+    .from('client_allergy_records')
+    .select('allergen, severity, source, confirmed_by_chef, notes, created_at')
+    .eq('client_id', user.entityId)
+
+  // Fetch notes about this client
+  const { data: clientNotes } = await db
+    .from('client_notes')
+    .select('content, category, pinned, created_at')
+    .eq('client_id', user.entityId)
+
+  // Fetch photos metadata (not the files themselves)
+  const { data: photos } = await db
+    .from('client_photos')
+    .select('caption, category, created_at')
+    .eq('client_id', user.entityId)
+    .is('deleted_at', null)
+
+  // Fetch taste profile
+  const { data: tasteProfile } = await db
+    .from('client_taste_profiles')
+    .select('*')
+    .eq('client_id', user.entityId)
+    .limit(1)
+
+  // Fetch kitchen inventory
+  const { data: kitchenInventory } = await db
+    .from('client_kitchen_inventory')
+    .select('category, item_name, quantity, notes')
+    .eq('client_id', user.entityId)
+
+  // Fetch intake form responses
+  const { data: intakeResponses } = await db
+    .from('client_intake_responses')
+    .select('responses, submitted_at, applied_at')
+    .eq('client_id', user.entityId)
+
+  // Fetch meal requests
+  const { data: mealRequests } = await db
+    .from('client_meal_requests')
+    .select('request_type, details, status, created_at')
+    .eq('client_id', user.entityId)
+
+  // Fetch loyalty/referral data
+  const { data: referrals } = await db
+    .from('client_referrals')
+    .select('referral_code, status, created_at')
+    .eq('referrer_client_id', user.entityId)
+
+  // Fetch NDA records
+  const { data: ndaRecords } = await db
+    .from('client_ndas')
+    .select('nda_type, status, effective_date, expiry_date, created_at')
+    .eq('client_id', user.entityId)
+
+  // Fetch ledger entries (financial records)
+  const { data: ledgerEntries } = await db
+    .from('ledger_entries')
+    .select('entry_type, amount_cents, description, created_at')
+    .eq('client_id', user.entityId)
+
   // Strip internal fields
   const sanitized = { ...client }
   delete sanitized.tenant_id
@@ -175,6 +237,16 @@ export async function exportClientData(): Promise<{ data: Record<string, any> }>
       inquiries: inquiries || [],
       quotes: quotes || [],
       messages,
+      allergyRecords: allergyRecords || [],
+      notes: clientNotes || [],
+      photos: photos || [],
+      tasteProfile: tasteProfile?.[0] || null,
+      kitchenInventory: kitchenInventory || [],
+      intakeResponses: intakeResponses || [],
+      mealRequests: mealRequests || [],
+      referrals: referrals || [],
+      ndaRecords: ndaRecords || [],
+      financialRecords: ledgerEntries || [],
     },
   }
 }
