@@ -159,6 +159,14 @@ export async function recordPayment(input: RecordPaymentInput) {
   }
 
   revalidatePath('/commerce')
+  // EC-G2 fix: bust all caches that read payment/financial data
+  revalidatePath('/dashboard')
+  revalidatePath('/events')
+  revalidatePath('/my-events')
+  if ((sale as any).event_id) {
+    revalidatePath(`/events/${(sale as any).event_id}`)
+    revalidatePath(`/my-events/${(sale as any).event_id}`)
+  }
   return payment
 }
 

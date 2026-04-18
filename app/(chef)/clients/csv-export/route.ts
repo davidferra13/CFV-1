@@ -9,14 +9,30 @@ export async function GET() {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const { data: clients } = await db
-    .from('clients')
-    .select(
-      'full_name, email, phone, created_at, status, is_active, dietary_restrictions, allergies, preferred_contact_method, referral_source, occupation, company, lifetime_value_cents, loyalty_tier, notes'
-    )
-    .eq('tenant_id', user.tenantId!)
-    .is('deleted_at', null)
-    .order('full_name')
+  // Fetch clients + LTV from financial view (ledger-derived, always current)
+  const [clientsResult, financialsResult] = await Promise.all([
+    db
+      .from('clients')
+      .select(
+        'id, full_name, email, phone, created_at, status, dietary_restrictions, allergies, preferred_contact_method, referral_source, occupation, company, loyalty_tier, notes'
+      )
+      .eq('tenant_id', user.tenantId!)
+      .is('deleted_at', null)
+      .order('full_name'),
+    db
+      .from('client_financial_summary')
+      .select('client_id, lifetime_value_cents')
+      .eq('tenant_id', user.tenantId!),
+  ])
+
+  const clients = clientsResult.data ?? []
+  const ltvMap = new Map<string, number>()
+  for (const f of (financialsResult.data ?? []) as {
+    client_id: string
+    lifetime_value_cents: number
+  }[]) {
+    ltvMap.set(f.client_id, f.lifetime_value_cents ?? 0)
+  }
 
   const header = row([
     'Name',
@@ -35,25 +51,26 @@ export async function GET() {
     'Loyalty Tier',
     'Notes',
   ])
-  const body = (clients ?? []).map((c: any) =>
-    row([
+  const body = clients.map((c: any) => {
+    const ltv = ltvMap.get(c.id)
+    return row([
       c.full_name,
       c.email,
       c.phone,
       c.created_at ? new Date(c.created_at).toLocaleDateString('en-US') : '',
       c.status ?? 'active',
-      c.is_active ? 'Yes' : 'No',
+      c.status !== 'dormant' ? 'Yes' : 'No',
       Array.isArray(c.dietary_restrictions) ? c.dietary_restrictions.join('; ') : '',
       Array.isArray(c.allergies) ? c.allergies.join('; ') : '',
       c.preferred_contact_method ?? '',
       c.referral_source ?? '',
       c.occupation ?? '',
       c.company ?? '',
-      c.lifetime_value_cents != null ? `$${(c.lifetime_value_cents / 100).toFixed(2)}` : '',
+      ltv != null ? `$${(ltv / 100).toFixed(2)}` : '',
       c.loyalty_tier ?? '',
       c.notes ?? '',
     ])
-  )
+  })
 
   const csv = [header, ...body].join('\n')
 

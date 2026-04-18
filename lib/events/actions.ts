@@ -548,7 +548,38 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
       revalidatePath(`/events/${eventId}`)
       revalidatePath('/my-events')
       revalidatePath(`/my-events/${eventId}`)
+      revalidatePath('/dashboard')
+      revalidatePath('/scheduling')
       invalidateRemyContextCache(user.tenantId!)
+
+      // EC-G9 fix: if event_date changed, notify collaborators (non-blocking)
+      if (updateFields.event_date && updateFields.event_date !== currentEvent.event_date) {
+        try {
+          const collabDb: any = createServerClient()
+          const { data: collabs } = await collabDb
+            .from('event_collaborators')
+            .select('chef_id')
+            .eq('event_id', eventId)
+            .neq('chef_id', user.tenantId!)
+
+          if (collabs && collabs.length > 0) {
+            const { createChefNotification } = await import('@/lib/notifications/actions')
+            for (const c of collabs) {
+              await createChefNotification({
+                tenantId: c.chef_id,
+                category: 'event',
+                action: 'event_date_changed',
+                title: 'Event date changed',
+                body: `"${event.occasion || 'Event'}" moved to ${updateFields.event_date}`,
+                actionUrl: `/events/${eventId}`,
+                eventId,
+              }).catch(() => {})
+            }
+          }
+        } catch (err) {
+          console.error('[non-blocking] Collaborator date-change notification failed', err)
+        }
+      }
 
       // Log chef activity (non-blocking)
       try {

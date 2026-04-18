@@ -226,6 +226,16 @@ export function OnboardingInterview({ onComplete, onSkip }: InterviewProps) {
           ) : (
             <div />
           )}
+          {onSkip && (
+            <button
+              type="button"
+              onClick={onSkip}
+              disabled={isPending}
+              className="text-xs text-stone-600 hover:text-stone-400 underline underline-offset-2 disabled:opacity-50"
+            >
+              Skip setup
+            </button>
+          )}
         </div>
       </div>
     </div>
