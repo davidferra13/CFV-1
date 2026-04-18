@@ -1,6 +1,6 @@
 # Spec: Request Trust and API Tenant Boundary Hardening
 
-> **Status:** in-progress
+> **Status:** verified
 > **Priority:** P0 (blocking)
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)
@@ -14,6 +14,9 @@ _Every status change, every claim, every verification gets a row. This is the au
 | Created       | 2026-04-09 17:39 EDT | Planner       |        |
 | Status: ready | 2026-04-09 17:39 EDT | Planner       |        |
 | Research pass | 2026-04-09 22:05 EDT | Codex         |        |
+| Claimed       | 2026-04-17 21:00 EDT | Opus          |        |
+| Built         | 2026-04-17 22:30 EDT | Opus          |        |
+| Verified      | 2026-04-17 22:35 EDT | Opus          | dirty  |
 
 ---
 

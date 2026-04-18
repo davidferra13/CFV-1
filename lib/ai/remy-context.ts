@@ -67,7 +67,7 @@ const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
  * Call this from any server action that mutates data Remy reads
  * (events, clients, recipes, menus, financials, inquiries, etc.).
  */
-export function invalidateRemyContextCache(tenantId: string): void {
+export async function invalidateRemyContextCache(tenantId: string): Promise<void> {
   contextCache.delete(tenantId)
 }
 
