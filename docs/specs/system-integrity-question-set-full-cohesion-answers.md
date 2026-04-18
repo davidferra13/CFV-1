@@ -9,27 +9,27 @@
 
 ## Domain 1: Onboarding End-to-End (FC1-FC10)
 
-| Q    | Verdict              | Summary                                                                                                                                                                                                                                                                                        |
-| ---- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FC1  | **PASS**             | Dashboard wraps every fetch in `safe()` + `WidgetErrorBoundary` + `Suspense`. Zero-data shows "All caught up" banner. `app/(chef)/dashboard/page.tsx:51-80`                                                                                                                                    |
-| FC2  | **PASS (by design)** | `network-step.tsx` exists as standalone component, deliberately excluded from `WIZARD_STEPS`. Not in `ONBOARDING_STEPS` array. Wizard imports exactly 6 steps. `lib/onboarding/onboarding-constants.ts:90`                                                                                     |
-| FC3  | **PARTIAL**          | `createOnboardingEvent()` does raw `db.from('events').insert()` with `status: 'draft'`. Creates real event row visible to calendar/dashboard. But bypasses `event_transitions` table; no "created" audit entry. `lib/onboarding/actions.ts:34-107`                                             |
-| FC4  | **PARTIAL**          | `completeOnboardingWizard()` sets only `onboarding_completed_at`, not `onboarding_banner_dismissed_at`. Banner may persist post-wizard until explicitly dismissed. Navigation is not blocked (gate checks either flag). `lib/onboarding/onboarding-actions.ts:247-264`                         |
-| FC5  | **FAIL**             | All 5 tour target selectors (`data-tour="chef-onboarding-home"` etc.) exist ONLY in `lib/onboarding/tour-config.ts`. Zero matching `data-tour` attributes in actual page components. Spotlight handles missing targets gracefully (centers tooltip) but highlight/spotlight is non-functional. |
-| FC6  | **PARTIAL**          | `seedDemoData()` creates 3 clients (with dietary), 2 events, 1 inquiry. Does NOT create: recipes, menus, quotes, expenses, staff, ledger entries. Dashboard financial/recipe/menu widgets show empty states. `lib/onboarding/demo-data-actions.ts:16-68`                                       |
-| FC7  | **PASS**             | No forced onboarding gates in chef layout (PERMANENT rule). `skipStep()` is non-blocking. `handleSkipAll()` calls both dismiss+complete. All pages handle missing data via safe()/error boundaries.                                                                                            |
-| FC8  | **PASS**             | `selectArchetype()` writes `archetype`, `enabled_modules`, `primary_nav_hrefs` to `chef_preferences`. Dashboard conditionally renders sections by archetype. Nav filtered by enabled_modules. Documents load archetype-specific packs. `lib/archetypes/actions.ts:17-74`                       |
-| FC9  | **PASS**             | `importClientDirect()` starts with `requireChef()`, derives `tenant_id: user.tenantId!` from session. Never accepts tenant from request body. `lib/clients/import-actions.ts:28-53`                                                                                                            |
-| FC10 | **PASS**             | `universalSearch()` queries DB directly via SQL on every invocation. No cache, no index, no replication lag. Immediately searchable. `lib/search/universal-search.ts:35`                                                                                                                       |
+| Q    | Verdict              | Summary                                                                                                                                                                                                                                                                  |
+| ---- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| FC1  | **PASS**             | Dashboard wraps every fetch in `safe()` + `WidgetErrorBoundary` + `Suspense`. Zero-data shows "All caught up" banner. `app/(chef)/dashboard/page.tsx:51-80`                                                                                                              |
+| FC2  | **PASS (by design)** | `network-step.tsx` exists as standalone component, deliberately excluded from `WIZARD_STEPS`. Not in `ONBOARDING_STEPS` array. Wizard imports exactly 6 steps. `lib/onboarding/onboarding-constants.ts:90`                                                               |
+| FC3  | **PARTIAL**          | `createOnboardingEvent()` does raw `db.from('events').insert()` with `status: 'draft'`. Creates real event row visible to calendar/dashboard. But bypasses `event_transitions` table; no "created" audit entry. `lib/onboarding/actions.ts:34-107`                       |
+| FC4  | **PARTIAL**          | `completeOnboardingWizard()` sets only `onboarding_completed_at`, not `onboarding_banner_dismissed_at`. Banner may persist post-wizard until explicitly dismissed. Navigation is not blocked (gate checks either flag). `lib/onboarding/onboarding-actions.ts:247-264`   |
+| FC5  | **FIXED**            | Tour target `data-tour` attributes now present on 10+ page components (dashboard, events, quotes, clients, staff pages, client portal pages). Spotlight targets functional.                                                                                              |
+| FC6  | **PARTIAL**          | `seedDemoData()` creates 3 clients (with dietary), 2 events, 1 inquiry. Does NOT create: recipes, menus, quotes, expenses, staff, ledger entries. Dashboard financial/recipe/menu widgets show empty states. `lib/onboarding/demo-data-actions.ts:16-68`                 |
+| FC7  | **PASS**             | No forced onboarding gates in chef layout (PERMANENT rule). `skipStep()` is non-blocking. `handleSkipAll()` calls both dismiss+complete. All pages handle missing data via safe()/error boundaries.                                                                      |
+| FC8  | **PASS**             | `selectArchetype()` writes `archetype`, `enabled_modules`, `primary_nav_hrefs` to `chef_preferences`. Dashboard conditionally renders sections by archetype. Nav filtered by enabled_modules. Documents load archetype-specific packs. `lib/archetypes/actions.ts:17-74` |
+| FC9  | **PASS**             | `importClientDirect()` starts with `requireChef()`, derives `tenant_id: user.tenantId!` from session. Never accepts tenant from request body. `lib/clients/import-actions.ts:28-53`                                                                                      |
+| FC10 | **PASS**             | `universalSearch()` queries DB directly via SQL on every invocation. No cache, no index, no replication lag. Immediately searchable. `lib/search/universal-search.ts:35`                                                                                                 |
 
 **Gaps Found:**
 
 - **FC-G1** (FC3): Onboarding event skips `event_transitions` table. Minor; draft is entry state.
 - **FC-G2** (FC4): Banner persists after wizard completion. Intentional design (hub checklist nudge), but could confuse.
-- **FC-G3** (FC5): Tour target DOM attributes missing from all pages. Tours non-functional.
+- ~~**FC-G3** (FC5): Tour target DOM attributes missing from all pages.~~ **FIXED.** `data-tour` attributes on 10+ pages.
 - **FC-G4** (FC6): Demo data too thin. No recipes, menus, financials. Chef can't explore 60% of app.
 
-**Score: 6 PASS, 3 PARTIAL, 1 FAIL**
+**Score: 6 PASS, 1 FIXED, 3 PARTIAL, 0 FAIL (was 6/3/1)**
 
 ---
 
@@ -46,7 +46,7 @@
 | FC17 | **PARTIAL** | Account deletion is soft-delete with 30-day grace period. `requestClientAccountDeletion()` sets flags on client record. But actual data purge (what tables get cleaned after 30 days) needs a cron job that executes the purge. Ledger entries have 7-year retention note in comments. No explicit anonymization logic found for ledger.                                                                                                           |
 | FC18 | **PASS**    | Chat view uses SSE. `ChatView` component imports from `lib/chat/realtime.ts` which uses `EventSource` for real-time message delivery. `createSSESubscription()` wired. `lib/chat/realtime.ts:1-34`                                                                                                                                                                                                                                                 |
 | FC19 | **PARTIAL** | Proposal token page (`app/(public)/proposal/[token]/page.tsx`) has rate limiting (`checkRateLimit`), handles not-found. Proposals have `expires_at` field and expiry check (`client-proposal-actions.ts:256`). But token is a UUID (sufficient entropy). No invalidation after acceptance found; token remains valid post-acceptance (replay possible for viewing, not re-accepting).                                                              |
-| FC20 | **FAIL**    | `redeemReward()` in `lib/loyalty/actions.ts:1189` deducts points, creates `loyalty_transactions` record, broadcasts SSE. But grep for "ledger" in loyalty actions returns **zero matches**. Redemption does NOT create a ledger entry. Chef's financial summary is unaware of loyalty discounts.                                                                                                                                                   |
+| FC20 | **FIXED**   | `redeemReward()` at `lib/loyalty/actions.ts:1292-1309` now creates ledger entry via `appendLedgerEntryInternal` when reward has monetary value. FC-G10 resolved.                                                                                                                                                                                                                                                                                   |
 
 **Gaps Found:**
 
@@ -55,9 +55,9 @@
 - **FC-G7** (FC16): Countdown has no offline/timezone handling.
 - **FC-G8** (FC17): No automated purge cron for soft-deleted accounts. No ledger anonymization.
 - **FC-G9** (FC19): Proposal tokens not invalidated after acceptance; viewable forever.
-- **FC-G10** (FC20): Loyalty redemptions don't create ledger entries. Financial summary blind to discounts.
+- ~~**FC-G10** (FC20): Loyalty redemptions don't create ledger entries.~~ **FIXED.** `appendLedgerEntryInternal` at `actions.ts:1296-1309`.
 
-**Score: 3 PASS, 6 PARTIAL, 1 FAIL**
+**Score: 3 PASS, 1 FIXED, 6 PARTIAL, 0 FAIL (was 3/6/1)**
 
 ---
 
@@ -359,7 +359,7 @@
 
 ---
 
-## Priority Gaps (40 Total, 31 Resolved, 3 Deferred, 6 Remaining)
+## Priority Gaps (40 Total, 34 Resolved, 3 Deferred, 1 Remaining + 2 Accepted)
 
 ### CRITICAL (Must Fix Before Launch) - 3 gaps, ALL RESOLVED
 
@@ -404,20 +404,20 @@
 | ~~FC-G33~~ | FC83 | ~~Search query not pre-filled in quick-create~~ | RESOLVED: append `?q=` param after stripping keywords                           |
 | ~~FC-G34~~ | FC87 | ~~No fuzzy search matching~~                    | RESOLVED: order-preserved character matching with 70% threshold                 |
 
-### LOW (Polish) - 13 gaps, 6 RESOLVED
+### LOW (Polish) - 13 gaps, 9 RESOLVED, 3 ACCEPTED
 
-| Gap        | Q     | Issue                                                 | Status                                                                                                                                                         |
-| ---------- | ----- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FC-G12     | FC27  | Token-gated pages need consistent expiry audit        |                                                                                                                                                                |
-| ~~FC-G13~~ | FC28  | ~~Gift card post-purchase chain~~                     | RESOLVED: chain verified complete; `revalidatePath` added to webhook                                                                                           |
-| FC-G26     | FC53  | No transactional vs marketing suppression distinction |                                                                                                                                                                |
-| FC-G27     | FC65  | Dashboard layout customization may be cosmetic        |                                                                                                                                                                |
-| ~~FC-G28~~ | FC66  | ~~Automation settings may not wire to triggers~~      | RESOLVED: verified fully wired (3 crons + 7 callsites)                                                                                                         |
-| FC-G29     | FC72  | Settings use requireChef not RBAC                     |                                                                                                                                                                |
-| FC-G30     | FC74  | Staff portal doesn't use RBAC permissions             |                                                                                                                                                                |
-| ~~FC-G31~~ | FC78  | ~~No immediate session invalidation on deactivation~~ | RESOLVED: `revokeAllSessionsForUser()` called on deactivation (both server action + API v2); `requireStaff()` checks `status === 'active'` as defense-in-depth |
-| FC-G32     | FC80  | No cross-staff visibility for same event              |                                                                                                                                                                |
-| ~~FC-G35~~ | FC90  | ~~No cross-type relevance ranking in search~~         | RESOLVED: fuzzy scoring applied to all results, sorted by relevance                                                                                            |
-| ~~FC-G37~~ | FC103 | ~~PIN uniqueness needs DB constraint verification~~   | RESOLVED: partial unique index `idx_staff_pin_per_tenant` exists                                                                                               |
-| FC-G38     | FC104 | Kiosk checkout chain needs end-to-end verification    |                                                                                                                                                                |
-| ~~FC-G43~~ | FC130 | RESOLVED - paywall intentional                        |                                                                                                                                                                |
+| Gap        | Q     | Issue                                                     | Status                                                                                                                                                                                                              |
+| ---------- | ----- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ~~FC-G12~~ | FC27  | ~~Token-gated pages need consistent expiry audit~~        | RESOLVED: audit complete (19 pages). Rate limiting added to 4 unprotected pages (`/worksheet`, `/e`, `/hub/me`, `/book/campaign`). 7 pages have no expiry by design (permanent links)                               |
+| ~~FC-G13~~ | FC28  | ~~Gift card post-purchase chain~~                         | RESOLVED: chain verified complete; `revalidatePath` added to webhook                                                                                                                                                |
+| ~~FC-G26~~ | FC53  | ~~No transactional vs marketing suppression distinction~~ | RESOLVED: `isTransactional` flag on `sendEmail()` bypasses complaint-only suppressions (honors hard bounces). Tagged: password reset, email change, receipts, notifications, contracts                              |
+| FC-G27     | FC65  | Dashboard layout customization may be cosmetic            |                                                                                                                                                                                                                     |
+| ~~FC-G28~~ | FC66  | ~~Automation settings may not wire to triggers~~          | RESOLVED: verified fully wired (3 crons + 7 callsites)                                                                                                                                                              |
+| FC-G29     | FC72  | Settings use requireChef not RBAC                         | ACCEPTED: functional via role check; RBAC is V2 scope                                                                                                                                                               |
+| FC-G30     | FC74  | Staff portal doesn't use RBAC permissions                 | ACCEPTED: functional via role check; RBAC is V2 scope                                                                                                                                                               |
+| ~~FC-G31~~ | FC78  | ~~No immediate session invalidation on deactivation~~     | RESOLVED: `revokeAllSessionsForUser()` called on deactivation (both server action + API v2); `requireStaff()` checks `status === 'active'` as defense-in-depth                                                      |
+| FC-G32     | FC80  | No cross-staff visibility for same event                  | ACCEPTED: by design; staff see own assignments only                                                                                                                                                                 |
+| ~~FC-G35~~ | FC90  | ~~No cross-type relevance ranking in search~~             | RESOLVED: fuzzy scoring applied to all results, sorted by relevance                                                                                                                                                 |
+| ~~FC-G37~~ | FC103 | ~~PIN uniqueness needs DB constraint verification~~       | RESOLVED: partial unique index `idx_staff_pin_per_tenant` exists                                                                                                                                                    |
+| ~~FC-G38~~ | FC104 | ~~Kiosk checkout chain needs end-to-end verification~~    | RESOLVED: audit complete. `executeSaleDeduction()` + `deductProductStock()` added to kiosk checkout (was missing vs POS path). Ledger skip is by design (anonymous sales). No receipt table exists (on-demand only) |
+| ~~FC-G43~~ | FC130 | RESOLVED - paywall intentional                            |                                                                                                                                                                                                                     |

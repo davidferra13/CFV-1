@@ -11,21 +11,21 @@
 
 | Q   | Verdict     | Summary                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | --- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| EC1 | **FAIL**    | `projectedFoodCostCents` hardcoded `null` at `lib/events/financial-summary-actions.ts:235`. DB function `compute_projected_food_cost_cents` EXISTS and is called in `transitions.ts:336` during state changes, but the financial summary page never invokes it. Dashboard reads from financial-summary-actions, so projected cost is always null. Downstream profit margin calc uses actual grocery spend instead, but projected food cost (from recipe book) is a dead chain.                  |
-| EC2 | **FAIL**    | `recordPayment()` at `lib/commerce/payment-actions.ts:161` calls ONLY `revalidatePath('/commerce')`. Missing: `/events/${eventId}`, `/events`, `/dashboard`, `/my-events`, client portal paths. Event detail, dashboard, client spending page all serve stale payment data until next full navigation. DB trigger creates ledger entry correctly; the view recomputes. But client-side cache is stale.                                                                                          |
+| EC1 | **FIXED**   | `projectedFoodCostCents` now computed via `compute_projected_food_cost_cents` DB RPC at `financial-summary-actions.ts:157-165`. EC-G1 resolved. Non-blocking (catches if function unavailable).                                                                                                                                                                                                                                                                                                 |
+| EC2 | **FIXED**   | `recordPayment()` at `lib/commerce/payment-actions.ts:161-169` now revalidates `/commerce`, `/dashboard`, `/events`, `/my-events`, and per-event paths. EC-G2 resolved.                                                                                                                                                                                                                                                                                                                         |
 | EC3 | **PARTIAL** | `createExpense` writes to expenses table. `event_financial_summary` view includes expenses (verified via financial-summary-actions.ts:actualGrocerySpendCents, additionalExpensesCents). CPA export reads from same view. BUT: completion contract (`evaluateCompletion`) checks menu/recipe/ingredient completeness, NOT financial readiness (no "payment received" or "expenses logged" check found).                                                                                         |
 | EC4 | **PARTIAL** | Recipe ingredient update in `lib/recipes/actions.ts` revalidates `/recipes` and `/recipes/${recipeId}` (line 690-691). Shopping list `generateShoppingList()` queries `recipe_ingredients` live on each call (no cache). BUT: recipe changes do NOT revalidate shopping list page path (`/culinary/shopping-list` or `/events/[id]/shopping`). Chef must navigate away and back, or regenerate. Cost calc: event_financial_summary uses ledger entries (actual spend), not recipe-derived cost. |
-| EC5 | **FAIL**    | `subcontract_agreements` table exists in schema with `event_id`, `rate_type`, `rate_cents`. BUT: grep for `getSubcontractCosts`, `subcontract` in `lib/` returns zero matches in server actions. No function reads subcontract costs into `event_financial_summary`. `getCoHostFinancialSummary` not found in lib. Collaborator costs are schema-only; the financial pipeline ignores them.                                                                                                     |
+| EC5 | **FIXED**   | `getSubcontractCosts(eventId)` now exists at `lib/community/subcontract-actions.ts:298`. Queries `subcontract_agreements` by event_id with status filter. Called from event detail page money tab. EC-G5 resolved.                                                                                                                                                                                                                                                                              |
 
 **Gaps Found:**
 
-- **EC-G1** (EC1): projectedFoodCostCents hardcoded null. DB function exists but financial summary page never calls it. CRITICAL: chef has no recipe-based cost projection.
-- **EC-G2** (EC2): recordPayment only revalidates /commerce. 5+ stale surfaces.
+- ~~**EC-G1** (EC1): projectedFoodCostCents hardcoded null.~~ **FIXED.** Now computed via DB RPC at `financial-summary-actions.ts:157-165`.
+- ~~**EC-G2** (EC2): recordPayment only revalidates /commerce.~~ **FIXED.** Now revalidates 5+ paths at `payment-actions.ts:162-169`.
 - **EC-G3** (EC3): Completion contract has no financial readiness check.
 - **EC-G4** (EC4): Recipe changes don't revalidate shopping list page.
-- **EC-G5** (EC5): Subcontract/collaborator costs exist in schema but zero server actions consume them.
+- ~~**EC-G5** (EC5): Subcontract costs absent from server actions.~~ **FIXED.** `getSubcontractCosts` at `subcontract-actions.ts:298`.
 
-**Score: 0 PASS, 2 PARTIAL, 3 FAIL**
+**Score: 3 FIXED, 2 PARTIAL, 0 FAIL (was 0/2/3)**
 
 ---
 
@@ -34,18 +34,18 @@
 | Q    | Verdict     | Summary                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | ---- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | EC6  | **PARTIAL** | Client form saves to `clients.dietary_restrictions` + `clients.allergies`. Remy context loads both (`remy-context.ts:564,1677-1679,1719-1722`). Event dietary conflict detection exists (`lib/events/dietary-conflict-actions.ts`). Prep timeline carries `allergenFlags` per item (`compute-timeline.ts:35`). Staff briefing (`generateStaffBriefing`) loads client data. BUT: shopping list has NO allergen annotation; it returns quantities only (`shopping-list-actions.ts:141`). Kiosk catalog has no dietary flag system. 7/9 hops connected, 2 broken. |
-| EC7  | **FAIL**    | `updateClientDietary()` at `lib/clients/dietary-dashboard-actions.ts:247` revalidates only `/clients/${clientId}`. Does NOT trigger re-evaluation of existing events. Events store `dietary_restrictions` as a copied array (set at inquiry conversion, `convertInquiryToEvent:1668`). Client profile update = event dietary data stale. Life-safety gap.                                                                                                                                                                                                      |
+| EC7  | **FIXED**   | `updateClientDietary()` at `dietary-dashboard-actions.ts:270-285` now propagates dietary changes to all active events (draft through confirmed). EC-G7 resolved.                                                                                                                                                                                                                                                                                                                                                                                               |
 | EC8  | **PARTIAL** | `createNetworkContactShare()` includes `details` field in share. On acceptance, client auto-creation uses name/email/phone from share. `client_context` in handoffs preserves dietary data. But the acceptance path for contact shares: need to verify the auto-created client copies dietary from the `details` JSON. Not confirmed end-to-end.                                                                                                                                                                                                               |
 | EC9  | **PASS**    | Remy context loads client dietary (`remy-context.ts:1719-1722`) and event dietary (`remy-context.ts:1677-1679`). Recipe allergen flags loaded and marked `[SAFETY]` (`remy-context.ts:2374-2376`). Menu allergens consolidated with cross-reference warning (`remy-context.ts:2682`). Remy has dietary data AND flags conflicts proactively.                                                                                                                                                                                                                   |
-| EC10 | **FAIL**    | `generateShoppingList()` returns `ShoppingListItem[]` with quantity, unit, cost fields only. No allergen flag field. No client/event dietary cross-reference. Shopping list is purely a quantity aggregator. Chef sees "buy 3 lbs peanut butter" with no warning that Event B has a peanut allergy guest.                                                                                                                                                                                                                                                      |
+| EC10 | **FIXED**   | `generateShoppingList()` now returns `allergenFlags` and `dietaryWarnings` per item (`shopping-list-actions.ts:29-30`). Cross-references `client_allergy_records` via `ingredientMatchesAllergen`. EC-G8 resolved.                                                                                                                                                                                                                                                                                                                                             |
 
 **Gaps Found:**
 
-- **EC-G6** (EC6): Shopping list has zero allergen annotations. Kiosk has no dietary flags.
-- **EC-G7** (EC7): Client dietary update doesn't propagate to existing events. LIFE-SAFETY gap.
-- **EC-G8** (EC10): Consolidated shopping list has no allergen cross-reference. LIFE-SAFETY gap.
+- **EC-G6** (EC6): Shopping list allergen annotations now present; kiosk dietary flags still missing.
+- ~~**EC-G7** (EC7): Client dietary update doesn't propagate.~~ **FIXED.** Cascades to active events at `dietary-dashboard-actions.ts:270-285`.
+- ~~**EC-G8** (EC10): Shopping list has no allergen cross-reference.~~ **FIXED.** `allergenFlags` + `dietaryWarnings` at `shopping-list-actions.ts:29-30`.
 
-**Score: 1 PASS, 2 PARTIAL, 2 FAIL**
+**Score: 2 FIXED, 1 PASS, 2 PARTIAL, 0 FAIL (was 1/2/2)**
 
 ---
 
@@ -210,50 +210,50 @@
 
 ## GRAND SCORECARD
 
-| Chain                | PASS  | PARTIAL | FAIL   | Gaps   |
-| -------------------- | ----- | ------- | ------ | ------ |
-| 1. Money             | 0     | 2       | 3      | 5      |
-| 2. Dietary Safety    | 1     | 2       | 2      | 3      |
-| 3. Time Cascade      | 1     | 1       | 3      | 4      |
-| 4. Inquiry Pipeline  | 0     | 4       | 1      | 3      |
-| 5. Recipe-to-Plate   | 1     | 4       | 0      | 3      |
-| 6. Notification      | 0     | 4       | 1      | 4      |
-| 7. Cache Consistency | 0     | 3       | 2      | 2      |
-| 8. Client Experience | 1     | 4       | 0      | 2      |
-| 9. Analytics Truth   | 2     | 3       | 0      | 1      |
-| 10. Collaboration    | 1     | 2       | 2      | 4      |
-| **TOTAL**            | **7** | **29**  | **14** | **31** |
+| Chain                | PASS  | PARTIAL | FAIL  | FIXED | Gaps   |
+| -------------------- | ----- | ------- | ----- | ----- | ------ |
+| 1. Money             | 0     | 2       | 0     | 3     | 2      |
+| 2. Dietary Safety    | 1     | 2       | 0     | 2     | 1      |
+| 3. Time Cascade      | 1     | 1       | 3     | 0     | 4      |
+| 4. Inquiry Pipeline  | 0     | 4       | 1     | 0     | 3      |
+| 5. Recipe-to-Plate   | 1     | 4       | 0     | 0     | 3      |
+| 6. Notification      | 0     | 4       | 1     | 0     | 4      |
+| 7. Cache Consistency | 0     | 3       | 2     | 0     | 2      |
+| 8. Client Experience | 1     | 4       | 0     | 0     | 2      |
+| 9. Analytics Truth   | 2     | 3       | 0     | 0     | 1      |
+| 10. Collaboration    | 1     | 2       | 2     | 0     | 4      |
+| **TOTAL**            | **7** | **29**  | **9** | **5** | **26** |
 
-**Overall: 14% PASS, 58% PARTIAL, 28% FAIL**
+**Overall: 14% PASS, 10% FIXED, 58% PARTIAL, 18% FAIL (was 28% FAIL)**
 
 ---
 
 ## Priority Gaps (31 Total)
 
-### CRITICAL (Life-Safety / Data Integrity) - 4 gaps
+### CRITICAL (Life-Safety / Data Integrity) - 4 gaps, ALL FIXED
 
-| Gap       | Q    | Issue                                                                    | Impact                                                                |
-| --------- | ---- | ------------------------------------------------------------------------ | --------------------------------------------------------------------- |
-| **EC-G7** | EC7  | Client dietary update doesn't propagate to existing events               | Guest with new allergy could be served allergen. LIFE-SAFETY.         |
-| **EC-G8** | EC10 | Shopping list has no allergen cross-reference                            | Chef buys allergen ingredients without warning. LIFE-SAFETY.          |
-| **EC-G1** | EC1  | projectedFoodCostCents hardcoded null; recipe-based cost projection dead | Chef has no projected food cost before shopping. Financial blindness. |
-| **EC-G2** | EC2  | recordPayment only revalidates /commerce                                 | 5+ surfaces show stale payment data. Client thinks they haven't paid. |
+| Gap       | Q    | Issue                                                                    | Status    |
+| --------- | ---- | ------------------------------------------------------------------------ | --------- |
+| **EC-G7** | EC7  | Client dietary update doesn't propagate to existing events               | **FIXED** |
+| **EC-G8** | EC10 | Shopping list has no allergen cross-reference                            | **FIXED** |
+| **EC-G1** | EC1  | projectedFoodCostCents hardcoded null; recipe-based cost projection dead | **FIXED** |
+| **EC-G2** | EC2  | recordPayment only revalidates /commerce                                 | **FIXED** |
 
-### HIGH (Operational Breakage) - 11 gaps
+### HIGH (Operational Breakage) - 11 gaps (1 FIXED, 10 remaining)
 
-| Gap    | Q    | Issue                                                                        |
-| ------ | ---- | ---------------------------------------------------------------------------- |
-| EC-G5  | EC5  | Subcontractor/collaborator costs structurally absent from financial pipeline |
-| EC-G9  | EC11 | Event date change has zero downstream cascade (6 systems)                    |
-| EC-G11 | EC13 | Collaborators not notified of event date changes                             |
-| EC-G15 | EC20 | Payment completion doesn't trigger FSM transition or confirmation email      |
-| EC-G20 | EC27 | Co-hosts not notified of menu changes                                        |
-| EC-G23 | EC31 | Cross-domain revalidation gap (mutations bust own domain only)               |
-| EC-G24 | EC33 | Zero SSE broadcast in server actions; multi-tab broken                       |
-| EC-G28 | EC46 | Collaborator excluded from calendar, shopping list, financial view           |
-| EC-G29 | EC47 | Shopping list excludes collaborating events for Chef B                       |
-| EC-G31 | EC50 | No per-collaborator financial view                                           |
-| EC-G12 | EC15 | No double-booking detection on event date change                             |
+| Gap       | Q    | Issue                                                                                           |
+| --------- | ---- | ----------------------------------------------------------------------------------------------- |
+| ~~EC-G5~~ | EC5  | ~~Subcontractor/collaborator costs structurally absent~~ **FIXED** `subcontract-actions.ts:298` |
+| EC-G9     | EC11 | Event date change has zero downstream cascade (6 systems)                                       |
+| EC-G11    | EC13 | Collaborators not notified of event date changes                                                |
+| EC-G15    | EC20 | Payment completion doesn't trigger FSM transition or confirmation email                         |
+| EC-G20    | EC27 | Co-hosts not notified of menu changes                                                           |
+| EC-G23    | EC31 | Cross-domain revalidation gap (mutations bust own domain only)                                  |
+| EC-G24    | EC33 | Zero SSE broadcast in server actions; multi-tab broken                                          |
+| EC-G28    | EC46 | Collaborator excluded from calendar, shopping list, financial view                              |
+| EC-G29    | EC47 | Shopping list excludes collaborating events for Chef B                                          |
+| EC-G31    | EC50 | No per-collaborator financial view                                                              |
+| EC-G12    | EC15 | No double-booking detection on event date change                                                |
 
 ### MEDIUM (UX / Completeness) - 12 gaps
 
@@ -283,10 +283,12 @@
 
 ---
 
-## Key Insight: The Three Structural Failures
+## Key Insight: The Three Structural Patterns (updated 2026-04-18)
 
-1. **No cross-domain cache busting.** Every mutation revalidates its own domain but NOT consuming domains. This causes systemic staleness across the app.
+1. **Cross-domain cache busting improving.** `recordPayment` (EC-G2) now busts 5+ paths. Pattern still incomplete for some mutations (EC-G23).
 
 2. **No SSE broadcast in server actions.** Zero `broadcast()` calls found. Real-time is component-level illusion, not mutation-driven. Multi-tab and multi-user are broken.
 
 3. **Collaboration is structurally single-tenant.** Financial summary, shopping list, calendar, and completion contract all filter by `tenant_id`. Collaborating chefs are invisible to these systems. The collaboration feature bolts onto display layers but doesn't penetrate operational logic.
+
+**Progress: 5 CRITICAL/HIGH gaps FIXED this audit. All 4 CRITICAL (life-safety) gaps resolved. 9 FAIL remain (was 14).**
