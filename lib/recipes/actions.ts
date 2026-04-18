@@ -626,6 +626,11 @@ export async function getRecipeById(recipeId: string) {
           totalCostCents: costSummary.total_ingredient_cost_cents,
           costPerPortionCents: costSummary.cost_per_portion_cents,
           hasAllPrices: costSummary.has_all_prices,
+          lastPriceUpdatedAt: costSummary.last_price_updated_at || null,
+          avgPriceConfidence: costSummary.avg_price_confidence
+            ? parseFloat(costSummary.avg_price_confidence)
+            : null,
+          lowConfidenceCount: costSummary.low_confidence_count || 0,
         }
       : null,
     costIssues,

@@ -681,6 +681,45 @@ export function summarizeTaskResults(results: RemyTaskResult[]): string {
       } else {
         summaries.push('No staff members found.')
       }
+    } else if (task.taskType === 'price.check' && task.data) {
+      const d = task.data as {
+        message?: string
+        prices?: Array<{
+          ingredient: string
+          cents: number | null
+          unit: string
+          store: string | null
+          source: string
+          confidence: number
+          piCents?: number | null
+          piStore?: string | null
+        }>
+      }
+      if (d.prices && d.prices.length > 0) {
+        const lines = d.prices.map((p) => {
+          if (p.cents === null && !p.piCents) return `- **${p.ingredient}**: no price data`
+          const parts: string[] = [`- **${p.ingredient}**:`]
+          if (p.cents !== null) {
+            const store = p.store ? ` at ${p.store}` : ''
+            parts.push(`$${(p.cents / 100).toFixed(2)}/${p.unit}${store}`)
+          }
+          // Show Pi market price if different from DB price
+          if (p.piCents && p.piStore) {
+            if (p.cents === null) {
+              parts.push(`$${(p.piCents / 100).toFixed(2)} at ${p.piStore} (market)`)
+            } else if (Math.abs(p.piCents - (p.cents || 0)) > 10) {
+              const cheaper = p.piCents < (p.cents || 0)
+              parts.push(
+                `| ${cheaper ? 'better deal' : 'also'} $${(p.piCents / 100).toFixed(2)} at ${p.piStore}`
+              )
+            }
+          }
+          return parts.join(' ')
+        })
+        summaries.push(lines.join('\n'))
+      } else {
+        summaries.push(d.message || 'No price data found.')
+      }
     } else {
       summaries.push(`"${name}" completed successfully.`)
     }

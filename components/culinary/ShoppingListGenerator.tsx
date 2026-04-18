@@ -47,6 +47,11 @@ function ShoppingListRow({ item }: { item: ShoppingItem }) {
           </div>
           <p className="text-xs text-stone-500">
             {item.category} · {item.supplier}
+            {item.priceStore && (
+              <span className="ml-1 text-stone-600">
+                · priced at {item.priceStore.split(' ').slice(0, 2).join(' ')}
+              </span>
+            )}
           </p>
           {item.dietaryWarnings && item.dietaryWarnings.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-1">
@@ -160,6 +165,8 @@ export function ShoppingListGenerator({ initialResult, initialEventIds }: Props)
         'To Buy',
         'Unit',
         'Estimated Cost',
+        'Price Store',
+        'Price Source',
       ].join(','),
       ...filteredItems.map((item) =>
         [
@@ -171,6 +178,8 @@ export function ShoppingListGenerator({ initialResult, initialEventIds }: Props)
           item.toBuy,
           item.unit,
           (item.estimatedCostCents / 100).toFixed(2),
+          `"${(item.priceStore || '').replace(/"/g, '""')}"`,
+          item.priceSource || '',
         ].join(',')
       ),
     ]

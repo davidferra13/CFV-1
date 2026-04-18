@@ -157,6 +157,12 @@ export const DEFAULT_TIER_MAP: Record<NotificationAction, NotificationTier> = {
   // Dietary safety
   dietary_menu_conflict: 'alert',
 
+  // Partner referrals
+  referral_booking_converted: 'alert',
+
+  // Collaboration
+  event_collaboration_invite: 'alert',
+
   // System
   system_alert: 'critical',
   account_access_alert: 'critical',

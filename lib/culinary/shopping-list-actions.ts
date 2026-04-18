@@ -26,6 +26,8 @@ export type ShoppingListItem = {
   onHand: number
   toBuy: number
   estimatedCostCents: number
+  priceStore: string | null
+  priceSource: string | null
   eventCount: number
   allergenFlags: string[] // EC-G8: allergen flags from ingredient for safety cross-reference
   dietaryWarnings: { clientName: string; allergen: string; severity: string }[] // Q11: cross-ref with client allergies
@@ -231,7 +233,7 @@ export async function generateShoppingList(input: {
     db
       .from('ingredients')
       .select(
-        'id, name, category, last_price_cents, preferred_vendor, default_yield_pct, allergen_flags'
+        'id, name, category, last_price_cents, last_price_store, last_price_source, preferred_vendor, default_yield_pct, allergen_flags'
       )
       .eq('tenant_id', user.tenantId!)
       .in('id', ingredientIds),
@@ -364,6 +366,8 @@ export async function generateShoppingList(input: {
         onHand: 0,
         toBuy: 0,
         estimatedCostCents: 0,
+        priceStore: ingredient.last_price_store || null,
+        priceSource: ingredient.last_price_source || null,
         eventCount: events.length,
         allergenFlags: (ingredient.allergen_flags as string[]) ?? [],
         dietaryWarnings: [] as { clientName: string; allergen: string; severity: string }[],

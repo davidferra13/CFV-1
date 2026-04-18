@@ -983,6 +983,35 @@ export function RecipeDetailClient({ recipe, initialCompletion, provenance }: Pr
                         {recipe.costIssues?.unitMismatches ? 'Approximate' : 'Partial'}
                       </Badge>
                     )}
+                    {recipe.costSummary.lastPriceUpdatedAt &&
+                      (() => {
+                        const daysAgo = Math.floor(
+                          (Date.now() -
+                            new Date(recipe.costSummary!.lastPriceUpdatedAt!).getTime()) /
+                            (1000 * 60 * 60 * 24)
+                        )
+                        const label =
+                          daysAgo <= 0
+                            ? 'today'
+                            : daysAgo === 1
+                              ? '1d ago'
+                              : daysAgo < 7
+                                ? `${daysAgo}d ago`
+                                : daysAgo < 30
+                                  ? `${Math.floor(daysAgo / 7)}w ago`
+                                  : `${Math.floor(daysAgo / 30)}mo ago`
+                        const color =
+                          daysAgo <= 7
+                            ? 'text-emerald-400'
+                            : daysAgo <= 30
+                              ? 'text-stone-400'
+                              : 'text-amber-400'
+                        return (
+                          <span className={`text-xs ${color} ml-2`} title="Last price update">
+                            priced {label}
+                          </span>
+                        )
+                      })()}
                   </dd>
                 </div>
               </div>

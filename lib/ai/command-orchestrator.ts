@@ -1783,18 +1783,35 @@ async function executeSingleTask(
         const { resolvePricesBatch } = await import('@/lib/pricing/resolve-price')
         const resolved = await resolvePricesBatch(pcIds, tenantId)
 
-        const priceResults = matchedRows.map((row: { id: string; name: string }) => {
-          const price = resolved.get(row.id)
-          if (!price || price.cents === null) {
-            return `${row.name}: No price data available`
+        // Also query Pi for live market comparison (non-blocking)
+        const piApi = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
+        let piPrices: Map<string, { cents: number; store: string }> = new Map()
+        try {
+          const piRes = await fetch(`${piApi}/api/lookup/batch`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              ingredients: matchedRows.map((r: { name: string }) => r.name),
+            }),
+            signal: AbortSignal.timeout(3000),
+          })
+          if (piRes.ok) {
+            const piData = await piRes.json()
+            for (const item of piData.results || piData.ingredients || []) {
+              const name = (item.name || item.query || '').toLowerCase()
+              const cents = item.best_price_cents || item.price_cents
+              const store = item.best_store || item.store || ''
+              if (name && cents) piPrices.set(name, { cents, store })
+            }
           }
-          return `${row.name}: $${(price.cents / 100).toFixed(2)}/${price.unit} at ${price.store || 'unknown'} (${price.freshness}, ${Math.round(price.confidence * 100)}% confidence)`
-        })
+        } catch {
+          // Pi offline; continue with DB-only data
+        }
 
         data = {
-          message: `Current prices:\n${priceResults.join('\n')}`,
           prices: matchedRows.map((row: { id: string; name: string }) => {
             const price = resolved.get(row.id)
+            const piMatch = piPrices.get(row.name.toLowerCase())
             return {
               ingredient: row.name,
               cents: price?.cents || null,
@@ -1802,6 +1819,8 @@ async function executeSingleTask(
               store: price?.store || null,
               source: price?.source || 'none',
               confidence: price?.confidence || 0,
+              piCents: piMatch?.cents || null,
+              piStore: piMatch?.store || null,
             }
           }),
         }
