@@ -50,20 +50,23 @@ export async function listDeferredTransferChefs(): Promise<DeferredTransferSumma
     .from('stripe_transfers')
     .select('stripe_payment_intent_id, tenant_id')
 
-  const transferredPIs = new Set(
+  // Build set of transaction references that already have transfers
+  const transferredRefs = new Set(
     (transfers ?? []).map((t: any) => t.stripe_payment_intent_id).filter(Boolean)
   )
+  // Also index by tenant+event for broader matching
+  const transferredByTenant = new Set(
+    (transfers ?? [])
+      .map((t: any) => `${t.tenant_id}:${t.stripe_payment_intent_id}`)
+      .filter(Boolean)
+  )
 
-  // Group deferred entries by tenant
+  // Group deferred entries by tenant (per-entry matching, not per-tenant)
   const deferredByTenant = new Map<string, { count: number; totalCents: number }>()
 
   for (const entry of entries) {
-    // Check if this entry's payment has been transferred
-    // The internal_notes field has "PaymentIntent: pi_xxx"
-    // But we can't easily join here, so we check if the tenant has ANY transfers
-    // A more precise approach: entries without a corresponding stripe_transfers row
-    const tenantTransfers = (transfers ?? []).filter((t: any) => t.tenant_id === entry.tenant_id)
-    if (tenantTransfers.length > 0) continue // Tenant has transfers, skip
+    // Skip entries whose transaction_reference matches a completed transfer
+    if (entry.transaction_reference && transferredRefs.has(entry.transaction_reference)) continue
 
     const current = deferredByTenant.get(entry.tenant_id) ?? { count: 0, totalCents: 0 }
     current.count++

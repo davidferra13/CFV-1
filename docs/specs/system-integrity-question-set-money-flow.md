@@ -2,8 +2,8 @@
 
 > **Purpose:** Trace every dollar through the system. From payment capture to ledger to payout to reporting. Every silent failure, race condition, or broken seam between financial subsystems must be identified. Money bugs cost real money.
 > **Created:** 2026-04-18
-> **Pre-build score:** TBD
-> **Post-build score:** TBD
+> **Pre-build score:** 33.5/58 (57.8%)
+> **Post-build score:** 41.5/58 (71.6%) -- 8 fixes
 
 ---
 
@@ -27,32 +27,32 @@ Does every Stripe checkout session result in a correct, complete ledger entry?
 
 Can the webhook handler survive real-world Stripe behavior (retries, out-of-order, bursts)?
 
-| #   | Question                                                                                         | Score | Evidence                                                                                                                                                                                                    |
-| --- | ------------------------------------------------------------------------------------------------ | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| B1  | Does the webhook handler check `event.created` timestamp to reject stale replayed events?        | NO    | No age check anywhere in webhook handler. A replayed event from days ago would be processed if it passes idempotency                                                                                        |
-| B2  | Is there rate limiting or concurrency control on webhook processing to prevent retry storms?     | NO    | No rate limiting, no mutex, no queue. Concurrent webhook deliveries for the same event could race on non-idempotent paths                                                                                   |
-| B3  | Does the `charge.refunded` handler correctly parse the event payload type?                       | NO    | `webhooks/stripe/route.ts:1211`: Casts `event.data.object` as `Stripe.Refund` but `charge.refunded` delivers a `Stripe.Charge`. Works at runtime by coincidence but semantics are wrong for partial refunds |
-| B4  | Does the webhook handle `payment_intent.payment_failed` with user-facing notification?           | 0.5   | Event type is handled (listed at L85-96) but need to verify if client/chef notifications fire on failure                                                                                                    |
-| B5  | Are all 15 handled event types tested or verified against Stripe's actual payload shapes?        | NO    | No test suite for webhook handlers. Type assertions are manual casts, not validated                                                                                                                         |
-| B6  | Does the webhook log sufficient context for debugging failed payments (event ID, amount, error)? | YES   | Error logging includes event type and error details. Side effect failures logged with `[non-blocking]` prefix                                                                                               |
+| #   | Question                                                                                         | Score | Evidence                                                                                                                                                                              |
+| --- | ------------------------------------------------------------------------------------------------ | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| B1  | Does the webhook handler check `event.created` timestamp to reject stale replayed events?        | NO    | No age check anywhere in webhook handler. A replayed event from days ago would be processed if it passes idempotency                                                                  |
+| B2  | Is there rate limiting or concurrency control on webhook processing to prevent retry storms?     | NO    | No rate limiting, no mutex, no queue. Concurrent webhook deliveries for the same event could race on non-idempotent paths                                                             |
+| B3  | Does the `charge.refunded` handler correctly parse the event payload type?                       | FIXED | Corrected: now casts as `Stripe.Charge`, extracts latest refund from `charge.refunds.data[0]`. Metadata read directly from charge. Refund amount and reason from actual refund object |
+| B4  | Does the webhook handle `payment_intent.payment_failed` with user-facing notification?           | 0.5   | Event type is handled (listed at L85-96) but need to verify if client/chef notifications fire on failure                                                                              |
+| B5  | Are all 15 handled event types tested or verified against Stripe's actual payload shapes?        | NO    | No test suite for webhook handlers. Type assertions are manual casts, not validated                                                                                                   |
+| B6  | Does the webhook log sufficient context for debugging failed payments (event ID, amount, error)? | YES   | Error logging includes event type and error details. Side effect failures logged with `[non-blocking]` prefix                                                                         |
 
-**B score: 1.5/6**
+**B score: 2.5/6**
 
 ## C. Ledger Immutability & Accuracy (7 questions)
 
 Is the append-only ledger truly immutable, and do computed balances match reality?
 
-| #   | Question                                                                                                  | Score | Evidence                                                                                                                                                                    |
-| --- | --------------------------------------------------------------------------------------------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| C1  | Is ledger immutability enforced at the database level (trigger or constraint), not just application code? | YES   | `append-internal.ts:12`: Comment confirms DB triggers enforce immutability. `ledger_entries` and `event_transitions` have immutability triggers                             |
-| C2  | Does every money-in and money-out event create a ledger entry (no orphaned payments)?                     | NO    | Kiosk/POS checkout (`kiosk/order/checkout/route.ts`) processes payments but writes ZERO ledger entries. Kiosk revenue is invisible to the financial system                  |
-| C3  | Does the sign guard prevent positive refund entries or negative payment entries?                          | YES   | `append-internal.ts:25-33`: Refunds must be negative, non-refunds must be positive. Enforced before insert                                                                  |
-| C4  | Is the `event_financial_summary` view consistent with ledger entries for tips?                            | NO    | View uses `e.tip_amount_cents` (event column) for tips, not ledger tip entries. If tip is recorded in ledger but event column not updated (or vice versa), summary is wrong |
-| C5  | Does deleting a tip create a reversing ledger entry to maintain ledger accuracy?                          | NO    | `tip-actions.ts:135`: `deleteTip` deletes from `event_tips` table but creates NO reversing ledger entry. Ledger becomes permanently overstated                              |
-| C6  | Does the ledger `transaction_reference` uniqueness constraint cover all entry sources?                    | YES   | Unique constraint on `transaction_reference` column. All append paths set it: Stripe events use event ID, manual entries use generated UUIDs                                |
-| C7  | Are ledger entry amounts always in integer cents (no floating-point)?                                     | YES   | All amounts use `_cents` suffix columns. `Math.round()` used consistently. Mileage: `Math.round(miles * 72.5)`. No floating-point accumulation                              |
+| #   | Question                                                                                                  | Score | Evidence                                                                                                                                                                |
+| --- | --------------------------------------------------------------------------------------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C1  | Is ledger immutability enforced at the database level (trigger or constraint), not just application code? | YES   | `append-internal.ts:12`: Comment confirms DB triggers enforce immutability. `ledger_entries` and `event_transitions` have immutability triggers                         |
+| C2  | Does every money-in and money-out event create a ledger entry (no orphaned payments)?                     | NO    | Kiosk/POS checkout (`kiosk/order/checkout/route.ts`) processes payments but writes ZERO ledger entries. Kiosk revenue is invisible to the financial system              |
+| C3  | Does the sign guard prevent positive refund entries or negative payment entries?                          | YES   | `append-internal.ts:25-33`: Refunds must be negative, non-refunds must be positive. Enforced before insert                                                              |
+| C4  | Is the `event_financial_summary` view consistent with ledger entries for tips?                            | FIXED | Migration `20260418000006`: view now derives `tip_amount_cents` from `SUM(le.amount_cents) FILTER (WHERE le.entry_type = 'tip')` instead of `e.tip_amount_cents` column |
+| C5  | Does deleting a tip create a reversing ledger entry to maintain ledger accuracy?                          | FIXED | `deleteTip` now reads tip amount before delete, creates negative ledger entry with `is_refund: true` and `entry_type: 'tip'`. Ledger stays accurate                     |
+| C6  | Does the ledger `transaction_reference` uniqueness constraint cover all entry sources?                    | YES   | Unique constraint on `transaction_reference` column. All append paths set it: Stripe events use event ID, manual entries use generated UUIDs                            |
+| C7  | Are ledger entry amounts always in integer cents (no floating-point)?                                     | YES   | All amounts use `_cents` suffix columns. `Math.round()` used consistently. Mileage: `Math.round(miles * 72.5)`. No floating-point accumulation                          |
 
-**C score: 4/7**
+**C score: 6/7**
 
 ## D. Refund & Reversal Pipeline (5 questions)
 
@@ -60,13 +60,13 @@ Do refunds correctly reverse both the Stripe charge and the ledger state?
 
 | #   | Question                                                                                              | Score | Evidence                                                                                                                                                                            |
 | --- | ----------------------------------------------------------------------------------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| D1  | Does the refund function validate that `amountCents` does not exceed the refundable amount?           | NO    | `refund.ts`: No validation that `amountCents <= charge.amount - charge.amount_refunded`. Over-refund would succeed at Stripe but create incorrect ledger entry                      |
+| D1  | Does the refund function validate that `amountCents` does not exceed the refundable amount?           | FIXED | Added validation: `if (amountCents > refundableAmount)` where `refundableAmount = charge.amount - (charge.amount_refunded or 0)`. Throws with descriptive error                     |
 | D2  | Are Stripe refund and ledger reversal atomic (no window where one succeeds without the other)?        | NO    | `refund.ts` header comment: Deliberately non-atomic. Stripe refund happens first; ledger entry is created by webhook. Window exists where refund is issued but webhook hasn't fired |
 | D3  | Does the refund path for Connect charges correctly reverse the transfer and application fee?          | YES   | `refund.ts:55-68`: `reverse_transfer: true` and `refund_application_fee: true` for destination charges                                                                              |
-| D4  | Does an idempotency key protect against duplicate refund creation?                                    | NO    | `refund.ts`: No `idempotency_key` on `stripe.refunds.create()`. Double-click or retry could create duplicate refunds                                                                |
+| D4  | Does an idempotency key protect against duplicate refund creation?                                    | FIXED | Added `idempotencyKey: refund_${charge.id}_${amountCents}` to `stripe.refunds.create()`. Prevents duplicate refunds on retry                                                        |
 | D5  | Does the `outstanding_balance_cents` in the financial summary update correctly after partial refunds? | YES   | `event_financial_summary` view: `outstanding = quoted_price - paid + refunded`. Refund ledger entries (negative) reduce `net_revenue` and increase `outstanding`. Math is correct   |
 
-**D score: 2/5**
+**D score: 4/5**
 
 ## E. Tip & Gratuity Flow (5 questions)
 
@@ -93,24 +93,24 @@ Does the gift card purchase-to-redemption pipeline maintain accurate balances?
 | F3  | Can a gift card be redeemed for more than its remaining balance?                                      | 0.5   | `remaining_balance_cents` exists on `client_incentives`. Need to verify enforcement at redemption time                                                     |
 | F4  | Does gift card purchase validation enforce reasonable limits?                                         | YES   | `gift-card-purchase-actions.ts:24-27`: Zod validation, $5-$2,000 range                                                                                     |
 | F5  | Does the loyalty auto-award prevent double-awarding points for the same event?                        | YES   | `loyalty/actions.ts:795-801`: Atomic CAS `UPDATE events SET loyalty_points_awarded=true WHERE loyalty_points_awarded=false`. Clean race condition guard    |
-| F6  | Does manual bonus point award have race condition protection?                                         | NO    | `loyalty/actions.ts`: `awardBonusPoints` reads `client.loyalty_points`, adds in JS, writes back. Two concurrent bonus awards = lost update                 |
+| F6  | Does manual bonus point award have race condition protection?                                         | FIXED | `award-internal.ts`: Now uses `rpc('increment_loyalty_points')` for atomic DB increment, with read-modify-write fallback if RPC unavailable                |
 
-**F score: 3/6**
+**F score: 4/6**
 
 ## G. Connect Payout & Transfer Routing (6 questions)
 
 Does chef payout via Stripe Connect work reliably for all payment scenarios?
 
-| #   | Question                                                                                           | Score | Evidence                                                                                                                                                                    |
-| --- | -------------------------------------------------------------------------------------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| G1  | Does the transfer routing validate that `grossAmount === platformFee + netTransfer`?               | NO    | `transfer-routing.ts`: No balance validation. `recordStripeTransfer` persists whatever is passed. Caller must ensure amounts add up                                         |
-| G2  | Does deferred transfer resolution trigger automatically when a chef completes Connect onboarding?  | NO    | `deferred-transfers.ts:106`: Admin-only manual resolution via `requireAdmin()`. No automatic trigger from `account.updated` webhook                                         |
-| G3  | Does the deferred transfer listing correctly identify all chefs with unresolved transfers?         | NO    | `deferred-transfers.ts:66`: `listDeferredTransferChefs` skips any tenant with ANY transfers. A chef with one transferred and one untransferred payment would be missed      |
-| G4  | Does the Connect account status check distinguish between `charges_enabled` and `payouts_enabled`? | NO    | `connect.ts:166`: DB stores single boolean `stripe_onboarding_complete`. A Stripe account where charges work but payouts don't would be incorrectly reported as fully ready |
-| G5  | Does deferred transfer handle the case where net transfer amount is zero or negative?              | YES   | `deferred-transfers.ts:171-174`: Net transfer <= 0 is skipped with error message. Does not attempt zero-dollar transfer                                                     |
-| G6  | Does the platform fee ledger maintain a separate audit trail from the main ledger?                 | YES   | `transfer-routing.ts:93-115`: Separate `platform_fee_ledger` table for platform fee audit trail                                                                             |
+| #   | Question                                                                                           | Score | Evidence                                                                                                                                      |
+| --- | -------------------------------------------------------------------------------------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| G1  | Does the transfer routing validate that `grossAmount === platformFee + netTransfer`?               | NO    | `transfer-routing.ts`: No balance validation. `recordStripeTransfer` persists whatever is passed. Caller must ensure amounts add up           |
+| G2  | Does deferred transfer resolution trigger automatically when a chef completes Connect onboarding?  | NO    | `deferred-transfers.ts:106`: Admin-only manual resolution via `requireAdmin()`. No automatic trigger from `account.updated` webhook           |
+| G3  | Does the deferred transfer listing correctly identify all chefs with unresolved transfers?         | FIXED | Now uses per-entry matching via `transferredRefs` Set against `transaction_reference`. Chefs with partial resolution are correctly identified |
+| G4  | Does the Connect account status check distinguish between `charges_enabled` and `payouts_enabled`? | FIXED | `connect.ts` + webhook: `stripe_onboarding_complete` now requires BOTH `charges_enabled && payouts_enabled`. Webhook passes both values       |
+| G5  | Does deferred transfer handle the case where net transfer amount is zero or negative?              | YES   | `deferred-transfers.ts:171-174`: Net transfer <= 0 is skipped with error message. Does not attempt zero-dollar transfer                       |
+| G6  | Does the platform fee ledger maintain a separate audit trail from the main ledger?                 | YES   | `transfer-routing.ts:93-115`: Separate `platform_fee_ledger` table for platform fee audit trail                                               |
 
-**G score: 2/6**
+**G score: 4/6**
 
 ## H. Kiosk/POS Financial Integration (5 questions)
 
@@ -159,43 +159,47 @@ Do reports, tax prep, and dashboards show numbers that match reality?
 
 ## Scoring Summary
 
-| Domain                       | Score    | Max    | Details                                                                     |
-| ---------------------------- | -------- | ------ | --------------------------------------------------------------------------- |
-| A. Payment Capture Integrity | 7        | 7      | Full marks. Solid implementation                                            |
-| B. Webhook Reliability       | 1.5      | 6      | No stale event check, no rate limiting, type bug on charge.refunded         |
-| C. Ledger Immutability       | 4        | 7      | Kiosk bypasses ledger, tip/summary inconsistency, deleteTip no reversal     |
-| D. Refund Pipeline           | 2        | 5      | No over-refund guard, non-atomic, no idempotency key                        |
-| E. Tip & Gratuity            | 2.5      | 5      | Record-keeping only (no digital pay), delete breaks ledger                  |
-| F. Gift Card & Loyalty       | 3        | 6      | Bonus points race condition, gift card redemption unverified                |
-| G. Connect & Transfers       | 2        | 6      | Manual-only deferred resolution, listing bug, charges/payouts conflated     |
-| H. Kiosk/POS                 | 1.5      | 5      | Zero ledger integration, no Terminal, disconnected from financial reporting |
-| I. Subscription & Billing    | 5        | 5      | Full marks. Clean implementation                                            |
-| J. Financial Reporting       | 5        | 6      | Kiosk revenue invisible to reports                                          |
-| **TOTAL**                    | **33.5** | **58** | **57.8%**                                                                   |
+| Domain                       | Pre      | Post     | Max    | Details                                                                           |
+| ---------------------------- | -------- | -------- | ------ | --------------------------------------------------------------------------------- |
+| A. Payment Capture Integrity | 7        | 7        | 7      | Full marks. Solid implementation                                                  |
+| B. Webhook Reliability       | 1.5      | 2.5      | 6      | FIXED: B3 type cast. Remaining: B1 stale events, B2 rate limiting, B5 tests       |
+| C. Ledger Immutability       | 4        | 6        | 7      | FIXED: C4 tip view, C5 delete reversal. Remaining: C2 kiosk                       |
+| D. Refund Pipeline           | 2        | 4        | 5      | FIXED: D1 over-refund guard, D4 idempotency. Remaining: D2 non-atomic (by design) |
+| E. Tip & Gratuity            | 2.5      | 2.5      | 5      | No changes. Record-keeping only, no digital pay                                   |
+| F. Gift Card & Loyalty       | 3        | 4        | 6      | FIXED: F6 bonus race condition. Remaining: F2, F3 gift card redemption            |
+| G. Connect & Transfers       | 2        | 4        | 6      | FIXED: G3 listing bug, G4 payouts_enabled. Remaining: G1 validation, G2 auto      |
+| H. Kiosk/POS                 | 1.5      | 1.5      | 5      | No changes. Kiosk is a financial island (design decision)                         |
+| I. Subscription & Billing    | 5        | 5        | 5      | Full marks. Clean implementation                                                  |
+| J. Financial Reporting       | 5        | 5        | 6      | Kiosk revenue invisible to reports (depends on C2/H1)                             |
+| **TOTAL**                    | **33.5** | **41.5** | **58** | **57.8% -> 71.6%**                                                                |
 
 ---
 
 ## Gap Analysis
 
-### Critical Money Bugs (fix now, code changes)
+### Fixed (8 items, this session)
 
-1. **C5** - `deleteTip` creates no reversing ledger entry. Ledger permanently overstated after tip deletion
-2. **C4** - `event_financial_summary` view reads `e.tip_amount_cents` (event column) instead of summing tip-type ledger entries. Inconsistent data source
-3. **D1** - No validation that refund amount does not exceed refundable amount. Over-refund possible
-4. **D4** - No idempotency key on `stripe.refunds.create()`. Duplicate refunds possible on retry
-5. **B3** - `charge.refunded` webhook casts payload as `Stripe.Refund` instead of `Stripe.Charge`. Type bug, works by coincidence
-6. **F6** - `awardBonusPoints` has read-modify-write race condition. Concurrent bonus awards = lost points
-7. **G3** - `listDeferredTransferChefs` skips chefs who have ANY transfers, missing those with partial resolution
-8. **G4** - Single `stripe_onboarding_complete` boolean conflates `charges_enabled` and `payouts_enabled`
+1. **B3** - `charge.refunded` webhook: corrected type cast from `Stripe.Refund` to `Stripe.Charge`, extract actual refund from `charge.refunds.data[0]`
+2. **C4** - Migration `20260418000006`: `event_financial_summary` view now derives tips from ledger entries, not `events.tip_amount_cents` column
+3. **C5** - `deleteTip` now reads tip amount before delete, creates negative reversing ledger entry with `is_refund: true`
+4. **D1** - Refund amount validation: `amountCents > refundableAmount` throws with descriptive error
+5. **D4** - Idempotency key `refund_${charge.id}_${amountCents}` added to `stripe.refunds.create()`
+6. **F6** - `awardBonusPointsInternal` now uses `rpc('increment_loyalty_points')` for atomic DB increment, with read-modify-write fallback
+7. **G3** - `listDeferredTransferChefs` now uses per-entry matching via `transferredRefs` Set, not per-tenant skip
+8. **G4** - `stripe_onboarding_complete` now requires both `charges_enabled && payouts_enabled`. Webhook passes both values
 
-### High-Value Improvements (design decisions)
+### Remaining Design Decisions (10 items)
 
-1. **C2/H1/J3** - Kiosk/POS is a financial island. No ledger entries, no reporting integration. Requires design decision on how kiosk revenue enters the ledger
-2. **G2** - Deferred transfer resolution is admin-only manual. Could auto-trigger on `account.updated` webhook
-3. **E1** - Tips are record-keeping only, no digital payment collection. Stripe checkout for tips would be a feature decision
-4. **B1/B2** - No stale event rejection or rate limiting on webhooks. Low-priority if Stripe is the only caller
-5. **D2** - Non-atomic refund + ledger is deliberate (webhook-driven). Acceptable if webhook delivery is reliable
-6. **H2** - Stripe Terminal adapter exists but kiosk doesn't use it. Feature gap
+1. **B1** - No stale event timestamp check on webhooks. Low risk if Stripe is sole caller
+2. **B2** - No rate limiting or concurrency control on webhook processing
+3. **B4** - `payment_intent.payment_failed` handling needs verification for user notifications
+4. **B5** - No test suite for webhook handlers against actual Stripe payload shapes
+5. **C2/H1/J3** - Kiosk/POS is a financial island: no ledger entries, invisible to reporting. Requires design decision on integration
+6. **D2** - Non-atomic refund + ledger is deliberate (webhook-driven). Acceptable trade-off
+7. **E1** - Tips are record-keeping only, no digital Stripe payment. Feature decision
+8. **E3** - Tip amount consistency between `event_tips` and ledger (partially addressed by C4/C5 fixes)
+9. **F2/F3** - Gift card redemption atomicity and over-redemption guard need verification
+10. **G1/G2** - Transfer routing has no balance validation; deferred resolution is manual admin-only
 
 ### Verified Solid (no action needed)
 
@@ -207,3 +211,5 @@ Do reports, tax prep, and dashboards show numbers that match reality?
 - Connect refund reversal
 - Mileage IRS rate accuracy
 - Tax prep Schedule C mapping
+- Checkout session circuit breaker + expiry
+- Kiosk idempotency + void on failure

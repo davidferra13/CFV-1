@@ -162,9 +162,12 @@ export async function refreshConnectAccountStatus(): Promise<ConnectAccountStatu
 
   const account = await stripe.accounts.retrieve(chef.stripe_account_id)
 
+  // Both charges AND payouts must be enabled for the chef to receive transfers
+  const fullyOnboarded = account.charges_enabled === true && account.payouts_enabled === true
+
   await db
     .from('chefs')
-    .update({ stripe_onboarding_complete: account.charges_enabled === true })
+    .update({ stripe_onboarding_complete: fullyOnboarded })
     .eq('id', user.entityId)
 
   revalidatePath('/settings/stripe-connect')
@@ -172,7 +175,7 @@ export async function refreshConnectAccountStatus(): Promise<ConnectAccountStatu
 
   return {
     connected: account.charges_enabled === true,
-    pending: !account.charges_enabled,
+    pending: !fullyOnboarded,
     accountId: chef.stripe_account_id,
     chargesEnabled: account.charges_enabled === true,
     payoutsEnabled: account.payouts_enabled === true,
@@ -187,13 +190,17 @@ export async function refreshConnectAccountStatus(): Promise<ConnectAccountStatu
  */
 export async function updateConnectStatusFromWebhook(
   stripeAccountId: string,
-  chargesEnabled: boolean
+  chargesEnabled: boolean,
+  payoutsEnabled?: boolean
 ): Promise<void> {
   const db = createServerClient({ admin: true })
 
+  // Both charges AND payouts must be enabled for full onboarding
+  const fullyOnboarded = chargesEnabled && (payoutsEnabled ?? chargesEnabled)
+
   const { error } = await db
     .from('chefs')
-    .update({ stripe_onboarding_complete: chargesEnabled })
+    .update({ stripe_onboarding_complete: fullyOnboarded })
     .eq('stripe_account_id', stripeAccountId)
 
   if (error) {

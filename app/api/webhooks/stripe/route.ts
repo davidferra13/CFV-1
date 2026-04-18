@@ -1316,7 +1316,7 @@ async function handleRefund(event: Stripe.Event) {
     const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
     const chefUserId = await getChefAuthUserId(tenant_id)
     if (chefUserId) {
-      const amountFormatted = (refund.amount / 100).toFixed(2)
+      const amountFormatted = (latestRefund.amount / 100).toFixed(2)
       await createNotification({
         tenantId: tenant_id,
         recipientId: chefUserId,
@@ -1327,7 +1327,7 @@ async function handleRefund(event: Stripe.Event) {
         actionUrl: `/events/${event_id}`,
         eventId: event_id,
         clientId: client_id,
-        metadata: { amount_cents: refund.amount },
+        metadata: { amount_cents: latestRefund.amount },
       })
     }
   } catch (notifErr) {
@@ -1337,7 +1337,7 @@ async function handleRefund(event: Stripe.Event) {
   // Notify client of refund confirmation in-app (non-blocking)
   try {
     const { createClientNotification } = await import('@/lib/notifications/client-actions')
-    const amountFormatted = (refund.amount / 100).toFixed(2)
+    const amountFormatted = (latestRefund.amount / 100).toFixed(2)
     await createClientNotification({
       tenantId: tenant_id,
       clientId: client_id,
@@ -1373,8 +1373,8 @@ async function handleRefund(event: Stripe.Event) {
         clientEmail: clientData.email,
         clientName: clientData.full_name,
         chefName: chefData?.business_name || chefData?.display_name || 'Your chef',
-        amountCents: refund.amount,
-        reason: refund.reason ?? 'Refund processed',
+        amountCents: latestRefund.amount,
+        reason: latestRefund.reason ?? 'Refund processed',
         isStripeRefund: true,
         occasion: '',
         eventDate: null,
@@ -1554,7 +1554,11 @@ async function handleAccountUpdated(event: Stripe.Event) {
 
   try {
     const { updateConnectStatusFromWebhook } = await import('@/lib/stripe/connect')
-    await updateConnectStatusFromWebhook(account.id, account.charges_enabled === true)
+    await updateConnectStatusFromWebhook(
+      account.id,
+      account.charges_enabled === true,
+      account.payouts_enabled === true
+    )
   } catch (err) {
     console.error('[handleAccountUpdated] Failed to update connect status:', err)
     throw err // Rethrow so Stripe retries the webhook
