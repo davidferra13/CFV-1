@@ -135,17 +135,17 @@ Chef A owns 2 events this week. She's collaborating on 1 more. The DOP progress 
 
 ## Scorecard
 
-| Domain                     | Questions | PASS   | PARTIAL | FAIL  |
-| -------------------------- | --------- | ------ | ------- | ----- |
-| A. Recipe Lifecycle        | Q1-Q5     | 3      | 0       | 2     |
-| B. Collaborator Ops Access | Q6-Q10    | 3      | 1       | 1     |
-| C. Client Data Continuity  | Q11-Q14   | 3      | 1       | 0     |
-| D. AI Network Intelligence | Q15-Q18   | 1      | 1       | 2     |
-| E. Notification Pipeline   | Q19-Q22   | 2      | 2       | 0     |
-| F. Contracts & Documents   | Q23-Q25   | 1      | 1       | 1     |
-| G. Staff Visibility        | Q26-Q28   | 2      | 0       | 1     |
-| H. Calendar & Availability | Q29-Q31   | 2      | 1       | 0     |
-| **Total**                  | **31**    | **17** | **7**   | **7** |
+| Domain                     | Questions | PASS   | PARTIAL | FAIL   |
+| -------------------------- | --------- | ------ | ------- | ------ |
+| A. Recipe Lifecycle        | Q1-Q5     | 2      | 0       | 3      |
+| B. Collaborator Ops Access | Q6-Q10    | 3      | 1       | 1      |
+| C. Client Data Continuity  | Q11-Q14   | 2      | 1       | 1      |
+| D. AI Network Intelligence | Q15-Q18   | 1      | 1       | 2      |
+| E. Notification Pipeline   | Q19-Q22   | 1      | 2       | 1      |
+| F. Contracts & Documents   | Q23-Q25   | 1      | 1       | 1      |
+| G. Staff Visibility        | Q26-Q28   | 2      | 0       | 1      |
+| H. Calendar & Availability | Q29-Q31   | 2      | 1       | 0      |
+| **Total**                  | **31**    | **14** | **7**   | **10** |
 
 ### Per-Question Verdicts
 
@@ -153,7 +153,7 @@ Chef A owns 2 events this week. She's collaborating on 1 more. The DOP progress 
 | --- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Q1  | PASS         | `getRecipeProvenance()` reverse-lookups `recipe_shares.created_recipe_id` to find sharing chef. "Shared by Chef X" badge renders on recipe detail page header. No schema change needed                                                                  |
 | Q2  | FAIL         | `deepCopyRecipe()` copies recipe record + ingredients ONLY. Missing: step photos, sub-recipes, peak windows, production logs, nutrition data                                                                                                            |
-| Q3  | PASS(G1)     | `removeConnection()` now cancels pending recipe shares in both directions on disconnect                                                                                                                                                                 |
+| Q3  | FAIL         | `removeConnection()` (`lib/network/actions.ts:1015`) only sets status to 'declined'. Does NOT cancel pending recipe shares. Orphaned shares remain in recipient's inbox. G1 fix was documented but never implemented                                    |
 | Q4  | PASS(G8)     | `getChefRelationshipSummary()` now counts `recipe_shares` table rows (both directions) and uses correct handoff table/column names                                                                                                                      |
 | Q5  | FAIL         | `attachRecipeReferenceToThread` and `shareRecipe` are completely disconnected. No bridge action from chat reference to data transfer                                                                                                                    |
 | Q6  | PASS(G5)     | `generateShoppingList` now queries event_collaborators and merges collab events into shopping list                                                                                                                                                      |
@@ -162,7 +162,7 @@ Chef A owns 2 events this week. She's collaborating on 1 more. The DOP progress 
 | Q9  | PASS(G12)    | `getEventPrepBlocks` now fetches collaborator chef blocks for shared events and merges them sorted by date/time                                                                                                                                         |
 | Q10 | FAIL         | `refreshIngredientCostsAction` is tenant-scoped. Does not include collaborator ingredient costs or `getSubcontractCosts(eventId)`. Single-tenant costing only                                                                                           |
 | Q11 | PASS(G4)     | `recordCollabHandoffConversion` now auto-creates client from `client_context` (name, email, dietary, allergies, referral_source)                                                                                                                        |
-| Q12 | PASS(G11)    | Contact share auto-client now carries `details` into notes, `event_date`, and stores `chef_referral:{sender_id}` as referral_source                                                                                                                     |
+| Q12 | FAIL         | `respondToNetworkContactShare()` (`lib/network/actions.ts:1340`) only updates share status. Does NOT auto-create client record. No dietary/event_date/referral carry-forward. G11 fix was documented but never implemented                              |
 | Q13 | PASS(G10)    | Handoff inbox now renders `dietaryRequirements`, `allergies`, and `clientName` from client_context alongside desired_cuisines                                                                                                                           |
 | Q14 | PARTIAL      | Cross-tenant read is intentional (referral tracking). Only returns `total_revenue_cents`, not full financial breakdown. Safe but unscoped at the query level                                                                                            |
 | Q15 | FAIL         | Remy has zero network awareness. No tools, no context, no system prompt mention. Cannot suggest handoffs, detect scheduling conflicts for network action, or reference connections                                                                      |
@@ -171,7 +171,7 @@ Chef A owns 2 events this week. She's collaborating on 1 more. The DOP progress 
 | Q18 | PASS(G19)    | `NAV_ROUTE_MAP` now includes `/network`, `/network?tab=connections`, `/network?tab=collab`, `/network?tab=community`. Remy can navigate to all network pages                                                                                            |
 | Q19 | PARTIAL(G2)  | 6 of 12 now fire canonical pipeline (connection_request, connection_accepted, handoff_received, handoff_accepted, contact_share, opportunity_interest). Remaining: collab_invite, collab_space_message, mentorship_request, social_follow               |
 | Q20 | PARTIAL(G9)  | Generic notification emails now sent via canonical pipeline (G2). Pretty templates exist but need custom routing in channel-router                                                                                                                      |
-| Q21 | PASS(G3)     | `CATEGORY_REPRESENTATIVE_ACTION` now includes `network: 'connection_request_received'`                                                                                                                                                                  |
+| Q21 | FAIL         | `CHEF_CATEGORIES` array and `CATEGORY_REPRESENTATIVE_ACTION` record have no `network` entry (`notification-settings-form.tsx:25-43`). NotificationCategory type has 14 categories, none is 'network'. G3 fix was documented but never implemented       |
 | Q22 | PASS(G7)     | `sendCollabThreadMessage` now notifies all other space members via canonical pipeline (email/push/SMS)                                                                                                                                                  |
 | Q23 | FAIL         | Contract generator (`generateContract`) is two-party only (Chef + Client). No collaborator, co-host, or subcontractor awareness. No revenue split terms                                                                                                 |
 | Q24 | PASS(G22)    | `getSubcontractCosts(eventId)` now called from event detail page and rendered in money tab. Amber card shows total subcontract cost and agreement count                                                                                                 |
@@ -185,9 +185,11 @@ Chef A owns 2 events this week. She's collaborating on 1 more. The DOP progress 
 
 ---
 
-## Classification Note (2026-04-17 audit)
+## Classification Note (2026-04-18 audit)
 
-All 7 FAIL and 7 PARTIAL verdicts are **network/collaboration feature gaps**, not data integrity or zero-hallucination violations. They represent unbuilt cross-boundary wiring for the chef-to-chef network feature set (deep copy completeness, cross-tenant menu permissions, AI network awareness, multi-party contracts, staff network visibility, availability signal sync). None involve incorrect data display, silent failures, or security issues. Reclassified as P2 enhancements per anti-clutter rule.
+All 10 FAIL and 7 PARTIAL verdicts are **network/collaboration feature gaps**, not data integrity or zero-hallucination violations. They represent unbuilt cross-boundary wiring for the chef-to-chef network feature set (deep copy completeness, cross-tenant menu permissions, AI network awareness, multi-party contracts, staff network visibility, availability signal sync). None involve incorrect data display, silent failures, or security issues. Reclassified as P2 enhancements per anti-clutter rule.
+
+**Stale verdict correction (2026-04-18):** Q3, Q12, Q21 were previously marked PASS with G1/G11/G3 fix references. Code verification shows these fixes were documented in the gap inventory but never implemented. Corrected to FAIL.
 
 ---
 
