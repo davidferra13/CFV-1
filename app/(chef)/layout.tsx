@@ -193,6 +193,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                       primaryNavHrefs={primaryNavHrefs}
                       enabledModules={enabledModules}
                       isAdmin={effectiveAdmin}
+                      isPrivileged={effectivePrivileged}
                       focusMode={focusMode}
                       userId={user.id}
                       tenantId={user.tenantId ?? user.entityId}
@@ -203,6 +204,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                       mobileTabHrefs={mobileTabHrefs}
                       enabledModules={enabledModules}
                       isAdmin={effectiveAdmin}
+                      isPrivileged={effectivePrivileged}
                       focusMode={focusMode}
                       userId={user.id}
                       tenantId={user.tenantId ?? user.entityId}
