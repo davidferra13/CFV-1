@@ -502,6 +502,38 @@ export async function executeFinalPurge(chefId: string): Promise<{
       console.error('[purge] Hub membership cleanup failed (non-blocking)', err)
     }
 
+    // 4c. Purge all AI/Remy data (non-blocking - 16 tables)
+    try {
+      const aiTables = [
+        { table: 'remy_support_shares', col: 'tenant_id' },
+        { table: 'remy_feedback', col: 'tenant_id' },
+        { table: 'remy_action_audit_log', col: 'tenant_id' },
+        { table: 'remy_approval_policies', col: 'tenant_id' },
+        { table: 'remy_alerts', col: 'tenant_id' },
+        { table: 'remy_abuse_log', col: 'tenant_id' },
+        { table: 'ai_task_queue', col: 'tenant_id' },
+        { table: 'remy_usage_metrics', col: 'tenant_id' },
+        { table: 'remy_artifacts', col: 'tenant_id' },
+        { table: 'remy_memories', col: 'tenant_id' },
+        // Messages cascade from conversations
+        { table: 'remy_conversations', col: 'tenant_id' },
+        { table: 'ai_preferences', col: 'tenant_id' },
+        { table: 'remy_onboarding', col: 'chef_id' },
+        { table: 'remy_milestones', col: 'chef_id' },
+        { table: 'chef_culinary_profiles', col: 'chef_id' },
+      ]
+      for (const { table, col } of aiTables) {
+        try {
+          await adminClient.from(table).delete().eq(col, chefId)
+        } catch {
+          // Table may not exist yet; non-blocking
+        }
+      }
+      await logDeletionAudit({ ...auditBase, action: 'ai_data_purged' })
+    } catch (err) {
+      console.error('[purge] AI data cleanup failed (non-blocking)', err)
+    }
+
     // 5. Delete auth user (triggers CASCADE on non-financial tables)
     if (chef.auth_user_id) {
       const { error: deleteError } = await adminClient.auth.admin.deleteUser(chef.auth_user_id)

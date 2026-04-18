@@ -6,7 +6,6 @@
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
-import { requirePro } from '@/lib/billing/require-pro'
 import { getAiPreferences } from '@/lib/ai/privacy-actions'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
@@ -1113,7 +1112,6 @@ export async function sendRemyMessage(
   currentPage?: string
 ): Promise<RemyResponse> {
   const user = await requireChef()
-  await requirePro('remy')
 
   // ─── Respect remy_enabled preference ───────────────────────────
   const prefs = await getAiPreferences()

@@ -6,6 +6,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
 import { runAlertRulesAdmin } from '@/lib/ai/remy-proactive-alerts'
+import { isAiEnabledForTenant } from '@/lib/ai/privacy-actions'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { recordCronHeartbeat, recordCronError } from '@/lib/cron/heartbeat'
 
@@ -37,6 +38,10 @@ async function handleProactiveAlerts(request: NextRequest): Promise<NextResponse
 
     for (const tenantId of tenantIds) {
       try {
+        // Skip tenants who have disabled Remy
+        const aiEnabled = await isAiEnabledForTenant(tenantId)
+        if (!aiEnabled) continue
+
         const inserted = await runAlertRulesAdmin(tenantId)
         totalInserted += inserted
         tenantsProcessed++

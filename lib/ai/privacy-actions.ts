@@ -23,6 +23,23 @@ export type AiDataSummary = {
   artifacts: number
 }
 
+// ─── Central AI Permission Check ─────────────────────────────────────────────
+// Use this from background processes (cron, scheduled jobs) that have a tenantId
+// but no user session. Returns false if Remy is disabled or preferences don't exist.
+
+export async function isAiEnabledForTenant(tenantId: string): Promise<boolean> {
+  const db: any = createServerClient()
+  const { data } = await db
+    .from('ai_preferences')
+    .select('remy_enabled')
+    .eq('tenant_id', tenantId)
+    .single()
+
+  // No preferences row = not onboarded = not enabled
+  if (!data) return false
+  return data.remy_enabled === true
+}
+
 // ─── Read ────────────────────────────────────────────────────────────────────
 
 export async function getAiPreferences(): Promise<AiPreferences> {
@@ -266,6 +283,35 @@ export async function deleteAllAiData(): Promise<{
   memories: number
   artifacts: number
 }> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+  const tenantId = user.tenantId!
+
+  // Delete from all AI tables (order matters: dependents first)
+  const supplementaryTables = [
+    { table: 'remy_support_shares', col: 'tenant_id' },
+    { table: 'remy_feedback', col: 'tenant_id' },
+    { table: 'remy_action_audit_log', col: 'tenant_id' },
+    { table: 'remy_approval_policies', col: 'tenant_id' },
+    { table: 'remy_alerts', col: 'tenant_id' },
+    { table: 'remy_abuse_log', col: 'tenant_id' },
+    { table: 'ai_task_queue', col: 'tenant_id' },
+    { table: 'remy_usage_metrics', col: 'tenant_id' },
+    { table: 'remy_onboarding', col: 'chef_id' },
+    { table: 'remy_milestones', col: 'chef_id' },
+    { table: 'chef_culinary_profiles', col: 'chef_id' },
+  ]
+
+  // Clean supplementary tables first (non-blocking individually)
+  for (const { table, col } of supplementaryTables) {
+    try {
+      await db.from(table).delete().eq(col, tenantId)
+    } catch {
+      // Table may not exist; non-blocking
+    }
+  }
+
+  // Then the core three (these return counts for the UI)
   const [convResult, memResult, artResult] = await Promise.all([
     deleteAllConversations(),
     deleteAllMemories(),

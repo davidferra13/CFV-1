@@ -32,6 +32,7 @@ import { NavigationPendingProvider } from '@/components/navigation/navigation-pe
 import { AppContextProvider } from '@/lib/context/app-context'
 import { PermissionProvider } from '@/lib/context/permission-context'
 import { resolveCurrentUserPermissions } from '@/lib/auth/permissions'
+import { isAiEnabledForTenant } from '@/lib/ai/privacy-actions'
 
 const FeedbackNudgeCard = dynamic(
   () => import('@/components/feedback/feedback-nudge-card').then((m) => m.FeedbackNudgeCard),
@@ -92,6 +93,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     userIsAdmin,
     deletionStatus,
     permissionSet,
+    remyEnabled,
   ] = await Promise.all([
     // Cached for 60s - slug and nav prefs change rarely, keyed per chef
     getChefLayoutData(user.entityId),
@@ -111,6 +113,8 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     })),
     // RBAC permissions - resolved from role_permissions + user_permission_overrides
     resolveCurrentUserPermissions(user.id, user.tenantId).catch(() => null),
+    // AI/Remy enabled check - controls whether Remy UI renders
+    isAiEnabledForTenant(user.entityId).catch(() => false),
   ])
   const effectiveAdmin = userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true'
 
@@ -123,7 +127,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
   const daysSinceCreation = layoutData.created_at
     ? differenceInDays(new Date(), new Date(layoutData.created_at))
     : 0
-  const shouldRenderRemy = true
+  const shouldRenderRemy = remyEnabled
 
   return (
     <AppContextProvider timezone={layoutData.timezone}>
