@@ -381,6 +381,7 @@ export function ChefMobileNav({
   mobileTabHrefs,
   enabledModules,
   isAdmin,
+  isPrivileged,
   focusMode,
   userId,
   tenantId,
@@ -389,6 +390,7 @@ export function ChefMobileNav({
   mobileTabHrefs?: string[]
   enabledModules?: string[]
   isAdmin?: boolean
+  isPrivileged?: boolean
   focusMode?: boolean
   userId: string
   tenantId: string
@@ -403,13 +405,13 @@ export function ChefMobileNav({
   const { has: hasPermission } = usePermissions()
   const tabItems = useMemo(
     () =>
-      focusMode
+      focusMode && !isPrivileged
         ? resolveStandaloneTop([...STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS]).map((item) => ({
             ...item,
             label: item.href === '/dashboard' ? 'Home' : item.label,
           }))
         : resolveMobileTabs(mobileTabHrefs),
-    [focusMode, mobileTabHrefs]
+    [focusMode, isPrivileged, mobileTabHrefs]
   )
 
   // Filter nav groups by role + focus mode.
@@ -445,14 +447,15 @@ export function ChefMobileNav({
       }))
       .filter((group) => group.items.length > 0)
 
-    if (!focusMode) return baseGroups
+    // VIP/Admin/Owner bypass focus mode entirely (see all groups)
+    if (!focusMode || isPrivileged) return baseGroups
     const strictGroups = baseGroups.filter((group) =>
       isStrictFocusGroupVisible(group.id, Boolean(isAdmin))
     )
     return strictGroups.sort(
       (a, b) => getStrictFocusGroupRank(a.id) - getStrictFocusGroupRank(b.id)
     )
-  }, [isAdmin, focusMode, enabledSet])
+  }, [isAdmin, isPrivileged, focusMode, enabledSet])
   const groupEntries = useMemo(
     () => accessibleGroups.map((group) => ({ group, isLocked: false })),
     [accessibleGroups]
