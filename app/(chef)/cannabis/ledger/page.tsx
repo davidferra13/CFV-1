@@ -103,6 +103,27 @@ export default async function CannabisLedgerPage() {
           ))}
         </div>
 
+        {/* Tax context: why this ledger exists */}
+        <div
+          className="rounded-xl p-4 mb-6 text-xs leading-relaxed"
+          style={{
+            background: 'rgba(74, 124, 78, 0.08)',
+            border: '1px solid rgba(74, 124, 78, 0.15)',
+            color: '#8fb791',
+          }}
+        >
+          <p className="font-semibold mb-1" style={{ color: '#a5d6a7' }}>
+            Why a separate cannabis ledger?
+          </p>
+          <p>
+            Under IRC Section 280E, businesses trafficking in controlled substances face limitations
+            on standard business deductions. This ledger isolates cannabis event financials so your
+            accountant can correctly separate cannabis-related revenue and expenses during tax
+            filing. These numbers also appear in your main financial summary; this view filters to
+            cannabis events only.
+          </p>
+        </div>
+
         {entries.length === 0 ? (
           <div
             className="rounded-xl p-8 text-center"

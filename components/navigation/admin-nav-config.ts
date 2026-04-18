@@ -23,7 +23,6 @@ import {
   MessagesSquare,
   NotebookIcon,
   Scales,
-  SealCheck,
   Settings,
   ShieldAlert,
   ShieldCheck,
@@ -87,7 +86,7 @@ export const adminNavGroups: AdminNavGroup[] = [
       { href: '/admin/financials', label: 'Financials', icon: DollarSign },
       { href: '/admin/reconciliation', label: 'Reconciliation', icon: Scales },
       { href: '/admin/system/payments', label: 'System Payments', icon: CreditCard },
-      { href: '/admin/cannabis', label: 'Cannabis Tier', icon: SealCheck },
+      // Cannabis Tier: hidden while feature is disabled (matches admin-sidebar.tsx line 49)
     ],
   },
   {

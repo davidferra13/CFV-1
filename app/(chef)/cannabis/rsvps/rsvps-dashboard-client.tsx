@@ -215,18 +215,8 @@ export function CannabisRsvpsDashboardClient({ initialData }: { initialData: Das
                   </option>
                 ))}
               </select>
-              <a
-                href={selectedEvent ? `/api/cannabis/rsvps/${selectedEvent.id}/summary` : '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-2 rounded-lg text-xs font-semibold text-center transition-opacity hover:opacity-90"
-                style={{
-                  background: 'linear-gradient(135deg, #2d5a30 0%, #4a7c4e 100%)',
-                  color: '#e8f5e9',
-                }}
-              >
-                Export RSVP Summary (PDF)
-              </a>
+              {/* Export PDF disabled: endpoint is a stub (returns 404).
+                  Re-enable when /api/cannabis/rsvps/[eventId]/summary is built. */}
               <button
                 type="button"
                 disabled
