@@ -1054,6 +1054,46 @@ export async function updateClientMealRequestStatus(
 
   if (error || !updated) throw new Error(error?.message ?? 'Unable to update request status')
 
+  // Q13: When scheduling a meal request, cross-reference dish against client allergies (non-blocking)
+  if (nextStatus === 'scheduled' && updated.dish_name) {
+    try {
+      const { data: allergyRecords } = await db
+        .from('client_allergy_records')
+        .select('allergen, severity')
+        .eq('client_id', updated.client_id)
+
+      if (allergyRecords?.length) {
+        const { ingredientMatchesAllergen } = await import('@/lib/menus/allergen-check')
+        const conflicts = (allergyRecords as any[]).filter((r: any) =>
+          ingredientMatchesAllergen(updated.dish_name, r.allergen)
+        )
+        if (conflicts.length > 0) {
+          const { getChefAuthUserId } = await import('@/lib/notifications/actions')
+          const chefUserId = await getChefAuthUserId(tenantId)
+          if (chefUserId) {
+            const conflictList = conflicts
+              .map((c: any) => `${c.allergen} (${c.severity})`)
+              .join(', ')
+            await createNotification({
+              tenantId,
+              recipientId: chefUserId,
+              category: 'client',
+              action: 'guest_dietary_alert',
+              title: `Dietary conflict: ${updated.dish_name}`,
+              body: `Meal request "${updated.dish_name}" may conflict with client allergies: ${conflictList}. Verify before preparing.`,
+              clientId: updated.client_id,
+            })
+          }
+        }
+      }
+    } catch (allergyErr) {
+      console.error(
+        '[updateClientMealRequestStatus] Allergy check failed (non-blocking):',
+        allergyErr
+      )
+    }
+  }
+
   if (nextStatus === 'scheduled' || nextStatus === 'declined') {
     try {
       const recipient = await getClientNotificationRecipient(db, updated.client_id, tenantId)
