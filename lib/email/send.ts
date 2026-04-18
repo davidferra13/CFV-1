@@ -82,7 +82,7 @@ async function isEmailSuppressed(email: string, allowTransactional = false): Pro
  */
 async function suppressEmail(email: string, reason: string): Promise<void> {
   const normalized = email.toLowerCase().trim()
-  suppressionCache.add(normalized)
+  suppressionCache.set(normalized, reason)
 
   try {
     const { createAdminClient } = await import('@/lib/db/admin')

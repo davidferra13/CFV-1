@@ -37,6 +37,7 @@ ChefFlow OS
 5. Staff is a restricted operational role inside the chef surface, not a chef variant.
 6. Partner is an external relationship role, not a chef variant.
 7. Admin is a platform authority layer. It is a system role for classification, even though implementation uses separate persisted admin access.
+8. Surface ownership is enforced at runtime by `lib/surfaces/runtime-surface-contract.ts`. Each surface declares its route roots, portal marker, auth guard, and nav owner. Tests in `tests/unit/runtime-surface-contract.test.ts` and `tests/unit/admin-nav-boundary.test.ts` verify alignment.
 
 ## Surfaces
 

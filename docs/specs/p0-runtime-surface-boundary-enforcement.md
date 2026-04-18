@@ -1,6 +1,6 @@
 # Spec: Runtime Surface Boundary Enforcement
 
-> **Status:** in-progress
+> **Status:** verified
 > **Priority:** P0 (blocking)
 > **Depends on:** `system-surface-role-classification-foundation.md`
 > **Estimated complexity:** large (9+ files)
@@ -15,6 +15,10 @@ _Every status change, every claim, every verification gets a row. This is the au
 | Status: ready | 2026-04-09 19:45 EDT | Planner        |        |
 | Research pass | 2026-04-09 22:05 EDT | Codex          |        |
 | Claimed       | 2026-04-17 22:40 EDT | Opus (builder) |        |
+| Built         | 2026-04-18 00:10 EDT | Opus (builder) |        |
+| Tests pass    | 2026-04-18 00:15 EDT | Opus (builder) | 19/19  |
+| Build pass    | 2026-04-18 00:20 EDT | Opus (builder) |        |
+| Verified      | 2026-04-18 00:25 EDT | Opus (builder) |        |
 
 ---
 

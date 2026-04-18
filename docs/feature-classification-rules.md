@@ -70,7 +70,7 @@ Use when the feature is for external collaborators managing their own relationsh
 
 ### `admin`
 
-Use when the feature is internal, cross-tenant, or able to override platform state.
+Use when the feature is internal, cross-tenant, or able to override platform state. Admin routes render through `AdminSidebar`/`AdminMobileNav`/`AdminMainContent` (admin-owned shell), not chef shell components. This is enforced by `lib/surfaces/runtime-surface-contract.ts` and tested in `tests/unit/admin-nav-boundary.test.ts`.
 
 ## Rule Set
 

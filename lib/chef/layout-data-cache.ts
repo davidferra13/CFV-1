@@ -14,7 +14,11 @@
 
 import { unstable_cache } from 'next/cache'
 import { createAdminClient } from '@/lib/db/admin'
-import { hasAdminAccess, hasPrivilegedAccess } from '@/lib/auth/admin-access'
+import {
+  hasAdminAccess,
+  hasPersistedAdminAccessForAuthUser,
+  hasPrivilegedAccess,
+} from '@/lib/auth/admin-access'
 import { ARCHETYPE_IDS } from '@/lib/archetypes/presets'
 import type { ArchetypeId } from '@/lib/archetypes/presets'
 
