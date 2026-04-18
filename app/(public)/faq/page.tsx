@@ -112,7 +112,7 @@ const FAQ_CATEGORIES: FaqCategory[] = [
       {
         question: 'How much does ChefFlow cost?',
         answer:
-          'ChefFlow is free. All features, no limits, no commission, no hidden fees. We do not take a cut of your bookings. Revenue comes from voluntary supporter contributions, not paywalls. Your success is not gated behind a subscription.',
+          'The core platform is free: inquiries, events, menus, recipes, food costing, finances, staff, and client management. No commission, no hidden fees, no cut of your bookings. Paid plans unlock automation, AI intelligence, and scale features for operators who want to grow faster.',
       },
       {
         question: 'Can I start with a small operation and grow later?',

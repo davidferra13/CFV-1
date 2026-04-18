@@ -13,6 +13,7 @@ import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { REMY_PERSONALITY } from '@/lib/ai/remy-personality'
+import { getAiPreferences } from '@/lib/ai/privacy-actions'
 
 // ============================================
 // TYPES
@@ -158,6 +159,13 @@ export async function generateBirthdayDraft(
   milestone: 'birthday' | 'anniversary'
 ): Promise<{ body: string; clientName: string }> {
   const user = await requireChef()
+
+  // Respect remy_enabled preference
+  const prefs = await getAiPreferences()
+  if (prefs && !prefs.remy_enabled) {
+    throw new Error('AI drafting is disabled. Enable Remy in Settings > Privacy & Data.')
+  }
+
   const db: any = createServerClient()
 
   const { data: client } = await db
