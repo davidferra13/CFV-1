@@ -8,6 +8,9 @@
 //
 // For free-tier features or chefs with paid access, returns the AuthUser as normal.
 //
+// Access bypass: VIP, Admin, and Owner users in platform_admins always pass
+// (handled inside hasProAccess, which checks platform privilege as fallback).
+//
 // Call sites: 73 across pages, API routes, and server actions.
 // Signature is identical to before - no call site changes needed.
 //

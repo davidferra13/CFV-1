@@ -3,6 +3,7 @@
 //
 // Access hierarchy:
 //   grandfathered → Pro (always, forever)
+//   comped        → Pro (admin-granted, no payment required)
 //   active        → Pro (paying subscriber)
 //   trialing      → Pro (within trial window) / Free (trial expired)
 //   past_due      → Pro (grace period while Stripe retries)
@@ -13,6 +14,7 @@
 import { cache } from 'react'
 import { createAdminClient } from '@/lib/db/admin'
 import { PRO_PRICE_MONTHLY } from '@/lib/billing/constants'
+import { hasPrivilegedAccess } from '@/lib/auth/admin-access'
 
 /** Monthly price in dollars - single source of truth for display. */
 export { PRO_PRICE_MONTHLY }
@@ -42,7 +44,7 @@ export const getTierForChef = cache(async (chefId: string): Promise<TierStatus> 
   const isGrandfathered = status === 'grandfathered'
 
   // These statuses always grant Pro
-  const alwaysProStatuses = ['grandfathered', 'active', 'past_due']
+  const alwaysProStatuses = ['grandfathered', 'comped', 'active', 'past_due']
   if (status && alwaysProStatuses.includes(status)) {
     return { tier: 'pro', isGrandfathered, subscriptionStatus: status }
   }
@@ -70,8 +72,30 @@ export const getTierForChef = cache(async (chefId: string): Promise<TierStatus> 
 
 /**
  * Simple boolean check for server actions that just need a yes/no.
+ * Checks billing tier first, then falls back to platform privilege (VIP/Admin/Owner).
  */
 export async function hasProAccess(chefId: string): Promise<boolean> {
   const { tier } = await getTierForChef(chefId)
-  return tier === 'pro'
+  if (tier === 'pro') return true
+
+  // Billing says free, but VIP/Admin/Owner bypass billing entirely.
+  // Resolve authUserId from chefId via user_roles.
+  return hasPrivilegedAccessByChefId(chefId)
+}
+
+/**
+ * Check if a chef has VIP/Admin/Owner platform access (bypasses billing).
+ * Resolves chefId -> authUserId -> platform_admins.
+ */
+async function hasPrivilegedAccessByChefId(chefId: string): Promise<boolean> {
+  const db: any = createAdminClient()
+  const { data: role } = await db
+    .from('user_roles')
+    .select('auth_user_id')
+    .eq('role', 'chef')
+    .eq('entity_id', chefId)
+    .maybeSingle()
+
+  if (!role?.auth_user_id) return false
+  return hasPrivilegedAccess(role.auth_user_id)
 }
