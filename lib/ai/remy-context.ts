@@ -560,9 +560,10 @@ async function loadDetailedContext(db: any, tenantId: string) {
 
     // Client vibe notes + dietary/allergy data (safety-critical)
     // No vibe_notes filter: clients with allergies but no vibe notes must still be visible
+    // Q16/Q19: include id (for structured allergy lookup) and status (dormancy visibility)
     db
       .from('clients')
-      .select('full_name, vibe_notes, dietary_restrictions, allergies')
+      .select('id, full_name, vibe_notes, dietary_restrictions, allergies, status')
       .eq('tenant_id', tenantId)
       .is('deleted_at', null)
       .order('updated_at', { ascending: false })
@@ -1252,12 +1253,34 @@ async function loadDetailedContext(db: any, tenantId: string) {
       const categories = [...new Set(recipes.map((r) => (r.category as string) ?? 'uncategorized'))]
       return { totalRecipes: recipes.length, categories }
     })(),
-    clientVibeNotes: (clientVibeNotesResult.data ?? []).map((c: Record<string, unknown>) => ({
-      name: (c.full_name as string) ?? 'Unknown',
-      vibeNotes: (c.vibe_notes as string) ?? '',
-      dietaryRestrictions: (c.dietary_restrictions as string[]) ?? [],
-      allergies: (c.allergies as string[]) ?? [],
-    })),
+    clientVibeNotes: await (async () => {
+      // Q16: Fetch structured allergy records with severity for all vibe-note clients
+      const vibeClients = (clientVibeNotesResult.data ?? []) as Array<Record<string, unknown>>
+      const vibeClientIds = vibeClients.map((c) => c.id as string).filter(Boolean)
+      const structuredAllergyMap = new Map<string, Array<{ allergen: string; severity: string }>>()
+      if (vibeClientIds.length > 0) {
+        const { data: allergyRecords } = await db
+          .from('client_allergy_records')
+          .select('client_id, allergen, severity')
+          .eq('tenant_id', tenantId)
+          .in('client_id', vibeClientIds)
+        for (const r of (allergyRecords ?? []) as any[]) {
+          const list = structuredAllergyMap.get(r.client_id) ?? []
+          list.push({ allergen: r.allergen, severity: r.severity })
+          structuredAllergyMap.set(r.client_id, list)
+        }
+      }
+      return vibeClients.map((c) => ({
+        name: (c.full_name as string) ?? 'Unknown',
+        vibeNotes: (c.vibe_notes as string) ?? '',
+        dietaryRestrictions: (c.dietary_restrictions as string[]) ?? [],
+        allergies: (c.allergies as string[]) ?? [],
+        // Q16: structured allergy records with severity (anaphylaxis/allergy/intolerance/preference)
+        allergyRecords: structuredAllergyMap.get(c.id as string) ?? [],
+        // Q19: client status for dormancy visibility
+        status: (c.status as string) ?? 'active',
+      }))
+    })(),
     recentAARInsights: (recentAARsResult.data ?? []).map((a: Record<string, unknown>) => ({
       rating: (a.overall_rating as number) ?? null,
       wentWell: (a.went_well as string) ?? '',

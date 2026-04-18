@@ -637,12 +637,22 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     contract: 'Contracts',
   }
 
+  // FC-G35: Score all results by relevance, sort within groups
+  const scored = results.map((r) => ({
+    ...r,
+    _score: fuzzyScore([r.title, r.snippet || ''].join(' ').toLowerCase(), needle),
+  }))
+  scored.sort((a, b) => b._score - a._score)
+
   const grouped: Record<string, SearchResult[]> = {}
-  for (const result of results) {
+  for (const { _score, ...result } of scored) {
     const key = sectionLabels[result.type]
     if (!grouped[key]) grouped[key] = []
     grouped[key].push(result)
   }
 
-  return { results, grouped }
+  // Also sort top-level results by relevance for flat display
+  const sortedResults = scored.map(({ _score, ...r }) => r)
+
+  return { results: sortedResults, grouped }
 }

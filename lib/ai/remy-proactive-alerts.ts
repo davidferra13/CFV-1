@@ -363,12 +363,12 @@ async function checkDormantClients(db: any, tenantId: string): Promise<AlertCand
 
   const { data: clients, error } = await db
     .from('clients')
-    .select('id, full_name, last_event_date')
+    .select('id, full_name, last_event_date, date_of_birth')
     .eq('tenant_id', tenantId)
-    .eq('is_active', true)
+    .is('deleted_at', null)
     .not('last_event_date', 'is', null)
     .lt('last_event_date', ninetyDaysAgo)
-    .limit(3)
+    .limit(5)
 
   if (error) throw error
 
@@ -390,13 +390,35 @@ async function checkDormantClients(db: any, tenantId: string): Promise<AlertCand
       (Date.now() - new Date(client.last_event_date).getTime()) / (1000 * 60 * 60 * 24)
     )
 
+    // Q20: Cross-reference birthday proximity for re-engagement opportunity
+    let birthdayNote = ''
+    let priority: 'low' | 'normal' | 'high' | 'urgent' = 'low'
+    if (client.date_of_birth) {
+      const dob = new Date(client.date_of_birth)
+      const nowDate = new Date()
+      const birthdayThisYear = new Date(nowDate.getFullYear(), dob.getMonth(), dob.getDate())
+      const daysUntilBirthday = Math.ceil(
+        (birthdayThisYear.getTime() - nowDate.getTime()) / (1000 * 60 * 60 * 24)
+      )
+      if (daysUntilBirthday >= 0 && daysUntilBirthday <= 14) {
+        const label =
+          daysUntilBirthday === 0
+            ? 'today'
+            : daysUntilBirthday === 1
+              ? 'tomorrow'
+              : `in ${daysUntilBirthday} days`
+        birthdayNote = ` Their birthday is ${label} - perfect reason to reach out.`
+        priority = 'normal'
+      }
+    }
+
     alerts.push({
       alertType: 'dormant_client',
       entityType: 'client',
       entityId: client.id,
       title: `${client.full_name} hasn't booked in ${daysSince} days`,
-      body: `Last event was ${daysSince} days ago. A quick check-in or seasonal offer could bring them back.`,
-      priority: 'low',
+      body: `Last event was ${daysSince} days ago. A quick check-in or seasonal offer could bring them back.${birthdayNote}`,
+      priority,
     })
   }
 

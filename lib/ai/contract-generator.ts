@@ -52,10 +52,21 @@ export async function generateContract(eventId: string): Promise<GeneratedContra
 
   const chef = chefResult.data
 
-  // Fetch client
-  const { data: client } = event.client_id
-    ? await db.from('clients').select('full_name, email, phone').eq('id', event.client_id).single()
-    : { data: null }
+  // Fetch client + collaborators
+  const [clientResult, collabResult] = await Promise.all([
+    event.client_id
+      ? db.from('clients').select('full_name, email, phone').eq('id', event.client_id).single()
+      : Promise.resolve({ data: null }),
+    db
+      .from('event_collaborators')
+      .select('role, chef:chefs!event_collaborators_chef_id_fkey(full_name, business_name)')
+      .eq('event_id', eventId)
+      .eq('status', 'accepted'),
+  ])
+  const client = clientResult.data
+  const coHosts = (collabResult.data ?? [])
+    .map((c: any) => c.chef?.full_name || c.chef?.business_name)
+    .filter(Boolean) as string[]
 
   const quotedPrice = event.quoted_price_cents
     ? '$' + (event.quoted_price_cents / 100).toFixed(2)
@@ -84,7 +95,7 @@ Include all standard sections a private chef contract should have.
 
 Parties:
   Chef/Service Provider: ${chef?.full_name ?? 'Chef'}, ${chef?.business_name ?? ''}
-  Email: ${chef?.email ?? 'TBD'}, Phone: ${chef?.phone ?? 'TBD'}
+  Email: ${chef?.email ?? 'TBD'}, Phone: ${chef?.phone ?? 'TBD'}${coHosts.length > 0 ? `\n  Co-hosting Chef(s): ${coHosts.join(', ')}` : ''}
   Client: ${client?.full_name ?? 'Client Name TBD'}
   Client Email: ${client?.email ?? 'TBD'}
 

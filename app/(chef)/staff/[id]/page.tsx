@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { StaffMemberForm } from '@/components/staff/staff-member-form'
 import { CreateStaffLoginForm } from '@/components/staff/create-staff-login-form'
+import { OnboardingChecklist } from '@/components/staff/onboarding-checklist'
 import { EntityPhotoUpload } from '@/components/entities/entity-photo-upload'
 import { formatCurrency } from '@/lib/utils/currency'
 
@@ -204,46 +205,8 @@ export default async function StaffDetailPage({ params }: { params: { id: string
         </Card>
       )}
 
-      {/* Onboarding Status */}
-      {onboardingTotal > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">
-              Onboarding
-              <Badge
-                variant={onboardingComplete === onboardingTotal ? 'success' : 'warning'}
-                className="ml-2"
-              >
-                {onboardingComplete}/{onboardingTotal}
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-1">
-              {member.onboarding.map((item: any) => (
-                <div key={item.id} className="flex items-center justify-between text-sm">
-                  <span className="text-stone-300">
-                    {item.item_key
-                      .replace(/_/g, ' ')
-                      .replace(/\b\w/g, (l: string) => l.toUpperCase())}
-                  </span>
-                  <Badge
-                    variant={
-                      item.status === 'complete'
-                        ? 'success'
-                        : item.status === 'not_applicable'
-                          ? 'default'
-                          : 'warning'
-                    }
-                  >
-                    {item.status}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Onboarding Checklist (interactive) */}
+      <OnboardingChecklist staffMemberId={member.id} items={member.onboarding} />
 
       {/* Contractor Agreements */}
       {member.agreements.length > 0 && (

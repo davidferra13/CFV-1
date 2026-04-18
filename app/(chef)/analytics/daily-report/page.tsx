@@ -1,5 +1,6 @@
 // Daily Report Page - view today's report + browse past days
 
+import { requireChef } from '@/lib/auth/get-user'
 import {
   getDailyReport,
   generateDailyReport,
@@ -12,6 +13,7 @@ export const metadata = {
 }
 
 export default async function DailyReportPage() {
+  await requireChef()
   // Try to get today's report, generate if not found
   const _d = new Date()
   const today = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`
