@@ -124,6 +124,33 @@
 - Build state on departure: tsc green (0 errors)
 - Notes: Remy alerts widget was fully built (remy-alerts-widget.tsx, getActiveAlerts action, remy_alerts table from migration 20260412000001) but never imported in dashboard. Now wired. Staff location assignment was added to schema + form by developer but not passed from detail page - wired. Pre-service par level backlog item was stale (already built in sweep 3). Remaining open items: dark mode (large), calendar/Google sync (needs OAuth), SMS (needs Twilio), location roster (no spec), multi-chef view (complex).
 
+## 2026-04-14 (afternoon) - Cloud Purge + Live-Ops Gap Closure
+
+- Agent: Builder (multiple agents)
+- Task: Supabase/Vercel/Firebase permanent removal + live-ops gap closure + resilience guards
+- Status: completed (retroactive entry)
+- Commits: deec1798c through 06d738e79 (13 commits)
+- Build state on departure: not verified (rapid iteration)
+- Notes: Permanently removed all Supabase, Vercel, Firebase dependencies. Guarded 18 pages against unprotected await crashes. Wired module toggles to sidebar. Added comms ingestion pipeline. Added /debug and /tdd skills. Session digest: 2026-04-14-cloud-purge-and-live-ops.md
+
+## 2026-04-14 (evening/overnight) - Calling Hardening + 160-Question Security Audit
+
+- Agent: Builder (multiple parallel agents)
+- Task: Calling system Rounds 3-13 + system integrity audit Q1-Q737
+- Status: completed (retroactive entry)
+- Commits: dc5d32f8e through 5a3ae7e01 (62 commits, 21:31-01:39)
+- Build state on departure: not verified (overnight marathon)
+- Notes: Largest audit session in project history. 11 calling rounds (3-13). 700+ security questions answered. Critical fixes: staff tenant scoping (Q419), SSRF blocking, NODE_ENV bypass removal, SVG XSS prevention, storage nosniff headers. TakeAChef integration, OpenClaw sync repair, hub enhancements all shipped in parallel. Session digest: 2026-04-14-calling-and-security-audit.md
+
+## 2026-04-15 (afternoon/evening) - System Integrity Expansion + Client Experience Audit
+
+- Agent: Builder (multiple parallel agents)
+- Task: Extend integrity tests Q41-Q190 + 57-question client experience audit
+- Status: completed (retroactive entry)
+- Commits: ae7409b70 through 65a97f625 (30+ commits)
+- Build state on departure: tsc green (0 errors)
+- Notes: Client XP audit went from 53% to 91% (52/57). 29 silent catch blocks eliminated. Menu health score + hub SSE realtime + push notifications shipped. System integrity tests now cover Q1-Q190. Separate dinner stress test digest covers FSM/financial work from same day. Session digest: 2026-04-15-integrity-and-client-experience.md
+
 ## 2026-04-17 ~03:00 EST
 
 - Agent: Builder
