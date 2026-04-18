@@ -17,39 +17,44 @@ type SendEmailParams = {
     content: Buffer | string
     contentType?: string
   }>
+  /** When true, bypass complaint-based suppression (spam complaints).
+   *  Hard bounces (invalid/nonexistent addresses) are still honored.
+   *  Use for: password resets, payment confirmations, security alerts. */
+  isTransactional?: boolean
 }
 
 // ── I2: In-memory suppression cache (warm on first check, TTL 5 min) ──
-const suppressionCache = new Set<string>()
+// Maps email -> reason so transactional emails can bypass complaint-only suppressions
+const suppressionCache = new Map<string, string>()
 let suppressionCacheLoadedAt = 0
 const SUPPRESSION_CACHE_TTL_MS = 5 * 60_000
 
-/**
- * Check if an email is suppressed (bounced/invalid).
- * Uses in-memory cache backed by DB table.
- */
-async function isEmailSuppressed(email: string): Promise<boolean> {
-  const normalized = email.toLowerCase().trim()
+// Reasons that indicate the address genuinely cannot receive mail
+const HARD_SUPPRESS_REASONS = new Set(['hard_bounce', 'invalid', 'not_found', 'undeliverable'])
 
-  // Fast path: check in-memory cache
-  if (
-    suppressionCache.has(normalized) &&
-    Date.now() - suppressionCacheLoadedAt < SUPPRESSION_CACHE_TTL_MS
-  ) {
-    return true
-  }
+/**
+ * Check if an email is suppressed.
+ * When `allowTransactional` is true, only hard bounces block; complaint-based
+ * suppressions are bypassed so critical emails (password resets, payment
+ * confirmations) still reach the recipient.
+ */
+async function isEmailSuppressed(email: string, allowTransactional = false): Promise<boolean> {
+  const normalized = email.toLowerCase().trim()
 
   // Refresh cache if stale
   if (Date.now() - suppressionCacheLoadedAt >= SUPPRESSION_CACHE_TTL_MS) {
     try {
       const { createAdminClient } = await import('@/lib/db/admin')
       const db: any = createAdminClient()
-      const { data } = await db.from('email_suppressions').select('email').limit(10000)
+      const { data } = await db.from('email_suppressions').select('email, reason').limit(10000)
 
       suppressionCache.clear()
       if (data) {
         for (const row of data) {
-          suppressionCache.add((row.email as string).toLowerCase().trim())
+          suppressionCache.set(
+            (row.email as string).toLowerCase().trim(),
+            (row.reason as string) || 'unknown'
+          )
         }
       }
       suppressionCacheLoadedAt = Date.now()
@@ -60,7 +65,16 @@ async function isEmailSuppressed(email: string): Promise<boolean> {
     }
   }
 
-  return suppressionCache.has(normalized)
+  const reason = suppressionCache.get(normalized)
+  if (!reason) return false
+
+  // Transactional emails bypass complaint-only suppressions (spam_complaint, complaint, manual)
+  // but still honor hard bounces (address genuinely unreachable)
+  if (allowTransactional && !HARD_SUPPRESS_REASONS.has(reason)) {
+    return false
+  }
+
+  return true
 }
 
 /**
