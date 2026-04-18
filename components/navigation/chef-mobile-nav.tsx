@@ -22,6 +22,7 @@ import { NotificationBell } from '@/components/notifications/notification-bell'
 import { GlobalSearch } from '@/components/search/global-search'
 import { OfflineNavIndicator } from '@/components/offline/offline-nav-indicator'
 import { OllamaStatusBadge } from '@/components/dashboard/ollama-status-badge'
+import { AiStatusDot } from '@/components/dashboard/ai-status-dot'
 import { ActivityDot } from '@/components/activity/activity-dot'
 import { AppLogo } from '@/components/branding/app-logo'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
@@ -567,7 +568,7 @@ export function ChefMobileNav({
             <div className="flex items-center justify-between h-14 px-4 border-b border-stone-800">
               <span className="font-semibold text-stone-100">Menu</span>
               <div className="flex items-center gap-1">
-                {isAdmin && <OllamaStatusBadge />}
+                {isAdmin ? <OllamaStatusBadge /> : <AiStatusDot />}
                 <ActivityDot />
                 {isAdmin && (
                   <button

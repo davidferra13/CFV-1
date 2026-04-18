@@ -24,6 +24,7 @@ import {
   Search,
   ShoppingCart,
   Utensils,
+  Globe,
 } from '@/components/ui/icons'
 import { RemyOnboardingWizard } from '@/components/ai-privacy/remy-onboarding-wizard'
 import { DataFlowAnimated } from '@/components/ai-privacy/data-flow-animated'
@@ -249,7 +250,7 @@ export default function AiPrivacyPage() {
             store website.
           </p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {[
             {
               icon: Search,
@@ -265,6 +266,11 @@ export default function AiPrivacyPage() {
               icon: Utensils,
               name: 'MealMe',
               use: 'Local store search',
+            },
+            {
+              icon: Globe,
+              name: 'DuckDuckGo',
+              use: 'Ingredient sourcing search',
             },
           ].map((svc) => (
             <div

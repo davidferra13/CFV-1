@@ -7,6 +7,7 @@
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
+import { getAiPreferences } from '@/lib/ai/privacy-actions'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { loadRemyContext } from '@/lib/ai/remy-context'
@@ -1113,6 +1114,15 @@ export async function sendRemyMessage(
 ): Promise<RemyResponse> {
   const user = await requireChef()
   await requirePro('remy')
+
+  // ─── Respect remy_enabled preference ───────────────────────────
+  const prefs = await getAiPreferences()
+  if (prefs && !prefs.remy_enabled) {
+    return {
+      text: 'Remy is currently disabled. You can re-enable it in Settings > Privacy & Data.',
+      intent: 'question' as const,
+    }
+  }
 
   // ─── GUARDRAILS (before any LLM call) ──────────────────────────
   // Admins bypass ALL guardrails - they can do whatever they want

@@ -44,7 +44,7 @@ export function TaskLoader({
   const text = messageOverride ?? ctx?.messages[0] ?? 'Working...'
 
   // Detect AI tasks from registry category
-  const isAi = aiTask ?? ctx?.category === 'ai' ?? false
+  const isAi = aiTask ?? ctx?.category === 'ai'
 
   const [showNote, setShowNote] = useState(false)
 

@@ -25,6 +25,7 @@ import { NotificationBell } from '@/components/notifications/notification-bell'
 import { GlobalSearch } from '@/components/search/global-search'
 import { OfflineNavIndicator } from '@/components/offline/offline-nav-indicator'
 import { OllamaStatusBadge } from '@/components/dashboard/ollama-status-badge'
+import { AiStatusDot } from '@/components/dashboard/ai-status-dot'
 import { ActivityDot } from '@/components/activity/activity-dot'
 import { SystemHeartbeat } from '@/components/navigation/system-heartbeat'
 import { useNavigationPending } from '@/components/navigation/navigation-pending-provider'
@@ -691,7 +692,7 @@ export function ChefSidebar({
         </Link>
         {!collapsed ? (
           <div className="flex items-center flex-shrink-0">
-            {isAdmin && <OllamaStatusBadge />}
+            {isAdmin ? <OllamaStatusBadge /> : <AiStatusDot />}
             <SystemHeartbeat />
             <OfflineNavIndicator />
             <ActivityDot />
@@ -736,8 +737,8 @@ export function ChefSidebar({
               <ChevronRight className="w-4 h-4" />
             </button>
 
-            {/* Ollama status (admin only) */}
-            {isAdmin && <OllamaStatusBadge />}
+            {/* AI status indicator */}
+            {isAdmin ? <OllamaStatusBadge /> : <AiStatusDot />}
             {/* Notification bell */}
             <NotificationBell collapsed />
             <GlobalSearch userId={userId} tenantId={tenantId} />

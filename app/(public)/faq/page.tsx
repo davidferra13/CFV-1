@@ -140,6 +140,11 @@ const FAQ_CATEGORIES: FaqCategory[] = [
           "Yes. Client data, financials, recipes, and conversations are processed by ChefFlow's own private AI infrastructure. We do not store conversation content on our servers. Your recipes are your intellectual property. We never use your data to train AI models or share it with third parties. The Trust Center has the full breakdown.",
       },
       {
+        question: 'Why does Remy respond slower than ChatGPT or other AI tools?',
+        answer:
+          "Remy runs on ChefFlow's own private AI infrastructure instead of sending your data to a third-party cloud service. That means your client names, recipes, financials, and conversations never leave ChefFlow. The tradeoff is that responses may take a few seconds longer than mainstream AI services. We chose privacy over speed because your business data is not ours to share.",
+      },
+      {
         question: 'How long does setup take?',
         answer:
           'Most chefs have a usable baseline in under an hour. Sign up, fill out your profile, add a few recipes, and you are ready to receive inquiries. The depth comes over time as you add more recipes, cost your menus, and build your client history.',

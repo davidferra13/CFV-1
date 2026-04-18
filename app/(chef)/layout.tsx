@@ -63,6 +63,10 @@ const RouteTracker = dynamic(
   () => import('@/components/session/route-tracker').then((m) => m.RouteTracker),
   { ssr: false }
 )
+const AiOutageBanner = dynamic(
+  () => import('@/components/dashboard/ai-outage-banner').then((m) => m.AiOutageBanner),
+  { ssr: false }
+)
 const ChefLiveAlerts = dynamic(
   () => import('@/components/calling/chef-live-alerts').then((m) => m.ChefLiveAlerts),
   { ssr: false }
@@ -173,6 +177,8 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                           daysRemaining={deletionStatus.daysRemaining}
                         />
                       )}
+                    {/* AI outage banner - shown after 2+ minutes of sustained AI downtime */}
+                    <AiOutageBanner />
                     {/* Desktop sidebar */}
                     <ChefSidebar
                       primaryNavHrefs={primaryNavHrefs}

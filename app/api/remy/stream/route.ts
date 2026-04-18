@@ -11,7 +11,7 @@ import { runCommand } from '@/lib/ai/command-orchestrator'
 import { getTaskName } from '@/lib/ai/command-task-descriptions'
 import { routeForRemy } from '@/lib/ai/llm-router'
 // Pi retired - no cross-monitor endpoint snapshot needed
-import { getRemyArchetype } from '@/lib/ai/privacy-actions'
+import { getRemyArchetype, getAiPreferences } from '@/lib/ai/privacy-actions'
 import { getSurveyState } from '@/lib/ai/remy-survey-actions'
 import { buildSurveyPromptSection } from '@/lib/ai/remy-survey-prompt'
 import type { SurveyState } from '@/lib/ai/remy-survey-constants'
@@ -68,9 +68,15 @@ import {
 //  POST Handler
 
 async function getRemyRuntimeState(
-  _tenantId: string
+  tenantId: string
 ): Promise<{ allowed: boolean; message?: string }> {
-  // Runtime is forced-on for this portal experience.
+  const prefs = await getAiPreferences()
+  if (prefs && !prefs.remy_enabled) {
+    return {
+      allowed: false,
+      message: 'Remy is disabled. You can re-enable it in Settings > Privacy & Data.',
+    }
+  }
   return { allowed: true }
 }
 
