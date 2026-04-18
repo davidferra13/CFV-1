@@ -242,6 +242,16 @@ thumb.jpg
 scripts/fix-test*.mjs
 scripts/update-test.mjs
 
+# Ad-hoc write/QA test scripts (one-off debug)
+_write-test.js
+_write_test.cjs
+scripts/_write-qa.js
+tests/write-qa-spec.mjs
+scripts/qa-*.mjs
+
+# QA screenshot directories (ephemeral)
+screenshots/
+
 # Temp working directory
 tmp/
 
