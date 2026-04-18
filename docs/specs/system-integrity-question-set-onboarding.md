@@ -4,7 +4,7 @@
 > **Created:** 2026-04-17
 > **Post-build audit:** 2026-04-17
 > **Pre-build score:** 7/40 (17.5%)
-> **Post-build score:** 30.5/40 (76.25%)
+> **Post-build score:** 32.5/40 (81.25%)
 
 ---
 
@@ -110,16 +110,16 @@
 6. **G4 - Dashboard feels alive.** Demo data offer + ChecklistWidget + Remy greeting + Accelerator. Dashboard is no longer empty after onboarding.
 7. **F3 - Step key validation.** `completeStep()` and `skipStep()` now validate step key against `WIZARD_STEPS` set. Arbitrary keys rejected.
 8. **G3 - Value props on every step.** Profile: "powers your public profile, quote templates, Remy introductions." Portfolio: "photos appear on profile and quotes, 3x booking rate." All steps now explain WHY before asking WHAT.
+9. **D4 - Staff onboarding cross-link.** `OnboardingChecklist` component now rendered on staff detail page (`/staff/[id]`). Interactive complete/N/A/pending buttons.
+10. **D1 - Client portal invitation.** `client-import-form.tsx` offers portal invitation after saving client with email. `generateOnboardingLink()` wired to button. URL displayed for sharing.
 
 ## Remaining Gaps (Accepted)
 
 1. **A4 - Wizard not re-enterable after skip.** Hub shows instead. Acceptable: wizard is a first-run initializer.
-2. **D1 - Client onboarding link not offered.** `first_client` is a hub step. Chef can find link on client detail page.
-3. **D4 - No staff onboarding cross-link.** Staff onboarding checklist component exists but not rendered on any page. Separate system.
-4. **D7 - Beta/client onboarding parallel paths.** Orthogonal systems by design.
-5. **F2 - Skip sets completed_at immediately.** By design: "wizard was handled", not "data was entered."
-6. **F4 - Profile triple-write not transactional.** Sequential, single user, same session. Low risk.
-7. **B2/B5 - Untested/unclear.** Need manual E2E testing, not code changes.
+2. **D7 - Beta/client onboarding parallel paths.** Orthogonal systems by design.
+3. **F2 - Skip sets completed_at immediately.** By design: "wizard was handled", not "data was entered."
+4. **F4 - Profile triple-write not transactional.** Sequential, single user, same session. Low risk.
+5. **B2/B5 - Untested/unclear.** Need manual E2E testing, not code changes.
 
 ## Verification Protocol
 
