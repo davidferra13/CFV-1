@@ -427,6 +427,16 @@ export async function applyResponseToClient(responseId: string, clientId: string
     console.error('[applyResponseToClient] Allergy sync failed (non-blocking):', err)
   }
 
+  // Recheck upcoming event menus for allergen conflicts (non-blocking)
+  try {
+    if (clientUpdate.allergies) {
+      const { recheckUpcomingMenusForClient } = await import('@/lib/dietary/menu-recheck')
+      await recheckUpcomingMenusForClient({ tenantId, clientId, db: db as any })
+    }
+  } catch (err) {
+    console.error('[applyResponseToClient] Menu recheck failed (non-blocking):', err)
+  }
+
   // Log dietary changes from intake response (non-blocking)
   try {
     if (clientUpdate.allergies || clientUpdate.dietary_restrictions) {

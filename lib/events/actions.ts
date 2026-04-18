@@ -563,12 +563,12 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
             .neq('chef_id', user.tenantId!)
 
           if (collabs && collabs.length > 0) {
-            const { createChefNotification } = await import('@/lib/notifications/actions')
+            const { createChefNotification } = await import('@/lib/notifications/chef-actions')
             for (const c of collabs) {
               await createChefNotification({
                 tenantId: c.chef_id,
                 category: 'event',
-                action: 'event_date_changed',
+                action: 'schedule_change',
                 title: 'Event date changed',
                 body: `"${event.occasion || 'Event'}" moved to ${updateFields.event_date}`,
                 actionUrl: `/events/${eventId}`,
@@ -578,6 +578,39 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
           }
         } catch (err) {
           console.error('[non-blocking] Collaborator date-change notification failed', err)
+        }
+
+        // EC-G10 fix: shift prep blocks by the same date delta (non-blocking)
+        try {
+          const oldDate = new Date(currentEvent.event_date + 'T00:00:00')
+          const newDate = new Date(updateFields.event_date + 'T00:00:00')
+          const deltaDays = Math.round(
+            (newDate.getTime() - oldDate.getTime()) / (1000 * 60 * 60 * 24)
+          )
+          if (deltaDays !== 0) {
+            const prepDb: any = createServerClient()
+            const { data: blocks } = await prepDb
+              .from('event_prep_blocks')
+              .select('id, block_date')
+              .eq('event_id', eventId)
+              .eq('chef_id', user.tenantId!)
+
+            if (blocks && blocks.length > 0) {
+              for (const block of blocks) {
+                const bd = new Date(block.block_date + 'T00:00:00')
+                bd.setDate(bd.getDate() + deltaDays)
+                const shifted = bd.toISOString().slice(0, 10)
+                await prepDb
+                  .from('event_prep_blocks')
+                  .update({ block_date: shifted })
+                  .eq('id', block.id)
+                  .eq('chef_id', user.tenantId!)
+              }
+              revalidatePath('/scheduling')
+            }
+          }
+        } catch (err) {
+          console.error('[non-blocking] Prep block date shift failed', err)
         }
       }
 

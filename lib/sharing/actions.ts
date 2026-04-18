@@ -438,13 +438,39 @@ async function logRsvpAudit(params: {
     try {
       const chefAuthId = await getChefAuthUserId(params.tenantId)
       if (chefAuthId) {
+        // Q39: Enrich with guest name and dietary detail
+        const guestName =
+          (params.afterValues?.full_name as string) ||
+          (params.beforeValues?.full_name as string) ||
+          null
+        let enrichedGuestName = guestName
+        if (!enrichedGuestName && params.guestId) {
+          const { data: g } = await (params.db as any)
+            .from('event_guests')
+            .select('full_name')
+            .eq('id', params.guestId)
+            .single()
+          enrichedGuestName = g?.full_name || 'A guest'
+        }
+        const dietaryDetail =
+          params.dietaryItems.length > 0
+            ? params.dietaryItems.map((d) => `${d.label} (${d.severity})`).join(', ')
+            : null
+
         await createNotification({
           tenantId: params.tenantId,
           recipientId: chefAuthId,
           category: 'client',
           action: 'guest_dietary_alert',
-          title: 'Critical RSVP change detected',
-          body: critical.reason || 'Guest RSVP changed in a critical way.',
+          title: enrichedGuestName
+            ? `Critical RSVP change: ${enrichedGuestName}`
+            : 'Critical RSVP change detected',
+          body: [
+            critical.reason || 'Guest RSVP changed in a critical way.',
+            dietaryDetail ? `Dietary items: ${dietaryDetail}` : null,
+          ]
+            .filter(Boolean)
+            .join(' '),
           eventId: params.eventId,
         })
       }

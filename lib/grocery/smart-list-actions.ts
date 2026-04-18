@@ -618,7 +618,43 @@ export async function getSmartList(listId: string) {
     )
   }
 
-  return data as SmartGroceryList & { smart_grocery_items: SmartGroceryItem[] }
+  // FC-G6: Attach allergy warnings when list is linked to an event
+  let allergyWarnings: string[] = []
+  if (data.event_id) {
+    try {
+      const { data: evt } = await db
+        .from('events')
+        .select('allergies, dietary_restrictions, client_id')
+        .eq('id', data.event_id)
+        .single()
+      if (evt) {
+        const evA = (evt.allergies as string[] | null) ?? []
+        const evD = (evt.dietary_restrictions as string[] | null) ?? []
+        if (evA.length > 0) allergyWarnings.push(`Allergies: ${evA.join(', ')}`)
+        if (evD.length > 0) allergyWarnings.push(`Dietary: ${evD.join(', ')}`)
+        if (evt.client_id) {
+          const { data: cl } = await db
+            .from('clients')
+            .select('allergies, dietary_restrictions')
+            .eq('id', evt.client_id)
+            .single()
+          for (const a of (cl?.allergies as string[] | null) ?? []) {
+            if (!evA.includes(a)) allergyWarnings.push(`Client allergy: ${a}`)
+          }
+          for (const d of (cl?.dietary_restrictions as string[] | null) ?? []) {
+            if (!evD.includes(d)) allergyWarnings.push(`Client dietary: ${d}`)
+          }
+        }
+      }
+    } catch {
+      /* non-blocking */
+    }
+  }
+
+  return { ...data, allergyWarnings } as SmartGroceryList & {
+    smart_grocery_items: SmartGroceryItem[]
+    allergyWarnings: string[]
+  }
 }
 
 // ============================================

@@ -2047,7 +2047,7 @@ export async function getMenuShoppingList(menuId: string): Promise<MenuShoppingL
   const { data: recipeIngredients } = await db
     .from('recipe_ingredients')
     .select(
-      'id, recipe_id, quantity, unit, is_optional, ingredient:ingredients(id, name, category, average_price_cents, last_price_cents)'
+      'id, recipe_id, quantity, unit, is_optional, yield_pct, ingredient:ingredients(id, name, category, average_price_cents, last_price_cents, default_yield_pct)'
     )
     .in('recipe_id', recipeIds)
     .eq('tenant_id', user.tenantId!)
@@ -2071,26 +2071,32 @@ export async function getMenuShoppingList(menuId: string): Promise<MenuShoppingL
       if (!ingredient) continue
 
       const scaledQty = ri.quantity * scale
+      // Apply yield adjustment: buy more to account for trim/waste
+      const yieldPct = Math.max(
+        Number(ri.yield_pct) || Number(ingredient.default_yield_pct) || 100,
+        1
+      )
+      const yieldAdjustedQty = yieldPct < 100 ? (scaledQty * 100) / yieldPct : scaledQty
       const priceCents = ingredient.last_price_cents || ingredient.average_price_cents || 0
       const hasPricing = !!(ingredient.last_price_cents || ingredient.average_price_cents)
-      const scaledCost = Math.round(priceCents * scaledQty)
+      const scaledCost = Math.round(priceCents * yieldAdjustedQty)
 
       if (ingredientMap.has(ingredient.id)) {
         const existing = ingredientMap.get(ingredient.id)!
-        existing.totalQuantity += scaledQty
+        existing.totalQuantity += yieldAdjustedQty
         existing.estimatedCostCents += scaledCost
         existing.sources.push({
           componentName: comp.name,
           recipeName: recipe.name,
           dish: dish?.course_name || 'Course',
-          scaledQty,
+          scaledQty: yieldAdjustedQty,
         })
       } else {
         ingredientMap.set(ingredient.id, {
           ingredientId: ingredient.id,
           ingredientName: ingredient.name,
           category: ingredient.category || 'other',
-          totalQuantity: scaledQty,
+          totalQuantity: yieldAdjustedQty,
           unit: ri.unit,
           estimatedCostCents: scaledCost,
           isOptional: ri.is_optional || false,
@@ -2100,7 +2106,7 @@ export async function getMenuShoppingList(menuId: string): Promise<MenuShoppingL
               componentName: comp.name,
               recipeName: recipe.name,
               dish: dish?.course_name || 'Course',
-              scaledQty,
+              scaledQty: yieldAdjustedQty,
             },
           ],
         })

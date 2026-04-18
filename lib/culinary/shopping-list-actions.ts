@@ -5,6 +5,7 @@ import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { createPurchaseOrder, addPOItem } from '@/lib/inventory/purchase-order-actions'
 import { normalizeUnit, canConvert, addQuantities } from '@/lib/grocery/unit-conversion'
+import { ingredientMatchesAllergen } from '@/lib/menus/allergen-check'
 
 const ShoppingListInputSchema = z.object({
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -26,6 +27,7 @@ export type ShoppingListItem = {
   estimatedCostCents: number
   eventCount: number
   allergenFlags: string[] // EC-G8: allergen flags from ingredient for safety cross-reference
+  dietaryWarnings: { clientName: string; allergen: string; severity: string }[] // Q11: cross-ref with client allergies
 }
 
 export type ShoppingListResult = {
@@ -150,7 +152,7 @@ export async function generateShoppingList(input: {
 
   let eventsQuery = db
     .from('events')
-    .select('id, event_date, guest_count')
+    .select('id, event_date, guest_count, client_id')
     .eq('tenant_id', user.tenantId!)
     .gte('event_date', parsed.startDate)
     .lte('event_date', parsed.endDate)
@@ -280,6 +282,38 @@ export async function generateShoppingList(input: {
     )
   }
 
+  // Q11: Fetch client allergy records for all events in this shopping window
+  const clientIds = [
+    ...new Set((events as any[]).map((e: any) => e.client_id).filter(Boolean)),
+  ] as string[]
+  const clientAllergyMap = new Map<
+    string,
+    Array<{ clientName: string; allergen: string; severity: string }>
+  >()
+  if (clientIds.length > 0) {
+    const [clientNamesResult, allergyRecordsResult] = await Promise.all([
+      db.from('clients').select('id, full_name').in('id', clientIds),
+      db
+        .from('client_allergy_records')
+        .select('client_id, allergen, severity')
+        .in('client_id', clientIds),
+    ])
+    const nameMap = new Map<string, string>(
+      ((clientNamesResult.data ?? []) as any[]).map((c: any) => [c.id, c.full_name ?? 'Client'])
+    )
+    for (const r of (allergyRecordsResult.data ?? []) as any[]) {
+      const list = clientAllergyMap.get(r.client_id) ?? []
+      list.push({
+        clientName: nameMap.get(r.client_id) ?? 'Client',
+        allergen: r.allergen,
+        severity: r.severity,
+      })
+      clientAllergyMap.set(r.client_id, list)
+    }
+  }
+  // Flatten all allergen records for cross-referencing against ingredients
+  const allAllergyRecords = [...clientAllergyMap.values()].flat()
+
   // Aggregate by ingredient ID, consolidating compatible units
   const aggregated = new Map<
     string,
@@ -324,6 +358,7 @@ export async function generateShoppingList(input: {
         estimatedCostCents: 0,
         eventCount: events.length,
         allergenFlags: (ingredient.allergen_flags as string[]) ?? [],
+        dietaryWarnings: [] as { clientName: string; allergen: string; severity: string }[],
         _recipeAccum: [{ qty: recipeQty, unit: normUnit }],
         _buyAccum: [{ qty: buyQty, unit: normUnit }],
       })
@@ -364,6 +399,21 @@ export async function generateShoppingList(input: {
     item.unit = bResult.unit
   }
 
+  // Q11: Cross-reference each ingredient against client allergy records
+  for (const [, item] of aggregated) {
+    for (const record of allAllergyRecords) {
+      if (ingredientMatchesAllergen(item.ingredientName, record.allergen)) {
+        // Avoid duplicates (same client + allergen)
+        const isDupe = item.dietaryWarnings.some(
+          (w) => w.clientName === record.clientName && w.allergen === record.allergen
+        )
+        if (!isDupe) {
+          item.dietaryWarnings.push(record)
+        }
+      }
+    }
+  }
+
   const items = Array.from(aggregated.values()).map(({ _recipeAccum, _buyAccum, ...item }) => {
     const onHand = onHandByIngredient.get(item.ingredientId) ?? 0
     const toBuy = Math.max(0, item.totalRequired - onHand)
@@ -392,6 +442,7 @@ export async function generateShoppingList(input: {
 
 export async function createPurchaseOrderFromShoppingList(input: {
   supplier?: string
+  eventId?: string
   items: Array<{
     ingredientId: string
     ingredientName: string
@@ -420,6 +471,7 @@ export async function createPurchaseOrderFromShoppingList(input: {
 
   const po = await createPurchaseOrder({
     vendorId,
+    eventId: input.eventId,
     notes: `Auto-generated from shopping list shortages (${new Date().toISOString()})`,
   })
 

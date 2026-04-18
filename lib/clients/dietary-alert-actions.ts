@@ -138,12 +138,33 @@ export async function logDietaryChange(
   newValue: string | null
 ): Promise<void> {
   const user = await requireChef()
-  const db: any = createServerClient()
+  await logDietaryChangeInternal(
+    user.tenantId!,
+    clientId,
+    changeType,
+    fieldName,
+    oldValue,
+    newValue
+  )
+}
 
+/**
+ * Q9: Internal variant for non-chef paths (onboarding, intake, instant-book, AI detection).
+ * Same logic as logDietaryChange but takes tenantId directly instead of requiring chef session.
+ */
+export async function logDietaryChangeInternal(
+  tenantId: string,
+  clientId: string,
+  changeType: ChangeType,
+  fieldName: string,
+  oldValue: string | null,
+  newValue: string | null
+): Promise<void> {
+  const db: any = createServerClient()
   const severity = classifySeverity(changeType)
 
   const { error } = await db.from('dietary_change_log').insert({
-    chef_id: user.tenantId!,
+    chef_id: tenantId,
     client_id: clientId,
     change_type: changeType,
     field_name: fieldName,
@@ -153,8 +174,7 @@ export async function logDietaryChange(
   })
 
   if (error) {
-    console.error('[logDietaryChange] Error:', error)
-    throw new Error('Failed to log dietary change')
+    console.error('[logDietaryChangeInternal] Error:', error)
   }
 }
 

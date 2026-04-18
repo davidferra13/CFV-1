@@ -235,7 +235,7 @@ function normalizeIngredient(name: string): string {
   return name.toLowerCase().trim()
 }
 
-function ingredientMatchesAllergen(ingredientName: string, allergen: string): boolean {
+export function ingredientMatchesAllergen(ingredientName: string, allergen: string): boolean {
   const normalized = normalizeIngredient(ingredientName)
   const allergenKey = allergen.toLowerCase().replace(/[^a-z_]/g, '')
   const terms = ALLERGEN_INGREDIENT_MAP[allergenKey]

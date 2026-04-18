@@ -48,6 +48,24 @@ function ShoppingListRow({ item }: { item: ShoppingItem }) {
           <p className="text-xs text-stone-500">
             {item.category} · {item.supplier}
           </p>
+          {item.dietaryWarnings && item.dietaryWarnings.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1">
+              {item.dietaryWarnings.map((w, i) => (
+                <span
+                  key={i}
+                  className={`inline-flex items-center text-[10px] px-1.5 py-0.5 rounded font-medium ${
+                    w.severity === 'anaphylaxis'
+                      ? 'bg-red-900/60 text-red-200'
+                      : w.severity === 'allergy'
+                        ? 'bg-amber-900/50 text-amber-200'
+                        : 'bg-stone-800 text-stone-400'
+                  }`}
+                >
+                  {w.clientName}: {w.allergen}
+                </span>
+              ))}
+            </div>
+          )}
         </td>
         <td className="px-2 py-2 text-right text-stone-300">
           {item.totalRequired.toFixed(2)} {item.unit}
@@ -174,6 +192,7 @@ export function ShoppingListGenerator({ initialResult, initialEventIds }: Props)
       try {
         const po = await createPurchaseOrderFromShoppingList({
           supplier: selectedSupplier || undefined,
+          eventId: pinnedEventIds?.length === 1 ? pinnedEventIds[0] : undefined,
           items: filteredItems.map((item) => ({
             ingredientId: item.ingredientId,
             ingredientName: item.ingredientName,

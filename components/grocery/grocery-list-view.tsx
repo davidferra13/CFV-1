@@ -175,6 +175,18 @@ export function GroceryListView({ data, eventId }: GroceryListViewProps) {
 
   return (
     <div className={isPrintMode ? 'print-grocery-list' : ''}>
+      {/* FC-G6: Allergy/dietary warnings */}
+      {data.allergyWarnings && data.allergyWarnings.length > 0 && (
+        <div className="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 print:border-red-400">
+          <p className="text-sm font-bold text-red-800 uppercase mb-1">Allergy Alert</p>
+          <ul className="text-sm text-red-700 space-y-0.5">
+            {data.allergyWarnings.map((w, i) => (
+              <li key={i}>{w}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Header */}
       <div className="mb-6 flex items-center justify-between print:hidden">
         <div>

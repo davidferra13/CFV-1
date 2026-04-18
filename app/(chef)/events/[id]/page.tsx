@@ -635,6 +635,17 @@ export default async function EventDetailPage({
               </span>
             )}
           </p>
+          {/* EC-G26 fix: show co-host names in event header */}
+          {(() => {
+            const acceptedCollabs = (eventCollaborators as any[]).filter(
+              (c: any) => c.status === 'accepted' && c.chef
+            )
+            if (acceptedCollabs.length === 0) return null
+            const names = acceptedCollabs
+              .map((c: any) => c.chef?.display_name || c.chef?.business_name || 'Co-host')
+              .join(', ')
+            return <p className="text-stone-400 text-sm mt-0.5">Co-hosting with {names}</p>
+          })()}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {event.status === 'draft' && (

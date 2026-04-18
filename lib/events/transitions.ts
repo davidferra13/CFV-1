@@ -327,6 +327,74 @@ export async function transitionEvent({
     log.events.warn('SSE broadcast for client event status failed (non-blocking)', { error: err })
   }
 
+  // EC-G30 fix: notify collaborators on meaningful transitions (non-blocking)
+  if (
+    ['accepted', 'paid', 'confirmed', 'in_progress', 'completed', 'cancelled'].includes(toStatus)
+  ) {
+    try {
+      const collabDb: any = createServerClient({ admin: true })
+      const { data: collabs } = await collabDb
+        .from('event_collaborators')
+        .select('chef_id')
+        .eq('event_id', eventId)
+        .neq('chef_id', event.tenant_id)
+
+      if (collabs && collabs.length > 0) {
+        const { createChefNotification } = await import('@/lib/notifications/chef-actions')
+        const label = event.occasion || 'Event'
+        for (const c of collabs) {
+          await createChefNotification({
+            tenantId: c.chef_id,
+            category: 'event',
+            action: 'schedule_change',
+            title: `Event ${toStatus}`,
+            body: `"${label}" moved to ${toStatus}`,
+            actionUrl: `/events/${eventId}`,
+            eventId,
+          }).catch(() => {})
+        }
+      }
+    } catch (err) {
+      log.events.warn('Collaborator transition notification failed (non-blocking)', { error: err })
+    }
+  }
+
+  // EC-G19 fix: remind chef to brief assigned staff on confirmed events (non-blocking)
+  if (toStatus === 'confirmed') {
+    try {
+      const staffDb: any = createServerClient({ admin: true })
+      const { data: staffAssignments } = await staffDb
+        .from('event_staff_assignments')
+        .select('id, staff_members(name)')
+        .eq('event_id', eventId)
+        .eq('chef_id', event.tenant_id)
+
+      if (staffAssignments && staffAssignments.length > 0) {
+        const staffNames = staffAssignments
+          .map((a: any) => a.staff_members?.name)
+          .filter(Boolean)
+          .join(', ')
+        const { createNotification } = await import('@/lib/notifications/actions')
+        const { getChefAuthUserId } = await import('@/lib/notifications/chef-actions')
+        const chefUserId = await getChefAuthUserId(event.tenant_id)
+        if (chefUserId) {
+          await createNotification({
+            tenantId: event.tenant_id,
+            recipientId: chefUserId,
+            category: 'ops',
+            action: 'staff_assignment',
+            title: 'Brief your staff',
+            body: `"${event.occasion || 'Event'}" is confirmed. ${staffAssignments.length} staff assigned: ${staffNames}`,
+            actionUrl: `/events/${eventId}`,
+            eventId,
+          })
+        }
+      }
+    } catch (err) {
+      log.events.warn('Staff briefing reminder failed (non-blocking)', { error: err })
+    }
+  }
+
   // A3: Stamp menu food cost snapshot when chef proposes (draft -> proposed).
   // Captures the cost at quote-send time so ingredient price drift doesn't
   // silently change the displayed cost after the quote is out.
@@ -1054,6 +1122,19 @@ export async function transitionEvent({
     }
 
     await runCompletedEventPostProcessing(eventId, event.tenant_id)
+
+    // Q30: Update client's last_event_date so analytics/proactive alerts stay current
+    if (event.client_id) {
+      try {
+        await db
+          .from('clients')
+          .update({ last_event_date: event.event_date || new Date().toISOString().slice(0, 10) })
+          .eq('id', event.client_id)
+          .eq('tenant_id', event.tenant_id)
+      } catch (ledErr) {
+        log.events.warn('last_event_date update failed (non-blocking)', { error: ledErr })
+      }
+    }
   }
 
   // Log chef activity (non-blocking)

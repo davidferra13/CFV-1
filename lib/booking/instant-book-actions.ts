@@ -177,6 +177,31 @@ export async function createInstantBookingCheckout(
       } catch (syncErr) {
         console.error('[instant-book] Allergy sync to flat failed (non-blocking):', syncErr)
       }
+
+      // Recheck upcoming event menus for allergen conflicts (non-blocking)
+      try {
+        const { recheckUpcomingMenusForClient } = await import('@/lib/dietary/menu-recheck')
+        await recheckUpcomingMenusForClient({ tenantId, clientId: client.id, db })
+      } catch (recheckErr) {
+        console.error('[instant-book] Menu recheck failed (non-blocking):', recheckErr)
+      }
+
+      // Q9: Log dietary changes from instant book (non-blocking)
+      try {
+        const { logDietaryChangeInternal } = await import('@/lib/clients/dietary-alert-actions')
+        for (const r of dietaryRecords) {
+          await logDietaryChangeInternal(
+            tenantId,
+            client.id,
+            'allergy_added',
+            'allergies',
+            null,
+            r.allergen
+          )
+        }
+      } catch (logErr) {
+        console.error('[instant-book] Dietary change log failed (non-blocking):', logErr)
+      }
     } catch (err) {
       console.error('[instant-book] Allergy record upsert failed (non-blocking):', err)
       dietarySaveFailed = true

@@ -852,6 +852,16 @@ export async function updateClient(clientId: string, input: UpdateClientInput) {
     console.error('[updateClient] Allergy sync failed (non-blocking):', err)
   }
 
+  // Recheck upcoming event menus for allergen conflicts (non-blocking)
+  try {
+    if ('allergies' in updateFields || 'dietary_restrictions' in updateFields) {
+      const { recheckUpcomingMenusForClient } = await import('@/lib/dietary/menu-recheck')
+      await recheckUpcomingMenusForClient({ tenantId: user.tenantId!, clientId, db })
+    }
+  } catch (err) {
+    console.error('[updateClient] Menu recheck failed (non-blocking):', err)
+  }
+
   // Propagate dietary/allergy changes to active events (non-blocking)
   // Ensures prep sheets and event detail show current data, not stale copy-at-creation data
   try {

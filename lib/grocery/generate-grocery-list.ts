@@ -50,6 +50,7 @@ export interface GroceryListData {
   guestCount: number
   totalItems: number
   generatedAt: string
+  allergyWarnings?: string[]
   budget: {
     quotedCents: number | null
     projectedCents: number | null
@@ -93,13 +94,39 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
   // 1. Fetch event details + menu
   const { data: event, error: eventError } = await db
     .from('events')
-    .select('id, occasion, guest_count, event_date, menu_id, quoted_price_cents')
+    .select(
+      'id, occasion, guest_count, event_date, menu_id, quoted_price_cents, dietary_restrictions, allergies, client_id'
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
 
   if (eventError || !event) {
     throw new Error('Event not found or access denied')
+  }
+
+  // FC-G6: Collect dietary/allergy warnings from event + client
+  const allergyWarnings: string[] = []
+  const eventAllergies = (event.allergies as string[] | null) ?? []
+  const eventDietary = (event.dietary_restrictions as string[] | null) ?? []
+  if (eventAllergies.length > 0) allergyWarnings.push(`Allergies: ${eventAllergies.join(', ')}`)
+  if (eventDietary.length > 0) allergyWarnings.push(`Dietary: ${eventDietary.join(', ')}`)
+  if (event.client_id) {
+    try {
+      const { data: clientRow } = await db
+        .from('clients')
+        .select('allergies, dietary_restrictions')
+        .eq('id', event.client_id)
+        .single()
+      for (const a of (clientRow?.allergies as string[] | null) ?? []) {
+        if (!eventAllergies.includes(a)) allergyWarnings.push(`Client allergy: ${a}`)
+      }
+      for (const d of (clientRow?.dietary_restrictions as string[] | null) ?? []) {
+        if (!eventDietary.includes(d)) allergyWarnings.push(`Client dietary: ${d}`)
+      }
+    } catch {
+      /* non-blocking */
+    }
   }
 
   if (!event.menu_id) {
@@ -110,6 +137,7 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
       guestCount: event.guest_count ?? 0,
       totalItems: 0,
       generatedAt: new Date().toISOString(),
+      allergyWarnings,
       budget: { quotedCents: null, projectedCents: null, ceilingCents: null, overBudget: false },
     }
   }
@@ -442,6 +470,7 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
     guestCount,
     totalItems: items.length,
     generatedAt: new Date().toISOString(),
+    allergyWarnings,
     budget: {
       quotedCents,
       projectedCents,

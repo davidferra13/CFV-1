@@ -1663,6 +1663,19 @@ export async function convertInquiryToEvent(inquiryId: string) {
   // Map cannabis_preference string → boolean
   const cannabisBoolean = mapCannabisPreferenceToBoolean(inquiry.confirmed_cannabis_preference)
 
+  // EC-G13 fix: map inquiry service_style_pref to event service_style enum
+  const SERVICE_STYLE_MAP: Record<string, string> = {
+    plated: 'plated',
+    'family style': 'family_style',
+    family_style: 'family_style',
+    buffet: 'buffet',
+    cocktail: 'cocktail',
+    'tasting menu': 'tasting_menu',
+    tasting_menu: 'tasting_menu',
+  }
+  const rawStylePref = (inquiry.service_style_pref || '').toLowerCase().trim()
+  const mappedServiceStyle = SERVICE_STYLE_MAP[rawStylePref] || null
+
   // Create draft event from confirmed inquiry facts + accepted quote pricing
   const { data: event, error: eventError } = await db
     .from('events')
@@ -1686,6 +1699,7 @@ export async function convertInquiryToEvent(inquiryId: string) {
       pricing_model: pricingModel,
       dietary_restrictions: inquiry.confirmed_dietary_restrictions || [],
       special_requests: inquiry.confirmed_service_expectations,
+      ...(mappedServiceStyle && { service_style: mappedServiceStyle }),
       cannabis_preference: cannabisBoolean,
       created_by: user.id,
       updated_by: user.id,

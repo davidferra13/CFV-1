@@ -410,15 +410,31 @@ async function checkAllergyGate(
     }
   }
 
-  // Check for unconfirmed allergy records
+  // Check for unconfirmed allergy records (primary client)
   const { data: unconfirmed } = await db
     .from('client_allergy_records')
     .select('allergen, severity')
     .eq('client_id', clientId)
     .eq('confirmed_by_chef', false)
 
-  if (!unconfirmed || unconfirmed.length === 0) {
-    // Either no allergies, or all confirmed - gate passes
+  // Q33: Also check event_guests for RSVP-reported allergies
+  const { data: guestDietary } = await db
+    .from('event_guests')
+    .select('full_name, allergies, dietary_restrictions')
+    .eq('event_id', eventId)
+    .eq('rsvp_status', 'attending')
+
+  const guestAllergens: string[] = []
+  for (const g of (guestDietary ?? []) as any[]) {
+    for (const a of (g.allergies as string[]) ?? []) {
+      guestAllergens.push(`${g.full_name || 'Guest'}: ${a}`)
+    }
+  }
+
+  const unconfirmedCount = unconfirmed?.length ?? 0
+
+  if (unconfirmedCount === 0 && guestAllergens.length === 0) {
+    // No unconfirmed client allergies and no guest-reported allergies
     return {
       gate,
       status: 'passed',
@@ -428,8 +444,22 @@ async function checkAllergyGate(
     }
   }
 
-  const hasAnaphylaxis = unconfirmed.some((r: any) => r.severity === 'anaphylaxis')
-  const allergenList = unconfirmed.map((r: any) => r.allergen).join(', ')
+  const hasAnaphylaxis = (unconfirmed ?? []).some((r: any) => r.severity === 'anaphylaxis')
+  const allergenList = (unconfirmed ?? []).map((r: any) => r.allergen).join(', ')
+
+  const detailParts: string[] = []
+  if (hasAnaphylaxis) {
+    detailParts.push(
+      `CRITICAL: Unconfirmed anaphylaxis risk for ${allergenList}. You must confirm or dismiss this before proceeding.`
+    )
+  } else if (unconfirmedCount > 0) {
+    detailParts.push(
+      `${unconfirmedCount} unconfirmed allergen(s): ${allergenList}. Please verify on the client profile.`
+    )
+  }
+  if (guestAllergens.length > 0) {
+    detailParts.push(`Guest-reported allergies: ${guestAllergens.join('; ')}`)
+  }
 
   return {
     gate,
@@ -437,9 +467,7 @@ async function checkAllergyGate(
     label: catalog.label,
     description: catalog.description,
     isHardBlock: hasAnaphylaxis,
-    details: hasAnaphylaxis
-      ? `CRITICAL: Unconfirmed anaphylaxis risk for ${allergenList}. You must confirm or dismiss this before proceeding.`
-      : `${unconfirmed.length} unconfirmed allergen(s): ${allergenList}. Please verify on the client profile.`,
+    details: detailParts.join(' | '),
   }
 }
 
@@ -644,6 +672,14 @@ export async function addAllergyRecord(
     await syncStructuredToFlat({ tenantId: user.tenantId!, clientId, db })
   } catch (syncErr) {
     console.error('[addAllergyRecord] Allergy sync to flat failed (non-blocking):', syncErr)
+  }
+
+  // Recheck upcoming event menus for allergen conflicts (non-blocking)
+  try {
+    const { recheckUpcomingMenusForClient } = await import('@/lib/dietary/menu-recheck')
+    await recheckUpcomingMenusForClient({ tenantId: user.tenantId!, clientId, db })
+  } catch (recheckErr) {
+    console.error('[addAllergyRecord] Menu recheck failed (non-blocking):', recheckErr)
   }
 
   revalidatePath(`/clients/${clientId}`)

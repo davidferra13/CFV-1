@@ -698,9 +698,35 @@ export async function updateRecipe(recipeId: string, input: UpdateRecipeInput) {
 // 5. DELETE RECIPE
 // ============================================
 
-export async function deleteRecipe(recipeId: string) {
+export async function deleteRecipe(recipeId: string, force = false) {
   const user = await requireChef()
   const db: any = createServerClient()
+
+  // Guard: check if recipe is linked to components on active events
+  if (!force) {
+    const { data: activeLinks } = await db.rpc('raw_sql', {
+      query: `
+        SELECT c.id
+        FROM components c
+        JOIN dishes d ON d.id = c.dish_id
+        JOIN menus m ON m.id = d.menu_id
+        JOIN events e ON e.id = m.event_id
+        WHERE c.recipe_id = $1
+          AND c.tenant_id = $2
+          AND e.status NOT IN ('completed', 'cancelled')
+          AND e.deleted_at IS NULL
+          AND m.deleted_at IS NULL
+        LIMIT 1
+      `,
+      params: [recipeId, user.tenantId!],
+    })
+
+    if (activeLinks && activeLinks.length > 0) {
+      throw new Error(
+        'This recipe is used in a menu on an active event. Archive the recipe or remove it from the menu first.'
+      )
+    }
+  }
 
   // Unlink from any components first
   await db

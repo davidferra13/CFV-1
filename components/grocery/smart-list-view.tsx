@@ -80,7 +80,7 @@ const AISLE_ORDER: AisleSection[] = [
 // ============================================
 
 interface SmartListViewProps {
-  list: SmartGroceryList & { smart_grocery_items: SmartGroceryItem[] }
+  list: SmartGroceryList & { smart_grocery_items: SmartGroceryItem[]; allergyWarnings?: string[] }
   onBack: () => void
 }
 
@@ -307,6 +307,18 @@ export function SmartListView({ list: initialList, onBack }: SmartListViewProps)
 
   return (
     <div className="space-y-4">
+      {/* FC-G6: Allergy/dietary warnings */}
+      {initialList.allergyWarnings && initialList.allergyWarnings.length > 0 && (
+        <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3">
+          <p className="text-sm font-bold text-red-800 uppercase mb-1">Allergy Alert</p>
+          <ul className="text-sm text-red-700 space-y-0.5">
+            {initialList.allergyWarnings.map((w, i) => (
+              <li key={i}>{w}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">

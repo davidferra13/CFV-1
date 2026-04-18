@@ -280,6 +280,22 @@ async function autoEscalateAllergyInsight({
     )
   }
 
+  // Recheck upcoming event menus for allergen conflicts (non-blocking)
+  try {
+    const { recheckUpcomingMenusForClient } = await import('@/lib/dietary/menu-recheck')
+    await recheckUpcomingMenusForClient({ tenantId, clientId, db })
+  } catch (recheckErr) {
+    console.error('[autoEscalateAllergyInsight] Menu recheck failed (non-blocking):', recheckErr)
+  }
+
+  // Q9: Log dietary change from AI detection (non-blocking)
+  try {
+    const { logDietaryChangeInternal } = await import('@/lib/clients/dietary-alert-actions')
+    await logDietaryChangeInternal(tenantId, clientId, 'allergy_added', 'allergies', null, allergen)
+  } catch (logErr) {
+    console.error('[autoEscalateAllergyInsight] Dietary change log failed (non-blocking):', logErr)
+  }
+
   // 2. Create a pinned dietary note (always creates - notes are a log, not deduplicated)
   const noteEmoji =
     severity === 'anaphylaxis'

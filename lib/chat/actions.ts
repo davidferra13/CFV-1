@@ -513,6 +513,19 @@ export async function sendChatMessage(input: z.infer<typeof SendMessageSchema>) 
     .eq('conversation_id', validated.conversation_id)
     .eq('auth_user_id', user.id)
 
+  // EC-G21 fix: SSE broadcast for real-time chat updates
+  try {
+    const { broadcast } = await import('@/lib/realtime/sse-server')
+    broadcast(`chat:${validated.conversation_id}`, 'new_message', {
+      id: message.id,
+      conversation_id: validated.conversation_id,
+      sender_id: user.id,
+      message_type: validated.message_type,
+      body: validated.body ?? null,
+      created_at: message.created_at,
+    })
+  } catch {}
+
   // Loyalty trigger: first message in conversation (non-blocking, client only)
   if (user.role === 'client' && user.tenantId) {
     try {

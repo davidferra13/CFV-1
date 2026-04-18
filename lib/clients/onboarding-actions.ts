@@ -160,6 +160,31 @@ export async function submitOnboarding(
     } catch (syncErr) {
       console.error('[onboarding] Allergy sync to flat failed (non-blocking):', syncErr)
     }
+
+    // Recheck upcoming event menus for allergen conflicts (non-blocking)
+    try {
+      const { recheckUpcomingMenusForClient } = await import('@/lib/dietary/menu-recheck')
+      await recheckUpcomingMenusForClient({ tenantId, clientId, db })
+    } catch (recheckErr) {
+      console.error('[onboarding] Menu recheck failed (non-blocking):', recheckErr)
+    }
+
+    // Q9: Log dietary changes from onboarding (non-blocking)
+    try {
+      const { logDietaryChangeInternal } = await import('@/lib/clients/dietary-alert-actions')
+      for (const a of parsed.data.allergies!) {
+        await logDietaryChangeInternal(
+          tenantId,
+          clientId,
+          'allergy_added',
+          'allergies',
+          null,
+          a.allergen
+        )
+      }
+    } catch (logErr) {
+      console.error('[onboarding] Dietary change log failed (non-blocking):', logErr)
+    }
   }
 
   try {
