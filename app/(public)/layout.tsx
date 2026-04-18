@@ -12,6 +12,7 @@ const PresenceBeacon = dynamic(
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <div
+      data-cf-portal="public"
       className="relative flex min-h-screen flex-col overflow-x-clip"
       style={{ background: 'var(--page-bg-gradient)' }}
     >

@@ -6,6 +6,7 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { withApiAuth, apiSuccess, apiNotFound, apiValidationError, apiError } from '@/lib/api/v2'
 import { transitionEvent } from '@/lib/events/transitions'
+import { TRANSITION_RULES, type EventStatus } from '@/lib/events/fsm'
 
 const VALID_STATUSES = [
   'draft',
@@ -17,17 +18,6 @@ const VALID_STATUSES = [
   'completed',
   'cancelled',
 ] as const
-
-const TRANSITION_RULES: Record<string, string[]> = {
-  draft: ['proposed', 'paid', 'cancelled'],
-  proposed: ['accepted', 'cancelled'],
-  accepted: ['paid', 'cancelled'],
-  paid: ['confirmed', 'cancelled'],
-  confirmed: ['in_progress', 'cancelled'],
-  in_progress: ['completed', 'cancelled'],
-  completed: [],
-  cancelled: [],
-}
 
 const TransitionBody = z.object({
   to_status: z.enum(VALID_STATUSES),
@@ -62,7 +52,7 @@ export const POST = withApiAuth(
 
     if (fetchErr || !event) return apiNotFound('Event')
 
-    const currentStatus = (event as any).status as string
+    const currentStatus = (event as any).status as EventStatus
 
     // Validate transition
     const allowed = TRANSITION_RULES[currentStatus] ?? []

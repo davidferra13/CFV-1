@@ -4,7 +4,7 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { withApiAuth, apiSuccess, apiValidationError, apiError } from '@/lib/api/v2'
-import { sendVoucherOrGiftCardToAnyone } from '@/lib/loyalty/voucher-actions'
+import { sendVoucherOrGiftCardForTenant } from '@/lib/loyalty/voucher-store'
 
 const SendBody = z.object({
   incentiveId: z.string().uuid(),
@@ -14,7 +14,7 @@ const SendBody = z.object({
 })
 
 export const POST = withApiAuth(
-  async (req: NextRequest, _ctx) => {
+  async (req: NextRequest, ctx) => {
     let body: unknown
     try {
       body = await req.json()
@@ -26,7 +26,7 @@ export const POST = withApiAuth(
     if (!parsed.success) return apiValidationError(parsed.error)
 
     try {
-      await sendVoucherOrGiftCardToAnyone(parsed.data as any)
+      await sendVoucherOrGiftCardForTenant(ctx.tenantId, parsed.data as any)
       return apiSuccess({ sent: true })
     } catch (err: any) {
       return apiError('send_failed', err.message ?? 'Failed to send voucher', 500)

@@ -4,15 +4,15 @@
 
 import { NextRequest } from 'next/server'
 import { withApiAuth, apiSuccess, apiCreated, apiError, apiNotFound } from '@/lib/api/v2'
-import { getPartnerLocations, createPartnerLocation } from '@/lib/partners/actions'
+import { getPartnerLocationsForTenant, createPartnerLocationForTenant } from '@/lib/partners/store'
 
 export const GET = withApiAuth(
-  async (_req, _ctx, params) => {
+  async (_req, ctx, params) => {
     const id = params?.id
     if (!id) return apiNotFound('Partner')
 
     try {
-      const locations = await getPartnerLocations(id)
+      const locations = await getPartnerLocationsForTenant(ctx.tenantId, id)
       return apiSuccess(locations)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch locations'
@@ -25,7 +25,7 @@ export const GET = withApiAuth(
 )
 
 export const POST = withApiAuth(
-  async (req: NextRequest, _ctx, params) => {
+  async (req: NextRequest, ctx, params) => {
     const id = params?.id
     if (!id) return apiNotFound('Partner')
 
@@ -37,19 +37,9 @@ export const POST = withApiAuth(
     }
 
     try {
-      const result = await createPartnerLocation({
+      const result = await createPartnerLocationForTenant(ctx.tenantId, {
         partner_id: id,
-        ...(body as {
-          name: string
-          address?: string
-          city?: string
-          state?: string
-          zip?: string
-          booking_url?: string
-          description?: string
-          notes?: string
-          max_guest_count?: number | null
-        }),
+        ...(body as any),
       })
       return apiCreated(result)
     } catch (err) {

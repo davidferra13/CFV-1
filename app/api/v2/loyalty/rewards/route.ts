@@ -4,12 +4,12 @@
 
 import { NextRequest } from 'next/server'
 import { withApiAuth, apiSuccess, apiCreated, apiError } from '@/lib/api/v2'
-import { getRewards, createReward } from '@/lib/loyalty/actions'
+import { getRewardsForTenant, createRewardForTenant } from '@/lib/loyalty/store'
 
 export const GET = withApiAuth(
-  async (_req, _ctx) => {
+  async (_req, ctx) => {
     try {
-      const rewards = await getRewards()
+      const rewards = await getRewardsForTenant(ctx.tenantId)
       return apiSuccess(rewards)
     } catch (err) {
       console.error('[api/v2/loyalty/rewards] GET error:', err)
@@ -20,7 +20,7 @@ export const GET = withApiAuth(
 )
 
 export const POST = withApiAuth(
-  async (req: NextRequest, _ctx) => {
+  async (req: NextRequest, ctx) => {
     let body: unknown
     try {
       body = await req.json()
@@ -29,7 +29,7 @@ export const POST = withApiAuth(
     }
 
     try {
-      const result = await createReward(body as any)
+      const result = await createRewardForTenant(ctx.tenantId, body as any)
       return apiCreated(result)
     } catch (err) {
       console.error('[api/v2/loyalty/rewards] POST error:', err)

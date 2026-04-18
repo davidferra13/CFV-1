@@ -2,15 +2,15 @@
 // GET /api/v2/loyalty/clients/:id/transactions
 
 import { withApiAuth, apiSuccess, apiNotFound, apiError } from '@/lib/api/v2'
-import { getLoyaltyTransactions } from '@/lib/loyalty/actions'
+import { getLoyaltyTransactionsForTenant } from '@/lib/loyalty/store'
 
 export const GET = withApiAuth(
-  async (_req, _ctx, params) => {
+  async (_req, ctx, params) => {
     const id = params?.id
     if (!id) return apiNotFound('Client')
 
     try {
-      const transactions = await getLoyaltyTransactions(id)
+      const transactions = await getLoyaltyTransactionsForTenant(ctx.tenantId, id)
       return apiSuccess(transactions)
     } catch (err) {
       console.error('[api/v2/loyalty/clients/transactions] GET error:', err)

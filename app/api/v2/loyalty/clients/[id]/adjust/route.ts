@@ -4,7 +4,7 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { withApiAuth, apiSuccess, apiNotFound, apiValidationError, apiError } from '@/lib/api/v2'
-import { adjustClientLoyalty } from '@/lib/loyalty/actions'
+import { adjustClientLoyaltyForTenant } from '@/lib/loyalty/store'
 
 const AdjustBody = z.object({
   adjustmentPoints: z.number().int().optional(),
@@ -16,7 +16,7 @@ const AdjustBody = z.object({
 })
 
 export const POST = withApiAuth(
-  async (req: NextRequest, _ctx, params) => {
+  async (req: NextRequest, ctx, params) => {
     const clientId = params?.id
     if (!clientId) return apiNotFound('Client')
 
@@ -31,7 +31,7 @@ export const POST = withApiAuth(
     if (!parsed.success) return apiValidationError(parsed.error)
 
     try {
-      await adjustClientLoyalty({ clientId, ...parsed.data })
+      await adjustClientLoyaltyForTenant(ctx.tenantId, { clientId, ...parsed.data })
       return apiSuccess({ adjusted: true })
     } catch (err: any) {
       return apiError('adjust_failed', err.message ?? 'Failed to adjust loyalty', 500)

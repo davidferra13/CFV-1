@@ -1410,12 +1410,7 @@ export const navGroups: NavGroup[] = [
 export const CORE_GROUP_IDS = new Set(['events', 'clients', 'culinary', 'finance', 'operations'])
 
 // Sort groups alphabetically so chefs can find features predictably.
-// Admin stays last since it's a special admin-only section.
-navGroups.sort((a, b) => {
-  if (a.id === 'admin') return 1
-  if (b.id === 'admin') return -1
-  return a.label.localeCompare(b.label)
-})
+navGroups.sort((a, b) => a.label.localeCompare(b.label))
 
 // Sort items within each group alphabetically, and children within each item
 for (const group of navGroups) {

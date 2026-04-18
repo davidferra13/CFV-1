@@ -4,10 +4,10 @@
 
 import { NextRequest } from 'next/server'
 import { withApiAuth, apiSuccess, apiNoContent, apiNotFound, apiError } from '@/lib/api/v2'
-import { updateReward, deactivateReward } from '@/lib/loyalty/actions'
+import { updateRewardForTenant, deactivateRewardForTenant } from '@/lib/loyalty/store'
 
 export const PATCH = withApiAuth(
-  async (req: NextRequest, _ctx, params) => {
+  async (req: NextRequest, ctx, params) => {
     const id = params?.id
     if (!id) return apiNotFound('Reward')
 
@@ -19,7 +19,7 @@ export const PATCH = withApiAuth(
     }
 
     try {
-      const result = await updateReward(id, body as any)
+      const result = await updateRewardForTenant(ctx.tenantId, id, body as any)
       return apiSuccess(result)
     } catch (err) {
       console.error('[api/v2/loyalty/rewards] PATCH error:', err)
@@ -30,12 +30,12 @@ export const PATCH = withApiAuth(
 )
 
 export const DELETE = withApiAuth(
-  async (_req, _ctx, params) => {
+  async (_req, ctx, params) => {
     const id = params?.id
     if (!id) return apiNotFound('Reward')
 
     try {
-      await deactivateReward(id)
+      await deactivateRewardForTenant(ctx.tenantId, id)
       return apiNoContent()
     } catch (err) {
       console.error('[api/v2/loyalty/rewards] DELETE error:', err)

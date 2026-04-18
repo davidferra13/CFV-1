@@ -423,7 +423,6 @@ export function ChefMobileNav({
   const accessibleGroups = useMemo(() => {
     const baseGroups = navGroups
       .filter((group) => {
-        if (group.id === 'admin') return Boolean(isAdmin)
         if (!group.module) return false
         if (enabledSet) return enabledSet.has(group.module)
         return DEFAULT_MODULE_SLUGS.has(group.module)

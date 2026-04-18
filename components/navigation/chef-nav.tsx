@@ -546,6 +546,7 @@ export function ChefSidebar({
   focusMode,
   userId,
   tenantId,
+  archetype,
 }: {
   primaryNavHrefs?: string[]
   enabledModules?: string[]
@@ -554,6 +555,7 @@ export function ChefSidebar({
   focusMode?: boolean
   userId: string
   tenantId: string
+  archetype?: string | null
 }) {
   const pathname = usePathname() ?? ''
   const searchParams = useSearchParams()
@@ -572,7 +574,6 @@ export function ChefSidebar({
   const accessibleGroups = useMemo(() => {
     const baseGroups = navGroups
       .filter((group) => {
-        if (group.id === 'admin') return Boolean(isAdmin)
         if (!group.module) return false
         if (enabledSet) return enabledSet.has(group.module)
         return DEFAULT_MODULE_SLUGS.has(group.module)
@@ -762,7 +763,7 @@ export function ChefSidebar({
             <ActivityDot collapsed />
 
             {/* Action Bar - rail mode */}
-            <ActionBar navFilter={navFilter} collapsed />
+            <ActionBar navFilter={navFilter} collapsed archetype={archetype} />
 
             <div className="w-6 border-t border-stone-800 my-1.5" />
 
@@ -859,7 +860,7 @@ export function ChefSidebar({
             <NavFilterInput value={navFilter} onChange={setNavFilter} />
 
             {/* ─── Action Bar (daily-driver shortcuts + Create) ─── */}
-            <ActionBar navFilter={navFilter} />
+            <ActionBar navFilter={navFilter} archetype={archetype} />
 
             {/* ─── Nav Groups (always visible, collapse individually) ─── */}
             {!focusMode && filteredGroupEntries.length > 0 && (

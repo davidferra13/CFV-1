@@ -3,10 +3,10 @@
 
 import { NextRequest } from 'next/server'
 import { withApiAuth, apiSuccess, apiNotFound, apiError } from '@/lib/api/v2'
-import { getRaffleResults, getEligibleEntries } from '@/lib/loyalty/raffle-actions'
+import { getRaffleResultsForTenant, getEligibleEntriesForTenant } from '@/lib/loyalty/raffle-store'
 
 export const GET = withApiAuth(
-  async (req: NextRequest, _ctx, params) => {
+  async (req: NextRequest, ctx, params) => {
     const id = params?.id
     if (!id) return apiNotFound('Raffle')
 
@@ -15,10 +15,10 @@ export const GET = withApiAuth(
 
     try {
       if (view === 'entries') {
-        const entries = await getEligibleEntries(id)
+        const entries = await getEligibleEntriesForTenant(ctx.tenantId, id)
         return apiSuccess({ entries })
       }
-      const results = await getRaffleResults(id)
+      const results = await getRaffleResultsForTenant(ctx.tenantId, id)
       return apiSuccess(results)
     } catch (err: any) {
       return apiError('fetch_failed', err.message ?? 'Failed to fetch raffle', 500)

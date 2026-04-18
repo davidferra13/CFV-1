@@ -13,7 +13,11 @@ import {
   apiValidationError,
   apiError,
 } from '@/lib/api/v2'
-import { addPartnerImage, removePartnerImage, reorderPartnerImages } from '@/lib/partners/actions'
+import {
+  addPartnerImageForTenant,
+  removePartnerImageForTenant,
+  reorderPartnerImagesForTenant,
+} from '@/lib/partners/store'
 
 const AddImageBody = z.object({
   url: z.string().url(),
@@ -26,7 +30,7 @@ const ReorderBody = z.object({
 })
 
 export const POST = withApiAuth(
-  async (req: NextRequest, _ctx, params) => {
+  async (req: NextRequest, ctx, params) => {
     const partnerId = params?.id
     if (!partnerId) return apiNotFound('Partner')
 
@@ -41,7 +45,7 @@ export const POST = withApiAuth(
     if (!parsed.success) return apiValidationError(parsed.error)
 
     try {
-      await addPartnerImage({ partnerId, ...parsed.data } as any)
+      await addPartnerImageForTenant(ctx.tenantId, { partner_id: partnerId, ...parsed.data } as any)
       return apiSuccess({ added: true })
     } catch (err: any) {
       return apiError('add_failed', err.message ?? 'Failed to add image', 500)
@@ -51,7 +55,7 @@ export const POST = withApiAuth(
 )
 
 export const PATCH = withApiAuth(
-  async (req: NextRequest, _ctx, params) => {
+  async (req: NextRequest, ctx, params) => {
     const partnerId = params?.id
     if (!partnerId) return apiNotFound('Partner')
 
@@ -66,7 +70,7 @@ export const PATCH = withApiAuth(
     if (!parsed.success) return apiValidationError(parsed.error)
 
     try {
-      await reorderPartnerImages(partnerId, parsed.data.imageIds)
+      await reorderPartnerImagesForTenant(ctx.tenantId, partnerId, parsed.data.imageIds)
       return apiSuccess({ reordered: true })
     } catch (err: any) {
       return apiError('reorder_failed', err.message ?? 'Failed to reorder images', 500)
@@ -76,7 +80,7 @@ export const PATCH = withApiAuth(
 )
 
 export const DELETE = withApiAuth(
-  async (req: NextRequest, _ctx, params) => {
+  async (req: NextRequest, ctx, params) => {
     const partnerId = params?.id
     if (!partnerId) return apiNotFound('Partner')
 
@@ -85,7 +89,7 @@ export const DELETE = withApiAuth(
     if (!imageId) return apiError('missing_image_id', 'imageId query parameter is required', 400)
 
     try {
-      await removePartnerImage(imageId)
+      await removePartnerImageForTenant(ctx.tenantId, imageId)
       return apiNoContent()
     } catch (err: any) {
       return apiError('remove_failed', err.message ?? 'Failed to remove image', 500)

@@ -4,7 +4,7 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { withApiAuth, apiSuccess, apiNotFound, apiValidationError, apiError } from '@/lib/api/v2'
-import { awardBonusPoints } from '@/lib/loyalty/actions'
+import { awardBonusPointsForTenant } from '@/lib/loyalty/store'
 
 const BonusBody = z.object({
   bonusPoints: z.number().int().positive(),
@@ -12,7 +12,7 @@ const BonusBody = z.object({
 })
 
 export const POST = withApiAuth(
-  async (req: NextRequest, _ctx, params) => {
+  async (req: NextRequest, ctx, params) => {
     const clientId = params?.id
     if (!clientId) return apiNotFound('Client')
 
@@ -27,7 +27,12 @@ export const POST = withApiAuth(
     if (!parsed.success) return apiValidationError(parsed.error)
 
     try {
-      await awardBonusPoints(clientId, parsed.data.bonusPoints, parsed.data.reason)
+      await awardBonusPointsForTenant(
+        ctx.tenantId,
+        clientId,
+        parsed.data.bonusPoints,
+        parsed.data.reason
+      )
       return apiSuccess({ awarded: true })
     } catch (err: any) {
       return apiError('award_failed', err.message ?? 'Failed to award bonus points', 500)

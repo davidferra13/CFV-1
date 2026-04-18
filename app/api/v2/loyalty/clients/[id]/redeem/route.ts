@@ -4,7 +4,7 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { withApiAuth, apiSuccess, apiNotFound, apiValidationError, apiError } from '@/lib/api/v2'
-import { redeemReward } from '@/lib/loyalty/actions'
+import { redeemRewardForTenant } from '@/lib/loyalty/store'
 
 const RedeemBody = z.object({
   rewardId: z.string().min(1),
@@ -12,7 +12,7 @@ const RedeemBody = z.object({
 })
 
 export const POST = withApiAuth(
-  async (req: NextRequest, _ctx, params) => {
+  async (req: NextRequest, ctx, params) => {
     const id = params?.id
     if (!id) return apiNotFound('Client')
 
@@ -27,7 +27,13 @@ export const POST = withApiAuth(
     if (!parsed.success) return apiValidationError(parsed.error)
 
     try {
-      const result = await redeemReward(id, parsed.data.rewardId, parsed.data.eventId)
+      const result = await redeemRewardForTenant(
+        ctx.tenantId,
+        id,
+        parsed.data.rewardId,
+        undefined,
+        parsed.data.eventId
+      )
       return apiSuccess(result)
     } catch (err) {
       console.error('[api/v2/loyalty/clients/redeem] POST error:', err)

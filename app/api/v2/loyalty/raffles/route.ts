@@ -4,12 +4,12 @@
 
 import { NextRequest } from 'next/server'
 import { withApiAuth, apiSuccess, apiCreated, apiError } from '@/lib/api/v2'
-import { getRaffles, createRaffle } from '@/lib/loyalty/raffle-actions'
+import { getRafflesForTenant, createRaffleForTenant } from '@/lib/loyalty/raffle-store'
 
 export const GET = withApiAuth(
-  async (_req, _ctx) => {
+  async (_req, ctx) => {
     try {
-      const raffles = await getRaffles()
+      const raffles = await getRafflesForTenant(ctx.tenantId)
       return apiSuccess(raffles)
     } catch (err) {
       console.error('[api/v2/loyalty/raffles] GET error:', err)
@@ -20,7 +20,7 @@ export const GET = withApiAuth(
 )
 
 export const POST = withApiAuth(
-  async (req: NextRequest, _ctx) => {
+  async (req: NextRequest, ctx) => {
     let body: unknown
     try {
       body = await req.json()
@@ -29,7 +29,7 @@ export const POST = withApiAuth(
     }
 
     try {
-      const result = await createRaffle(body as any)
+      const result = await createRaffleForTenant(ctx.tenantId, body as any)
       return apiCreated(result)
     } catch (err) {
       console.error('[api/v2/loyalty/raffles] POST error:', err)

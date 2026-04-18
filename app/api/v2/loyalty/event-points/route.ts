@@ -4,14 +4,14 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { withApiAuth, apiSuccess, apiValidationError, apiError } from '@/lib/api/v2'
-import { awardEventPoints } from '@/lib/loyalty/actions'
+import { awardEventPointsForTenant } from '@/lib/loyalty/store'
 
 const AwardBody = z.object({
   eventId: z.string().uuid(),
 })
 
 export const POST = withApiAuth(
-  async (req: NextRequest, _ctx) => {
+  async (req: NextRequest, ctx) => {
     let body: unknown
     try {
       body = await req.json()
@@ -23,7 +23,7 @@ export const POST = withApiAuth(
     if (!parsed.success) return apiValidationError(parsed.error)
 
     try {
-      await awardEventPoints(parsed.data.eventId)
+      await awardEventPointsForTenant(ctx.tenantId, parsed.data.eventId)
       return apiSuccess({ awarded: true })
     } catch (err: any) {
       return apiError('award_failed', err.message ?? 'Failed to award event points', 500)

@@ -2,15 +2,15 @@
 // POST /api/v2/partners/:id/share-link
 
 import { withApiAuth, apiSuccess, apiNotFound, apiError } from '@/lib/api/v2'
-import { generatePartnerShareLink } from '@/lib/partners/actions'
+import { generatePartnerShareLinkForTenant } from '@/lib/partners/store'
 
 export const POST = withApiAuth(
-  async (_req, _ctx, params) => {
+  async (_req, ctx, params) => {
     const id = params?.id
     if (!id) return apiNotFound('Partner')
 
     try {
-      const result = await generatePartnerShareLink(id)
+      const result = await generatePartnerShareLinkForTenant(ctx.tenantId, id)
       return apiSuccess(result)
     } catch (err: any) {
       return apiError('generate_failed', err.message ?? 'Failed to generate share link', 500)

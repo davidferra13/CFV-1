@@ -2,12 +2,12 @@
 // GET /api/v2/loyalty/overview
 
 import { withApiAuth, apiSuccess, apiError } from '@/lib/api/v2'
-import { getLoyaltyOverview } from '@/lib/loyalty/actions'
+import { getLoyaltyOverviewForTenant } from '@/lib/loyalty/store'
 
 export const GET = withApiAuth(
-  async (_req, _ctx) => {
+  async (_req, ctx) => {
     try {
-      const overview = await getLoyaltyOverview()
+      const overview = await getLoyaltyOverviewForTenant(ctx.tenantId)
       return apiSuccess(overview)
     } catch (err) {
       console.error('[api/v2/loyalty/overview] GET error:', err)

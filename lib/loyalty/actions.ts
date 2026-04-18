@@ -785,12 +785,21 @@ export async function awardEventPoints(eventId: string) {
     throw new Error('Event not found')
   }
 
-  if (event.loyalty_points_awarded) {
-    return { success: true, alreadyAwarded: true, pointsAwarded: 0 }
-  }
-
   if (event.status !== 'completed') {
     throw new Error('Points can only be awarded for completed events')
+  }
+
+  // Atomic claim: prevents double-award race between UI action and API store
+  const { data: claimed } = await db
+    .from('events')
+    .update({ loyalty_points_awarded: true })
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .eq('loyalty_points_awarded', false)
+    .select('id')
+
+  if (!claimed || claimed.length === 0) {
+    return { success: true, alreadyAwarded: true, pointsAwarded: 0 }
   }
 
   // Get loyalty config
@@ -1005,12 +1014,7 @@ export async function awardEventPoints(eventId: string) {
     console.error('[awardEventPoints] Client notification failed (non-blocking):', err)
   }
 
-  // Mark event as awarded
-  await db
-    .from('events')
-    .update({ loyalty_points_awarded: true })
-    .eq('id', eventId)
-    .eq('tenant_id', user.tenantId!)
+  // Note: loyalty_points_awarded already set atomically at claim time (top of function)
 
   // SSE real-time broadcast (non-blocking)
   try {
