@@ -50,11 +50,87 @@ export async function seedDemoData(): Promise<SeedDemoDataResult> {
       daysAgo: ONBOARDING_SAMPLE_INQUIRY.daysAgo,
     })
 
+    // FC-G4: Seed recipes and a menu so the chef can explore more of the app
+    let recipesCreated = 0
+    let menusCreated = 0
+    try {
+      const demoRecipes = [
+        {
+          name: 'Pan-Seared Salmon',
+          description: 'Crispy skin salmon with lemon butter',
+          category: 'main',
+          servings: 4,
+          prep_time_minutes: 15,
+          cook_time_minutes: 20,
+        },
+        {
+          name: 'Caesar Salad',
+          description: 'Classic romaine with house-made dressing',
+          category: 'starter',
+          servings: 4,
+          prep_time_minutes: 10,
+          cook_time_minutes: 0,
+        },
+        {
+          name: 'Chocolate Lava Cake',
+          description: 'Warm molten center with vanilla ice cream',
+          category: 'dessert',
+          servings: 6,
+          prep_time_minutes: 20,
+          cook_time_minutes: 14,
+        },
+      ]
+
+      const recipeIds: string[] = []
+      for (const recipe of demoRecipes) {
+        const { data } = await admin
+          .from('recipes')
+          .insert({ tenant_id: tenantId, ...recipe, is_demo: true })
+          .select('id')
+          .single()
+        if (data?.id) {
+          recipeIds.push(data.id)
+          recipesCreated++
+        }
+      }
+
+      // Create a demo menu linked to the first event
+      if (recipeIds.length > 0) {
+        const { data: menuData } = await admin
+          .from('menus')
+          .insert({
+            tenant_id: tenantId,
+            name: 'Sample Dinner Menu',
+            description: 'A demo menu to explore the menu builder',
+            is_demo: true,
+          })
+          .select('id')
+          .single()
+
+        if (menuData?.id) {
+          menusCreated++
+          // Add recipes as menu items
+          for (let i = 0; i < recipeIds.length; i++) {
+            await admin.from('menu_items').insert({
+              menu_id: menuData.id,
+              recipe_id: recipeIds[i],
+              course: demoRecipes[i].category,
+              sort_order: i,
+            })
+          }
+        }
+      }
+    } catch (demoExtraErr) {
+      console.error('[seedDemoData] Recipe/menu seeding failed (non-blocking):', demoExtraErr)
+    }
+
     return {
       created: true,
       clientsCreated: ONBOARDING_SAMPLE_CLIENTS.length,
       eventsCreated: ONBOARDING_SAMPLE_EVENTS.length,
       inquiriesCreated: 1,
+      recipesCreated,
+      menusCreated,
     }
   } catch (error) {
     return {

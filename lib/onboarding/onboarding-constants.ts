@@ -2,10 +2,20 @@
 // Extracted from onboarding-actions.ts because 'use server' files cannot export
 // non-async values (Next.js restriction).
 //
-// WIZARD_STEPS = the 6 steps shown in the first-run setup wizard (all skippable).
+// WIZARD_STEPS = the steps shown in the first-run setup wizard (filtered by archetype).
 // ONBOARDING_STEPS = all steps including post-wizard hub items.
 
+import type { ArchetypeId } from '@/lib/archetypes/presets'
+
 export const ONBOARDING_STEPS = [
+  // Step 0: Archetype selection (required, not skippable)
+  {
+    key: 'archetype',
+    title: 'What You Do',
+    description: 'Tell us what kind of chef you are so we can set up the right tools',
+    icon: 'chef-hat',
+    optional: false,
+  },
   {
     key: 'profile',
     title: 'Your Profile',
@@ -48,6 +58,13 @@ export const ONBOARDING_STEPS = [
     icon: 'calendar',
     optional: false,
   },
+  {
+    key: 'chef_network',
+    title: 'Chef Network',
+    description: 'Connect with other chefs for handoffs, collaboration, and community',
+    icon: 'users',
+    optional: false,
+  },
   // Post-wizard hub steps (not shown in wizard)
   {
     key: 'services',
@@ -86,10 +103,40 @@ export const ONBOARDING_STEPS = [
   },
 ] as const
 
-// The 5 wizard steps. All are skippable; only business name is truly required.
-export const WIZARD_STEPS = ONBOARDING_STEPS.filter((s) => !s.optional)
+// All wizard steps (unfiltered). Archetype filtering happens via getWizardStepsForArchetype.
+const ALL_WIZARD_STEPS = ONBOARDING_STEPS.filter((s) => !s.optional)
+
+// Legacy export for code that doesn't have archetype context yet
+export const WIZARD_STEPS = ALL_WIZARD_STEPS
 
 export type OnboardingStepKey = (typeof ONBOARDING_STEPS)[number]['key']
+
+// ─── Archetype-based step filtering ────────────────────────────────────────────
+
+const STEP_ARCHETYPE_FILTER: Record<string, ArchetypeId[] | 'all'> = {
+  archetype: 'all',
+  profile: 'all',
+  portfolio: 'all',
+  first_menu: ['private-chef', 'caterer', 'restaurant', 'bakery'],
+  pricing: 'all',
+  connect_gmail: 'all',
+  first_event: ['private-chef', 'caterer', 'meal-prep', 'food-truck'],
+  chef_network: 'all',
+}
+
+/**
+ * Returns wizard steps filtered for a specific archetype.
+ * If archetype is null, returns all wizard steps.
+ */
+export function getWizardStepsForArchetype(archetype: ArchetypeId | null) {
+  if (!archetype) return ALL_WIZARD_STEPS
+
+  return ALL_WIZARD_STEPS.filter((step) => {
+    const filter = STEP_ARCHETYPE_FILTER[step.key]
+    if (!filter || filter === 'all') return true
+    return filter.includes(archetype)
+  })
+}
 
 // US states for location dropdown
 export const US_STATES = [

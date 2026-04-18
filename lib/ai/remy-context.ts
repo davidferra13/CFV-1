@@ -61,6 +61,16 @@ interface CachedContext {
 const contextCache = new Map<string, CachedContext>()
 const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
 
+/**
+ * Bust the Remy context cache for a tenant so the next Remy query
+ * picks up freshly-mutated data instead of stale 5-minute context.
+ * Call this from any server action that mutates data Remy reads
+ * (events, clients, recipes, menus, financials, inquiries, etc.).
+ */
+export function invalidateRemyContextCache(tenantId: string): void {
+  contextCache.delete(tenantId)
+}
+
 async function recordContextFailure(
   tenantId: string,
   operation: string,
@@ -415,12 +425,13 @@ async function loadDetailedContext(db: any, tenantId: string) {
       .order('created_at', { ascending: false })
       .limit(5),
 
-    // Month revenue from ledger
+    // Month revenue from ledger (all non-refund, non-tip entry types)
     db
       .from('ledger_entries')
       .select('amount_cents')
       .eq('tenant_id', tenantId)
-      .eq('entry_type', 'payment')
+      .eq('is_refund', false)
+      .not('entry_type', 'eq', 'tip')
       .gte('created_at', monthStart),
 
     // Pending quotes
@@ -518,12 +529,13 @@ async function loadDetailedContext(db: any, tenantId: string) {
       .order('created_at', { ascending: false })
       .limit(5),
 
-    // Year revenue (ledger payments YTD)
+    // Year revenue (all non-refund, non-tip ledger entries YTD)
     db
       .from('ledger_entries')
       .select('amount_cents, client_id')
       .eq('tenant_id', tenantId)
-      .eq('entry_type', 'payment')
+      .eq('is_refund', false)
+      .not('entry_type', 'eq', 'tip')
       .gte('created_at', yearStart),
 
     // Year expenses
@@ -616,13 +628,14 @@ async function loadDetailedContext(db: any, tenantId: string) {
       .order('event_date', { ascending: true })
       .limit(500),
 
-    // Monthly revenue distribution - ledger payments from past 12 months
+    // Monthly revenue distribution - all revenue entries from past 12 months
     // Used to identify busy/slow months for revenue pattern awareness
     db
       .from('ledger_entries')
       .select('amount_cents, created_at')
       .eq('tenant_id', tenantId)
-      .eq('entry_type', 'payment')
+      .eq('is_refund', false)
+      .not('entry_type', 'eq', 'tip')
       .gte('created_at', new Date(now.getFullYear() - 1, now.getMonth(), 1).toISOString()),
 
     // Upcoming payment deadlines (due within 7 days, not yet overdue)

@@ -2,11 +2,17 @@
 
 /**
  * DataFlowSchematic - pure React/SVG inline diagram.
- * Shows the cloud AI processing flow: Chef → ChefFlow Cloud AI → Chef.
+ * Shows the private AI processing flow: Chef → ChefFlow Private AI → Chef.
  * Conversation content is not stored server-side.
  */
 
 import { Check, X, Shield, Server } from '@/components/ui/icons'
+import {
+  SCHEMATIC_SUBTITLE,
+  SCHEMATIC_BOUNDARY,
+  SCHEMATIC_NODE,
+  SCHEMATIC_SUBTEXT,
+} from '@/lib/ai/privacy-narrative'
 
 export function DataFlowSchematic() {
   return (
@@ -14,9 +20,7 @@ export function DataFlowSchematic() {
       {/* Title */}
       <div className="text-center">
         <h2 className="text-xl font-bold text-stone-100">How Remy Processes Your Data</h2>
-        <p className="text-sm text-stone-500 mt-1">
-          Remy uses secure cloud AI. Here is how your data flows.
-        </p>
+        <p className="text-sm text-stone-500 mt-1">{SCHEMATIC_SUBTITLE}</p>
       </div>
 
       {/* ─── Private Loop Diagram ────────────────────────────── */}
@@ -28,7 +32,7 @@ export function DataFlowSchematic() {
           <div>
             <h3 className="font-semibold text-emerald-900">Remy Conversations</h3>
             <p className="text-xs text-emerald-600">
-              Cloud AI processing. Conversation content not stored.
+              Private AI processing. Conversation content not stored.
             </p>
           </div>
         </div>
@@ -37,7 +41,7 @@ export function DataFlowSchematic() {
           <svg
             viewBox="0 0 400 200"
             className="w-full"
-            aria-label="Diagram showing Remy conversations processed by ChefFlow cloud AI"
+            aria-label="Diagram showing Remy conversations processed by ChefFlow private AI"
           >
             {/* ChefFlow boundary */}
             <rect
@@ -57,7 +61,7 @@ export function DataFlowSchematic() {
               textAnchor="middle"
               className="fill-emerald-800 text-xs-tight font-semibold"
             >
-              ChefFlow + Secure Cloud AI
+              ChefFlow + Private AI
             </text>
 
             {/* You → box */}
@@ -138,10 +142,10 @@ export function DataFlowSchematic() {
               textAnchor="middle"
               className="fill-emerald-800 text-xs-tight font-semibold"
             >
-              Remy (Cloud AI)
+              Remy (Private AI)
             </text>
             <text x="235" y="81" textAnchor="middle" className="fill-emerald-600 text-3xs">
-              Secure cloud runtime
+              ChefFlow&apos;s own infrastructure
             </text>
 
             {/* Conversation storage label */}
@@ -255,7 +259,7 @@ export function DataFlowSchematic() {
                 &#x2713;
               </text>
               <text x="22" y="12" className="fill-emerald-800 text-2xs">
-                AI uses secure cloud processing
+                AI runs on ChefFlow&apos;s private infrastructure
               </text>
             </g>
             <g transform="translate(15, 165)">

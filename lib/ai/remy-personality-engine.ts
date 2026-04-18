@@ -495,6 +495,39 @@ export async function getCuratedGreeting(
       return null
     }
 
+    // 1b. Chef wizard awareness - acknowledge setup completion or encourage mid-setup
+    try {
+      const wizardRow = await db
+        .from('chefs')
+        .select('onboarding_completed_at')
+        .eq('id', chefId)
+        .limit(1)
+      const wizardCompleted = wizardRow.data?.[0]?.onboarding_completed_at
+      if (wizardCompleted) {
+        const completedAt = new Date(wizardCompleted as string)
+        const hoursSinceCompletion = (Date.now() - completedAt.getTime()) / (1000 * 60 * 60)
+        // Within 2 hours of wizard completion, celebrate it once
+        if (hoursSinceCompletion < 2) {
+          const celebrated = await db
+            .from('remy_milestones')
+            .select('id')
+            .eq('chef_id', chefId)
+            .eq('milestone_key', 'wizard_completed')
+            .limit(1)
+          if (!celebrated.data?.length) {
+            markMilestoneCelebrated(chefId, 'wizard_completed', {}).catch(() => {})
+            return {
+              isCurated: true,
+              text: `Welcome aboard, ${chefName}! Your workspace is all set up. I'm Remy, your AI assistant. Ask me anything about managing your business, or just say hi.`,
+              quickReplies: ['What can you help with?', 'Show me around'],
+            }
+          }
+        }
+      }
+    } catch {
+      // Non-critical: wizard awareness is best-effort
+    }
+
     // 2. Uncelebrated milestones (only for onboarded users, one at a time)
     if (onboarding.stage === 'onboarded') {
       const [milestone, anniversary] = await Promise.all([

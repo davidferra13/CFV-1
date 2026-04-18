@@ -250,7 +250,10 @@ export async function completeOnboardingWizard() {
 
   const { error } = await db
     .from('chefs')
-    .update({ onboarding_completed_at: new Date().toISOString() })
+    .update({
+      onboarding_completed_at: new Date().toISOString(),
+      onboarding_banner_dismissed_at: new Date().toISOString(),
+    })
     .eq('id', user.entityId)
 
   if (error) {
@@ -556,7 +559,26 @@ async function persistProfileData(db: any, tenantId: string, data: Record<string
     if (error) console.error('[onboarding] Failed to upsert chef_marketplace_profiles', error)
   }
 
-  // 4. Set network_discoverable in chef_preferences
+  // 4. Persist service_area to community_profiles (freeform text, e.g. "Greater Boston area")
+  if (serviceArea && serviceArea.trim()) {
+    try {
+      const { error } = await db
+        .from('community_profiles')
+        .upsert(
+          {
+            chef_id: tenantId,
+            display_name: businessName || 'Chef',
+            service_area: serviceArea.trim(),
+          },
+          { onConflict: 'chef_id' }
+        )
+      if (error) console.error('[onboarding] Failed to persist service_area', error)
+    } catch (err) {
+      console.error('[non-blocking] Service area persistence failed', err)
+    }
+  }
+
+  // 5. Set network_discoverable in chef_preferences
   if (typeof isPublic === 'boolean') {
     const { error } = await db
       .from('chef_preferences')

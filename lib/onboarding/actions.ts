@@ -97,6 +97,20 @@ export async function createOnboardingEvent(input: {
       return { success: false, error: 'Failed to create event' }
     }
 
+    // Log initial state transition (consistent with createEvent in events/actions.ts)
+    try {
+      await db.from('event_state_transitions').insert({
+        tenant_id: user.tenantId!,
+        event_id: event.id,
+        from_status: null,
+        to_status: 'draft',
+        transitioned_by: user.id,
+        metadata: { action: 'onboarding_event_created' },
+      })
+    } catch {
+      // Non-blocking: transition log failure doesn't block event creation
+    }
+
     return { success: true, eventId: event.id }
   } catch (err) {
     return {

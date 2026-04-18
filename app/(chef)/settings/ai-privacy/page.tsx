@@ -142,9 +142,10 @@ export default function AiPrivacyPage() {
         </div>
         <div className="text-sm text-stone-300 space-y-3 leading-relaxed">
           <p>
-            Remy uses secure cloud AI infrastructure to process your requests and generate
-            responses. When you talk to Remy, your message is sent to the AI runtime, processed, and
-            the response is returned to you.
+            Remy runs on ChefFlow&apos;s own private AI infrastructure to process your requests and
+            generate responses. When you talk to Remy, your message is processed by ChefFlow&apos;s
+            AI runtime, not by third-party services like OpenAI or Google. The response is returned
+            directly to you.
           </p>
           <p>
             We do not store conversation content on our servers. Your conversation history lives in

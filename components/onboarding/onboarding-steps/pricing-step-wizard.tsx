@@ -14,10 +14,13 @@ type ExistingPricingData = {
   packages: PackageDeal[]
 }
 
+import type { StepCopy } from '@/lib/onboarding/archetype-copy'
+
 type PricingStepWizardProps = {
   onComplete: (data: Record<string, unknown>) => void
   onSkip: () => void
   existingData?: ExistingPricingData
+  copy?: StepCopy
 }
 
 // Shared input class for currency fields (no left padding needed; $ is a sibling element).
@@ -68,7 +71,12 @@ function CurrencyInput({
   )
 }
 
-export function PricingStepWizard({ onComplete, onSkip, existingData }: PricingStepWizardProps) {
+export function PricingStepWizard({
+  onComplete,
+  onSkip,
+  existingData,
+  copy,
+}: PricingStepWizardProps) {
   const [hourlyRate, setHourlyRate] = useState(existingData?.hourlyRate ?? '')
   const [perGuestRate, setPerGuestRate] = useState(existingData?.perGuestRate ?? '')
   const [minimumBooking, setMinimumBooking] = useState(existingData?.minimumBooking ?? '')
@@ -125,29 +133,31 @@ export function PricingStepWizard({ onComplete, onSkip, existingData }: PricingS
       </div>
 
       <div className="space-y-4">
-        {/* Hourly Rate */}
-        <div>
-          <label htmlFor="hourlyRate" className="block text-sm font-medium text-foreground">
-            Hourly Rate
-          </label>
-          <CurrencyInput id="hourlyRate" value={hourlyRate} onChange={setHourlyRate} />
-        </div>
+        {/* Hourly Rate (hidden when archetype sets hourlyLabel to null) */}
+        {copy?.hourlyLabel !== null && (
+          <div>
+            <label htmlFor="hourlyRate" className="block text-sm font-medium text-foreground">
+              {copy?.hourlyLabel || 'Hourly Rate'}
+            </label>
+            <CurrencyInput id="hourlyRate" value={hourlyRate} onChange={setHourlyRate} />
+          </div>
+        )}
 
-        {/* Per-Guest Rate */}
+        {/* Per-Guest / Per-Person / Per-Meal Rate */}
         <div>
           <label htmlFor="perGuestRate" className="block text-sm font-medium text-foreground">
-            Per-Guest Rate
+            {copy?.rateLabel || 'Per-Guest Rate'}
           </label>
           <CurrencyInput id="perGuestRate" value={perGuestRate} onChange={setPerGuestRate} />
           <p className="mt-1 text-xs text-muted-foreground">
-            Price per person for a standard dinner
+            {copy?.rateHint || 'Price per person'}
           </p>
         </div>
 
         {/* Minimum Booking */}
         <div>
           <label htmlFor="minimumBooking" className="block text-sm font-medium text-foreground">
-            Minimum Booking Amount
+            {copy?.minimumLabel || 'Minimum Booking Amount'}
           </label>
           <CurrencyInput id="minimumBooking" value={minimumBooking} onChange={setMinimumBooking} />
         </div>

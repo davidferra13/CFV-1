@@ -92,6 +92,44 @@ async function checkMissingGroceryList(db: any, tenantId: string): Promise<Alert
   return alerts
 }
 
+async function checkOverdueInstallments(db: any, tenantId: string): Promise<AlertCandidate[]> {
+  const alerts: AlertCandidate[] = []
+  const today = new Date().toISOString().slice(0, 10)
+
+  const { data: installments, error } = await db
+    .from('payment_plan_installments')
+    .select(
+      'id, due_date, amount_cents, paid, event_id, events(occasion, client_id, clients(full_name))'
+    )
+    .eq('tenant_id', tenantId)
+    .eq('paid', false)
+    .lt('due_date', today)
+    .limit(5)
+
+  if (error) throw error
+
+  for (const inst of installments ?? []) {
+    const daysOverdue = Math.floor(
+      (Date.now() - new Date(inst.due_date).getTime()) / (1000 * 60 * 60 * 24)
+    )
+    const amount = ((inst.amount_cents ?? 0) / 100).toLocaleString('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    })
+    const clientName = inst.events?.clients?.full_name ?? 'Client'
+    const occasion = inst.events?.occasion ?? 'Event'
+    alerts.push({
+      alertType: 'overdue_installment',
+      entityType: 'payment_plan_installment',
+      entityId: inst.id,
+      title: `${clientName} installment ${daysOverdue}d overdue`,
+      body: `${amount} installment for "${occasion}" was due ${inst.due_date} (${daysOverdue} days ago).`,
+      priority: daysOverdue >= 7 ? 'urgent' : 'high',
+    })
+  }
+  return alerts
+}
+
 async function checkOverdueInvoices(db: any, tenantId: string): Promise<AlertCandidate[]> {
   const alerts: AlertCandidate[] = []
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
@@ -400,6 +438,81 @@ async function isDuplicate(
   return (count ?? 0) > 0
 }
 
+// Detect events stuck in pre-completion states too long.
+// Stuck = no status change within reasonable timeframes per state.
+async function checkStuckEvents(db: any, tenantId: string): Promise<AlertCandidate[]> {
+  const alerts: AlertCandidate[] = []
+  const now = new Date()
+  const _li = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+
+  // Events proposed > 5 days ago with no response
+  const fiveDaysAgo = _li(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 5))
+  const { data: stuckProposed } = await db
+    .from('events')
+    .select('id, occasion, event_date, client:clients(full_name)')
+    .eq('tenant_id', tenantId)
+    .eq('status', 'proposed')
+    .lte('updated_at', `${fiveDaysAgo}T23:59:59Z`)
+    .limit(5)
+
+  for (const e of stuckProposed ?? []) {
+    const clientName = (e.client as any)?.full_name ?? 'client'
+    alerts.push({
+      alertType: 'stuck_event_proposed',
+      entityType: 'event',
+      entityId: e.id,
+      title: `Proposal awaiting response`,
+      body: `"${e.occasion ?? 'Event'}" for ${clientName} has been proposed for 5+ days with no response. Consider following up.`,
+      priority: 'normal',
+    })
+  }
+
+  // Events accepted > 7 days ago with no payment
+  const sevenDaysAgo = _li(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7))
+  const { data: stuckAccepted } = await db
+    .from('events')
+    .select('id, occasion, event_date, client:clients(full_name)')
+    .eq('tenant_id', tenantId)
+    .eq('status', 'accepted')
+    .lte('updated_at', `${sevenDaysAgo}T23:59:59Z`)
+    .limit(5)
+
+  for (const e of stuckAccepted ?? []) {
+    const clientName = (e.client as any)?.full_name ?? 'client'
+    alerts.push({
+      alertType: 'stuck_event_accepted',
+      entityType: 'event',
+      entityId: e.id,
+      title: `Accepted event awaiting payment`,
+      body: `"${e.occasion ?? 'Event'}" for ${clientName} was accepted 7+ days ago but no payment recorded. Send a payment reminder or check in.`,
+      priority: 'high',
+    })
+  }
+
+  // Events paid > 5 days ago but not confirmed (chef needs to confirm)
+  const { data: stuckPaid } = await db
+    .from('events')
+    .select('id, occasion, event_date, client:clients(full_name)')
+    .eq('tenant_id', tenantId)
+    .eq('status', 'paid')
+    .lte('updated_at', `${fiveDaysAgo}T23:59:59Z`)
+    .limit(5)
+
+  for (const e of stuckPaid ?? []) {
+    alerts.push({
+      alertType: 'stuck_event_paid',
+      entityType: 'event',
+      entityId: e.id,
+      title: `Paid event needs confirmation`,
+      body: `"${e.occasion ?? 'Event'}" has been paid for 5+ days but not confirmed. Confirm to trigger prep planning and calendar sync.`,
+      priority: 'high',
+    })
+  }
+
+  return alerts
+}
+
 async function runRuleSafely(
   tenantId: string,
   operation: string,
@@ -432,36 +545,44 @@ export async function runAlertRules(tenantId: string): Promise<number> {
     prepAlerts,
     groceryAlerts,
     overdueAlerts,
+    installmentAlerts,
     staleAlerts,
     paymentAlerts,
     birthdayAlerts,
     weatherAlerts,
     postEventAlerts,
     dormantAlerts,
+    stuckAlerts,
   ] = await Promise.all([
     runRuleSafely(tenantId, 'check_missing_prep_list', () => checkMissingPrepList(db, tenantId)),
     runRuleSafely(tenantId, 'check_missing_grocery_list', () =>
       checkMissingGroceryList(db, tenantId)
     ),
     runRuleSafely(tenantId, 'check_overdue_invoices', () => checkOverdueInvoices(db, tenantId)),
+    runRuleSafely(tenantId, 'check_overdue_installments', () =>
+      checkOverdueInstallments(db, tenantId)
+    ),
     runRuleSafely(tenantId, 'check_stale_inquiries', () => checkStaleInquiries(db, tenantId)),
     runRuleSafely(tenantId, 'check_payment_received', () => checkPaymentReceived(db, tenantId)),
     runRuleSafely(tenantId, 'check_client_birthdays', () => checkClientBirthdays(db, tenantId)),
     runRuleSafely(tenantId, 'check_weather_for_events', () => checkWeatherForEvents(tenantId)),
     runRuleSafely(tenantId, 'check_post_event_capture', () => checkPostEventCapture(db, tenantId)),
     runRuleSafely(tenantId, 'check_dormant_clients', () => checkDormantClients(db, tenantId)),
+    runRuleSafely(tenantId, 'check_stuck_events', () => checkStuckEvents(db, tenantId)),
   ])
 
   const allCandidates = [
     ...prepAlerts,
     ...groceryAlerts,
     ...overdueAlerts,
+    ...installmentAlerts,
     ...staleAlerts,
     ...paymentAlerts,
     ...birthdayAlerts,
     ...weatherAlerts,
     ...postEventAlerts,
     ...dormantAlerts,
+    ...stuckAlerts,
   ]
 
   let inserted = 0

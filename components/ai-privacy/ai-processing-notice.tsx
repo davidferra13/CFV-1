@@ -1,11 +1,14 @@
 'use client'
 
 import { Shield } from '@/components/ui/icons'
+import { NOTICE_COMPACT, NOTICE_FULL, NO_TRAINING, DATA_STORAGE } from '@/lib/ai/privacy-narrative'
 
 /**
  * Shared disclosure component for AI processing.
  * Use this anywhere the app needs to explain how AI features work.
  * Centralized so the disclosure stays consistent and does not drift.
+ *
+ * All text comes from lib/ai/privacy-narrative.ts (single source of truth).
  */
 export function AiProcessingNotice({
   variant = 'compact',
@@ -18,7 +21,7 @@ export function AiProcessingNotice({
     return (
       <p className={`text-xs text-stone-500 flex items-center gap-1 ${className}`}>
         <Shield className="h-3 w-3 shrink-0" />
-        AI features use secure cloud processing.
+        {NOTICE_COMPACT}
       </p>
     )
   }
@@ -32,15 +35,9 @@ export function AiProcessingNotice({
         <p className="text-sm font-medium text-stone-200">How AI processing works</p>
       </div>
       <div className="text-xs text-stone-400 space-y-1.5 leading-relaxed">
+        <p>{NOTICE_FULL}</p>
         <p>
-          ChefFlow uses cloud AI infrastructure for AI-powered features like Remy, recipe parsing,
-          and auto-responses. When you use these features, your inputs are processed by secure
-          third-party AI infrastructure and returned to you.
-        </p>
-        <p>
-          We do not sell your data or use it to train models. Usage metadata (feature used, error
-          counts) is collected for reliability monitoring. Conversation content is not stored on our
-          servers.
+          {NO_TRAINING} {DATA_STORAGE}
         </p>
       </div>
     </div>

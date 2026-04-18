@@ -10,14 +10,20 @@ import {
   dismissOnboardingBanner,
 } from '@/lib/onboarding/onboarding-actions'
 import { getGoogleConnection } from '@/lib/google/auth'
+import { getChefArchetype } from '@/lib/archetypes/actions'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { WIZARD_STEPS } from '@/lib/onboarding/onboarding-constants'
+import { getWizardStepsForArchetype } from '@/lib/onboarding/onboarding-constants'
+import type { ArchetypeId } from '@/lib/archetypes/presets'
+import type { ConfigurationInputs } from '@/lib/onboarding/configuration-inputs'
+import { getStepCopy, getCompletionCopy } from '@/lib/onboarding/archetype-copy'
+import { OnboardingInterview } from './onboarding-interview'
 import { ProfileStep } from './onboarding-steps/profile-step'
 import { PortfolioStep } from './onboarding-steps/portfolio-step'
 import { PricingStepWizard } from './onboarding-steps/pricing-step-wizard'
 import { ConnectGmailStep } from './onboarding-steps/connect-gmail-step'
 import { FirstMenuStep } from './onboarding-steps/first-menu-step'
 import { FirstBookingStep } from './onboarding-steps/first-booking-step'
+import { NetworkStep } from './onboarding-steps/network-step'
 
 type ProgressEntry = {
   step_key: string
@@ -61,15 +67,19 @@ export function OnboardingWizard() {
   const [gmailConnected, setGmailConnected] = useState(false)
   const handledGmailCallbackRef = useRef(false)
 
+  // Archetype state
+  const [archetype, setArchetype] = useState<ArchetypeId | null>(null)
+  const [archetypeLoaded, setArchetypeLoaded] = useState(false)
+
+  // Steps filtered by archetype
+  const filteredSteps = getWizardStepsForArchetype(archetype)
+
   async function handleSkipAll() {
-    // Mark onboarding as dismissed so the layout gate stops redirecting here.
-    // Try both in parallel first; if that fails, try each individually.
     try {
       const [bannerResult, wizardResult] = await Promise.all([
         dismissOnboardingBanner(),
         completeOnboardingWizard(),
       ])
-      // If parallel succeeded but returned errors, try individually
       if (!bannerResult?.success || !wizardResult?.success) {
         if (!bannerResult?.success) {
           await dismissOnboardingBanner().catch(() => {})
@@ -80,24 +90,19 @@ export function OnboardingWizard() {
       }
     } catch (err) {
       console.error('[setup] Parallel skip failed, trying individually', err)
-      // Try each one separately (one may succeed even if the other fails)
       await dismissOnboardingBanner().catch(() => {})
       await completeOnboardingWizard().catch(() => {})
     }
-    // Always navigate regardless of outcome. The fail-open getOnboardingStatus()
-    // and /settings exemption prevent the user from being permanently trapped.
     router.push('/dashboard')
   }
 
   useEffect(() => {
     loadProgress()
     loadExistingData()
-    // Fire-and-forget: check if Gmail is already connected
+    loadArchetype()
     getGoogleConnection()
       .then((status) => setGmailConnected(status.gmail.connected))
-      .catch(() => {
-        /* Non-blocking: default to false */
-      })
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -143,6 +148,19 @@ export function OnboardingWizard() {
     }
   }, [searchParams, router])
 
+  async function loadArchetype() {
+    try {
+      const existing = await getChefArchetype()
+      if (existing) {
+        setArchetype(existing)
+      }
+    } catch (err) {
+      console.error('[setup] Failed to load archetype', err)
+    } finally {
+      setArchetypeLoaded(true)
+    }
+  }
+
   async function loadExistingData() {
     try {
       const data = await getExistingProfileData()
@@ -156,9 +174,8 @@ export function OnboardingWizard() {
     try {
       const data = await getOnboardingProgress()
       setProgress(data as ProgressEntry[])
-      // Find first incomplete step
       const doneKeys = new Set(data.map((p: ProgressEntry) => p.step_key))
-      const firstIncomplete = WIZARD_STEPS.findIndex((s) => !doneKeys.has(s.key))
+      const firstIncomplete = filteredSteps.findIndex((s) => !doneKeys.has(s.key))
       if (firstIncomplete === -1) {
         setIsComplete(true)
       } else {
@@ -169,14 +186,55 @@ export function OnboardingWizard() {
     }
   }
 
+  // Re-sync current step when archetype changes (steps get filtered)
+  useEffect(() => {
+    if (!archetypeLoaded) return
+    const steps = getWizardStepsForArchetype(archetype)
+    const doneKeys = new Set(progress.map((p) => p.step_key))
+    const firstIncomplete = steps.findIndex((s) => !doneKeys.has(s.key))
+    if (firstIncomplete === -1 && steps.length > 0 && doneKeys.size > 0) {
+      setIsComplete(true)
+    } else if (firstIncomplete >= 0) {
+      setCurrentIndex(firstIncomplete)
+    }
+  }, [archetype, archetypeLoaded])
+
+  // Configuration interview state (hints from the engine for downstream steps)
+  const [configHints, setConfigHints] = useState<Record<string, boolean>>({})
+
+  function handleInterviewComplete(inputs: ConfigurationInputs, hints: Record<string, boolean>) {
+    // The interview already called configureWorkspace() which wrote everything to DB.
+    // We just need to update local state and advance.
+    setArchetype(inputs.archetype)
+    setConfigHints(hints)
+
+    // Mark archetype step as complete in local progress
+    setProgress((prev) => [
+      ...prev.filter((p) => p.step_key !== 'archetype'),
+      {
+        step_key: 'archetype',
+        completed_at: new Date().toISOString(),
+        skipped: false,
+        data: inputs as unknown as Record<string, unknown>,
+      },
+    ])
+
+    // Persist to onboarding_progress table (non-blocking)
+    completeStep('archetype', inputs as unknown as Record<string, unknown>).catch((err) => {
+      console.error('[setup] Failed to persist archetype step', err)
+    })
+
+    // Auto-advance past archetype step
+    setCurrentIndex(1)
+  }
+
   function handleComplete(data?: Record<string, unknown>) {
-    const currentStep = WIZARD_STEPS[currentIndex]
+    const currentStep = filteredSteps[currentIndex]
     if (!currentStep) return
 
     const stepKey = currentStep.key
     const previousProgress = [...progress]
 
-    // Optimistic update
     const newEntry: ProgressEntry = {
       step_key: stepKey,
       completed_at: new Date().toISOString(),
@@ -202,7 +260,7 @@ export function OnboardingWizard() {
   }
 
   function handleSkip() {
-    const currentStep = WIZARD_STEPS[currentIndex]
+    const currentStep = filteredSteps[currentIndex]
     if (!currentStep) return
 
     const stepKey = currentStep.key
@@ -216,10 +274,8 @@ export function OnboardingWizard() {
     const updated = [...progress.filter((p) => p.step_key !== stepKey), newEntry]
     setProgress(updated)
 
-    // Always advance immediately so the user is never stuck
     advanceStep()
 
-    // Save to DB in the background (best-effort)
     startTransition(async () => {
       try {
         await skipStep(stepKey)
@@ -230,7 +286,7 @@ export function OnboardingWizard() {
   }
 
   function advanceStep() {
-    if (currentIndex >= WIZARD_STEPS.length - 1) {
+    if (currentIndex >= filteredSteps.length - 1) {
       finishWizard()
     } else {
       setCurrentIndex((i) => i + 1)
@@ -238,9 +294,6 @@ export function OnboardingWizard() {
   }
 
   async function finishWizard() {
-    // Await the DB write before showing the completion screen.
-    // If it fails, retry once. If retry fails, show completion anyway
-    // (the fail-open getOnboardingStatus + /settings exemption prevent trapping).
     let saved = false
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
@@ -264,14 +317,19 @@ export function OnboardingWizard() {
   }
 
   function goToStep(index: number) {
+    // Don't allow navigating back to archetype step once selected
+    if ((filteredSteps[index]?.key as string) === 'archetype' && archetype) return
     setCurrentIndex(index)
     if (isComplete) setIsComplete(false)
   }
 
   const completedCount = progress.filter((p) => p.completed_at).length
-  const percentComplete = Math.round((completedCount / WIZARD_STEPS.length) * 100)
+  const percentComplete = Math.round((completedCount / filteredSteps.length) * 100)
 
+  // ─── Completion Screen ───────────────────────────────────────────
   if (isComplete) {
+    const completion = getCompletionCopy(archetype)
+
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="mx-auto max-w-lg text-center p-8">
@@ -290,14 +348,36 @@ export function OnboardingWizard() {
               />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-foreground">You&apos;re all set!</h1>
-          <p className="mt-3 text-muted-foreground">
-            Your ChefFlow account is ready. Head to your dashboard to start managing your business.
-          </p>
-          <div className="mt-8 flex gap-3 justify-center">
+          <h1 className="text-3xl font-bold text-foreground">{completion.heading}</h1>
+          <p className="mt-3 text-muted-foreground">{completion.subtext}</p>
+          <div className="mt-8 space-y-3">
+            {completion.nextSteps.map((step) => (
+              <a
+                key={step.href}
+                href={step.href}
+                className="flex items-center justify-between rounded-lg border border-border px-4 py-3 text-sm text-foreground hover:bg-muted transition-colors"
+              >
+                <span>{step.label}</span>
+                <svg
+                  className="h-4 w-4 text-muted-foreground"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </a>
+            ))}
+          </div>
+          <div className="mt-6">
             <a
               href="/dashboard"
-              className="rounded-md bg-orange-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-orange-500"
+              className="rounded-md bg-orange-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-orange-500 inline-block"
             >
               Go to Dashboard
             </a>
@@ -307,8 +387,8 @@ export function OnboardingWizard() {
     )
   }
 
-  // Crash guard: if currentStep is undefined, show fallback
-  const currentStep = WIZARD_STEPS[currentIndex]
+  // Crash guard
+  const currentStep = filteredSteps[currentIndex]
   if (!currentStep) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -325,6 +405,14 @@ export function OnboardingWizard() {
     )
   }
 
+  // ─── Configuration Interview (Step 0) ────────────────────────────
+  if ((currentStep.key as string) === 'archetype') {
+    return <OnboardingInterview onComplete={handleInterviewComplete} />
+  }
+
+  // ─── Standard Wizard Steps ───────────────────────────────────────
+  const stepCopy = getStepCopy(currentStep.key, archetype)
+
   return (
     <div className="flex min-h-screen bg-background">
       {/* Sidebar */}
@@ -335,11 +423,16 @@ export function OnboardingWizard() {
         </div>
 
         <nav className="space-y-1">
-          {WIZARD_STEPS.map((step, i) => {
+          {filteredSteps.map((step, i) => {
+            if ((step.key as string) === 'archetype') return null
+
             const entry = progress.find((p) => p.step_key === step.key)
             const isDone = !!entry?.completed_at
             const isSkipped = !!entry?.skipped
             const isCurrent = i === currentIndex
+
+            const displayNum =
+              filteredSteps.slice(0, i).filter((s) => (s.key as string) !== 'archetype').length + 1
 
             return (
               <button
@@ -384,10 +477,12 @@ export function OnboardingWizard() {
                   ) : isSkipped ? (
                     <span className="text-xs">&ndash;</span>
                   ) : (
-                    i + 1
+                    displayNum
                   )}
                 </span>
-                <span className="truncate">{step.title}</span>
+                <span className="truncate">
+                  {step.key === currentStep.key && stepCopy.title ? stepCopy.title : step.title}
+                </span>
               </button>
             )
           })}
@@ -396,7 +491,6 @@ export function OnboardingWizard() {
 
       {/* Main content */}
       <div className="flex-1">
-        {/* Redirect reason banner - shown when layout gate redirected user here */}
         {searchParams?.get('reason') === 'setup_required' && (
           <div className="bg-blue-50 dark:bg-blue-950/30 border-b border-blue-200 dark:border-blue-800 px-6 py-3 text-sm text-blue-800 dark:text-blue-300">
             Complete your profile setup (or skip it) to access ChefFlow.
@@ -407,7 +501,10 @@ export function OnboardingWizard() {
         <div className="border-b border-border bg-card/60 backdrop-blur-sm px-6 py-3">
           <div className="flex items-center justify-between text-sm text-muted-foreground mb-1.5">
             <span>
-              Step {currentIndex + 1} of {WIZARD_STEPS.length}
+              Step{' '}
+              {filteredSteps.slice(0, currentIndex).filter((s) => (s.key as string) !== 'archetype')
+                .length + 1}{' '}
+              of {filteredSteps.filter((s) => (s.key as string) !== 'archetype').length}
             </span>
             <div className="flex items-center gap-4">
               <span>{percentComplete}% complete</span>
@@ -430,58 +527,61 @@ export function OnboardingWizard() {
 
         {/* Step content */}
         <div className="mx-auto max-w-2xl px-4 sm:px-6 py-8 sm:py-10">
-          {/* Mobile step indicator - compact horizontal dots with labels */}
+          {/* Mobile step indicator */}
           <div className="mb-6 lg:hidden">
             <div className="flex items-center justify-center gap-1.5 mb-2">
-              {WIZARD_STEPS.map((step, i) => {
-                const entry = progress.find((p) => p.step_key === step.key)
-                const isDone = !!entry?.completed_at
-                const isSkipped = !!entry?.skipped
-                const isCurrent = i === currentIndex
+              {filteredSteps
+                .filter((s) => (s.key as string) !== 'archetype')
+                .map((step, i) => {
+                  const entry = progress.find((p) => p.step_key === step.key)
+                  const isDone = !!entry?.completed_at
+                  const isSkipped = !!entry?.skipped
+                  const actualIndex = filteredSteps.indexOf(step)
+                  const isCurrent = actualIndex === currentIndex
 
-                return (
-                  <button
-                    key={step.key}
-                    type="button"
-                    onClick={() => goToStep(i)}
-                    className={`flex items-center justify-center h-7 w-7 rounded-full text-xs font-medium transition-colors ${
-                      isCurrent
-                        ? 'bg-orange-600 text-white'
-                        : isDone
-                          ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400'
-                          : isSkipped
-                            ? 'bg-muted text-muted-foreground'
-                            : 'bg-muted text-muted-foreground'
-                    }`}
-                    aria-label={`${step.title}${isDone ? ' (done)' : isSkipped ? ' (skipped)' : ''}`}
-                  >
-                    {isDone ? (
-                      <svg
-                        className="h-3.5 w-3.5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                    ) : (
-                      i + 1
-                    )}
-                  </button>
-                )
-              })}
+                  return (
+                    <button
+                      key={step.key}
+                      type="button"
+                      onClick={() => goToStep(actualIndex)}
+                      className={`flex items-center justify-center h-7 w-7 rounded-full text-xs font-medium transition-colors ${
+                        isCurrent
+                          ? 'bg-orange-600 text-white'
+                          : isDone
+                            ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400'
+                            : isSkipped
+                              ? 'bg-muted text-muted-foreground'
+                              : 'bg-muted text-muted-foreground'
+                      }`}
+                      aria-label={`${step.title}${isDone ? ' (done)' : isSkipped ? ' (skipped)' : ''}`}
+                    >
+                      {isDone ? (
+                        <svg
+                          className="h-3.5 w-3.5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      ) : (
+                        i + 1
+                      )}
+                    </button>
+                  )
+                })}
             </div>
             <p className="text-xs text-muted-foreground text-center uppercase tracking-wide">
-              {currentStep.title}
+              {stepCopy.title || currentStep.title}
             </p>
           </div>
 
-          {/* Back button */}
+          {/* Back button (archetype step already returned above, so currentStep is never archetype here) */}
           {currentIndex > 0 && (
             <button
               type="button"
@@ -513,13 +613,14 @@ export function OnboardingWizard() {
             <PortfolioStep onComplete={handleComplete} onSkip={handleSkip} />
           )}
           {currentStep.key === 'first_menu' && (
-            <FirstMenuStep onComplete={handleComplete} onSkip={handleSkip} />
+            <FirstMenuStep onComplete={handleComplete} onSkip={handleSkip} copy={stepCopy} />
           )}
           {currentStep.key === 'pricing' && (
             <PricingStepWizard
               onComplete={handleComplete}
               onSkip={handleSkip}
               existingData={existingData?.pricing ?? undefined}
+              copy={stepCopy}
             />
           )}
           {currentStep.key === 'connect_gmail' && (
@@ -531,7 +632,10 @@ export function OnboardingWizard() {
             />
           )}
           {currentStep.key === 'first_event' && (
-            <FirstBookingStep onComplete={handleComplete} onSkip={handleSkip} />
+            <FirstBookingStep onComplete={handleComplete} onSkip={handleSkip} copy={stepCopy} />
+          )}
+          {currentStep.key === 'chef_network' && (
+            <NetworkStep onComplete={handleComplete} onSkip={handleSkip} />
           )}
         </div>
       </div>

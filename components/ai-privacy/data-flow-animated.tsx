@@ -10,6 +10,12 @@
  */
 
 import { Check, X, AlertTriangle, Shield } from '@/components/ui/icons'
+import {
+  FLOW_CHEFFLOW_LABEL,
+  FLOW_CHEFFLOW_AI_LABEL,
+  FLOW_CHEFFLOW_BADGE,
+  FLOW_BULLETS,
+} from '@/lib/ai/privacy-narrative'
 
 export function DataFlowAnimated() {
   return (
@@ -77,7 +83,7 @@ export function DataFlowAnimated() {
             </div>
             <div>
               <div className="text-sm font-semibold text-emerald-900">ChefFlow + Remy</div>
-              <div className="text-xs-tight text-emerald-600">Data never leaves ChefFlow</div>
+              <div className="text-xs-tight text-emerald-600">{FLOW_CHEFFLOW_LABEL}</div>
             </div>
           </div>
 
@@ -95,27 +101,21 @@ export function DataFlowAnimated() {
                 <div className="text-emerald-400 text-xs">⇄</div>
                 <div className="rounded-md border border-emerald-300 bg-emerald-900 px-3 py-1.5 text-center">
                   <div className="text-xs font-semibold text-emerald-900">Remy (AI)</div>
-                  <div className="text-xxs text-emerald-600">Private servers</div>
+                  <div className="text-xxs text-emerald-600">{FLOW_CHEFFLOW_AI_LABEL}</div>
                 </div>
               </div>
             </div>
             <div className="rounded-md border border-emerald-300 bg-emerald-200 px-3 py-1.5 text-center mt-1">
               <div className="flex items-center gap-1 justify-center">
                 <Shield className="h-3 w-3 text-emerald-700" />
-                <span className="text-xxs font-bold text-emerald-800">
-                  No Third-Party AI Services
-                </span>
+                <span className="text-xxs font-bold text-emerald-800">{FLOW_CHEFFLOW_BADGE}</span>
               </div>
             </div>
           </div>
 
           {/* Bullet points */}
           <div className="space-y-2 pt-1">
-            {[
-              "AI runs on ChefFlow's own servers",
-              'Zero data sent to any company',
-              "Delete anytime - it's truly gone",
-            ].map((text) => (
+            {FLOW_BULLETS.map((text) => (
               <div key={text} className="flex items-start gap-2">
                 <Check className="h-3.5 w-3.5 text-emerald-500 mt-0.5 shrink-0" />
                 <span className="text-xs text-emerald-800">{text}</span>

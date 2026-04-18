@@ -6,13 +6,15 @@
 
 import { useState, useTransition } from 'react'
 import { createMenuWithCourses } from '@/lib/menus/actions'
+import type { StepCopy } from '@/lib/onboarding/archetype-copy'
 
 interface FirstMenuStepProps {
   onComplete: (data?: Record<string, unknown>) => void
   onSkip: () => void
+  copy?: StepCopy
 }
 
-export function FirstMenuStep({ onComplete, onSkip }: FirstMenuStepProps) {
+export function FirstMenuStep({ onComplete, onSkip, copy }: FirstMenuStepProps) {
   const [menuName, setMenuName] = useState('')
   const [dishes, setDishes] = useState<string[]>(['', '', ''])
   const [error, setError] = useState<string | null>(null)
@@ -73,10 +75,12 @@ export function FirstMenuStep({ onComplete, onSkip }: FirstMenuStepProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-foreground">Your first menu</h2>
+        <h2 className="text-xl font-semibold text-foreground">
+          {copy?.title || 'Your first menu'}
+        </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Type in a menu name and a few dishes. You can edit everything later, add recipes, set
-          pricing, and build out full courses. For now, just get something on the board.
+          {copy?.description ||
+            'Type in a menu name and a few dishes. You can edit everything later, add recipes, set pricing, and build out full courses. For now, get something on the board.'}
         </p>
       </div>
 
@@ -90,7 +94,11 @@ export function FirstMenuStep({ onComplete, onSkip }: FirstMenuStepProps) {
           type="text"
           value={menuName}
           onChange={(e) => setMenuName(e.target.value)}
-          placeholder="e.g. Summer Tasting Menu, Date Night, Holiday Dinner"
+          placeholder={
+            copy?.placeholder
+              ? `e.g. ${copy.placeholder}`
+              : 'e.g. Summer Tasting Menu, Date Night, Holiday Dinner'
+          }
           className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
       </div>

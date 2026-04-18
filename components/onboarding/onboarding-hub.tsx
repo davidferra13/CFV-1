@@ -14,6 +14,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import type { OnboardingProgress } from '@/lib/onboarding/progress-actions'
+import type { ArchetypeId } from '@/lib/archetypes/presets'
 
 type Phase = {
   key: keyof Omit<OnboardingProgress, 'completedPhases' | 'totalPhases'>
@@ -24,6 +25,10 @@ type Phase = {
   ctaLabel: string
   doneSummary: (progress: OnboardingProgress) => string
   optional?: boolean
+  /** Which archetypes see this phase. Undefined = all. */
+  archetypes?: ArchetypeId[]
+  /** Tour target ID for spotlight system (FC-G3) */
+  tourId?: string
 }
 
 const PHASES: Phase[] = [
@@ -44,6 +49,7 @@ const PHASES: Phase[] = [
     icon: Users,
     href: '/onboarding/clients',
     ctaLabel: 'Import Clients',
+    tourId: 'chef-import-clients',
     doneSummary: (p) =>
       p.clients.count === 1 ? '1 client imported' : `${p.clients.count} clients imported`,
   },
@@ -55,6 +61,7 @@ const PHASES: Phase[] = [
     icon: Star,
     href: '/onboarding/loyalty',
     ctaLabel: 'Set Up Loyalty',
+    tourId: 'chef-setup-loyalty',
     doneSummary: () => 'Loyalty program configured',
   },
   {
@@ -65,6 +72,7 @@ const PHASES: Phase[] = [
     icon: BookOpen,
     href: '/onboarding/recipes',
     ctaLabel: 'Add Recipes',
+    tourId: 'chef-add-recipes',
     doneSummary: (p) =>
       p.recipes.count === 1 ? '1 recipe added' : `${p.recipes.count} recipes added`,
   },
@@ -76,20 +84,43 @@ const PHASES: Phase[] = [
     icon: Users2,
     href: '/onboarding/staff',
     ctaLabel: 'Add Staff',
+    tourId: 'chef-setup-staff',
     doneSummary: (p) =>
       p.staff.count === 1 ? '1 staff member added' : `${p.staff.count} staff members added`,
     optional: true,
+    archetypes: ['caterer', 'restaurant'],
   },
 ]
 
-export function OnboardingHub({ progress }: { progress: OnboardingProgress }) {
-  const pct = Math.round((progress.completedPhases / progress.totalPhases) * 100)
+export function OnboardingHub({
+  progress,
+  archetype,
+}: {
+  progress: OnboardingProgress
+  archetype?: ArchetypeId | null
+}) {
+  // Filter phases by archetype
+  const visiblePhases = PHASES.filter((phase) => {
+    if (!phase.archetypes) return true
+    if (!archetype) return true
+    return phase.archetypes.includes(archetype)
+  })
+
+  const visibleCompleted = visiblePhases.filter((phase) => {
+    const val = progress[phase.key as keyof OnboardingProgress]
+    if (typeof val === 'boolean') return val
+    if (typeof val === 'object' && val !== null && 'done' in val)
+      return (val as { done: boolean }).done
+    return false
+  }).length
+
+  const pct = Math.round((visibleCompleted / visiblePhases.length) * 100)
 
   return (
     <div className="min-h-screen bg-stone-800">
       <div className="max-w-3xl mx-auto px-4 py-12 space-y-8">
         {/* Header */}
-        <div>
+        <div data-tour="chef-onboarding-home">
           <h1 className="text-3xl font-bold text-stone-100">Set Up Your Business</h1>
           <p className="text-stone-300 mt-2">
             Migrate your existing clients, recipes, and loyalty program so ChefFlow knows your
@@ -101,7 +132,7 @@ export function OnboardingHub({ progress }: { progress: OnboardingProgress }) {
         <div>
           <div className="flex justify-between text-sm text-stone-300 mb-2">
             <span>
-              {progress.completedPhases} of {progress.totalPhases} phases complete
+              {visibleCompleted} of {visiblePhases.length} phases complete
             </span>
             <span>{pct}%</span>
           </div>
@@ -115,7 +146,7 @@ export function OnboardingHub({ progress }: { progress: OnboardingProgress }) {
 
         {/* Phase cards */}
         <div className="space-y-4">
-          {PHASES.map((phase) => {
+          {visiblePhases.map((phase) => {
             const isDone =
               phase.key === 'profile'
                 ? progress.profile
@@ -133,6 +164,7 @@ export function OnboardingHub({ progress }: { progress: OnboardingProgress }) {
               <Card
                 key={phase.key}
                 className={isDone ? 'border-green-200 bg-green-950' : 'bg-stone-900'}
+                {...(phase.tourId ? { 'data-tour': phase.tourId } : {})}
               >
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-3 text-base font-semibold">

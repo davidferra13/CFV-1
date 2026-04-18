@@ -75,6 +75,8 @@ const RemyConversationalSchema = z.object({
 
 const NAV_ROUTE_MAP = `
 AVAILABLE PAGES (suggest these when relevant):
+
+CORE WORKFLOW:
 /dashboard - Dashboard overview
 /events - All events list
 /events/new - Create a new event
@@ -83,31 +85,95 @@ AVAILABLE PAGES (suggest these when relevant):
 /clients - Client directory
 /clients/new - Add a new client
 /inquiries - Inquiry pipeline
-/quotes - Quotes
+/quotes - Quotes list
+/quotes/new - Create a new quote
 /schedule - Calendar / availability
 /calendar - Calendar views
+/calendar/week - Weekly calendar
+/calendar/day - Daily calendar
+
+CULINARY:
 /recipes - Recipe library
 /recipes/new - Create a new recipe
 /menus - Menu library
 /menus/new - Create a new menu
-/financials - Financial hub
+/culinary - Culinary hub
+/culinary/prep/timeline - Prep timeline
+/culinary/prep/shopping - Shopping list
+/culinary/ingredients - Ingredient library
+/culinary/price-catalog - Price catalog
+/culinary/vendors - Vendor directory
+/culinary/substitutions - Substitution lookup
+/culinary/costing - Food costing tools
+/culinary/costing/recipe - Recipe cost breakdown
+/culinary/menus/engineering - Menu engineering
+/culinary/my-kitchen - My kitchen setup
+
+FINANCE:
+/finance - Finance hub
+/finance/overview - Financial overview
+/finance/invoices - Invoices
+/finance/payments - Payment tracking
+/finance/ledger - Ledger / transaction log
+/finance/expenses - Expense categories
+/finance/reporting - Financial reports
+/finance/reporting/profit-loss - Profit & loss
+/finance/tax - Tax tools
 /expenses - Expense tracker
 /expenses/new - Add an expense
+/financials - Financial summary
+
+CLIENTS:
+/clients/loyalty - Client loyalty overview
+/clients/preferences - Client dietary preferences
+/clients/communication - Client communication hub
+/clients/insights - Client insights
+/clients/segments - Client segments
+/clients/vip - VIP clients
 /chat - Client messaging
+
+STAFF & OPS:
 /staff - Staff management
-/settings - Account settings
-/settings/my-profile - Edit profile
-/settings/integrations - Integrations
-/settings/automations - Automation settings
-/aar - After-action reviews
-/reviews - Client reviews
-/analytics - Analytics & reports
+/staff/schedule - Staff scheduling
+/staff/availability - Staff availability
+/tasks - Task management
+/inventory - Inventory management
+/operations/equipment - Equipment tracker
+
+MARKETING & GROWTH:
+/marketing - Marketing campaigns
 /proposals - Proposal templates
 /loyalty - Loyalty program
+/partners - Referral partners
+/leads - Lead pipeline
+/reviews - Client reviews
+/testimonials - Testimonials
+
+ANALYTICS & REPORTS:
+/analytics - Analytics hub
+/analytics/pipeline - Pipeline analytics
+/analytics/demand - Demand forecast
+/aar - After-action reviews
 /goals - Business goals
-/remy - Remy history (everything Remy has saved)
+/insights - Business insights
+
+SETTINGS:
+/settings - Account settings
+/settings/my-profile - Edit profile
+/settings/billing - Subscription & billing
+/settings/integrations - Integrations
+/settings/automations - Automation settings
+/settings/notifications - Notification preferences
+/settings/embed - Embeddable widget setup
+/settings/contracts - Contract templates
+/settings/remy - Remy AI settings
+/settings/stripe-connect - Stripe Connect setup
+
+COMMUNITY:
 /circles - Your circles (dinner + community)
-/hub/circles - Browse community circles (topic-based groups anyone can join)
+/hub/circles - Browse community circles
+/network - Chef network
+/remy - Remy history
 `.trim()
 
 // Scoped route map for Focus Mode - only core workflows

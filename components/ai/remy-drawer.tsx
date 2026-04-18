@@ -59,6 +59,7 @@ import { getRemyCuratedGreeting, advanceRemyTour } from '@/lib/ai/remy-personali
 // ─── Extracted modules ───────────────────────────────────────────────────────
 import { getStartersForPage, getThinkingMessage } from '@/lib/ai/remy-starters'
 import { markdownComponents } from '@/lib/ai/remy-markdown-config'
+import { SPEED_TRADEOFF, REMY_LIMITED_MODE } from '@/lib/ai/privacy-narrative'
 import { useVoiceInput } from '@/lib/hooks/use-voice-input'
 import {
   useMessageActions,
@@ -1076,10 +1077,7 @@ export function RemyDrawer() {
                 {!ollamaOnline && (
                   <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200">
                     <VolumeX className="h-3.5 w-3.5 text-amber-400 shrink-0" />
-                    <span>
-                      <strong>Limited mode</strong> - Ollama is offline. I can still answer common
-                      questions instantly, but complex queries need Ollama running.
-                    </span>
+                    <span>{REMY_LIMITED_MODE}</span>
                   </div>
                 )}
 
@@ -1510,9 +1508,7 @@ export function RemyDrawer() {
                       <Globe className="h-3 w-3" />
                       Remy can make mistakes. Please double-check important info.
                     </p>
-                    <p className="text-xxs text-stone-500 italic">
-                      AI features use secure cloud processing.
-                    </p>
+                    <p className="text-xxs text-stone-500 italic">{SPEED_TRADEOFF}</p>
                   </div>
                   <span
                     className={`text-xxs tabular-nums ${input.length >= 1800 ? (input.length >= 2000 ? 'text-red-500 font-medium' : 'text-amber-500') : 'text-stone-400'}`}

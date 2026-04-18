@@ -77,6 +77,8 @@ export type SeedDemoDataResult = {
   clientsCreated: number
   eventsCreated: number
   inquiriesCreated: number
+  recipesCreated?: number
+  menusCreated?: number
   error?: string
 }
 

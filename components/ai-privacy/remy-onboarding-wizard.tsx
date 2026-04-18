@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/icons'
 import { DataFlowAnimated } from './data-flow-animated'
 import { completeOnboarding } from '@/lib/ai/privacy-actions'
+import { ONBOARDING_HOW_IT_WORKS, ONBOARDING_RECAP_PRIVATE } from '@/lib/ai/privacy-narrative'
 
 type OnboardingStep = {
   id: string
@@ -153,8 +154,8 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                 {[
                   {
                     icon: <HardDrive className="h-5 w-5 text-brand-500" />,
-                    title: 'Cloud AI',
-                    desc: 'Remy uses secure cloud AI infrastructure. Your inputs are processed to generate responses and are not stored on our servers.',
+                    title: 'Private AI',
+                    desc: ONBOARDING_HOW_IT_WORKS,
                   },
                   {
                     icon: <Lock className="h-5 w-5 text-brand-500" />,
@@ -337,7 +338,7 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
               <div className="rounded-xl border border-emerald-200 bg-emerald-950/50 p-5 space-y-3">
                 <h3 className="font-semibold text-emerald-900">Quick recap:</h3>
                 {[
-                  'Remy runs on ChefFlow\u2019s private servers - no third-party AI',
+                  ONBOARDING_RECAP_PRIVATE,
                   'Conversations stay in your browser, not on our servers',
                   'Delete anything at any time',
                   'Remy assists only - never acts without your approval',

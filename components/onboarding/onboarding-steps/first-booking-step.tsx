@@ -7,13 +7,15 @@
 import { useState, useTransition } from 'react'
 import { createOnboardingEvent } from '@/lib/onboarding/actions'
 import { todayLocalDateString } from '@/lib/utils/format'
+import type { StepCopy } from '@/lib/onboarding/archetype-copy'
 
 interface FirstBookingStepProps {
   onComplete: (data?: Record<string, unknown>) => void
   onSkip: () => void
+  copy?: StepCopy
 }
 
-export function FirstBookingStep({ onComplete, onSkip }: FirstBookingStepProps) {
+export function FirstBookingStep({ onComplete, onSkip, copy }: FirstBookingStepProps) {
   const [eventDate, setEventDate] = useState('')
   const [serveTime, setServeTime] = useState('18:00')
   const [guestCount, setGuestCount] = useState(4)
@@ -63,10 +65,12 @@ export function FirstBookingStep({ onComplete, onSkip }: FirstBookingStepProps) 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-foreground">Your first booking</h2>
+        <h2 className="text-xl font-semibold text-foreground">
+          {copy?.title || 'Your first booking'}
+        </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Add an upcoming event or dinner. This creates a draft booking you can flesh out later with
-          menus, pricing, and client details.
+          {copy?.description ||
+            'Add an upcoming event or booking. This creates a draft you can flesh out later with menus, pricing, and client details.'}
         </p>
       </div>
 
