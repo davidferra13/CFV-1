@@ -132,31 +132,72 @@
 
 ---
 
+## Domain 12: Culinary Data Chain (Recipe -> Menu -> Shopping -> Costing)
+
+| #   | Question                                                                               | Systems                                                                       | Answer                                                                                                                                                                                                                            | Status   |
+| --- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| Q49 | When a recipe ingredient quantity is edited, do shopping/grocery lists get fresh data? | `lib/recipes/actions.ts`, `lib/documents/generate-grocery-list.ts`            | Yes. Recipe ingredient edits fire `revalidatePath('/culinary')` + `revalidateTag('recipe-costs')` (lines 844-846, 925-927, 964-966). Grocery list generator queries `recipe_ingredients` fresh per request (no `unstable_cache`). | VERIFIED |
+| Q50 | When a recipe is deleted, do menu components dangling?                                 | `lib/recipes/actions.ts:701-759`                                              | No. `deleteRecipe()` guards against active event links (line 706-728, throws if found), then sets `components.recipe_id = null` for all referencing components (line 732-736) before deleting the recipe.                         | VERIFIED |
+| Q51 | When menu dishes have no linked recipe, does shopping list handle it?                  | `lib/documents/generate-grocery-list.ts:206-209`                              | Yes. Components are split into `withRecipe` and `withoutRecipe`. Unlinked components appear in a "VERIFY MANUALLY (no recipe linked)" section in the PDF (line 676-681). No silent omission.                                      | VERIFIED |
+| Q52 | Does the grocery list generator handle unit conversions?                               | `lib/documents/generate-grocery-list.ts:12`, `lib/units/conversion-engine.ts` | Yes. Both single-event and consolidated grocery list generators import and use `convertQuantity` from the conversion engine.                                                                                                      | VERIFIED |
+| Q53 | Do bulk recipe imports bust all downstream caches?                                     | `lib/recipes/actions.ts:2517-2519`                                            | Yes. Bulk import calls `revalidatePath('/recipes')`, `revalidatePath('/recipes/ingredients')`, `revalidatePath('/culinary/costing')`.                                                                                             | VERIFIED |
+
+---
+
+## Domain 13: Staff + Notification + Portal Seams
+
+| #   | Question                                                                    | Systems                                          | Answer                                                                                                                                                                                                    | Status    |
+| --- | --------------------------------------------------------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| Q54 | When an event transitions, do assigned staff get notified?                  | `lib/events/transitions.ts:371-396`              | Partial. On `confirmed` transition, chef gets a "Brief your staff" notification listing assigned staff names (line 386-396). Staff members themselves do NOT receive direct notifications of transitions. | KNOWN-GAP |
+| Q55 | When an event is cancelled, are staff assignments cleaned up?               | `lib/events/transitions.ts:1249-1258`            | Yes. Cancellation handler deletes from `event_staff_assignments` where `event_id` matches. Non-blocking with try/catch.                                                                                   | VERIFIED  |
+| Q56 | Does `createNotification` also fire SSE broadcast?                          | `lib/notifications/actions.ts:129`               | Yes. Every `createNotification` call ends with `broadcastInsert('notifications', recipientId, notification)`. These are not separate systems; they're wired in the same function.                         | VERIFIED  |
+| Q57 | Does the cron `event-progression` use full `transitionEvent` or a shortcut? | `app/api/cron/event-progression/route.ts:59,100` | Full `transitionEvent` with `systemTransition: true`. All side effects fire (notifications, activity log, automations, webhooks). No shortcut.                                                            | VERIFIED  |
+
+---
+
+## Domain 14: Cron + Email + Loyalty Seams
+
+| #   | Question                                                   | Systems                                           | Answer                                                                                                                                                                                                                                                                                   | Status    |
+| --- | ---------------------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| Q58 | Does the dormancy-nudge cron deduplicate?                  | `app/api/scheduled/dormancy-nudge/route.ts:46-68` | Yes. Checks `dormancy_nudge_sent_at > nudgeCooloff` (configurable cooldown). Skips recently nudged chefs.                                                                                                                                                                                | VERIFIED  |
+| Q59 | When an email send fails, is it queued for retry?          | `lib/email/send.ts:208-233`                       | Yes. Transient failures go to `email_dead_letter_queue` with 3 max retries, 5-min initial backoff. Hard bounces get suppressed instead (no retry). Circuit breaker trips after 5 consecutive failures (60s reset).                                                                       | VERIFIED  |
+| Q60 | Does review submission fire loyalty triggers?              | `lib/reviews/actions.ts:116-122`                  | Yes. `fireTrigger('review_submitted')` + conditional `fireTrigger('public_review_consent')` if consent given. Also `fireTrigger('google_review_clicked')` for Google review clicks (line 231-232).                                                                                       | VERIFIED  |
+| Q61 | Does testimonial submission fire loyalty triggers?         | `lib/testimonials/submit-testimonial.ts`          | **No.** `submitTestimonialByToken` has no `fireTrigger` call. Reviews award loyalty points, testimonials don't. Both are client actions on the same event. If loyalty program is active, a client submitting a testimonial gets nothing, while a client submitting a review gets points. | KNOWN-GAP |
+| Q62 | Do lifecycle automations check event status before acting? | `app/api/cron/event-progression/route.ts:47-48`   | Yes. Cron queries only `status = 'confirmed'` for start transitions and `status = 'in_progress'` for completion. Cancelled/completed events are never touched.                                                                                                                           | VERIFIED  |
+
+---
+
 ## Summary
 
-| Domain                           | Questions | FIXED  | VERIFIED | KNOWN-GAP |
-| -------------------------------- | --------- | ------ | -------- | --------- |
-| 1. RPC Contract Fidelity         | Q1-Q4     | 1      | 2        | 1         |
-| 2. Auth Boundary Crossings       | Q5-Q8     | 1      | 3        | 0         |
-| 3. AI Pipeline Cohesion          | Q9-Q13    | 4      | 0        | 1         |
-| 4. Event FSM Side Effects        | Q14-Q18   | 1      | 3        | 1         |
-| 5. Cache Invalidation            | Q19-Q22   | 0      | 3        | 1         |
-| 6. Side Effect Failure Detection | Q23-Q26   | 0      | 3        | 1         |
-| 7. Prompt-to-Context Lifecycle   | Q27-Q30   | 1      | 3        | 0         |
-| 8. Financial Integrity           | Q31-Q34   | 0      | 4        | 0         |
-| 9. Notification Cross-Role       | Q35-Q38   | 0      | 4        | 0         |
-| 10. Regression Guards            | Q39-Q40   | 0      | 0        | 2         |
-| 11. Public Surface Security      | Q41-Q48   | 2      | 4        | 1         |
-| **Total**                        | **48**    | **10** | **29**   | **8**     |
+| Domain                            | Questions | FIXED  | VERIFIED | KNOWN-GAP |
+| --------------------------------- | --------- | ------ | -------- | --------- |
+| 1. RPC Contract Fidelity          | Q1-Q4     | 1      | 2        | 1         |
+| 2. Auth Boundary Crossings        | Q5-Q8     | 1      | 3        | 0         |
+| 3. AI Pipeline Cohesion           | Q9-Q13    | 4      | 0        | 1         |
+| 4. Event FSM Side Effects         | Q14-Q18   | 1      | 3        | 1         |
+| 5. Cache Invalidation             | Q19-Q22   | 0      | 3        | 1         |
+| 6. Side Effect Failure Detection  | Q23-Q26   | 0      | 3        | 1         |
+| 7. Prompt-to-Context Lifecycle    | Q27-Q30   | 1      | 3        | 0         |
+| 8. Financial Integrity            | Q31-Q34   | 0      | 4        | 0         |
+| 9. Notification Cross-Role        | Q35-Q38   | 0      | 4        | 0         |
+| 10. Regression Guards             | Q39-Q40   | 0      | 0        | 2         |
+| 11. Public Surface Security       | Q41-Q48   | 2      | 4        | 1         |
+| 12. Culinary Data Chain           | Q49-Q53   | 0      | 5        | 0         |
+| 13. Staff + Notification + Portal | Q54-Q57   | 0      | 3        | 1         |
+| 14. Cron + Email + Loyalty        | Q58-Q62   | 0      | 4        | 1         |
+| **Total**                         | **62**    | **10** | **40**   | **10**    |
 
 ### KNOWN-GAP Registry
 
-| ID  | Gap                                                    | Risk                                                     | Mitigation                                                               |
-| --- | ------------------------------------------------------ | -------------------------------------------------------- | ------------------------------------------------------------------------ |
-| Q4  | No automated guard on RPC return shape changes         | HIGH - silent consumer breakage                          | Manual grep before migration. Consider adding RPC return type tests.     |
-| Q13 | No CI check for Remy action registry sync              | MEDIUM - new actions may miss Focus Mode or formatters   | Remy cohesion question set covers it manually.                           |
-| Q18 | No `revalidateTag` in `transitionEvent`                | LOW - no `unstable_cache` on event data currently        | Watch for future `unstable_cache` additions.                             |
-| Q22 | Remy Tier 2 cache may serve stale data for 5 minutes   | LOW - conversational context, not transactional          | Accepted. Full scope bypasses cache for critical queries.                |
-| Q23 | Most non-blocking side effects have no DLQ/retry       | MEDIUM - failed webhooks, loyalty triggers silently lost | Only chef notification has DLQ. Consider expanding to webhook + loyalty. |
-| Q39 | No test for quote acceptance -> event transition chain | HIGH - was silently broken                               | Write integration test.                                                  |
-| Q40 | No test for client cancellation -> refund notification | HIGH - was silently broken                               | Write integration test.                                                  |
+| ID  | Gap                                                    | Risk                                                     | Mitigation                                                                |
+| --- | ------------------------------------------------------ | -------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Q4  | No automated guard on RPC return shape changes         | HIGH - silent consumer breakage                          | Manual grep before migration. Consider adding RPC return type tests.      |
+| Q13 | No CI check for Remy action registry sync              | MEDIUM - new actions may miss Focus Mode or formatters   | Remy cohesion question set covers it manually.                            |
+| Q18 | No `revalidateTag` in `transitionEvent`                | LOW - no `unstable_cache` on event data currently        | Watch for future `unstable_cache` additions.                              |
+| Q22 | Remy Tier 2 cache may serve stale data for 5 minutes   | LOW - conversational context, not transactional          | Accepted. Full scope bypasses cache for critical queries.                 |
+| Q23 | Most non-blocking side effects have no DLQ/retry       | MEDIUM - failed webhooks, loyalty triggers silently lost | Only chef notification has DLQ. Consider expanding to webhook + loyalty.  |
+| Q39 | No test for quote acceptance -> event transition chain | HIGH - was silently broken                               | Write integration test.                                                   |
+| Q40 | No test for client cancellation -> refund notification | HIGH - was silently broken                               | Write integration test.                                                   |
+| Q42 | Share endpoint leaks tenantId to public                | LOW - UUID not exploitable without auth                  | Strip tenantId from share response or move to server-only field.          |
+| Q54 | Staff not directly notified of event transitions       | LOW - chef gets "brief your staff" reminder              | Consider staff notification channel if staff portal adoption grows.       |
+| Q61 | Testimonial submission skips loyalty triggers          | MEDIUM - inconsistent with review flow                   | Add `fireTrigger('testimonial_submitted')` to `submitTestimonialByToken`. |
