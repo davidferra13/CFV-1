@@ -48,8 +48,10 @@ const PAID_HIGHLIGHTS = [
 
 function StatusBadge({ status }: { status: SubscriptionStatus }) {
   if (status.isGrandfathered) return <Badge variant="info">Founding Member</Badge>
+  if (status.status === 'comped') return <Badge variant="success">Full Access</Badge>
   if (status.isActive) return <Badge variant="success">Active Plan</Badge>
-  return null
+  if (status.isTrial) return <Badge variant="warning">Trial</Badge>
+  return <Badge variant="default">Free</Badge>
 }
 
 export function BillingClient({ status, thankYou, requestedFeature }: Props) {
@@ -145,7 +147,9 @@ export function BillingClient({ status, thankYou, requestedFeature }: Props) {
               <p className="mt-0.5 text-sm text-stone-400">
                 {status.isGrandfathered
                   ? 'Founding member. Full platform access, forever.'
-                  : 'Full platform access. All paid features unlocked.'}
+                  : status.status === 'comped'
+                    ? 'Full platform access. No payment required.'
+                    : 'Full platform access. All paid features unlocked.'}
               </p>
             </div>
             <StatusBadge status={status} />
@@ -160,26 +164,28 @@ export function BillingClient({ status, thankYou, requestedFeature }: Props) {
             </div>
           )}
 
-          {status.isActive && status.subscriptionCurrentPeriodEnd && (
-            <div className="mt-4 border-t border-stone-800 pt-4">
-              <div className="flex items-center gap-2 text-sm text-stone-400">
-                <CheckCircle2 size={15} className="text-green-500 shrink-0" />
-                <span>
-                  Renews{' '}
-                  {new Date(status.subscriptionCurrentPeriodEnd).toLocaleDateString('en-US', {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
-                </span>
+          {status.isActive &&
+            status.hasStripeSubscription &&
+            status.subscriptionCurrentPeriodEnd && (
+              <div className="mt-4 border-t border-stone-800 pt-4">
+                <div className="flex items-center gap-2 text-sm text-stone-400">
+                  <CheckCircle2 size={15} className="text-green-500 shrink-0" />
+                  <span>
+                    Renews{' '}
+                    {new Date(status.subscriptionCurrentPeriodEnd).toLocaleDateString('en-US', {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                  </span>
+                </div>
+                <div className="mt-3">
+                  <Button variant="secondary" onClick={handlePortal} loading={isPendingPortal}>
+                    Manage Plan
+                  </Button>
+                </div>
               </div>
-              <div className="mt-3">
-                <Button variant="secondary" onClick={handlePortal} loading={isPendingPortal}>
-                  Manage Plan
-                </Button>
-              </div>
-            </div>
-          )}
+            )}
         </div>
       )}
 

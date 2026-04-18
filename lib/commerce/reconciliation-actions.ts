@@ -275,8 +275,8 @@ export async function generateDailyReconciliation(input: GenerateReportInput = {
   )
 
   const ledgerTotalCents = localDayLedgerEntries.reduce((sum: number, row: any) => {
-    if (row.is_refund) return sum - (row.amount_cents ?? 0)
-    if (row.entry_type === 'expense') return sum - (row.amount_cents ?? 0)
+    // Refund amount_cents is already negative (DB constraint), so just add it
+    if (row.entry_type === 'expense') return sum - Math.abs(row.amount_cents ?? 0)
     return sum + (row.amount_cents ?? 0)
   }, 0)
 

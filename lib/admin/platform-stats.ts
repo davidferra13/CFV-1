@@ -30,6 +30,8 @@ export type PlatformChefRow = {
   eventCount: number
   clientCount: number
   gmvCents: number
+  subscription_status: string | null
+  account_status: string | null
 }
 
 export type PlatformClientRow = {
@@ -195,7 +197,7 @@ export async function getPlatformChefList(): Promise<PlatformChefRow[]> {
 
   const { data: chefs } = await db
     .from('chefs')
-    .select('id, business_name, email, created_at')
+    .select('id, business_name, email, created_at, subscription_status, account_status')
     .order('created_at', { ascending: false })
 
   if (!chefs?.length) return []
@@ -236,6 +238,8 @@ export async function getPlatformChefList(): Promise<PlatformChefRow[]> {
     eventCount: eventCountMap[chef.id] ?? 0,
     clientCount: clientCountMap[chef.id] ?? 0,
     gmvCents: gmvMap[chef.id] ?? 0,
+    subscription_status: chef.subscription_status ?? null,
+    account_status: chef.account_status ?? null,
   }))
 }
 

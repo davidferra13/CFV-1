@@ -122,14 +122,14 @@ export async function getSubscriptionStatus(chefId: string): Promise<Subscriptio
 
   if (!chef) {
     return {
-      status: 'grandfathered',
+      status: null,
       trialEndsAt: null,
       daysRemaining: null,
       isActive: false,
       isTrial: false,
       isTrialExpiring: false,
       isExpired: false,
-      isGrandfathered: true,
+      isGrandfathered: false,
       subscriptionCurrentPeriodEnd: null,
       hasStripeCustomer: false,
       hasStripeSubscription: false,
@@ -137,14 +137,15 @@ export async function getSubscriptionStatus(chefId: string): Promise<Subscriptio
   }
 
   const now = new Date()
-  const status = (chef.subscription_status as string) ?? 'grandfathered'
+  const status = (chef.subscription_status as string) ?? null
   const trialEndsAt = chef.trial_ends_at ? new Date(chef.trial_ends_at) : null
   const daysRemaining = trialEndsAt
     ? Math.ceil((trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
     : null
 
   const isGrandfathered = status === 'grandfathered'
-  const isActive = status === 'active'
+  const isComped = status === 'comped'
+  const isActive = status === 'active' || isComped
   const isTrial = status === 'trialing' && daysRemaining !== null && daysRemaining > 0
   const isTrialExpiring = isTrial && daysRemaining !== null && daysRemaining <= 3
   const isExpired =
@@ -184,12 +185,18 @@ export async function handleSubscriptionUpdated(subscription: Stripe.Subscriptio
     ? new Date(sub.current_period_end * 1000).toISOString()
     : null
 
-  // Resolve chefId first so we can bust the layout cache
+  // Resolve chef so we can check comped status and bust cache
   const { data: chef } = await db
     .from('chefs')
-    .select('id')
+    .select('id, subscription_status')
     .eq('stripe_customer_id' as any, customerId)
     .single()
+
+  // If the chef was comped by admin, don't let Stripe webhooks overwrite it.
+  // This can happen if a canceled subscription fires a delayed webhook.
+  if (chef?.subscription_status === 'comped' || chef?.subscription_status === 'grandfathered') {
+    return
+  }
 
   const { error } = await db
     .from('chefs')
@@ -260,12 +267,29 @@ export async function handleSubscriptionDeleted(subscription: Stripe.Subscriptio
   const customerId =
     typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id
 
-  // Resolve chefId first so we can bust the layout cache
+  // Resolve chef so we can check comped status and bust cache
   const { data: chef } = await db
     .from('chefs')
-    .select('id')
+    .select('id, subscription_status')
     .eq('stripe_customer_id' as any, customerId)
     .single()
+
+  // If the chef was comped by admin, the Stripe cancellation webhook should NOT
+  // overwrite the comped status. The admin explicitly set this; Stripe is just
+  // confirming the cancellation we initiated.
+  if (chef?.subscription_status === 'comped') {
+    // Just clear the subscription ID, keep comped status
+    await db
+      .from('chefs')
+      .update({ stripe_subscription_id: null } as any)
+      .eq('stripe_customer_id' as any, customerId)
+
+    if (chef?.id) {
+      const { revalidateTag } = await import('next/cache')
+      revalidateTag(`chef-layout-${chef.id}`)
+    }
+    return
+  }
 
   // Preserve the period end so paid features remain accessible until the period expires.
   // Stripe fires subscription.deleted at cancellation time, but the chef already paid

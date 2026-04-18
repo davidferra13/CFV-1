@@ -13,23 +13,36 @@ This file is read by Claude Code at the start of every conversation. These rules
 
 ---
 
-## MODEL STRATEGY (3-Tier System - READ THIS)
+## MODEL STRATEGY (4-Tier System - READ THIS)
 
 **Default model for this project is Opus 4.6.** This is configured in `.claude/settings.json` (`"model": "opus"`). The Max $200/mo plan bills against a token budget. Tier selection is cost discipline, not preference.
 
-**The 3-tier model:**
+**The 4-tier model:**
 
-| Tier         | Model     | Agent          | Purpose                                    |
-| ------------ | --------- | -------------- | ------------------------------------------ |
-| **Worker**   | Haiku 4.5 | `haiku-worker` | Mechanical, judgment-free tasks. Cheapest. |
-| **Executor** | Opus 4.6  | (main session) | All normal work. Default.                  |
-| **Advisor**  | Opus 4.6  | `opus-advisor` | Hard decisions only. Most expensive.       |
+| Tier         | Model         | Agent/Tool        | Cost      | Purpose                                              |
+| ------------ | ------------- | ----------------- | --------- | ---------------------------------------------------- |
+| **Local**    | Gemma 4 (e4b) | `ollama-delegate` | $0        | Mechanical bulk work. Drafts, boilerplate, summaries |
+| **Worker**   | Haiku 4.5     | `haiku-worker`    | Cheap     | Judgment-light Claude agent tasks                    |
+| **Executor** | Opus 4.6      | (main session)    | Standard  | All normal work. Default                             |
+| **Advisor**  | Opus 4.6      | `opus-advisor`    | Expensive | Hard decisions only. Most expensive                  |
+
+### LOCAL DELEGATION (PREFERRED FOR MECHANICAL TASKS)
+
+**Before using Haiku for a mechanical task, consider if `ollama-delegate` MCP tools can do it for $0.** The `delegate`, `delegate_code`, `delegate_summarize`, and `delegate_extract` tools route to local Gemma 4 via Ollama. Claude stays the orchestrator and verifies all delegated output.
+
+**Delegate when:** drafting text, generating boilerplate, commit messages, doc sections, compliance scanning, reformatting, summarizing files, extracting structured data, simple code generation.
+
+**Don't delegate when:** multi-file reasoning, architecture decisions, complex debugging, tasks needing tool access or codebase context, security-sensitive code, anything where bad output costs more time than tokens saved.
+
+**Rule of thumb:** if the task is mechanical and you can verify the result in <10 seconds, delegate it.
+
+Requires: Ollama running locally (`ollama serve`). If Ollama is down, fall back to Haiku or do it directly.
 
 ### SONNET BAN (ABSOLUTE)
 
 **EVERY `Agent` tool call MUST include `model: "haiku"` or `model: "opus"`.** Omitting it defaults to Sonnet, which drains a separate token bucket and has locked the developer out before. Prefer direct Grep/Glob/Read over spawning agents.
 
-**Haiku** (`model: "haiku"`): mechanical tasks only (file scanning, compliance checks, boilerplate, data extraction). No judgment, no architecture.
+**Haiku** (`model: "haiku"`): judgment-light Claude agent tasks that need tool access (file scanning, compliance checks with codebase context). For tasks that don't need Claude tools, use `ollama-delegate` instead (free).
 
 **Opus Advisor** (`model: "opus"`, `subagent_type: "opus-advisor"`): last resort for hard decisions (architecture tradeoffs, security design, stuck after 2+ failed fixes). Tell it to use extended thinking.
 

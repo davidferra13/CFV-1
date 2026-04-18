@@ -2,6 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { appendLedgerEntryInternal } from './append-internal'
 import { revalidatePath } from 'next/cache'
 
 // ============================================
@@ -121,27 +122,31 @@ export async function importPayment(input: PaymentImportInput): Promise<PaymentI
     const description =
       input.description?.trim() || `Historical ${input.entry_type} - ${input.date}`
 
-    const { data: ledgerEntry, error: ledgerError } = await db
-      .from('ledger_entries')
-      .insert({
-        tenant_id: user.tenantId!,
-        client_id: resolvedClientId,
-        event_id: null,
-        entry_type: input.entry_type,
-        amount_cents: input.amount_cents,
-        payment_method: paymentMethod,
-        description,
-        received_at: `${input.date}T00:00:00Z`,
-        internal_notes: 'Historical payment - imported from records',
-        created_by: user.id,
-      })
-      .select('id')
-      .single()
+    const isRefund = input.entry_type === 'refund'
+    const amountCents = isRefund ? -Math.abs(input.amount_cents) : Math.abs(input.amount_cents)
+    const importRef = `import_${user.tenantId}_${input.date}_${input.amount_cents}_${resolvedClientId}`
 
-    if (ledgerError || !ledgerEntry) {
-      console.error('[importPayment] Ledger insert error:', ledgerError)
+    const result = await appendLedgerEntryInternal({
+      tenant_id: user.tenantId!,
+      client_id: resolvedClientId,
+      event_id: null,
+      entry_type: input.entry_type,
+      amount_cents: amountCents,
+      payment_method: paymentMethod,
+      description,
+      received_at: `${input.date}T00:00:00Z`,
+      internal_notes: 'Historical payment - imported from records',
+      created_by: user.id,
+      is_refund: isRefund,
+      refund_reason: isRefund ? description : undefined,
+      transaction_reference: importRef,
+    })
+
+    if (!result.entry && !result.duplicate) {
       throw new Error('Failed to create ledger entry')
     }
+
+    const ledgerEntry = result.entry
 
     revalidatePath('/finance')
     revalidatePath('/events')

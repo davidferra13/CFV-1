@@ -831,7 +831,17 @@ export async function updateClient(clientId: string, input: UpdateClientInput) {
           ? (newVal as string[]).join(', ')
           : String(newVal ?? '')
         if (oldStr !== newStr) {
-          const changeType = field === 'allergies' ? 'allergy_added' : 'restriction_added'
+          const oldArr = Array.isArray(oldVal) ? oldVal : []
+          const newArr = Array.isArray(newVal) ? (newVal as string[]) : []
+          const isRemoval = newArr.length < oldArr.length
+          const changeType =
+            field === 'allergies'
+              ? isRemoval
+                ? 'allergy_removed'
+                : 'allergy_added'
+              : isRemoval
+                ? 'restriction_removed'
+                : 'restriction_added'
           await logDietaryChange(clientId, changeType, field, oldStr || null, newStr || null)
         }
       }
@@ -873,12 +883,19 @@ export async function updateClient(clientId: string, input: UpdateClientInput) {
       for (const field of changedDietaryForPropagation) {
         propagateFields[field] = (updateFields as Record<string, unknown>)[field] ?? []
       }
-      await db
+      const { data: affectedEvents } = await db
         .from('events')
         .update(propagateFields)
         .eq('client_id', clientId)
         .eq('tenant_id', user.tenantId!)
         .in('status', activeStatuses)
+        .select('id')
+      // Revalidate affected event pages so dietary badges update
+      if (affectedEvents?.length) {
+        for (const evt of affectedEvents) {
+          revalidatePath(`/events/${evt.id}`)
+        }
+      }
     }
   } catch (err) {
     console.error('[updateClient] Dietary propagation to events failed (non-blocking):', err)

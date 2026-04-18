@@ -1,7 +1,7 @@
 'use server'
 
 import { createServerClient } from '@/lib/db/server'
-import { getServiceConfigForTenant } from '@/lib/chef-services/service-config-actions'
+import { getServiceConfigForTenant } from '@/lib/chef-services/service-config-internal'
 import { generateFirstResponse } from '@/lib/templates/inquiry-first-response'
 import type { PricingConfig } from '@/lib/pricing/config-types'
 

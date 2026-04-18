@@ -58,7 +58,7 @@ const CONFIG = {
   prodUrl: 'https://cheflowhq.com',
   prodHealthUrl: 'https://cheflowhq.com/api/health',
   ollamaPcUrl: process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
-  ollamaPcModel: process.env.OLLAMA_MODEL || 'qwen3-coder:30b',
+  ollamaPcModel: process.env.OLLAMA_MODEL || 'gemma4',
   logFile: join(PROJECT_ROOT, 'mission-control.log'),
   dbUrl: process.env.NEXT_PUBLIC_DB_URL || '',
   dbServiceKey: process.env.DB_SERVICE_ROLE_KEY || '',

@@ -2,12 +2,13 @@
 
 // Menu Nutritional Summary
 // AI estimates per-serving nutritional breakdown for the full proposed menu.
-// Routed to Gemini (nutritional knowledge, not PII).
+// Routed to local Ollama (Gemma 4). No cloud dependency.
 // Output is ESTIMATE ONLY - clearly labeled as approximate, not medical advice.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import { GoogleGenAI } from '@google/genai'
+import { z } from 'zod'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 
 export interface CourseNutrition {
   courseName: string
@@ -35,11 +36,29 @@ export interface MenuNutritionalSummary {
   generatedAt: string
 }
 
-const getClient = () => {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) throw new Error('GEMINI_API_KEY not configured')
-  return new GoogleGenAI({ apiKey })
-}
+const MenuNutritionalSchema = z.object({
+  totalCaloriesPerGuest: z.number().nullable(),
+  totalProteinG: z.number().nullable(),
+  totalCarbsG: z.number().nullable(),
+  totalFatG: z.number().nullable(),
+  courses: z.array(
+    z.object({
+      courseName: z.string(),
+      dishName: z.string(),
+      servingSize: z.string(),
+      calories: z.number().nullable(),
+      proteinG: z.number().nullable(),
+      carbsG: z.number().nullable(),
+      fatG: z.number().nullable(),
+      fiberG: z.number().nullable(),
+      sodiumMg: z.number().nullable(),
+      keyAllergens: z.array(z.string()),
+      confidence: z.enum(['high', 'medium', 'low']),
+    })
+  ),
+  highlights: z.array(z.string()),
+  dietarySuitability: z.array(z.string()),
+})
 
 export async function getMenuNutritionalSummary(eventId: string): Promise<MenuNutritionalSummary> {
   const user = await requireChef()
@@ -98,13 +117,13 @@ export async function getMenuNutritionalSummary(eventId: string): Promise<MenuNu
     }
   }
 
-  const prompt = `You are a registered dietitian nutritionist estimating nutritional content for a private chef's menu.
+  const systemPrompt = `You are a registered dietitian nutritionist estimating nutritional content for a private chef's menu.
 Provide per-serving estimates for each course.
 Be conservative and realistic - use typical portion sizes for fine dining.
 Clearly note confidence level based on ingredient detail available.
-These are estimates for general awareness, NOT medical nutrition advice.
+These are estimates for general awareness, NOT medical nutrition advice.`
 
-Menu courses:
+  const userContent = `Menu courses:
 ${menuItems
   .map((m) => {
     const recipe = Array.isArray(m.recipes) ? m.recipes[0] : m.recipes
@@ -141,27 +160,16 @@ Return JSON: {
   }],
   "highlights": ["..."],
   "dietarySuitability": ["..."]
-}
+}`
 
-Return ONLY valid JSON.`
-
-  try {
-    const ai = getClient()
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: prompt,
-      config: { temperature: 0.2, responseMimeType: 'application/json' },
-    })
-    const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const parsed = JSON.parse(text)
-    return {
-      ...parsed,
-      disclaimer:
-        'All nutritional values are AI estimates only. They should not be used for medical dietary planning. Consult a registered dietitian for precise nutritional information.',
-      generatedAt: new Date().toISOString(),
-    }
-  } catch (err) {
-    console.error('[menu-nutritional] Failed:', err)
-    throw new Error('Could not estimate nutritional content. Please try again.')
+  const parsed = await parseWithOllama(systemPrompt, userContent, MenuNutritionalSchema, {
+    temperature: 0.2,
+    maxTokens: 2048,
+  })
+  return {
+    ...parsed,
+    disclaimer:
+      'All nutritional values are AI estimates only. They should not be used for medical dietary planning. Consult a registered dietitian for precise nutritional information.',
+    generatedAt: new Date().toISOString(),
   }
 }

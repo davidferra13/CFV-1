@@ -6,7 +6,7 @@ import {
 import { getCannabisEvents } from '@/lib/chef/cannabis-actions'
 
 export default async function CannabisCompliancePage() {
-  const events = await getCannabisEvents().catch(() => [])
+  const events = await getCannabisEvents()
   const activeEvents = events.filter(
     (event: any) => !['completed', 'cancelled'].includes(event.status)
   )

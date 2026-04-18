@@ -4,9 +4,11 @@ import { createAdminClient } from '@/lib/db/admin'
 import { requireAdmin } from '@/lib/auth/admin'
 import { isAdminPreviewActive } from '@/lib/auth/admin-preview'
 import { resolveOwnerIdentity } from '@/lib/platform/owner-account'
+import { getAccessLevelForAuthUser, type AdminAccessLevel } from '@/lib/auth/admin-access'
 
 export type AdminDebugState = {
   isAdmin: boolean
+  accessLevel: AdminAccessLevel | null
   previewActive: boolean
   effectiveAdmin: boolean
   focusMode: boolean
@@ -21,7 +23,10 @@ export async function getAdminDebugState(): Promise<AdminDebugState> {
   const previewActive = isAdminPreviewActive()
   const db: any = createAdminClient()
 
-  const ownerIdentity = await resolveOwnerIdentity(db)
+  const [ownerIdentity, accessLevel] = await Promise.all([
+    resolveOwnerIdentity(db),
+    getAccessLevelForAuthUser(admin.id),
+  ])
 
   let focusMode = false
   let enabledModules: string[] = []
@@ -48,6 +53,7 @@ export async function getAdminDebugState(): Promise<AdminDebugState> {
 
   return {
     isAdmin: true,
+    accessLevel,
     previewActive,
     effectiveAdmin: !previewActive,
     focusMode,

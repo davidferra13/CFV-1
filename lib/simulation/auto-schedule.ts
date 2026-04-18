@@ -33,7 +33,7 @@ async function warmupOllama(): Promise<void> {
   const ollamaUrl = process.env.OLLAMA_BASE_URL
   if (!ollamaUrl) return
 
-  const model = process.env.OLLAMA_MODEL || 'qwen3-coder:30b'
+  const model = process.env.OLLAMA_MODEL || 'gemma4'
 
   try {
     console.log(`[ollama-warmup] Warming up ${model}...`)

@@ -711,47 +711,60 @@ async function deepCopyRecipe(input: {
 
   if (createErr || !newRecipe) throw new Error('Failed to create recipe copy')
 
-  // Copy ingredients: find-or-create per name in target tenant
-  for (const ri of origIngredients || []) {
-    const ing = ri.ingredient
-    if (!ing) continue
+  // Copy ingredients: find-or-create per name in target tenant.
+  // Wrapped in try/catch with cleanup: if ingredient copy fails partway,
+  // delete the partial recipe to avoid orphaned data.
+  try {
+    for (const ri of origIngredients || []) {
+      const ing = ri.ingredient
+      if (!ing) continue
 
-    // Find existing ingredient in target tenant (case-insensitive name match)
-    let { data: existingIng } = await db
-      .from('ingredients')
-      .select('id')
-      .eq('tenant_id', toTenantId)
-      .ilike('name', ing.name)
-      .limit(1)
-      .single()
-
-    if (!existingIng) {
-      // Create ingredient in target tenant
-      const { data: newIng } = await db
+      // Find existing ingredient in target tenant (case-insensitive name match)
+      let { data: existingIng } = await db
         .from('ingredients')
-        .insert({
-          tenant_id: toTenantId,
-          name: ing.name,
-          category: ing.category,
-          default_unit: ing.default_unit,
-        })
         .select('id')
+        .eq('tenant_id', toTenantId)
+        .ilike('name', ing.name)
+        .limit(1)
         .single()
-      existingIng = newIng
+
+      if (!existingIng) {
+        // Create ingredient in target tenant
+        const { data: newIng } = await db
+          .from('ingredients')
+          .insert({
+            tenant_id: toTenantId,
+            name: ing.name,
+            category: ing.category,
+            default_unit: ing.default_unit,
+          })
+          .select('id')
+          .single()
+        existingIng = newIng
+      }
+
+      if (!existingIng?.id) continue
+
+      await db.from('recipe_ingredients').insert({
+        recipe_id: newRecipe.id,
+        ingredient_id: existingIng.id,
+        quantity: ri.quantity,
+        unit: ri.unit,
+        sort_order: ri.sort_order,
+        is_optional: ri.is_optional ?? false,
+        preparation_notes: ri.preparation_notes || null,
+        substitution_notes: ri.substitution_notes || null,
+      })
     }
-
-    if (!existingIng?.id) continue
-
-    await db.from('recipe_ingredients').insert({
-      recipe_id: newRecipe.id,
-      ingredient_id: existingIng.id,
-      quantity: ri.quantity,
-      unit: ri.unit,
-      sort_order: ri.sort_order,
-      is_optional: ri.is_optional ?? false,
-      preparation_notes: ri.preparation_notes || null,
-      substitution_notes: ri.substitution_notes || null,
-    })
+  } catch (ingredientErr) {
+    // Cleanup: delete the partial recipe copy to avoid orphaned data
+    // (recipe_ingredients cascade-deletes via FK)
+    console.error(
+      '[deepCopyRecipe] Ingredient copy failed, cleaning up partial recipe',
+      ingredientErr
+    )
+    await db.from('recipes').delete().eq('id', newRecipe.id).eq('tenant_id', toTenantId)
+    throw new Error('Failed to copy recipe ingredients')
   }
 
   return newRecipe.id

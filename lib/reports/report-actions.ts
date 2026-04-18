@@ -48,7 +48,7 @@ export async function generateReport(
   dateRange: DateRangeFilter,
   period?: ReportPeriod
 ): Promise<{ success: true; report: GeneratedReport } | { success: false; error: string }> {
-  await requirePro('custom-reports')
+  await requirePro('advanced-analytics')
   const user = await requireChef()
   const tenantId = user.tenantId!
 
@@ -89,7 +89,7 @@ export async function generateReport(
 // ── Saved Reports CRUD ───────────────────────────────────────────────────
 
 export async function getSavedReports(): Promise<SavedReportRow[]> {
-  await requirePro('custom-reports')
+  await requirePro('advanced-analytics')
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -111,7 +111,7 @@ export async function saveReport(
   name: string,
   config: ReportConfig
 ): Promise<{ success: true; id: string } | { success: false; error: string }> {
-  await requirePro('custom-reports')
+  await requirePro('advanced-analytics')
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -138,7 +138,7 @@ export async function saveReport(
 export async function deleteReport(
   reportId: string
 ): Promise<{ success: true } | { success: false; error: string }> {
-  await requirePro('custom-reports')
+  await requirePro('advanced-analytics')
   const user = await requireChef()
   const db: any = createServerClient()
 

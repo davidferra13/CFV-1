@@ -2,14 +2,15 @@
 
 // Service Timeline / Run-of-Show Generator
 // AI creates a minute-by-minute execution plan for the full service.
-// Routed to Gemini (quality-critical creative scheduling - not PII).
+// Routed to local Ollama (Gemma 4). No cloud dependency.
 // Output is DRAFT ONLY - chef approves before printing or sharing with staff.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import { GoogleGenAI } from '@google/genai'
+import { z } from 'zod'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 
-// ── Types ─────────────────────────────────────────────────────────────────
+// -- Types --
 
 export interface TimelineEntry {
   time: string // e.g. "5:30 PM"
@@ -40,13 +41,20 @@ interface EventStaffRow {
   staff_members: { name: string; role: string } | null
 }
 
-const getClient = () => {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) throw new Error('GEMINI_API_KEY not configured')
-  return new GoogleGenAI({ apiKey })
-}
+const ServiceTimelineSchema = z.object({
+  entries: z.array(
+    z.object({
+      time: z.string(),
+      duration: z.string(),
+      task: z.string(),
+      who: z.string(),
+      notes: z.string().nullable(),
+    })
+  ),
+  printReady: z.string(),
+})
 
-// ── Server Action ─────────────────────────────────────────────────────────
+// -- Server Action --
 
 export async function generateServiceTimeline(eventId: string): Promise<ServiceTimeline> {
   const user = await requireChef()
@@ -84,9 +92,13 @@ export async function generateServiceTimeline(eventId: string): Promise<ServiceT
     .filter(Boolean)
     .join(', ')
 
-  const prompt = `You are a professional event planner creating a minute-by-minute service run-of-show for a private chef event.
+  const systemPrompt = `You are a professional event planner creating a minute-by-minute service run-of-show for a private chef event.
+Create a complete run-of-show from chef arrival through post-service cleanup.
+Include: setup, prep, cooking windows, service timing for each course, cleanup.
+Be realistic - build in buffer time.
+Format as a JSON array of timeline entries, plus a plain-text version for printing.`
 
-Event Details:
+  const userContent = `Event Details:
   Occasion: ${event.occasion ?? 'Private Dinner'}
   Date: ${event.event_date ?? 'TBD'}
   Guest count: ${event.guest_count ?? 'TBD'}
@@ -102,36 +114,20 @@ ${menuItems.map((m) => `  - ${m.course_type ?? 'Course'}: ${m.name}${m.prep_time
 
 Staff: ${staffNames || 'Chef only'}
 
-Create a complete run-of-show from chef arrival through post-service cleanup.
-Include: setup, prep, cooking windows, service timing for each course, cleanup.
-Be realistic - build in buffer time.
-Format as a JSON array of timeline entries, plus a plain-text version for printing.
-
 Return JSON: {
   "entries": [{ "time": "H:MM AM/PM", "duration": "X min", "task": "...", "who": "Chef|Staff|Both", "notes": "...or null" }],
   "printReady": "full plain text run-of-show for single-page print"
-}
+}`
 
-Return ONLY valid JSON, no markdown.`
-
-  try {
-    const ai = getClient()
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: prompt,
-      config: { temperature: 0.4, responseMimeType: 'application/json' },
-    })
-    const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const parsed = JSON.parse(text)
-    return {
-      eventOccasion: event.occasion ?? 'Private Event',
-      serviceDate: event.event_date ?? '',
-      entries: parsed.entries ?? [],
-      printReady: parsed.printReady ?? '',
-      generatedAt: new Date().toISOString(),
-    }
-  } catch (err) {
-    console.error('[service-timeline] Failed:', err)
-    throw new Error('Could not generate service timeline. Please try again.')
+  const parsed = await parseWithOllama(systemPrompt, userContent, ServiceTimelineSchema, {
+    temperature: 0.4,
+    maxTokens: 4096,
+  })
+  return {
+    eventOccasion: event.occasion ?? 'Private Event',
+    serviceDate: event.event_date ?? '',
+    entries: parsed.entries ?? [],
+    printReady: parsed.printReady ?? '',
+    generatedAt: new Date().toISOString(),
   }
 }

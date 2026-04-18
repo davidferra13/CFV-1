@@ -158,18 +158,8 @@ export async function getServiceConfig(): Promise<ChefServiceConfig> {
   return { ...DEFAULTS, ...config }
 }
 
-// ─── Read for Remy (no auth - called from context loader with tenantId) ────
-
-export async function getServiceConfigForTenant(tenantId: string): Promise<ChefServiceConfig> {
-  const db: any = createServerClient()
-
-  const { data } = await db.from('chef_service_config').select('*').eq('chef_id', tenantId).single()
-
-  if (!data) return { ...DEFAULTS }
-
-  const { id, chef_id, tenant_id, created_at, updated_at, ...config } = data
-  return { ...DEFAULTS, ...config }
-}
+// NOTE: getServiceConfigForTenant moved to @/lib/chef-services/service-config-internal
+// to avoid exposing it as a browser-callable server action.
 
 // ─── Write ──────────────────────────────────────────────────────────────────
 

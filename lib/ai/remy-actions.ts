@@ -21,7 +21,6 @@ import {
   REMY_PRIVACY_NOTE,
   REMY_TOPIC_GUARDRAILS,
   REMY_ANTI_INJECTION,
-  REMY_KITCHEN_PHRASES,
 } from '@/lib/ai/remy-personality'
 import {
   buildDynamicPersonalityBlock,
@@ -515,7 +514,6 @@ function buildRemySystemPrompt(
     parts.push(remyArchetypeModifier)
   }
 
-  parts.push(REMY_KITCHEN_PHRASES)
   // Few-shot examples - show Remy how to respond, not just what to be
   parts.push(REMY_FEW_SHOT_EXAMPLES)
   parts.push(REMY_DRAFT_INSTRUCTIONS)
@@ -568,8 +566,15 @@ Use seasonal awareness naturally - mention what's in season, upcoming holidays t
   }
 
   // Business context
+  const locationStr =
+    context.chefCity && context.chefState
+      ? `${context.chefCity}, ${context.chefState}`
+      : context.chefCity || context.chefState || null
+  const archetypeLabel = context.chefArchetype
+    ? context.chefArchetype.replace(/_/g, ' ').replace(/-/g, ' ')
+    : null
   parts.push(`\nBUSINESS CONTEXT:
-- Business: ${context.businessName ?? 'Your business'}${context.tagline ? ` - "${context.tagline}"` : ''}
+- Business: ${context.businessName ?? 'Your business'}${context.tagline ? ` - "${context.tagline}"` : ''}${archetypeLabel ? `\n- Business type: ${archetypeLabel}` : ''}${locationStr ? `\n- Location: ${locationStr}` : ''}
 - Clients: ${context.clientCount} total
 - Upcoming events: ${context.upcomingEventCount}
 - Open inquiries: ${context.openInquiryCount}${context.pendingQuoteCount ? `\n- Pending quotes: ${context.pendingQuoteCount}` : ''}${context.monthRevenueCents !== undefined ? `\n- Month revenue: $${(context.monthRevenueCents / 100).toFixed(2)}` : ''}`)

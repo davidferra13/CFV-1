@@ -7,9 +7,12 @@ import { dateToDateString } from '@/lib/utils/format'
 
 // Event Time-Progression Cron
 // Advances events through the FSM based on wall-clock time:
-//   confirmed  -> in_progress : when event_date has arrived (date <= today)
+//   confirmed  -> in_progress : when event_date has arrived (date <= today in event timezone)
 //   in_progress -> completed  : when departure_time has passed, or event_date is past
 // Also detects stuck events and creates chef_todos as nudges.
+//
+// Timezone: each event resolves to event_timezone or chef.timezone (default America/New_York).
+// "Today" is computed per-event in the event's local timezone.
 
 // Days allowed in each state before flagged as stuck
 const STUCK_THRESHOLDS_DAYS: Record<string, number> = {

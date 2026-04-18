@@ -39,6 +39,32 @@ export function detectMemoryIntent(message: string): MemoryIntent {
   return null
 }
 
+// ─── Thinking Mode (Gemma 4 configurable reasoning) ──────────────────────────
+// Gemma 4 supports `think: true` for step-by-step reasoning before answering.
+// Enable for complex queries where deeper reasoning improves output quality.
+// Keep off for simple chat to maintain fast response times.
+
+const THINKING_PATTERNS = [
+  /\b(analyz|analysis|break\s*down|compare|evaluat|assess)/i,
+  /\b(financ|revenue|profit|margin|cost|expense|budget|pricing|forecast)/i,
+  /\b(strategy|plan|approach|recommend|advise|suggest\s+how)/i,
+  /\b(why\s+(is|are|did|does|do|should|would|has))/i,
+  /\b(explain|walk\s+me\s+through|help\s+me\s+understand)/i,
+  /\b(what\s+should\s+I|how\s+should\s+I|best\s+way\s+to)/i,
+  /\b(trend|pattern|insight|opportunit)/i,
+]
+
+export function shouldUseThinking(scope: 'full' | 'minimal' | 'focused', message: string): boolean {
+  // Always off for minimal scope (greetings, simple questions)
+  if (scope === 'minimal') return false
+
+  // Full scope = complex query, always think
+  if (scope === 'full') return true
+
+  // Focused scope: check message patterns for complexity signals
+  return THINKING_PATTERNS.some((p) => p.test(message))
+}
+
 export function formatCategoryLabel(cat: string): string {
   return cat.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }
@@ -515,6 +541,83 @@ export function summarizeTaskResults(results: RemyTaskResult[]): string {
     } else if (task.taskType === 'nav.go' && task.data) {
       const d = task.data as { route: string; navigated: boolean }
       summaries.push(`Navigating you to **${d.route}** now.`)
+
+      // ─── Workflow action results ───────────────────────────────────────────
+    } else if (task.taskType === 'agent.complete_todo' && task.data) {
+      const d = task.data as { success: boolean; message: string }
+      summaries.push(d.message)
+    } else if (
+      (task.taskType === 'agent.start_timer' || task.taskType === 'agent.stop_timer') &&
+      task.data
+    ) {
+      const d = task.data as { success: boolean; message: string }
+      summaries.push(d.message)
+    } else if (task.taskType === 'agent.set_food_budget' && task.data) {
+      const d = task.data as { success: boolean; message: string }
+      summaries.push(d.message)
+    } else if (task.taskType === 'agent.create_goal' && task.data) {
+      const d = task.data as { success: boolean; message: string }
+      summaries.push(d.message)
+    } else if (task.taskType === 'agent.mark_followup' && task.data) {
+      const d = task.data as { success: boolean; message: string }
+      summaries.push(d.message)
+    } else if (task.taskType === 'agent.shopping_list' && task.data) {
+      const d = task.data as { success: boolean; message: string }
+      summaries.push(d.message)
+    } else if (task.taskType === 'agent.recipe_dietary_check' && task.data) {
+      const d = task.data as { success: boolean; message: string }
+      summaries.push(d.message)
+
+      // ─── More read-only task formatting ────────────────────────────────────
+    } else if (task.taskType === 'briefing.morning' && task.data) {
+      const d = task.data as { briefing?: string; message?: string }
+      summaries.push(d.briefing ?? d.message ?? 'Morning briefing ready.')
+    } else if (task.taskType === 'goals.dashboard' && task.data) {
+      const d = task.data as {
+        goals?: Array<{ label: string; progress_pct?: number; status: string }>
+      }
+      if (d.goals && d.goals.length > 0) {
+        const lines = ['**Your goals:**']
+        for (const g of d.goals) {
+          const pct = g.progress_pct != null ? ` (${g.progress_pct}%)` : ''
+          lines.push(`- ${g.label}${pct} - ${g.status}`)
+        }
+        summaries.push(lines.join('\n'))
+      } else {
+        summaries.push('No active goals. Set one with "set a goal to..."')
+      }
+    } else if (task.taskType === 'tasks.list' && task.data) {
+      const d = task.data as { tasks?: Array<{ title: string; status: string; due_date?: string }> }
+      if (d.tasks && d.tasks.length > 0) {
+        const lines = [`**${d.tasks.length} task${d.tasks.length === 1 ? '' : 's'}:**`]
+        for (const t of d.tasks.slice(0, 10)) {
+          const due = t.due_date ? ` (due ${t.due_date})` : ''
+          lines.push(`- ${t.title}${due} [${t.status}]`)
+        }
+        summaries.push(lines.join('\n'))
+      } else {
+        summaries.push('No tasks found.')
+      }
+    } else if (task.taskType === 'staff.availability' && task.data) {
+      const d = task.data as { staff?: Array<{ name: string; available: boolean; role?: string }> }
+      if (d.staff && d.staff.length > 0) {
+        const available = d.staff.filter((s) => s.available)
+        const unavailable = d.staff.filter((s) => !s.available)
+        const lines: string[] = []
+        if (available.length > 0) {
+          lines.push(
+            `**Available (${available.length}):** ${available.map((s) => `${s.name}${s.role ? ` (${s.role})` : ''}`).join(', ')}`
+          )
+        }
+        if (unavailable.length > 0) {
+          lines.push(
+            `**Unavailable (${unavailable.length}):** ${unavailable.map((s) => s.name).join(', ')}`
+          )
+        }
+        summaries.push(lines.join('\n'))
+      } else {
+        summaries.push('No staff members found.')
+      }
     } else {
       summaries.push(`"${name}" completed successfully.`)
     }
@@ -548,35 +651,34 @@ export function sseHeaders(): HeadersInit {
 
 /**
  * Hard timeout for Ollama streaming calls.
- * 3 minutes - the 30b MoE model with partial GPU offload (9/49 layers)
- * regularly takes 40-74s per response. Under load or with long context,
- * it can exceed 90s. This only fires if Ollama is truly stuck.
+ * Gemma 4 responds in 1-6s. 30s catches genuine hangs without
+ * wasting 3 minutes on a dead connection.
  */
-export const OLLAMA_STREAM_TIMEOUT_MS = 180_000 // 3 min - 30b MoE model on 6GB VRAM can take 40-90s per response
+export const OLLAMA_STREAM_TIMEOUT_MS = 30_000
 
 /**
  * Max tokens for streaming conversational responses.
- * Prevents Ollama from generating megabytes of output and ballooning memory.
- * 2048 tokens ~ ~1500 words - more than enough for a chat reply.
+ * 4096 tokens ~ 3000 words. Gemma 4 with 128K context handles this easily.
  */
-export const OLLAMA_STREAM_MAX_TOKENS = 2048
+export const OLLAMA_STREAM_MAX_TOKENS = 4096
 
 /**
- * Operator-mode response budgets by context scope.
- * Keeps narrow questions tight while leaving enough headroom for true strategy work.
+ * Response token budgets by context scope.
+ * Gemma 4 is fast enough that generous budgets don't hurt latency.
+ * Let the model use what it needs; short answers stay short naturally.
  */
 export function getOperatorResponseTokenBudget(
   scope: 'full' | 'minimal' | 'focused',
   intent: 'question' | 'mixed' | 'command' = 'question'
 ): number {
-  let budget = 220
+  let budget = 1200
 
   if (scope === 'minimal') {
-    budget = intent === 'mixed' ? 160 : 120
+    budget = intent === 'mixed' ? 800 : 600
   } else if (scope === 'focused') {
-    budget = intent === 'mixed' ? 280 : 220
+    budget = intent === 'mixed' ? 1500 : 1200
   } else {
-    budget = intent === 'mixed' ? 520 : 420
+    budget = intent === 'mixed' ? 2500 : 2000
   }
 
   return Math.min(budget, OLLAMA_STREAM_MAX_TOKENS)
@@ -590,7 +692,7 @@ export function buildGreetingFastPath(now = new Date()): string {
 }
 
 /**
- * Filters out <think>...</think> blocks from qwen3 streaming output.
+ * Filters out <think>...</think> blocks from streaming output.
  * Accumulates partial tokens until a complete think block can be stripped.
  */
 export class ThinkingBlockFilter {
@@ -663,4 +765,209 @@ export function extractNavSuggestions(
   } catch {
     return []
   }
+}
+
+// ─── Action Suggestions ───────────────────────────────────────────────────────
+// After answering a question, suggest related actions Remy can execute.
+// Deterministic (regex-based), no LLM call. Max 2 suggestions per response.
+
+interface ActionSuggestion {
+  label: string
+  prompt: string // Pre-filled message the chef can send
+  description?: string
+}
+
+const ACTION_SUGGESTION_RULES: Array<{
+  trigger: RegExp
+  suggestions: ActionSuggestion[]
+}> = [
+  {
+    trigger: /\b(?:revenue|income|earnings|how much.*(?:make|earn))\b/i,
+    suggestions: [
+      { label: 'Full P&L', prompt: 'Show my P&L', description: 'Profit & loss breakdown' },
+      {
+        label: 'Cash flow forecast',
+        prompt: 'Cash flow forecast',
+        description: 'Projected cash flow',
+      },
+    ],
+  },
+  {
+    trigger: /\b(?:client|customer).*(?:detail|info|about)\b/i,
+    suggestions: [
+      {
+        label: 'Draft follow-up',
+        prompt: 'Draft a follow-up',
+        description: 'Write a follow-up message',
+      },
+      {
+        label: 'Check dietary needs',
+        prompt: 'Check dietary restrictions',
+        description: 'Review allergies & restrictions',
+      },
+    ],
+  },
+  {
+    trigger: /\b(?:event|dinner|party|booking).*(?:upcoming|next|this week|schedule)\b/i,
+    suggestions: [
+      {
+        label: 'Packing list',
+        prompt: 'Generate a packing list for my next event',
+        description: 'Gear & supplies checklist',
+      },
+      {
+        label: 'Prep timeline',
+        prompt: 'What do I need to prep?',
+        description: 'Prep readiness check',
+      },
+    ],
+  },
+  {
+    trigger: /\b(?:inquiry|lead|inquir).*(?:open|pending|new)\b/i,
+    suggestions: [
+      {
+        label: 'Draft response',
+        prompt: 'Draft a response to the inquiry',
+        description: 'Write a reply',
+      },
+      {
+        label: 'Check availability',
+        prompt: 'Check my availability',
+        description: 'See open dates',
+      },
+    ],
+  },
+  {
+    trigger: /\b(?:slow|quiet|no events|no bookings|gap|downtime)\b/i,
+    suggestions: [
+      {
+        label: 'Re-engage clients',
+        prompt: 'Who should I re-engage?',
+        description: 'Clients due for outreach',
+      },
+      {
+        label: 'Marketing ideas',
+        prompt: 'Marketing suggestions for slow season',
+        description: 'Growth strategies',
+      },
+    ],
+  },
+  {
+    trigger: /\b(?:overwhelm|stressed|busy|slammed|full rail|in the weeds)\b/i,
+    suggestions: [
+      { label: "Today's plan", prompt: 'Brief me', description: 'Prioritized daily plan' },
+      { label: 'Staff help', prompt: "Who's available to help?", description: 'Available staff' },
+    ],
+  },
+  {
+    trigger: /\b(?:margin|profit|food cost|pricing|charge|undercharg)\b/i,
+    suggestions: [
+      {
+        label: 'Break-even analysis',
+        prompt: 'Break-even analysis for my next event',
+        description: 'Cost vs revenue',
+      },
+      {
+        label: 'Quote comparison',
+        prompt: 'How do my quotes compare?',
+        description: 'Quote range analysis',
+      },
+    ],
+  },
+  {
+    trigger: /\b(?:recipe|menu|dish|course)\b/i,
+    suggestions: [
+      {
+        label: 'Shopping list',
+        prompt: 'Shopping list for this menu',
+        description: 'Ingredients & quantities',
+      },
+      {
+        label: 'Dietary check',
+        prompt: 'Check dietary compatibility',
+        description: 'Allergen & diet analysis',
+      },
+    ],
+  },
+  {
+    trigger: /\b(?:prep|shopping|groceries|pack|drive|cook)\b.*\b(?:start|begin|ready|time)\b/i,
+    suggestions: [
+      {
+        label: 'Start timer',
+        prompt: 'Start the prep timer',
+        description: 'Track your work phase',
+      },
+      {
+        label: 'Packing list',
+        prompt: 'Generate packing list',
+        description: 'Gear & supplies checklist',
+      },
+    ],
+  },
+  {
+    trigger: /\b(?:done|finished|completed|wrapped up|all set)\b/i,
+    suggestions: [
+      { label: 'Stop timer', prompt: 'Stop the timer', description: 'Log elapsed time' },
+      {
+        label: 'Mark follow-up sent',
+        prompt: 'Mark the follow-up done',
+        description: 'Update event closure',
+      },
+    ],
+  },
+  {
+    trigger: /\b(?:goal|target|objective|plan|quarter|year)\b.*\b(?:set|create|track|new)\b/i,
+    suggestions: [
+      {
+        label: 'Set a goal',
+        prompt: 'Set a goal to book 10 events',
+        description: 'Create a business goal',
+      },
+      { label: 'Goal dashboard', prompt: 'Show my goals', description: 'Progress overview' },
+    ],
+  },
+  {
+    trigger: /\b(?:budget|food cost|spend|cap)\b/i,
+    suggestions: [
+      {
+        label: 'Set food budget',
+        prompt: 'Set food budget for my next event',
+        description: 'Track ingredient spend',
+      },
+      {
+        label: 'Expense breakdown',
+        prompt: 'Show my expense breakdown',
+        description: 'Where money goes',
+      },
+    ],
+  },
+  {
+    trigger: /\b(?:todo|task|checklist|to.do)\b/i,
+    suggestions: [
+      { label: 'Complete a todo', prompt: 'Mark my top todo done', description: 'Check it off' },
+      { label: 'Create a todo', prompt: 'Create a todo', description: 'Add a new task' },
+    ],
+  },
+]
+
+export function suggestFollowUpActions(
+  userMessage: string,
+  remyResponse: string
+): ActionSuggestion[] {
+  const combined = `${userMessage} ${remyResponse}`
+  const suggestions: ActionSuggestion[] = []
+
+  for (const rule of ACTION_SUGGESTION_RULES) {
+    if (rule.trigger.test(combined)) {
+      for (const s of rule.suggestions) {
+        // Don't suggest something the chef already asked about
+        if (!new RegExp(s.prompt.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(userMessage)) {
+          suggestions.push(s)
+        }
+      }
+    }
+    if (suggestions.length >= 2) break
+  }
+
+  return suggestions.slice(0, 2)
 }

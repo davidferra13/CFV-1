@@ -6,6 +6,8 @@
 import { cookies } from 'next/headers'
 import { isAdmin } from '@/lib/auth/admin'
 import { revalidatePath } from 'next/cache'
+import { logAdminAction } from '@/lib/admin/audit'
+import { requireChef } from '@/lib/auth/get-user'
 
 const PREVIEW_COOKIE = 'chefflow-admin-preview'
 
@@ -28,6 +30,19 @@ export async function toggleAdminPreview(enabled: boolean): Promise<void> {
     })
   } else {
     store.delete(PREVIEW_COOKIE)
+  }
+
+  // Audit log the preview mode toggle (non-blocking)
+  try {
+    const user = await requireChef()
+    await logAdminAction({
+      actorEmail: user.email ?? 'unknown',
+      actorUserId: user.id,
+      actionType: enabled ? 'admin_preview_enabled' : 'admin_preview_disabled',
+      details: { mode: enabled ? 'chef' : 'admin' },
+    })
+  } catch {
+    // Non-blocking; admin status already verified above
   }
 
   revalidatePath('/', 'layout')

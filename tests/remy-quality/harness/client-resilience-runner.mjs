@@ -7,7 +7,7 @@
  *
  *  1. Rate limit exhaustion — rapid-fire 15 messages, verify refusal at #13
  *  2. Bad auth — expired cookie, garbage cookie, no cookie, wrong role (chef)
- *  3. Cold model load — unload qwen3:30b, time the cold-start response
+ *  3. Cold model load — unload gemma4, time the cold-start response
  *  4. Max history capacity — 20 messages of ~3500 chars each, verify coherence
  *  5. NAV_SUGGESTIONS stress — prompts designed to trigger nav output, validate JSON
  *
@@ -18,7 +18,7 @@
  *   node tests/remy-quality/harness/client-resilience-runner.mjs
  *
  * WARNING: Test 1 (rate limit) will exhaust the rate limit bucket for ~60s.
- *          Test 3 (cold start) will unload qwen3:30b temporarily.
+ *          Test 3 (cold start) will unload gemma4 temporarily.
  *          Run this suite LAST, not before other suites.
  */
 
@@ -364,7 +364,7 @@ async function testColdStart(cookie) {
   console.log('\n' + '═'.repeat(60))
   console.log('  TEST 3: Cold Model Load')
   console.log('═'.repeat(60))
-  console.log('  Unloading qwen3:30b, then timing cold-start response\n')
+  console.log('  Unloading gemma4, then timing cold-start response\n')
 
   const checks = []
 
@@ -377,12 +377,12 @@ async function testColdStart(cookie) {
   const warmMs = warmResult.ms
 
   // Unload the model
-  process.stdout.write('  Unloading qwen3:30b... ')
+  process.stdout.write('  Unloading gemma4... ')
   try {
     await fetch(`${OLLAMA_URL}/api/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'qwen3:30b', keep_alive: 0 }),
+      body: JSON.stringify({ model: 'gemma4', keep_alive: 0 }),
     })
     console.log('done')
   } catch (err) {
@@ -449,7 +449,7 @@ async function testColdStart(cookie) {
     await fetch(`${OLLAMA_URL}/api/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'qwen3:30b', prompt: 'hello', options: { num_predict: 1 } }),
+      body: JSON.stringify({ model: 'gemma4', prompt: 'hello', options: { num_predict: 1 } }),
     })
   } catch {}
 

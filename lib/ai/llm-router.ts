@@ -24,9 +24,7 @@ export interface OllamaEndpoint {
 interface RouterState {
   endpoints: OllamaEndpoint[]
   lastHealthCheck: Date | null
-  /** Don't hammer health checks - minimum 60s between checks.
-   *  The badge also polls /api/tags separately, so keep this relaxed
-   *  to avoid double-polling Ollama every few seconds. */
+  /** Minimum 30s between health checks. Fast enough to detect recovery quickly. */
   healthCheckCooldownMs: number
 }
 
@@ -37,7 +35,7 @@ interface RouterState {
 const state: RouterState = {
   endpoints: [],
   lastHealthCheck: null,
-  healthCheckCooldownMs: 60_000,
+  healthCheckCooldownMs: 30_000,
 }
 
 // ============================================
@@ -77,7 +75,7 @@ export async function routeTask(
  * Route a Remy chat request. Returns full endpoint config or null if unavailable.
  * Convenience wrapper around routeTask() for the Remy streaming route.
  */
-export async function routeForRemy(_opts?: { preferEndpoint?: LlmEndpoint }): Promise<{
+export async function routeForRemy(): Promise<{
   host: string
   model: string
   endpointName: 'pc'
@@ -89,8 +87,8 @@ export async function routeForRemy(_opts?: { preferEndpoint?: LlmEndpoint }): Pr
 
   return {
     host: url,
-    // Use fast tier for Remy streaming responses - lower latency for interactive use.
-    model: getModelForEndpoint('pc', 'fast'),
+    // Standard tier for Remy - Gemma 4 is fast enough that standard has no latency penalty.
+    model: getModelForEndpoint('pc', 'standard'),
     endpointName: 'pc',
   }
 }

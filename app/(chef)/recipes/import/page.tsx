@@ -15,8 +15,8 @@ export const metadata: Metadata = { title: 'Import Recipes' }
 export default async function RecipeImportPage() {
   await requireChef()
 
-  const aiConfigured = !!(process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY)
-  const visionConfigured = !!process.env.GEMINI_API_KEY
+  const aiConfigured = !!process.env.OLLAMA_BASE_URL
+  const visionConfigured = !!process.env.OLLAMA_BASE_URL
 
   return <RecipeImportHubClient aiConfigured={aiConfigured} visionConfigured={visionConfigured} />
 }

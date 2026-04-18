@@ -92,7 +92,7 @@ Rules:
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'qwen2.5vl',
+        model: 'gemma4',
         prompt,
         images: [imageBase64],
         stream: false,
@@ -101,7 +101,7 @@ Rules:
           num_predict: 4096,
         },
       }),
-      signal: AbortSignal.timeout(120000), // 2 min timeout for vision
+      signal: AbortSignal.timeout(30000), // 30s timeout for vision (Gemma 4 is fast)
     })
 
     if (!response.ok) {

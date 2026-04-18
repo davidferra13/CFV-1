@@ -1,15 +1,15 @@
-import { notFound } from 'next/navigation'
 import { format } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getViewerEventByToken } from '@/lib/sharing/actions'
+import { TokenExpiredPage } from '@/components/ui/token-expired-page'
 import { ViewerIntentForm } from '@/components/sharing/viewer-intent-form'
 
 export default async function ViewerSharePage({ params }: { params: { token: string } }) {
   const data = await getViewerEventByToken(params.token)
 
   if (!data) {
-    notFound()
+    return <TokenExpiredPage reason="not_found" noun="event" />
   }
 
   const statusLabel =

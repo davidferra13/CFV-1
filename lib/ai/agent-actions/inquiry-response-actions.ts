@@ -4,7 +4,7 @@
 
 import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
 import type { AgentActionPreview } from '@/lib/ai/command-types'
-import { getServiceConfigForTenant } from '@/lib/chef-services/service-config-actions'
+import { getServiceConfigForTenant } from '@/lib/chef-services/service-config-internal'
 import { generateFirstResponse } from '@/lib/templates/inquiry-first-response'
 import { createServerClient } from '@/lib/db/server'
 import type { PricingConfig } from '@/lib/pricing/config-types'

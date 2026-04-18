@@ -19,6 +19,16 @@
         "postgresql://postgres:CHEF.jdgyuegf9924092.FLOW@127.0.0.1:54322/postgres"
       ]
     },
+    "ollama-delegate": {
+      "type": "stdio",
+      "command": "node",
+      "args": [".claude/mcp-servers/ollama-delegate/server.mjs"],
+      "env": {
+        "OLLAMA_DELEGATE_URL": "http://localhost:11434",
+        "OLLAMA_DELEGATE_MODEL": "gemma4:e4b",
+        "OLLAMA_DELEGATE_TIMEOUT": "120000"
+      }
+    },
     "mempalace": {
       "type": "stdio",
       "command": "py",

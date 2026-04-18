@@ -325,10 +325,27 @@ export default async function ChefDashboard() {
   const timeOfDay = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening'
   const firstName = (user.email ?? '').split('@')[0].split('.')[0]
 
-  const [archetype, onboardingProgress, remyAlerts] = await Promise.all([
+  const [archetype, onboardingProgress, remyAlerts, profileGated] = await Promise.all([
     safe('archetype', () => getCachedChefArchetype(user.entityId), null),
     safe('onboardingProgress', () => getOnboardingProgress(), null),
     safe('remyAlerts', () => getActiveAlerts(10), []),
+    safe(
+      'profileGated',
+      async () => {
+        const { createServerClient } = await import('@/lib/db/server')
+        const db: any = createServerClient()
+        const { data } = await db
+          .from('chefs')
+          .select('bio, tagline, display_name, slug')
+          .eq('id', user.tenantId)
+          .single()
+        if (!data?.slug) return false // no public page yet
+        const isEmailPrefix =
+          data.display_name?.includes('@') || /^[a-z0-9]+$/i.test(data.display_name?.trim() || '')
+        return !(data.bio || data.tagline) || isEmailPrefix
+      },
+      false
+    ),
   ])
   const primaryAction = getDashboardPrimaryAction(archetype)
 
@@ -390,6 +407,21 @@ export default async function ChefDashboard() {
 
       {/* Onboarding banner - shows until setup is complete, then auto-hides */}
       <OnboardingBanner />
+
+      {/* Profile gated warning - public profile hidden because bio/tagline missing */}
+      {profileGated && (
+        <div className="rounded-xl border border-amber-800/40 bg-amber-950/30 px-5 py-3 flex items-center justify-between gap-4">
+          <p className="text-sm text-amber-300">
+            Your public profile is hidden because it&apos;s missing a bio or tagline.
+          </p>
+          <Link
+            href="/settings/my-profile"
+            className="text-sm font-medium text-amber-400 hover:text-amber-300 whitespace-nowrap"
+          >
+            Complete Profile &rarr;
+          </Link>
+        </div>
+      )}
 
       {/* Onboarding checklist widget - shows setup progress until all phases complete */}
       {onboardingProgress && <OnboardingChecklistWidget progress={onboardingProgress} />}

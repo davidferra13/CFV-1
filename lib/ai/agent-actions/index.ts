@@ -31,6 +31,8 @@ import { inquiryResponseAgentActions } from './inquiry-response-actions'
 // ─── Menu proposal + lifecycle circle actions (2026-03-06) ───────────────
 import { menuProposalAgentActions } from './menu-proposal-actions'
 import { lifecycleCircleAgentActions } from './lifecycle-circle-actions'
+// ─── Workflow actions (2026-04-18) ──────────────────────────────────────────
+import { workflowAgentActions } from './workflow-actions'
 
 let registered = false
 
@@ -71,4 +73,7 @@ export function ensureAgentActionsRegistered(): void {
   // ─── Menu proposal + lifecycle circle actions (2026-03-06) ───────────────
   registerAgentActions(menuProposalAgentActions)
   registerAgentActions(lifecycleCircleAgentActions)
+
+  // ─── Workflow actions (2026-04-18) ──────────────────────────────────────────
+  registerAgentActions(workflowAgentActions)
 }

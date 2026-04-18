@@ -90,8 +90,9 @@ export default function AboutPage() {
             software should help with that, not make it worse.
           </p>
           <p className="mt-3 text-sm leading-relaxed text-stone-400">
-            No paywalls, no feature tiers, no locked capabilities. If you want to support the
-            project, there is an optional contribution in settings. That is it.
+            The core platform is free, forever. Every workflow a solo chef needs to operate is
+            included at no cost. Premium features that add automation, AI, and scale are available
+            for subscribers who want them, but nothing essential is locked.
           </p>
         </div>
       </section>

@@ -467,6 +467,20 @@ export async function POST(request: Request) {
       )
     }
 
+    // Inventory deduction (non-blocking, matches POS counterCheckout pattern)
+    try {
+      const { executeSaleDeduction } = await import('@/lib/commerce/inventory-bridge')
+      await executeSaleDeduction((sale as any).id)
+    } catch (err) {
+      console.error('[kiosk/order/checkout] Inventory deduction failed (non-blocking):', err)
+    }
+    try {
+      const { deductProductStock } = await import('@/lib/commerce/inventory-bridge')
+      await deductProductStock((sale as any).id)
+    } catch (err) {
+      console.error('[kiosk/order/checkout] Product stock deduction failed (non-blocking):', err)
+    }
+
     try {
       await syncRegisterSessionTotals({
         db,

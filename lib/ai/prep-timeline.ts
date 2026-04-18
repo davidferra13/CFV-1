@@ -2,14 +2,15 @@
 
 // Prep Timeline Generator
 // AI creates a backward-scheduled prep plan from service time through all recipe prep needs.
-// Routed to Gemini (creative scheduling, not PII).
+// Routed to local Ollama (Gemma 4). No cloud dependency.
 // Output is DRAFT ONLY - chef approves/edits before using.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import { GoogleGenAI } from '@google/genai'
+import { z } from 'zod'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 
-// ── Types ─────────────────────────────────────────────────────────────────
+// -- Types --
 
 export interface PrepTask {
   time: string // e.g. "9:00 AM"
@@ -42,13 +43,23 @@ interface MenuComponentRow {
   } | null
 }
 
-const getClient = () => {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) throw new Error('GEMINI_API_KEY not configured')
-  return new GoogleGenAI({ apiKey })
-}
+const PrepTimelineSchema = z.object({
+  tasks: z.array(
+    z.object({
+      time: z.string(),
+      task: z.string(),
+      duration: z.string(),
+      recipe: z.string(),
+      canParallelize: z.boolean(),
+      notes: z.string().nullable(),
+    })
+  ),
+  totalPrepHours: z.number(),
+  suggestedStartTime: z.string(),
+  criticalPath: z.array(z.string()),
+})
 
-// ── Server Action ─────────────────────────────────────────────────────────
+// -- Server Action --
 
 export async function generatePrepTimeline(eventId: string): Promise<PrepTimeline> {
   const user = await requireChef()
@@ -90,9 +101,17 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
     }
   })
 
-  const prompt = `You are a culinary operations planner. Create a backward-scheduled prep timeline for a private chef event.
+  const systemPrompt = `You are a culinary operations planner. Create a backward-scheduled prep timeline for a private chef event.
 
-Event:
+Rules for backward scheduling:
+1. Work backward from service time
+2. Account for plating time (3-5 min per course at scale)
+3. Note which tasks can run in parallel (e.g. roast in oven while making sauce)
+4. Flag the critical path - tasks with zero slack
+5. Account for guest count - scaling affects timing
+6. Add 15-20% buffer to all estimates`
+
+  const userContent = `Event:
   Occasion: ${event.occasion ?? 'Private Dinner'}
   Date: ${event.event_date ?? 'TBD'}
   Guest count: ${guestCount}
@@ -102,43 +121,24 @@ Event:
 Menu (${menuItems.length} dishes):
 ${recipeDetails.map((r) => `  - [${r.course}] ${r.dish}${r.prepMinutes ? ': prep ' + r.prepMinutes + 'min' : ''}${r.cookMinutes ? ', cook ' + r.cookMinutes + 'min' : ''}`).join('\n') || '  - No dishes assigned yet'}
 
-Rules for backward scheduling:
-1. Work backward from service time
-2. Account for plating time (3–5 min per course at scale)
-3. Note which tasks can run in parallel (e.g. roast in oven while making sauce)
-4. Flag the critical path - tasks with zero slack
-5. Account for ${guestCount} guests - scaling affects timing
-6. Add 15–20% buffer to all estimates
-
 Return JSON: {
   "tasks": [{ "time": "H:MM AM/PM", "task": "...", "duration": "X min", "recipe": "dish name", "canParallelize": bool, "notes": "...or null" }],
   "totalPrepHours": number,
   "suggestedStartTime": "H:MM AM/PM",
   "criticalPath": ["task description", ...]
-}
+}`
 
-Return ONLY valid JSON.`
-
-  try {
-    const ai = getClient()
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: prompt,
-      config: { temperature: 0.3, responseMimeType: 'application/json' },
-    })
-    const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const parsed = JSON.parse(text)
-    return {
-      eventDate: event.event_date ?? '',
-      serviceTime: serveTime,
-      tasks: parsed.tasks ?? [],
-      totalPrepHours: parsed.totalPrepHours ?? 0,
-      suggestedStartTime: parsed.suggestedStartTime ?? 'TBD',
-      criticalPath: parsed.criticalPath ?? [],
-      generatedAt: new Date().toISOString(),
-    }
-  } catch (err) {
-    console.error('[prep-timeline] Failed:', err)
-    throw new Error('Could not generate prep timeline. Please try again.')
+  const parsed = await parseWithOllama(systemPrompt, userContent, PrepTimelineSchema, {
+    temperature: 0.3,
+    maxTokens: 2048,
+  })
+  return {
+    eventDate: event.event_date ?? '',
+    serviceTime: serveTime,
+    tasks: parsed.tasks ?? [],
+    totalPrepHours: parsed.totalPrepHours ?? 0,
+    suggestedStartTime: parsed.suggestedStartTime ?? 'TBD',
+    criticalPath: parsed.criticalPath ?? [],
+    generatedAt: new Date().toISOString(),
   }
 }

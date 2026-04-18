@@ -37,6 +37,10 @@ export interface ParseOllamaOptions {
   endpointUrl?: string
   /** Override the model name (e.g. Pi model). If not set, uses tier-based resolution. */
   model?: string
+  /** Base64-encoded images for vision tasks. Gemma 4 has native multimodal support. */
+  images?: string[]
+  /** Sampling temperature. Lower = more deterministic. Default: Ollama model default. */
+  temperature?: number
 }
 
 /** Default max tokens for structured JSON responses - keeps Ollama from running away */
@@ -47,9 +51,8 @@ const DEFAULT_MAX_TOKENS = 512
 const MAX_INPUT_LENGTH = 100_000
 
 /** Default hard timeout for any Ollama call - prevents infinite hangs.
- *  60s is generous for a 30b model on a laptop - normal calls finish in 10-30s.
- *  This only fires if Ollama is truly stuck, not just thinking. */
-const DEFAULT_OLLAMA_TIMEOUT_MS = 60_000
+ *  10s is 5x margin for Gemma 4 which responds in <2s. */
+const DEFAULT_OLLAMA_TIMEOUT_MS = 10_000
 
 /**
  * Wraps a promise with a hard timeout. If the promise doesn't resolve
@@ -125,45 +128,52 @@ export async function parseWithOllama<T>(
   const startTime = Date.now()
   const timeoutMs = options?.timeoutMs ?? DEFAULT_OLLAMA_TIMEOUT_MS
 
-  // Retry Ollama call up to 2 times on transient errors, with hard timeout per attempt
+  // Single call with one retry on transient failure. Gemma 4 responds in <2s;
+  // if it fails twice, something is genuinely wrong.
   let rawText: string
-  const { withRetry } = await import('@/lib/resilience/retry')
-  try {
-    const response = await withRetry(
-      () =>
-        withTimeout(
-          ollama.chat({
-            model,
-            messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: userContent },
-            ],
-            format: 'json',
-            options: { num_predict: options?.maxTokens ?? DEFAULT_MAX_TOKENS },
-            keep_alive: '30m',
-            think: false,
-          } as any) as unknown as Promise<ChatResponse>,
-          timeoutMs,
-          'chat'
-        ),
+  const chatPayload = {
+    model,
+    messages: [
+      { role: 'system', content: systemPrompt },
       {
-        maxAttempts: 2,
-        onRetry: (attempt, err) => {
-          log.ai.warn(`Retry attempt ${attempt}`, { error: err })
-        },
-        retryOn: (err) => {
-          if (err instanceof OllamaOfflineError) return true
-          const msg = err instanceof Error ? err.message : String(err)
-          return (
-            msg.includes('timeout') ||
-            msg.includes('aborted') ||
-            msg.includes('AbortError') ||
-            msg.includes('unreachable') ||
-            msg.includes('network')
-          )
-        },
-      }
-    )
+        role: 'user',
+        content: userContent,
+        ...(options?.images?.length ? { images: options.images } : {}),
+      },
+    ],
+    format: 'json',
+    options: {
+      num_predict: options?.maxTokens ?? DEFAULT_MAX_TOKENS,
+      ...(options?.temperature !== undefined ? { temperature: options.temperature } : {}),
+    },
+    keep_alive: '30m',
+    think: false,
+  } as any
+  try {
+    let response: ChatResponse
+    try {
+      response = (await withTimeout(
+        ollama.chat(chatPayload) as unknown as Promise<ChatResponse>,
+        timeoutMs,
+        'chat'
+      )) as ChatResponse
+    } catch (firstErr) {
+      // Single retry on transient errors
+      const msg = firstErr instanceof Error ? firstErr.message : String(firstErr)
+      const isTransient =
+        firstErr instanceof OllamaOfflineError ||
+        msg.includes('timeout') ||
+        msg.includes('aborted') ||
+        msg.includes('unreachable') ||
+        msg.includes('network')
+      if (!isTransient) throw firstErr
+      log.ai.warn('Retrying after transient failure', { error: firstErr })
+      response = (await withTimeout(
+        ollama.chat(chatPayload) as unknown as Promise<ChatResponse>,
+        timeoutMs,
+        'chat'
+      )) as ChatResponse
+    }
     rawText = response.message.content
   } catch (err) {
     const errMsg = err instanceof Error ? err.message : String(err)

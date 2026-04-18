@@ -4,9 +4,9 @@
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
-export const REMY_MAX_MESSAGE_LENGTH = 2000
+export const REMY_MAX_MESSAGE_LENGTH = 8000
 export const REMY_MAX_MEMORY_LENGTH = 500
-export const REMY_RATE_LIMIT_MAX = 12 // messages per window
+export const REMY_RATE_LIMIT_MAX = 30 // messages per window
 export const REMY_RATE_LIMIT_WINDOW_MS = 60_000 // 1 minute
 
 // ─── Result Type ────────────────────────────────────────────────────────────

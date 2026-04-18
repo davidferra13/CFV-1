@@ -135,20 +135,5 @@ export async function getDepositDefaults(): Promise<{
   }
 }
 
-// ─── Admin helper: fetch settings for a tenant (no auth check) ───────────
-// Used by cron routes to read settings for any tenant.
-
-export async function getAutomationSettingsForTenant(
-  tenantId: string
-): Promise<Omit<ChefAutomationSettings, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>> {
-  const db = createServerClient({ admin: true })
-
-  const { data } = await db
-    .from('chef_automation_settings' as any)
-    .select('*')
-    .eq('tenant_id', tenantId)
-    .maybeSingle()
-
-  if (!data) return DEFAULT_AUTOMATION_SETTINGS
-  return data as unknown as ChefAutomationSettings
-}
+// NOTE: getAutomationSettingsForTenant moved to @/lib/automations/settings-internal
+// to avoid exposing it as a browser-callable server action.

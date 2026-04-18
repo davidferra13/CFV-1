@@ -13,10 +13,13 @@ import { createAdminClient } from '@/lib/db/admin'
 
 /**
  * Fetch a cannabis invitation by its token.
- * Returns null if the token is invalid, expired, already claimed, or not approved.
+ * Uses admin client to bypass RLS (the claiming user is not the inviter,
+ * so the inviter-only SELECT policy would block this query).
+ * Returns null for any invalid/expired/claimed token (generic response
+ * to prevent token status enumeration).
  */
 export async function getCannabisInviteByToken(token: string) {
-  const db: any = createServerClient()
+  const db: any = createAdminClient()
 
   const { data, error } = await db
     .from('cannabis_tier_invitations')
@@ -46,8 +49,8 @@ export async function getCannabisInviteByToken(token: string) {
 /**
  * The authenticated user claims the cannabis invite.
  * Must be called by someone who is signed in - their auth.uid() is used.
- * Validates the token is still valid, then:
- * 1. Marks the invitation as claimed
+ * Validates the token is still valid, then atomically:
+ * 1. Marks the invitation as claimed (with expiration re-check + row count guard)
  * 2. Inserts a cannabis_tier_users row for the claiming user
  */
 export async function claimCannabisInvite(token: string) {
@@ -72,15 +75,18 @@ export async function claimCannabisInvite(token: string) {
     }
   }
 
+  // Use admin client for all writes (bypasses RLS)
+  const adminClient: any = createAdminClient()
+
   // Get user role info
-  const { data: roleData } = await db
+  const { data: roleData } = await adminClient
     .from('user_roles')
     .select('role, entity_id')
     .eq('auth_user_id', user.id)
     .single()
 
   // Check if they already have tier access
-  const { data: existing } = await db
+  const { data: existing } = await adminClient
     .from('cannabis_tier_users')
     .select('status')
     .eq('auth_user_id', user.id)
@@ -90,19 +96,31 @@ export async function claimCannabisInvite(token: string) {
     return { success: false, error: 'You already have cannabis tier access.' }
   }
 
-  // Use admin client for the writes (bypasses RLS for insert into cannabis_tier_users)
-  const adminClient: any = createAdminClient()
-
-  // Mark invite as claimed
-  const { error: claimError } = await (adminClient as any)
+  // Atomically claim the invite with ALL guards:
+  // - must still be approved
+  // - must not be claimed yet (race condition guard)
+  // - must not be expired (expiration re-check at write time)
+  const now = new Date().toISOString()
+  const { data: claimResult, error: claimError } = await adminClient
     .from('cannabis_tier_invitations')
-    .update({ claimed_at: new Date().toISOString() })
+    .update({ claimed_at: now })
     .eq('id', invite.id)
     .eq('admin_approval_status', 'approved')
     .is('claimed_at', null)
+    .gt('expires_at', now)
+    .select('id')
 
   if (claimError) {
     return { success: false, error: 'Failed to claim invitation. Please try again.' }
+  }
+
+  // Check affected row count: if zero rows matched, someone else claimed it
+  // or it expired between validation and write
+  if (!claimResult || claimResult.length === 0) {
+    return {
+      success: false,
+      error: 'This invitation is invalid, expired, or has already been claimed.',
+    }
   }
 
   // Grant cannabis tier
@@ -113,7 +131,7 @@ export async function claimCannabisInvite(token: string) {
   if (userType === 'chef' && roleData?.entity_id) {
     tenantId = roleData.entity_id
   } else if (userType === 'client' && roleData?.entity_id) {
-    const { data: clientData } = await (adminClient as any)
+    const { data: clientData } = await adminClient
       .from('clients')
       .select('tenant_id')
       .eq('id', roleData.entity_id)
@@ -121,7 +139,7 @@ export async function claimCannabisInvite(token: string) {
     tenantId = clientData?.tenant_id ?? undefined
   }
 
-  const { error: grantError } = await (adminClient as any).from('cannabis_tier_users').upsert(
+  const { error: grantError } = await adminClient.from('cannabis_tier_users').upsert(
     {
       auth_user_id: user.id,
       user_type: userType,

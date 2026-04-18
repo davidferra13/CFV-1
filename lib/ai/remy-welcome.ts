@@ -4,7 +4,7 @@
 
 export const REMY_WELCOME_MESSAGE = `Welcome to ChefFlow! I'm Remy - your AI sous chef.
 
-I run on ChefFlow's own private AI, so your data stays yours. Responses may take a moment longer than cloud AI services, but nothing leaves ChefFlow.
+I run on ChefFlow's own private AI, so your data stays yours. Fast, private, and nothing leaves ChefFlow.
 
 Here are some things I can help with right now:
 

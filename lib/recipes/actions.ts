@@ -6,7 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import type { Database } from '@/types/database'
 import { invalidateRemyContextCache } from '@/lib/ai/remy-context'
@@ -843,6 +843,7 @@ export async function addIngredientToRecipe(recipeId: string, input: AddIngredie
 
   revalidatePath(`/recipes/${recipeId}`)
   revalidatePath('/culinary') // EC-G4: bust shopping list cache
+  revalidateTag('recipe-costs')
   return {
     success: true,
     recipeIngredient,
@@ -923,6 +924,7 @@ export async function updateRecipeIngredient(
 
   revalidatePath(`/recipes/${ri.recipe_id}`)
   revalidatePath('/culinary') // EC-G4: bust shopping list cache
+  revalidateTag('recipe-costs')
   return { success: true, costWarning }
 }
 
@@ -961,6 +963,7 @@ export async function removeIngredientFromRecipe(recipeIngredientId: string) {
 
   revalidatePath(`/recipes/${ri.recipe_id}`)
   revalidatePath('/culinary') // EC-G4: bust shopping list cache
+  revalidateTag('recipe-costs')
   return { success: true }
 }
 

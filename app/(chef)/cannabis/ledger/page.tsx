@@ -33,7 +33,36 @@ const ENTRY_TYPE_LABELS: Record<string, string> = {
 }
 
 export default async function CannabisLedgerPage() {
-  const { events, entries, totals } = await getCannabisLedger()
+  let ledgerData: Awaited<ReturnType<typeof getCannabisLedger>>
+  try {
+    ledgerData = await getCannabisLedger()
+  } catch (err) {
+    return (
+      <CannabisPageWrapper>
+        <div className="px-6 py-8 max-w-3xl mx-auto">
+          <CannabisPortalHeader
+            title="Cannabis Ledger"
+            subtitle="Financial record for all cannabis events"
+            backHref="/cannabis"
+            backLabel="Cannabis Hub"
+          />
+          <div
+            className="rounded-xl p-8 text-center"
+            style={{
+              background: '#1a0f0f',
+              border: '1px solid rgba(239, 154, 154, 0.3)',
+            }}
+          >
+            <p className="text-sm" style={{ color: '#ef9a9a' }}>
+              Failed to load ledger data. Please try again later.
+            </p>
+          </div>
+        </div>
+      </CannabisPageWrapper>
+    )
+  }
+
+  const { entries, totals } = ledgerData
 
   return (
     <CannabisPageWrapper>

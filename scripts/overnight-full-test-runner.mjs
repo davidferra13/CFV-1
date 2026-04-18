@@ -19,7 +19,7 @@
  *
  * Prerequisites:
  *   - Beta server running at beta.cheflowhq.com (localhost:3200)
- *   - Ollama running with qwen3:4b + qwen3-coder models loaded
+ *   - Ollama running with gemma4 loaded
  *   - Agent test account seeded
  */
 

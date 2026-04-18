@@ -13,7 +13,7 @@
  *
  * Prerequisites:
  *   - Dev server running on port 3100
- *   - Ollama running with qwen3:4b + qwen3-coder:30b loaded
+ *   - Ollama running with gemma4 loaded
  *   - Agent test account exists
  */
 
@@ -282,8 +282,8 @@ async function checkOllama() {
     return {
       running: true,
       models: modelNames,
-      hasFast: modelNames.some((n) => n.includes('qwen3:4b')),
-      hasStandard: modelNames.some((n) => n.includes('qwen3-coder') || n.includes('qwen3:30b')),
+      hasFast: modelNames.some((n) => n.includes('gemma4')),
+      hasStandard: modelNames.some((n) => n.includes('gemma4')),
     }
   } catch {
     return { running: false, models: [], hasFast: false, hasStandard: false }
@@ -426,10 +426,10 @@ async function main() {
   console.log(`  OK Ollama running (${ollama.models.length} models loaded)`)
 
   if (!ollama.hasFast) {
-    console.warn('  WARN qwen3:4b not loaded - classification may use a different model')
+    console.warn('  WARN gemma4 not loaded - classification may use a different model')
   }
   if (!ollama.hasStandard) {
-    console.warn('  WARN qwen3-coder:30b not loaded - responses may use a different model')
+    console.warn('  WARN gemma4 not loaded - responses may use a different model')
   }
 
   // 2. Authenticate
@@ -441,12 +441,12 @@ async function main() {
   // 3. Pre-warm models
   console.log('  Pre-warming models...')
   if (ollama.hasFast) {
-    const prewarm = await prewarmModel('qwen3:4b')
+    const prewarm = await prewarmModel('gemma4')
     if (prewarm === true) {
-      console.log('    OK qwen3:4b warm')
+      console.log('    OK gemma4 warm')
     } else {
       console.warn(
-        '    WARN qwen3:4b prewarm skipped (' +
+        '    WARN gemma4 prewarm skipped (' +
           (prewarm?.error || ('non-200 response within ' + PREWARM_TIMEOUT_MS + 'ms')) +
           ')'
       )
@@ -628,8 +628,8 @@ async function main() {
 
   // 6. Generate reports
   const models = {
-    fast: 'qwen3:4b',
-    standard: ollama.models.find((m) => m.includes('qwen3-coder')) || 'qwen3-coder:30b',
+    fast: 'gemma4',
+    standard: 'gemma4',
   }
 
   const benchmarkDir = path.join(__dirname, '..', 'benchmarks')

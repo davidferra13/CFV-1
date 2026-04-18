@@ -455,6 +455,28 @@ export async function getRelationshipTenure(createdAt: string): Promise<Relation
   return 'veteran'
 }
 
+// ─── Archetype-Aware Welcome ────────────────────────────────────────────────
+
+function getArchetypeWelcome(chefName: string, archetype?: string | null): string {
+  const name = chefName || 'Chef'
+  switch (archetype) {
+    case 'private_chef':
+      return `Welcome aboard, ${name}! Your private chef workspace is ready. I'm Remy, your AI assistant. I can help with client management, event planning, quotes, and keeping your business running smoothly.`
+    case 'caterer':
+      return `Welcome aboard, ${name}! Your catering command center is set up. I'm Remy, your AI assistant. I can help you manage events, build proposals, track staff, and keep every detail covered.`
+    case 'meal_prep':
+      return `Welcome aboard, ${name}! Your meal prep hub is ready to roll. I'm Remy, your AI assistant. I can help with order management, client preferences, prep scheduling, and scaling your operation.`
+    case 'bakery':
+      return `Welcome aboard, ${name}! Your bakery workspace is all set. I'm Remy, your AI assistant. I can help with orders, product pricing, client requests, and keeping your production on track.`
+    case 'restaurant':
+      return `Welcome aboard, ${name}! Your restaurant ops center is ready. I'm Remy, your AI assistant. I can help with reservations, menu management, cost tracking, and running a tight ship.`
+    case 'food_truck':
+      return `Welcome aboard, ${name}! Your food truck dashboard is locked and loaded. I'm Remy, your AI assistant. I can help with stops, inventory, pricing, and keeping the wheels turning.`
+    default:
+      return `Welcome aboard, ${name}! Your workspace is all set up. I'm Remy, your AI assistant. Ask me anything about managing your business, or just say hi.`
+  }
+}
+
 // ─── Master Greeting Function ─────────────────────────────────────────────────
 
 /**
@@ -499,10 +521,11 @@ export async function getCuratedGreeting(
     try {
       const wizardRow = await db
         .from('chefs')
-        .select('onboarding_completed_at')
+        .select('onboarding_completed_at, archetype')
         .eq('id', chefId)
         .limit(1)
       const wizardCompleted = wizardRow.data?.[0]?.onboarding_completed_at
+      const chefArchetype = (wizardRow.data?.[0] as { archetype?: string })?.archetype
       if (wizardCompleted) {
         const completedAt = new Date(wizardCompleted as string)
         const hoursSinceCompletion = (Date.now() - completedAt.getTime()) / (1000 * 60 * 60)
@@ -516,9 +539,10 @@ export async function getCuratedGreeting(
             .limit(1)
           if (!celebrated.data?.length) {
             markMilestoneCelebrated(chefId, 'wizard_completed', {}).catch(() => {})
+            const welcomeText = getArchetypeWelcome(chefName, chefArchetype)
             return {
               isCurated: true,
-              text: `Welcome aboard, ${chefName}! Your workspace is all set up. I'm Remy, your AI assistant. Ask me anything about managing your business, or just say hi.`,
+              text: welcomeText,
               quickReplies: ['What can you help with?', 'Show me around'],
             }
           }

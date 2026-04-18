@@ -14,7 +14,7 @@
  *
  * Prerequisites:
  *   - Dev server running on port 3100
- *   - Ollama running with qwen3:30b loaded
+ *   - Ollama running with gemma4 loaded
  *   - Client test account seeded (.auth/seed-ids.json)
  */
 
@@ -386,7 +386,7 @@ function evaluateResponse(prompt, result, defaults) {
 // ─── Pre-warm Ollama ────────────────────────────────────────────────────────
 
 async function prewarmOllama() {
-  console.log('Pre-warming qwen3:30b (conversation model)...')
+  console.log('Pre-warming gemma4 (conversation model)...')
   try {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), PRE_WARM_TIMEOUT_MS)
@@ -394,14 +394,14 @@ async function prewarmOllama() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'qwen3:30b',
+        model: 'gemma4',
         prompt: 'Hello',
         options: { num_predict: 1 },
       }),
       signal: controller.signal,
     })
     clearTimeout(timeout)
-    console.log('qwen3:30b ready.\n')
+    console.log('gemma4 ready.\n')
   } catch (err) {
     console.warn(`Pre-warm warning: ${err.message} (continuing anyway)\n`)
   }
@@ -455,7 +455,7 @@ function generateMarkdownReport(results, startTime, endTime) {
 
 **Date:** ${((_d) => `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(new Date())}
 **Endpoint:** \`${API_ENDPOINT}\`
-**Model:** qwen3:30b (conversation)
+**Model:** gemma4 (conversation)
 **Prompts:** ${results.length}
 **Total Runtime:** ${(totalMs / 1000 / 60).toFixed(1)} minutes
 
@@ -554,7 +554,7 @@ function generateBenchmarkJSON(results, startTime, endTime) {
     meta: {
       timestamp: new Date().toISOString(),
       endpoint: API_ENDPOINT,
-      model: 'qwen3:30b',
+      model: 'gemma4',
       role: 'client',
       totalPrompts: results.length,
       totalRuntimeMs: endTime - startTime,
@@ -595,7 +595,7 @@ async function main() {
   console.log('='.repeat(60))
   console.log('  CLIENT REMY QUALITY TEST SUITE')
   console.log('  Endpoint: /api/remy/client')
-  console.log('  Model: qwen3:30b (conversation)')
+  console.log('  Model: gemma4 (conversation)')
   console.log('='.repeat(60))
   console.log()
 

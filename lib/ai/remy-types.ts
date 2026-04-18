@@ -118,6 +118,9 @@ export interface RemyContext {
   chefName: string | null
   businessName: string | null
   tagline: string | null
+  chefCity: string | null
+  chefState: string | null
+  chefArchetype: string | null
   clientCount: number
   upcomingEventCount: number
   openInquiryCount: number

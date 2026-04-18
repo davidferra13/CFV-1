@@ -4,7 +4,11 @@ import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef, requireStaff } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import { assignStaffToEvent, checkAssignmentConflict } from '@/lib/staff/actions'
+import {
+  assignStaffToEvent,
+  checkAssignmentConflict,
+  eventsOverlapInTime,
+} from '@/lib/staff/actions'
 import { clockIn, clockOut } from '@/lib/staff/clock-actions'
 
 const DateRangeSchema = z.object({
@@ -210,7 +214,7 @@ export async function scheduleStaffMemberWithConflictCheck(input: {
 
   const { data: event, error: eventError } = await db
     .from('events')
-    .select('id, event_date')
+    .select('id, event_date, serve_time, departure_time')
     .eq('id', parsed.eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -219,13 +223,22 @@ export async function scheduleStaffMemberWithConflictCheck(input: {
     throw new Error('Event not found')
   }
 
-  const conflicts = await checkAssignmentConflict(
+  // Check same-day assignments, then filter to actual time overlaps
+  const sameDayAssignments = await checkAssignmentConflict(
     parsed.staffMemberId,
     event.event_date,
     parsed.eventId
   )
-  if (conflicts.length > 0) {
-    throw new Error('Scheduling conflict: this staff member is already assigned on this date')
+  const timeOverlaps = sameDayAssignments.filter((a: any) => {
+    const existing = a.events
+    if (!existing) return true // no event data, assume conflict
+    return eventsOverlapInTime(existing, event.serve_time, event.departure_time)
+  })
+  if (timeOverlaps.length > 0) {
+    const conflictNames = timeOverlaps
+      .map((a: any) => a.events?.occasion || 'another event')
+      .join(', ')
+    throw new Error(`Scheduling conflict: overlapping times with ${conflictNames}`)
   }
 
   await assignStaffToEvent({

@@ -76,7 +76,7 @@ export async function generateStaffBriefing(eventId: string): Promise<StaffBrief
       id, occasion, event_date, serve_time, guest_count,
       location_address, special_requests, notes, ambiance_notes,
       clients (
-        id, full_name,
+        id, full_name, allergies, dietary_restrictions,
         kitchen_constraints, kitchen_oven_notes, kitchen_burner_notes,
         kitchen_counter_notes, kitchen_refrigeration_notes, kitchen_plating_notes,
         kitchen_sink_notes
@@ -109,6 +109,19 @@ export async function generateStaffBriefing(eventId: string): Promise<StaffBrief
     .eq('converted_to_event_id', eventId)
     .eq('tenant_id', user.tenantId!)
     .maybeSingle()
+
+  // Fetch confirmed allergy records for the client
+  let allergyRecords: any[] = []
+  if (event.clients?.id) {
+    const { data: allergyRows } = await db
+      .from('client_allergy_records')
+      .select('allergen, severity, notes')
+      .eq('client_id', event.clients.id)
+      .eq('tenant_id', user.tenantId!)
+      .eq('confirmed_by_chef', true)
+      .order('severity', { ascending: true })
+    allergyRecords = allergyRows ?? []
+  }
 
   // Fetch active menu dishes for this event via event_menus -> dishes chain
   const { data: eventMenuLinks } = await (db
@@ -177,14 +190,26 @@ export async function generateStaffBriefing(eventId: string): Promise<StaffBrief
     console.error('[non-blocking] Collaborator lookup for briefing failed', err)
   }
 
-  // Build dietary restrictions list
-  const dietaryRaw =
+  // Combine kitchen notes into one string
+  const client = event.clients as any
+
+  // Build dietary restrictions list (merge inquiry + client profile, deduplicate)
+  const inquiryDietary =
     inquiry?.confirmed_dietary_restrictions ?? event.confirmed_dietary_restrictions ?? []
-  const dietaryList: string[] = Array.isArray(dietaryRaw)
-    ? dietaryRaw.filter(Boolean)
-    : typeof dietaryRaw === 'string'
-      ? [dietaryRaw]
-      : []
+  const clientDietary = client?.dietary_restrictions ?? []
+  const mergedDietary = [
+    ...(Array.isArray(inquiryDietary)
+      ? inquiryDietary
+      : typeof inquiryDietary === 'string'
+        ? [inquiryDietary]
+        : []),
+    ...(Array.isArray(clientDietary)
+      ? clientDietary
+      : typeof clientDietary === 'string'
+        ? [clientDietary]
+        : []),
+  ].filter(Boolean)
+  const dietaryList: string[] = [...new Set(mergedDietary)]
 
   // Build menu items list (grouped by course if available)
   const menuItems: string[] = (menuRows ?? []).map((item: any) => {
@@ -192,9 +217,6 @@ export async function generateStaffBriefing(eventId: string): Promise<StaffBrief
     const desc = item.description ? ` - ${item.description}` : ''
     return `${course}${item.name}${desc}`
   })
-
-  // Combine kitchen notes into one string
-  const client = event.clients as any
   const kitchenParts = [
     client?.kitchen_oven_notes ? `Oven: ${client.kitchen_oven_notes}` : null,
     client?.kitchen_burner_notes ? `Burners: ${client.kitchen_burner_notes}` : null,
@@ -218,7 +240,12 @@ export async function generateStaffBriefing(eventId: string): Promise<StaffBrief
     locationAddress: event.location_address ?? null,
     clientName: client?.full_name ?? null,
     dietaryRestrictions: dietaryList,
-    allergyNotes: null,
+    allergyNotes:
+      allergyRecords.length > 0
+        ? allergyRecords
+            .map((a: any) => `${a.allergen} (${a.severity})${a.notes ? ': ' + a.notes : ''}`)
+            .join('; ')
+        : null,
     menuItems,
     menuNotes: event.notes ?? null,
     serviceStylePref: inquiry?.service_style_pref ?? null,

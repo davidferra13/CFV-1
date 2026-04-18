@@ -19,14 +19,14 @@ async function main() {
 
   console.log('Signed in as agent. Auth OK.\n');
 
-  // Pre-warm the classifier model (4b)
-  console.log('Pre-warming qwen3:4b...');
+  // Pre-warm Gemma 4
+  console.log('Pre-warming gemma4...');
   await fetch('http://localhost:11434/api/generate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: 'qwen3:4b', prompt: 'hello', options: { num_predict: 1 } }),
+    body: JSON.stringify({ model: 'gemma4', prompt: 'hello', options: { num_predict: 1 } }),
   });
-  console.log('4b ready.\n');
+  console.log('gemma4 ready.\n');
 
   const tests = [
     { name: 'Greeting', message: 'Hey Remy, what can you help me with?' },

@@ -7,7 +7,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/db/server'
 import { evaluateAutomations } from '@/lib/automations/engine'
-import { getAutomationSettingsForTenant } from '@/lib/automations/settings-actions'
+import { getAutomationSettingsForTenant } from '@/lib/automations/settings-internal'
 import type { TriggerEvent } from '@/lib/automations/types'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { runMonitoredCronJob } from '@/lib/cron/monitor'

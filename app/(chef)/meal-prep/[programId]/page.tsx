@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function MealPrepProgramPage({ params }: Props) {
   const user = await requireChef()
-  await requirePro('operations')
+  await requirePro('meal-prep-ops')
 
   const program = await getMealPrepProgram(params.programId)
   if (!program) notFound()

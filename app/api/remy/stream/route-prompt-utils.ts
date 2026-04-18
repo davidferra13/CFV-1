@@ -4,6 +4,7 @@ import {
   REMY_FEW_SHOT_EXAMPLES,
   REMY_DRAFT_INSTRUCTIONS,
   REMY_PRIVACY_NOTE,
+  REMY_SPEED_EXPLANATION,
   REMY_TOPIC_GUARDRAILS,
   REMY_ANTI_INJECTION,
 } from '@/lib/ai/remy-personality'
@@ -54,44 +55,141 @@ AVAILABLE PAGES (suggest these when relevant):
 
 export type ContextScope = 'full' | 'minimal' | 'focused'
 
-// ─── Response Length Calibration (deterministic - word count analysis) ────────
-// Matches response length to the chef's message complexity. Short questions get
-// short answers. Detailed messages get detailed responses. No LLM needed.
+// ─── Memory Relevance Filter ───────────────────────────────────────────────
+// Instead of dumping all memories into the prompt (wastes tokens on a 4B model),
+// keep only memories whose content shares keywords with the user's message.
+// Always keeps high-priority categories (allergies, dietary) regardless of match.
 
-function calibrateResponseLength(message: string): string {
-  if (!message) return ''
+const ALWAYS_INCLUDE_CATEGORIES = new Set([
+  'client_insight', // safety-relevant (may contain allergy/dietary notes)
+  'business_rule', // core operating constraints
+])
 
-  const words = message.trim().split(/\s+/).length
-  const hasQuestionMark = message.includes('?')
-  const isYesNo = /^(is|are|was|were|do|does|did|can|could|will|would|should|has|have|had)\b/i.test(
-    message.trim()
+// Common words that don't signal relevance
+const STOP_WORDS = new Set([
+  'a',
+  'an',
+  'the',
+  'is',
+  'are',
+  'was',
+  'were',
+  'be',
+  'been',
+  'being',
+  'have',
+  'has',
+  'had',
+  'do',
+  'does',
+  'did',
+  'will',
+  'would',
+  'could',
+  'should',
+  'may',
+  'might',
+  'shall',
+  'can',
+  'need',
+  'dare',
+  'ought',
+  'i',
+  'me',
+  'my',
+  'mine',
+  'we',
+  'our',
+  'you',
+  'your',
+  'he',
+  'she',
+  'it',
+  'they',
+  'them',
+  'their',
+  'this',
+  'that',
+  'these',
+  'those',
+  'and',
+  'but',
+  'or',
+  'nor',
+  'not',
+  'so',
+  'yet',
+  'for',
+  'with',
+  'about',
+  'from',
+  'into',
+  'to',
+  'in',
+  'on',
+  'at',
+  'by',
+  'of',
+  'what',
+  'how',
+  'why',
+  'when',
+  'where',
+  'who',
+  'which',
+  'hi',
+  'hey',
+  'hello',
+  'thanks',
+  'thank',
+  'please',
+  'just',
+  'also',
+])
+
+function filterMemoriesByRelevance(
+  memories: RemyMemory[],
+  userMessage: string,
+  maxMemories: number = 30
+): RemyMemory[] {
+  if (memories.length <= maxMemories) return memories
+
+  // Extract meaningful keywords from user message
+  const msgWords = new Set(
+    userMessage
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter((w) => w.length > 2 && !STOP_WORDS.has(w))
   )
 
-  // Very short messages (1-5 words) - likely a quick question or command
-  if (words <= 5) {
-    return '\nRESPONSE LENGTH: Very short question - answer in 1 sentence when possible. Only add a second sentence if it changes the outcome.'
-  }
+  // If no meaningful keywords, return most recent memories
+  if (msgWords.size === 0) return memories.slice(0, maxMemories)
 
-  // Short messages (6-15 words) - standard question
-  if (words <= 15) {
-    if (isYesNo && hasQuestionMark) {
-      return '\nRESPONSE LENGTH: Yes/no question - lead with yes/no or the decision, then add 1 short sentence of context if needed.'
+  // Score each memory by keyword overlap
+  const scored = memories.map((mem) => {
+    // Safety-critical memories always included
+    const catLower = mem.category.toLowerCase()
+    if (ALWAYS_INCLUDE_CATEGORIES.has(catLower)) {
+      return { mem, score: 100 }
     }
-    return '\nRESPONSE LENGTH: Brief question - respond in 1-2 sentences or up to 3 bullets. No padding.'
-  }
 
-  // Medium messages (16-40 words) - moderate detail expected
-  if (words <= 40) {
-    return '\nRESPONSE LENGTH: Standard question - answer in 1 short paragraph or up to 3 bullets. Solve the main point first.'
-  }
+    const memWords = mem.content
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter((w) => w.length > 2)
 
-  // Long messages (41-80 words) - chef is being detailed, match their energy
-  if (words <= 80) {
-    return '\nRESPONSE LENGTH: The chef wrote a detailed message - be specific, but stay tight. Prioritize the answer, then key supporting details.'
-  }
+    let score = 0
+    for (const w of memWords) {
+      if (msgWords.has(w)) score++
+    }
+    return { mem, score }
+  })
 
-  // Very long messages (80+ words) - chef is explaining something complex
-  return '\nRESPONSE LENGTH: The chef wrote a long message - still keep the reply concise and structured. Address the core decision first, then only the most important supporting points.'
+  // Sort by score descending, take top N
+  scored.sort((a, b) => b.score - a.score)
+  return scored.slice(0, maxMemories).map((s) => s.mem)
 }
 
 //  System Prompt Builder
@@ -167,6 +265,7 @@ export function buildRemySystemPrompt(
   const contextScope: ContextScope = _contextScope ?? 'focused'
   const includeOperationalContext = contextScope !== 'minimal'
   const includeAnalyticalContext = contextScope === 'full'
+  const includeSessionContext = contextScope !== 'minimal'
 
   parts.push(REMY_PERSONALITY)
 
@@ -179,6 +278,13 @@ export function buildRemySystemPrompt(
 
   parts.push(REMY_DRAFT_INSTRUCTIONS)
   parts.push(REMY_PRIVACY_NOTE)
+  // Speed explanation only when the chef asks about latency
+  if (
+    userMessage &&
+    /\b(?:slow|speed|fast|lag|delay|wait|long|forever|taking)\b/i.test(userMessage)
+  ) {
+    parts.push(REMY_SPEED_EXPLANATION)
+  }
   parts.push(REMY_TOPIC_GUARDRAILS)
   parts.push(REMY_ANTI_INJECTION)
   parts.push(getContextModeInstruction(contextScope))
@@ -307,8 +413,8 @@ The chef can see the full structured view at /daily.`)
     parts.push(emailLines.join('\n'))
   }
 
-  // Calendar & Availability
-  if (context.calendarSummary) {
+  // Calendar & Availability (skip in minimal - availability checks use page entity)
+  if (includeOperationalContext && context.calendarSummary) {
     const cal = context.calendarSummary
     const sections: string[] = []
     if (cal.blockedDates.length > 0) {
@@ -576,7 +682,7 @@ Mention the most urgent items naturally when relevant - especially if the chef a
   }
 
   // Navigation trail - what pages the chef visited this session
-  if (recentPages && recentPages.length > 0) {
+  if (includeSessionContext && recentPages && recentPages.length > 0) {
     const trail = recentPages.map((p) => {
       const time = new Date(p.at).toLocaleTimeString('en-US', {
         hour: 'numeric',
@@ -591,7 +697,7 @@ This shows the chef's workflow - what they've been looking at and in what order.
   }
 
   // Recent mutations - what the chef just did in the app
-  if (recentActions && recentActions.length > 0) {
+  if (includeSessionContext && recentActions && recentActions.length > 0) {
     const actions = recentActions.map((a) => {
       const time = new Date(a.at).toLocaleTimeString('en-US', {
         hour: 'numeric',
@@ -606,7 +712,7 @@ These are real actions the chef just took. Use them to continue the workflow whe
   }
 
   // Recent errors - help the chef if they hit problems
-  if (recentErrors && recentErrors.length > 0) {
+  if (includeSessionContext && recentErrors && recentErrors.length > 0) {
     const errs = recentErrors.map((e) => {
       const time = new Date(e.at).toLocaleTimeString('en-US', {
         hour: 'numeric',
@@ -621,7 +727,7 @@ If the chef seems frustrated or asks about something failing, these errors are c
   }
 
   // Session duration - how long the chef has been working
-  if (sessionMinutes && sessionMinutes > 0) {
+  if (includeSessionContext && sessionMinutes && sessionMinutes > 0) {
     const hours = Math.floor(sessionMinutes / 60)
     const mins = sessionMinutes % 60
     const duration = hours > 0 ? `${hours}h ${mins}m` : `${mins} minutes`
@@ -679,20 +785,30 @@ ${context.mentionedEntities.map((e) => `--- ${e.type.toUpperCase()} ---\n${e.sum
 The chef mentioned these by name. Use this data to answer their question accurately.`)
   }
 
-  const memoryBlock = formatMemoriesForPrompt(memories)
-  if (memoryBlock) {
-    parts.push(memoryBlock)
+  // Memories - skip entirely in minimal mode, filter by relevance in focused/full
+  if (includeOperationalContext) {
+    const relevantMemories = userMessage
+      ? filterMemoriesByRelevance(memories, userMessage)
+      : memories
+    const memoryBlock = formatMemoriesForPrompt(relevantMemories)
+    if (memoryBlock) {
+      parts.push(memoryBlock)
+    }
   }
 
   // Previous session continuity - remind Remy what the chef was working on last time
-  if (previousSessionTopics && previousSessionTopics.topics.length > 0) {
+  if (includeSessionContext && previousSessionTopics && previousSessionTopics.topics.length > 0) {
     const timeLabel = formatRelativeTime(previousSessionTopics.lastActiveAt)
     parts.push(`\nLAST SESSION (${timeLabel} - "${previousSessionTopics.title}"):
 The chef previously discussed: ${previousSessionTopics.topics.join('; ')}
 If the chef's first message relates to these topics, pick up naturally - "Picking up where we left off..." or weave in the context. If they're asking about something new, don't force a reference to the old session.`)
   }
 
-  if (recentConversationSummaries && recentConversationSummaries.length > 0) {
+  if (
+    includeSessionContext &&
+    recentConversationSummaries &&
+    recentConversationSummaries.length > 0
+  ) {
     const recentConversationLines = recentConversationSummaries
       .filter((item) => item.summary.trim().length > 0)
       .slice(0, 3)
@@ -705,7 +821,13 @@ Use these as background context when the current message clearly relates to past
     }
   }
 
-  parts.push(`\n${NAV_ROUTE_MAP}`)
+  // NAV_ROUTE_MAP only for non-minimal scope or navigation-related messages
+  if (
+    includeOperationalContext ||
+    (userMessage && /\b(?:go to|navigate|where|page|find|open|show me)\b/i.test(userMessage))
+  ) {
+    parts.push(`\n${NAV_ROUTE_MAP}`)
+  }
 
   parts.push(`\nGROUNDING RULE (CRITICAL):
 You may ONLY reference data that actually appears in the sections above.
@@ -947,25 +1069,11 @@ ${context.businessIntelligence}
 Reference these insights when the chef asks about their business, pricing strategy, client health, capacity, or growth.`)
   }
 
-  // Response length calibration (deterministic - word count analysis)
-  if (userMessage) {
-    const lengthInstruction = calibrateResponseLength(userMessage)
-    if (lengthInstruction) parts.push(lengthInstruction)
-  }
-
-  // Streaming mode: plain text with nav suggestions as JSON at the end
+  // Streaming mode: markdown with optional nav suggestions
   parts.push(`\nRESPONSE FORMAT:
-Write your reply in natural language with markdown formatting (bold, bullets, etc.).
-Default to the shortest useful answer.
-Use one of these default shapes only: 1 line answer, 1-3 bullets, a short draft, or 1 concise clarifying question.
-Answer in the first line. Do not open with filler, praise, or process narration.
-Use up to 3 bullets by default when listing items.
-If the answer depends on missing information, ask one concise clarifying question instead of giving a long speculative response.
-Do not tack on extra offers or follow-up questions unless the next action is obvious and high-value.
-If you want to suggest page navigation links, end your response with a line containing only:
-NAV_SUGGESTIONS: [{"label":"Page Name","href":"/route"}]
-Only include nav suggestions when genuinely helpful.
-Present all suggestions as drafts. Never claim to have taken autonomous actions.`)
+Use markdown formatting (bold, bullets). Shapes: 1 line answer, 1-3 bullets, a short draft, or 1 clarifying question.
+To suggest page links, end with: NAV_SUGGESTIONS: [{"label":"Page Name","href":"/route"}]
+Only include nav suggestions when genuinely helpful.`)
 
   return parts.join('\n')
 }
@@ -1345,14 +1453,25 @@ const FULL_SCOPE_PATTERNS: RegExp[] = [
 ]
 
 const MINIMAL_SCOPE_PATTERNS: RegExp[] = [
+  // Navigation / how-to
   /^(where|how)\s+do\s+i\s+(add|create|find|set up|log|import|edit|change|update|go|navigate|open)\b/i,
+  /^what page\b/i,
+  /^which page\b/i,
+  /^where is\b/i,
+  // Availability checks
   /^am i free\b/i,
   /^(is|are)\b.*\b(free|available|open|blocked)\b/i,
   /^what('?s| is)\s+(on )?(my )?(calendar|schedule|agenda)\b/i,
   /^who('?s| is)\s+available\b/i,
-  /^what page\b/i,
-  /^which page\b/i,
-  /^where is\b/i,
+  // Greetings and short conversational messages
+  /^(hi|hey|hello|yo|sup|morning|afternoon|evening)\s*[!.?]?\s*$/i,
+  /^(thanks|thank you|thx|ty|got it|ok|okay|sure|sounds good|perfect|great|awesome|nice|cool|bet)\s*[!.?]?\s*$/i,
+  /^(yes|no|yep|nope|nah|yeah|yea)\s*[!.?]?\s*$/i,
+  // Simple single-topic questions (no business analysis needed)
+  /^what('?s| is) (a |an |the )?(q[- ]?factor|yield factor|food cost|markup|margin)\b/i,
+  /^how (do|does|should) (i|a chef|chefs) (price|charge|cost|quote)\b/i,
+  /^(can|does) (remy|chefflow|the app) (do|handle|support|have)\b/i,
+  /^what (can|does) (remy|chefflow) (do|handle)\b/i,
 ]
 
 const FOCUSED_HINT_PATTERNS: RegExp[] = [
@@ -1360,6 +1479,32 @@ const FOCUSED_HINT_PATTERNS: RegExp[] = [
   /\b(client|event|quote|inquiry|menu|recipe|staff|invoice|payment|calendar|schedule|email|document|profile|page)\b/i,
   /\b(today|tomorrow|saturday|sunday|monday|tuesday|wednesday|thursday|friday|weekend|next week)\b/i,
 ]
+
+/**
+ * Early scope hint - runs BEFORE classification to guide context loading.
+ * Only returns 'minimal' or 'full' when confident from regex alone.
+ * Returns null when intent is needed (caller should use focused as default).
+ */
+export function getEarlyScopeHint(message: string): ContextScope | null {
+  const normalized = message.trim().toLowerCase()
+  if (!normalized) return null
+
+  if (FULL_SCOPE_PATTERNS.some((pattern) => pattern.test(normalized))) {
+    return 'full'
+  }
+
+  if (MINIMAL_SCOPE_PATTERNS.some((pattern) => pattern.test(normalized))) {
+    return 'minimal'
+  }
+
+  // Short messages without focused hints are likely minimal
+  const words = normalized.split(/\s+/).filter(Boolean).length
+  if (words <= 6 && !FOCUSED_HINT_PATTERNS.some((pattern) => pattern.test(normalized))) {
+    return 'minimal'
+  }
+
+  return null // Need classification to decide
+}
 
 export function determineContextScope(message: string, intent: string): ContextScope {
   const normalized = message.trim().toLowerCase()
@@ -1394,7 +1539,8 @@ export function determineContextScope(message: string, intent: string): ContextS
 
 export function formatConversationHistory(history: RemyMessage[]): string {
   if (history.length === 0) return ''
-  const recent = history.slice(-10)
+  // Gemma 4 has 128K context. Keep last 20 messages (10 turns) for rich continuity.
+  const recent = history.slice(-20)
   const formatted = recent
     .map((m) => `${m.role === 'user' ? 'Chef' : 'Remy'}: ${m.content}`)
     .join('\n')

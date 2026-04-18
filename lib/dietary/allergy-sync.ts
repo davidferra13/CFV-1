@@ -20,7 +20,7 @@ export type AllergyStoreInput = {
  * Sync flat array -> structured records.
  * Call after any write to clients.allergies (updateClient, createClient, intake form).
  * Upserts records into client_allergy_records for each allergen in the flat array.
- * Does NOT delete records that were removed from the flat array (preserves chef confirmations).
+ * Removes structured records for allergens no longer in the flat array.
  */
 export async function syncFlatToStructured(opts: AllergyStoreInput): Promise<void> {
   const { tenantId, clientId, db } = opts
@@ -34,18 +34,34 @@ export async function syncFlatToStructured(opts: AllergyStoreInput): Promise<voi
     .single()
 
   const flatAllergies: string[] = client?.allergies ?? []
-  if (flatAllergies.length === 0) return
 
   // Read existing structured records
   const { data: existing } = await db
     .from('client_allergy_records')
-    .select('allergen')
+    .select('id, allergen')
     .eq('client_id', clientId)
     .eq('tenant_id', tenantId)
 
-  const existingSet = new Set(
-    (existing ?? []).map((r: { allergen: string }) => r.allergen.toLowerCase())
-  )
+  const existingRecords = (existing ?? []) as { id: string; allergen: string }[]
+  const existingSet = new Set(existingRecords.map((r) => r.allergen.toLowerCase()))
+
+  // Remove structured records for allergens no longer in the flat array
+  const normalizedFlat = new Set(flatAllergies.map((a) => normalizeAllergenLabel(a).toLowerCase()))
+  const toDelete = existingRecords.filter((r) => !normalizedFlat.has(r.allergen.toLowerCase()))
+  if (toDelete.length > 0) {
+    await db
+      .from('client_allergy_records')
+      .delete()
+      .in(
+        'id',
+        toDelete.map((r) => r.id)
+      )
+      .eq('client_id', clientId)
+      .eq('tenant_id', tenantId)
+  }
+
+  // Nothing to add if flat array is empty
+  if (flatAllergies.length === 0) return
 
   // Build rows for allergens not yet in structured table
   const newRows = flatAllergies

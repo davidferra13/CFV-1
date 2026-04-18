@@ -7,6 +7,7 @@ import { requireChef, requireClient, getCurrentUser } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { log } from '@/lib/logger'
 import { revalidatePath } from 'next/cache'
+import { invalidateRemyContextCache } from '@/lib/ai/remy-context'
 import { TransitionEventInputSchema, type TransitionActorContext } from '@/lib/validation/schemas'
 import { dateToDateString } from '@/lib/utils/format'
 import {
@@ -313,6 +314,14 @@ export async function transitionEvent({
   revalidatePath('/my-events')
   revalidatePath('/dashboard')
   revalidatePath('/finance')
+  revalidatePath('/calendar')
+
+  // Bust Remy context cache so AI reflects the status change immediately
+  try {
+    invalidateRemyContextCache(event.tenant_id)
+  } catch {
+    /* non-blocking */
+  }
 
   // Broadcast event status change so clients viewing the event page get a live refresh (non-blocking)
   try {
@@ -677,6 +686,7 @@ export async function transitionEvent({
     if (client?.email && chef) {
       const {
         sendEventProposedEmail,
+        sendEventAcceptedEmail,
         sendEventConfirmedEmail,
         sendEventCompletedEmail,
         sendEventCancelledEmail,
@@ -715,6 +725,17 @@ export async function transitionEvent({
           guestCount: event.guest_count,
           location,
           coHostNames,
+        })
+      }
+
+      if (toStatus === 'accepted' && fromStatus === 'proposed') {
+        await sendEventAcceptedEmail({
+          clientEmail: client.email,
+          clientName: client.full_name,
+          chefName,
+          eventId,
+          occasion,
+          eventDate: dateToDateString(event.event_date as Date | string),
         })
       }
 
@@ -1224,6 +1245,40 @@ export async function transitionEvent({
     } catch (err) {
       log.events.warn('Travel leg cleanup on cancellation failed (non-blocking)', { error: err })
     }
+
+    // Clean up staff assignments linked to this event (non-blocking)
+    try {
+      const adminDb = createServerClient({ admin: true })
+      await adminDb
+        .from('event_staff_assignments')
+        .delete()
+        .eq('event_id', eventId)
+        .eq('tenant_id', event.tenant_id)
+    } catch (err) {
+      log.events.warn('Staff assignment cleanup on cancellation failed (non-blocking)', {
+        error: err,
+      })
+    }
+
+    // Archive Dinner Circle so clients can't post to a cancelled event (non-blocking)
+    try {
+      const adminDb = createServerClient({ admin: true })
+      const { data: linkedGroup } = await adminDb
+        .from('hub_groups')
+        .select('id')
+        .eq('event_id', eventId)
+        .eq('is_active', true)
+        .maybeSingle()
+
+      if (linkedGroup?.id) {
+        await adminDb
+          .from('hub_groups')
+          .update({ is_active: false, updated_at: new Date().toISOString() })
+          .eq('id', linkedGroup.id)
+      }
+    } catch (err) {
+      log.events.warn('Circle archive on cancellation failed (non-blocking)', { error: err })
+    }
   }
 
   // Fire automations (non-blocking)
@@ -1271,12 +1326,12 @@ export async function transitionEvent({
         const eventTitle = event.occasion || 'Untitled event'
         const actionMap = {
           confirmed: {
-            action: 'event_paid' as const,
+            action: 'event_confirmed' as const,
             title: 'Event confirmed',
             body: `"${eventTitle}" is now confirmed`,
           },
           in_progress: {
-            action: 'event_paid' as const,
+            action: 'event_in_progress' as const,
             title: 'Event in progress',
             body: `"${eventTitle}" is now in progress`,
           },

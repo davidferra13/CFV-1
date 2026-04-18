@@ -286,9 +286,7 @@ export async function classifyIntent(message: string): Promise<ClassificationRes
 
   // Fall through to Ollama for ambiguous messages
   try {
-    // Use 'complex' tier (30b conversation model) instead of 'fast' (4b)
-    // to avoid model swap on 6GB VRAM. Remy streaming now uses the same tier,
-    // eliminates the 60-100s model swap penalty that occurs every request.
+    // Complex tier for nuanced classification. All tiers use Gemma 4 now.
     const result = await parseWithOllama(
       CLASSIFIER_SYSTEM_PROMPT,
       `Classify this message: "${message}"`,

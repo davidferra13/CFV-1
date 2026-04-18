@@ -400,6 +400,7 @@ export async function sendContractToClient(contractId: string) {
           eventDate: event?.event_date ? format(new Date(event.event_date), 'MMMM d, yyyy') : 'TBD',
           signingUrl,
         }),
+        isTransactional: true,
       })
     }
   } catch (err) {
@@ -768,7 +769,12 @@ export async function markContractSigned(contractId: string) {
 
   const { error } = await db
     .from('event_contracts')
-    .update({ status: 'signed', signed_at: new Date().toISOString() })
+    .update({
+      status: 'signed',
+      signed_at: new Date().toISOString(),
+      signed_by: user.id,
+      internal_notes: `Chef override: marked as signed by ${user.email || user.id} on ${new Date().toISOString()}`,
+    })
     .eq('id', contractId)
     .eq('chef_id', user.tenantId!)
 

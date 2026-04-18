@@ -88,17 +88,8 @@ export default async function ImportPage({ searchParams }: { searchParams: { mod
       {!aiConfigured && (
         <Alert variant="warning" title="Smart Import Not Configured">
           Set the{' '}
-          <code className="font-mono text-sm bg-yellow-900 px-1 rounded">GEMINI_API_KEY</code>{' '}
-          environment variable to enable parsing. Get a free key at{' '}
-          <a
-            href="https://aistudio.google.com/apikey"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline"
-          >
-            Google Studio
-          </a>
-          .
+          <code className="font-mono text-sm bg-yellow-900 px-1 rounded">OLLAMA_BASE_URL</code>{' '}
+          environment variable to enable AI parsing.
         </Alert>
       )}
 

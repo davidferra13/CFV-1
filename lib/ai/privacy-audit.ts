@@ -1,17 +1,9 @@
 // Privacy Routing Audit Map
-// Single source of truth for which AI modules must use local Ollama vs cloud Gemini.
+// Single source of truth for AI module routing. All modules use Ollama (Gemma 4).
 // No 'use server' - importable from any context.
 //
-// Rules (from CLAUDE.md):
-//   - Client PII (names, emails, phones, addresses) → Ollama
-//   - Financials (budget, quotes, payments, revenue) → Ollama
-//   - Health data (allergies, dietary restrictions)   → Ollama
-//   - Client messages and conversation content        → Ollama
-//   - Business analytics and lead scores              → Ollama
-//   - Operational data (temp logs, staff data)        → Ollama
-//   - Creative/marketing copy (no PII embedded)       → Gemini OK
-//   - Vision/OCR (receipt images, documents)          → Gemini OK (no local multimodal yet)
-//   - Public regulatory/template data                 → Gemini OK
+// As of 2026-04-18, Gemini is fully removed. Gemma 4 handles vision natively,
+// so all tasks (including OCR, receipts, recipes) route through Ollama.
 
 import type { AIProvider } from './providers'
 import type { ModelTier } from './providers'
@@ -190,133 +182,133 @@ export const AI_MODULE_ROUTING: Record<string, AIModuleRouting> = {
     reason: 'Known client email list + email body',
   },
 
-  // ── Gemini (Cloud) - Non-PII Tasks ────────────────────────────────
+  // ── Formerly Gemini (now Ollama) - Low-sensitivity tasks ───────────
 
   // Creative / marketing
   'menu-suggestions': {
-    provider: 'gemini',
+    provider: 'ollama',
     modelTier: 'standard',
     dataSensitivity: 'low',
     reason: 'Occasion + guest count only, no PII',
   },
   'quote-draft': {
-    provider: 'gemini',
+    provider: 'ollama',
     modelTier: 'standard',
     dataSensitivity: 'low',
     reason: 'Pricing logic, no client PII',
   },
   'recipe-scaling': {
-    provider: 'gemini',
+    provider: 'ollama',
     modelTier: 'standard',
     dataSensitivity: 'low',
     reason: 'Recipe data only',
   },
   'grocery-consolidation': {
-    provider: 'gemini',
+    provider: 'ollama',
     modelTier: 'standard',
     dataSensitivity: 'low',
     reason: 'Ingredient lists only',
   },
   'social-captions': {
-    provider: 'gemini',
+    provider: 'ollama',
     modelTier: 'standard',
     dataSensitivity: 'low',
     reason: 'Marketing copy, no PII',
   },
   'chef-bio': {
-    provider: 'gemini',
+    provider: 'ollama',
     modelTier: 'standard',
     dataSensitivity: 'low',
     reason: 'Chef own data (consented)',
   },
   'review-request': {
-    provider: 'gemini',
+    provider: 'ollama',
     modelTier: 'standard',
     dataSensitivity: 'low',
     reason: 'Marketing template',
   },
   'testimonial-selection': {
-    provider: 'gemini',
+    provider: 'ollama',
     modelTier: 'standard',
     dataSensitivity: 'low',
     reason: 'Anonymized quotes',
   },
 
-  // Event planning (no client PII)
+  // Event planning
   'prep-timeline': {
-    provider: 'gemini',
+    provider: 'ollama',
     modelTier: 'standard',
     dataSensitivity: 'low',
     reason: 'Recipe timing only',
   },
   'service-timeline': {
-    provider: 'gemini',
+    provider: 'ollama',
     modelTier: 'standard',
     dataSensitivity: 'low',
     reason: 'Recipe timing only',
   },
   'contingency-ai': {
-    provider: 'gemini',
+    provider: 'ollama',
     modelTier: 'standard',
     dataSensitivity: 'low',
     reason: 'Event logistics only',
   },
   'aar-generator': {
-    provider: 'gemini',
+    provider: 'ollama',
     modelTier: 'standard',
     dataSensitivity: 'low',
     reason: 'Post-event analysis',
   },
 
-  // Vision / OCR (no local multimodal model yet)
+  // Vision / OCR (Gemma 4 native multimodal)
   'parse-receipt': {
-    provider: 'gemini',
+    provider: 'ollama',
     modelTier: 'standard',
     dataSensitivity: 'medium',
-    reason: 'Chef own receipts, requires vision model',
+    reason: 'Chef own receipts, Gemma 4 native vision',
   },
   'parse-document-vision': {
-    provider: 'gemini',
+    provider: 'ollama',
     modelTier: 'standard',
     dataSensitivity: 'medium',
-    reason: 'Document OCR, requires vision model',
+    reason: 'Document OCR, Gemma 4 native vision',
   },
 
-  // Business documents (public/template data)
+  // Business documents
   'permit-checklist': {
-    provider: 'gemini',
+    provider: 'ollama',
     modelTier: 'standard',
     dataSensitivity: 'low',
     reason: 'Public regulatory data',
   },
   'vendor-comparison': {
-    provider: 'gemini',
+    provider: 'ollama',
     modelTier: 'standard',
     dataSensitivity: 'low',
     reason: 'Public vendor data',
   },
   'equipment-depreciation-explainer': {
-    provider: 'gemini',
+    provider: 'ollama',
     modelTier: 'standard',
     dataSensitivity: 'low',
     reason: 'Equipment data, no PII',
   },
   'menu-nutritional': {
-    provider: 'gemini',
+    provider: 'ollama',
     modelTier: 'standard',
     dataSensitivity: 'low',
     reason: 'Recipe nutritional data',
   },
 
-  // Email drafting (ACE system - uses inquiry data, not raw PII)
+  // Email drafting (ACE system)
   correspondence: {
-    provider: 'gemini',
+    provider: 'ollama',
     modelTier: 'standard',
     dataSensitivity: 'medium',
     reason: 'ACE uses controlled context, not raw client PII',
   },
   'parse-recipe': {
-    provider: 'gemini',
+    provider: 'ollama',
     modelTier: 'standard',
     dataSensitivity: 'low',
     reason: 'Recipe text, ingredients, methods',
@@ -324,9 +316,7 @@ export const AI_MODULE_ROUTING: Record<string, AIModuleRouting> = {
 }
 
 /** Count modules by provider. */
-export function getRoutingStats(): { ollama: number; gemini: number; total: number } {
+export function getRoutingStats(): { ollama: number; total: number } {
   const entries = Object.values(AI_MODULE_ROUTING)
-  const ollama = entries.filter((e) => e.provider === 'ollama').length
-  const gemini = entries.filter((e) => e.provider === 'gemini').length
-  return { ollama, gemini, total: entries.length }
+  return { ollama: entries.length, total: entries.length }
 }

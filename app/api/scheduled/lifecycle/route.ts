@@ -6,7 +6,7 @@
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/db/server'
-import { getAutomationSettingsForTenant } from '@/lib/automations/settings-actions'
+import { getAutomationSettingsForTenant } from '@/lib/automations/settings-internal'
 import { recordCronHeartbeat, recordCronError } from '@/lib/cron/heartbeat'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'

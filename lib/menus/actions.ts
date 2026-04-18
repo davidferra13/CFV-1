@@ -11,6 +11,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { Database } from '@/types/database'
 import { invalidateRemyContextCache } from '@/lib/ai/remy-context'
+import { revalidateMenuIntelligenceCache } from '@/lib/menus/menu-intelligence-actions'
 import type { ComponentCategory } from './constants'
 import { executeWithIdempotency } from '@/lib/mutations/idempotency'
 import { createConflictError } from '@/lib/mutations/conflict'
@@ -703,6 +704,9 @@ export async function attachMenuToEvent(eventId: string, menuId: string) {
 
   revalidatePath(`/events/${eventId}`)
   revalidatePath(`/menus/${menuId}`)
+  revalidatePath('/culinary')
+  revalidatePath('/dashboard')
+  invalidateRemyContextCache(user.tenantId!)
   return { success: true }
 }
 
@@ -730,6 +734,9 @@ export async function detachMenuFromEvent(menuId: string) {
     revalidatePath(`/events/${detached.event_id}`)
   }
   revalidatePath(`/menus/${menuId}`)
+  revalidatePath('/culinary')
+  revalidatePath('/dashboard')
+  invalidateRemyContextCache(user.tenantId!)
   return { success: true }
 }
 
@@ -1112,6 +1119,11 @@ export async function addDishToMenu(input: CreateDishInput) {
   }
 
   revalidatePath(`/menus/${validated.menu_id}`)
+  try {
+    revalidateMenuIntelligenceCache(validated.menu_id)
+  } catch {
+    /* non-blocking */
+  }
   return { success: true, dish }
 }
 
@@ -1141,6 +1153,11 @@ export async function updateDish(dishId: string, input: UpdateDishInput) {
   }
 
   revalidatePath(`/menus/${dish.menu_id}`)
+  try {
+    revalidateMenuIntelligenceCache(dish.menu_id)
+  } catch {
+    /* non-blocking */
+  }
   return { success: true, dish }
 }
 
@@ -1176,6 +1193,11 @@ export async function deleteDish(dishId: string) {
   }
 
   revalidatePath(`/menus/${dish.menu_id}`)
+  try {
+    revalidateMenuIntelligenceCache(dish.menu_id)
+  } catch {
+    /* non-blocking */
+  }
   return { success: true }
 }
 

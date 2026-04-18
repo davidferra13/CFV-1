@@ -3,6 +3,7 @@
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
+import { invalidateRemyContextCache } from '@/lib/ai/remy-context'
 import { z } from 'zod'
 
 // ==========================================
@@ -154,6 +155,11 @@ export async function requestGuestCountChange(
   }
 
   revalidatePath(`/events/${parsed.data.eventId}`)
+  revalidatePath('/dashboard')
+  revalidatePath('/calendar')
+  revalidatePath('/my-events')
+  revalidatePath('/scheduling')
+  invalidateRemyContextCache(user.entityId!)
   return { success: true, changeId: change.id, priceImpact: priceImpactCents }
 }
 

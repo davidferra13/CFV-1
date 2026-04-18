@@ -101,7 +101,8 @@ export async function postPreEventBriefing(input: {
   // Build "what to have ready" from service config
   let whatToHaveReady: string[] = []
   try {
-    const { getServiceConfigForTenant } = await import('@/lib/chef-services/service-config-actions')
+    const { getServiceConfigForTenant } =
+      await import('@/lib/chef-services/service-config-internal')
     const config: any = await getServiceConfigForTenant(circle.tenantId)
     if (config) {
       if (config.requires_oven) whatToHaveReady.push('Oven available and working')

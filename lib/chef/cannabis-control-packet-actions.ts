@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
+import { requireCannabisAgreementSigned } from '@/lib/chef/cannabis-access-guards'
 import { createServerClient } from '@/lib/db/server'
 import {
   assignGuestsToSeats,
@@ -14,6 +15,7 @@ import {
   type ControlPacketLayoutType,
   type ControlPacketReconciliationGuestRow,
 } from '@/lib/cannabis/control-packet-engine'
+import { logCannabisAudit } from '@/lib/admin/audit'
 
 const CONTROL_PACKET_BUCKET = 'cannabis-control-packets'
 const SIGNED_URL_EXPIRY_SECONDS = 3600
@@ -66,6 +68,8 @@ const SaveReconciliationSchema = z.object({
   chefSignature: z.string().max(200).nullable().optional(),
   hostAcknowledgment: z.string().max(200).nullable().optional(),
   guestRows: z.array(ReconciliationGuestRowSchema).max(400),
+  /** Optimistic lock: pass updated_at from last read to detect concurrent edits */
+  expectedUpdatedAt: z.string().nullable().optional(),
 })
 
 const FinalizePacketSchema = z.object({
@@ -803,6 +807,7 @@ export async function generateCannabisControlPacketSnapshot(
 ) {
   const validated = GenerateSnapshotSchema.parse(input)
   const user = await requireChef()
+  await requireCannabisAgreementSigned(user.id)
   const db: any = createServerClient()
   const context = await loadCannabisEventContext(validated.eventId, user.tenantId!)
 
@@ -897,6 +902,16 @@ export async function generateCannabisControlPacketSnapshot(
   revalidatePath('/cannabis/events')
   revalidatePath(`/cannabis/events/${validated.eventId}/control-packet`)
 
+  try {
+    await logCannabisAudit({
+      actorUserId: user.id,
+      actionType: 'cannabis_control_packet_generated',
+      targetId: inserted.id as string,
+      targetType: 'control_packet_snapshot',
+      details: { eventId: validated.eventId, version: inserted.version_number },
+    })
+  } catch {}
+
   return {
     success: true,
     snapshotId: inserted.id as string,
@@ -966,7 +981,71 @@ export async function uploadControlPacketEvidence(snapshotId: string, formData: 
   }
 
   revalidatePath(`/cannabis/events/${snapshot.event_id}/control-packet`)
+
+  try {
+    await logCannabisAudit({
+      actorUserId: user.id,
+      actionType: 'cannabis_evidence_uploaded',
+      targetId: inserted.id as string,
+      targetType: 'control_packet_evidence',
+      details: { snapshotId: snapshot.id, eventId: snapshot.event_id, contentType: file.type },
+    })
+  } catch {}
+
   return { success: true, evidenceId: inserted.id as string }
+}
+
+export async function deleteControlPacketEvidence(evidenceId: string) {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data: evidence, error: evidenceError } = await (db
+    .from('cannabis_control_packet_evidence' as any)
+    .select('id, snapshot_id, event_id, tenant_id, storage_path')
+    .eq('id', evidenceId)
+    .eq('tenant_id', user.tenantId!)
+    .single() as any)
+
+  if (evidenceError || !evidence) {
+    throw new Error('Evidence record not found')
+  }
+
+  // Check snapshot is not finalized
+  const { data: snapshot, error: snapshotError } = await (db
+    .from('cannabis_control_packet_snapshots' as any)
+    .select('id, finalization_locked')
+    .eq('id', evidence.snapshot_id)
+    .eq('tenant_id', user.tenantId!)
+    .single() as any)
+
+  if (snapshotError || !snapshot) {
+    throw new Error('Snapshot not found')
+  }
+
+  if (snapshot.finalization_locked) {
+    throw new Error('Cannot delete evidence after finalization')
+  }
+
+  // Delete DB record first
+  const { error: deleteError } = await (db
+    .from('cannabis_control_packet_evidence' as any)
+    .delete()
+    .eq('id', evidenceId)
+    .eq('tenant_id', user.tenantId!) as any)
+
+  if (deleteError) {
+    throw new Error('Failed to delete evidence record')
+  }
+
+  // Delete from storage (non-blocking: if this fails, the record is already gone)
+  try {
+    await db.storage.from(CONTROL_PACKET_BUCKET).remove([evidence.storage_path])
+  } catch (err) {
+    console.error('[non-blocking] Failed to delete evidence file from storage', err)
+  }
+
+  revalidatePath(`/cannabis/events/${evidence.event_id}/control-packet`)
+  return { success: true }
 }
 
 export async function upsertControlPacketReconciliation(
@@ -974,6 +1053,7 @@ export async function upsertControlPacketReconciliation(
 ) {
   const validated = SaveReconciliationSchema.parse(input)
   const user = await requireChef()
+  await requireCannabisAgreementSigned(user.id)
   const db: any = createServerClient()
 
   const { data: snapshot, error: snapshotError } = await (db
@@ -1052,31 +1132,65 @@ export async function upsertControlPacketReconciliation(
     safeCourseCount
   )
 
-  const { error: upsertError } = await (db
-    .from('cannabis_control_packet_reconciliations' as any)
-    .upsert(
-      {
-        snapshot_id: snapshot.id,
-        event_id: snapshot.event_id,
-        tenant_id: user.tenantId!,
-        snapshot_version: snapshot.version_number,
-        extract_label_strength: normalizeNullableText(validated.extractLabelStrength ?? null),
-        service_operator: normalizeNullableText(validated.serviceOperator ?? null),
-        total_syringes_portioned: validated.totalSyringesPortioned ?? null,
-        total_doses_administered: validated.totalDosesAdministered ?? null,
-        extract_returned_to_host: validated.extractReturnedToHost ?? null,
-        irregularities_notes: normalizeNullableText(validated.irregularitiesNotes ?? null),
-        chef_signature: normalizeNullableText(validated.chefSignature ?? null),
-        host_acknowledgment: normalizeNullableText(validated.hostAcknowledgment ?? null),
-        guest_reconciliation: sanitizedGuestRows,
-        mismatch_summary: mismatchSummary,
-        reconciled_at: new Date().toISOString(),
-        reconciled_by: user.id,
-      },
-      { onConflict: 'snapshot_id' }
-    ) as any)
+  const now = new Date().toISOString()
+  const reconciliationPayload = {
+    snapshot_id: snapshot.id,
+    event_id: snapshot.event_id,
+    tenant_id: user.tenantId!,
+    snapshot_version: snapshot.version_number,
+    extract_label_strength: normalizeNullableText(validated.extractLabelStrength ?? null),
+    service_operator: normalizeNullableText(validated.serviceOperator ?? null),
+    total_syringes_portioned: validated.totalSyringesPortioned ?? null,
+    total_doses_administered: validated.totalDosesAdministered ?? null,
+    extract_returned_to_host: validated.extractReturnedToHost ?? null,
+    irregularities_notes: normalizeNullableText(validated.irregularitiesNotes ?? null),
+    chef_signature: normalizeNullableText(validated.chefSignature ?? null),
+    host_acknowledgment: normalizeNullableText(validated.hostAcknowledgment ?? null),
+    guest_reconciliation: sanitizedGuestRows,
+    mismatch_summary: mismatchSummary,
+    reconciled_at: now,
+    reconciled_by: user.id,
+    updated_at: now,
+  }
 
-  if (upsertError) {
+  // Check if reconciliation already exists for optimistic locking
+  const { data: existing } = await (db
+    .from('cannabis_control_packet_reconciliations' as any)
+    .select('id, updated_at')
+    .eq('snapshot_id', snapshot.id)
+    .eq('tenant_id', user.tenantId!)
+    .maybeSingle() as any)
+
+  let writeError: any = null
+
+  if (existing) {
+    // Optimistic lock: only update if updated_at matches what we read.
+    // If another write happened between our read and this write, the condition fails.
+    const expectedUpdatedAt = validated.expectedUpdatedAt
+    if (expectedUpdatedAt && expectedUpdatedAt !== existing.updated_at) {
+      throw new Error(
+        'This reconciliation was modified by another session. Please reload and try again.'
+      )
+    }
+
+    const { error } = await (db
+      .from('cannabis_control_packet_reconciliations' as any)
+      .update(reconciliationPayload)
+      .eq('id', existing.id)
+      .eq('tenant_id', user.tenantId!)
+      .eq('updated_at', existing.updated_at) as any)
+
+    if (error) writeError = error
+  } else {
+    // First save: insert
+    const { error } = await (db
+      .from('cannabis_control_packet_reconciliations' as any)
+      .insert(reconciliationPayload) as any)
+
+    if (error) writeError = error
+  }
+
+  if (writeError) {
     throw new Error('Failed to save reconciliation')
   }
 
@@ -1090,6 +1204,7 @@ export async function upsertControlPacketReconciliation(
 export async function finalizeControlPacket(input: z.infer<typeof FinalizePacketSchema>) {
   const validated = FinalizePacketSchema.parse(input)
   const user = await requireChef()
+  await requireCannabisAgreementSigned(user.id)
   const db: any = createServerClient()
 
   const { data: snapshot, error: snapshotError } = await (db

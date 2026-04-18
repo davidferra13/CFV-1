@@ -1,5 +1,5 @@
-Live Ops Guardian found 3 failing check(s).
-Run: live-ops-50396-1776474902
-Target: http://localhost:3000
-Failures: unit-canary, launch-public, launch-public-inquiry
+Live Ops Guardian found 2 failing check(s).
+Run: live-ops-42372-1776500102
+Target: http://localhost:3100
+Failures: unit-canary, launch-public-inquiry
 Latest summary: C:\Users\david\Documents\CFv1\logs\live-ops-guardian-latest.json

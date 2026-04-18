@@ -17,4 +17,4 @@ export function getResendClient(): Resend {
 }
 
 export const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'info@cheflowhq.com'
-export const FROM_NAME = 'CheFlow'
+export const FROM_NAME = 'ChefFlow'

@@ -8,6 +8,7 @@ import { sendEmail } from './send'
 import { ClientInvitationEmail } from './templates/client-invitation'
 import { QuoteSentEmail } from './templates/quote-sent'
 import { EventProposedEmail } from './templates/event-proposed'
+import { EventAcceptedEmail } from './templates/event-accepted'
 import { PaymentConfirmationEmail } from './templates/payment-confirmation'
 import { PaymentFailedEmail } from './templates/payment-failed'
 import { EventConfirmedEmail } from './templates/event-confirmed'
@@ -229,6 +230,29 @@ export async function sendEventProposedEmail(params: {
       location: params.location,
       eventUrl: `${APP_URL}/my-events/${params.eventId}`,
       coHostNames: params.coHostNames,
+    }),
+  })
+}
+
+// ─── Event Accepted (proposed -> accepted) ──────────────────────────────
+
+export async function sendEventAcceptedEmail(params: {
+  clientEmail: string
+  clientName: string
+  chefName: string
+  eventId: string
+  occasion: string
+  eventDate: string
+}) {
+  await sendEmail({
+    to: params.clientEmail,
+    subject: `Proposal accepted: ${params.occasion}`,
+    react: createElement(EventAcceptedEmail, {
+      clientName: params.clientName,
+      chefName: params.chefName,
+      occasion: params.occasion,
+      eventDate: formatDate(params.eventDate),
+      eventUrl: `${APP_URL}/my-events/${params.eventId}`,
     }),
   })
 }

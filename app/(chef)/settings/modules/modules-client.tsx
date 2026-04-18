@@ -21,6 +21,7 @@ type Props = {
   isGrandfathered: boolean
   focusMode: boolean
   isAdmin: boolean
+  isPrivileged?: boolean
 }
 
 export function ModulesClient({
@@ -29,6 +30,7 @@ export function ModulesClient({
   isGrandfathered,
   focusMode: initialFocusMode,
   isAdmin,
+  isPrivileged,
 }: Props) {
   const router = useRouter()
   const [enabled, setEnabled] = useState<Set<string>>(new Set(initial))
@@ -169,6 +171,13 @@ export function ModulesClient({
               Mode is turned off.
             </p>
           </div>
+        )}
+
+        {/* Privileged users: Focus Mode is bypassed in nav */}
+        {isPrivileged && !isAdmin && focusMode && (
+          <p className="text-xs text-stone-500 mt-3 italic">
+            Focus Mode is on, but your account bypasses it. You see all modules in the sidebar.
+          </p>
         )}
 
         {/* Admin: show visibility registry */}

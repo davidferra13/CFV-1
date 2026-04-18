@@ -3,12 +3,13 @@
 // Review Request Drafter
 // AI crafts a personalized review request message per client.
 // Distinct from followup-draft.ts (general follow-up) - this specifically asks for a review.
-// Routed to Gemini (quality-critical client communication).
+// Routed to local Ollama (Gemma 4). No cloud dependency.
 // Output is DRAFT ONLY - chef must approve before sending.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import { GoogleGenAI } from '@google/genai'
+import { z } from 'zod'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 
 export interface ReviewRequestDraft {
   subject: string
@@ -18,11 +19,12 @@ export interface ReviewRequestDraft {
   generatedAt: string
 }
 
-const getClient = () => {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) throw new Error('GEMINI_API_KEY not configured')
-  return new GoogleGenAI({ apiKey })
-}
+const ReviewRequestSchema = z.object({
+  subject: z.string(),
+  body: z.string(),
+  shortVersion: z.string(),
+  reviewPlatformSuggestion: z.string(),
+})
 
 export async function draftReviewRequest(eventId: string): Promise<ReviewRequestDraft> {
   const user = await requireChef()
@@ -70,18 +72,10 @@ export async function draftReviewRequest(eventId: string): Promise<ReviewRequest
           .join(', ')
       : null
 
-  const prompt = `You are a personal chef crafting a review request message to a client after a successful event.
+  const systemPrompt = `You are a personal chef crafting a review request message to a client after a successful event.
 Write in first person singular. Warm, genuine, never pushy or salesy.
 Reference specific details from the event to make it personal.
 The ask should feel natural - like a friend asking for a favor, not a business soliciting reviews.
-
-Chef: ${chef?.display_name ?? 'Chef'}, ${chef?.business_name ?? ''}
-Client first name: ${firstName}
-Event: ${event.occasion ?? 'Private Dinner'}
-Event date: ${event.event_date ?? 'recently'}
-Guest count: ${event.guest_count ?? 'a few'}
-Menu highlights: ${menuHighlight ?? 'a custom menu'}
-Service style: ${event.service_style ?? 'plated'}
 
 Rules:
 - Open with a personal reference to the specific event (not a generic opener)
@@ -91,29 +85,26 @@ Rules:
 - Sign off naturally (not "Best regards")
 - NO exclamation points in the opening line
 - NO "I hope this email finds you well"
-- Under 120 words for the body
+- Under 120 words for the body`
+
+  const userContent = `Chef: ${chef?.display_name ?? 'Chef'}, ${chef?.business_name ?? ''}
+Client first name: ${firstName}
+Event: ${event.occasion ?? 'Private Dinner'}
+Event date: ${event.event_date ?? 'recently'}
+Guest count: ${event.guest_count ?? 'a few'}
+Menu highlights: ${menuHighlight ?? 'a custom menu'}
+Service style: ${event.service_style ?? 'plated'}
 
 Return JSON: {
   "subject": "email subject line",
   "body": "full message body",
   "shortVersion": "SMS/DM version under 160 characters",
   "reviewPlatformSuggestion": "Google|Yelp|Instagram|Facebook (pick best for a private chef)"
-}
+}`
 
-Return ONLY valid JSON.`
-
-  try {
-    const ai = getClient()
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: prompt,
-      config: { temperature: 0.7, responseMimeType: 'application/json' },
-    })
-    const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const parsed = JSON.parse(text)
-    return { ...parsed, generatedAt: new Date().toISOString() }
-  } catch (err) {
-    console.error('[review-request] Failed:', err)
-    throw new Error('Could not draft review request. Please try again.')
-  }
+  const parsed = await parseWithOllama(systemPrompt, userContent, ReviewRequestSchema, {
+    temperature: 0.7,
+    maxTokens: 1024,
+  })
+  return { ...parsed, generatedAt: new Date().toISOString() }
 }

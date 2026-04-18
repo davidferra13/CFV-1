@@ -45,7 +45,7 @@ export type AchievementInput = z.infer<typeof AchievementSchema>
 
 export async function createAchievement(input: AchievementInput) {
   const chef = await requireChef()
-  await requirePro('professional')
+  await requirePro('professional-dev')
   const db: any = createServerClient()
   const data = AchievementSchema.parse(input)
 
@@ -63,7 +63,7 @@ export async function createAchievement(input: AchievementInput) {
 
 export async function updateAchievement(id: string, input: AchievementInput) {
   const chef = await requireChef()
-  await requirePro('professional')
+  await requirePro('professional-dev')
   const db: any = createServerClient()
   const data = AchievementSchema.parse(input)
 
@@ -84,7 +84,7 @@ export async function updateAchievement(id: string, input: AchievementInput) {
 
 export async function deleteAchievement(id: string) {
   const chef = await requireChef()
-  await requirePro('professional')
+  await requirePro('professional-dev')
   const db: any = createServerClient()
 
   const { error } = await db
@@ -99,7 +99,7 @@ export async function deleteAchievement(id: string) {
 
 export async function listAchievements(publicOnly = false) {
   const chef = await requireChef()
-  await requirePro('professional')
+  await requirePro('professional-dev')
   const db: any = createServerClient()
 
   let q = db
@@ -148,7 +148,7 @@ export type LearningGoalInput = z.infer<typeof LearningGoalSchema>
 
 export async function createLearningGoal(input: LearningGoalInput) {
   const chef = await requireChef()
-  await requirePro('professional')
+  await requirePro('professional-dev')
   const db: any = createServerClient()
   const data = LearningGoalSchema.parse(input)
 
@@ -164,7 +164,7 @@ export async function createLearningGoal(input: LearningGoalInput) {
 
 export async function completeLearningGoal(id: string, notes?: string) {
   const chef = await requireChef()
-  await requirePro('professional')
+  await requirePro('professional-dev')
   const db: any = createServerClient()
 
   const { error } = await db
@@ -183,7 +183,7 @@ export async function completeLearningGoal(id: string, notes?: string) {
 
 export async function updateLearningGoal(id: string, input: Partial<LearningGoalInput>) {
   const chef = await requireChef()
-  await requirePro('professional')
+  await requirePro('professional-dev')
   const db: any = createServerClient()
 
   const { error } = await db
@@ -198,7 +198,7 @@ export async function updateLearningGoal(id: string, input: Partial<LearningGoal
 
 export async function deleteLearningGoal(id: string) {
   const chef = await requireChef()
-  await requirePro('professional')
+  await requirePro('professional-dev')
   const db: any = createServerClient()
 
   const { error } = await db.from('learning_goals').delete().eq('id', id).eq('chef_id', chef.id)
@@ -209,7 +209,7 @@ export async function deleteLearningGoal(id: string) {
 
 export async function listLearningGoals(status?: 'active' | 'completed' | 'abandoned') {
   const chef = await requireChef()
-  await requirePro('professional')
+  await requirePro('professional-dev')
   const db: any = createServerClient()
 
   let q = db

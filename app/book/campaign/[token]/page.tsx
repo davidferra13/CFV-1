@@ -2,8 +2,10 @@
 // No authentication required.
 // Shows the dinner concept and a lightweight "Count me in" booking form.
 
-import { notFound } from 'next/navigation'
+import { headers } from 'next/headers'
+import { checkRateLimit } from '@/lib/rateLimit'
 import { getCampaignByToken } from '@/lib/campaigns/public-booking-actions'
+import { TokenExpiredPage } from '@/components/ui/token-expired-page'
 import { CampaignBookingForm } from '@/components/public/campaign-booking-form'
 import { format } from 'date-fns'
 import { Calendar, DollarSign, Users } from '@/components/ui/icons'
@@ -11,9 +13,21 @@ import { Calendar, DollarSign, Users } from '@/components/ui/icons'
 type Props = { params: { token: string } }
 
 export default async function PublicBookingPage({ params }: Props) {
+  const headersList = await headers()
+  const ip = headersList.get('x-forwarded-for')?.split(',')[0] || 'unknown'
+  try {
+    await checkRateLimit(`campaign-book:${ip}`, 30, 15 * 60 * 1000)
+  } catch {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-stone-400">
+        Too many requests. Please try again later.
+      </div>
+    )
+  }
+
   const dinner = await getCampaignByToken(params.token)
 
-  if (!dinner) notFound()
+  if (!dinner) return <TokenExpiredPage reason="not_found" noun="booking" />
 
   const dateDisplay = dinner.proposed_date
     ? format(new Date(dinner.proposed_date + 'T12:00:00'), 'EEEE, MMMM d, yyyy')

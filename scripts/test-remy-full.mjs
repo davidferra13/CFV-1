@@ -23,7 +23,7 @@ async function main() {
   await fetch('http://localhost:11434/api/generate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: 'qwen3:4b', prompt: 'hello', options: { num_predict: 1 } }),
+    body: JSON.stringify({ model: 'gemma4', prompt: 'hello', options: { num_predict: 1 } }),
   })
   console.log('Ready.')
 

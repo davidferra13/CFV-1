@@ -675,6 +675,9 @@ class QueryBuilder<T = any> {
           onClause = `${targetAliasRef}.${quoteIdent(reverseFkCol)} = ${parentRef}."id"`
         } else {
           const singularGuess = targetTable.replace(/s$/, '') + '_id'
+          console.warn(
+            `[compat] FK map miss: ${plan.parentTable}::${targetTable} - guessing "${singularGuess}". Run "npm run db:fk-cache" to regenerate.`
+          )
           onClause = `${parentRef}.${quoteIdent(singularGuess)} = ${targetAliasRef}."id"`
         }
       }

@@ -689,6 +689,20 @@ const PAID_FEATURES: FeatureDefinition[] = [
 
   // --- F. Cannabis / Compliance Systems ---
   {
+    slug: 'cannabis-portal',
+    label: 'Cannabis Dining Portal',
+    description:
+      'Full cannabis dining module: events, control packets, guest intake, host agreements, handbook, and dedicated ledger',
+    tier: 'paid',
+    category: 'compliance',
+    upgrade_trigger: {
+      moment: 'Chef enables cannabis_preference on an event',
+      message:
+        'Access the full cannabis dining toolkit: control packets, guest consent, dosing reconciliation, and compliance documentation.',
+      cta: 'Unlock Cannabis Portal',
+    },
+  },
+  {
     slug: 'dose-tracking',
     label: 'Dose Tracking',
     description: 'Per-seat dosing records, limits, and tracking for infused events',

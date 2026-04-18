@@ -331,7 +331,7 @@ export async function voidOfflinePayment(input: VoidOfflinePaymentInput) {
       tenant_id: original.tenant_id,
       client_id: original.client_id,
       entry_type: 'adjustment' as const,
-      amount_cents: original.amount_cents, // same amount
+      amount_cents: -Math.abs(original.amount_cents), // negate for refund
       payment_method: original.payment_method,
       description: `Voided: ${reason}`,
       event_id: original.event_id,
@@ -372,6 +372,26 @@ export async function voidOfflinePayment(input: VoidOfflinePaymentInput) {
     })
   } catch (err) {
     console.error('[voidOfflinePayment] Activity log failed (non-blocking):', err)
+  }
+
+  // Notify client that their payment was voided (non-blocking)
+  if (original.client_id && original.event_id) {
+    try {
+      const { createClientNotification } = await import('@/lib/notifications/client-actions')
+      const amountFormatted = `$${(Math.abs(original.amount_cents) / 100).toFixed(2)}`
+      await createClientNotification({
+        tenantId: user.tenantId!,
+        clientId: original.client_id,
+        category: 'payment',
+        action: 'refund_processed',
+        title: 'Payment voided',
+        body: `A ${amountFormatted} ${original.payment_method} payment has been voided: ${reason}`,
+        actionUrl: `/my-events/${original.event_id}`,
+        eventId: original.event_id,
+      })
+    } catch (err) {
+      console.error('[voidOfflinePayment] Client notification failed (non-blocking):', err)
+    }
   }
 
   if (original.event_id) {

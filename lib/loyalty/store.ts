@@ -187,6 +187,13 @@ export async function updateLoyaltyConfigForTenant(
     return { success: false, error: 'Failed to update loyalty configuration' }
   }
 
+  try {
+    const { broadcastUpdate } = await import('@/lib/realtime/broadcast')
+    broadcastUpdate('loyalty', tenantId, { type: 'config_updated' })
+  } catch {
+    /* non-blocking */
+  }
+
   return { success: true, config: castConfig(config) }
 }
 
@@ -311,6 +318,14 @@ export async function createRewardForTenant(
     .single()
 
   if (error) throw new Error('Failed to create reward')
+
+  try {
+    const { broadcastUpdate } = await import('@/lib/realtime/broadcast')
+    broadcastUpdate('loyalty', tenantId, { type: 'reward_created', rewardId: reward.id })
+  } catch {
+    /* non-blocking */
+  }
+
   return { success: true, reward }
 }
 
@@ -330,6 +345,14 @@ export async function updateRewardForTenant(
     .single()
 
   if (error) throw new Error('Failed to update reward')
+
+  try {
+    const { broadcastUpdate } = await import('@/lib/realtime/broadcast')
+    broadcastUpdate('loyalty', tenantId, { type: 'reward_updated', rewardId: reward.id })
+  } catch {
+    /* non-blocking */
+  }
+
   return { success: true, reward }
 }
 
@@ -346,6 +369,14 @@ export async function deactivateRewardForTenant(
     .eq('tenant_id', tenantId)
 
   if (error) throw new Error('Failed to deactivate reward')
+
+  try {
+    const { broadcastUpdate } = await import('@/lib/realtime/broadcast')
+    broadcastUpdate('loyalty', tenantId, { type: 'reward_deactivated', rewardId })
+  } catch {
+    /* non-blocking */
+  }
+
   return { success: true }
 }
 
@@ -923,6 +954,19 @@ export async function adjustClientLoyaltyForTenant(
       .eq('id', validated.clientId)
       .eq('tenant_id', tenantId)
     if (error) throw new Error('Failed to update client loyalty data')
+  }
+
+  try {
+    const { broadcastUpdate } = await import('@/lib/realtime/broadcast')
+    broadcastUpdate('loyalty', tenantId, {
+      type: 'loyalty_adjusted',
+      clientId: validated.clientId,
+      actions,
+      newBalance: updates.loyalty_points,
+      newTier: updates.loyalty_tier,
+    })
+  } catch {
+    /* non-blocking */
   }
 
   return { success: true, actions, updates }

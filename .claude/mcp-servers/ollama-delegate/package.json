@@ -1,0 +1,11 @@
+{
+  "name": "ollama-delegate",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "MCP server that delegates tasks from Claude Code to local Ollama models (Gemma 4) to save API tokens",
+  "main": "server.mjs",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0"
+  }
+}

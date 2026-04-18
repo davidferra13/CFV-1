@@ -1,6 +1,8 @@
 import { Metadata } from 'next'
+import { headers } from 'next/headers'
 import { getPublicEventByShareToken } from '@/lib/tickets/purchase-actions'
-import { notFound } from 'next/navigation'
+import { TokenExpiredPage } from '@/components/ui/token-expired-page'
+import { checkRateLimit } from '@/lib/rateLimit'
 import { PublicEventView } from './public-event-view'
 
 interface Props {
@@ -50,11 +52,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function PublicEventPage({ params, searchParams }: Props) {
+  const headersList = await headers()
+  const ip = headersList.get('x-forwarded-for')?.split(',')[0] || 'unknown'
+  try {
+    await checkRateLimit(`public-event:${ip}`, 60, 15 * 60 * 1000)
+  } catch {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-stone-400">
+        Too many requests. Please try again later.
+      </div>
+    )
+  }
+
   const { shareToken } = await params
   const search = await searchParams
   const event = await getPublicEventByShareToken(shareToken)
 
-  if (!event) notFound()
+  if (!event) return <TokenExpiredPage reason="not_found" noun="event" />
 
   // JSON-LD structured data for Google Events
   const jsonLd = {

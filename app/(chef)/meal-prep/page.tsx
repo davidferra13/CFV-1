@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: 'Meal Prep' }
 
 export default async function MealPrepPage() {
   await requireChef()
-  await requirePro('operations')
+  await requirePro('meal-prep-ops')
 
   const programs = await listMealPrepPrograms()
 

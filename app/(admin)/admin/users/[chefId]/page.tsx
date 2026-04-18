@@ -2,7 +2,9 @@
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { createAdminClient } from '@/lib/db/admin'
+import { logAdminAction } from '@/lib/admin/audit'
 import { ChefDangerZone } from '@/components/admin/chef-danger-zone'
+import { ChefAccessPanel } from '@/components/admin/chef-access-panel'
 import { AdminCreditForm } from '@/components/admin/admin-credit-form'
 import { ChefHealthBadge } from '@/components/admin/chef-health-badge'
 import { computeChefHealthScore, CHEF_TIER_LABELS } from '@/lib/chefs/health-score'
@@ -29,8 +31,9 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 export default async function AdminChefDetailPage({ params }: { params: { chefId: string } }) {
+  let admin
   try {
-    await requireAdmin()
+    admin = await requireAdmin()
   } catch {
     redirect('/unauthorized')
   }
@@ -39,15 +42,45 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
 
   const { data: chef } = await db
     .from('chefs')
-    .select('id, business_name, email, created_at, phone, account_status')
+    .select('id, business_name, email, created_at, phone, account_status, subscription_status')
     .eq('id', params.chefId)
     .single()
 
   if (!chef) notFound()
 
+  // Audit log: admin viewed chef detail (non-blocking)
+  logAdminAction({
+    actorEmail: admin.email,
+    actorUserId: admin.id,
+    actionType: 'admin_viewed_chef',
+    targetId: params.chefId,
+    targetType: 'chef',
+    details: { chefEmail: chef.email, businessName: chef.business_name },
+  }).catch(() => {})
+
   const email = chef.email
   const accountStatus: 'active' | 'suspended' =
     chef.account_status === 'suspended' ? 'suspended' : 'active'
+  const subscriptionStatus: string | null = chef.subscription_status ?? null
+
+  // Resolve platform access level (VIP/admin/owner) from platform_admins via user_roles
+  const { data: userRole } = await db
+    .from('user_roles')
+    .select('auth_user_id')
+    .eq('role', 'chef')
+    .eq('entity_id', params.chefId)
+    .maybeSingle()
+
+  let accessLevel: string | null = null
+  if (userRole?.auth_user_id) {
+    const { data: platformAdmin } = await db
+      .from('platform_admins')
+      .select('access_level')
+      .eq('auth_user_id', userRole.auth_user_id)
+      .eq('is_active', true)
+      .maybeSingle()
+    accessLevel = platformAdmin?.access_level ?? null
+  }
 
   const [eventsSettled, clientsSettled, ledgerSettled] = await Promise.allSettled([
     db
@@ -389,6 +422,14 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
           </div>
         )}
       </div>
+
+      {/* Access Management - comp/VIP controls */}
+      <ChefAccessPanel
+        chefId={params.chefId}
+        chefName={chef.business_name ?? 'this chef'}
+        subscriptionStatus={subscriptionStatus}
+        accessLevel={accessLevel}
+      />
 
       {/* Admin Ledger Correction */}
       <AdminCreditForm chefId={params.chefId} eventOptions={eventOptions} />

@@ -81,18 +81,16 @@ export function getStartersForPage(pathname: string): StarterPrompt[] {
 
 export function getThinkingMessage(elapsed: number, intent?: string): string {
   if (intent === 'command') {
-    if (elapsed > 15) return 'Running your tasks on a private model, so it takes a bit longer...'
+    if (elapsed > 15) return 'Still working on your tasks...'
     if (elapsed > 10) return "Running your tasks - this one's taking a bit..."
     return 'Running your tasks...'
   }
   if (intent === 'mixed') {
-    if (elapsed > 20) return 'Private model needs a moment for this one, almost there...'
     if (elapsed > 15) return 'Working on both parts, hang tight...'
     return 'Working on your question and tasks...'
   }
   // Default question intent
-  if (elapsed > 25) return 'Private model, so no rush. Your data stays yours.'
-  if (elapsed > 15) return 'Remy runs locally for your privacy, so responses take a moment...'
+  if (elapsed > 15) return 'Digging into this one...'
   if (elapsed > 10) return 'Thinking hard on this one...'
   if (elapsed > 5) return 'Remy is thinking...'
   return 'Remy is thinking...'

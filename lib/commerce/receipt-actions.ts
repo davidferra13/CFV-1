@@ -279,6 +279,7 @@ export async function sendReceiptByEmail(input: {
         contentType: 'application/pdf',
       },
     ],
+    isTransactional: true,
   })
 
   if (!sent) {

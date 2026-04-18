@@ -1,10 +1,10 @@
 // Public Tip Page - no auth required.
 // Client receives this link after a completed event (Uber-style tip prompt).
 
-import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { getTipRequestByToken } from '@/lib/finance/tip-actions'
+import { TokenExpiredPage } from '@/components/ui/token-expired-page'
 import { TipForm } from './tip-form'
 
 export const metadata = { title: 'Leave a Tip' }
@@ -25,7 +25,7 @@ export default async function TipPage({ params }: { params: { token: string } })
 
   const data = await getTipRequestByToken(params.token)
 
-  if (!data) notFound()
+  if (!data) return <TokenExpiredPage reason="expired" noun="tip" />
 
   const { request, chefName, eventDate, eventOccasion, eventTotalCents } = data
 

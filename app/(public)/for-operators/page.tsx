@@ -159,7 +159,8 @@ export default function ForOperatorsPage() {
           What you get
         </h2>
         <p className="mt-3 text-sm text-stone-400">
-          Everything below is free. No tiers, no paywalls, no feature gates.
+          Everything below is included in the free tier. No transaction fees, no locked core
+          workflows.
         </p>
         <div className="mt-10 grid gap-px overflow-hidden rounded-2xl border border-stone-800/60 sm:grid-cols-2">
           {CAPABILITIES.map((cap) => (

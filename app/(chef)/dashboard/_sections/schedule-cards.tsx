@@ -166,10 +166,10 @@ export async function ScheduleCards() {
         emptyMessage={
           nextEvent
             ? `No events today. Next: ${nextEvent.occasion || 'Event'} on ${format(new Date(nextEvent.eventDate + 'T12:00:00'), 'MMM d')}`
-            : 'No events scheduled. A quiet day to plan ahead.'
+            : 'No events scheduled yet. Create your first one to get started.'
         }
-        emptyActionLabel="View Calendar"
-        emptyActionHref="/calendar"
+        emptyActionLabel={nextEvent ? 'View Calendar' : 'Create Event'}
+        emptyActionHref={nextEvent ? '/calendar' : '/events/new'}
       />
 
       {/* Week Strip - special widget */}

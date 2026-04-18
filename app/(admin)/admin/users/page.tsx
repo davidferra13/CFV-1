@@ -37,6 +37,41 @@ function ChefBadge({
   return null
 }
 
+const TIER_STYLES: Record<string, string> = {
+  active: 'bg-green-950 text-green-400 border border-green-800',
+  comped: 'bg-green-950 text-green-400 border border-green-800',
+  grandfathered: 'bg-blue-950 text-blue-400 border border-blue-800',
+  trialing: 'bg-amber-950 text-amber-400 border border-amber-800',
+  past_due: 'bg-red-950 text-red-400 border border-red-800',
+  canceled: 'bg-stone-800 text-stone-500 border border-stone-700',
+  suspended: 'bg-red-950 text-red-400 border border-red-800',
+}
+
+function TierBadge({
+  status,
+  accountStatus,
+}: {
+  status: string | null
+  accountStatus: string | null
+}) {
+  if (accountStatus === 'suspended') {
+    return (
+      <span
+        className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium ${TIER_STYLES.suspended}`}
+      >
+        suspended
+      </span>
+    )
+  }
+  if (!status) return <span className="text-[10px] text-stone-600">free</span>
+  const style = TIER_STYLES[status] ?? 'bg-stone-800 text-stone-500 border border-stone-700'
+  return (
+    <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium ${style}`}>
+      {status}
+    </span>
+  )
+}
+
 export default async function AdminChefListPage() {
   try {
     await requireAdmin()
@@ -104,6 +139,9 @@ export default async function AdminChefListPage() {
                     Joined
                   </th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
+                    Tier
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Status
                   </th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
@@ -130,6 +168,12 @@ export default async function AdminChefListPage() {
                         day: 'numeric',
                         year: 'numeric',
                       })}
+                    </td>
+                    <td className="px-4 py-3">
+                      <TierBadge
+                        status={chef.subscription_status}
+                        accountStatus={chef.account_status}
+                      />
                     </td>
                     <td className="px-4 py-3">
                       <ChefBadge chef={chef} />

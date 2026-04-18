@@ -3,10 +3,8 @@
 // No financials, no client lists, no internal notes.
 
 import { createAdminClient } from '@/lib/db/admin'
-import {
-  getServiceConfigForTenant,
-  formatServiceConfigForPrompt,
-} from '@/lib/chef-services/service-config-actions'
+import { getServiceConfigForTenant } from '@/lib/chef-services/service-config-internal'
+import { formatServiceConfigForPrompt } from '@/lib/chef-services/service-config-actions'
 
 export interface RemyPublicContext {
   chefName: string | null

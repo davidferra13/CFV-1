@@ -69,7 +69,7 @@ export async function addContainer(input: {
   label: string
   notes?: string | null
 }): Promise<Container | { error: string }> {
-  const user = await requirePro('meal-prep')
+  const user = await requirePro('meal-prep-ops')
   const db: any = createServerClient()
 
   const tableExists = await checkTableExists(db, 'meal_prep_containers')
@@ -104,7 +104,7 @@ export async function sendContainerToClient(
   clientId: string,
   clientName: string
 ): Promise<Container | { error: string }> {
-  const user = await requirePro('meal-prep')
+  const user = await requirePro('meal-prep-ops')
   const db: any = createServerClient()
 
   const tableExists = await checkTableExists(db, 'meal_prep_containers')
@@ -142,7 +142,7 @@ export async function sendContainerToClient(
 export async function markContainerReturned(
   containerId: string
 ): Promise<Container | { error: string }> {
-  const user = await requirePro('meal-prep')
+  const user = await requirePro('meal-prep-ops')
   const db: any = createServerClient()
 
   const tableExists = await checkTableExists(db, 'meal_prep_containers')
@@ -177,7 +177,7 @@ export async function markContainerReturned(
 export async function markContainerLost(
   containerId: string
 ): Promise<Container | { error: string }> {
-  const user = await requirePro('meal-prep')
+  const user = await requirePro('meal-prep-ops')
   const db: any = createServerClient()
 
   const tableExists = await checkTableExists(db, 'meal_prep_containers')
@@ -203,7 +203,7 @@ export async function markContainerLost(
 export async function getContainers(
   statusFilter?: ContainerStatus
 ): Promise<Container[] | { error: string }> {
-  const user = await requirePro('meal-prep')
+  const user = await requirePro('meal-prep-ops')
   const db: any = createServerClient()
 
   const tableExists = await checkTableExists(db, 'meal_prep_containers')
@@ -228,7 +228,7 @@ export async function getContainers(
  * Get a summary of container inventory and outstanding items.
  */
 export async function getContainerSummary(): Promise<ContainerSummary | { error: string }> {
-  const user = await requirePro('meal-prep')
+  const user = await requirePro('meal-prep-ops')
   const db: any = createServerClient()
 
   const tableExists = await checkTableExists(db, 'meal_prep_containers')

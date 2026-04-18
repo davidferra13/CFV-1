@@ -67,7 +67,13 @@ import {
   generateFoodSafetyIncidentDraft,
   generateConfirmationDraft,
 } from '@/lib/ai/draft-actions'
-import type { CommandRun, TaskResult, PlannedTask, ApprovalTier } from '@/lib/ai/command-types'
+import type {
+  CommandRun,
+  CommandPlan,
+  TaskResult,
+  PlannedTask,
+  ApprovalTier,
+} from '@/lib/ai/command-types'
 import { getAvailableActions } from '@/lib/ai/remy-action-filter'
 import { startRemyActionAudit, finishRemyActionAudit } from '@/lib/ai/remy-action-audit-actions'
 import {
@@ -2109,6 +2115,681 @@ async function executeSingleTask(
   }
 }
 
+// ─── Deterministic Command Router ─────────────────────────────────────────────
+// Regex -> PlannedTask mapping for the most common commands.
+// Bypasses the LLM intent parser entirely, saving 2-5 seconds.
+// Returns null when no pattern matches (falls through to LLM parser).
+
+// Helper: extract a proper-noun name from the message
+function extractName(text: string): string | null {
+  // "for Sarah Johnson", "about the Millers", "client John", "find Sarah"
+  const patterns = [
+    /(?:for|about|client|find|check|show)\s+(?:the\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})/,
+    /^(?:find|check|show|look up|search)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})/,
+  ]
+  for (const p of patterns) {
+    const m = text.match(p)
+    if (m) return m[1].replace(/(?:'s|'s)\s*$/i, '')
+  }
+  return null
+}
+
+// Helper: extract a date reference from the message
+function extractDateRef(text: string): string | null {
+  // ISO dates, "March 15", "next Saturday", "tomorrow", "this weekend"
+  const isoMatch = text.match(/\b(\d{4}-\d{2}-\d{2})\b/)
+  if (isoMatch) return isoMatch[1]
+
+  const monthMatch = text.match(
+    /\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})(?:st|nd|rd|th)?\b/i
+  )
+  if (monthMatch) return `${monthMatch[1]} ${monthMatch[2]}`
+
+  const relMatch = text.match(
+    /\b(today|tomorrow|tonight|this weekend|next (?:monday|tuesday|wednesday|thursday|friday|saturday|sunday|week))\b/i
+  )
+  if (relMatch) return relMatch[1]
+
+  return null
+}
+
+function tryDeterministicCommandPlan(input: string): CommandPlan | null {
+  const trimmed = input.trim()
+
+  // 1. Event listing: "upcoming events", "my events", "what events do I have"
+  if (
+    /^(?:upcoming|my|next|show|list)\s+events?\b/i.test(trimmed) ||
+    /^what\s+events?\s+(?:do i|have i)\b/i.test(trimmed)
+  ) {
+    return {
+      rawInput: input,
+      overallConfidence: 1.0,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'event.list_upcoming',
+          tier: 1,
+          confidence: 1.0,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 2. Client search: "find Sarah", "look up Johnson", "client details for Sarah"
+  if (/^(?:find|look up|search|pull up|get|show|check)\s+(?:client\s+)?/i.test(trimmed)) {
+    const name = extractName(trimmed)
+    if (name) {
+      return {
+        rawInput: input,
+        overallConfidence: 0.95,
+        tasks: [
+          {
+            id: 't1',
+            taskType: 'client.search',
+            tier: 1,
+            confidence: 0.95,
+            inputs: { query: name },
+            dependsOn: [],
+          },
+        ],
+      }
+    }
+  }
+
+  // 3. Availability check: "is March 15 free", "check if Saturday is available", "am I free tomorrow"
+  if (
+    /\b(?:free|available|open|blocked|booked)\b/i.test(trimmed) ||
+    /^(?:check|is)\b.*\b(?:availab|free)\b/i.test(trimmed)
+  ) {
+    const date = extractDateRef(trimmed)
+    if (date) {
+      return {
+        rawInput: input,
+        overallConfidence: 0.95,
+        tasks: [
+          {
+            id: 't1',
+            taskType: 'calendar.availability',
+            tier: 1,
+            confidence: 0.95,
+            inputs: { date },
+            dependsOn: [],
+          },
+        ],
+      }
+    }
+  }
+
+  // 4. Financial summary: "revenue", "how much did I make", "financial summary", "my numbers"
+  if (
+    /^(?:revenue|financial summary|my numbers|how much (?:did i|have i) (?:make|earn))/i.test(
+      trimmed
+    ) ||
+    /^(?:show|get)\s+(?:my\s+)?(?:revenue|financials?|numbers)\b/i.test(trimmed)
+  ) {
+    return {
+      rawInput: input,
+      overallConfidence: 1.0,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'finance.summary',
+          tier: 1,
+          confidence: 1.0,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 5. Recipe search: "search recipes for pasta", "find my risotto recipe"
+  if (
+    /^(?:search|find|look up)\s+(?:my\s+)?(?:recipes?\s+(?:for|with|about)\s+|)(.+)\s+recipes?\s*$/i.test(
+      trimmed
+    ) ||
+    /^(?:search|find|look up)\s+(?:my\s+)?recipes?\s+(?:for|with|about)\s+(.+)/i.test(trimmed)
+  ) {
+    const queryMatch = trimmed.match(
+      /(?:recipes?\s+(?:for|with|about)\s+|(?:for|with|about)\s+(.+)\s+recipes?)(.+)?/i
+    )
+    const query =
+      queryMatch?.[1]?.trim() ||
+      queryMatch?.[2]?.trim() ||
+      trimmed.replace(/^(?:search|find|look up)\s+(?:my\s+)?recipes?\s*/i, '').trim()
+    if (query) {
+      return {
+        rawInput: input,
+        overallConfidence: 0.95,
+        tasks: [
+          {
+            id: 't1',
+            taskType: 'recipe.search',
+            tier: 1,
+            confidence: 0.95,
+            inputs: { query },
+            dependsOn: [],
+          },
+        ],
+      }
+    }
+  }
+
+  // 6. Open inquiries: "pending inquiries", "open leads", "show inquiries"
+  if (/^(?:pending|open|new|show|list|my)\s+(?:inquir|leads?)\b/i.test(trimmed)) {
+    return {
+      rawInput: input,
+      overallConfidence: 1.0,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'inquiry.list_open',
+          tier: 1,
+          confidence: 1.0,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 7. Draft follow-up: "draft a follow-up for Sarah", "write a thank you for the Henderson dinner"
+  if (/^(?:draft|write)\s+(?:a\s+)?(?:follow[- ]?up|thank[- ]?you|thank you)\b/i.test(trimmed)) {
+    const name = extractName(trimmed)
+    return {
+      rawInput: input,
+      overallConfidence: 0.9,
+      tasks: [
+        {
+          id: 't1',
+          taskType: name ? 'draft.thank_you' : 'email.followup',
+          tier: 1,
+          confidence: 0.9,
+          inputs: name ? { clientName: name } : { text: trimmed },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 8. Email drafts: "draft an email", "write an email to Sarah"
+  if (/^(?:draft|write)\s+(?:a\s+|an\s+)?(?:email|message|note)\b/i.test(trimmed)) {
+    const name = extractName(trimmed)
+    return {
+      rawInput: input,
+      overallConfidence: 0.9,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'email.generic',
+          tier: 1,
+          confidence: 0.9,
+          inputs: { text: trimmed, ...(name ? { clientName: name } : {}) },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 9. Morning briefing: "brief me", "morning briefing", "what's today look like"
+  if (
+    /^(?:brief me|morning briefing|debrief me|daily brief)\b/i.test(trimmed) ||
+    /^what'?s?\s+(?:today|my day)\s+look\s+like/i.test(trimmed)
+  ) {
+    return {
+      rawInput: input,
+      overallConfidence: 1.0,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'briefing.morning',
+          tier: 1,
+          confidence: 1.0,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 10. Create event: "create an event for Saturday", "make a booking for Sarah"
+  if (
+    /^(?:create|make|add|set up|book)\s+(?:a\s+|an\s+)?(?:event|booking|dinner|party)\b/i.test(
+      trimmed
+    )
+  ) {
+    const name = extractName(trimmed)
+    const date = extractDateRef(trimmed)
+    return {
+      rawInput: input,
+      overallConfidence: 0.85,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'agent.create_event',
+          tier: 2,
+          confidence: 0.85,
+          inputs: {
+            text: trimmed,
+            ...(name ? { clientName: name } : {}),
+            ...(date ? { date } : {}),
+          },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 11. Email inbox: "show my inbox", "recent emails", "email summary"
+  if (
+    /^(?:show\s+)?(?:my\s+)?(?:inbox|recent emails?|email inbox|email summary)\b/i.test(trimmed)
+  ) {
+    return {
+      rawInput: input,
+      overallConfidence: 1.0,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'email.inbox_summary',
+          tier: 1,
+          confidence: 1.0,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 12. Staff availability: "who's available", "staff availability", "show available staff"
+  if (
+    /^(?:who'?s?\s+available|staff\s+availab|show\s+(?:available\s+)?staff|available\s+staff)\b/i.test(
+      trimmed
+    )
+  ) {
+    return {
+      rawInput: input,
+      overallConfidence: 1.0,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'staff.availability',
+          tier: 1,
+          confidence: 1.0,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 13. Web search: "search the web for...", "google...", "look up online..."
+  if (/^(?:search the web|google|look up online|search online)\s+(?:for\s+)?(.+)/i.test(trimmed)) {
+    const queryMatch = trimmed.match(
+      /^(?:search the web|google|look up online|search online)\s+(?:for\s+)?(.+)/i
+    )
+    if (queryMatch?.[1]) {
+      return {
+        rawInput: input,
+        overallConfidence: 1.0,
+        tasks: [
+          {
+            id: 't1',
+            taskType: 'web.search',
+            tier: 1,
+            confidence: 1.0,
+            inputs: { query: queryMatch[1].trim() },
+            dependsOn: [],
+          },
+        ],
+      }
+    }
+  }
+
+  // 14. P&L / profit and loss: "P&L", "profit and loss", "show my P&L"
+  if (/^(?:show\s+)?(?:my\s+)?(?:p\s*&?\s*l|profit\s+(?:and|&)\s+loss)\b/i.test(trimmed)) {
+    return {
+      rawInput: input,
+      overallConfidence: 1.0,
+      tasks: [
+        { id: 't1', taskType: 'finance.pnl', tier: 1, confidence: 1.0, inputs: {}, dependsOn: [] },
+      ],
+    }
+  }
+
+  // 15. Packing list: "packing list for Saturday", "what do I need to pack"
+  if (/^(?:packing list|what do i need to pack|generate.*packing list)\b/i.test(trimmed)) {
+    const name = extractName(trimmed)
+    return {
+      rawInput: input,
+      overallConfidence: 0.9,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'ops.packing_list',
+          tier: 1,
+          confidence: 0.9,
+          inputs: { text: trimmed, ...(name ? { clientName: name } : {}) },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 16. Complete todo: "mark the shopping done", "complete the Whole Foods todo"
+  if (
+    /^(?:mark|complete|finish|done|check off)\b.*\b(?:todo|task|shopping|prep|order)\b/i.test(
+      trimmed
+    ) ||
+    /\b(?:todo|task)\b.*\b(?:done|complete|finished)\b/i.test(trimmed)
+  ) {
+    return {
+      rawInput: input,
+      overallConfidence: 0.9,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'agent.complete_todo',
+          tier: 2,
+          confidence: 0.9,
+          inputs: { description: trimmed },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 17. Start/stop timer: "start prep", "stop the clock", "start shopping for Henderson"
+  if (
+    /^(?:start|begin|kick off)\s+(?:the\s+)?(?:timer|clock|prep|shopping|packing|driving|execution|service)\b/i.test(
+      trimmed
+    )
+  ) {
+    return {
+      rawInput: input,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'agent.start_timer',
+          tier: 2,
+          confidence: 0.95,
+          inputs: { description: trimmed },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+  if (
+    /^(?:stop|end|finish)\s+(?:the\s+)?(?:timer|clock|prep|shopping|packing|driving|execution|service)\b/i.test(
+      trimmed
+    )
+  ) {
+    return {
+      rawInput: input,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'agent.stop_timer',
+          tier: 2,
+          confidence: 0.95,
+          inputs: { description: trimmed },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 18. Food budget: "set food budget at $800", "food cost budget $500 for Henderson"
+  if (/\b(?:food\s+(?:cost\s+)?budget|set.*budget.*\$)\b/i.test(trimmed)) {
+    return {
+      rawInput: input,
+      overallConfidence: 0.9,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'agent.set_food_budget',
+          tier: 2,
+          confidence: 0.9,
+          inputs: { description: trimmed },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 19. Create goal: "set a goal", "goal to book 10 events"
+  if (
+    /^(?:set|create|add|make)\s+(?:a\s+)?(?:goal|target|objective)\b/i.test(trimmed) ||
+    /\bgoal\s+to\s+/i.test(trimmed)
+  ) {
+    return {
+      rawInput: input,
+      overallConfidence: 0.9,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'agent.create_goal',
+          tier: 2,
+          confidence: 0.9,
+          inputs: { description: trimmed },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 20. Shopping list: "shopping list for spring menu", "what do I need to buy"
+  if (
+    /^(?:shopping list|grocery list|what do i need to buy|ingredients? list)\b/i.test(trimmed) ||
+    /\b(?:shopping|grocery)\s+list\s+for\b/i.test(trimmed)
+  ) {
+    return {
+      rawInput: input,
+      overallConfidence: 0.9,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'agent.shopping_list',
+          tier: 2,
+          confidence: 0.9,
+          inputs: { description: trimmed },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 21. Recipe dietary check: "is my risotto gluten-free", "check risotto for celiac"
+  if (
+    /\b(?:is|check|can)\b.*\b(?:recipe|dish|risotto|pasta|soup|salad)\b.*\b(?:safe|gluten|celiac|vegan|allerg|dairy|nut|kosher|halal)\b/i.test(
+      trimmed
+    ) ||
+    /\b(?:dietary|allergen)\s+(?:check|analysis)\b.*\b(?:recipe|dish)\b/i.test(trimmed)
+  ) {
+    return {
+      rawInput: input,
+      overallConfidence: 0.9,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'agent.recipe_dietary_check',
+          tier: 2,
+          confidence: 0.9,
+          inputs: { description: trimmed },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 22. Mark follow-up: "mark Henderson follow-up done", "follow-up sent for Smith"
+  if (
+    /\b(?:follow[- ]?up)\b.*\b(?:done|sent|complete|mark)\b/i.test(trimmed) ||
+    /^mark\b.*\bfollow[- ]?up\b/i.test(trimmed)
+  ) {
+    return {
+      rawInput: input,
+      overallConfidence: 0.9,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'agent.mark_followup',
+          tier: 2,
+          confidence: 0.9,
+          inputs: { description: trimmed },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 23. Today's plan / daily ops: "what's on my plate", "what should I do today"
+  if (
+    /^(?:what(?:'s| is) on my plate|what should i do|daily plan|today's plan|what do i need to)\b/i.test(
+      trimmed
+    ) ||
+    /^(?:brief|brief me|morning briefing|daily briefing)\b/i.test(trimmed)
+  ) {
+    return {
+      rawInput: input,
+      overallConfidence: 1.0,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'briefing.morning',
+          tier: 1,
+          confidence: 1.0,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 24. Goals: "show my goals", "goal progress", "how are my goals"
+  if (
+    /^(?:show|list|check|how are)\s+(?:my\s+)?goals?\b/i.test(trimmed) ||
+    /^goal\s+(?:progress|status|dashboard)\b/i.test(trimmed)
+  ) {
+    return {
+      rawInput: input,
+      overallConfidence: 1.0,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'goals.dashboard',
+          tier: 1,
+          confidence: 1.0,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 25. Tasks/todos: "show my tasks", "what's on my list", "overdue tasks"
+  if (
+    /^(?:show|list|my)\s+(?:tasks?|todos?)\b/i.test(trimmed) ||
+    /^(?:overdue|pending)\s+tasks?\b/i.test(trimmed)
+  ) {
+    const isOverdue = /overdue/i.test(trimmed)
+    return {
+      rawInput: input,
+      overallConfidence: 1.0,
+      tasks: [
+        {
+          id: 't1',
+          taskType: isOverdue ? 'tasks.overdue' : 'tasks.list',
+          tier: 1,
+          confidence: 1.0,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 26. Staff availability: "who's available", "available staff"
+  if (/^(?:who(?:'s| is) available|available staff|staff availability)\b/i.test(trimmed)) {
+    return {
+      rawInput: input,
+      overallConfidence: 1.0,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'staff.availability',
+          tier: 1,
+          confidence: 1.0,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 27. Nudges/alerts: "what needs attention", "any alerts", "pending actions"
+  if (
+    /^(?:what needs attention|any alerts|pending actions|what(?:'s| is) urgent)\b/i.test(trimmed) ||
+    /^(?:show|list)\s+(?:my\s+)?(?:nudges?|alerts?)\b/i.test(trimmed)
+  ) {
+    return {
+      rawInput: input,
+      overallConfidence: 1.0,
+      tasks: [
+        { id: 't1', taskType: 'nudge.list', tier: 1, confidence: 1.0, inputs: {}, dependsOn: [] },
+      ],
+    }
+  }
+
+  // 28. Inbox: "show my inbox", "any new emails", "email summary"
+  if (
+    /^(?:show|check)\s+(?:my\s+)?(?:inbox|emails?)\b/i.test(trimmed) ||
+    /^(?:any new|recent)\s+emails?\b/i.test(trimmed) ||
+    /^email\s+(?:summary|status)\b/i.test(trimmed)
+  ) {
+    return {
+      rawInput: input,
+      overallConfidence: 1.0,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'email.inbox_summary',
+          tier: 1,
+          confidence: 1.0,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 29. Navigation: "go to events", "take me to clients", "open recipes"
+  if (/^(?:go to|take me to|open|navigate to)\s+(.+)/i.test(trimmed)) {
+    const target = trimmed.match(/^(?:go to|take me to|open|navigate to)\s+(.+)/i)?.[1]?.trim()
+    if (target) {
+      return {
+        rawInput: input,
+        overallConfidence: 1.0,
+        tasks: [
+          {
+            id: 't1',
+            taskType: 'nav.go',
+            tier: 1,
+            confidence: 1.0,
+            inputs: { route: target },
+            dependsOn: [],
+          },
+        ],
+      }
+    }
+  }
+
+  return null // No match - fall through to LLM parser
+}
+
 // ─── Public Server Actions ────────────────────────────────────────────────────
 
 /**
@@ -2160,6 +2841,35 @@ export async function runCommand(rawInput: string): Promise<CommandRun> {
         results: [result],
         ollamaOffline: false,
       }
+    }
+
+    // ─── Deterministic Command Router (Formula > AI) ──────────────────────────
+    // Bypass the LLM intent parser for common command patterns.
+    // Each pattern maps directly to a PlannedTask, saving 2-5s of Ollama latency.
+    const fastPlan = tryDeterministicCommandPlan(rawInput)
+    if (fastPlan) {
+      const rounds = buildExecutionRounds(fastPlan.tasks)
+      const allResults: TaskResult[] = []
+      const resultsByType = new Map<string, unknown>()
+      for (const round of rounds) {
+        const roundResults = await Promise.all(
+          round.map((task) => {
+            const resolvedDeps: Record<string, unknown> = {}
+            for (const depId of task.dependsOn) {
+              const depTask = fastPlan.tasks.find((t) => t.id === depId)
+              if (depTask && resultsByType.has(depTask.taskType)) {
+                resolvedDeps[depTask.taskType] = resultsByType.get(depTask.taskType)
+              }
+            }
+            return executeSingleTask(task, resolvedDeps, tenantId, approvalPolicyMap)
+          })
+        )
+        for (const result of roundResults) {
+          allResults.push(result)
+          if (result.data !== undefined) resultsByType.set(result.taskType, result.data)
+        }
+      }
+      return { runId, rawInput, startedAt, results: allResults }
     }
 
     let plan = await parseCommandIntent(rawInput)

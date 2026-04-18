@@ -8,7 +8,7 @@ import fs from 'fs'
 import path from 'path'
 
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434'
-const VISION_MODEL = process.env.OLLAMA_VISION_MODEL || 'llava:7b'
+const VISION_MODEL = process.env.OLLAMA_VISION_MODEL || 'gemma4'
 
 /**
  * Extract text from an image file using the OCR pipeline.

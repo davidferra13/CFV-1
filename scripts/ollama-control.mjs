@@ -19,7 +19,7 @@ const execAsync = promisify(exec)
 
 const PORT = 9999
 const PC_URL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434'
-const PC_MODEL = process.env.OLLAMA_MODEL || 'qwen3-coder:30b'
+const PC_MODEL = process.env.OLLAMA_MODEL || 'gemma4'
 
 // ── Ollama Direct API ──────────────────────────────────────────────
 

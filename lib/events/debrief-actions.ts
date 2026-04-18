@@ -547,7 +547,7 @@ export async function generateDebriefDraft(
   const user = await requireChef()
   const db: any = createServerClient()
 
-  if (!process.env.GEMINI_API_KEY) {
+  if (!process.env.OLLAMA_BASE_URL) {
     return { error: 'AI not configured' }
   }
 
@@ -596,13 +596,17 @@ ${menuLines ? `- Menu: ${menuLines}` : ''}
 Write only the reflection notes. No greeting, no sign-off, no quotes. Just the notes.`
 
   try {
-    const { GoogleGenAI } = await import('@google/genai')
-    const genai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
-    const response = await genai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
+    const { Ollama } = await import('ollama')
+    const { getOllamaConfig } = await import('@/lib/ai/providers')
+    const config = getOllamaConfig()
+    const ollama = new Ollama({ host: config.baseUrl })
+    const response = await ollama.chat({
+      model: config.model,
+      messages: [{ role: 'user', content: prompt }],
+      options: { num_predict: 512 },
+      keep_alive: '30m',
     })
-    const text = (response.text ?? '') as string
+    const text = response.message.content ?? ''
     return { draft: text.trim() }
   } catch (err) {
     console.error('[debrief] generateDebriefDraft error:', err)

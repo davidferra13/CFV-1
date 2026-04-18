@@ -9,7 +9,7 @@ import {
 } from '@/components/cannabis/cannabis-portal-header'
 
 export default async function CannabisHubPage() {
-  const events = await getCannabisEvents().catch(() => [])
+  const events = await getCannabisEvents()
   const eventCount = events.length
   const recentEvents = events.filter(
     (e: any) => !['completed', 'cancelled'].includes(e.status ?? '')

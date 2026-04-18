@@ -1,10 +1,10 @@
 // Guest Post-Event Feedback - public, token-authenticated
 // No login required. Sent to event guests after completion.
 
-import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { getGuestFeedbackByToken } from '@/lib/sharing/actions'
+import { TokenExpiredPage } from '@/components/ui/token-expired-page'
 import { GuestFeedbackForm } from './guest-feedback-form'
 
 export const metadata = { title: 'Guest Feedback' }
@@ -26,7 +26,7 @@ export default async function GuestFeedbackPage({ params }: { params: { token: s
 
   const feedback = await getGuestFeedbackByToken(params.token)
 
-  if (!feedback) notFound()
+  if (!feedback) return <TokenExpiredPage reason="expired" noun="feedback" />
 
   if (feedback.submitted_at) {
     return (

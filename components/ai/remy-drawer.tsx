@@ -59,7 +59,7 @@ import { getRemyCuratedGreeting, advanceRemyTour } from '@/lib/ai/remy-personali
 // ─── Extracted modules ───────────────────────────────────────────────────────
 import { getStartersForPage, getThinkingMessage } from '@/lib/ai/remy-starters'
 import { markdownComponents } from '@/lib/ai/remy-markdown-config'
-import { SPEED_TRADEOFF, REMY_LIMITED_MODE } from '@/lib/ai/privacy-narrative'
+import { REMY_LIMITED_MODE } from '@/lib/ai/privacy-narrative'
 import { useVoiceInput } from '@/lib/hooks/use-voice-input'
 import {
   useMessageActions,
@@ -267,7 +267,7 @@ export function RemyDrawer() {
   const [ollamaOnline, setOllamaOnline] = useState(true)
   useEffect(() => {
     if (!open) return
-    // Warm up the classifier model (qwen3:4b) and check Ollama status
+    // Warm up Gemma 4 and check Ollama status
     fetch('/api/remy/warmup', { method: 'POST' })
       .then((res) => setOllamaOnline(res.ok))
       .catch(() => setOllamaOnline(false))
@@ -1254,17 +1254,30 @@ export function RemyDrawer() {
                         msg.navSuggestions &&
                         msg.navSuggestions.length > 0 && (
                           <div className="flex flex-wrap gap-1.5">
-                            {msg.navSuggestions.map((nav) => (
-                              <Link
-                                key={nav.href}
-                                href={nav.href}
-                                onClick={closeDrawer}
-                                className="inline-flex items-center gap-1 text-xs bg-brand-950 dark:bg-brand-900/30 text-brand-400 dark:text-brand-300 rounded-full px-3 py-1 hover:bg-brand-900 dark:hover:bg-brand-900/50 transition-colors"
-                              >
-                                <ArrowRight className="h-3 w-3" />
-                                {nav.label}
-                              </Link>
-                            ))}
+                            {msg.navSuggestions.map((nav) =>
+                              nav.href.startsWith('remy:') ? (
+                                <button
+                                  type="button"
+                                  key={nav.href}
+                                  onClick={() => handleSend(nav.href.slice(5))}
+                                  title={nav.description || undefined}
+                                  className="inline-flex items-center gap-1 text-xs bg-brand-950 dark:bg-brand-900/30 text-brand-400 dark:text-brand-300 rounded-full px-3 py-1 hover:bg-brand-900 dark:hover:bg-brand-900/50 transition-colors cursor-pointer"
+                                >
+                                  <ArrowRight className="h-3 w-3" />
+                                  {nav.label}
+                                </button>
+                              ) : (
+                                <Link
+                                  key={nav.href}
+                                  href={nav.href}
+                                  onClick={closeDrawer}
+                                  className="inline-flex items-center gap-1 text-xs bg-brand-950 dark:bg-brand-900/30 text-brand-400 dark:text-brand-300 rounded-full px-3 py-1 hover:bg-brand-900 dark:hover:bg-brand-900/50 transition-colors"
+                                >
+                                  <ArrowRight className="h-3 w-3" />
+                                  {nav.label}
+                                </Link>
+                              )
+                            )}
                           </div>
                         )}
 
@@ -1456,9 +1469,9 @@ export function RemyDrawer() {
                       data-remy-input=""
                       value={input}
                       onChange={(e) => {
-                        if (e.target.value.length <= 2000) setInput(e.target.value)
+                        if (e.target.value.length <= 8000) setInput(e.target.value)
                       }}
-                      maxLength={2000}
+                      maxLength={8000}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
                           e.preventDefault()
@@ -1508,12 +1521,11 @@ export function RemyDrawer() {
                       <Globe className="h-3 w-3" />
                       Remy can make mistakes. Please double-check important info.
                     </p>
-                    <p className="text-xxs text-stone-500 italic">{SPEED_TRADEOFF}</p>
                   </div>
                   <span
-                    className={`text-xxs tabular-nums ${input.length >= 1800 ? (input.length >= 2000 ? 'text-red-500 font-medium' : 'text-amber-500') : 'text-stone-400'}`}
+                    className={`text-xxs tabular-nums ${input.length >= 7500 ? (input.length >= 8000 ? 'text-red-500 font-medium' : 'text-amber-500') : 'text-stone-400'}`}
                   >
-                    {input.length}/2000
+                    {input.length}/8000
                   </span>
                 </div>
               </div>

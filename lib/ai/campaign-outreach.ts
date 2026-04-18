@@ -16,21 +16,14 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import { GoogleGenAI } from '@google/genai'
 import { z } from 'zod'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { format } from 'date-fns'
 import { dateToDateString } from '@/lib/utils/format'
 
-const getGeminiClient = () => {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) throw new Error('GEMINI_API_KEY not configured')
-  return new GoogleGenAI({ apiKey })
-}
-
 // ============================================================
-// 1. GEMINI - CAMPAIGN CONCEPT COPY (no client PII)
+// 1. OLLAMA - CAMPAIGN CONCEPT COPY (no client PII)
 // ============================================================
 
 const CampaignConceptSchema = z.object({
@@ -86,25 +79,13 @@ Rules:
 
 Return ONLY valid JSON: { "hook": "...", "description": "...", "callToAction": "..." }`
 
-  try {
-    const ai = getGeminiClient()
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: prompt,
-      config: { temperature: 0.75, responseMimeType: 'application/json' },
-    })
-    const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const raw = JSON.parse(text)
-    const validated = CampaignConceptSchema.safeParse(raw)
-    if (!validated.success) {
-      console.error('[campaign-concept] Zod validation failed:', validated.error.format())
-      throw new Error('Campaign concept response did not match expected format. Please try again.')
-    }
-    return { ...validated.data, generatedAt: new Date().toISOString() }
-  } catch (err) {
-    console.error('[campaign-concept] Gemini failed:', err)
-    throw new Error('Could not draft dinner concept. Please try again.')
-  }
+  const validated = await parseWithOllama(
+    'You are writing promotional copy for a private chef\'s exclusive dinner invitation. The tone should be warm, refined, and exciting. Not salesy. Not corporate. Personal and genuine. No exclamation points in the hook. No "Are you ready to..." or "Join us for...". No emoji. Keep total word count under 80 words across all three fields.',
+    prompt,
+    CampaignConceptSchema,
+    { temperature: 0.75, maxTokens: 512 }
+  )
+  return { ...validated, generatedAt: new Date().toISOString() }
 }
 
 // ============================================================

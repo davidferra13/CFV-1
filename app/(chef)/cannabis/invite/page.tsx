@@ -15,7 +15,7 @@ const STATUS_STYLES: Record<string, { label: string; color: string }> = {
 }
 
 export default async function CannabisInvitePage() {
-  const sentInvites = await getMySentCannabisInvites().catch(() => [])
+  const sentInvites = await getMySentCannabisInvites()
 
   return (
     <CannabisPageWrapper>

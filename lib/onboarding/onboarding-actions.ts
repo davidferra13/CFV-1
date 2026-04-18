@@ -116,6 +116,21 @@ export async function completeStep(stepKey: string, data?: Record<string, unknow
     return { success: false, error: 'Invalid step key' }
   }
 
+  // Validate data payload: must be plain object, max 50KB serialized
+  if (data !== undefined) {
+    if (typeof data !== 'object' || data === null || Array.isArray(data)) {
+      return { success: false, error: 'Invalid step data format' }
+    }
+    try {
+      const serialized = JSON.stringify(data)
+      if (serialized.length > 50_000) {
+        return { success: false, error: 'Step data too large' }
+      }
+    } catch {
+      return { success: false, error: 'Step data not serializable' }
+    }
+  }
+
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()
@@ -603,15 +618,18 @@ async function persistProfileData(db: any, tenantId: string, data: Record<string
     }
   }
 
-  // 5. Set network_discoverable in chef_preferences
-  if (typeof isPublic === 'boolean') {
-    const { error } = await db
-      .from('chef_preferences')
-      .upsert(
-        { chef_id: tenantId, tenant_id: tenantId, network_discoverable: isPublic },
-        { onConflict: 'chef_id' }
-      )
-    if (error) console.error('[onboarding] Failed to update network_discoverable', error)
+  // 5. Set network_discoverable + bridge city/state to chef_preferences
+  {
+    const prefUpdate: Record<string, unknown> = { chef_id: tenantId, tenant_id: tenantId }
+    if (typeof isPublic === 'boolean') prefUpdate.network_discoverable = isPublic
+    if (city) prefUpdate.home_city = city
+    if (state) prefUpdate.home_state = state
+    if (Object.keys(prefUpdate).length > 2) {
+      const { error } = await db
+        .from('chef_preferences')
+        .upsert(prefUpdate, { onConflict: 'chef_id' })
+      if (error) console.error('[onboarding] Failed to update chef_preferences', error)
+    }
   }
 
   revalidatePath('/settings/my-profile')

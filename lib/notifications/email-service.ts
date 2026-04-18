@@ -136,6 +136,7 @@ export async function sendNotificationEmail(
       actionUrl: input.variables.actionUrl,
       actionLabel: copy.actionLabel,
     }),
+    isTransactional: true,
   })
 
   if (!sent) {

@@ -10,7 +10,7 @@ import { CannabisEventCard } from '@/components/cannabis/cannabis-event-card'
 import Link from 'next/link'
 
 export default async function CannabisEventsPage() {
-  const events = await getCannabisEvents().catch(() => [])
+  const events = await getCannabisEvents()
 
   const upcoming = events.filter((e: any) => !['completed', 'cancelled'].includes(e.status ?? ''))
   const past = events.filter((e: any) => ['completed', 'cancelled'].includes(e.status ?? ''))
@@ -25,7 +25,7 @@ export default async function CannabisEventsPage() {
           backLabel="Cannabis Hub"
           actions={
             <Link
-              href="/events/new"
+              href="/events/new?cannabis=true"
               className="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all"
               style={{
                 background: 'linear-gradient(135deg, #2d5a30 0%, #4a7c4e 100%)',
@@ -33,7 +33,7 @@ export default async function CannabisEventsPage() {
                 boxShadow: '0 0 12px rgba(74, 124, 78, 0.3)',
               }}
             >
-              + New Event
+              + New Cannabis Event
             </Link>
           }
         />
@@ -56,7 +56,7 @@ export default async function CannabisEventsPage() {
               will appear here.
             </p>
             <Link
-              href="/events/new"
+              href="/events/new?cannabis=true"
               className="inline-block mt-4 text-xs underline"
               style={{ color: '#4a7c4e' }}
             >

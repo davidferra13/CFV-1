@@ -2,12 +2,13 @@
 
 // Social Media Caption Generator
 // Generates Instagram/social captions from event details, menu, and tone.
-// Routed to Gemini (creative marketing copy, not PII).
+// Routed to local Ollama (Gemma 4). No cloud dependency.
 // Output is DRAFT ONLY - chef picks and edits before posting.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import { GoogleGenAI } from '@google/genai'
+import { z } from 'zod'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 
 export type CaptionTone = 'warm_personal' | 'elegant_professional' | 'playful_casual'
 
@@ -32,11 +33,19 @@ interface MenuComponentRow {
   description: string | null
 }
 
-const getClient = () => {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) throw new Error('GEMINI_API_KEY not configured')
-  return new GoogleGenAI({ apiKey })
-}
+const SocialCaptionsSchema = z.object({
+  captions: z.array(
+    z.object({
+      platform: z.enum(['instagram', 'facebook', 'twitter', 'linkedin']),
+      tone: z.enum(['warm_personal', 'elegant_professional', 'playful_casual']),
+      caption: z.string(),
+      hashtags: z.array(z.string()),
+      characterCount: z.number(),
+    })
+  ),
+  instagramFirst: z.string(),
+  shortVersion: z.string(),
+})
 
 export async function generateSocialCaptions(
   eventId: string,
@@ -78,28 +87,15 @@ export async function generateSocialCaptions(
       'Fun, approachable, light. Use conversational language. Allowed one emoji per post.',
   }[tone]
 
-  const prompt = `You are a social media strategist for a private chef.
+  const systemPrompt = `You are a social media strategist for a private chef.
 Generate social media captions for a recently completed event.
 Do NOT mention the client's name or any identifying information.
 Focus on the food, craft, atmosphere, and experience.
 Never reveal private event locations or client details.
 
-Chef: ${chef?.display_name ?? 'Chef'}${chef?.business_name ? ' (' + chef.business_name + ')' : ''}
-${chef?.tagline ? 'Brand tagline: ' + chef.tagline : ''}
-
-Event:
-  Type: ${event.occasion ?? 'Private Dinner'}
-  Guests: ${event.guest_count ?? 'a select group'}
-  Style: ${event.service_style ?? 'plated dinner'}
-
-Menu highlights:
-${menu.map((m) => `  - ${m.name}${m.description ? ': ' + m.description : ''}`).join('\n') || '  - A custom seasonal menu'}
-
-Tone: ${toneGuide}
-
 Generate 3 captions:
-1. Instagram (150–300 chars + 8–12 hashtags)
-2. Facebook (200–400 chars, no hashtags)
+1. Instagram (150-300 chars + 8-12 hashtags)
+2. Facebook (200-400 chars, no hashtags)
 3. Twitter/X (under 140 chars)
 
 Return JSON: {
@@ -110,22 +106,24 @@ Return JSON: {
   ],
   "instagramFirst": "instagram caption + hashtags as one string",
   "shortVersion": "under 140 chars version"
-}
+}`
 
-Return ONLY valid JSON.`
+  const userContent = `Chef: ${chef?.display_name ?? 'Chef'}${chef?.business_name ? ' (' + chef.business_name + ')' : ''}
+${chef?.tagline ? 'Brand tagline: ' + chef.tagline : ''}
 
-  try {
-    const ai = getClient()
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: prompt,
-      config: { temperature: 0.8, responseMimeType: 'application/json' },
-    })
-    const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const parsed = JSON.parse(text)
-    return { ...parsed, generatedAt: new Date().toISOString() }
-  } catch (err) {
-    console.error('[social-captions] Failed:', err)
-    throw new Error('Could not generate captions. Please try again.')
-  }
+Event:
+  Type: ${event.occasion ?? 'Private Dinner'}
+  Guests: ${event.guest_count ?? 'a select group'}
+  Style: ${event.service_style ?? 'plated dinner'}
+
+Menu highlights:
+${menu.map((m) => `  - ${m.name}${m.description ? ': ' + m.description : ''}`).join('\n') || '  - A custom seasonal menu'}
+
+Tone: ${toneGuide}`
+
+  const parsed = await parseWithOllama(systemPrompt, userContent, SocialCaptionsSchema, {
+    temperature: 0.8,
+    maxTokens: 1024,
+  })
+  return { ...parsed, generatedAt: new Date().toISOString() }
 }

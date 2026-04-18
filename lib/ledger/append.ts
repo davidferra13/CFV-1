@@ -59,6 +59,14 @@ export async function appendLedgerEntryForChef(
   revalidatePath('/dashboard')
   revalidatePath('/finance')
 
+  // Bust Remy context cache so AI reflects financial change immediately (non-blocking)
+  try {
+    const { invalidateRemyContextCache } = await import('@/lib/ai/remy-context')
+    invalidateRemyContextCache(user.tenantId!)
+  } catch {
+    /* non-blocking */
+  }
+
   return result
 }
 
@@ -161,6 +169,14 @@ export async function createAdjustment({
   revalidatePath('/events')
   revalidatePath('/dashboard')
   revalidatePath('/finance')
+
+  // Bust Remy context cache so AI reflects financial change immediately (non-blocking)
+  try {
+    const { invalidateRemyContextCache } = await import('@/lib/ai/remy-context')
+    invalidateRemyContextCache(user.tenantId!)
+  } catch {
+    /* non-blocking */
+  }
 
   return result
 }

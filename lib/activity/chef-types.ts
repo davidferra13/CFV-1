@@ -25,6 +25,7 @@ export type ChefActivityAction =
   | 'event_updated'
   | 'event_transitioned'
   | 'event_cancelled'
+  | 'event_deleted'
   | 'event_invoice_sent'
   | 'event_photo_uploaded'
   | 'event_menu_approved'

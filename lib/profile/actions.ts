@@ -21,7 +21,7 @@ import { createAdminClient } from '@/lib/db/admin'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import { derivePublicTrustSummary } from '@/lib/dietary/public-trust'
-import { getServiceConfigForTenant } from '@/lib/chef-services/service-config-actions'
+import { getServiceConfigForTenant } from '@/lib/chef-services/service-config-internal'
 
 const SlugSchema = z
   .string()
@@ -128,6 +128,7 @@ export async function getPublicChefProfile(slug: string) {
       'social_links',
       'google_review_url',
       'booking_base_price_cents',
+      'archetype',
     ].join(', ')
   )
 
@@ -283,6 +284,7 @@ export async function getPublicChefProfile(slug: string) {
       social_links: chef.social_links ?? {},
       google_review_url: chef.google_review_url ?? null,
       booking_base_price_cents: chef.booking_base_price_cents ?? null,
+      archetype: chef.archetype ?? null,
       discovery,
       dietaryTrust,
     },

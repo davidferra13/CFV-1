@@ -1,6 +1,7 @@
 // New Quote Page - Create a quote with pricing intelligence
 // Can be navigated to directly or from an inquiry (with pre-filled data)
 
+import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getClients } from '@/lib/clients/actions'
 import { getClientPricingHistory } from '@/lib/quotes/actions'
@@ -8,6 +9,7 @@ import { getInquiryById } from '@/lib/inquiries/actions'
 import { getPricingSuggestion } from '@/lib/analytics/pricing-suggestions'
 import { formatBenchmarkSuggestion } from '@/lib/inquiries/goldmine-pricing-benchmarks'
 import { QuoteForm } from '@/components/quotes/quote-form'
+import { getPricingConfig } from '@/lib/pricing/config-actions'
 
 type SearchParamValue = string | string[] | undefined
 type NewQuoteSearchParams = Record<string, SearchParamValue>
@@ -88,7 +90,26 @@ export default async function NewQuotePage({
 }) {
   const user = await requireChef()
 
-  const clients = (await getClients()) as ClientRecord[]
+  const [clients, pricingConfig] = await Promise.all([
+    getClients() as Promise<ClientRecord[]>,
+    getPricingConfig(),
+  ])
+
+  const RATE_KEYS = [
+    'couples_rate_3_course',
+    'couples_rate_4_course',
+    'couples_rate_5_course',
+    'group_rate_3_course',
+    'group_rate_4_course',
+    'group_rate_5_course',
+    'weekly_standard_min',
+    'weekly_standard_max',
+    'cook_and_leave_rate',
+  ] as const
+  const usingDefaults = !RATE_KEYS.some((k) => {
+    const val = (pricingConfig as unknown as Record<string, unknown>)[k]
+    return typeof val === 'number' && val > 0
+  })
 
   // Pre-fill from query params and inquiry if provided
   let prefilledClientId = readString(searchParams, 'client_id', 80)
@@ -194,6 +215,21 @@ export default async function NewQuotePage({
           Build a pricing quote. Previous client pricing is shown to help set the right price.
         </p>
       </div>
+
+      {usingDefaults && (
+        <div className="rounded-xl border border-amber-800/40 bg-amber-950/30 px-5 py-3 flex items-center justify-between gap-4">
+          <p className="text-sm text-amber-300">
+            Your pricing rates haven&apos;t been configured yet. Quotes will use system defaults
+            until you set your own rates.
+          </p>
+          <Link
+            href="/settings/pricing"
+            className="text-sm font-medium text-amber-400 hover:text-amber-300 whitespace-nowrap"
+          >
+            Set Rates &rarr;
+          </Link>
+        </div>
+      )}
 
       <QuoteForm
         tenantId={user.tenantId!}

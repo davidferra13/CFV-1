@@ -44,8 +44,10 @@ import {
   detectMemoryIntent,
   encodeSSE,
   extractNavSuggestions,
+  suggestFollowUpActions,
   formatCategoryLabel,
   getOperatorResponseTokenBudget,
+  shouldUseThinking,
   sseErrorResponse,
   sseHeaders,
   summarizeTaskResults,
@@ -55,6 +57,7 @@ import {
   buildRemySystemPrompt,
   formatConversationHistory,
   determineContextScope,
+  getEarlyScopeHint,
 } from './route-prompt-utils'
 import { tryInstantAnswer } from './route-instant-answers'
 import { parseTaskChain, looksLikeChain } from '@/lib/ai/remy-chain-parser'
@@ -63,6 +66,8 @@ import {
   formatReceiptForConfirmation,
   analyzeDishPhoto,
   formatDishPhotoResponse,
+  processVoiceMemo,
+  formatVoiceMemoResponse,
 } from '@/lib/ai/remy-vision-actions'
 
 //  POST Handler
@@ -83,14 +88,18 @@ async function getRemyRuntimeState(
 export async function POST(req: NextRequest) {
   try {
     const user = await requireChef()
-    const runtimeState = await getRemyRuntimeState(user.tenantId!)
+
+    // Parallelize: runtime state check, body parsing, and admin check are independent
+    const [runtimeState, rawBody, admin] = await Promise.all([
+      getRemyRuntimeState(user.tenantId!),
+      req.json().catch(() => null as unknown),
+      isRemyAdmin(),
+    ])
+
     if (!runtimeState.allowed) {
       return sseErrorResponse(runtimeState.message ?? 'Remy is disabled for this account.', 403)
     }
-    let rawBody: unknown
-    try {
-      rawBody = await req.json()
-    } catch {
+    if (!rawBody) {
       return sseErrorResponse('Request body must be valid JSON.', 400)
     }
     const validated = validateRemyRequestBody(rawBody)
@@ -131,25 +140,25 @@ export async function POST(req: NextRequest) {
           rawRecord.recentConversationSummaries as Array<{ summary: string; generatedAt: string }>
         ).slice(0, 5)
       : null
-    const history = validateHistory(rawRecord.history, 10) as RemyMessage[]
+    const history = validateHistory(rawRecord.history, 20) as RemyMessage[]
 
-    //  GUARDRAILS
-    const admin = await isRemyAdmin()
-
+    //  GUARDRAILS (block + rate limit parallelized for non-admins)
     if (!admin) {
-      const blockStatus = await isRemyBlocked()
+      const [blockStatus, rateLimited] = await Promise.all([
+        isRemyBlocked(),
+        checkRateLimit(`remy-stream:${user.tenantId!}`, 30, 60_000)
+          .then(() => false)
+          .catch(() => true),
+      ])
       if (blockStatus.blocked) {
         return sseErrorResponse(
           'Your access to Remy has been temporarily suspended due to repeated policy violations.',
           403
         )
       }
-
-      try {
-        await checkRateLimit(`remy-stream:${user.tenantId!}`, 12, 60_000)
-      } catch {
+      if (rateLimited) {
         return sseErrorResponse(
-          'Whoa, slow down chef - I can only handle 12 messages a minute. Give me about a minute and try again.',
+          'Whoa, slow down chef - I can only handle 30 messages a minute. Give me a moment and try again.',
           429
         )
       }
@@ -166,26 +175,6 @@ export async function POST(req: NextRequest) {
         }
         return sseErrorResponse(inputCheck.refusal ?? 'That request is not allowed.', 400)
       }
-    }
-
-    // Check AI runtime availability via configured endpoint (cloud in production)
-    const { getOllamaConfig } = await import('@/lib/ai/providers')
-    try {
-      const runtimeConfig = getOllamaConfig()
-      const health = await fetch(`${runtimeConfig.baseUrl}/api/tags`, {
-        signal: AbortSignal.timeout(5000),
-      })
-      if (!health.ok) {
-        return sseErrorResponse(
-          'AI features are temporarily unavailable. Please try again in a few moments.',
-          503
-        )
-      }
-    } catch {
-      return sseErrorResponse(
-        'AI features are temporarily unavailable. Please try again in a few moments.',
-        503
-      )
     }
 
     //  RECIPE GENERATION BLOCK (hard rule - AI never generates recipes)
@@ -266,6 +255,38 @@ export async function POST(req: NextRequest) {
             data: isOllama
               ? 'Vision analysis is temporarily unavailable. Try again in a moment, or describe what you see instead.'
               : 'Failed to analyze the image. Try again or describe what you see instead.',
+          }),
+          { headers: sseHeaders() }
+        )
+      }
+    }
+
+    //  AUDIO PATH (voice memos - Gemma 4 native audio processing)
+    const audioBase64 =
+      typeof rawRecord.audioBase64 === 'string' && rawRecord.audioBase64.length > 100
+        ? (rawRecord.audioBase64 as string)
+        : null
+
+    if (audioBase64) {
+      try {
+        const memoData = await processVoiceMemo(audioBase64)
+        const responseText = formatVoiceMemoResponse(memoData)
+
+        const body =
+          encodeSSE({ type: 'intent', data: 'audio' }) +
+          encodeSSE({ type: 'token', data: responseText }) +
+          encodeSSE({ type: 'done', data: null })
+        return new Response(body, { headers: sseHeaders() })
+      } catch (err) {
+        const isOllama =
+          err instanceof Error &&
+          (err.message.includes('Ollama') || err.message.includes('ECONNREFUSED'))
+        return new Response(
+          encodeSSE({
+            type: 'error',
+            data: isOllama
+              ? 'Audio processing is temporarily unavailable. Try again in a moment, or type out your notes instead.'
+              : 'Failed to process the audio. Try again or type out your notes instead.',
           }),
           { headers: sseHeaders() }
         )
@@ -512,11 +533,14 @@ export async function POST(req: NextRequest) {
     acquireInteractiveLock()
 
     //  MAIN PATH: classify + load context
-    // Hard timeout: if the entire pre-stream setup takes >120s, bail out.
-    // Classifier + context + memories usually takes 5-15s. Cold model load
-    // on 6GB VRAM can add 30-60s. 120s accommodates worst-case cold start.
+    // Early scope hint: determine context scope from message text BEFORE classification.
+    // For minimal scope (greetings, how-to, short questions), skip 31 Tier 2 DB queries.
+    const earlyScopeHint = getEarlyScopeHint(message)
+
+    // Hard timeout: if the entire pre-stream setup takes >30s, bail out.
+    // Gemma 4 loads fast. Classifier + context + memories takes 2-5s.
     const setupTimeout = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('Pre-stream setup timed out after 120s')), 120_000)
+      setTimeout(() => reject(new Error('Pre-stream setup timed out after 30s')), 30_000)
     )
 
     let context: Awaited<ReturnType<typeof loadRemyContext>>
@@ -532,20 +556,27 @@ export async function POST(req: NextRequest) {
       const [ctx, cls, mems, profile, favChefs, mentioned, archetype, survey, palaceSummaries] =
         (await Promise.race([
           Promise.all([
-            loadRemyContext(currentPage),
+            loadRemyContext(currentPage, earlyScopeHint),
             classifyIntent(message),
-            loadRelevantMemories(message, undefined, undefined),
-            getCulinaryProfileForPrompt(user.tenantId!).catch(() => ''),
-            getFavoriteChefs().catch(() => []),
+            // Skip heavy lookups for minimal scope - they won't be included in the prompt anyway
+            earlyScopeHint === 'minimal'
+              ? Promise.resolve([])
+              : loadRelevantMemories(message, undefined, undefined),
+            earlyScopeHint === 'minimal'
+              ? Promise.resolve('')
+              : getCulinaryProfileForPrompt(user.tenantId!).catch(() => ''),
+            earlyScopeHint === 'minimal' ? Promise.resolve([]) : getFavoriteChefs().catch(() => []),
             resolveMessageEntities(message).catch((err) => {
               console.error('[non-blocking] Entity resolution failed:', err)
               return []
             }),
-            getRemyArchetype().catch(() => null),
+            earlyScopeHint === 'minimal'
+              ? Promise.resolve(null)
+              : getRemyArchetype().catch(() => null),
             activeForm === 'remy-survey'
               ? getSurveyState().catch(() => null)
               : Promise.resolve(null),
-            history.length === 0
+            history.length === 0 && earlyScopeHint !== 'minimal'
               ? searchRemyConversationSummaries(message, { limit: 3 }).catch(() => [])
               : Promise.resolve([]),
           ]),
@@ -600,22 +631,38 @@ export async function POST(req: NextRequest) {
     const surveyPromptSection =
       activeForm === 'remy-survey' ? buildSurveyPromptSection(surveyState) : null
 
-    //  Safety-critical fast-path: dietary/allergy queries -> command
-    // Allergy queries are safety-critical and MUST route through dietary.check
-    // to return structured data. The LLM classifier sometimes misroutes these
-    // as "question" intent, causing the LLM to answer without querying the DB.
-    const dietaryRegex = /(?:allerg|dietary|restriction|epipen|anaphyla|intoleran)/i
-    if (classification.intent === 'question' && dietaryRegex.test(message)) {
+    //  INTENT OVERRIDES (Formula > AI - correct misclassifications)
+
+    // Safety-critical: dietary/allergy queries MUST route through dietary.check
+    if (
+      classification.intent === 'question' &&
+      /(?:allerg|dietary|restriction|epipen|anaphyla|intoleran)/i.test(message)
+    ) {
       classification = { ...classification, intent: 'command' }
     }
 
-    //  Financial context queries -> question path
-    // Payment/outstanding/invoice questions about clients are best answered by the
-    // LLM from its full financial context, not by client.search which only returns
-    // name/tier/allergies. Override command -> question for these.
-    const financialQueryRegex =
-      /(?:outstanding|payment|invoice|owe|balance|paid|unpaid|overdue|past due)/i
-    if (classification.intent === 'command' && financialQueryRegex.test(message)) {
+    // Action verbs that should always be commands, even if classifier said question
+    if (classification.intent === 'question') {
+      const forceCommandPatterns = [
+        /^(?:draft|write|create|make|add|build|generate|prepare|send|email|text)\b/i,
+        /^(?:find|search|look up|check|show|pull up|get|grab|fetch)\b.*[A-Z]/i, // action + proper noun
+        /^(?:book|reserve|block off|schedule|cancel|reschedule)\b/i,
+        /^(?:scale|portion|pack|import|bulk|parse|process|log|record)\b/i,
+        /^(?:go to|take me to|open|navigate)\b/i,
+        /^(?:brief me|morning briefing|debrief me)\b/i,
+        /^(?:upcoming|my|next|show|list)\s+(?:events?|inquir|clients?|recipes?|staff)\b/i,
+        /^(?:pending|open|overdue|new)\s+(?:inquir|leads?|invoices?|payments?)\b/i,
+      ]
+      if (forceCommandPatterns.some((p) => p.test(message))) {
+        classification = { ...classification, intent: 'command' }
+      }
+    }
+
+    // Financial context queries -> question path (LLM answers better from full context)
+    if (
+      classification.intent === 'command' &&
+      /(?:outstanding|payment|invoice|owe|balance|paid|unpaid|overdue|past due)/i.test(message)
+    ) {
       classification = { ...classification, intent: 'question' }
     }
 
@@ -747,14 +794,18 @@ export async function POST(req: NextRequest) {
       return new Response(stream, { headers: sseHeaders() })
     }
 
-    //  MIXED path
-    if (classification.intent === 'mixed') {
+    //  STREAMING path (handles both question and mixed intents)
+    // Mixed: execute commands first, then stream conversational response.
+    // Question: stream directly.
+    const isMixed = classification.intent === 'mixed'
+    let mixedTasks: RemyTaskResult[] = []
+    let mixedTaskSummary = ''
+
+    if (isMixed) {
       const commandInput = classification.commandPart ?? message
-      const questionInput = classification.questionPart ?? message
+      const commandRun = await runCommand(commandInput)
 
-      const [commandRun] = await Promise.all([runCommand(commandInput)])
-
-      const tasks: RemyTaskResult[] = (commandRun.results ?? []).map((r) => ({
+      mixedTasks = (commandRun.results ?? []).map((r) => ({
         taskId: r.taskId,
         taskType: r.taskType,
         tier: r.tier,
@@ -765,190 +816,9 @@ export async function POST(req: NextRequest) {
         holdReason: r.holdReason,
         preview: r.preview,
       }))
-
-      const taskSummary = summarizeTaskResults(tasks)
-
-      // Stream the conversational part - always routes to PC (only endpoint)
-      const mixedEndpoint = await routeForRemy()
-      if (!mixedEndpoint) {
-        releaseInteractiveLock()
-        return new Response(
-          encodeSSE({
-            type: 'error',
-            data: "I'm offline right now - no Ollama endpoints are reachable.",
-          }),
-          { headers: sseHeaders() }
-        )
-      }
-
-      // Phase 5B: Intent-aware context scoping for mixed path
-      const mixedScope = determineContextScope(message, classification.intent)
-      const mixedTokenBudget = getOperatorResponseTokenBudget(mixedScope, 'mixed')
-
-      const systemPrompt = buildRemySystemPrompt(
-        context,
-        memories,
-        culinaryProfile,
-        favoriteChefsList,
-        archetypeId,
-        recentPages,
-        recentActions,
-        recentErrors,
-        sessionMinutes,
-        activeForm,
-        surveyPromptSection,
-        otherChannelDigest,
-        previousSessionTopics,
-        message,
-        mixedScope,
-        recentConversationSummaries
-      )
-
-      // Warn if system prompt is large enough to risk silent truncation.
-      // Without explicit num_ctx the model defaults to its native context
-      // window (~32k for qwen3-coder:30b). 16k chars ~ 4k tokens - safe,
-      // but log a warning above 24k chars (~6k tokens) so we notice growth.
-      if (systemPrompt.length > 24_000) {
-        console.warn(
-          `[remy/stream] [ALERT] System prompt is ${systemPrompt.length} chars (~${Math.round(systemPrompt.length / 4)} tokens) - may be truncated by model context window`
-        )
-      }
-
-      const historyStr = formatConversationHistory(history)
-      const mixedUserMessage = `${historyStr}Chef: ${questionInput}`
-      const encoder = new TextEncoder()
-      const stream = new ReadableStream({
-        async start(controller) {
-          // Hard timeout: kill the Ollama call if it hangs
-          const abortCtrl = new AbortController()
-          const timeout = setTimeout(() => abortCtrl.abort(), OLLAMA_STREAM_TIMEOUT_MS)
-          // Stop streaming when the client disconnects (drawer closed)
-          const onDisconnect = () => abortCtrl.abort()
-          req.signal.addEventListener('abort', onDisconnect)
-
-          try {
-            controller.enqueue(encoder.encode(encodeSSE({ type: 'intent', data: 'mixed' })))
-
-            let fullResponse = ''
-            let usedMixedEndpoint = mixedEndpoint
-            const mixedThinkFilter = new ThinkingBlockFilter()
-
-            // Try primary endpoint, failover if connection fails before any tokens
-            try {
-              const mixedOllama = new Ollama({ host: mixedEndpoint.host })
-              const response: any = await mixedOllama.chat({
-                model: mixedEndpoint.model,
-                messages: [
-                  { role: 'system', content: systemPrompt },
-                  { role: 'user', content: mixedUserMessage },
-                ],
-                stream: true,
-                options: {
-                  num_predict: mixedTokenBudget,
-                },
-                keep_alive: '30m',
-                think: false,
-              } as any)
-
-              for await (const chunk of response) {
-                if (abortCtrl.signal.aborted) break
-                const token = chunk.message?.content ?? ''
-                if (token) {
-                  const filtered = mixedThinkFilter.process(token)
-                  if (filtered) {
-                    fullResponse += filtered
-                    controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: filtered })))
-                  }
-                }
-              }
-              const flushed = mixedThinkFilter.flush()
-              if (flushed) {
-                fullResponse += flushed
-                controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: flushed })))
-              }
-            } catch (primaryErr) {
-              if (fullResponse.length > 0) throw primaryErr
-
-              const fallback = await routeForRemy({ preferEndpoint: 'pc' })
-              if (!fallback || fallback.endpointName === mixedEndpoint.endpointName)
-                throw primaryErr
-
-              console.log(
-                `[remy] mixed: ${mixedEndpoint.endpointName} failed - falling back to ${fallback.endpointName}`
-              )
-              usedMixedEndpoint = fallback
-              const mixedFallbackFilter = new ThinkingBlockFilter()
-              const fallbackOllama = new Ollama({ host: fallback.host })
-              const response: any = await fallbackOllama.chat({
-                model: fallback.model,
-                messages: [
-                  { role: 'system', content: systemPrompt },
-                  { role: 'user', content: mixedUserMessage },
-                ],
-                stream: true,
-                options: {
-                  num_predict: mixedTokenBudget,
-                },
-                keep_alive: '30m',
-                think: false,
-              } as any)
-
-              for await (const chunk of response) {
-                if (abortCtrl.signal.aborted) break
-                const token = chunk.message?.content ?? ''
-                if (token) {
-                  const filtered = mixedFallbackFilter.process(token)
-                  if (filtered) {
-                    fullResponse += filtered
-                    controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: filtered })))
-                  }
-                }
-              }
-              const flushed = mixedFallbackFilter.flush()
-              if (flushed) {
-                fullResponse += flushed
-                controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: flushed })))
-              }
-            }
-
-            // Parse nav suggestions from the end of the response
-            const navSuggestions = extractNavSuggestions(fullResponse)
-
-            // Append task summary
-            if (taskSummary) {
-              controller.enqueue(
-                encoder.encode(encodeSSE({ type: 'token', data: `\n\n${taskSummary}` }))
-              )
-            }
-
-            if (tasks.length > 0) {
-              controller.enqueue(encoder.encode(encodeSSE({ type: 'tasks', data: tasks })))
-            }
-            if (navSuggestions.length > 0) {
-              controller.enqueue(encoder.encode(encodeSSE({ type: 'nav', data: navSuggestions })))
-            }
-            controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
-          } catch (err) {
-            console.error(
-              '[remy] Mixed path streaming error:',
-              err instanceof Error ? err.message : err
-            )
-            controller.enqueue(
-              encoder.encode(encodeSSE({ type: 'error', data: sanitizeErrorForClient(err) }))
-            )
-          } finally {
-            clearTimeout(timeout)
-            req.signal.removeEventListener('abort', onDisconnect)
-            releaseInteractiveLock()
-            controller.close()
-          }
-        },
-      })
-
-      return new Response(stream, { headers: sseHeaders() })
+      mixedTaskSummary = summarizeTaskResults(mixedTasks)
     }
 
-    //  QUESTION path (default) - STREAMED, always routes to PC (only endpoint)
     const endpoint = await routeForRemy()
     if (!endpoint) {
       releaseInteractiveLock()
@@ -961,9 +831,13 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Phase 5B: Intent-aware context scoping - reduce prompt size for focused queries
     const contextScope = determineContextScope(message, classification.intent)
-    const questionTokenBudget = getOperatorResponseTokenBudget(contextScope, 'question')
+    const intentType = isMixed ? 'mixed' : 'question'
+    const tokenBudget = getOperatorResponseTokenBudget(
+      contextScope,
+      intentType as 'question' | 'mixed'
+    )
+    const useThinking = shouldUseThinking(contextScope, message)
 
     const systemPrompt = buildRemySystemPrompt(
       context,
@@ -983,117 +857,103 @@ export async function POST(req: NextRequest) {
       contextScope,
       recentConversationSummaries
     )
+
+    if (systemPrompt.length > 24_000) {
+      console.warn(
+        `[remy/stream] [ALERT] System prompt is ${systemPrompt.length} chars (~${Math.round(systemPrompt.length / 4)} tokens) - may be truncated by model context window`
+      )
+    }
+
     const historyStr = formatConversationHistory(history)
-    const userMessage = `${historyStr}Chef: ${message}`
+    const questionInput = isMixed ? (classification.questionPart ?? message) : message
+    const userMessage = `${historyStr}Chef: ${questionInput}`
 
     const encoder = new TextEncoder()
     const stream = new ReadableStream({
       async start(controller) {
-        // Hard timeout: kill the Ollama call if it hangs
         const abortCtrl = new AbortController()
         const timeout = setTimeout(() => abortCtrl.abort(), OLLAMA_STREAM_TIMEOUT_MS)
-        // Stop streaming when the client disconnects (drawer closed)
         const onDisconnect = () => abortCtrl.abort()
         req.signal.addEventListener('abort', onDisconnect)
 
         try {
-          controller.enqueue(encoder.encode(encodeSSE({ type: 'intent', data: 'question' })))
+          controller.enqueue(encoder.encode(encodeSSE({ type: 'intent', data: intentType })))
 
           let fullResponse = ''
-          let usedEndpoint = endpoint
           const thinkFilter = new ThinkingBlockFilter()
 
-          // Try primary endpoint, failover to secondary if connection fails
-          try {
-            const ollama = new Ollama({ host: endpoint.host })
-            const response: any = await ollama.chat({
-              model: endpoint.model,
-              messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: userMessage },
-              ],
-              stream: true,
-              options: {
-                num_predict: questionTokenBudget,
-              },
-              keep_alive: '30m',
-              think: false,
-            } as any)
+          const ollama = new Ollama({ host: endpoint.host })
+          const response: any = await ollama.chat({
+            model: endpoint.model,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userMessage },
+            ],
+            stream: true,
+            options: {
+              num_predict: useThinking ? tokenBudget + 200 : tokenBudget,
+            },
+            keep_alive: '30m',
+            think: useThinking,
+          } as any)
 
-            for await (const chunk of response) {
-              if (abortCtrl.signal.aborted) break
-              const token = chunk.message?.content ?? ''
-              if (token) {
-                const filtered = thinkFilter.process(token)
-                if (filtered) {
-                  fullResponse += filtered
-                  controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: filtered })))
-                }
+          for await (const chunk of response) {
+            if (abortCtrl.signal.aborted) break
+            const token = chunk.message?.content ?? ''
+            if (token) {
+              const filtered = thinkFilter.process(token)
+              if (filtered) {
+                fullResponse += filtered
+                controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: filtered })))
               }
-            }
-            // Flush any remaining buffered content
-            const flushed = thinkFilter.flush()
-            if (flushed) {
-              fullResponse += flushed
-              controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: flushed })))
-            }
-          } catch (primaryErr) {
-            // Only failover if no tokens were sent (connection failure, not mid-stream)
-            if (fullResponse.length > 0) throw primaryErr
-
-            const fallback = await routeForRemy({ preferEndpoint: 'pc' })
-            if (!fallback || fallback.endpointName === endpoint.endpointName) throw primaryErr
-
-            console.log(
-              `[remy] ${endpoint.endpointName} failed - falling back to ${fallback.endpointName}`
-            )
-            usedEndpoint = fallback
-            const fallbackFilter = new ThinkingBlockFilter()
-            const fallbackOllama = new Ollama({ host: fallback.host })
-            const response: any = await fallbackOllama.chat({
-              model: fallback.model,
-              messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: userMessage },
-              ],
-              stream: true,
-              options: {
-                num_predict: questionTokenBudget,
-              },
-              keep_alive: '30m',
-              think: false,
-            } as any)
-
-            for await (const chunk of response) {
-              if (abortCtrl.signal.aborted) break
-              const token = chunk.message?.content ?? ''
-              if (token) {
-                const filtered = fallbackFilter.process(token)
-                if (filtered) {
-                  fullResponse += filtered
-                  controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: filtered })))
-                }
-              }
-            }
-            const flushed = fallbackFilter.flush()
-            if (flushed) {
-              fullResponse += flushed
-              controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: flushed })))
             }
           }
+          const flushed = thinkFilter.flush()
+          if (flushed) {
+            fullResponse += flushed
+            controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: flushed })))
+          }
 
-          // Parse nav suggestions from end of response
+          // Append mixed task results after the streamed response
+          if (mixedTaskSummary) {
+            controller.enqueue(
+              encoder.encode(encodeSSE({ type: 'token', data: `\n\n${mixedTaskSummary}` }))
+            )
+          }
+          if (mixedTasks.length > 0) {
+            controller.enqueue(encoder.encode(encodeSSE({ type: 'tasks', data: mixedTasks })))
+          }
+
+          // Nav suggestions from LLM response
           const navSuggestions = extractNavSuggestions(fullResponse)
           if (navSuggestions.length > 0) {
             controller.enqueue(encoder.encode(encodeSSE({ type: 'nav', data: navSuggestions })))
           }
 
+          // Deterministic action suggestions when LLM didn't provide nav
+          if (navSuggestions.length === 0) {
+            const actionHints = suggestFollowUpActions(userMessage, fullResponse)
+            if (actionHints.length > 0) {
+              controller.enqueue(
+                encoder.encode(
+                  encodeSSE({
+                    type: 'nav',
+                    data: actionHints.map((a) => ({
+                      label: a.label,
+                      href: `remy:${a.prompt}`,
+                      description: a.description,
+                    })),
+                  })
+                )
+              )
+            }
+          }
+
           controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
 
-          // Record anonymous usage metric (non-blocking, never fails the response)
           recordRemyMetric({
             category: 'general',
-            modelVersion: usedEndpoint.model,
+            modelVersion: endpoint.model,
           }).catch((err) => console.error('[non-blocking] Remy metric failed', err))
         } catch (err) {
           const errMsg = err instanceof Error ? err.message : String(err)
@@ -1103,7 +963,7 @@ export async function POST(req: NextRequest) {
             errMsg.includes('timeout') ||
             errMsg.includes('timed out') ||
             errMsg.includes('aborted')
-          console.error('[remy] Question path streaming error:', errMsg)
+          console.error('[remy] Streaming error:', errMsg)
           controller.enqueue(
             encoder.encode(
               encodeSSE({
@@ -1115,7 +975,6 @@ export async function POST(req: NextRequest) {
             )
           )
 
-          // Record error metric (non-blocking)
           recordRemyMetric({
             category: 'general',
             isError: true,

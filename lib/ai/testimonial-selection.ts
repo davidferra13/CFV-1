@@ -2,12 +2,13 @@
 
 // Testimonial Highlight Selection
 // AI scans all client feedback/reviews and surfaces the top quotes for portfolio use.
-// Routed to Gemini (curating public-intended content, quality judgment needed).
+// Routed to local Ollama (Gemma 4). No cloud dependency.
 // Output is SUGGESTION ONLY - chef decides which to publish.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import { GoogleGenAI } from '@google/genai'
+import { z } from 'zod'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 
 export interface TestimonialHighlight {
   clientNameInitial: string // e.g. "S.M." - anonymized for portfolio
@@ -16,13 +17,13 @@ export interface TestimonialHighlight {
   fullContext: string // original full message for chef reference
   why: string // why this quote is compelling
   bestPlatform: string // where to use this (website, Instagram, email signature)
-  score: number // 0–100 strength score
+  score: number // 0-100 strength score
 }
 
 export interface TestimonialSelectionResult {
   topTestimonials: TestimonialHighlight[]
   portfolioReady: TestimonialHighlight[] // score >= 80 - ready to use as-is
-  needsEditing: TestimonialHighlight[] // score 60–79 - good with minor edits
+  needsEditing: TestimonialHighlight[] // score 60-79 - good with minor edits
   summary: string
   generatedAt: string
 }
@@ -41,18 +42,27 @@ interface SurveyRow {
   events: { occasion: string | null; clients: { full_name: string } | null } | null
 }
 
-const getClient = () => {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) throw new Error('GEMINI_API_KEY not configured')
-  return new GoogleGenAI({ apiKey })
-}
+const TestimonialResponseSchema = z.object({
+  topTestimonials: z.array(
+    z.object({
+      clientNameInitial: z.string(),
+      eventType: z.string(),
+      quote: z.string(),
+      fullContext: z.string(),
+      why: z.string(),
+      bestPlatform: z.string(),
+      score: z.number(),
+    })
+  ),
+  summary: z.string(),
+})
 
 export async function selectTestimonialHighlights(): Promise<TestimonialSelectionResult> {
   const user = await requireChef()
   const db: any = createServerClient()
 
   // Gather AAR client feedback and positive messages
-  const [aarResult, messagesResult, surveysResult] = await Promise.all([
+  const [aarResult, surveysResult] = await Promise.all([
     (db as any)
       .from('aars')
       .select(
@@ -64,18 +74,6 @@ export async function selectTestimonialHighlights(): Promise<TestimonialSelectio
       .eq('tenant_id', user.tenantId!)
       .not('client_feedback', 'is', null)
       .limit(30),
-    db
-      .from('messages')
-      .select(
-        `
-        body, created_at, client_id,
-        clients(full_name),
-        events(occasion)
-      `
-      )
-      .eq('tenant_id', user.tenantId!)
-      .eq('direction', 'inbound')
-      .limit(50),
     (db as any)
       .from('client_surveys')
       .select(
@@ -90,7 +88,6 @@ export async function selectTestimonialHighlights(): Promise<TestimonialSelectio
   ])
 
   const aars = (aarResult.data ?? []) as AarRow[]
-  const messages = messagesResult.data ?? []
   const surveys = (surveysResult.data ?? []) as SurveyRow[]
 
   // Combine and format all feedback sources
@@ -146,7 +143,7 @@ export async function selectTestimonialHighlights(): Promise<TestimonialSelectio
     }
   }
 
-  const prompt = `You are a marketing consultant for a private chef. Evaluate these client feedback excerpts and identify the strongest testimonials for portfolio/marketing use.
+  const systemPrompt = `You are a marketing consultant for a private chef. Evaluate these client feedback excerpts and identify the strongest testimonials for portfolio/marketing use.
 
 Score each on:
   - Specificity (does it mention specific dishes or moments?) +30
@@ -154,11 +151,12 @@ Score each on:
   - Credibility (does it sound authentic, not generic?) +25
   - Marketability (would a prospective client read this and want to book?) +20
 
-Anonymize client names to initials (e.g. "Sarah M." → "S.M.").
+Anonymize client names to initials (e.g. "Sarah M." -> "S.M.").
 Extract the BEST QUOTE from each piece of feedback - sometimes the full text is too long.
 Only include quotes that are genuinely compelling.
+Only include testimonials with score >= 60. Sort by score descending.`
 
-Feedback items:
+  const userContent = `Feedback items:
 ${feedbackItems.map((f, i) => `${i + 1}. [${f.eventType} | ${f.clientName}]:\n"${f.content.slice(0, 500)}"`).join('\n\n')}
 
 Return JSON: {
@@ -172,30 +170,18 @@ Return JSON: {
     "score": 0-100
   }],
   "summary": "2 sentence summary of testimonial collection quality"
-}
+}`
 
-Only include testimonials with score >= 60. Sort by score descending.
-Return ONLY valid JSON.`
-
-  try {
-    const ai = getClient()
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: prompt,
-      config: { temperature: 0.4, responseMimeType: 'application/json' },
-    })
-    const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const parsed = JSON.parse(text)
-    const all: TestimonialHighlight[] = parsed.topTestimonials ?? []
-    return {
-      topTestimonials: all,
-      portfolioReady: all.filter((t) => t.score >= 80),
-      needsEditing: all.filter((t) => t.score >= 60 && t.score < 80),
-      summary: parsed.summary ?? '',
-      generatedAt: new Date().toISOString(),
-    }
-  } catch (err) {
-    console.error('[testimonial-selection] Failed:', err)
-    throw new Error('Could not evaluate testimonials. Please try again.')
+  const parsed = await parseWithOllama(systemPrompt, userContent, TestimonialResponseSchema, {
+    temperature: 0.4,
+    maxTokens: 2048,
+  })
+  const all: TestimonialHighlight[] = parsed.topTestimonials ?? []
+  return {
+    topTestimonials: all,
+    portfolioReady: all.filter((t) => t.score >= 80),
+    needsEditing: all.filter((t) => t.score >= 60 && t.score < 80),
+    summary: parsed.summary ?? '',
+    generatedAt: new Date().toISOString(),
   }
 }

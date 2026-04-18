@@ -1,6 +1,6 @@
 'use server'
 
-// Remy Survey Answer Extraction - Uses Ollama fast tier (qwen3:4b) to distill
+// Remy Survey Answer Extraction - Uses Ollama fast tier to distill
 // conversational survey answers into structured factual statements.
 // Called non-blocking after each mascot chat response during survey mode.
 

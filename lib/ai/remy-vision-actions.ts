@@ -9,7 +9,9 @@ import { Ollama } from 'ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { getOllamaConfig } from '@/lib/ai/providers'
 
-const VISION_MODEL = 'llava:7b' // or bakllava, minicpm-v
+// Gemma 4 E4B is natively multimodal (text + image + audio + video).
+// No separate vision model needed. Uses the same model as all other Remy tasks.
+const VISION_MODEL = process.env.OLLAMA_MODEL || 'gemma4'
 
 async function getOllamaClient(): Promise<Ollama> {
   const { baseUrl } = getOllamaConfig()
@@ -243,6 +245,132 @@ export async function formatDishPhotoResponse(data: DishPhotoTags): Promise<stri
   }
 
   lines.push('\nWant me to save this to your portfolio? I can tag it and add it to your documents.')
+
+  return lines.join('\n')
+}
+
+// ─── Audio / Voice Memo Processing (Gemma 4 native audio) ───────────────────
+
+export interface VoiceMemoData {
+  transcription: string
+  actionItems: string[]
+  clients: string[]
+  events: string[]
+  notes: string[]
+  confidence: 'high' | 'medium' | 'low'
+}
+
+const VOICE_MEMO_PROMPT = `You are transcribing a voice memo from a private chef. Listen carefully and extract:
+
+1. The full transcription (clean it up for readability, remove filler words)
+2. Any action items mentioned
+3. Client names mentioned
+4. Event references
+5. Important notes or details
+
+Return JSON:
+{
+  "transcription": "cleaned up transcription text",
+  "actionItems": ["action item 1", "action item 2"],
+  "clients": ["client name 1"],
+  "events": ["event reference 1"],
+  "notes": ["important detail 1"],
+  "confidence": "high" or "medium" or "low"
+}
+
+Rules:
+- Clean up speech artifacts (um, uh, like) but preserve the chef's meaning
+- Action items should be specific and actionable
+- Return ONLY valid JSON, no markdown fencing`
+
+/**
+ * Process a voice memo using Gemma 4's native audio capabilities.
+ * Transcribes and extracts structured data from the audio.
+ */
+export async function processVoiceMemo(audioBase64: string): Promise<VoiceMemoData> {
+  const client = await getOllamaClient()
+
+  // Gemma 4 E4B handles audio natively via the generate endpoint
+  const response: any = await client.generate({
+    model: VISION_MODEL,
+    system: VOICE_MEMO_PROMPT,
+    prompt: 'Transcribe and extract data from this voice memo.',
+    images: [audioBase64], // Gemma 4 accepts audio through the images parameter
+    stream: false,
+    format: 'json',
+    options: { temperature: 0.1, num_predict: 3000 },
+  } as any)
+
+  try {
+    const text = (response.response as string).trim()
+    const jsonMatch = text.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) {
+      return {
+        transcription: text || '(could not transcribe)',
+        actionItems: [],
+        clients: [],
+        events: [],
+        notes: [],
+        confidence: 'low',
+      }
+    }
+    const parsed = JSON.parse(jsonMatch[0])
+    return {
+      transcription: String(parsed.transcription || ''),
+      actionItems: Array.isArray(parsed.actionItems) ? parsed.actionItems.map(String) : [],
+      clients: Array.isArray(parsed.clients) ? parsed.clients.map(String) : [],
+      events: Array.isArray(parsed.events) ? parsed.events.map(String) : [],
+      notes: Array.isArray(parsed.notes) ? parsed.notes.map(String) : [],
+      confidence: ['high', 'medium', 'low'].includes(parsed.confidence) ? parsed.confidence : 'low',
+    }
+  } catch {
+    return {
+      transcription: '(transcription failed)',
+      actionItems: [],
+      clients: [],
+      events: [],
+      notes: [],
+      confidence: 'low',
+    }
+  }
+}
+
+/**
+ * Format voice memo data as a Remy response for chef review.
+ */
+export function formatVoiceMemoResponse(data: VoiceMemoData): string {
+  const lines: string[] = ['**Voice memo processed:**\n']
+
+  if (data.transcription) {
+    lines.push(`> ${data.transcription}\n`)
+  }
+
+  if (data.actionItems.length > 0) {
+    lines.push('**Action items:**')
+    for (const item of data.actionItems) {
+      lines.push(`- [ ] ${item}`)
+    }
+    lines.push('')
+  }
+
+  if (data.clients.length > 0) {
+    lines.push(`**Clients mentioned:** ${data.clients.join(', ')}`)
+  }
+
+  if (data.events.length > 0) {
+    lines.push(`**Events referenced:** ${data.events.join(', ')}`)
+  }
+
+  if (data.notes.length > 0) {
+    lines.push('\n**Notes:**')
+    for (const note of data.notes) {
+      lines.push(`- ${note}`)
+    }
+  }
+
+  lines.push(
+    '\nWant me to create tasks from the action items, or log these notes to a client or event?'
+  )
 
   return lines.join('\n')
 }

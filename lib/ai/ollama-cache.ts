@@ -14,8 +14,8 @@ interface CacheEntry {
   timestamp: number
 }
 
-const MAX_ENTRIES = 100
-const TTL_MS = 5 * 60 * 1000 // 5 minutes
+const MAX_ENTRIES = 500
+const TTL_MS = 2 * 60 * 1000 // 2 minutes - regeneration is cheap with Gemma 4
 
 const cache = new Map<string, CacheEntry>()
 

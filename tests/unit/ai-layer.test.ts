@@ -293,9 +293,9 @@ describe('providers', () => {
     delete process.env.OLLAMA_MODEL_FAST
     delete process.env.OLLAMA_MODEL_COMPLEX
 
-    assert.equal(getOllamaModel('fast'), 'qwen3:4b')
-    assert.equal(getOllamaModel('standard'), 'qwen3-coder:30b')
-    assert.equal(getOllamaModel('complex'), 'qwen3:30b')
+    assert.equal(getOllamaModel('fast'), 'gemma4')
+    assert.equal(getOllamaModel('standard'), 'gemma4')
+    assert.equal(getOllamaModel('complex'), 'gemma4')
     restoreEnv()
   })
 
@@ -304,7 +304,7 @@ describe('providers', () => {
     delete process.env.OLLAMA_MODEL
     const config = getOllamaConfig()
     assert.equal(config.baseUrl, 'http://localhost:11434')
-    assert.equal(config.model, 'qwen3-coder:30b')
+    assert.equal(config.model, 'gemma4')
     restoreEnv()
   })
 })

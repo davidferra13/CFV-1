@@ -21,7 +21,7 @@ export const MAX_HISTORY_MESSAGE_LENGTH = 4000
 export const MAX_HISTORY_TOTAL_LENGTH = 30_000
 
 /** Max characters for the current message (matches guardrails) */
-export const MAX_MESSAGE_LENGTH = 2000
+export const MAX_MESSAGE_LENGTH = 8000
 
 /** Max file size (bytes) before FileReader in the browser */
 export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024 // 5MB

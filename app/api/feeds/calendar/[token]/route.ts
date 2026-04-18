@@ -42,7 +42,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
   const { data: events } = await (db
     .from('events')
     .select(
-      'id, occasion, event_date, serve_time, departure_time, status, location_address, guest_count, site_notes'
+      'id, occasion, event_date, serve_time, departure_time, status, location_address, guest_count, site_notes, created_at, updated_at'
     )
     .eq('tenant_id', chef.id)
     .gte('event_date', thirtyDaysAgo.split('T')[0])
@@ -89,16 +89,41 @@ function escapeIcs(str: string): string {
   return str.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n')
 }
 
+function normalizeTimeTo24h(timeStr: string): string | null {
+  // Handle "18:00:00" or "18:00" (24h with optional seconds)
+  const match24 = timeStr.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/)
+  if (match24) {
+    const h = parseInt(match24[1])
+    if (h >= 0 && h <= 23) return `${String(h).padStart(2, '0')}:${match24[2]}`
+  }
+  // Handle "7:00 PM" or "07:00 AM" (12h with AM/PM)
+  const match12 = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
+  if (match12) {
+    let h = parseInt(match12[1])
+    const m = match12[2]
+    const period = match12[3].toUpperCase()
+    if (period === 'PM' && h !== 12) h += 12
+    if (period === 'AM' && h === 12) h = 0
+    return `${String(h).padStart(2, '0')}:${m}`
+  }
+  return null
+}
+
 function formatIcsDate(dateStr: string, timeStr?: string | null): string {
-  // dateStr: "2026-03-15", timeStr: "18:00" or null
+  // dateStr: "2026-03-15", timeStr: "18:00" / "18:00:00" / "7:00 PM" / null
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return ''
   const [year, month, day] = dateStr.split('-')
   if (timeStr) {
-    if (!/^\d{1,2}:\d{2}$/.test(timeStr)) return `${year}${month}${day}`
-    const [hour, minute] = timeStr.split(':')
-    return `${year}${month}${day}T${hour.padStart(2, '0')}${minute}00`
+    const normalized = normalizeTimeTo24h(timeStr)
+    if (!normalized) return `${year}${month}${day}`
+    const [hour, minute] = normalized.split(':')
+    return `${year}${month}${day}T${hour}${minute}00`
   }
   return `${year}${month}${day}`
+}
+
+function formatIcsTimestamp(isoStr: string): string {
+  return isoStr.replace(/[-:]/g, '').replace(/\.\d+/, '').replace('Z', '') + 'Z'
 }
 
 function formatIcsEvent(
@@ -112,6 +137,8 @@ function formatIcsEvent(
     location_address: string | null
     guest_count: number | null
     site_notes: string | null
+    created_at: string | null
+    updated_at: string | null
   },
   chefId: string
 ): string {
@@ -135,13 +162,19 @@ function formatIcsEvent(
     ? formatIcsDate(eventDateStr, event.departure_time)
     : event.serve_time
       ? (() => {
-          const startHour = parseInt(event.serve_time!.split(':')[0])
-          const endHour = Math.min(startHour + 3, 23) // Cap at 23:xx to avoid invalid iCal time
-          return formatIcsDate(eventDateStr, `${endHour}:${event.serve_time!.split(':')[1]}`)
+          const normalized = normalizeTimeTo24h(event.serve_time!)
+          if (!normalized) return null
+          const [hStr, mStr] = normalized.split(':')
+          const endHour = Math.min(parseInt(hStr) + 3, 23)
+          return formatIcsDate(eventDateStr, `${endHour}:${mStr}`)
         })()
       : null
 
   const isAllDay = !event.serve_time
+
+  // RFC 5545: SEQUENCE increments on reschedule. Derive from whether event was modified.
+  const wasModified = event.updated_at && event.created_at && event.updated_at !== event.created_at
+  const sequence = wasModified ? 1 : 0
 
   const descParts: string[] = []
   if (event.guest_count) descParts.push(`Guests: ${event.guest_count}`)
@@ -151,7 +184,7 @@ function formatIcsEvent(
   const lines = [
     'BEGIN:VEVENT',
     `UID:${uid}`,
-    `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '')}`,
+    `DTSTAMP:${formatIcsTimestamp(new Date().toISOString())}`,
     isAllDay ? `DTSTART;VALUE=DATE:${dtStart}` : `DTSTART:${dtStart}`,
   ]
 
@@ -160,6 +193,11 @@ function formatIcsEvent(
   }
 
   lines.push(`SUMMARY:${escapeIcs(summary)}`)
+  lines.push(`SEQUENCE:${sequence}`)
+
+  if (event.updated_at) {
+    lines.push(`LAST-MODIFIED:${formatIcsTimestamp(new Date(event.updated_at).toISOString())}`)
+  }
 
   if (event.location_address) {
     lines.push(`LOCATION:${escapeIcs(event.location_address)}`)

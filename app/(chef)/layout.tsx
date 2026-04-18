@@ -22,6 +22,7 @@ import { AnalyticsIdentify } from '@/components/analytics/analytics-identify'
 import { MarketResearchBannerWrapper } from '@/components/beta-survey/market-research-banner-wrapper'
 import {
   getCachedCannabisAccess,
+  getCachedChefArchetype,
   getCachedDeletionStatus,
   getCachedIsAdmin,
   getCachedIsPrivileged,
@@ -33,7 +34,7 @@ import { NavigationPendingProvider } from '@/components/navigation/navigation-pe
 import { AppContextProvider } from '@/lib/context/app-context'
 import { PermissionProvider } from '@/lib/context/permission-context'
 import { resolveCurrentUserPermissions } from '@/lib/auth/permissions'
-import { isAiEnabledForTenant } from '@/lib/ai/privacy-actions'
+import { isAiEnabledForTenant } from '@/lib/ai/privacy-internal'
 
 const FeedbackNudgeCard = dynamic(
   () => import('@/components/feedback/feedback-nudge-card').then((m) => m.FeedbackNudgeCard),
@@ -96,6 +97,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     deletionStatus,
     permissionSet,
     remyEnabled,
+    chefArchetype,
   ] = await Promise.all([
     // Cached for 60s - slug and nav prefs change rarely, keyed per chef
     getChefLayoutData(user.entityId),
@@ -119,6 +121,8 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     resolveCurrentUserPermissions(user.id, user.tenantId).catch(() => null),
     // AI/Remy enabled check - controls whether Remy UI renders
     isAiEnabledForTenant(user.entityId).catch(() => false),
+    // Archetype for nav label adaptation (cached 60s)
+    getCachedChefArchetype(user.entityId).catch(() => null),
   ])
   const effectiveAdmin = userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true'
   const effectivePrivileged = userIsPrivileged || process.env.DEMO_MODE_ENABLED === 'true'
@@ -197,6 +201,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                       focusMode={focusMode}
                       userId={user.id}
                       tenantId={user.tenantId ?? user.entityId}
+                      archetype={chefArchetype}
                     />
                     {/* Mobile nav (top bar + bottom tabs) */}
                     <ChefMobileNav
@@ -250,6 +255,8 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                       traits={{
                         entity_id: user.entityId,
                         tenant_id: user.tenantId ?? user.entityId,
+                        is_admin: userIsAdmin,
+                        is_privileged: userIsPrivileged,
                       }}
                     />
 

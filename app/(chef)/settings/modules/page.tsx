@@ -3,18 +3,19 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getEnabledModules } from '@/lib/billing/module-actions'
 import { getTierForChef } from '@/lib/billing/tier'
 import { isFocusModeEnabled } from '@/lib/billing/focus-mode-actions'
-import { isEffectiveAdmin } from '@/lib/auth/admin-preview'
+import { isEffectiveAdmin, isEffectivePrivileged } from '@/lib/auth/admin-preview'
 import { ModulesClient } from './modules-client'
 
 export const metadata: Metadata = { title: 'Modules' }
 
 export default async function ModulesPage() {
   const user = await requireChef()
-  const [enabledModules, tierStatus, focusMode, userIsAdmin] = await Promise.all([
+  const [enabledModules, tierStatus, focusMode, userIsAdmin, userIsPrivileged] = await Promise.all([
     getEnabledModules(),
     getTierForChef(user.entityId),
     isFocusModeEnabled(),
     isEffectiveAdmin().catch(() => false),
+    isEffectivePrivileged().catch(() => false),
   ])
 
   return (
@@ -32,6 +33,7 @@ export default async function ModulesPage() {
         isGrandfathered={tierStatus.isGrandfathered}
         focusMode={focusMode}
         isAdmin={userIsAdmin}
+        isPrivileged={userIsPrivileged}
       />
     </div>
   )

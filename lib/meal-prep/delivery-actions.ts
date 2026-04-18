@@ -63,7 +63,7 @@ export async function scheduleDelivery(input: {
   address?: string | null
   notes?: string | null
 }): Promise<Delivery | { error: string }> {
-  const user = await requirePro('meal-prep')
+  const user = await requirePro('meal-prep-ops')
   const db: any = createServerClient()
 
   const tableExists = await checkTableExists(db, 'meal_prep_deliveries')
@@ -108,7 +108,7 @@ export async function updateDelivery(
     status: DeliveryStatus
   }>
 ): Promise<Delivery | { error: string }> {
-  const user = await requirePro('meal-prep')
+  const user = await requirePro('meal-prep-ops')
   const db: any = createServerClient()
 
   const tableExists = await checkTableExists(db, 'meal_prep_deliveries')
@@ -143,7 +143,7 @@ export async function updateDelivery(
  * Mark a delivery as delivered.
  */
 export async function markDelivered(deliveryId: string): Promise<Delivery | { error: string }> {
-  const user = await requirePro('meal-prep')
+  const user = await requirePro('meal-prep-ops')
   const db: any = createServerClient()
 
   const tableExists = await checkTableExists(db, 'meal_prep_deliveries')
@@ -175,7 +175,7 @@ export async function markDelivered(deliveryId: string): Promise<Delivery | { er
 export async function cancelDelivery(
   deliveryId: string
 ): Promise<{ success: boolean } | { error: string }> {
-  const user = await requirePro('meal-prep')
+  const user = await requirePro('meal-prep-ops')
   const db: any = createServerClient()
 
   const tableExists = await checkTableExists(db, 'meal_prep_deliveries')
@@ -201,7 +201,7 @@ export async function getDeliveries(
   endDate: string,
   statusFilter?: DeliveryStatus
 ): Promise<Delivery[] | { error: string }> {
-  const user = await requirePro('meal-prep')
+  const user = await requirePro('meal-prep-ops')
   const db: any = createServerClient()
 
   const tableExists = await checkTableExists(db, 'meal_prep_deliveries')

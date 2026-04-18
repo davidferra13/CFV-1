@@ -260,6 +260,8 @@ export async function getCannabisLedger() {
 
 // ─── Send Invite (routes to admin approval queue) ─────────────────────────────
 
+const DAILY_INVITE_LIMIT = 10
+
 export async function sendCannabisInvite(input: {
   inviteeEmail: string
   inviteeName?: string
@@ -271,6 +273,19 @@ export async function sendCannabisInvite(input: {
   if (!hasAccess) throw new Error('Cannabis tier access required to send invites')
 
   const db: any = createServerClient()
+
+  // Rate limit: max invites per day per chef
+  const dayStart = new Date()
+  dayStart.setHours(0, 0, 0, 0)
+  const { count: todayCount } = await db
+    .from('cannabis_tier_invitations')
+    .select('id', { count: 'exact', head: true })
+    .eq('invited_by_auth_user_id', user.id)
+    .gte('created_at', dayStart.toISOString())
+
+  if ((todayCount ?? 0) >= DAILY_INVITE_LIMIT) {
+    throw new Error(`Daily invite limit reached (${DAILY_INVITE_LIMIT}). Try again tomorrow.`)
+  }
 
   // Check if an invite for this email is already pending or approved
   const { data: existing } = await db

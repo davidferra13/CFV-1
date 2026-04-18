@@ -1,5 +1,6 @@
 import 'server-only'
 
+import { createHash } from 'crypto'
 import { redirect } from 'next/navigation'
 import { requireChef, type AuthUser } from '@/lib/auth/get-user'
 import { hasCannabisAccess } from '@/lib/chef/cannabis-actions'
@@ -42,6 +43,17 @@ export async function getCannabisHostAgreement(
     .maybeSingle()
 
   if (error || !data) return null
+
+  // Verify immutable hash to detect tampering
+  const recomputedHash = createHash('sha256').update(data.agreement_text_snapshot).digest('hex')
+  if (recomputedHash !== data.immutable_hash) {
+    console.error(
+      `[cannabis] Host agreement hash mismatch for user ${hostUserId}. ` +
+        `Expected ${data.immutable_hash}, got ${recomputedHash}. Possible tampering.`
+    )
+    return null
+  }
+
   return data as CannabisHostAgreementRecord
 }
 

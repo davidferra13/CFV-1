@@ -3,7 +3,7 @@
  */
 
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434'
-const TEXT_MODEL = process.env.OLLAMA_TEXT_MODEL || 'qwen2.5:1.5b'
+const TEXT_MODEL = process.env.OLLAMA_TEXT_MODEL || 'gemma4'
 
 export async function classifyDocument(filename, fileType, textContent) {
   const truncated = (textContent || '').substring(0, 2000)

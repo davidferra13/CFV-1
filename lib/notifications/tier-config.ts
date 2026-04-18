@@ -44,6 +44,8 @@ export const DEFAULT_TIER_MAP: Record<NotificationAction, NotificationTier> = {
   proposal_accepted: 'alert',
   proposal_declined: 'alert',
   event_paid: 'alert',
+  event_confirmed: 'alert',
+  event_in_progress: 'info',
   event_completed: 'info',
   event_cancelled: 'alert',
   event_proposed_to_client: 'alert',

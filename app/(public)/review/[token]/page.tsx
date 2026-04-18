@@ -1,10 +1,10 @@
 // Public Review Submission Page - token-based, no auth required
 // Clients receive a link with a unique token to submit their review.
 
-import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { getReviewRequestByToken } from '@/lib/testimonials/submit-testimonial'
+import { TokenExpiredPage } from '@/components/ui/token-expired-page'
 import { ReviewForm } from './review-form'
 
 export const metadata = { title: 'Leave a Review' }
@@ -25,7 +25,7 @@ export default async function ReviewPage({ params }: { params: { token: string }
 
   const request = await getReviewRequestByToken(params.token)
 
-  if (!request) notFound()
+  if (!request) return <TokenExpiredPage reason="not_found" noun="review" />
 
   if (request.alreadySubmitted) {
     return (

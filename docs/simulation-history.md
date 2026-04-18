@@ -285,3 +285,13 @@ Failing: client_parse (0%), menu_suggestions (0%)
 
 Passing: inquiry_parse, client_parse, allergen_risk, correspondence, quote_draft
 Failing: menu_suggestions (0%)
+
+## 2026-04-18 04:31 UTC - 67% pass rate - Run d9ab7c18
+
+Passing: inquiry_parse, allergen_risk, correspondence, quote_draft
+Failing: client_parse (0%), menu_suggestions (0%)
+
+## 2026-04-18 05:00 UTC - 83% pass rate - Run cc4920ef
+
+Passing: inquiry_parse, client_parse, allergen_risk, correspondence, quote_draft
+Failing: menu_suggestions (0%)

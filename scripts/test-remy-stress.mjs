@@ -6,7 +6,7 @@
  *
  * Prerequisites:
  *   1. Dev server running on port 3100
- *   2. Ollama running (qwen3:4b + qwen3:30b)
+ *   2. Ollama running (gemma4)
  *   3. Seed data loaded: npx tsx scripts/remy-eval/seed-remy-test-data.ts
  *
  * Run: node scripts/test-remy-stress.mjs
@@ -1124,8 +1124,8 @@ async function main() {
   await authenticate();
   console.log('Auth OK.\n');
 
-  // Pre-warm all 3 Ollama models
-  const models = ['qwen3:4b', 'qwen3-coder:30b', 'qwen3:30b'];
+  // Pre-warm Gemma 4 (single model for all tiers now)
+  const models = ['gemma4'];
   for (const model of models) {
     console.log(`Pre-warming ${model}...`);
     try {

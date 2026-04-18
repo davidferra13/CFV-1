@@ -24,6 +24,8 @@ import { format } from 'date-fns'
 import { isDemoEvent } from '@/lib/onboarding/demo-data-utils'
 import { createServerClient } from '@/lib/db/server'
 import { EmptyState } from '@/components/ui/empty-state'
+import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
+import { getArchetypeCopy } from '@/lib/archetypes/ui-copy'
 
 export const metadata: Metadata = { title: 'Events' }
 
@@ -153,16 +155,22 @@ async function EventsList({ status }: { status: EventStatus }) {
   }
 
   if (events.length === 0) {
+    const archetype = await getCachedChefArchetype(user.entityId).catch(() => null)
+    const copy = getArchetypeCopy(archetype)
     return (
       <EmptyState
         remy={status === 'all' ? 'idle' : 'straight-face'}
-        title={status === 'all' ? 'No events yet' : `No ${status.replace('_', ' ')} events`}
+        title={
+          status === 'all'
+            ? copy.noEventsMessage.split('.')[0]
+            : `No ${status.replace('_', ' ')} ${copy.eventsLabel.toLowerCase()}`
+        }
         description={
           status === 'all'
-            ? 'Create your first event to start managing your schedule.'
-            : 'Try a different filter or create a new event.'
+            ? copy.noEventsMessage
+            : `Try a different filter or create a new ${copy.eventSingular}.`
         }
-        action={status === 'all' ? { label: 'Create Event', href: '/events/new' } : undefined}
+        action={status === 'all' ? { label: copy.newEventLabel, href: '/events/new' } : undefined}
       />
     )
   }

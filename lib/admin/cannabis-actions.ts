@@ -229,19 +229,119 @@ export async function rejectInvite(inviteId: string, reason?: string) {
   return { success: true }
 }
 
+// ─── Revoke an Approved (Unclaimed) Invite ───────────────────────────────────
+
+export async function revokeApprovedInvite(inviteId: string) {
+  const admin = await requireAdmin()
+  const db: any = createAdminClient()
+
+  const { data: updated, error } = await db
+    .from('cannabis_tier_invitations')
+    .update({
+      admin_approval_status: 'revoked',
+      approved_by_admin_email: admin.email,
+    })
+    .eq('id', inviteId)
+    .eq('admin_approval_status', 'approved')
+    .is('claimed_at', null)
+    .select('id')
+
+  if (error) throw new Error('Failed to revoke invite: ' + error.message)
+  if (!updated || updated.length === 0) {
+    throw new Error('Invite not found, already claimed, or not in approved state')
+  }
+
+  await logAdminAction({
+    actorEmail: admin.email,
+    actorUserId: admin.id,
+    actionType: 'cannabis_invite_revoked',
+    targetId: inviteId,
+    targetType: 'cannabis_invitation',
+    details: {},
+  })
+
+  return { success: true }
+}
+
+// ─── Regenerate Expired Invite Token ─────────────────────────────────────────
+
+export async function regenerateInviteToken(inviteId: string) {
+  const admin = await requireAdmin()
+  const db: any = createAdminClient()
+
+  const newToken = randomBytes(32).toString('hex')
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+
+  // Only regenerate for approved, unclaimed invites (expired or not)
+  const { data: updated, error } = await db
+    .from('cannabis_tier_invitations')
+    .update({
+      token: newToken,
+      expires_at: expiresAt,
+      sent_at: new Date().toISOString(),
+    })
+    .eq('id', inviteId)
+    .eq('admin_approval_status', 'approved')
+    .is('claimed_at', null)
+    .select('id')
+
+  if (error) throw new Error('Failed to regenerate invite token: ' + error.message)
+  if (!updated || updated.length === 0) {
+    throw new Error('Invite not found, already claimed, or not in approved state')
+  }
+
+  await logAdminAction({
+    actorEmail: admin.email,
+    actorUserId: admin.id,
+    actionType: 'cannabis_invite_token_regenerated',
+    targetId: inviteId,
+    targetType: 'cannabis_invitation',
+    details: { new_expires_at: expiresAt },
+  })
+
+  return { success: true, token: newToken }
+}
+
 // ─── Grant Tier Directly (Admin sends invite themselves) ──────────────────────
 
 export async function adminGrantTierByEmail(input: { email: string; notes?: string }) {
   const admin = await requireAdmin()
   const db: any = createAdminClient()
 
-  // Look up the auth user by email
-  const { data: authData, error: authError } = await db.auth.admin.listUsers()
-  if (authError) throw new Error('Failed to look up users')
+  // Look up the auth user by email via direct query (avoids loading all users into memory)
+  const { data: authUsers, error: authError } = await db
+    .from('auth_users_by_email' as any)
+    .select('id, email')
+    .ilike('email', input.email.toLowerCase())
+    .limit(1)
 
-  const targetUser = authData.users.find(
-    (u: any) => u.email?.toLowerCase() === input.email.toLowerCase()
-  )
+  // Fallback: if the view/table doesn't exist, use paginated listUsers
+  let targetUser: { id: string; email: string } | null = null
+
+  if (!authError && authUsers && authUsers.length > 0) {
+    targetUser = authUsers[0]
+  } else {
+    // Paginated scan fallback (safe, max 50 per page)
+    let page = 1
+    const perPage = 50
+    while (!targetUser) {
+      const { data: pageData, error: pageError } = await db.auth.admin.listUsers({ page, perPage })
+      if (pageError || !pageData?.users?.length) break
+
+      const match = pageData.users.find(
+        (u: any) => u.email?.toLowerCase() === input.email.toLowerCase()
+      )
+      if (match) {
+        targetUser = match
+        break
+      }
+
+      if (pageData.users.length < perPage) break
+      page++
+      if (page > 100) break // safety cap: 5000 users max scan
+    }
+  }
+
   if (!targetUser) throw new Error(`No account found for email: ${input.email}`)
 
   // Get their role

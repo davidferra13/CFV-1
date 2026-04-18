@@ -27,9 +27,9 @@ const BASE_URL = 'http://localhost:3100'
 const AGENT_EMAIL = process.env.AGENT_EMAIL ?? 'agent@chefflow.test'
 const AGENT_PASSWORD = process.env.AGENT_PASSWORD ?? 'AgentChefFlow!2026'
 const OLLAMA_URL = process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434'
-const STREAM_MODEL = process.env.REMY_EVAL_STREAM_MODEL ?? 'qwen3-coder:30b'
-const GRADER_MODEL = process.env.REMY_EVAL_GRADER_MODEL ?? 'qwen3:4b'
-const MODEL_TIMEOUT_MS = Number(process.env.REMY_EVAL_MODEL_TIMEOUT_MS ?? '180000')
+const STREAM_MODEL = process.env.REMY_EVAL_STREAM_MODEL ?? 'gemma4'
+const GRADER_MODEL = process.env.REMY_EVAL_GRADER_MODEL ?? 'gemma4'
+const MODEL_TIMEOUT_MS = Number(process.env.REMY_EVAL_MODEL_TIMEOUT_MS ?? '30000')
 const GRADER_RETRIES = Number(process.env.REMY_EVAL_GRADER_RETRIES ?? '2')
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -444,9 +444,8 @@ async function main() {
   // Authenticate
   const cookies = await authenticate()
 
-  // Warm up the 30b model used by both classifier and streamer.
-  // Since classifier was moved to modelTier 'standard' (qwen3-coder:30b),
-  // only one model is needed for the entire Remy pipeline.
+  // Warm up Gemma 4 used by both classifier and streamer.
+  // All tiers use the same model now.
   console.log('\n🔥 Warming up Ollama model...')
   try {
     const warmRes = await fetch(`${OLLAMA_URL}/api/generate`, {

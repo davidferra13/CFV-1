@@ -29,6 +29,8 @@ export type AuditActionType =
   | 'admin_moderated_chat_message'
   | 'admin_moderated_social_post'
   | 'admin_moderated_hub_group'
+  | 'admin_preview_enabled'
+  | 'admin_preview_disabled'
 
 export async function logAdminAction({
   actorEmail,

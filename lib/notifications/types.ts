@@ -30,6 +30,8 @@ export type NotificationAction =
   // Events
   | 'proposal_accepted'
   | 'event_paid'
+  | 'event_confirmed'
+  | 'event_in_progress'
   | 'event_completed'
   | 'event_cancelled'
   // Payments
@@ -187,6 +189,8 @@ export const NOTIFICATION_CONFIG: Record<
   proposal_accepted: { category: 'event', icon: 'CheckCircle', toastByDefault: true },
   proposal_declined: { category: 'event', icon: 'XCircle', toastByDefault: true },
   event_paid: { category: 'event', icon: 'CreditCard', toastByDefault: true },
+  event_confirmed: { category: 'event', icon: 'CheckCircle', toastByDefault: true },
+  event_in_progress: { category: 'event', icon: 'ChefHat', toastByDefault: false },
   event_completed: { category: 'event', icon: 'PartyPopper', toastByDefault: false },
   event_cancelled: { category: 'event', icon: 'XCircle', toastByDefault: true },
 

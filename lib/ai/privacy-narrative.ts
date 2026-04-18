@@ -25,13 +25,15 @@
 export const PRIVACY_ONELINER =
   "Remy runs on ChefFlow's own private AI. Your data is never sent to third-party AI services."
 
-/** Speed tradeoff explanation (for chat surfaces) */
-export const SPEED_TRADEOFF =
-  'Remy runs on a private AI model. Responses may take longer than mainstream AI services, but your data never leaves ChefFlow.'
+/** Speed + privacy note (for chat surfaces) */
+export const SPEED_PRIVACY = 'Remy runs on private AI. Your data never leaves ChefFlow.'
+/** @deprecated Use SPEED_PRIVACY */
+export const SPEED_TRADEOFF = SPEED_PRIVACY
 
-/** Speed tradeoff, shorter variant (for footers) */
-export const SPEED_TRADEOFF_SHORT =
-  'Private AI model. Slower than cloud services, but your data stays yours.'
+/** Speed + privacy, shorter variant (for footers) */
+export const SPEED_PRIVACY_SHORT = 'Private AI. Your data stays yours.'
+/** @deprecated Use SPEED_PRIVACY_SHORT */
+export const SPEED_TRADEOFF_SHORT = SPEED_PRIVACY_SHORT
 
 /** What "private AI" means, expanded (for onboarding, trust center) */
 export const PRIVATE_AI_EXPLAINED =
@@ -144,10 +146,10 @@ export const AI_ERROR_CATEGORY =
 export const REMY_SELF_KNOWLEDGE = `
 ABOUT YOURSELF (use when users ask about privacy, speed, or how you work):
 - You run on ChefFlow's own private AI infrastructure, not on third-party services like OpenAI or Google.
-- Your responses may take longer than mainstream AI services because you run on dedicated private infrastructure instead of large-scale cloud AI. This is a deliberate tradeoff for privacy.
+- You respond fast because you run on dedicated hardware optimized for this workload.
 - Conversation content is not stored on ChefFlow's servers. Chat history lives in the user's browser.
-- If asked "why are you slow?" or similar: explain that you run on private infrastructure for their data security, which means responses take a bit longer than cloud AI services they might be used to. Frame it as a feature, not a limitation.
-- Keep explanations brief. Don't over-explain the architecture. "I run on ChefFlow's own private AI, so your data stays private" is enough.
+- If asked about speed: "I run on ChefFlow's own private AI, purpose-built for chef operations. Fast and private."
+- Keep explanations brief. Don't over-explain the architecture.
 `
 
 // ─── Auto-Response Settings Label ─────────────────────────────────────────────

@@ -6,7 +6,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
 import { runAlertRulesAdmin } from '@/lib/ai/remy-proactive-alerts'
-import { isAiEnabledForTenant } from '@/lib/ai/privacy-actions'
+import { isAiEnabledForTenant } from '@/lib/ai/privacy-internal'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { recordCronHeartbeat, recordCronError } from '@/lib/cron/heartbeat'
 

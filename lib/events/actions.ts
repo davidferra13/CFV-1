@@ -233,6 +233,7 @@ export async function createEvent(input: CreateEventInput) {
       revalidatePath('/events')
       revalidatePath('/dashboard')
       revalidatePath('/my-events')
+      revalidatePath('/calendar')
       invalidateRemyContextCache(user.tenantId!)
       return { success: true, event }
     },
@@ -550,6 +551,7 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
       revalidatePath(`/my-events/${eventId}`)
       revalidatePath('/dashboard')
       revalidatePath('/scheduling')
+      revalidatePath('/calendar')
       invalidateRemyContextCache(user.tenantId!)
 
       // EC-G9 fix: if event_date changed, notify collaborators (non-blocking)
@@ -707,6 +709,23 @@ export async function deleteEvent(eventId: string) {
 
   revalidatePath('/events')
   invalidateRemyContextCache(user.tenantId!)
+
+  // Activity log (non-blocking)
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    await logChefActivity({
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      action: 'event_deleted',
+      domain: 'event',
+      entityType: 'event',
+      entityId: eventId,
+      summary: 'Deleted draft event',
+    })
+  } catch (err) {
+    console.error('[deleteEvent] Activity log failed (non-blocking):', err)
+  }
+
   return { success: true }
 }
 

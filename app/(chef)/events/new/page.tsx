@@ -6,6 +6,8 @@ import { getClients } from '@/lib/clients/actions'
 import { getPartnersWithLocations } from '@/lib/partners/actions'
 import { getDepositDefaults } from '@/lib/automations/settings-actions'
 import { EventForm } from '@/components/events/event-form'
+import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
+import { getArchetypeCopy } from '@/lib/archetypes/ui-copy'
 
 export default async function NewEventPage({
   searchParams,
@@ -14,11 +16,13 @@ export default async function NewEventPage({
 }) {
   const user = await requireChef()
 
-  const [clients, { partners, partnerLocations }, depositDefaults] = await Promise.all([
+  const [clients, { partners, partnerLocations }, depositDefaults, archetype] = await Promise.all([
     getClients(),
     getPartnersWithLocations(),
     getDepositDefaults(),
+    getCachedChefArchetype(user.entityId).catch(() => null),
   ])
+  const copy = getArchetypeCopy(archetype)
 
   const seed =
     searchParams.client_id || searchParams.date || searchParams.occasion
@@ -52,8 +56,10 @@ export default async function NewEventPage({
       </div>
 
       <div>
-        <h1 className="text-3xl font-bold text-stone-100">Create New Event</h1>
-        <p className="text-stone-400 mt-1">Fill in the details for your new event</p>
+        <h1 className="text-3xl font-bold text-stone-100">
+          Create {copy.newEventLabel.replace('New ', '')}
+        </h1>
+        <p className="text-stone-400 mt-1">Fill in the details for your new {copy.eventSingular}</p>
       </div>
 
       <EventForm

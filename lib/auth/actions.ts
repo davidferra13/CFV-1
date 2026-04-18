@@ -573,6 +573,7 @@ export async function requestPasswordReset(email: string) {
         to: normalizedEmail,
         subject: 'Reset your ChefFlow password',
         react: PasswordResetEmail({ resetUrl }),
+        isTransactional: true,
       })
     } catch (err) {
       log.auth.warn('Password reset email failed', { error: err })
@@ -800,6 +801,7 @@ export async function requestEmailChange(newEmail: string) {
       to: normalizedNew,
       subject: 'Confirm your new ChefFlow email',
       react: EmailChangeVerificationEmail({ confirmUrl }),
+      isTransactional: true,
     })
   } catch (err) {
     log.auth.warn('Email change verification send failed', { error: err })

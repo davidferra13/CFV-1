@@ -686,13 +686,13 @@ async function testOllamaDown(cookie) {
     console.log('  ✅ Ollama is back online')
 
     // Step 7: Warm up the model so subsequent tests aren't affected
-    console.log('  🔥 Warming up qwen3:30b...')
+    console.log('  🔥 Warming up gemma4...')
     try {
       await fetch(`${OLLAMA_URL}/api/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'qwen3:30b',
+          model: 'gemma4',
           prompt: 'Say hello.',
           stream: false,
           options: { num_predict: 10 },

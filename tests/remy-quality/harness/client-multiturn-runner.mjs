@@ -209,11 +209,11 @@ async function main() {
   const cookie = await authenticate()
 
   // Pre-warm
-  console.log('Pre-warming qwen3:30b...')
+  console.log('Pre-warming gemma4...')
   try {
     await fetch('http://localhost:11434/api/generate', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'qwen3:30b', prompt: 'Hello', options: { num_predict: 1 } }),
+      body: JSON.stringify({ model: 'gemma4', prompt: 'Hello', options: { num_predict: 1 } }),
     })
   } catch {}
   console.log('Ready.\n')

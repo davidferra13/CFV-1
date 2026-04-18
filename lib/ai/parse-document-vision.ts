@@ -1,23 +1,14 @@
 // AI Vision Document Parser
-// Accepts images or PDFs, detects content type, and extracts structured data
-
-// ⚠️ AI POLICY EXCEPTION: Vision processing
-// This function uses Gemini cloud for image/PDF analysis.
-// Ollama does not currently support vision models on our hardware (6GB VRAM).
-// WARNING: The 'client_info' detection path extracts names, emails, phones,
-// dietary restrictions, and allergies. This is HIGH sensitivity data going to cloud.
-// TODO: When a local vision model is available, migrate client_info extraction
-// to Ollama. Other document types (receipt, recipe text, general docs) are
-// lower sensitivity and acceptable as cloud-processed.
-// See AI-POLICY.md for the full data classification rules.
+// Accepts images or PDFs, detects content type, and extracts structured data.
+// Uses Gemma 4 native vision via Ollama. Fully local, no cloud dependency.
+// Resolves the previous privacy concern: client_info path (names, emails, allergies)
+// now stays local instead of going to cloud.
 
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { GoogleGenAI } from '@google/genai'
 import { z } from 'zod'
-
-const MODEL = 'gemini-2.5-flash'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 
 // --- Schemas ---
 
@@ -101,18 +92,10 @@ RULES:
 - For receipts, convert all money values to cents (multiply dollars by 100)
 - For recipes, expand abbreviations
 - For allergies, over-flag rather than miss
-- If the document is blurry or hard to read, set confidence to "low" and add warnings
-
-RESPOND WITH ONLY valid JSON:
-{
-  "detectedType": "client_info|recipe|receipt|document",
-  "confidence": "high|medium|low",
-  "warnings": [],
-  "extractedData": { ... }
-}`
+- If the document is blurry or hard to read, set confidence to "low" and add warnings`
 
 /**
- * Parse an uploaded file (image or PDF) using Gemini vision.
+ * Parse an uploaded file (image or PDF) using Gemma 4 native vision.
  * Detects content type and extracts structured data.
  */
 export async function parseDocumentWithVision(
@@ -122,55 +105,16 @@ export async function parseDocumentWithVision(
 ): Promise<VisionDetectionResult> {
   await requireChef()
 
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) {
-    throw new Error('GEMINI_API_KEY is not configured. File import requires a Gemini API key.')
-  }
-
-  const ai = new GoogleGenAI({ apiKey })
   const isPdf = mediaType === 'application/pdf'
 
-  const response = await ai.models.generateContent({
-    model: MODEL,
-    contents: [
-      {
-        inlineData: {
-          mimeType: mediaType,
-          data: base64Data,
-        },
-      },
-      {
-        text: `Analyze this ${isPdf ? 'PDF document' : 'image'}${filename ? ` (filename: ${filename})` : ''}. Detect the content type and extract structured data. Return only valid JSON.`,
-      },
-    ],
-    config: { systemInstruction: VISION_SYSTEM_PROMPT },
-  })
-  const rawText = response.text
-
-  if (!rawText) {
-    throw new Error('No text response from parser')
-  }
-
-  // Parse JSON
-  let jsonStr = rawText.trim()
-  const jsonMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/)
-  if (jsonMatch) {
-    jsonStr = jsonMatch[1].trim()
-  }
-
-  let parsed: unknown
-  try {
-    parsed = JSON.parse(jsonStr)
-  } catch {
-    throw new Error('Parser returned invalid JSON. Please try again with a clearer file.')
-  }
-
-  // Validate
-  const zodResult = VisionDetectionSchema.safeParse(parsed)
-  if (!zodResult.success) {
-    console.error('[parseDocumentWithVision] Validation errors:', zodResult.error.issues)
-    throw new Error('Document extraction did not match expected format. Please try again.')
-  }
-
-  return zodResult.data
+  return parseWithOllama(
+    VISION_SYSTEM_PROMPT,
+    `Analyze this ${isPdf ? 'PDF document' : 'image'}${filename ? ` (filename: ${filename})` : ''}. Detect the content type and extract structured data. Return only valid JSON.`,
+    VisionDetectionSchema,
+    {
+      images: [base64Data],
+      maxTokens: 4096,
+      timeoutMs: 30_000,
+    }
+  )
 }

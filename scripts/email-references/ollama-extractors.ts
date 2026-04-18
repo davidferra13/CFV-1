@@ -8,9 +8,9 @@
  * client names, occasion normalization, service style, referral interpretation.
  *
  * Model routing:
- *   first-contact → standard (qwen3-coder:30b) - structured JSON extraction
- *   follow-up → fast (qwen3:4b) - shorter responses, simpler classification
- *   outbound → fast (qwen3:4b) - supplementary enrichment
+ *   first-contact → standard (gemma4) - structured JSON extraction
+ *   follow-up → fast (gemma4) - shorter responses, simpler classification
+ *   outbound → fast (gemma4) - supplementary enrichment
  */
 
 import { Ollama } from 'ollama'
@@ -25,9 +25,9 @@ import {
 // ─── Config ─────────────────────────────────────────────────────────────
 
 const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434'
-const MODEL_FAST = process.env.OLLAMA_MODEL_FAST || 'qwen3:4b'
-const MODEL_STANDARD = process.env.OLLAMA_MODEL || 'qwen3-coder:30b'
-const TIMEOUT_MS = 60_000
+const MODEL_FAST = process.env.OLLAMA_MODEL_FAST || 'gemma4'
+const MODEL_STANDARD = process.env.OLLAMA_MODEL || 'gemma4'
+const TIMEOUT_MS = 15_000
 const MAX_TOKENS = 512
 
 // ─── Ollama Client ──────────────────────────────────────────────────────

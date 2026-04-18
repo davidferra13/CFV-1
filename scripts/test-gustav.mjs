@@ -24,13 +24,13 @@ const tests = [
 ];
 
 async function main() {
-  console.log('Testing Gustav (Ollama qwen3:4b)...\n');
+  console.log('Testing Gustav (Ollama gemma4)...\n');
 
   // Pre-warm
   await fetch('http://localhost:11434/api/generate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: 'qwen3:4b', prompt: 'test', options: { num_predict: 1 } }),
+    body: JSON.stringify({ model: 'gemma4', prompt: 'test', options: { num_predict: 1 } }),
   });
   console.log('Model pre-warmed.\n');
 
@@ -49,7 +49,7 @@ async function main() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'qwen3:4b',
+          model: 'gemma4',
           messages: [
             { role: 'system', content: GUSTAV_SYSTEM },
             { role: 'user', content: test.message },

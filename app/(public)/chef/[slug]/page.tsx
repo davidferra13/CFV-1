@@ -348,6 +348,21 @@ export default async function ChefProfilePage({ params }: Props) {
 
           <h1 className="text-4xl md:text-5xl font-bold text-stone-100">{chef.display_name}</h1>
 
+          {chef.archetype && (
+            <p className="text-sm font-medium text-brand-400 mt-2 uppercase tracking-widest">
+              {(
+                {
+                  private_chef: 'Private Chef',
+                  caterer: 'Catering',
+                  meal_prep: 'Meal Prep',
+                  bakery: 'Bakery',
+                  restaurant: 'Restaurant',
+                  food_truck: 'Food Truck',
+                } as Record<string, string>
+              )[chef.archetype] ?? null}
+            </p>
+          )}
+
           {chef.tagline && (
             <p className="text-lg md:text-xl text-stone-300 mt-3 max-w-2xl mx-auto">
               {chef.tagline}

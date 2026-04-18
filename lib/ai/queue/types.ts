@@ -183,22 +183,22 @@ export interface WorkerState {
  * rather than melting the machine.
  */
 export const OLLAMA_GUARD = {
-  /** Seconds before a single Ollama call is force-killed */
-  CALL_TIMEOUT_MS: 90_000,
+  /** Hard timeout per Ollama call. Gemma 4 responds in <2s; 30s catches true hangs. */
+  CALL_TIMEOUT_MS: 30_000,
   /** Max tokens per background task response (interactive Remy has its own limit) */
   MAX_TOKENS_BACKGROUND: 1024,
-  /** Seconds between worker polls (prevents busy-waiting) */
-  POLL_INTERVAL_MS: 250,
-  /** Minimum seconds between Ollama calls (cooldown to prevent thermal throttling) */
-  COOLDOWN_MS: 250, // Increased from 150ms to ease GPU memory pressure during sustained load
+  /** Milliseconds between worker polls */
+  POLL_INTERVAL_MS: 150,
+  /** Milliseconds between Ollama calls. Gemma 4 is memory-efficient; minimal cooldown needed. */
+  COOLDOWN_MS: 100,
   /** Max consecutive failures before worker backs off */
   MAX_CONSECUTIVE_FAILURES: 5,
   /** Backoff duration after max consecutive failures (ms) */
-  FAILURE_BACKOFF_MS: 30_000,
+  FAILURE_BACKOFF_MS: 15_000,
   /** Max queue depth per tenant before rejecting new tasks */
   MAX_QUEUE_DEPTH_PER_TENANT: 200,
   /** Max processing time before a task is considered hung and re-queued */
-  HUNG_TASK_TIMEOUT_MS: 180_000,
+  HUNG_TASK_TIMEOUT_MS: 60_000,
   /** Max payload size in bytes (100KB - prevents DB bloat and memory issues) */
   MAX_PAYLOAD_BYTES: 100_000,
 } as const

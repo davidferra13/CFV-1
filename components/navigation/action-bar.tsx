@@ -9,23 +9,28 @@ import { InboxUnreadBadge } from '@/components/communication/inbox-unread-badge'
 import { NotificationsUnreadBadge } from '@/components/notifications/notifications-unread-badge'
 import { InquiriesUnreadBadge } from '@/components/inquiries/inquiries-unread-badge'
 import { useNavigationPending } from '@/components/navigation/navigation-pending-provider'
+import { getArchetypeCopy } from '@/lib/archetypes/ui-copy'
 
 type ActionBarProps = {
   /** Filter string from nav search input */
   navFilter?: string
   /** Rail/collapsed mode: icon-only rendering */
   collapsed?: boolean
+  /** Chef archetype for contextual labels */
+  archetype?: string | null
 }
 
-export function ActionBar({ navFilter = '', collapsed = false }: ActionBarProps) {
+export function ActionBar({ navFilter = '', collapsed = false, archetype }: ActionBarProps) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const { pendingHref, setPendingHref } = useNavigationPending()
 
+  const copy = getArchetypeCopy(archetype)
+  const items = actionBarItems.map((item) =>
+    item.href === '/events' ? { ...item, label: copy.eventsLabel } : item
+  )
   const query = navFilter.toLowerCase().trim()
-  const filtered = query
-    ? actionBarItems.filter((item) => item.label.toLowerCase().includes(query))
-    : actionBarItems
+  const filtered = query ? items.filter((item) => item.label.toLowerCase().includes(query)) : items
 
   if (collapsed) {
     return (

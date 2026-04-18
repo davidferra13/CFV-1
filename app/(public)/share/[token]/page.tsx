@@ -4,7 +4,7 @@
 
 import { getEventShareByToken, getGuestByToken } from '@/lib/sharing/actions'
 import { format } from 'date-fns'
-import { notFound } from 'next/navigation'
+import { TokenExpiredPage } from '@/components/ui/token-expired-page'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { RSVPForm } from '@/components/sharing/rsvp-form'
@@ -20,7 +20,7 @@ export default async function SharePage({ params }: { params: { token: string } 
   const eventData = await getEventShareByToken(params.token)
 
   if (!eventData) {
-    notFound()
+    return <TokenExpiredPage reason="not_found" noun="event" />
   }
 
   // Check if guest has already RSVPed (stored in cookie)

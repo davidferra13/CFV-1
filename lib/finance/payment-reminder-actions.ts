@@ -7,7 +7,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import { getAutomationSettingsForTenant } from '@/lib/automations/settings-actions'
+import { getAutomationSettingsForTenant } from '@/lib/automations/settings-internal'
 import { differenceInDays } from 'date-fns'
 
 export type OutstandingBalanceEvent = {

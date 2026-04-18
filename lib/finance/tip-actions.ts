@@ -83,20 +83,52 @@ export async function addTip(formData: FormData): Promise<{ success: boolean; er
     return { success: false, error: 'Invalid input: event ID and positive amount are required' }
   }
 
-  const { error } = await db.from('event_tips' as any).insert({
-    event_id: eventId,
-    tenant_id: user.tenantId!,
-    amount_cents: Math.round(amountDollars * 100),
-    method,
-    notes,
-  })
+  const amountCents = Math.round(amountDollars * 100)
+
+  const { data: tipRow, error } = await db
+    .from('event_tips' as any)
+    .insert({
+      event_id: eventId,
+      tenant_id: user.tenantId!,
+      amount_cents: amountCents,
+      method,
+      notes,
+    })
+    .select('id')
+    .single()
 
   if (error) {
     log.error('Failed to add tip', { error })
     return { success: false, error: 'Failed to save tip' }
   }
 
+  // Append ledger entry so tip appears in financial summary, P&L, and CPA export
+  try {
+    // Look up client_id from the event (required for ledger entry)
+    const { data: evt } = await db
+      .from('events')
+      .select('client_id')
+      .eq('id', eventId)
+      .eq('tenant_id', user.tenantId!)
+      .single()
+
+    if (evt?.client_id) {
+      await appendLedgerEntryForChef({
+        client_id: evt.client_id,
+        entry_type: 'tip',
+        amount_cents: amountCents,
+        description: `Tip recorded (${method})${notes ? `: ${notes}` : ''}`,
+        event_id: eventId,
+        transaction_reference: `manual_tip_${tipRow?.id ?? eventId}_${Date.now()}`,
+        payment_method: (method === 'venmo' ? 'venmo' : method === 'card' ? 'card' : 'cash') as any,
+      })
+    }
+  } catch (err) {
+    log.error('Failed to append tip to ledger (tip still recorded in event_tips)', { error: err })
+  }
+
   revalidatePath(`/events/${eventId}`)
+  revalidatePath('/dashboard')
   return { success: true }
 }
 

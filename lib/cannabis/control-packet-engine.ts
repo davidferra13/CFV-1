@@ -51,6 +51,7 @@ export interface ControlPacketReconciliationGuestRow {
 }
 
 const LINEAR_PREFIX = 'S'
+const MAX_SEAT_COUNT = 300
 
 function safePositiveInt(value: number | null | undefined, fallback: number): number {
   if (!Number.isFinite(value)) return fallback
@@ -90,7 +91,7 @@ export function generateSeatBlueprint(
   seatCountTarget: number,
   customSeatIds: string[] = []
 ): ControlPacketSeatBlueprint[] {
-  const safeSeatCount = safePositiveInt(seatCountTarget, 1)
+  const safeSeatCount = Math.min(safePositiveInt(seatCountTarget, 1), MAX_SEAT_COUNT)
 
   if (layoutType === 'grid_2x5') return gridSeatIds(2, 5, safeSeatCount)
   if (layoutType === 'grid_3x4') return gridSeatIds(3, 4, safeSeatCount)

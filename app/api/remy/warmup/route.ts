@@ -1,8 +1,6 @@
-// Remy Model Warmup - Pings qwen3-coder:30b to keep it loaded in memory.
+// Remy Model Warmup - Pings Gemma 4 to keep it loaded in memory.
 // Called when the Remy drawer opens so the model is warm for the first query.
 // Uses keep_alive: '30m' to prevent Ollama from evicting the model between queries.
-// NOTE: Classifier was moved to 'standard' tier (same model as streaming),
-// so we warm the standard model - not the fast (4b) model.
 
 import { NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth/get-user'
@@ -16,7 +14,7 @@ export async function POST() {
   }
 
   const baseUrl = getOllamaConfig().baseUrl
-  const model = getOllamaModel('standard') // qwen3-coder:30b - same model used by classifier + streamer
+  const model = getOllamaModel('standard')
 
   try {
     const res = await fetch(`${baseUrl}/api/generate`, {

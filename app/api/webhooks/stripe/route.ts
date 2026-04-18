@@ -997,6 +997,14 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
     } catch (cacheErr) {
       console.error('[handlePaymentSucceeded] Cache invalidation failed (non-blocking):', cacheErr)
     }
+
+    // Bust Remy context cache so AI reflects payment immediately (non-blocking)
+    try {
+      const { invalidateRemyContextCache } = await import('@/lib/ai/remy-context')
+      invalidateRemyContextCache(tenant_id)
+    } catch {
+      /* non-blocking */
+    }
   } catch (transitionError) {
     // Log but don't throw - ledger entry is what matters
     console.error('[handlePaymentSucceeded] Transition failed:', transitionError)
@@ -1476,7 +1484,7 @@ async function handleDisputeFundsWithdrawn(event: Stripe.Event) {
     tenant_id,
     client_id,
     entry_type: 'refund',
-    amount_cents: dispute.amount,
+    amount_cents: -Math.abs(dispute.amount),
     payment_method: 'card',
     description: `Dispute funds withdrawn for event ${event_id}`,
     event_id,

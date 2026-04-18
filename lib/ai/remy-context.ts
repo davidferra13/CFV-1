@@ -29,10 +29,8 @@ import { getBusinessHealthSummary } from '@/lib/intelligence/business-health-sum
 import { getEventIntelligenceContext } from '@/lib/intelligence/event-context'
 import { getClientIntelligenceContext } from '@/lib/intelligence/client-intelligence-context'
 import { getInquiryConversionContext } from '@/lib/intelligence/inquiry-conversion-context'
-import {
-  getServiceConfigForTenant,
-  formatServiceConfigForPrompt,
-} from '@/lib/chef-services/service-config-actions'
+import { getServiceConfigForTenant } from '@/lib/chef-services/service-config-internal'
+import { formatServiceConfigForPrompt } from '@/lib/chef-services/service-config-actions'
 
 // ─── In-Memory Cache (per-tenant, 5-min TTL) ────────────────────────────────
 
@@ -46,6 +44,9 @@ interface CachedContext {
     | 'chefName'
     | 'businessName'
     | 'tagline'
+    | 'chefCity'
+    | 'chefState'
+    | 'chefArchetype'
     | 'pageEntity'
     | 'mentionedEntities'
     | 'dailyPlan'
@@ -60,6 +61,47 @@ interface CachedContext {
 
 const contextCache = new Map<string, CachedContext>()
 const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
+
+/** Empty detailed context for minimal scope - skips all 31 Tier 2 queries */
+function getEmptyDetailedContext(): CachedContext['data'] {
+  return {
+    upcomingEvents: [],
+    recentClients: [],
+    monthRevenueCents: undefined,
+    pendingQuoteCount: 0,
+    calendarSummary: { blockedDates: [], calendarEntries: [], waitlistEntries: [] },
+    yearlyStats: undefined,
+    quoteDistribution: undefined,
+    inquiryVelocity: undefined,
+    profitabilityStats: undefined,
+    staffRoster: [],
+    equipmentSummary: { totalItems: 0, categories: [] },
+    activeGoals: [],
+    activeTodos: [],
+    upcomingCalls: [],
+    documentSummary: { totalDocuments: 0, totalFolders: 0 },
+    recentArtifacts: [],
+    recipeStats: undefined,
+    clientVibeNotes: [],
+    recentAARInsights: [],
+    pendingMenuApprovals: [],
+    unreadInquiryMessages: [],
+    staleInquiries: [],
+    overduePayments: [],
+    upcomingPaymentDeadlines: [],
+    expiringQuotes: [],
+    clientReengagement: [],
+    revenuePattern: undefined,
+    conversionRate: undefined,
+    expenseBreakdown: [],
+    dayOfWeekPattern: undefined,
+    serviceStyles: [],
+    repeatClientRatio: undefined,
+    avgLeadTime: undefined,
+    guestCountTrend: undefined,
+    costingContext: undefined,
+  } as CachedContext['data']
+}
 
 /**
  * Bust the Remy context cache for a tenant so the next Remy query
@@ -118,120 +160,147 @@ async function reportContextQueryErrors(
 
 // ─── Public Loader ──────────────────────────────────────────────────────────
 
-export async function loadRemyContext(currentPage?: string): Promise<RemyContext> {
+export async function loadRemyContext(
+  currentPage?: string,
+  scopeHint?: 'minimal' | 'focused' | 'full' | null
+): Promise<RemyContext> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()
+  const isMinimal = scopeHint === 'minimal'
 
   // Tier 1: Always fresh (cheap count queries + chef profile + daily plan + service config)
+  // These run even for minimal scope - they're fast and provide core business summary.
   const [chefProfile, counts, dailyPlan, healthSummary, serviceConfig, archetype] =
     await Promise.all([
       loadChefProfile(db, tenantId),
       loadQuickCounts(db, tenantId),
-      withContextFallback(tenantId, 'load_daily_plan', null, () => getDailyPlanStats()),
-      withContextFallback(tenantId, 'load_business_health_summary', null, async () => {
-        const summary = await getBusinessHealthSummary()
-        return summary.remyContext
-      }),
-      withContextFallback(tenantId, 'load_service_config', null, () =>
-        getServiceConfigForTenant(tenantId)
-      ),
-      getCachedChefArchetype(tenantId),
+      isMinimal
+        ? Promise.resolve(null)
+        : withContextFallback(tenantId, 'load_daily_plan', null, () => getDailyPlanStats()),
+      isMinimal
+        ? Promise.resolve(null)
+        : withContextFallback(tenantId, 'load_business_health_summary', null, async () => {
+            const summary = await getBusinessHealthSummary()
+            return summary.remyContext
+          }),
+      isMinimal
+        ? Promise.resolve(null)
+        : withContextFallback(tenantId, 'load_service_config', null, () =>
+            getServiceConfigForTenant(tenantId)
+          ),
+      isMinimal ? Promise.resolve(null) : getCachedChefArchetype(tenantId),
     ])
 
-  // Tier 2: Cached for 5 minutes
-  const cached = contextCache.get(tenantId)
+  // Tier 2: Cached for 5 minutes - SKIP ENTIRELY for minimal scope
+  // This is the big win: 31 queries eliminated for simple questions like "hi" or "where do I add a client?"
   let detailed: CachedContext['data']
 
-  if (cached && cached.expiresAt > Date.now()) {
-    detailed = cached.data
+  if (isMinimal) {
+    // Return empty defaults - minimal scope only needs profile + counts + page entity
+    detailed = getEmptyDetailedContext()
   } else {
-    detailed = await loadDetailedContext(db, tenantId)
-    contextCache.set(tenantId, {
-      data: detailed,
-      expiresAt: Date.now() + CACHE_TTL_MS,
-    })
+    const cached = contextCache.get(tenantId)
+    if (cached && cached.expiresAt > Date.now()) {
+      detailed = cached.data
+    } else {
+      detailed = await loadDetailedContext(db, tenantId)
+      contextCache.set(tenantId, {
+        data: detailed,
+        expiresAt: Date.now() + CACHE_TTL_MS,
+      })
+    }
   }
 
-  // Tier 2b: Email digest (non-blocking, cached alongside detailed context)
-  const emailDigest = await withContextFallback(
-    tenantId,
-    'load_email_digest',
-    undefined,
-    () => loadEmailDigest(tenantId),
-    { currentPage: currentPage ?? null }
-  )
+  // Tier 2b: Skip entirely for minimal scope
+  let emailDigest: Awaited<ReturnType<typeof loadEmailDigest>> | undefined
+  let recentSurveyFeedback: any
+  let pendingMilestones: any
+  let autoResponseStatus: any
 
-  // Tier 2b: Recent survey feedback (non-blocking)
-  const recentSurveyFeedback = await withContextFallback(
-    tenantId,
-    'load_recent_survey_feedback',
-    undefined,
-    async () => {
-      const { data } = await db
-        .from('post_event_surveys')
-        .select(
-          'overall_rating, would_book_again, completed_at, event:events(occasion, client:clients(full_name))'
-        )
-        .eq('chef_id', tenantId)
-        .eq('status', 'completed')
-        .order('completed_at', { ascending: false })
-        .limit(5)
-      if (!data || data.length === 0) return undefined
-      return data.map((s: any) => ({
-        clientName: s.event?.client?.full_name ?? 'Unknown',
-        overallRating: s.overall_rating ?? 0,
-        wouldBookAgain: s.would_book_again ?? false,
-        completedAt: s.completed_at,
-      }))
-    }
-  )
+  if (isMinimal) {
+    emailDigest = undefined
+    recentSurveyFeedback = undefined
+    pendingMilestones = undefined
+    autoResponseStatus = undefined
+  } else {
+    emailDigest =
+      (await withContextFallback(
+        tenantId,
+        'load_email_digest',
+        undefined,
+        () => loadEmailDigest(tenantId),
+        { currentPage: currentPage ?? null }
+      )) ?? undefined
 
-  // Tier 2b: Pending payment milestones (non-blocking)
-  const pendingMilestones = await withContextFallback(
-    tenantId,
-    'load_pending_milestones',
-    undefined,
-    async () => {
-      const { data } = await db
-        .from('event_payment_milestones')
-        .select('name, amount_cents, due_date, event:events(occasion, client:clients(full_name))')
-        .eq('chef_id', tenantId)
-        .in('status', ['pending', 'partial'])
-        .order('due_date', { ascending: true })
-        .limit(10)
-      if (!data || data.length === 0) return undefined
-      return data.map((m: any) => ({
-        clientName: m.event?.client?.full_name ?? 'Unknown',
-        occasion: m.event?.occasion ?? 'Event',
-        milestoneName: m.name ?? 'Payment',
-        amountCents: m.amount_cents ?? 0,
-        dueDate: m.due_date,
-      }))
-    }
-  )
-
-  // Tier 2b: Auto-response status (non-blocking)
-  const autoResponseStatus = await withContextFallback(
-    tenantId,
-    'load_auto_response_status',
-    undefined,
-    async () => {
-      const [configResult, templateCountResult] = await Promise.all([
-        db.from('auto_response_config').select('enabled').eq('chef_id', tenantId).single(),
-        db
-          .from('response_templates')
-          .select('id', { count: 'exact', head: true })
-          .eq('chef_id', tenantId),
-      ])
-      return {
-        enabled: configResult.data?.enabled ?? false,
-        templateCount: templateCountResult.count ?? 0,
+    recentSurveyFeedback = await withContextFallback(
+      tenantId,
+      'load_recent_survey_feedback',
+      undefined,
+      async () => {
+        const { data } = await db
+          .from('post_event_surveys')
+          .select(
+            'overall_rating, would_book_again, completed_at, event:events(occasion, client:clients(full_name))'
+          )
+          .eq('chef_id', tenantId)
+          .eq('status', 'completed')
+          .order('completed_at', { ascending: false })
+          .limit(5)
+        if (!data || data.length === 0) return undefined
+        return data.map((s: any) => ({
+          clientName: s.event?.client?.full_name ?? 'Unknown',
+          overallRating: s.overall_rating ?? 0,
+          wouldBookAgain: s.would_book_again ?? false,
+          completedAt: s.completed_at,
+        }))
       }
-    }
-  )
+    )
 
-  // Tier 3: Page-specific entity context (non-blocking)
+    pendingMilestones = await withContextFallback(
+      tenantId,
+      'load_pending_milestones',
+      undefined,
+      async () => {
+        const { data } = await db
+          .from('event_payment_milestones')
+          .select('name, amount_cents, due_date, event:events(occasion, client:clients(full_name))')
+          .eq('chef_id', tenantId)
+          .in('status', ['pending', 'partial'])
+          .order('due_date', { ascending: true })
+          .limit(10)
+        if (!data || data.length === 0) return undefined
+        return data.map((m: any) => ({
+          clientName: m.event?.client?.full_name ?? 'Unknown',
+          occasion: m.event?.occasion ?? 'Event',
+          milestoneName: m.name ?? 'Payment',
+          amountCents: m.amount_cents ?? 0,
+          dueDate: m.due_date,
+        }))
+      }
+    )
+
+    autoResponseStatus = await withContextFallback(
+      tenantId,
+      'load_auto_response_status',
+      undefined,
+      async () => {
+        const [configResult, templateCountResult] = await Promise.all([
+          db.from('auto_response_config').select('enabled').eq('chef_id', tenantId).single(),
+          db
+            .from('response_templates')
+            .select('id', { count: 'exact', head: true })
+            .eq('chef_id', tenantId),
+        ])
+        return {
+          enabled: configResult.data?.enabled ?? false,
+          templateCount: templateCountResult.count ?? 0,
+        }
+      }
+    )
+  }
+
+  // Tier 3: Page-specific entity context - always load (cheap and useful even for minimal)
   const pageEntity = await withContextFallback(
     tenantId,
     'load_page_entity_context',
@@ -244,6 +313,9 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
     chefName: chefProfile.businessName,
     businessName: chefProfile.businessName,
     tagline: chefProfile.tagline,
+    chefCity: chefProfile.city,
+    chefState: chefProfile.state,
+    chefArchetype: chefProfile.archetype,
     clientCount: counts.clients,
     upcomingEventCount: counts.upcomingEvents,
     openInquiryCount: counts.openInquiries,
@@ -304,7 +376,7 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
 async function loadChefProfile(db: any, tenantId: string) {
   const { data, error } = await db
     .from('chefs')
-    .select('business_name, tagline')
+    .select('business_name, tagline, city, state, archetype')
     .eq('id', tenantId)
     .single()
 
@@ -315,6 +387,9 @@ async function loadChefProfile(db: any, tenantId: string) {
   return {
     businessName: data?.business_name ?? null,
     tagline: data?.tagline ?? null,
+    city: data?.city ?? null,
+    state: data?.state ?? null,
+    archetype: data?.archetype ?? null,
   }
 }
 

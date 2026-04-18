@@ -1,6 +1,5 @@
 import { createAdminClient } from '@/lib/db/admin'
 import { extractBearerToken, validateDeviceToken } from '@/lib/devices/token'
-import { hasProAccess } from '@/lib/billing/tier'
 import { computeRegisterSessionTotals } from '@/lib/commerce/register-metrics'
 import { isPosManagerRole, readPosManagerRoleSetFromEnv } from '@/lib/commerce/kiosk-policy'
 

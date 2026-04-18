@@ -63,9 +63,7 @@ export function TaskLoader({
       <span>
         {text}
         {showNote && (
-          <span className="text-stone-500 ml-1 animate-in fade-in duration-500">
-            (private AI, may take a moment)
-          </span>
+          <span className="text-stone-500 ml-1 animate-in fade-in duration-500">(private AI)</span>
         )}
       </span>
     </span>

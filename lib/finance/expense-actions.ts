@@ -182,6 +182,9 @@ export async function createExpense(input: CreateExpenseInput): Promise<Expense>
 
   revalidatePath('/finance')
   revalidatePath('/dashboard')
+  if (input.event_id) {
+    revalidatePath(`/events/${input.event_id}`)
+  }
 
   // Outbound webhook (non-blocking)
   try {

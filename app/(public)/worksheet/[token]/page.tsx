@@ -3,9 +3,11 @@
 // Chef sends this link to client before a dinner so they can fill out
 // their preferences, allergies, dietary restrictions, and event details.
 
-import { notFound } from 'next/navigation'
+import { headers } from 'next/headers'
 import type { Metadata } from 'next'
+import { checkRateLimit } from '@/lib/rateLimit'
 import { getWorksheetByToken } from '@/lib/marketplace/worksheet-actions'
+import { TokenExpiredPage } from '@/components/ui/token-expired-page'
 import { ClientWorksheetForm } from './worksheet-form'
 
 type Props = { params: { token: string } }
@@ -16,8 +18,20 @@ export const metadata: Metadata = {
 }
 
 export default async function WorksheetPage({ params }: Props) {
+  const headersList = await headers()
+  const ip = headersList.get('x-forwarded-for')?.split(',')[0] || 'unknown'
+  try {
+    await checkRateLimit(`worksheet:${ip}`, 30, 15 * 60 * 1000)
+  } catch {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-stone-400">
+        Too many requests. Please try again later.
+      </div>
+    )
+  }
+
   const worksheet = await getWorksheetByToken(params.token)
-  if (!worksheet) notFound()
+  if (!worksheet) return <TokenExpiredPage reason="not_found" noun="worksheet" />
 
   return (
     <div className="min-h-screen bg-stone-50">

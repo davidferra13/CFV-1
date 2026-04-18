@@ -1,8 +1,8 @@
 'use server'
 
+import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export type AiPreferences = {
@@ -21,23 +21,6 @@ export type AiDataSummary = {
   messages: number
   memories: number
   artifacts: number
-}
-
-// ─── Central AI Permission Check ─────────────────────────────────────────────
-// Use this from background processes (cron, scheduled jobs) that have a tenantId
-// but no user session. Returns false if Remy is disabled or preferences don't exist.
-
-export async function isAiEnabledForTenant(tenantId: string): Promise<boolean> {
-  const db: any = createServerClient()
-  const { data } = await db
-    .from('ai_preferences')
-    .select('remy_enabled')
-    .eq('tenant_id', tenantId)
-    .single()
-
-  // No preferences row = not onboarded = not enabled
-  if (!data) return false
-  return data.remy_enabled === true
 }
 
 // ─── Read ────────────────────────────────────────────────────────────────────
@@ -110,9 +93,25 @@ export async function getAiDataSummary(): Promise<AiDataSummary> {
 
 // ─── Write ───────────────────────────────────────────────────────────────────
 
+const AiPreferencesUpdateSchema = z.object({
+  remy_enabled: z.boolean().optional(),
+  onboarding_completed: z.boolean().optional(),
+  data_retention_days: z.number().int().min(1).max(3650).nullable().optional(),
+  allow_memory: z.boolean().optional(),
+  allow_suggestions: z.boolean().optional(),
+  allow_document_drafts: z.boolean().optional(),
+  remy_archetype: z.string().max(100).nullable().optional(),
+})
+
 export async function saveAiPreferences(
   prefs: Partial<Omit<AiPreferences, 'onboarding_completed_at'>>
 ): Promise<{ success: boolean }> {
+  const parsed = AiPreferencesUpdateSchema.safeParse(prefs)
+  if (!parsed.success) {
+    console.error('[ai-privacy] Invalid preferences input:', parsed.error.message)
+    return { success: false }
+  }
+
   const user = await requireChef()
   const db: any = createServerClient()
   const tenantId = user.tenantId!
@@ -120,7 +119,7 @@ export async function saveAiPreferences(
   const { error } = await db.from('ai_preferences').upsert(
     {
       tenant_id: tenantId,
-      ...prefs,
+      ...parsed.data,
       updated_at: new Date().toISOString(),
     },
     { onConflict: 'tenant_id' }
