@@ -10,6 +10,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { normalizeUnit, canConvert, addQuantities, formatQuantity } from './unit-conversion'
 import { assignStoreSection } from '@/lib/formulas/grocery-consolidation'
+import { PORTIONS_BY_SERVICE_STYLE } from '@/lib/finance/industry-benchmarks'
 
 // ── Types ─────────────────────────────────────────────────────────────
 
@@ -95,7 +96,7 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
   const { data: event, error: eventError } = await db
     .from('events')
     .select(
-      'id, occasion, guest_count, event_date, menu_id, quoted_price_cents, dietary_restrictions, allergies, client_id'
+      'id, occasion, guest_count, event_date, menu_id, quoted_price_cents, dietary_restrictions, allergies, client_id, service_style'
     )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
@@ -247,7 +248,9 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
 
     const recipeServings = recipe.servings ?? 4
     const componentScale = Number(comp.scale_factor) || 1
-    const scaleFactor = (guestCount / recipeServings) * componentScale
+    const serviceStyle = event.service_style ?? 'plated'
+    const styleMultiplier = PORTIONS_BY_SERVICE_STYLE[serviceStyle]?.multiplier ?? 1.0
+    const scaleFactor = (guestCount / recipeServings) * componentScale * styleMultiplier
     const recipeIngredients = Array.isArray(recipe.recipe_ingredients)
       ? recipe.recipe_ingredients
       : []
@@ -358,12 +361,16 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
       finalUnit = result.unit
     }
 
+    // Apply waste buffer based on event's service style
+    const wasteRate = PORTIONS_BY_SERVICE_STYLE[event.service_style ?? 'plated']?.wasteExpected ?? 3
+    const bufferedQty = totalQty * (1 + wasteRate / 100)
+
     items.push({
       ingredientId: entry.ingredientId,
       ingredientName: entry.ingredientName,
       recipeQuantity: recipeQty,
-      totalQuantity: totalQty,
-      displayQuantity: formatQuantity(totalQty, finalUnit),
+      totalQuantity: bufferedQty,
+      displayQuantity: formatQuantity(bufferedQty, finalUnit),
       unit: finalUnit,
       yieldPct: entry.yieldPct,
       category: getCategoryDisplay(entry.category),

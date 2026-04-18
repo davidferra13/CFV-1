@@ -19,6 +19,18 @@
 - Cash flow forecast (30-day), revenue forecast, revenue goals
 - Stripe integration (payments + voluntary supporter contributions)
 
+## Receipt Intelligence Engine (2026-04-18)
+
+Receipts are now structured purchase records with full quantity/unit extraction:
+
+- 3 OCR parsers enhanced: Gemini (unit field), regex (weight-priced/qty patterns), Ollama (already had units)
+- Receipt learning: manual corrections create durable mappings for future auto-matching
+- Unit normalization: receipt units converted to ingredient's canonical unit before pricing
+- Price sanity guard: >50% deviation from average flagged for chef review instead of auto-applying
+
+Key files: `lib/receipts/receipt-learning.ts`, `lib/finance/expense-line-item-actions.ts`
+
 ## Open Items
 
 - CPA-ready tax export built but needs Playwright verification
+- Price flag review UI (accept/reject flagged ingredient prices)

@@ -1,26 +1,18 @@
 // AI Receipt Extraction
-// Uses Gemini vision to extract structured data from receipt photos
-
-// ⚠️ AI POLICY EXCEPTION: Vision processing
-// These functions use Gemini cloud for image/PDF analysis.
-// Ollama does not currently support vision models on our hardware (6GB VRAM).
-// ACCEPTABLE because: receipts contain store names and prices (LOW sensitivity),
-// not client PII, dietary data, or financial summaries.
-// REVIEW WHEN: A local vision model becomes viable (e.g., LLaVA on Ollama).
-// See AI-POLICY.md for the full data classification rules.
+// Uses Gemma 4 native vision via Ollama to extract structured data from receipt photos.
+// Fully local, no cloud dependency.
 
 'use server'
 
-import { GoogleGenAI } from '@google/genai'
 import { z } from 'zod'
-
-const MODEL = 'gemini-2.5-flash'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
 
 // --- Schema ---
 
 const LineItemSchema = z.object({
   description: z.string(),
   quantity: z.number(),
+  unit: z.string().default('each'),
   unitPriceCents: z.number().int(),
   totalPriceCents: z.number().int(),
   category: z.enum([
@@ -63,9 +55,10 @@ INSTRUCTIONS:
 1. Extract the store name and location/address if visible
 2. Extract the date and time of purchase
 3. Extract EVERY line item with:
-   - Description: expand abbreviations (e.g., "BNLS CHKN BRST" → "Boneless Chicken Breast", "ORG WHL MLK" → "Organic Whole Milk")
+   - Description: expand abbreviations (e.g., "BNLS CHKN BRST" -> "Boneless Chicken Breast", "ORG WHL MLK" -> "Organic Whole Milk")
    - Quantity: default to 1 if not explicit
-   - Unit price in cents (multiply dollars by 100)
+   - Unit: the purchase unit (e.g., "lb", "oz", "each", "dozen", "gallon", "bunch", "bag", "can"). Default to "each" if not visible. For weight-priced items like "2.31 LB @ $4.99/LB", set unit to "lb" and quantity to 2.31
+   - Unit price in cents (multiply dollars by 100). For weight-priced items, this is the per-unit price (e.g., $4.99/lb = 499)
    - Total price in cents
    - Category: classify each item as one of: protein, produce, dairy, pantry, alcohol, supplies, personal, unknown
 4. Extract subtotal, tax, and total in cents
@@ -91,87 +84,24 @@ FLAG WARNINGS for:
 - Items where the price seems unusually high or low
 - Abbreviated items you're uncertain about
 - Tax calculations that don't add up
-- Missing or unreadable sections
-
-RESPOND WITH ONLY valid JSON matching this exact structure (no markdown, no explanation):
-{
-  "storeName": "string or null",
-  "storeLocation": "string or null",
-  "purchaseDate": "YYYY-MM-DD or null",
-  "purchaseTime": "HH:MM or null",
-  "lineItems": [
-    {
-      "description": "string",
-      "quantity": 1,
-      "unitPriceCents": 499,
-      "totalPriceCents": 499,
-      "category": "produce"
-    }
-  ],
-  "subtotalCents": 0,
-  "taxCents": 0,
-  "totalCents": 0,
-  "paymentMethod": "string or null",
-  "itemCount": 0,
-  "confidence": "high",
-  "warnings": []
-}`
+- Missing or unreadable sections`
 
 /**
- * Parse a receipt image using Gemini vision capabilities.
+ * Parse a receipt image using Gemma 4 native vision via Ollama.
  * Accepts a base64-encoded image and returns structured extraction data.
  */
 export async function parseReceiptImage(
   imageBase64: string,
   mediaType: 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif' = 'image/jpeg'
 ): Promise<ReceiptExtraction> {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) {
-    throw new Error(
-      'GEMINI_API_KEY is not configured. Receipt extraction requires a Gemini API key.'
-    )
-  }
-
-  const ai = new GoogleGenAI({ apiKey })
-  const response = await ai.models.generateContent({
-    model: MODEL,
-    contents: [
-      {
-        inlineData: {
-          mimeType: mediaType,
-          data: imageBase64,
-        },
-      },
-      { text: 'Extract all data from this receipt. Return only valid JSON.' },
-    ],
-    config: { systemInstruction: RECEIPT_SYSTEM_PROMPT },
-  })
-  const rawText = response.text
-
-  if (!rawText) {
-    throw new Error('No text response from parser')
-  }
-
-  // Parse JSON - handle potential markdown wrapping
-  let jsonStr = rawText.trim()
-  const jsonMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/)
-  if (jsonMatch) {
-    jsonStr = jsonMatch[1].trim()
-  }
-
-  let parsed: unknown
-  try {
-    parsed = JSON.parse(jsonStr)
-  } catch {
-    throw new Error('Parser returned invalid JSON. Please try again with a clearer photo.')
-  }
-
-  // Validate with Zod
-  const zodResult = ReceiptExtractionSchema.safeParse(parsed)
-  if (!zodResult.success) {
-    console.error('[parseReceiptImage] Validation errors:', zodResult.error.issues)
-    throw new Error('Receipt extraction did not match expected format. Please try again.')
-  }
-
-  return zodResult.data
+  return parseWithOllama(
+    RECEIPT_SYSTEM_PROMPT,
+    'Extract all data from this receipt. Return only valid JSON.',
+    ReceiptExtractionSchema,
+    {
+      images: [imageBase64],
+      maxTokens: 4096,
+      timeoutMs: 30_000,
+    }
+  )
 }

@@ -48,6 +48,8 @@ export type ReceiptLineItemRecord = {
   id: string
   description: string
   priceCents: number | null
+  quantity: number | null
+  unit: string | null
   expenseTag: 'business' | 'personal' | 'unknown'
   ingredientCategory: string | null
 }
@@ -190,6 +192,8 @@ export async function processReceiptOCR(receiptPhotoId: string) {
     tenant_id: user.tenantId!,
     description: item.description,
     price_cents: item.totalPriceCents,
+    quantity: item.quantity ?? null,
+    unit: item.unit ?? null,
     expense_tag: item.category === 'personal' ? 'personal' : 'business',
     ingredient_category: item.category,
   }))
@@ -282,7 +286,7 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
       `
       id, event_id, photo_url, upload_status,
       receipt_extractions(id, store_name, purchase_date, payment_method, total_cents,
-        receipt_line_items(id, description, price_cents, expense_tag, ingredient_category)
+        receipt_line_items(id, description, price_cents, quantity, unit, expense_tag, ingredient_category)
       )
     `
     )
@@ -334,6 +338,8 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
       receiptLineItemId: string
       description: string
       amountCents: number
+      quantity: number | null
+      unit: string | null
     }> = []
 
     for (const item of businessItems) {
@@ -365,6 +371,8 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
           receiptLineItemId: item.id,
           description: item.description,
           amountCents: item.priceCents!,
+          quantity: item.quantity ? Number(item.quantity) : null,
+          unit: item.unit ?? null,
         })
       } else if (error) {
         console.error('[approveReceiptSummary] Expense insert error:', error)
@@ -396,6 +404,8 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
             receiptLineItemId: input.receiptLineItemId,
             description: input.description,
             amountCents: input.amountCents,
+            quantity: input.quantity,
+            unit: input.unit,
             ingredientId,
             matchedBy: ingredientId ? ('receipt_ocr' as const) : ('manual' as const),
             matchConfidence,
@@ -429,7 +439,8 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
               expense_id: li.expenseId,
               store_name: vendorName ?? null,
               price_cents: li.amountCents,
-              quantity: 1,
+              quantity: li.quantity ?? 1,
+              unit: li.unit ?? undefined,
               purchase_date: expenseDate,
             })
           } catch {

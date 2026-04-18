@@ -20,6 +20,20 @@
 - Culinary Board: kanban (brainstorm > design > test > approved)
 - Seasonal Palettes: seasonal ingredient/dish curation
 
+## Recipe Scaling Engine (2026-04-18)
+
+Central deterministic engine replacing 5 duplicated linear formulas. Handles:
+
+- Service style multipliers (buffet +25%, cocktail -25%, etc.)
+- Category-aware scaling (spices sublinear, oils by-pan, fixed items stay constant)
+- Waste buffer (3-15% by service style)
+- Pack rounding (whole units for count items, 0.25 for weight, 0.5 for volume)
+- Yield inference (estimates serving count from protein weight when yield_quantity is NULL)
+- Purchase feedback (suggests recipe qty adjustments when chef consistently over-buys)
+
+Key files: `lib/scaling/recipe-scaling-engine.ts`, `lib/scaling/yield-inference.ts`, `lib/scaling/purchase-feedback.ts`
+
 ## Open Items
 
-None. Fully functional.
+- UI for purchase feedback suggestions on recipe detail page
+- UI for price flag review (accept/reject flagged prices)

@@ -7,6 +7,8 @@
 export type ParsedLineItem = {
   name: string
   priceCents: number
+  quantity: number | null
+  unit: string | null
 }
 
 export type ParsedReceipt = {
@@ -259,12 +261,60 @@ function extractAmount(text: string, patterns: RegExp[]): number | null {
 // "ITEM NAME     X.XX"
 // "ITEM NAME         X.XX F"  (F = food stamp eligible, T = taxable, etc.)
 // Some have quantity: "2 x ITEM NAME    $X.XX" or "ITEM NAME  2@$3.99  $7.98"
+// Weight-priced: "CHICKEN BREAST  2.31 LB @ $4.99/LB  $11.53"
 
+// Unit keywords recognized on receipts
+const UNIT_KEYWORDS: Record<string, string> = {
+  lb: 'lb',
+  lbs: 'lb',
+  pound: 'lb',
+  pounds: 'lb',
+  oz: 'oz',
+  ounce: 'oz',
+  ounces: 'oz',
+  kg: 'kg',
+  kilogram: 'kg',
+  gal: 'gallon',
+  gallon: 'gallon',
+  gallons: 'gallon',
+  ea: 'each',
+  each: 'each',
+  ct: 'each',
+  count: 'each',
+  dz: 'dozen',
+  dozen: 'dozen',
+  pk: 'pack',
+  pack: 'pack',
+  packs: 'pack',
+  bunch: 'bunch',
+  bunches: 'bunch',
+  can: 'can',
+  cans: 'can',
+  bag: 'bag',
+  bags: 'bag',
+  btl: 'bottle',
+  bottle: 'bottle',
+  bottles: 'bottle',
+}
+
+// Pattern: "2.31 LB @ $4.99/LB  $11.53" (weight-priced items)
+const WEIGHT_PRICED_PATTERN =
+  /^(.+?)\s+(\d+\.?\d*)\s*(LB|LBS|OZ|KG|GAL)\s*@\s*\$?\s*(\d+\.\d{2})\s*\/\s*\w+\s+\$?\s*(\d+\.\d{2})\s*[A-Z]?\s*$/i
+
+// Pattern: "2 x ITEM NAME  $X.XX" or "3x ITEM  $X.XX" (quantity prefix)
+const QTY_PREFIX_PATTERN = /^(\d+)\s*[xX]\s+(.+?)\s+\$?\s*(\d{1,6}\.\d{2})\s*[A-Z]?\s*$/
+
+// Pattern: "ITEM NAME  2@$3.99  $7.98" (quantity-at-price)
+const QTY_AT_PRICE_PATTERN =
+  /^(.+?)\s+(\d+)\s*@\s*\$?\s*(\d+\.\d{2})\s+\$?\s*(\d+\.\d{2})\s*[A-Z]?\s*$/
+
+// Fallback: plain "ITEM NAME  $X.XX"
 const LINE_ITEM_PATTERN = /^(.+?)\s+\$?\s*(\d{1,6}\.\d{2})\s*[A-Z]?\s*$/
 
 /**
  * Extract line items from OCR text.
- * Returns an array of { name, priceCents } objects.
+ * Returns an array of { name, priceCents, quantity, unit } objects.
+ * quantity and unit are null when not parseable from the receipt text.
  */
 function extractLineItems(lines: string[]): ParsedLineItem[] {
   const items: ParsedLineItem[] = []
@@ -316,7 +366,49 @@ function extractLineItems(lines: string[]): ParsedLineItem[] {
     const lower = trimmed.toLowerCase()
     if (SKIP_KEYWORDS.some((kw) => lower.includes(kw))) continue
 
-    // Try to match a line item pattern
+    // Try weight-priced pattern first: "CHICKEN 2.31 LB @ $4.99/LB $11.53"
+    const weightMatch = trimmed.match(WEIGHT_PRICED_PATTERN)
+    if (weightMatch) {
+      const name = weightMatch[1].trim()
+      const qty = parseFloat(weightMatch[2])
+      const unitRaw = weightMatch[3].toLowerCase()
+      const totalCents = dollarsToCents(weightMatch[5])
+      if (name.length >= 2 && totalCents !== null && totalCents > 0 && /[a-zA-Z]/.test(name)) {
+        items.push({
+          name,
+          priceCents: totalCents,
+          quantity: qty,
+          unit: UNIT_KEYWORDS[unitRaw] ?? unitRaw,
+        })
+        continue
+      }
+    }
+
+    // Try quantity prefix: "2 x ITEM $X.XX"
+    const qtyPrefixMatch = trimmed.match(QTY_PREFIX_PATTERN)
+    if (qtyPrefixMatch) {
+      const qty = parseInt(qtyPrefixMatch[1], 10)
+      const name = qtyPrefixMatch[2].trim()
+      const totalCents = dollarsToCents(qtyPrefixMatch[3])
+      if (name.length >= 2 && totalCents !== null && totalCents > 0 && /[a-zA-Z]/.test(name)) {
+        items.push({ name, priceCents: totalCents, quantity: qty, unit: 'each' })
+        continue
+      }
+    }
+
+    // Try quantity-at-price: "ITEM 2@$3.99 $7.98"
+    const qtyAtMatch = trimmed.match(QTY_AT_PRICE_PATTERN)
+    if (qtyAtMatch) {
+      const name = qtyAtMatch[1].trim()
+      const qty = parseInt(qtyAtMatch[2], 10)
+      const totalCents = dollarsToCents(qtyAtMatch[4])
+      if (name.length >= 2 && totalCents !== null && totalCents > 0 && /[a-zA-Z]/.test(name)) {
+        items.push({ name, priceCents: totalCents, quantity: qty, unit: 'each' })
+        continue
+      }
+    }
+
+    // Fallback: plain line item (no quantity/unit)
     const match = trimmed.match(LINE_ITEM_PATTERN)
     if (match) {
       const name = match[1].trim()
@@ -326,7 +418,7 @@ function extractLineItems(lines: string[]): ParsedLineItem[] {
       if (name.length >= 2 && cents !== null && cents > 0 && cents < 1000000) {
         // Skip if the name is just numbers or punctuation
         if (/[a-zA-Z]/.test(name)) {
-          items.push({ name, priceCents: cents })
+          items.push({ name, priceCents: cents, quantity: null, unit: null })
         }
       }
     }

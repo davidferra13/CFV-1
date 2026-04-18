@@ -81,6 +81,8 @@ export async function scanAndParseReceipt(formData: FormData): Promise<{
       items: result.items.map((item) => ({
         name: item.productName,
         priceCents: item.totalPrice,
+        quantity: item.quantity ?? null,
+        unit: item.unit ?? null,
       })),
     }
 

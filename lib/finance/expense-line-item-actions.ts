@@ -263,6 +263,38 @@ export async function matchLineItemToIngredient(
     return { success: false, error: error.message }
   }
 
+  // Record learned mapping so this receipt text auto-matches next time (non-blocking)
+  if (ingredientId) {
+    try {
+      const { data: lineItem } = await db
+        .from('expense_line_items')
+        .select('description, expense_id')
+        .eq('id', lineItemId)
+        .eq('tenant_id', user.tenantId!)
+        .single()
+
+      if (lineItem?.description) {
+        // Try to get store name from the parent expense
+        let storeName: string | null = null
+        try {
+          const { data: expense } = await db
+            .from('expenses')
+            .select('vendor_name')
+            .eq('id', lineItem.expense_id)
+            .single()
+          storeName = expense?.vendor_name ?? null
+        } catch {
+          /* non-blocking */
+        }
+
+        const { recordLearnedMapping } = await import('@/lib/receipts/receipt-learning')
+        await recordLearnedMapping(user.tenantId!, lineItem.description, ingredientId, storeName)
+      }
+    } catch (err) {
+      console.error('[matchLineItemToIngredient] Learning record error (non-blocking):', err)
+    }
+  }
+
   revalidatePath('/expenses')
   revalidatePath('/financials')
   revalidatePath('/finance')
@@ -272,17 +304,52 @@ export async function matchLineItemToIngredient(
 // ─── 5. Suggest Ingredient Matches ─────────────────────────────────────
 
 /**
- * Deterministic ingredient matching using string similarity.
+ * Deterministic ingredient matching using string similarity + learned mappings.
  * Formula > AI: no LLM calls, pure string comparison.
+ *
+ * Checks receipt learning table first (durable manual corrections),
+ * then falls back to string similarity.
  *
  * Returns top matches for a receipt line item description.
  */
 export async function suggestIngredientMatches(
   description: string,
-  limit: number = 5
+  limit: number = 5,
+  storeName?: string | null
 ): Promise<IngredientMatch[]> {
   const user = await requireChef()
   const db: any = createServerClient()
+
+  // Check learned mappings first (from prior manual corrections)
+  try {
+    const { lookupLearnedMapping } = await import('@/lib/receipts/receipt-learning')
+    const learned = await lookupLearnedMapping(user.tenantId!, description, storeName)
+    if (learned && learned.confidence >= 0.8) {
+      // Fetch ingredient details
+      const { data: ing } = await db
+        .from('ingredients')
+        .select('id, name, category, last_price_cents')
+        .eq('id', learned.ingredientId)
+        .eq('tenant_id', user.tenantId!)
+        .eq('archived', false)
+        .single()
+
+      if (ing) {
+        return [
+          {
+            ingredientId: ing.id,
+            ingredientName: ing.name,
+            category: ing.category,
+            confidence: learned.confidence,
+            lastPriceCents: ing.last_price_cents,
+            matchReason: `learned mapping (${learned.matchCount} prior match${learned.matchCount === 1 ? '' : 'es'})`,
+          },
+        ]
+      }
+    }
+  } catch {
+    // Learning lookup is non-blocking; fall through to string similarity
+  }
 
   // Fetch all active ingredients for this chef
   const { data: ingredients } = await db
@@ -334,11 +401,15 @@ export async function suggestIngredientMatches(
  * update the ingredient's last_price_cents with the actual price from the receipt.
  * Only applies to items that haven't been applied yet (price_applied = false).
  *
- * Returns: count of ingredients updated.
+ * Features:
+ * - Unit normalization: converts receipt unit to ingredient's default_unit
+ * - Price sanity guard: flags >50% deviations for chef review
+ *
+ * Returns: count of ingredients updated + count flagged for review.
  */
 export async function applyLineItemPrices(
   expenseId: string
-): Promise<{ success: boolean; updated: number; error?: string }> {
+): Promise<{ success: boolean; updated: number; flagged: number; error?: string }> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -350,36 +421,100 @@ export async function applyLineItemPrices(
     .eq('tenant_id', user.tenantId!)
     .single()
 
-  if (!expense) return { success: false, updated: 0, error: 'Expense not found' }
+  if (!expense) return { success: false, updated: 0, flagged: 0, error: 'Expense not found' }
 
-  // Get unapplied matched line items
+  // Get unapplied matched line items with unit info
   const { data: lineItems } = await db
     .from('expense_line_items')
-    .select('id, ingredient_id, amount_cents, quantity')
+    .select('id, ingredient_id, amount_cents, quantity, unit')
     .eq('expense_id', expenseId)
     .eq('tenant_id', user.tenantId!)
     .eq('price_applied', false)
     .not('ingredient_id', 'is', null)
 
-  if (!lineItems || lineItems.length === 0) return { success: true, updated: 0 }
+  if (!lineItems || lineItems.length === 0) return { success: true, updated: 0, flagged: 0 }
+
+  // Fetch ingredient details for unit normalization and sanity checks
+  const ingredientIds = [...new Set((lineItems as any[]).map((li: any) => li.ingredient_id))]
+  const { data: ingredientRows } = await db
+    .from('ingredients')
+    .select('id, default_unit, average_price_cents, price_unit')
+    .eq('tenant_id', user.tenantId!)
+    .in('id', ingredientIds)
+
+  const ingredientMap = new Map<string, any>()
+  for (const ing of (ingredientRows ?? []) as any[]) {
+    ingredientMap.set(ing.id, ing)
+  }
+
+  // Lazy-load unit conversion engine
+  let convertQuantity: ((qty: number, from: string, to: string) => number | null) | null = null
+  try {
+    const conversionEngine = await import('@/lib/units/conversion-engine')
+    convertQuantity = conversionEngine.convertQuantity ?? null
+  } catch {
+    // Unit conversion unavailable; fall through to raw qty
+  }
 
   let updated = 0
+  let flagged = 0
+  const SANITY_THRESHOLD = 0.5 // 50% deviation from average
 
   for (const item of lineItems as any[]) {
-    // Compute unit price: if quantity is set, divide total by quantity
-    const qty = item.quantity ? Number(item.quantity) : 1
-    const unitPriceCents = Math.round(item.amount_cents / qty)
+    const ingredient = ingredientMap.get(item.ingredient_id)
+    const receiptQty = item.quantity ? Number(item.quantity) : 1
+    const receiptUnit = item.unit ?? null
+    const ingredientUnit = ingredient?.default_unit ?? 'each'
+
+    // Unit normalization: convert receipt qty to ingredient's canonical unit
+    let qtyInIngredientUnit = receiptQty
+    if (receiptUnit && receiptUnit !== ingredientUnit && convertQuantity) {
+      const converted = convertQuantity(receiptQty, receiptUnit, ingredientUnit)
+      if (converted !== null && converted > 0) {
+        qtyInIngredientUnit = converted
+      }
+    }
+
+    const unitPriceCents = Math.round(item.amount_cents / qtyInIngredientUnit)
+
+    // Price sanity guard: compare to historical average
+    const avgPrice = ingredient?.average_price_cents ? Number(ingredient.average_price_cents) : null
+
+    if (avgPrice && avgPrice > 0) {
+      const deviation = Math.abs(unitPriceCents - avgPrice) / avgPrice
+      if (deviation > SANITY_THRESHOLD) {
+        // Flag for review instead of auto-applying
+        const direction = unitPriceCents > avgPrice ? 'above' : 'below'
+        const pctStr = Math.round(deviation * 100)
+        await db
+          .from('ingredients')
+          .update({
+            price_flag_pending: true,
+            price_flag_new_cents: unitPriceCents,
+            price_flag_reason: `${pctStr}% ${direction} average ($${(avgPrice / 100).toFixed(2)} avg, $${(unitPriceCents / 100).toFixed(2)} new)`,
+          } as any)
+          .eq('id', item.ingredient_id)
+          .eq('tenant_id', user.tenantId!)
+
+        // Mark line item as processed (don't re-process) but don't update price
+        await db.from('expense_line_items').update({ price_applied: true }).eq('id', item.id)
+        flagged++
+        continue
+      }
+    }
 
     // Update ingredient prices: both last_price (tracking) and cost_per_unit (costing engine)
+    const today = ((_d) =>
+      `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+      new Date()
+    )
+
     const { error: updateError } = await db
       .from('ingredients')
       .update({
         last_price_cents: unitPriceCents,
         cost_per_unit_cents: unitPriceCents,
-        last_price_date: ((_d) =>
-          `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
-          new Date()
-        ),
+        last_price_date: today,
         last_purchased_at: new Date().toISOString(),
       } as any)
       .eq('id', item.ingredient_id)
@@ -404,7 +539,81 @@ export async function applyLineItemPrices(
     revalidatePath(`/events/${expense.event_id}/financial`)
   }
 
-  return { success: true, updated }
+  return { success: true, updated, flagged }
+}
+
+// ─── 6b. Resolve Price Flag ──────────────────────────────────────────────
+
+/**
+ * Accept or reject a flagged ingredient price.
+ * When accepted: applies the flagged price as the new cost_per_unit_cents.
+ * When rejected: clears the flag without changing the price.
+ */
+export async function resolvePriceFlag(
+  ingredientId: string,
+  accept: boolean
+): Promise<{ success: boolean; error?: string }> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  // Fetch the flagged ingredient
+  const { data: ingredient } = await db
+    .from('ingredients')
+    .select('id, price_flag_pending, price_flag_new_cents')
+    .eq('id', ingredientId)
+    .eq('tenant_id', user.tenantId!)
+    .eq('price_flag_pending', true)
+    .single()
+
+  if (!ingredient) {
+    return { success: false, error: 'No pending price flag found' }
+  }
+
+  if (accept && ingredient.price_flag_new_cents != null) {
+    // Apply the flagged price
+    const today = ((_d) =>
+      `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+      new Date()
+    )
+
+    await db
+      .from('ingredients')
+      .update({
+        last_price_cents: ingredient.price_flag_new_cents,
+        cost_per_unit_cents: ingredient.price_flag_new_cents,
+        last_price_date: today,
+        last_purchased_at: new Date().toISOString(),
+        price_flag_pending: false,
+        price_flag_new_cents: null,
+        price_flag_reason: null,
+      } as any)
+      .eq('id', ingredientId)
+      .eq('tenant_id', user.tenantId!)
+
+    // Cascade price change to recipe costs
+    try {
+      const { propagatePriceChange } = await import('@/lib/pricing/cost-refresh-actions')
+      await propagatePriceChange([ingredientId])
+    } catch (err) {
+      console.error('[resolvePriceFlag] Price cascade error (non-blocking):', err)
+    }
+  } else {
+    // Reject: just clear the flag
+    await db
+      .from('ingredients')
+      .update({
+        price_flag_pending: false,
+        price_flag_new_cents: null,
+        price_flag_reason: null,
+      } as any)
+      .eq('id', ingredientId)
+      .eq('tenant_id', user.tenantId!)
+  }
+
+  revalidatePath('/culinary')
+  revalidatePath('/recipes')
+  revalidatePath('/inventory')
+  return { success: true }
 }
 
 // ─── 7. Event Actual vs Estimated Cost ─────────────────────────────────

@@ -6,6 +6,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createPurchaseOrder, addPOItem } from '@/lib/inventory/purchase-order-actions'
 import { normalizeUnit, canConvert, addQuantities } from '@/lib/grocery/unit-conversion'
 import { ingredientMatchesAllergen } from '@/lib/menus/allergen-check'
+import { PORTIONS_BY_SERVICE_STYLE } from '@/lib/finance/industry-benchmarks'
 
 const ShoppingListInputSchema = z.object({
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -46,7 +47,8 @@ async function getRecipeMultipliersForEvents(
   db: any,
   tenantId: string,
   eventIds: string[],
-  eventGuestCounts: Map<string, number>
+  eventGuestCounts: Map<string, number>,
+  eventServiceStyles: Map<string, string> = new Map()
 ): Promise<Map<string, number>> {
   // Fetch menus with event_id so we can trace guest count
   const { data: menus } = await db
@@ -99,7 +101,7 @@ async function getRecipeMultipliersForEvents(
     recipeServingsMap.set(r.id, Number(r.servings) || 4)
   }
 
-  // Compute: (guestCount / recipeServings) * scale_factor per component
+  // Compute: (guestCount / recipeServings) * scale_factor * serviceStyleMultiplier per component
   const multipliers = new Map<string, number>()
   for (const component of components as any[]) {
     const recipeId = component.recipe_id as string
@@ -108,7 +110,9 @@ async function getRecipeMultipliersForEvents(
     const eventId = menuEventMap.get(menuId) ?? ''
     const guestCount = eventGuestCounts.get(eventId) ?? 10
     const recipeServings = recipeServingsMap.get(recipeId) ?? 4
-    const effectiveMultiplier = (guestCount / recipeServings) * scaleFactor
+    const serviceStyle = eventServiceStyles.get(eventId) ?? 'plated'
+    const styleMultiplier = PORTIONS_BY_SERVICE_STYLE[serviceStyle]?.multiplier ?? 1.0
+    const effectiveMultiplier = (guestCount / recipeServings) * scaleFactor * styleMultiplier
 
     multipliers.set(recipeId, (multipliers.get(recipeId) ?? 0) + effectiveMultiplier)
   }
@@ -152,7 +156,7 @@ export async function generateShoppingList(input: {
 
   let eventsQuery = db
     .from('events')
-    .select('id, event_date, guest_count, client_id')
+    .select('id, event_date, guest_count, service_style, client_id')
     .eq('tenant_id', user.tenantId!)
     .gte('event_date', parsed.startDate)
     .lte('event_date', parsed.endDate)
@@ -179,11 +183,15 @@ export async function generateShoppingList(input: {
   const eventGuestCounts = new Map<string, number>(
     (events as any[]).map((e: any) => [e.id, Number(e.guest_count) || 10])
   )
+  const eventServiceStyles = new Map<string, string>(
+    (events as any[]).map((e: any) => [e.id, e.service_style ?? 'plated'])
+  )
   const recipeMultipliers = await getRecipeMultipliersForEvents(
     db,
     user.tenantId!,
     eventIds,
-    eventGuestCounts
+    eventGuestCounts,
+    eventServiceStyles
   )
 
   if (recipeMultipliers.size === 0) {
@@ -414,15 +422,24 @@ export async function generateShoppingList(input: {
     }
   }
 
+  // Compute waste buffer rate: use max waste% across all events' service styles
+  const serviceStyles = [...eventServiceStyles.values()]
+  const wasteBufferPct = serviceStyles.reduce((max, style) => {
+    const rate = PORTIONS_BY_SERVICE_STYLE[style]?.wasteExpected ?? 3
+    return Math.max(max, rate)
+  }, 3)
+
   const items = Array.from(aggregated.values()).map(({ _recipeAccum, _buyAccum, ...item }) => {
     const onHand = onHandByIngredient.get(item.ingredientId) ?? 0
-    const toBuy = Math.max(0, item.totalRequired - onHand)
+    // Apply waste buffer to totalRequired before subtracting on-hand
+    const buffered = item.totalRequired * (1 + wasteBufferPct / 100)
+    const toBuy = Math.max(0, buffered - onHand)
     const ingredient = ingredientMap.get(item.ingredientId)
     const estimatedUnitCost = ingredient?.last_price_cents ?? 0
 
     return {
       ...item,
-      totalRequired: round2(item.totalRequired),
+      totalRequired: round2(buffered),
       onHand: round2(onHand),
       toBuy: round2(toBuy),
       estimatedCostCents: Math.round(toBuy * estimatedUnitCost),
