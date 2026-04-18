@@ -12,30 +12,26 @@ import { isEffectivePrivileged } from '@/lib/auth/admin-preview'
  * passed to Ollama's system prompt.
  */
 const FOCUS_MODE_ACTIONS = new Set([
-  // Event management
-  'event.list',
-  'event.detail',
-  'event.search',
-  'event.upcoming',
+  // Event management (exact taskType strings from executeSingleTask switch)
+  'event.list_upcoming',
+  'event.list_by_status',
+  'event.details',
 
   // Client management
-  'client.list',
-  'client.detail',
+  'client.list_recent',
+  'client.details',
   'client.search',
 
   // Quotes & inquiries
-  'quote.list',
-  'quote.detail',
-  'inquiry.list',
-  'inquiry.detail',
+  'inquiry.list_open',
+  'inquiry.details',
 
   // Calendar
-  'calendar.upcoming',
   'calendar.availability',
 
   // Finance
   'finance.summary',
-  'finance.event_summary',
+  'finance.pnl',
 
   // Recipes & menus
   'recipe.search',
@@ -56,11 +52,11 @@ const FOCUS_MODE_ACTIONS = new Set([
   'agent.shopping_list',
   'agent.recipe_dietary_check',
 
-  // Drafting
-  'draft.message',
-  'draft.email',
-  'draft.followup',
+  // Drafting (exact taskType strings)
   'draft.thank_you',
+  'email.followup',
+  'email.generic',
+  'agent.draft_email',
 ])
 
 /**

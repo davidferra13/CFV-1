@@ -598,6 +598,69 @@ export function summarizeTaskResults(results: RemyTaskResult[]): string {
       } else {
         summaries.push('No tasks found.')
       }
+    } else if (task.taskType === 'tasks.overdue' && task.data) {
+      const d = task.data as { tasks?: Array<{ title: string; status: string; due_date?: string }> }
+      if (d.tasks && d.tasks.length > 0) {
+        const lines = [`**${d.tasks.length} overdue task${d.tasks.length === 1 ? '' : 's'}:**`]
+        for (const t of d.tasks.slice(0, 10)) {
+          const due = t.due_date ? ` (was due ${t.due_date})` : ''
+          lines.push(`- ${t.title}${due}`)
+        }
+        summaries.push(lines.join('\n'))
+      } else {
+        summaries.push("No overdue tasks - you're on track!")
+      }
+    } else if (task.taskType === 'email.inbox_summary' && task.data) {
+      const d = task.data as {
+        total?: number
+        unread?: number
+        recent?: Array<{ from: string; subject: string; date?: string }>
+        summary?: string
+      }
+      if (d.summary) {
+        summaries.push(d.summary)
+      } else if (d.recent && d.recent.length > 0) {
+        const lines = [`**Inbox** (${d.unread ?? 0} unread of ${d.total ?? d.recent.length}):\n`]
+        for (const e of d.recent.slice(0, 8)) {
+          lines.push(`- **${e.from}**: ${e.subject}${e.date ? ` (${e.date})` : ''}`)
+        }
+        summaries.push(lines.join('\n'))
+      } else {
+        summaries.push('Inbox is empty or email sync is not connected.')
+      }
+    } else if (task.taskType === 'email.followup' && task.data) {
+      const d = task.data as {
+        draftText?: string
+        subject?: string
+        clientName?: string
+        message?: string
+      }
+      if (d.draftText) {
+        const label = d.clientName ? ` for ${d.clientName}` : ''
+        summaries.push(`Here's your follow-up draft${label}:\n\n${d.draftText}`)
+      } else {
+        summaries.push(d.message ?? `Follow-up drafted.`)
+      }
+    } else if (task.taskType === 'finance.pnl' && task.data) {
+      const d = task.data as {
+        revenueCents?: number
+        expensesCents?: number
+        profitCents?: number
+        marginPct?: number
+        period?: string
+        summary?: string
+      }
+      if (d.summary) {
+        summaries.push(d.summary)
+      } else {
+        const rev = d.revenueCents != null ? `$${(d.revenueCents / 100).toFixed(2)}` : '$0'
+        const exp = d.expensesCents != null ? `$${(d.expensesCents / 100).toFixed(2)}` : '$0'
+        const profit = d.profitCents != null ? `$${(d.profitCents / 100).toFixed(2)}` : '$0'
+        const margin = d.marginPct != null ? ` (${d.marginPct.toFixed(1)}% margin)` : ''
+        summaries.push(
+          `**P&L${d.period ? ` - ${d.period}` : ''}:**\nRevenue: ${rev}\nExpenses: ${exp}\nProfit: ${profit}${margin}`
+        )
+      }
     } else if (task.taskType === 'staff.availability' && task.data) {
       const d = task.data as { staff?: Array<{ name: string; available: boolean; role?: string }> }
       if (d.staff && d.staff.length > 0) {
