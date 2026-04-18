@@ -118,6 +118,12 @@ export function PricingStepWizard({
       }))
     }
 
+    // No pricing data entered: treat as skip, not false completion
+    if (Object.keys(pricingConfig).length === 0) {
+      onSkip()
+      return
+    }
+
     onComplete({ pricingConfig })
   }
 

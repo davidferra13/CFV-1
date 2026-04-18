@@ -16,6 +16,7 @@ import { getWizardStepsForArchetype } from '@/lib/onboarding/onboarding-constant
 import type { ArchetypeId } from '@/lib/archetypes/presets'
 import type { ConfigurationInputs } from '@/lib/onboarding/configuration-inputs'
 import { getStepCopy, getCompletionCopy } from '@/lib/onboarding/archetype-copy'
+import { seedDemoData } from '@/lib/onboarding/demo-data-actions'
 import { OnboardingInterview } from './onboarding-interview'
 import { ProfileStep } from './onboarding-steps/profile-step'
 import { PortfolioStep } from './onboarding-steps/portfolio-step'
@@ -327,6 +328,23 @@ export function OnboardingWizard() {
   const percentComplete = Math.round((completedCount / filteredSteps.length) * 100)
 
   // ─── Completion Screen ───────────────────────────────────────────
+  const [demoSeeded, setDemoSeeded] = useState(false)
+  const [demoLoading, setDemoLoading] = useState(false)
+
+  async function handleSeedDemo() {
+    setDemoLoading(true)
+    try {
+      const result = await seedDemoData()
+      if (result.created || result.error === 'Demo data already exists') {
+        setDemoSeeded(true)
+      }
+    } catch (err) {
+      console.error('[setup] Failed to seed demo data', err)
+    } finally {
+      setDemoLoading(false)
+    }
+  }
+
   if (isComplete) {
     const completion = getCompletionCopy(archetype)
 
@@ -374,6 +392,30 @@ export function OnboardingWizard() {
               </a>
             ))}
           </div>
+
+          {/* Demo data offer */}
+          {!demoSeeded && (
+            <div className="mt-6 rounded-lg border border-dashed border-border p-4">
+              <p className="text-sm text-muted-foreground mb-2">
+                Want to see how ChefFlow looks with real data?
+              </p>
+              <button
+                type="button"
+                onClick={handleSeedDemo}
+                disabled={demoLoading}
+                className="text-sm text-orange-600 hover:text-orange-500 font-medium disabled:opacity-50"
+              >
+                {demoLoading ? 'Loading sample data...' : 'Load sample clients, events & inquiries'}
+              </button>
+            </div>
+          )}
+          {demoSeeded && (
+            <p className="mt-6 text-sm text-green-600">
+              Sample data loaded. Your dashboard will have clients, events, and an inquiry to
+              explore.
+            </p>
+          )}
+
           <div className="mt-6">
             <a
               href="/dashboard"

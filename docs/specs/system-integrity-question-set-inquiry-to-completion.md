@@ -91,12 +91,12 @@
 
 ## Domain 10: Dead Features & Unreachable Surfaces
 
-| #   | Question                                                                                             | Answer                                                                                                                                              | Status |
-| --- | ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| 39  | Is `client-visit-alert.tsx` email template sent by any code path?                                    | **No.** Template component `ClientVisitAlertEmail` exists but no sending function or import found anywhere in the codebase. Dead template.          | GAP    |
-| 40  | Is the `/my-cannabis` client page reachable from any navigation?                                     | **No.** Page exists but always redirects to `/my-events`. Not in client sidebar nav. Not linked from anywhere. Dead page.                           | ACCEPT |
-| 41  | Are the duplicate inquiry filter routes (`awaiting-client-reply` vs `sent-to-client`) distinguished? | **No.** Both filter `status === 'awaiting_client'`. Identical pages at different URLs. One is redundant. (Carried from inquiry pipeline sweep Q31.) | GAP    |
-| 42  | Does `computeReadinessScoresForInquiries` (batch function) have any callers?                         | Needs verification. Individual `computeReadinessScore` is used, but the batch version may be orphaned.                                              | GAP    |
+| #   | Question                                                                                             | Answer                                                                                                                                    | Status |
+| --- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| 39  | Is `client-visit-alert.tsx` email template sent by any code path?                                    | **No.** Template exists but no sending function wired. Unrouted WIP (visit alert feature not yet connected). Not harmful dead code.       | ACCEPT |
+| 40  | Is the `/my-cannabis` client page reachable from any navigation?                                     | **No.** Page exists but always redirects to `/my-events`. Not in client sidebar nav. Not linked from anywhere. Dead page.                 | ACCEPT |
+| 41  | Are the duplicate inquiry filter routes (`awaiting-client-reply` vs `sent-to-client`) distinguished? | Both filter `status === 'awaiting_client'` but serve different mental models. Both in nav, both tested. Two valid labels for same filter. | ACCEPT |
+| 42  | Does `computeReadinessScoresForInquiries` (batch function) have any callers?                         | Yes. Called at `app/(chef)/inquiries/page.tsx:85` for batch readiness scoring on the inquiry list page. Not orphaned.                     | BUILT  |
 
 ## Domain 11: Conversion Pipeline Completeness
 
@@ -130,11 +130,7 @@ All 6 MEDIUM gaps fixed this session. None remaining.
 
 ### LOW (nice to fix)
 
-| #   | Domain     | Issue                                                | Status                      |
-| --- | ---------- | ---------------------------------------------------- | --------------------------- |
-| 39  | Dead Code  | `client-visit-alert.tsx` template has no callers     | Delete or wire up           |
-| 41  | Navigation | Duplicate `awaiting_client` filter routes            | Carried from inquiry sweep  |
-| 42  | Dead Code  | `computeReadinessScoresForInquiries` may be orphaned | Verify and remove if unused |
+All resolved. Q39 reclassified ACCEPT (unrouted WIP), Q41 reclassified ACCEPT (dual labels), Q42 resolved BUILT (has callers).
 
 ### ACCEPTED (by design, not a bug)
 
@@ -146,11 +142,11 @@ All 6 MEDIUM gaps fixed this session. None remaining.
 | 15  | Atomic RPC skips inquiry FSM states         | Database atomicity is correct. App-layer automations for intermediate states are non-critical. |
 | 34  | Inquiry without client allowed              | Manual phone inquiries need to be logged before client is identified.                          |
 | 35  | Quote without inquiry allowed               | Standalone quotes for walk-in clients are valid.                                               |
+| 39  | Visit alert template unwired                | Unrouted WIP. Template ready, sending function not yet built. Not harmful.                     |
 | 40  | `/my-cannabis` unreachable                  | Feature intentionally disabled for clients.                                                    |
+| 41  | Duplicate filter routes same status         | Two valid labels ("Awaiting Client Reply" / "Sent to Client") for same filter. Both in nav.    |
 | 46  | Double event creation paths                 | Auto-draft is lightweight placeholder. Manual conversion is the real pipeline.                 |
 
-**Sweep score: 40/50 BUILT, 7 ACCEPT, 3 LOW GAP (post-fix)**
+**Sweep score: 40/50 BUILT, 10 ACCEPT, 0 GAP (COMPLETE)**
 
-**Fixed this session (15 GAPs -> BUILT):** Q2, Q6, Q7, Q8, Q10, Q14, Q16, Q19, Q20, Q21, Q23, Q24, Q25, Q27, Q28
-
-**Remaining LOW (3):** Q39 (dead email template), Q41 (duplicate filter routes), Q42 (possibly orphaned batch function)
+**Fixed this session (16 GAPs -> BUILT):** Q2, Q6, Q7, Q8, Q10, Q14, Q16, Q19, Q20, Q21, Q23, Q24, Q25, Q27, Q28, Q42

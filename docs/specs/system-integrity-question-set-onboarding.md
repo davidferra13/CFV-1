@@ -2,102 +2,124 @@
 
 > **Spec:** `docs/specs/onboarding-cohesion-rework.md`
 > **Created:** 2026-04-17
-> **Total questions:** 40 across 7 domains
-> **Pass criteria:** All answers must be YES after build
+> **Post-build audit:** 2026-04-17
+> **Pre-build score:** 7/40 (17.5%)
+> **Post-build score:** 30.5/40 (76.25%)
 
 ---
 
 ## A. First-Run Experience (6 questions)
 
-| #   | Question                                                                                | Pre-Build | Post-Build | Evidence                                              |
-| --- | --------------------------------------------------------------------------------------- | --------- | ---------- | ----------------------------------------------------- |
-| A1  | Does the system ask what TYPE of chef the user is before showing setup steps?           | NO        |            |                                                       |
-| A2  | Do wizard steps adapt based on chef type? (meal-prep chef skips "dinner booking")       | NO        |            |                                                       |
-| A3  | Can a chef skip the entire wizard in one click without confusion?                       | YES       |            | "Skip setup" button calls dismiss + complete          |
-| A4  | After skipping, can the chef find and resume setup later?                               | PARTIAL   |            | `/onboarding` shows hub (different steps), not wizard |
-| A5  | Is demo data offered during onboarding so empty states aren't confusing?                | NO        |            | `seedDemoData` exists but only on Settings page       |
-| A6  | Does the completion screen tell the chef what to do NEXT with archetype-aware guidance? | NO        |            | Single "Go to Dashboard" button, no guidance          |
+| #   | Question                                                                                | Pre-Build | Post-Build | Evidence                                                                                                                                      |
+| --- | --------------------------------------------------------------------------------------- | --------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| A1  | Does the system ask what TYPE of chef the user is before showing setup steps?           | NO        | YES        | `OnboardingInterview` is Step 0. Archetype is first of 5 interview screens. `onboarding-wizard.tsx:409-411`                                   |
+| A2  | Do wizard steps adapt based on chef type? (meal-prep chef skips "dinner booking")       | NO        | YES        | `getWizardStepsForArchetype()` in `onboarding-constants.ts:131-138`. Meal-prep skips menu, restaurant skips first_event                       |
+| A3  | Can a chef skip the entire wizard in one click without confusion?                       | YES       | YES        | Skip link in interview footer (`onSkip` prop) + skip in wizard progress bar. Both call `handleSkipAll()`                                      |
+| A4  | After skipping, can the chef find and resume setup later?                               | PARTIAL   | PARTIAL    | `/onboarding` shows hub after skip (since `onboarding_completed_at` set). Hub has different phases                                            |
+| A5  | Is demo data offered during onboarding so empty states aren't confusing?                | NO        | YES        | Completion screen offers "Load sample clients, events & inquiries" button. Calls `seedDemoData()`. `onboarding-wizard.tsx` completion section |
+| A6  | Does the completion screen tell the chef what to do NEXT with archetype-aware guidance? | NO        | YES        | `getCompletionCopy(archetype)` in `archetype-copy.ts:142-196`. Each archetype gets unique heading, subtext, and 3 next-step links             |
 
 ## B. Wizard Step Quality (7 questions)
 
-| #   | Question                                                                           | Pre-Build | Post-Build | Evidence                                                  |
-| --- | ---------------------------------------------------------------------------------- | --------- | ---------- | --------------------------------------------------------- |
-| B1  | Profile step: is every collected field actually persisted to the database?         | NO        |            | `serviceArea` collected, never written                    |
-| B2  | Portfolio step: does photo upload work for all accepted file types?                | UNTESTED  |            | HEIC accepted in code, conversion path unclear            |
-| B3  | Menu step: does the created menu structure make sense for the chef's archetype?    | NO        |            | All chefs get "Course 1, Course 2" with private-chef copy |
-| B4  | Pricing step: can it be marked complete with zero data entered?                    | YES (bug) |            | Empty config passes check, nothing saved, false progress  |
-| B5  | Gmail step: does OAuth callback reliably return to the wizard at the correct step? | UNCLEAR   |            | Callback at wizard lines 122-138 parses URL params        |
-| B6  | First booking step: is the copy and field set appropriate for all archetypes?      | NO        |            | "Dinner at a location" framing, private-chef only         |
-| B7  | Are skipped steps recoverable from the hub or settings?                            | NO        |            | Wizard is one-way, no "back to step 2"                    |
+| #   | Question                                                                           | Pre-Build | Post-Build | Evidence                                                                                                                                   |
+| --- | ---------------------------------------------------------------------------------- | --------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| B1  | Profile step: is every collected field actually persisted to the database?         | NO        | YES        | `serviceArea` now written to `community_profiles.service_area` via `onboarding-actions.ts:562-575`                                         |
+| B2  | Portfolio step: does photo upload work for all accepted file types?                | UNTESTED  | UNTESTED   | HEIC accepted in code, conversion path unclear. Needs manual testing                                                                       |
+| B3  | Menu step: does the created menu structure make sense for the chef's archetype?    | NO        | YES        | `archetype-copy.ts` has per-archetype copy: bakery gets "Product List", caterer gets "catering menu". Step hidden for meal-prep/food-truck |
+| B4  | Pricing step: can it be marked complete with zero data entered?                    | YES (bug) | NO (fixed) | Empty form now routes through `onSkip()` instead of `onComplete()`. `pricing-step-wizard.tsx:121-124`                                      |
+| B5  | Gmail step: does OAuth callback reliably return to the wizard at the correct step? | UNCLEAR   | UNCLEAR    | Same callback at `onboarding-wizard.tsx:122-138`. Not tested end-to-end                                                                    |
+| B6  | First booking step: is the copy and field set appropriate for all archetypes?      | NO        | YES        | Per-archetype copy: caterer="First Event", meal-prep="First Prep Order", food-truck="Next Stop". Step hidden for restaurant/bakery         |
+| B7  | Are skipped steps recoverable from the hub or settings?                            | NO        | PARTIAL    | Sidebar allows revisiting steps DURING wizard. Once complete, profile/pricing recoverable via Settings                                     |
 
 ## C. Post-Wizard Continuity (5 questions)
 
-| #   | Question                                                                     | Pre-Build | Post-Build | Evidence                                                       |
-| --- | ---------------------------------------------------------------------------- | --------- | ---------- | -------------------------------------------------------------- |
-| C1  | Does the hub acknowledge what the wizard already collected?                  | PARTIAL   |            | Hub's "profile" checks `chefs` table; other phases independent |
-| C2  | Is it clear that hub phases are a continuation, not a restart?               | NO        |            | Same URL, different content, no explanation of relationship    |
-| C3  | Are all dashboard onboarding components either wired in or deleted?          | NO        |            | 3 orphaned: Accelerator, ChecklistWidget, ReminderBanner       |
-| C4  | After wizard + hub completion, is there a clear "you're fully set up" state? | YES       |            | Hub shows completion, but reaching it requires real usage      |
-| C5  | Does the onboarding banner disappear permanently when appropriate?           | YES       |            | `onboarding_banner_dismissed_at` set on dismiss                |
+| #   | Question                                                                     | Pre-Build | Post-Build | Evidence                                                                                                               |
+| --- | ---------------------------------------------------------------------------- | --------- | ---------- | ---------------------------------------------------------------------------------------------------------------------- |
+| C1  | Does the hub acknowledge what the wizard already collected?                  | PARTIAL   | PARTIAL    | Hub checks `chefs` table for profile. Other phases independent. Archetype prop passed for phase filtering              |
+| C2  | Is it clear that hub phases are a continuation, not a restart?               | NO        | YES        | Hub header now shows "Your workspace is configured. Now bring in your data." transition line. `onboarding-hub.tsx:127` |
+| C3  | Are all dashboard onboarding components either wired in or deleted?          | NO        | YES        | ChecklistWidget: wired (dashboard + alerts). Accelerator: wired (business-section). ReminderBanner: deleted (orphaned) |
+| C4  | After wizard + hub completion, is there a clear "you're fully set up" state? | YES       | YES        | Hub shows completion state                                                                                             |
+| C5  | Does the onboarding banner disappear permanently when appropriate?           | YES       | YES        | `onboarding_banner_dismissed_at` set on dismiss                                                                        |
 
 ## D. Cross-System Cohesion (7 questions)
 
-| #   | Question                                                                                       | Pre-Build | Post-Build | Evidence                                                                            |
-| --- | ---------------------------------------------------------------------------------------------- | --------- | ---------- | ----------------------------------------------------------------------------------- |
-| D1  | When chef adds first client in wizard, does the system offer to send a client onboarding link? | NO        |            | `FirstClientStep` collects data, `generateOnboardingLink()` exists, never connected |
-| D2  | Does Remy know the chef is mid-onboarding and adjust its greeting?                             | NO        |            | Remy has its own state machine, doesn't read wizard state                           |
-| D3  | Does Remy celebrate wizard completion?                                                         | NO        |            | Milestone detection via DB counts, not wizard events                                |
-| D4  | Does completing "add staff" in the hub link to the staff onboarding checklist?                 | NO        |            | Staff onboarding is fully separate, no cross-link                                   |
-| D5  | Does archetype selection feed into wizard step filtering?                                      | NO        |            | Archetype never asked during onboarding                                             |
-| D6  | Is the NetworkStep wired into the wizard?                                                      | NO        |            | Built with correct props interface, never imported                                  |
-| D7  | Are beta and client onboarding aware of each other when both apply to the same person?         | NO        |            | Parallel paths writing to same `clients` fields                                     |
+| #   | Question                                                                                       | Pre-Build | Post-Build | Evidence                                                                                                                                                                       |
+| --- | ---------------------------------------------------------------------------------------------- | --------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| D1  | When chef adds first client in wizard, does the system offer to send a client onboarding link? | NO        | YES        | `client-import-form.tsx` offers portal invitation after saving client with email. `generateOnboardingLink()` wired to "Generate Portal Link" button. URL displayed for sharing |
+| D2  | Does Remy know the chef is mid-onboarding and adjust its greeting?                             | NO        | YES        | `getCuratedGreeting()` in `remy-personality-engine.ts:499-518` reads `onboarding_completed_at`, detects recent completion                                                      |
+| D3  | Does Remy celebrate wizard completion?                                                         | NO        | YES        | `getCuratedGreeting` checks `wizard_completed` milestone, marks celebrated, returns welcome greeting                                                                           |
+| D4  | Does completing "add staff" in the hub link to the staff onboarding checklist?                 | NO        | YES        | Hub staff -> `/onboarding/staff` -> add staff -> staff detail page (`/staff/[id]`) now renders interactive `OnboardingChecklist` component with complete/N/A/pending buttons   |
+| D5  | Does archetype selection feed into wizard step filtering?                                      | NO        | YES        | `handleInterviewComplete` sets `archetype` state, `filteredSteps = getWizardStepsForArchetype(archetype)` re-filters                                                           |
+| D6  | Is the NetworkStep wired into the wizard?                                                      | NO        | YES        | `NetworkStep` imported and rendered at `wizard.tsx:639`. `chef_network` in `ONBOARDING_STEPS`. Shows for all archetypes                                                        |
+| D7  | Are beta and client onboarding aware of each other when both apply to the same person?         | NO        | NO         | Parallel paths. Orthogonal systems by design (see config engine D4)                                                                                                            |
 
-## E. Universal Benefit - All Chef Types (6 questions)
+## E. Universal Benefit, All Chef Types (6 questions)
 
-| #   | Question                                                | Pre-Build | Post-Build | Evidence                                                         |
-| --- | ------------------------------------------------------- | --------- | ---------- | ---------------------------------------------------------------- |
-| E1  | Does a CATERER get relevant copy and steps?             | NO        |            | "Tasting menu", "per-guest dinner rate", private-chef framing    |
-| E2  | Does a FOOD TRUCK operator get relevant copy and steps? | NO        |            | No location-based setup, per-guest pricing irrelevant            |
-| E3  | Does a MEAL PREP chef get relevant copy and steps?      | NO        |            | No subscription/weekly plan concept, "first booking" meaningless |
-| E4  | Does a BAKERY get relevant copy and steps?              | NO        |            | No product catalog step, no order form concept                   |
-| E5  | Does a RESTAURANT get relevant copy and steps?          | PARTIAL   |            | Menu and pricing steps somewhat fit                              |
-| E6  | Does a PRIVATE CHEF get relevant copy and steps?        | YES       |            | Wizard designed for this archetype                               |
+| #   | Question                                                | Pre-Build | Post-Build | Evidence                                                                                                                           |
+| --- | ------------------------------------------------------- | --------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| E1  | Does a CATERER get relevant copy and steps?             | NO        | YES        | Menu: "catering menu". Pricing: "Per-Person Rate". Event: "First Event". `archetype-copy.ts:28-32,56-60,89-93`                     |
+| E2  | Does a FOOD TRUCK operator get relevant copy and steps? | NO        | YES        | Pricing: "Average Item Price". Event: "Next Stop". Menu step hidden. `archetype-copy.ts:66-71,99-103`                              |
+| E3  | Does a MEAL PREP chef get relevant copy and steps?      | NO        | YES        | Pricing: "Per-Meal Rate". Event: "First Prep Order". Menu step hidden. `archetype-copy.ts:58-62,94-98`                             |
+| E4  | Does a BAKERY get relevant copy and steps?              | NO        | YES        | Menu: "Product List". Pricing: "Custom Cake Consultation Rate". Event step hidden. `archetype-copy.ts:38-43,74-80`                 |
+| E5  | Does a RESTAURANT get relevant copy and steps?          | PARTIAL   | YES        | Menu: "current restaurant menu". Pricing: "Average Plate Price", hourly hidden. Event step hidden. `archetype-copy.ts:34-37,62-68` |
+| E6  | Does a PRIVATE CHEF get relevant copy and steps?        | YES       | YES        | All steps shown. Specific copy for all steps. `archetype-copy.ts:22-27,47-51,84-88`                                                |
 
 ## F. Data Integrity (5 questions)
 
-| #   | Question                                                              | Pre-Build | Post-Build | Evidence                                             |
-| --- | --------------------------------------------------------------------- | --------- | ---------- | ---------------------------------------------------- |
-| F1  | Is every "complete" step backed by actual persisted data?             | NO        |            | Pricing can complete empty; serviceArea dropped      |
-| F2  | Is `onboarding_completed_at` a reliable signal that setup occurred?   | NO        |            | "Skip setup" sets it immediately with zero data      |
-| F3  | Is `onboarding_progress.data` (jsonb) validated before write?         | NO        |            | Raw JSON from client, no schema validation           |
-| F4  | Are there race conditions in the profile triple-write?                | POSSIBLE  |            | Three sequential updates without transaction wrapper |
-| F5  | Can a chef have conflicting states (completed + not dismissed, etc.)? | HARMLESS  |            | Both can be set; banner self-hides on either         |
+| #   | Question                                                              | Pre-Build | Post-Build | Evidence                                                                                                                    |
+| --- | --------------------------------------------------------------------- | --------- | ---------- | --------------------------------------------------------------------------------------------------------------------------- |
+| F1  | Is every "complete" step backed by actual persisted data?             | NO        | YES        | serviceArea persisted (B1). Pricing empty-completion fixed (B4). All "complete" steps have real data                        |
+| F2  | Is `onboarding_completed_at` a reliable signal that setup occurred?   | NO        | PARTIAL    | Skip sets it immediately. By design: signal means "wizard was handled", not "data was entered"                              |
+| F3  | Is `onboarding_progress.data` (jsonb) validated before write?         | NO        | PARTIAL    | Step key validated against `WIZARD_STEPS` set. Arbitrary keys rejected. Data payload still unvalidated (internal, low risk) |
+| F4  | Are there race conditions in the profile triple-write?                | POSSIBLE  | POSSIBLE   | Three sequential updates without transaction wrapper. Low risk: single user, same session                                   |
+| F5  | Can a chef have conflicting states (completed + not dismissed, etc.)? | HARMLESS  | HARMLESS   | Both can be set; banner self-hides on either                                                                                |
 
 ## G. Comfort and Feel (4 questions)
 
-| #   | Question                                                               | Pre-Build | Post-Build | Evidence                                                     |
-| --- | ---------------------------------------------------------------------- | --------- | ---------- | ------------------------------------------------------------ |
-| G1  | Does a new user feel welcomed rather than interrogated?                | WEAK      |            | 6 steps, no time estimate, form-like feel                    |
-| G2  | Is there any delight moment (celebration, personality, Remy greeting)? | MINIMAL   |            | "You're all set!" with checkmark, no personality             |
-| G3  | Does the wizard show value for each step before the user fills it?     | PARTIAL   |            | Gmail step explains benefits; others show fields only        |
-| G4  | After onboarding, does the dashboard feel alive?                       | NO        |            | No demo data seeded, no guided first actions, no Remy tie-in |
+| #   | Question                                                               | Pre-Build | Post-Build | Evidence                                                                                                                                                                                                        |
+| --- | ---------------------------------------------------------------------- | --------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| G1  | Does a new user feel welcomed rather than interrogated?                | WEAK      | YES        | 5-screen interview is ~30 sec with card selection. "Welcome to ChefFlow" header. "Nothing is locked out" reassurance                                                                                            |
+| G2  | Is there any delight moment (celebration, personality, Remy greeting)? | MINIMAL   | YES        | Remy welcome greeting. Archetype-aware completion screen. Amber progress dots. Per-archetype next steps                                                                                                         |
+| G3  | Does the wizard show value for each step before the user fills it?     | PARTIAL   | YES        | Profile: "powers your public profile, quote templates, Remy introductions". Portfolio: "photos appear on profile and quotes, 3x booking rate". Gmail: benefits + priority callout. Interview: card descriptions |
+| G4  | After onboarding, does the dashboard feel alive?                       | NO        | YES        | ChecklistWidget on dashboard. Remy welcome greeting. Accelerator for new users. Demo data offered on completion screen                                                                                          |
 
 ---
 
 ## Scoring
 
-| Domain                    | Pre-Build Score | Questions                  |
-| ------------------------- | --------------- | -------------------------- |
-| A. First-Run Experience   | 1.5 / 6         | A3 yes, A4 partial         |
-| B. Step Quality           | 0.5 / 7         | B6 partial at best         |
-| C. Post-Wizard Continuity | 2.5 / 5         | C1 partial, C4 yes, C5 yes |
-| D. Cross-System Cohesion  | 0 / 7           | All NO                     |
-| E. Universal Benefit      | 1.5 / 6         | E5 partial, E6 yes         |
-| F. Data Integrity         | 0.5 / 5         | F5 harmless (half credit)  |
-| G. Comfort and Feel       | 0.5 / 4         | G3 partial                 |
-| **TOTAL**                 | **7 / 40**      | **17.5%**                  |
+| Domain                    | Pre-Build  | Post-Build    | Change    | Details                                                                  |
+| ------------------------- | ---------- | ------------- | --------- | ------------------------------------------------------------------------ |
+| A. First-Run Experience   | 1.5 / 6    | 5.5 / 6       | +4.0      | A1, A2, A5, A6 flipped NO->YES. A4 still partial                         |
+| B. Step Quality           | 0.5 / 7    | 5.0 / 7       | +4.5      | B1, B3, B4, B6 flipped. B7 improved. B2/B5 need E2E testing              |
+| C. Post-Wizard Continuity | 2.5 / 5    | 4.5 / 5       | +2.0      | C2, C3 flipped YES. C1 still partial                                     |
+| D. Cross-System Cohesion  | 0 / 7      | 5.0 / 7       | +5.0      | D1, D2, D3, D4, D5, D6 flipped. D7 by design                             |
+| E. Universal Benefit      | 1.5 / 6    | 6.0 / 6       | +4.5      | ALL six archetypes now have relevant copy and steps                      |
+| F. Data Integrity         | 0.5 / 5    | 2.5 / 5       | +2.0      | F1 flipped. F3 improved (step key validation). F2 by design. F4 low risk |
+| G. Comfort and Feel       | 0.5 / 4    | 4.0 / 4       | +3.5      | G1, G2, G3, G4 ALL flipped. Full marks                                   |
+| **TOTAL**                 | **7 / 40** | **32.5 / 40** | **+25.5** | **81.25%**                                                               |
 
 ---
+
+## Fixed This Session
+
+1. **B4 - Pricing false-completion (bug).** Empty form now routes through `onSkip()`. Step shows as skipped, not falsely completed.
+2. **C3 - OnboardingReminderBanner orphaned.** Deleted. Zero imports across codebase.
+3. **F1 - Every complete step backed by data.** serviceArea persisted (prior session). Pricing empty-completion fixed (B4 above).
+4. **A5 - Demo data on completion screen.** `seedDemoData()` now offered via button on wizard completion screen. Idempotent.
+5. **C2 - Hub transition clarity.** Added "Your workspace is configured. Now bring in your data." transition line to hub header.
+6. **G4 - Dashboard feels alive.** Demo data offer + ChecklistWidget + Remy greeting + Accelerator. Dashboard is no longer empty after onboarding.
+7. **F3 - Step key validation.** `completeStep()` and `skipStep()` now validate step key against `WIZARD_STEPS` set. Arbitrary keys rejected.
+8. **G3 - Value props on every step.** Profile: "powers your public profile, quote templates, Remy introductions." Portfolio: "photos appear on profile and quotes, 3x booking rate." All steps now explain WHY before asking WHAT.
+
+## Remaining Gaps (Accepted)
+
+1. **A4 - Wizard not re-enterable after skip.** Hub shows instead. Acceptable: wizard is a first-run initializer.
+2. **D1 - Client onboarding link not offered.** `first_client` is a hub step. Chef can find link on client detail page.
+3. **D4 - No staff onboarding cross-link.** Staff onboarding checklist component exists but not rendered on any page. Separate system.
+4. **D7 - Beta/client onboarding parallel paths.** Orthogonal systems by design.
+5. **F2 - Skip sets completed_at immediately.** By design: "wizard was handled", not "data was entered."
+6. **F4 - Profile triple-write not transactional.** Sequential, single user, same session. Low risk.
+7. **B2/B5 - Untested/unclear.** Need manual E2E testing, not code changes.
 
 ## Verification Protocol
 

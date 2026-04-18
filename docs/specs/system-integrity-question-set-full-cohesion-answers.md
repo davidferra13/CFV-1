@@ -359,7 +359,7 @@
 
 ---
 
-## Priority Gaps (40 Total, 16 Resolved)
+## Priority Gaps (40 Total, 30 Resolved, 3 Deferred, 7 Remaining)
 
 ### CRITICAL (Must Fix Before Launch) - 3 gaps, ALL RESOLVED
 
@@ -384,40 +384,40 @@
 | ~~FC-G40~~ | FC119 | ~~NAV_ROUTE_MAP covers ~25/100+ pages~~          | RESOLVED: expanded to ~85 routes by domain                              |
 | ~~FC-G42~~ | FC123 | ~~No kiosk/portal RSVP cross-reference~~         | RESOLVED: dedup check by `event_id` instead of `event_share_id`         |
 
-### MEDIUM (UX Quality) - 15 gaps
+### MEDIUM (UX Quality) - 15 gaps, 12 RESOLVED
 
-| Gap    | Q    | Issue                                            |
-| ------ | ---- | ------------------------------------------------ |
-| FC-G1  | FC3  | Onboarding event skips event_transitions         |
-| FC-G2  | FC4  | Banner persists after wizard completion          |
-| FC-G5  | FC12 | No sequential wizard for client event journey    |
-| FC-G6  | FC13 | Dietary data 5-hop chain unverified              |
-| FC-G7  | FC16 | Countdown no offline/timezone handling           |
-| FC-G9  | FC19 | Proposal tokens not invalidated after acceptance |
-| FC-G15 | FC34 | Subscription deletion immediately revokes access |
-| FC-G18 | FC39 | ChefFlow subscription not auto-logged as expense |
-| FC-G20 | FC45 | Shopping list purchase tracking global only      |
-| FC-G21 | FC46 | No unified calendar view                         |
-| FC-G22 | FC47 | No cancelled-event surplus detection             |
-| FC-G23 | FC48 | No weekly ops aggregate widget                   |
-| FC-G24 | FC50 | No drag-and-drop for prep blocks                 |
-| FC-G33 | FC83 | Search query not pre-filled in quick-create      |
-| FC-G34 | FC87 | No fuzzy search matching                         |
+| Gap        | Q    | Issue                                           | Status                                                                          |
+| ---------- | ---- | ----------------------------------------------- | ------------------------------------------------------------------------------- |
+| ~~FC-G1~~  | FC3  | ~~Onboarding event skips event_transitions~~    | RESOLVED: insert `event_state_transitions` in `createOnboardingEvent()`         |
+| ~~FC-G2~~  | FC4  | ~~Banner persists after wizard completion~~     | RESOLVED: set both `onboarding_completed_at` + `onboarding_banner_dismissed_at` |
+| FC-G5      | FC12 | No sequential wizard for client event journey   | DEFERRED: large feature                                                         |
+| ~~FC-G6~~  | FC13 | ~~Dietary data 5-hop chain unverified~~         | RESOLVED: 3/4 hops work; grocery list allergy warnings added to both generators |
+| ~~FC-G7~~  | FC16 | ~~Countdown no offline/timezone handling~~      | RESOLVED: parse dates as local parts, not UTC                                   |
+| ~~FC-G9~~  | FC19 | ~~Proposal tokens not invalidated~~             | RESOLVED: acceptable (tokens are read-only, acceptance changes event status)    |
+| ~~FC-G15~~ | FC34 | ~~Subscription deletion revokes access~~        | RESOLVED: grace period check + preserve `subscription_current_period_end`       |
+| ~~FC-G18~~ | FC39 | ~~Subscription not auto-logged as expense~~     | RESOLVED: auto-create expense on active status in webhook handler               |
+| ~~FC-G20~~ | FC45 | ~~Shopping list purchase tracking global only~~ | RESOLVED: PO creation now accepts + forwards `eventId`                          |
+| FC-G21     | FC46 | No unified calendar view                        | DEFERRED: large feature                                                         |
+| ~~FC-G22~~ | FC47 | ~~No cancelled-event surplus detection~~        | RESOLVED: notification with purchased ingredient count + cost on cancellation   |
+| ~~FC-G23~~ | FC48 | ~~No weekly ops aggregate widget~~              | RESOLVED: StatCard with event count, guests, prep days, burnout warnings        |
+| FC-G24     | FC50 | No drag-and-drop for prep blocks                | DEFERRED: large feature                                                         |
+| ~~FC-G33~~ | FC83 | ~~Search query not pre-filled in quick-create~~ | RESOLVED: append `?q=` param after stripping keywords                           |
+| ~~FC-G34~~ | FC87 | ~~No fuzzy search matching~~                    | RESOLVED: order-preserved character matching with 70% threshold                 |
 
-### LOW (Polish) - 13 gaps
+### LOW (Polish) - 13 gaps, 5 RESOLVED
 
-| Gap        | Q     | Issue                                                 |
-| ---------- | ----- | ----------------------------------------------------- |
-| FC-G12     | FC27  | Token-gated pages need consistent expiry audit        |
-| FC-G13     | FC28  | Gift card post-purchase chain partially verified      |
-| FC-G26     | FC53  | No transactional vs marketing suppression distinction |
-| FC-G27     | FC65  | Dashboard layout customization may be cosmetic        |
-| FC-G28     | FC66  | Automation settings may not wire to triggers          |
-| FC-G29     | FC72  | Settings use requireChef not RBAC                     |
-| FC-G30     | FC74  | Staff portal doesn't use RBAC permissions             |
-| FC-G31     | FC78  | No immediate session invalidation on deactivation     |
-| FC-G32     | FC80  | No cross-staff visibility for same event              |
-| FC-G35     | FC90  | No cross-type relevance ranking in search             |
-| FC-G37     | FC103 | PIN uniqueness needs DB constraint verification       |
-| FC-G38     | FC104 | Kiosk checkout chain needs end-to-end verification    |
-| ~~FC-G43~~ | FC130 | RESOLVED - paywall intentional                        |
+| Gap        | Q     | Issue                                                 | Status                                                               |
+| ---------- | ----- | ----------------------------------------------------- | -------------------------------------------------------------------- |
+| FC-G12     | FC27  | Token-gated pages need consistent expiry audit        |                                                                      |
+| ~~FC-G13~~ | FC28  | ~~Gift card post-purchase chain~~                     | RESOLVED: chain verified complete; `revalidatePath` added to webhook |
+| FC-G26     | FC53  | No transactional vs marketing suppression distinction |                                                                      |
+| FC-G27     | FC65  | Dashboard layout customization may be cosmetic        |                                                                      |
+| ~~FC-G28~~ | FC66  | ~~Automation settings may not wire to triggers~~      | RESOLVED: verified fully wired (3 crons + 7 callsites)               |
+| FC-G29     | FC72  | Settings use requireChef not RBAC                     |                                                                      |
+| FC-G30     | FC74  | Staff portal doesn't use RBAC permissions             |                                                                      |
+| FC-G31     | FC78  | No immediate session invalidation on deactivation     |                                                                      |
+| FC-G32     | FC80  | No cross-staff visibility for same event              |                                                                      |
+| ~~FC-G35~~ | FC90  | ~~No cross-type relevance ranking in search~~         | RESOLVED: fuzzy scoring applied to all results, sorted by relevance  |
+| ~~FC-G37~~ | FC103 | ~~PIN uniqueness needs DB constraint verification~~   | RESOLVED: partial unique index `idx_staff_pin_per_tenant` exists     |
+| FC-G38     | FC104 | Kiosk checkout chain needs end-to-end verification    |                                                                      |
+| ~~FC-G43~~ | FC130 | RESOLVED - paywall intentional                        |                                                                      |

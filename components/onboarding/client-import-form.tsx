@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { importClientDirect } from '@/lib/clients/import-actions'
+import { generateOnboardingLink } from '@/lib/clients/onboarding-actions'
 
 type ImportedClient = {
   id: string
@@ -36,6 +37,8 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
   const [clients, setClients] = useState<ImportedClient[]>(initialClients)
   const [error, setError] = useState<string | null>(null)
   const [tagInput, setTagInput] = useState({ dietary: '', allergy: '' })
+  const [portalOffer, setPortalOffer] = useState<{ clientId: string; name: string } | null>(null)
+  const [portalUrl, setPortalUrl] = useState<string | null>(null)
 
   function set(field: keyof typeof EMPTY_FORM, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -65,6 +68,20 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
     }
   }
 
+  async function handleSendPortalLink() {
+    if (!portalOffer) return
+    try {
+      const result = await generateOnboardingLink(portalOffer.clientId)
+      if (result.success && result.url) {
+        setPortalUrl(result.url)
+      } else {
+        setError(result.error || 'Failed to generate portal link')
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to generate portal link')
+    }
+  }
+
   function handleSave() {
     if (!form.full_name.trim()) {
       setError('Client name is required')
@@ -89,6 +106,13 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
           lifetime_value_cents: valueCents,
         })
         setClients((prev) => [...prev, result.client])
+        // Offer portal invitation if client has an email
+        if (form.email.trim()) {
+          setPortalOffer({ clientId: result.client.id, name: result.client.full_name })
+        } else {
+          setPortalOffer(null)
+        }
+        setPortalUrl(null)
         setForm(EMPTY_FORM)
         setTagInput({ dietary: '', allergy: '' })
         router.refresh()
@@ -295,6 +319,51 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
             </div>
           </CardContent>
         </Card>
+
+        {/* Portal invitation offer (after saving client with email) */}
+        {portalOffer && (
+          <Card>
+            <CardContent className="py-4 space-y-3">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-stone-200">
+                    Send {portalOffer.name} a portal invitation?
+                  </p>
+                  <p className="text-xs text-stone-400 mt-0.5">
+                    They can fill in their own dietary preferences, allergies, and contact details.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  aria-label="Dismiss portal invitation"
+                  onClick={() => {
+                    setPortalOffer(null)
+                    setPortalUrl(null)
+                  }}
+                  className="text-stone-500 hover:text-stone-300"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              {portalUrl ? (
+                <div className="space-y-1">
+                  <p className="text-xs text-green-500 font-medium">
+                    Link generated. Share it with your client:
+                  </p>
+                  <Input
+                    value={portalUrl}
+                    readOnly
+                    onClick={(e) => (e.target as HTMLInputElement).select()}
+                  />
+                </div>
+              ) : (
+                <Button variant="secondary" onClick={handleSendPortalLink} className="w-full">
+                  Generate Portal Link
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Client list - right panel (2/5) */}

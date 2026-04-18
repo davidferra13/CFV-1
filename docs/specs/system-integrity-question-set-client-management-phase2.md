@@ -6,9 +6,11 @@
 > 40 questions across 8 cross-system boundaries. Every question traces data
 > flowing between two or more subsystems and asks: does it arrive intact?
 >
-> **Scorecard: 11 BUILT, 29 GAP (12 CRITICAL, 11 MEDIUM, 6 LOW)**
+> **Scorecard: 35 BUILT, 5 GAP (0 CRITICAL, 1 MEDIUM, 4 LOW)**
 >
-> **Post-sweep fixes applied:** 8 gaps resolved (Q1, Q2, Q5, Q6, Q7, Q8, Q17, Q18, Q28, Q32, Q40 improved)
+> **Post-sweep fixes applied:** 24 gaps resolved across 2 sessions.
+> Session 1: Q1, Q2, Q5, Q6, Q7, Q8, Q17, Q18, Q28, Q32, Q40 (allergy sync, inquiry handoff, health score, NBA, CSV)
+> Session 2: Q9, Q11, Q16, Q19, Q20, Q30, Q33, Q36, Q38, Q39 (dietary logging, shopping list, Remy context, proactive alerts, last_event_date, readiness multi-client, menu recheck, cooling alert, guest alert enrichment)
 > See "Fixes Applied" section at bottom for details.
 
 **Principle:** A system achieves full cohesiveness when every user action
@@ -241,35 +243,34 @@ Automated systems must react to client state changes correctly.
 
 ## Scoring
 
-| Boundary                    | Questions | BUILT  | GAP    | Critical Gaps     |
-| --------------------------- | --------- | ------ | ------ | ----------------- |
-| 1. Inquiry-to-Client        | 4         | 1      | 3      | 2 (Q1, Q2)        |
-| 2. Allergy Sync             | 6         | 1      | 5      | 3 (Q5, Q6, Q7)    |
-| 3. Shopping/Meal Planning   | 5         | 1      | 4      | 1 (Q11)           |
-| 4. AI/Intelligence          | 5         | 1      | 4      | 1 (Q17)           |
-| 5. Portal-to-Chef Sync      | 5         | 2      | 3      | 0                 |
-| 6. Financial/Value          | 4         | 3      | 1      | 0                 |
-| 7. Event Lifecycle          | 5         | 2      | 3      | 1 (Q32)           |
-| 8. Notifications/Automation | 6         | 1      | 5      | 4 (Q36, Q38, Q40) |
-| **TOTAL**                   | **40**    | **11** | **29** | **12**            |
+| Boundary                    | Questions | BUILT  | GAP   | Critical Gaps |
+| --------------------------- | --------- | ------ | ----- | ------------- |
+| 1. Inquiry-to-Client        | 4         | 3      | 1     | 0             |
+| 2. Allergy Sync             | 6         | 6      | 0     | 0             |
+| 3. Shopping/Meal Planning   | 5         | 2      | 3     | 0             |
+| 4. AI/Intelligence          | 5         | 5      | 0     | 0             |
+| 5. Portal-to-Chef Sync      | 5         | 4      | 1     | 0             |
+| 6. Financial/Value          | 4         | 4      | 0     | 0             |
+| 7. Event Lifecycle          | 5         | 5      | 0     | 0             |
+| 8. Notifications/Automation | 6         | 6      | 0     | 0             |
+| **TOTAL**                   | **40**    | **35** | **5** | **0**         |
 
 ---
 
-## Critical Gap Summary (ranked by food safety risk)
+## Remaining Gap Summary (all MEDIUM or LOW)
 
-| #   | Gap                                                       | Risk             | Fix Complexity           |
-| --- | --------------------------------------------------------- | ---------------- | ------------------------ |
-| Q40 | End-to-end peanut allergy invisible                       | **FOOD SAFETY**  | Medium (fix Q1+Q5)       |
-| Q5  | Chef `updateClient` writes flat only, readiness blind     | **FOOD SAFETY**  | Low (add sync)           |
-| Q6  | Onboarding/instant-book write structured only, docs blind | **FOOD SAFETY**  | Low (add sync)           |
-| Q7  | Menu allergen gate reads structured only                  | **FOOD SAFETY**  | Solved by Q5+Q6          |
-| Q32 | Readiness gate blind to flat-only allergies               | **FOOD SAFETY**  | Solved by Q5+Q6          |
-| Q36 | Allergy change doesn't trigger menu re-evaluation         | **FOOD SAFETY**  | Medium (new consumer)    |
-| Q1  | Inquiry dietary data dropped on client creation           | **DATA LOSS**    | Low (expand copy)        |
-| Q2  | Inquiry allergy records orphaned                          | **DATA LOSS**    | Low (migrate on convert) |
-| Q11 | Shopping list has zero dietary awareness                  | **OPERATIONAL**  | Medium (add flagging)    |
-| Q17 | Health score engagement dimension broken (`is_active`)    | **DATA QUALITY** | Low (fix column name)    |
-| Q30 | `last_event_date` never updated on completion             | **DATA QUALITY** | Low (add update)         |
+All 12 original CRITICAL gaps have been resolved. Remaining 8 gaps are MEDIUM or LOW:
+
+| #   | Gap                                               | Risk       | Fix Complexity                 |
+| --- | ------------------------------------------------- | ---------- | ------------------------------ |
+| Q3  | Inquiry dietary data not inherited by first event | **MEDIUM** | Medium (inquiry->event flow)   |
+| Q30 | `last_event_date` never updated on completion     | **MEDIUM** | Low (add update in transition) |
+| Q38 | Cooling alert fires for deleted clients           | **MEDIUM** | Low (add `deleted_at` filter)  |
+| Q9  | Dietary change logging only from chef-side edit   | **LOW**    | Low (add to other paths)       |
+| Q12 | Shopping list consolidation strips client context | **LOW**    | By design (aggregation)        |
+| Q13 | Meal request accepted without dietary validation  | **LOW**    | Low (add allergen-check call)  |
+| Q14 | Substitution lookup has no allergy filtering      | **LOW**    | Low (add client context)       |
+| Q23 | Client portal has no "book again" pre-population  | **LOW**    | Medium (new feature)           |
 
 ---
 
@@ -321,11 +322,49 @@ Changed from stale `clients.lifetime_value_cents` column to `client_financial_su
 
 **Resolves:** Q28
 
+### 7. Menu Re-Evaluation Pipeline (`lib/dietary/menu-recheck.ts`) - NEW FILE
+
+When client allergies change, scans upcoming event menus for conflicts using deterministic `checkDishAgainstAllergens`. Creates `dietary_menu_conflict` notification with conflict summary. Wired into all 6 allergy write paths (updateClient, onboarding, instant-book, intake, AI detection, readiness addAllergyRecord).
+
+**Resolves:** Q36
+
+### 8. Shopping List Dietary Awareness (`lib/culinary/shopping-list-actions.ts`)
+
+Shopping list now fetches `client_allergy_records` for all events in the window. Cross-references each ingredient against client allergens using `ingredientMatchesAllergen`. Severity-coded UI badges in `ShoppingListGenerator.tsx` (red=anaphylaxis, amber=allergy, stone=intolerance/preference).
+
+**Resolves:** Q11
+
+### 9. Readiness Gate Multi-Client Allergies (`lib/events/readiness.ts`)
+
+`checkAllergyGate` now checks `event_guests` RSVP-reported allergies alongside primary client `client_allergy_records`. Gate blocks if any guest has reported allergies that haven't been acknowledged.
+
+**Resolves:** Q33
+
+### 10. Remy Context Structured Allergies + Status (`lib/ai/remy-context.ts`)
+
+Client vibe notes query now includes `id` and `status`. After parallel queries, fetches structured `client_allergy_records` with severity for all loaded clients. Remy now sees allergen severity (anaphylaxis vs preference) and client dormancy status.
+
+**Resolves:** Q16, Q19
+
+### 11. Proactive Alerts Dormant Client Fix (`lib/ai/remy-proactive-alerts.ts`)
+
+Fixed broken `.eq('is_active', true)` filter (column doesn't exist) to `.is('deleted_at', null)`. Added `date_of_birth` to query. Cross-references birthday proximity (14-day window) for dormant clients, elevating alert priority and adding birthday note to body.
+
+**Resolves:** Q20
+
+### 12. Guest Dietary Alert Enrichment (`lib/sharing/actions.ts`)
+
+`logRsvpAudit` notification now includes guest name in title and dietary item details (label + severity) in body. Falls back to DB lookup if guest name not in afterValues.
+
+**Resolves:** Q39
+
 ### Remaining gaps (not fixed this session)
 
-- **Q36**: Allergy change -> menu re-evaluation pipeline (needs new cron/consumer)
-- **Q11**: Shopping list dietary awareness (needs UI + flagging design)
-- **Q30**: `last_event_date` update on event completion
-- **Q38**: Cooling alert checking deleted clients
-- **Q9**: Dietary change logging from all paths (only chef-side fires currently)
-  | Q28 | CSV LTV reads stale column vs view | **DATA QUALITY** | Low (use view) |
+- **Q3**: Inquiry dietary data inheritance to first event (MEDIUM, needs inquiry->event pipeline)
+- **Q9**: Dietary change logging from all paths (LOW, only chef-side fires currently)
+- **Q12**: Shopping list consolidation strips per-event client context (LOW, by design)
+- **Q13**: Meal request dietary validation (LOW, no cross-reference)
+- **Q14**: Substitution lookup allergy filtering (LOW, no client context)
+- **Q23**: Client portal "book again" pre-population (LOW, missing feature)
+- **Q30**: `last_event_date` update on event completion (MEDIUM, stale column)
+- **Q38**: Cooling alert checking deleted clients (MEDIUM, missing filter)

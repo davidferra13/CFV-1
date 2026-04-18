@@ -3,7 +3,7 @@
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
-import { WIZARD_STEPS, type OnboardingStepKey } from './onboarding-constants'
+import { ONBOARDING_STEPS, WIZARD_STEPS, type OnboardingStepKey } from './onboarding-constants'
 
 // ============================================
 // EXISTING DATA (for pre-filling the wizard)
@@ -109,7 +109,13 @@ export async function getOnboardingProgress() {
   return data ?? []
 }
 
+const VALID_STEP_KEYS = new Set(ONBOARDING_STEPS.map((s) => s.key))
+
 export async function completeStep(stepKey: string, data?: Record<string, unknown>) {
+  if (!VALID_STEP_KEYS.has(stepKey as OnboardingStepKey)) {
+    return { success: false, error: 'Invalid step key' }
+  }
+
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()
@@ -176,6 +182,10 @@ export async function completeStep(stepKey: string, data?: Record<string, unknow
 }
 
 export async function skipStep(stepKey: string) {
+  if (!VALID_STEP_KEYS.has(stepKey as OnboardingStepKey)) {
+    return { success: false, error: 'Invalid step key' }
+  }
+
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()
@@ -562,16 +572,14 @@ async function persistProfileData(db: any, tenantId: string, data: Record<string
   // 4. Persist service_area to community_profiles (freeform text, e.g. "Greater Boston area")
   if (serviceArea && serviceArea.trim()) {
     try {
-      const { error } = await db
-        .from('community_profiles')
-        .upsert(
-          {
-            chef_id: tenantId,
-            display_name: businessName || 'Chef',
-            service_area: serviceArea.trim(),
-          },
-          { onConflict: 'chef_id' }
-        )
+      const { error } = await db.from('community_profiles').upsert(
+        {
+          chef_id: tenantId,
+          display_name: businessName || 'Chef',
+          service_area: serviceArea.trim(),
+        },
+        { onConflict: 'chef_id' }
+      )
       if (error) console.error('[onboarding] Failed to persist service_area', error)
     } catch (err) {
       console.error('[non-blocking] Service area persistence failed', err)

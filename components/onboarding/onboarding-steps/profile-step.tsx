@@ -202,7 +202,7 @@ export function ProfileStep({ onComplete, onSkip, existingData }: ProfileStepPro
       <div>
         <h2 className="text-xl font-semibold text-foreground">Tell us about your business</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          This helps clients find you and understand what you offer.
+          This powers your public profile, quote templates, and how Remy introduces you to clients.
         </p>
       </div>
 

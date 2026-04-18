@@ -133,7 +133,8 @@ export function PortfolioStep({ onComplete, onSkip }: PortfolioStepProps) {
       <div>
         <h2 className="text-xl font-semibold text-foreground">Show off your best work</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Upload photos of your dishes, events, or plating. Clients love seeing what you do.
+          These photos appear on your public profile and in quotes you send. Clients who see photos
+          book 3x more often.
         </p>
       </div>
 

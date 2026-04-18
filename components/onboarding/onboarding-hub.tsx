@@ -121,9 +121,12 @@ export function OnboardingHub({
       <div className="max-w-3xl mx-auto px-4 py-12 space-y-8">
         {/* Header */}
         <div data-tour="chef-onboarding-home">
+          <p className="text-sm text-amber-400 font-medium mb-2">
+            Your workspace is configured. Now bring in your data.
+          </p>
           <h1 className="text-3xl font-bold text-stone-100">Set Up Your Business</h1>
           <p className="text-stone-300 mt-2">
-            Migrate your existing clients, recipes, and loyalty program so ChefFlow knows your
+            Import your existing clients, recipes, and loyalty program so ChefFlow knows your
             business from day one.
           </p>
         </div>
