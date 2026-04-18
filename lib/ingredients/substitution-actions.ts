@@ -33,6 +33,7 @@ export type SubstitutionSearchResult = {
     notes: string | null
     dietary_safe_for: string[]
     source: 'system' | 'chef'
+    allergyConflicts?: Array<{ allergen: string; severity: string }> // Q14: conflicts with client allergies
   }>
 }
 
@@ -44,7 +45,8 @@ export type SubstitutionSearchResult = {
  * Uses case-insensitive partial matching.
  */
 export async function searchSubstitutions(
-  ingredientName: string
+  ingredientName: string,
+  clientId?: string
 ): Promise<SubstitutionSearchResult | null> {
   const user = await requireChef()
 
@@ -99,6 +101,33 @@ export async function searchSubstitutions(
   }
 
   if (allSubstitutes.length === 0) return null
+
+  // Q14: If clientId provided, cross-reference substitutes against client allergies
+  if (clientId) {
+    try {
+      const { data: allergyRecords } = await db
+        .from('client_allergy_records')
+        .select('allergen, severity')
+        .eq('client_id', clientId)
+
+      if (allergyRecords?.length) {
+        const { ingredientMatchesAllergen } = await import('@/lib/menus/allergen-check')
+        for (const sub of allSubstitutes) {
+          const conflicts = (allergyRecords as any[]).filter((r: any) =>
+            ingredientMatchesAllergen(sub.substitute, r.allergen)
+          )
+          if (conflicts.length > 0) {
+            sub.allergyConflicts = conflicts.map((c: any) => ({
+              allergen: c.allergen,
+              severity: c.severity,
+            }))
+          }
+        }
+      }
+    } catch (err) {
+      console.error('[searchSubstitutions] Allergy cross-ref failed (non-blocking):', err)
+    }
+  }
 
   // Find the best matching original name for display
   const bestOriginal = systemMatches[0]?.original ?? chefSubs?.[0]?.original ?? ingredientName
