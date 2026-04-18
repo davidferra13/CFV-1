@@ -10,6 +10,7 @@ import { revalidatePath } from 'next/cache'
 import { logCannabisAudit } from '@/lib/admin/audit'
 import { z } from 'zod'
 import { dateToDateString } from '@/lib/utils/format'
+import { createConflictError } from '@/lib/mutations/conflict'
 
 function parseEventDateTime(eventDate: string, timeValue?: string | null) {
   const safeTime = timeValue && /^\d{2}:\d{2}/.test(timeValue) ? timeValue.slice(0, 5) : '18:00'

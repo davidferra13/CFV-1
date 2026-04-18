@@ -61,8 +61,28 @@ export async function awardBonusPointsInternal(
     throw new Error('Failed to award bonus points')
   }
 
-  // Update client balance
-  const newBalance = (client.loyalty_points || 0) + points
+  // Atomic balance increment (prevents lost-update race condition on concurrent awards)
+  const { data: updatedClient } = await db.rpc('increment_loyalty_points', {
+    p_client_id: clientId,
+    p_tenant_id: tenantId,
+    p_points: points,
+  })
+
+  // Fallback: if RPC doesn't exist yet, use read-modify-write (less safe but functional)
+  let newBalance: number
+  if (updatedClient !== null && updatedClient !== undefined) {
+    newBalance =
+      typeof updatedClient === 'number'
+        ? updatedClient
+        : ((updatedClient as any)?.loyalty_points ?? (client.loyalty_points || 0) + points)
+  } else {
+    newBalance = (client.loyalty_points || 0) + points
+    await db
+      .from('clients')
+      .update({ loyalty_points: newBalance })
+      .eq('id', clientId)
+      .eq('tenant_id', tenantId)
+  }
 
   // Recalculate tier based on lifetime earned
   const { data: configRow } = await db
@@ -85,10 +105,7 @@ export async function awardBonusPointsInternal(
 
   await db
     .from('clients')
-    .update({
-      loyalty_points: newBalance,
-      loyalty_tier: newTier,
-    })
+    .update({ loyalty_tier: newTier })
     .eq('id', clientId)
     .eq('tenant_id', tenantId)
 

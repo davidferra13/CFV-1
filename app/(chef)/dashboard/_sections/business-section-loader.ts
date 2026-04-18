@@ -289,6 +289,7 @@ export async function loadBusinessSectionData({
     remyAuditSummary,
     remyApprovalPolicies,
     remyMetrics,
+    waitlistStats,
     userIsAdmin,
   ] = await Promise.all([
     safe('clients', getClients, []),

@@ -1208,17 +1208,22 @@ async function handlePaymentCanceled(event: Stripe.Event) {
  * Append refund entry to ledger
  */
 async function handleRefund(event: Stripe.Event) {
-  const refund = event.data.object as Stripe.Refund
-  const stripe = getStripe()
+  // charge.refunded event delivers a Stripe.Charge, not a Stripe.Refund
+  const charge = event.data.object as Stripe.Charge
 
-  // Safely handle refund.charge - can be null in edge cases
-  if (!refund.charge || typeof refund.charge !== 'string') {
-    console.error('[handleRefund] No charge ID on refund object:', refund.id)
+  if (!charge.id) {
+    console.error('[handleRefund] No charge ID on event object')
     return
   }
 
-  // Get charge to find metadata
-  const charge = await stripe.charges.retrieve(refund.charge)
+  // Extract the latest refund from the charge's refunds list
+  const latestRefund = charge.refunds?.data?.[0]
+  if (!latestRefund) {
+    console.error('[handleRefund] No refunds found on charge:', charge.id)
+    return
+  }
+
+  // Metadata lives directly on the charge (no extra API call needed)
   const { event_id, tenant_id, client_id } = charge.metadata
 
   if (!event_id || !tenant_id || !client_id) {
@@ -1232,14 +1237,14 @@ async function handleRefund(event: Stripe.Event) {
     tenant_id,
     client_id,
     entry_type: 'refund',
-    amount_cents: -Math.abs(refund.amount), // H2 fix: DB constraint requires negative for is_refund=true
+    amount_cents: -Math.abs(latestRefund.amount), // Use actual refund amount, not full charge amount
     payment_method: 'card',
     description: `Refund issued for event ${event_id}`,
     event_id,
     transaction_reference: event.id,
     is_refund: true,
-    refund_reason: refund.reason ?? 'Stripe refund',
-    internal_notes: `Charge: ${refund.charge}, Refund: ${refund.id}`,
+    refund_reason: latestRefund.reason ?? 'Stripe refund',
+    internal_notes: `Charge: ${charge.id}, Refund: ${latestRefund.id}`,
     created_by: null,
   })
 
