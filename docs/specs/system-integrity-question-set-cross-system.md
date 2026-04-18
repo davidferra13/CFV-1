@@ -185,6 +185,12 @@ Chef A owns 2 events this week. She's collaborating on 1 more. The DOP progress 
 
 ---
 
+## Classification Note (2026-04-17 audit)
+
+All 7 FAIL and 7 PARTIAL verdicts are **network/collaboration feature gaps**, not data integrity or zero-hallucination violations. They represent unbuilt cross-boundary wiring for the chef-to-chef network feature set (deep copy completeness, cross-tenant menu permissions, AI network awareness, multi-party contracts, staff network visibility, availability signal sync). None involve incorrect data display, silent failures, or security issues. Reclassified as P2 enhancements per anti-clutter rule.
+
+---
+
 ## Gap Inventory
 
 > Populated after verdict investigation. Ranked by impact. P0 = data loss or security. P1 = broken user flow. P2 = missing connection, enhancement.
