@@ -407,7 +407,7 @@ export function OnboardingWizard() {
 
   // ─── Configuration Interview (Step 0) ────────────────────────────
   if ((currentStep.key as string) === 'archetype') {
-    return <OnboardingInterview onComplete={handleInterviewComplete} />
+    return <OnboardingInterview onComplete={handleInterviewComplete} onSkip={handleSkipAll} />
   }
 
   // ─── Standard Wizard Steps ───────────────────────────────────────

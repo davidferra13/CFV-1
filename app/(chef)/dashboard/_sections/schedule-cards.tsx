@@ -179,6 +179,27 @@ export async function ScheduleCards() {
         </WidgetCardShell>
       )}
 
+      {/* Weekly Ops Aggregate (FC-G23) */}
+      {weekSchedule.days.length > 0 &&
+        (() => {
+          const weekEvents = weekSchedule.days.flatMap((d) => d.events)
+          const totalEvents = weekEvents.length
+          const totalGuests = weekEvents.reduce((sum, e) => sum + (e.guestCount ?? 0), 0)
+          const prepDays = weekSchedule.days.filter((d) => d.dayType === 'prep').length
+          if (totalEvents === 0) return null
+          return (
+            <StatCard
+              widgetId="weekly_ops"
+              title="This Week"
+              value={`${totalEvents} event${totalEvents !== 1 ? 's' : ''}`}
+              subtitle={`${totalGuests} guests${prepDays > 0 ? ` · ${prepDays} prep day${prepDays !== 1 ? 's' : ''}` : ''}`}
+              trend={weekSchedule.warnings.length > 0 ? weekSchedule.warnings[0] : 'On track'}
+              trendDirection={weekSchedule.warnings.length > 0 ? 'down' : 'up'}
+              href="/calendar/week"
+            />
+          )
+        })()}
+
       {/* DOP Tasks - stat card */}
       {taskCount > 0 && (
         <StatCard

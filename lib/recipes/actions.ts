@@ -689,6 +689,7 @@ export async function updateRecipe(recipeId: string, input: UpdateRecipeInput) {
 
   revalidatePath('/recipes')
   revalidatePath(`/recipes/${recipeId}`)
+  revalidatePath('/culinary') // EC-G4: bust shopping list cache
   invalidateRemyContextCache(user.tenantId!)
   return { success: true, recipe }
 }
@@ -815,6 +816,7 @@ export async function addIngredientToRecipe(recipeId: string, input: AddIngredie
   }
 
   revalidatePath(`/recipes/${recipeId}`)
+  revalidatePath('/culinary') // EC-G4: bust shopping list cache
   return {
     success: true,
     recipeIngredient,
@@ -894,6 +896,7 @@ export async function updateRecipeIngredient(
   }
 
   revalidatePath(`/recipes/${ri.recipe_id}`)
+  revalidatePath('/culinary') // EC-G4: bust shopping list cache
   return { success: true, costWarning }
 }
 
@@ -931,6 +934,7 @@ export async function removeIngredientFromRecipe(recipeIngredientId: string) {
   }
 
   revalidatePath(`/recipes/${ri.recipe_id}`)
+  revalidatePath('/culinary') // EC-G4: bust shopping list cache
   return { success: true }
 }
 
