@@ -14,9 +14,23 @@ import { EventCountdown } from '@/components/sharing/event-countdown'
 import { GuestNetworkShare } from '@/components/sharing/guest-network-share'
 import { JoinHubCTA } from '@/components/hub/join-hub-cta'
 import { GuestResendLink } from '@/components/sharing/guest-resend-link'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 export default async function SharePage({ params }: { params: { token: string } }) {
+  const headersList = await headers()
+  const ip = headersList.get('x-forwarded-for')?.split(',')[0] || 'unknown'
+
+  try {
+    await checkRateLimit(`share:${ip}`, 30, 15 * 60 * 1000)
+  } catch {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-stone-400">
+        Too many requests. Please try again later.
+      </div>
+    )
+  }
+
   const eventData = await getEventShareByToken(params.token)
 
   if (!eventData) {

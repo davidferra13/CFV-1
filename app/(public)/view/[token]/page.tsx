@@ -4,8 +4,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getViewerEventByToken } from '@/lib/sharing/actions'
 import { TokenExpiredPage } from '@/components/ui/token-expired-page'
 import { ViewerIntentForm } from '@/components/sharing/viewer-intent-form'
+import { headers } from 'next/headers'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 export default async function ViewerSharePage({ params }: { params: { token: string } }) {
+  const headersList = await headers()
+  const ip = headersList.get('x-forwarded-for')?.split(',')[0] || 'unknown'
+
+  try {
+    await checkRateLimit(`view:${ip}`, 30, 15 * 60 * 1000)
+  } catch {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-stone-400">
+        Too many requests. Please try again later.
+      </div>
+    )
+  }
+
   const data = await getViewerEventByToken(params.token)
 
   if (!data) {

@@ -13,13 +13,22 @@ import { dateToMonthString } from '@/lib/utils/format'
  */
 export async function getEventFinancialSummary(eventId: string) {
   const user = await requireChef()
+  return getEventFinancialSummaryInternal(eventId, user.tenantId!)
+}
+
+/**
+ * Internal variant: accepts tenantId directly for cross-auth-boundary use
+ * (e.g. client-initiated cancellation checking refund amounts).
+ * NOT exported as a server action - only callable from server-side code.
+ */
+export async function getEventFinancialSummaryInternal(eventId: string, tenantId: string) {
   const db: any = createServerClient()
 
   const { data, error } = await db
     .from('event_financial_summary')
     .select('*')
     .eq('event_id', eventId)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', tenantId)
     .single()
 
   if (error) {

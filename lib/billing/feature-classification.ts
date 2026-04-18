@@ -64,6 +64,13 @@ const FREE_FEATURES: FeatureDefinition[] = [
     category: 'core',
   },
   {
+    slug: 'data-export',
+    label: 'Data Export (Takeout)',
+    description: 'Download a complete copy of all chef data as an organized ZIP',
+    tier: 'free',
+    category: 'core',
+  },
+  {
     slug: 'profile-basic',
     label: 'Chef Profile',
     description: 'Chef identity, cuisine type, region, bio, public presence',
@@ -775,6 +782,31 @@ const PAID_FEATURES: FeatureDefinition[] = [
       moment: 'Chef tries to process a counter sale',
       message: 'Process walk-up and pre-order sales with a full POS system.',
       cta: 'Enable Commerce Engine',
+    },
+  },
+  {
+    slug: 'community',
+    label: 'Community Benchmarking',
+    description: 'Anonymous industry benchmarking, peer comparisons, and community metrics',
+    tier: 'paid',
+    category: 'intelligence',
+    upgrade_trigger: {
+      moment: 'Chef views benchmarking comparisons',
+      message: 'See how your metrics stack up against anonymized industry peers.',
+      cta: 'Enable Community Benchmarking',
+    },
+  },
+  {
+    slug: 'protection',
+    label: 'Business Protection',
+    description:
+      'Insurance tracking, liability management, certificate storage, and compliance alerts',
+    tier: 'paid',
+    category: 'ops',
+    upgrade_trigger: {
+      moment: 'Chef views the insurance and protection page',
+      message: 'Track policies, certificates, and compliance deadlines in one place.',
+      cta: 'Enable Business Protection',
     },
   },
 ]

@@ -441,8 +441,8 @@ export async function transitionEvent({
   // Q7: On cancellation with payments received, notify chef about pending refund
   if (toStatus === 'cancelled') {
     try {
-      const { getEventFinancialSummary } = await import('@/lib/ledger/compute')
-      const financials = await getEventFinancialSummary(eventId)
+      const { getEventFinancialSummaryInternal } = await import('@/lib/ledger/compute')
+      const financials = await getEventFinancialSummaryInternal(eventId, event.tenant_id)
       const totalPaid = financials?.totalPaidCents ?? 0
       const totalRefunded = financials?.totalRefundedCents ?? 0
       const unrefunded = totalPaid - totalRefunded

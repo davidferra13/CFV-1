@@ -113,7 +113,9 @@ export async function acceptQuote(quoteId: string) {
   // The RPC checks client ownership but not expiry or event cancellation.
   const { data: preCheck } = await db
     .from('quotes')
-    .select('id, status, valid_until, event_id, events(status)')
+    .select(
+      'id, status, valid_until, event_id, tenant_id, inquiry_id, name, total_cents, deposit_required, deposit_amount_cents, events(status)'
+    )
     .eq('id', quoteId)
     .eq('client_id', user.entityId)
     .single()
@@ -150,14 +152,15 @@ export async function acceptQuote(quoteId: string) {
     )
   }
 
-  const quote = response as {
-    tenant_id: string
-    event_id: string | null
-    inquiry_id: string | null
-    quote_name?: string | null
-    total_quoted_cents?: number | null
-    deposit_required?: boolean | null
-    deposit_amount_cents?: number | null
+  // RPC returns {ok, status} only. Use preCheck data for all side effects.
+  const quote = {
+    tenant_id: preCheck?.tenant_id as string,
+    event_id: preCheck?.event_id as string | null,
+    inquiry_id: preCheck?.inquiry_id as string | null,
+    quote_name: preCheck?.name as string | null,
+    total_quoted_cents: preCheck?.total_cents as number | null,
+    deposit_required: preCheck?.deposit_required as boolean | null,
+    deposit_amount_cents: preCheck?.deposit_amount_cents as number | null,
   }
 
   revalidatePath('/my-quotes')
