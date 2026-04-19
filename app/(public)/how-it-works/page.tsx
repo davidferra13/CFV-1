@@ -4,6 +4,8 @@ import {
   PUBLIC_OPERATOR_ENTRY,
   PUBLIC_PRIMARY_CONSUMER_CTA,
 } from '@/lib/public/public-surface-config'
+import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
+import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -17,6 +19,11 @@ export const metadata: Metadata = {
     url: `${BASE_URL}/how-it-works`,
     siteName: 'ChefFlow',
     type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'How ChefFlow Works',
+    description: 'Browse chef profiles, send an inquiry, connect directly. No fees on either side.',
   },
   alternates: {
     canonical: `${BASE_URL}/how-it-works`,
@@ -137,6 +144,7 @@ export default function HowItWorksPage() {
               {PUBLIC_OPERATOR_ENTRY.label}
             </Link>
           </div>
+          <PublicSecondaryEntryCluster links={PUBLIC_SECONDARY_ENTRY_CONFIG.how_it_works} theme="dark" />
         </div>
       </section>
     </main>

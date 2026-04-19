@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
+import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
+import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import {
   DISCOVERY_SERVICE_TYPE_OPTIONS,
@@ -60,6 +62,11 @@ export const metadata: Metadata = {
     description: 'Browse reviewed chefs by cuisine, service type, and availability.',
     url: `${APP_URL}/chefs`,
     type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Hire a Private Chef Near You',
+    description: 'Browse reviewed chefs by cuisine, service type, and availability.',
   },
   alternates: {
     canonical: `${APP_URL}/chefs`,
@@ -496,6 +503,15 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
                 Reset filters
               </Link>
             </div>
+            <p className="mt-4 text-sm text-stone-500">
+              Looking for restaurants, caterers, or food trucks instead?{' '}
+              <Link
+                href="/nearby"
+                className="font-medium text-brand-400 transition-colors hover:text-brand-300"
+              >
+                Browse all food operators nearby
+              </Link>
+            </p>
             <WaitlistCapture location={activeLocationLabel || requestedLocation || undefined} />
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               {ZERO_RESULT_SUGGESTIONS.map((option) => (
@@ -528,6 +544,8 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
             </p>
           </div>
         </div>
+
+        <PublicSecondaryEntryCluster links={PUBLIC_SECONDARY_ENTRY_CONFIG.directory} theme="dark" />
       </section>
     </div>
   )

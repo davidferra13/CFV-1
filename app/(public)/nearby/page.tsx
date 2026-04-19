@@ -11,6 +11,8 @@ import {
   PUBLIC_PRIMARY_CONSUMER_CTA,
   PUBLIC_SECONDARY_CONSUMER_CTA,
 } from '@/lib/public/public-surface-config'
+import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
+import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 import { NearbyFilters } from './_components/nearby-filters'
 import { ListingCard } from './_components/listing-card'
 // import { NominationForm } from './_components/nomination-form' // Hidden until data quality is ready
@@ -21,6 +23,20 @@ export const metadata: Metadata = {
   title: 'Nearby - Find Food Near You',
   description:
     'Find restaurants, private chefs, caterers, food trucks, bakeries, and more near you.',
+  alternates: {
+    canonical: `${APP_URL}/nearby`,
+  },
+  openGraph: {
+    title: 'Nearby - Find Food Near You',
+    description: 'Find restaurants, private chefs, caterers, food trucks, bakeries, and more near you.',
+    url: `${APP_URL}/nearby`,
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Nearby - Find Food Near You',
+    description: 'Find restaurants, private chefs, caterers, food trucks, bakeries, and more near you.',
+  },
 }
 
 type PageProps = {
@@ -32,6 +48,8 @@ type PageProps = {
     city?: string | string[]
     price?: string | string[]
     page?: string | string[]
+    lat?: string | string[]
+    lon?: string | string[]
   }
 }
 
@@ -99,6 +117,22 @@ function StateGrid({ stats }: { stats: DirectoryStats }) {
           </div>
         </div>
       )}
+
+      {/* Dinner Circles prompt */}
+      <div className="rounded-xl border border-amber-800/30 bg-amber-950/10 p-5 sm:flex sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-semibold text-stone-200">Gather your people</p>
+          <p className="mt-1 text-xs text-stone-400">
+            Dinner Circles let you coordinate group meals and join food conversations near you.
+          </p>
+        </div>
+        <Link
+          href="/hub/circles"
+          className="mt-3 inline-flex items-center rounded-lg bg-amber-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-amber-500 sm:mt-0 sm:ml-4 sm:flex-shrink-0"
+        >
+          Browse Circles
+        </Link>
+      </div>
     </div>
   )
 }
@@ -109,10 +143,12 @@ async function FilteredResults({
   filters,
   activeFilterLabels,
   currentParams,
+  cuisineFilter,
 }: {
   filters: DiscoverFilters
   activeFilterLabels: string[]
   currentParams: URLSearchParams
+  cuisineFilter?: string
 }) {
   const result = await getDirectoryListings(filters)
 
@@ -131,14 +167,21 @@ async function FilteredResults({
         <div className="py-24 text-center">
           <h2 className="text-xl font-semibold text-stone-300">No listings match these filters</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-stone-500">
-            Try broadening your search or clearing some filters.
+            Try broadening your search or clearing some filters. If the business you are looking for
+            is not listed yet, you can add it for free.
           </p>
-          <div className="mt-6">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/nearby"
               className="rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
             >
               Clear filters
+            </Link>
+            <Link
+              href="/nearby/submit"
+              className="rounded-lg border border-stone-700 px-5 py-2.5 text-sm font-medium text-stone-300 transition-colors hover:border-stone-600 hover:bg-stone-800 hover:text-stone-100"
+            >
+              Add a business
             </Link>
           </div>
         </div>
@@ -155,6 +198,25 @@ async function FilteredResults({
             total={result.total}
             searchParams={currentParams}
           />
+
+          {/* Dinner Circle contextual prompt */}
+          <div className="mt-10 rounded-xl border border-amber-800/30 bg-amber-950/10 p-5 text-center">
+            <p className="text-sm font-semibold text-stone-200">
+              {cuisineFilter
+                ? `Love ${cuisineFilter} food? Start a circle.`
+                : 'Found something good? Gather your people.'}
+            </p>
+            <p className="mx-auto mt-1.5 max-w-md text-xs text-stone-400">
+              Dinner Circles let you coordinate group meals, share recommendations, and keep everyone
+              on the same page.
+            </p>
+            <Link
+              href={cuisineFilter ? `/hub/circles?topic=${encodeURIComponent(cuisineFilter)}` : '/hub/circles'}
+              className="mt-3 inline-flex items-center rounded-lg bg-amber-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-amber-500"
+            >
+              {cuisineFilter ? `Browse ${cuisineFilter} circles` : 'Browse Dinner Circles'}
+            </Link>
+          </div>
         </>
       )}
     </>
@@ -226,8 +288,11 @@ export default async function NearbyPage({ searchParams }: PageProps) {
   const city = firstParam(searchParams?.city)
   const priceRange = firstParam(searchParams?.price)
   const pageParam = parseInt(firstParam(searchParams?.page)) || 1
+  const latParam = parseFloat(firstParam(searchParams?.lat))
+  const lonParam = parseFloat(firstParam(searchParams?.lon))
+  const hasUserLocation = isFinite(latParam) && isFinite(lonParam)
 
-  const hasFilters = query || businessType || cuisine || state || priceRange || city
+  const hasFilters = query || businessType || cuisine || state || priceRange || city || hasUserLocation
   const isLanding = !hasFilters
 
   const stats = await getDirectoryStats()
@@ -240,6 +305,8 @@ export default async function NearbyPage({ searchParams }: PageProps) {
     city: city || undefined,
     priceRange: priceRange || undefined,
     page: pageParam,
+    userLat: hasUserLocation ? latParam : undefined,
+    userLon: hasUserLocation ? lonParam : undefined,
   }
 
   // Build active filter labels
@@ -270,7 +337,7 @@ export default async function NearbyPage({ searchParams }: PageProps) {
         : 'Find food near you. Restaurants, private chefs, caterers, food trucks, bakeries, and more.'
 
   return (
-    <div className="min-h-screen bg-stone-950">
+    <div className="min-h-screen">
       {/* Hero */}
       <section className="border-b border-stone-800/50">
         <div className="mx-auto max-w-6xl px-4 pb-8 pt-16 sm:px-6 lg:px-8">
@@ -344,9 +411,12 @@ export default async function NearbyPage({ searchParams }: PageProps) {
               filters={filters}
               activeFilterLabels={activeFilterLabels}
               currentParams={currentParams}
+              cuisineFilter={cuisine || undefined}
             />
           </Suspense>
         )}
+
+        <PublicSecondaryEntryCluster links={PUBLIC_SECONDARY_ENTRY_CONFIG.nearby} theme="dark" />
 
         {/* ODbL attribution - legal requirement, moved to minimal inline text */}
         <p className="mt-16 text-center text-[10px] text-stone-600">

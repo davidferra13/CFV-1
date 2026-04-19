@@ -166,6 +166,11 @@ export const DEFAULT_TIER_MAP: Record<NotificationAction, NotificationTier> = {
   // Price intelligence
   price_watch_alert: 'alert',
 
+  // Directory (admin, listing lifecycle)
+  directory_listing_claimed: 'alert',
+  directory_listing_verified: 'info',
+  directory_listing_removed: 'info',
+
   // System
   system_alert: 'critical',
   account_access_alert: 'critical',

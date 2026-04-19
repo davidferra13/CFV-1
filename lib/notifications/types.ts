@@ -155,6 +155,10 @@ export type NotificationAction =
   | 'event_collaboration_invite'
   // Price intelligence
   | 'price_watch_alert'
+  // Directory (admin, listing lifecycle)
+  | 'directory_listing_claimed'
+  | 'directory_listing_verified'
+  | 'directory_listing_removed'
 
 export type Notification = {
   id: string
@@ -372,6 +376,11 @@ export const NOTIFICATION_CONFIG: Record<
 
   // Price intelligence
   price_watch_alert: { category: 'ops', icon: 'TrendingDown', toastByDefault: true },
+
+  // Directory (admin, listing lifecycle)
+  directory_listing_claimed: { category: 'system', icon: 'MapPin', toastByDefault: true },
+  directory_listing_verified: { category: 'system', icon: 'CheckCircle', toastByDefault: false },
+  directory_listing_removed: { category: 'system', icon: 'Trash2', toastByDefault: false },
 }
 
 // Category display names for preferences UI

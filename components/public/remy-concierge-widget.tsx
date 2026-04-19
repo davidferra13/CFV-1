@@ -401,8 +401,8 @@ export function RemyConciergeWidget() {
                   I&apos;m Remy, your ChefFlow concierge.
                   <br />
                   <br />
-                  Tell me your biggest admin bottleneck and I&apos;ll show you how ChefFlow handles
-                  it.
+                  Looking for food nearby, want to book a chef, or need help running your food
+                  business? I can help.
                 </div>
               </div>
 

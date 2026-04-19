@@ -8,6 +8,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { pgClient } from '@/lib/db'
+import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
+import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 import {
   getIngredientCategories,
   getRecentlyEnrichedIngredients,
@@ -26,6 +28,15 @@ export const metadata: Metadata = {
       'Browse flavor profiles, origin, dietary info, and live pricing for thousands of culinary ingredients.',
     url: `${BASE_URL}/ingredients`,
     type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Ingredient Guide',
+    description:
+      'Browse flavor profiles, origin, dietary info, and live pricing for thousands of culinary ingredients.',
+  },
+  alternates: {
+    canonical: `${BASE_URL}/ingredients`,
   },
 }
 
@@ -318,6 +329,8 @@ export default async function IngredientsPage({ searchParams }: Props) {
             )}
           </div>
         )}
+
+        <PublicSecondaryEntryCluster links={PUBLIC_SECONDARY_ENTRY_CONFIG.ingredients} theme="dark" />
       </div>
     </>
   )

@@ -31,8 +31,7 @@ export function PublicFooter() {
             <span className="text-base font-display tracking-tight text-stone-100">ChefFlow</span>
           </Link>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-stone-400">
-            Book a private chef, browse chef profiles, or explore the broader food directory.
-            ChefFlow also powers the operator back office.
+            {PLATFORM_SHORT_DESCRIPTION} ChefFlow also powers the operator back office.
           </p>
         </div>
 

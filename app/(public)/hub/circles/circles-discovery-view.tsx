@@ -154,6 +154,21 @@ export function CirclesDiscoveryView({
       {/* Loading state */}
       {isSearching && <div className="py-8 text-center text-sm text-stone-500">Searching...</div>}
 
+      {/* Nearby cross-link when topic matches cuisine */}
+      {activeTopic && (
+        <div className="mb-4 flex items-center justify-between rounded-lg border border-stone-700/50 bg-stone-800/30 px-4 py-3">
+          <p className="text-xs text-stone-400">
+            Looking for {activeTopic.toLowerCase()} food near you?
+          </p>
+          <Link
+            href={`/nearby?cuisine=${encodeURIComponent(activeTopic.toLowerCase())}`}
+            className="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-brand-700"
+          >
+            Find {activeTopic} nearby
+          </Link>
+        </div>
+      )}
+
       {/* Results */}
       {!isSearching && circles.length > 0 && (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -173,15 +188,23 @@ export function CirclesDiscoveryView({
               ? 'No circles match your search. Try different keywords or be the first to create one.'
               : 'Be the first to start a community circle. Pick a topic you care about and start the conversation.'}
           </p>
-          {isAuthenticated && !showCreate && (
-            <button
-              type="button"
-              onClick={() => setShowCreate(true)}
-              className="mt-4 rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-500"
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+            {isAuthenticated && !showCreate && (
+              <button
+                type="button"
+                onClick={() => setShowCreate(true)}
+                className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-500"
+              >
+                Create the First Circle
+              </button>
+            )}
+            <Link
+              href="/nearby"
+              className="rounded-lg border border-stone-600 px-4 py-2 text-sm font-medium text-stone-300 transition-colors hover:border-stone-500 hover:text-stone-100"
             >
-              Create the First Circle
-            </button>
-          )}
+              Browse food nearby
+            </Link>
+          </div>
         </div>
       )}
 

@@ -1,6 +1,6 @@
-# External Directory (Discover)
+# External Directory (Nearby)
 
-Public directory of food businesses that are NOT ChefFlow platform users. Lives at `/discover`, managed at `/admin/directory-listings`.
+Public directory of food businesses that are NOT ChefFlow platform users. Lives at `/nearby` (canonical route; `/discover` redirects here for legacy compatibility), managed at `/admin/directory-listings`.
 
 ## How It Works
 
@@ -15,7 +15,7 @@ discovered ──> claimed ──> verified
 ```
 
 - **Discovered:** Admin creates manually or approves a community nomination. Shows public facts only (name, city, cuisine, website). No email on file, no outreach sent.
-- **Pending submission:** Business self-submits via `/discover/submit`. Provides their email. Waits for admin review.
+- **Pending submission:** Business self-submits via `/nearby/submit`. Provides their email. Waits for admin review.
 - **Claimed:** Business owner claims an existing discovered listing by providing name + email. Unlocks profile enhancement.
 - **Verified:** Admin approves. Green badge, higher ranking in results.
 - **Removed:** Business or admin removes the listing.
@@ -43,14 +43,14 @@ Emails are non-blocking side effects. They never prevent the main action from su
 Every send function in `outreach.ts` follows the same pattern:
 
 1. **Opt-out check:** Queries `directory_email_preferences` for the recipient. If `opted_out = true`, logs a skip and returns early.
-2. **Build opt-out URL:** `base64url(email)` appended as `?t=` param to `/discover/unsubscribe`.
+2. **Build opt-out URL:** `base64url(email)` appended as `?t=` param to `/nearby/unsubscribe`.
 3. **Send via Resend:** Calls `sendEmail()` from `lib/email/send.ts` with a React Email component.
 4. **Log the send:** Inserts a row into `directory_outreach_log` with email type, recipient, subject, and error (if any).
 5. **Error handling:** `try/catch` around everything. Failures are logged, never thrown. The calling action in `actions.ts` also wraps the outreach call in `.catch()` so a failed email never breaks the user's submission/claim.
 
 ### Unsubscribe flow
 
-1. Every email footer has an unsubscribe link: `/discover/unsubscribe?t=<base64url-encoded-email>`
+1. Every email footer has an unsubscribe link: `/nearby/unsubscribe?t=<base64url-encoded-email>`
 2. Page decodes the `?t` param, pre-fills the email input.
 3. User clicks "Unsubscribe", which calls `optOutDirectoryEmail()`.
 4. That upserts into `directory_email_preferences` with `opted_out: true`.
@@ -87,8 +87,14 @@ Key columns: `name`, `slug`, `city`, `state`, `business_type`, `cuisine_types[]`
 | `lib/discover/outreach.ts`                   | Email dispatch, opt-out checks, send logging, admin stats.                                                                   |
 | `lib/discover/constants.ts`                  | 8 business types, 21 cuisine categories, 4 price ranges, 5 statuses. Type exports + label helpers.                           |
 | `lib/email/templates/directory-welcome.tsx`  | React Email: submission confirmation, 3-step process, preview CTA.                                                           |
-| `lib/email/templates/directory-claimed.tsx`  | React Email: claim confirmation, CTA to `/discover/[slug]/enhance`.                                                          |
+| `lib/email/templates/directory-claimed.tsx`  | React Email: claim confirmation, CTA to `/nearby/[slug]/enhance`.                                                             |
 | `lib/email/templates/directory-verified.tsx` | React Email: verified badge confirmation, link to live listing.                                                              |
+
+## Data Sources
+
+Primary data source is **OpenStreetMap** (OSM) via the OpenClaw pipeline on Raspberry Pi. Listings carry `osm_id`, `lat`, `lon`, and `postcode` fields for provenance and geolocation. The `/nearby` page includes ODbL attribution in the footer as required by the OSM license.
+
+Additional sources: community nominations (`submitNomination`), self-submissions (`submitDirectoryListing`), and admin manual creation (`adminCreateListing`).
 
 ## Adding a new email trigger
 

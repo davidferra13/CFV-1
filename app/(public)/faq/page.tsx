@@ -4,6 +4,8 @@ import { TrackedLink } from '@/components/analytics/tracked-link'
 import { FAQ_PRIVACY } from '@/lib/ai/privacy-narrative'
 import { LAUNCH_MODE, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
 import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
+import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
+import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -173,6 +175,12 @@ export const metadata: Metadata = {
     siteName: 'ChefFlow',
     type: 'website',
   },
+  twitter: {
+    card: 'summary',
+    title: 'ChefFlow FAQ',
+    description:
+      'Practical answers for private chef clients and food operators on pricing, food costing, business growth, and the ChefFlow platform.',
+  },
   alternates: {
     canonical: `${BASE_URL}/faq`,
   },
@@ -287,6 +295,10 @@ export default function FaqPage() {
             </TrackedLink>
           </div>
         </div>
+      </section>
+
+      <section className="mx-auto max-w-4xl px-4 pb-12 sm:px-6 lg:px-8">
+        <PublicSecondaryEntryCluster links={PUBLIC_SECONDARY_ENTRY_CONFIG.faq} theme="dark" />
       </section>
     </div>
   )

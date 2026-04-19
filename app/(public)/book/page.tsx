@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { BookDinnerForm } from './_components/book-dinner-form'
 import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
 import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
+import { PUBLIC_DIRECTORY_HELPER } from '@/lib/public/public-surface-config'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -15,6 +17,11 @@ export const metadata: Metadata = {
       'Describe your event and get matched with reviewed private chefs near you. Matched chefs reach out directly.',
     url: `${BASE_URL}/book`,
     type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Book a Private Chef',
+    description: 'Describe your event and get matched with reviewed private chefs near you.',
   },
   alternates: {
     canonical: `${BASE_URL}/book`,
@@ -41,6 +48,15 @@ export default function BookPage() {
       {/* Form */}
       <section className="mx-auto max-w-2xl px-4 pb-20 sm:px-6 lg:px-8">
         <BookDinnerForm />
+        <p className="mt-8 text-center text-sm text-stone-500">
+          {PUBLIC_DIRECTORY_HELPER}{' '}
+          <Link
+            href="/nearby"
+            className="font-medium text-brand-400 transition-colors hover:text-brand-300"
+          >
+            Browse the food directory
+          </Link>
+        </p>
         <PublicSecondaryEntryCluster
           links={PUBLIC_SECONDARY_ENTRY_CONFIG.open_booking}
           theme="dark"

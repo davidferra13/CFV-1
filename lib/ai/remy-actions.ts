@@ -170,6 +170,11 @@ SETTINGS:
 /settings/remy - Remy AI settings
 /settings/stripe-connect - Stripe Connect setup
 
+DISCOVERY:
+/nearby - Browse food operators near you (restaurants, caterers, food trucks, bakeries, etc.)
+/nearby/submit - Add your business to the free directory
+/chefs - Browse private chef profiles on ChefFlow
+
 COMMUNITY:
 /circles - Your circles (dinner + community)
 /hub/circles - Browse community circles

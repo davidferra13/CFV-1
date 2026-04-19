@@ -16,7 +16,7 @@ ChefFlow is a universal food services operating system. It serves five distinct 
 | **Client / Consumer**      | Discover chefs, book events, manage dietary needs, approve menus, pay, leave reviews      | `/chefs`, `/my-events`, `/my-hub`               |
 | **Guest / Attendee**       | RSVP, share dietary restrictions, view menus, provide feedback, join dinner circles       | `/event/[id]/guest/[token]`, `/hub/g/[token]`   |
 | **Staff / Team Member**    | View assignments, manage stations, track tasks, clock in/out                              | `/staff-dashboard`, `/staff-tasks`              |
-| **Community Member**       | Discover food operators, share templates, connect with other chefs, browse the directory  | `/discover`, `/network`, `/community/templates` |
+| **Community Member**       | Discover food operators, share templates, connect with other chefs, browse the directory  | `/nearby`, `/network`, `/community/templates`   |
 
 ---
 
@@ -24,7 +24,7 @@ ChefFlow is a universal food services operating system. It serves five distinct 
 
 ### Objective 1: Become the Operating System for Independent Food Professionals
 
-**What this means:** Every food operator (private chefs, caterers, meal prep services, food trucks, bakeries, restaurants) runs their entire business through ChefFlow. Not just one vertical; the full spectrum.
+**What this means:** Every food operator (private chefs, caterers, meal prep services, food trucks, bakeries, restaurants, pop-ups, supper clubs) runs their entire business through ChefFlow. Not just one vertical; the full spectrum.
 
 **Features that serve this objective:**
 
@@ -58,7 +58,7 @@ ChefFlow is a universal food services operating system. It serves five distinct 
 | Chef directory with filters | `/chefs`                        | Built. Location, cuisine, service type, dietary, price range, availability filters | Needs population and SEO traction |
 | Individual chef profiles    | `/chef/[slug]`                  | Built. Bio, services, reviews, credentials, portfolio, social links, JSON-LD       | Needs real chef profiles          |
 | Public inquiry form         | `/chef/[slug]/inquire`          | Built. No-auth form with trust signals sidebar                                     | Active                            |
-| Food operator directory     | `/discover`, `/discover/[slug]` | Built. Multi-state, multi-type (restaurant, bakery, chef, caterer, food truck)     | Needs population                  |
+| Food operator directory     | `/nearby`, `/nearby/[slug]`     | Built. Multi-state, multi-type (restaurant, bakery, chef, caterer, food truck)     | Needs population                  |
 | Embeddable widget           | `/embed/inquiry/[chefId]`       | Built. iFrame-ready, themed, CORS-enabled                                          | Active                            |
 | Booking page per chef       | `/settings/booking` (config)    | Built. Shareable link, pricing model, deposit config                               | Active                            |
 | Gift card purchases         | `/chef/[slug]/gift-cards`       | Built. Public purchase flow                                                        | Needs validation                  |
@@ -279,7 +279,7 @@ These are the questions that must be answered to align the platform's direction.
 
 3. **Geographic focus:** The food operator directory spans multiple states. Should growth be concentrated in one metro/region first (Haverhill/Boston corridor), or distributed nationally from day one?
 
-4. **Brand architecture:** ChefFlow (app), cheflowhq.com (domain), and the food operator directory at `/discover` serve different audiences. Should they remain under one brand, or does the directory need its own identity?
+4. **Brand architecture:** ChefFlow (app), cheflowhq.com (domain), and the food operator directory at `/nearby` serve different audiences. Should they remain under one brand, or does the directory need its own identity?
 
 ### User Acquisition
 
@@ -287,7 +287,7 @@ These are the questions that must be answered to align the platform's direction.
 
 6. **Chef onboarding friction:** The onboarding flow has 5 phases (profile, clients, recipes, staff, loyalty) plus a smart import hub with 11 import modes. Is this the right level of depth for first-time users, or should the initial experience be lighter with progressive disclosure?
 
-7. **Client acquisition channel:** Clients can find chefs through the directory (`/chefs`), individual chef profiles (`/chef/[slug]`), the embeddable widget, the food operator directory (`/discover`), or direct links. Which channel should receive the most investment?
+7. **Client acquisition channel:** Clients can find chefs through the directory (`/chefs`), individual chef profiles (`/chef/[slug]`), the embeddable widget, the food operator directory (`/nearby`), or direct links. Which channel should receive the most investment?
 
 8. **Beta tester pipeline:** Elena (grazing board operator, Kittery area) is the first external tester. What does the next-10-users cohort look like? Same archetype or diversified?
 

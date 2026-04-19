@@ -75,6 +75,7 @@ export const FOOTER_SECTIONS = {
       PUBLIC_DINNER_CIRCLES_ENTRY,
       { href: '/services', label: 'Services' },
       { href: '/how-it-works', label: 'How It Works' },
+      { href: '/faq', label: 'FAQ' },
       PUBLIC_SUPPORTING_DIRECTORY_ENTRY,
     ],
   },

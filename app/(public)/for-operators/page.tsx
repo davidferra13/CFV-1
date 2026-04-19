@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
+import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
+import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -15,6 +17,12 @@ export const metadata: Metadata = {
     url: `${BASE_URL}/for-operators`,
     siteName: 'ChefFlow',
     type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'For Operators - ChefFlow',
+    description:
+      'The operating system for private chefs, caterers, and food operators. Free forever.',
   },
   alternates: {
     canonical: `${BASE_URL}/for-operators`,
@@ -277,6 +285,23 @@ export default function ForOperatorsPage() {
         </div>
       </section>
 
+      {/* Free listing nudge */}
+      <section className="border-t border-stone-800/40">
+        <div className="mx-auto flex w-full max-w-3xl flex-col items-center px-4 py-10 text-center sm:px-6 lg:px-8">
+          <p className="text-sm font-medium text-stone-300">Not ready to sign up yet?</p>
+          <p className="mt-1.5 max-w-lg text-sm text-stone-500">
+            Add your business to our free food operator directory so customers can find you. No
+            account needed, no strings attached.
+          </p>
+          <Link
+            href="/nearby/submit"
+            className="mt-4 inline-flex items-center gap-1.5 rounded-xl border border-stone-700 px-5 py-2.5 text-sm font-medium text-stone-300 transition-colors hover:border-stone-600 hover:bg-stone-800 hover:text-stone-100"
+          >
+            List your business for free
+          </Link>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="border-t border-stone-800/40">
         <div className="mx-auto flex w-full max-w-3xl flex-col items-center px-4 py-16 text-center sm:px-6 md:py-20 lg:px-8">
@@ -294,6 +319,10 @@ export default function ForOperatorsPage() {
             Start for Free
           </Link>
         </div>
+      </section>
+
+      <section className="mx-auto max-w-3xl px-4 pb-12 sm:px-6 lg:px-8">
+        <PublicSecondaryEntryCluster links={PUBLIC_SECONDARY_ENTRY_CONFIG.for_operators} theme="dark" />
       </section>
     </main>
   )

@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
+import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -16,6 +18,12 @@ export const metadata: Metadata = {
       'Shared dinner pages for guest coordination, updates, and event details before the meal.',
     url: `${BASE_URL}/hub`,
     type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Dinner Circles',
+    description:
+      'Shared dinner pages for guest coordination, updates, and event details before the meal.',
   },
 }
 
@@ -61,6 +69,18 @@ export default function DinnerCirclesLandingPage() {
             className="inline-flex items-center justify-center rounded-xl gradient-accent px-5 py-3 text-sm font-semibold text-white"
           >
             Book a Chef
+          </Link>
+          <Link
+            href="/hub/circles"
+            className="inline-flex items-center justify-center rounded-xl border border-stone-700 bg-stone-950 px-5 py-3 text-sm font-medium text-stone-300 transition-colors hover:border-stone-600 hover:text-stone-100"
+          >
+            Browse Community Circles
+          </Link>
+          <Link
+            href="/nearby"
+            className="inline-flex items-center justify-center rounded-xl border border-stone-700 bg-stone-950 px-5 py-3 text-sm font-medium text-stone-300 transition-colors hover:border-stone-600 hover:text-stone-100"
+          >
+            Food Near You
           </Link>
           <Link
             href="/how-it-works"
@@ -112,9 +132,13 @@ export default function DinnerCirclesLandingPage() {
             href="/chefs"
             className="mt-6 inline-flex items-center justify-center rounded-xl border border-stone-700 px-4 py-2.5 text-sm font-medium text-stone-200 transition-colors hover:border-stone-600 hover:bg-stone-800"
           >
-            Browse chefs
+            Browse Chefs
           </Link>
         </div>
+      </section>
+
+      <section className="mx-auto max-w-5xl px-4 pb-12 sm:px-6 lg:px-8">
+        <PublicSecondaryEntryCluster links={PUBLIC_SECONDARY_ENTRY_CONFIG.hub} theme="dark" />
       </section>
     </div>
   )

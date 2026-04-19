@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, useRef } from 'react'
 import { Search, SlidersHorizontal, X } from '@/components/ui/icons'
 import {
   BUSINESS_TYPES,
@@ -38,6 +38,11 @@ export function NearbyFilters({ query, businessType, cuisine, state, city, price
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
   const [showMoreFilters, setShowMoreFilters] = useState(!!(cuisine || state || city || priceRange))
   const [showAllCuisines, setShowAllCuisines] = useState(false)
+  const [locationActive, setLocationActive] = useState(
+    !!(searchParams?.get('lat') && searchParams?.get('lon'))
+  )
+  const [locationLoading, setLocationLoading] = useState(false)
+  const geoWatchId = useRef<number | null>(null)
 
   // Rotate placeholder text
   useEffect(() => {
@@ -79,7 +84,52 @@ export function NearbyFilters({ query, businessType, cuisine, state, city, price
     setShowMoreFilters(false)
   }, [router])
 
-  const hasFilters = query || businessType || cuisine || state || city || priceRange
+  const toggleLocation = useCallback(() => {
+    if (locationActive) {
+      // Turn off location sorting
+      if (geoWatchId.current != null) {
+        navigator.geolocation.clearWatch(geoWatchId.current)
+        geoWatchId.current = null
+      }
+      const params = new URLSearchParams(searchParams?.toString())
+      params.delete('lat')
+      params.delete('lon')
+      params.delete('page')
+      setLocationActive(false)
+      router.push(`/nearby?${params.toString()}`)
+      return
+    }
+
+    if (!navigator.geolocation) return
+
+    setLocationLoading(true)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const params = new URLSearchParams(searchParams?.toString())
+        params.set('lat', pos.coords.latitude.toFixed(4))
+        params.set('lon', pos.coords.longitude.toFixed(4))
+        params.delete('page')
+        setLocationActive(true)
+        setLocationLoading(false)
+        router.push(`/nearby?${params.toString()}`)
+      },
+      () => {
+        setLocationLoading(false)
+      },
+      { enableHighAccuracy: false, timeout: 8000 }
+    )
+  }, [locationActive, router, searchParams])
+
+  // Cleanup geolocation watch on unmount
+  useEffect(() => {
+    return () => {
+      if (geoWatchId.current != null) {
+        navigator.geolocation.clearWatch(geoWatchId.current)
+      }
+    }
+  }, [])
+
+  const hasFilters = query || businessType || cuisine || state || city || priceRange || locationActive
 
   const placeholderText = PLACEHOLDER_TEXTS[placeholderIndex]
 
@@ -104,6 +154,19 @@ export function NearbyFilters({ query, businessType, cuisine, state, city, price
           className="h-12 rounded-xl bg-brand-600 px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
         >
           Search
+        </button>
+        <button
+          type="button"
+          onClick={toggleLocation}
+          disabled={locationLoading}
+          title={locationActive ? 'Stop sorting by distance' : 'Sort by distance from me'}
+          className={`h-12 rounded-xl px-4 text-sm font-medium transition-colors ${
+            locationActive
+              ? 'bg-brand-600 text-white hover:bg-brand-700'
+              : 'border border-stone-700 text-stone-400 hover:border-stone-600 hover:text-stone-200'
+          } ${locationLoading ? 'animate-pulse' : ''}`}
+        >
+          {locationLoading ? '...' : locationActive ? '📍' : '📍 Near me'}
         </button>
       </form>
 

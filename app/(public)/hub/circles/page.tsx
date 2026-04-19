@@ -4,6 +4,10 @@ import { getCurrentUser } from '@/lib/auth/get-user'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { discoverPublicCircles } from '@/lib/hub/community-circle-actions'
 import { CirclesDiscoveryView } from './circles-discovery-view'
+import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
+import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
+
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 export const metadata: Metadata = {
   title: 'Community Circles | ChefFlow',
@@ -11,6 +15,21 @@ export const metadata: Metadata = {
     'Discover and join food community circles. Talk Japanese cuisine, gluten-free cooking, wine pairings, and more.',
   // Override hub layout noindex: public discovery page should be crawlable
   robots: { index: true, follow: true },
+  alternates: {
+    canonical: `${BASE_URL}/hub/circles`,
+  },
+  openGraph: {
+    title: 'Community Circles | ChefFlow',
+    description:
+      'Discover and join food community circles. Talk Japanese cuisine, gluten-free cooking, wine pairings, and more.',
+    url: `${BASE_URL}/hub/circles`,
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Community Circles | ChefFlow',
+    description: 'Discover and join food community circles on ChefFlow.',
+  },
 }
 
 interface Props {
@@ -42,7 +61,7 @@ export default async function CirclesDiscoveryPage({ searchParams }: Props) {
   ])
 
   return (
-    <div className="min-h-screen bg-stone-950">
+    <div className="min-h-screen">
       <div className="mx-auto max-w-4xl px-4 py-8">
         <CirclesDiscoveryView
           initialCircles={result.circles}
@@ -51,6 +70,7 @@ export default async function CirclesDiscoveryPage({ searchParams }: Props) {
           initialTopic={params.topic || ''}
           isAuthenticated={!!user}
         />
+        <PublicSecondaryEntryCluster links={PUBLIC_SECONDARY_ENTRY_CONFIG.hub_circles} theme="dark" />
       </div>
     </div>
   )

@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { PUBLIC_PRIMARY_CONSUMER_CTA } from '@/lib/public/public-surface-config'
+import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
+import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -15,6 +17,12 @@ export const metadata: Metadata = {
     url: `${BASE_URL}/services`,
     siteName: 'ChefFlow',
     type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Chef Services - ChefFlow',
+    description:
+      'Private dinners, catering, meal prep, weddings, corporate dining, cooking classes.',
   },
   alternates: {
     canonical: `${BASE_URL}/services`,
@@ -116,6 +124,10 @@ export default function ServicesPage() {
             {PUBLIC_PRIMARY_CONSUMER_CTA.label}
           </Link>
         </div>
+      </section>
+
+      <section className="mx-auto max-w-3xl px-4 pb-12 sm:px-6 lg:px-8">
+        <PublicSecondaryEntryCluster links={PUBLIC_SECONDARY_ENTRY_CONFIG.services} theme="dark" />
       </section>
     </main>
   )

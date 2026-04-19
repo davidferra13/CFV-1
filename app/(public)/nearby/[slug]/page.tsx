@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getDirectoryListingBySlug } from '@/lib/discover/actions'
 import { getBusinessTypeLabel, getCuisineLabel } from '@/lib/discover/constants'
+import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
+import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 // import { ClaimRemoveActions } from './_components/claim-remove-actions' // Hidden until directory is public
 import { CategoryPlaceholder } from '../_components/category-icon'
 
@@ -87,7 +89,7 @@ export default async function ListingDetailPage({ params }: Props) {
   const hasPhotos = listing.photo_urls.length > 0
 
   return (
-    <div className="min-h-screen bg-stone-950">
+    <div className="min-h-screen">
       <ListingJsonLd listing={listing} />
       {/* Back nav */}
       <div className="border-b border-stone-800/50">
@@ -107,6 +109,15 @@ export default async function ListingDetailPage({ params }: Props) {
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold text-stone-100 md:text-3xl">{listing.name}</h1>
+              {listing.status === 'verified' ? (
+                <span className="inline-flex items-center rounded-full bg-emerald-950 px-2.5 py-0.5 text-xs font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">
+                  Verified
+                </span>
+              ) : listing.status === 'claimed' ? (
+                <span className="inline-flex items-center rounded-full bg-blue-950 px-2.5 py-0.5 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-500/20">
+                  Claimed
+                </span>
+              ) : null}
             </div>
             <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-stone-400">
               <span className="rounded-full bg-stone-800 px-2.5 py-0.5 text-xs font-medium">
@@ -189,7 +200,28 @@ export default async function ListingDetailPage({ params }: Props) {
               </div>
             )}
 
-            {/* Minimal info notice removed - no oversharing about data source */}
+            {/* Dinner Circle CTA */}
+            <div className="rounded-xl border border-amber-800/30 bg-amber-950/10 p-5">
+              <h2 className="text-sm font-semibold text-stone-200">Planning a group meal?</h2>
+              <p className="mt-1.5 text-sm text-stone-400">
+                Start a Dinner Circle to gather friends, coordinate the details, and keep everyone on
+                the same page.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link
+                  href="/hub/circles"
+                  className="rounded-lg bg-amber-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-amber-500"
+                >
+                  Browse Circles
+                </Link>
+                <Link
+                  href="/hub"
+                  className="rounded-lg border border-stone-700 px-4 py-2 text-xs font-medium text-stone-300 transition-colors hover:border-stone-600 hover:text-stone-100"
+                >
+                  What are Dinner Circles?
+                </Link>
+              </div>
+            </div>
           </div>
 
           {/* Sidebar */}
@@ -277,9 +309,28 @@ export default async function ListingDetailPage({ params }: Props) {
                 )
               })()}
 
-            {/* Claim/remove actions hidden until directory is public */}
+            {/* Data confidence indicator */}
+            <div className="rounded-xl border border-stone-800/50 bg-stone-900/30 p-4">
+              <p className="text-[11px] text-stone-500">
+                {listing.status === 'verified'
+                  ? 'This listing has been verified by the business owner.'
+                  : listing.status === 'claimed'
+                    ? 'This listing has been claimed by the business owner but is not yet verified.'
+                    : 'This listing was created from public data sources. Details may not be current.'}
+              </p>
+              {listing.status !== 'verified' && listing.status !== 'claimed' && (
+                <Link
+                  href={`/nearby/submit`}
+                  className="mt-2 inline-block text-xs font-medium text-brand-400 hover:text-brand-300 transition-colors"
+                >
+                  Is this your business? Claim it
+                </Link>
+              )}
+            </div>
           </div>
         </div>
+
+        <PublicSecondaryEntryCluster links={PUBLIC_SECONDARY_ENTRY_CONFIG.nearby_detail} theme="dark" />
       </div>
     </div>
   )

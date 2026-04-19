@@ -130,6 +130,18 @@ test.describe('Public — Landing & Marketing Pages', () => {
     await assertPageLoads(page, '/marketplace-chefs')
   })
 
+  test('/nearby — food operator directory loads', async ({ page }) => {
+    await assertPageLoads(page, '/nearby')
+    const bodyText = await page.locator('body').innerText()
+    expect(bodyText).toMatch(/nearby|find food near you|discover/i)
+  })
+
+  test('/nearby/submit — business submission page loads', async ({ page }) => {
+    await assertPageLoads(page, '/nearby/submit')
+    const bodyText = await page.locator('body').innerText()
+    expect(bodyText).toMatch(/add your business|submit|free listing/i)
+  })
+
   test('/discover — legacy discover route serves the nearby experience', async ({ page }) => {
     await page.goto('/discover?city=portland', { waitUntil: 'domcontentloaded' })
     await page.waitForURL(/\/nearby\?city=portland$/, { timeout: 20_000 })

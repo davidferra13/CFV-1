@@ -14,7 +14,7 @@ The system serves five actor types:
 
 | Actor        | Definition                                                                                                                  | Authentication                                         |
 | ------------ | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| **Operator** | A food professional who runs their business through ChefFlow (private chef, caterer, meal prep service, food truck, bakery) | Email/password or Google OAuth. Session via JWT.       |
+| **Operator** | A food professional who runs their business through ChefFlow (private chef, caterer, meal prep service, food truck, bakery, restaurant, pop-up, supper club) | Email/password or Google OAuth. Session via JWT.       |
 | **Client**   | A person who hires an operator for food services                                                                            | Email/password or token-based access. Session via JWT. |
 | **Guest**    | A person attending an event managed by an operator                                                                          | Token-based access only. No account required.          |
 | **Staff**    | A person employed by an operator                                                                                            | Email/password. Scoped to one operator.                |
@@ -863,15 +863,19 @@ Displays:
 
 ### 13.3 Food Operator Directory
 
-**Route:** `/discover`
+**Route:** `/nearby` (canonical; `/discover` redirects here for legacy compatibility)
 
-A broader directory of food establishments (restaurants, bakeries, food trucks, caterers, chefs) that may or may not use ChefFlow.
+A broader directory of food establishments that may or may not use ChefFlow. Sourced from OpenStreetMap via OpenClaw pipeline, community nominations, and self-submissions.
+
+**Operator types:** Restaurant, private chef, caterer, food truck, bakery, meal prep, pop-up, supper club (8 types; canonical list in `lib/discover/constants.ts`).
 
 **Filters:** Type, cuisine, state, city, price range.
 
 Each listing: business name, type, cuisine, location, contact info, hours, social links.
 
-Operators can claim and enhance their listing. Anyone can nominate a new business for inclusion.
+**Current state (2026-04-18):** Listing pages are `noindex/nofollow`. Nomination form and claim/remove actions are hidden pending data quality confidence. Stats display is hidden. These features are built but gated.
+
+Operators can claim and enhance their listing. Anyone can nominate a new business for inclusion (nomination UI currently hidden; backend active).
 
 ### 13.4 Guest Event Portal
 

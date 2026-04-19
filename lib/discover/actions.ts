@@ -1,7 +1,7 @@
 'use server'
 
 // External Directory Listing Actions
-// Public queries + admin mutations for the /discover directory.
+// Public queries + admin mutations for the /nearby directory.
 // Uses admin client for all operations since this table uses service_role RLS.
 
 import { createServerClient } from '@/lib/db/server'
@@ -106,6 +106,10 @@ export type DiscoverFilters = {
   state?: string
   priceRange?: string
   page?: number
+  /** User latitude for proximity sorting (optional, from browser geolocation) */
+  userLat?: number
+  /** User longitude for proximity sorting (optional, from browser geolocation) */
+  userLon?: number
 }
 
 export async function getDirectoryListings(
@@ -176,6 +180,25 @@ export async function getDirectoryListings(
     const total = parseInt(countResult[0].count)
     const totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE))
 
+    // Build ORDER BY: proximity-first when user coordinates are available, otherwise default ranking
+    let orderBy: string
+    if (
+      filters.userLat != null &&
+      filters.userLon != null &&
+      isFinite(filters.userLat) &&
+      isFinite(filters.userLon)
+    ) {
+      // Haversine-approximation distance sort (degrees, not meters; sufficient for ranking)
+      // Listings without lat/lon sort to the end
+      const latParam = `$${paramIndex}`
+      const lonParam = `$${paramIndex + 1}`
+      params.push(filters.userLat, filters.userLon)
+      paramIndex += 2
+      orderBy = `(CASE WHEN lat IS NOT NULL AND lon IS NOT NULL THEN (lat - ${latParam})*(lat - ${latParam}) + (lon - ${lonParam})*(lon - ${lonParam}) ELSE 999999 END) ASC, featured DESC, lead_score DESC NULLS LAST, name ASC`
+    } else {
+      orderBy = `featured DESC, (CASE WHEN photo_urls IS NOT NULL AND array_length(photo_urls, 1) > 0 THEN 0 ELSE 1 END), lead_score DESC NULLS LAST, name ASC`
+    }
+
     // Data query
     const dataResult = await pgClient.unsafe(
       `SELECT id, name, slug, city, ${CANONICAL_STATE_SQL} as state, cuisine_types, business_type, website_url,
@@ -183,7 +206,7 @@ export async function getDirectoryListings(
               lat, lon, lead_score
        FROM directory_listings
        WHERE ${whereClause}
-       ORDER BY featured DESC, (CASE WHEN photo_urls IS NOT NULL AND array_length(photo_urls, 1) > 0 THEN 0 ELSE 1 END), lead_score DESC NULLS LAST, name ASC
+       ORDER BY ${orderBy}
        LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`,
       [...params, ITEMS_PER_PAGE, offset]
     )

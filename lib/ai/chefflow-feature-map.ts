@@ -282,6 +282,64 @@ export const CHEFFLOW_FEATURE_MAP: FeatureMapEntry[] = [
     featureName: 'Remy AI Assistant',
     tier: 'free',
   },
+  // Consumer-facing entries
+  {
+    painPoint: 'I want to find food near me / restaurants / caterers / food trucks',
+    painKeywords: [
+      'find food',
+      'near me',
+      'nearby',
+      'restaurant',
+      'caterer',
+      'food truck',
+      'bakery',
+      'where to eat',
+      'food directory',
+      'discover',
+    ],
+    solution:
+      'The Nearby directory lets you browse restaurants, caterers, food trucks, bakeries, and more. Filter by cuisine, location, or business type. Use the Near Me button to sort by distance.',
+    featureName: 'Food Directory (Nearby)',
+    tier: 'free',
+  },
+  {
+    painPoint: 'I want to hire a private chef for a dinner / event',
+    painKeywords: [
+      'hire',
+      'book',
+      'private chef',
+      'dinner party',
+      'catering',
+      'personal chef',
+      'event',
+      'party',
+      'how much',
+      'cost',
+      'price',
+    ],
+    solution:
+      'Submit a free booking request at /book. Describe your event and matched chefs in your area reach out directly. No platform fee, no obligation. You can also browse chef profiles at /chefs.',
+    featureName: 'Chef Booking',
+    tier: 'free',
+  },
+  {
+    painPoint: 'I want to coordinate a group dinner / gather friends',
+    painKeywords: [
+      'dinner circle',
+      'group dinner',
+      'gather',
+      'coordinate',
+      'friends',
+      'rsvp',
+      'community',
+      'circle',
+      'join',
+    ],
+    solution:
+      'Dinner Circles are shared pages where guests coordinate before a meal. Join a public circle by topic at /hub/circles, or get an invite link from your host. No account needed to participate.',
+    featureName: 'Dinner Circles',
+    tier: 'free',
+  },
 ]
 
 /**
@@ -301,12 +359,16 @@ export function formatFeatureMapForPrompt(): string {
  */
 export function getStarterPainPoints(): Array<{ label: string; message: string }> {
   return [
+    // Operator starters
     { label: 'Too many apps', message: "I'm juggling too many tools to run my business" },
     {
       label: 'Client tracking',
       message: 'I keep losing track of client preferences and allergies',
     },
     { label: 'Getting paid', message: 'Invoicing and collecting payments is a mess' },
-    { label: 'Is my data safe?', message: 'How do you handle my data and privacy?' },
+    // Consumer starters
+    { label: 'Find food nearby', message: 'I want to find restaurants or caterers near me' },
+    { label: 'Hire a chef', message: 'How do I book a private chef for a dinner party?' },
+    { label: 'Dinner Circles', message: 'What are Dinner Circles and how do I join one?' },
   ]
 }

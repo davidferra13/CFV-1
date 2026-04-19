@@ -16,15 +16,30 @@ export type SecondaryEntrySurface =
   | 'contact'
   | 'gift_cards'
   | 'gift_cards_success'
+  | 'directory'
+  | 'nearby'
+  | 'nearby_detail'
+  | 'how_it_works'
+  | 'ingredients'
+  | 'services'
+  | 'faq'
+  | 'about'
+  | 'for_operators'
+  | 'hub'
+  | 'hub_circles'
 
 export const PUBLIC_SECONDARY_ENTRY_CONFIG: Record<SecondaryEntrySurface, SecondaryEntryLink[]> = {
   open_booking: [
+    {
+      label: 'Browse Chefs',
+      href: '/chefs',
+      description: 'Pick a specific chef instead',
+    },
     {
       label: 'How it works',
       href: '/how-it-works',
       description: 'See what to expect step by step',
     },
-    { label: 'Trust and safety', href: '/trust', description: 'How we protect clients and chefs' },
     { label: 'Contact us', href: '/contact', description: 'Questions before you book' },
   ],
   single_chef_inquiry: [
@@ -42,18 +57,14 @@ export const PUBLIC_SECONDARY_ENTRY_CONFIG: Record<SecondaryEntrySurface, Second
     { label: 'Browse all chefs', href: '/chefs', description: 'Explore other private chefs' },
   ],
   trust: [
-    { label: 'Book a chef', href: '/book', description: 'Request your private dining experience' },
-    { label: 'Contact us', href: '/contact', description: 'Talk to a real person' },
+    { label: 'Book a Chef', href: '/book', description: 'Request your private dining experience' },
+    { label: 'Food near you', href: '/nearby', description: 'Restaurants, caterers, food trucks' },
     { label: 'How it works', href: '/how-it-works', description: 'The full process explained' },
   ],
   contact: [
-    { label: 'Book a chef', href: '/book', description: 'Start your event request' },
-    { label: 'Browse chefs', href: '/chefs', description: 'Find the right chef for your event' },
-    {
-      label: 'How it works',
-      href: '/how-it-works',
-      description: 'What happens after you reach out',
-    },
+    { label: 'Book a Chef', href: '/book', description: 'Start your event request' },
+    { label: 'Food near you', href: '/nearby', description: 'Find food operators near you' },
+    { label: 'How it works', href: '/how-it-works', description: 'What happens after you reach out' },
   ],
   gift_cards: [
     {
@@ -66,7 +77,62 @@ export const PUBLIC_SECONDARY_ENTRY_CONFIG: Record<SecondaryEntrySurface, Second
   ],
   gift_cards_success: [
     { label: 'Book an event', href: '/book', description: 'Ready to plan your own dinner?' },
-    { label: 'Browse chefs', href: '/chefs', description: 'Find your perfect private chef' },
+    { label: 'Browse Chefs', href: '/chefs', description: 'Find your perfect private chef' },
     { label: 'How it works', href: '/how-it-works', description: 'Learn what to expect' },
+  ],
+  directory: [
+    { label: 'Book a Chef', href: '/book', description: 'Request a private dining experience' },
+    { label: 'Browse Chefs', href: '/chefs', description: 'Find reviewed private chefs' },
+    { label: 'Food near you', href: '/nearby', description: 'Restaurants, caterers, food trucks' },
+  ],
+  nearby: [
+    { label: 'Book a Chef', href: '/book', description: 'Request a private dining experience' },
+    { label: 'Browse Chefs', href: '/chefs', description: 'Find reviewed private chefs' },
+    { label: 'Dinner Circles', href: '/hub/circles', description: 'Join food community conversations' },
+  ],
+  nearby_detail: [
+    { label: 'Browse nearby', href: '/nearby', description: 'Find more food operators' },
+    { label: 'Book a Chef', href: '/book', description: 'Hire a private chef instead' },
+    { label: 'Dinner Circles', href: '/hub/circles', description: 'Join food community conversations' },
+  ],
+  how_it_works: [
+    { label: 'Book a Chef', href: '/book', description: 'Start your event request' },
+    { label: 'Food near you', href: '/nearby', description: 'Restaurants, caterers, food trucks' },
+    { label: 'Dinner Circles', href: '/hub/circles', description: 'Coordinate group meals' },
+  ],
+  ingredients: [
+    { label: 'Book a Chef', href: '/book', description: 'Hire a private chef for your next event' },
+    { label: 'Food near you', href: '/nearby', description: 'Restaurants, caterers, food trucks' },
+    { label: 'Services', href: '/services', description: 'Private dinners, catering, meal prep' },
+  ],
+  services: [
+    { label: 'Book a Chef', href: '/book', description: 'Start your event request' },
+    { label: 'Food near you', href: '/nearby', description: 'Restaurants, caterers, food trucks' },
+    { label: 'Dinner Circles', href: '/hub/circles', description: 'Join food community conversations' },
+  ],
+  faq: [
+    { label: 'Book a Chef', href: '/book', description: 'Start your event request' },
+    { label: 'Food near you', href: '/nearby', description: 'Find food operators near you' },
+    { label: 'For operators', href: '/for-operators', description: 'List your business free' },
+  ],
+  about: [
+    { label: 'Book a Chef', href: '/book', description: 'Start your event request' },
+    { label: 'Browse Chefs', href: '/chefs', description: 'Find reviewed private chefs' },
+    { label: 'For operators', href: '/for-operators', description: 'Run your food business here' },
+  ],
+  for_operators: [
+    { label: 'Book a Chef', href: '/book', description: 'Looking to hire, not join?' },
+    { label: 'Browse Chefs', href: '/chefs', description: 'See who is already on ChefFlow' },
+    { label: 'How it works', href: '/how-it-works', description: 'The full process explained' },
+  ],
+  hub: [
+    { label: 'Book a Chef', href: '/book', description: 'Plan your own private dining event' },
+    { label: 'Browse Chefs', href: '/chefs', description: 'Find a chef for your group' },
+    { label: 'Community Circles', href: '/hub/circles', description: 'Join food conversations' },
+  ],
+  hub_circles: [
+    { label: 'Book a Chef', href: '/book', description: 'Hire a chef for your group' },
+    { label: 'Browse Chefs', href: '/chefs', description: 'Find reviewed private chefs' },
+    { label: 'Dinner Circles', href: '/hub', description: 'Learn about Dinner Circles' },
   ],
 }
