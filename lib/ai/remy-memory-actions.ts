@@ -161,6 +161,26 @@ export async function extractAndSaveMemories(
         source_artifact_id: sourceArtifactId ?? null,
         source_message: userMessage,
       })
+
+      // CIL observation: feed memory into per-tenant knowledge graph (non-blocking)
+      try {
+        const { notifyCIL } = await import('@/lib/cil/notify')
+        const entityIds = [`chef_${tenantId}`]
+        if (relatedClientId) entityIds.push(`client_${relatedClientId}`)
+        await notifyCIL({
+          tenantId,
+          source: 'memory',
+          entityIds,
+          payload: {
+            category: mem.category,
+            content: mem.content,
+            importance: mem.importance,
+            label: mem.relatedClientName || mem.category,
+          },
+        })
+      } catch {
+        // CIL failure is non-fatal
+      }
     }
   } catch (err) {
     // Non-blocking - never throw. Memory extraction failure must not affect the user.

@@ -138,4 +138,26 @@ async function logExecution(
     status,
     error: error || null,
   })
+
+  // CIL observation (non-blocking)
+  try {
+    const { notifyCIL } = await import('@/lib/cil/notify')
+    const entityIds: string[] = []
+    if (context.entityId && context.entityType) {
+      entityIds.push(`${context.entityType}_${context.entityId}`)
+    }
+    await notifyCIL({
+      tenantId,
+      source: 'automation',
+      entityIds,
+      payload: {
+        rule_name: rule.name,
+        trigger_event: rule.trigger_event,
+        action_type: rule.action_type,
+        status,
+      },
+    })
+  } catch {
+    // CIL failure is non-fatal
+  }
 }

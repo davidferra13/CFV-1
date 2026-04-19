@@ -87,6 +87,27 @@ export async function appendLedgerEntryInternal(input: AppendLedgerEntryInput) {
     console.error('[non-blocking] payment.received webhook failed', err)
   }
 
+  // CIL observation: feed ledger entry into per-tenant knowledge graph (non-blocking)
+  try {
+    const { notifyCIL } = await import('@/lib/cil/notify')
+    const entityIds = [`event_${input.event_id}`]
+    if (input.client_id) entityIds.push(`client_${input.client_id}`)
+    await notifyCIL({
+      tenantId: input.tenant_id,
+      source: 'ledger',
+      entityIds,
+      payload: {
+        entry_type: input.entry_type,
+        amount_cents: input.amount_cents,
+        payment_method: input.payment_method,
+        is_refund: input.is_refund,
+        occasion: undefined,
+      },
+    })
+  } catch {
+    // CIL failure is non-fatal
+  }
+
   return { duplicate: false, entry: data }
 }
 

@@ -11,6 +11,10 @@ function isSentryEnabled() {
   )
 }
 
+function areBackgroundJobsDisabled() {
+  return process.env.DISABLE_BACKGROUND_JOBS_FOR_E2E === 'true'
+}
+
 export async function register() {
   // Fail loudly if critical production keys are missing.
   assertProductionSafetyEnv()
@@ -37,13 +41,17 @@ export async function register() {
       })
     }
 
-    const { scheduleSimulation } = await import('./lib/simulation/auto-schedule')
-    scheduleSimulation()
+    if (areBackgroundJobsDisabled()) {
+      console.log('[instrumentation] Background job startup disabled for E2E.')
+    } else {
+      const { scheduleSimulation } = await import('./lib/simulation/auto-schedule')
+      scheduleSimulation()
 
-    // Self-hosted cron ticker: fires all scheduled API routes at their defined cadences.
-    // Replaces the need for an external scheduler (Vercel cron, Windows Task Scheduler, etc.)
-    const { startCronTicker } = await import('./lib/cron/ticker')
-    startCronTicker()
+      // Self-hosted cron ticker: fires all scheduled API routes at their defined cadences.
+      // Replaces the need for an external scheduler (Vercel cron, Windows Task Scheduler, etc.)
+      const { startCronTicker } = await import('./lib/cron/ticker')
+      startCronTicker()
+    }
 
     // Warm up critical pages so the first real user doesn't hit cold-start latency.
     // Each dynamic page requires loading its server-side module graph on first hit.

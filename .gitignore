@@ -274,3 +274,4 @@ scripts/archive-digester/extracted-threads.json
 scripts/archive-digester/parsed-emails.json
 scripts/archive-digester/*.mbox
 graphify
+graphify-out

@@ -251,9 +251,8 @@ export async function formatDishPhotoResponse(data: DishPhotoTags): Promise<stri
 
 // ─── Audio / Voice Memo Processing (Gemma 4 native audio) ───────────────────
 
-// Type + formatter re-exported from non-server module (sync fns can't live in 'use server' files)
+// Type re-exported; formatter accessed via direct import in consumers (sync fns can't re-export from 'use server' files)
 export type { VoiceMemoData } from './voice-memo-format'
-export { formatVoiceMemoResponse } from './voice-memo-format'
 import type { VoiceMemoData } from './voice-memo-format'
 
 const VOICE_MEMO_PROMPT = `You are transcribing a voice memo from a private chef. Listen carefully and extract:

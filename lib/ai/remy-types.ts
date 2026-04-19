@@ -392,6 +392,7 @@ export interface RemyContext {
     stockAlerts: number
     freshnessPct: number
   }
+  cilInsights?: string
 }
 
 // ─── Page Entity Context ────────────────────────────────────────────────────

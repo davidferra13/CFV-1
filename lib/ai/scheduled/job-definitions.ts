@@ -143,4 +143,20 @@ export const SCHEDULED_JOBS: ScheduledJob[] = [
     seedOnStartup: true,
     enabled: true,
   },
+  {
+    taskType: 'scheduled.cil_decay',
+    name: 'CIL Graph Decay Sweep',
+    intervalMs: 24 * 60 * 60 * 1000,
+    priority: AI_PRIORITY.BATCH,
+    seedOnStartup: true,
+    enabled: true,
+  },
+  {
+    taskType: 'scheduled.cil_scan',
+    name: 'CIL Pattern Scanner',
+    intervalMs: 60 * 60 * 1000,
+    priority: AI_PRIORITY.BATCH,
+    seedOnStartup: true,
+    enabled: true,
+  },
 ]

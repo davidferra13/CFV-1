@@ -1454,6 +1454,28 @@ export async function transitionEvent({
     log.events.warn('Outbound webhook dispatch failed (non-blocking)', { error: err })
   }
 
+  // CIL observation: feed transition into per-tenant knowledge graph (non-blocking)
+  try {
+    const { notifyCIL } = await import('@/lib/cil/notify')
+    const entityIds = [`event_${eventId}`]
+    if (event.client_id) entityIds.push(`client_${event.client_id}`)
+    await notifyCIL({
+      tenantId: event.tenant_id,
+      source: 'event_transition',
+      entityIds,
+      payload: {
+        fromStatus,
+        toStatus,
+        occasion: event.occasion,
+        clientName: event.client_id ? undefined : undefined,
+        eventDate: event.event_date,
+        guestCount: event.guest_count,
+      },
+    })
+  } catch {
+    // CIL failure is non-fatal
+  }
+
   return {
     success: true,
     fromStatus,

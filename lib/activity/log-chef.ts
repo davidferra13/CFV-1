@@ -56,6 +56,28 @@ export async function logChefActivity(input: {
         action: input.action,
       })
     }
+
+    // CIL observation: feed activity into per-tenant knowledge graph (non-blocking)
+    try {
+      const { notifyCIL } = await import('@/lib/cil/notify')
+      const entityIds = [`chef_${input.tenantId}`]
+      if (input.entityId) entityIds.push(`${input.entityType}_${input.entityId}`)
+      if (input.clientId) entityIds.push(`client_${input.clientId}`)
+      await notifyCIL({
+        tenantId: input.tenantId,
+        source: 'db_mutation',
+        entityIds,
+        payload: {
+          action: input.action,
+          domain: input.domain,
+          entityType: input.entityType,
+          summary: input.summary,
+          ...(input.context || {}),
+        },
+      })
+    } catch {
+      // CIL failure is non-fatal
+    }
   } catch (err) {
     logActivityEvent('error', 'logChefActivity failed (non-fatal)', {
       action: input.action,

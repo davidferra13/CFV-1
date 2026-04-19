@@ -67,8 +67,8 @@ import {
   analyzeDishPhoto,
   formatDishPhotoResponse,
   processVoiceMemo,
-  formatVoiceMemoResponse,
 } from '@/lib/ai/remy-vision-actions'
+import { formatVoiceMemoResponse } from '@/lib/ai/voice-memo-format'
 
 //  POST Handler
 

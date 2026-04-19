@@ -26,6 +26,8 @@ import {
   handleSocialPostDraft,
   handleClientSentiment,
 } from '@/lib/ai/scheduled/jobs'
+import { handleCILDecay } from '@/lib/cil/decay-handler'
+import { handleCILScan } from '@/lib/cil/scanner-handler'
 import {
   handleInquiryCreated,
   handleInquiryStale,
@@ -449,6 +451,20 @@ const SCHEDULED_HANDLER_MAP: Record<
     endpoint: 'pc',
     recurrence: '1 week',
     handler: handleClientSentiment,
+  },
+  'scheduled.cil_decay': {
+    name: 'CIL Graph Decay Sweep',
+    model: 'fast',
+    endpoint: 'pc',
+    recurrence: '1 day',
+    handler: handleCILDecay,
+  },
+  'scheduled.cil_scan': {
+    name: 'CIL Pattern Scanner',
+    model: 'fast',
+    endpoint: 'pc',
+    recurrence: '1 hour',
+    handler: handleCILScan,
   },
 }
 

@@ -157,8 +157,9 @@ The systems that power everything.
 
 - [x] Authentication (Auth.js v5, credentials + Google OAuth, JWT sessions)
 - [x] Database (PostgreSQL, Drizzle ORM, 725 tables, 4-layer schema)
-- [x] AI runtime (Ollama for private data, Gemini for generic tasks)
+- [x] AI runtime (Gemma 4 via Ollama, single provider, cloud in prod)
 - [x] Real-time updates (SSE with EventEmitter bus)
+- [x] **Continuous Intelligence Layer** - Phase 1+2 built April 18: per-tenant SQLite knowledge graph, 7 signal sources, hourly pattern scanner, Remy context integration. Graphify-inspired confidence model (EXTRACTED/INFERRED/AMBIGUOUS)
 - [x] File storage (local filesystem, HMAC signed URLs)
 - [ ] **Mobile app + PWA activation** - P0 spec ready: `docs/specs/cloud-mobile-unified-migration.md` (self-hosted, $0 cost)
 - [x] Email integration (Gmail API, send/sync/threading)

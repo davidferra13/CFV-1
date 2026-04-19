@@ -676,6 +676,13 @@ ${context.businessIntelligence}
 Reference these insights when the chef asks about their business, pricing strategy, client health, capacity, or growth.`)
   }
 
+  // CIL: Continuous Intelligence Layer insights (accumulated knowledge graph)
+  if (context.cilInsights) {
+    parts.push(`\nCONTINUOUS INTELLIGENCE (accumulated patterns from chef's history - use proactively):
+${context.cilInsights}
+These insights come from the chef's persistent knowledge graph. Mention relevant ones when they naturally fit the conversation. Proactively flag high-severity items.`)
+  }
+
   // Revenue pattern awareness
   if (context.revenuePattern) {
     const rp = context.revenuePattern

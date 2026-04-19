@@ -447,6 +447,14 @@ export async function loadRemyContext(
     })(),
     // Price intelligence from Pi
     priceContext: priceContext ?? undefined,
+    // CIL: Continuous Intelligence Layer insights (graph-based pattern detection)
+    cilInsights: isMinimal
+      ? undefined
+      : await withContextFallback(tenantId, 'load_cil_insights', undefined, async () => {
+          const { getCILInsights, formatInsightsForRemy } = await import('@/lib/cil/api')
+          const scan = await getCILInsights(tenantId)
+          return scan ? formatInsightsForRemy(scan) : undefined
+        }),
   }
 }
 

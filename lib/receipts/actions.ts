@@ -489,6 +489,26 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
 
             if (receiveRows.length > 0) {
               await db.from('inventory_transactions').insert(receiveRows)
+
+              // CIL observation: inventory from receipt (non-blocking)
+              try {
+                const { notifyCIL } = await import('@/lib/cil/notify')
+                for (const row of receiveRows) {
+                  await notifyCIL({
+                    tenantId: user.tenantId!,
+                    source: 'inventory',
+                    entityIds: [`ingredient_${row.ingredient_id}`, `chef_${user.tenantId}`],
+                    payload: {
+                      transaction_type: row.transaction_type,
+                      quantity: row.quantity,
+                      cost_cents: row.cost_cents,
+                      name: row.notes,
+                    },
+                  })
+                }
+              } catch {
+                // CIL failure is non-fatal
+              }
             }
           }
         } catch (invErr) {
