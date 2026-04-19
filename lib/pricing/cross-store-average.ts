@@ -2,6 +2,8 @@
  * Cross-Store Regional Average Pricing
  * Reads from the regional_price_averages materialized view.
  * Provides Tier 6 in the 10-tier resolution chain.
+ *
+ * With state grouping: prefers state-matched row, falls back to any available.
  */
 
 import { db } from '@/lib/db'
@@ -23,6 +25,7 @@ interface RegionalAvgRow {
   ingredient_id: string
   ingredient_name: string
   category: string | null
+  store_state: string | null
   store_count: number
   avg_price_per_unit_cents: number
   min_price_per_unit_cents: number
@@ -31,35 +34,47 @@ interface RegionalAvgRow {
   most_recent_date: string
 }
 
+function mapRow(row: RegionalAvgRow): RegionalAverage {
+  return {
+    ingredientId: row.ingredient_id,
+    ingredientName: row.ingredient_name,
+    category: row.category,
+    storeCount: Number(row.store_count),
+    avgPricePerUnitCents: Number(row.avg_price_per_unit_cents),
+    minPricePerUnitCents: Number(row.min_price_per_unit_cents),
+    maxPricePerUnitCents: Number(row.max_price_per_unit_cents),
+    mostCommonUnit: row.most_common_unit || 'each',
+    mostRecentDate: row.most_recent_date,
+  }
+}
+
 /**
  * Get cross-store average price for a single ingredient.
+ * Prefers state-matched row, falls back to any available.
  * Returns null if the materialized view has no data or fewer than 2 stores.
  */
-export async function getRegionalAverage(ingredientId: string): Promise<RegionalAverage | null> {
+export async function getRegionalAverage(
+  ingredientId: string,
+  state?: string | null
+): Promise<RegionalAverage | null> {
   try {
     const rows = (await db.execute(sql`
-      SELECT ingredient_id, ingredient_name, category, store_count,
+      SELECT ingredient_id, ingredient_name, category, store_state, store_count,
              avg_price_per_unit_cents, min_price_per_unit_cents, max_price_per_unit_cents,
              most_common_unit, most_recent_date
       FROM regional_price_averages
       WHERE ingredient_id = ${ingredientId}
+      ORDER BY
+        CASE WHEN ${state} IS NOT NULL AND store_state = ${state} THEN 0 ELSE 1 END,
+        store_count DESC
+      LIMIT 1
     `)) as unknown as RegionalAvgRow[]
 
     if (rows.length === 0) return null
     const row = rows[0]
     if (!row.avg_price_per_unit_cents || row.avg_price_per_unit_cents <= 0) return null
 
-    return {
-      ingredientId: row.ingredient_id,
-      ingredientName: row.ingredient_name,
-      category: row.category,
-      storeCount: Number(row.store_count),
-      avgPricePerUnitCents: Number(row.avg_price_per_unit_cents),
-      minPricePerUnitCents: Number(row.min_price_per_unit_cents),
-      maxPricePerUnitCents: Number(row.max_price_per_unit_cents),
-      mostCommonUnit: row.most_common_unit || 'each',
-      mostRecentDate: row.most_recent_date,
-    }
+    return mapRow(row)
   } catch (err) {
     // View may not exist yet (migration not applied). Gracefully skip.
     console.warn(
@@ -72,35 +87,31 @@ export async function getRegionalAverage(ingredientId: string): Promise<Regional
 /**
  * Batch lookup: get regional averages for multiple ingredients.
  * Returns a Map from ingredient_id to RegionalAverage.
+ * Prefers state-matched rows per ingredient.
  */
 export async function getRegionalAveragesBatch(
-  ingredientIds: string[]
+  ingredientIds: string[],
+  state?: string | null
 ): Promise<Map<string, RegionalAverage>> {
   const result = new Map<string, RegionalAverage>()
   if (ingredientIds.length === 0) return result
 
   try {
     const rows = (await db.execute(sql`
-      SELECT ingredient_id, ingredient_name, category, store_count,
+      SELECT DISTINCT ON (ingredient_id)
+             ingredient_id, ingredient_name, category, store_state, store_count,
              avg_price_per_unit_cents, min_price_per_unit_cents, max_price_per_unit_cents,
              most_common_unit, most_recent_date
       FROM regional_price_averages
       WHERE ingredient_id = ANY(${ingredientIds})
+      ORDER BY ingredient_id,
+        CASE WHEN ${state} IS NOT NULL AND store_state = ${state} THEN 0 ELSE 1 END,
+        store_count DESC
     `)) as unknown as RegionalAvgRow[]
 
     for (const row of rows) {
       if (row.avg_price_per_unit_cents && row.avg_price_per_unit_cents > 0) {
-        result.set(row.ingredient_id, {
-          ingredientId: row.ingredient_id,
-          ingredientName: row.ingredient_name,
-          category: row.category,
-          storeCount: Number(row.store_count),
-          avgPricePerUnitCents: Number(row.avg_price_per_unit_cents),
-          minPricePerUnitCents: Number(row.min_price_per_unit_cents),
-          maxPricePerUnitCents: Number(row.max_price_per_unit_cents),
-          mostCommonUnit: row.most_common_unit || 'each',
-          mostRecentDate: row.most_recent_date,
-        })
+        result.set(row.ingredient_id, mapRow(row))
       }
     }
   } catch (err) {

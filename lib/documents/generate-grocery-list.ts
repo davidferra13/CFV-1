@@ -286,14 +286,28 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
     return null
   }
 
-  // Resolve prices via unified 8-tier chain (batch: 3 queries, not N+1)
+  // Resolve prices via unified 10-tier chain (batch: 3 queries, not N+1)
+  // Look up chef's default store for price resolution context
   const allIngredientIds: string[] = [
     ...new Set(recipeIngredients.map((ri: any) => (ri.ingredient as any)?.id).filter(Boolean)),
   ] as string[]
   let resolvedPriceMap = new Map<string, number | null>()
   if (allIngredientIds.length > 0) {
     const { resolvePricesBatch } = await import('@/lib/pricing/resolve-price')
-    const resolved = await resolvePricesBatch(allIngredientIds, user.tenantId!)
+    let preferredStore: string | undefined
+    try {
+      const { data: defaultStore } = await db
+        .from('chef_preferred_stores')
+        .select('store_name')
+        .eq('chef_id', user.entityId)
+        .eq('is_default', true)
+        .limit(1)
+        .single()
+      if (defaultStore?.store_name) preferredStore = defaultStore.store_name
+    } catch {
+      // No default store configured; resolve-price will use best available
+    }
+    const resolved = await resolvePricesBatch(allIngredientIds, user.tenantId!, { preferredStore })
     for (const [id, price] of resolved) {
       resolvedPriceMap.set(id, price.cents)
     }

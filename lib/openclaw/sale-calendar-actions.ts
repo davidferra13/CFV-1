@@ -11,6 +11,7 @@ import { getPreferredStores } from '@/lib/grocery/store-shopping-actions'
 import { unstable_cache } from 'next/cache'
 
 const OPENCLAW_API = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
+const OPENCLAW_TOKEN = process.env.OPENCLAW_API_TOKEN || null
 
 // --- Types ---
 
@@ -35,8 +36,11 @@ async function fetchPi<T>(
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 5000)
   try {
+    const authHeaders: Record<string, string> = {}
+    if (OPENCLAW_TOKEN) authHeaders['Authorization'] = `Bearer ${OPENCLAW_TOKEN}`
     const res = await fetch(`${OPENCLAW_API}${path}`, {
       ...options,
+      headers: { ...authHeaders, ...(options?.headers || {}) },
       signal: controller.signal,
       cache: 'no-store',
     })

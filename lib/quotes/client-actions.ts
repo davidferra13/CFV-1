@@ -49,7 +49,17 @@ export async function getClientQuoteById(quoteId: string) {
     .from('quotes')
     .select(
       `
-      *,
+      id, tenant_id, inquiry_id, event_id, client_id,
+      created_at, updated_at, quote_name, pricing_model,
+      price_per_person_cents, guest_count_estimated,
+      total_quoted_cents, deposit_required, deposit_amount_cents,
+      deposit_percentage, pricing_notes, status,
+      sent_at, accepted_at, rejected_at, rejected_reason,
+      expired_at, valid_until, snapshot_frozen,
+      negotiation_occurred, original_quoted_cents,
+      version, is_superseded, show_cost_breakdown,
+      exclusions_note, addon_total_cents, effective_total_cents,
+      cover_photo_url, chef_message,
       inquiry:inquiries(id, confirmed_occasion, confirmed_date, confirmed_guest_count)
     `
     )

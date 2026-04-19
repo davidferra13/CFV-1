@@ -8,6 +8,7 @@ export default {
     port: 8081,
     dbEndpoint: '/api/sync/database',
     timeoutMs: 600000, // 10 min - snapshot creation on busy Pi can take 3-5 min
+    authToken: process.env.OPENCLAW_API_TOKEN || null,
   },
   pg: {
     connectionString:

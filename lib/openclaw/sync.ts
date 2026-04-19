@@ -25,6 +25,13 @@ import { refreshPriceViews } from '@/lib/pricing/cross-store-average'
 import { validatePrice, validatePriceChange } from '@/lib/openclaw/price-validator'
 
 const OPENCLAW_API = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
+const OPENCLAW_TOKEN = process.env.OPENCLAW_API_TOKEN || null
+
+function piHeaders(extra?: Record<string, string>): Record<string, string> {
+  const h: Record<string, string> = { ...extra }
+  if (OPENCLAW_TOKEN) h['Authorization'] = `Bearer ${OPENCLAW_TOKEN}`
+  return h
+}
 
 // --- Types ---
 
@@ -100,6 +107,7 @@ export async function getOpenClawStatsInternal(): Promise<OpenClawStats | null> 
     const res = await fetch(`${OPENCLAW_API}/api/stats`, {
       signal: controller.signal,
       cache: 'no-store',
+      headers: piHeaders(),
     })
     clearTimeout(timeout)
     if (!res.ok) return null
@@ -131,6 +139,7 @@ export async function getOpenClawPrices(params?: {
     const res = await fetch(`${OPENCLAW_API}/api/prices?${searchParams}`, {
       signal: controller.signal,
       cache: 'no-store',
+      headers: piHeaders(),
     })
     clearTimeout(timeout)
     if (!res.ok) return []
@@ -149,6 +158,7 @@ export async function getOpenClawSources(): Promise<any[]> {
     const res = await fetch(`${OPENCLAW_API}/api/sources`, {
       signal: controller.signal,
       cache: 'no-store',
+      headers: piHeaders(),
     })
     clearTimeout(timeout)
     if (!res.ok) return []
@@ -167,6 +177,7 @@ export async function getOpenClawChanges(limit = 50): Promise<any[]> {
     const res = await fetch(`${OPENCLAW_API}/api/changes?limit=${limit}`, {
       signal: controller.signal,
       cache: 'no-store',
+      headers: piHeaders(),
     })
     clearTimeout(timeout)
     if (!res.ok) return []
@@ -189,7 +200,7 @@ async function fetchEnriched(
     const timeout = setTimeout(() => controller.abort(), 60000)
     const res = await fetch(`${OPENCLAW_API}/api/prices/enriched`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: piHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ items: names }),
       signal: controller.signal,
       cache: 'no-store',
@@ -217,7 +228,7 @@ async function suggestCatalogItems(names: string[]): Promise<void> {
   try {
     await fetch(`${OPENCLAW_API}/api/catalog/suggest`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: piHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ items: names.slice(0, 500) }),
       signal: AbortSignal.timeout(10000),
     })
@@ -288,6 +299,15 @@ async function syncCore(
   tenantId?: string | null
 ): Promise<SyncResult> {
   try {
+    // Step 0: Resolve chef home_state for geographic tagging of synced prices
+    let chefHomeState: string | null = null
+    if (tenantId) {
+      const stateRows = (await db.execute(
+        sql`SELECT home_state FROM chefs WHERE id = ${tenantId} LIMIT 1`
+      )) as unknown as { home_state: string | null }[]
+      chefHomeState = stateRows[0]?.home_state || null
+    }
+
     // Step 1: Load ChefFlow ingredients for the current tenant, unless this is an internal sync.
     const ingredientQuery = db
       .select({
@@ -496,13 +516,14 @@ async function syncCore(
               await db.execute(sql`
                 INSERT INTO ingredient_price_history
                   (id, ingredient_id, tenant_id, price_cents, price_per_unit_cents,
-                   quantity, unit, purchase_date, store_name, source, notes)
+                   quantity, unit, purchase_date, store_name, source, notes, store_state)
                 VALUES (
                   gen_random_uuid(), ${ing.id}, ${ing.tenantId},
                   ${storePrice.cents}, ${storePrice.normalized_cents},
                   1, ${storePrice.normalized_unit}, ${today},
                   ${storePrice.store}, ${granularSource},
-                  ${`Automated price sync - ${storePrice.store}`}
+                  ${`Automated price sync - ${storePrice.store}`},
+                  ${chefHomeState}
                 )
                 ON CONFLICT (ingredient_id, tenant_id, source, store_name, purchase_date)
                   WHERE source LIKE 'openclaw_%'
@@ -510,7 +531,8 @@ async function syncCore(
                   price_cents = EXCLUDED.price_cents,
                   price_per_unit_cents = EXCLUDED.price_per_unit_cents,
                   unit = EXCLUDED.unit,
-                  notes = EXCLUDED.notes
+                  notes = EXCLUDED.notes,
+                  store_state = COALESCE(EXCLUDED.store_state, ingredient_price_history.store_state)
               `)
             } catch (err) {
               console.warn(
@@ -571,6 +593,7 @@ async function syncCore(
       revalidatePath('/culinary/costing')
       revalidateTag('recipe-costs')
       revalidateTag('ingredient-prices')
+      revalidateTag('sale-calendar')
     }
 
     // Step 6b: Trigger cost refresh for all synced ingredients (non-blocking)
@@ -586,11 +609,12 @@ async function syncCore(
       }
     }
 
-    // Step 7: Refresh materialized views for cross-store averaging (non-blocking)
+    // Step 7: Refresh materialized views for cross-store averaging
     if (updated > 0 && !dryRun) {
-      refreshPriceViews().catch((err: unknown) => {
-        console.error('[syncPrices] View refresh failed (non-blocking):', err)
-      })
+      const viewResult = await refreshPriceViews()
+      if (!viewResult.success) {
+        console.error('[syncPrices] View refresh failed:', viewResult.error)
+      }
     }
 
     // Step 8: Feed unmatched names back to Pi for catalog growth (Phase 3.5)

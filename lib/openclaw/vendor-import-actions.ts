@@ -8,8 +8,9 @@
  */
 
 import { requireChef } from '@/lib/auth/get-user'
-import { revalidatePath } from 'next/cache'
-import { revalidateTag } from 'next/cache'
+import { db } from '@/lib/db'
+import { sql } from 'drizzle-orm'
+import { revalidatePath, revalidateTag } from 'next/cache'
 
 const OPENCLAW_API = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
 
@@ -154,7 +155,8 @@ export async function confirmVendorImport(payload: {
   vendor_source_id: string
   items: { canonical_id: string; raw_name: string; price_cents: number; unit: string }[]
 }): Promise<ConfirmResult> {
-  await requireChef()
+  const user = await requireChef()
+  const tenantId = user.tenantId!
 
   if (!payload.items || payload.items.length === 0) {
     return { success: false, imported: 0, error: 'No items to import' }
@@ -178,6 +180,66 @@ export async function confirmVendorImport(payload: {
     }
 
     const data = await res.json()
+
+    // Write vendor prices to local ingredient_price_history (Tier 1 resolution)
+    // Map canonical_id -> local ingredient_id via ingredient_aliases
+    try {
+      const canonicalIds = payload.items.map((i) => i.canonical_id).filter(Boolean)
+      if (canonicalIds.length > 0) {
+        const aliasRows = (await db.execute(sql`
+          SELECT ia.ingredient_id, ia.system_ingredient_id
+          FROM ingredient_aliases ia
+          WHERE ia.system_ingredient_id = ANY(${canonicalIds})
+            AND ia.match_method != 'dismissed'
+            AND EXISTS (
+              SELECT 1 FROM ingredients ing
+              WHERE ing.id = ia.ingredient_id AND ing.tenant_id = ${tenantId}
+            )
+        `)) as unknown as { ingredient_id: string; system_ingredient_id: string }[]
+
+        const canonicalToLocal = new Map<string, string>()
+        for (const row of aliasRows) {
+          canonicalToLocal.set(row.system_ingredient_id, row.ingredient_id)
+        }
+
+        const today = new Date().toISOString().split('T')[0]
+        for (const item of payload.items) {
+          const localIngredientId = canonicalToLocal.get(item.canonical_id)
+          if (!localIngredientId) continue
+
+          await db.execute(sql`
+            INSERT INTO ingredient_price_history
+              (id, ingredient_id, tenant_id, price_cents, price_per_unit_cents,
+               quantity, unit, purchase_date, store_name, source, notes)
+            VALUES (
+              gen_random_uuid(), ${localIngredientId}, ${tenantId},
+              ${item.price_cents}, ${item.price_cents},
+              1, ${item.unit || 'each'}, ${today},
+              ${payload.vendor_name}, 'vendor_invoice',
+              ${`Vendor import: ${item.raw_name}`}
+            )
+          `)
+
+          // Update ingredient last_price
+          await db.execute(sql`
+            UPDATE ingredients SET
+              last_price_cents = ${item.price_cents},
+              last_price_date = ${today},
+              price_unit = ${item.unit || 'each'},
+              last_price_source = 'vendor_invoice',
+              last_price_store = ${payload.vendor_name},
+              last_price_confidence = 1.0
+            WHERE id = ${localIngredientId}
+              AND tenant_id = ${tenantId}
+          `)
+        }
+      }
+    } catch (err) {
+      // Non-blocking: Pi confirm succeeded, local write is best-effort
+      console.warn(
+        `[vendor-import] Local price history write failed: ${err instanceof Error ? err.message : 'unknown'}`
+      )
+    }
 
     revalidatePath('/culinary/price-catalog')
     revalidateTag('pi-data')

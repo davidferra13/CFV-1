@@ -25,6 +25,20 @@ import { sql } from 'drizzle-orm'
 import { getRegionalAverage, getRegionalAveragesBatch } from './cross-store-average'
 import { getCategoryBaseline, getCategoryBaselinesBatch } from './category-baseline'
 
+// --- Chef State Lookup (cached per request) ---
+
+const stateCache = new Map<string, string | null>()
+
+async function getChefHomeState(tenantId: string): Promise<string | null> {
+  if (stateCache.has(tenantId)) return stateCache.get(tenantId)!
+  const rows = (await db.execute(
+    sql`SELECT home_state FROM chefs WHERE id = ${tenantId} LIMIT 1`
+  )) as unknown as { home_state: string | null }[]
+  const state = rows[0]?.home_state || null
+  stateCache.set(tenantId, state)
+  return state
+}
+
 // --- Types ---
 
 export type PriceSource =
@@ -231,7 +245,7 @@ export async function resolvePrice(
   options?: { preferredStore?: string; state?: string }
 ): Promise<ResolvedPrice> {
   const preferredStore = options?.preferredStore || null
-  const preferredState = options?.state || null
+  const preferredState = options?.state || (await getChefHomeState(tenantId))
   const noPrice: ResolvedPrice = {
     cents: null,
     unit: 'each',
@@ -246,13 +260,13 @@ export async function resolvePrice(
     reason: 'No price data. Log a receipt to set the price.',
   }
 
-  // Tier 1: RECEIPT (manual, grocery_entry, po_receipt, vendor_invoice) within 90 days
+  // Tier 1: RECEIPT (manual, receipt, grocery_entry, po_receipt, vendor_invoice) within 90 days
   const receipt = (await db.execute(sql`
     SELECT price_per_unit_cents, unit, store_name, purchase_date, source
     FROM ingredient_price_history
     WHERE ingredient_id = ${ingredientId}
       AND tenant_id = ${tenantId}
-      AND source IN ('manual', 'grocery_entry', 'po_receipt', 'vendor_invoice')
+      AND source IN ('manual', 'receipt', 'grocery_entry', 'po_receipt', 'vendor_invoice')
       AND purchase_date > CURRENT_DATE - INTERVAL '90 days'
     ORDER BY purchase_date DESC
     LIMIT 1
@@ -453,7 +467,7 @@ export async function resolvePrice(
   }
 
   // Tier 6: REGIONAL_AVERAGE (cross-store average from materialized view)
-  const regionalAvg = await getRegionalAverage(ingredientId)
+  const regionalAvg = await getRegionalAverage(ingredientId, preferredState)
   if (regionalAvg) {
     // Check freshness: only use if most recent data is within 60 days
     const daysSinceRecent = regionalAvg.mostRecentDate
@@ -568,7 +582,7 @@ export async function resolvePrice(
     FROM ingredient_price_history
     WHERE ingredient_id = ${ingredientId}
       AND tenant_id = ${tenantId}
-      AND source IN ('manual', 'grocery_entry', 'po_receipt', 'vendor_invoice')
+      AND source IN ('manual', 'receipt', 'grocery_entry', 'po_receipt', 'vendor_invoice')
       AND price_per_unit_cents IS NOT NULL
   `)) as unknown as AvgRow[]
 
@@ -636,7 +650,7 @@ export async function resolvePricesBatch(
   options?: { preferredStore?: string; state?: string }
 ): Promise<Map<string, ResolvedPrice>> {
   const preferredStore = options?.preferredStore || null
-  const preferredState = options?.state || null
+  const preferredState = options?.state || (await getChefHomeState(tenantId))
   const result = new Map<string, ResolvedPrice>()
 
   if (ingredientIds.length === 0) return result
@@ -647,7 +661,7 @@ export async function resolvePricesBatch(
     FROM ingredient_price_history
     WHERE ingredient_id = ANY(${ingredientIds})
       AND tenant_id = ${tenantId}
-      AND source IN ('manual', 'grocery_entry', 'po_receipt', 'vendor_invoice')
+      AND source IN ('manual', 'receipt', 'grocery_entry', 'po_receipt', 'vendor_invoice')
     ORDER BY ingredient_id, purchase_date DESC
   `)) as unknown as BatchRow[]
 
@@ -709,7 +723,7 @@ export async function resolvePricesBatch(
   }
 
   // Query 4: Regional averages for all ingredients (batch)
-  const regionalAverages = await getRegionalAveragesBatch(ingredientIds)
+  const regionalAverages = await getRegionalAveragesBatch(ingredientIds, preferredState)
 
   // Query 5: Get categories for all ingredients (needed for category baseline fallback)
   const categoryRows = (await db.execute(sql`

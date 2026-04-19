@@ -163,6 +163,9 @@ export const DEFAULT_TIER_MAP: Record<NotificationAction, NotificationTier> = {
   // Collaboration
   event_collaboration_invite: 'alert',
 
+  // Price intelligence
+  price_watch_alert: 'alert',
+
   // System
   system_alert: 'critical',
   account_access_alert: 'critical',

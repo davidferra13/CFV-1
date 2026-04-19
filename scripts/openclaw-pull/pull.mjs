@@ -13,7 +13,9 @@
  * Or via Windows Scheduled Task (hourly).
  */
 
-import { mkdirSync, readdirSync, statSync, unlinkSync, writeFileSync } from 'fs'
+import { mkdirSync, readdirSync, statSync, unlinkSync, createWriteStream, copyFileSync, openSync, readSync, closeSync } from 'fs'
+import { pipeline } from 'stream/promises'
+import { Readable } from 'stream'
 import config from './config.mjs'
 
 let Database
@@ -36,14 +38,14 @@ function timestampForFilename(date) {
   return date.toISOString().replace(/[:.]/g, '-')
 }
 
-function persistLocalMirror(buffer, startedAt) {
+function persistLocalMirror(sourcePath, startedAt) {
   mkdirSync(config.backupDir, { recursive: true })
 
   const latestPath = `${config.backupDir}/${config.backups.latestFile}`
   const snapshotPath = `${config.backupDir}/${config.backups.snapshotPrefix}${timestampForFilename(startedAt)}.db`
 
-  writeFileSync(latestPath, buffer)
-  writeFileSync(snapshotPath, buffer)
+  copyFileSync(sourcePath, latestPath)
+  copyFileSync(sourcePath, snapshotPath)
 
   const snapshotFiles = readdirSync(config.backupDir)
     .filter(
@@ -503,26 +505,32 @@ async function main() {
   mkdirSync(config.tempDir, { recursive: true })
 
   // ── Step 1: Download SQLite ────────────────────────────────────────────
+  const dbPath = `${config.tempDir}/openclaw-latest.db`
   log(`Fetching SQLite from http://${config.pi.host}:${config.pi.port}${config.pi.dbEndpoint}`)
-  let buffer
   try {
+    const headers = {}
+    if (config.pi.authToken) headers['Authorization'] = `Bearer ${config.pi.authToken}`
     const res = await fetch(
       `http://${config.pi.host}:${config.pi.port}${config.pi.dbEndpoint}`,
-      { signal: AbortSignal.timeout(config.pi.timeoutMs) }
+      { signal: AbortSignal.timeout(config.pi.timeoutMs), headers }
     )
     if (!res.ok) throw new Error(`Pi returned ${res.status}: ${res.statusText}`)
-    buffer = Buffer.from(await res.arrayBuffer())
+    // Stream to disk instead of buffering entire DB in memory
+    await pipeline(Readable.fromWeb(res.body), createWriteStream(dbPath))
   } catch (err) {
     log(`ERROR: Pi unreachable - ${err.message}`)
     process.exit(1)
   }
 
-  const dbPath = `${config.tempDir}/openclaw-latest.db`
-  writeFileSync(dbPath, buffer)
   const fileSize = statSync(dbPath).size
   log(`Downloaded ${(fileSize / 1024 / 1024).toFixed(1)}MB SQLite database`)
 
-  if (buffer.length < 100 || buffer.toString('utf8', 0, 16) !== 'SQLite format 3\0') {
+  // Validate SQLite magic bytes from disk (not memory)
+  const fd = openSync(dbPath, 'r')
+  const header = Buffer.alloc(16)
+  readSync(fd, header, 0, 16, 0)
+  closeSync(fd)
+  if (fileSize < 100 || header.toString('utf8', 0, 16) !== 'SQLite format 3\0') {
     log('ERROR: Downloaded file is not a valid SQLite database')
     process.exit(1)
   }

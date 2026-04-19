@@ -153,6 +153,8 @@ export type NotificationAction =
   | 'referral_booking_converted'
   // Collaboration
   | 'event_collaboration_invite'
+  // Price intelligence
+  | 'price_watch_alert'
 
 export type Notification = {
   id: string
@@ -367,6 +369,9 @@ export const NOTIFICATION_CONFIG: Record<
 
   // Collaboration
   event_collaboration_invite: { category: 'event', icon: 'Users', toastByDefault: true },
+
+  // Price intelligence
+  price_watch_alert: { category: 'ops', icon: 'TrendingDown', toastByDefault: true },
 }
 
 // Category display names for preferences UI

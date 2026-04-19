@@ -2,8 +2,10 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { createNotification } from '@/lib/notifications/actions'
 import type { SimulatorDish } from './menu-simulator'
 import { dateToDateString } from '@/lib/utils/format'
+import { unstable_cache, revalidateTag } from 'next/cache'
 
 // ============================================
 // TYPES
@@ -335,7 +337,68 @@ export async function analyzeMenuEngineering(dateRange?: {
   for (const r of engineeringData) counts[r.quadrant]++
   const uncostable = engineeringData.filter((r) => !r.hasCompleteCostData).length
 
-  // 8. Build recommendations
+  // 8. Detect classification changes and notify (Q98 fix)
+  try {
+    const cacheKey = `menu-eng-snapshot-${tenantId}`
+    const getSnapshot = unstable_cache(
+      async () => ({}) as Record<string, MenuQuadrant>,
+      [cacheKey],
+      { tags: ['menu-engineering-snapshot'], revalidate: false }
+    )
+    const previousSnapshot = await getSnapshot()
+
+    // Build current snapshot
+    const currentSnapshot: Record<string, MenuQuadrant> = {}
+    for (const r of engineeringData) {
+      currentSnapshot[r.recipeId] = r.quadrant
+    }
+
+    // Compare and notify on significant shifts
+    const significantShifts: { name: string; from: string; to: string }[] = []
+    for (const r of engineeringData) {
+      const prev = previousSnapshot[r.recipeId]
+      if (!prev || prev === r.quadrant) continue
+      // Only alert on negative shifts (star->dog, star->plowhorse, etc.)
+      const qRank: Record<MenuQuadrant, number> = { star: 0, puzzle: 1, plowhorse: 2, dog: 3 }
+      if (qRank[r.quadrant] > qRank[prev]) {
+        significantShifts.push({
+          name: r.recipeName,
+          from: QUADRANT_META[prev].label,
+          to: QUADRANT_META[r.quadrant].label,
+        })
+      }
+    }
+
+    if (significantShifts.length > 0) {
+      const shiftList = significantShifts
+        .slice(0, 3)
+        .map((s) => `${s.name}: ${s.from} -> ${s.to}`)
+        .join(', ')
+      const extra = significantShifts.length > 3 ? ` (+${significantShifts.length - 3} more)` : ''
+
+      await createNotification({
+        tenantId,
+        recipientId: user.id,
+        category: 'ops',
+        action: 'system_alert',
+        title: 'Menu engineering classifications changed',
+        body: `${shiftList}${extra}`,
+        actionUrl: '/culinary/menus',
+      })
+    }
+
+    // Store current snapshot for next comparison (overwrite cache)
+    revalidateTag('menu-engineering-snapshot')
+    // Re-cache with current data
+    unstable_cache(async () => currentSnapshot, [cacheKey], {
+      tags: ['menu-engineering-snapshot'],
+      revalidate: false,
+    })
+  } catch {
+    // Non-blocking: classification change detection is best-effort
+  }
+
+  // 9. Build recommendations
   const recommendations: QuadrantRecommendation[] = (
     ['star', 'plowhorse', 'puzzle', 'dog'] as MenuQuadrant[]
   ).map((q) => ({

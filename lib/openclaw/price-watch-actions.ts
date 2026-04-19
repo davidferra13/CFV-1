@@ -8,6 +8,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { createNotification } from '@/lib/notifications/actions'
 import { revalidatePath } from 'next/cache'
 
 const OPENCLAW_API = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
@@ -174,9 +175,19 @@ export async function checkPriceWatchAlerts(): Promise<PriceWatchAlert[]> {
     const data = await res.json()
     const results = data.results || {}
 
+    const FRESHNESS_LIMIT_MS = 14 * 24 * 60 * 60 * 1000 // 14 days
+
     for (const watch of watches) {
       const piResult = results[watch.ingredient_name]
       if (!piResult?.bestPrice) continue
+
+      // Freshness gate: skip stale prices older than 14 days (Q86 fix)
+      const priceDate =
+        piResult.bestPrice.date || piResult.bestPrice.lastSeen || piResult.bestPrice.purchase_date
+      if (priceDate) {
+        const priceAge = Date.now() - new Date(priceDate).getTime()
+        if (priceAge > FRESHNESS_LIMIT_MS) continue
+      }
 
       const currentCents = piResult.bestPrice.cents
       if (currentCents <= watch.target_price_cents) {
@@ -210,6 +221,24 @@ export async function checkPriceWatchAlerts(): Promise<PriceWatchAlert[]> {
       }
     } catch (err) {
       console.error('[checkPriceWatchAlerts] Failed to stamp last_alerted_at:', err)
+    }
+
+    // Create in-app notifications for triggered alerts
+    for (const alert of alerts) {
+      try {
+        const priceFmt = (c: number) => `$${(c / 100).toFixed(2)}`
+        await createNotification({
+          tenantId: user.tenantId!,
+          recipientId: user.id,
+          category: 'ops',
+          action: 'price_watch_alert',
+          title: `${alert.ingredientName} hit your target price`,
+          body: `Now ${priceFmt(alert.currentPriceCents)}/${alert.priceUnit} at ${alert.store} (target: ${priceFmt(alert.targetPriceCents)}, ${alert.savingsPct}% below)`,
+          actionUrl: '/culinary/ingredients',
+        })
+      } catch {
+        // Non-blocking: alert still returned even if notification fails
+      }
     }
   }
 
