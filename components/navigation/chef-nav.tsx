@@ -35,7 +35,7 @@ import { InboxUnreadBadge } from '@/components/communication/inbox-unread-badge'
 import { CirclesUnreadBadge } from '@/components/hub/circles-unread-badge'
 import { InquiriesUnreadBadge } from '@/components/inquiries/inquiries-unread-badge'
 import { ChatNavUnreadBadge } from '@/components/chat/chat-nav-unread-badge'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
+
 import { usePermissions } from '@/lib/context/permission-context'
 import { getStrictFocusGroupRank, isStrictFocusGroupVisible } from '@/lib/navigation/focus-mode-nav'
 
@@ -712,7 +712,6 @@ export function ChefSidebar({
                 <Bot className="w-[18px] h-[18px]" />
               </button>
             )}
-            <ThemeToggle className="h-8 w-8 min-h-0 rounded-lg border border-stone-700 bg-stone-900/80 p-0 text-stone-400 hover:bg-stone-800 hover:text-stone-100" />
             <NotificationBell />
             <button
               type="button"
@@ -746,7 +745,6 @@ export function ChefSidebar({
             {/* Notification bell */}
             <NotificationBell collapsed />
             <GlobalSearch userId={userId} tenantId={tenantId} />
-            <ThemeToggle className="h-10 w-10 min-h-0 rounded-lg border border-stone-700 bg-stone-900/80 p-0 text-stone-400 hover:bg-stone-800 hover:text-stone-100" />
             {isAdmin && (
               <button
                 type="button"

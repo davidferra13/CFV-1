@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut } from '@/lib/auth/actions'
 import { Button } from '@/components/ui/button'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 type Props = {
   staffName: string
@@ -70,7 +69,6 @@ export function StaffNav({ staffName, staffEmail }: Props) {
 
           {/* Right side: name + sign out */}
           <div className="hidden sm:flex items-center gap-4">
-            <ThemeToggle className="h-10 w-10 min-h-0 rounded-lg border border-stone-700 bg-stone-900/80 p-0" />
             <div className="text-right">
               <div className="text-sm font-medium text-stone-200">{staffName}</div>
               <div className="text-xs text-stone-500">{staffEmail}</div>
@@ -82,7 +80,6 @@ export function StaffNav({ staffName, staffEmail }: Props) {
 
           {/* Mobile hamburger */}
           <div className="flex items-center gap-1 sm:hidden">
-            <ThemeToggle className="h-10 w-10 min-h-0 rounded-lg border border-stone-700 bg-stone-900/80 p-0" />
             <button
               className="text-stone-400 hover:text-stone-200 p-2"
               onClick={() => setMenuOpen(!menuOpen)}

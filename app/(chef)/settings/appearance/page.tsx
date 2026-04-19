@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { ColorPalettePicker } from '@/components/settings/color-palette-picker'
 
 export const metadata: Metadata = { title: 'Appearance' }
@@ -32,13 +31,7 @@ export default async function AppearancePage() {
           <CardTitle>Color Mode</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-stone-300">Light / Dark</p>
-              <p className="text-sm text-stone-500">Switch between light and dark mode</p>
-            </div>
-            <ThemeToggle dataTestId="appearance-theme-toggle" />
-          </div>
+          <p className="text-sm text-stone-400">Dark mode is always on.</p>
         </CardContent>
       </Card>
     </div>

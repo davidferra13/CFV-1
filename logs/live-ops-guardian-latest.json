@@ -1,66 +1,51 @@
 {
-  "runId": "live-ops-27976-1776611701",
-  "ranAt": "2026-04-19T15:15:40.1803677Z",
-  "target": null,
+  "runId": "live-ops-26068-1776615301",
+  "ranAt": "2026-04-19T16:15:35.9968134Z",
+  "target": {
+    "label": "prod",
+    "baseUrl": "http://localhost:3000"
+  },
   "newChangesDetected": true,
   "periodicSweepDue": false,
   "authSweepsEnabled": false,
-  "changedPathCount": 46,
-  "changedPaths": [
-    ".claude/settings.json",
-    "app/(public)/chef/[slug]/page.tsx",
-    "app/(public)/e/[shareToken]/page.tsx",
-    "app/(public)/e/[shareToken]/public-event-view.tsx",
-    "app/(public)/g/[code]/page.tsx",
-    "app/(public)/ingredient/[id]/page.tsx",
-    "app/api/book/route.ts",
-    "app/api/webhooks/stripe/route.ts",
-    "app/sitemap.ts",
-    "components/guest-leads/guest-lead-form.tsx",
-    "components/navigation/public-nav-config.ts",
-    "components/public/post-action-footer.tsx",
-    "docs/external-directory.md",
-    "docs/session-log.md",
-    "docs/simulation-history.md",
-    "docs/simulation-report.md",
-    "docs/sync-status.json",
-    "docs/system-behavior-specification.md",
-    "docs/uptime-history.json",
-    "docs/website-goals-survey.md",
-    "lib/email/notifications.ts",
-    "lib/email/templates/campaign.tsx",
-    "lib/email/templates/directory-welcome.tsx",
-    "lib/email/templates/incentive-delivery.tsx",
-    "lib/guest-leads/actions.ts",
-    "lib/tickets/purchase-actions.ts",
-    "logs/live-ops-guardian-latest.json",
-    "logs/live-ops-guardian-state.json",
-    "playwright.config.ts",
-    "tests/helpers/e2e-seed.ts",
-    "tests/interactions/11-onboarding-wizard.spec.ts",
-    "tsconfig.next.json",
-    "app/(public)/gift-cards/",
-    "docs/anthropic-follow-on-audit-answers-2026-04-18.md",
-    "docs/anthropic-follow-on-audit-supplement-2026-04-18.md",
-    "docs/anthropic-system-audit-2026-04-18.md",
-    "docs/anthropic-unasked-questions-2026-04-18.md",
-    "docs/changes/2026-04-18-open-booking-dietary-parity.md",
-    "docs/specs/system-integrity-question-set-consumer-discovery-cohesion-v1.md",
-    "docs/specs/system-integrity-question-set-extraction-frontier.md",
-    "docs/specs/system-integrity-question-set-openclaw-cohesion-v2-answers.md",
-    "docs/specs/system-integrity-question-set-openclaw-cohesion-v3.md",
-    "logs/live-ops-guardian-alert.txt",
-    "scripts/run-playwright-dev-server.mjs",
-    "tests/unit/open-booking-intake-parity.test.ts",
-    "tests/unit/open-booking.route.test.ts"
+  "changedPathCount": 2,
+  "changedPaths": ["docs/sync-status.json", "docs/uptime-history.json"],
+  "healthProbes": [
+    {
+      "name": "health-ping",
+      "path": "/api/health/ping",
+      "ok": true,
+      "statusCode": 200,
+      "error": null
+    },
+    {
+      "name": "health-readiness",
+      "path": "/api/health/readiness?strict=1",
+      "ok": true,
+      "statusCode": 200,
+      "error": null
+    },
+    {
+      "name": "home",
+      "path": "/",
+      "ok": true,
+      "statusCode": 200,
+      "error": null
+    },
+    {
+      "name": "signin",
+      "path": "/auth/signin",
+      "ok": true,
+      "statusCode": 200,
+      "error": null
+    }
   ],
-  "healthProbes": [],
   "steps": [
     {
       "name": "unit-canary",
       "status": "passed",
       "exitCode": 0,
-      "durationSeconds": 21.6
+      "durationSeconds": 21.8
     }
   ],
   "notes": [],

@@ -25,7 +25,7 @@ import { OllamaStatusBadge } from '@/components/dashboard/ollama-status-badge'
 import { AiStatusDot } from '@/components/dashboard/ai-status-dot'
 import { ActivityDot } from '@/components/activity/activity-dot'
 import { AppLogo } from '@/components/branding/app-logo'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
+
 import { usePermissions } from '@/lib/context/permission-context'
 import {
   getStrictFocusGroupRank,
@@ -586,7 +586,6 @@ export function ChefMobileNav({
                     <Bot className="w-4 h-4" />
                   </button>
                 )}
-                <ThemeToggle className="h-8 w-8 min-h-0 rounded-lg border border-stone-700 bg-stone-900/80 p-0 text-stone-400 hover:bg-stone-800 hover:text-stone-100" />
                 <button
                   type="button"
                   aria-label="Close menu"

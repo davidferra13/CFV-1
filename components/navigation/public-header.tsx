@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { ChevronDown, Menu, X } from '@/components/ui/icons'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import { AppLogo } from '@/components/branding/app-logo'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
+
 import { PUBLIC_PRIMARY_CONSUMER_CTA } from '@/lib/public/public-surface-config'
 import {
   PUBLIC_NAV,
@@ -154,7 +154,6 @@ export function PublicHeader() {
 
         {/* Desktop actions */}
         <div className="hidden items-center gap-2 md:flex">
-          <ThemeToggle className="h-10 w-10 min-h-0 rounded-lg border border-stone-600 bg-stone-900/80 p-0" />
           <TrackedLink
             href="/auth/signin"
             analyticsName="header_signin"
@@ -175,7 +174,6 @@ export function PublicHeader() {
 
         {/* Mobile actions */}
         <div className="flex items-center gap-2 md:hidden">
-          <ThemeToggle className="h-11 w-11 min-h-0 rounded-lg border border-stone-600 bg-stone-900/80 p-0" />
           <TrackedLink
             href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
             analyticsName="header_mobile_book_a_chef_quick"

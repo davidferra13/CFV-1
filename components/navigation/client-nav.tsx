@@ -23,7 +23,6 @@ import { AppLogo } from '@/components/branding/app-logo'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { ClientHubUnreadBadge } from '@/components/hub/client-hub-unread-badge'
 import { ClientChatUnreadBadge } from '@/components/chat/client-chat-unread-badge'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 interface ClientNavProps {
   userEmail: string
@@ -139,7 +138,6 @@ export function ClientSidebar({ userEmail }: ClientNavProps) {
             >
               <CalendarPlus className="w-[18px] h-[18px]" />
             </Link>
-            <ThemeToggle className="h-10 w-10 min-h-0 rounded-lg border border-stone-700 bg-stone-900/80 p-0" />
             <div className="w-6 border-t border-stone-800 my-1.5" />
             {navItems.map((item) => {
               const Icon = item.icon
@@ -215,11 +213,6 @@ export function ClientSidebar({ userEmail }: ClientNavProps) {
           }`}
         >
           <NotificationBell collapsed={collapsed} />
-          <ThemeToggle
-            className={`rounded-lg border border-stone-700 bg-stone-900/80 p-0 ${
-              collapsed ? 'h-10 w-10 min-h-0' : 'h-9 w-9 min-h-0'
-            }`}
-          />
         </div>
         {!collapsed ? (
           <p className="px-3 pb-1 text-xs text-stone-400 truncate">{userEmail}</p>
@@ -268,7 +261,6 @@ export function ClientMobileNav({ userEmail }: ClientNavProps) {
             >
               Book Now
             </Link>
-            <ThemeToggle className="h-11 w-11 min-h-0 rounded-lg border border-stone-700 bg-stone-900/80 p-0" />
             <NotificationBell />
             <button
               type="button"

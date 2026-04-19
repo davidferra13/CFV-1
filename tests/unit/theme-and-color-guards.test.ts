@@ -27,46 +27,39 @@ const BLUE_UTILITY_ALLOWLIST = new Set([
 ])
 const BLUE_UTILITY_PATTERN = /[A-Za-z:-]*(?:blue|sky|cyan|indigo)-[0-9]{2,3}(?:\/[0-9]{1,3})?/g
 
-test('theme foundation stays light-first and shared at the app root', () => {
+test('theme is forced dark across the entire app', () => {
   const tailwindConfig = read('tailwind.config.ts')
   const rootLayout = read('app/layout.tsx')
   const themeProvider = read('components/ui/app-theme-provider.tsx')
   const globals = read('app/globals.css')
   const chefLayout = read('app/(chef)/layout.tsx')
-  const embedPage = read('app/embed/inquiry/[chefId]/page.tsx')
 
   assert.match(tailwindConfig, /darkMode:\s*'class'/)
   assert.match(rootLayout, /<AppThemeProvider>/)
-  assert.match(themeProvider, /defaultTheme="light"/)
+  assert.match(themeProvider, /defaultTheme="dark"/)
+  assert.match(themeProvider, /forcedTheme="dark"/)
   assert.match(themeProvider, /enableSystem=\{false\}/)
   assert.match(themeProvider, /storageKey="chefflow-theme"/)
-  assert.match(themeProvider, /forceLightTheme = pathname\?\.startsWith\('\/embed'\)/)
   assert.match(globals, /:root\s*\{/)
   assert.match(globals, /\.dark\s*\{/)
   assert.doesNotMatch(globals, /html\.dark\s*\{/)
   assert.doesNotMatch(chefLayout, /ThemeProvider/)
-  assert.match(embedPage, /className=\{theme === 'dark' \? 'dark' : undefined\}/)
 })
 
-test('theme toggles remain wired into every route shell', () => {
+test('ThemeToggle is not used in any navigation shell', () => {
   const authLayout = read('app/auth/layout.tsx')
   const publicHeader = read('components/navigation/public-header.tsx')
   const clientNav = read('components/navigation/client-nav.tsx')
   const chefNav = read('components/navigation/chef-nav.tsx')
   const chefMobileNav = read('components/navigation/chef-mobile-nav.tsx')
   const staffNav = read('components/staff/staff-nav.tsx')
-  const adminLayout = read('app/(admin)/layout.tsx')
-  const appearancePage = read('app/(chef)/settings/appearance/page.tsx')
 
-  assert.match(authLayout, /ThemeToggle/)
-  assert.match(publicHeader, /ThemeToggle/)
-  assert.match(clientNav, /ThemeToggle/)
-  assert.match(chefNav, /ThemeToggle/)
-  assert.match(chefMobileNav, /ThemeToggle/)
-  assert.match(staffNav, /ThemeToggle/)
-  assert.match(adminLayout, /ChefSidebar/)
-  assert.match(adminLayout, /ChefMobileNav/)
-  assert.match(appearancePage, /appearance-theme-toggle/)
+  assert.doesNotMatch(authLayout, /ThemeToggle/)
+  assert.doesNotMatch(publicHeader, /ThemeToggle/)
+  assert.doesNotMatch(clientNav, /ThemeToggle/)
+  assert.doesNotMatch(chefNav, /ThemeToggle/)
+  assert.doesNotMatch(chefMobileNav, /ThemeToggle/)
+  assert.doesNotMatch(staffNav, /ThemeToggle/)
 })
 
 test('generic blue-family utilities stay confined to explicit brand allowlist files', () => {
