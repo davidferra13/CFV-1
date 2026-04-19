@@ -16,9 +16,11 @@ type Props = {
   shareToken: string
   guestName?: string
   guestToken?: string
+  /** When true, show only first initial instead of full guest names (privacy) */
+  maskNames?: boolean
 }
 
-export function GuestPhotoGallery({ shareToken, guestName, guestToken }: Props) {
+export function GuestPhotoGallery({ shareToken, guestName, guestToken, maskNames }: Props) {
   const [photos, setPhotos] = useState<Photo[]>([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
@@ -186,7 +188,7 @@ export function GuestPhotoGallery({ shareToken, guestName, guestToken }: Props) 
               {photo.url ? (
                 <img
                   src={photo.url}
-                  alt={photo.caption || `Photo by ${photo.guest_name}`}
+                  alt={photo.caption || `Photo by ${maskNames ? 'a guest' : photo.guest_name}`}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                 />
               ) : (
@@ -202,7 +204,9 @@ export function GuestPhotoGallery({ shareToken, guestName, guestToken }: Props) 
                 </div>
               )}
               <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-2">
-                <p className="text-white text-xs font-medium truncate">{photo.guest_name}</p>
+                <p className="text-white text-xs font-medium truncate">
+                  {maskNames ? `${photo.guest_name.charAt(0).toUpperCase()}.` : photo.guest_name}
+                </p>
               </div>
             </button>
           ))}
@@ -230,7 +234,11 @@ export function GuestPhotoGallery({ shareToken, guestName, guestToken }: Props) 
               />
             )}
             <div className="mt-3 text-center">
-              <p className="text-white font-medium">{selectedPhoto.guest_name}</p>
+              <p className="text-white font-medium">
+                {maskNames
+                  ? `${selectedPhoto.guest_name.charAt(0).toUpperCase()}.`
+                  : selectedPhoto.guest_name}
+              </p>
               {selectedPhoto.caption && (
                 <p className="text-white/70 text-sm mt-1">{selectedPhoto.caption}</p>
               )}

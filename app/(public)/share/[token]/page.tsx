@@ -344,6 +344,7 @@ export default async function SharePage({ params }: { params: { token: string } 
               shareToken={params.token}
               guestName={existingGuest?.full_name}
               guestToken={existingGuest?.guest_token}
+              maskNames={!eventData.visibility?.show_guest_list}
             />
           </CardContent>
         </Card>
@@ -358,6 +359,7 @@ export default async function SharePage({ params }: { params: { token: string } 
               shareToken={params.token}
               guestName={existingGuest?.full_name}
               guestToken={existingGuest?.guest_token}
+              maskNames={!eventData.visibility?.show_guest_list}
             />
           </CardContent>
         </Card>

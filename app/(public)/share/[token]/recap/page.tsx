@@ -91,7 +91,7 @@ export default async function RecapPage({ params }: { params: { token: string } 
         {photos.length > 0 && (
           <div className="mb-8">
             <h2 className="text-xl font-semibold text-stone-100 mb-4 text-center">Moments</h2>
-            <RecapPhotoGrid photos={photos} />
+            <RecapPhotoGrid photos={photos} maskNames={!eventData.visibility?.show_guest_list} />
           </div>
         )}
 
@@ -111,7 +111,12 @@ export default async function RecapPage({ params }: { params: { token: string } 
                     {msg.emoji && <span className="mr-1 not-italic">{msg.emoji}</span>}
                     &ldquo;{msg.message}&rdquo;
                   </p>
-                  <p className="text-sm text-stone-500 mt-2">- {msg.guest_name}</p>
+                  <p className="text-sm text-stone-500 mt-2">
+                    -{' '}
+                    {eventData.visibility?.show_guest_list
+                      ? msg.guest_name
+                      : `${msg.guest_name.charAt(0).toUpperCase()}.`}
+                  </p>
                 </div>
               ))}
             </div>

@@ -17,11 +17,13 @@ type Props = {
   shareToken: string
   guestName?: string
   guestToken?: string
+  /** When true, show only first initial instead of full guest names (privacy) */
+  maskNames?: boolean
 }
 
 const QUICK_EMOJIS = ['🎉', '🍽️', '🤩', '❤️', '🔥', '👨‍🍳']
 
-export function ExcitementWall({ shareToken, guestName, guestToken }: Props) {
+export function ExcitementWall({ shareToken, guestName, guestToken, maskNames }: Props) {
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
   const [posting, setPosting] = useState(false)
@@ -209,7 +211,9 @@ export function ExcitementWall({ shareToken, guestName, guestToken }: Props) {
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-stone-100 text-sm">{msg.guest_name}</span>
+                    <span className="font-medium text-stone-100 text-sm">
+                      {maskNames ? `${msg.guest_name.charAt(0).toUpperCase()}.` : msg.guest_name}
+                    </span>
                     {msg.is_pinned && (
                       <span className="text-xs text-brand-600 font-medium">pinned</span>
                     )}

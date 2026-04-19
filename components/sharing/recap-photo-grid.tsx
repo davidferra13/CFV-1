@@ -10,7 +10,7 @@ type Photo = {
   caption: string | null
 }
 
-export function RecapPhotoGrid({ photos }: { photos: Photo[] }) {
+export function RecapPhotoGrid({ photos, maskNames }: { photos: Photo[]; maskNames?: boolean }) {
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
 
   if (photos.length === 0) return null
@@ -27,7 +27,7 @@ export function RecapPhotoGrid({ photos }: { photos: Photo[] }) {
             {photo.url ? (
               <img
                 src={photo.url}
-                alt={photo.caption || `Photo by ${photo.guest_name}`}
+                alt={photo.caption || `Photo by ${maskNames ? 'a guest' : photo.guest_name}`}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
               />
             ) : (
@@ -72,7 +72,11 @@ export function RecapPhotoGrid({ photos }: { photos: Photo[] }) {
               />
             )}
             <div className="mt-3 text-center">
-              <p className="text-white font-medium">{selectedPhoto.guest_name}</p>
+              <p className="text-white font-medium">
+                {maskNames
+                  ? `${selectedPhoto.guest_name.charAt(0).toUpperCase()}.`
+                  : selectedPhoto.guest_name}
+              </p>
               {selectedPhoto.caption && (
                 <p className="text-white/70 text-sm mt-1">{selectedPhoto.caption}</p>
               )}
