@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
+import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -14,6 +16,12 @@ export const metadata: Metadata = {
     url: `${BASE_URL}/about`,
     siteName: 'ChefFlow',
     type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'About ChefFlow',
+    description:
+      'Built by a working chef. One platform for clients, events, menus, food costing, finances, and staff.',
   },
   alternates: {
     canonical: `${BASE_URL}/about`,
@@ -115,6 +123,10 @@ export default function AboutPage() {
             </Link>
           </div>
         </div>
+      </section>
+
+      <section className="mx-auto max-w-3xl px-4 pb-12 sm:px-6 lg:px-8">
+        <PublicSecondaryEntryCluster links={PUBLIC_SECONDARY_ENTRY_CONFIG.about} theme="dark" />
       </section>
     </main>
   )

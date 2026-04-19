@@ -330,7 +330,10 @@ export default async function IngredientsPage({ searchParams }: Props) {
           </div>
         )}
 
-        <PublicSecondaryEntryCluster links={PUBLIC_SECONDARY_ENTRY_CONFIG.ingredients} theme="dark" />
+        <PublicSecondaryEntryCluster
+          links={PUBLIC_SECONDARY_ENTRY_CONFIG.ingredients}
+          theme="dark"
+        />
       </div>
     </>
   )

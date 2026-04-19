@@ -38,7 +38,15 @@ export default async function ReviewPage({ params }: { params: { token: string }
               Your review has already been submitted. We really appreciate your feedback!
             </p>
           </div>
-          <PostActionFooter chefSlug={request.chefSlug} chefName={request.chefName} />
+          <PostActionFooter
+            chefSlug={request.chefSlug}
+            chefName={request.chefName}
+            crossLink={
+              request.chefSlug
+                ? { href: `/chef/${request.chefSlug}/inquire`, label: 'Book Again' }
+                : null
+            }
+          />
         </div>
       </div>
     )
@@ -71,7 +79,15 @@ export default async function ReviewPage({ params }: { params: { token: string }
         </div>
 
         <ReviewForm token={params.token} defaultName={request.clientName} />
-        <PostActionFooter chefSlug={request.chefSlug} chefName={request.chefName} />
+        <PostActionFooter
+          chefSlug={request.chefSlug}
+          chefName={request.chefName}
+          crossLink={
+            request.chefSlug
+              ? { href: `/chef/${request.chefSlug}/inquire`, label: 'Book Again' }
+              : null
+          }
+        />
       </div>
     </div>
   )

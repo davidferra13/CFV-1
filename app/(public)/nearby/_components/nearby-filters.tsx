@@ -129,7 +129,8 @@ export function NearbyFilters({ query, businessType, cuisine, state, city, price
     }
   }, [])
 
-  const hasFilters = query || businessType || cuisine || state || city || priceRange || locationActive
+  const hasFilters =
+    query || businessType || cuisine || state || city || priceRange || locationActive
 
   const placeholderText = PLACEHOLDER_TEXTS[placeholderIndex]
 

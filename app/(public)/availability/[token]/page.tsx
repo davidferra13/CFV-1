@@ -1,8 +1,10 @@
 import { headers } from 'next/headers'
+import Link from 'next/link'
 import { createServerClient } from '@/lib/db/server'
 import { Card, CardContent } from '@/components/ui/card'
 import { dateToDateString } from '@/lib/utils/format'
 import { checkRateLimit } from '@/lib/rateLimit'
+import { PostActionFooter } from '@/components/public/post-action-footer'
 
 export default async function PublicAvailabilityPage({
   params,
@@ -124,6 +126,14 @@ export default async function PublicAvailabilityPage({
 
   const chefName = (shareToken as any).chefs?.display_name || 'Chef'
 
+  // Fetch chef's booking slug for profile link
+  const { data: chefProfile } = await db
+    .from('chefs')
+    .select('booking_slug')
+    .eq('id', shareToken.tenant_id)
+    .single()
+  const chefSlug: string | null = chefProfile?.booking_slug || null
+
   return (
     <div className="max-w-2xl mx-auto py-12 px-4 space-y-6">
       <div className="text-center">
@@ -170,9 +180,24 @@ export default async function PublicAvailabilityPage({
         </CardContent>
       </Card>
 
-      <p className="text-center text-xs text-stone-300">
-        Contact {chefName} directly to book an available date.
-      </p>
+      {/* Booking CTA */}
+      {chefSlug ? (
+        <div className="flex flex-col items-center gap-3">
+          <p className="text-center text-sm text-stone-300">See a date that works?</p>
+          <Link
+            href={`/chef/${chefSlug}/inquire`}
+            className="inline-flex items-center justify-center rounded-xl gradient-accent px-6 py-3 text-sm font-semibold text-white"
+          >
+            Inquire with {chefName}
+          </Link>
+        </div>
+      ) : (
+        <p className="text-center text-xs text-stone-300">
+          Contact {chefName} directly to book an available date.
+        </p>
+      )}
+
+      <PostActionFooter chefSlug={chefSlug} chefName={chefName} />
     </div>
   )
 }

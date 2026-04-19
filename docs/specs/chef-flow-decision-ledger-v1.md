@@ -3,6 +3,7 @@
 > Created: 2026-04-18
 > Purpose: operational ledger for closing the current cohesion frontier around corpus trust, public discovery, and broad food-operator coverage.
 > Companion docs:
+>
 > - `docs/specs/system-integrity-question-set-extraction-frontier.md`
 > - `docs/system-behavior-specification.md`
 > - `docs/external-directory.md`
@@ -89,35 +90,35 @@ If a feature cannot map cleanly to those primitives, it is underspecified, redun
 
 ## 6. Summary Table
 
-| ID | Area | Current direction | Status |
-| --- | --- | --- | --- |
-| CFDL-001 | Corpus precedence and freshness | Precedence order published; first enforcement pass complete (route + taxonomy + stale claims fixed) | IMPLEMENTED |
-| CFDL-002 | Canonical public discovery route | `/nearby` is canonical; `/discover` redirects. All docs, code, tests aligned | LOCKED |
-| CFDL-003 | Public discovery promise | Both chef marketplace and broader food-operator directory exist; primary promise undecided | PROVISIONAL |
-| CFDL-004 | Geography commitment | Code covers 50 states + D.C.; public promise not yet written | PROVISIONAL |
-| CFDL-005 | In-scope operator taxonomy | 8 types in code and all specs aligned; broader national expansion undecided | LOCKED |
-| CFDL-006 | Canonical listing entity and lifecycle | `directory_listings` with `discovered -> claimed -> verified -> removed` is real | LOCKED |
-| CFDL-007 | Consent boundary | Public facts can be discovered; private contact data requires voluntary submission or claim | LOCKED |
-| CFDL-008 | Search/filter model | Query, type, cuisine, state, city, and price filters are implemented and documented | LOCKED |
-| CFDL-009 | Exact-name recall and fuzzy retrieval | Basic full-text exists; alias, misspelling, and old-name guarantees are not specified | OPEN |
-| CFDL-010 | Ranking policy | Current ranking exists in code (`featured`, photo, `lead_score`, name); not canonically documented | PROVISIONAL |
-| CFDL-011 | Location and "nearby" truth | Proximity sorting via browser geolocation implemented; city/state filters remain as fallback | IMPLEMENTED |
-| CFDL-012 | Data freshness and evidence labels | OSM sourcing documented; UI confidence labels still unspecified | PROVISIONAL |
-| CFDL-013 | Low-data operator handling | Minimum viable listing = name + type + (city or state); all fields degrade gracefully | LOCKED |
-| CFDL-014 | Submission, claim, nomination, enhance, removal flows | All routes built; nomination and claim UI hidden pending data quality; current state documented in spec | IMPLEMENTED |
-| CFDL-015 | Safety and high-risk claims | Verification badges + data-source labels on detail pages; trust policy documented | LOCKED |
-| CFDL-016 | No-results and recovery behavior | Empty state now offers "Clear filters" + "Add a business" recovery CTA | LOCKED |
-| CFDL-017 | Verification and telemetry | Standalone `/nearby` and `/nearby/submit` tests added; recall/accuracy telemetry still unspecified | IMPLEMENTED |
-| CFDL-018 | MemPalace extraction protocol | Needed for real closure; unavailable this session | BLOCKED |
-| CFDL-019 | Closeout gate for national food-operator coverage | No single release gate; depends on CFDL-003, -004, -009 | OPEN |
-| CFDL-020 | Remy directory awareness | DISCOVERY section added to NAV_ROUTE_MAP with `/nearby`, `/nearby/submit`, `/chefs` | IMPLEMENTED |
-| CFDL-021 | Cross-links between /chefs and /nearby | /chefs empty state now links to /nearby ("Browse all food operators nearby") | IMPLEMENTED |
-| CFDL-022 | /for-operators directory listing awareness | "Not ready to sign up?" section added before final CTA, links to `/nearby/submit` | IMPLEMENTED |
-| CFDL-023 | Listing-to-account merge | No merge logic when external operator joins ChefFlow | OPEN |
-| CFDL-024 | Directory notification system integration | 3 directory actions added to notification types + tier config (claimed, verified, removed) | IMPLEMENTED |
-| CFDL-025 | JSON-LD + noindex staging strategy | Intentional staging; now documented | LOCKED |
-| CFDL-026 | Admin directory cross-linking | No admin directory management pages exist; N/A until admin UI built | OUT_OF_SCOPE |
-| CFDL-027 | Directory query caching for scale | No caching; needed before noindex removal | PROVISIONAL |
+| ID       | Area                                                  | Current direction                                                                                       | Status       |
+| -------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------ |
+| CFDL-001 | Corpus precedence and freshness                       | Precedence order published; first enforcement pass complete (route + taxonomy + stale claims fixed)     | IMPLEMENTED  |
+| CFDL-002 | Canonical public discovery route                      | `/nearby` is canonical; `/discover` redirects. All docs, code, tests aligned                            | LOCKED       |
+| CFDL-003 | Public discovery promise                              | Both chef marketplace and broader food-operator directory exist; primary promise undecided              | PROVISIONAL  |
+| CFDL-004 | Geography commitment                                  | Code covers 50 states + D.C.; public promise not yet written                                            | PROVISIONAL  |
+| CFDL-005 | In-scope operator taxonomy                            | 8 types in code and all specs aligned; broader national expansion undecided                             | LOCKED       |
+| CFDL-006 | Canonical listing entity and lifecycle                | `directory_listings` with `discovered -> claimed -> verified -> removed` is real                        | LOCKED       |
+| CFDL-007 | Consent boundary                                      | Public facts can be discovered; private contact data requires voluntary submission or claim             | LOCKED       |
+| CFDL-008 | Search/filter model                                   | Query, type, cuisine, state, city, and price filters are implemented and documented                     | LOCKED       |
+| CFDL-009 | Exact-name recall and fuzzy retrieval                 | Basic full-text exists; alias, misspelling, and old-name guarantees are not specified                   | OPEN         |
+| CFDL-010 | Ranking policy                                        | Current ranking exists in code (`featured`, photo, `lead_score`, name); not canonically documented      | PROVISIONAL  |
+| CFDL-011 | Location and "nearby" truth                           | Proximity sorting via browser geolocation implemented; city/state filters remain as fallback            | IMPLEMENTED  |
+| CFDL-012 | Data freshness and evidence labels                    | OSM sourcing documented; UI confidence labels still unspecified                                         | PROVISIONAL  |
+| CFDL-013 | Low-data operator handling                            | Minimum viable listing = name + type + (city or state); all fields degrade gracefully                   | LOCKED       |
+| CFDL-014 | Submission, claim, nomination, enhance, removal flows | All routes built; nomination and claim UI hidden pending data quality; current state documented in spec | IMPLEMENTED  |
+| CFDL-015 | Safety and high-risk claims                           | Verification badges + data-source labels on detail pages; trust policy documented                       | LOCKED       |
+| CFDL-016 | No-results and recovery behavior                      | Empty state now offers "Clear filters" + "Add a business" recovery CTA                                  | LOCKED       |
+| CFDL-017 | Verification and telemetry                            | Standalone `/nearby` and `/nearby/submit` tests added; recall/accuracy telemetry still unspecified      | IMPLEMENTED  |
+| CFDL-018 | MemPalace extraction protocol                         | Needed for real closure; unavailable this session                                                       | BLOCKED      |
+| CFDL-019 | Closeout gate for national food-operator coverage     | No single release gate; depends on CFDL-003, -004, -009                                                 | OPEN         |
+| CFDL-020 | Remy directory awareness                              | DISCOVERY section added to NAV_ROUTE_MAP with `/nearby`, `/nearby/submit`, `/chefs`                     | IMPLEMENTED  |
+| CFDL-021 | Cross-links between /chefs and /nearby                | /chefs empty state now links to /nearby ("Browse all food operators nearby")                            | IMPLEMENTED  |
+| CFDL-022 | /for-operators directory listing awareness            | "Not ready to sign up?" section added before final CTA, links to `/nearby/submit`                       | IMPLEMENTED  |
+| CFDL-023 | Listing-to-account merge                              | No merge logic when external operator joins ChefFlow                                                    | OPEN         |
+| CFDL-024 | Directory notification system integration             | 3 directory actions added to notification types + tier config (claimed, verified, removed)              | IMPLEMENTED  |
+| CFDL-025 | JSON-LD + noindex staging strategy                    | Intentional staging; now documented                                                                     | LOCKED       |
+| CFDL-026 | Admin directory cross-linking                         | No admin directory management pages exist; N/A until admin UI built                                     | OUT_OF_SCOPE |
+| CFDL-027 | Directory query caching for scale                     | No caching; needed before noindex removal                                                               | PROVISIONAL  |
 
 ---
 

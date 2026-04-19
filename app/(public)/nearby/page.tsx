@@ -28,14 +28,16 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'Nearby - Find Food Near You',
-    description: 'Find restaurants, private chefs, caterers, food trucks, bakeries, and more near you.',
+    description:
+      'Find restaurants, private chefs, caterers, food trucks, bakeries, and more near you.',
     url: `${APP_URL}/nearby`,
     type: 'website',
   },
   twitter: {
     card: 'summary',
     title: 'Nearby - Find Food Near You',
-    description: 'Find restaurants, private chefs, caterers, food trucks, bakeries, and more near you.',
+    description:
+      'Find restaurants, private chefs, caterers, food trucks, bakeries, and more near you.',
   },
 }
 
@@ -207,11 +209,15 @@ async function FilteredResults({
                 : 'Found something good? Gather your people.'}
             </p>
             <p className="mx-auto mt-1.5 max-w-md text-xs text-stone-400">
-              Dinner Circles let you coordinate group meals, share recommendations, and keep everyone
-              on the same page.
+              Dinner Circles let you coordinate group meals, share recommendations, and keep
+              everyone on the same page.
             </p>
             <Link
-              href={cuisineFilter ? `/hub/circles?topic=${encodeURIComponent(cuisineFilter)}` : '/hub/circles'}
+              href={
+                cuisineFilter
+                  ? `/hub/circles?topic=${encodeURIComponent(cuisineFilter)}`
+                  : '/hub/circles'
+              }
               className="mt-3 inline-flex items-center rounded-lg bg-amber-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-amber-500"
             >
               {cuisineFilter ? `Browse ${cuisineFilter} circles` : 'Browse Dinner Circles'}
@@ -292,7 +298,8 @@ export default async function NearbyPage({ searchParams }: PageProps) {
   const lonParam = parseFloat(firstParam(searchParams?.lon))
   const hasUserLocation = isFinite(latParam) && isFinite(lonParam)
 
-  const hasFilters = query || businessType || cuisine || state || priceRange || city || hasUserLocation
+  const hasFilters =
+    query || businessType || cuisine || state || priceRange || city || hasUserLocation
   const isLanding = !hasFilters
 
   const stats = await getDirectoryStats()

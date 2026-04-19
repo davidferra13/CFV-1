@@ -70,7 +70,10 @@ export default async function CirclesDiscoveryPage({ searchParams }: Props) {
           initialTopic={params.topic || ''}
           isAuthenticated={!!user}
         />
-        <PublicSecondaryEntryCluster links={PUBLIC_SECONDARY_ENTRY_CONFIG.hub_circles} theme="dark" />
+        <PublicSecondaryEntryCluster
+          links={PUBLIC_SECONDARY_ENTRY_CONFIG.hub_circles}
+          theme="dark"
+        />
       </div>
     </div>
   )

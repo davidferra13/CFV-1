@@ -64,7 +64,11 @@ export const PUBLIC_SECONDARY_ENTRY_CONFIG: Record<SecondaryEntrySurface, Second
   contact: [
     { label: 'Book a Chef', href: '/book', description: 'Start your event request' },
     { label: 'Food near you', href: '/nearby', description: 'Find food operators near you' },
-    { label: 'How it works', href: '/how-it-works', description: 'What happens after you reach out' },
+    {
+      label: 'How it works',
+      href: '/how-it-works',
+      description: 'What happens after you reach out',
+    },
   ],
   gift_cards: [
     {
@@ -88,12 +92,20 @@ export const PUBLIC_SECONDARY_ENTRY_CONFIG: Record<SecondaryEntrySurface, Second
   nearby: [
     { label: 'Book a Chef', href: '/book', description: 'Request a private dining experience' },
     { label: 'Browse Chefs', href: '/chefs', description: 'Find reviewed private chefs' },
-    { label: 'Dinner Circles', href: '/hub/circles', description: 'Join food community conversations' },
+    {
+      label: 'Dinner Circles',
+      href: '/hub/circles',
+      description: 'Join food community conversations',
+    },
   ],
   nearby_detail: [
     { label: 'Browse nearby', href: '/nearby', description: 'Find more food operators' },
     { label: 'Book a Chef', href: '/book', description: 'Hire a private chef instead' },
-    { label: 'Dinner Circles', href: '/hub/circles', description: 'Join food community conversations' },
+    {
+      label: 'Dinner Circles',
+      href: '/hub/circles',
+      description: 'Join food community conversations',
+    },
   ],
   how_it_works: [
     { label: 'Book a Chef', href: '/book', description: 'Start your event request' },
@@ -108,7 +120,11 @@ export const PUBLIC_SECONDARY_ENTRY_CONFIG: Record<SecondaryEntrySurface, Second
   services: [
     { label: 'Book a Chef', href: '/book', description: 'Start your event request' },
     { label: 'Food near you', href: '/nearby', description: 'Restaurants, caterers, food trucks' },
-    { label: 'Dinner Circles', href: '/hub/circles', description: 'Join food community conversations' },
+    {
+      label: 'Dinner Circles',
+      href: '/hub/circles',
+      description: 'Join food community conversations',
+    },
   ],
   faq: [
     { label: 'Book a Chef', href: '/book', description: 'Start your event request' },

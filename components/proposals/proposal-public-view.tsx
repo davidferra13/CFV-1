@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { approveProposal, declineProposal } from '@/lib/proposals/client-proposal-actions'
+import Link from 'next/link'
 import type { PublicProposalData } from '@/lib/proposals/client-proposal-actions'
 
 type ProposalPublicViewProps = {
@@ -469,9 +470,34 @@ export function ProposalPublicView({ proposal, shareToken }: ProposalPublicViewP
           </div>
         )}
 
-        {/* Footer */}
-        <div className="text-center pt-6 border-t border-stone-800">
-          <p className="text-xs text-stone-600">Powered by ChefFlow</p>
+        {/* Forward paths */}
+        <div className="mt-8 space-y-4">
+          {proposal.chefSlug && (
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href={`/chef/${proposal.chefSlug}`}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-stone-600 px-4 py-2 text-sm font-medium text-stone-300 transition-colors hover:border-stone-500 hover:text-stone-100"
+              >
+                {proposal.chefName ? `View ${proposal.chefName}'s Profile` : 'View Chef Profile'}
+              </Link>
+              <Link
+                href={`/chef/${proposal.chefSlug}/inquire`}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-stone-600 px-4 py-2 text-sm font-medium text-stone-300 transition-colors hover:border-stone-500 hover:text-stone-100"
+              >
+                Book Again
+              </Link>
+            </div>
+          )}
+          <div className="text-center pt-2">
+            <a
+              href="https://cheflowhq.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-stone-500 hover:text-stone-400 transition-colors"
+            >
+              Powered by <span className="font-semibold">ChefFlow</span>
+            </a>
+          </div>
         </div>
       </div>
     </div>

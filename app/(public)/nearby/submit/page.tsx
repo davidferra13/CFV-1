@@ -1,11 +1,30 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { SubmitListingForm } from './_components/submit-listing-form'
+import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
+import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
+
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 export const metadata: Metadata = {
   title: 'Add Your Business - Nearby',
   description:
     'Submit your restaurant, catering business, food truck, bakery, or private chef service to the Nearby directory. Free listing, no commission.',
+  openGraph: {
+    title: 'Add Your Business - ChefFlow Nearby',
+    description:
+      'Free listing for restaurants, caterers, food trucks, bakeries, and private chefs. No commission.',
+    url: `${BASE_URL}/nearby/submit`,
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Add Your Business - ChefFlow Nearby',
+    description: 'Free listing for food businesses. No commission, no middleman.',
+  },
+  alternates: {
+    canonical: `${BASE_URL}/nearby/submit`,
+  },
 }
 
 export default function SubmitListingPage() {
@@ -42,6 +61,12 @@ export default function SubmitListingPage() {
         <div className="mt-8">
           <SubmitListingForm />
         </div>
+
+        <PublicSecondaryEntryCluster
+          links={PUBLIC_SECONDARY_ENTRY_CONFIG.nearby}
+          heading="Looking for something else?"
+          theme="dark"
+        />
       </div>
     </div>
   )

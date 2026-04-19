@@ -144,7 +144,10 @@ export default function HowItWorksPage() {
               {PUBLIC_OPERATOR_ENTRY.label}
             </Link>
           </div>
-          <PublicSecondaryEntryCluster links={PUBLIC_SECONDARY_ENTRY_CONFIG.how_it_works} theme="dark" />
+          <PublicSecondaryEntryCluster
+            links={PUBLIC_SECONDARY_ENTRY_CONFIG.how_it_works}
+            theme="dark"
+          />
         </div>
       </section>
     </main>

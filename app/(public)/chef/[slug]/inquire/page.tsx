@@ -34,11 +34,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
   const slug = data.chef.inquiry_slug || data.chef.public_slug || params.slug
 
+  const title = `Inquire with ${data.chef.display_name}`
+  const description = `Share your event details with ${data.chef.display_name}. Private dinners, catering, meal prep, and more.`
+
   return {
-    title: `Inquire with ${data.chef.display_name}`,
-    description: `Share your event details with ${data.chef.display_name}.`,
+    title,
+    description,
     alternates: {
       canonical: `${baseUrl}/chef/${slug}/inquire`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${baseUrl}/chef/${slug}/inquire`,
+      type: 'website',
+      ...(data.chef.profile_image_url ? { images: [data.chef.profile_image_url] } : {}),
+    },
+    twitter: {
+      card: 'summary',
+      title,
+      description,
     },
   }
 }

@@ -1,5 +1,6 @@
 import { getSurveyData } from '@/lib/feedback/surveys'
 import { PostEventSurveyForm } from '@/components/feedback/post-event-survey-form'
+import { PostActionFooter } from '@/components/public/post-action-footer'
 import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import { checkRateLimit } from '@/lib/rateLimit'
@@ -38,11 +39,14 @@ export default async function FeedbackPage({ params }: { params: { token: string
   if (surveyData.alreadyCompleted) {
     return (
       <div className="min-h-screen bg-stone-950 flex items-center justify-center p-4">
-        <div className="max-w-md text-center">
-          <h1 className="text-2xl font-bold text-stone-100 mb-2">Thank You!</h1>
-          <p className="text-stone-400">
-            You have already submitted your feedback. We appreciate it!
-          </p>
+        <div className="max-w-md w-full">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-stone-100 mb-2">Thank You!</h1>
+            <p className="text-stone-400">
+              You have already submitted your feedback. We appreciate it!
+            </p>
+          </div>
+          <PostActionFooter chefSlug={surveyData.chefSlug} chefName={surveyData.chefName} />
         </div>
       </div>
     )
@@ -64,6 +68,7 @@ export default async function FeedbackPage({ params }: { params: { token: string
           dishes={surveyData.dishes}
           chefName={surveyData.chefName}
         />
+        <PostActionFooter chefSlug={surveyData.chefSlug} chefName={surveyData.chefName} />
       </div>
     </div>
   )

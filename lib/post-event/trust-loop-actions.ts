@@ -28,6 +28,7 @@ export type PostEventSurveyPageData = {
   occasion: string
   eventDate: string | null
   chefName: string
+  chefSlug: string | null
   dishes: SurveyPageDish[]
 }
 
@@ -304,7 +305,7 @@ export async function getPostEventSurveyPageData(
   const db: any = createServerClient({ admin: true })
   const [{ data: event }, { data: chef }] = await Promise.all([
     db.from('events').select('occasion, event_date, menu_id').eq('id', survey.event_id).single(),
-    db.from('chefs').select('business_name').eq('id', survey.tenant_id).single(),
+    db.from('chefs').select('business_name, booking_slug').eq('id', survey.tenant_id).single(),
   ])
 
   let dishes: SurveyPageDish[] = []
@@ -330,6 +331,7 @@ export async function getPostEventSurveyPageData(
     occasion: event?.occasion ?? 'your event',
     eventDate: event?.event_date ?? null,
     chefName: chef?.business_name ?? 'Your Chef',
+    chefSlug: chef?.booking_slug ?? null,
     dishes,
   }
 }

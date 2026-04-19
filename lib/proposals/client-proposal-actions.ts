@@ -49,6 +49,7 @@ export type PublicProposalData = {
   createdAt: string
   chefName: string | null
   chefBusinessName: string | null
+  chefSlug: string | null
   clientName: string | null
   eventDate: string | null
   eventOccasion: string | null
@@ -278,7 +279,7 @@ export async function getPublicProposal(shareToken: string): Promise<PublicPropo
   // Fetch chef info
   const { data: chef } = await db
     .from('chefs')
-    .select('display_name, business_name')
+    .select('display_name, business_name, booking_slug')
     .eq('id', proposal.tenant_id)
     .single()
 
@@ -498,6 +499,7 @@ function buildPublicData(
     createdAt: proposal.created_at,
     chefName: chef?.display_name || null,
     chefBusinessName: chef?.business_name || null,
+    chefSlug: chef?.booking_slug || null,
     clientName: client?.full_name ?? null,
     eventDate: event?.event_date || null,
     eventOccasion: event?.occasion || null,

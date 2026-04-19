@@ -42,7 +42,11 @@ export default async function TipPage({ params }: { params: { token: string } })
               Your tip has been received. {chefName} appreciates your generosity!
             </p>
           </div>
-          <PostActionFooter chefSlug={chefSlug} chefName={chefName} />
+          <PostActionFooter
+            chefSlug={chefSlug}
+            chefName={chefName}
+            crossLink={chefSlug ? { href: `/chef/${chefSlug}/inquire`, label: 'Book Again' } : null}
+          />
         </div>
       </div>
     )
@@ -59,7 +63,11 @@ export default async function TipPage({ params }: { params: { token: string } })
               Thank you for your time. We hope you enjoyed the experience!
             </p>
           </div>
-          <PostActionFooter chefSlug={chefSlug} chefName={chefName} />
+          <PostActionFooter
+            chefSlug={chefSlug}
+            chefName={chefName}
+            crossLink={chefSlug ? { href: `/chef/${chefSlug}/inquire`, label: 'Book Again' } : null}
+          />
         </div>
       </div>
     )
@@ -98,7 +106,11 @@ export default async function TipPage({ params }: { params: { token: string } })
           chefName={chefName}
         />
 
-        <PostActionFooter chefSlug={chefSlug} chefName={chefName} />
+        <PostActionFooter
+          chefSlug={chefSlug}
+          chefName={chefName}
+          crossLink={chefSlug ? { href: `/chef/${chefSlug}/inquire`, label: 'Book Again' } : null}
+        />
       </div>
     </div>
   )

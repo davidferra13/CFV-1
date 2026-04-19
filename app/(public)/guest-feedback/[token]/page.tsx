@@ -39,7 +39,15 @@ export default async function GuestFeedbackPage({ params }: { params: { token: s
               Your feedback has already been submitted. We really appreciate it!
             </p>
           </div>
-          <PostActionFooter chefSlug={feedback.chefSlug} chefName={feedback.chefName} />
+          <PostActionFooter
+            chefSlug={feedback.chefSlug}
+            chefName={feedback.chefName}
+            crossLink={
+              feedback.chefSlug
+                ? { href: `/chef/${feedback.chefSlug}/inquire`, label: 'Book Again' }
+                : null
+            }
+          />
         </div>
       </div>
     )
@@ -66,7 +74,15 @@ export default async function GuestFeedbackPage({ params }: { params: { token: s
         </div>
 
         <GuestFeedbackForm token={params.token} />
-        <PostActionFooter chefSlug={feedback.chefSlug} chefName={feedback.chefName} />
+        <PostActionFooter
+          chefSlug={feedback.chefSlug}
+          chefName={feedback.chefName}
+          crossLink={
+            feedback.chefSlug
+              ? { href: `/chef/${feedback.chefSlug}/inquire`, label: 'Book Again' }
+              : null
+          }
+        />
       </div>
     </div>
   )

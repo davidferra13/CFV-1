@@ -322,7 +322,10 @@ export default function ForOperatorsPage() {
       </section>
 
       <section className="mx-auto max-w-3xl px-4 pb-12 sm:px-6 lg:px-8">
-        <PublicSecondaryEntryCluster links={PUBLIC_SECONDARY_ENTRY_CONFIG.for_operators} theme="dark" />
+        <PublicSecondaryEntryCluster
+          links={PUBLIC_SECONDARY_ENTRY_CONFIG.for_operators}
+          theme="dark"
+        />
       </section>
     </main>
   )

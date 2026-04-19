@@ -204,8 +204,8 @@ export default async function ListingDetailPage({ params }: Props) {
             <div className="rounded-xl border border-amber-800/30 bg-amber-950/10 p-5">
               <h2 className="text-sm font-semibold text-stone-200">Planning a group meal?</h2>
               <p className="mt-1.5 text-sm text-stone-400">
-                Start a Dinner Circle to gather friends, coordinate the details, and keep everyone on
-                the same page.
+                Start a Dinner Circle to gather friends, coordinate the details, and keep everyone
+                on the same page.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <Link
@@ -330,7 +330,10 @@ export default async function ListingDetailPage({ params }: Props) {
           </div>
         </div>
 
-        <PublicSecondaryEntryCluster links={PUBLIC_SECONDARY_ENTRY_CONFIG.nearby_detail} theme="dark" />
+        <PublicSecondaryEntryCluster
+          links={PUBLIC_SECONDARY_ENTRY_CONFIG.nearby_detail}
+          theme="dark"
+        />
       </div>
     </div>
   )

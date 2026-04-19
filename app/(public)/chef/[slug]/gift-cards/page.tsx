@@ -15,7 +15,30 @@ type Props = { params: { slug: string } }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getPublicChefProfile(params.slug)
   if (!data) return { title: 'Gift Cards' }
-  return { title: `Gift Cards - ${data.chef.display_name}` }
+
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+  const title = `Gift a Private Chef Experience - ${data.chef.display_name}`
+  const description = `Send a gift card for ${data.chef.display_name}'s private chef services. The perfect gift for food lovers.`
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `${baseUrl}/chef/${params.slug}/gift-cards`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${baseUrl}/chef/${params.slug}/gift-cards`,
+      type: 'website',
+      ...(data.chef.profile_image_url ? { images: [data.chef.profile_image_url] } : {}),
+    },
+    twitter: {
+      card: 'summary',
+      title,
+      description,
+    },
+  }
 }
 
 export default async function GiftCardStorePage({ params }: Props) {
