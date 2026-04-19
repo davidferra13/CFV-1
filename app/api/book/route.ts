@@ -166,6 +166,7 @@ export async function POST(request: NextRequest) {
     const clientName = stripHtml(data.full_name)
     const dietaryRestrictions = parseDietaryRestrictions(data.dietary_restrictions)
     const inquiryIds: string[] = []
+    let firstCircleToken: string | null = null
 
     // Build the source message
     const sourceParts = [
@@ -417,6 +418,22 @@ export async function POST(request: NextRequest) {
         } catch (arErr) {
           console.error('[open-booking] Auto-response failed (non-blocking):', arErr)
         }
+
+        // Create Dinner Circle for communication (parity with submitPublicInquiry)
+        try {
+          const { createInquiryCircle } = await import('@/lib/hub/inquiry-circle-actions')
+          const circle = await createInquiryCircle({
+            inquiryId: inquiry.id,
+            clientName,
+            clientEmail,
+            occasion: stripHtml(data.occasion),
+          })
+          if (!firstCircleToken && circle?.groupToken) {
+            firstCircleToken = circle.groupToken
+          }
+        } catch (circleErr) {
+          console.error('[open-booking] Dinner Circle creation failed (non-blocking):', circleErr)
+        }
       } catch (chefErr) {
         console.error('[open-booking] Error processing chef', chef.id, chefErr)
       }
@@ -425,6 +442,9 @@ export async function POST(request: NextRequest) {
     // Send client confirmation email (non-blocking)
     try {
       const { sendInquiryReceivedEmail } = await import('@/lib/email/notifications')
+      const circleUrl = firstCircleToken
+        ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'}/hub/g/${firstCircleToken}`
+        : undefined
       await sendInquiryReceivedEmail({
         clientEmail,
         clientName,
@@ -433,6 +453,7 @@ export async function POST(request: NextRequest) {
         eventDate: data.event_date || null,
         guestCount: data.guest_count ?? null,
         location: data.location?.trim() ? stripHtml(data.location) : null,
+        circleUrl,
       })
     } catch (emailErr) {
       console.error('[open-booking] Client email failed (non-blocking):', emailErr)

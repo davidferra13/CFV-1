@@ -34,6 +34,7 @@ import {
   getPublicCharityImpact,
 } from '@/lib/credentials/actions'
 import { getPublicPortfolio } from '@/lib/events/photo-actions'
+import { getUpcomingPublicEvents } from '@/lib/tickets/purchase-actions'
 import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
 import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 import { getCurrentUser } from '@/lib/auth/get-user'
@@ -216,6 +217,7 @@ export default async function ChefProfilePage({ params }: Props) {
     charityImpact,
     portfolio,
     chefCredFields,
+    upcomingEvents,
   ] = await Promise.all([
     getPublicChefReviewFeed(chef.id),
     chef.show_availability_signals ? getPublicAvailabilitySignals(chef.id) : Promise.resolve([]),
@@ -246,6 +248,7 @@ export default async function ChefProfilePage({ params }: Props) {
         return { showResumeAvailableNote: false }
       }
     })(),
+    getUpcomingPublicEvents(chef.id).catch(() => []),
   ])
 
   const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
@@ -661,6 +664,56 @@ export default async function ChefProfilePage({ params }: Props) {
                       Inquire
                     </TrackedLink>
                   </div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {upcomingEvents.length > 0 && (
+        <section className="py-12 px-6 bg-stone-900/70">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold text-stone-100">Upcoming Events</h2>
+              <p className="text-stone-300 mt-2 text-sm">
+                Public events you can attend. Buy tickets directly.
+              </p>
+            </div>
+            <div className="space-y-3">
+              {upcomingEvents.map((evt) => {
+                const dateLabel = new Date(`${evt.eventDate}T00:00:00`).toLocaleDateString(
+                  'en-US',
+                  { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' }
+                )
+                const priceLabel =
+                  evt.minPriceCents != null
+                    ? evt.minPriceCents === evt.maxPriceCents
+                      ? `$${(evt.minPriceCents / 100).toFixed(0)}`
+                      : `$${(evt.minPriceCents / 100).toFixed(0)} - $${(evt.maxPriceCents! / 100).toFixed(0)}`
+                    : null
+                return (
+                  <TrackedLink
+                    key={evt.shareToken}
+                    href={`/e/${evt.shareToken}`}
+                    analyticsName="public_profile_upcoming_event"
+                    analyticsProps={{ chef_slug: publicSlug, event_date: evt.eventDate }}
+                    className="flex items-center justify-between rounded-xl border border-stone-700 bg-stone-950/80 px-5 py-4 transition-colors hover:border-stone-500 hover:bg-stone-900"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-semibold text-stone-100 truncate">{evt.eventName}</p>
+                      <p className="text-sm text-stone-400 mt-0.5">
+                        {dateLabel}
+                        {evt.locationCity ? ` · ${evt.locationCity}` : ''}
+                      </p>
+                    </div>
+                    <div className="flex-shrink-0 ml-4 text-right">
+                      {priceLabel && (
+                        <p className="text-sm font-medium text-brand-400">{priceLabel}</p>
+                      )}
+                      <p className="text-xs text-stone-400">Get Tickets</p>
+                    </div>
+                  </TrackedLink>
                 )
               })}
             </div>

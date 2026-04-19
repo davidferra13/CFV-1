@@ -473,7 +473,7 @@ async function FullIngredientPage({ id, detail }: { id: string; detail: CatalogD
           )}
 
           {/* Chef CTA */}
-          <ChefCta category={categorySlug} />
+          <ChefCta category={categorySlug} ingredientName={detail.ingredient.name} />
 
           {/* Share */}
           <div className="px-6 py-5 bg-stone-900/50">
@@ -610,7 +610,7 @@ function KnowledgeOnlyPage({
           )}
 
           {/* Chef CTA */}
-          <ChefCta category={category} />
+          <ChefCta category={category} ingredientName={name} />
 
           {/* Share */}
           <div className="px-6 py-5 bg-stone-900/50">
@@ -836,8 +836,27 @@ const DEFAULT_CTA = {
   sub: 'Private chefs on ChefFlow source ingredients you choose and cook them exactly how you want.',
 }
 
-function ChefCta({ category }: { category: string | null }) {
+// Map ingredient categories to relevant chef directory cuisine filters
+const CATEGORY_CUISINE_MAP: Record<string, string> = {
+  spice: 'indian',
+  specialty: 'japanese',
+  alcohol: 'french',
+}
+
+function ChefCta({
+  category,
+  ingredientName,
+}: {
+  category: string | null
+  ingredientName?: string
+}) {
   const cta = (category && CATEGORY_CTA[category]) || DEFAULT_CTA
+  const cuisineFilter = category ? CATEGORY_CUISINE_MAP[category] : undefined
+  const chefsHref = cuisineFilter ? `/chefs?cuisine=${cuisineFilter}` : '/chefs'
+  const bookHref = ingredientName
+    ? `/book?occasion=${encodeURIComponent(`Dinner featuring ${ingredientName}`)}`
+    : '/book'
+
   return (
     <div className="px-6 py-5 border-b border-stone-800 bg-stone-950/40">
       <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">
@@ -847,13 +866,13 @@ function ChefCta({ category }: { category: string | null }) {
       <p className="text-xs text-stone-400 leading-relaxed mb-4">{cta.sub}</p>
       <div className="flex flex-wrap gap-2">
         <Link
-          href="/book"
+          href={bookHref}
           className="inline-flex items-center gap-1.5 rounded-lg bg-stone-100 px-4 py-2 text-xs font-semibold text-stone-900 hover:bg-white transition-colors"
         >
           Book a Chef
         </Link>
         <Link
-          href="/chefs"
+          href={chefsHref}
           className="inline-flex items-center gap-1.5 rounded-lg border border-stone-700 px-4 py-2 text-xs font-medium text-stone-300 hover:border-stone-500 hover:text-stone-100 transition-colors"
         >
           Browse Chefs

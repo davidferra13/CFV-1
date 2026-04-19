@@ -40,7 +40,13 @@
     ".next-dev-pw-31088-1775756857616/types/**/*.ts",
     ".next-dev-pw-50648-1775756986011/types/**/*.ts",
     ".next-dev-pw-61900-1775757021528/types/**/*.ts",
-    ".next-dev-proof-8dd97e76-73aa-4cf5-a08b-05a5adb79f51/types/**/*.ts"
+    ".next-dev-proof-8dd97e76-73aa-4cf5-a08b-05a5adb79f51/types/**/*.ts",
+    ".next-dev-pw-10428-1776557842302/types/**/*.ts",
+    ".next-dev-pw-36316-1776558158211/types/**/*.ts",
+    ".next-dev-pw-32132-1776563668847/types/**/*.ts",
+    ".next-dev-pw-8808-1776565328200/types/**/*.ts",
+    ".next-dev-pw-38000-1776565509410/types/**/*.ts",
+    ".next-dev-pw-42420-1776565971939/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

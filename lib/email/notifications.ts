@@ -434,6 +434,8 @@ export async function sendIncentiveDeliveryEmail(params: {
   valueLabel: string
   expiresAt?: string | null
   personalMessage?: string | null
+  chefSlug?: string | null
+  chefName?: string | null
 }) {
   const typeLabel = params.incentiveType === 'gift_card' ? 'gift card' : 'voucher'
 
@@ -449,6 +451,8 @@ export async function sendIncentiveDeliveryEmail(params: {
       valueLabel: params.valueLabel,
       expiresAt: params.expiresAt,
       personalMessage: params.personalMessage,
+      chefSlug: params.chefSlug,
+      chefName: params.chefName,
     }),
   })
 }

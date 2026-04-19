@@ -147,6 +147,82 @@ export async function getPublicEventByShareToken(
   }
 }
 
+// ─── Public: Upcoming ticketed events for a chef ────────────────────
+
+export type PublicUpcomingEvent = {
+  shareToken: string
+  eventName: string
+  eventDate: string
+  serveTime: string | null
+  locationCity: string | null
+  occasion: string | null
+  minPriceCents: number | null
+  maxPriceCents: number | null
+  ticketTypesCount: number
+}
+
+export async function getUpcomingPublicEvents(tenantId: string): Promise<PublicUpcomingEvent[]> {
+  const db: any = createServerClient({ admin: true })
+  const today = new Date().toISOString().split('T')[0]
+
+  // Get share settings with tickets enabled for this chef
+  const { data: shares } = await db
+    .from('event_share_settings')
+    .select('event_id, share_token, tickets_enabled')
+    .eq('tenant_id', tenantId)
+    .eq('tickets_enabled', true)
+
+  if (!shares || shares.length === 0) return []
+
+  const eventIds = shares.map((s: any) => s.event_id)
+  const tokenMap = new Map(shares.map((s: any) => [s.event_id, s.share_token]))
+
+  // Get upcoming, non-cancelled events
+  const { data: events } = await db
+    .from('events')
+    .select('id, event_date, serve_time, occasion, location_city, status')
+    .eq('tenant_id', tenantId)
+    .in('id', eventIds)
+    .gte('event_date', today)
+    .not('status', 'in', '("cancelled","draft")')
+    .order('event_date', { ascending: true })
+    .limit(10)
+
+  if (!events || events.length === 0) return []
+
+  // Get ticket type pricing for these events
+  const { data: ticketTypes } = await db
+    .from('event_ticket_types')
+    .select('event_id, price_cents')
+    .in(
+      'event_id',
+      events.map((e: any) => e.id)
+    )
+    .eq('is_active', true)
+
+  const pricesByEvent = new Map<string, number[]>()
+  for (const tt of ticketTypes ?? []) {
+    const prices = pricesByEvent.get(tt.event_id) ?? []
+    prices.push(tt.price_cents)
+    pricesByEvent.set(tt.event_id, prices)
+  }
+
+  return events.map((e: any) => {
+    const prices = pricesByEvent.get(e.id) ?? []
+    return {
+      shareToken: tokenMap.get(e.id),
+      eventName: e.occasion || 'Event',
+      eventDate: e.event_date,
+      serveTime: e.serve_time,
+      locationCity: e.location_city,
+      occasion: e.occasion,
+      minPriceCents: prices.length > 0 ? Math.min(...prices) : null,
+      maxPriceCents: prices.length > 0 ? Math.max(...prices) : null,
+      ticketTypesCount: prices.length,
+    }
+  })
+}
+
 // ─── Public: Purchase ticket via Stripe Checkout ─────────────────────
 
 export async function purchaseTicket(input: PurchaseTicketInput): Promise<PurchaseTicketResult> {

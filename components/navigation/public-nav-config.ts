@@ -74,6 +74,7 @@ export const FOOTER_SECTIONS = {
       PUBLIC_SECONDARY_CONSUMER_CTA,
       PUBLIC_DINNER_CIRCLES_ENTRY,
       { href: '/services', label: 'Services' },
+      { href: '/gift-cards', label: 'Gift Cards' },
       { href: '/how-it-works', label: 'How It Works' },
       { href: '/faq', label: 'FAQ' },
       PUBLIC_SUPPORTING_DIRECTORY_ENTRY,

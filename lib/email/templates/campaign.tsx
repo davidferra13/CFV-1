@@ -62,7 +62,11 @@ export function CampaignEmail({
           {/* Footer */}
           <Section style={footer}>
             <Text style={footerText}>
-              This message was sent by <strong>{chefName}</strong> via ChefFlow.
+              This message was sent by <strong>{chefName}</strong> via{' '}
+              <Link href="https://cheflowhq.com" style={unsubLink}>
+                ChefFlow
+              </Link>{' '}
+              &mdash; find and book private chefs near you.
             </Text>
             <Text style={footerText}>
               <Link href={unsubscribeUrl} style={unsubLink}>

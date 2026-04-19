@@ -7,9 +7,10 @@ type Props = {
   guestCode: string
   chefName: string
   primaryColor: string
+  chefSlug?: string | null
 }
 
-export function GuestLeadForm({ guestCode, chefName, primaryColor }: Props) {
+export function GuestLeadForm({ guestCode, chefName, primaryColor, chefSlug }: Props) {
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -63,16 +64,34 @@ export function GuestLeadForm({ guestCode, chefName, primaryColor }: Props) {
           {chefName} will be in touch soon. Looking forward to cooking for you!
         </p>
 
-        <div className="mt-8 pt-6 border-t border-stone-700 max-w-sm mx-auto">
-          <p className="text-sm text-stone-500 mb-3">
-            Want to browse menus, track events, and book directly?
-          </p>
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          {chefSlug && (
+            <a
+              href={`/chef/${chefSlug}`}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-stone-600 px-4 py-2 text-sm font-medium text-stone-300 transition-colors hover:border-stone-500 hover:text-stone-100"
+            >
+              View {chefName}'s Profile
+            </a>
+          )}
+          {chefSlug && (
+            <a
+              href={`/chef/${chefSlug}/inquire?name=${encodeURIComponent(form.name)}&email=${encodeURIComponent(form.email)}`}
+              className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+              style={{ backgroundColor: primaryColor }}
+            >
+              Book {chefName} Now
+            </a>
+          )}
+        </div>
+
+        <div className="mt-6 pt-6 border-t border-stone-700 max-w-sm mx-auto">
+          <p className="text-sm text-stone-500 mb-3">Or browse all chefs on ChefFlow</p>
           <a
-            href="/auth/client-signup"
+            href="/chefs"
             className="inline-block px-6 py-2.5 rounded-lg font-medium text-sm border transition-colors hover:opacity-90"
             style={{ borderColor: primaryColor, color: primaryColor }}
           >
-            Create your free account
+            Browse Chefs
           </a>
         </div>
       </div>

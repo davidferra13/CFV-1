@@ -1,6 +1,8 @@
-import { Text } from '@react-email/components'
+import { Text, Button } from '@react-email/components'
 import * as React from 'react'
 import { BaseLayout } from './base-layout'
+
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 type IncentiveDeliveryEmailProps = {
   recipientName?: string | null
@@ -11,6 +13,10 @@ type IncentiveDeliveryEmailProps = {
   valueLabel: string
   expiresAt?: string | null
   personalMessage?: string | null
+  /** Chef slug for direct profile link */
+  chefSlug?: string | null
+  /** Chef display name */
+  chefName?: string | null
 }
 
 function formatTypeLabel(type: 'voucher' | 'gift_card') {
@@ -26,6 +32,8 @@ export function IncentiveDeliveryEmail({
   valueLabel,
   expiresAt,
   personalMessage,
+  chefSlug,
+  chefName,
 }: IncentiveDeliveryEmailProps) {
   return (
     <BaseLayout preview={`${senderName} sent you a ${formatTypeLabel(incentiveType)}`}>
@@ -52,6 +60,18 @@ export function IncentiveDeliveryEmail({
       ) : null}
 
       <Text style={muted}>Keep this email for your records and share the code when redeeming.</Text>
+
+      <div style={ctaSection}>
+        {chefSlug ? (
+          <Button href={`${SITE_URL}/chef/${chefSlug}/inquire`} style={ctaButton}>
+            Book {chefName ? `with ${chefName}` : 'a Private Chef'}
+          </Button>
+        ) : (
+          <Button href={`${SITE_URL}/chefs`} style={ctaButton}>
+            Browse Chefs on ChefFlow
+          </Button>
+        )}
+      </div>
     </BaseLayout>
   )
 }
@@ -126,6 +146,23 @@ const messageValue = {
   lineHeight: '1.6',
   color: '#374151',
   whiteSpace: 'pre-wrap' as const,
+}
+
+const ctaSection = {
+  textAlign: 'center' as const,
+  margin: '24px 0 0',
+}
+
+const ctaButton = {
+  backgroundColor: '#e88f47',
+  borderRadius: '8px',
+  color: '#ffffff',
+  display: 'inline-block' as const,
+  fontSize: '14px',
+  fontWeight: '600' as const,
+  padding: '12px 24px',
+  textDecoration: 'none',
+  textAlign: 'center' as const,
 }
 
 const muted = {

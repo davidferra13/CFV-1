@@ -12,13 +12,13 @@ ChefFlow is a business operating system for independent food professionals. It m
 
 The system serves five actor types:
 
-| Actor        | Definition                                                                                                                  | Authentication                                         |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| Actor        | Definition                                                                                                                                                   | Authentication                                         |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
 | **Operator** | A food professional who runs their business through ChefFlow (private chef, caterer, meal prep service, food truck, bakery, restaurant, pop-up, supper club) | Email/password or Google OAuth. Session via JWT.       |
-| **Client**   | A person who hires an operator for food services                                                                            | Email/password or token-based access. Session via JWT. |
-| **Guest**    | A person attending an event managed by an operator                                                                          | Token-based access only. No account required.          |
-| **Staff**    | A person employed by an operator                                                                                            | Email/password. Scoped to one operator.                |
-| **Visitor**  | An unauthenticated person browsing public pages                                                                             | No authentication.                                     |
+| **Client**   | A person who hires an operator for food services                                                                                                             | Email/password or token-based access. Session via JWT. |
+| **Guest**    | A person attending an event managed by an operator                                                                                                           | Token-based access only. No account required.          |
+| **Staff**    | A person employed by an operator                                                                                                                             | Email/password. Scoped to one operator.                |
+| **Visitor**  | An unauthenticated person browsing public pages                                                                                                              | No authentication.                                     |
 
 Every piece of data in the system belongs to exactly one operator (tenant). No actor can ever read or write data belonging to a different operator's tenant, except through explicitly shared public surfaces.
 

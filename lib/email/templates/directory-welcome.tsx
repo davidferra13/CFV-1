@@ -67,6 +67,18 @@ export function DirectoryWelcomeEmail({
         </Link>
         .
       </Text>
+
+      <div style={upgradeCard}>
+        <Text style={upgradeHeading}>Run your whole business here</Text>
+        <Text style={upgradeText}>
+          ChefFlow is a free operating system for food businesses. Manage events, clients, menus,
+          finances, and more. No commissions, no hidden fees.
+        </Text>
+        <Button href={`${SITE_URL}/for-operators`} style={upgradeButton}>
+          Learn More
+        </Button>
+      </div>
+
       <Text style={signoff}>The ChefFlow Team</Text>
       <Text style={optOutText}>
         <Link href={optOutUrl} style={optOutLink}>
@@ -137,6 +149,40 @@ const link = {
   color: '#e88f47',
   textDecoration: 'none',
   fontWeight: '600' as const,
+}
+
+const upgradeCard = {
+  border: '1px solid #e5e7eb',
+  borderRadius: '8px',
+  padding: '20px',
+  margin: '0 0 24px',
+  backgroundColor: '#fefce8',
+}
+
+const upgradeHeading = {
+  fontSize: '15px',
+  fontWeight: '600' as const,
+  color: '#18181b',
+  margin: '0 0 8px',
+}
+
+const upgradeText = {
+  fontSize: '13px',
+  lineHeight: '1.6',
+  color: '#374151',
+  margin: '0 0 12px',
+}
+
+const upgradeButton = {
+  backgroundColor: '#18181b',
+  borderRadius: '6px',
+  color: '#ffffff',
+  display: 'inline-block' as const,
+  fontSize: '13px',
+  fontWeight: '500' as const,
+  padding: '8px 16px',
+  textDecoration: 'none',
+  textAlign: 'center' as const,
 }
 
 const signoff = {

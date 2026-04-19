@@ -35,7 +35,7 @@ export async function getChefByGuestCode(code: string) {
   const { data: chef } = await db
     .from('chefs')
     .select(
-      'id, display_name, business_name, bio, profile_image_url, portal_primary_color, portal_background_color, tagline'
+      'id, display_name, business_name, bio, profile_image_url, portal_primary_color, portal_background_color, tagline, slug'
     )
     .eq('id', event.tenant_id)
     .single()
@@ -49,6 +49,7 @@ export async function getChefByGuestCode(code: string) {
     tagline: chef.tagline as string | null,
     primaryColor: chef.portal_primary_color as string | null,
     backgroundColor: chef.portal_background_color as string | null,
+    chefSlug: chef.slug as string | null,
     tenantId: chef.id as string,
     eventId: event.id as string,
   }

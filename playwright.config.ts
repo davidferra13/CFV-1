@@ -24,7 +24,8 @@ function envFlag(value: string | undefined, fallback: boolean): boolean {
 }
 
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3100'
-const WEB_SERVER_COMMAND = process.env.PLAYWRIGHT_WEB_SERVER_COMMAND || 'npm run dev'
+const WEB_SERVER_COMMAND =
+  process.env.PLAYWRIGHT_WEB_SERVER_COMMAND || 'node scripts/run-playwright-dev-server.mjs'
 const RUN_ID = process.env.PLAYWRIGHT_RUN_ID || `pw-${process.pid}-${Date.now()}`
 const OUTPUT_DIR = process.env.PLAYWRIGHT_OUTPUT_DIR || `test-results/${RUN_ID}`
 const DEV_DIST_DIR = process.env.NEXT_DIST_DIR || `.next-dev-${RUN_ID}`

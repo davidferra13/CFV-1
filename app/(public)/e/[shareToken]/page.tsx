@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import { getPublicEventByShareToken } from '@/lib/tickets/purchase-actions'
 import { TokenExpiredPage } from '@/components/ui/token-expired-page'
 import { checkRateLimit } from '@/lib/rateLimit'
+import { createServerClient } from '@/lib/db/server'
 import { PublicEventView } from './public-event-view'
 
 interface Props {
@@ -110,6 +111,26 @@ export default async function PublicEventPage({ params, searchParams }: Props) {
       : {}),
   }
 
+  // Fetch circle URL for post-purchase confirmation screen
+  let circleUrl: string | null = null
+  if (search.purchased === 'true') {
+    try {
+      const db: any = createServerClient({ admin: true })
+      const { data: circleGroup } = await db
+        .from('hub_groups')
+        .select('group_token')
+        .eq('event_id', event.eventId)
+        .eq('is_active', true)
+        .maybeSingle()
+      if (circleGroup?.group_token) {
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
+        circleUrl = `${appUrl}/hub/g/${circleGroup.group_token}`
+      }
+    } catch {
+      // Non-blocking
+    }
+  }
+
   return (
     <>
       <script
@@ -122,6 +143,7 @@ export default async function PublicEventPage({ params, searchParams }: Props) {
         justPurchased={search.purchased === 'true'}
         purchaseCancelled={search.cancelled === 'true'}
         ticketId={search.ticket}
+        circleUrl={circleUrl}
       />
     </>
   )

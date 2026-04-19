@@ -3,6 +3,7 @@
 // land here, and can express interest in booking their own event.
 
 import Image from 'next/image'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
@@ -75,6 +76,15 @@ export default async function GuestLandingPage({ params }: Props) {
           <p className="text-stone-500 mt-4 max-w-md mx-auto leading-relaxed">
             Enjoyed tonight? Leave your info and I'll reach out about cooking for you.
           </p>
+
+          {data.chefSlug && (
+            <Link
+              href={`/chef/${data.chefSlug}`}
+              className="inline-block mt-4 text-sm text-stone-400 hover:text-stone-200 transition-colors underline underline-offset-2"
+            >
+              View full profile
+            </Link>
+          )}
         </div>
       </section>
 
@@ -85,6 +95,7 @@ export default async function GuestLandingPage({ params }: Props) {
             guestCode={params.code}
             chefName={data.chefName}
             primaryColor={primaryColor}
+            chefSlug={data.chefSlug}
           />
         </div>
       </section>

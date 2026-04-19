@@ -10,13 +10,13 @@
 
 ChefFlow is a universal food services operating system. It serves five distinct user archetypes through one integrated platform:
 
-| Archetype                  | What They Do Here                                                                         | Entry Point                                     |
-| -------------------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| **Food Business Operator** | Run their entire culinary business (events, clients, finances, recipes, staff, marketing) | `/dashboard` (chef portal)                      |
-| **Client / Consumer**      | Discover chefs, book events, manage dietary needs, approve menus, pay, leave reviews      | `/chefs`, `/my-events`, `/my-hub`               |
-| **Guest / Attendee**       | RSVP, share dietary restrictions, view menus, provide feedback, join dinner circles       | `/event/[id]/guest/[token]`, `/hub/g/[token]`   |
-| **Staff / Team Member**    | View assignments, manage stations, track tasks, clock in/out                              | `/staff-dashboard`, `/staff-tasks`              |
-| **Community Member**       | Discover food operators, share templates, connect with other chefs, browse the directory  | `/nearby`, `/network`, `/community/templates`   |
+| Archetype                  | What They Do Here                                                                         | Entry Point                                   |
+| -------------------------- | ----------------------------------------------------------------------------------------- | --------------------------------------------- |
+| **Food Business Operator** | Run their entire culinary business (events, clients, finances, recipes, staff, marketing) | `/dashboard` (chef portal)                    |
+| **Client / Consumer**      | Discover chefs, book events, manage dietary needs, approve menus, pay, leave reviews      | `/chefs`, `/my-events`, `/my-hub`             |
+| **Guest / Attendee**       | RSVP, share dietary restrictions, view menus, provide feedback, join dinner circles       | `/event/[id]/guest/[token]`, `/hub/g/[token]` |
+| **Staff / Team Member**    | View assignments, manage stations, track tasks, clock in/out                              | `/staff-dashboard`, `/staff-tasks`            |
+| **Community Member**       | Discover food operators, share templates, connect with other chefs, browse the directory  | `/nearby`, `/network`, `/community/templates` |
 
 ---
 
@@ -53,16 +53,16 @@ ChefFlow is a universal food services operating system. It serves five distinct 
 
 **Features that serve this objective:**
 
-| Feature                     | Route(s)                        | Current State                                                                      | Gap                               |
-| --------------------------- | ------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------- |
-| Chef directory with filters | `/chefs`                        | Built. Location, cuisine, service type, dietary, price range, availability filters | Needs population and SEO traction |
-| Individual chef profiles    | `/chef/[slug]`                  | Built. Bio, services, reviews, credentials, portfolio, social links, JSON-LD       | Needs real chef profiles          |
-| Public inquiry form         | `/chef/[slug]/inquire`          | Built. No-auth form with trust signals sidebar                                     | Active                            |
-| Food operator directory     | `/nearby`, `/nearby/[slug]`     | Built. Multi-state, multi-type (restaurant, bakery, chef, caterer, food truck)     | Needs population                  |
-| Embeddable widget           | `/embed/inquiry/[chefId]`       | Built. iFrame-ready, themed, CORS-enabled                                          | Active                            |
-| Booking page per chef       | `/settings/booking` (config)    | Built. Shareable link, pricing model, deposit config                               | Active                            |
-| Gift card purchases         | `/chef/[slug]/gift-cards`       | Built. Public purchase flow                                                        | Needs validation                  |
-| Compare chefs               | `/compare`                      | Built. Side-by-side comparison tool                                                | Needs real data                   |
+| Feature                     | Route(s)                     | Current State                                                                      | Gap                               |
+| --------------------------- | ---------------------------- | ---------------------------------------------------------------------------------- | --------------------------------- |
+| Chef directory with filters | `/chefs`                     | Built. Location, cuisine, service type, dietary, price range, availability filters | Needs population and SEO traction |
+| Individual chef profiles    | `/chef/[slug]`               | Built. Bio, services, reviews, credentials, portfolio, social links, JSON-LD       | Needs real chef profiles          |
+| Public inquiry form         | `/chef/[slug]/inquire`       | Built. No-auth form with trust signals sidebar                                     | Active                            |
+| Food operator directory     | `/nearby`, `/nearby/[slug]`  | Built. Multi-state, multi-type (restaurant, bakery, chef, caterer, food truck)     | Needs population                  |
+| Embeddable widget           | `/embed/inquiry/[chefId]`    | Built. iFrame-ready, themed, CORS-enabled                                          | Active                            |
+| Booking page per chef       | `/settings/booking` (config) | Built. Shareable link, pricing model, deposit config                               | Active                            |
+| Gift card purchases         | `/chef/[slug]/gift-cards`    | Built. Public purchase flow                                                        | Needs validation                  |
+| Compare chefs               | `/compare`                   | Built. Side-by-side comparison tool                                                | Needs real data                   |
 
 **Measurement:** Monthly public profile views, inquiry submissions from public pages, directory search volume.
 

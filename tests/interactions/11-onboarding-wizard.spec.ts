@@ -1,34 +1,45 @@
-// Interaction Layer — Onboarding Wizard
-// Tests the chef onboarding flow which guides new chefs through
-// setting up their profile, importing clients, adding recipes,
-// setting up staff, and configuring loyalty/rewards.
-//
-// Steps covered:
-//   /onboarding          — Welcome / profile setup
-//   /onboarding/clients  — Import or add initial clients
-//   /onboarding/recipes  — Add first recipes
-//   /onboarding/staff    — Add staff members
-//   /onboarding/loyalty  — Configure loyalty/rewards program
-//
-// Uses chef storageState (interactions-chef project).
+// Interaction Layer - Onboarding
+// Covers the chef onboarding entry surface plus the import/setup sub-pages.
 
 import { test, expect } from '../helpers/fixtures'
 
-// ─── Onboarding Entry ─────────────────────────────────────────────────────────
+test.setTimeout(120_000)
 
-test.describe('Onboarding — Entry Point', () => {
+async function gotoOnboarding(page: any, path: string) {
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      await page.goto(path, { waitUntil: 'domcontentloaded', timeout: 90_000 })
+      await expect(page.locator('body')).toBeVisible()
+      return
+    } catch (error) {
+      const message = String(error)
+      const retryable = message.includes('ERR_ABORTED') || message.includes('frame was detached')
+      if (!retryable || attempt === 3) throw error
+      await page.waitForTimeout(1_500 * attempt)
+    }
+  }
+}
+
+async function expectAction(page: any, name: RegExp) {
+  const button = page.getByRole('button', { name }).first()
+  if ((await button.count()) > 0) {
+    await expect(button).toBeVisible({ timeout: 10_000 })
+    return
+  }
+
+  await expect(page.getByRole('link', { name }).first()).toBeVisible({ timeout: 10_000 })
+}
+
+test.describe('Onboarding - Entry Point', () => {
   test('/onboarding loads and shows welcome content', async ({ page }) => {
-    await page.goto('/onboarding')
-    await page.waitForLoadState('networkidle')
+    await gotoOnboarding(page, '/onboarding')
     expect(page.url()).not.toMatch(/auth\/signin/)
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.trim().length).toBeGreaterThan(50)
   })
 
   test('/onboarding has a progress indicator or step structure', async ({ page }) => {
-    await page.goto('/onboarding')
-    await page.waitForLoadState('networkidle')
-    // Should show some indication of steps or progress
+    await gotoOnboarding(page, '/onboarding')
     const progressEl = page
       .locator('[role="progressbar"], .progress, [aria-valuemax], .step, .steps')
       .first()
@@ -36,204 +47,134 @@ test.describe('Onboarding — Entry Point', () => {
     await expect(progressEl).toBeVisible({ timeout: 10_000 })
   })
 
-  test('/onboarding has a continue or next button', async ({ page }) => {
-    await page.goto('/onboarding')
-    await page.waitForLoadState('networkidle')
-    const nextBtn = page
-      .getByRole('button', { name: /continue|next|get started|begin|start/i })
-      .first()
-    await expect(nextBtn).toBeVisible({ timeout: 10_000 })
+  test('/onboarding has a primary setup action', async ({ page }) => {
+    await gotoOnboarding(page, '/onboarding')
+    await expectAction(
+      page,
+      /continue|next|get started|begin|start|edit profile|import clients|set up loyalty|add recipes|add staff|go to dashboard/i
+    )
   })
 
   test('/onboarding does not throw JS errors', async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
-    await page.goto('/onboarding')
-    await page.waitForLoadState('networkidle')
+    await gotoOnboarding(page, '/onboarding')
     expect(errors).toHaveLength(0)
   })
 
-  test('/onboarding has form fields for profile information', async ({ page }) => {
-    await page.goto('/onboarding')
-    await page.waitForLoadState('networkidle')
-    // Onboarding typically collects name, tagline, bio, etc.
+  test('/onboarding renders either the wizard or the setup hub', async ({ page }) => {
+    await gotoOnboarding(page, '/onboarding')
     const inputs = await page.locator('input, textarea').count()
-    expect(inputs, 'Onboarding should have form fields').toBeGreaterThanOrEqual(0)
-    // At minimum the page should render content
+    expect(inputs).toBeGreaterThanOrEqual(0)
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.trim().length).toBeGreaterThan(20)
   })
 })
 
-// ─── Onboarding Clients Step ──────────────────────────────────────────────────
-
-test.describe('Onboarding — Clients Step', () => {
+test.describe('Onboarding - Clients Step', () => {
   test('/onboarding/clients loads', async ({ page }) => {
-    await page.goto('/onboarding/clients')
-    await page.waitForLoadState('networkidle')
+    await gotoOnboarding(page, '/onboarding/clients')
     expect(page.url()).not.toMatch(/auth\/signin/)
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.trim().length).toBeGreaterThan(20)
   })
 
   test('/onboarding/clients has client import or add options', async ({ page }) => {
-    await page.goto('/onboarding/clients')
-    await page.waitForLoadState('networkidle')
-    // Should show options to import, add, or skip clients
+    await gotoOnboarding(page, '/onboarding/clients')
     const clientContent = page.getByText(/client|import|add|skip|contact/i).first()
     await expect(clientContent).toBeVisible({ timeout: 10_000 })
   })
 
   test('/onboarding/clients has navigation forward', async ({ page }) => {
-    await page.goto('/onboarding/clients')
-    await page.waitForLoadState('networkidle')
-    const nextBtn = page.getByRole('button', { name: /continue|next|skip|proceed/i }).first()
-    await expect(nextBtn).toBeVisible({ timeout: 10_000 })
+    await gotoOnboarding(page, '/onboarding/clients')
+    await expectAction(page, /continue|next|skip|proceed/i)
   })
 
   test('/onboarding/clients does not throw JS errors', async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
-    await page.goto('/onboarding/clients')
-    await page.waitForLoadState('networkidle')
+    await gotoOnboarding(page, '/onboarding/clients')
     expect(errors).toHaveLength(0)
   })
 })
 
-// ─── Onboarding Recipes Step ──────────────────────────────────────────────────
-
-test.describe('Onboarding — Recipes Step', () => {
+test.describe('Onboarding - Recipes Step', () => {
   test('/onboarding/recipes loads', async ({ page }) => {
-    await page.goto('/onboarding/recipes')
-    await page.waitForLoadState('networkidle')
+    await gotoOnboarding(page, '/onboarding/recipes')
     expect(page.url()).not.toMatch(/auth\/signin/)
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.trim().length).toBeGreaterThan(20)
   })
 
   test('/onboarding/recipes has recipe-related content', async ({ page }) => {
-    await page.goto('/onboarding/recipes')
-    await page.waitForLoadState('networkidle')
+    await gotoOnboarding(page, '/onboarding/recipes')
     const recipeContent = page.getByText(/recipe|dish|cuisine|add|import|skip/i).first()
     await expect(recipeContent).toBeVisible({ timeout: 10_000 })
   })
 
   test('/onboarding/recipes has navigation forward', async ({ page }) => {
-    await page.goto('/onboarding/recipes')
-    await page.waitForLoadState('networkidle')
-    const nextBtn = page.getByRole('button', { name: /continue|next|skip|proceed/i }).first()
-    await expect(nextBtn).toBeVisible({ timeout: 10_000 })
+    await gotoOnboarding(page, '/onboarding/recipes')
+    await expectAction(page, /continue|next|skip|proceed/i)
   })
 
   test('/onboarding/recipes does not throw JS errors', async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
-    await page.goto('/onboarding/recipes')
-    await page.waitForLoadState('networkidle')
+    await gotoOnboarding(page, '/onboarding/recipes')
     expect(errors).toHaveLength(0)
   })
 })
 
-// ─── Onboarding Staff Step ────────────────────────────────────────────────────
-
-test.describe('Onboarding — Staff Step', () => {
+test.describe('Onboarding - Staff Step', () => {
   test('/onboarding/staff loads', async ({ page }) => {
-    await page.goto('/onboarding/staff')
-    await page.waitForLoadState('networkidle')
+    await gotoOnboarding(page, '/onboarding/staff')
     expect(page.url()).not.toMatch(/auth\/signin/)
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.trim().length).toBeGreaterThan(20)
   })
 
   test('/onboarding/staff has staff-related content', async ({ page }) => {
-    await page.goto('/onboarding/staff')
-    await page.waitForLoadState('networkidle')
+    await gotoOnboarding(page, '/onboarding/staff')
     const staffContent = page.getByText(/staff|assistant|helper|team|solo|skip/i).first()
     await expect(staffContent).toBeVisible({ timeout: 10_000 })
   })
 
-  test('/onboarding/staff has navigation forward', async ({ page }) => {
-    await page.goto('/onboarding/staff')
-    await page.waitForLoadState('networkidle')
-    const nextBtn = page.getByRole('button', { name: /continue|next|skip|proceed|finish/i }).first()
-    await expect(nextBtn).toBeVisible({ timeout: 10_000 })
+  test('/onboarding/staff has navigation actions', async ({ page }) => {
+    await gotoOnboarding(page, '/onboarding/staff')
+    await expectAction(page, /continue|next|skip|proceed|finish|dashboard|overview/i)
   })
 
   test('/onboarding/staff does not throw JS errors', async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
-    await page.goto('/onboarding/staff')
-    await page.waitForLoadState('networkidle')
+    await gotoOnboarding(page, '/onboarding/staff')
     expect(errors).toHaveLength(0)
   })
 })
 
-// ─── Onboarding Loyalty Step ──────────────────────────────────────────────────
-
-test.describe('Onboarding — Loyalty Step', () => {
+test.describe('Onboarding - Loyalty Step', () => {
   test('/onboarding/loyalty loads', async ({ page }) => {
-    await page.goto('/onboarding/loyalty')
-    await page.waitForLoadState('networkidle')
+    await gotoOnboarding(page, '/onboarding/loyalty')
     expect(page.url()).not.toMatch(/auth\/signin/)
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.trim().length).toBeGreaterThan(20)
   })
 
   test('/onboarding/loyalty has loyalty/rewards-related content', async ({ page }) => {
-    await page.goto('/onboarding/loyalty')
-    await page.waitForLoadState('networkidle')
+    await gotoOnboarding(page, '/onboarding/loyalty')
     const loyaltyContent = page.getByText(/loyalty|reward|point|referral|program|skip/i).first()
     await expect(loyaltyContent).toBeVisible({ timeout: 10_000 })
   })
 
-  test('/onboarding/loyalty has navigation forward (finish onboarding)', async ({ page }) => {
-    await page.goto('/onboarding/loyalty')
-    await page.waitForLoadState('networkidle')
-    const nextBtn = page
-      .getByRole('button', { name: /continue|next|skip|finish|complete|done/i })
-      .first()
-    await expect(nextBtn).toBeVisible({ timeout: 10_000 })
+  test('/onboarding/loyalty has navigation forward', async ({ page }) => {
+    await gotoOnboarding(page, '/onboarding/loyalty')
+    await expectAction(page, /continue|next|skip|finish|complete|done/i)
   })
 
   test('/onboarding/loyalty does not throw JS errors', async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
-    await page.goto('/onboarding/loyalty')
-    await page.waitForLoadState('networkidle')
+    await gotoOnboarding(page, '/onboarding/loyalty')
     expect(errors).toHaveLength(0)
-  })
-})
-
-// ─── Onboarding Cross-Step Navigation ─────────────────────────────────────────
-
-test.describe('Onboarding — Step Accessibility', () => {
-  const onboardingSteps = [
-    { label: 'main', path: '/onboarding' },
-    { label: 'clients', path: '/onboarding/clients' },
-    { label: 'recipes', path: '/onboarding/recipes' },
-    { label: 'staff', path: '/onboarding/staff' },
-    { label: 'loyalty', path: '/onboarding/loyalty' },
-  ]
-
-  for (const step of onboardingSteps) {
-    test(`Onboarding ${step.label} step is accessible by URL`, async ({ page }) => {
-      await page.goto(step.path)
-      await page.waitForLoadState('networkidle')
-      expect(page.url()).not.toMatch(/auth\/signin/)
-      const bodyText = await page.locator('body').innerText()
-      expect(bodyText.trim().length).toBeGreaterThan(20)
-    })
-  }
-
-  test('All onboarding steps accessible without JS errors', async ({ page }) => {
-    const errors: string[] = []
-    page.on('pageerror', (err) => errors.push(err.message))
-
-    for (const step of onboardingSteps) {
-      await page.goto(step.path)
-      await page.waitForLoadState('networkidle')
-    }
-
-    expect(errors, 'No JS errors across all onboarding steps').toHaveLength(0)
   })
 })

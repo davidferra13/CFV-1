@@ -3,7 +3,7 @@
     "playwright": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@playwright/mcp", "--browser", "chromium", "--headless"]
+      "args": ["-y", "@playwright/mcp", "--browser", "chromium"]
     },
     "github": {
       "type": "stdio",

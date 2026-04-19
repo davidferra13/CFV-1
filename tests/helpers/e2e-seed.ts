@@ -377,7 +377,8 @@ async function ensureInquiry(
       confirmed_location: 'Beacon Hill, Boston, MA',
       confirmed_occasion: 'TEST Private Dinner',
       confirmed_budget_cents: 150000,
-      unknown_fields: [],
+      // Compat client treats bare [] as a native PG array; stringify JSONB empties.
+      unknown_fields: JSON.stringify([]),
       next_action_required: 'Review and respond',
       next_action_by: nextActionBy,
       first_contact_at: new Date().toISOString(),

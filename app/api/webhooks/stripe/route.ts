@@ -304,10 +304,10 @@ async function handleGiftCardPurchaseCompleted(event: Stripe.Event, db: any) {
   const crypto = require('crypto')
   const code = `GFT-${crypto.randomBytes(8).toString('hex').toUpperCase()}`
 
-  // Fetch the chef's display name and email for the gift card title and notification
+  // Fetch the chef's display name, slug, and email for the gift card title and notification
   const { data: chef } = await db
     .from('chefs')
-    .select('display_name, business_name, email')
+    .select('display_name, business_name, email, slug')
     .eq('id', tenant_id)
     .single()
 
@@ -378,6 +378,8 @@ async function handleGiftCardPurchaseCompleted(event: Stripe.Event, db: any) {
       valueLabel: `$${amountDollars} gift card value`,
       expiresAt: expiresAtLabel,
       personalMessage: intent.personal_message,
+      chefSlug: chef?.slug || null,
+      chefName,
     })
   } catch (emailErr) {
     console.error(

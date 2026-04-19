@@ -87,7 +87,7 @@ Key columns: `name`, `slug`, `city`, `state`, `business_type`, `cuisine_types[]`
 | `lib/discover/outreach.ts`                   | Email dispatch, opt-out checks, send logging, admin stats.                                                                   |
 | `lib/discover/constants.ts`                  | 8 business types, 21 cuisine categories, 4 price ranges, 5 statuses. Type exports + label helpers.                           |
 | `lib/email/templates/directory-welcome.tsx`  | React Email: submission confirmation, 3-step process, preview CTA.                                                           |
-| `lib/email/templates/directory-claimed.tsx`  | React Email: claim confirmation, CTA to `/nearby/[slug]/enhance`.                                                             |
+| `lib/email/templates/directory-claimed.tsx`  | React Email: claim confirmation, CTA to `/nearby/[slug]/enhance`.                                                            |
 | `lib/email/templates/directory-verified.tsx` | React Email: verified badge confirmation, link to live listing.                                                              |
 
 ## Data Sources
