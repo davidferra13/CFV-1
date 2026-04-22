@@ -85,9 +85,18 @@ const TimelineRow = memo(function TimelineRow({
               {item.actor === 'client' ? 'Client' : 'You'}
             </span>
           )}
+          {item.badges?.map((badge) => (
+            <span
+              key={badge}
+              className="text-xxs font-medium px-1.5 py-0.5 rounded shrink-0 bg-stone-800 text-stone-300"
+            >
+              {badge}
+            </span>
+          ))}
           <span className="text-xs text-stone-300 truncate">{item.summary}</span>
         </div>
         {item.detail && <p className="text-xs text-stone-400 mt-0.5 truncate">{item.detail}</p>}
+        {item.explanation && <p className="text-xxs text-stone-500 mt-1">{item.explanation}</p>}
       </div>
 
       <span className="text-xs-tight text-stone-400 shrink-0 mt-0.5">{timeLabel}</span>
@@ -96,12 +105,16 @@ const TimelineRow = memo(function TimelineRow({
 
   if (item.href) {
     return (
-      <div className="relative">
+      <div className="relative" data-ledger-row data-ledger-source={item.source}>
         <Link href={item.href}>{inner}</Link>
       </div>
     )
   }
-  return <div className="relative">{inner}</div>
+  return (
+    <div className="relative" data-ledger-row data-ledger-source={item.source}>
+      {inner}
+    </div>
+  )
 })
 
 function formatTimeLabel(dateStr: string): string {

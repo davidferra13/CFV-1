@@ -1,7 +1,7 @@
 # ChefFlow User Manual
 
 > **For:** Chefs, clients, and anyone using ChefFlow
-> **Last updated:** 2026-04-04
+> **Last updated:** 2026-04-22
 > **App:** app.cheflowhq.com
 
 ---
@@ -177,6 +177,8 @@ Every client has a detailed profile covering:
 - **Logistics:** Kitchen access, parking, special requests, photo consent
 - **Relationship:** Next event, days since last event, total lifetime events
 - **Engagement:** HOT (active in last 14 days), WARM (active in 30 days), COLD (inactive 30+ days)
+
+The relationship timeline on the client profile is the canonical interaction feed. It combines authoritative events, inquiries, messages, notes, quotes, payments, reviews, client portal activity, menu revisions, and document version history into one chronological view. Quote, menu, and document revisions also show their revision identity directly in the timeline.
 
 ### Search, Filter, and Bulk Actions
 

@@ -158,6 +158,16 @@
 - Build state on departure: focused slice green, repo-wide CI typecheck still blocked by unrelated dirty-checkout errors in `lib/openclaw/ingredient-knowledge-queries.ts` and `lib/openclaw/public-ingredient-queries.ts`
 - Notes: `lib/auth/server-action-inventory.ts` now classifies page-facing mutations as `standard`, `sensitive`, or `critical` and surfaces missing auth or observability signals as policy violations. Verified with focused `tsc`, `node --test --import tsx tests/unit/server-action-auth-inventory.test.ts`, and `npx playwright test -c playwright.system-integrity.config.ts tests/system-integrity/q80-revalidation-after-mutation.spec.ts`. `bash scripts/session-close.sh` was unavailable on this Windows host because `/bin/bash` is missing, so closeout artifacts were completed manually. Session digest: `docs/session-digests/2026-04-22-draft.md`
 
+## 2026-04-22 13:55 EST
+
+- Agent: Codex
+- Task: Land the canonical client interaction ledger and revision-aware relationship timeline projection
+- Status: completed
+- Files touched: 14 files in this slice (repo already dirty outside the slice)
+- Commits: pending at log-write time
+- Build state on departure: focused slice verified; repo-wide `npm run typecheck:app` blocked by unrelated existing errors in `app/(chef)/settings/client-preview/public-profile-preview.tsx`, `app/(public)/_components/homepage-live-signal.tsx`, `components/public/location-experience-showcase.tsx`, and `lib/db/boot-contract.ts`
+- Notes: Added `lib/clients/interaction-ledger.ts` and `lib/clients/interaction-ledger-core.ts` as the canonical relationship-history contract, then reduced `getUnifiedClientTimeline()` to a compatibility projection. The ledger now normalizes authoritative events, inquiries, messages, notes, quotes, payments, reviews, high-intent portal activity, menu revisions, and document versions, with one shared revision envelope for quote lineage, menu revisions, and document version history. Verified with focused ESLint, `node --test --import tsx tests/unit/client-interaction-ledger.test.ts`, `graphify update .`, and direct Playwright browser verification on `http://localhost:3100/clients/8c40bca7-8b6b-4235-8c52-77489f313ffb` using the agent account in `.auth/agent.json`. Session digest: `docs/session-digests/2026-04-22-draft.md`
+
 ## 2026-04-22 13:31 EST
 
 - Agent: Codex

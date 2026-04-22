@@ -134,7 +134,7 @@ Track every dollar in and out. Immutable, auditable, real.
 
 Build relationships, understand the business, get visible.
 
-- [x] Client CRM (30-panel relationship hub, unified timeline)
+- [x] Client CRM (30-panel relationship hub, canonical interaction ledger with revision-aware relationship timeline)
 - [x] Analytics hub (inquiry funnel, revenue trends, utilization, cost tracking; 5 metrics deferred with honest "N/A" states)
 - [x] Public chef profile (avatar, bio, reviews, JSON-LD SEO)
 - [x] Reviews management (internal + external, approval workflow)

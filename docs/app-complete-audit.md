@@ -530,6 +530,8 @@
 30. **Event History Table** — status filter buttons + table with "View Details" per row
 31. **Client Feedback** — reviews with ratings (conditional)
 
+The relationship timeline now runs on a canonical interaction ledger projection over authoritative events, inquiries, messages, notes, quotes, payments, reviews, high-intent client portal activity, menu revisions, and document versions. Quote, menu, and document entries surface revision identity inline.
+
 ### 3.3 Client Sub-Sections
 
 | Route                                         | Content                                                                                                                                                                                                                                    |

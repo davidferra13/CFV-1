@@ -9,7 +9,8 @@
 ## What's Here
 
 - Client directory with search, bulk operations, CSV export
-- 30-panel client detail: core profile, demographics, financial analytics, culinary profile, kitchen/access info, relationship intelligence, communication hub, AI analysis, unified timeline
+- 30-panel client detail: core profile, demographics, financial analytics, culinary profile, kitchen/access info, relationship intelligence, communication hub, AI analysis, and a canonical interaction ledger projection in the relationship timeline
+- Relationship timeline now normalizes authoritative events, inquiries, messages, notes, quotes, payments, reviews, client portal activity, menu revisions, and document versions into one chronological feed without creating a second source of truth
 - Quick Add vs Full Profile creation modes
 - Sub-sections: active, inactive, VIP, duplicates, segments, gift cards, communication, history, preferences, insights, loyalty, presence
 - AI-powered duplicate detection
