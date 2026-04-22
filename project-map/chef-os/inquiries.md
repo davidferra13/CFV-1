@@ -17,6 +17,7 @@
 - Partners: referral stats, locations, service history
 - Proposals: template builder, visual editor, selectable add-ons
 - Testimonials: approval workflow (pending/approved/featured)
+- Event-scoped quick proposal preview: proposal generation now accepts CP-Engine client profile guidance for preview only, exposing confidence, service depth, emotional state, hard vetoes, strong likes, novelty opportunities, and unresolved clarifications when profile persistence exists
 - Prospecting (admin only): dossier, call queue, AI scrub, scripts, pipeline kanban, clusters, import
 
 ## Open Items

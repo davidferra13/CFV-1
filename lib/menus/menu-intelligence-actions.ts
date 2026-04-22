@@ -11,6 +11,18 @@ import { createAdminClient } from '@/lib/db/admin'
 import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
 import { UnknownAppError } from '@/lib/errors/app-error'
 import { dateToDateString } from '@/lib/utils/format'
+import {
+  buildDietaryConflictsFromVector,
+  mapClientProfileVectorToMenuClientTasteSummary,
+  type DietaryConflict,
+  type MenuClientTasteSummary,
+  type MenuConflictDish,
+} from '@/lib/clients/client-profile-chef-workflow'
+import { getClientProfileVectorForTenant } from '@/lib/clients/client-profile-service'
+export type {
+  DietaryConflict,
+  MenuClientTasteSummary,
+} from '@/lib/clients/client-profile-chef-workflow'
 
 import {
   MENU_CONTEXT_CACHE_TAG,
@@ -124,12 +136,6 @@ export type BudgetComplianceResult =
       marginPercent: number
       status: 'ok' | 'warning' | 'critical'
     }
-
-export interface DietaryConflict {
-  ingredientName: string
-  dishName: string
-  clientPreference: string
-}
 
 // Margin thresholds (deterministic, from design doc)
 const MARGIN_WARNING_THRESHOLD = 35
@@ -1922,15 +1928,6 @@ export async function getMenuPerformance(menuId: string): Promise<MenuPerformanc
 // CROSS-REFERENCING: CLIENT TASTE PROFILE (MENU CONTEXT)
 // ============================================
 
-export interface MenuClientTasteSummary {
-  clientId: string
-  clientName: string
-  loved: string[]
-  disliked: string[]
-  cuisinePreferences: string[]
-  pastEventCount: number
-}
-
 const _getMenuClientTasteCached = (menuId: string, tenantId: string) =>
   unstable_cache(
     async (): Promise<MenuClientTasteSummary | null> => {
@@ -1940,12 +1937,11 @@ const _getMenuClientTasteCached = (menuId: string, tenantId: string) =>
     { revalidate: 60, tags: [`${MENU_TASTE_CACHE_TAG}-${menuId}`] }
   )()
 
-async function _getMenuClientTasteInner(
+async function loadMenuLinkedClientContext(
   menuId: string,
-  tenantId: string
-): Promise<MenuClientTasteSummary | null> {
-  const db: any = createAdminClient()
-
+  tenantId: string,
+  db: any
+): Promise<{ clientId: string; clientName: string | null } | null> {
   const { data: menu } = await db
     .from('menus')
     .select('event_id')
@@ -1959,6 +1955,7 @@ async function _getMenuClientTasteInner(
     .from('events')
     .select('client_id')
     .eq('id', menu.event_id)
+    .eq('tenant_id', tenantId)
     .single()
 
   if (!event?.client_id) return null
@@ -1968,45 +1965,39 @@ async function _getMenuClientTasteInner(
     .select('full_name')
     .eq('id', event.client_id)
     .eq('tenant_id', tenantId)
-    .single()
+    .maybeSingle()
 
-  if (!client) return null
-
-  const { data: prefs } = await db
-    .from('client_preferences')
-    .select('item_type, item_name, rating')
-    .eq('tenant_id', tenantId)
-    .eq('client_id', event.client_id)
-    .order('observed_at', { ascending: false })
-
-  const loved: string[] = []
-  const disliked: string[] = []
-  const cuisines: string[] = []
-
-  for (const p of prefs || []) {
-    if (p.rating === 'loved' || p.rating === 'liked') {
-      if (p.item_type === 'cuisine') cuisines.push(p.item_name)
-      else loved.push(p.item_name)
-    } else if (p.rating === 'disliked') {
-      disliked.push(p.item_name)
-    }
+  return {
+    clientId: event.client_id,
+    clientName: client?.full_name ?? null,
   }
+}
+
+async function _getMenuClientTasteInner(
+  menuId: string,
+  tenantId: string
+): Promise<MenuClientTasteSummary | null> {
+  const db: any = createAdminClient()
+  const clientContext = await loadMenuLinkedClientContext(menuId, tenantId, db)
+  if (!clientContext) return null
+
+  const vector = await getClientProfileVectorForTenant(clientContext.clientId, tenantId, {
+    dbClient: db,
+  })
+  if (!vector) return null
 
   const { count } = await db
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
-    .eq('client_id', event.client_id)
+    .eq('client_id', clientContext.clientId)
     .in('status', ['completed', 'confirmed', 'paid', 'in_progress'])
 
-  return {
-    clientId: event.client_id,
-    clientName: client.full_name,
-    loved: loved.slice(0, 8),
-    disliked: disliked.slice(0, 8),
-    cuisinePreferences: cuisines.slice(0, 5),
-    pastEventCount: count || 0,
-  }
+  return mapClientProfileVectorToMenuClientTasteSummary({
+    vector,
+    clientName: clientContext.clientName,
+    pastEventCount: Number(count ?? 0),
+  })
 }
 
 export async function getMenuClientTaste(menuId: string): Promise<MenuClientTasteSummary | null> {
@@ -2271,56 +2262,37 @@ export async function detectMenuDietaryConflicts(
 ): Promise<{ conflicts: DietaryConflict[]; clientName: string | null } | null> {
   const user = await requireChef()
   const db: any = createServerClient()
+  const clientContext = await loadMenuLinkedClientContext(menuId, user.tenantId!, db)
+  if (!clientContext) return null
 
-  // Get menu -> event -> client chain
-  const { data: menu } = await db
-    .from('menus')
-    .select('event_id')
-    .eq('id', menuId)
-    .eq('tenant_id', user.tenantId!)
-    .single()
-
-  if (!menu?.event_id) return null
-
-  const { data: event } = await db
-    .from('events')
-    .select('client_id')
-    .eq('id', menu.event_id)
-    .eq('tenant_id', user.tenantId!)
-    .single()
-
-  if (!event?.client_id) return null
-
-  const { data: client } = await db
-    .from('clients')
-    .select('full_name')
-    .eq('id', event.client_id)
-    .eq('tenant_id', user.tenantId!)
-    .single()
-
-  // Get disliked items from client preferences
-  const { data: prefs } = await db
-    .from('client_preferences')
-    .select('item_name')
-    .eq('tenant_id', user.tenantId!)
-    .eq('client_id', event.client_id)
-    .eq('rating', 'disliked')
-
-  if (!prefs?.length) return null
-
-  const dislikedSet = new Set(prefs.map((p: any) => p.item_name.toLowerCase()))
+  const vector = await getClientProfileVectorForTenant(clientContext.clientId, user.tenantId!, {
+    dbClient: db,
+  })
+  if (!vector) return null
 
   // Get all menu ingredients with dish attribution
   const { data: dishes } = await db
     .from('dishes')
-    .select('id, name')
+    .select('id, name, allergen_flags')
     .eq('menu_id', menuId)
     .eq('tenant_id', user.tenantId!)
 
   if (!dishes?.length) return null
 
   const dishIds = dishes.map((d: any) => d.id)
-  const dishMap = new Map(dishes.map((d: any) => [d.id, d.name as string]))
+  const dishMap = new Map<string, MenuConflictDish>(
+    dishes.map((dish: any) => [
+      dish.id,
+      {
+        dishName: dish.name || 'Unknown dish',
+        ingredientNames: [],
+        labelNames: [
+          dish.name || 'Unknown dish',
+          ...((dish.allergen_flags as string[] | null) ?? []),
+        ],
+      },
+    ])
+  )
 
   const { data: components } = await db
     .from('components')
@@ -2328,64 +2300,57 @@ export async function detectMenuDietaryConflicts(
     .in('dish_id', dishIds)
     .eq('tenant_id', user.tenantId!)
 
-  const recipeToDish = new Map<string, string>()
-  const recipeIds: string[] = []
+  const recipeToDishIds = new Map<string, string[]>()
+  const recipeIds = new Set<string>()
   for (const c of components || []) {
     if (c.recipe_id) {
-      recipeToDish.set(c.recipe_id, c.dish_id)
-      recipeIds.push(c.recipe_id)
+      const dishIdsForRecipe = recipeToDishIds.get(c.recipe_id) ?? []
+      dishIdsForRecipe.push(c.dish_id)
+      recipeToDishIds.set(c.recipe_id, dishIdsForRecipe)
+      recipeIds.add(c.recipe_id)
     }
   }
 
-  if (!recipeIds.length) return null
+  const recipeIngredients =
+    recipeIds.size > 0
+      ? (
+          await db
+            .from('recipe_ingredients')
+            .select('recipe_id, ingredient_id')
+            .in('recipe_id', [...recipeIds])
+        ).data
+      : []
 
-  const { data: recipeIngredients } = await db
-    .from('recipe_ingredients')
-    .select('recipe_id, ingredient_id')
-    .in('recipe_id', recipeIds)
+  if (recipeIngredients?.length) {
+    const ingredientIds = [...new Set(recipeIngredients.map((ri: any) => ri.ingredient_id))]
+    const { data: ingredients } = await db
+      .from('ingredients')
+      .select('id, name')
+      .in('id', ingredientIds)
+    const ingredientMap = new Map<string, string>(
+      (ingredients || []).map((ingredient: any) => [ingredient.id, ingredient.name as string])
+    )
 
-  if (!recipeIngredients?.length) return null
+    for (const recipeIngredient of recipeIngredients as any[]) {
+      const ingredientName = ingredientMap.get(recipeIngredient.ingredient_id)
+      if (!ingredientName) continue
 
-  const ingredientIds = [...new Set(recipeIngredients.map((ri: any) => ri.ingredient_id))]
-
-  const { data: ingredients } = await db
-    .from('ingredients')
-    .select('id, name')
-    .in('id', ingredientIds)
-
-  if (!ingredients?.length) return null
-
-  const ingredientMap = new Map(ingredients.map((i: any) => [i.id, i.name as string]))
-
-  // Cross-reference: find menu ingredients that match disliked items
-  const conflicts: DietaryConflict[] = []
-  const seen = new Set<string>()
-
-  for (const ri of recipeIngredients as any[]) {
-    const ingName = ingredientMap.get(ri.ingredient_id) as string | undefined
-    if (!ingName) continue
-
-    const ingLower = ingName.toLowerCase()
-
-    for (const disliked of dislikedSet) {
-      if (ingLower.includes(disliked as string) || (disliked as string).includes(ingLower)) {
-        const dishId = recipeToDish.get(ri.recipe_id) || ''
-        const key = `${ingName}-${dishId}`
-        if (seen.has(key)) continue
-        seen.add(key)
-
-        conflicts.push({
-          ingredientName: ingName,
-          dishName: (dishMap.get(dishId) as string) || 'Unknown dish',
-          clientPreference: disliked as string,
-        })
+      for (const dishId of recipeToDishIds.get(recipeIngredient.recipe_id) ?? []) {
+        dishMap.get(dishId)?.ingredientNames.push(ingredientName)
       }
     }
   }
 
+  const conflicts = buildDietaryConflictsFromVector({
+    vector,
+    menuDishes: [...dishMap.values()],
+  })
+
+  if (conflicts.length === 0) return null
+
   return {
-    conflicts: conflicts.sort((a, b) => a.dishName.localeCompare(b.dishName)),
-    clientName: client?.full_name || null,
+    conflicts,
+    clientName: clientContext.clientName,
   }
 }
 

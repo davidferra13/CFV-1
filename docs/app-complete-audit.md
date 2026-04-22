@@ -366,6 +366,7 @@
 - h1: event occasion, `EventStatusBadge`, date/time
 - Buttons: "Edit Event" (draft only) → `/events/[id]/edit`, "Schedule" → `/events/[id]/schedule`, "Packing List" (not draft/cancelled) → `/events/[id]/pack`, "Grocery Quote" (has menu, not cancelled) → `/events/[id]/grocery-quote`, "Travel Plan" → `/events/[id]/travel`, "Back to Events" → `/events`
 - Realtime sync component (auto-refreshes on FSM change)
+- Conditional button: " Quick Proposal\
 
 #### Banners (conditional)
 

@@ -115,6 +115,8 @@ For formal presentations, go to Sidebar > Proposals > New Proposal. Use the temp
 
 ### Tracking Calls and Meetings
 
+Event-driven proposal previews can also show a compact **Client Profile Guidance** section when ChefFlow has a client profile vector available. That guidance may include confidence, service depth, emotional state, hard vetoes, strong likes, novelty opportunities, and clarifications still needed. If the client profile tables are not available yet, this section stays hidden instead of showing guessed data.
+
 Click **Schedule Call** on any inquiry to set a date, time, and agenda. After the call, mark it as attended or no-show, and add outcome notes. Upcoming calls also appear in your dashboard widget.
 
 ---
@@ -155,6 +157,8 @@ Each event has four tabs:
 **Wrap-Up:** Post-event checklist, after-action report (AI-generated summary), lifecycle stage detection, photos, and link to client feedback survey.
 
 ### Views
+
+When an event has a linked client and is not cancelled, the header also shows **Quick Proposal**. This opens a proposal preview for the event without changing quote persistence by itself.
 
 Switch between **List view** and **Kanban view** on the Events page. The kanban shows events as cards in columns by status. Use the 9 status filters to narrow your view.
 
@@ -246,6 +250,7 @@ The Ingredients page shows the price for each item, resolved through a multi-tie
 5. Estimated fallback
 
 Each price shows its source (which store, which data point). Toggle the price history chart to see trends over time.
+When the event is linked to a client, the menu intelligence sidebar also reads that client's profile vector when available. It keeps the existing taste summary format, and it can flag hard vetoes, severe dislikes, and unresolved ambiguities that overlap the menu. If the client profile tables are not present in the database yet, ChefFlow omits this guidance instead of inventing it.
 
 ### Finding an Ingredient (Sourcing Intelligence)
 

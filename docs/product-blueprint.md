@@ -56,7 +56,7 @@ Get clients, close deals, manage the pipeline.
 - [x] Lead management (website leads, guest leads, conversion tracking)
 - [x] Calls and meetings (agenda, outcome tracking, no-show handling)
 - [x] Partner referrals (stats, locations, service history)
-- [x] Proposals and templates (visual editor, selectable add-ons)
+- [x] Proposals and templates (visual editor, selectable add-ons, event-scoped quick proposal preview with conditional CP-Engine client profile guidance when profile persistence is available)
 - [x] Testimonial collection (approval workflow, featured display)
 - [x] Smart Fill (paste text, AI extracts structured data)
 - [x] Gmail integration (send, sync, thread linking)
@@ -69,6 +69,7 @@ Organize the work, see the schedule, know what's next.
 
 - [x] Menu builder (create, edit, assign to events, drag-drop dishes)
 - [x] Calendar (day/week/month views, iCal sync, Google Calendar)
+- [x] CP-Engine menu intelligence wiring (built Apr 22: menu intelligence now maps client profile vectors into the legacy taste summary surface, detects hard veto, severe dislike, and unresolved ambiguity overlaps against dishes, and fails closed when `client_profile_*` tables are absent)
 - [x] Daily Ops (AI-generated daily plan, 4 swim lanes, checkboxes)
 - [x] Morning Briefing (alerts, yesterday recap, today's events, staff, tasks)
 - [x] Prep Timeline (active timers, countdowns, station assignments, alerts)

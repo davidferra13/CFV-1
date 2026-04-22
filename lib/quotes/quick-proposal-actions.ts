@@ -4,8 +4,14 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
+import { createAdminClient } from '@/lib/db/admin'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
+import {
+  buildProposalProfileGuidance,
+  type ProposalProfileGuidance,
+} from '@/lib/clients/client-profile-chef-workflow'
+import { getClientProfileVectorForTenant } from '@/lib/clients/client-profile-service'
 
 // ============================================
 // TYPES
@@ -46,10 +52,13 @@ export type ProposalData = {
   pricingNotes: string | null
   // Terms
   defaultTerms: string | null
+  profileGuidance: ProposalProfileGuidance | null
   // Existing quote check
   hasExistingQuote: boolean
   existingQuoteId: string | null
 }
+
+export type { ProposalProfileGuidance } from '@/lib/clients/client-profile-chef-workflow'
 
 export type ProposalOverrides = {
   quoteName?: string
@@ -67,6 +76,42 @@ export type ProposalOverrides = {
 // ============================================
 // 1. GENERATE PROPOSAL FROM EVENT
 // ============================================
+
+function isMissingClientProfileTableError(error: unknown): boolean {
+  const code =
+    typeof error === 'object' && error && 'code' in error ? String((error as any).code) : ''
+  const message =
+    typeof error === 'object' && error && 'message' in error ? String((error as any).message) : ''
+
+  return code === '42P01' || (message.includes('client_profile_') && message.includes('exist'))
+}
+
+async function loadProposalProfileGuidance(
+  clientId: string,
+  tenantId: string
+): Promise<ProposalProfileGuidance | null> {
+  const db: any = createAdminClient()
+  const persistenceCheck = await db
+    .from('client_profile_vectors')
+    .select('id')
+    .eq('tenant_id', tenantId)
+    .eq('primary_client_id', clientId)
+    .limit(1)
+    .maybeSingle()
+
+  if (persistenceCheck?.error) {
+    if (!isMissingClientProfileTableError(persistenceCheck.error)) {
+      console.error(
+        '[generateProposalFromEvent] Failed to check client profile persistence:',
+        persistenceCheck.error
+      )
+    }
+    return null
+  }
+
+  const vector = await getClientProfileVectorForTenant(clientId, tenantId, { dbClient: db })
+  return vector ? buildProposalProfileGuidance(vector) : null
+}
 
 export async function generateProposalFromEvent(
   eventId: string
@@ -163,6 +208,8 @@ export async function generateProposalFromEvent(
     pricePerPersonCents = Math.round(event.quoted_price_cents / event.guest_count)
   }
 
+  const profileGuidance = await loadProposalProfileGuidance(event.client_id, tenantId)
+
   const proposal: ProposalData = {
     eventId: event.id,
     chefBusinessName: chef.business_name,
@@ -191,6 +238,7 @@ export async function generateProposalFromEvent(
     pricePerPersonCents,
     pricingNotes: event.pricing_notes,
     defaultTerms: null, // Client-side will load from localStorage
+    profileGuidance,
     hasExistingQuote: !!existingQuote,
     existingQuoteId: existingQuote?.id || null,
   }

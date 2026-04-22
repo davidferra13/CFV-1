@@ -15,6 +15,7 @@
   - Money: menu picker, financials, payments, expenses, cost forecast, profit
   - Ops: time tracking, staff, temp logging, substitutions, prep docs, readiness gates
   - Wrap-Up: post-event checklist, AAR summary, lifecycle progress
+- Event header quick proposal entry: shown when an event has a linked client and is not cancelled; opens a generation-only preview that can surface CP-Engine client profile guidance without persisting quote data
 - Guest experience portal (messages, reminders, dietary confirmation, documents, feedback)
 - AI contract generator
 - Allergen conflict detection (FDA Big 9)

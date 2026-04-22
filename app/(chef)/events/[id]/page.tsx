@@ -43,6 +43,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { EventExportButton } from '@/components/exports/event-export-button'
 import { EventActionsOverflow } from '@/components/events/event-actions-overflow'
+import { QuickProposalButton } from '@/components/events/quick-proposal-button'
 import { ChefGuestPanel } from '@/components/sharing/chef-guest-panel'
 import { EventStatusRealtimeSync } from '@/components/events/event-status-realtime-sync'
 import { getEventShares, getEventGuests, getEventRSVPSummary } from '@/lib/sharing/actions'
@@ -672,6 +673,9 @@ export default async function EventDetailPage({
           <Link href={`/events/${event.id}/documents`}>
             <Button variant="secondary">Documents</Button>
           </Link>
+          {event.client_id && !['cancelled'].includes(event.status) && (
+            <QuickProposalButton eventId={event.id} />
+          )}
           <EventActionsOverflow
             actions={[
               ...(!isEventToday(event.event_date) && !['draft', 'cancelled'].includes(event.status)

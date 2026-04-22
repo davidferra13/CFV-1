@@ -26,6 +26,11 @@ function formatServiceStyle(style: string): string {
     .join(' ')
 }
 
+function formatConfidenceScore(score: number | null): string | null {
+  if (score === null) return null
+  return `${Math.round(score * 100)}%`
+}
+
 type ProposalPreviewProps = {
   proposal: ProposalData
   onQuoteCreated?: (quoteId: string) => void
@@ -194,6 +199,119 @@ export function ProposalPreview({ proposal, onQuoteCreated, onClose }: ProposalP
             <div className="text-sm">
               <span className="text-red-600 font-medium">Allergies:</span>{' '}
               {proposal.allergies.join(', ')}
+            </div>
+          )}
+        </section>
+      )}
+
+      {proposal.profileGuidance && (
+        <section className="rounded-lg border bg-gray-50 p-4 space-y-3">
+          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
+            Client Profile Guidance
+          </h3>
+
+          <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+            {proposal.profileGuidance.confidenceScore !== null && (
+              <div>
+                <p className="text-gray-500">Confidence</p>
+                <p className="font-medium">
+                  {formatConfidenceScore(proposal.profileGuidance.confidenceScore)}
+                </p>
+              </div>
+            )}
+            {proposal.profileGuidance.serviceDepth && (
+              <div>
+                <p className="text-gray-500">Service Depth</p>
+                <p className="font-medium">{proposal.profileGuidance.serviceDepth}</p>
+              </div>
+            )}
+            {proposal.profileGuidance.emotionalState && (
+              <div>
+                <p className="text-gray-500">Emotional State</p>
+                <p className="font-medium">{proposal.profileGuidance.emotionalState}</p>
+              </div>
+            )}
+          </div>
+
+          {proposal.profileGuidance.confidenceSummary && (
+            <p className="text-sm text-gray-600">{proposal.profileGuidance.confidenceSummary}</p>
+          )}
+
+          {proposal.profileGuidance.hardVetoes.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-red-600 uppercase tracking-wider mb-2">
+                Hard Vetoes
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {proposal.profileGuidance.hardVetoes.map((item) => (
+                  <span
+                    key={item}
+                    className="rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs text-red-700"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {proposal.profileGuidance.strongLikes.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-emerald-700 uppercase tracking-wider mb-2">
+                Strong Likes
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {proposal.profileGuidance.strongLikes.map((item) => (
+                  <span
+                    key={item}
+                    className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs text-emerald-700"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {proposal.profileGuidance.noveltyOpportunities.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-brand-700 uppercase tracking-wider mb-2">
+                Novelty Opportunities
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {proposal.profileGuidance.noveltyOpportunities.map((item) => (
+                  <span
+                    key={item}
+                    className="rounded-full border border-brand-100 bg-brand-50 px-2.5 py-1 text-xs text-brand-700"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {proposal.profileGuidance.ambiguities.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-amber-700 uppercase tracking-wider mb-2">
+                Clarifications Needed
+              </p>
+              <div className="space-y-2">
+                {proposal.profileGuidance.ambiguities.map((ambiguity) => (
+                  <div
+                    key={`${ambiguity.title}-${ambiguity.question}`}
+                    className="rounded-md border border-amber-200 bg-amber-50 p-3"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-medium text-amber-900">{ambiguity.title}</p>
+                      <span className="text-xs uppercase tracking-wider text-amber-700">
+                        {ambiguity.severity}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm text-amber-900/80">{ambiguity.question}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </section>
