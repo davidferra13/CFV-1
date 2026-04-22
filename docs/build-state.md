@@ -12,25 +12,29 @@ Last known state of the app. Updated after every successful type check and build
 
 ## Current State
 
-| Check                                    | Status | Last Verified | Commit | Agent                                       |
-| ---------------------------------------- | ------ | ------------- | ------ | ------------------------------------------- |
-| `npx tsc --noEmit --skipLibCheck`        | green  | 2026-04-18    | dirty  | Opus (runtime surface boundary enforcement) |
-| `npm run build -- --no-lint` (12GB heap) | green  | 2026-04-18    | dirty  | Opus (runtime surface boundary enforcement) |
+| Check                                    | Status | Last Verified | Commit | Agent                                |
+| ---------------------------------------- | ------ | ------------- | ------ | ------------------------------------ |
+| `npx tsc --noEmit --skipLibCheck`        | green  | 2026-04-22    | dirty  | Codex (surface contract drift guard) |
+| `npm run build -- --no-lint` (12GB heap) | green  | 2026-04-22    | dirty  | Codex (surface contract drift guard) |
 
 **Green note (2026-04-12, dead-zone session):** tsc remains green after: (1) financials/page.tsx cash-flow tile gating via getFinanceSurfaceAvailability, (2) remy-personality-engine.ts sync export -> async fix (Next.js build requirement), (3) cron definitions for proactive-alerts and scheduled-messages. No new TS errors introduced. tsc not re-run (changes are type-safe: async wrappers over same return types, filtered array map, object literal additions).
 
 **Green note (2026-04-12, client portal parity):** tsc exits 0 with zero errors. Delivered: live event list refresh, menu_modified_after_approval migration + client UI, NotificationProvider subscriber API, TS error fixes in remy files.
 
-**Last green build:** 2026-04-11 - Full production build on commit ce742b36b. Fixed 3 'use server' files exporting runtime objects (remy-personality-engine sync functions, marketing-spend CHANNEL_LABELS, permit-actions PERMIT_TYPE_LABELS). All 3 extracted to separate constants files. BUILD_ID confirmed present.
+**Last green build:** 2026-04-22 - Full production build on dirty checkout via `$env:NEXT_DIST_DIR='.next-build-check'; node scripts/run-next-build.mjs`. Fixed the Edge-incompatible runtime metadata helper, removed the invalid `__testOnly` object export from the revenue forecast server module, and restored buildability before closing the session. BUILD_ID confirmed present in `.next-build-check`.
 **Last commit on main:** ce742b36b
 
-**Current blocker:** none. Both typecheck and build pass. BUILD_ID artifact confirmed present after build. Build script (`scripts/run-next-build.mjs`) uses 12GB heap by default (`NEXT_BUILD_MAX_OLD_SPACE_SIZE=12288`). Peak observed: 11.3GB during compilation.
+**Current blocker:** the latest dirty checkout is no longer repo-wide typecheck clean. `node scripts/run-typecheck.mjs -p tsconfig.ci.json` now fails on unrelated existing OpenClaw cast errors in `lib/openclaw/ingredient-knowledge-queries.ts` and `lib/openclaw/public-ingredient-queries.ts`. The last known full build baseline above remains valid, but builders should not treat the current dirty checkout as globally re-verified until that drift is resolved. Build script (`scripts/run-next-build.mjs`) uses 12GB heap by default (`NEXT_BUILD_MAX_OLD_SPACE_SIZE=12288`). Peak observed: 11.3GB during compilation.
 
 **Known non-blocking build noise:** `npm run build -- --no-lint` still emits existing `DYNAMIC_SERVER_USAGE` warnings from unrelated routes during static generation, and Next 14.2.35 still warns that `serverActions` is an unrecognized key in `next.config.js`. The build exits `0`. Treat those warnings as follow-up runtime/config cleanup, not as a blocker for the current baseline.
 
 **Canonical build command:** use `npm run build -- --no-lint`; on Windows PowerShell, prefer `npm.cmd run build -- --no-lint` so warning output from `next build` is not misreported by the `npm.ps1` wrapper. Do not use raw `npx next build --no-lint`.
 
 **Pre-flight caveat:** this file describes the last known green baseline, not every newer uncommitted change on top of it. Builder pre-flight must use preserved-dirty-checkout mode only when both this file and the latest builder-start handoff explicitly authorize it. That handoff now also lists the current dirty snapshot that sits ahead of this baseline; capture `git status --short` again before coding and do not treat the older green state as proof that the current dirty checkout is fully re-verified.
+
+**Supplemental verification (2026-04-22, surface contract drift guard):** `node scripts/run-typecheck.mjs -p tsconfig.ci.json` passes. `node --test --import tsx tests/unit/surface-governance.test.ts tests/unit/runtime-surface-contract.test.ts tests/unit/surface-completeness.test.ts tests/unit/request-auth-context.test.ts tests/unit/web-beta-build-surface.test.ts tests/unit/middleware.routing.test.ts tests/unit/platform-observability-context.test.ts tests/unit/daily-report-delivery.test.ts tests/unit/revenue-forecast-run.test.ts` passes. Production build succeeds via `$env:NEXT_DIST_DIR='.next-build-check'; node scripts/run-next-build.mjs`. Playwright verification passed on `127.0.0.1:3000` for `/dashboard`, `/settings/modules`, `/trust`, `/admin`, and the blocked client-route redirect from `/my-events` back to `/dashboard`.
+
+**Supplemental verification (2026-04-22, privileged mutation policy contract):** Focused typecheck passed with a temporary tsconfig targeting `lib/auth/server-action-inventory.ts`, `tests/unit/server-action-auth-inventory.test.ts`, and `tests/system-integrity/q80-revalidation-after-mutation.spec.ts` via `$env:NODE_OPTIONS='--max-old-space-size=8192'; npx tsc -p <temp-config> --pretty false`. `node --test --import tsx tests/unit/server-action-auth-inventory.test.ts` passes, including the failure-path assertion for a sensitive client mutation that is missing observability. `npx playwright test -c playwright.system-integrity.config.ts tests/system-integrity/q80-revalidation-after-mutation.spec.ts` passes and confirms the shared contract still classifies privileged admin, finance, contract, and client mutation files.
 
 **Current builder-start handoff:** `docs/research/current-builder-start-handoff-2026-04-02.md`
 

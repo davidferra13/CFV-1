@@ -151,7 +151,7 @@ Build relationships, understand the business, get visible.
 
 ---
 
-## Infrastructure - 77% Complete
+## Infrastructure - 78% Complete
 
 The systems that power everything.
 
@@ -170,6 +170,10 @@ The systems that power everything.
 - [x] **SSE authentication** - fixed (session + validateRealtimeChannelAccess; stale gap entry)
 - [x] **Automated database backups** - built April 4, encrypted, 14-day retention
 - [x] **Request correlation and observability** - built Apr 12: X-Request-ID header on all responses, logger fallback, Sentry tag auto-attach
+- [x] **Release gate executor + attestation bridge** - built Apr 22: `verify-release` now runs manifest-defined gates, includes the surface completeness JSON contract, classifies warning-policy findings, and writes machine-readable attestations on pass or fail
+- [x] **Privileged mutation policy contract** - built Apr 22: the shared server-action inventory now classifies page-facing mutations as `standard`, `sensitive`, or `critical`, surfaces missing auth and observability controls as machine-readable violations, and keeps admin, finance, contract, and client mutations under one canonical policy owner
+- [x] **Surface contract and drift guard** - built Apr 22: every root runtime shell and the web-beta release shell now publish `data-cf-surface`, authenticated portals resolve mode from the shared surface-governance contract, the surface completeness audit enforces those declarations, and the contract graph exposes per-route mode metadata
+- [x] **Public share visibility contract** - built Apr 22: public share and viewer tokens now normalize one canonical visibility object, keep chef UUIDs server-side, gate guest count and service style behind host-controlled settings, and require a live share token before opening Dinner Circle
 
 ---
 
@@ -262,7 +266,7 @@ These are explicitly out of scope for V1. Do not build, spec, or plan these:
 | Ollama exposed on localhost:11434 | Medium   | Always        | No auth on AI endpoint (local only)                        |
 | 3 interface philosophy violations | Fixed    | Found April 4 | Fixed Apr 5: inquiries filter, event header, quotes panels |
 | 179/184 forms lack auto-save      | Low      | Always        | UX debt, not blocking                                      |
-| Share token PII scope undefined   | Low      | Always        | Security design decision needed                            |
+| Share token scope drift           | Fixed    | Always        | Fixed Apr 22: explicit public contract, no chef UUID leak  |
 
 ---
 
@@ -322,6 +326,6 @@ OpenClaw is a separate system running on a Raspberry Pi. It does ALL data collec
 
 ---
 
-_Last updated: 2026-04-11_
+_Last updated: 2026-04-22_
 _Document owner: Developer (David)_
 _Canonical location: `docs/product-blueprint.md`_

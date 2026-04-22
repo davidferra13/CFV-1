@@ -1,18 +1,5 @@
 # Session Log
 
-## 2026-04-12 (UTC date sweep + mempalace backlog close-out)
-
-- Agent: Builder (Sonnet 4.6)
-- Task: Complete UTC date bug sweep (all remaining files) + MemPalace backlog stale item resolution
-- Status: completed
-- Files touched:
-  - 35 files in scripts/, lib/, app/, components/, tests/ (batch 5 UTC fixes)
-  - 11 test harness files in tests/remy-quality/ + test helpers (batch 6 UTC fixes, background agent)
-  - C:/Users/david/.claude/projects/c--Users-david-Documents-CFv1/memory/project_mempalace_backlog.md (3 stale items resolved)
-- Commits: ff8593a80 (batch 6 test harnesses), 043e36d07 (batch 5 scripts/lib/components), d4024772b (analytics Date.slice crash fixes from prior session)
-- Build state on departure: green (tsc: 0 errors verified post-commit 5d429b82b; no structural changes in this session)
-- Notes: UTC date sweep complete. Zero remaining `new Date().toISOString().split('T')[0]` or `.slice(0,10)` instances in source. Compute-daily-report.ts used pure UTC ms arithmetic to avoid off-by-one at UTC midnight. MemPalace backlog: 3 stale items marked resolved (Feature Discovery already at /features, business-cards.tsx doesn't exist, v2/documents/generate fully implements all doc types).
-
 ## 2026-04-12 (postgres.js Date crash sweep + billing activation)
 
 - Agent: Builder (Sonnet 4.6)
@@ -160,3 +147,13 @@
 - Commits: 7fbb222c3
 - Build state on departure: green (tsc 0 errors)
 - Notes: 6 files fixed. Icon imports, log types, redeclared vars, optional params, wrong DB API, icon props. Session digest written.
+
+## 2026-04-22 15:43 EST
+
+- Agent: Builder (Opus 4.6)
+- Task: Close the privileged mutation policy layer by extending the shared server-action mutation inventory
+- Status: completed
+- Files touched: 9 files
+- Commits:
+- Build state on departure: focused slice green, repo-wide CI typecheck still blocked by unrelated dirty-checkout errors in `lib/openclaw/ingredient-knowledge-queries.ts` and `lib/openclaw/public-ingredient-queries.ts`
+- Notes: `lib/auth/server-action-inventory.ts` now classifies page-facing mutations as `standard`, `sensitive`, or `critical` and surfaces missing auth or observability signals as policy violations. Verified with focused `tsc`, `node --test --import tsx tests/unit/server-action-auth-inventory.test.ts`, and `npx playwright test -c playwright.system-integrity.config.ts tests/system-integrity/q80-revalidation-after-mutation.spec.ts`. `bash scripts/session-close.sh` was unavailable on this Windows host because `/bin/bash` is missing, so closeout artifacts were completed manually. Session digest: `docs/session-digests/2026-04-22-draft.md`
