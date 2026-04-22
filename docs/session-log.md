@@ -153,7 +153,7 @@
 - Agent: Builder (Opus 4.6)
 - Task: Close the privileged mutation policy layer by extending the shared server-action mutation inventory
 - Status: completed
-- Files touched: 9 files
-- Commits:
+- Files touched: 10 files
+- Commits: 4427048f0
 - Build state on departure: focused slice green, repo-wide CI typecheck still blocked by unrelated dirty-checkout errors in `lib/openclaw/ingredient-knowledge-queries.ts` and `lib/openclaw/public-ingredient-queries.ts`
 - Notes: `lib/auth/server-action-inventory.ts` now classifies page-facing mutations as `standard`, `sensitive`, or `critical` and surfaces missing auth or observability signals as policy violations. Verified with focused `tsc`, `node --test --import tsx tests/unit/server-action-auth-inventory.test.ts`, and `npx playwright test -c playwright.system-integrity.config.ts tests/system-integrity/q80-revalidation-after-mutation.spec.ts`. `bash scripts/session-close.sh` was unavailable on this Windows host because `/bin/bash` is missing, so closeout artifacts were completed manually. Session digest: `docs/session-digests/2026-04-22-draft.md`
