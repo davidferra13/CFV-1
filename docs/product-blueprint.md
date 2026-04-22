@@ -73,6 +73,7 @@ Organize the work, see the schedule, know what's next.
 - [x] Morning Briefing (alerts, yesterday recap, today's events, staff, tasks)
 - [x] Prep Timeline (active timers, countdowns, station assignments, alerts)
 - [x] Task Board (kanban, priority badges, carry-forward from previous days)
+- [x] Structured task vs reminder contract truth (built Apr 22: Remy task summaries, overdue briefings, and AI task creation now use `tasks`, while lightweight reminder completion stays on `chef_todos` through the canonical reminder helpers)
 - [x] Station Ops / Kitchen Clipboard (daily command center per station)
 - [x] Production Calendar (monthly grid, color-coded by status)
 - [x] Travel Planning (weekly travel legs, stop counts)

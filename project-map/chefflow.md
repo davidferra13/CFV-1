@@ -103,3 +103,13 @@ Full blueprint: `docs/product-blueprint.md`
 **What changed:** `lib/quotes/quote-prefill.ts` owns the canonical read/build helpers, `app/(chef)/quotes/new/page.tsx` composes explicit URL values with inquiry and event enrichment, and inquiry detail, menu detail, scope-drift change orders, and the consulting calculator now all reuse the same href builder instead of hand-assembling their own query strings.
 
 **Design principle:** one prefill schema, one parser/builder, no route-local query dialects.
+
+## Task and Reminder Contract Truth (Apr 2026)
+
+**Status:** Verified
+
+**What it is:** A narrow ownership contract for ChefFlow's two existing work layers: structured operational tasks on `/tasks`, and lightweight reminders in `chef_todos`.
+
+**What changed:** Remy task summaries, overdue briefing/proactive reads, and AI-created structured work now route through `tasks` with the real task schema. Workflow reminder completion stays on `chef_todos` through the canonical todo helpers plus reminder-text matching, so reminder flows stop pretending they have task fields like `due_date` or `priority`.
+
+**Design principle:** one owner for structured work, one owner for lightweight reminders, no fake shared schema.

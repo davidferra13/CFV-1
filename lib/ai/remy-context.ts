@@ -658,13 +658,14 @@ async function loadDetailedContext(db: any, tenantId: string) {
       .order('target_date', { ascending: true })
       .limit(10),
 
-    // Active todos (chef_todos only has: text, completed, sort_order)
+    // Active structured tasks for task summaries and briefings.
     db
-      .from('chef_todos')
-      .select('text, completed, sort_order')
+      .from('tasks')
+      .select('title, due_date, priority, status')
       .eq('chef_id', tenantId)
-      .eq('completed', false)
-      .order('sort_order', { ascending: true })
+      .in('status', ['pending', 'in_progress'])
+      .order('due_date', { ascending: true, nullsFirst: false })
+      .order('priority', { ascending: false })
       .limit(10),
 
     // Scheduled calls (upcoming)
@@ -1388,10 +1389,10 @@ async function loadDetailedContext(db: any, tenantId: string) {
       status: (g.status as string) ?? 'active',
     })),
     activeTodos: (todosResult.data ?? []).map((t: Record<string, unknown>) => ({
-      title: (t.text as string) ?? 'Untitled',
-      dueDate: null,
-      priority: 'normal',
-      status: 'pending',
+      title: (t.title as string) ?? 'Untitled',
+      dueDate: (t.due_date as string) ?? null,
+      priority: (t.priority as string) ?? 'medium',
+      status: (t.status as string) ?? 'pending',
     })),
     upcomingCalls: (callsResult.data ?? []).map((c: Record<string, unknown>) => ({
       clientName: ((c.client as Record<string, unknown> | null)?.full_name as string) ?? 'Unknown',

@@ -490,9 +490,9 @@ ${context.staffRoster
 ${context.activeGoals.map((g) => `- ${g.title}${g.targetDate ? ` (due ${g.targetDate})` : ''}${g.progress !== null ? ` ${g.progress}%` : ''} [${g.status}]`).join('\n')}`)
   }
 
-  // Todos
+  // Tasks
   if (includeOperationalContext && context.activeTodos && context.activeTodos.length > 0) {
-    parts.push(`\nTODO LIST (${context.activeTodos.length}):
+    parts.push(`\nTASK LIST (${context.activeTodos.length}):
 ${context.activeTodos.map((t) => `- ${t.title}${t.dueDate ? ` (due ${t.dueDate})` : ''} [${t.priority}] ${t.status}`).join('\n')}`)
   }
 

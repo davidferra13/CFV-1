@@ -6,6 +6,7 @@ import type { AgentActionPreview } from '@/lib/ai/command-types'
 import { searchClientsByName } from '@/lib/clients/actions'
 import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
 function localDateISO(d: Date): string {
@@ -175,7 +176,7 @@ export const operationsAgentActions: AgentActionDefinition[] = [
       return {
         preview: {
           actionType: 'agent.create_todo',
-          summary: `Create todo: ${parsed.title}`,
+          summary: `Create task: ${parsed.title}`,
           fields,
           safety: 'reversible',
         },
@@ -196,7 +197,12 @@ export const operationsAgentActions: AgentActionDefinition[] = [
       })
 
       if (error) return { success: false, message: `Failed: ${error.message}` }
-      return { success: true, message: `Todo "${payload.title}" created!` }
+      revalidatePath('/tasks')
+      return {
+        success: true,
+        message: `Task "${payload.title}" created!`,
+        redirectUrl: '/tasks',
+      }
     },
   },
 

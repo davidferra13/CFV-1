@@ -60,10 +60,10 @@ export const proactiveAgentActions: AgentActionDefinition[] = [
           .order('created_at', { ascending: true })
           .limit(5),
         db
-          .from('chef_todos')
+          .from('tasks')
           .select('id, title, due_date, priority')
-          .eq('tenant_id', ctx.tenantId)
-          .eq('status', 'pending')
+          .eq('chef_id', ctx.tenantId)
+          .in('status', ['pending', 'in_progress'])
           .lte('due_date', now)
           .order('due_date', { ascending: true })
           .limit(5),

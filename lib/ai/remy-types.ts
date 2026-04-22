@@ -209,7 +209,7 @@ export interface RemyContext {
     progress: number | null
     status: string
   }>
-  /** Pending todos */
+  /** Active structured tasks used by Remy task summaries and briefings */
   activeTodos?: Array<{ title: string; dueDate: string | null; priority: string; status: string }>
   /** Scheduled calls */
   upcomingCalls?: Array<{

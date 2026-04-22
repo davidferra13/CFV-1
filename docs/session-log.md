@@ -1,5 +1,15 @@
 # Session Log
 
+## 2026-04-22 18:18 EST
+
+- Agent: Codex
+- Task: Close the task and todo ownership contract without creating a second task domain
+- Status: completed
+- Files touched: 18 files in this slice (repo already dirty outside the slice)
+- Commits: pending at log-write time
+- Build state on departure: focused slice verified; repo-wide `npm run typecheck:app` still blocked by unrelated existing dirty-checkout errors in `app/(chef)/settings/client-preview/public-profile-preview.tsx`, `app/(public)/_components/homepage-live-signal.tsx`, `components/public/location-experience-showcase.tsx`, and `lib/db/boot-contract.ts`
+- Notes: Added `lib/todos/match.ts` so reminder completion can stay on `chef_todos` honestly, rewired Remy plus briefing/proactive task reads onto structured `tasks`, and updated the spec/control-tower/build-state artifacts so this lane no longer reads as open. Verified with focused `tsc`, `node --test --import tsx tests/unit/task-todo-contract.test.ts`, `graphify update .`, and direct Playwright browser verification on isolated `http://127.0.0.1:3210` using seeded chef auth through `/api/e2e/auth`. A follow-up live create attempt on the pre-existing `/tasks` form did not insert a DB row, so broader task-board create-path validation remains a separate existing surface issue. `bash scripts/session-close.sh` was unavailable on this Windows host because `/bin/bash` is missing, so the digest, build-state update, and session-log entry were completed manually.
+
 ## 2026-04-12 (postgres.js Date crash sweep + billing activation)
 
 - Agent: Builder (Sonnet 4.6)

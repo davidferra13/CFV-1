@@ -931,8 +931,8 @@ export async function executeMorningBriefing(tenantId: string) {
   const { data: todos } = await db
     .from('tasks')
     .select('id, title, due_date, priority')
-    .eq('tenant_id', tenantId)
-    .eq('completed', false)
+    .eq('chef_id', tenantId)
+    .in('status', ['pending', 'in_progress'])
     .lte('due_date', today)
     .order('priority', { ascending: false })
     .limit(10)

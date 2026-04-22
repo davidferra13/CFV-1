@@ -18,7 +18,7 @@ export const briefingAgentActions: AgentActionDefinition[] = [
     tier: 2,
     safety: 'reversible',
     description:
-      "Generate the chef's morning briefing: today's events, prep needed, overdue todos, new inquiries, and pending payments.",
+      "Generate the chef's morning briefing: today's events, prep needed, overdue tasks, new inquiries, and pending payments.",
     inputSchema: '{ "context": "optional string - any specific area to focus on" }',
     tierNote: 'Tier 2 - presents structured briefing for chef review.',
 
@@ -70,7 +70,7 @@ export const briefingAgentActions: AgentActionDefinition[] = [
           .from('tasks')
           .select('id, title, due_date, priority')
           .eq('chef_id', ctx.tenantId)
-          .eq('status', 'pending')
+          .in('status', ['pending', 'in_progress'])
           .lte('due_date', today)
           .order('priority', { ascending: false })
           .limit(5),
@@ -134,7 +134,7 @@ export const briefingAgentActions: AgentActionDefinition[] = [
         { label: 'Date', value: today },
         { label: "Today's Events", value: String((todayEvents ?? []).length) },
         { label: "Tomorrow's Events", value: String((tomorrowEvents ?? []).length) },
-        { label: 'Overdue Todos', value: String((overdueTodos ?? []).length) },
+        { label: 'Overdue Tasks', value: String((overdueTodos ?? []).length) },
         { label: 'New Inquiries', value: String((newInquiries ?? []).length) },
       ]
 

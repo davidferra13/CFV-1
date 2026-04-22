@@ -6,45 +6,16 @@ import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
 import type { AgentActionPreview } from '@/lib/ai/command-types'
 import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { findTodoMatch } from '@/lib/todos/match'
 import { z } from 'zod'
 
 // ─── Complete Todo ─────────────────────────────────────────────────────────────
 // "Mark the shopping done", "complete the Whole Foods todo"
 
-async function findTodoByQuery(
-  query: string,
-  chefId: string
-): Promise<{ id: string; title: string; completed: boolean } | null> {
-  const db: any = createServerClient()
-  const { data: todos } = await db
-    .from('chef_todos')
-    .select('id, title, completed')
-    .eq('chef_id', chefId)
-    .eq('completed', false)
-    .order('created_at', { ascending: false })
-    .limit(20)
-
-  if (!todos || todos.length === 0) return null
-
-  const q = query.toLowerCase()
-  // Exact substring match first
-  const exact = todos.find((t: any) => (t.title as string).toLowerCase().includes(q))
-  if (exact) return exact as any
-
-  // Word overlap scoring
-  const words = q.split(/\s+/).filter((w: string) => w.length > 2)
-  let best: any = null
-  let bestScore = 0
-  for (const todo of todos) {
-    const title = (todo.title as string).toLowerCase()
-    const score = words.filter((w: string) => title.includes(w)).length
-    if (score > bestScore) {
-      bestScore = score
-      best = todo
-    }
-  }
-
-  return bestScore > 0 ? best : todos[0]
+async function findTodoByQuery(query: string): Promise<{ id: string; text: string } | null> {
+  const { getTodos } = await import('@/lib/todos/actions')
+  const todos = await getTodos()
+  return findTodoMatch(todos, query)
 }
 
 // ─── Create Goal ───────────────────────────────────────────────────────────────
@@ -136,17 +107,17 @@ export const workflowAgentActions: AgentActionDefinition[] = [
     inputSchema: '{ "description": "string - which todo to complete, e.g. Whole Foods shopping" }',
     tierNote: 'ALWAYS tier 2 - chef confirms which todo.',
 
-    async executor(inputs, ctx) {
+    async executor(inputs) {
       const query = String(inputs.description ?? '')
-      const todo = await findTodoByQuery(query, ctx.tenantId)
+      const todo = await findTodoByQuery(query)
 
       if (!todo) {
         return {
           preview: {
             actionType: 'agent.complete_todo',
-            summary: 'No matching todo found',
+            summary: 'No matching reminder found',
             fields: [{ label: 'Search', value: query }],
-            warnings: ['No open todos match that description.'],
+            warnings: ['No open reminders match that description.'],
             safety: 'reversible',
           },
           commitPayload: {},
@@ -156,11 +127,11 @@ export const workflowAgentActions: AgentActionDefinition[] = [
       return {
         preview: {
           actionType: 'agent.complete_todo',
-          summary: `Complete: ${todo.title}`,
-          fields: [{ label: 'Todo', value: todo.title }],
+          summary: `Complete reminder: ${todo.text}`,
+          fields: [{ label: 'Reminder', value: todo.text }],
           safety: 'reversible',
         },
-        commitPayload: { todoId: todo.id, title: todo.title },
+        commitPayload: { todoId: todo.id, text: todo.text },
       }
     },
 
@@ -172,7 +143,7 @@ export const workflowAgentActions: AgentActionDefinition[] = [
       if (!result.success)
         return { success: false, message: result.error ?? 'Failed to complete todo.' }
 
-      return { success: true, message: `"${payload.title}" marked done!` }
+      return { success: true, message: `"${payload.text}" marked done!` }
     },
   },
 
