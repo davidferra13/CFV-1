@@ -48,6 +48,7 @@ import {
 import type { SimulatorDish } from '@/lib/menus/menu-simulator'
 import { CompletionCard } from '@/components/completion/completion-card'
 import type { CompletionResult } from '@/lib/completion/types'
+import { buildQuoteDraftHref } from '@/lib/quotes/quote-prefill'
 
 type RecipeInfo = {
   id: string
@@ -559,7 +560,12 @@ export function MenuDetailClient({
           </Link>
         )}
         {event && (
-          <Link href={`/quotes/new?event_id=${event.id}`}>
+          <Link
+            href={buildQuoteDraftHref({
+              source: 'event',
+              event_id: event.id,
+            })}
+          >
             <Button size="sm" variant="secondary">
               Create Quote
             </Button>

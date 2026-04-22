@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { formatCurrency } from '@/lib/utils/currency'
+import { buildQuoteDraftHref } from '@/lib/quotes/quote-prefill'
 
 const EXAMPLE_VALUES = {
   foodCost: '420',
@@ -156,7 +157,6 @@ export function PricingCalculator() {
   const handleCreateQuoteDraft = () => {
     if (numbers.recommendedQuote <= 0) return
 
-    const params = new URLSearchParams()
     const quoteName = eventName.trim() || 'Private Chef Service Quote'
     const suggestedDepositCents = Math.round(
       numbers.recommendedQuote * (numbers.suggestedDepositRate / 100) * 100
@@ -165,30 +165,22 @@ export function PricingCalculator() {
     const validUntil = new Date(_vu.getFullYear(), _vu.getMonth(), _vu.getDate() + 7)
     const validUntilIso = `${validUntil.getFullYear()}-${String(validUntil.getMonth() + 1).padStart(2, '0')}-${String(validUntil.getDate()).padStart(2, '0')}`
 
-    params.set('source', 'consulting')
-    params.set('quote_name', quoteName)
-    params.set('pricing_model', 'flat_rate')
-    params.set('total_cents', String(Math.round(numbers.recommendedQuote * 100)))
-    params.set('deposit_required', 'true')
-    params.set('deposit_percentage', String(numbers.suggestedDepositRate))
-    params.set('deposit_amount_cents', String(suggestedDepositCents))
-    params.set('valid_until', validUntilIso)
-
-    if (numbers.guests > 0) {
-      params.set('guest_count', String(numbers.guests))
-      params.set('price_per_person_cents', String(Math.round(numbers.perGuest * 100)))
-    }
-
-    params.set(
-      'pricing_notes',
-      `Proposed service total ${formatDollars(numbers.recommendedQuote)}. ${numbers.suggestedDepositRate}% deposit requested to reserve the date.`
+    router.push(
+      buildQuoteDraftHref({
+        source: 'consulting',
+        quote_name: quoteName,
+        pricing_model: 'flat_rate',
+        total_cents: Math.round(numbers.recommendedQuote * 100),
+        deposit_required: true,
+        deposit_percentage: numbers.suggestedDepositRate,
+        deposit_amount_cents: suggestedDepositCents,
+        valid_until: validUntilIso,
+        guest_count: numbers.guests > 0 ? numbers.guests : undefined,
+        price_per_person_cents: numbers.guests > 0 ? Math.round(numbers.perGuest * 100) : undefined,
+        pricing_notes: `Proposed service total ${formatDollars(numbers.recommendedQuote)}. ${numbers.suggestedDepositRate}% deposit requested to reserve the date.`,
+        internal_notes: `Consulting calculator prefill. Cost floor ${formatDollars(numbers.costFloor)}. Projected profit ${formatDollars(numbers.projectedProfit)}.`,
+      })
     )
-    params.set(
-      'internal_notes',
-      `Consulting calculator prefill. Cost floor ${formatDollars(numbers.costFloor)}. Projected profit ${formatDollars(numbers.projectedProfit)}.`
-    )
-
-    router.push(`/quotes/new?${params.toString()}`)
   }
 
   return (

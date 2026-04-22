@@ -122,17 +122,30 @@ test.describe('Inquiry Sub-Pages', () => {
   }
 })
 
-test.describe('Convert Inquiry to Event', () => {
-  test('inquiry detail has conversion option', async ({ page, seedIds }) => {
+test.describe('Inquiry Workflow Contract', () => {
+  test('awaiting-chef inquiry exposes quote creation before event conversion', async ({
+    page,
+    seedIds,
+  }) => {
     await page.goto(`/inquiries/${seedIds.inquiryIds.awaitingChef}`)
     await page.waitForLoadState('networkidle')
-    const bodyText = await page.locator('body').innerText()
-    // Should have a way to convert to event (button, link, or menu option)
-    const hasConvertOption = /convert|create event|make event/i.test(bodyText)
-    // This is informational — conversion may require additional fields first
-    if (!hasConvertOption) {
-      // Log but don't fail — some inquiry states may not be convertible yet
-      console.log('[INFO] No convert-to-event option visible — may need more data first')
-    }
+
+    const createQuoteLink = page.getByTestId('inquiry-create-quote')
+    await expect(createQuoteLink).toBeVisible()
+    const href = await createQuoteLink.getAttribute('href')
+    expect(href).toBeTruthy()
+
+    const url = new URL(href!, 'http://localhost')
+    expect(url.pathname).toBe('/quotes/new')
+    expect(url.searchParams.get('source')).toBe('inquiry')
+    expect(url.searchParams.get('inquiry_id')).toBe(seedIds.inquiryIds.awaitingChef)
+
+    const quotesSection = page.getByTestId('inquiry-quotes-section')
+    await expect(quotesSection).toBeVisible()
+    await expect(quotesSection.locator(`a[href="/quotes/${seedIds.quoteIds.draft}"]`)).toBeVisible()
+
+    await expect(
+      page.getByRole('button', { name: /convert to event|convert to series/i })
+    ).not.toBeVisible()
   })
 })

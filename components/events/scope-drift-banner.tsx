@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import type { ScopeDriftResult } from '@/lib/events/scope-drift'
 import { acknowledgeScopeDrift } from '@/lib/events/scope-drift-actions'
+import { buildQuoteDraftHref } from '@/lib/quotes/quote-prefill'
 
 type Props = {
   eventId: string
@@ -61,7 +62,10 @@ export function ScopeDriftBanner({ eventId, driftResult, acknowledged }: Props) 
               Acknowledge &amp; Continue
             </Button>
             <Link
-              href={`/quotes/new?from_event=${eventId}`}
+              href={buildQuoteDraftHref({
+                source: 'change_order',
+                event_id: eventId,
+              })}
               className="inline-flex items-center gap-1 rounded-md border border-amber-400 bg-amber-900 px-3 py-1.5 text-xs font-medium text-amber-900 hover:bg-amber-200 transition-colors"
             >
               Issue Change Order

@@ -47,6 +47,7 @@ import { useIdempotentMutation } from '@/lib/offline/use-idempotent-mutation'
 import { parseConflictError, type ConflictErrorPayload } from '@/lib/mutations/conflict'
 import { ValidationError } from '@/lib/errors/app-error'
 import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
+import type { QuoteDraftPrefillSource } from '@/lib/quotes/quote-prefill'
 
 type Client = {
   id: string
@@ -109,7 +110,7 @@ type QuoteFormProps = {
   benchmarkHint?: string | null
   prefilledClientId?: string
   prefilledInquiryId?: string
-  prefilledSource?: string | null
+  prefilledSource?: QuoteDraftPrefillSource | null
   prefilledQuoteName?: string | null
   prefilledPricingModel?: 'flat_rate' | 'per_person' | 'custom' | null
   prefilledGuestCount?: number | null
@@ -1095,6 +1096,18 @@ export function QuoteForm({
                 Prefilled from Consulting Calculator.
               </span>{' '}
               Review values below, select client, and save as a draft quote.
+            </div>
+          )}
+          {prefilledSource === 'event' && !prefilledInquiryId && (
+            <div className="rounded-lg bg-sky-950 border border-sky-700 px-4 py-3 text-sm text-sky-300">
+              <span className="font-medium text-sky-200">Linked to an existing event.</span> Review
+              the event context below, confirm pricing, and save the draft quote back to this event.
+            </div>
+          )}
+          {prefilledSource === 'change_order' && (
+            <div className="rounded-lg bg-amber-950 border border-amber-700 px-4 py-3 text-sm text-amber-300">
+              <span className="font-medium text-amber-200">Linked from scope drift.</span> Review
+              the updated event context and issue a revised quote before sending it.
             </div>
           )}
           {prefilledSource === 'recurring_default' && (

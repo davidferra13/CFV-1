@@ -51,6 +51,7 @@ Get clients, close deals, manage the pipeline.
 
 - [x] Inquiry pipeline (submit, parse, respond, track, priority grouping)
 - [x] Quote builder (create, send, accept, reject, pricing intelligence)
+- [x] Schema-aware quote draft prefill runtime (built Apr 22: `/quotes/new` now reads one canonical prefill contract shared by inquiry detail, event/menu detail, scope-drift change orders, and the consulting calculator; explicit URL values win before inquiry/event enrichment fills missing context)
 - [x] Public booking page (shareable slug-based link)
 - [x] Lead management (website leads, guest leads, conversion tracking)
 - [x] Calls and meetings (agenda, outcome tracking, no-show handling)

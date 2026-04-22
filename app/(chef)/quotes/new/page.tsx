@@ -10,10 +10,14 @@ import { getPricingSuggestion } from '@/lib/analytics/pricing-suggestions'
 import { formatBenchmarkSuggestion } from '@/lib/inquiries/goldmine-pricing-benchmarks'
 import { QuoteForm } from '@/components/quotes/quote-form'
 import { getPricingConfig } from '@/lib/pricing/config-actions'
+import { getEventById } from '@/lib/events/actions'
+import {
+  readQuoteDraftPrefillFromSearchParams,
+  type QuoteDraftPrefillSource,
+} from '@/lib/quotes/quote-prefill'
 
 type SearchParamValue = string | string[] | undefined
 type NewQuoteSearchParams = Record<string, SearchParamValue>
-type PricingModel = 'flat_rate' | 'per_person' | 'custom'
 type ClientRecord = {
   id: string
   full_name: string
@@ -21,66 +25,6 @@ type ClientRecord = {
   recurring_pricing_model?: 'none' | 'flat_rate' | 'per_person' | null
   recurring_price_cents?: number | null
   recurring_pricing_notes?: string | null
-}
-
-function firstValue(value: SearchParamValue): string | undefined {
-  if (Array.isArray(value)) return value[0]
-  return value
-}
-
-function readString(params: NewQuoteSearchParams, key: string, maxLength = 200): string | null {
-  const raw = firstValue(params[key])?.trim()
-  if (!raw) return null
-  return raw.slice(0, maxLength)
-}
-
-function readInt(
-  params: NewQuoteSearchParams,
-  key: string,
-  opts: { min?: number; max?: number } = {}
-): number | null {
-  const raw = firstValue(params[key])
-  if (!raw) return null
-  const parsed = Number.parseInt(raw, 10)
-  if (!Number.isFinite(parsed)) return null
-  if (opts.min != null && parsed < opts.min) return null
-  if (opts.max != null && parsed > opts.max) return null
-  return parsed
-}
-
-function readFloat(
-  params: NewQuoteSearchParams,
-  key: string,
-  opts: { min?: number; max?: number } = {}
-): number | null {
-  const raw = firstValue(params[key])
-  if (!raw) return null
-  const parsed = Number.parseFloat(raw)
-  if (!Number.isFinite(parsed)) return null
-  if (opts.min != null && parsed < opts.min) return null
-  if (opts.max != null && parsed > opts.max) return null
-  return parsed
-}
-
-function readBoolean(params: NewQuoteSearchParams, key: string): boolean | undefined {
-  const raw = firstValue(params[key])?.toLowerCase()
-  if (!raw) return undefined
-  if (raw === '1' || raw === 'true' || raw === 'yes') return true
-  if (raw === '0' || raw === 'false' || raw === 'no') return false
-  return undefined
-}
-
-function readDateString(params: NewQuoteSearchParams, key: string): string | null {
-  const raw = firstValue(params[key])?.trim()
-  if (!raw) return null
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return null
-  return raw
-}
-
-function readPricingModel(params: NewQuoteSearchParams, key: string): PricingModel | null {
-  const raw = firstValue(params[key])
-  if (raw === 'flat_rate' || raw === 'per_person' || raw === 'custom') return raw
-  return null
 }
 
 export default async function NewQuotePage({
@@ -111,42 +55,46 @@ export default async function NewQuotePage({
     return typeof val === 'number' && val > 0
   })
 
-  // Pre-fill from query params and inquiry if provided
-  let prefilledClientId = readString(searchParams, 'client_id', 80)
-  let prefilledInquiryId = readString(searchParams, 'inquiry_id', 80)
-  let prefilledSource = readString(searchParams, 'source', 40)
-  let prefilledGuestCount = readInt(searchParams, 'guest_count', { min: 1, max: 10000 })
-  let prefilledBudgetCents = readInt(searchParams, 'total_cents', { min: 1, max: 100000000 })
-  let prefilledQuoteName = readString(searchParams, 'quote_name', 140)
-  let prefilledPricingModel = readPricingModel(searchParams, 'pricing_model')
-  let prefilledPricePerPersonCents = readInt(searchParams, 'price_per_person_cents', {
-    min: 1,
-    max: 10000000,
-  })
-  let prefilledDepositRequired = readBoolean(searchParams, 'deposit_required')
-  let prefilledDepositAmountCents = readInt(searchParams, 'deposit_amount_cents', {
-    min: 1,
-    max: 100000000,
-  })
-  let prefilledDepositPercentage = readFloat(searchParams, 'deposit_percentage', {
-    min: 0,
-    max: 100,
-  })
-  let prefilledValidUntil = readDateString(searchParams, 'valid_until')
-  let prefilledPricingNotes = readString(searchParams, 'pricing_notes', 1200)
-  let prefilledInternalNotes = readString(searchParams, 'internal_notes', 1200)
-  let prefilledEventId = readString(searchParams, 'event_id', 80)
+  // Canonical prefill comes from the shared search-param contract. Inquiry and event
+  // enrichment then compose on top of explicit URL values instead of replacing them.
+  const urlPrefill = readQuoteDraftPrefillFromSearchParams(searchParams)
+
+  let prefilledClientId = urlPrefill.client_id ?? null
+  let prefilledInquiryId = urlPrefill.inquiry_id ?? null
+  let prefilledSource: QuoteDraftPrefillSource | null = urlPrefill.source ?? null
+  let prefilledGuestCount = urlPrefill.guest_count ?? null
+  let prefilledBudgetCents = urlPrefill.total_cents ?? null
+  let prefilledQuoteName = urlPrefill.quote_name ?? null
+  let prefilledPricingModel = urlPrefill.pricing_model ?? null
+  let prefilledPricePerPersonCents = urlPrefill.price_per_person_cents ?? null
+  let prefilledDepositRequired = urlPrefill.deposit_required
+  let prefilledDepositAmountCents = urlPrefill.deposit_amount_cents ?? null
+  let prefilledDepositPercentage = urlPrefill.deposit_percentage ?? null
+  let prefilledValidUntil = urlPrefill.valid_until ?? null
+  let prefilledPricingNotes = urlPrefill.pricing_notes ?? null
+  let prefilledInternalNotes = urlPrefill.internal_notes ?? null
+  let prefilledEventId = urlPrefill.event_id ?? null
   let prefilledOccasion: string | null = null
   let prefilledEventDate: string | null = null
 
   if (prefilledInquiryId) {
     const inquiry = await getInquiryById(prefilledInquiryId)
     if (inquiry) {
-      prefilledClientId = inquiry.client_id || prefilledClientId
-      prefilledGuestCount = inquiry.confirmed_guest_count
-      prefilledBudgetCents = inquiry.confirmed_budget_cents
+      prefilledClientId = prefilledClientId ?? inquiry.client_id ?? null
+      prefilledGuestCount = prefilledGuestCount ?? inquiry.confirmed_guest_count
+      prefilledBudgetCents = prefilledBudgetCents ?? inquiry.confirmed_budget_cents
       prefilledOccasion = inquiry.confirmed_occasion ?? null
       prefilledEventDate = inquiry.confirmed_date ?? null
+    }
+  }
+
+  if (prefilledEventId) {
+    const event = await getEventById(prefilledEventId)
+    if (event) {
+      prefilledClientId = prefilledClientId ?? event.client_id ?? null
+      prefilledGuestCount = prefilledGuestCount ?? event.guest_count ?? null
+      prefilledOccasion = prefilledOccasion ?? event.occasion ?? null
+      prefilledEventDate = prefilledEventDate ?? event.event_date ?? null
     }
   }
 

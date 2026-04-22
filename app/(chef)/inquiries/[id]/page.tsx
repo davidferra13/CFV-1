@@ -11,6 +11,7 @@ import {
   getRecipesForLinker,
 } from '@/lib/inquiries/note-actions'
 import { getQuotesForInquiry } from '@/lib/quotes/actions'
+import { buildQuoteDraftHref } from '@/lib/quotes/quote-prefill'
 import { getMessageThread, getResponseTemplates } from '@/lib/messages/actions'
 import {
   InquiryStatusBadge,
@@ -78,6 +79,10 @@ import { getNextActions } from '@/lib/lifecycle/next-action'
 import { NextActionBanner } from '@/components/lifecycle/next-action-banner'
 import { RepeatClientPanel } from '@/components/clients/repeat-client-panel'
 import { getHandoffForInquiry } from '@/lib/network/collab-actions'
+import {
+  readPublicSeasonalMarketPulseIntentFromUnknownFields,
+  type PublicSeasonalMarketPulseIntent,
+} from '@/lib/public/public-seasonal-market-pulse'
 
 function getDisplayName(inquiry: {
   client: { id: string; full_name: string; email: string; phone: string | null } | null
@@ -161,6 +166,48 @@ function getTakeAChefPageCapture(inquiry: { unknown_fields: unknown }) {
       typeof workflow?.menu_captured_at === 'string' ? (workflow.menu_captured_at as string) : null,
     menuSeen: workflow?.menu_seen === true,
   }
+}
+
+function formatSeasonalScopeLabel(intent: PublicSeasonalMarketPulseIntent): string {
+  return intent.scope.isFallback ? `${intent.scope.label} fallback` : intent.scope.label
+}
+
+function getSeasonalIntentEvidenceLabel(intent: PublicSeasonalMarketPulseIntent): string {
+  if (intent.sourceMode === 'market-backed') {
+    return 'Market-backed'
+  }
+
+  if (intent.provenance.fallbackReason === 'stale_market_evidence') {
+    return 'Calendar fallback, stale market evidence withheld'
+  }
+
+  return 'Calendar fallback, market evidence unavailable'
+}
+
+function getSeasonalIntentFreshnessLabel(intent: PublicSeasonalMarketPulseIntent): string {
+  if (intent.provenance.marketAsOf) {
+    const asOf = format(new Date(intent.provenance.marketAsOf), 'MMM d, yyyy')
+
+    if (intent.provenance.marketStatus === 'fresh') {
+      return `Fresh public snapshots as of ${asOf}`
+    }
+
+    if (intent.provenance.marketStatus === 'stale') {
+      return `Stale public snapshots from ${asOf}`
+    }
+
+    return `Point-in-time public snapshots from ${asOf}`
+  }
+
+  if (intent.provenance.fallbackReason === 'stale_market_evidence') {
+    return 'Available public snapshots were older than 72 hours'
+  }
+
+  if (intent.provenance.fallbackReason === 'market_data_unavailable') {
+    return 'No public snapshots were available'
+  }
+
+  return 'No public snapshot timestamp stored'
 }
 
 export default async function InquiryDetailPage({ params }: { params: { id: string } }) {
@@ -258,6 +305,11 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
   const scheduleRequest = parsedScheduleRequest.success ? parsedScheduleRequest.data : undefined
   const scheduleSummary = summarizeScheduleRequest(scheduleRequest)
   const tacPageCapture = inquiry.channel === 'take_a_chef' ? getTakeAChefPageCapture(inquiry) : null
+  const seasonalIntent = readPublicSeasonalMarketPulseIntentFromUnknownFields(
+    inquiry.unknown_fields
+  )
+  const hasResolvedRequestScope =
+    seasonalIntent?.requestScope && seasonalIntent.requestScope.label !== seasonalIntent.scope.label
 
   // Compute GOLDMINE lead score (used for badge + factors display)
   const uf = inquiry.unknown_fields as Record<string, unknown> | null
@@ -449,6 +501,84 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
             These need to be confirmed before converting to an event.
           </p>
         </div>
+      )}
+
+      {seasonalIntent && (
+        <Card className="p-6 border-stone-700 bg-stone-900/70">
+          <div className="flex flex-col gap-4">
+            <div>
+              <p className="text-xxs font-semibold uppercase tracking-wider text-emerald-300">
+                Seasonal Intent
+              </p>
+              <h2 className="mt-2 text-lg font-semibold text-stone-100">
+                {seasonalIntent.season} market note
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-stone-300">
+                {seasonalIntent.leadIngredients.join(', ')}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {seasonalIntent.leadIngredients.map((ingredient) => (
+                <span
+                  key={ingredient}
+                  className="rounded-full border border-stone-700 bg-stone-950 px-3 py-1 text-xs text-stone-300"
+                >
+                  {ingredient}
+                </span>
+              ))}
+            </div>
+            <dl
+              className={`grid gap-3 text-sm text-stone-300 ${
+                hasResolvedRequestScope ? 'md:grid-cols-4' : 'md:grid-cols-3'
+              }`}
+            >
+              <div>
+                <dt className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+                  Market Note Scope
+                </dt>
+                <dd className="mt-1">{formatSeasonalScopeLabel(seasonalIntent)}</dd>
+              </div>
+              {hasResolvedRequestScope && (
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+                    Booking Scope
+                  </dt>
+                  <dd className="mt-1">{seasonalIntent.requestScope?.label}</dd>
+                </div>
+              )}
+              <div>
+                <dt className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+                  Evidence
+                </dt>
+                <dd className="mt-1">{getSeasonalIntentEvidenceLabel(seasonalIntent)}</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+                  Freshness
+                </dt>
+                <dd className="mt-1">{getSeasonalIntentFreshnessLabel(seasonalIntent)}</dd>
+              </div>
+            </dl>
+            {(seasonalIntent.endingSoon || seasonalIntent.comingNext) && (
+              <p className="text-xs leading-5 text-stone-400">
+                {seasonalIntent.endingSoon
+                  ? `${seasonalIntent.endingSoon} was flagged as ending soon. `
+                  : ''}
+                {seasonalIntent.comingNext
+                  ? `${seasonalIntent.comingNext} was flagged as the next move.`
+                  : ''}
+              </p>
+            )}
+            <p className="text-xs leading-5 text-stone-500">
+              {seasonalIntent.sourceMode === 'market-backed'
+                ? 'Fresh public market evidence was carried from the public note into this request.'
+                : 'This request carried the public note as a calendar fallback because fresh public market evidence was unavailable or withheld.'}{' '}
+              {hasResolvedRequestScope
+                ? 'The booking location was resolved separately so the chef can compare note scope to request scope.'
+                : 'The stored note scope matches the booking context carried into the request.'}
+            </p>
+          </div>
+        </Card>
       )}
 
       {/* Inquiry Summary - visual snapshot */}
@@ -820,11 +950,16 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
       </Card>
 
       {/* Quotes Section */}
-      <Card className="p-6">
+      <Card className="p-6" data-testid="inquiry-quotes-section">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Quotes</h2>
           <Link
-            href={`/quotes/new?inquiry_id=${inquiry.id}${inquiry.client_id ? `&client_id=${inquiry.client_id}` : ''}`}
+            href={buildQuoteDraftHref({
+              source: 'inquiry',
+              inquiry_id: inquiry.id,
+              client_id: inquiry.client_id ?? undefined,
+            })}
+            data-testid="inquiry-create-quote"
           >
             <Button size="sm">+ Create Quote</Button>
           </Link>

@@ -93,3 +93,13 @@ Full blueprint: `docs/product-blueprint.md`
 **What changed:** `lib/auth/server-action-inventory.ts` now emits privilege metadata for `standard`, `sensitive`, and `critical` mutations, reusing existing file and table ownership instead of inventing a second registry. `tests/unit/server-action-auth-inventory.test.ts` covers the failure path for missing observability, and `tests/system-integrity/q80-revalidation-after-mutation.spec.ts` ensures known admin, finance, contract, and client mutation files keep resolving through the shared classifier.
 
 **Design principle:** one mutation inventory, one privilege classifier, no sibling policy registry.
+
+## Schema-Aware Quote Prefill Runtime (Apr 2026)
+
+**Status:** Built
+
+**What it is:** A shared quote-prefill contract now defines how cross-surface quote draft links pass client, inquiry, event, pricing, and source context into `/quotes/new`.
+
+**What changed:** `lib/quotes/quote-prefill.ts` owns the canonical read/build helpers, `app/(chef)/quotes/new/page.tsx` composes explicit URL values with inquiry and event enrichment, and inquiry detail, menu detail, scope-drift change orders, and the consulting calculator now all reuse the same href builder instead of hand-assembling their own query strings.
+
+**Design principle:** one prefill schema, one parser/builder, no route-local query dialects.

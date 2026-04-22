@@ -84,13 +84,44 @@ test.describe('Quote Flows — Edit', () => {
 
 // ─── Quote Creation ───────────────────────────────────────────────────────────
 
-test.describe('Quote Flows — Creation', () => {
-  test('/quotes/new — form renders', async ({ page }) => {
+test.describe('Quote Flows - Creation', () => {
+  test('/quotes/new - form renders', async ({ page }) => {
     await page.goto('/quotes/new')
     await page.waitForLoadState('networkidle')
     // Should have form fields
     const inputs = await page.locator('input, textarea, select').count()
     expect(inputs, 'Quote creation form should have inputs').toBeGreaterThan(0)
+  })
+
+  test('/quotes/new - canonical prefill query renders source context and values', async ({
+    page,
+    seedIds,
+  }) => {
+    const params = new URLSearchParams({
+      source: 'change_order',
+      event_id: seedIds.eventIds.confirmed,
+      quote_name: 'Schema Prefill Contract Test',
+      pricing_model: 'flat_rate',
+      guest_count: '12',
+      total_cents: '420000',
+      deposit_required: 'true',
+      deposit_percentage: '25',
+      deposit_amount_cents: '105000',
+      valid_until: '2026-05-01',
+      pricing_notes: 'Schema-prefilled pricing note.',
+    })
+
+    await page.goto(`/quotes/new?${params.toString()}`)
+    await page.waitForLoadState('networkidle')
+
+    await expect(page.locator('body')).toContainText('Linked from scope drift', {
+      timeout: 10_000,
+    })
+    await expect(page.getByPlaceholder('e.g., Anniversary Dinner - Premium Package')).toHaveValue(
+      'Schema Prefill Contract Test'
+    )
+    await expect(page.getByLabel(/Total Quoted Amount/i)).toHaveValue('4200.00')
+    await expect(page.getByLabel(/Pricing Notes/i)).toHaveValue('Schema-prefilled pricing note.')
   })
 })
 
