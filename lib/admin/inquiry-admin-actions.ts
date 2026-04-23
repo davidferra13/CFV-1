@@ -5,8 +5,10 @@
 
 import { createAdminClient } from '@/lib/db/admin'
 import { requireAdmin } from '@/lib/auth/admin'
+import { deriveProvenance } from '@/lib/analytics/source-provenance'
 import { resolveOwnerIdentity } from '@/lib/platform/owner-account'
 import { calculateDistanceMiles } from '@/lib/geo/public-location'
+import { PUBLIC_INTAKE_LANE_KEYS } from '@/lib/public/intake-lane-config'
 import { revalidatePath } from 'next/cache'
 
 // ---------------------------------------------------------------------------
@@ -89,7 +91,7 @@ export async function getPlatformInquiryList(
   let q = db
     .from('inquiries')
     .select(
-      'id, tenant_id, client_id, channel, status, confirmed_occasion, confirmed_guest_count, confirmed_location, first_contact_at, created_at, converted_to_event_id, unknown_fields'
+      'id, tenant_id, client_id, channel, status, confirmed_occasion, confirmed_guest_count, confirmed_location, first_contact_at, created_at, converted_to_event_id, unknown_fields, utm_medium'
     )
     .order('created_at', { ascending: false })
 
@@ -128,7 +130,12 @@ export async function getPlatformInquiryList(
   let items: PlatformInquiry[] = allInquiries.map((row: any) => {
     const chef = chefMap.get(row.tenant_id)
     const client = clientMap.get(row.client_id)
-    const isOpenBooking = row.unknown_fields?.open_booking === true || row.channel === 'website'
+    const provenance = deriveProvenance({
+      channel: row.channel,
+      unknown_fields: row.unknown_fields,
+      utm_medium: row.utm_medium,
+    })
+    const isOpenBooking = provenance.key === PUBLIC_INTAKE_LANE_KEYS.open_booking
 
     // Distance from founder
     let distFromFounder: number | null = null

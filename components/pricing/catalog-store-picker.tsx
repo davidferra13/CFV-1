@@ -171,32 +171,48 @@ export function CatalogStorePicker({
         </div>
       )}
 
-      {/* All Stores */}
+      {/* Other stores: only show when searching (don't dump hundreds of stores) */}
       <div>
-        {myStores.length > 0 && (
-          <h3 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-3">
-            All Stores
-          </h3>
-        )}
-        {otherStores.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {otherStores.map((store) => (
-              <StoreCard
-                key={store.id}
-                store={store}
-                displayName={cleanStoreName(store.name)}
-                onClick={() => {
-                  const displayName = cleanStoreName(store.name)
-                  onSelectStore(displayName, displayName)
-                }}
-              />
-            ))}
-          </div>
-        ) : filteredStores.length === 0 ? (
+        {search ? (
+          <>
+            {otherStores.length > 0 && (
+              <>
+                <h3 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-3">
+                  Search Results
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {otherStores.slice(0, 12).map((store) => (
+                    <StoreCard
+                      key={store.id}
+                      store={store}
+                      displayName={cleanStoreName(store.name)}
+                      onClick={() => {
+                        const displayName = cleanStoreName(store.name)
+                        onSelectStore(displayName, displayName)
+                      }}
+                    />
+                  ))}
+                </div>
+                {otherStores.length > 12 && (
+                  <p className="text-xs text-stone-500 mt-2 text-center">
+                    {otherStores.length - 12} more stores match. Narrow your search to find a
+                    specific store.
+                  </p>
+                )}
+              </>
+            )}
+            {filteredStores.length === 0 && (
+              <div className="text-center py-8 text-stone-500 text-sm">
+                No stores matching &ldquo;{search}&rdquo;
+              </div>
+            )}
+          </>
+        ) : myStores.length === 0 ? (
           <div className="text-center py-8 text-stone-500 text-sm">
-            {search
-              ? `No stores matching "${search}"`
-              : 'No stores available. Price data is still being collected.'}
+            <p>Search for a store above, or browse all stores.</p>
+            <p className="mt-1 text-xs text-stone-600">
+              {activeStores.length.toLocaleString()} stores available
+            </p>
           </div>
         ) : null}
       </div>

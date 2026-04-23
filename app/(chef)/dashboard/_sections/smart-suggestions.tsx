@@ -29,13 +29,6 @@ interface ClientGap {
   missing: string[]
 }
 
-interface IngredientGap {
-  total: number
-  withPrice: number
-  stale: number
-  neverPriced: number
-}
-
 interface MenuGap {
   id: string
   name: string
@@ -102,42 +95,6 @@ async function getClientGaps(tenantId: string): Promise<ClientGap[]> {
   return result as unknown as ClientGap[]
 }
 
-async function getIngredientGaps(tenantId: string): Promise<IngredientGap> {
-  const result = await pgClient`
-    SELECT
-      COUNT(*)::int AS total,
-      COUNT(*) FILTER (
-        WHERE EXISTS (
-          SELECT 1 FROM ingredient_price_history iph
-          WHERE iph.ingredient_id = i.id
-          AND iph.created_at > NOW() - INTERVAL '30 days'
-        )
-      )::int AS "withPrice",
-      COUNT(*) FILTER (
-        WHERE EXISTS (
-          SELECT 1 FROM ingredient_price_history iph
-          WHERE iph.ingredient_id = i.id
-          AND iph.created_at <= NOW() - INTERVAL '30 days'
-        )
-        AND NOT EXISTS (
-          SELECT 1 FROM ingredient_price_history iph2
-          WHERE iph2.ingredient_id = i.id
-          AND iph2.created_at > NOW() - INTERVAL '30 days'
-        )
-      )::int AS stale,
-      COUNT(*) FILTER (
-        WHERE NOT EXISTS (
-          SELECT 1 FROM ingredient_price_history iph
-          WHERE iph.ingredient_id = i.id
-        )
-      )::int AS "neverPriced"
-    FROM ingredients i
-    WHERE i.tenant_id = ${tenantId}
-  `
-  const row = result[0] as unknown as IngredientGap | undefined
-  return row ?? { total: 0, withPrice: 0, stale: 0, neverPriced: 0 }
-}
-
 async function getMenuGaps(tenantId: string): Promise<MenuGap[]> {
   const result = await pgClient`
     SELECT
@@ -163,25 +120,18 @@ export async function SmartSuggestions() {
   const user = await requireChef()
   const tenantId = user.tenantId!
 
-  const [recipeGaps, clientGaps, ingredientGaps, menuGaps] = await Promise.all([
+  const [recipeGaps, clientGaps, menuGaps] = await Promise.all([
     safe('recipeGaps', () => getRecipeGaps(tenantId), []),
     safe('clientGaps', () => getClientGaps(tenantId), []),
-    safe('ingredientGaps', () => getIngredientGaps(tenantId), {
-      total: 0,
-      withPrice: 0,
-      stale: 0,
-      neverPriced: 0,
-    }),
     safe('menuGaps', () => getMenuGaps(tenantId), []),
   ])
 
   // If everything is complete, don't render at all
   const hasRecipeGaps = recipeGaps.length > 0
   const hasClientGaps = clientGaps.length > 0
-  const hasIngredientGaps = ingredientGaps.neverPriced > 0 || ingredientGaps.stale > 0
   const hasMenuGaps = menuGaps.length > 0
 
-  if (!hasRecipeGaps && !hasClientGaps && !hasIngredientGaps && !hasMenuGaps) {
+  if (!hasRecipeGaps && !hasClientGaps && !hasMenuGaps) {
     return (
       <div className="col-span-full flex items-center gap-3 py-5 px-4 rounded-xl border border-emerald-900/30 bg-emerald-950/20">
         <span className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-900/40 shrink-0">
@@ -235,12 +185,6 @@ export async function SmartSuggestions() {
     status: m.total_dishes === 0 ? ('red' as const) : ('amber' as const),
   }))
 
-  // Ingredient coverage stat
-  const coveragePct =
-    ingredientGaps.total > 0
-      ? Math.round((ingredientGaps.withPrice / ingredientGaps.total) * 100)
-      : null
-
   // AI: prioritize suggestions by business impact (non-blocking)
   const aiPriority = await safe(
     'aiPriority',
@@ -248,12 +192,9 @@ export async function SmartSuggestions() {
       generateSuggestionPriority({
         recipeGapsCount: recipeGaps.length,
         clientGapsCount: clientGaps.length,
-        ingredientCoverage:
-          ingredientGaps.total > 0
-            ? Math.round((ingredientGaps.withPrice / ingredientGaps.total) * 100)
-            : 100,
-        neverPricedCount: ingredientGaps.neverPriced,
-        staleCount: ingredientGaps.stale,
+        ingredientCoverage: 100,
+        neverPricedCount: 0,
+        staleCount: 0,
         menuGapsCount: menuGaps.length,
       }),
     null
@@ -282,24 +223,7 @@ export async function SmartSuggestions() {
         </div>
       )}
 
-      {/* Ingredient pricing coverage */}
-      {hasIngredientGaps && (
-        <StatCard
-          widgetId="suggestions-ingredient-coverage"
-          title="Ingredient Pricing"
-          value={coveragePct != null ? `${coveragePct}%` : 'N/A'}
-          subtitle={`${ingredientGaps.withPrice} of ${ingredientGaps.total} priced`}
-          trend={
-            ingredientGaps.neverPriced > 0
-              ? `${ingredientGaps.neverPriced} never priced`
-              : ingredientGaps.stale > 0
-                ? `${ingredientGaps.stale} stale`
-                : undefined
-          }
-          trendDirection={ingredientGaps.neverPriced > 0 ? 'down' : 'flat'}
-          href="/culinary/price-catalog"
-        />
-      )}
+      {/* Ingredient pricing coverage - admin only (OpenClaw/dev data, not chef-facing) */}
 
       {/* Recipes with unpriced ingredients */}
       {hasRecipeGaps && (

@@ -7,7 +7,6 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getConnectAccountStatus } from '@/lib/stripe/connect'
 import { getGoogleConnection } from '@/lib/google/auth'
 import { getDOPTaskDigest } from '@/lib/scheduling/task-digest'
-import { getCalendarConnection } from '@/lib/scheduling/calendar-sync-actions'
 import { Card } from '@/components/ui/card'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -73,10 +72,9 @@ function HealthRow({ check }: { check: HealthCheck }) {
 export default async function SystemHealthPage() {
   await requireChef()
 
-  const [stripeStatus, gmailStatus, calendarStatus, dopDigest] = await Promise.all([
+  const [stripeStatus, googleStatus, dopDigest] = await Promise.all([
     getConnectAccountStatus().catch(() => null),
     getGoogleConnection().catch(() => null),
-    getCalendarConnection().catch(() => null),
     getDOPTaskDigest().catch(() => null),
   ])
 
@@ -115,13 +113,13 @@ export default async function SystemHealthPage() {
   }
 
   // Gmail / Google
-  if (!gmailStatus) {
+  if (!googleStatus) {
     checks.push({
       label: 'Gmail Integration',
       status: 'unknown',
       detail: 'Could not check Gmail connection',
     })
-  } else if (!gmailStatus.gmail.connected) {
+  } else if (!googleStatus.gmail.connected) {
     checks.push({
       label: 'Gmail Integration',
       status: 'warning',
@@ -129,48 +127,73 @@ export default async function SystemHealthPage() {
       actionHref: '/settings',
       actionLabel: 'Connect Gmail →',
     })
-  } else if (gmailStatus.gmail.errorCount > 0) {
+  } else if (googleStatus.gmail.errorCount > 0) {
     checks.push({
       label: 'Gmail Integration',
       status: 'warning',
-      detail: `${gmailStatus.gmail.errorCount} sync error${gmailStatus.gmail.errorCount === 1 ? '' : 's'} - check your Google connection`,
+      detail: `${googleStatus.gmail.errorCount} sync error${googleStatus.gmail.errorCount === 1 ? '' : 's'} - check your Google connection`,
       actionHref: '/settings',
       actionLabel: 'Review →',
     })
   } else {
-    const lastSync = gmailStatus.gmail.lastSync
-      ? `Last synced ${formatDistanceToNow(new Date(gmailStatus.gmail.lastSync), { addSuffix: true })}`
+    const lastSync = googleStatus.gmail.lastSync
+      ? `Last synced ${formatDistanceToNow(new Date(googleStatus.gmail.lastSync), { addSuffix: true })}`
       : 'No sync recorded yet'
     checks.push({
       label: 'Gmail Integration',
       status: 'ok',
-      detail: `${gmailStatus.gmail.email ?? 'Connected'} · ${lastSync}`,
+      detail: `${googleStatus.gmail.email ?? 'Connected'} · ${lastSync}`,
     })
   }
 
   // Google Calendar
-  if (!calendarStatus) {
+  if (!googleStatus) {
     checks.push({
       label: 'Google Calendar',
       status: 'unknown',
       detail: 'Could not check Calendar connection',
     })
-  } else if (!calendarStatus.connected) {
+  } else if (!googleStatus.calendar.connected) {
     checks.push({
       label: 'Google Calendar',
       status: 'warning',
-      detail: "Not connected - confirmed events won't sync to your calendar",
+      detail:
+        'Not connected - public availability cannot verify external Google Calendar busy time',
       actionHref: '/settings',
       actionLabel: 'Connect Calendar →',
     })
+  } else if (googleStatus.calendar.health === 'error') {
+    checks.push({
+      label: 'Google Calendar',
+      status: 'warning',
+      detail:
+        googleStatus.calendar.healthDetail ||
+        'Live Google Calendar verification is unavailable. Booking dates are being held safely.',
+      actionHref: '/settings',
+      actionLabel: 'Review →',
+    })
+  } else if (googleStatus.calendar.conflictCount > 0) {
+    const checkedAt = googleStatus.calendar.checkedAt
+      ? `last checked ${formatDistanceToNow(new Date(googleStatus.calendar.checkedAt), { addSuffix: true })}`
+      : 'live check time unavailable'
+    checks.push({
+      label: 'Google Calendar',
+      status: 'warning',
+      detail: `${googleStatus.calendar.email ?? 'Connected'} · ${googleStatus.calendar.conflictCount} upcoming date${googleStatus.calendar.conflictCount === 1 ? '' : 's'} already show other Google Calendar busy time · ${checkedAt}`,
+      actionHref: '/settings',
+      actionLabel: 'Review →',
+    })
   } else {
-    const lastSync = calendarStatus.lastSync
-      ? `Last synced ${formatDistanceToNow(new Date(calendarStatus.lastSync), { addSuffix: true })}`
-      : 'Connected - sync fires on event confirmation'
+    const lastChecked = googleStatus.calendar.checkedAt
+      ? `Live check ${formatDistanceToNow(new Date(googleStatus.calendar.checkedAt), { addSuffix: true })}`
+      : 'Live check completed'
+    const lastSync = googleStatus.calendar.lastSync
+      ? `Latest ChefFlow event sync ${formatDistanceToNow(new Date(googleStatus.calendar.lastSync), { addSuffix: true })}`
+      : 'No ChefFlow event has synced yet'
     checks.push({
       label: 'Google Calendar',
       status: 'ok',
-      detail: `${calendarStatus.email ?? 'Connected'} · ${lastSync}`,
+      detail: `${googleStatus.calendar.email ?? 'Connected'} · ${lastChecked} · ${lastSync}`,
     })
   }
 

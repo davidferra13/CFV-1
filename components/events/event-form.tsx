@@ -26,7 +26,11 @@ import { parseConflictError, type ConflictErrorPayload } from '@/lib/mutations/c
 import { ValidationError } from '@/lib/errors/app-error'
 import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
 import { setActiveForm } from '@/lib/ai/remy-activity-tracker'
+import { normalizeLocationTruthValue } from '@/lib/events/location-truth'
+import { normalizeEventTimeTruthValue } from '@/lib/events/time-truth'
 import { PrepTimeEstimateHint } from '@/components/intelligence/prep-time-estimate-hint'
+import { sanitizeReturnTo } from '@/lib/navigation/return-to'
+import { getDateConflictResultWithTimeout } from '@/lib/availability/conflict-check-client'
 
 type Client = {
   id: string
@@ -137,6 +141,7 @@ export function EventForm({
 }: EventFormProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const returnTo = sanitizeReturnTo(searchParams.get('returnTo'))
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [conflictError, setConflictError] = useState<ConflictErrorPayload | null>(null)
@@ -270,7 +275,7 @@ export function EventForm({
         Intl.DateTimeFormat().resolvedOptions().timeZone ||
         'America/New_York',
     }),
-    [event, initialDeposit]
+    [event, initialDeposit, seed?.client_id, seed?.occasion, seed?.event_date]
   )
   const [committedFormData, setCommittedFormData] = useState<EventFormData>(initialFormData)
 
@@ -301,6 +306,8 @@ export function EventForm({
     () => JSON.stringify(currentFormData) !== JSON.stringify(committedFormData),
     [committedFormData, currentFormData]
   )
+  const buildEventReturnHref = (eventId?: string) =>
+    returnTo ?? (eventId ? `/events/${eventId}` : '/events')
 
   const unsavedGuard = useUnsavedChangesGuard({
     isDirty,
@@ -342,6 +349,17 @@ export function EventForm({
 
   const buildEditPayload = (expectedUpdatedAt?: string) => {
     const guestCountNum = parseInt(guestCount)
+    const normalizedLocationAddress = normalizeLocationTruthValue(locationAddress) ?? undefined
+    const normalizedLocationCity = normalizeLocationTruthValue(locationCity) ?? undefined
+    const normalizedLocationState = normalizeLocationTruthValue(locationState) ?? undefined
+    const normalizedLocationZip = normalizeLocationTruthValue(locationZip) ?? undefined
+    const normalizedServeTime = normalizeEventTimeTruthValue(serveTime) ?? undefined
+    const hasMeaningfulLocation = Boolean(
+      normalizedLocationAddress ||
+      normalizedLocationCity ||
+      normalizedLocationState ||
+      normalizedLocationZip
+    )
     const hasQuotedPrice = totalAmount.trim().length > 0
     const parsedQuotedPrice = hasQuotedPrice ? parseCurrencyToCents(totalAmount) : undefined
     const totalAmountCents =
@@ -376,18 +394,18 @@ export function EventForm({
     return {
       // Keep as YYYY-MM-DD string - toISOString() shifts dates by timezone offset
       event_date: eventDate,
-      serve_time: serveTime,
+      serve_time: normalizedServeTime,
       guest_count: guestCountNum,
-      location_address: locationAddress,
-      location_city: locationCity,
-      location_state: locationState || undefined,
-      location_zip: locationZip,
+      location_address: normalizedLocationAddress,
+      location_city: normalizedLocationCity,
+      location_state: normalizedLocationState,
+      location_zip: normalizedLocationZip,
       occasion: occasion || undefined,
       special_requests: specialRequests || undefined,
       quoted_price_cents: totalAmountCents,
       deposit_amount_cents: depositAmountCents,
-      location_lat: locationLat ?? undefined,
-      location_lng: locationLng ?? undefined,
+      location_lat: hasMeaningfulLocation ? (locationLat ?? undefined) : undefined,
+      location_lng: hasMeaningfulLocation ? (locationLng ?? undefined) : undefined,
       referral_partner_id: referralPartnerId,
       partner_location_id: partnerLocationId,
       event_timezone: eventTimezone || undefined,
@@ -450,7 +468,7 @@ export function EventForm({
         await durableDraft.clearDraft()
         setConflictError(null)
         setLatestConflictData(null)
-        router.push(`/events/${event.id}`)
+        router.push(buildEventReturnHref(event.id))
       } else {
         throw new Error('Failed to update event')
       }
@@ -477,7 +495,7 @@ export function EventForm({
   }
 
   // Step 1 validation before advancing (async - checks availability conflicts)
-  // Only client + date are hard requirements. Everything else can be TBD for drafts.
+  // Only client + date are hard requirements. Everything else can stay unknown on drafts.
   const handleContinue = async () => {
     setError(null)
     if (!clientId) {
@@ -500,18 +518,17 @@ export function EventForm({
     if (eventDate) {
       const dateOnly = eventDate.slice(0, 10) // YYYY-MM-DD
       setConflictChecking(true)
-      try {
-        const result = await checkDateConflicts(dateOnly, mode === 'edit' ? event?.id : undefined)
-        setConflictChecking(false)
+      const result = await getDateConflictResultWithTimeout({
+        check: checkDateConflicts,
+        date: dateOnly,
+        excludeEventId: mode === 'edit' ? event?.id : undefined,
+      })
+      setConflictChecking(false)
 
-        if (result.warnings.length > 0) {
-          setConflictWarnings(result.warnings)
-          setConflictOverride(false)
-          return // Stay on step 1 until user acknowledges
-        }
-      } catch {
-        setConflictChecking(false)
-        // Non-blocking: if conflict check fails, still allow advance
+      if (result?.warnings.length) {
+        setConflictWarnings(result.warnings)
+        setConflictOverride(false)
+        return // Stay on step 1 until user acknowledges
       }
     }
 
@@ -562,22 +579,33 @@ export function EventForm({
 
       if (mode === 'create') {
         const guestCountSafe = guestCountNum > 0 ? guestCountNum : 1
+        const normalizedLocationAddress = normalizeLocationTruthValue(locationAddress) ?? ''
+        const normalizedLocationCity = normalizeLocationTruthValue(locationCity) ?? ''
+        const normalizedLocationState = normalizeLocationTruthValue(locationState) ?? undefined
+        const normalizedLocationZip = normalizeLocationTruthValue(locationZip) ?? ''
+        const normalizedServeTime = normalizeEventTimeTruthValue(serveTime) ?? ''
+        const hasMeaningfulLocation = Boolean(
+          normalizedLocationAddress ||
+          normalizedLocationCity ||
+          normalizedLocationState ||
+          normalizedLocationZip
+        )
         const input: CreateEventInput & { idempotency_key?: string } = {
           client_id: clientId,
           // Keep as YYYY-MM-DD string - toISOString() shifts dates by timezone offset
           event_date: eventDate,
-          serve_time: serveTime || '',
+          serve_time: normalizedServeTime,
           guest_count: guestCountSafe,
-          location_address: locationAddress || 'TBD',
-          location_city: locationCity || 'TBD',
-          location_state: locationState || undefined,
-          location_zip: locationZip || 'TBD',
+          location_address: normalizedLocationAddress,
+          location_city: normalizedLocationCity,
+          location_state: normalizedLocationState,
+          location_zip: normalizedLocationZip,
           occasion: occasion || undefined,
           special_requests: specialRequests || undefined,
           quoted_price_cents: totalAmountCents,
           deposit_amount_cents: depositAmountCents,
-          location_lat: locationLat ?? undefined,
-          location_lng: locationLng ?? undefined,
+          location_lat: hasMeaningfulLocation ? (locationLat ?? undefined) : undefined,
+          location_lng: hasMeaningfulLocation ? (locationLng ?? undefined) : undefined,
           referral_partner_id: referralPartnerId,
           partner_location_id: partnerLocationId,
           event_timezone: eventTimezone || undefined,
@@ -598,7 +626,7 @@ export function EventForm({
           if (waitlistId) {
             convertWaitlistEntry(waitlistId, result.event.id).catch(() => {})
           }
-          router.push(`/events/${result.event.id}`)
+          router.push(buildEventReturnHref(result.event.id))
         } else {
           throw new Error('Failed to create event')
         }
@@ -614,7 +642,7 @@ export function EventForm({
         if (result.success) {
           setCommittedFormData(currentFormData)
           await durableDraft.clearDraft()
-          router.push(`/events/${event.id}`)
+          router.push(buildEventReturnHref(event.id))
         } else {
           throw new Error('Failed to update event')
         }
@@ -833,7 +861,11 @@ export function EventForm({
               <Button
                 type="button"
                 variant="secondary"
-                onClick={() => unsavedGuard.requestNavigation(() => router.back())}
+                onClick={() =>
+                  unsavedGuard.requestNavigation(() =>
+                    returnTo ? router.push(returnTo) : router.back()
+                  )
+                }
               >
                 Cancel
               </Button>

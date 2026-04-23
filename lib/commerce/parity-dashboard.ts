@@ -134,7 +134,10 @@ export async function getCloverParityDashboard(): Promise<CloverParityDashboard>
   const parityPlanPath = path.join(process.cwd(), 'plans', 'clover-parity-master-todo.md')
   const mvpContractPath = path.join(process.cwd(), 'plans', 'clover-parity-mvp-contract.md')
   const [rawPlan, rawContract] = await Promise.all([
-    readFile(parityPlanPath, 'utf8'),
+    readFile(parityPlanPath, 'utf8').catch((error: NodeJS.ErrnoException) => {
+      if (error.code === 'ENOENT') return ''
+      throw error
+    }),
     readFile(mvpContractPath, 'utf8').catch(() => ''),
   ])
   const lines = rawPlan.split(/\r?\n/)

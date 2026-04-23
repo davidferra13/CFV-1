@@ -8,7 +8,9 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { getTravelPlan } from '@/lib/travel/actions'
 import { TravelPlanClient } from '@/components/events/travel-plan-client'
+import { ServiceSimulationReturnBanner } from '@/components/events/service-simulation-return-banner'
 import { Button } from '@/components/ui/button'
+import { sanitizeReturnTo } from '@/lib/navigation/return-to'
 
 async function getEventForTravel(eventId: string, tenantId: string) {
   const db: any = createServerClient()
@@ -38,8 +40,15 @@ async function getChefHomeAddress(chefId: string) {
   return [data.home_address, data.home_city, data.home_state].filter(Boolean).join(', ')
 }
 
-export default async function EventTravelPage({ params }: { params: { id: string } }) {
+export default async function EventTravelPage({
+  params,
+  searchParams,
+}: {
+  params: { id: string }
+  searchParams?: { returnTo?: string }
+}) {
   const user = await requireChef()
+  const returnTo = sanitizeReturnTo(searchParams?.returnTo)
 
   const [event, plan, homeAddress] = await Promise.all([
     getEventForTravel(params.id, user.tenantId!),
@@ -57,9 +66,11 @@ export default async function EventTravelPage({ params }: { params: { id: string
 
   return (
     <div className="space-y-6">
+      <ServiceSimulationReturnBanner returnTo={returnTo} />
+
       {/* Breadcrumb */}
       <div className="flex items-center gap-2">
-        <Link href={`/events/${event.id}`}>
+        <Link href={returnTo ?? `/events/${event.id}`}>
           <Button variant="ghost" size="sm">
             ← {event.occasion || 'Event'}
           </Button>

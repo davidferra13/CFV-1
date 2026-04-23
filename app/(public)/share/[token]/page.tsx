@@ -312,7 +312,7 @@ export default async function SharePage({ params }: { params: { token: string } 
           <div className="mb-6">
             <JoinHubCTA
               eventId={eventData.eventId}
-              tenantId={eventData.tenantId}
+              shareToken={params.token}
               eventTitle={eventData.occasion ?? 'Dinner'}
             />
           </div>

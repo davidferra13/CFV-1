@@ -5,6 +5,7 @@
 import { requireClient } from '@/lib/auth/get-user'
 import { getClientEventById } from '@/lib/events/client-actions'
 import { getClientEventContract } from '@/lib/contracts/actions'
+import { getCurrentJourneyAction } from '@/lib/events/journey-steps'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import { notFound } from 'next/navigation'
@@ -12,6 +13,7 @@ import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert } from '@/components/ui/alert'
+import AcceptProposalButton from '../accept-proposal-button'
 import type { Database } from '@/types/database'
 
 type EventStatus = Database['public']['Enums']['event_status']
@@ -53,15 +55,39 @@ export default async function UnifiedProposalPage({ params }: { params: { id: st
   const outstandingBalanceCents = financial?.outstandingBalanceCents ?? quotedPriceCents
 
   // Contract state helpers
-  const contractExists = !!contract
-  const contractSigned = contract?.status === 'signed'
-  const contractPendingSignature = contract && ['sent', 'viewed'].includes(contract.status)
+  const contractExists = Boolean(event.hasContract)
+  const contractStatus = event.contractStatus ?? null
+  const contractSigned = Boolean(event.contractSignedAt) || contractStatus === 'signed'
+  const contractPendingSignature = contractStatus === 'sent' || contractStatus === 'viewed'
+  const contractAwaitingChef = contractStatus === 'draft'
+  const contractReadyAfterAcceptance = event.status === 'proposed' && contractPendingSignature
 
   // Payment readiness: event is accepted AND (no contract, or contract is signed)
   const canPay =
     event.status === 'accepted' &&
     outstandingBalanceCents > 0 &&
     (!contractExists || contractSigned)
+
+  const postAcceptAction = getCurrentJourneyAction({
+    eventId: event.id,
+    occasion: event.occasion ?? null,
+    eventStatus: 'accepted',
+    menuApprovalStatus: (event as any).menu_approval_status ?? null,
+    menuApprovalUpdatedAt: (event as any).menu_approval_updated_at ?? null,
+    hasContract: contractExists,
+    contractStatus,
+    contractSignedAt: event.contractSignedAt ?? null,
+    preEventChecklistConfirmedAt: (event as any).pre_event_checklist_confirmed_at ?? null,
+    hasOutstandingBalance: outstandingBalanceCents > 0,
+    hasReview: event.hasReview ?? false,
+  })
+  const postAcceptRedirectHref =
+    postAcceptAction?.key === 'contract_signing'
+      ? `/my-events/${event.id}/contract?next=payment`
+      : (postAcceptAction?.actionHref ?? `/my-events/${event.id}`)
+  const acceptConfirmDescription = contractExists
+    ? 'By accepting this proposal, you agree to the event details and pricing. We will take you to the agreement first if a signature is required, then payment.'
+    : 'By accepting this proposal, you agree to the event details and pricing. We will take you straight to payment next.'
 
   // Terminal/post-active statuses - just show summary
   const isTerminalOrActive = ['in_progress', 'completed', 'cancelled'].includes(event.status)
@@ -243,7 +269,7 @@ export default async function UnifiedProposalPage({ params }: { params: { id: st
       )}
 
       {/* ── SECTION 4: Contract ───────────────────────────────────────────── */}
-      {contractExists && event.status !== 'cancelled' && (
+      {contractExists && contract && event.status !== 'cancelled' && (
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Service Agreement</CardTitle>
@@ -260,9 +286,23 @@ export default async function UnifiedProposalPage({ params }: { params: { id: st
 
             {contractPendingSignature && (
               <Alert variant="info" className="mb-4">
-                <p className="font-medium text-sm">Signature required</p>
+                <p className="font-medium text-sm">
+                  {contractReadyAfterAcceptance ? 'Agreement ready' : 'Signature required'}
+                </p>
                 <p className="text-sm">
-                  Please read and sign the service agreement below to proceed to payment.
+                  {contractReadyAfterAcceptance
+                    ? "Accept the proposal first and we'll take you straight to signature, then payment."
+                    : 'Please read and sign the service agreement below to proceed to payment.'}
+                </p>
+              </Alert>
+            )}
+            {contractAwaitingChef && (
+              <Alert variant="info" className="mb-4">
+                <p className="font-medium text-sm">Agreement in progress</p>
+                <p className="text-sm">
+                  {event.status === 'proposed'
+                    ? 'Your chef is finalizing the service agreement so it is ready right after you accept this proposal.'
+                    : 'Your chef is finalizing the service agreement. Payment will unlock as soon as it is sent.'}
                 </p>
               </Alert>
             )}
@@ -275,9 +315,9 @@ export default async function UnifiedProposalPage({ params }: { params: { id: st
             )}
 
             {/* Sign CTA */}
-            {contractPendingSignature && (
+            {event.status !== 'proposed' && contractPendingSignature && (
               <div className="mt-4">
-                <Link href={`/my-events/${event.id}/contract`}>
+                <Link href={`/my-events/${event.id}/contract?next=payment`}>
                   <button
                     type="button"
                     className="w-full bg-brand-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-brand-700 transition"
@@ -300,14 +340,12 @@ export default async function UnifiedProposalPage({ params }: { params: { id: st
               Review the details above and click Accept Proposal to move forward. You&apos;ll then
               be asked to{contractExists ? ' sign the contract and' : ''} make your payment.
             </p>
-            <Link href={`/my-events/${event.id}`}>
-              <button
-                type="button"
-                className="w-full bg-brand-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-brand-700 transition"
-              >
-                Accept Proposal
-              </button>
-            </Link>
+            <AcceptProposalButton
+              eventId={event.id}
+              successRedirectHref={postAcceptRedirectHref}
+              confirmDescription={acceptConfirmDescription}
+              buttonLabel="Accept Proposal"
+            />
           </CardContent>
         </Card>
       )}
@@ -340,7 +378,11 @@ export default async function UnifiedProposalPage({ params }: { params: { id: st
         !contractSigned &&
         outstandingBalanceCents > 0 && (
           <Alert variant="info" className="mb-6">
-            <p className="font-medium text-sm">Sign the contract above to unlock payment.</p>
+            <p className="font-medium text-sm">
+              {contractPendingSignature
+                ? 'Sign the contract above to unlock payment.'
+                : 'Your chef is finalizing the agreement. Payment will unlock once it is ready.'}
+            </p>
           </Alert>
         )}
 

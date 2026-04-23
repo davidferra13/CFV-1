@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getAllComponents } from '@/lib/menus/actions'
 import { Card } from '@/components/ui/card'
+import { SymbolKeyTrigger } from '@/components/ui/symbol-key'
 
 export const metadata: Metadata = { title: 'Prep Timeline' }
 
@@ -49,12 +50,19 @@ export default async function PrepTimelinePage() {
       </div>
 
       <Card className="p-4 bg-amber-950 border-amber-200">
-        <p className="text-sm font-medium text-amber-800">How to use this view</p>
-        <p className="text-sm text-amber-700 mt-1">
-          Components marked as make-ahead on a menu appear here, grouped by menu and sorted from
-          longest to shortest lead time. Use this to build your day-by-day prep schedule working
-          backwards from the event date.
-        </p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium text-amber-800">How to use this view</p>
+            <p className="text-sm text-amber-700 mt-1">
+              Components marked as make-ahead on a menu appear here, grouped by menu and sorted from
+              longest to shortest lead time. Use this to build your day-by-day prep schedule working
+              backwards from the event date.
+            </p>
+          </div>
+          <div className="shrink-0">
+            <SymbolKeyTrigger />
+          </div>
+        </div>
       </Card>
 
       {makeAheadComponents.length === 0 ? (

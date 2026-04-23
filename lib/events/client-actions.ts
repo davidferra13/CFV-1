@@ -9,6 +9,10 @@ import { acceptProposal, transitionEvent } from '@/lib/events/transitions'
 import { clientGetOrCreateConversation, sendChatMessage } from '@/lib/chat/actions'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import {
+  getClientGuestCountChangeCenter,
+  requestClientGuestCountChange,
+} from '@/lib/guests/count-changes'
 
 /**
  * Get events for the current client.
@@ -100,6 +104,7 @@ export async function getClientEventById(eventId: string) {
     { count: photoCount },
     { data: contract },
     { count: reviewCount },
+    guestCountChangeCenter,
   ] = await Promise.all([
     db
       .from('menus')
@@ -126,11 +131,25 @@ export async function getClientEventById(eventId: string) {
       .is('deleted_at', null),
     db
       .from('event_contracts')
-      .select('id, status, signed_at')
+      .select('id, status, signed_at, created_at')
       .eq('event_id', eventId)
       .not('status', 'eq', 'voided')
+      .order('created_at', { ascending: false })
+      .limit(1)
       .maybeSingle(),
     db.from('client_reviews').select('id', { count: 'exact', head: true }).eq('event_id', eventId),
+    getClientGuestCountChangeCenter(eventId).catch(() => ({
+      policy: {
+        canRequest: false,
+        hasDeadline: false,
+        deadlineDays: null,
+        cutoffAt: null,
+        summary: 'Guest-count changes are temporarily unavailable.',
+        reason: 'Refresh the page and try again.',
+      },
+      pendingRequest: null,
+      history: [],
+    })),
   ])
 
   return {
@@ -148,8 +167,10 @@ export async function getClientEventById(eventId: string) {
     transitions: (transitions || []) as Array<{ to_status: string; transitioned_at: string }>,
     hasPhotos: (photoCount ?? 0) > 0,
     hasContract: !!contract,
+    contractStatus: contract?.status ?? null,
     contractSignedAt: contract?.signed_at ?? null,
     hasReview: (reviewCount ?? 0) > 0,
+    guestCountChangeCenter,
   }
 }
 
@@ -269,7 +290,8 @@ const UpdateGuestCountSchema = z.object({
 
 /**
  * Client requests a guest count change on an active event.
- * Updates the event record and notifies the chef via chat + in-app notification.
+ * Delegates to the shared guest_count_changes workflow so audit history,
+ * work-graph exposure, and chef review all stay on one path.
  */
 export async function requestGuestCountUpdate(eventId: string, guestCount: number) {
   const user = await requireClient()
@@ -293,47 +315,13 @@ export async function requestGuestCountUpdate(eventId: string, guestCount: numbe
 
   const previousCount = event.guest_count
 
-  const { error } = await db
-    .from('events')
-    .update({ guest_count: validated.guestCount })
-    .eq('id', validated.eventId)
-    .eq('client_id', user.entityId)
+  const result = await requestClientGuestCountChange({
+    eventId: validated.eventId,
+    newCount: validated.guestCount,
+  })
 
-  if (error) {
-    console.error('[requestGuestCountUpdate] Error:', error)
-    throw new Error('Failed to update guest count')
-  }
-
-  // Notify chef via chat (non-blocking)
-  try {
-    const conversationResult = await clientGetOrCreateConversation({
-      context_type: 'event',
-      event_id: validated.eventId,
-    })
-    await sendChatMessage({
-      conversation_id: conversationResult.conversation.id,
-      message_type: 'text',
-      body: `Guest count updated from ${previousCount} to ${validated.guestCount} for "${event.occasion || 'event'}".`,
-    })
-  } catch (err) {
-    console.error('[requestGuestCountUpdate] Chat notify failed (non-blocking):', err)
-  }
-
-  // In-app notification (non-blocking)
-  try {
-    const { createNotification } = await import('@/lib/notifications/actions')
-    await createNotification({
-      tenantId: event.tenant_id,
-      recipientId: event.tenant_id,
-      category: 'event',
-      action: 'guest_count_changed',
-      title: 'Guest count updated',
-      body: `Guest count changed from ${previousCount} to ${validated.guestCount}`,
-      actionUrl: `/events/${validated.eventId}`,
-      eventId: validated.eventId,
-    })
-  } catch (err) {
-    console.error('[requestGuestCountUpdate] Notification failed (non-blocking):', err)
+  if (!result.success) {
+    throw new Error(result.error || 'Failed to submit guest-count request')
   }
 
   revalidatePath(`/my-events/${validated.eventId}`)

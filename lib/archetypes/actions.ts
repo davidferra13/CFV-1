@@ -5,6 +5,7 @@ import { createServerClient } from '@/lib/db/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { getArchetype, ARCHETYPE_IDS } from './presets'
 import type { ArchetypeId } from './presets'
+import { normalizePrimaryNavHrefs } from '@/lib/interface/surface-governance'
 
 function fromChefPreferences(db: any): any {
   return (db as any).from('chef_preferences')
@@ -28,7 +29,7 @@ export async function selectArchetype(archetypeId: ArchetypeId) {
   const payload = {
     archetype: archetypeId,
     enabled_modules: archetype.enabledModules,
-    primary_nav_hrefs: archetype.primaryNavHrefs,
+    primary_nav_hrefs: normalizePrimaryNavHrefs(archetype.primaryNavHrefs),
     updated_at: new Date().toISOString(),
   }
 
@@ -111,7 +112,7 @@ export async function saveCustomNavDefault() {
   const { error } = await fromChefPreferences(db)
     .update({
       saved_custom_nav_hrefs: {
-        primary_nav_hrefs: (prefs as any).primary_nav_hrefs ?? [],
+        primary_nav_hrefs: normalizePrimaryNavHrefs((prefs as any).primary_nav_hrefs ?? []),
         enabled_modules: (prefs as any).enabled_modules ?? [],
       },
     })
@@ -145,7 +146,7 @@ export async function restoreCustomNavDefault() {
 
   const { error } = await fromChefPreferences(db)
     .update({
-      primary_nav_hrefs: saved.primary_nav_hrefs ?? [],
+      primary_nav_hrefs: normalizePrimaryNavHrefs(saved.primary_nav_hrefs ?? []),
       enabled_modules: saved.enabled_modules ?? [],
     })
     .eq('chef_id', user.entityId)

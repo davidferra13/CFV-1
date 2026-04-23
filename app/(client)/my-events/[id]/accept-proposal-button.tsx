@@ -9,7 +9,19 @@ import { Button } from '@/components/ui/button'
 import { Alert } from '@/components/ui/alert'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 
-export default function AcceptProposalButton({ eventId }: { eventId: string }) {
+type Props = {
+  eventId: string
+  successRedirectHref?: string
+  confirmDescription?: string
+  buttonLabel?: string
+}
+
+export default function AcceptProposalButton({
+  eventId,
+  successRedirectHref,
+  confirmDescription,
+  buttonLabel,
+}: Props) {
   const router = useRouter()
   const [showConfirm, setShowConfirm] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -21,8 +33,7 @@ export default function AcceptProposalButton({ eventId }: { eventId: string }) {
 
     try {
       await acceptEventProposal(eventId)
-      // Success - redirect to payment page
-      router.push(`/my-events/${eventId}/pay`)
+      router.push(successRedirectHref ?? `/my-events/${eventId}/pay`)
     } catch (err: any) {
       setError(err.message || 'Failed to accept proposal')
       setShowConfirm(false)
@@ -46,13 +57,16 @@ export default function AcceptProposalButton({ eventId }: { eventId: string }) {
         onClick={() => setShowConfirm(true)}
         disabled={loading}
       >
-        Accept This Proposal
+        {buttonLabel ?? 'Accept This Proposal'}
       </Button>
 
       <ConfirmModal
         open={showConfirm}
         title="Accept Event Proposal?"
-        description="By accepting this proposal, you agree to the event details and pricing. You will be directed to payment after accepting."
+        description={
+          confirmDescription ??
+          'By accepting this proposal, you agree to the event details and pricing. You will be directed to payment after accepting.'
+        }
         confirmLabel="Accept & Continue"
         loading={loading}
         onConfirm={handleAccept}

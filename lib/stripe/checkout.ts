@@ -26,7 +26,11 @@ function getStripe(): Stripe {
  */
 export async function createPaymentCheckoutUrl(
   eventId: string,
-  tenantId: string
+  tenantId: string,
+  options?: {
+    successUrl?: string
+    cancelUrl?: string
+  }
 ): Promise<string | null> {
   const db = createServerClient({ admin: true })
 
@@ -39,7 +43,8 @@ export async function createPaymentCheckoutUrl(
     .single()
 
   if (!event) return null
-  if (event.status !== 'accepted') return null
+  const payableStatuses = ['accepted', 'paid', 'confirmed', 'in_progress', 'completed']
+  if (!payableStatuses.includes(event.status)) return null
 
   // Determine payment amount
   const { data: financial } = await db
@@ -142,8 +147,8 @@ export async function createPaymentCheckoutUrl(
       },
     ],
     payment_intent_data: paymentIntentData as any,
-    success_url: `${appUrl}/my-events/${eventId}?payment=success`,
-    cancel_url: `${appUrl}/my-events/${eventId}?payment=cancelled`,
+    success_url: options?.successUrl ?? `${appUrl}/my-events/${eventId}?payment=success`,
+    cancel_url: options?.cancelUrl ?? `${appUrl}/my-events/${eventId}?payment=cancelled`,
     customer_email: (event.client as { email: string | null })?.email || undefined,
     expires_at: Math.floor(Date.now() / 1000) + 72 * 3600, // 72 hours
   }

@@ -5,6 +5,7 @@ import { createServerClient } from '@/lib/db/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import { optimizeLogo } from '@/lib/images/optimize'
+import { getOnboardingCompletionState } from '@/lib/onboarding/completion-state'
 
 const CHEF_LOGOS_BUCKET = 'chef-logos'
 const MAX_LOGO_SIZE = 5 * 1024 * 1024 // 5MB
@@ -405,7 +406,8 @@ export async function getOnboardingStatus(): Promise<boolean> {
   // Fail open: if we can't find the chef row, don't trap the user in a redirect loop
   if (!data) return true
 
-  // Onboarding is "done" if the wizard was completed OR the user dismissed the banner
-  // (dismissing = user explicitly opted out of onboarding)
-  return !!(data as any)?.onboarding_completed_at || !!(data as any)?.onboarding_banner_dismissed_at
+  return getOnboardingCompletionState({
+    onboardingCompletedAt: (data as any)?.onboarding_completed_at ?? null,
+    onboardingBannerDismissedAt: (data as any)?.onboarding_banner_dismissed_at ?? null,
+  }).wizardCompleted
 }

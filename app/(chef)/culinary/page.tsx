@@ -62,10 +62,10 @@ const tiles = [
 
 async function CulinaryStats() {
   const [recipes, menus, ingredients, vendors] = await Promise.all([
-    getRecipes(),
-    getMenus(),
-    getIngredients(),
-    listVendors(),
+    getRecipes().catch(() => []),
+    getMenus().catch(() => []),
+    getIngredients().catch(() => []),
+    listVendors().catch(() => []),
   ])
 
   const activeMenus = menus.filter((m: any) => m.status !== 'archived')

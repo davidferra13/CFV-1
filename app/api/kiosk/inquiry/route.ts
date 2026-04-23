@@ -6,6 +6,8 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
 import { createClientFromLead } from '@/lib/clients/actions'
 import { extractBearerToken, validateDeviceToken } from '@/lib/devices/token'
+import { PUBLIC_INTAKE_JSON_BODY_MAX_BYTES, readJsonBodyWithLimit } from '@/lib/api/request-body'
+import { PUBLIC_INTAKE_LANE_KEYS, withSubmissionSource } from '@/lib/public/intake-lane-config'
 import { z } from 'zod'
 
 const KioskInquirySchema = z.object({
@@ -59,7 +61,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Too many submissions. Please wait.' }, { status: 429 })
     }
 
-    const body = await request.json()
+    const bodyResult = await readJsonBodyWithLimit(request, {
+      maxBytes: PUBLIC_INTAKE_JSON_BODY_MAX_BYTES,
+      invalidJsonMessage: 'Invalid kiosk inquiry request body',
+      payloadTooLargeMessage: 'Kiosk inquiry request body is too large',
+    })
+    if (!bodyResult.ok) {
+      return NextResponse.json({ error: bodyResult.error }, { status: bodyResult.status })
+    }
+
+    const body = bodyResult.data
     const parsed = KioskInquirySchema.parse(body)
 
     // Must have at least email or phone
@@ -125,11 +136,11 @@ export async function POST(request: Request) {
         confirmed_guest_count: parsed.party_size,
         confirmed_occasion: 'Inquiry via kiosk',
         source_message: sourceMessage,
-        unknown_fields: {
+        unknown_fields: withSubmissionSource(PUBLIC_INTAKE_LANE_KEYS.kiosk_inquiry, {
           notes: parsed.notes?.trim() || null,
           device_id: device.deviceId,
           staff_member_id: parsed.staff_member_id || null,
-        },
+        }),
         status: 'new',
       })
       .select('id')

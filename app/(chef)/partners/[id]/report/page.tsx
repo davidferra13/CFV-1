@@ -138,7 +138,15 @@ export default async function PartnerReportPage({ params }: { params: { id: stri
               {data.location_breakdown.map((loc) => (
                 <div key={loc.location_id} className="rounded-lg border border-stone-700 p-4">
                   <p className="font-medium text-stone-100">{loc.location_name}</p>
-                  <div className="flex gap-6 mt-2 text-sm">
+                  <div className="mt-2 grid grid-cols-2 gap-3 text-sm md:grid-cols-3">
+                    <div>
+                      <span className="text-stone-500">Inquiry clicks:</span>{' '}
+                      <span className="font-medium">{loc.inquiry_click_count}</span>
+                    </div>
+                    <div>
+                      <span className="text-stone-500">Booking clicks:</span>{' '}
+                      <span className="font-medium">{loc.booking_click_count}</span>
+                    </div>
                     <div>
                       <span className="text-stone-500">Referrals:</span>{' '}
                       <span className="font-medium">{loc.referral_count}</span>
@@ -146,6 +154,14 @@ export default async function PartnerReportPage({ params }: { params: { id: stri
                     <div>
                       <span className="text-stone-500">Events:</span>{' '}
                       <span className="font-medium">{loc.event_count}</span>
+                    </div>
+                    <div>
+                      <span className="text-stone-500">Completed:</span>{' '}
+                      <span className="font-medium">{loc.completed_event_count}</span>
+                    </div>
+                    <div>
+                      <span className="text-stone-500">Revenue:</span>{' '}
+                      <span className="font-medium">{formatCents(loc.revenue_cents)}</span>
                     </div>
                   </div>
                 </div>

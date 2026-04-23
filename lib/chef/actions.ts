@@ -23,6 +23,7 @@ import {
   DEFAULT_PREFERENCES,
   MENU_ENGINE_FEATURE_KEYS,
 } from '@/lib/scheduling/types'
+import { MAX_PRIMARY_NAV_ITEMS, normalizePrimaryNavHrefs } from '@/lib/interface/surface-governance'
 
 // ============================================
 // VALIDATION
@@ -54,7 +55,8 @@ const DashboardWidgetPreferenceSchema = z.object({
 })
 
 const PrimaryNavHrefSchema = z.string().trim().min(1).max(160)
-const PrimaryNavHrefArraySchema = z.array(PrimaryNavHrefSchema).max(200)
+const StoredPrimaryNavHrefArraySchema = z.array(PrimaryNavHrefSchema).max(200)
+const PrimaryNavHrefArraySchema = z.array(PrimaryNavHrefSchema).max(MAX_PRIMARY_NAV_ITEMS)
 
 const MenuEngineFeaturesSchema = z
   .object({
@@ -239,24 +241,13 @@ function getDashboardWidgetsFromUnknown(value: unknown): DashboardWidgetPreferen
 }
 
 function sanitizePrimaryNavHrefs(input: string[]): string[] {
-  const seen = new Set<string>()
-  const hrefs: string[] = []
-
-  for (const rawHref of input) {
-    const href = rawHref.trim()
-    if (!href || !href.startsWith('/')) continue
-    if (seen.has(href)) continue
-    seen.add(href)
-    hrefs.push(href)
-  }
-
-  return hrefs
+  return normalizePrimaryNavHrefs(input)
 }
 
 function getPrimaryNavHrefsFromUnknown(value: unknown): string[] {
   if (!Array.isArray(value)) return []
 
-  const parsed = PrimaryNavHrefArraySchema.safeParse(value)
+  const parsed = StoredPrimaryNavHrefArraySchema.safeParse(value)
   if (!parsed.success) return []
 
   return sanitizePrimaryNavHrefs(parsed.data)

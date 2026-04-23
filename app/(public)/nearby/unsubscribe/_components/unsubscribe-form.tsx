@@ -34,8 +34,8 @@ export function UnsubscribeForm({ initialEmail }: Props) {
       <div className="rounded-xl border border-emerald-800/40 bg-emerald-950/20 p-6">
         <p className="text-sm font-semibold text-emerald-300">You have been unsubscribed.</p>
         <p className="mt-1 text-xs text-emerald-200/60">
-          You will no longer receive emails about directory listings. Your listing (if any) remains
-          active and unchanged.
+          You will no longer receive Nearby saved-search or directory update emails. Your listing
+          (if any) remains active and unchanged.
         </p>
       </div>
     )
@@ -61,7 +61,8 @@ export function UnsubscribeForm({ initialEmail }: Props) {
         {isPending ? 'Processing...' : 'Unsubscribe'}
       </button>
       <p className="text-xs-tight text-stone-600">
-        This only affects directory notification emails. It does not remove your listing.
+        This only affects Nearby saved-search and directory notification emails. It does not remove
+        your listing.
       </p>
     </form>
   )

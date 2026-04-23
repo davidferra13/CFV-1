@@ -7,6 +7,7 @@ import { ReviewRequestPanel } from '@/components/ai/review-request-panel'
 import { GratuityPanel } from '@/components/ai/gratuity-panel'
 import { SocialCaptionsPanel } from '@/components/ai/social-captions-panel'
 import { EntityActivityTimeline } from '@/components/activity/entity-activity-timeline'
+import { PostEventLearningPanel } from '@/components/events/post-event-learning-panel'
 import { PostEventTrustPanel } from '@/components/events/post-event-trust-panel'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -75,7 +76,7 @@ export function EventDetailWrapTab({
                 Client insights, recipe notes, dish photos &#8212; while it&#39;s still fresh.
               </p>
             </div>
-            <Link href={`/events/${eventId}/debrief`}>
+            <Link href={`/events/${eventId}/debrief`} data-testid="event-wrap-debrief-link">
               <Button>Start Debrief</Button>
             </Link>
           </div>
@@ -93,7 +94,7 @@ export function EventDetailWrapTab({
                 {format(new Date(debriefCompletedAt), 'MMM d')}
               </span>
             </div>
-            <Link href={`/events/${eventId}/debrief`}>
+            <Link href={`/events/${eventId}/debrief`} data-testid="event-wrap-debrief-link">
               <Button variant="ghost" size="sm">
                 View / Edit
               </Button>
@@ -101,6 +102,8 @@ export function EventDetailWrapTab({
           </div>
         </Card>
       )}
+
+      <PostEventLearningPanel eventId={eventId} eventStatus={eventStatus} />
 
       <PostEventTrustPanel
         eventId={eventId}

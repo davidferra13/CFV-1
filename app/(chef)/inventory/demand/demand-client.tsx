@@ -61,7 +61,7 @@ export function DemandClient({ initialForecast }: Props) {
                   const deficit = item.deficit ?? 0
                   return (
                     <tr
-                      key={item.ingredientId ?? idx}
+                      key={`${item.ingredientId ?? 'ingredient'}:${item.unit ?? 'unit'}:${idx}`}
                       className="border-b border-stone-800 hover:bg-stone-800/50"
                     >
                       <td className="px-4 py-3">

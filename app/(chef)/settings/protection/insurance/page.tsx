@@ -2,6 +2,7 @@
 // Displays all insurance policies for the tenant with status and expiry details.
 
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { InsuranceList } from '@/components/protection/insurance-list'
@@ -32,6 +33,18 @@ export default async function InsurancePoliciesPage() {
         <p className="text-sm text-brand-900">
           Set expiry reminders so you never lapse on coverage. Clients increasingly ask for proof of
           insurance before booking - keep your certificates accessible here.
+        </p>
+      </div>
+
+      <div className="rounded-lg border border-stone-700 bg-stone-900/70 px-4 py-3">
+        <p className="text-sm text-stone-300">
+          Active policies on file can surface as public current-record badges on your chef profile.
+          Self-reported insurance settings alone do not create that badge. Review the public model
+          in the{' '}
+          <Link href="/trust" className="font-medium text-brand-400 hover:text-brand-300">
+            Trust Center
+          </Link>
+          .
         </p>
       </div>
 

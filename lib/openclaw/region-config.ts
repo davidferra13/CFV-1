@@ -64,11 +64,6 @@ export function getRegion(regionId: string): Region | undefined {
   return REGIONS.find((r) => r.id === regionId)
 }
 
-/** Get the default region */
-export function getDefaultRegion(): Region {
-  return REGIONS[0]
-}
-
 /** Get a region by zip code */
 export function getRegionByZip(zip: string): Region | undefined {
   return REGIONS.find((r) => r.zip === zip)

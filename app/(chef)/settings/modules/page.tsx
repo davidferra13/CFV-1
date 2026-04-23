@@ -23,8 +23,8 @@ export default async function ModulesPage() {
       <div>
         <h1 className="text-3xl font-bold text-stone-100 dark:text-stone-100">Modules</h1>
         <p className="text-stone-400 dark:text-stone-400 mt-1">
-          Choose which areas appear in your sidebar. Focus Mode is an optional setting that hides
-          less-used sections for a calmer workspace. Nothing is deleted or locked.
+          Choose which areas stay visible in your workspace. Focus Mode trims shell clutter to core
+          work, and module changes affect navigation visibility, not your data.
         </p>
       </div>
       <ModulesClient

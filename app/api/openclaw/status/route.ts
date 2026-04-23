@@ -1,32 +1,56 @@
 import { NextResponse } from 'next/server'
-import { getCoverageSummary } from '@/lib/pricing/coverage-report'
+import { getOpenClawRuntimeHealth } from '@/lib/openclaw/health-contract'
+
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 /**
  * GET /api/openclaw/status
  *
- * Public health endpoint for the pricing intelligence system.
- * Returns coverage metrics, data freshness, and system health.
- * Used by app.cheflowhq.com and cheflowhq.com.
+ * Public status endpoint for OpenClaw-backed pricing intelligence.
+ * Coverage and sync health now come from the shared runtime contract so
+ * this route no longer invents a separate health story.
  */
 export async function GET() {
   try {
-    const summary = await getCoverageSummary()
+    const health = await getOpenClawRuntimeHealth()
 
     return NextResponse.json({
-      status: 'operational',
-      timestamp: new Date().toISOString(),
+      status:
+        health.overall.status === 'ok'
+          ? 'operational'
+          : health.overall.status === 'partial'
+            ? 'partial'
+            : health.overall.status === 'unknown'
+              ? 'unknown'
+              : 'degraded',
+      timestamp: health.generatedAt,
       coverage: {
-        chains: summary.total_chains,
-        total_prices: summary.total_prices,
-        states_with_stores: summary.states_with_stores,
-        usda_baselines: summary.usda_baselines,
-        farmers_markets: summary.farmers_markets,
-        estimation_models: summary.estimation_models,
+        chains: health.coverage.totalChains,
+        total_prices: health.coverage.totalPrices,
+        states_with_stores: health.coverage.statesWithStores,
+        usda_baselines: health.coverage.usdaBaselines,
+        farmers_markets: health.coverage.farmersMarkets,
+        estimation_models: health.coverage.estimationModels,
+        food_products: health.coverage.foodProducts,
       },
       health: {
-        has_prices: summary.total_prices > 0,
-        has_baselines: summary.usda_baselines > 0,
-        has_estimation: summary.estimation_models > 0,
+        has_prices: health.coverage.totalPrices > 0,
+        has_baselines: health.coverage.usdaBaselines > 0,
+        has_estimation: health.coverage.estimationModels > 0,
+        mirror_status: health.mirror.status,
+        bridge_status: health.bridge.status,
+        pi_status: health.pi.status,
+        wrapper_status: health.wrapper.status,
+        reason: health.overall.reason,
+      },
+      sync: {
+        overall: health.overall,
+        wrapper: health.wrapper,
+        mirror: health.mirror,
+        bridge: health.bridge,
+        pi: health.pi,
+        warnings: health.warnings,
       },
     })
   } catch (err) {
@@ -34,7 +58,7 @@ export async function GET() {
       {
         status: 'error',
         timestamp: new Date().toISOString(),
-        error: 'Failed to retrieve coverage data',
+        error: 'Failed to retrieve pricing status',
       },
       { status: 500 }
     )

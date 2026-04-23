@@ -1,6 +1,7 @@
 // Client Portal Layout - Layer 2 of Defense in Depth
 
 import { requireClient } from '@/lib/auth/get-user'
+import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import {
   ClientSidebarProvider,
@@ -17,8 +18,13 @@ import { TestAccountBanner } from '@/components/dev/test-account-banner'
 import { ClientTourWrapper } from '@/components/onboarding/client-tour-wrapper'
 import { AnalyticsIdentify } from '@/components/analytics/analytics-identify'
 import { MarketResearchBannerWrapper } from '@/components/beta-survey/market-research-banner-wrapper'
+import { PATHNAME_HEADER } from '@/lib/auth/request-auth-context'
+import { resolveClientSurfaceMode } from '@/lib/interface/surface-governance'
 
 export default async function ClientLayout({ children }: { children: React.ReactNode }) {
+  const pathname = headers().get(PATHNAME_HEADER) ?? '/my-events'
+  const surfaceMode = resolveClientSurfaceMode(pathname)
+
   let user
   try {
     user = await requireClient()
@@ -31,7 +37,11 @@ export default async function ClientLayout({ children }: { children: React.React
       <NotificationProvider userId={user.id}>
         <ToastProvider />
         <TestAccountBanner email={user.email} />
-        <div className="min-h-screen bg-stone-900 text-stone-100" data-cf-portal="client">
+        <div
+          className="min-h-screen bg-stone-900 text-stone-100"
+          data-cf-portal="client"
+          data-cf-surface={surfaceMode}
+        >
           <a
             href="#main-content"
             className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-brand-500 focus:px-4 focus:py-2 focus:text-white"

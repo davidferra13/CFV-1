@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useTransition } from 'react'
 import { searchChefs, type CommunityProfile } from '@/lib/community/community-actions'
+import { NEUTRAL_SERVICE_AREA_PLACEHOLDER } from '@/lib/site/national-brand-copy'
 
 type DirectoryFilters = {
   cuisine: string
@@ -58,9 +59,7 @@ export function CommunityDirectory({
       {/* Search/Filter Bar */}
       <form onSubmit={handleSearch} className="flex flex-wrap gap-3 items-end">
         <div className="flex-1 min-w-[160px]">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Cuisine
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Cuisine</label>
           <input
             type="text"
             placeholder="e.g. Italian, French..."
@@ -70,12 +69,10 @@ export function CommunityDirectory({
           />
         </div>
         <div className="flex-1 min-w-[160px]">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Service Area
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Service Area</label>
           <input
             type="text"
-            placeholder="e.g. San Francisco..."
+            placeholder={NEUTRAL_SERVICE_AREA_PLACEHOLDER}
             value={filters.area}
             onChange={(e) => setFilters((f) => ({ ...f, area: e.target.value }))}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
@@ -85,9 +82,7 @@ export function CommunityDirectory({
           <input
             type="checkbox"
             checked={filters.acceptingReferrals}
-            onChange={(e) =>
-              setFilters((f) => ({ ...f, acceptingReferrals: e.target.checked }))
-            }
+            onChange={(e) => setFilters((f) => ({ ...f, acceptingReferrals: e.target.checked }))}
             className="rounded border-gray-300"
           />
           Accepting referrals
@@ -105,9 +100,7 @@ export function CommunityDirectory({
       {isPending && profiles.length === 0 ? (
         <p className="text-sm text-gray-500">Loading chefs...</p>
       ) : profiles.length === 0 ? (
-        <p className="text-sm text-gray-500">
-          No chefs found. Try adjusting your filters.
-        </p>
+        <p className="text-sm text-gray-500">No chefs found. Try adjusting your filters.</p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {profiles.map((profile) => (
@@ -117,9 +110,7 @@ export function CommunityDirectory({
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="font-semibold text-gray-900">
-                    {profile.display_name}
-                  </h3>
+                  <h3 className="font-semibold text-gray-900">{profile.display_name}</h3>
                   {profile.service_area && (
                     <p className="text-sm text-gray-500">{profile.service_area}</p>
                   )}
@@ -146,7 +137,8 @@ export function CommunityDirectory({
 
               {profile.years_experience != null && (
                 <p className="mt-2 text-xs text-gray-500">
-                  {profile.years_experience} year{profile.years_experience !== 1 ? 's' : ''} experience
+                  {profile.years_experience} year{profile.years_experience !== 1 ? 's' : ''}{' '}
+                  experience
                 </p>
               )}
 

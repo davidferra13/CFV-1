@@ -184,8 +184,8 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
               </div>
 
               <p className="text-xs text-stone-600 mt-2">
-                Advanced: If you run your own AI (Ollama), you can route Remy to your local machine
-                in Settings. Inference stays on your device.
+                Advanced: If you run your own AI (Ollama), you can route Remy to a direct endpoint
+                you control in Settings, including this computer or a Raspberry Pi.
               </p>
             </div>
           )}

@@ -128,7 +128,7 @@ export function PostEventFeedback({
             Feedback saved. {ratedCount} dish{ratedCount !== 1 ? 'es' : ''} rated.
           </p>
           <p className="text-xs text-stone-500 mt-1">
-            Preferences have been added to the client's taste profile.
+            Preferences have been added to the client's culinary signal history.
           </p>
         </CardContent>
       </Card>
@@ -140,7 +140,7 @@ export function PostEventFeedback({
       <CardHeader className="pb-2">
         <CardTitle className="text-base text-stone-100">Post-Event Feedback</CardTitle>
         <p className="text-xs text-stone-500">
-          Rate each dish to build the client's taste profile over time.
+          Rate each dish to build the client's culinary signal history over time.
         </p>
       </CardHeader>
 

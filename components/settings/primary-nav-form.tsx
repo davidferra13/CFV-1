@@ -8,6 +8,7 @@ import {
   DEFAULT_PRIMARY_SHORTCUT_HREFS,
   getPrimaryShortcutOptions,
 } from '@/components/navigation/nav-config'
+import { MAX_PRIMARY_NAV_ITEMS, normalizePrimaryNavHrefs } from '@/lib/interface/surface-governance'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -16,18 +17,8 @@ type PrimaryShortcutOption = ReturnType<typeof getPrimaryShortcutOptions>[number
 const ALL_SHORTCUT_OPTIONS: PrimaryShortcutOption[] = getPrimaryShortcutOptions()
 
 function normalizeHrefOrder(hrefs: string[]): string[] {
-  const seen = new Set<string>()
-  const normalized: string[] = []
-
-  for (const rawHref of hrefs) {
-    const href = rawHref.trim()
-    if (!href || seen.has(href)) continue
-    if (!ALL_SHORTCUT_OPTIONS.some((option) => option.href === href)) continue
-    seen.add(href)
-    normalized.push(href)
-  }
-
-  return normalized
+  const normalized = normalizePrimaryNavHrefs(hrefs)
+  return normalized.filter((href) => ALL_SHORTCUT_OPTIONS.some((option) => option.href === href))
 }
 
 function equalOrder(left: string[], right: string[]) {
@@ -56,6 +47,7 @@ export function PrimaryNavForm({ initialPrimaryNavHrefs }: { initialPrimaryNavHr
   const [error, setError] = useState<string | null>(null)
 
   const selectedSet = useMemo(() => new Set(selectedHrefs), [selectedHrefs])
+  const canAddMore = selectedHrefs.length < MAX_PRIMARY_NAV_ITEMS
 
   const selectedOptions = useMemo(() => {
     const byHref = new Map(ALL_SHORTCUT_OPTIONS.map((option) => [option.href, option] as const))
@@ -100,6 +92,7 @@ export function PrimaryNavForm({ initialPrimaryNavHrefs }: { initialPrimaryNavHr
   }
 
   const addShortcut = (href: string) => {
+    if (!canAddMore) return
     setSelectedHrefs((prev) => [...prev, href])
     setSuccess(false)
     setError(null)
@@ -133,7 +126,11 @@ export function PrimaryNavForm({ initialPrimaryNavHrefs }: { initialPrimaryNavHr
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-stone-500">
-              These tabs stay visible in your primary bar. Drag-style reorder is done with up/down.
+              Up to {MAX_PRIMARY_NAV_ITEMS} tabs stay visible in your primary bar. Reorder them with
+              the up and down controls.
+            </p>
+            <p className="text-xs text-stone-500">
+              {selectedOptions.length} of {MAX_PRIMARY_NAV_ITEMS} visible slots in use.
             </p>
 
             {selectedOptions.length === 0 && (
@@ -192,8 +189,14 @@ export function PrimaryNavForm({ initialPrimaryNavHrefs }: { initialPrimaryNavHr
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-stone-500">
-              Any route listed here can be promoted into your primary bar.
+              Promote routes into the primary bar until you reach the {MAX_PRIMARY_NAV_ITEMS}-tab
+              budget.
             </p>
+            {!canAddMore && (
+              <p className="rounded-md border border-dashed border-stone-600 p-3 text-sm text-stone-500">
+                Primary bar is full. Remove a tab before adding another.
+              </p>
+            )}
 
             <input
               value={search}
@@ -223,6 +226,7 @@ export function PrimaryNavForm({ initialPrimaryNavHrefs }: { initialPrimaryNavHr
                     type="button"
                     variant="secondary"
                     size="sm"
+                    disabled={!canAddMore}
                     onClick={() => addShortcut(option.href)}
                   >
                     Add

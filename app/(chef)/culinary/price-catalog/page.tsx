@@ -1,4 +1,5 @@
 import { requireChef } from '@/lib/auth/get-user'
+import { isAdmin } from '@/lib/auth/admin'
 import { getCatalogStats } from '@/lib/openclaw/catalog-actions'
 import { getStoreCatalogStats } from '@/lib/openclaw/store-catalog-actions'
 import { getOpenClawRefreshStatus } from '@/lib/openclaw/refresh-status-actions'
@@ -53,6 +54,7 @@ export default async function FoodCatalogPage({
 }) {
   const { q } = await searchParams
   await requireChef()
+  const admin = await isAdmin().catch(() => false)
 
   const defaultCatalogStats: CatalogStatsResult = { total: 0, priced: 0, categories: [] }
   const defaultStoreStats: StoreStatsResult = {
@@ -98,51 +100,47 @@ export default async function FoodCatalogPage({
 
   const freshPct =
     storeStats.prices > 0 ? Math.round((storeStats.freshPrices / storeStats.prices) * 100) : 0
-  const statsLoaded = catalogStats.total > 0 || storeStats.stores > 0
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-stone-100">Food Catalog</h1>
         <p className="mt-1 max-w-3xl text-stone-400">
-          Browse the synced local catalog mirror stored with ChefFlow. Searches and price detail
-          reads stay on the machine running the site instead of reaching upstream at request time.
+          Search ingredient prices across stores. Pick a store or search to get started.
         </p>
       </div>
 
-      {!statsLoaded && (
-        <div className="rounded-lg border border-amber-800 bg-amber-950/40 px-4 py-3 text-sm text-amber-400">
-          Stats are still loading. Refresh in a moment to see totals. The catalog browser below is
-          fully functional.
-        </div>
+      {/* Infrastructure stats: admin only */}
+      {admin && (
+        <>
+          <div className="flex flex-wrap gap-3">
+            <StatCard
+              label="Ingredients"
+              value={catalogStats.total.toLocaleString()}
+              sub={`${catalogStats.priced.toLocaleString()} with mirrored pricing`}
+              pulse={catalogStats.total > 0}
+            />
+            <StatCard
+              label="Active Stores"
+              value={storeStats.stores.toLocaleString()}
+              sub={`${storeStats.chains.toLocaleString()} chains mirrored locally`}
+              pulse={storeStats.stores > 0}
+            />
+            <StatCard
+              label="Price Records"
+              value={storeStats.prices.toLocaleString()}
+              sub={`${freshPct}% seen within 7 days`}
+            />
+            <StatCard
+              label="Food Products"
+              value={storeStats.foodProducts.toLocaleString()}
+              sub={`${storeStats.products.toLocaleString()} total mirrored products`}
+            />
+          </div>
+
+          <OpenClawRefreshStatus status={refreshStatus} variant="local-mirror" />
+        </>
       )}
-
-      <div className="flex flex-wrap gap-3">
-        <StatCard
-          label="Ingredients"
-          value={catalogStats.total.toLocaleString()}
-          sub={`${catalogStats.priced.toLocaleString()} with mirrored pricing`}
-          pulse={catalogStats.total > 0}
-        />
-        <StatCard
-          label="Active Stores"
-          value={storeStats.stores.toLocaleString()}
-          sub={`${storeStats.chains.toLocaleString()} chains mirrored locally`}
-          pulse={storeStats.stores > 0}
-        />
-        <StatCard
-          label="Price Records"
-          value={storeStats.prices.toLocaleString()}
-          sub={`${freshPct}% seen within 7 days`}
-        />
-        <StatCard
-          label="Food Products"
-          value={storeStats.foodProducts.toLocaleString()}
-          sub={`${storeStats.products.toLocaleString()} total mirrored products`}
-        />
-      </div>
-
-      <OpenClawRefreshStatus status={refreshStatus} variant="local-mirror" />
 
       <CatalogBrowser initialSearch={q ?? ''} />
     </div>

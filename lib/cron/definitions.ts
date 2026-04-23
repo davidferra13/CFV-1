@@ -148,6 +148,13 @@ export const CRON_MONITOR_DEFINITIONS: CronMonitorDefinition[] = [
     description: 'Refresh revenue-goal milestones and weekly digest signals',
   },
   {
+    cronName: 'revenue-forecast',
+    routePath: '/api/scheduled/revenue-forecast',
+    maxExpectedMinutes: 1440,
+    cadence: 'daily',
+    description: 'Persist 3-, 6-, and 12-month revenue forecast snapshots for each tenant',
+  },
+  {
     cronName: 'simulation-check',
     routePath: '/api/scheduled/simulation/check',
     maxExpectedMinutes: 720,
@@ -201,7 +208,7 @@ export const CRON_MONITOR_DEFINITIONS: CronMonitorDefinition[] = [
     routePath: '/api/scheduled/daily-report',
     maxExpectedMinutes: 2880,
     cadence: 'daily',
-    description: 'Generate and email chef daily reports',
+    description: 'Generate chef daily reports (email delivery opt-in)',
   },
   {
     cronName: 'developer-digest',

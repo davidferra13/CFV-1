@@ -6,16 +6,10 @@ import { requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { getClientEvents } from '@/lib/events/client-actions'
 import { getMyLoyaltyStatus } from '@/lib/loyalty/actions'
-import { getClientQuotes } from '@/lib/quotes/client-actions'
-import { getClientInquiries } from '@/lib/inquiries/client-actions'
 import { getConversationInbox } from '@/lib/chat/actions'
 import { getClientSpendingSummary } from '@/lib/clients/spending-actions'
-import { getMyMealCollaborationData, getMyProfile } from '@/lib/clients/client-profile-actions'
-import { getClientSignalNotificationPref } from '@/lib/calendar/signal-settings-actions'
-import { getClientHubGroups, getClientProfileToken } from '@/lib/hub/client-hub-actions'
-import { getMyFriends, getPendingFriendRequests } from '@/lib/hub/friend-actions'
-import { getHubTotalUnreadCount } from '@/lib/hub/notification-actions'
-import { getEventRSVPSummary, getEventShares } from '@/lib/sharing/actions'
+import { getClientWorkGraphSnapshot } from '@/lib/client-work-graph/actions'
+import type { ClientWorkGraph } from '@/lib/client-work-graph/types'
 import type { Database } from '@/types/database'
 import type { ClientDashboardWidgetPreference } from '@/lib/client-dashboard/types'
 import { CLIENT_DASHBOARD_WIDGET_IDS } from '@/lib/client-dashboard/types'
@@ -151,6 +145,7 @@ export async function getClientDashboardData(): Promise<{
   unreviewedEvent: ClientDashboardEvent | null
   chefDisplayName: string
   pastWithBalance: Set<string>
+  workGraph: ClientWorkGraph
   actionRequired: {
     proposalCount: number
     paymentDueCount: number
@@ -163,21 +158,9 @@ export async function getClientDashboardData(): Promise<{
   const user = await requireClient()
   const db: any = createServerClient()
 
-  const [
-    eventsResult,
-    loyaltyStatus,
-    quotes,
-    inquiries,
-    inbox,
-    spendingSummary,
-    myProfile,
-    mealCollab,
-    signalNotificationsEnabled,
-  ] = await Promise.all([
-    getClientEvents({ pastLimit: 5 }),
+  const [snapshot, loyaltyStatus, inbox, spendingSummary] = await Promise.all([
+    getClientWorkGraphSnapshot({ pastLimit: 5 }),
     getMyLoyaltyStatus().catch(() => null),
-    getClientQuotes().catch(() => []),
-    getClientInquiries().catch(() => []),
     getConversationInbox().catch(() => []),
     getClientSpendingSummary().catch(() => ({
       lifetimeSpendCents: 0,
@@ -188,48 +171,20 @@ export async function getClientDashboardData(): Promise<{
       events: [],
       loadError: true as const,
     })),
-    getMyProfile().catch(() => null),
-    getMyMealCollaborationData().catch(() => ({ history: [], requests: [] })),
-    getClientSignalNotificationPref().catch(() => true),
   ])
 
+  const {
+    eventsResult,
+    quotes,
+    inquiries,
+    profileSummary,
+    hubSummary,
+    rsvpSummary,
+    unreviewedEvent,
+    pastWithBalance,
+    workGraph,
+  } = snapshot
   const { upcoming, past } = eventsResult
-
-  let unreviewedEvent: ClientDashboardEvent | null = null
-  let pastWithBalance = new Set<string>()
-
-  if (past.length > 0) {
-    const pastIds = past.map((event: any) => event.id)
-
-    const [reviewRows, balanceRows] = await Promise.all([
-      db
-        .from('client_reviews')
-        .select('event_id')
-        .in('event_id', pastIds)
-        .then((result: any) => result.data ?? []),
-      db
-        .from('event_financial_summary')
-        .select('event_id, outstanding_balance_cents')
-        .in('event_id', pastIds)
-        .gt('outstanding_balance_cents', 0)
-        .then((result: any) => result.data ?? []),
-    ])
-
-    const reviewedEventIds = new Set(
-      (reviewRows as Array<{ event_id: string }>).map((row) => row.event_id)
-    )
-    pastWithBalance = new Set(
-      (balanceRows as Array<{ event_id: string; outstanding_balance_cents: number }>)
-        .filter((row) => (row.outstanding_balance_cents ?? 0) > 0)
-        .map((row) => row.event_id)
-    )
-
-    const latestFirst = [...past].sort(
-      (a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime()
-    )
-    unreviewedEvent = (latestFirst.find((event) => !reviewedEventIds.has(event.id)) ??
-      null) as ClientDashboardEvent | null
-  }
 
   let chefDisplayName = 'your chef'
   if (unreviewedEvent && user.tenantId) {
@@ -239,84 +194,6 @@ export async function getClientDashboardData(): Promise<{
       .eq('id', user.tenantId)
       .single()
     chefDisplayName = chef?.business_name || 'your chef'
-  }
-
-  const proposalCount = upcoming.filter((event: any) => event.status === 'proposed').length
-  const paymentDueCount = upcoming.filter(
-    (event: any) => event.status === 'accepted' && (event.quoted_price_cents ?? 0) > 0
-  ).length
-  const outstandingBalanceCount = pastWithBalance.size
-  const quotePendingCount = (quotes as Array<Record<string, any>>).filter(
-    (quote) => quote.status === 'sent'
-  ).length
-  const inquiryAwaitingCount = (inquiries as Array<Record<string, any>>).filter(
-    (inquiry) => inquiry.status === 'awaiting_client'
-  ).length
-
-  const [profileToken, groups, friends, pendingFriendRequests] = await Promise.all([
-    getClientProfileToken().catch(() => ''),
-    getClientHubGroups().catch(() => []),
-    getMyFriends().catch(() => []),
-    getPendingFriendRequests().catch(() => []),
-  ])
-  let unreadLoadFailed = false
-  const totalUnreadCount = profileToken
-    ? await getHubTotalUnreadCount(profileToken).catch(() => {
-        unreadLoadFailed = true
-        return 0
-      })
-    : 0
-
-  const profileChecks = [
-    Boolean((myProfile as any)?.full_name),
-    Boolean((myProfile as any)?.phone),
-    Boolean((myProfile as any)?.address),
-    Array.isArray((myProfile as any)?.dietary_restrictions)
-      ? (myProfile as any).dietary_restrictions.length > 0
-      : false,
-    Array.isArray((myProfile as any)?.allergies) ? (myProfile as any).allergies.length > 0 : false,
-    Array.isArray((myProfile as any)?.favorite_cuisines)
-      ? (myProfile as any).favorite_cuisines.length > 0
-      : false,
-  ]
-  const completedFields = profileChecks.filter(Boolean).length
-  const totalFields = profileChecks.length
-  const completionPercent = Math.round((completedFields / totalFields) * 100)
-  const pendingMealRequests = Array.isArray(mealCollab.requests)
-    ? mealCollab.requests.filter((request: any) =>
-        ['requested', 'reviewed', 'scheduled'].includes(String(request.status))
-      ).length
-    : 0
-
-  let rsvpSummary: {
-    eventId: string
-    occasion: string | null
-    totalGuests: number
-    attendingCount: number
-    pendingCount: number
-    hasActiveShare: boolean
-  } | null = null
-  const rsvpEvent = (upcoming as Array<Record<string, any>>).find((event) =>
-    ['accepted', 'paid', 'confirmed', 'in_progress'].includes(String(event.status))
-  )
-
-  if (rsvpEvent?.id) {
-    const [summary, shares] = await Promise.all([
-      getEventRSVPSummary(String(rsvpEvent.id)).catch(() => null),
-      getEventShares(String(rsvpEvent.id)).catch(() => []),
-    ])
-    const hasActiveShare = Array.isArray(shares)
-      ? shares.some((share: any) => Boolean(share?.is_active))
-      : false
-
-    rsvpSummary = {
-      eventId: String(rsvpEvent.id),
-      occasion: (rsvpEvent.occasion as string | null) ?? null,
-      totalGuests: Number((summary as any)?.total_guests ?? 0),
-      attendingCount: Number((summary as any)?.attending_count ?? 0),
-      pendingCount: Number((summary as any)?.pending_count ?? 0),
-      hasActiveShare,
-    }
   }
 
   const quoteIdForPdf =
@@ -336,41 +213,25 @@ export async function getClientDashboardData(): Promise<{
     inquiries: inquiries as Array<Record<string, any>>,
     inbox: inbox as Array<Record<string, any>>,
     spendingSummary,
-    profileSummary: {
-      completionPercent,
-      completedFields,
-      totalFields,
-      pendingMealRequests,
-      signalNotificationsEnabled,
-    },
-    hubSummary: {
-      groupCount: groups.length,
-      friendCount: friends.length,
-      pendingFriendRequestCount: pendingFriendRequests.length,
-      totalUnreadCount,
-      unreadLoadFailed,
-    },
+    profileSummary,
+    hubSummary,
     rsvpSummary,
     documentsSummary: {
       nextEventId,
       lastPastEventId,
       quoteIdForPdf,
     },
-    unreviewedEvent,
+    unreviewedEvent: unreviewedEvent as ClientDashboardEvent | null,
     chefDisplayName,
     pastWithBalance,
+    workGraph,
     actionRequired: {
-      proposalCount,
-      paymentDueCount,
-      outstandingBalanceCount,
-      quotePendingCount,
-      inquiryAwaitingCount,
-      totalItems:
-        proposalCount +
-        paymentDueCount +
-        outstandingBalanceCount +
-        quotePendingCount +
-        inquiryAwaitingCount,
+      proposalCount: workGraph.summary.proposalCount,
+      paymentDueCount: workGraph.summary.paymentDueCount,
+      outstandingBalanceCount: workGraph.summary.outstandingBalanceCount,
+      quotePendingCount: workGraph.summary.quotePendingCount,
+      inquiryAwaitingCount: workGraph.summary.inquiryAwaitingCount,
+      totalItems: workGraph.summary.totalItems,
     },
   }
 }

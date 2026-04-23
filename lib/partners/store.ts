@@ -2,6 +2,88 @@
 // Accepts tenantId directly instead of calling requireChef().
 
 import { createServerClient } from '@/lib/db/server'
+import {
+  LOCATION_BEST_FOR_OPTIONS,
+  LOCATION_EXPERIENCE_TAG_OPTIONS,
+  LOCATION_SERVICE_TYPE_OPTIONS,
+  normalizeLocationOptionValues,
+  normalizeRelationshipType,
+} from '@/lib/partners/location-experiences'
+
+function buildLocationWritePayload(input: {
+  name?: string
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  zip?: string | null
+  booking_url?: string | null
+  description?: string | null
+  notes?: string | null
+  max_guest_count?: number | null
+  experience_tags?: readonly string[] | null
+  best_for?: readonly string[] | null
+  service_types?: readonly string[] | null
+}) {
+  return {
+    ...(input.name !== undefined ? { name: input.name } : {}),
+    ...(input.address !== undefined ? { address: input.address || null } : {}),
+    ...(input.city !== undefined ? { city: input.city || null } : {}),
+    ...(input.state !== undefined ? { state: input.state || null } : {}),
+    ...(input.zip !== undefined ? { zip: input.zip || null } : {}),
+    ...(input.booking_url !== undefined ? { booking_url: input.booking_url || null } : {}),
+    ...(input.description !== undefined ? { description: input.description || null } : {}),
+    ...(input.notes !== undefined ? { notes: input.notes || null } : {}),
+    ...(input.max_guest_count !== undefined
+      ? { max_guest_count: input.max_guest_count ?? null }
+      : {}),
+    ...(input.experience_tags !== undefined
+      ? {
+          experience_tags: normalizeLocationOptionValues(
+            input.experience_tags,
+            LOCATION_EXPERIENCE_TAG_OPTIONS
+          ),
+        }
+      : {}),
+    ...(input.best_for !== undefined
+      ? { best_for: normalizeLocationOptionValues(input.best_for, LOCATION_BEST_FOR_OPTIONS) }
+      : {}),
+    ...(input.service_types !== undefined
+      ? {
+          service_types: normalizeLocationOptionValues(
+            input.service_types,
+            LOCATION_SERVICE_TYPE_OPTIONS
+          ),
+        }
+      : {}),
+  }
+}
+
+async function upsertChefLocationLink(
+  db: any,
+  input: {
+    tenantId: string
+    locationId: string
+    relationshipType?: string | null
+    isPublic?: boolean
+    isFeatured?: boolean
+    sortOrder?: number
+  }
+) {
+  const { error } = await db.from('chef_location_links').upsert(
+    {
+      tenant_id: input.tenantId,
+      chef_id: input.tenantId,
+      location_id: input.locationId,
+      relationship_type: normalizeRelationshipType(input.relationshipType),
+      is_public: input.isPublic ?? true,
+      is_featured: input.isFeatured ?? true,
+      sort_order: input.sortOrder ?? 0,
+    },
+    { onConflict: 'chef_id,location_id' }
+  )
+
+  if (error) throw error
+}
 
 /**
  * Bulk assign events to a partner, with tenant ownership validation.
@@ -89,7 +171,23 @@ export async function getPartnerLocationsForTenant(tenantId: string, partnerId: 
     .order('name', { ascending: true })
 
   if (error) throw new Error('Failed to fetch locations')
-  return data
+  const locationIds = (data || []).map((location: any) => location.id)
+  const { data: links } = locationIds.length
+    ? await db
+        .from('chef_location_links')
+        .select('location_id, relationship_type, is_public, is_featured, sort_order')
+        .eq('chef_id', tenantId)
+        .in('location_id', locationIds)
+    : { data: [] }
+  const linkMap = Object.fromEntries((links || []).map((link: any) => [link.location_id, link]))
+
+  return (data || []).map((location: any) => ({
+    ...location,
+    relationship_type: normalizeRelationshipType(linkMap[location.id]?.relationship_type),
+    is_public: linkMap[location.id]?.is_public ?? true,
+    is_featured: linkMap[location.id]?.is_featured ?? true,
+    sort_order: linkMap[location.id]?.sort_order ?? 0,
+  }))
 }
 
 export async function createPartnerLocationForTenant(
@@ -105,6 +203,13 @@ export async function createPartnerLocationForTenant(
     description?: string
     notes?: string
     max_guest_count?: number | null
+    experience_tags?: string[]
+    best_for?: string[]
+    service_types?: string[]
+    relationship_type?: string
+    is_public?: boolean
+    is_featured?: boolean
+    sort_order?: number
   }
 ) {
   const db: any = createServerClient({ admin: true })
@@ -123,20 +228,20 @@ export async function createPartnerLocationForTenant(
     .insert({
       tenant_id: tenantId,
       partner_id: input.partner_id,
-      name: input.name,
-      address: input.address || null,
-      city: input.city || null,
-      state: input.state || null,
-      zip: input.zip || null,
-      booking_url: input.booking_url || null,
-      description: input.description || null,
-      notes: input.notes || null,
-      max_guest_count: input.max_guest_count ?? null,
+      ...buildLocationWritePayload(input),
     })
     .select()
     .single()
 
   if (error) throw new Error('Failed to create location')
+  await upsertChefLocationLink(db, {
+    tenantId,
+    locationId: location.id,
+    relationshipType: input.relationship_type,
+    isPublic: input.is_public,
+    isFeatured: input.is_featured,
+    sortOrder: input.sort_order,
+  })
   return { success: true, location }
 }
 

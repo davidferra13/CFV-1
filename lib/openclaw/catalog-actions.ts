@@ -15,6 +15,7 @@ import { db, pgClient } from '@/lib/db'
 import { ingredients } from '@/lib/db/schema/schema'
 import { and, eq, sql } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
+import { getCatalogDetailFromContract } from '@/lib/openclaw/catalog-detail-contract'
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
@@ -49,25 +50,6 @@ type CatalogAggregateRow = {
   best_price_cents: number | string | null
   best_price_store: string | null
   best_price_unit: string | null
-}
-
-type CatalogPriceRow = {
-  store_name: string
-  store_city: string | null
-  store_state: string | null
-  store_website: string | null
-  price_cents: number | string
-  price_unit: string | null
-  price_type: string | null
-  source: string | null
-  in_stock: boolean | null
-  source_url: string | null
-  image_url: string | null
-  brand: string | null
-  aisle_cat: string | null
-  last_confirmed_at: string | Date | null
-  last_changed_at: string | Date | null
-  package_size: string | null
 }
 
 // --- Types ---
@@ -195,21 +177,20 @@ function normalizeImage(value: string | null | undefined): string | null {
   return trimmed
 }
 
-function confidenceFromSource(source: string | null): string {
-  const normalized = source?.toLowerCase() ?? ''
+function normalizeStoreLocationPart(value: string | null | undefined): string | null {
+  const trimmed = value?.trim()
+  return trimmed && trimmed.length > 0 ? trimmed : null
+}
 
-  if (normalized.includes('receipt')) return 'exact_receipt'
-  if (normalized.includes('instacart')) return 'instacart_adjusted'
-  if (normalized.includes('flipp') || normalized.includes('flyer')) return 'flyer_scrape'
-  if (
-    normalized.includes('government') ||
-    normalized.includes('usda') ||
-    normalized.includes('bls')
-  ) {
-    return 'government_baseline'
-  }
+function buildStoreCoverageLabel(
+  city: string | null | undefined,
+  state: string | null | undefined
+) {
+  const normalizedCity = normalizeStoreLocationPart(city)
+  const normalizedState = normalizeStoreLocationPart(state)
 
-  return 'direct_scrape'
+  if (normalizedCity && normalizedState) return `${normalizedCity}, ${normalizedState}`
+  return normalizedCity ?? normalizedState ?? null
 }
 
 function resolveCatalogSort(sort?: string): CatalogSort {
@@ -446,141 +427,7 @@ function mapCatalogItemV2(row: CatalogAggregateRow): CatalogItemV2 {
 }
 
 async function getCatalogDetailInternal(ingredientId: string): Promise<CatalogDetailResult | null> {
-  const ingredientRows = await pgClient`
-    SELECT
-      ingredient_id,
-      name,
-      COALESCE(NULLIF(category, ''), 'uncategorized') AS category,
-      COALESCE(NULLIF(standard_unit, ''), 'each') AS standard_unit
-    FROM openclaw.canonical_ingredients
-    WHERE ingredient_id = ${ingredientId}
-    LIMIT 1
-  `
-
-  if (ingredientRows.length === 0) return null
-
-  const rows = (await pgClient`
-    WITH matched AS (
-      SELECT
-        s.id AS store_id,
-        s.name AS store_name,
-        s.city AS store_city,
-        s.state AS store_state,
-        COALESCE(c.website_url, c.store_locator_url) AS store_website,
-        COALESCE(sp.sale_price_cents, sp.price_cents) AS price_cents,
-        COALESCE(NULLIF(ci.standard_unit, ''), NULLIF(p.size_unit, ''), 'each') AS price_unit,
-        sp.price_type,
-        sp.source,
-        COALESCE(sp.in_stock, true) AS in_stock,
-        NULL::text AS source_url,
-        COALESCE(
-          NULLIF(p.image_url, ''),
-          NULLIF(ci.off_image_url, 'none'),
-          ci.off_image_url
-        ) AS image_url,
-        p.brand,
-        COALESCE(pc.department, pc.name) AS aisle_cat,
-        sp.last_seen_at AS last_confirmed_at,
-        sp.last_seen_at AS last_changed_at,
-        p.size AS package_size,
-        ROW_NUMBER() OVER (
-          PARTITION BY s.id
-          ORDER BY COALESCE(sp.sale_price_cents, sp.price_cents) ASC NULLS LAST,
-                   sp.last_seen_at DESC NULLS LAST
-        ) AS store_rank
-      FROM openclaw.canonical_ingredients ci
-      LEFT JOIN openclaw.normalization_map nm
-        ON nm.canonical_ingredient_id = ci.ingredient_id
-      LEFT JOIN openclaw.products p
-        ON LOWER(TRIM(p.name)) = LOWER(TRIM(nm.raw_name))
-       AND p.is_food = true
-      LEFT JOIN openclaw.store_products sp
-        ON sp.product_id = p.id
-       AND sp.price_cents > 0
-      LEFT JOIN openclaw.stores s
-        ON s.id = sp.store_id
-       AND s.is_active = true
-      LEFT JOIN openclaw.chains c
-        ON c.id = s.chain_id
-      LEFT JOIN openclaw.product_categories pc
-        ON pc.id = p.category_id
-      WHERE ci.ingredient_id = ${ingredientId}
-    )
-    SELECT
-      store_name,
-      store_city,
-      store_state,
-      store_website,
-      price_cents,
-      price_unit,
-      price_type,
-      source,
-      in_stock,
-      source_url,
-      image_url,
-      brand,
-      aisle_cat,
-      last_confirmed_at,
-      last_changed_at,
-      package_size
-    FROM matched
-    WHERE store_rank = 1
-      AND store_id IS NOT NULL
-    ORDER BY price_cents ASC NULLS LAST, store_name ASC
-  `) as CatalogPriceRow[]
-
-  const prices: CatalogDetailPrice[] = rows.map((row) => ({
-    store: row.store_name,
-    storeCity: row.store_city ?? null,
-    storeState: row.store_state ?? null,
-    storeWebsite: row.store_website ?? null,
-    priceCents: toNumber(row.price_cents),
-    priceUnit: normalizeUnit(row.price_unit),
-    priceType: row.price_type ?? 'retail',
-    pricingTier: row.price_type ?? 'retail',
-    confidence: confidenceFromSource(row.source),
-    inStock: Boolean(row.in_stock),
-    sourceUrl: row.source_url ?? null,
-    imageUrl: normalizeImage(row.image_url),
-    brand: row.brand ?? null,
-    aisleCat: row.aisle_cat ?? null,
-    lastConfirmedAt: toIso(row.last_confirmed_at) ?? new Date(0).toISOString(),
-    lastChangedAt:
-      toIso(row.last_changed_at) ?? toIso(row.last_confirmed_at) ?? new Date(0).toISOString(),
-    packageSize: row.package_size ?? null,
-  }))
-
-  const summary = {
-    storeCount: prices.length,
-    inStockCount: prices.filter((price) => price.inStock).length,
-    outOfStockCount: prices.filter((price) => !price.inStock).length,
-    cheapestCents: prices.length > 0 ? Math.min(...prices.map((price) => price.priceCents)) : null,
-    cheapestStore:
-      prices.length > 0
-        ? prices.reduce((best, current) => (current.priceCents < best.priceCents ? current : best))
-            .store
-        : null,
-    avgCents:
-      prices.length > 0
-        ? Math.round(
-            prices.reduce((sum, price) => sum + price.priceCents, 0) / Math.max(prices.length, 1)
-          )
-        : null,
-    hasSourceUrls: prices.some((price) => Boolean(price.sourceUrl || price.storeWebsite)),
-  }
-
-  const ingredient = ingredientRows[0]
-
-  return {
-    ingredient: {
-      id: ingredient.ingredient_id as string,
-      name: ingredient.name as string,
-      category: normalizeCategory(ingredient.category as string | null),
-      standardUnit: normalizeUnit(ingredient.standard_unit as string | null),
-    },
-    prices,
-    summary,
-  }
+  return getCatalogDetailFromContract({ ingredientId, visibility: 'internal' })
 }
 
 async function getCategoryCoverageInternal(): Promise<CategoryCoverage[]> {
@@ -649,9 +496,9 @@ async function getCatalogStoresInternal(): Promise<CatalogStore[]> {
     status: row.status as string,
     logoUrl: row.logo_url ?? null,
     storeColor: null,
-    region: row.city && row.state ? `${row.city}, ${row.state}` : (row.state ?? null),
-    city: row.city ?? null,
-    state: row.state ?? null,
+    region: buildStoreCoverageLabel(row.city as string | null, row.state as string | null),
+    city: normalizeStoreLocationPart(row.city as string | null),
+    state: normalizeStoreLocationPart(row.state as string | null),
   }))
 }
 

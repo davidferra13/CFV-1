@@ -13,6 +13,7 @@ import type { Json } from '@/types/database'
 import type { AiQueueItem, AiTaskStatus, ApprovalTier, EnqueueInput, LlmEndpoint } from './types'
 import { OLLAMA_GUARD } from './types'
 import { getTaskDefinition } from './registry'
+import { resolveAiActionDecision } from '@/lib/ai/dispatch/router'
 
 async function recordQueueFailure(input: {
   operation: string
@@ -70,6 +71,32 @@ async function releaseClaimAfterIncrementFailure(input: {
       incrementError: input.errorMessage,
     },
   })
+}
+
+function resolveApprovalTierByConfidence(
+  baseTier: ApprovalTier,
+  payload?: Record<string, unknown>
+): ApprovalTier {
+  const confidence =
+    typeof payload?._aiConfidence === 'number' ? Number(payload._aiConfidence) : null
+
+  if (confidence == null) {
+    return baseTier
+  }
+
+  const decision = resolveAiActionDecision({
+    confidence,
+    requiresApproval: baseTier !== 'auto',
+    canAutoExecute: baseTier === 'auto',
+    canQueueForApproval: true,
+    safety:
+      baseTier === 'hold' ? 'restricted' : baseTier === 'draft' ? 'significant' : 'reversible',
+  })
+
+  if (!decision) return baseTier
+  if (decision.disposition === 'execute') return 'auto'
+  if (decision.disposition === 'queue_for_approval') return 'draft'
+  return 'hold'
 }
 
 // ============================================
@@ -164,7 +191,10 @@ export async function enqueueTask(
       tenant_id: input.tenantId,
       task_type: input.taskType,
       priority: input.priority ?? definition.defaultPriority,
-      approval_tier: input.approvalTier ?? definition.approvalTier,
+      approval_tier: resolveApprovalTierByConfidence(
+        input.approvalTier ?? definition.approvalTier,
+        input.payload
+      ),
       status: 'pending',
       payload: (input.payload ?? {}) as Json,
       target_endpoint: input.targetEndpoint ?? definition.preferredEndpoint,

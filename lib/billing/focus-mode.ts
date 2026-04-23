@@ -3,6 +3,8 @@
 // Server actions (isFocusModeEnabled, toggleFocusMode) are in focus-mode-actions.ts.
 // This file has no 'use server' because it exports const arrays/Sets.
 
+export const DEFAULT_FOCUS_MODE_ENABLED = true
+
 /**
  * Core modules - the 6 workflows a private chef needs daily.
  * These are always visible when Focus Mode is ON.

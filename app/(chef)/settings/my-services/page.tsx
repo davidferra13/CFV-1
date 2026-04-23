@@ -278,6 +278,14 @@ export default function MyServicesPage() {
         accurately with clients. If something is turned off, Remy will never mention it.
       </p>
 
+      <div className="mb-6 rounded-lg border border-stone-700 bg-stone-900/70 px-4 py-3">
+        <p className="text-sm text-stone-300">
+          Public profile trust badges come from active uploaded protection or compliance records.
+          Service settings can publish self-reported details, but they do not create a
+          current-record badge on their own.
+        </p>
+      </div>
+
       <div className="space-y-3">
         {/* SERVICES */}
         <Section
@@ -527,6 +535,7 @@ export default function MyServicesPage() {
           />
           <Toggle
             label="I carry liability insurance"
+            description="Self-reported here. Public current-record badges come from active uploaded insurance records."
             checked={config.is_insured}
             onChange={(v) => update('is_insured', v)}
           />
@@ -612,7 +621,7 @@ export default function MyServicesPage() {
               <textarea
                 value={config.custom_travel_note ?? ''}
                 onChange={(e) => update('custom_travel_note', e.target.value || null)}
-                placeholder='e.g. "I cover the entire North Shore at no extra charge."'
+                placeholder='e.g. "I cover my standard service area at no extra charge."'
                 rows={1}
                 maxLength={200}
                 className="w-full rounded-md border border-stone-700 bg-stone-800/50 px-3 py-2 text-sm

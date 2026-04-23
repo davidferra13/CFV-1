@@ -5,6 +5,7 @@
 import { createServerClient } from '@/lib/db/server'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { getGoogleAccessToken } from '@/lib/google/auth'
+import { getGoogleGmailControl } from '@/lib/google/mailbox-control'
 import { listMessagesPage, getFullMessage } from './client'
 import { classifyEmail } from './classify'
 
@@ -16,6 +17,7 @@ const TRANSIENT_CLASSIFICATION_MAX_ATTEMPTS = 3
 export interface HistoricalScanBatchOptions {
   batchSize?: number
   messageConcurrency?: number
+  mailboxId?: string | null
 }
 
 export interface HistoricalScanBatchResult {
@@ -29,6 +31,7 @@ export interface HistoricalScanBatchResult {
 }
 
 type HistoricalScanConnection = {
+  mailbox_id: string | null
   connected_email: string | null
   gmail_connected: boolean
   historical_scan_enabled: boolean
@@ -38,6 +41,8 @@ type HistoricalScanConnection = {
   historical_scan_total_seen: number | null
   historical_scan_lookback_days: number | null
   historical_scan_started_at: string | null
+  historical_scan_completed_at: string | null
+  historical_scan_last_run_at: string | null
   historical_scan_result_size_estimate: number | null
 }
 
@@ -150,60 +155,132 @@ export async function runHistoricalScanBatch(
 
   const batchSize = Math.max(1, options.batchSize ?? DEFAULT_BATCH_SIZE)
   const db = createServerClient({ admin: true })
+  const control = await getGoogleGmailControl({
+    chefId,
+    tenantId,
+    db,
+    allowRepair: true,
+  })
+  let mailbox =
+    options.mailboxId && options.mailboxId.trim()
+      ? (
+          await db
+            .from('google_mailboxes')
+            .select(
+              'id, normalized_email, gmail_connected, historical_scan_enabled, historical_scan_status, historical_scan_page_token, historical_scan_total_processed, historical_scan_total_seen, historical_scan_lookback_days, historical_scan_started_at, historical_scan_completed_at, historical_scan_last_run_at, historical_scan_result_size_estimate'
+            )
+            .eq('id', options.mailboxId)
+            .eq('chef_id', chefId)
+            .eq('tenant_id', tenantId)
+            .maybeSingle()
+        ).data
+      : control.mailbox?.gmailConnected && control.mailbox.isActive
+        ? {
+            id: control.mailbox.id,
+            normalized_email: control.mailbox.normalizedEmail,
+            gmail_connected: control.mailbox.gmailConnected,
+            historical_scan_enabled: control.mailbox.historicalScanEnabled,
+            historical_scan_status: control.mailbox.historicalScanStatus,
+            historical_scan_page_token: control.mailbox.historicalScanPageToken,
+            historical_scan_total_processed: control.mailbox.historicalScanTotalProcessed,
+            historical_scan_total_seen: control.mailbox.historicalScanTotalSeen,
+            historical_scan_lookback_days: control.mailbox.historicalScanLookbackDays,
+            historical_scan_started_at: control.mailbox.historicalScanStartedAt,
+            historical_scan_completed_at: control.mailbox.historicalScanCompletedAt,
+            historical_scan_last_run_at: control.mailbox.historicalScanLastRunAt,
+            historical_scan_result_size_estimate: control.mailbox.historicalScanResultSizeEstimate,
+          }
+        : null
 
-  const { data: conn, error: connErr } = await db
-    .from('google_connections')
-    .select(
-      'connected_email, gmail_connected, historical_scan_enabled, historical_scan_status, historical_scan_page_token, historical_scan_total_processed, historical_scan_total_seen, historical_scan_lookback_days, historical_scan_started_at, historical_scan_result_size_estimate'
-    )
-    .eq('chef_id', chefId)
-    .single()
+  const scanConn: HistoricalScanConnection | null = mailbox
+    ? {
+        mailbox_id: mailbox.id,
+        connected_email: mailbox.normalized_email,
+        gmail_connected: mailbox.gmail_connected === true,
+        historical_scan_enabled: mailbox.historical_scan_enabled === true,
+        historical_scan_status: String(mailbox.historical_scan_status || 'idle'),
+        historical_scan_page_token: mailbox.historical_scan_page_token || null,
+        historical_scan_total_processed: mailbox.historical_scan_total_processed ?? 0,
+        historical_scan_total_seen: mailbox.historical_scan_total_seen ?? 0,
+        historical_scan_lookback_days: mailbox.historical_scan_lookback_days ?? 0,
+        historical_scan_started_at: mailbox.historical_scan_started_at || null,
+        historical_scan_completed_at: mailbox.historical_scan_completed_at || null,
+        historical_scan_last_run_at: mailbox.historical_scan_last_run_at || null,
+        historical_scan_result_size_estimate: mailbox.historical_scan_result_size_estimate ?? null,
+      }
+    : control.legacyConnection
+      ? {
+          mailbox_id: null,
+          connected_email: control.legacyConnection.connectedEmail,
+          gmail_connected: control.legacyConnection.gmailConnected,
+          historical_scan_enabled: control.legacyConnection.historicalScanEnabled,
+          historical_scan_status: control.legacyConnection.historicalScanStatus,
+          historical_scan_page_token: control.legacyConnection.historicalScanPageToken,
+          historical_scan_total_processed: control.legacyConnection.historicalScanTotalProcessed,
+          historical_scan_total_seen: control.legacyConnection.historicalScanTotalSeen,
+          historical_scan_lookback_days: control.legacyConnection.historicalScanLookbackDays,
+          historical_scan_started_at: control.legacyConnection.historicalScanStartedAt,
+          historical_scan_completed_at: control.legacyConnection.historicalScanCompletedAt,
+          historical_scan_last_run_at: control.legacyConnection.historicalScanLastRunAt,
+          historical_scan_result_size_estimate:
+            control.legacyConnection.historicalScanResultSizeEstimate,
+        }
+      : null
 
-  if (connErr || !conn) {
-    result.errors.push('No google_connections row found')
+  if (!scanConn) {
+    result.errors.push('No mailbox-native or legacy Gmail connection found')
     result.status = 'error'
     return result
   }
+  const activeScanConn = scanConn
 
-  const scanConn = conn as HistoricalScanConnection
-
-  if (!scanConn.gmail_connected) {
+  if (!activeScanConn.gmail_connected) {
     result.errors.push('Gmail not connected')
     result.status = 'error'
     return result
   }
 
-  if (!scanConn.historical_scan_enabled) {
+  if (!activeScanConn.historical_scan_enabled) {
     result.errors.push('Historical scan not enabled')
     result.status = 'error'
     return result
   }
 
-  if (scanConn.historical_scan_status === 'completed') {
+  if (activeScanConn.historical_scan_status === 'completed') {
     result.status = 'completed'
     return result
   }
 
-  const scanStartedAt = scanConn.historical_scan_started_at ?? new Date().toISOString()
-  const { error: startErr } = await db
-    .from('google_connections')
-    .update({
-      historical_scan_status: 'in_progress',
-      historical_scan_started_at: scanStartedAt,
-      historical_scan_last_run_at: new Date().toISOString(),
-      historical_scan_completed_at: null,
-    })
-    .eq('chef_id', chefId)
+  async function updateScanState(updates: Record<string, unknown>) {
+    await db.from('google_connections').update(updates).eq('chef_id', chefId)
 
-  if (startErr) {
-    result.errors.push(`Failed to persist scan start: ${startErr.message}`)
+    if (activeScanConn.mailbox_id) {
+      await db.from('google_mailboxes').update(updates).eq('id', activeScanConn.mailbox_id)
+    }
+  }
+
+  const scanStartedAt = activeScanConn.historical_scan_started_at ?? new Date().toISOString()
+  const startUpdates = {
+    historical_scan_status: 'in_progress',
+    historical_scan_started_at: scanStartedAt,
+    historical_scan_last_run_at: new Date().toISOString(),
+    historical_scan_completed_at: null,
+  }
+
+  try {
+    await updateScanState(startUpdates)
+  } catch (startErr) {
+    result.errors.push(`Failed to persist scan start: ${(startErr as Error).message}`)
     result.status = 'error'
     return result
   }
 
   let accessToken: string
   try {
-    accessToken = await getGoogleAccessToken(chefId, { skipSessionCheck: true })
+    accessToken = await getGoogleAccessToken(chefId, {
+      skipSessionCheck: true,
+      mailboxId: activeScanConn.mailbox_id,
+    })
   } catch (err) {
     result.errors.push(`Token error: ${(err as Error).message}`)
     result.status = 'error'
@@ -217,8 +294,8 @@ export async function runHistoricalScanBatch(
   }
   try {
     pageResult = await listMessagesPage(accessToken, {
-      pageToken: scanConn.historical_scan_page_token ?? undefined,
-      query: buildHistoricalScanQuery(scanConn.historical_scan_lookback_days ?? 0),
+      pageToken: activeScanConn.historical_scan_page_token ?? undefined,
+      query: buildHistoricalScanQuery(activeScanConn.historical_scan_lookback_days ?? 0),
       maxResults: batchSize,
     })
   } catch (err) {
@@ -241,11 +318,16 @@ export async function runHistoricalScanBatch(
   let syncedSet = new Set<string>()
 
   if (pageMessageIds.length > 0) {
-    const { data: alreadySynced, error: syncedErr } = await db
+    let alreadySyncedQuery = db
       .from('gmail_sync_log')
       .select('gmail_message_id')
-      .eq('tenant_id', tenantId)
       .in('gmail_message_id', pageMessageIds)
+
+    alreadySyncedQuery = activeScanConn.mailbox_id
+      ? alreadySyncedQuery.eq('mailbox_id', activeScanConn.mailbox_id)
+      : alreadySyncedQuery.eq('tenant_id', tenantId)
+
+    const { data: alreadySynced, error: syncedErr } = await alreadySyncedQuery
 
     if (syncedErr) {
       result.errors.push(`Failed to load dedup state: ${syncedErr.message}`)
@@ -258,9 +340,9 @@ export async function runHistoricalScanBatch(
     )
   }
 
-  const baseTotalProcessed = scanConn.historical_scan_total_processed ?? 0
-  const baseTotalSeen = Math.max(scanConn.historical_scan_total_seen ?? 0, baseTotalProcessed)
-  const connectedEmail = scanConn.connected_email
+  const baseTotalProcessed = activeScanConn.historical_scan_total_processed ?? 0
+  const baseTotalSeen = Math.max(activeScanConn.historical_scan_total_seen ?? 0, baseTotalProcessed)
+  const connectedEmail = activeScanConn.connected_email
 
   for (const msgRef of pageResult.messages) {
     result.seen++
@@ -277,6 +359,7 @@ export async function runHistoricalScanBatch(
         msgRef.id,
         chefId,
         tenantId,
+        activeScanConn.mailbox_id,
         connectedEmail,
         knownClientEmails,
         result
@@ -289,6 +372,7 @@ export async function runHistoricalScanBatch(
       await checkpointHistoricalScanProgress(
         db,
         chefId,
+        activeScanConn.mailbox_id,
         baseTotalProcessed + result.processed,
         baseTotalSeen + result.seen
       )
@@ -299,7 +383,7 @@ export async function runHistoricalScanBatch(
   const newTotalProcessed = baseTotalProcessed + result.processed
   const newTotalSeen = baseTotalSeen + result.seen
   const resultSizeEstimate = Math.max(
-    scanConn.historical_scan_result_size_estimate ?? 0,
+    activeScanConn.historical_scan_result_size_estimate ?? 0,
     pageResult.resultSizeEstimate ?? 0,
     newTotalSeen
   )
@@ -318,7 +402,7 @@ export async function runHistoricalScanBatch(
     result.status = 'completed'
   }
 
-  await db.from('google_connections').update(progressUpdate).eq('chef_id', chefId)
+  await updateScanState(progressUpdate)
 
   return result
 }
@@ -329,6 +413,7 @@ async function processHistoricalMessage(
   messageId: string,
   chefId: string,
   tenantId: string,
+  mailboxId: string | null,
   connectedEmail: string | null,
   knownClientEmails: string[],
   result: HistoricalScanBatchResult
@@ -340,6 +425,7 @@ async function processHistoricalMessage(
     await logScanEntry(
       db,
       tenantId,
+      mailboxId,
       messageId,
       { ...email, body: email.body, date: email.date },
       'personal',
@@ -355,6 +441,7 @@ async function processHistoricalMessage(
   await logScanEntry(
     db,
     tenantId,
+    mailboxId,
     messageId,
     { ...email, body: email.body, date: email.date },
     classification.category,
@@ -384,6 +471,7 @@ async function processHistoricalMessage(
   const inserted = await saveHistoricalFinding(db, {
     tenant_id: tenantId,
     chef_id: chefId,
+    mailbox_id: mailboxId,
     gmail_message_id: messageId,
     gmail_thread_id: email.threadId || null,
     from_address: `${email.from.name ? email.from.name + ' ' : ''}<${email.from.email}>`.trim(),
@@ -404,17 +492,21 @@ async function processHistoricalMessage(
 async function checkpointHistoricalScanProgress(
   db: any,
   chefId: string,
+  mailboxId: string | null,
   totalProcessed: number,
   totalSeen: number
 ) {
-  await db
-    .from('google_connections')
-    .update({
-      historical_scan_total_processed: totalProcessed,
-      historical_scan_total_seen: totalSeen,
-      historical_scan_last_run_at: new Date().toISOString(),
-    })
-    .eq('chef_id', chefId)
+  const payload = {
+    historical_scan_total_processed: totalProcessed,
+    historical_scan_total_seen: totalSeen,
+    historical_scan_last_run_at: new Date().toISOString(),
+  }
+
+  await db.from('google_connections').update(payload).eq('chef_id', chefId)
+
+  if (mailboxId) {
+    await db.from('google_mailboxes').update(payload).eq('id', mailboxId)
+  }
 }
 
 async function saveHistoricalFinding(
@@ -422,6 +514,7 @@ async function saveHistoricalFinding(
   finding: {
     tenant_id: string
     chef_id: string
+    mailbox_id: string | null
     gmail_message_id: string
     gmail_thread_id: string | null
     from_address: string
@@ -434,12 +527,16 @@ async function saveHistoricalFinding(
     status: 'pending'
   }
 ) {
-  const { data: existing, error: existingErr } = await db
+  let existingQuery = db
     .from('gmail_historical_findings')
     .select('id')
-    .eq('tenant_id', finding.tenant_id)
     .eq('gmail_message_id', finding.gmail_message_id)
-    .maybeSingle()
+
+  existingQuery = finding.mailbox_id
+    ? existingQuery.eq('mailbox_id', finding.mailbox_id)
+    : existingQuery.eq('tenant_id', finding.tenant_id)
+
+  const { data: existing, error: existingErr } = await existingQuery.maybeSingle()
 
   if (existingErr) {
     throw new Error(`Historical finding lookup failed: ${existingErr.message}`)
@@ -460,6 +557,7 @@ async function saveHistoricalFinding(
 async function logScanEntry(
   db: any,
   tenantId: string,
+  mailboxId: string | null,
   messageId: string,
   email: {
     from: { email: string }
@@ -482,8 +580,9 @@ async function logScanEntry(
   }
 
   try {
-    await db.from('gmail_sync_log').insert({
+    const payload = {
       tenant_id: tenantId,
+      mailbox_id: mailboxId,
       gmail_message_id: messageId,
       gmail_thread_id: email.threadId || null,
       from_address: email.from.email,
@@ -494,7 +593,14 @@ async function logScanEntry(
       body_preview: email.body?.slice(0, 2000) || null,
       snippet: email.body?.slice(0, 200) || null,
       received_at: receivedAt,
-    })
+    }
+
+    if (mailboxId) {
+      await db.from('gmail_sync_log').upsert(payload, { onConflict: 'mailbox_id,gmail_message_id' })
+      return
+    }
+
+    await db.from('gmail_sync_log').insert(payload)
   } catch {
     // Ignore dedup conflicts when a retry sees a message that already landed.
   }

@@ -45,6 +45,7 @@ export default async function AdminDirectoryListingsPage() {
     discovered: listings.filter((l) => l.status === 'discovered').length,
     claimed: listings.filter((l) => l.status === 'claimed').length,
     verified: listings.filter((l) => l.status === 'verified').length,
+    linkedToChefs: listings.filter((l) => l.linked_chef_id).length,
     pendingSubmissions: listings.filter((l) => l.status === 'pending_submission').length,
     removed: listings.filter((l) => l.status === 'removed').length,
     removalRequests: listings.filter(
@@ -71,13 +72,14 @@ export default async function AdminDirectoryListingsPage() {
       </div>
 
       {/* Stats */}
-      <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
+      <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
         {[
           { label: 'Total', value: stats.total, color: 'text-stone-100' },
           { label: 'Listed', value: stats.discovered, color: 'text-stone-300' },
           { label: 'Pending', value: stats.pendingSubmissions, color: 'text-amber-300' },
           { label: 'Claimed', value: stats.claimed, color: 'text-brand-300' },
           { label: 'Verified', value: stats.verified, color: 'text-emerald-300' },
+          { label: 'Linked chefs', value: stats.linkedToChefs, color: 'text-sky-300' },
           { label: 'Removed', value: stats.removed, color: 'text-red-300' },
           {
             label: 'Removal Requests',

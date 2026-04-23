@@ -3,21 +3,49 @@
 import { useState, useTransition } from 'react'
 import { searchDirectory, type DirectorySearchFilters } from '@/lib/community/directory-actions'
 import { DirectoryListingCard } from './directory-listing-card'
+import { NEUTRAL_CITY_PLACEHOLDER } from '@/lib/site/national-brand-copy'
 
 const CUISINE_OPTIONS = [
-  'American', 'Italian', 'French', 'Japanese', 'Mexican', 'Thai',
-  'Indian', 'Mediterranean', 'Chinese', 'Korean', 'Caribbean',
-  'Southern', 'BBQ', 'Seafood', 'Vegan', 'Farm-to-Table',
+  'American',
+  'Italian',
+  'French',
+  'Japanese',
+  'Mexican',
+  'Thai',
+  'Indian',
+  'Mediterranean',
+  'Chinese',
+  'Korean',
+  'Caribbean',
+  'Southern',
+  'BBQ',
+  'Seafood',
+  'Vegan',
+  'Farm-to-Table',
 ]
 
 const DIETARY_OPTIONS = [
-  'Gluten-Free', 'Vegan', 'Vegetarian', 'Keto', 'Paleo',
-  'Halal', 'Kosher', 'Nut-Free', 'Dairy-Free', 'Low-Sodium',
+  'Gluten-Free',
+  'Vegan',
+  'Vegetarian',
+  'Keto',
+  'Paleo',
+  'Halal',
+  'Kosher',
+  'Nut-Free',
+  'Dairy-Free',
+  'Low-Sodium',
 ]
 
 const SERVICE_TYPE_OPTIONS = [
-  'Private Dinner', 'Meal Prep', 'Catering', 'Cooking Class',
-  'Event Chef', 'Personal Chef', 'Pop-Up', 'Corporate',
+  'Private Dinner',
+  'Meal Prep',
+  'Catering',
+  'Cooking Class',
+  'Event Chef',
+  'Personal Chef',
+  'Pop-Up',
+  'Corporate',
 ]
 
 const SORT_OPTIONS = [
@@ -26,7 +54,7 @@ const SORT_OPTIONS = [
   { value: 'price_high', label: 'Price: High to Low' },
 ] as const
 
-type SortOption = typeof SORT_OPTIONS[number]['value']
+type SortOption = (typeof SORT_OPTIONS)[number]['value']
 
 export function DirectorySearch() {
   const [results, setResults] = useState<any[]>([])
@@ -103,7 +131,7 @@ export function DirectorySearch() {
               type="text"
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              placeholder="e.g. Austin"
+              placeholder={NEUTRAL_CITY_PLACEHOLDER}
               className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
             />
           </div>
@@ -128,7 +156,9 @@ export function DirectorySearch() {
             >
               <option value="">Any cuisine</option>
               {CUISINE_OPTIONS.map((c) => (
-                <option key={c} value={c}>{c}</option>
+                <option key={c} value={c}>
+                  {c}
+                </option>
               ))}
             </select>
           </div>
@@ -143,7 +173,9 @@ export function DirectorySearch() {
             >
               <option value="">Any dietary need</option>
               {DIETARY_OPTIONS.map((d) => (
-                <option key={d} value={d}>{d}</option>
+                <option key={d} value={d}>
+                  {d}
+                </option>
               ))}
             </select>
           </div>
@@ -158,14 +190,18 @@ export function DirectorySearch() {
             >
               <option value="">Any service</option>
               {SERVICE_TYPE_OPTIONS.map((s) => (
-                <option key={s} value={s}>{s}</option>
+                <option key={s} value={s}>
+                  {s}
+                </option>
               ))}
             </select>
           </div>
 
           {/* Max Price */}
           <div>
-            <label className="text-sm font-medium text-muted-foreground">Max Price ($/person)</label>
+            <label className="text-sm font-medium text-muted-foreground">
+              Max Price ($/person)
+            </label>
             <input
               type="number"
               value={maxPriceDollars}
@@ -207,14 +243,18 @@ export function DirectorySearch() {
               className="rounded-md border bg-background px-3 py-1.5 text-sm"
             >
               {SORT_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>{o.label}</option>
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
               ))}
             </select>
           </div>
 
           {sorted.length === 0 ? (
             <div className="rounded-lg border bg-card p-8 text-center">
-              <p className="text-muted-foreground">No chefs match your search. Try broadening your filters.</p>
+              <p className="text-muted-foreground">
+                No chefs match your search. Try broadening your filters.
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

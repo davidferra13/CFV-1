@@ -1,14 +1,14 @@
 'use client'
 
 // Module toggle grid - lets chefs choose which feature areas appear in their sidebar.
-// Each module card shows name, description, tier badge, and a toggle switch.
-// Focus Mode toggle at top - when ON, only core modules shown. Admin sees status registry.
+// Each module card shows name, description, and a toggle switch.
+// Focus Mode toggle at top - when ON, standard chef accounts see the reduced shell.
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { Sparkles, Lock, Focus, Eye, EyeOff } from '@/components/ui/icons'
+import { Focus, Eye } from '@/components/ui/icons'
 import { MODULES } from '@/lib/billing/modules'
 import type { Tier } from '@/lib/billing/tier'
 import { updateEnabledModules, enableAllModules } from '@/lib/billing/module-actions'
@@ -26,10 +26,7 @@ type Props = {
 
 export function ModulesClient({
   enabledModules: initial,
-  tier,
-  isGrandfathered,
   focusMode: initialFocusMode,
-  isAdmin,
   isPrivileged,
 }: Props) {
   const router = useRouter()
@@ -120,8 +117,10 @@ export function ModulesClient({
               <h3 className="text-base font-semibold text-stone-100">Focus Mode</h3>
               <p className="text-sm text-stone-400 mt-0.5">
                 {focusMode
-                  ? 'Focus Mode is on. Only core areas are visible in the sidebar. All routes remain accessible by direct URL or command palette.'
-                  : 'All areas visible. Turn on Focus Mode for a calmer, simplified sidebar.'}
+                  ? isPrivileged
+                    ? 'Focus Mode is on, but privileged accounts keep the full shell. Standard chef accounts are reduced to the core dashboard, inbox, inquiries, events, and clients areas.'
+                    : 'Focus Mode is on. The shell keeps only dashboard, inbox, inquiries, events, clients, and the Events and Clients sections.'
+                  : 'The full workspace is visible. Turn on Focus Mode to reduce shell noise and keep only the core dashboard, inbox, inquiries, events, and clients areas in view for standard chef accounts.'}
               </p>
             </div>
           </div>
@@ -142,7 +141,7 @@ export function ModulesClient({
         </div>
 
         {/* Focus Mode ON: show what's active */}
-        {focusMode && (
+        {focusMode && !isPrivileged && (
           <div className="mt-4 pt-4 border-t border-stone-700/50">
             <p className="text-xs text-stone-500 uppercase tracking-wider mb-2">
               Active in Focus Mode
@@ -154,10 +153,8 @@ export function ModulesClient({
                 { label: 'Inquiries', desc: 'Primary shortcut' },
                 { label: 'Events', desc: 'Primary shortcut' },
                 { label: 'Clients', desc: 'Primary shortcut' },
-                { label: 'Remy group', desc: 'Visible in strict Focus Mode' },
-                { label: 'Sales group', desc: 'Visible in strict Focus Mode' },
-                { label: 'Events group', desc: 'Visible in strict Focus Mode' },
-                { label: 'Clients group', desc: 'Visible in strict Focus Mode' },
+                { label: 'Events section', desc: 'Grouped section' },
+                { label: 'Clients section', desc: 'Grouped section' },
               ].map((item) => (
                 <div key={item.label} className="flex items-center gap-2 text-sm text-stone-300">
                   <Eye size={12} className="text-brand-400 shrink-0" />
@@ -167,34 +164,17 @@ export function ModulesClient({
               ))}
             </div>
             <p className="text-xs text-stone-500 mt-3">
-              Other areas stay available by direct URL, but are hidden from the sidebar until Focus
-              Mode is turned off.
+              Other areas are suppressed from the shell until Focus Mode is turned off.
             </p>
           </div>
         )}
 
         {/* Privileged users: Focus Mode is bypassed in nav */}
-        {isPrivileged && !isAdmin && focusMode && (
+        {isPrivileged && focusMode && (
           <p className="text-xs text-stone-500 mt-3 italic">
-            Focus Mode is on, but your account bypasses it. You see all modules in the sidebar.
+            Focus Mode is on, but privileged accounts bypass the reduced shell. You still see the
+            full workspace.
           </p>
-        )}
-
-        {/* Admin: show visibility registry */}
-        {isAdmin && focusMode && (
-          <div className="mt-3 pt-3 border-t border-stone-700/50">
-            <p className="text-xs text-stone-500 uppercase tracking-wider mb-2">
-              Hidden in Focus Mode (admin view)
-            </p>
-            <div className="grid gap-1.5 sm:grid-cols-2">
-              {MODULES.filter((m) => !CORE_MODULES.includes(m.slug as any)).map((mod) => (
-                <div key={mod.slug} className="flex items-center gap-2 text-sm text-stone-500">
-                  <EyeOff size={12} className="shrink-0" />
-                  <span>{mod.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
         )}
       </div>
 
@@ -223,8 +203,6 @@ export function ModulesClient({
           <div className="grid gap-3 sm:grid-cols-2">
             {MODULES.map((mod) => {
               const isOn = enabled.has(mod.slug)
-              const isProModule = mod.tier === 'paid'
-              const isLocked = isProModule && tier === 'free'
 
               return (
                 <div

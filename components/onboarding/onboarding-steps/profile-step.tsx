@@ -423,7 +423,7 @@ export function ProfileStep({ onComplete, onSkip, existingData }: ProfileStepPro
           type="text"
           value={serviceArea}
           onChange={(e) => setServiceArea(e.target.value)}
-          placeholder="e.g. Greater Boston area, North Shore"
+          placeholder="e.g. 20-mile radius from downtown, nearby suburbs, or statewide travel"
           className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2 text-foreground shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
         />
       </div>

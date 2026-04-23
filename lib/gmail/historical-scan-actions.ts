@@ -10,6 +10,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { parseInquiryFromText } from '@/lib/ai/parse-inquiry'
 import { createClientFromLead } from '@/lib/clients/actions'
 import type { Json } from '@/types/database'
+import { getGoogleGmailControl, listGoogleGmailMailboxes } from '@/lib/google/mailbox-control'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -45,6 +46,39 @@ export interface HistoricalFinding {
 export async function enableHistoricalEmailScan(): Promise<void> {
   const user = await requireChef()
   const db: any = createServerClient()
+  const mailboxes = await listGoogleGmailMailboxes({
+    chefId: user.entityId!,
+    tenantId: user.tenantId!,
+    requireConnected: true,
+    allowRepair: true,
+    db,
+  })
+
+  if (mailboxes.length === 0) {
+    const control = await getGoogleGmailControl({
+      chefId: user.entityId!,
+      tenantId: user.tenantId!,
+      db,
+      allowRepair: true,
+    })
+    if (!control.legacyConnection?.gmailConnected) {
+      throw new Error('Gmail is not connected')
+    }
+  }
+
+  if (mailboxes.length > 0) {
+    await db
+      .from('google_mailboxes')
+      .update({
+        historical_scan_enabled: true,
+        historical_scan_status: 'idle',
+        historical_scan_lookback_days: 0,
+      })
+      .in(
+        'id',
+        mailboxes.map((mailbox) => mailbox.id)
+      )
+  }
 
   await db
     .from('google_connections')
@@ -63,6 +97,26 @@ export async function enableHistoricalEmailScan(): Promise<void> {
 export async function disableHistoricalEmailScan(): Promise<void> {
   const user = await requireChef()
   const db: any = createServerClient()
+  const mailboxes = await listGoogleGmailMailboxes({
+    chefId: user.entityId!,
+    tenantId: user.tenantId!,
+    includeInactive: true,
+    allowRepair: true,
+    db,
+  })
+
+  if (mailboxes.length > 0) {
+    await db
+      .from('google_mailboxes')
+      .update({
+        historical_scan_enabled: false,
+        historical_scan_status: 'paused',
+      })
+      .in(
+        'id',
+        mailboxes.map((mailbox) => mailbox.id)
+      )
+  }
 
   // Pause (not reset) - preserves progress and existing findings
   await db
@@ -81,28 +135,44 @@ export async function disableHistoricalEmailScan(): Promise<void> {
 export async function getHistoricalScanStatus(): Promise<HistoricalScanStatus | null> {
   const user = await requireChef()
   const db: any = createServerClient()
+  const mailboxes = await listGoogleGmailMailboxes({
+    chefId: user.entityId!,
+    tenantId: user.tenantId!,
+    requireConnected: true,
+    allowRepair: true,
+    db,
+  })
 
-  const { data, error } = await db
-    .from('google_connections')
-    .select(
-      'gmail_connected, historical_scan_enabled, historical_scan_status, historical_scan_total_processed, historical_scan_lookback_days, historical_scan_started_at, historical_scan_completed_at, historical_scan_last_run_at'
-    )
-    .eq('chef_id', user.entityId)
-    .maybeSingle()
+  const mailbox = mailboxes[0] || null
+  if (mailbox) {
+    return {
+      enabled: mailbox.historicalScanEnabled ?? false,
+      status: (mailbox.historicalScanStatus as HistoricalScanStatus['status']) ?? 'idle',
+      totalProcessed: mailbox.historicalScanTotalProcessed ?? 0,
+      startedAt: mailbox.historicalScanStartedAt ?? null,
+      completedAt: mailbox.historicalScanCompletedAt ?? null,
+      lastRunAt: mailbox.historicalScanLastRunAt ?? null,
+      lookbackDays: mailbox.historicalScanLookbackDays ?? 0,
+    }
+  }
 
-  if (error || !data) return null
-
-  // If Gmail is not connected, scan can't run
-  if (!data.gmail_connected) return null
+  const control = await getGoogleGmailControl({
+    chefId: user.entityId!,
+    tenantId: user.tenantId!,
+    db,
+    allowRepair: true,
+  })
+  const legacy = control.legacyConnection
+  if (!legacy?.gmailConnected) return null
 
   return {
-    enabled: data.historical_scan_enabled ?? false,
-    status: (data.historical_scan_status as HistoricalScanStatus['status']) ?? 'idle',
-    totalProcessed: data.historical_scan_total_processed ?? 0,
-    startedAt: data.historical_scan_started_at ?? null,
-    completedAt: data.historical_scan_completed_at ?? null,
-    lastRunAt: data.historical_scan_last_run_at ?? null,
-    lookbackDays: data.historical_scan_lookback_days ?? 730,
+    enabled: legacy.historicalScanEnabled ?? false,
+    status: (legacy.historicalScanStatus as HistoricalScanStatus['status']) ?? 'idle',
+    totalProcessed: legacy.historicalScanTotalProcessed ?? 0,
+    startedAt: legacy.historicalScanStartedAt ?? null,
+    completedAt: legacy.historicalScanCompletedAt ?? null,
+    lastRunAt: legacy.historicalScanLastRunAt ?? null,
+    lookbackDays: legacy.historicalScanLookbackDays ?? 0,
   }
 }
 
@@ -239,6 +309,7 @@ export async function importHistoricalFinding(findingId: string): Promise<{ inqu
     tenant_id: user.tenantId!,
     inquiry_id: inquiry.id,
     client_id: clientId,
+    mailbox_id: finding.mailbox_id ?? null,
     channel: 'email' as const,
     direction: 'inbound' as const,
     status: 'logged' as const,

@@ -5,6 +5,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getEventById } from '@/lib/events/actions'
 import { getBusinessDocInfo, getDocumentReadiness } from '@/lib/documents/actions'
 import { getEventFinancialSummaryFull } from '@/lib/events/financial-summary-actions'
+import { evaluateReadinessForDocumentGeneration } from '@/lib/events/readiness'
 import { getChefArchetype } from '@/lib/archetypes/actions'
 import {
   getEventDocumentSnapshotDrilldown,
@@ -21,8 +22,11 @@ import {
 import type { OperationalDocumentType } from '@/lib/documents/template-catalog'
 import { BulkGenerateRunner } from '@/components/documents/bulk-generate-runner'
 import { DocumentSection } from '@/components/documents/document-section'
+import { ReadinessAwareDocumentButton } from '@/components/documents/readiness-aware-document-button'
+import { ServiceSimulationReturnBanner } from '@/components/events/service-simulation-return-banner'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { sanitizeReturnTo } from '@/lib/navigation/return-to'
 
 type SnapshotDocFilter = 'any' | SnapshotDocumentType
 
@@ -168,9 +172,11 @@ export default async function EventDocumentsPage({
     order?: string
     version?: string
     page?: string
+    returnTo?: string
   }
 }) {
   await requireChef()
+  const returnTo = sanitizeReturnTo(searchParams?.returnTo)
 
   const rawDoc = (searchParams?.doc ?? 'any').trim().toLowerCase()
   const docFilter: SnapshotDocFilter =
@@ -212,6 +218,7 @@ export default async function EventDocumentsPage({
     generationHealth,
     bulkRunHistory,
     financialSummary,
+    readinessGate,
   ] = await Promise.all([
     getEventById(params.id),
     getDocumentReadiness(params.id),
@@ -233,6 +240,7 @@ export default async function EventDocumentsPage({
     getEventDocumentGenerationHealth(params.id),
     getEventDocumentBulkRunHistory(params.id),
     getEventFinancialSummaryFull(params.id).catch(() => null),
+    evaluateReadinessForDocumentGeneration(params.id).catch(() => null),
   ])
 
   if (!event) notFound()
@@ -329,6 +337,8 @@ export default async function EventDocumentsPage({
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
+      <ServiceSimulationReturnBanner returnTo={returnTo} />
+
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-stone-100">Event Documents</h1>
@@ -341,15 +351,13 @@ export default async function EventDocumentsPage({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button
-            variant="primary"
+          <ReadinessAwareDocumentButton
+            eventId={event.id}
             href={`/api/documents/${event.id}?type=all&archive=1`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Print All (8 Sheets)
-          </Button>
-          <Link href={`/events/${event.id}`}>
+            label="Print All (8 Sheets)"
+            readiness={readinessGate}
+          />
+          <Link href={returnTo ?? `/events/${event.id}`}>
             <Button variant="secondary">Back to Event</Button>
           </Link>
         </div>
@@ -439,15 +447,14 @@ export default async function EventDocumentsPage({
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button
+              <ReadinessAwareDocumentButton
+                eventId={event.id}
+                href={`/api/documents/${event.id}?type=pack&types=${encodeURIComponent(packTypesParam)}&archive=1`}
+                label="Print Recommended Pack"
+                readiness={readinessGate}
                 variant="primary"
                 size="sm"
-                href={`/api/documents/${event.id}?type=pack&types=${encodeURIComponent(packTypesParam)}&archive=1`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Print Recommended Pack
-              </Button>
+              />
             </div>
           </div>
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -536,6 +543,7 @@ export default async function EventDocumentsPage({
           </p>
           <BulkGenerateRunner
             eventId={event.id}
+            readiness={readinessGate}
             recommendedTypes={pack.recommendedOperationalDocs}
             readyRecommendedTypes={readyRecommendedTypes}
             missingArchiveTypes={missingArchiveTypes}
@@ -705,7 +713,12 @@ export default async function EventDocumentsPage({
         </Card>
       </details>
 
-      <DocumentSection eventId={event.id} readiness={readiness} businessDocs={businessDocs} />
+      <DocumentSection
+        eventId={event.id}
+        readiness={readiness}
+        businessDocs={businessDocs}
+        readinessGate={readinessGate}
+      />
 
       <details className="rounded border border-stone-800 px-4 py-3">
         <summary className="cursor-pointer text-sm text-stone-300">

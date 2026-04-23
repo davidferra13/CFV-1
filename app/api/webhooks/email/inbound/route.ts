@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { resolveChefByAlias } from '@/lib/comms/email-channel'
-import { ingestCommunicationEvent } from '@/lib/communication/pipeline'
+import { ingestManagedInboundCommunication } from '@/lib/communication/managed-ingest'
 
 // Cloudflare Email Worker POSTs here when an email arrives at {alias}@cheflowhq.com
 // Worker format:
@@ -8,11 +7,6 @@ import { ingestCommunicationEvent } from '@/lib/communication/pipeline'
 // Header: X-Webhook-Secret: <INBOUND_EMAIL_WEBHOOK_SECRET>
 // Body (JSON):
 //   { from: string, to: string, subject: string, text: string, html?: string }
-
-function extractAlias(toAddress: string): string {
-  const local = toAddress.split('@')[0]?.toLowerCase() || ''
-  return local
-}
 
 function extractSenderIdentity(from: string): string {
   // "Name <email@example.com>" -> keep as-is
@@ -57,34 +51,35 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing from or to' }, { status: 400 })
   }
 
-  const alias = extractAlias(to)
-  const chefId = await resolveChefByAlias(alias)
-
-  if (!chefId) {
-    // Unknown alias - not an error, just not routable
-    return NextResponse.json({ ok: true, routed: false })
-  }
-
   const rawContent = buildRawContent(subject || '', text || '')
-  if (!rawContent) {
-    return NextResponse.json({ ok: true, routed: false, reason: 'empty body' })
-  }
 
   try {
-    await ingestCommunicationEvent({
-      tenantId: chefId,
-      source: 'email',
-      externalId: message_id || null,
-      externalThreadKey: thread_id || null,
-      timestamp: new Date().toISOString(),
+    const result = await ingestManagedInboundCommunication({
+      channel: 'email',
+      toAddress: to,
       senderIdentity: extractSenderIdentity(from),
       rawContent,
-      direction: 'inbound',
-      ingestionSource: 'webhook',
-      isRawSignalOnly: false, // direct inbound to chef's address is always triage-visible
+      timestamp: new Date().toISOString(),
+      externalId: message_id || null,
+      externalThreadKey: thread_id || null,
+      providerName: 'cloudflare_email_routing',
+      legacyMessage: {
+        enabled: true,
+        subject: subject || null,
+        body: text || '',
+      },
     })
 
-    return NextResponse.json({ ok: true, routed: true })
+    if (!result.routed || result.reason === 'empty_body') {
+      return NextResponse.json({ ok: true, routed: false, reason: result.reason || 'unmanaged' })
+    }
+
+    return NextResponse.json({
+      ok: true,
+      routed: true,
+      deduped: result.deduped,
+      tenantId: result.tenantId,
+    })
   } catch (err) {
     console.error('[email/inbound] Ingest failed:', err)
     return NextResponse.json({ error: 'Ingest failed' }, { status: 500 })

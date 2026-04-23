@@ -64,7 +64,8 @@ const SurveyResponseSchema = z.object({
       z.object({
         dish_id: z.string().optional(),
         dish_name: z.string(),
-        rating: z.number().int().min(1).max(5),
+        sentiment: z.enum(['liked', 'neutral', 'disliked']).optional(),
+        rating: z.number().int().min(1).max(5).optional(),
         comment: z.string().max(500).optional(),
       })
     )

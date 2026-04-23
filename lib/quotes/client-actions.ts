@@ -22,7 +22,8 @@ export async function getClientQuotes() {
     .select(
       `
       *,
-      inquiry:inquiries(id, confirmed_occasion)
+      inquiry:inquiries(id, confirmed_occasion, confirmed_date, confirmed_guest_count),
+      event:events(occasion, event_date)
     `
     )
     .eq('client_id', user.entityId)

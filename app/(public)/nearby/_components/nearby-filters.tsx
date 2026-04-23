@@ -1,25 +1,21 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useState, useRef } from 'react'
-import { Search, SlidersHorizontal, X } from '@/components/ui/icons'
+import { useCallback, useEffect, useState } from 'react'
+import { MapPin, Search, SlidersHorizontal, X } from '@/components/ui/icons'
 import {
   BUSINESS_TYPES,
   CUISINE_CATEGORIES,
   PRICE_RANGES,
   US_STATES,
 } from '@/lib/discover/constants'
+import { NEARBY_RADIUS_OPTIONS } from '@/lib/discover/nearby-search'
+import {
+  NEUTRAL_CITY_PLACEHOLDER,
+  NEUTRAL_LOCATION_PLACEHOLDER,
+  NEUTRAL_NEARBY_QUERY_EXAMPLES,
+} from '@/lib/site/national-brand-copy'
 import { CategoryPill } from './category-icon'
-
-const PLACEHOLDER_TEXTS = [
-  'Thai food in Boston...',
-  'Caterers near Austin...',
-  'Bakeries in Portland...',
-  'Private chefs in Miami...',
-  'Food trucks in Denver...',
-  'Seafood in Seattle...',
-  'Italian in New York...',
-]
 
 type Props = {
   query: string
@@ -28,30 +24,61 @@ type Props = {
   state: string
   city: string
   priceRange: string
+  location: string
+  radiusMiles: number | null
+  locationError: string | null
+  locationLabel: string | null
+  usingBrowserLocation: boolean
 }
 
-export function NearbyFilters({ query, businessType, cuisine, state, city, priceRange }: Props) {
+export function NearbyFilters({
+  query,
+  businessType,
+  cuisine,
+  state,
+  city,
+  priceRange,
+  location,
+  radiusMiles,
+  locationError,
+  locationLabel,
+  usingBrowserLocation,
+}: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
   const [searchInput, setSearchInput] = useState(query)
+  const [locationInput, setLocationInput] = useState(location)
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
-  const [showMoreFilters, setShowMoreFilters] = useState(!!(cuisine || state || city || priceRange))
-  const [showAllCuisines, setShowAllCuisines] = useState(false)
-  const [locationActive, setLocationActive] = useState(
-    !!(searchParams?.get('lat') && searchParams?.get('lon'))
+  const [showMoreFilters, setShowMoreFilters] = useState(
+    !!(cuisine || state || city || priceRange || location || radiusMiles != null)
   )
+  const [showAllCuisines, setShowAllCuisines] = useState(false)
   const [locationLoading, setLocationLoading] = useState(false)
-  const geoWatchId = useRef<number | null>(null)
 
-  // Rotate placeholder text
   useEffect(() => {
-    if (query) return // Don't rotate when user has typed something
+    setSearchInput(query)
+  }, [query])
+
+  useEffect(() => {
+    setLocationInput(location)
+  }, [location])
+
+  useEffect(() => {
+    if (query) return
     const interval = setInterval(() => {
-      setPlaceholderIndex((i) => (i + 1) % PLACEHOLDER_TEXTS.length)
+      setPlaceholderIndex((index) => (index + 1) % NEUTRAL_NEARBY_QUERY_EXAMPLES.length)
     }, 3000)
     return () => clearInterval(interval)
   }, [query])
+
+  const applyParams = useCallback(
+    (params: URLSearchParams) => {
+      const queryString = params.toString()
+      router.push(queryString ? `/nearby?${queryString}` : '/nearby')
+    },
+    [router]
+  )
 
   const updateFilter = useCallback(
     (key: string, value: string) => {
@@ -62,41 +89,64 @@ export function NearbyFilters({ query, businessType, cuisine, state, city, price
         params.delete(key)
       }
       params.delete('page')
+
       if (key === 'state') {
         params.delete('city')
       }
-      router.push(`/nearby?${params.toString()}`)
+
+      applyParams(params)
     },
-    [router, searchParams]
+    [applyParams, searchParams]
   )
 
   const handleSearch = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault()
+    (event: React.FormEvent) => {
+      event.preventDefault()
       updateFilter('q', searchInput.trim())
     },
     [searchInput, updateFilter]
   )
 
-  const clearFilters = useCallback(() => {
-    router.push('/nearby')
-    setSearchInput('')
-    setShowMoreFilters(false)
-  }, [router])
-
-  const toggleLocation = useCallback(() => {
-    if (locationActive) {
-      // Turn off location sorting
-      if (geoWatchId.current != null) {
-        navigator.geolocation.clearWatch(geoWatchId.current)
-        geoWatchId.current = null
-      }
+  const handleLocationSearch = useCallback(
+    (event?: React.FormEvent) => {
+      event?.preventDefault()
       const params = new URLSearchParams(searchParams?.toString())
+      const nextLocation = locationInput.trim()
+
+      params.delete('page')
       params.delete('lat')
       params.delete('lon')
+
+      if (nextLocation) {
+        params.set('location', nextLocation)
+      } else {
+        params.delete('location')
+        params.delete('radius')
+      }
+
+      applyParams(params)
+    },
+    [applyParams, locationInput, searchParams]
+  )
+
+  const clearFilters = useCallback(() => {
+    setSearchInput('')
+    setLocationInput('')
+    setShowMoreFilters(false)
+    router.push('/nearby')
+  }, [router])
+
+  const toggleBrowserLocation = useCallback(() => {
+    const params = new URLSearchParams(searchParams?.toString())
+    const hasCoordinateLocation = !!(searchParams?.get('lat') && searchParams?.get('lon'))
+    const usingCurrentLocation = usingBrowserLocation && hasCoordinateLocation
+
+    if (usingCurrentLocation) {
+      params.delete('lat')
+      params.delete('lon')
+      params.delete('radius')
       params.delete('page')
-      setLocationActive(false)
-      router.push(`/nearby?${params.toString()}`)
+      applyParams(params)
       return
     }
 
@@ -104,48 +154,50 @@ export function NearbyFilters({ query, businessType, cuisine, state, city, price
 
     setLocationLoading(true)
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const params = new URLSearchParams(searchParams?.toString())
-        params.set('lat', pos.coords.latitude.toFixed(4))
-        params.set('lon', pos.coords.longitude.toFixed(4))
+      (position) => {
+        params.delete('location')
         params.delete('page')
-        setLocationActive(true)
+        params.set('lat', position.coords.latitude.toFixed(4))
+        params.set('lon', position.coords.longitude.toFixed(4))
+        applyParams(params)
         setLocationLoading(false)
-        router.push(`/nearby?${params.toString()}`)
       },
       () => {
         setLocationLoading(false)
       },
       { enableHighAccuracy: false, timeout: 8000 }
     )
-  }, [locationActive, router, searchParams])
+  }, [applyParams, searchParams, usingBrowserLocation])
 
-  // Cleanup geolocation watch on unmount
-  useEffect(() => {
-    return () => {
-      if (geoWatchId.current != null) {
-        navigator.geolocation.clearWatch(geoWatchId.current)
-      }
-    }
-  }, [])
-
+  const hasActiveLocation = !!location || usingBrowserLocation || !!locationLabel
   const hasFilters =
-    query || businessType || cuisine || state || city || priceRange || locationActive
+    query ||
+    businessType ||
+    cuisine ||
+    state ||
+    city ||
+    priceRange ||
+    location ||
+    usingBrowserLocation ||
+    radiusMiles != null
 
-  const placeholderText = PLACEHOLDER_TEXTS[placeholderIndex]
-
+  const placeholderText = NEUTRAL_NEARBY_QUERY_EXAMPLES[placeholderIndex]
   const visibleCuisines = showAllCuisines ? CUISINE_CATEGORIES : CUISINE_CATEGORIES.slice(0, 8)
+  const locationStatus = usingBrowserLocation
+    ? 'Using your current location.'
+    : locationLabel
+      ? `Searching near ${locationLabel}.`
+      : null
 
   return (
     <div className="space-y-4">
-      {/* Search bar */}
-      <form onSubmit={handleSearch} className="flex items-center gap-2">
+      <form onSubmit={handleSearch} className="flex flex-col gap-2 sm:flex-row">
         <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-500 pointer-events-none" />
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-500" />
           <input
             type="text"
             value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
+            onChange={(event) => setSearchInput(event.target.value)}
             placeholder={placeholderText}
             className="h-12 w-full rounded-xl border border-stone-700 bg-stone-900/80 pl-11 pr-4 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
           />
@@ -158,34 +210,39 @@ export function NearbyFilters({ query, businessType, cuisine, state, city, price
         </button>
         <button
           type="button"
-          onClick={toggleLocation}
+          onClick={toggleBrowserLocation}
           disabled={locationLoading}
-          title={locationActive ? 'Stop sorting by distance' : 'Sort by distance from me'}
-          className={`h-12 rounded-xl px-4 text-sm font-medium transition-colors ${
-            locationActive
+          aria-pressed={usingBrowserLocation}
+          title={
+            usingBrowserLocation
+              ? 'Stop sorting by your current location'
+              : 'Use my current location'
+          }
+          className={`inline-flex h-12 items-center justify-center gap-2 rounded-xl px-4 text-sm font-medium transition-colors ${
+            usingBrowserLocation
               ? 'bg-brand-600 text-white hover:bg-brand-700'
               : 'border border-stone-700 text-stone-400 hover:border-stone-600 hover:text-stone-200'
           } ${locationLoading ? 'animate-pulse' : ''}`}
         >
-          {locationLoading ? '...' : locationActive ? '📍' : '📍 Near me'}
+          <MapPin className="h-4 w-4" />
+          {locationLoading ? 'Locating...' : usingBrowserLocation ? 'Using location' : 'Near me'}
         </button>
       </form>
 
-      {/* Business type pills */}
-      <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-        {BUSINESS_TYPES.map((t) => (
+      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        {BUSINESS_TYPES.map((type) => (
           <CategoryPill
-            key={t.value}
-            businessType={t.value}
-            active={businessType === t.value}
-            onClick={() => updateFilter('type', businessType === t.value ? '' : t.value)}
+            key={type.value}
+            businessType={type.value}
+            active={businessType === type.value}
+            onClick={() => updateFilter('type', businessType === type.value ? '' : type.value)}
           />
         ))}
       </div>
 
-      {/* Expanded filters toggle */}
       {!showMoreFilters && !hasFilters && (
         <button
+          type="button"
           onClick={() => setShowMoreFilters(true)}
           className="flex items-center gap-1.5 text-xs font-medium text-stone-500 transition-colors hover:text-stone-300"
         >
@@ -194,61 +251,61 @@ export function NearbyFilters({ query, businessType, cuisine, state, city, price
         </button>
       )}
 
-      {/* Expanded filter rows */}
       {(showMoreFilters || hasFilters) && (
         <div className="space-y-3">
-          {/* Cuisine pills */}
-          <div>
-            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-              {visibleCuisines.map((c) => (
-                <button
-                  key={c.value}
-                  onClick={() => updateFilter('cuisine', cuisine === c.value ? '' : c.value)}
-                  className={`flex-shrink-0 rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
-                    cuisine === c.value
-                      ? 'bg-brand-600 text-white'
-                      : 'border border-stone-700/60 bg-stone-900/60 text-stone-400 hover:border-brand-600/50 hover:text-stone-200'
-                  }`}
-                >
-                  {c.label}
-                </button>
-              ))}
-              {!showAllCuisines && (
-                <button
-                  onClick={() => setShowAllCuisines(true)}
-                  className="flex-shrink-0 rounded-full border border-dashed border-stone-600 px-3.5 py-1.5 text-xs font-medium text-stone-500 transition-colors hover:border-stone-500 hover:text-stone-300"
-                >
-                  + More
-                </button>
-              )}
-            </div>
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            {visibleCuisines.map((category) => (
+              <button
+                key={category.value}
+                type="button"
+                onClick={() =>
+                  updateFilter('cuisine', cuisine === category.value ? '' : category.value)
+                }
+                className={`flex-shrink-0 rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
+                  cuisine === category.value
+                    ? 'bg-brand-600 text-white'
+                    : 'border border-stone-700/60 bg-stone-900/60 text-stone-400 hover:border-brand-600/50 hover:text-stone-200'
+                }`}
+              >
+                {category.label}
+              </button>
+            ))}
+            {!showAllCuisines && (
+              <button
+                type="button"
+                onClick={() => setShowAllCuisines(true)}
+                className="flex-shrink-0 rounded-full border border-dashed border-stone-600 px-3.5 py-1.5 text-xs font-medium text-stone-500 transition-colors hover:border-stone-500 hover:text-stone-300"
+              >
+                + More
+              </button>
+            )}
           </div>
 
-          {/* Price + Location row */}
           <div className="flex flex-wrap items-center gap-3">
-            {/* Price pills */}
             <div className="flex gap-1.5">
-              {PRICE_RANGES.map((p) => (
+              {PRICE_RANGES.map((range) => (
                 <button
-                  key={p.value}
-                  onClick={() => updateFilter('price', priceRange === p.value ? '' : p.value)}
+                  key={range.value}
+                  type="button"
+                  onClick={() =>
+                    updateFilter('price', priceRange === range.value ? '' : range.value)
+                  }
                   className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
-                    priceRange === p.value
+                    priceRange === range.value
                       ? 'bg-brand-600 text-white'
                       : 'border border-stone-700/60 bg-stone-900/60 text-stone-400 hover:border-brand-600/50 hover:text-stone-200'
                   }`}
                 >
-                  {p.label}
+                  {range.label}
                 </button>
               ))}
             </div>
 
             <div className="h-5 w-px bg-stone-700/50" />
 
-            {/* State dropdown (too many for pills) */}
             <select
               value={state}
-              onChange={(e) => updateFilter('state', e.target.value)}
+              onChange={(event) => updateFilter('state', event.target.value)}
               className="h-9 rounded-lg border border-stone-700 bg-stone-900 px-3 text-xs text-stone-300 focus:border-brand-500 focus:outline-none"
             >
               <option value="">All states</option>
@@ -259,32 +316,74 @@ export function NearbyFilters({ query, businessType, cuisine, state, city, price
               ))}
             </select>
 
-            {/* City input (only when state selected) */}
             {state && (
               <input
                 type="text"
                 defaultValue={city}
-                onBlur={(e) => updateFilter('city', e.target.value.trim())}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    updateFilter('city', (e.target as HTMLInputElement).value.trim())
+                onBlur={(event) => updateFilter('city', event.target.value.trim())}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    updateFilter('city', (event.target as HTMLInputElement).value.trim())
                   }
                 }}
-                placeholder="City name..."
+                placeholder={NEUTRAL_CITY_PLACEHOLDER}
                 className="h-9 w-36 rounded-lg border border-stone-700 bg-stone-900 px-3 text-xs text-stone-300 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none"
               />
             )}
+          </div>
 
+          <form
+            onSubmit={handleLocationSearch}
+            className="flex flex-col gap-3 md:flex-row md:items-center"
+          >
+            <div className="relative flex-1">
+              <MapPin className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-500" />
+              <input
+                type="text"
+                value={locationInput}
+                onChange={(event) => setLocationInput(event.target.value)}
+                placeholder={NEUTRAL_LOCATION_PLACEHOLDER}
+                className="h-11 w-full rounded-xl border border-stone-700 bg-stone-900/80 pl-11 pr-4 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+              />
+            </div>
+            <button
+              type="submit"
+              className="h-11 rounded-xl border border-stone-700 px-4 text-sm font-medium text-stone-300 transition-colors hover:border-stone-600 hover:bg-stone-800 hover:text-stone-100"
+            >
+              Set location
+            </button>
+            {hasActiveLocation && (
+              <select
+                value={radiusMiles != null ? String(radiusMiles) : ''}
+                onChange={(event) => updateFilter('radius', event.target.value)}
+                className="h-11 rounded-xl border border-stone-700 bg-stone-900 px-3 text-sm text-stone-300 focus:border-brand-500 focus:outline-none"
+              >
+                <option value="">Any distance</option>
+                {NEARBY_RADIUS_OPTIONS.map((radiusOption) => (
+                  <option key={radiusOption} value={radiusOption}>
+                    Within {radiusOption} miles
+                  </option>
+                ))}
+              </select>
+            )}
             {hasFilters && (
               <button
+                type="button"
                 onClick={clearFilters}
-                className="flex items-center gap-1 rounded-lg border border-stone-600 px-3 py-1.5 text-xs font-medium text-stone-400 transition-colors hover:border-stone-500 hover:text-stone-200"
+                className="inline-flex h-11 items-center justify-center gap-1 rounded-xl border border-stone-600 px-4 text-sm font-medium text-stone-400 transition-colors hover:border-stone-500 hover:text-stone-200"
               >
-                <X className="h-3 w-3" />
+                <X className="h-3.5 w-3.5" />
                 Clear all
               </button>
             )}
-          </div>
+          </form>
+
+          {(locationStatus || locationError) && (
+            <div className="space-y-1">
+              {locationStatus && <p className="text-xs text-stone-500">{locationStatus}</p>}
+              {locationError && <p className="text-xs text-amber-300">{locationError}</p>}
+            </div>
+          )}
         </div>
       )}
     </div>

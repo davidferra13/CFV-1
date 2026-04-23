@@ -1,9 +1,11 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
+import { overrideReadinessForTransition, type ReadinessResult } from '@/lib/events/readiness'
 import type { OperationalDocumentType } from '@/lib/documents/document-definitions'
 
 const DOC_LABELS: Record<OperationalDocumentType, string> = {
@@ -42,6 +44,7 @@ type BulkRunResponse = {
 
 type BulkGenerateRunnerProps = {
   eventId: string
+  readiness: ReadinessResult | null
   recommendedTypes: OperationalDocumentType[]
   readyRecommendedTypes: OperationalDocumentType[]
   missingArchiveTypes: OperationalDocumentType[]
@@ -57,8 +60,14 @@ function dedupeTypes(types: OperationalDocumentType[]): OperationalDocumentType[
   return Array.from(new Set(types))
 }
 
+function appendReturnTo(route: string, returnTo: string) {
+  const separator = route.includes('?') ? '&' : '?'
+  return `${route}${separator}returnTo=${encodeURIComponent(returnTo)}`
+}
+
 export function BulkGenerateRunner({
   eventId,
+  readiness,
   recommendedTypes,
   readyRecommendedTypes,
   missingArchiveTypes,
@@ -66,11 +75,14 @@ export function BulkGenerateRunner({
   historicalRetryRuns = [],
 }: BulkGenerateRunnerProps) {
   const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [isRunning, setIsRunning] = useState(false)
   const [lastRun, setLastRun] = useState<BulkRunResponse | null>(null)
   const [retryTypes, setRetryTypes] = useState<OperationalDocumentType[]>(
     dedupeTypes(initialLatestFailedTypes)
   )
+  const [pendingTypes, setPendingTypes] = useState<OperationalDocumentType[] | null>(null)
 
   const defaultTypes = useMemo(() => {
     if (missingArchiveTypes.length > 0) return dedupeTypes(missingArchiveTypes)
@@ -79,8 +91,12 @@ export function BulkGenerateRunner({
   }, [missingArchiveTypes, readyRecommendedTypes, recommendedTypes])
   const primaryLabel =
     missingArchiveTypes.length > 0 ? 'Generate Missing PDFs' : 'Generate Ready PDFs'
+  const returnTo = (() => {
+    const query = searchParams.toString()
+    return `${pathname}${query ? `?${query}` : ''}`
+  })()
 
-  async function runBulk(types: OperationalDocumentType[]) {
+  async function runBulk(types: OperationalDocumentType[], readinessOverride = false) {
     const normalizedTypes = dedupeTypes(types)
     if (normalizedTypes.length === 0) {
       toast.error('No document types selected for this run.')
@@ -95,6 +111,7 @@ export function BulkGenerateRunner({
         body: JSON.stringify({
           types: normalizedTypes,
           runId: crypto.randomUUID(),
+          readinessOverride,
         }),
       })
 
@@ -132,6 +149,34 @@ export function BulkGenerateRunner({
     }
   }
 
+  async function confirmRunWithReadiness() {
+    if (!pendingTypes) return
+
+    const nextTypes = pendingTypes
+    setPendingTypes(null)
+    try {
+      const hasBlockers = Boolean(readiness && readiness.counts.blockers > 0)
+      if (hasBlockers) {
+        await overrideReadinessForTransition(eventId, 'documents')
+      }
+      await runBulk(nextTypes, hasBlockers)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to override readiness blockers')
+    }
+  }
+
+  function requestRun(types: OperationalDocumentType[]) {
+    if (
+      readiness &&
+      (readiness.counts.blockers > 0 || readiness.counts.risks > 0 || readiness.counts.stale > 0)
+    ) {
+      setPendingTypes(types)
+      return
+    }
+
+    void runBulk(types)
+  }
+
   return (
     <div className="space-y-3 rounded border border-stone-800 p-3">
       <div className="flex flex-wrap items-center gap-2">
@@ -139,7 +184,7 @@ export function BulkGenerateRunner({
           variant="primary"
           size="sm"
           loading={isRunning}
-          onClick={() => runBulk(defaultTypes)}
+          onClick={() => requestRun(defaultTypes)}
           disabled={defaultTypes.length === 0}
         >
           {primaryLabel} ({defaultTypes.length})
@@ -149,7 +194,7 @@ export function BulkGenerateRunner({
             variant="secondary"
             size="sm"
             loading={isRunning}
-            onClick={() => runBulk(retryTypes)}
+            onClick={() => requestRun(retryTypes)}
             disabled={retryTypes.length === 0}
           >
             Retry Failed ({retryTypes.length})
@@ -207,7 +252,9 @@ export function BulkGenerateRunner({
               size="sm"
               loading={isRunning}
               onClick={() =>
-                runBulk(readyRecommendedTypes.length > 0 ? readyRecommendedTypes : recommendedTypes)
+                requestRun(
+                  readyRecommendedTypes.length > 0 ? readyRecommendedTypes : recommendedTypes
+                )
               }
               disabled={recommendedTypes.length === 0}
             >
@@ -226,7 +273,7 @@ export function BulkGenerateRunner({
                     size="sm"
                     loading={isRunning}
                     disabled={run.failedTypes.length === 0}
-                    onClick={() => runBulk(run.failedTypes)}
+                    onClick={() => requestRun(run.failedTypes)}
                   >
                     Retry {run.label} ({run.failedTypes.length})
                   </Button>
@@ -236,6 +283,53 @@ export function BulkGenerateRunner({
           )}
         </div>
       </details>
+
+      <ConfirmModal
+        open={Boolean(pendingTypes && readiness)}
+        title={
+          readiness?.counts.blockers
+            ? 'Document generation needs an explicit override'
+            : 'Generate documents with current readiness signal?'
+        }
+        description={
+          readiness
+            ? `Confidence ${readiness.confidence}%. ${readiness.counts.blockers} blockers, ${readiness.counts.risks} risks, ${readiness.counts.stale} stale.`
+            : undefined
+        }
+        confirmLabel={readiness?.counts.blockers ? 'Override and Generate' : 'Generate Anyway'}
+        cancelLabel="Go Back"
+        loading={isRunning}
+        onCancel={() => setPendingTypes(null)}
+        onConfirm={() => {
+          void confirmRunWithReadiness()
+        }}
+        maxWidth="max-w-xl"
+      >
+        {readiness ? (
+          <div className="space-y-2">
+            {readiness.gates
+              .filter((gate) => gate.status !== 'verified')
+              .map((gate) => (
+                <div
+                  key={gate.gate}
+                  className="rounded border border-stone-800 bg-stone-950/60 px-3 py-2"
+                >
+                  <p className="text-sm font-medium text-stone-100">{gate.label}</p>
+                  <p className="mt-1 text-sm text-stone-400">{gate.details || gate.description}</p>
+                  <div className="mt-2">
+                    <Button
+                      href={appendReturnTo(gate.verifyRoute, returnTo)}
+                      variant="ghost"
+                      size="sm"
+                    >
+                      {gate.ctaLabel}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+          </div>
+        ) : null}
+      </ConfirmModal>
     </div>
   )
 }

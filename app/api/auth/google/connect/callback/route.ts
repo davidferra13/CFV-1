@@ -1,11 +1,13 @@
 // Google OAuth Callback for workspace services (Gmail, Calendar)
-// Exchanges the auth code for tokens and stores them in google_connections.
+// Exchanges the auth code for tokens, keeps google_connections for compatibility,
+// and upserts google_mailboxes as the operational Gmail mailbox record.
 // This is SEPARATE from the Google OAuth callback at /auth/callback.
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@/lib/db/server'
 import { getCurrentUser } from '@/lib/auth/get-user'
+import { upsertGoogleMailboxFromLegacyConnection } from '@/lib/google/mailbox-control'
 import {
   buildGoogleConnectCallbackUrl,
   GOOGLE_OAUTH_CSRF_COOKIE,
@@ -213,9 +215,9 @@ export async function GET(request: NextRequest) {
 
   const { data: existing } = await db
     .from('google_connections')
-    .select('gmail_connected, calendar_connected, scopes, refresh_token')
+    .select('gmail_connected, calendar_connected, scopes, refresh_token, connected_email')
     .eq('chef_id', state.chefId)
-    .single()
+    .maybeSingle()
 
   const mergedGmail = gmailConnected || (existing?.gmail_connected ?? false)
   const mergedCalendar = calendarConnected || (existing?.calendar_connected ?? false)
@@ -251,6 +253,38 @@ export async function GET(request: NextRequest) {
         redirectBase
       )
     )
+  }
+
+  const mailboxEmail =
+    connectedEmail !== 'unknown' ? connectedEmail : String(existing?.connected_email || '').trim()
+
+  if (mergedGmail && mailboxEmail) {
+    try {
+      await upsertGoogleMailboxFromLegacyConnection({
+        chefId: state.chefId,
+        tenantId: currentUser.tenantId || state.chefId,
+        connectedEmail: mailboxEmail,
+        accessToken: tokens.access_token,
+        refreshToken,
+        tokenExpiresAt: expiresAt,
+        scopes: mergedScopes,
+        gmailConnected: true,
+        gmailSyncErrors: 0,
+        db,
+      })
+    } catch (mailboxError) {
+      console.error('[Google OAuth] Failed to save mailbox control row:', mailboxError)
+      return NextResponse.redirect(
+        new URL(
+          buildGoogleConnectResultPath({
+            returnTo,
+            key: 'error',
+            value: 'Failed to save Gmail mailbox ownership',
+          }),
+          redirectBase
+        )
+      )
+    }
   }
 
   const service = gmailConnected ? 'gmail' : calendarConnected ? 'calendar' : 'google'

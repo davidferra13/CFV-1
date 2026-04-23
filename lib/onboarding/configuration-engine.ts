@@ -6,6 +6,7 @@
 
 import type { ArchetypeId } from '@/lib/archetypes/presets'
 import type { DashboardWidgetId } from '@/lib/scheduling/types'
+import { normalizePrimaryNavHrefs } from '@/lib/interface/surface-governance'
 import type {
   ConfigurationInputs,
   ScaleId,
@@ -220,7 +221,7 @@ export function resolveConfiguration(inputs: ConfigurationInputs): SystemConfigu
   return {
     archetype,
     enabled_modules: preset.enabledModules,
-    primary_nav_hrefs: preset.primaryNavHrefs,
+    primary_nav_hrefs: normalizePrimaryNavHrefs(preset.primaryNavHrefs),
     mobile_tab_hrefs: preset.mobileTabHrefs,
     dashboard_widgets: dashboardWidgets,
     default_prep_hours: PREP_HOURS[archetype],

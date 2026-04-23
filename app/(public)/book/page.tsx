@@ -1,36 +1,66 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { PublicPageView } from '@/components/analytics/public-page-view'
+import { SectionViewTracker } from '@/components/analytics/section-view-tracker'
+import { TrackedLink } from '@/components/analytics/tracked-link'
 import { BookDinnerForm } from './_components/book-dinner-form'
+import { IntakeLaneExpectations } from '@/components/public/intake-lane-expectations'
 import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
+import {
+  mergePublicOpenBookingPrefill,
+  readPublicOpenBookingPrefillFromSearchParams,
+  readPublicSeasonalMarketPulseContext,
+} from '@/lib/public/public-seasonal-market-pulse'
+import { PUBLIC_INTAKE_LANE_KEYS } from '@/lib/public/intake-lane-config'
 import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 import { PUBLIC_DIRECTORY_HELPER } from '@/lib/public/public-surface-config'
+import { PUBLIC_MARKET_SCOPE, buildMarketingMetadata } from '@/lib/site/public-site'
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
-
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMarketingMetadata({
   title: 'Book a Private Chef',
   description:
     'Tell us about your event and ChefFlow will share your request with matched private chefs in your area. Matched chefs reach out directly. Free to submit, no obligation.',
-  openGraph: {
-    title: 'Book a Private Chef',
-    description:
-      'Describe your event and get matched with reviewed private chefs near you. Matched chefs reach out directly.',
-    url: `${BASE_URL}/book`,
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary',
-    title: 'Book a Private Chef',
-    description: 'Describe your event and get matched with reviewed private chefs near you.',
-  },
-  alternates: {
-    canonical: `${BASE_URL}/book`,
-  },
+  path: '/book',
+  imagePath: '/social/chefflow-booking.png',
+  imageAlt: 'ChefFlow booking flow preview',
+  twitterCard: 'summary_large_image',
+})
+
+type BookPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }
 
-export default function BookPage() {
+export default async function BookPage({ searchParams }: BookPageProps) {
+  const resolvedSearchParams = await searchParams
+  const urlPrefill = readPublicOpenBookingPrefillFromSearchParams(resolvedSearchParams)
+  const seasonalContext = readPublicSeasonalMarketPulseContext(resolvedSearchParams)
+  const initialPrefill = mergePublicOpenBookingPrefill(seasonalContext?.prefill, urlPrefill)
+  const analyticsScope = seasonalContext?.scope.label ?? PUBLIC_MARKET_SCOPE
+  const seasonalAnalytics = seasonalContext
+    ? {
+        season: seasonalContext.season,
+        source_mode: seasonalContext.sourceMode,
+        market_scope: seasonalContext.scope.label,
+        market_scope_mode: seasonalContext.scope.mode,
+        lead_ingredients: seasonalContext.peakNow.join(' | '),
+        fallback_reason:
+          seasonalContext.intent.provenance.fallbackReason === 'none'
+            ? null
+            : seasonalContext.intent.provenance.fallbackReason,
+        market_freshness_status: seasonalContext.intent.provenance.marketStatus,
+      }
+    : undefined
+
   return (
     <div className="min-h-screen">
+      <PublicPageView
+        pageName="open_booking"
+        properties={{
+          section: 'public_growth',
+          entry_context: seasonalContext?.entryContext ?? 'direct',
+          ...(seasonalAnalytics ?? { market_scope: analyticsScope }),
+        }}
+      />
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-brand-600/8 via-transparent to-transparent" />
@@ -45,9 +75,37 @@ export default function BookPage() {
         </div>
       </section>
 
+      <section className="mx-auto max-w-5xl px-4 pb-8 sm:px-6 lg:px-8">
+        <SectionViewTracker
+          moduleName="booking_expectations"
+          pageName="open_booking"
+          properties={seasonalAnalytics}
+        />
+        <IntakeLaneExpectations lane={PUBLIC_INTAKE_LANE_KEYS.open_booking} />
+
+        <div className="mt-6 flex flex-col gap-3 rounded-[1.75rem] border border-stone-700 bg-stone-900/60 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+          <p className="text-xs text-stone-500">
+            Need more context before you send the lead? Review how ChefFlow handles trust and
+            support.
+          </p>
+          <TrackedLink
+            href="/trust"
+            analyticsName="booking_trust_link"
+            analyticsProps={{ section: 'booking_expectations' }}
+            className="inline-flex items-center justify-center rounded-xl border border-stone-700 bg-stone-950 px-4 py-2.5 text-sm font-medium text-stone-200 transition-colors hover:border-stone-600 hover:bg-stone-900"
+          >
+            Review trust center
+          </TrackedLink>
+        </div>
+      </section>
+
       {/* Form */}
       <section className="mx-auto max-w-2xl px-4 pb-20 sm:px-6 lg:px-8">
-        <BookDinnerForm />
+        <BookDinnerForm
+          initialPrefill={initialPrefill}
+          seasonalContext={seasonalContext}
+          analyticsEntryContext={seasonalContext?.entryContext ?? null}
+        />
         <p className="mt-8 text-center text-sm text-stone-500">
           {PUBLIC_DIRECTORY_HELPER}{' '}
           <Link

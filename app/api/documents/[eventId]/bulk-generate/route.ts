@@ -7,6 +7,7 @@ import {
   isOperationalDocumentType,
   type OperationalDocumentType,
 } from '@/lib/documents/document-definitions'
+import { evaluateReadinessForDocumentGeneration } from '@/lib/events/readiness'
 import { verifyCsrfOrigin } from '@/lib/security/csrf'
 import { createServerClient } from '@/lib/db/server'
 
@@ -15,6 +16,7 @@ const MAX_ERROR_MESSAGE_LENGTH = 280
 
 const bulkGenerateRequestSchema = z.object({
   types: z.array(z.string()).max(MAX_TYPES_PER_RUN).optional(),
+  readinessOverride: z.boolean().optional(),
   runId: z
     .string()
     .trim()
@@ -119,6 +121,26 @@ export async function POST(request: NextRequest, { params }: { params: { eventId
   }
 
   const types = normalizeRequestedTypes(payload.types).slice(0, MAX_TYPES_PER_RUN)
+  const readiness = await evaluateReadinessForDocumentGeneration(eventId).catch(() => null)
+  if (readiness && readiness.counts.blockers > 0 && payload.readinessOverride !== true) {
+    return NextResponse.json(
+      {
+        error:
+          'Readiness blockers must be fixed or explicitly overridden before generating the packet.',
+        readiness: {
+          confidence: readiness.confidence,
+          counts: readiness.counts,
+          blockers: readiness.blockers.map((blocker) => ({
+            gate: blocker.gate,
+            label: blocker.label,
+            details: blocker.details,
+            verifyRoute: blocker.verifyRoute,
+          })),
+        },
+      },
+      { status: 409 }
+    )
+  }
   const runId = payload.runId ?? randomUUID()
   const startedAt = new Date().toISOString()
   const results: BulkGenerateResultRow[] = []
@@ -129,6 +151,9 @@ export async function POST(request: NextRequest, { params }: { params: { eventId
     url.searchParams.set('type', type)
     url.searchParams.set('archive', '1')
     url.searchParams.set('idempotencyKey', `bulk:${runId}:${type}`)
+    if (payload.readinessOverride === true) {
+      url.searchParams.set('readinessOverride', '1')
+    }
 
     try {
       const response = await fetch(url, {

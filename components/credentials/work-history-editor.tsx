@@ -331,7 +331,7 @@ export function WorkHistoryEditor({ initialEntries }: Props) {
                   setEditing((p) => ({ ...p!, location_label: e.target.value || null }))
                 }
                 className="w-full rounded-lg border border-stone-700 bg-stone-800 px-3 py-2 text-sm text-stone-100 placeholder-stone-600 focus:border-stone-500 focus:outline-none"
-                placeholder="Boston, MA"
+                placeholder="City, State"
               />
             </div>
             <div className="flex items-end gap-2">

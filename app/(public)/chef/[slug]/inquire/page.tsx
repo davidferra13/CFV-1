@@ -24,8 +24,10 @@ import {
 import { createServerClient } from '@/lib/db/server'
 import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
 import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
+import { getPublicChefBuyerSignals } from '@/lib/public/chef-profile-readiness'
+import type { PublicChefLocationExperience } from '@/lib/partners/location-experiences'
 
-type Props = { params: { slug: string }; searchParams: { ref?: string } }
+type Props = { params: { slug: string }; searchParams: { ref?: string; loc?: string } }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getPublicChefProfile(params.slug)
@@ -78,39 +80,109 @@ export default async function InquirePage({ params, searchParams }: Props) {
     : { backgroundColor }
 
   const hasWebsiteLink = Boolean(data.chef.website_url && data.chef.show_website_on_public_profile)
+  const selectedLocation =
+    data.locationExperiences.find(
+      (location: PublicChefLocationExperience) => location.id === searchParams.loc
+    ) ?? null
+  const validPartnerIds = new Set((data.partners || []).map((partner: any) => partner.id))
+  const referralPartnerId =
+    selectedLocation?.partner.id ??
+    (searchParams.ref && validPartnerIds.has(searchParams.ref) ? searchParams.ref : null)
 
-  const [reviewFeed, availabilitySignals, workHistory, achievements, charityImpact, chefCredRow] =
-    await Promise.all([
-      getPublicChefReviewFeed(data.chef.id),
-      data.chef.show_availability_signals
-        ? getPublicAvailabilitySignals(data.chef.id)
-        : Promise.resolve([]),
-      getPublicWorkHistory(data.chef.id).catch(() => []),
-      getPublicAchievements(data.chef.id).catch(() => []),
-      getPublicCharityImpact(data.chef.id).catch(() => ({
-        totalHours: 0,
-        totalEntries: 0,
-        uniqueOrgs: 0,
-        verified501cOrgs: 0,
-        publicCharityPercent: null,
-        publicCharityNote: null,
-        showPublicCharity: false,
-        organizations: [],
-      })),
-      (async () => {
-        try {
-          const db: any = createServerClient({ admin: true })
-          const { data: chefRow } = await db
-            .from('chefs')
-            .select('show_resume_available_note')
-            .eq('id', data.chef.id)
-            .single()
-          return { showResumeAvailableNote: chefRow?.show_resume_available_note ?? false }
-        } catch {
-          return { showResumeAvailableNote: false }
-        }
-      })(),
-    ])
+  const [
+    reviewFeed,
+    availabilitySignals,
+    workHistory,
+    achievements,
+    charityImpact,
+    chefCredRow,
+    buyerSignals,
+  ] = await Promise.all([
+    getPublicChefReviewFeed(data.chef.id),
+    data.chef.show_availability_signals
+      ? getPublicAvailabilitySignals(data.chef.id)
+      : Promise.resolve([]),
+    getPublicWorkHistory(data.chef.id).catch(() => []),
+    getPublicAchievements(data.chef.id).catch(() => []),
+    getPublicCharityImpact(data.chef.id).catch(() => ({
+      totalHours: 0,
+      totalEntries: 0,
+      uniqueOrgs: 0,
+      verified501cOrgs: 0,
+      publicCharityPercent: null,
+      publicCharityNote: null,
+      showPublicCharity: false,
+      organizations: [],
+    })),
+    (async () => {
+      try {
+        const db: any = createServerClient({ admin: true })
+        const { data: chefRow } = await db
+          .from('chefs')
+          .select('show_resume_available_note')
+          .eq('id', data.chef.id)
+          .single()
+        return { showResumeAvailableNote: chefRow?.show_resume_available_note ?? false }
+      } catch {
+        return { showResumeAvailableNote: false }
+      }
+    })(),
+    getPublicChefBuyerSignals(data.chef.id, {
+      bookingBasePriceCents: data.chef.booking_base_price_cents,
+      bookingPricingType: data.chef.booking_pricing_type,
+      bookingDepositType: data.chef.booking_deposit_type,
+      bookingDepositPercent: data.chef.booking_deposit_percent,
+      bookingDepositFixedCents: data.chef.booking_deposit_fixed_cents,
+    }).catch(() => ({
+      pricing: {
+        startingPriceCents: null,
+        dinnerLowCents: null,
+        dinnerHighCents: null,
+        mealPrepLowCents: null,
+        mealPrepHighCents: null,
+        cookAndLeaveRateCents: null,
+        minimumBookingCents: null,
+        minimumSpendCents: null,
+        depositType: null,
+        depositPercent: null,
+        depositFixedCents: null,
+      },
+      service: {
+        includedItems: [],
+        staffingItems: [],
+        equipmentItems: [],
+        dietaryItems: [],
+        communicationItems: [],
+        extraItems: [],
+        travelRadiusMiles: null,
+        travelFeeCents: null,
+        minimumGuests: null,
+        guestCountDeadlineDays: null,
+        groceriesIncluded: null,
+        gratuityPolicy: null,
+        hasCancellationPolicy: null,
+        cancellationTerms: null,
+        hasReschedulePolicy: null,
+        rescheduleTerms: null,
+        customWhatsIncluded: null,
+        customCleanupNote: null,
+        customTravelNote: null,
+        customDietaryNote: null,
+        customGratuityNote: null,
+        customIntroPitch: null,
+        selfReportedInsurance: false,
+      },
+      operations: {
+        responseTime: null,
+        lastActiveAt: null,
+      },
+      verification: {
+        badges: [],
+        activeInsuranceCount: 0,
+        activeCertificationCount: 0,
+      },
+    })),
+  ])
 
   const nextSignals = availabilitySignals.slice(0, 3)
   const topWorkHistory = workHistory.slice(0, 2)
@@ -138,7 +210,10 @@ export default async function InquirePage({ params, searchParams }: Props) {
                 chefSlug={inquirySlug}
                 chefName={data.chef.display_name}
                 primaryColor={primaryColor}
-                referralPartnerId={searchParams.ref || null}
+                expectedResponseTime={buyerSignals.operations.responseTime}
+                referralPartnerId={referralPartnerId}
+                partnerLocationId={selectedLocation?.id ?? null}
+                selectedLocation={selectedLocation}
               />
             </div>
 

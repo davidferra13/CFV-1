@@ -5,6 +5,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import {
   getPartnerById,
   getPartnerEvents,
+  getPartnerLocationChangeRequests,
   getEventsNotAssignedToPartner,
 } from '@/lib/partners/actions'
 import { notFound } from 'next/navigation'
@@ -20,9 +21,14 @@ import { SharePartnerReportButton } from '@/components/partners/share-partner-re
 import { PartnerInviteButton } from '@/components/partners/partner-invite-button'
 import { CopyReferralLinkButton } from '@/components/partners/copy-referral-link-button'
 import { PartnerPayoutPanel } from '@/components/partners/partner-payout-panel'
+import { LocationChangeRequestReviewForm } from '@/components/partners/location-change-request-review-form'
 import { getPartnerPayouts } from '@/lib/partners/payout-actions'
 import { Inbox, CalendarCheck, DollarSign, Users, TrendingUp, MapPin } from '@/components/ui/icons'
 import { EntityPhotoUpload } from '@/components/entities/entity-photo-upload'
+import {
+  PARTNER_LOCATION_PROPOSAL_FIELD_LABELS,
+  getPartnerLocationProposalChangedFields,
+} from '@/lib/partners/location-change-requests'
 
 const TYPE_LABELS: Record<string, string> = {
   airbnb_host: 'Airbnb Host',
@@ -47,14 +53,16 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
     .single()
   const chefSlug = chefRow?.inquiry_slug || chefRow?.public_slug || ''
 
-  const [partner, partnerEvents, unassignedEvents, existingPayouts] = await Promise.all([
-    getPartnerById(params.id),
-    getPartnerEvents(params.id).catch(() => [] as Awaited<ReturnType<typeof getPartnerEvents>>),
-    getEventsNotAssignedToPartner(params.id).catch(
-      () => [] as Awaited<ReturnType<typeof getEventsNotAssignedToPartner>>
-    ),
-    getPartnerPayouts(params.id).catch(() => []),
-  ])
+  const [partner, partnerEvents, unassignedEvents, existingPayouts, locationChangeRequests] =
+    await Promise.all([
+      getPartnerById(params.id),
+      getPartnerEvents(params.id).catch(() => [] as Awaited<ReturnType<typeof getPartnerEvents>>),
+      getEventsNotAssignedToPartner(params.id).catch(
+        () => [] as Awaited<ReturnType<typeof getEventsNotAssignedToPartner>>
+      ),
+      getPartnerPayouts(params.id).catch(() => []),
+      getPartnerLocationChangeRequests(params.id).catch(() => []),
+    ])
 
   if (!partner) notFound()
 
@@ -387,12 +395,87 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
           partnerId={partner.id}
           locations={(partner.partner_locations || []).map((loc: any) => ({
             ...loc,
-            inquiry_count: partner.location_stats[loc.id]?.inquiry_count || 0,
-            event_count: partner.location_stats[loc.id]?.event_count || 0,
+            ...(partner.location_stats[loc.id] || {
+              inquiry_click_count: 0,
+              booking_click_count: 0,
+              inquiry_count: 0,
+              event_count: 0,
+              completed_event_count: 0,
+              total_revenue_cents: 0,
+              total_guests: 0,
+            }),
           }))}
           images={partner.partner_images || []}
         />
       </Card>
+
+      {locationChangeRequests.length > 0 && (
+        <Card className="p-6">
+          <h2 className="text-lg font-semibold text-stone-100">Partner Change Requests</h2>
+          <p className="mt-1 text-sm text-stone-500">
+            Review partner-authored public location changes before they go live.
+          </p>
+
+          <div className="mt-5 space-y-4">
+            {locationChangeRequests.map((request) => {
+              const location = (partner.partner_locations || []).find(
+                (item: any) => item.id === request.location_id
+              )
+              const changedFields = location
+                ? getPartnerLocationProposalChangedFields(
+                    location,
+                    request.requested_payload as any
+                  )
+                : []
+
+              return (
+                <div
+                  key={request.id}
+                  className="rounded-2xl border border-stone-800 bg-stone-950/70 p-5"
+                >
+                  <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-stone-100">
+                        {location?.name || 'Location request'}
+                      </p>
+                      <p className="mt-1 text-xs text-stone-500">
+                        {request.status.charAt(0).toUpperCase() + request.status.slice(1)} ·{' '}
+                        {format(new Date(request.created_at), 'MMM d, yyyy')}
+                      </p>
+                    </div>
+                    <Badge variant={request.status === 'pending' ? 'warning' : 'default'}>
+                      {request.status}
+                    </Badge>
+                  </div>
+
+                  {changedFields.length > 0 && (
+                    <p className="mt-3 text-sm text-stone-300">
+                      Proposed changes:{' '}
+                      {changedFields
+                        .map((field) => PARTNER_LOCATION_PROPOSAL_FIELD_LABELS[field] ?? field)
+                        .join(', ')}
+                    </p>
+                  )}
+
+                  {request.partner_note && (
+                    <p className="mt-3 text-sm text-stone-300">{request.partner_note}</p>
+                  )}
+
+                  {request.review_note && (
+                    <p className="mt-3 text-xs text-stone-500">
+                      Review note: {request.review_note}
+                    </p>
+                  )}
+
+                  {request.status === 'pending' && (
+                    <LocationChangeRequestReviewForm requestId={request.id} />
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </Card>
+      )}
 
       {/* Assign Past Events */}
       <Card className="p-6">

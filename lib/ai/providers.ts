@@ -1,46 +1,92 @@
 // AI Provider Configuration
 // No 'use server' - safe to import from any context (client, server, edge)
-// Single AI runtime: Ollama-compatible endpoint running Gemma 4.
-// OLLAMA_BASE_URL points to cloud endpoint in production, localhost in dev.
+// Single AI runtime: Ollama-compatible endpoints with local-first routing.
+
+import { getAiRuntimePolicy, resolveOllamaModel } from './dispatch/routing-table'
+import { resolveAiDispatch } from './dispatch/router'
+import type { AiDispatchRequest, AiRuntimeMode, DispatchModelTier } from './dispatch/types'
 
 export type AIProvider = 'ollama'
+export type ModelTier = DispatchModelTier
 
-/**
- * Model tier for task-complexity routing.
- * Kept for API compatibility. All tiers resolve to the same Gemma 4 model.
- * Override with OLLAMA_MODEL env var if a different model is needed.
- */
-export type ModelTier = 'fast' | 'standard' | 'complex'
+export interface OllamaConfig {
+  baseUrl: string
+  model: string
+  endpointName: 'local' | 'cloud'
+  executionLocation: 'local' | 'cloud'
+  mode: AiRuntimeMode
+}
 
-/**
- * Returns true if an Ollama-compatible endpoint is configured.
- */
-export function isOllamaEnabled(): boolean {
-  return !!process.env.OLLAMA_BASE_URL
+type OllamaConfigInput = Pick<
+  AiDispatchRequest,
+  | 'taskType'
+  | 'systemPrompt'
+  | 'userContent'
+  | 'preferredLocation'
+  | 'latencySensitive'
+  | 'deviceCapability'
+> & {
+  modelTier?: ModelTier
 }
 
 /**
- * Returns the Ollama connection config: base URL + model name.
+ * Returns true if at least one explicit Ollama-compatible endpoint is configured.
  */
-export function getOllamaConfig(): { baseUrl: string; model: string } {
+export function isOllamaEnabled(): boolean {
+  return getAiRuntimePolicy().endpoints.some((endpoint) => endpoint.enabled)
+}
+
+/**
+ * Returns the resolved Ollama connection config after dispatch routing.
+ * Falls back to the local default URL so legacy health checks still have a target.
+ */
+export function getOllamaConfig(input?: OllamaConfigInput): OllamaConfig {
+  const decision = resolveAiDispatch({
+    taskType: input?.taskType,
+    systemPrompt: input?.systemPrompt,
+    userContent: input?.userContent,
+    modelTier: input?.modelTier ?? 'standard',
+    preferredLocation: input?.preferredLocation,
+    latencySensitive: input?.latencySensitive,
+    deviceCapability: input?.deviceCapability,
+  })
+
+  if (decision.endpoint && decision.model) {
+    return {
+      baseUrl: decision.endpoint.baseUrl,
+      model: decision.model,
+      endpointName: decision.endpoint.name,
+      executionLocation: decision.endpoint.location,
+      mode: decision.runtimePolicy.mode,
+    }
+  }
+
+  const policy = getAiRuntimePolicy()
+  const fallbackLocation = policy.defaultLocation
+  const fallbackEndpoint =
+    policy.endpoints.find((endpoint) => endpoint.location === fallbackLocation) ??
+    policy.endpoints[0]
+
   return {
-    baseUrl: process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
-    model: process.env.OLLAMA_MODEL || 'gemma4',
+    baseUrl: fallbackEndpoint.baseUrl,
+    model: resolveOllamaModel(input?.modelTier ?? 'standard', fallbackLocation),
+    endpointName: fallbackEndpoint.location,
+    executionLocation: fallbackEndpoint.location,
+    mode: policy.mode,
   }
 }
 
 /**
- * Returns the Ollama model name. Tier parameter kept for API compatibility
- * but all tiers resolve to the same model (Gemma 4 is fast enough for everything).
+ * Returns the Ollama model name for the default routed endpoint.
  */
-export function getOllamaModel(_tier: ModelTier = 'standard'): string {
-  return process.env.OLLAMA_MODEL || 'gemma4'
+export function getOllamaModel(tier: ModelTier = 'standard'): string {
+  return getOllamaConfig({ modelTier: tier }).model
 }
 
 /**
- * Returns the model for a given endpoint/tier combo.
- * Kept for API compatibility with Remy streaming route.
+ * Returns the model for a given endpoint and tier combo.
+ * Endpoint parameter is kept for API compatibility with queue and Remy routes.
  */
-export function getModelForEndpoint(_endpoint: 'pc', _tier: ModelTier = 'standard'): string {
-  return process.env.OLLAMA_MODEL || 'gemma4'
+export function getModelForEndpoint(_endpoint: 'pc', tier: ModelTier = 'standard'): string {
+  return getOllamaModel(tier)
 }

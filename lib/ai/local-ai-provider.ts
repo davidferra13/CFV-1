@@ -15,6 +15,35 @@ export interface LocalAIProvider {
   ): Promise<void>
 }
 
+function trimTrailingSlashes(value: string): string {
+  return value.replace(/\/+$/, '')
+}
+
+/**
+ * Supports both raw Ollama hosts (`http://host:11434`) and relay-style roots
+ * (`http://host:8081/api/ollama`) without duplicating `/api`.
+ */
+export function resolveOllamaApiUrl(baseUrl: string, endpoint: string): string {
+  const normalizedBase = trimTrailingSlashes(baseUrl.trim())
+  const normalizedEndpoint = endpoint.replace(/^\/+/, '')
+
+  if (/\/api\/ollama$/i.test(normalizedBase) || /\/api$/i.test(normalizedBase)) {
+    return `${normalizedBase}/${normalizedEndpoint}`
+  }
+
+  return `${normalizedBase}/api/${normalizedEndpoint}`
+}
+
+export function pickOllamaModelVariant(requestedModel: string, availableModels: string[]): string {
+  const normalizedRequested = requestedModel.trim()
+  if (!normalizedRequested) return requestedModel
+  if (availableModels.includes(normalizedRequested)) return normalizedRequested
+
+  const requestedBase = normalizedRequested.split(':')[0]
+  const baseMatch = availableModels.find((modelName) => modelName.split(':')[0] === requestedBase)
+  return baseMatch ?? normalizedRequested
+}
+
 // Strips Gemma 4 <think>...</think> blocks from streaming output.
 // Mirrors ThinkingBlockFilter from route-runtime-utils.ts (server-side).
 class ThinkingBlockFilter {
@@ -79,9 +108,25 @@ export class OllamaLocalProvider implements LocalAIProvider {
 
   constructor(private url: string) {}
 
+  private async resolveModel(model: string, signal?: AbortSignal): Promise<string> {
+    try {
+      const res = await fetch(resolveOllamaApiUrl(this.url, 'tags'), { signal })
+      if (!res.ok) return model
+
+      const data = await res.json()
+      const availableModels: string[] = (data?.models ?? [])
+        .map((entry: { name?: string }) => entry?.name)
+        .filter((name: string | undefined): name is string => !!name)
+
+      return pickOllamaModelVariant(model, availableModels)
+    } catch {
+      return model
+    }
+  }
+
   async detect(): Promise<boolean> {
     try {
-      const res = await fetch(`${this.url}/api/tags`, {
+      const res = await fetch(resolveOllamaApiUrl(this.url, 'tags'), {
         signal: AbortSignal.timeout(3000),
       })
       return res.ok
@@ -98,11 +143,12 @@ export class OllamaLocalProvider implements LocalAIProvider {
     options?: { num_predict?: number; think?: boolean },
     signal?: AbortSignal
   ): Promise<void> {
-    const res = await fetch(`${this.url}/api/chat`, {
+    const resolvedModel = await this.resolveModel(model, signal)
+    const res = await fetch(resolveOllamaApiUrl(this.url, 'chat'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model,
+        model: resolvedModel,
         messages: [{ role: 'system', content: systemPrompt }, ...messages],
         stream: true,
         options: options?.num_predict ? { num_predict: options.num_predict } : undefined,

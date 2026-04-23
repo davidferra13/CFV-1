@@ -4,21 +4,38 @@
 
 import { requireClient } from '@/lib/auth/get-user'
 import { getClientEventContract, recordClientView } from '@/lib/contracts/actions'
+import { getClientEventById } from '@/lib/events/client-actions'
 import { notFound } from 'next/navigation'
 import { ContractSigningClient } from './contract-signing-client'
 import { format } from 'date-fns'
+import { Alert } from '@/components/ui/alert'
+import { redirect } from 'next/navigation'
 
-export default async function ContractSigningPage({ params }: { params: { id: string } }) {
+export default async function ContractSigningPage({
+  params,
+  searchParams,
+}: {
+  params: { id: string }
+  searchParams: { next?: string }
+}) {
   await requireClient()
 
-  const contractRaw = await getClientEventContract(params.id)
+  const [event, contractRaw] = await Promise.all([
+    getClientEventById(params.id),
+    getClientEventContract(params.id),
+  ])
 
-  if (!contractRaw) {
+  if (!event || !contractRaw) {
     notFound()
+  }
+
+  if (event.status === 'proposed') {
+    redirect(`/my-events/${params.id}/proposal`)
   }
 
   // Cast to any - contracts table added in migration 20260303000003 after last type generation
   const contract = contractRaw as any
+  const continueToPayment = searchParams.next === 'payment'
 
   // Record that client viewed the contract (idempotent for signed/voided)
   if (contract.status === 'sent') {
@@ -33,9 +50,17 @@ export default async function ContractSigningPage({ params }: { params: { id: st
         <div>
           <h1 className="text-2xl font-bold text-stone-100">Service Agreement</h1>
           <p className="mt-1 text-sm text-stone-500">
-            Please read the full agreement below before signing.
+            {continueToPayment
+              ? 'Please read and sign the agreement below to unlock payment.'
+              : 'Please read the full agreement below before signing.'}
           </p>
         </div>
+
+        {continueToPayment && contract.status !== 'signed' && (
+          <Alert variant="info">
+            Once you sign the agreement, we&apos;ll take you straight to payment.
+          </Alert>
+        )}
 
         <ContractSigningClient
           contractId={contract.id}
@@ -43,6 +68,7 @@ export default async function ContractSigningPage({ params }: { params: { id: st
           status={contract.status as 'draft' | 'sent' | 'viewed' | 'signed' | 'voided'}
           signedAt={signedAt}
           eventId={params.id}
+          continueToPayment={continueToPayment}
         />
       </div>
     </div>

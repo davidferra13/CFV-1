@@ -8,7 +8,8 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { sendEmail } from '@/lib/email/send'
 import { sendSms } from '@/lib/sms/send'
-import { getResendClient, FROM_EMAIL } from '@/lib/email/resend-client'
+import { FROM_EMAIL } from '@/lib/email/resend-client'
+import { getEmailProvider, getLegacyResendMessageId } from '@/lib/email/provider'
 import { renderTokens, splitName } from '@/lib/marketing/tokens'
 import { CAMPAIGN_TYPE_LABELS, SEGMENT_OPTIONS, SYSTEM_TEMPLATES } from '@/lib/marketing/constants'
 import { CampaignEmail } from '@/lib/email/templates/campaign'
@@ -370,6 +371,7 @@ async function executeCampaignSend(campaignId: string, chefId: string, db: any) 
 
   const audience = await resolveAudience(chefId, campaign.target_segment as Record<string, unknown>)
   const chefName = await getChefDisplayName(chefId)
+  const provider = getEmailProvider()
 
   let sentCount = 0
   let skippedCount = 0
@@ -433,7 +435,8 @@ async function executeCampaignSend(campaignId: string, chefId: string, db: any) 
     const renderedBody = renderTokens(campaign.body_html, tokenCtx)
 
     try {
-      // Call Resend directly to capture the message ID
+      // Keep Resend as the live transport while capturing the provider message id
+      // through the new adapter boundary.
       if (!process.env.RESEND_API_KEY) {
         console.log('[campaign] RESEND_API_KEY not configured, skipping email to client', client.id)
         await db
@@ -443,8 +446,8 @@ async function executeCampaignSend(campaignId: string, chefId: string, db: any) 
         continue
       }
 
-      const resend = getResendClient()
-      const { data: sendData, error: sendError } = await resend.emails.send({
+      const sendResult = await provider.send({
+        kind: 'marketing',
         from: `${chefName} via ChefFlow <${FROM_EMAIL}>`,
         to: client.email,
         subject: renderedSubject,
@@ -456,21 +459,14 @@ async function executeCampaignSend(campaignId: string, chefId: string, db: any) 
         }),
       })
 
-      if (sendError) {
-        await db
-          .from('campaign_recipients')
-          .update({ error_message: sendError.message })
-          .eq('id', recipientRow.id)
-      } else {
-        await db
-          .from('campaign_recipients')
-          .update({
-            sent_at: new Date().toISOString(),
-            resend_message_id: sendData?.id ?? null,
-          })
-          .eq('id', recipientRow.id)
-        sentCount++
-      }
+      await db
+        .from('campaign_recipients')
+        .update({
+          sent_at: new Date().toISOString(),
+          resend_message_id: getLegacyResendMessageId(sendResult),
+        })
+        .eq('id', recipientRow.id)
+      sentCount++
     } catch (err) {
       await db
         .from('campaign_recipients')
@@ -921,12 +917,32 @@ export async function listSequences() {
 
   const { data, error } = await db
     .from('automated_sequences')
-    .select('*, sequence_steps(*), sequence_enrollments(count)')
+    .select('*, sequence_steps(*)')
     .eq('chef_id', chef.entityId)
     .order('created_at', { ascending: true })
 
   if (error) throw new Error(error.message)
-  return data ?? []
+
+  const sequences = data ?? []
+  if (sequences.length === 0) return []
+
+  const { data: enrollments, error: enrollmentError } = await db
+    .from('sequence_enrollments')
+    .select('sequence_id')
+    .eq('chef_id', chef.entityId)
+
+  if (enrollmentError) throw new Error(enrollmentError.message)
+
+  const enrollmentCounts = new Map<string, number>()
+  for (const enrollment of enrollments ?? []) {
+    const sequenceId = enrollment.sequence_id
+    enrollmentCounts.set(sequenceId, (enrollmentCounts.get(sequenceId) ?? 0) + 1)
+  }
+
+  return sequences.map((sequence: any) => ({
+    ...sequence,
+    sequence_enrollments: [{ count: enrollmentCounts.get(sequence.id) ?? 0 }],
+  }))
 }
 
 export async function createSequence(input: {

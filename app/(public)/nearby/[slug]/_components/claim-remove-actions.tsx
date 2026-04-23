@@ -1,15 +1,18 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { requestListingClaim, requestListingRemoval } from '@/lib/discover/actions'
 
 type Props = {
   listingId: string
   status: string
+  enhancePath?: string
 }
 
-export function ClaimRemoveActions({ listingId, status }: Props) {
+export function ClaimRemoveActions({ listingId, status, enhancePath }: Props) {
+  const router = useRouter()
   const [mode, setMode] = useState<'idle' | 'claim' | 'remove'>('idle')
   const [isPending, startTransition] = useTransition()
   const [name, setName] = useState('')
@@ -28,7 +31,15 @@ export function ClaimRemoveActions({ listingId, status }: Props) {
           email: email.trim(),
         })
         if (result.success) {
-          toast.success('Claim submitted! We will verify your ownership shortly.')
+          toast.success(
+            enhancePath
+              ? 'Claim submitted. Redirecting you to complete your profile.'
+              : 'Claim submitted! We will verify your ownership shortly.'
+          )
+          if (enhancePath) {
+            router.push(enhancePath)
+            return
+          }
           setMode('idle')
         } else {
           toast.error(result.error || 'Failed to submit claim.')

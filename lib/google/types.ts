@@ -11,7 +11,7 @@ export interface GoogleConnection {
   gmail_history_id: string | null
   gmail_last_sync_at: string | null
   gmail_sync_errors: number
-  calendar_last_sync_at: string | null
+  calendar_last_sync_at?: string | null
 }
 
 export interface GoogleServiceStatus {
@@ -20,9 +20,20 @@ export interface GoogleServiceStatus {
   lastSync: string | null
 }
 
+export type GoogleCalendarHealth = 'ok' | 'warning' | 'error' | 'unknown'
+
+export interface GoogleCalendarServiceStatus extends GoogleServiceStatus {
+  checkedAt: string | null
+  health: GoogleCalendarHealth
+  healthDetail: string | null
+  busyRangeCount: number
+  conflictCount: number
+  calendarCount: number
+}
+
 export interface GoogleConnectionStatus {
   gmail: GoogleServiceStatus & { errorCount: number }
-  calendar: GoogleServiceStatus
+  calendar: GoogleCalendarServiceStatus
 }
 
 // The types below are specific to the Gmail agent

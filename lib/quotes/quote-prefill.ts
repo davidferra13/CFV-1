@@ -5,6 +5,7 @@ export type QuoteDraftPrefillSource =
   | 'inquiry'
   | 'event'
   | 'change_order'
+  | 'quote_revision'
   | 'recurring_default'
 
 export type QuoteDraftPrefillPricingModel = 'flat_rate' | 'per_person' | 'custom'
@@ -34,6 +35,7 @@ const QuoteDraftPrefillSourceSchema = z.enum([
   'inquiry',
   'event',
   'change_order',
+  'quote_revision',
   'recurring_default',
 ])
 const QuoteDraftPrefillPricingModelSchema = z.enum(['flat_rate', 'per_person', 'custom'])

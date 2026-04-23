@@ -1,3 +1,10 @@
+import {
+  NEUTRAL_NETWORK_AVAILABILITY_PLACEHOLDER,
+  NEUTRAL_NETWORK_REFERRAL_OFFER_PLACEHOLDER,
+  NEUTRAL_NETWORK_REFERRAL_REQUEST_PLACEHOLDER,
+  NEUTRAL_NETWORK_URGENT_NEED_PLACEHOLDER,
+} from '@/lib/site/national-brand-copy'
+
 export const NETWORK_FEATURE_KEYS = [
   'availability',
   'referral_asks',
@@ -29,18 +36,17 @@ export const NETWORK_FEATURE_DEFINITIONS: Record<
   availability: {
     label: 'Availability',
     description: 'Open dates, location, service type, and guest range.',
-    placeholder:
-      'Open for bookings on March 12-15 in Boston, MA. Up to 14 guests. DM if you need coverage.',
+    placeholder: NEUTRAL_NETWORK_AVAILABILITY_PLACEHOLDER,
   },
   referral_asks: {
     label: 'Referral Asks',
     description: 'Ask for referrals you need help with right now.',
-    placeholder: 'Looking for a trusted chef for March 22 in Providence (8 guests, plated dinner).',
+    placeholder: NEUTRAL_NETWORK_REFERRAL_REQUEST_PLACEHOLDER,
   },
   referral_offers: {
     label: 'Referral Offers',
     description: 'Offer referrals you cannot take yourself.',
-    placeholder: 'I cannot take a March 29 brunch request in Cape Cod. Anyone available?',
+    placeholder: NEUTRAL_NETWORK_REFERRAL_OFFER_PLACEHOLDER,
   },
   collab_requests: {
     label: 'Collab Requests',
@@ -77,7 +83,7 @@ export const NETWORK_FEATURE_DEFINITIONS: Record<
   urgent_needs: {
     label: 'Urgent Needs',
     description: 'Last-minute staffing, rental, or ingredient requests.',
-    placeholder: 'Urgent: need a server for tonight in Cambridge from 6-10 PM.',
+    placeholder: NEUTRAL_NETWORK_URGENT_NEED_PLACEHOLDER,
   },
   professional_proof: {
     label: 'Professional Proof',

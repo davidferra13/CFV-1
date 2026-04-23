@@ -8,9 +8,29 @@ import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { syncGmailInbox } from './sync'
 import { getGoogleAccessToken } from '@/lib/google/auth'
+import { getGoogleGmailControl, listGoogleGmailMailboxes } from '@/lib/google/mailbox-control'
 import { sendEmail, getMessageHeaders } from './client'
 import { isCommTriageEnabled } from '@/lib/features'
 import type { SyncResult, GmailSyncLogEntry, SendMessageResult } from './types'
+
+function mergeSyncResults(results: SyncResult[]): SyncResult {
+  return results.reduce<SyncResult>(
+    (merged, result) => ({
+      processed: merged.processed + result.processed,
+      inquiriesCreated: merged.inquiriesCreated + result.inquiriesCreated,
+      messagesLogged: merged.messagesLogged + result.messagesLogged,
+      skipped: merged.skipped + result.skipped,
+      errors: [...merged.errors, ...result.errors],
+    }),
+    {
+      processed: 0,
+      inquiriesCreated: 0,
+      messagesLogged: 0,
+      skipped: 0,
+      errors: [],
+    }
+  )
+}
 
 // ─── Get Gmail Sync Status ──────────────────────────────────────────────────
 
@@ -20,28 +40,39 @@ export async function getGmailSyncStatus(): Promise<{
 }> {
   const user = await requireChef()
   const db: any = createServerClient()
+  const mailboxes = await listGoogleGmailMailboxes({
+    chefId: user.entityId!,
+    tenantId: user.tenantId!,
+    requireConnected: true,
+    allowRepair: true,
+    db,
+  })
 
-  const { data: conn } = await db
-    .from('google_connections')
-    .select('gmail_connected')
-    .eq('chef_id', user.entityId)
-    .maybeSingle()
+  if (mailboxes.length === 0) {
+    const control = await getGoogleGmailControl({
+      chefId: user.entityId!,
+      tenantId: user.tenantId!,
+      db,
+      allowRepair: true,
+    })
+    if (!control.legacyConnection?.gmailConnected) {
+      return { connected: false, lastSyncedAt: null }
+    }
 
-  if (!conn?.gmail_connected) {
-    return { connected: false, lastSyncedAt: null }
+    return {
+      connected: true,
+      lastSyncedAt: control.legacyConnection.gmailLastSyncAt ?? null,
+    }
   }
 
-  const { data: lastLog } = await db
-    .from('gmail_sync_log')
-    .select('synced_at')
-    .eq('tenant_id', user.tenantId!)
-    .order('synced_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
+  const lastSyncedAt = [...mailboxes]
+    .map((mailbox) => mailbox.gmailLastSyncAt)
+    .filter(Boolean)
+    .sort((a, b) => new Date(b as string).getTime() - new Date(a as string).getTime())[0]
 
   return {
     connected: true,
-    lastSyncedAt: lastLog?.synced_at ?? null,
+    lastSyncedAt: lastSyncedAt ?? null,
   }
 }
 
@@ -50,20 +81,34 @@ export async function getGmailSyncStatus(): Promise<{
 export async function triggerGmailSync(): Promise<SyncResult> {
   const user = await requireChef()
   const db: any = createServerClient()
+  const mailboxes = await listGoogleGmailMailboxes({
+    chefId: user.entityId!,
+    tenantId: user.tenantId!,
+    requireConnected: true,
+    allowRepair: true,
+    db,
+  })
+  const control = await getGoogleGmailControl({
+    chefId: user.entityId!,
+    tenantId: user.tenantId!,
+    db,
+    allowRepair: true,
+  })
 
-  // Verify Gmail is connected
-  const { data: conn } = await db
-    .from('google_connections')
-    .select('gmail_connected')
-    .eq('chef_id', user.entityId)
-    .single()
-
-  if (!conn?.gmail_connected) {
+  if (mailboxes.length === 0 && !control.legacyConnection?.gmailConnected) {
     throw new Error('Gmail is not connected. Connect your Google account in Settings first.')
   }
 
-  // Run the sync
-  const result = await syncGmailInbox(user.entityId!, user.tenantId!)
+  const result =
+    mailboxes.length > 0
+      ? mergeSyncResults(
+          await Promise.all(
+            mailboxes.map((mailbox) =>
+              syncGmailInbox(user.entityId!, user.tenantId!, { mailboxId: mailbox.id })
+            )
+          )
+        )
+      : await syncGmailInbox(user.entityId!, user.tenantId!)
 
   // Revalidate pages that show inquiry/message/inbox data
   revalidatePath('/inquiries')
@@ -171,8 +216,16 @@ export async function approveAndSendMessage(messageId: string): Promise<SendMess
   const clientEmail = (message.client as { email: string | null })?.email
   if (!clientEmail) throw new Error('Client has no email address')
 
+  const { getManagedOutboundChannel } = await import('@/lib/communication/managed-channels')
+  const managedChannel = await getManagedOutboundChannel({
+    tenantId: user.tenantId!,
+    channel: 'email',
+  })
+
   // 2. Get Gmail access token
-  const accessToken = await getGoogleAccessToken(user.entityId!)
+  const accessToken = await getGoogleAccessToken(user.entityId!, {
+    mailboxId: managedChannel?.mailboxId || null,
+  })
 
   // 3. Find the most recent inbound message in the same thread for reply threading
   let inReplyTo: string | undefined
@@ -282,26 +335,23 @@ export async function approveAndSendMessage(messageId: string): Promise<SendMess
     try {
       const { ingestCommunicationEvent } = await import('@/lib/communication/pipeline')
 
-      // Get the chef's connected Gmail address for senderIdentity
-      const { data: conn } = await db
-        .from('google_connections')
-        .select('connected_email')
-        .eq('chef_id', user.entityId!)
-        .single()
-
       await ingestCommunicationEvent({
         tenantId: user.tenantId!,
         source: 'email',
         externalId: gmailResult.messageId,
         externalThreadKey: gmailResult.threadId,
         timestamp: new Date().toISOString(),
-        senderIdentity: conn?.connected_email ?? 'chef',
+        senderIdentity: managedChannel?.managedAddress ?? 'chef',
         rawContent: `${subject}\n\n${emailBody}`.trim(),
         direction: 'outbound',
         linkedEntityType: message.inquiry_id ? 'inquiry' : null,
         linkedEntityId: message.inquiry_id || null,
         ingestionSource: 'manual',
         actorId: user.id,
+        providerName:
+          managedChannel?.provider === 'google_connection' ? 'google_connection' : 'gmail',
+        managedChannelAddress: managedChannel?.managedAddress || null,
+        recipientAddress: clientEmail,
       })
     } catch (intakeErr) {
       console.error(

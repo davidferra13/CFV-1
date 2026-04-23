@@ -7,13 +7,15 @@
 
 import { Ollama, type ChatResponse } from 'ollama'
 import { z } from 'zod'
-import { isOllamaEnabled, getOllamaConfig, getOllamaModel } from './providers'
+import { isOllamaEnabled, getOllamaConfig } from './providers'
 import type { ModelTier } from './providers'
 import { OllamaOfflineError } from './ollama-errors'
 import { getCachedResult, setCachedResult } from './ollama-cache'
 import { log } from '@/lib/logger'
 import { incrementAiMetric, recordAiLatency, recordAiTier } from './ai-metrics'
 import { reportAppError } from '@/lib/monitoring/sentry-reporter'
+import { resolveAiDispatch } from './dispatch/router'
+import type { AiDispatchRequest } from './dispatch/types'
 
 function extractJsonPayload(rawText: string): string {
   const jsonMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/)
@@ -41,6 +43,8 @@ export interface ParseOllamaOptions {
   images?: string[]
   /** Sampling temperature. Lower = more deterministic. Default: Ollama model default. */
   temperature?: number
+  /** Optional routing hints for the shared AI dispatch layer. */
+  dispatchHint?: Omit<AiDispatchRequest, 'systemPrompt' | 'userContent' | 'modelTier'>
 }
 
 /** Default max tokens for structured JSON responses - keeps Ollama from running away */
@@ -97,7 +101,7 @@ export async function parseWithOllama<T>(
   schema: z.ZodType<T>,
   options?: ParseOllamaOptions
 ): Promise<T> {
-  if (!isOllamaEnabled()) {
+  if (!isOllamaEnabled() && !options?.endpointUrl) {
     throw new OllamaOfflineError('OLLAMA_BASE_URL is not set in environment', 'not_configured')
   }
 
@@ -109,10 +113,48 @@ export async function parseWithOllama<T>(
     userContent = userContent.slice(0, MAX_INPUT_LENGTH)
   }
 
-  const config = getOllamaConfig()
-  const baseUrl = options?.endpointUrl || config.baseUrl
-  const model =
-    options?.model || (options?.modelTier ? getOllamaModel(options.modelTier) : config.model)
+  const dispatch = resolveAiDispatch({
+    taskType: options?.dispatchHint?.taskType ?? 'structured.parse',
+    systemPrompt,
+    userContent,
+    metadata: options?.dispatchHint?.metadata,
+    source: options?.dispatchHint?.source ?? 'parseWithOllama',
+    surface: options?.dispatchHint?.surface ?? 'server.parse',
+    modelTier: options?.modelTier ?? 'standard',
+    preferredLocation: options?.dispatchHint?.preferredLocation,
+    latencySensitive: options?.dispatchHint?.latencySensitive,
+    deviceCapability: options?.dispatchHint?.deviceCapability,
+    confidence: options?.dispatchHint?.confidence,
+    canAutoExecute: options?.dispatchHint?.canAutoExecute,
+    canQueueForApproval: options?.dispatchHint?.canQueueForApproval,
+    requiresApproval: options?.dispatchHint?.requiresApproval,
+    safety: options?.dispatchHint?.safety,
+    allowCloudFallback: options?.dispatchHint?.allowCloudFallback,
+  })
+
+  const routedConfig = getOllamaConfig({
+    taskType: options?.dispatchHint?.taskType ?? 'structured.parse',
+    systemPrompt,
+    userContent,
+    modelTier: options?.modelTier ?? 'standard',
+    preferredLocation: options?.dispatchHint?.preferredLocation,
+    latencySensitive: options?.dispatchHint?.latencySensitive,
+    deviceCapability: options?.dispatchHint?.deviceCapability,
+  })
+
+  const baseUrl = options?.endpointUrl || dispatch.endpoint?.baseUrl || routedConfig.baseUrl
+  const model = options?.model || dispatch.model || routedConfig.model
+
+  log.ai.info('AI dispatch resolved for parseWithOllama', {
+    context: {
+      taskType: options?.dispatchHint?.taskType ?? 'structured.parse',
+      executionLocation: dispatch.executionLocation,
+      privacyLevel: dispatch.privacy.level,
+      taskClass: dispatch.classification.taskClass,
+      reasons: dispatch.reasons.slice(0, 5),
+      confidenceDisposition: dispatch.confidenceDecision?.disposition ?? null,
+    },
+  })
 
   // Check cache first
   if (options?.cache) {
@@ -276,7 +318,15 @@ export async function parseWithOllama<T>(
 
       if (repairedResult.success) {
         const durationMs = Date.now() - startTime
-        log.ai.info('Repair pass succeeded', { context: { model, repair: true }, durationMs })
+        log.ai.info('Repair pass succeeded', {
+          context: {
+            model,
+            repair: true,
+            executionLocation: dispatch.executionLocation,
+            privacyLevel: dispatch.privacy.level,
+          },
+          durationMs,
+        })
         incrementAiMetric('ai.call.repair_succeeded')
         incrementAiMetric('ai.call.success')
         recordAiLatency(durationMs)
@@ -308,7 +358,14 @@ export async function parseWithOllama<T>(
   }
 
   const durationMs = Date.now() - startTime
-  log.ai.info('Parsed successfully', { context: { model }, durationMs })
+  log.ai.info('Parsed successfully', {
+    context: {
+      model,
+      executionLocation: dispatch.executionLocation,
+      privacyLevel: dispatch.privacy.level,
+    },
+    durationMs,
+  })
   incrementAiMetric('ai.call.success')
   recordAiLatency(durationMs)
   if (options?.modelTier) recordAiTier(options.modelTier)

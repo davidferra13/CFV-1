@@ -167,7 +167,7 @@ function buildHelp(surface: RemySurface, context: SurfaceInstantContext): string
     'I can help with your event details, quote status, dietary info, loyalty points, and where to find things in the portal.',
     '- Ask about your next event',
     '- Ask about pending quotes or payments',
-    '- Ask where to update guest count, review menus, or message Chef',
+    '- Ask where to request a guest-count change, review menus, or message Chef',
   ].join('\n')
 }
 

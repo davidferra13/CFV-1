@@ -39,8 +39,12 @@ export type PartnerReportData = {
   location_breakdown: {
     location_id: string
     location_name: string
+    inquiry_click_count: number
+    booking_click_count: number
     referral_count: number
     event_count: number
+    completed_event_count: number
+    revenue_cents: number
   }[]
 }
 
@@ -111,19 +115,73 @@ export async function getPartnerReportData(
     totalReferrals > 0 ? Math.round((eventsCompleted / totalReferrals) * 100) : 0
 
   // Location breakdown
-  const locBreakdown: Record<string, { referral_count: number; event_count: number }> = {}
+  const locBreakdown: Record<
+    string,
+    {
+      inquiry_click_count: number
+      booking_click_count: number
+      referral_count: number
+      event_count: number
+      completed_event_count: number
+      revenue_cents: number
+    }
+  > = {}
+
+  const ensureLocationBreakdown = (locationId: string) => {
+    if (!locBreakdown[locationId]) {
+      locBreakdown[locationId] = {
+        inquiry_click_count: 0,
+        booking_click_count: 0,
+        referral_count: 0,
+        event_count: 0,
+        completed_event_count: 0,
+        revenue_cents: 0,
+      }
+    }
+    return locBreakdown[locationId]
+  }
+
   for (const inq of inquiries || []) {
     if (inq.partner_location_id && locationMap[inq.partner_location_id]) {
-      if (!locBreakdown[inq.partner_location_id])
-        locBreakdown[inq.partner_location_id] = { referral_count: 0, event_count: 0 }
-      locBreakdown[inq.partner_location_id].referral_count++
+      ensureLocationBreakdown(inq.partner_location_id).referral_count++
     }
   }
   for (const evt of events || []) {
     if (evt.partner_location_id && locationMap[evt.partner_location_id]) {
-      if (!locBreakdown[evt.partner_location_id])
-        locBreakdown[evt.partner_location_id] = { referral_count: 0, event_count: 0 }
-      locBreakdown[evt.partner_location_id].event_count++
+      const stats = ensureLocationBreakdown(evt.partner_location_id)
+      stats.event_count++
+      if (evt.status === 'completed') {
+        stats.completed_event_count++
+        stats.revenue_cents += evt.quoted_price_cents || 0
+      }
+    }
+  }
+
+  const locationIds = Object.keys(locationMap)
+  if (locationIds.length > 0) {
+    const observabilityDb: any = createServerClient({ admin: true })
+    const { data: locationClicks } = await observabilityDb
+      .from('platform_observability_events')
+      .select('event_key, subject_id')
+      .eq('tenant_id', user.tenantId!)
+      .eq('subject_type', 'location')
+      .in('subject_id', locationIds)
+      .in('event_key', [
+        'conversion.location_inquiry_link_clicked',
+        'conversion.location_booking_link_clicked',
+      ])
+      .gte('occurred_at', from)
+      .lte('occurred_at', to)
+
+    for (const click of locationClicks || []) {
+      if (!click.subject_id || !locationMap[click.subject_id]) continue
+      const stats = ensureLocationBreakdown(click.subject_id)
+      if (click.event_key === 'conversion.location_inquiry_link_clicked') {
+        stats.inquiry_click_count++
+      }
+      if (click.event_key === 'conversion.location_booking_link_clicked') {
+        stats.booking_click_count++
+      }
     }
   }
 

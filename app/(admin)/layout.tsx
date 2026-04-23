@@ -4,6 +4,7 @@
 // NOT chef shell components. This is an enforced runtime boundary.
 
 import { requireAdmin } from '@/lib/auth/admin'
+import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import {
@@ -20,6 +21,8 @@ import { PresenceBeacon } from '@/components/admin/presence-beacon'
 import { TestAccountBanner } from '@/components/dev/test-account-banner'
 import { isFounderEmail } from '@/lib/platform/owner-account'
 import { AnalyticsIdentify } from '@/components/analytics/analytics-identify'
+import { PATHNAME_HEADER } from '@/lib/auth/request-auth-context'
+import { resolveAdminSurfaceMode } from '@/lib/interface/surface-governance'
 
 export const metadata = {
   title: 'Admin',
@@ -31,6 +34,9 @@ const RemyWrapper = dynamic(
 )
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const pathname = headers().get(PATHNAME_HEADER) ?? '/admin'
+  const surfaceMode = resolveAdminSurfaceMode(pathname)
+
   let admin
   try {
     admin = await requireAdmin()
@@ -44,7 +50,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <NotificationProvider userId={admin.id}>
           <ToastProvider />
           <TestAccountBanner email={admin.email} />
-          <div className="min-h-screen bg-stone-900 text-stone-100" data-cf-portal="admin">
+          <div
+            className="min-h-screen bg-stone-900 text-stone-100"
+            data-cf-portal="admin"
+            data-cf-surface={surfaceMode}
+          >
             <AdminSidebar userId={admin.id} />
             <AdminMobileNav userId={admin.id} />
             <AdminMainContent>{children}</AdminMainContent>

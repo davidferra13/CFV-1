@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, startTransition } from 'react'
+import { useEffect, useMemo, useState, startTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -66,12 +66,12 @@ export function MenuLibraryPicker({ eventId, menus, preferences }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Auto-mark preferences as viewed if they haven't been
-  if (preferences && !preferences.chef_viewed_at) {
+  useEffect(() => {
+    if (!preferences || preferences.chef_viewed_at) return
     startTransition(() => {
       void markPreferencesViewed(eventId)
     })
-  }
+  }, [eventId, preferences])
 
   const filtered = useMemo(() => {
     let result = menus

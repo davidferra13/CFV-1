@@ -40,8 +40,15 @@ export default async function StaffDetailPage({ params }: { params: { id: string
   const user = await requireChef()
   await requirePro('staff-management')
   const db: any = createServerClient()
-  const [member, hasLogin, { data: locRows }, { data: linkedEmployee }] = await Promise.all([
-    getStaffMember(params.id),
+  let member
+  try {
+    member = await getStaffMember(params.id)
+  } catch {
+    notFound()
+  }
+  if (!member) notFound()
+
+  const [hasLogin, { data: locRows }, { data: linkedEmployee }] = await Promise.all([
     checkStaffHasLogin(params.id),
     db
       .from('business_locations')
@@ -56,7 +63,6 @@ export default async function StaffDetailPage({ params }: { params: { id: string
       .eq('staff_member_id', params.id)
       .limit(1),
   ])
-  if (!member) notFound()
   const locations = (locRows ?? []) as { id: string; name: string; location_type: string }[]
 
   // If staff member is linked to an employee, fetch payroll records

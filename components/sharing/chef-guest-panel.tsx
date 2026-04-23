@@ -5,6 +5,10 @@
 
 import { useState } from 'react'
 import { updateGuestVisibility } from '@/lib/sharing/actions'
+import {
+  getDefaultPublicShareVisibilitySettings,
+  type PublicShareVisibilitySettings,
+} from '@/lib/sharing/public-contract'
 import { Badge } from '@/components/ui/badge'
 
 interface Guest {
@@ -31,16 +35,7 @@ interface RSVPSummary {
   all_allergies: string[] | null
 }
 
-interface VisibilitySettings {
-  show_date_time: boolean
-  show_location: boolean
-  show_occasion: boolean
-  show_menu: boolean
-  show_dietary_info: boolean
-  show_special_requests: boolean
-  show_guest_list: boolean
-  show_chef_name: boolean
-}
+type VisibilitySettings = PublicShareVisibilitySettings
 
 interface ChefGuestPanelProps {
   eventShareId: string | null
@@ -54,6 +49,8 @@ const VISIBILITY_LABELS: Record<keyof VisibilitySettings, string> = {
   show_date_time: 'Date & Time',
   show_location: 'Location',
   show_occasion: 'Occasion',
+  show_guest_count: 'Guest Count',
+  show_service_style: 'Service Style',
   show_menu: 'Menu',
   show_dietary_info: 'Dietary Info',
   show_special_requests: 'Special Requests',
@@ -68,17 +65,9 @@ export function ChefGuestPanel({
   originalGuestCount,
   visibility: initialVisibility,
 }: ChefGuestPanelProps) {
+  const defaultVisibility = getDefaultPublicShareVisibilitySettings()
   const [visibility, setVisibility] = useState<VisibilitySettings>(
-    initialVisibility || {
-      show_date_time: true,
-      show_location: true,
-      show_occasion: true,
-      show_menu: false,
-      show_dietary_info: false,
-      show_special_requests: false,
-      show_guest_list: false,
-      show_chef_name: true,
-    }
+    initialVisibility ? { ...defaultVisibility, ...initialVisibility } : defaultVisibility
   )
   const [saving, setSaving] = useState(false)
 

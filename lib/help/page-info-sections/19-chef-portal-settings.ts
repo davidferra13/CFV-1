@@ -230,6 +230,18 @@ export const CHEF_PORTAL_SETTINGS_PAGE_INFO: Record<string, PageInfoEntry> = {
     ],
   },
 
+  '/settings/credentials': {
+    title: 'Credentials',
+    description:
+      'Career timeline, public-safe credentials, community impact controls, and private resume upload.',
+    features: [
+      'Work history timeline',
+      'Private resume upload',
+      'Resume available upon request toggle',
+      'Community impact visibility',
+    ],
+  },
+
   '/settings/professional/skills': {
     title: 'Capability Inventory',
     description: 'Self-assess your confidence across cuisines, diets, and techniques.',

@@ -309,17 +309,14 @@ export async function getPostEventSurveyPageData(
   ])
 
   let dishes: SurveyPageDish[] = []
-  if (event?.menu_id) {
-    const { data: menuDishes } = await db
-      .from('dishes')
-      .select('id, name, course_name')
-      .eq('menu_id', event.menu_id)
-      .order('course_number', { ascending: true })
-
-    dishes = (menuDishes ?? []).map((dish: any) => ({
-      id: dish.id,
-      name: dish.name ?? '',
-      course_name: dish.course_name ?? null,
+  if (survey.event_id) {
+    const { getEventDishFeedbackChoicesByTenant } =
+      await import('@/lib/post-event/learning-actions')
+    const choices = await getEventDishFeedbackChoicesByTenant(survey.event_id, survey.tenant_id)
+    dishes = choices.map((choice) => ({
+      id: choice.id,
+      name: choice.name,
+      course_name: choice.courseName,
     }))
   }
 
@@ -403,6 +400,11 @@ export async function submitPostEventSurveyResponse(
 
   revalidatePath('/surveys')
   revalidatePath(`/events/${survey.event_id}`)
+  {
+    const { refreshEventOutcomeLearningByTenant } =
+      await import('@/lib/post-event/learning-actions')
+    await refreshEventOutcomeLearningByTenant(survey.event_id, survey.tenant_id)
+  }
 
   return { success: true }
 }

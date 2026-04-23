@@ -7,10 +7,19 @@ import { getEventById } from '@/lib/events/actions'
 import { getClients } from '@/lib/clients/actions'
 import { getPartnersWithLocations } from '@/lib/partners/actions'
 import { EventForm } from '@/components/events/event-form'
+import { ServiceSimulationReturnBanner } from '@/components/events/service-simulation-return-banner'
 import { Alert } from '@/components/ui/alert'
+import { sanitizeReturnTo } from '@/lib/navigation/return-to'
 
-export default async function EditEventPage({ params }: { params: { id: string } }) {
+export default async function EditEventPage({
+  params,
+  searchParams,
+}: {
+  params: { id: string }
+  searchParams?: { returnTo?: string }
+}) {
   const user = await requireChef()
+  const returnTo = sanitizeReturnTo(searchParams?.returnTo)
 
   const event = await getEventById(params.id)
 
@@ -50,6 +59,8 @@ export default async function EditEventPage({ params }: { params: { id: string }
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
+      <ServiceSimulationReturnBanner returnTo={returnTo} />
+
       <div>
         <h1 className="text-3xl font-bold text-stone-100">Edit Event</h1>
         <p className="text-stone-400 mt-1">Update event details</p>

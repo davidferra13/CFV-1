@@ -20,6 +20,7 @@ type Props = {
   status: 'draft' | 'sent' | 'viewed' | 'signed' | 'voided'
   signedAt: string | null
   eventId: string
+  continueToPayment?: boolean
 }
 
 export function ContractSigningClient({
@@ -28,6 +29,7 @@ export function ContractSigningClient({
   status,
   signedAt,
   eventId,
+  continueToPayment = false,
 }: Props) {
   const router = useRouter()
   const [signatureDataUrl, setSignatureDataUrl] = useState<string | null>(null)
@@ -51,6 +53,10 @@ export function ContractSigningClient({
         signature_data_url: signatureDataUrl,
         signer_user_agent: navigator.userAgent,
       })
+      if (continueToPayment) {
+        router.push(`/my-events/${eventId}/pay`)
+        return
+      }
       setDone(true)
       router.refresh()
     } catch (err) {

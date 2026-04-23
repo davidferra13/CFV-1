@@ -9,6 +9,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { materializeCanonicalDishIntoMenu } from './canonical-dish-menu-core'
 
 // ============================================================
 // SCHEMAS
@@ -46,114 +47,25 @@ export async function addCanonicalDishToMenu(input: {
 
   const db: any = createServerClient()
 
-  // Verify menu belongs to tenant and is editable
-  const { data: menu } = await db
-    .from('menus')
-    .select('id, status, tenant_id')
-    .eq('id', validated.menuId)
-    .eq('tenant_id', user.tenantId!)
-    .is('deleted_at', null)
-    .single()
-
-  if (!menu) {
-    return { success: false, error: 'Menu not found' }
-  }
-
-  if (menu.status === 'locked') {
-    return { success: false, error: 'Cannot add dishes to a locked menu' }
-  }
-
-  // Load canonical dish + components
-  const { data: canonicalDish } = await db
-    .from('dish_index')
-    .select('id, name, course, description, dietary_tags, allergen_flags')
-    .eq('id', validated.dishId)
-    .eq('tenant_id', user.tenantId!)
-    .single()
-
-  if (!canonicalDish) {
-    return { success: false, error: 'Canonical dish not found' }
-  }
-
-  const { data: canonicalComponents } = await db
-    .from('dish_index_components')
-    .select('id, name, category, description, sort_order, recipe_id')
-    .eq('dish_id', validated.dishId)
-    .eq('tenant_id', user.tenantId!)
-    .order('sort_order', { ascending: true })
-
-  // Determine course number: use provided or pick next available
-  let courseNumber = validated.courseNumber ?? 1
-  if (!validated.courseNumber) {
-    const { data: existingDishes } = await db
-      .from('dishes')
-      .select('course_number')
-      .eq('menu_id', validated.menuId)
-      .eq('tenant_id', user.tenantId!)
-      .order('course_number', { ascending: false })
-      .limit(1)
-
-    if (existingDishes && existingDishes.length > 0) {
-      courseNumber = existingDishes[0].course_number + 1
-    }
-  }
-
-  const courseName = validated.courseName ?? canonicalDish.course ?? `Course ${courseNumber}`
-
-  // Insert menu-local compatibility dish row
-  const { data: menuDish, error: dishError } = await db
-    .from('dishes')
-    .insert({
-      tenant_id: user.tenantId!,
-      menu_id: validated.menuId,
-      course_number: courseNumber,
-      course_name: courseName,
-      name: canonicalDish.name,
-      description: canonicalDish.description ?? null,
-      dietary_tags: canonicalDish.dietary_tags ?? [],
-      allergen_flags: canonicalDish.allergen_flags ?? [],
-      // Source tracking
-      dish_index_id: validated.mode === 'reference' ? canonicalDish.id : null,
-      source_mode: validated.mode,
-      copied_from_dish_index_id: validated.mode === 'copy' ? canonicalDish.id : null,
-      created_by: user.id,
-      updated_by: user.id,
+  try {
+    const materialized = await materializeCanonicalDishIntoMenu({
+      db,
+      tenantId: user.tenantId!,
+      actorUserId: user.id,
+      menuId: validated.menuId,
+      dishId: validated.dishId,
+      mode: validated.mode,
+      courseNumber: validated.courseNumber,
+      courseName: validated.courseName,
     })
-    .select()
-    .single()
 
-  if (dishError || !menuDish) {
-    console.error('[addCanonicalDishToMenu] dish insert error:', dishError)
-    return { success: false, error: 'Failed to create menu dish' }
-  }
-
-  // Insert compatibility component rows from canonical components
-  if (canonicalComponents && canonicalComponents.length > 0) {
-    const componentRows = canonicalComponents.map((c: any) => ({
-      tenant_id: user.tenantId!,
-      dish_id: menuDish.id,
-      name: c.name,
-      category: c.category,
-      description: c.description ?? null,
-      sort_order: c.sort_order,
-      linked_recipe_id: c.recipe_id ?? null,
-      // Track canonical component source for reference-mode sync
-      dish_index_component_id: validated.mode === 'reference' ? c.id : null,
-      created_by: user.id,
-      updated_by: user.id,
-    }))
-
-    const { error: compError } = await db.from('components').insert(componentRows)
-
-    if (compError) {
-      console.error('[addCanonicalDishToMenu] components insert error:', compError)
-      // Non-blocking: dish was created, component sync can retry
+    return { success: true, menuDishId: materialized.menuDishId }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to create menu dish',
     }
   }
-
-  revalidatePath(`/menus/${validated.menuId}`)
-
-  return { success: true, menuDishId: menuDish.id }
 }
 
 // ============================================================

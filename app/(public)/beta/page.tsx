@@ -5,6 +5,7 @@ import { BetaSignupForm } from '@/components/beta/beta-signup-form'
 import { ArrowRight, BadgeDollarSign, ClipboardList, Repeat, Users } from '@/components/ui/icons'
 import { getBetaSignupCount } from '@/lib/beta/actions'
 import { BETA_CAPACITY } from '@/lib/beta/constants'
+import { buildOperatorWalkthroughHref } from '@/lib/marketing/walkthrough-links'
 
 type BetaSignupPageProps = {
   searchParams?: {
@@ -159,12 +160,15 @@ export default async function BetaSignupPage({ searchParams }: BetaSignupPagePro
                 <ArrowRight className="h-4 w-4" />
               </TrackedLink>
               <TrackedLink
-                href="/contact"
+                href={buildOperatorWalkthroughHref({
+                  sourcePage: 'beta_signup',
+                  sourceCta: 'hero_walkthrough',
+                })}
                 analyticsName="beta_contact_walkthrough"
                 analyticsProps={{ section: 'hero' }}
                 className="inline-flex items-center justify-center rounded-xl border border-stone-600 bg-stone-900 px-5 py-3 text-sm font-semibold text-stone-200 transition-colors hover:bg-stone-800"
               >
-                Book a walkthrough
+                Request operator walkthrough
               </TrackedLink>
             </div>
           </div>

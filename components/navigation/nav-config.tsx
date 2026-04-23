@@ -1,7 +1,9 @@
 // Centralized navigation configuration (single source of truth)
 // Organized by chef workflow with granular sub-categories (3-5 items per group).
-// Rule: nothing hidden. If it's built, it's findable within 1-2 clicks.
+// Rule: primary shells stay within the attention budget. Secondary routes stay discoverable
+// through context, All Features, settings, or command/search instead of always being visible.
 // Items within each group and children within each item are sorted alphabetically.
+import { normalizePrimaryNavHrefs } from '@/lib/interface/surface-governance'
 import type { LucideIcon } from '@/components/ui/icons'
 import {
   Activity,
@@ -127,6 +129,7 @@ type NavGroup = {
 type PrimaryShortcutOption = NavItem & { context: string }
 
 // Primary hub links shown in the sidebar.
+// Default hub set is capped to the philosophy budget for top-level navigation.
 // tier: 'primary' = top section (core daily workflow), 'secondary' = below divider (specialty hubs)
 // subMenu: curated quick-access links shown in a collapsible drawer under the hub link
 // coreFeature: true = shown in Focus Mode
@@ -134,12 +137,26 @@ type PrimaryShortcutOption = NavItem & { context: string }
 export const standaloneTop: NavItem[] = [
   {
     href: '/dashboard',
-    label: 'Dashboard',
+    label: 'Today',
     icon: LayoutDashboard,
     coreFeature: true,
     tier: 'primary',
   },
   { href: '/inbox', label: 'Inbox', icon: Inbox, coreFeature: true, tier: 'primary' },
+  {
+    href: '/inquiries',
+    label: 'Pipeline',
+    icon: Funnel,
+    coreFeature: true,
+    tier: 'primary',
+    subMenu: [
+      { href: '/inquiries/new', label: 'New Inquiry' },
+      { href: '/leads', label: 'Leads' },
+      { href: '/quotes', label: 'Quotes' },
+      { href: '/proposals', label: 'Proposals' },
+      { href: '/wix-submissions', label: 'Wix Submissions' },
+    ],
+  },
   {
     href: '/events',
     label: 'Events',
@@ -149,9 +166,21 @@ export const standaloneTop: NavItem[] = [
     subMenu: [
       { href: '/events/new', label: 'New Event' },
       { href: '/calendar', label: 'Calendar' },
-      { href: '/inquiries', label: 'Inquiries' },
-      { href: '/quotes', label: 'Quotes' },
-      { href: '/proposals', label: 'Proposals' },
+    ],
+  },
+  {
+    href: '/culinary',
+    label: 'Culinary',
+    icon: ChefHat,
+    coreFeature: true,
+    tier: 'primary',
+    subMenu: [
+      { href: '/culinary/recipes', label: 'Recipes' },
+      { href: '/menus', label: 'Menus' },
+      { href: '/culinary/price-catalog', label: 'Food Catalog' },
+      { href: '/culinary/costing', label: 'Costing' },
+      { href: '/culinary/prep', label: 'Prep' },
+      { href: '/culinary/prep/shopping', label: 'Shopping Lists' },
     ],
   },
   {
@@ -168,68 +197,15 @@ export const standaloneTop: NavItem[] = [
     ],
   },
   {
-    href: '/circles',
-    label: 'Circles',
-    icon: MessagesSquare,
-    coreFeature: true,
-    tier: 'primary',
-    subMenu: [
-      { href: '/circles', label: 'All Circles' },
-      { href: '/circles?tab=feed', label: 'Social Feed' },
-      { href: '/hub/circles', label: 'Browse Community' },
-    ],
-  },
-  {
-    href: '/culinary',
-    label: 'Culinary',
-    icon: ChefHat,
-    coreFeature: true,
-    tier: 'secondary',
-    subMenu: [
-      { href: '/culinary/recipes', label: 'Recipes' },
-      { href: '/menus', label: 'Menus' },
-      { href: '/culinary/price-catalog', label: 'Food Catalog' },
-      { href: '/culinary/costing', label: 'Costing' },
-      { href: '/culinary/prep', label: 'Prep' },
-      { href: '/culinary/prep/shopping', label: 'Shopping Lists' },
-    ],
-  },
-  {
     href: '/finance',
-    label: 'Finance',
+    label: 'Money',
     icon: DollarSign,
     coreFeature: true,
-    tier: 'secondary',
+    tier: 'primary',
     subMenu: [
       { href: '/finance/invoices', label: 'Invoices' },
       { href: '/expenses', label: 'Expenses' },
       { href: '/finance/reporting/profit-loss', label: 'Profit and Loss' },
-    ],
-  },
-  {
-    href: '/operations',
-    label: 'Operations',
-    icon: Activity,
-    coreFeature: true,
-    tier: 'secondary',
-    subMenu: [
-      { href: '/briefing', label: 'Morning Briefing' },
-      { href: '/stations/daily-ops', label: 'Daily Ops' },
-      { href: '/staff', label: 'Staff' },
-      { href: '/tasks', label: 'Tasks' },
-    ],
-  },
-  {
-    href: '/growth',
-    label: 'Growth',
-    icon: TrendingUp,
-    coreFeature: true,
-    tier: 'secondary',
-    subMenu: [
-      { href: '/marketing', label: 'Campaigns' },
-      { href: '/social', label: 'Social Media' },
-      { href: '/network', label: 'Chef Network' },
-      { href: '/analytics', label: 'Analytics' },
     ],
   },
 ]
@@ -457,6 +433,11 @@ export const navGroups: NavGroup[] = [
         label: 'Products',
         icon: Package,
         children: [{ href: '/commerce/products/new', label: 'New Product' }],
+      },
+      {
+        href: '/commerce/storefront',
+        label: 'Passive Storefront',
+        icon: Store,
       },
       {
         href: '/commerce/promotions',
@@ -888,7 +869,6 @@ export const navGroups: NavGroup[] = [
           { href: '/social/calendar', label: 'Content Calendar' },
           { href: '/social/vault', label: 'Media Vault' },
           { href: '/social/connections', label: 'Platform Connections' },
-          { href: '/social/compose', label: 'Post from Event', hidden: true },
           { href: '/social/settings', label: 'Queue Settings' },
           { href: '/social/templates', label: 'Social Templates' },
         ],
@@ -1408,7 +1388,7 @@ export const navGroups: NavGroup[] = [
 
 // Core groups shown in the sidebar by default.
 // Everything else is accessible via /features (All Features gateway).
-export const CORE_GROUP_IDS = new Set(['events', 'clients', 'culinary', 'finance', 'operations'])
+export const CORE_GROUP_IDS = new Set(['pipeline', 'events', 'clients', 'culinary', 'finance'])
 
 // Sort groups alphabetically so chefs can find features predictably.
 navGroups.sort((a, b) => a.label.localeCompare(b.label))
@@ -1429,26 +1409,27 @@ export const standaloneBottom: NavItem[] = [
 ]
 
 export const mobileTabItems: NavItem[] = [
-  { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
-  { href: '/daily', label: 'Daily Ops', icon: ListChecks },
+  { href: '/dashboard', label: 'Today', icon: LayoutDashboard },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
+  { href: '/inquiries', label: 'Pipeline', icon: ChatTeardropText },
   { href: '/events', label: 'Events', icon: CalendarDays },
-  { href: '/clients', label: 'Clients', icon: Users },
+  { href: '/daily', label: 'Daily Ops', icon: ListChecks },
 ]
 
 // All available options for mobile tab customization.
 // Users can pick 5 from this list via Settings > Navigation.
 export const MOBILE_TAB_OPTIONS: NavItem[] = [
-  { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
+  { href: '/dashboard', label: 'Today', icon: LayoutDashboard },
   { href: '/daily', label: 'Daily Ops', icon: ListChecks },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
   { href: '/events', label: 'Events', icon: CalendarDays },
   { href: '/clients', label: 'Clients', icon: Users },
+  { href: '/culinary', label: 'Culinary', icon: ChefHat },
   { href: '/calendar', label: 'Calendar', icon: CalendarDays },
-  { href: '/inquiries', label: 'Inquiries', icon: ChatTeardropText },
+  { href: '/inquiries', label: 'Pipeline', icon: ChatTeardropText },
   { href: '/menus', label: 'Menus', icon: UtensilsCrossed },
   { href: '/recipes', label: 'Recipes', icon: BookOpen },
-  { href: '/finance', label: 'Finance', icon: DollarSign },
+  { href: '/finance', label: 'Money', icon: DollarSign },
   { href: '/chat', label: 'Messaging', icon: MessageCircle },
   { href: '/documents', label: 'Documents', icon: FileText },
   { href: '/culinary/costing', label: 'Costing', icon: Calculator },
@@ -1544,6 +1525,12 @@ const settingsShortcutOptions: PrimaryShortcutOption[] = [
     href: '/settings/professional',
     label: 'Professional Development',
     icon: Settings,
+    context: 'Settings',
+  },
+  {
+    href: '/settings/credentials',
+    label: 'Credentials & Resume',
+    icon: IdentificationBadge,
     context: 'Settings',
   },
   {
@@ -1805,12 +1792,14 @@ function buildPrimaryShortcutOptions(): PrimaryShortcutOption[] {
 
 const PRIMARY_SHORTCUT_OPTIONS: PrimaryShortcutOption[] = buildPrimaryShortcutOptions()
 
-export const DEFAULT_PRIMARY_SHORTCUT_HREFS = standaloneTop.map((item) => item.href)
+export const DEFAULT_PRIMARY_SHORTCUT_HREFS = normalizePrimaryNavHrefs(
+  standaloneTop.map((item) => item.href)
+)
 
 export function resolveStandaloneTop(preferredHrefs?: string[] | null): NavItem[] {
   const byHref = new Map(PRIMARY_SHORTCUT_OPTIONS.map((item) => [item.href, item] as const))
   const seen = new Set<string>()
-  const desired = (preferredHrefs ?? []).map((href) => href.trim()).filter(Boolean)
+  const desired = normalizePrimaryNavHrefs(preferredHrefs ?? [])
   const resolved: NavItem[] = []
 
   for (const href of desired) {
@@ -1822,7 +1811,7 @@ export function resolveStandaloneTop(preferredHrefs?: string[] | null): NavItem[
   }
 
   if (resolved.length > 0) return resolved
-  return standaloneTop
+  return standaloneTop.map((item) => ({ ...item }))
 }
 
 export function getPrimaryShortcutOptions() {
@@ -1830,15 +1819,15 @@ export function getPrimaryShortcutOptions() {
 }
 
 // ─── Action Bar: 6 primary domains (decision contract 2026-04-09) ───
-// Today, Inbox, Events, Clients, Culinary, Finance
+// Today, Inbox, Pipeline, Events, Culinary, Money
 // All other surfaces reachable via the All Features collapse, command palette, or direct routes.
 export const actionBarItems: NavItem[] = [
   { href: '/dashboard', label: 'Today', icon: LayoutDashboard },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
+  { href: '/inquiries', label: 'Pipeline', icon: Funnel },
   { href: '/events', label: 'Events', icon: CalendarDays },
-  { href: '/clients', label: 'Clients', icon: Users },
   { href: '/culinary', label: 'Culinary', icon: UtensilsCrossed },
-  { href: '/finance', label: 'Finance', icon: DollarSign },
+  { href: '/finance', label: 'Money', icon: DollarSign },
 ]
 
 // ─── + Create dropdown: 15 direct navigation links ───

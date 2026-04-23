@@ -1,3 +1,8 @@
+import {
+  PUBLIC_MATCHING_EXPLAINER_COPY,
+  PUBLIC_MATCHING_FOLLOWUP_COPY,
+} from '@/lib/public/public-market-copy'
+
 export type PublicRouteRole =
   | 'consumer_booking'
   | 'consumer_browse'
@@ -12,7 +17,7 @@ export type PublicCta = {
 
 export const PUBLIC_PRIMARY_CONSUMER_CTA: PublicCta = {
   href: '/book',
-  label: 'Book a Chef',
+  label: 'Book Now',
 }
 
 export const PUBLIC_SECONDARY_CONSUMER_CTA: PublicCta = {
@@ -44,11 +49,14 @@ export const PUBLIC_ROUTE_ROLE: Record<string, PublicRouteRole> = {
   '/how-it-works': 'consumer_support',
   '/trust': 'consumer_support',
   '/contact': 'consumer_support',
+  '/pricing': 'operator_software',
   '/for-operators': 'operator_software',
+  '/for-operators/walkthrough': 'operator_software',
   '/marketplace-chefs': 'operator_software',
 }
 
-export const PUBLIC_MATCHED_CHEF_HELPER =
-  'Tell us about your event and matched chefs reach out to you directly.'
+export const PUBLIC_MATCHED_CHEF_HELPER = PUBLIC_MATCHING_EXPLAINER_COPY
+
+export const PUBLIC_MATCHED_CHEF_FOLLOWUP = PUBLIC_MATCHING_FOLLOWUP_COPY
 
 export const PUBLIC_DIRECTORY_HELPER = 'Looking for restaurants, caterers, or food trucks instead?'

@@ -11,23 +11,38 @@
  */
 
 import { pgClient } from '@/lib/db'
-import type { CatalogDetailResult, CatalogDetailPrice } from '@/lib/openclaw/catalog-types'
+import type { CatalogDetailResult } from '@/lib/openclaw/catalog-types'
+import {
+  getCatalogDetailFromContract,
+  type CatalogIngredientRecord,
+} from '@/lib/openclaw/catalog-detail-contract'
+import { evaluateCanonicalIngredientPublicPublishability } from '@/lib/openclaw/public-ingredient-publish'
+
+async function withPgTrgmSimilarityThreshold<T>(
+  threshold: number,
+  runner: (client: typeof pgClient) => Promise<T>
+): Promise<T> {
+  const transactionalClient = pgClient as typeof pgClient & {
+    begin?: unknown
+  }
+  const begin = transactionalClient.begin as unknown as
+    | ((callback: (tx: typeof pgClient) => Promise<T>) => Promise<T>)
+    | undefined
+
+  if (typeof begin !== 'function') {
+    return runner(pgClient)
+  }
+
+  return begin(async (tx) => {
+    const transactionClient = tx as typeof pgClient
+    await transactionClient`SET LOCAL pg_trgm.similarity_threshold = ${threshold}`
+    return runner(transactionClient)
+  })
+}
 
 // ---------------------------------------------------------------------------
 // Internal helpers (mirrors catalog-actions.ts normalisation helpers)
 // ---------------------------------------------------------------------------
-
-function toNumber(value: unknown): number {
-  if (typeof value === 'number') return value
-  if (typeof value === 'string') return Number(value)
-  return 0
-}
-
-function toIso(value: unknown): string | null {
-  if (!value) return null
-  if (value instanceof Date) return value.toISOString()
-  return String(value)
-}
 
 function normalizeCategory(value: string | null | undefined): string {
   const trimmed = value?.trim()
@@ -37,13 +52,6 @@ function normalizeCategory(value: string | null | undefined): string {
 function normalizeUnit(value: string | null | undefined): string {
   const trimmed = value?.trim()
   return trimmed && trimmed.length > 0 ? trimmed : 'each'
-}
-
-function normalizeImage(value: string | null | undefined): string | null {
-  if (!value) return null
-  const trimmed = value.trim()
-  if (!trimmed || trimmed.toLowerCase() === 'none') return null
-  return trimmed
 }
 
 // ---------------------------------------------------------------------------
@@ -69,180 +77,44 @@ export async function getPublicIngredientDetail(
       ingredient_id,
       name,
       COALESCE(NULLIF(category, ''), 'uncategorized') AS category,
-      COALESCE(NULLIF(standard_unit, ''), 'each') AS standard_unit
-    FROM openclaw.canonical_ingredients
-    WHERE ingredient_id = ${ingredientId}
+      COALESCE(NULLIF(standard_unit, ''), 'each') AS standard_unit,
+      EXISTS (
+        SELECT 1
+        FROM openclaw.normalization_map nm
+        JOIN openclaw.products p
+          ON LOWER(TRIM(p.name)) = LOWER(TRIM(nm.raw_name))
+         AND p.is_food = true
+        WHERE nm.canonical_ingredient_id = ci.ingredient_id
+      ) AS has_food_product_match
+    FROM openclaw.canonical_ingredients ci
+    WHERE ci.ingredient_id = ${ingredientId}
     LIMIT 1
   `
 
   if ((ingredientRows as any[]).length === 0) return null
 
   const ingredient = (ingredientRows as any[])[0]
+  const publishability = evaluateCanonicalIngredientPublicPublishability({
+    id: ingredient.ingredient_id as string,
+    name: ingredient.name as string,
+    category: (ingredient.category as string | null) ?? null,
+    hasFoodProductMatch: Boolean(ingredient.has_food_product_match),
+  })
 
-  // Two-step lookup to avoid the slow cross-join between products (13.9M rows)
-  // and normalization_map. Each step uses indexed single-value lookups.
-  //
-  // Step 1: get a sample of raw_names for this ingredient (indexed, fast)
-  // Step 2: for each raw_name, fetch ONE product ID via exact name match (index scan)
-  // Step 3: batch-fetch store prices for those product IDs (product_id index, fast)
-  //
-  // This keeps the intermediate result bounded regardless of product table duplicates.
-  const nmRows = await pgClient`
-    SELECT LOWER(TRIM(raw_name)) AS rn
-    FROM openclaw.normalization_map
-    WHERE canonical_ingredient_id = ${ingredientId}
-    ORDER BY confidence DESC NULLS LAST
-    LIMIT 8
-  `
+  if (!publishability.allowed) return null
 
-  const rawNames = (nmRows as any[]).map((r: any) => r.rn as string)
-  if (rawNames.length === 0) {
-    // No normalization entries - ingredient has no price data
-    return {
-      ingredient: {
-        id: ingredient.ingredient_id as string,
-        name: ingredient.name as string,
-        category: normalizeCategory(ingredient.category as string | null),
-        standardUnit: normalizeUnit(ingredient.standard_unit as string | null),
-      },
-      prices: [],
-      summary: {
-        storeCount: 0,
-        inStockCount: 0,
-        outOfStockCount: 0,
-        cheapestCents: null,
-        cheapestStore: null,
-        avgCents: null,
-        hasSourceUrls: false,
-      },
-    }
+  const ingredientRecord: CatalogIngredientRecord = {
+    id: ingredient.ingredient_id as string,
+    name: ingredient.name as string,
+    category: normalizeCategory(ingredient.category as string | null),
+    standardUnit: normalizeUnit(ingredient.standard_unit as string | null),
   }
 
-  // For each raw_name, get ONE product ID via single-value exact match (uses btree index)
-  const productIdResults = await Promise.all(
-    rawNames.map((rn) =>
-      pgClient`
-        SELECT id, COALESCE(NULLIF(size_unit, ''), 'each') AS size_unit, image_url, brand
-        FROM openclaw.products
-        WHERE LOWER(TRIM(name)) = ${rn}
-          AND is_food = true
-        LIMIT 1
-      `.then((r) => (r as any[])[0] ?? null)
-    )
-  )
-
-  const productSample = productIdResults.filter(Boolean) as Array<{
-    id: string
-    size_unit: string
-    image_url: string | null
-    brand: string | null
-  }>
-
-  if (productSample.length === 0) {
-    return {
-      ingredient: {
-        id: ingredient.ingredient_id as string,
-        name: ingredient.name as string,
-        category: normalizeCategory(ingredient.category as string | null),
-        standardUnit: normalizeUnit(ingredient.standard_unit as string | null),
-      },
-      prices: [],
-      summary: {
-        storeCount: 0,
-        inStockCount: 0,
-        outOfStockCount: 0,
-        cheapestCents: null,
-        cheapestStore: null,
-        avgCents: null,
-        hasSourceUrls: false,
-      },
-    }
-  }
-
-  const productIds = productSample.map((p) => p.id)
-  const productMeta: Record<
-    string,
-    { size_unit: string; image_url: string | null; brand: string | null }
-  > = {}
-  for (const p of productSample) {
-    productMeta[p.id] = { size_unit: p.size_unit, image_url: p.image_url, brand: p.brand }
-  }
-
-  // Batch-fetch store prices for these product IDs (product_id index is efficient for N <= 8)
-  const rows = await pgClient`
-    SELECT
-      s.name AS store_name,
-      s.city AS store_city,
-      s.state AS store_state,
-      sp.product_id,
-      COALESCE(sp.sale_price_cents, sp.price_cents) AS price_cents,
-      sp.price_type,
-      sp.source,
-      COALESCE(sp.in_stock, true) AS in_stock,
-      sp.last_seen_at AS last_confirmed_at
-    FROM openclaw.store_products sp
-    JOIN openclaw.stores s ON s.id = sp.store_id AND s.is_active = true
-    WHERE sp.product_id = ANY(${productIds}::uuid[])
-      AND sp.price_cents > 0
-    ORDER BY price_cents ASC NULLS LAST
-  `
-
-  // Dedup by store name: pick cheapest entry per store (rows already sorted by price ASC)
-  const seenStores = new Set<string>()
-  const prices: CatalogDetailPrice[] = []
-  for (const row of rows as any[]) {
-    const storeName = String(row.store_name)
-    if (seenStores.has(storeName)) continue
-    seenStores.add(storeName)
-    const meta = productMeta[row.product_id] ?? { size_unit: 'each', image_url: null, brand: null }
-    prices.push({
-      store: storeName,
-      storeCity: row.store_city ?? null,
-      storeState: row.store_state ?? null,
-      storeWebsite: null,
-      priceCents: toNumber(row.price_cents),
-      priceUnit: normalizeUnit(meta.size_unit),
-      priceType: row.price_type ?? 'retail',
-      pricingTier: row.price_type ?? 'retail',
-      confidence: row.source?.includes('instacart') ? 'instacart_adjusted' : 'direct_scrape',
-      inStock: Boolean(row.in_stock),
-      sourceUrl: null,
-      imageUrl: normalizeImage(meta.image_url),
-      brand: meta.brand ?? null,
-      aisleCat: null,
-      lastConfirmedAt: toIso(row.last_confirmed_at) ?? new Date(0).toISOString(),
-      lastChangedAt: toIso(row.last_confirmed_at) ?? new Date(0).toISOString(),
-      packageSize: null,
-    })
-  }
-
-  const inStockPrices = prices.filter((p) => p.inStock)
-  const summary = {
-    storeCount: prices.length,
-    inStockCount: inStockPrices.length,
-    outOfStockCount: prices.length - inStockPrices.length,
-    cheapestCents: prices.length > 0 ? Math.min(...prices.map((p) => p.priceCents)) : null,
-    cheapestStore:
-      prices.length > 0
-        ? prices.reduce((a, b) => (a.priceCents <= b.priceCents ? a : b)).store
-        : null,
-    avgCents:
-      prices.length > 0
-        ? Math.round(prices.reduce((s, p) => s + p.priceCents, 0) / prices.length)
-        : null,
-    hasSourceUrls: prices.some((p) => Boolean(p.sourceUrl || p.storeWebsite)),
-  }
-
-  return {
-    ingredient: {
-      id: ingredient.ingredient_id as string,
-      name: ingredient.name as string,
-      category: normalizeCategory(ingredient.category as string | null),
-      standardUnit: normalizeUnit(ingredient.standard_unit as string | null),
-    },
-    prices,
-    summary,
-  }
+  return getCatalogDetailFromContract({
+    ingredientId,
+    visibility: 'public',
+    ingredient: ingredientRecord,
+  })
 }
 
 // ---------------------------------------------------------------------------
@@ -269,6 +141,7 @@ export async function searchPublicIngredients(
 ): Promise<PublicIngredientSearchHit[]> {
   const normalized = query.trim()
   if (!normalized) return []
+  const searchLimit = Math.min(Math.max(limit, 1) * 4, 40)
 
   // FTS first (no correlated subqueries - keep it fast on 96K rows)
   const ftsRows = await pgClient`
@@ -281,11 +154,52 @@ export async function searchPublicIngredients(
     FROM openclaw.canonical_ingredients ci
     WHERE to_tsvector('english', ci.name) @@ plainto_tsquery('english', ${normalized})
     ORDER BY rank DESC
-    LIMIT ${limit}
+    LIMIT ${searchLimit}
   `
 
   if ((ftsRows as any[]).length > 0) {
-    return (ftsRows as any[]).map((row) => ({
+    return (ftsRows as any[])
+      .map((row) => ({
+        id: String(row.id),
+        name: String(row.name),
+        category: normalizeCategory(row.category as string | null),
+        standardUnit: normalizeUnit(row.standard_unit as string | null),
+        hasPrice: false,
+        bestPriceCents: null,
+        bestPriceUnit: null,
+      }))
+      .filter(
+        (row) =>
+          evaluateCanonicalIngredientPublicPublishability({
+            id: row.id,
+            name: row.name,
+            category: row.category,
+            hasFoodProductMatch: false,
+          }).allowed
+      )
+      .slice(0, limit)
+  }
+
+  // Trigram fallback for typos / partial names
+  const trigramRows = await withPgTrgmSimilarityThreshold(
+    0.25,
+    (client) =>
+      client`
+      SELECT
+        ci.ingredient_id AS id,
+        ci.name,
+        COALESCE(NULLIF(ci.category, ''), 'uncategorized') AS category,
+        COALESCE(NULLIF(ci.standard_unit, ''), 'each') AS standard_unit,
+        extensions.similarity(ci.name::text, ${normalized}::text) AS sim
+      FROM openclaw.canonical_ingredients ci
+      WHERE ci.name OPERATOR(extensions.%) ${normalized}
+      ORDER BY sim DESC
+      LIMIT ${searchLimit}
+    `
+  )
+
+  return (trigramRows as any[])
+    .map((row) => ({
       id: String(row.id),
       name: String(row.name),
       category: normalizeCategory(row.category as string | null),
@@ -294,31 +208,91 @@ export async function searchPublicIngredients(
       bestPriceCents: null,
       bestPriceUnit: null,
     }))
+    .filter(
+      (row) =>
+        evaluateCanonicalIngredientPublicPublishability({
+          id: row.id,
+          name: row.name,
+          category: row.category,
+          hasFoodProductMatch: false,
+        }).allowed
+    )
+    .slice(0, limit)
+}
+
+export interface PublicIngredientSpotlight {
+  id: string
+  name: string
+  category: string
+  ingredientHref: string
+  storeCount: number
+  inStockCount: number
+  cheapestCents: number | null
+  cheapestStore: string | null
+  cheapestUnit: string | null
+  avgCents: number | null
+  lastConfirmedAt: string | null
+}
+
+/**
+ * Resolve a short list of ingredient names into public market spotlights.
+ * This reuses the public search + detail layer instead of introducing a second
+ * homepage-only ingredient access path.
+ */
+export async function getPublicIngredientSpotlightsByNames(
+  names: string[]
+): Promise<PublicIngredientSpotlight[]> {
+  const uniqueNames = Array.from(
+    new Set(names.map((name) => name.trim()).filter((name) => name.length > 0))
+  )
+  if (uniqueNames.length === 0) return []
+
+  const hits = await Promise.all(uniqueNames.map((name) => getBestIngredientHit(name)))
+
+  const spotlights = await Promise.all(
+    hits.map(async (hit, index) => {
+      if (!hit) return null
+
+      const detail = await getPublicIngredientDetail(hit.id)
+      if (!detail || detail.summary.storeCount === 0 || detail.prices.length === 0) {
+        return null
+      }
+
+      const cheapest = detail.prices.reduce((best, price) =>
+        best == null || price.priceCents < best.priceCents ? price : best
+      )
+      const lastConfirmedAt = detail.prices.reduce<string | null>((latest, price) => {
+        if (!price.lastConfirmedAt) return latest
+        if (!latest) return price.lastConfirmedAt
+        return price.lastConfirmedAt > latest ? price.lastConfirmedAt : latest
+      }, null)
+      const spotlight: PublicIngredientSpotlight = {
+        id: detail.ingredient.id,
+        name: detail.ingredient.name,
+        category: detail.ingredient.category,
+        ingredientHref: `/ingredient/${encodeURIComponent(detail.ingredient.id)}`,
+        storeCount: detail.summary.storeCount,
+        inStockCount: detail.summary.inStockCount,
+        cheapestCents: detail.summary.cheapestCents,
+        cheapestStore: detail.summary.cheapestStore,
+        cheapestUnit: cheapest.priceUnit ?? null,
+        avgCents: detail.summary.avgCents,
+        lastConfirmedAt,
+      }
+
+      return {
+        index,
+        spotlight,
+      }
+    })
+  )
+
+  const resolvedSpotlights: Array<{ index: number; spotlight: PublicIngredientSpotlight }> = []
+  for (const entry of spotlights) {
+    if (entry) resolvedSpotlights.push(entry)
   }
 
-  // Trigram fallback for typos / partial names
-  const trigramRows = await pgClient`
-    SELECT
-      ci.ingredient_id AS id,
-      ci.name,
-      COALESCE(NULLIF(ci.category, ''), 'uncategorized') AS category,
-      COALESCE(NULLIF(ci.standard_unit, ''), 'each') AS standard_unit,
-      extensions.similarity(ci.name::text, ${normalized}::text) AS sim
-    FROM openclaw.canonical_ingredients ci
-    WHERE extensions.similarity(ci.name::text, ${normalized}::text) > 0.25
-    ORDER BY sim DESC
-    LIMIT ${limit}
-  `
-
-  return (trigramRows as any[]).map((row) => ({
-    id: String(row.id),
-    name: String(row.name),
-    category: normalizeCategory(row.category as string | null),
-    standardUnit: normalizeUnit(row.standard_unit as string | null),
-    hasPrice: false,
-    bestPriceCents: null,
-    bestPriceUnit: null,
-  }))
+  return resolvedSpotlights.sort((a, b) => a.index - b.index).map((entry) => entry.spotlight)
 }
 
 // ---------------------------------------------------------------------------
@@ -346,6 +320,7 @@ export async function getPublicAlternatives(
   excludeId: string,
   limit = 4
 ): Promise<PublicAlternative[]> {
+  const searchLimit = Math.min(Math.max(limit, 1) * 4, 24)
   const rows = await pgClient`
     SELECT DISTINCT ON (ci.ingredient_id)
       ci.ingredient_id AS id,
@@ -355,14 +330,56 @@ export async function getPublicAlternatives(
     JOIN openclaw.normalization_map nm ON nm.canonical_ingredient_id = ci.ingredient_id
     WHERE LOWER(COALESCE(NULLIF(ci.category, ''), 'uncategorized')) = LOWER(${category})
       AND ci.ingredient_id != ${excludeId}
-    LIMIT ${limit}
+    LIMIT ${searchLimit}
   `
 
-  return (rows as any[]).map((row) => ({
-    id: String(row.id),
-    name: String(row.name),
-    category,
-    bestPriceCents: null,
-    bestPriceUnit: normalizeUnit(row.standard_unit as string | null),
-  }))
+  return (rows as any[])
+    .map((row) => ({
+      id: String(row.id),
+      name: String(row.name),
+      category,
+      bestPriceCents: null,
+      bestPriceUnit: normalizeUnit(row.standard_unit as string | null),
+    }))
+    .filter(
+      (row) =>
+        evaluateCanonicalIngredientPublicPublishability({
+          id: row.id,
+          name: row.name,
+          category: row.category,
+          hasFoodProductMatch: true,
+        }).allowed
+    )
+    .slice(0, limit)
+}
+
+function normalizeIngredientName(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function scoreIngredientHit(query: string, hit: PublicIngredientSearchHit): number {
+  const normalizedQuery = normalizeIngredientName(query)
+  const normalizedName = normalizeIngredientName(hit.name)
+
+  if (!normalizedQuery || !normalizedName) return 0
+  if (normalizedName === normalizedQuery) return 100
+  if (normalizedName.startsWith(`${normalizedQuery} `)) return 90
+  if (normalizedName.includes(normalizedQuery)) return 75
+  if (normalizedQuery.includes(normalizedName)) return 60
+  return 0
+}
+
+async function getBestIngredientHit(query: string): Promise<PublicIngredientSearchHit | null> {
+  const hits = await searchPublicIngredients(query, 5)
+  if (hits.length === 0) return null
+
+  const scored = hits
+    .map((hit) => ({ hit, score: scoreIngredientHit(query, hit) }))
+    .sort((a, b) => b.score - a.score)
+
+  return scored[0]?.score > 0 ? scored[0].hit : hits[0]
 }

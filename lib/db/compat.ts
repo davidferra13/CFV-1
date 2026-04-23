@@ -107,6 +107,7 @@ type JoinPlan = {
   sqlAlias: string
   parentTable: string
   parentAlias: string
+  relationCardinality: 'one' | 'many'
   children: JoinPlan[]
 }
 
@@ -144,16 +145,27 @@ function parseSelectString(select: string): ParsedSelect {
 
   for (const token of tokens) {
     // Check for nested select: table(col1, col2) or alias:table(col1, col2)
-    // Also supports PostgREST FK hints: table!fk_column(cols) or table!inner(cols)
+    // Also supports PostgREST FK hints:
+    //   table!fk_column(cols)
+    //   table!inner(cols)
+    //   table!fk_constraint!inner(cols)
+    // and allows optional whitespace before the opening parenthesis.
     const nestedMatch = token.match(
-      /^(?:([a-zA-Z_][a-zA-Z0-9_]*):)?([a-zA-Z_][a-zA-Z0-9_]*)(?:!([a-zA-Z_][a-zA-Z0-9_]*))?\((.+)\)$/
+      /^(?:([a-zA-Z_][a-zA-Z0-9_]*):)?([a-zA-Z_][a-zA-Z0-9_]*)(?:(![a-zA-Z_][a-zA-Z0-9_]*)*)\s*\(([\s\S]+)\)$/
     )
     if (nestedMatch) {
-      const [, alias, table, hint, innerCols] = nestedMatch
+      const [, alias, table, rawHints, innerCols] = nestedMatch
+      const hints =
+        typeof rawHints === 'string' && rawHints.length > 0
+          ? rawHints
+              .split('!')
+              .map((hint) => hint.trim())
+              .filter(Boolean)
+          : []
       const nestedParsed = parseSelectString(innerCols)
-      const isInner = hint === 'inner'
-      // If hint is not 'inner' or 'left', treat it as an explicit FK column name
-      const explicitFk = hint && hint !== 'inner' && hint !== 'left' ? hint : null
+      const isInner = hints.includes('inner')
+      // If a hint is not a join-mode hint, treat it as an explicit FK column/constraint hint.
+      const explicitFk = hints.find((hint) => hint !== 'inner' && hint !== 'left') ?? null
       joins.push({
         alias: alias || null,
         table,
@@ -186,6 +198,43 @@ async function loadFkCache(): Promise<void> {
 
 function resolveFkColumn(sourceTable: string, targetTable: string): string | null {
   return FK_MAP[`${sourceTable}::${targetTable}`] ?? null
+}
+
+function resolveExplicitFkHint(sourceTable: string, explicitFkHint: string): string {
+  const normalizedHint = assertIdent(explicitFkHint)
+  if (!normalizedHint.endsWith('_fkey')) {
+    return normalizedHint
+  }
+
+  const sourcePrefix = `${sourceTable}_`
+  if (normalizedHint.startsWith(sourcePrefix)) {
+    const derivedColumn = normalizedHint.slice(sourcePrefix.length, -'_fkey'.length)
+    if (derivedColumn) {
+      return assertIdent(derivedColumn)
+    }
+  }
+
+  return normalizedHint
+}
+
+function determineJoinCardinality(
+  parentTable: string,
+  targetTable: string,
+  explicitFkHint: string | null
+): 'one' | 'many' {
+  if (explicitFkHint) {
+    return 'one'
+  }
+
+  if (resolveFkColumn(parentTable, targetTable)) {
+    return 'one'
+  }
+
+  if (resolveFkColumn(targetTable, parentTable)) {
+    return 'many'
+  }
+
+  return 'one'
 }
 
 // ─── Filter types ────────────────────────────────────────────────────────────
@@ -508,7 +557,7 @@ class QueryBuilder<T = any> {
     const rows = await pgClient.unsafe(sql, params.slice(0, whereParams.length) as any[])
 
     // Post-process: nest joined data
-    let data: any[] = hasJoins ? this.nestJoinedRows(rows, parsed) : [...rows]
+    let data: any[] = hasJoins ? this.nestJoinedRows(rows, parsed, joinPlans) : [...rows]
 
     // Handle single/maybeSingle
     if (this._singleRow) {
@@ -564,6 +613,7 @@ class QueryBuilder<T = any> {
         sqlAlias,
         parentTable,
         parentAlias,
+        relationCardinality: determineJoinCardinality(parentTable, join.table, join.explicitFk),
         children: this.buildJoinPlans(join.joins, join.table, sqlAlias, currentPath),
       }
     })
@@ -663,7 +713,7 @@ class QueryBuilder<T = any> {
 
     let onClause: string
     if (plan.join.explicitFk) {
-      const fk = assertIdent(plan.join.explicitFk)
+      const fk = resolveExplicitFkHint(plan.parentTable, plan.join.explicitFk)
       onClause = `${parentRef}.${quoteIdent(fk)} = ${targetAliasRef}."id"`
     } else {
       const fkCol = resolveFkColumn(plan.parentTable, targetTable)
@@ -690,24 +740,137 @@ class QueryBuilder<T = any> {
     return sql
   }
 
-  private nestJoinedRows(rows: any[], parsed: ParsedSelect): any[] {
-    return rows.map((row) => {
-      const result = { ...row }
+  private nestJoinedRows(rows: any[], parsed: ParsedSelect, joinPlans: JoinPlan[]): any[] {
+    const planByAlias = new Map<string, JoinPlan>()
+    for (const plan of joinPlans) {
+      planByAlias.set(plan.join.alias || plan.join.table, plan)
+    }
+
+    const grouped = new Map<string, Record<string, any>>()
+
+    for (const row of rows) {
+      const baseRow: Record<string, any> = { ...row }
+      for (const join of parsed.joins) {
+        delete baseRow[`__join_${join.alias || join.table}`]
+      }
+
+      const rowKey = this.getRowGroupKey(baseRow)
+      const existing = grouped.get(rowKey) ?? { ...baseRow }
+
       for (const join of parsed.joins) {
         const alias = join.alias || join.table
+        const plan = planByAlias.get(alias)
+        if (!plan) continue
+
         const joinKey = `__join_${alias}`
-        if (joinKey in result) {
-          result[alias] = result[joinKey]
-          delete result[joinKey]
-          // If all values in the nested object are null, the join didn't match
-          if (result[alias] && typeof result[alias] === 'object') {
-            const allNull = Object.values(result[alias]).every((v) => v === null)
-            if (allNull) result[alias] = null
-          }
-        }
+        existing[alias] = this.mergeJoinValue(existing[alias], row[joinKey], plan)
       }
-      return result
-    })
+
+      grouped.set(rowKey, existing)
+    }
+
+    return Array.from(grouped.values())
+  }
+
+  private getRowGroupKey(row: Record<string, any>): string {
+    if (row.id !== undefined && row.id !== null) {
+      return String(row.id)
+    }
+
+    return JSON.stringify(row)
+  }
+
+  private mergeJoinValue(existingValue: any, rawValue: any, plan: JoinPlan): any {
+    const normalizedIncoming = this.normalizeJoinValue(rawValue, plan)
+
+    if (plan.relationCardinality === 'many') {
+      const items = Array.isArray(existingValue) ? [...existingValue] : []
+      if (normalizedIncoming === null) {
+        return items
+      }
+
+      const incomingItems = Array.isArray(normalizedIncoming)
+        ? normalizedIncoming
+        : [normalizedIncoming]
+
+      for (const incomingItem of incomingItems) {
+        const matchIndex = items.findIndex((candidate) =>
+          this.areJoinedRecordsEqual(candidate, incomingItem)
+        )
+        if (matchIndex === -1) {
+          items.push(incomingItem)
+          continue
+        }
+        items[matchIndex] = this.mergeJoinedObject(items[matchIndex], incomingItem, plan)
+      }
+
+      return items
+    }
+
+    if (normalizedIncoming === null) {
+      return existingValue ?? null
+    }
+
+    if (!existingValue) {
+      return normalizedIncoming
+    }
+
+    return this.mergeJoinedObject(existingValue, normalizedIncoming, plan)
+  }
+
+  private normalizeJoinValue(rawValue: any, plan: JoinPlan): any {
+    if (rawValue === null || rawValue === undefined) {
+      return null
+    }
+
+    if (Array.isArray(rawValue)) {
+      return rawValue.map((item) => this.normalizeJoinObject(item, plan))
+    }
+
+    return this.normalizeJoinObject(rawValue, plan)
+  }
+
+  private normalizeJoinObject(rawValue: any, plan: JoinPlan): any {
+    if (rawValue === null || rawValue === undefined) {
+      return rawValue
+    }
+
+    const normalized: Record<string, any> = { ...rawValue }
+
+    for (const child of plan.children) {
+      const alias = child.join.alias || child.join.table
+      normalized[alias] = this.mergeJoinValue(undefined, rawValue[alias], child)
+    }
+
+    return normalized
+  }
+
+  private mergeJoinedObject(existingValue: any, incomingValue: any, plan: JoinPlan): any {
+    const merged: Record<string, any> = { ...existingValue }
+
+    for (const [key, value] of Object.entries(incomingValue ?? {})) {
+      const childPlan = plan.children.find(
+        (candidate) => (candidate.join.alias || candidate.join.table) === key
+      )
+      if (childPlan) {
+        merged[key] = this.mergeJoinValue(merged[key], value, childPlan)
+        continue
+      }
+
+      if (merged[key] === undefined || merged[key] === null) {
+        merged[key] = value
+      }
+    }
+
+    return merged
+  }
+
+  private areJoinedRecordsEqual(left: any, right: any): boolean {
+    if (left?.id !== undefined && right?.id !== undefined) {
+      return left.id === right.id
+    }
+
+    return JSON.stringify(left) === JSON.stringify(right)
   }
 
   // ── WHERE clause builder ────────────────────────────────────────────────

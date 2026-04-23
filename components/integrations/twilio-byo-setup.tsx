@@ -9,9 +9,17 @@ type Props = {
   connected: boolean
   phoneNumber: string | null
   accountSid: string | null
+  inboundWebhookUrl: string
+  statusCallbackUrl: string
 }
 
-export function TwilioByoSetup({ connected, phoneNumber, accountSid }: Props) {
+export function TwilioByoSetup({
+  connected,
+  phoneNumber,
+  accountSid,
+  inboundWebhookUrl,
+  statusCallbackUrl,
+}: Props) {
   const [open, setOpen] = useState(false)
   const [sid, setSid] = useState('')
   const [token, setToken] = useState('')
@@ -138,12 +146,16 @@ export function TwilioByoSetup({ connected, phoneNumber, accountSid }: Props) {
               Cancel
             </Button>
           </div>
-          <p className="text-xs text-stone-500">
-            Set your Twilio webhook URL to:{' '}
-            <span className="font-mono text-stone-400">
-              https://app.cheflowhq.com/api/webhooks/twilio
-            </span>
-          </p>
+          <div className="space-y-1 text-xs text-stone-500">
+            <p>
+              Set your Twilio inbound webhook URL to:{' '}
+              <span className="font-mono text-stone-400">{inboundWebhookUrl}</span>
+            </p>
+            <p>
+              ChefFlow also sends per-message status callbacks to:{' '}
+              <span className="font-mono text-stone-400">{statusCallbackUrl}</span>
+            </p>
+          </div>
         </div>
       )}
     </div>

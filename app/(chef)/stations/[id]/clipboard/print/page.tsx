@@ -32,6 +32,7 @@ export default async function PrintClipboardPage({
   const { generatedBy, printMode: defaultMode, customFooter } = await getDocumentContext()
   const printMode =
     searchParams.mode === 'thermal' ? ('thermal-80' as const) : (defaultMode ?? 'standard')
+  const printedAt = new Date().toLocaleString()
 
   // Load station
   const { data: station } = await db
@@ -83,6 +84,7 @@ export default async function PrintClipboardPage({
       title={`${station.name} - Daily Clipboard`}
       subtitle={`Date: ${dateLabel}`}
       generatedBy={generatedBy}
+      printedAt={printedAt}
       footer={customFooter ?? undefined}
       mode={printMode}
     >

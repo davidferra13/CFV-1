@@ -15,10 +15,8 @@
 import { claimNextTask, completeTask, failTask } from './actions'
 import { getTaskDefinition } from './registry'
 import { routeTask, isAnyEndpointHealthy } from '../llm-router'
-import { getModelForEndpoint } from '../providers'
 import { OLLAMA_GUARD } from './types'
 import type { WorkerState, AiQueueItem } from './types'
-import type { ModelTier } from '../providers'
 import { recordMetric, writeDailySummary, writeTaskPerformance } from './monitor'
 import { reportTaskFailure, reportWorkerBackoff } from '../../incidents/reporter'
 
@@ -271,15 +269,21 @@ async function processTask(task: AiQueueItem): Promise<void> {
 
   // Hoisted so `finally` can always clear it (prevents timer leak)
   let timeoutTimer: ReturnType<typeof setTimeout> | null = null
+  let routedEndpointName: 'pc' | 'local' | 'cloud' = 'pc'
 
   try {
     // ── Route to PC Ollama ──
-    const routed = await routeTask('auto', task.priority)
+    const routed = await routeTask('auto', task.priority, {
+      taskType: task.task_type,
+      payload: task.payload,
+      modelTier: definition.modelTier,
+      surface: 'queue.worker',
+    })
+    routedEndpointName = routed.endpointName
     const endpointUrl = routed.url
 
     // ── Resolve the right model for this task tier ──
-    const modelTier = (definition.modelTier || 'standard') as ModelTier
-    const resolvedModel = getModelForEndpoint('pc', modelTier)
+    const resolvedModel = routed.model
 
     // ── Execute with hard timeout (timer cleaned up in finally block) ──
     const timeoutPromise = new Promise<never>((_, reject) => {
@@ -299,7 +303,7 @@ async function processTask(task: AiQueueItem): Promise<void> {
         {
           ...task.payload,
           _endpoint: endpointUrl,
-          _endpointName: 'pc',
+          _endpointName: routedEndpointName,
           _model: resolvedModel,
         },
         task.tenant_id
@@ -318,7 +322,7 @@ async function processTask(task: AiQueueItem): Promise<void> {
       ...result,
       _meta: {
         durationMs,
-        endpoint: 'pc',
+        endpoint: routedEndpointName,
         attempt: task.attempts,
       },
     })
@@ -328,7 +332,7 @@ async function processTask(task: AiQueueItem): Promise<void> {
       taskType: task.task_type,
       status: 'completed',
       durationMs,
-      endpoint: 'pc',
+      endpoint: routedEndpointName,
       timestamp: new Date().toISOString(),
       attempt: task.attempts,
     })
@@ -355,7 +359,7 @@ async function processTask(task: AiQueueItem): Promise<void> {
       taskType: task.task_type,
       status: 'failed',
       durationMs,
-      endpoint: 'pc',
+      endpoint: routedEndpointName,
       timestamp: new Date().toISOString(),
       attempt: task.attempts,
     })

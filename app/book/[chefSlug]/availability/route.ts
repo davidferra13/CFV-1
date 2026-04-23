@@ -4,9 +4,13 @@
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/db/server'
+import { getGoogleCalendarTruthForRange } from '@/lib/scheduling/calendar-sync'
 import { dateToDateString } from '@/lib/utils/format'
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
+
+type AvailabilityStatus = 'available' | 'blocked' | 'unavailable'
+type CalendarTruthMode = 'verified_external' | 'internal_only' | 'degraded'
 
 export async function GET(request: NextRequest, { params }: { params: { chefSlug: string } }) {
   const { searchParams } = request.nextUrl
@@ -71,7 +75,7 @@ export async function GET(request: NextRequest, { params }: { params: { chefSlug
     }
 
     // Fetch confirmed/in_progress events (block those dates)
-    const [eventsResult, blocksResult] = await Promise.all([
+    const [eventsResult, blocksResult, calendarTruth] = await Promise.all([
       db
         .from('events')
         .select('event_date')
@@ -85,6 +89,12 @@ export async function GET(request: NextRequest, { params }: { params: { chefSlug
         .eq('chef_id', tenantId)
         .gte('block_date', startDate)
         .lte('block_date', endDate),
+      getGoogleCalendarTruthForRange(
+        tenantId,
+        `${startDate}T00:00:00.000Z`,
+        `${endDate}T23:59:59.999Z`,
+        { db }
+      ),
     ])
 
     const bookedDates = new Set(
@@ -93,6 +103,18 @@ export async function GET(request: NextRequest, { params }: { params: { chefSlug
     const manualBlocks = new Set(
       (blocksResult.data ?? []).map((b: any) => dateToDateString(b.block_date as Date | string))
     )
+    const externalBusyDates = new Set(calendarTruth.busyDates)
+    const calendarTruthMode: CalendarTruthMode = !calendarTruth.connection.connected
+      ? 'internal_only'
+      : calendarTruth.connection.health === 'error'
+        ? 'degraded'
+        : 'verified_external'
+    const calendarTruthMessage =
+      calendarTruthMode === 'verified_external'
+        ? 'Live availability checks confirmed ChefFlow events, chef blocked dates, and Google Calendar busy time.'
+        : calendarTruthMode === 'internal_only'
+          ? 'Availability reflects confirmed ChefFlow events and chef blocked dates.'
+          : 'Live Google Calendar verification is temporarily unavailable, so new dates are held to avoid false availability.'
 
     // Build result map
     const _now = new Date()
@@ -103,23 +125,32 @@ export async function GET(request: NextRequest, { params }: { params: { chefSlug
     )
     const cutoffStr = `${_cutoffDate.getFullYear()}-${String(_cutoffDate.getMonth() + 1).padStart(2, '0')}-${String(_cutoffDate.getDate()).padStart(2, '0')}`
 
-    const availability: Record<string, 'available' | 'blocked' | 'unavailable'> = {}
+    const availability: Record<string, AvailabilityStatus> = {}
     const conflictDetails: Record<string, string[]> = {}
 
     const cursor = new Date(startValue)
     while (cursor.getTime() <= endValue.getTime()) {
       const dateStr = cursor.toISOString().slice(0, 10)
+      const hasBookedEvent = bookedDates.has(dateStr)
+      const hasManualBlock = manualBlocks.has(dateStr)
+      const hasInternalBlock = hasBookedEvent || hasManualBlock
+      const hasExternalBusy = externalBusyDates.has(dateStr)
 
       if (dateStr < cutoffStr) {
         availability[dateStr] = 'unavailable'
         conflictDetails[dateStr] = [
           `Minimum notice is ${minNoticeDays} day${minNoticeDays === 1 ? '' : 's'}`,
         ]
-      } else if (bookedDates.has(dateStr) || manualBlocks.has(dateStr)) {
+      } else if (calendarTruthMode === 'degraded' && !hasInternalBlock) {
+        availability[dateStr] = 'unavailable'
+        conflictDetails[dateStr] = ['Live Google Calendar verification is temporarily unavailable']
+      } else if (hasInternalBlock || hasExternalBusy) {
         availability[dateStr] = 'blocked'
         const reasons: string[] = []
-        if (bookedDates.has(dateStr)) reasons.push('Existing confirmed event')
-        if (manualBlocks.has(dateStr)) reasons.push('Chef blocked availability')
+        if (hasBookedEvent) reasons.push('Existing confirmed event')
+        if (hasManualBlock) reasons.push('Chef blocked availability')
+        if (!hasInternalBlock && hasExternalBusy)
+          reasons.push('Google Calendar already marked busy')
         conflictDetails[dateStr] = reasons
       } else {
         availability[dateStr] = 'available'
@@ -134,10 +165,18 @@ export async function GET(request: NextRequest, { params }: { params: { chefSlug
         conflict_details: conflictDetails,
         start_date: startDate,
         end_date: endDate,
+        calendar_truth: {
+          mode: calendarTruthMode,
+          message: calendarTruthMessage,
+          checked_at: calendarTruth.connection.checkedAt,
+        },
       },
       {
         headers: {
-          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+          'Cache-Control':
+            calendarTruthMode === 'internal_only'
+              ? 'public, s-maxage=300, stale-while-revalidate=600'
+              : 'no-store',
         },
       }
     )

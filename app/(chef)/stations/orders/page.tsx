@@ -137,7 +137,7 @@ export default async function OrdersPage({
                           </span>
                         </td>
                         <td className="py-2 pr-4 text-stone-500">
-                          {new Date(order.created_at).toLocaleDateString()}
+                          {new Date(order.requested_at).toLocaleDateString()}
                         </td>
                       </tr>
                     ))}

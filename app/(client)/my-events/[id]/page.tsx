@@ -38,11 +38,12 @@ import { CancellationPolicyDisplay } from '@/components/events/cancellation-poli
 import { EventJourneyStepper } from '@/components/events/event-journey-stepper'
 import { CalendarAddButtons } from '@/components/events/calendar-add-buttons'
 
-import { buildJourneySteps } from '@/lib/events/journey-steps'
+import { buildJourneySteps, getCurrentJourneyAction } from '@/lib/events/journey-steps'
 import { getCircleTokenForEvent } from '@/lib/hub/client-hub-actions'
 import { PaymentSuccessRefresher } from '@/components/events/payment-success-refresher'
 import { EventStatusWatcher } from '@/components/events/event-status-watcher'
 import type { Database } from '@/types/database'
+import { GuestCountChangeCard } from './guest-count-change-card'
 
 type EventStatus = Database['public']['Enums']['event_status']
 
@@ -91,6 +92,52 @@ export default async function EventDetailPage({
   const totalPaidCents = financial?.totalPaidCents ?? 0
   const quotedPriceCents = financial?.quotedPriceCents ?? event.quoted_price_cents ?? 0
   const outstandingBalanceCents = financialAvailable ? (financial?.outstandingBalanceCents ?? 0) : 0
+  const contractStatus = event.contractStatus ?? null
+  const contractPendingSignature = contractStatus === 'sent' || contractStatus === 'viewed'
+  const contractNeedsChefHandoff =
+    event.status === 'accepted' &&
+    event.hasContract &&
+    !event.contractSignedAt &&
+    !contractPendingSignature
+  const currentJourneyAction = getCurrentJourneyAction({
+    eventId: event.id,
+    occasion: event.occasion ?? null,
+    eventStatus: event.status,
+    eventTransitions: event.transitions,
+    menuApprovalStatus: (event as any).menu_approval_status ?? null,
+    menuApprovalUpdatedAt: (event as any).menu_approval_updated_at ?? null,
+    hasContract: event.hasContract,
+    contractStatus,
+    contractSignedAt: event.contractSignedAt ?? null,
+    preEventChecklistConfirmedAt: (event as any).pre_event_checklist_confirmed_at ?? null,
+    hasOutstandingBalance: outstandingBalanceCents > 0,
+    hasReview: event.hasReview,
+  })
+  const postAcceptAction = getCurrentJourneyAction({
+    eventId: event.id,
+    occasion: event.occasion ?? null,
+    eventStatus: 'accepted',
+    eventTransitions: event.transitions,
+    menuApprovalStatus: (event as any).menu_approval_status ?? null,
+    menuApprovalUpdatedAt: (event as any).menu_approval_updated_at ?? null,
+    hasContract: event.hasContract,
+    contractStatus,
+    contractSignedAt: event.contractSignedAt ?? null,
+    preEventChecklistConfirmedAt: (event as any).pre_event_checklist_confirmed_at ?? null,
+    hasOutstandingBalance: outstandingBalanceCents > 0,
+    hasReview: event.hasReview,
+  })
+  const postAcceptRedirectHref =
+    postAcceptAction?.key === 'contract_signing'
+      ? `/my-events/${event.id}/contract?next=payment`
+      : (postAcceptAction?.actionHref ?? `/my-events/${event.id}`)
+  const acceptedPrimaryHref =
+    currentJourneyAction?.key === 'contract_signing'
+      ? `/my-events/${event.id}/contract?next=payment`
+      : (currentJourneyAction?.actionHref ?? `/my-events/${event.id}/pay`)
+  const proposedAcceptDescription = event.hasContract
+    ? 'By accepting this proposal, you agree to the event details and pricing. We will take you to the agreement first if a signature is required, then payment.'
+    : 'By accepting this proposal, you agree to the event details and pricing. We will take you straight to payment next.'
 
   // Fetch sharing and RSVP data
   const [
@@ -229,7 +276,8 @@ export default async function EventDetailPage({
             <div>
               <p className="font-medium mb-1">Proposal Pending</p>
               <p className="text-sm">
-                Review the event details below and accept the proposal to proceed with payment.
+                Review the event details below and accept the proposal to continue into
+                {event.hasContract ? ' contract and payment.' : ' payment.'}
               </p>
             </div>
             <Link
@@ -267,6 +315,7 @@ export default async function EventDetailPage({
                 menuApprovalStatus: (event as any).menu_approval_status ?? null,
                 menuApprovalUpdatedAt: (event as any).menu_approval_updated_at ?? null,
                 hasContract: event.hasContract,
+                contractStatus,
                 contractSignedAt: event.contractSignedAt ?? null,
                 preEventChecklistConfirmedAt:
                   (event as any).pre_event_checklist_confirmed_at ?? null,
@@ -342,6 +391,12 @@ export default async function EventDetailPage({
           )}
         </CardContent>
       </Card>
+
+      <GuestCountChangeCard
+        eventId={event.id}
+        currentGuestCount={event.guest_count}
+        center={(event as any).guestCountChangeCenter}
+      />
 
       {/* Payment Summary Card */}
       <Card className="mb-6">
@@ -636,16 +691,24 @@ export default async function EventDetailPage({
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-4 mb-8">
-        {event.status === 'proposed' && <AcceptProposalButton eventId={event.id} />}
-
-        {event.status === 'accepted' && outstandingBalanceCents > 0 && (
-          <Link
-            href={`/my-events/${event.id}/pay`}
-            className="flex-1 block w-full bg-brand-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-brand-700 transition text-center"
-          >
-            Proceed to Payment
-          </Link>
+        {event.status === 'proposed' && (
+          <AcceptProposalButton
+            eventId={event.id}
+            successRedirectHref={postAcceptRedirectHref}
+            confirmDescription={proposedAcceptDescription}
+          />
         )}
+
+        {event.status === 'accepted' &&
+          outstandingBalanceCents > 0 &&
+          !contractNeedsChefHandoff && (
+            <Link
+              href={acceptedPrimaryHref}
+              className="flex-1 block w-full bg-brand-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-brand-700 transition text-center"
+            >
+              {currentJourneyAction?.actionLabel ?? 'Proceed to Payment'}
+            </Link>
+          )}
 
         {['proposed', 'accepted'].includes(event.status) && (
           <Link
@@ -663,6 +726,15 @@ export default async function EventDetailPage({
           />
         )}
       </div>
+
+      {contractNeedsChefHandoff && (
+        <Alert variant="info" className="mb-8">
+          <p className="font-medium mb-1">Agreement in progress</p>
+          <p className="text-sm">
+            Your chef is finalizing the service agreement. Payment will unlock once it is ready.
+          </p>
+        </Alert>
+      )}
 
       {/* Share with Guests & RSVP Summary */}
       {event.status !== 'draft' && event.status !== 'cancelled' && (

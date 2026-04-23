@@ -1,32 +1,18 @@
-import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
+import Image from 'next/image'
 import { Suspense } from 'react'
+import { PublicPageView } from '@/components/analytics/public-page-view'
+import { TrackedLink } from '@/components/analytics/tracked-link'
 import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
 import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 import { getBusinessHoursForChef } from '@/lib/communication/business-hours'
 import { buildContactSupportInfo } from '@/lib/contact/public-support'
 import { createServerClient } from '@/lib/db/server'
 import { resolveOwnerIdentity } from '@/lib/platform/owner-account'
+import { PUBLIC_REQUEST_ROUTING_COPY } from '@/lib/public/public-market-copy'
+import { PUBLIC_MARKET_SCOPE, SUPPORT_EMAIL, getFounderProfile } from '@/lib/site/public-site'
 
 export const revalidate = 60
-
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
-const SUPPORT_EMAIL = 'support@cheflowhq.com'
-
-export const metadata: Metadata = {
-  title: 'Contact Us',
-  description: 'Have questions about ChefFlow? Get in touch with our team.',
-  openGraph: {
-    title: 'Contact Us',
-    description: 'Have questions about ChefFlow? Get in touch with our team.',
-    url: `${BASE_URL}/contact`,
-    siteName: 'ChefFlow',
-    type: 'website',
-  },
-  alternates: {
-    canonical: `${BASE_URL}/contact`,
-  },
-}
 
 const ContactForm = dynamic(() => import('./_components/contact-form'), {
   loading: () => (
@@ -82,16 +68,21 @@ async function getSupportInfo() {
 }
 
 export default async function ContactPage() {
-  const supportInfo = await getSupportInfo()
+  const [supportInfo, founder] = await Promise.all([getSupportInfo(), getFounderProfile()])
 
   return (
     <main>
+      <PublicPageView
+        pageName="contact"
+        properties={{ section: 'public_growth', market_scope: PUBLIC_MARKET_SCOPE }}
+      />
       {/* Page Header - server rendered */}
       <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-stone-100 mb-4">Get in Touch</h1>
           <p className="text-lg md:text-xl text-stone-300">
-            Have questions? We&apos;re here to help.
+            Questions about booking, operator setup, or support expectations? The company details
+            are explicit below.
           </p>
         </div>
       </section>
@@ -99,6 +90,60 @@ export default async function ContactPage() {
       {/* Contact Form and Info - lazy loaded */}
       <section className="container mx-auto px-4 pb-16 md:pb-24">
         <div className="max-w-4xl mx-auto">
+          <div className="mb-8 grid gap-4 md:grid-cols-3">
+            <div className="rounded-2xl border border-stone-700/60 bg-stone-900/50 p-5">
+              <div className="flex items-center gap-3">
+                {founder.headshotUrl ? (
+                  <Image
+                    src={founder.headshotUrl}
+                    alt={founder.fullName}
+                    width={56}
+                    height={56}
+                    className="h-14 w-14 rounded-2xl object-cover ring-1 ring-stone-700"
+                  />
+                ) : (
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-stone-800 text-lg font-semibold text-stone-300">
+                    {founder.fullName.charAt(0)}
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm font-semibold text-stone-100">{founder.fullName}</p>
+                  <p className="text-xs uppercase tracking-wide text-brand-300">{founder.role}</p>
+                </div>
+              </div>
+              <p className="mt-4 text-sm leading-relaxed text-stone-400">
+                Founder-led support and product decisions remain tied to live operator workflows.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-stone-700/60 bg-stone-900/50 p-5">
+              <p className="text-xs uppercase tracking-wide text-stone-500">Company location</p>
+              <p className="mt-2 text-sm font-semibold text-stone-100">{founder.location}</p>
+              <p className="mt-3 text-sm leading-relaxed text-stone-400">
+                {PUBLIC_REQUEST_ROUTING_COPY}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-stone-700/60 bg-stone-900/50 p-5">
+              <p className="text-xs uppercase tracking-wide text-stone-500">Company contact</p>
+              <a
+                href={`mailto:${SUPPORT_EMAIL}`}
+                className="mt-2 inline-flex text-sm font-semibold text-brand-400 transition-colors hover:text-brand-300"
+              >
+                {SUPPORT_EMAIL}
+              </a>
+              <p className="mt-3 text-sm leading-relaxed text-stone-400">
+                Typical response target is one business day. For trust details, start with the
+                public trust center.
+              </p>
+              <TrackedLink
+                href="/trust"
+                analyticsName="contact_trust_link"
+                analyticsProps={{ section: 'contact_company_block' }}
+                className="mt-4 inline-flex text-sm font-medium text-stone-200 underline decoration-stone-600 underline-offset-4 hover:text-white"
+              >
+                Review trust center
+              </TrackedLink>
+            </div>
+          </div>
           <Suspense>
             <ContactForm supportInfo={supportInfo} />
           </Suspense>

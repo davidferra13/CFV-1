@@ -13,6 +13,7 @@ import {
   getPublicIngredientDetail,
   getPublicAlternatives,
 } from '@/lib/openclaw/public-ingredient-queries'
+import { isKnowledgeIngredientPubliclyIndexable } from '@/lib/openclaw/public-ingredient-publish'
 import { classifyFromCatalogDetail } from '@/lib/pricing/sourceability'
 import { formatCurrency } from '@/lib/utils/currency'
 
@@ -25,6 +26,10 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
   if (!id || typeof id !== 'string') {
     return NextResponse.json({ error: 'Missing ingredient id' }, { status: 400 })
+  }
+
+  if (!isKnowledgeIngredientPubliclyIndexable({ slug: id })) {
+    return NextResponse.json({ error: 'Ingredient not found' }, { status: 404 })
   }
 
   try {

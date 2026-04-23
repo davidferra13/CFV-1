@@ -2,6 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { pgClient } from '@/lib/db'
+import { getOpenClawRuntimeHealth } from '@/lib/openclaw/health-contract'
 
 export type ChefPricingReadinessStatus = 'unknown' | 'not_ready' | 'usable_with_caveats' | 'ready'
 export type MarketPricingReadinessStatus =
@@ -242,54 +243,18 @@ export async function getPricingReadinessSummary(): Promise<PricingReadinessSumm
   }
 
   try {
-    const [syncRows, storeRows, productRows, priceRows, centroidRows] = await Promise.all([
-      pgClient`
-        SELECT
-          COUNT(DISTINCT started_at::date)::int AS green_days_last_7,
-          MAX(finished_at) AS last_healthy_sync_at
-        FROM openclaw.sync_runs
-        WHERE started_at > NOW() - INTERVAL '7 days'
-          AND finished_at IS NOT NULL
-          AND COALESCE(errors, 0) = 0
-      `,
-      pgClient`
-        SELECT
-          COUNT(*)::int AS stores,
-          COUNT(DISTINCT state)::int AS states_covered,
-          COUNT(DISTINCT zip)::int AS store_zip_count
-        FROM openclaw.stores
-        WHERE is_active = true
-      `,
-      pgClient`
-        SELECT COUNT(*)::int AS food_products
-        FROM openclaw.products
-        WHERE is_food = true
-      `,
-      pgClient`
-        SELECT
-          COUNT(*)::int AS price_records,
-          COUNT(*) FILTER (WHERE last_seen_at > NOW() - INTERVAL '7 days')::int AS fresh_price_records
-        FROM openclaw.store_products
-      `,
-      pgClient`
-        SELECT COUNT(*)::int AS zip_centroid_count
-        FROM openclaw.zip_centroids
-      `,
-    ])
-
-    const priceRecords = toInt(priceRows[0]?.price_records)
-    const freshPriceRecords = toInt(priceRows[0]?.fresh_price_records)
+    const health = await getOpenClawRuntimeHealth()
 
     market = buildMarketSection({
-      lastHealthySyncAt: toIso(syncRows[0]?.last_healthy_sync_at),
-      greenDaysLast7: toInt(syncRows[0]?.green_days_last_7),
-      stores: toInt(storeRows[0]?.stores),
-      statesCovered: toInt(storeRows[0]?.states_covered),
-      storeZipCount: toInt(storeRows[0]?.store_zip_count),
-      foodProducts: toInt(productRows[0]?.food_products),
-      priceRecords,
-      freshPricePct: toPct(freshPriceRecords, priceRecords),
-      zipCentroidsLoaded: toInt(centroidRows[0]?.zip_centroid_count) > 0,
+      lastHealthySyncAt: health.mirror.lastHealthySyncAt,
+      greenDaysLast7: health.mirror.greenDaysLast7,
+      stores: health.mirror.stores,
+      statesCovered: health.mirror.statesCovered,
+      storeZipCount: health.mirror.storeZipCount,
+      foodProducts: health.coverage.foodProducts,
+      priceRecords: health.mirror.priceRecords,
+      freshPricePct: health.mirror.freshPricePct,
+      zipCentroidsLoaded: health.mirror.zipCentroidsLoaded,
     })
   } catch {
     market = marketFallback

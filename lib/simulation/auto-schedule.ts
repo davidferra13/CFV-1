@@ -24,6 +24,19 @@ export function scheduleSimulation(): void {
   console.log('[sim-auto] Simulation auto-scheduler registered. First check in 45s.')
 }
 
+function getInternalBaseUrl(): string {
+  if (process.env.CHEFFLOW_AUTH_ORIGIN) {
+    return process.env.CHEFFLOW_AUTH_ORIGIN
+  }
+
+  if (process.env.NODE_ENV === 'production') {
+    return process.env.NEXT_PUBLIC_APP_URL ?? 'http://127.0.0.1:3000'
+  }
+
+  const port = process.env.PORT || '3100'
+  return `http://127.0.0.1:${port}`
+}
+
 /**
  * Send a tiny test prompt to Ollama to force the model into memory.
  * The first real user request will be much faster after this warmup.
@@ -66,8 +79,7 @@ async function warmupOllama(): Promise<void> {
 }
 
 async function runCheck(): Promise<void> {
-  const baseUrl =
-    process.env.CHEFFLOW_AUTH_ORIGIN ?? process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const baseUrl = getInternalBaseUrl()
   const secret = process.env.CRON_SECRET
 
   if (!secret) {

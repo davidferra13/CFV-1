@@ -1,9 +1,10 @@
-import type { Metadata, Viewport } from 'next'
+﻿import type { Metadata, Viewport } from 'next'
 import dynamic from 'next/dynamic'
 import { DM_Sans, DM_Serif_Display } from 'next/font/google'
 import { IconProvider } from '@/components/ui/icon-provider'
 import { ColorPaletteProvider, PaletteScript } from '@/components/ui/color-palette-provider'
 import { AppThemeProvider } from '@/components/ui/app-theme-provider'
+import { COMPANY_NAME, PUBLIC_SITE_URL, absoluteUrl } from '@/lib/site/public-site'
 import './globals.css'
 
 const DeferredRootRuntime = dynamic(
@@ -34,11 +35,11 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: 'ChefFlow - Chefs, Restaurants, and Food Near You',
-    template: '%s | ChefFlow',
+    default: 'ChefFlow - Curated Chef Network And Food Directory',
+    template: `%s | ${COMPANY_NAME}`,
   },
   description:
-    'Find private chefs, caterers, restaurants, food trucks, and bakeries near you. Browse menus, explore cuisines, and connect directly with food providers.',
+    "Browse ChefFlow's curated chef network, describe your event for matched outreach, and explore food operators in the public directory.",
   manifest: '/manifest.json',
   icons: {
     icon: [
@@ -56,17 +57,20 @@ export const metadata: Metadata = {
     'mobile-web-app-capable': 'yes',
   },
   openGraph: {
-    title: 'ChefFlow - Chefs, Restaurants, and Food Near You',
+    title: 'ChefFlow - Curated Chef Network And Food Directory',
     description:
-      'Find private chefs, caterers, restaurants, food trucks, and bakeries near you. Browse menus and connect directly.',
-    siteName: 'ChefFlow',
+      "Browse ChefFlow's curated chef network, describe your event for matched outreach, and explore food operators in the public directory.",
+    siteName: COMPANY_NAME,
     type: 'website',
     locale: 'en_US',
+    images: [{ url: absoluteUrl('/social/chefflow-home.png'), alt: 'ChefFlow homepage preview' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ChefFlow - Chefs, Restaurants, and Food Near You',
-    description: 'Find private chefs, caterers, restaurants, food trucks, and bakeries near you.',
+    title: 'ChefFlow - Curated Chef Network And Food Directory',
+    description:
+      "Browse ChefFlow's curated chef network, describe your event for matched outreach, and explore food operators in the public directory.",
+    images: [absoluteUrl('/social/chefflow-home.png')],
   },
   robots: {
     index: true,
@@ -99,7 +103,7 @@ export const metadata: Metadata = {
       'application/rss+xml': '/feed.xml',
     },
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'),
+  metadataBase: new URL(PUBLIC_SITE_URL),
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

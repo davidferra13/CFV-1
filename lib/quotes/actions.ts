@@ -17,6 +17,7 @@ import { executeWithIdempotency } from '@/lib/mutations/idempotency'
 import { createConflictError } from '@/lib/mutations/conflict'
 import { AuthError, UnknownAppError, ValidationError } from '@/lib/errors/app-error'
 import { isMissingSoftDeleteColumn } from '@/lib/mutations/soft-delete-compat'
+import { QUOTE_SENT_REPAIR_KIND } from '@/lib/monitoring/failure-repair'
 
 type QuoteStatus = Database['public']['Enums']['quote_status']
 type PricingModel = Database['public']['Enums']['pricing_model']
@@ -755,6 +756,12 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
         entityId: id,
         tenantId: user.tenantId,
         errorMessage: emailErr instanceof Error ? emailErr.message : String(emailErr),
+        context: {
+          repairKind: QUOTE_SENT_REPAIR_KIND,
+          clientId: updated.client_id,
+          inquiryId: updated.inquiry_id ?? null,
+          eventId: updated.event_id ?? null,
+        },
       })
     }
   }

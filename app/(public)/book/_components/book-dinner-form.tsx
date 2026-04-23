@@ -1,6 +1,19 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
+import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
+import type {
+  PublicOpenBookingPrefill,
+  PublicSeasonalMarketPulseBookingContext,
+} from '@/lib/public/public-seasonal-market-pulse'
+import {
+  buildPublicMarketScopeNote,
+  resolvePublicMarketScope,
+} from '@/lib/public/public-market-scope'
+import {
+  NEUTRAL_BOOKING_REQUEST_EXAMPLE,
+  NEUTRAL_LOCATION_PLACEHOLDER,
+} from '@/lib/site/national-brand-copy'
 import { LocationAutocomplete, type LocationData } from '@/components/ui/location-autocomplete'
 
 const DRAFT_KEY = 'cf-book-form-draft'
@@ -12,6 +25,36 @@ function loadDraft(): Partial<FormState> | null {
     return raw ? (JSON.parse(raw) as Partial<FormState>) : null
   } catch {
     return null
+  }
+}
+
+function hasMeaningfulDraftValue(value: unknown) {
+  if (typeof value === 'number') return value > 0
+  if (typeof value === 'string') return value.trim().length > 0
+  return false
+}
+
+function mergeDraftIntoForm(form: FormState, draft: Partial<FormState>): FormState {
+  const next = { ...form }
+  const mutableNext = next as Record<keyof FormState, string | number>
+
+  for (const [field, value] of Object.entries(draft) as Array<[keyof FormState, unknown]>) {
+    if (field === 'website_url') continue
+    if (!hasMeaningfulDraftValue(value)) continue
+    mutableNext[field] = value as string | number
+  }
+
+  return next
+}
+
+function applyPrefill(form: FormState, prefill?: PublicOpenBookingPrefill | null): FormState {
+  if (!prefill) return form
+
+  return {
+    ...form,
+    ...(prefill.occasion ? { occasion: prefill.occasion } : {}),
+    ...(prefill.service_type ? { service_type: prefill.service_type } : {}),
+    ...(prefill.additional_notes ? { additional_notes: prefill.additional_notes } : {}),
   }
 }
 
@@ -111,8 +154,18 @@ const DEFAULT_FORM: FormState = {
   website_url: '',
 }
 
-export function BookDinnerForm() {
-  const [form, setForm] = useState<FormState>(DEFAULT_FORM)
+type BookDinnerFormProps = {
+  initialPrefill?: PublicOpenBookingPrefill
+  seasonalContext?: PublicSeasonalMarketPulseBookingContext | null
+  analyticsEntryContext?: string | null
+}
+
+export function BookDinnerForm({
+  initialPrefill,
+  seasonalContext,
+  analyticsEntryContext,
+}: BookDinnerFormProps) {
+  const [form, setForm] = useState<FormState>(() => applyPrefill(DEFAULT_FORM, initialPrefill))
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState<SubmitResult | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -120,16 +173,62 @@ export function BookDinnerForm() {
   const [nlText, setNlText] = useState('')
   const [nlParsing, setNlParsing] = useState(false)
   const [nlUsed, setNlUsed] = useState(false)
+  const [hasStarted, setHasStarted] = useState(false)
+  const liveScope = seasonalContext
+    ? resolvePublicMarketScope({
+        explicitLabel: form.location,
+        source: 'request_location',
+      })
+    : null
+  const effectiveScope =
+    seasonalContext == null
+      ? null
+      : liveScope && !liveScope.isFallback
+        ? liveScope
+        : seasonalContext.scope
+  const seasonalAnalytics =
+    seasonalContext && effectiveScope
+      ? {
+          season: seasonalContext.season,
+          source_mode: seasonalContext.sourceMode,
+          market_scope: effectiveScope.label,
+          market_scope_mode: effectiveScope.mode,
+          lead_ingredients: seasonalContext.peakNow.join(' | '),
+          fallback_reason:
+            seasonalContext.intent.provenance.fallbackReason === 'none'
+              ? null
+              : seasonalContext.intent.provenance.fallbackReason,
+          market_freshness_status: seasonalContext.intent.provenance.marketStatus,
+        }
+      : null
+  const seasonalIntent = seasonalContext
+    ? {
+        ...seasonalContext.intent,
+        ...(effectiveScope && effectiveScope.label !== seasonalContext.scope.label
+          ? { requestScope: effectiveScope }
+          : {}),
+      }
+    : null
 
   // Restore draft on mount
   useEffect(() => {
     const draft = loadDraft()
     if (draft && Object.values(draft).some((v) => v)) {
-      setForm((prev) => ({ ...prev, ...draft }))
+      setForm((prev) => mergeDraftIntoForm(prev, draft))
     }
   }, [])
 
   function updateField(field: keyof FormState, value: string | number) {
+    if (!hasStarted && field !== 'website_url' && String(value).trim().length > 0) {
+      setHasStarted(true)
+      trackEvent(ANALYTICS_EVENTS.BOOKING_FORM_STARTED, {
+        source: 'open_booking',
+        entry_context: analyticsEntryContext ?? 'direct',
+        first_field: field,
+        ...(seasonalAnalytics ?? {}),
+      })
+    }
+
     setForm((prev) => {
       const next = { ...prev, [field]: value }
       saveDraft(next)
@@ -195,7 +294,10 @@ export function BookDinnerForm() {
       const res = await fetch('/api/book', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form }),
+        body: JSON.stringify({
+          ...form,
+          seasonal_intent: seasonalIntent,
+        }),
       })
 
       const data = await res.json()
@@ -209,6 +311,13 @@ export function BookDinnerForm() {
       }
 
       clearDraft()
+      trackEvent(ANALYTICS_EVENTS.BOOKING_FORM_SUBMITTED, {
+        source: 'open_booking',
+        entry_context: analyticsEntryContext ?? 'direct',
+        matched_count: data.matched_count ?? 0,
+        has_matches: (data.matched_count ?? 0) > 0,
+        ...(seasonalAnalytics ?? {}),
+      })
       setResult(data)
     } catch {
       setError('Network error. Please check your connection and try again.')
@@ -314,6 +423,26 @@ export function BookDinnerForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {seasonalContext && (
+        <div className="rounded-2xl border border-stone-700 bg-stone-900/60 p-5 sm:p-6">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-300">
+            {seasonalContext.summary.eyebrow}
+          </p>
+          <p className="mt-2 text-sm font-semibold text-stone-100">
+            {seasonalContext.summary.headline}
+          </p>
+          <p className="mt-2 text-sm leading-6 text-stone-300">{seasonalContext.summary.body}</p>
+          <p className="mt-3 text-xs leading-5 text-stone-500">
+            {seasonalContext.summary.sourceNote}
+          </p>
+          <p className="mt-2 text-xs leading-5 text-stone-500">
+            {effectiveScope
+              ? buildPublicMarketScopeNote(effectiveScope)
+              : seasonalContext.summary.scopeNote}
+          </p>
+        </div>
+      )}
+
       {/* Honeypot */}
       <div className="hidden" aria-hidden="true">
         <input
@@ -338,9 +467,7 @@ export function BookDinnerForm() {
           <textarea
             value={nlText}
             onChange={(e) => setNlText(e.target.value)}
-            placeholder={
-              'e.g. "Birthday dinner for 8 in Boston on July 12, a few guests are vegetarian, looking for Italian food"'
-            }
+            placeholder={NEUTRAL_BOOKING_REQUEST_EXAMPLE}
             rows={2}
             className={`${inputClass} resize-none`}
           />
@@ -455,7 +582,7 @@ export function BookDinnerForm() {
               value={form.location}
               onSelect={(data: LocationData) => updateField('location', data.displayText)}
               onChange={(text) => updateField('location', text)}
-              placeholder="City, state or ZIP code"
+              placeholder={NEUTRAL_LOCATION_PLACEHOLDER}
               className={inputClass}
             />
           </div>

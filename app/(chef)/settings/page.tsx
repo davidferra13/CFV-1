@@ -4,12 +4,12 @@
 
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
+import { createServerClient } from '@/lib/db/server'
 
 export const metadata: Metadata = { title: 'Settings' }
 import { getChefPreferences } from '@/lib/chef/actions'
 import { getGoogleConnection } from '@/lib/google/auth'
 import { getGmailSyncHistory } from '@/lib/gmail/actions'
-import { getCalendarConnection } from '@/lib/scheduling/calendar-sync-actions'
 import { getHistoricalScanStatus } from '@/lib/gmail/historical-scan-actions'
 import { getWixConnection, getWixSubmissions } from '@/lib/wix/actions'
 import { getNetworkDiscoverable } from '@/lib/network/actions'
@@ -37,9 +37,10 @@ import Link from 'next/link'
 import { isAdmin } from '@/lib/auth/admin'
 import { CHEF_FEATURE_FLAGS, hasChefFeatureFlag } from '@/lib/features/chef-feature-flags'
 import { SettingsCategory } from '@/components/settings/settings-category'
-import { SettingsGuidedOverview } from '@/components/settings/settings-guided-overview'
 import { SettingsAdvancedDirectory } from '@/components/settings/settings-advanced-directory'
 import { BrandingCard } from '@/components/settings/branding-card'
+import { SettingsFixActions } from '@/components/settings/settings-fix-actions'
+import { resolveSettingsFixTasks } from '@/lib/interface/action-layer'
 
 function SettingsGroupHeader({
   label,
@@ -65,6 +66,7 @@ function SettingsGroupHeader({
 
 export default async function SettingsPage() {
   const user = await requireChef()
+  const db: any = createServerClient()
   const [
     preferences,
     googleConnection,
@@ -75,6 +77,7 @@ export default async function SettingsPage() {
     networkDiscoverable,
     googleReviewUrl,
     profile,
+    profileReadiness,
     businessMode,
     availabilitySignalEnabled,
     schedulingRules,
@@ -88,7 +91,17 @@ export default async function SettingsPage() {
       console.error('[Settings] getGoogleConnection failed:', err)
       return {
         gmail: { connected: false, email: null, lastSync: null, errorCount: 0 },
-        calendar: { connected: false, email: null, lastSync: null },
+        calendar: {
+          connected: false,
+          email: null,
+          lastSync: null,
+          checkedAt: null,
+          health: 'unknown',
+          healthDetail: null,
+          busyRangeCount: 0,
+          conflictCount: 0,
+          calendarCount: 0,
+        },
       } as Awaited<ReturnType<typeof getGoogleConnection>>
     }),
     getGmailSyncHistory(10).catch(() => []),
@@ -98,6 +111,27 @@ export default async function SettingsPage() {
     getNetworkDiscoverable().catch(() => false),
     getGoogleReviewUrl().catch(() => null),
     getChefSlug(),
+    db
+      .from('chefs')
+      .select('slug, tagline, bio, profile_image_url')
+      .eq('id', user.entityId)
+      .single()
+      .then(({ data }: { data: any }) => ({
+        slug: data?.slug ?? null,
+        tagline: data?.tagline ?? null,
+        bio: data?.bio ?? null,
+        profileImageUrl: data?.profile_image_url ?? null,
+        publicProfileHidden:
+          Boolean(data?.slug) &&
+          (!String(data?.bio ?? '').trim() || !String(data?.tagline ?? '').trim()),
+      }))
+      .catch(() => ({
+        slug: null,
+        tagline: null,
+        bio: null,
+        profileImageUrl: null,
+        publicProfileHidden: false,
+      })),
     getBusinessMode(),
     getAvailabilitySignalSetting().catch(() => false),
     getSchedulingRules().catch(() => null),
@@ -109,6 +143,14 @@ export default async function SettingsPage() {
   const systemAndAccountDescription = developerToolsEnabled
     ? 'Developer tools, legal, and account management'
     : 'Legal and account management'
+  const fixTasks = resolveSettingsFixTasks({
+    profile: profileReadiness,
+    googleConnection,
+    schedulingRules,
+    bookingSettings,
+    googleReviewUrl,
+    wixConnection,
+  })
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -128,12 +170,13 @@ export default async function SettingsPage() {
       {/* ═══════════════════════════════════════════════════════ */}
       {/* GUIDED OVERVIEW                                        */}
       {/* ═══════════════════════════════════════════════════════ */}
-      <SettingsGuidedOverview />
+      <SettingsFixActions tasks={fixTasks} />
 
       {/* ═══════════════════════════════════════════════════════ */}
       {/* ADVANCED SETTINGS DIRECTORY (collapsed by default)    */}
       {/* ═══════════════════════════════════════════════════════ */}
       <SettingsAdvancedDirectory
+        id="settings-directory"
         title="Full settings directory"
         description="Everything, grouped by business area, communication, AI, growth, and account management."
         sectionCount={developerToolsEnabled ? 20 : 19}
@@ -175,9 +218,10 @@ export default async function SettingsPage() {
                 href="/settings/navigation"
                 className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
               >
-                <p className="font-medium text-stone-100">Primary Navigation</p>
+                <p className="font-medium text-stone-100">Navigation Preferences</p>
                 <p className="text-sm text-stone-500 mt-1">
-                  Choose which tabs are always visible in your primary bar and set their order.
+                  Review shell behavior and customize mobile bottom tabs. Desktop sidebar structure
+                  stays fixed for consistency.
                 </p>
               </Link>
               <Link
@@ -238,7 +282,7 @@ export default async function SettingsPage() {
           {/* ── 2. Profile & Branding ────────────────────────────── */}
           <SettingsCategory
             title="Profile & Branding"
-            description="Manage your core business profile, brand logo, public profile presentation, and portal background."
+            description="Manage your core business profile, brand logo, public profile presentation, and public profile background."
             icon="Palette"
             primary
             tone="rose"

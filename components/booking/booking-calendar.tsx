@@ -6,6 +6,13 @@
 import { useState, useEffect } from 'react'
 
 type DateStatus = 'available' | 'blocked' | 'unavailable' | 'loading'
+type CalendarTruthMode = 'verified_external' | 'internal_only' | 'degraded'
+
+type CalendarTruthState = {
+  mode: CalendarTruthMode
+  message: string
+  checked_at?: string | null
+}
 
 type Props = {
   chefSlug: string
@@ -36,22 +43,49 @@ export function BookingCalendar({ chefSlug, onSelectDate, selectedDate }: Props)
   const [availability, setAvailability] = useState<Record<string, DateStatus>>({})
   const [conflictDetails, setConflictDetails] = useState<Record<string, string[]>>({})
   const [loading, setLoading] = useState(false)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [calendarTruth, setCalendarTruth] = useState<CalendarTruthState>({
+    mode: 'internal_only',
+    message: 'Availability reflects confirmed ChefFlow events and chef blocked dates.',
+    checked_at: null,
+  })
 
   useEffect(() => {
     let cancelled = false
     setLoading(true)
+    setLoadError(null)
 
     fetch(`/book/${chefSlug}/availability?year=${year}&month=${month}`)
-      .then((r) => r.json())
+      .then(async (response) => {
+        const data = await response.json()
+        if (!response.ok) {
+          throw new Error((data?.error as string) || 'Availability could not be loaded')
+        }
+        return data
+      })
       .then((data) => {
         if (cancelled) return
         setAvailability((data?.availability ?? {}) as Record<string, DateStatus>)
         setConflictDetails((data?.conflict_details ?? {}) as Record<string, string[]>)
+        setCalendarTruth(
+          (data?.calendar_truth as CalendarTruthState | undefined) ?? {
+            mode: 'internal_only',
+            message: 'Availability reflects confirmed ChefFlow events and chef blocked dates.',
+            checked_at: null,
+          }
+        )
       })
-      .catch(() => {
+      .catch((err) => {
         if (cancelled) return
         setAvailability({})
         setConflictDetails({})
+        setCalendarTruth({
+          mode: 'degraded',
+          message:
+            'Availability could not be loaded right now. Please refresh or contact the chef.',
+          checked_at: null,
+        })
+        setLoadError(err instanceof Error ? err.message : 'Availability could not be loaded')
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -90,6 +124,25 @@ export function BookingCalendar({ chefSlug, onSelectDate, selectedDate }: Props)
 
   return (
     <div className="space-y-3">
+      {(loadError || calendarTruth.message) && (
+        <div
+          className={`rounded-lg border px-3 py-2 text-xs ${
+            calendarTruth.mode === 'verified_external'
+              ? 'border-emerald-800 bg-emerald-950/40 text-emerald-100'
+              : calendarTruth.mode === 'degraded'
+                ? 'border-amber-700 bg-amber-950/40 text-amber-100'
+                : 'border-stone-700 bg-stone-900 text-stone-300'
+          }`}
+        >
+          <p>{loadError || calendarTruth.message}</p>
+          {!loadError && calendarTruth.checked_at && calendarTruth.mode === 'verified_external' && (
+            <p className="mt-1 text-[11px] text-emerald-200/80">
+              Checked {new Date(calendarTruth.checked_at).toLocaleString()}
+            </p>
+          )}
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <button
           type="button"

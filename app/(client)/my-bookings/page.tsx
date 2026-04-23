@@ -4,9 +4,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { format, formatDistanceToNow } from 'date-fns'
 import { requireClient } from '@/lib/auth/get-user'
-import { getClientEvents } from '@/lib/events/client-actions'
-import { getClientQuotes } from '@/lib/quotes/client-actions'
-import { getClientInquiries } from '@/lib/inquiries/client-actions'
+import { getClientWorkGraphSnapshot } from '@/lib/client-work-graph/actions'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { EventStatusBadge } from '@/components/events/event-status-badge'
@@ -35,22 +33,6 @@ const QUOTE_STATUS: Record<
   rejected: { label: 'Declined', variant: 'error' },
 }
 
-// What action (if any) should a client take for a given event status
-function getEventAction(event: any): { label: string; href: string } | null {
-  switch (event.status) {
-    case 'proposed':
-      return { label: 'Review Proposal', href: `/my-events/${event.id}/proposal` }
-    case 'accepted':
-      return { label: 'Pay Now', href: `/my-events/${event.id}/pay` }
-    case 'confirmed':
-      return { label: 'View Checklist', href: `/my-events/${event.id}/pre-event-checklist` }
-    case 'completed':
-      return { label: 'View Summary', href: `/my-events/${event.id}/event-summary` }
-    default:
-      return null
-  }
-}
-
 const TABS = ['events', 'quotes', 'inquiries'] as const
 type Tab = (typeof TABS)[number]
 
@@ -63,22 +45,16 @@ export default async function MyBookingsPage({
   const params = await searchParams
   const tab: Tab = TABS.includes(params.tab as Tab) ? (params.tab as Tab) : 'events'
 
-  const [eventsResult, quotes, inquiries] = await Promise.all([
-    getClientEvents(),
-    getClientQuotes(),
-    getClientInquiries(),
-  ])
+  const snapshot = await getClientWorkGraphSnapshot()
+  const { eventsResult, quotes, inquiries, workGraph } = snapshot
 
   const pendingQuotes = quotes.filter((q: any) => q.status === 'sent')
   const resolvedQuotes = quotes.filter((q: any) => q.status !== 'sent')
-
-  const eventsNeedingAction = eventsResult.upcoming.filter((e: any) =>
-    ['proposed', 'accepted', 'confirmed'].includes(e.status)
+  const bookingWorkItems = workGraph.items.filter((item) =>
+    ['event', 'quote', 'inquiry', 'rsvp'].includes(item.category)
   )
-  const totalActionItems =
-    eventsNeedingAction.length +
-    pendingQuotes.length +
-    inquiries.filter((i: any) => i.status === 'awaiting_response').length
+  const totalActionItems = bookingWorkItems.length
+  const primaryBookingWorkItem = bookingWorkItems[0] ?? null
 
   return (
     <div className="space-y-6">
@@ -89,15 +65,39 @@ export default async function MyBookingsPage({
 
       {/* Action required banner */}
       {totalActionItems > 0 && (
-        <div className="flex items-center gap-3 rounded-lg bg-brand-950 border border-brand-800 px-4 py-3">
-          <AlertCircle className="w-5 h-5 text-brand-400 shrink-0" />
-          <p className="text-sm text-brand-300">
-            You have{' '}
-            <span className="font-semibold text-brand-200">
-              {totalActionItems} item{totalActionItems > 1 ? 's' : ''}
-            </span>{' '}
-            that need your attention.
-          </p>
+        <div
+          data-work-item-id={primaryBookingWorkItem?.id}
+          className="rounded-lg border border-brand-800 bg-brand-950 px-4 py-3"
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-brand-400" />
+              <div className="space-y-1">
+                <p className="text-sm text-brand-300">
+                  You have{' '}
+                  <span className="font-semibold text-brand-200">
+                    {totalActionItems} item{totalActionItems > 1 ? 's' : ''}
+                  </span>{' '}
+                  that need your attention.
+                </p>
+                {primaryBookingWorkItem ? (
+                  <p className="text-sm text-brand-100">{primaryBookingWorkItem.title}</p>
+                ) : null}
+                {primaryBookingWorkItem ? (
+                  <p className="text-xs text-brand-300/80">{primaryBookingWorkItem.detail}</p>
+                ) : null}
+              </div>
+            </div>
+
+            {primaryBookingWorkItem ? (
+              <Link
+                href={primaryBookingWorkItem.href}
+                className="inline-flex rounded-lg bg-brand-500 px-3 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-brand-400"
+              >
+                {primaryBookingWorkItem.ctaLabel}
+              </Link>
+            ) : null}
+          </div>
         </div>
       )}
 
@@ -159,7 +159,7 @@ export default async function MyBookingsPage({
                     Upcoming
                   </h2>
                   {eventsResult.upcoming.map((event: any) => {
-                    const action = getEventAction(event)
+                    const action = workGraph.eventActionsById[String(event.id)] ?? null
                     return (
                       <Link key={event.id} href={`/my-events/${event.id}`}>
                         <Card className="p-4 hover:shadow-md hover:border-stone-600 transition-all cursor-pointer group">
@@ -190,7 +190,7 @@ export default async function MyBookingsPage({
                                   onClick={(e) => e.stopPropagation()}
                                   className="text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded px-2.5 py-1.5 transition-colors"
                                 >
-                                  {action.label}
+                                  {action.ctaLabel}
                                 </Link>
                               )}
                               <ChevronRight className="w-5 h-5 text-stone-400 group-hover:text-brand-600 transition-colors" />
@@ -219,7 +219,7 @@ export default async function MyBookingsPage({
                     )}
                   </div>
                   {eventsResult.past.map((event: any) => {
-                    const action = getEventAction(event)
+                    const action = workGraph.eventActionsById[String(event.id)] ?? null
                     return (
                       <Link key={event.id} href={`/my-events/${event.id}`}>
                         <Card className="p-4 hover:shadow-sm transition-all cursor-pointer group opacity-75 hover:opacity-100">
@@ -241,7 +241,7 @@ export default async function MyBookingsPage({
                                   onClick={(e) => e.stopPropagation()}
                                   className="text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded px-2.5 py-1.5 transition-colors"
                                 >
-                                  {action.label}
+                                  {action.ctaLabel}
                                 </Link>
                               )}
                               <ChevronRight className="w-5 h-5 text-stone-400 group-hover:text-brand-600 transition-colors" />

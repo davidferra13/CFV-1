@@ -6,7 +6,21 @@ import { BreadcrumbBar } from '@/components/navigation/breadcrumb-bar'
 import { QuickExpenseTrigger } from '@/components/expenses/quick-expense-trigger'
 import { usePathname } from 'next/navigation'
 
-export function ChefMainContent({ children }: { children: React.ReactNode }) {
+export function ChefMainContent({
+  children,
+  showDesktopSidebar = true,
+  showMobileNav = true,
+  showBreadcrumbBar = true,
+  showQuickExpenseTrigger = true,
+  contentWidth = 'constrained',
+}: {
+  children: React.ReactNode
+  showDesktopSidebar?: boolean
+  showMobileNav?: boolean
+  showBreadcrumbBar?: boolean
+  showQuickExpenseTrigger?: boolean
+  contentWidth?: 'constrained' | 'full'
+}) {
   const { collapsed } = useSidebar()
   const pathname = usePathname()
 
@@ -14,15 +28,19 @@ export function ChefMainContent({ children }: { children: React.ReactNode }) {
     <main
       id="main-content"
       tabIndex={-1}
-      className={`pt-mobile-header pb-mobile-nav lg:pt-0 lg:pb-0 transition-all duration-200 ${
-        collapsed ? 'lg:pl-16' : 'lg:pl-60'
-      }`}
+      className={`transition-all duration-200 ${
+        showMobileNav ? 'pt-mobile-header pb-mobile-nav md:pt-0 md:pb-0' : 'pt-0 pb-0'
+      } ${showDesktopSidebar ? `md:pl-16 ${collapsed ? 'lg:pl-16' : 'lg:pl-60'}` : 'lg:pl-0'}`}
     >
-      <BreadcrumbBar />
-      <QuickExpenseTrigger />
+      {showBreadcrumbBar ? <BreadcrumbBar /> : null}
+      {showQuickExpenseTrigger ? <QuickExpenseTrigger /> : null}
       <div
         key={pathname}
-        className="max-w-content mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 animate-fade-slide-up"
+        className={`animate-fade-slide-up ${
+          contentWidth === 'full'
+            ? 'w-full'
+            : 'max-w-content mx-auto px-4 py-6 sm:px-6 lg:px-8 lg:py-8'
+        }`}
       >
         {children}
       </div>

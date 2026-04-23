@@ -12,6 +12,8 @@ type DirectoryResultsTrackerProps = {
   serviceTypeFilter: string
   priceRangeFilter: string
   partnerTypeFilter: string
+  locationExperienceFilter: string
+  locationBestForFilter: string
   acceptingOnly: boolean
   sortMode: DirectorySortMode
   resultCount: number
@@ -26,6 +28,8 @@ export function DirectoryResultsTracker({
   serviceTypeFilter,
   priceRangeFilter,
   partnerTypeFilter,
+  locationExperienceFilter,
+  locationBestForFilter,
   acceptingOnly,
   sortMode,
   resultCount,
@@ -41,6 +45,8 @@ export function DirectoryResultsTracker({
       serviceTypeFilter ||
       priceRangeFilter ||
       partnerTypeFilter ||
+      locationExperienceFilter ||
+      locationBestForFilter ||
       acceptingOnly ||
       sortMode !== 'featured'
     )
@@ -52,6 +58,8 @@ export function DirectoryResultsTracker({
       serviceTypeFilter,
       priceRangeFilter,
       partnerTypeFilter,
+      locationExperienceFilter,
+      locationBestForFilter,
       acceptingOnly,
       sortMode,
       resultCount,
@@ -71,6 +79,8 @@ export function DirectoryResultsTracker({
       service_type_filter: serviceTypeFilter || 'none',
       price_range_filter: priceRangeFilter || 'none',
       partner_type_filter: partnerTypeFilter || 'none',
+      location_experience_filter: locationExperienceFilter || 'none',
+      location_best_for_filter: locationBestForFilter || 'none',
       accepting_only: acceptingOnly,
       sort_mode: sortMode,
       result_count: resultCount,
@@ -88,6 +98,8 @@ export function DirectoryResultsTracker({
         service_type_filter: serviceTypeFilter || 'none',
         price_range_filter: priceRangeFilter || 'none',
         partner_type_filter: partnerTypeFilter || 'none',
+        location_experience_filter: locationExperienceFilter || 'none',
+        location_best_for_filter: locationBestForFilter || 'none',
         accepting_only: acceptingOnly,
         sort_mode: sortMode,
         result_count: resultCount,
@@ -104,6 +116,8 @@ export function DirectoryResultsTracker({
         service_type_filter: serviceTypeFilter || 'none',
         price_range_filter: priceRangeFilter || 'none',
         partner_type_filter: partnerTypeFilter || 'none',
+        location_experience_filter: locationExperienceFilter || 'none',
+        location_best_for_filter: locationBestForFilter || 'none',
         accepting_only: acceptingOnly,
         sort_mode: sortMode,
       })
@@ -117,6 +131,8 @@ export function DirectoryResultsTracker({
     resultCount,
     serviceTypeFilter,
     sortMode,
+    locationBestForFilter,
+    locationExperienceFilter,
     locationFilter,
     locationSource,
     totalCount,

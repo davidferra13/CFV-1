@@ -1,157 +1,260 @@
-// Event Readiness Engine
-// The gatekeeper for FSM state transitions.
-//
-// This module answers one question per event at any moment:
-//   "Is this event ready to move to the next stage?"
-//
-// Gates are preconditions organized by lifecycle transition:
-//   paid → confirmed:  allergies_verified, documents_generated
-//   confirmed → in_progress: packing_reviewed, equipment_confirmed
-//   in_progress → completed: receipts_uploaded, kitchen_clean, dop_complete, financial_reconciled
-//
-// Gates are:
-//   - Evaluated automatically by the system (checkAllGates)
-//   - Overridable by the chef with a mandatory reason (overrideGate)
-//   - Surfaced in the UI as warnings (soft) or blockers (hard)
-//
-// Hard blocks (cannot be overridden):
-//   - Unconfirmed ANAPHYLAXIS allergy records on a client
-//
-// Soft warnings (chef can override):
-//   - Everything else
-
 'use server'
 
+import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import { revalidatePath } from 'next/cache'
-import type { EventStatus } from './transitions'
+import {
+  getCurrentEventServiceSimulation,
+  getCurrentEventServiceSimulationForTenant,
+} from '@/lib/service-simulation/state'
+import type {
+  ServiceSimulationProof,
+  ServiceSimulationProofId,
+  ServiceSimulationProofSeverity,
+  ServiceSimulationProofStatus,
+} from '@/lib/service-simulation/types'
+import type { EventStatus } from './fsm'
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-export type ReadinessGate =
-  | 'allergies_verified'
-  | 'menu_client_approved'
-  | 'documents_generated'
-  | 'deposit_collected'
-  | 'packing_reviewed'
-  | 'equipment_confirmed'
-  | 'receipts_uploaded'
-  | 'kitchen_clean'
-  | 'dop_complete'
-  | 'financial_reconciled'
-
-export type GateStatus = 'pending' | 'passed' | 'overridden'
+export type ReadinessGate = ServiceSimulationProofId
+export type GateStatus = ServiceSimulationProofStatus | 'overridden'
+export type ReadinessTargetStatus = EventStatus | 'documents'
 
 export interface GateResult {
   gate: ReadinessGate
   status: GateStatus
   label: string
   description: string
-  isHardBlock: boolean // true = cannot be overridden (e.g., anaphylaxis present)
-  details?: string // Context about why it's pending
-  overrideReason?: string // If status = 'overridden', what reason the chef gave
+  details?: string
+  isHardBlock: boolean
+  blocking: boolean
+  severity: ServiceSimulationProofSeverity
+  sourceOfTruth: string
+  lastVerifiedAt?: string | null
+  overrideReason?: string
+  verifyRoute: string
+  verifyTarget: string
+  ctaLabel: string
 }
 
 export interface ReadinessResult {
   eventId: string
-  targetStatus: EventStatus
-  ready: boolean // true only if all gates passed or overridden
-  hardBlocked: boolean // true if any gate is a hard block
+  targetStatus: ReadinessTargetStatus
+  ready: boolean
+  hardBlocked: boolean
+  confidence: number
+  contextHash: string
+  counts: {
+    blockers: number
+    risks: number
+    stale: number
+  }
   gates: GateResult[]
-  blockers: GateResult[] // gates still pending (and not overridden)
-  warnings: GateResult[] // gates overridden with reason (logged, not blocking)
+  blockers: GateResult[]
+  warnings: GateResult[]
+  mostLikelyFailurePoint: GateResult | null
 }
 
-// Gate definitions by transition
-const GATE_CATALOG: Record<ReadinessGate, { label: string; description: string }> = {
-  allergies_verified: {
-    label: 'Allergies Verified',
-    description: 'All detected allergies for this client have been reviewed and confirmed by you',
-  },
-  menu_client_approved: {
-    label: 'Menu Approved by Client',
-    description: 'Client has reviewed and approved the proposed menu',
-  },
-  documents_generated: {
-    label: 'Documents Generated',
-    description: 'Front-of-house menu, prep sheet, and packing list have been generated',
-  },
-  packing_reviewed: {
-    label: 'Packing List Reviewed',
-    description: 'You have reviewed the packing list and everything is confirmed packed',
-  },
-  equipment_confirmed: {
-    label: 'Equipment Confirmed',
-    description: 'All required equipment has been confirmed as present and ready',
-  },
-  receipts_uploaded: {
-    label: 'Receipts Uploaded',
-    description: 'All grocery and supply receipts have been uploaded and logged',
-  },
-  kitchen_clean: {
-    label: 'Kitchen Left Clean',
-    description: 'Kitchen cleaner than found - confirmed before leaving',
-  },
-  dop_complete: {
-    label: 'Day-Of Protocol Complete',
-    description: 'All day-of-protocol checklist items are green',
-  },
-  deposit_collected: {
-    label: 'Deposit Collected',
-    description: 'The required deposit has been recorded in the ledger before confirming',
-  },
-  financial_reconciled: {
-    label: 'Financials Reconciled',
-    description: 'All expenses logged and outstanding balance noted',
-  },
+type OverrideRow = {
+  gate: string
+  status: string
+  override_reason: string | null
+  metadata: Record<string, unknown> | null
 }
 
-// Which gates apply to which transition
-const TRANSITION_GATES: Record<string, ReadinessGate[]> = {
-  'paid->confirmed': ['allergies_verified', 'documents_generated', 'deposit_collected'],
-  'confirmed->in_progress': ['packing_reviewed'],
-  'in_progress->completed': ['receipts_uploaded', 'kitchen_clean', 'financial_reconciled'],
+const BLOCKING_PROOFS_BY_TARGET: Record<ReadinessTargetStatus, ReadinessGate[]> = {
+  draft: [],
+  proposed: [],
+  accepted: [],
+  paid: [],
+  confirmed: ['prep_timeline', 'dietary_constraints', 'arrival_logistics', 'service_plan_flow'],
+  in_progress: [
+    'prep_timeline',
+    'packing_list',
+    'dietary_constraints',
+    'arrival_logistics',
+    'service_plan_flow',
+  ],
+  completed: [],
+  cancelled: [],
+  documents: [
+    'prep_timeline',
+    'packing_list',
+    'dietary_constraints',
+    'arrival_logistics',
+    'service_plan_flow',
+  ],
 }
 
-// ─── Main Readiness Evaluator ─────────────────────────────────────────────────
+function proofDetail(proof: ServiceSimulationProof): string {
+  if (proof.status === 'stale') return proof.staleReason ?? proof.sourceOfTruth
+  return proof.sourceOfTruth
+}
 
-/**
- * Evaluate readiness for a specific FSM transition.
- * Returns gate-by-gate status and an overall ready/blocked determination.
- *
- * Called from transitionEvent() before the actual update to surface
- * warnings and hard blocks to the chef.
- */
+function isOverrideActive(row: OverrideRow | undefined, contextHash: string): boolean {
+  if (!row || row.status !== 'overridden') return false
+  const metadataHash =
+    row.metadata && typeof row.metadata.contextHash === 'string' ? row.metadata.contextHash : null
+  return metadataHash === contextHash
+}
+
+function isBlockingForTarget(
+  proof: ServiceSimulationProof,
+  targetStatus: ReadinessTargetStatus
+): boolean {
+  return BLOCKING_PROOFS_BY_TARGET[targetStatus].includes(proof.id)
+}
+
+function buildGateResult(
+  proof: ServiceSimulationProof,
+  targetStatus: ReadinessTargetStatus,
+  overrideRow: OverrideRow | undefined,
+  contextHash: string
+): GateResult {
+  const overridden = isOverrideActive(overrideRow, contextHash)
+  const targetBlocking = isBlockingForTarget(proof, targetStatus)
+
+  return {
+    gate: proof.id,
+    status: overridden ? 'overridden' : proof.status,
+    label: proof.label,
+    description: proof.sourceOfTruth,
+    details: proofDetail(proof),
+    isHardBlock:
+      !overridden &&
+      proof.status === 'unverified' &&
+      proof.severity === 'critical' &&
+      proof.blocking &&
+      targetBlocking,
+    blocking: targetBlocking,
+    severity: proof.severity,
+    sourceOfTruth: proof.sourceOfTruth,
+    lastVerifiedAt: proof.lastVerifiedAt,
+    overrideReason: overridden ? (overrideRow?.override_reason ?? 'Override recorded') : undefined,
+    verifyRoute: proof.verifyAction.route,
+    verifyTarget: proof.verifyAction.uiTarget,
+    ctaLabel: proof.verifyAction.ctaLabel,
+  }
+}
+
+function computeConfidence(counts: ReadinessResult['counts']): number {
+  return Math.max(
+    0,
+    Math.min(100, 100 - counts.blockers * 25 - counts.risks * 10 - counts.stale * 6)
+  )
+}
+
+function rankGate(gate: GateResult): number {
+  if (gate.isHardBlock) return 0
+  if (gate.status === 'stale' && gate.severity === 'critical') return 1
+  if (gate.status === 'overridden' && gate.severity === 'critical') return 2
+  if (gate.status === 'unverified') return 3
+  if (gate.status === 'stale') return 4
+  if (gate.status === 'overridden') return 5
+  return 6
+}
+
+async function fetchOverrideRows(
+  db: ReturnType<typeof createServerClient>,
+  eventId: string,
+  tenantId: string,
+  gates: ReadinessGate[]
+): Promise<Map<ReadinessGate, OverrideRow>> {
+  const { data, error } = await (db as any)
+    .from('event_readiness_gates')
+    .select('gate, status, override_reason, metadata')
+    .eq('tenant_id', tenantId)
+    .eq('event_id', eventId)
+    .in('gate', gates)
+
+  if (error && !error.message?.includes('event_readiness_gates')) {
+    throw new Error(`Failed to load readiness overrides: ${error.message}`)
+  }
+
+  return new Map(((data ?? []) as OverrideRow[]).map((row) => [row.gate as ReadinessGate, row]))
+}
+
+async function evaluateReadinessInternal(params: {
+  eventId: string
+  tenantId: string
+  targetStatus: ReadinessTargetStatus
+  admin?: boolean
+}): Promise<ReadinessResult> {
+  const { eventId, tenantId, targetStatus } = params
+  const db: any = createServerClient(params.admin ? { admin: true } : undefined)
+  const simulationState = params.admin
+    ? await getCurrentEventServiceSimulationForTenant(eventId, tenantId)
+    : await getCurrentEventServiceSimulation(eventId)
+  const overrideRows = await fetchOverrideRows(
+    db,
+    eventId,
+    tenantId,
+    simulationState.simulation.proofs.map((proof) => proof.id)
+  )
+
+  const gates = simulationState.simulation.proofs.map((proof) =>
+    buildGateResult(proof, targetStatus, overrideRows.get(proof.id), simulationState.hash)
+  )
+  const blockers = gates.filter((gate) => gate.isHardBlock)
+  const risks = gates.filter(
+    (gate) => gate.status === 'overridden' || (gate.status === 'unverified' && !gate.isHardBlock)
+  ).length
+  const stale = gates.filter((gate) => gate.status === 'stale').length
+  const counts = {
+    blockers: blockers.length,
+    risks,
+    stale,
+  }
+  const mostLikelyFailurePoint =
+    [...gates].sort((left, right) => rankGate(left) - rankGate(right))[0] ?? null
+
+  return {
+    eventId,
+    targetStatus,
+    ready: blockers.length === 0,
+    hardBlocked: blockers.length > 0,
+    confidence: computeConfidence(counts),
+    contextHash: simulationState.hash,
+    counts,
+    gates,
+    blockers,
+    warnings: gates.filter((gate) => !gate.isHardBlock && gate.status !== 'verified'),
+    mostLikelyFailurePoint:
+      !mostLikelyFailurePoint || mostLikelyFailurePoint.status === 'verified'
+        ? null
+        : mostLikelyFailurePoint,
+  }
+}
+
+async function getEventTenantAndStatus(eventId: string): Promise<{
+  tenantId: string
+  status: EventStatus
+} | null> {
+  const db: any = createServerClient({ admin: true })
+  const { data: event, error } = await db
+    .from('events')
+    .select('tenant_id, status')
+    .eq('id', eventId)
+    .single()
+
+  if (error || !event) return null
+
+  return {
+    tenantId: event.tenant_id as string,
+    status: event.status as EventStatus,
+  }
+}
+
+export async function computeEventReadiness(eventId: string) {
+  const state = await getCurrentEventServiceSimulation(eventId)
+  return state.simulation.readiness
+}
+
 export async function evaluateReadinessForTransition(
   eventId: string,
   fromStatus: EventStatus,
   toStatus: EventStatus
 ): Promise<ReadinessResult> {
-  const db: any = createServerClient({ admin: true })
-
-  const transitionKey = `${fromStatus}->${toStatus}`
-  const requiredGates = TRANSITION_GATES[transitionKey] || []
-
-  // If no gates defined for this transition, it's always ready
-  if (requiredGates.length === 0) {
-    return {
-      eventId,
-      targetStatus: toStatus,
-      ready: true,
-      hardBlocked: false,
-      gates: [],
-      blockers: [],
-      warnings: [],
-    }
-  }
-
-  // Fetch event to get client_id and tenant_id
-  const { data: event } = await db
-    .from('events')
-    .select('tenant_id, client_id')
-    .eq('id', eventId)
-    .single()
+  const event = await getEventTenantAndStatus(eventId)
 
   if (!event) {
     return {
@@ -159,410 +262,198 @@ export async function evaluateReadinessForTransition(
       targetStatus: toStatus,
       ready: true,
       hardBlocked: false,
+      confidence: 100,
+      contextHash: '',
+      counts: { blockers: 0, risks: 0, stale: 0 },
       gates: [],
       blockers: [],
       warnings: [],
+      mostLikelyFailurePoint: null,
     }
   }
 
-  // Fetch existing gate records for this event
-  const { data: existingGates } = await db
-    .from('event_readiness_gates' as any)
-    .select('*')
-    .eq('event_id', eventId)
-    .in('gate', requiredGates)
+  if (fromStatus === 'in_progress' && toStatus === 'completed') {
+    return evaluateReadinessInternal({
+      eventId,
+      tenantId: event.tenantId,
+      targetStatus: 'completed',
+      admin: true,
+    })
+  }
 
-  const existingMap = new Map<string, { status: string; override_reason: string | null }>(
-    (existingGates || []).map((g: any) => [g.gate, g])
-  )
-
-  // Check each gate dynamically
-  const results = await Promise.all(
-    requiredGates.map((gate) =>
-      evaluateGate(gate, eventId, event.tenant_id, event.client_id, existingMap, db)
-    )
-  )
-
-  const blockers = results.filter((r) => r.status === 'pending')
-  const warnings = results.filter((r) => r.status === 'overridden')
-  const hardBlocked = blockers.some((r) => r.isHardBlock)
-  const ready = blockers.length === 0
+  if (
+    (fromStatus === 'paid' && toStatus === 'confirmed') ||
+    (fromStatus === 'confirmed' && toStatus === 'in_progress')
+  ) {
+    return evaluateReadinessInternal({
+      eventId,
+      tenantId: event.tenantId,
+      targetStatus: toStatus,
+      admin: true,
+    })
+  }
 
   return {
     eventId,
     targetStatus: toStatus,
-    ready,
-    hardBlocked,
-    gates: results,
-    blockers,
-    warnings,
+    ready: true,
+    hardBlocked: false,
+    confidence: 100,
+    contextHash: '',
+    counts: { blockers: 0, risks: 0, stale: 0 },
+    gates: [],
+    blockers: [],
+    warnings: [],
+    mostLikelyFailurePoint: null,
   }
 }
 
-// ─── Individual Gate Evaluator ────────────────────────────────────────────────
+export async function evaluateReadinessForDocumentGeneration(
+  eventId: string
+): Promise<ReadinessResult | null> {
+  const user = await requireChef()
+  return evaluateReadinessInternal({
+    eventId,
+    tenantId: user.tenantId!,
+    targetStatus: 'documents',
+  })
+}
 
-async function evaluateGate(
-  gate: ReadinessGate,
-  eventId: string,
-  tenantId: string,
-  clientId: string | null,
-  existingMap: Map<string, { status: string; override_reason: string | null }>,
-  db: any
-): Promise<GateResult> {
-  const catalog = GATE_CATALOG[gate]
-  const existing = existingMap.get(gate)
+export async function overrideGate(eventId: string, gate: ReadinessGate, reason: string) {
+  const user = await requireChef()
+  const db: any = createServerClient()
+  const readiness = await evaluateReadinessInternal({
+    eventId,
+    tenantId: user.tenantId!,
+    targetStatus: 'documents',
+  })
+  const targetGate = readiness.gates.find((entry) => entry.gate === gate)
 
-  // If it's already passed or overridden in the DB, honor that
-  if (existing?.status === 'passed') {
-    return {
-      gate,
-      status: 'passed',
-      label: catalog.label,
-      description: catalog.description,
-      isHardBlock: false,
-    }
+  if (!targetGate) {
+    throw new Error('Readiness proof not found for this event')
   }
 
-  if (existing?.status === 'overridden') {
-    return {
+  const normalizedReason = reason.trim()
+  if (normalizedReason.length < 3) {
+    throw new Error('A brief override reason is required')
+  }
+
+  const { error } = await db.from('event_readiness_gates' as any).upsert(
+    {
+      tenant_id: user.tenantId!,
+      event_id: eventId,
       gate,
       status: 'overridden',
-      label: catalog.label,
-      description: catalog.description,
-      isHardBlock: false,
-      overrideReason: existing.override_reason || undefined,
-    }
+      resolved_at: new Date().toISOString(),
+      overridden_by: user.id,
+      override_reason: normalizedReason,
+      metadata: {
+        contextHash: readiness.contextHash,
+        targetStatus: readiness.targetStatus,
+        confidence: readiness.confidence,
+        proofStatus: targetGate.status,
+      },
+    },
+    { onConflict: 'event_id,gate' }
+  )
+
+  if (error) {
+    throw new Error(error.message || 'Failed to override readiness proof')
   }
 
-  // Otherwise: dynamically check
-  switch (gate) {
-    case 'allergies_verified':
-      return checkAllergyGate(gate, eventId, tenantId, clientId, catalog, db)
-
-    case 'documents_generated':
-      return checkDocumentsGate(gate, eventId, catalog, db)
-
-    case 'menu_client_approved':
-      return checkMenuApprovalGate(gate, eventId, catalog, db)
-
-    case 'deposit_collected':
-      return checkDepositGate(gate, eventId, catalog, db)
-
-    case 'financial_reconciled':
-      return checkFinancialReconciledGate(gate, eventId, catalog, db)
-
-    case 'packing_reviewed':
-    case 'equipment_confirmed':
-    case 'receipts_uploaded':
-    case 'kitchen_clean':
-    case 'dop_complete':
-      // These require explicit chef action - they're pending until marked
-      return {
-        gate,
-        status: 'pending',
-        label: catalog.label,
-        description: catalog.description,
-        isHardBlock: false,
-        details: 'Tap to confirm this has been completed',
-      }
-
-    default:
-      return {
-        gate,
-        status: 'pending',
-        label: catalog.label,
-        description: catalog.description,
-        isHardBlock: false,
-      }
-  }
+  revalidatePath(`/events/${eventId}`)
+  revalidatePath(`/events/${eventId}/execution`)
+  revalidatePath(`/events/${eventId}/documents`)
+  revalidatePath('/dashboard')
+  revalidatePath('/calendar')
+  return { success: true }
 }
 
-// ─── Gate: Deposit Collected ─────────────────────────────────────────────────
-
-async function checkDepositGate(
-  gate: ReadinessGate,
+export async function overrideReadinessForTransition(
   eventId: string,
-  catalog: { label: string; description: string },
-  db: any
-): Promise<GateResult> {
-  // Fetch event's deposit requirement
+  targetStatus: Extract<ReadinessTargetStatus, 'confirmed' | 'in_progress' | 'documents'>,
+  reason = `Override acknowledged before ${targetStatus === 'documents' ? 'document generation' : `transition to ${targetStatus}`}`
+) {
+  const user = await requireChef()
+  const db: any = createServerClient()
+  const readiness = await evaluateReadinessInternal({
+    eventId,
+    tenantId: user.tenantId!,
+    targetStatus,
+  })
+
+  const overrideable = readiness.gates.filter((gate) => gate.isHardBlock)
+  if (overrideable.length === 0) {
+    return { success: true, count: 0 }
+  }
+
+  const rows = overrideable.map((gate) => ({
+    tenant_id: user.tenantId!,
+    event_id: eventId,
+    gate: gate.gate,
+    status: 'overridden',
+    resolved_at: new Date().toISOString(),
+    overridden_by: user.id,
+    override_reason: reason,
+    metadata: {
+      contextHash: readiness.contextHash,
+      targetStatus,
+      confidence: readiness.confidence,
+      proofStatus: gate.status,
+    },
+  }))
+
+  const { error } = await db.from('event_readiness_gates' as any).upsert(rows, {
+    onConflict: 'event_id,gate',
+  })
+
+  if (error) {
+    throw new Error(error.message || 'Failed to override readiness blockers')
+  }
+
+  revalidatePath(`/events/${eventId}`)
+  revalidatePath(`/events/${eventId}/execution`)
+  revalidatePath(`/events/${eventId}/documents`)
+  revalidatePath('/dashboard')
+  revalidatePath('/calendar')
+  return { success: true, count: rows.length }
+}
+
+export async function getEventReadiness(eventId: string) {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
   const { data: event } = await db
     .from('events')
-    .select('deposit_amount_cents')
-    .eq('id', eventId)
-    .single()
-
-  const depositRequired = (event?.deposit_amount_cents ?? 0) as number
-
-  // No deposit required - gate passes automatically
-  if (!depositRequired || depositRequired <= 0) {
-    return {
-      gate,
-      status: 'passed',
-      label: catalog.label,
-      description: catalog.description,
-      isHardBlock: false,
-    }
-  }
-
-  // Check how much has been paid via ledger
-  const { data: summary } = await db
-    .from('event_financial_summary')
-    .select('total_paid_cents')
-    .eq('event_id', eventId)
-    .single()
-
-  const totalPaid = (summary?.total_paid_cents ?? 0) as number
-
-  if (totalPaid >= depositRequired) {
-    return {
-      gate,
-      status: 'passed',
-      label: catalog.label,
-      description: catalog.description,
-      isHardBlock: false,
-    }
-  }
-
-  const formatCents = (c: number) =>
-    `$${(c / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
-  const shortfall = depositRequired - totalPaid
-
-  return {
-    gate,
-    status: 'pending',
-    label: catalog.label,
-    description: catalog.description,
-    isHardBlock: false, // Soft block: chef can override if deposit was collected off-platform
-    details: `Deposit required: ${formatCents(depositRequired)} - collected: ${formatCents(totalPaid)} - shortfall: ${formatCents(shortfall)}. Record the payment to proceed, or override if collected off-platform.`,
-  }
-}
-
-// ─── Gate: Financial Reconciled ───────────────────────────────────────────────
-
-async function checkFinancialReconciledGate(
-  gate: ReadinessGate,
-  eventId: string,
-  catalog: { label: string; description: string },
-  db: any
-): Promise<GateResult> {
-  const { data: summary } = await db
-    .from('event_financial_summary')
-    .select('outstanding_balance_cents, total_paid_cents, quoted_price_cents')
-    .eq('event_id', eventId)
-    .single()
-
-  if (!summary) {
-    return {
-      gate,
-      status: 'pending',
-      label: catalog.label,
-      description: catalog.description,
-      isHardBlock: false,
-      details: 'Could not load financial summary. Tap to confirm manually.',
-    }
-  }
-
-  const outstanding = (summary.outstanding_balance_cents ?? 0) as number
-
-  if (outstanding <= 0) {
-    // Balance is zero (or overpaid) - auto-pass
-    return {
-      gate,
-      status: 'passed',
-      label: catalog.label,
-      description: catalog.description,
-      isHardBlock: false,
-    }
-  }
-
-  const formatCents = (c: number) =>
-    `$${(c / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
-
-  return {
-    gate,
-    status: 'pending',
-    label: catalog.label,
-    description: catalog.description,
-    isHardBlock: false,
-    details: `Outstanding balance: ${formatCents(outstanding)}. Record the payment or override if settled off-platform.`,
-  }
-}
-
-// ─── Gate: Allergies Verified ─────────────────────────────────────────────────
-
-async function checkAllergyGate(
-  gate: ReadinessGate,
-  eventId: string,
-  tenantId: string,
-  clientId: string | null,
-  catalog: { label: string; description: string },
-  db: any
-): Promise<GateResult> {
-  if (!clientId) {
-    // No client assigned - can't verify, treat as passed (no one to check)
-    return {
-      gate,
-      status: 'passed',
-      label: catalog.label,
-      description: catalog.description,
-      isHardBlock: false,
-    }
-  }
-
-  // Check for unconfirmed allergy records (primary client)
-  const { data: unconfirmed } = await db
-    .from('client_allergy_records')
-    .select('allergen, severity')
-    .eq('client_id', clientId)
-    .eq('confirmed_by_chef', false)
-
-  // Q33: Also check event_guests for RSVP-reported allergies
-  const { data: guestDietary } = await db
-    .from('event_guests')
-    .select('full_name, allergies, dietary_restrictions')
-    .eq('event_id', eventId)
-    .eq('rsvp_status', 'attending')
-
-  const guestAllergens: string[] = []
-  for (const g of (guestDietary ?? []) as any[]) {
-    for (const a of (g.allergies as string[]) ?? []) {
-      guestAllergens.push(`${g.full_name || 'Guest'}: ${a}`)
-    }
-  }
-
-  const unconfirmedCount = unconfirmed?.length ?? 0
-
-  if (unconfirmedCount === 0 && guestAllergens.length === 0) {
-    // No unconfirmed client allergies and no guest-reported allergies
-    return {
-      gate,
-      status: 'passed',
-      label: catalog.label,
-      description: catalog.description,
-      isHardBlock: false,
-    }
-  }
-
-  const hasAnaphylaxis = (unconfirmed ?? []).some((r: any) => r.severity === 'anaphylaxis')
-  const allergenList = (unconfirmed ?? []).map((r: any) => r.allergen).join(', ')
-
-  const detailParts: string[] = []
-  if (hasAnaphylaxis) {
-    detailParts.push(
-      `CRITICAL: Unconfirmed anaphylaxis risk for ${allergenList}. You must confirm or dismiss this before proceeding.`
-    )
-  } else if (unconfirmedCount > 0) {
-    detailParts.push(
-      `${unconfirmedCount} unconfirmed allergen(s): ${allergenList}. Please verify on the client profile.`
-    )
-  }
-  if (guestAllergens.length > 0) {
-    detailParts.push(`Guest-reported allergies: ${guestAllergens.join('; ')}`)
-  }
-
-  return {
-    gate,
-    status: 'pending',
-    label: catalog.label,
-    description: catalog.description,
-    isHardBlock: hasAnaphylaxis,
-    details: detailParts.join(' | '),
-  }
-}
-
-// ─── Gate: Documents Generated ────────────────────────────────────────────────
-
-async function checkDocumentsGate(
-  gate: ReadinessGate,
-  eventId: string,
-  catalog: { label: string; description: string },
-  db: any
-): Promise<GateResult> {
-  // Check if at minimum a prep sheet has been generated
-  // (FOH menu auto-generates on confirm, so we just check if it was ever generated)
-  const { data: event } = await db
-    .from('events')
-    .select('prep_sheet_generated_at, packing_list_generated_at')
-    .eq('id', eventId)
-    .single()
-
-  const missingDocs: string[] = []
-  if (!event?.prep_sheet_generated_at) missingDocs.push('Prep Sheet')
-  if (!event?.packing_list_generated_at) missingDocs.push('Packing List')
-
-  if (missingDocs.length === 0) {
-    return {
-      gate,
-      status: 'passed',
-      label: catalog.label,
-      description: catalog.description,
-      isHardBlock: false,
-    }
-  }
-
-  return {
-    gate,
-    status: 'pending',
-    label: catalog.label,
-    description: catalog.description,
-    isHardBlock: false,
-    details: `Not yet generated: ${missingDocs.join(', ')}`,
-  }
-}
-
-// ─── Gate: Menu Client Approved ───────────────────────────────────────────────
-
-async function checkMenuApprovalGate(
-  gate: ReadinessGate,
-  eventId: string,
-  catalog: { label: string; description: string },
-  db: any
-): Promise<GateResult> {
-  // Check menu_approval_requests table for an approved record
-  const { data: approval } = await db
-    .from('menu_approval_requests')
     .select('status')
-    .eq('event_id', eventId)
-    .eq('status', 'approved')
-    .limit(1)
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
     .single()
 
-  if (approval) {
-    return {
-      gate,
-      status: 'passed',
-      label: catalog.label,
-      description: catalog.description,
-      isHardBlock: false,
-    }
+  if (!event) return null
+
+  const currentStatus = event.status as EventStatus
+  const nextTransitionMap: Record<string, ReadinessTargetStatus | null> = {
+    draft: null,
+    proposed: null,
+    accepted: null,
+    paid: 'confirmed',
+    confirmed: 'in_progress',
+    in_progress: 'completed',
+    completed: null,
+    cancelled: null,
   }
 
-  // Check if there's a pending approval request
-  const { data: pending } = await db
-    .from('menu_approval_requests')
-    .select('status, sent_at')
-    .eq('event_id', eventId)
-    .limit(1)
-    .single()
+  const nextTarget = nextTransitionMap[currentStatus]
+  if (!nextTarget) return null
 
-  return {
-    gate,
-    status: 'pending',
-    label: catalog.label,
-    description: catalog.description,
-    isHardBlock: false,
-    details: pending
-      ? `Approval request sent - awaiting client response`
-      : `No menu approval request has been sent to the client yet`,
-  }
+  return evaluateReadinessInternal({
+    eventId,
+    tenantId: user.tenantId!,
+    targetStatus: nextTarget,
+  })
 }
 
-// ─── Allergy Record Actions ───────────────────────────────────────────────────
-
-/**
- * Get all allergy records for a client (chef-only).
- */
 export async function getClientAllergyRecords(clientId: string) {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -572,7 +463,7 @@ export async function getClientAllergyRecords(clientId: string) {
     .select('*')
     .eq('client_id', clientId)
     .eq('tenant_id', user.tenantId!)
-    .order('severity', { ascending: false }) // anaphylaxis first
+    .order('severity', { ascending: false })
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -583,9 +474,6 @@ export async function getClientAllergyRecords(clientId: string) {
   return data || []
 }
 
-/**
- * Confirm an AI-detected allergy record (chef explicitly verifies it's real).
- */
 export async function confirmAllergyRecord(
   allergyRecordId: string,
   options?: { severity?: string; notes?: string }
@@ -615,9 +503,6 @@ export async function confirmAllergyRecord(
   return { success: true }
 }
 
-/**
- * Dismiss (delete) an AI-detected allergy record the chef determines is incorrect.
- */
 export async function dismissAllergyRecord(allergyRecordId: string) {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -637,9 +522,6 @@ export async function dismissAllergyRecord(allergyRecordId: string) {
   return { success: true }
 }
 
-/**
- * Manually add an allergy record (chef-entered, auto-confirmed).
- */
 export async function addAllergyRecord(
   clientId: string,
   data: { allergen: string; severity: string; notes?: string }
@@ -666,7 +548,6 @@ export async function addAllergyRecord(
     throw new Error('Failed to add allergy record')
   }
 
-  // Sync structured -> flat so document generators see chef-entered allergies
   try {
     const { syncStructuredToFlat } = await import('@/lib/dietary/allergy-sync')
     await syncStructuredToFlat({ tenantId: user.tenantId!, clientId, db })
@@ -674,7 +555,6 @@ export async function addAllergyRecord(
     console.error('[addAllergyRecord] Allergy sync to flat failed (non-blocking):', syncErr)
   }
 
-  // Recheck upcoming event menus for allergen conflicts (non-blocking)
   try {
     const { recheckUpcomingMenusForClient } = await import('@/lib/dietary/menu-recheck')
     await recheckUpcomingMenusForClient({ tenantId: user.tenantId!, clientId, db })
@@ -686,170 +566,16 @@ export async function addAllergyRecord(
   return { success: true }
 }
 
-// ─── Gate Pass / Override Actions ────────────────────────────────────────────
-
-/**
- * Mark a readiness gate as passed (called when chef completes the action).
- */
-export async function markGatePassed(
-  eventId: string,
-  gate: ReadinessGate,
-  metadata?: Record<string, unknown>
-) {
-  const user = await requireChef()
-  const db: any = createServerClient()
-
-  // Verify event belongs to tenant
-  const { data: event } = await db
-    .from('events')
-    .select('tenant_id')
-    .eq('id', eventId)
-    .eq('tenant_id', user.tenantId!)
-    .single()
-
-  if (!event) throw new Error('Event not found')
-
-  const { error } = await db.from('event_readiness_gates' as any).upsert(
-    {
-      tenant_id: user.tenantId!,
-      event_id: eventId,
-      gate,
-      status: 'passed',
-      resolved_at: new Date().toISOString(),
-      metadata: metadata || null,
-    },
-    { onConflict: 'event_id,gate' }
-  )
-
-  if (error) {
-    console.error('[markGatePassed] Error:', error)
-    throw new Error('Failed to mark gate as passed')
-  }
-
-  revalidatePath(`/events/${eventId}`)
-  return { success: true }
-}
-
-/**
- * Override a readiness gate with a mandatory reason (chef bypass).
- * Hard-blocked gates (anaphylaxis) cannot be overridden.
- */
-export async function overrideGate(eventId: string, gate: ReadinessGate, reason: string) {
-  const user = await requireChef()
-  const db: any = createServerClient()
-
-  if (!reason || reason.trim().length < 5) {
-    throw new Error('A reason of at least 5 characters is required to override a gate')
-  }
-
-  // Verify event belongs to tenant
-  const { data: event } = await db
-    .from('events')
-    .select('tenant_id, client_id')
-    .eq('id', eventId)
-    .eq('tenant_id', user.tenantId!)
-    .single()
-
-  if (!event) throw new Error('Event not found')
-
-  // Check if this gate is hard-blocked (anaphylaxis allergy present)
-  if (gate === 'allergies_verified' && event.client_id) {
-    const { data: criticalAllergies } = await db
-      .from('client_allergy_records')
-      .select('allergen')
-      .eq('client_id', event.client_id)
-      .eq('confirmed_by_chef', false)
-      .eq('severity', 'anaphylaxis')
-      .limit(1)
-
-    if (criticalAllergies && criticalAllergies.length > 0) {
-      throw new Error(
-        'Cannot override: unconfirmed anaphylaxis allergens must be explicitly confirmed or dismissed by you before proceeding. This is a safety requirement.'
-      )
-    }
-  }
-
-  const { error } = await db.from('event_readiness_gates' as any).upsert(
-    {
-      tenant_id: user.tenantId!,
-      event_id: eventId,
-      gate,
-      status: 'overridden',
-      resolved_at: new Date().toISOString(),
-      overridden_by: user.id,
-      override_reason: reason.trim(),
-    },
-    { onConflict: 'event_id,gate' }
-  )
-
-  if (error) {
-    console.error('[overrideGate] Error:', error)
-    throw new Error('Failed to override gate')
-  }
-
-  revalidatePath(`/events/${eventId}`)
-  return { success: true }
-}
-
-/**
- * Get the full readiness status for an event (used by event detail page).
- * Evaluates all gates relevant to the current event status.
- */
-export async function getEventReadiness(eventId: string) {
-  const user = await requireChef()
-  const db: any = createServerClient()
-
-  const { data: event } = await db
-    .from('events')
-    .select('status, tenant_id, client_id')
-    .eq('id', eventId)
-    .eq('tenant_id', user.tenantId!)
-    .single()
-
-  if (!event) return null
-
-  const currentStatus = event.status as EventStatus
-
-  // Figure out what the next transition is
-  const nextTransitionMap: Record<string, { from: EventStatus; to: EventStatus } | null> = {
-    draft: { from: 'draft', to: 'proposed' },
-    proposed: null, // client action, no gates needed
-    accepted: null, // Stripe webhook, no gates needed
-    paid: { from: 'paid', to: 'confirmed' },
-    confirmed: { from: 'confirmed', to: 'in_progress' },
-    in_progress: { from: 'in_progress', to: 'completed' },
-    completed: null,
-    cancelled: null,
-  }
-
-  const nextTransition = nextTransitionMap[currentStatus]
-  if (!nextTransition) return null
-
-  return evaluateReadinessForTransition(eventId, nextTransition.from, nextTransition.to)
-}
-
-/**
- * Cross-event allergy check.
- * Given an event, return any allergens in the client's confirmed allergy records
- * that could conflict with the event's menu items.
- * Used by document generators and the readiness engine.
- */
 export async function checkMenuAllergyConflicts(eventId: string): Promise<{
   hasConflicts: boolean
   conflicts: Array<{ allergen: string; severity: string; menuItem?: string }>
 }> {
   const db: any = createServerClient({ admin: true })
 
-  // Get event's client
-  const { data: event } = await db
-    .from('events')
-    .select('client_id, tenant_id')
-    .eq('id', eventId)
-    .single()
+  const { data: event } = await db.from('events').select('client_id').eq('id', eventId).single()
 
   if (!event?.client_id) return { hasConflicts: false, conflicts: [] }
 
-  // Get confirmed allergy records
   const { data: allergies } = await db
     .from('client_allergy_records')
     .select('allergen, severity')
@@ -859,21 +585,21 @@ export async function checkMenuAllergyConflicts(eventId: string): Promise<{
 
   if (!allergies || allergies.length === 0) return { hasConflicts: false, conflicts: [] }
 
-  // Get event menu items (components attached to this event's menus)
   const { data: components } = await db
     .from('menu_components' as any)
     .select('name, ingredients')
     .eq('event_id', eventId)
 
   if (!components || components.length === 0) {
-    // No menu yet - flag that allergies exist but can't compare
     return {
       hasConflicts: false,
-      conflicts: allergies.map((a: any) => ({ allergen: a.allergen, severity: a.severity })),
+      conflicts: allergies.map((allergy: any) => ({
+        allergen: allergy.allergen,
+        severity: allergy.severity,
+      })),
     }
   }
 
-  // Simple text-match: check if allergen name appears in any component name or ingredients
   const conflicts: Array<{ allergen: string; severity: string; menuItem?: string }> = []
 
   for (const allergy of allergies) {
@@ -889,7 +615,7 @@ export async function checkMenuAllergyConflicts(eventId: string): Promise<{
           severity: allergy.severity,
           menuItem: component.name,
         })
-        break // Only flag once per allergen
+        break
       }
     }
   }

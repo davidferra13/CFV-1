@@ -12,6 +12,7 @@ import {
   AlertCircle,
   Download,
 } from '@/components/ui/icons'
+import { NEUTRAL_PROSPECT_CSV_PLACEHOLDER } from '@/lib/site/national-brand-copy'
 
 export function CSVImportForm() {
   const [csvText, setCsvText] = useState('')
@@ -122,7 +123,7 @@ export function CSVImportForm() {
             <textarea
               value={csvText}
               onChange={(e) => handleTextPaste(e.target.value)}
-              placeholder={`name,phone,email,city,state,category\nCape Cod Yacht Club,(508) 555-1234,events@ccyc.com,Hyannis,MA,yacht_club\n...`}
+              placeholder={NEUTRAL_PROSPECT_CSV_PLACEHOLDER}
               className="w-full h-40 rounded-lg border border-stone-600 px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
               disabled={isPending}
             />

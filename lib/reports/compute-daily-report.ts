@@ -5,6 +5,10 @@
 //   - The app page server action (via requireChef + admin client)
 
 import type { DailyReportContent, HighIntentVisit, DailyReportEvent } from './types'
+import {
+  attachDerivedOutputProvenance,
+  resolveAiDerivedOutputModelMetadata,
+} from '@/lib/analytics/source-provenance'
 import { generateDailyNarrative } from '@/lib/ai/daily-narrative'
 
 // Accept any client with a database-compatible query builder API
@@ -629,5 +633,23 @@ export async function computeDailyReport(
   // AI narrative: non-blocking, falls back to null if AI unavailable
   reportData.aiNarrative = await safe('aiNarrative', () => generateDailyNarrative(reportData), null)
 
-  return reportData
+  return attachDerivedOutputProvenance(reportData, {
+    asOf: `${reportDate}T23:59:59.000Z`,
+    derivationMethod: reportData.aiNarrative ? 'hybrid' : 'deterministic',
+    derivationSource: reportData.aiNarrative
+      ? 'computeDailyReport(generateDailyNarrative)'
+      : 'computeDailyReport',
+    freshnessWindowMs: 24 * 60 * 60 * 1000,
+    inputs: [
+      { kind: 'chef', id: tenantId, label: 'Daily report tenant' },
+      { kind: 'report', id: reportDate, label: 'daily-report' },
+    ],
+    model: reportData.aiNarrative
+      ? resolveAiDerivedOutputModelMetadata({
+          modelTier: 'fast',
+          taskType: 'daily-report.narrative',
+        })
+      : null,
+    moduleId: 'lib/reports/compute-daily-report.ts',
+  })
 }

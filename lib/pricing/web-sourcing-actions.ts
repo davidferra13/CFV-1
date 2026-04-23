@@ -7,7 +7,7 @@
  * specialty retailers via DuckDuckGo HTML scraping - free, no API key required.
  *
  * The chef's home_city + home_state are added to the query so results are
- * regionally relevant (e.g. a Portland ME chef gets New England suppliers).
+ * relevant to the chef's actual market instead of a fixed default region.
  *
  * Results are filtered to trusted retailer domains and cached 1 hour per query.
  * Auth-gated: only authenticated chefs can trigger searches.

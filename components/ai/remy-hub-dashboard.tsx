@@ -217,7 +217,7 @@ function SettingsTab() {
           >
             {prefs.remy_enabled
               ? localAiEnabled
-                ? 'AI features run on your own machine. Conversation content never leaves your device.'
+                ? 'AI features run on the endpoint you configured, including this computer or a Raspberry Pi you control.'
                 : "AI features run on ChefFlow's private infrastructure. Conversation content is not stored on our servers."
               : 'Your existing AI data is preserved. Enable Remy from the controls below.'}
           </p>
@@ -250,9 +250,9 @@ function SettingsTab() {
           </p>
           <p>
             <strong>We will always:</strong> Process AI on{' '}
-            {localAiEnabled ? 'your own machine' : "ChefFlow's own servers"}, give you complete
-            visibility into what Remy knows, let you delete any or all data instantly, and respect
-            your choice to opt out entirely.
+            {localAiEnabled ? 'the endpoint you control' : "ChefFlow's own servers"}, give you
+            complete visibility into what Remy knows, let you delete any or all data instantly, and
+            respect your choice to opt out entirely.
           </p>
         </div>
       </div>

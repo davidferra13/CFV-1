@@ -3,6 +3,10 @@
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
+import {
+  linkDirectoryListingToChefAccount,
+  resolveChefDirectoryListingLink,
+} from '@/lib/discover/entity-resolution'
 import { ONBOARDING_STEPS, WIZARD_STEPS, type OnboardingStepKey } from './onboarding-constants'
 
 // ============================================
@@ -630,6 +634,42 @@ async function persistProfileData(db: any, tenantId: string, data: Record<string
         .upsert(prefUpdate, { onConflict: 'chef_id' })
       if (error) console.error('[onboarding] Failed to update chef_preferences', error)
     }
+  }
+
+  try {
+    const { data: chefRecord } = await db
+      .from('chefs')
+      .select('email, business_name, display_name, website_url, city, state')
+      .eq('id', tenantId)
+      .maybeSingle()
+
+    if (chefRecord) {
+      const resolved = await resolveChefDirectoryListingLink(db, {
+        chefId: tenantId,
+        email: chefRecord.email ?? null,
+        businessName: chefRecord.business_name ?? businessName ?? null,
+        displayName: chefRecord.display_name ?? businessName ?? null,
+        websiteUrl: chefRecord.website_url ?? websiteUrl ?? null,
+        city: chefRecord.city ?? city ?? null,
+        state: chefRecord.state ?? state ?? null,
+      })
+
+      if (resolved) {
+        const linkResult = await linkDirectoryListingToChefAccount(db, {
+          listingId: resolved.listingId,
+          chefId: tenantId,
+          confidence: resolved.confidence,
+          reason: resolved.reason,
+        })
+
+        if (linkResult.status === 'linked' || linkResult.status === 'already_linked') {
+          revalidatePath(`/nearby/${resolved.slug}`)
+          revalidatePath('/admin/directory-listings')
+        }
+      }
+    }
+  } catch (err) {
+    console.error('[onboarding] Failed to resolve linked nearby listing', err)
   }
 
   revalidatePath('/settings/my-profile')

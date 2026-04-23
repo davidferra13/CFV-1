@@ -1,28 +1,18 @@
 import type { Metadata } from 'next'
 import { BreadcrumbJsonLd, JsonLd } from '@/components/seo/json-ld'
+import { SUPPORT_EMAIL, absoluteUrl, buildMarketingMetadata } from '@/lib/site/public-site'
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
-
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMarketingMetadata({
   title: 'Contact ChefFlow | Private Chef Software Support',
   description:
     'Questions about ChefFlow? Contact support@cheflowhq.com or use the form. We respond within 1 business day.',
-  openGraph: {
-    title: 'Contact ChefFlow',
-    description: 'Questions about ChefFlow? We respond within 1 business day.',
-    url: `${BASE_URL}/contact`,
-    siteName: 'ChefFlow',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary',
-    title: 'Contact ChefFlow',
-    description: 'Questions about ChefFlow? We respond within 1 business day.',
-  },
-  alternates: {
-    canonical: `${BASE_URL}/contact`,
-  },
-}
+  path: '/contact',
+  imagePath: '/social/chefflow-booking.png',
+  imageAlt: 'ChefFlow contact and booking preview',
+  openGraphTitle: 'Contact ChefFlow',
+  twitterTitle: 'Contact ChefFlow',
+  twitterCard: 'summary_large_image',
+})
 
 export default function ContactLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -32,15 +22,15 @@ export default function ContactLayout({ children }: { children: React.ReactNode 
           '@context': 'https://schema.org',
           '@type': 'ContactPage',
           name: 'Contact ChefFlow',
-          url: `${BASE_URL}/contact`,
+          url: absoluteUrl('/contact'),
           mainEntity: {
             '@type': 'Organization',
             name: 'ChefFlow',
-            email: 'support@cheflowhq.com',
-            url: BASE_URL,
+            email: SUPPORT_EMAIL,
+            url: absoluteUrl('/'),
             contactPoint: {
               '@type': 'ContactPoint',
-              email: 'support@cheflowhq.com',
+              email: SUPPORT_EMAIL,
               contactType: 'customer support',
               availableLanguage: 'English',
               hoursAvailable: {
@@ -55,8 +45,8 @@ export default function ContactLayout({ children }: { children: React.ReactNode 
       />
       <BreadcrumbJsonLd
         items={[
-          { name: 'Home', url: BASE_URL },
-          { name: 'Contact', url: `${BASE_URL}/contact` },
+          { name: 'Home', url: absoluteUrl('/') },
+          { name: 'Contact', url: absoluteUrl('/contact') },
         ]}
       />
       {children}

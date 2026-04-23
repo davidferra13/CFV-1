@@ -147,6 +147,30 @@ export const PLATFORM_OBSERVABILITY_TAXONOMY = {
     digestSection: 'conversion',
     alertDedupMinutes: 0,
   },
+  'conversion.location_booking_link_clicked': {
+    label: 'Location Booking Link Clicked',
+    description:
+      'A visitor clicked through from a chef profile location card to a venue booking link.',
+    group: 'conversion',
+    scope: 'public',
+    severity: 'important',
+    realtimeAlert: false,
+    dailyDigest: true,
+    digestSection: 'conversion',
+    alertDedupMinutes: 0,
+  },
+  'conversion.location_inquiry_link_clicked': {
+    label: 'Location Inquiry Link Clicked',
+    description:
+      'A visitor clicked from a public location page or card into the chef inquiry flow.',
+    group: 'conversion',
+    scope: 'public',
+    severity: 'important',
+    realtimeAlert: false,
+    dailyDigest: true,
+    digestSection: 'conversion',
+    alertDedupMinutes: 0,
+  },
   'feature.portal_login': {
     label: 'Portal Login',
     description: 'A portal user logged in.',
@@ -315,6 +339,17 @@ export const PLATFORM_OBSERVABILITY_TAXONOMY = {
   'feature.public_profile_viewed': {
     label: 'Public Profile Viewed',
     description: 'A visitor viewed the chef public profile page.',
+    group: 'feature',
+    scope: 'private',
+    severity: 'info',
+    realtimeAlert: false,
+    dailyDigest: true,
+    digestSection: 'engagement',
+    alertDedupMinutes: 0,
+  },
+  'feature.daily_report_delivered': {
+    label: 'Daily Report Delivered',
+    description: 'A daily report email was delivered to a chef.',
     group: 'feature',
     scope: 'private',
     severity: 'info',

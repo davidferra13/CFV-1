@@ -1110,6 +1110,13 @@ export function QuoteForm({
               the updated event context and issue a revised quote before sending it.
             </div>
           )}
+          {prefilledSource === 'quote_revision' && (
+            <div className="rounded-lg bg-amber-950 border border-amber-700 px-4 py-3 text-sm text-amber-300">
+              <span className="font-medium text-amber-200">Prepared from a rejected quote.</span>{' '}
+              Review the copied pricing context, revise the draft, and send it only after you
+              approve the changes.
+            </div>
+          )}
           {prefilledSource === 'recurring_default' && (
             <div className="rounded-lg bg-emerald-950 border border-emerald-700 px-4 py-3 text-sm text-emerald-700">
               <span className="font-medium text-emerald-600">

@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { NEUTRAL_LOCATION_PLACEHOLDER } from '@/lib/site/national-brand-copy'
 import { LocationAutocomplete, type LocationData } from '@/components/ui/location-autocomplete'
 
 const SERVICE_OPTIONS = [
@@ -44,11 +45,14 @@ export function HomepageSearch() {
   }
 
   return (
-    <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2 sm:gap-0">
-      <div className="flex flex-1 flex-col sm:flex-row rounded-2xl border border-stone-600/80 bg-stone-900/80 backdrop-blur-sm shadow-lg overflow-hidden focus-within:border-brand-600/60 transition-colors">
-        <div className="flex-1 flex items-center border-b sm:border-b-0 sm:border-r border-stone-700/60">
+    <form onSubmit={handleSearch} className="flex flex-col gap-3">
+      <div className="flex flex-1 flex-col overflow-hidden rounded-[1.5rem] border border-stone-700/80 bg-stone-900/90 shadow-[0_20px_40px_rgba(0,0,0,0.22)] backdrop-blur-sm transition-colors focus-within:border-brand-600/60 sm:flex-row">
+        <div className="flex min-h-[54px] flex-1 items-center border-b border-stone-700/60 sm:min-h-0 sm:border-b-0 sm:border-r">
+          <label htmlFor="homepage-location" className="sr-only">
+            Location
+          </label>
           <svg
-            className="ml-4 h-5 w-5 text-stone-500 flex-shrink-0"
+            className="ml-4 h-5 w-5 shrink-0 text-stone-500"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -67,19 +71,24 @@ export function HomepageSearch() {
             />
           </svg>
           <LocationAutocomplete
+            id="homepage-location"
+            name="location"
             value={location}
             onSelect={handleLocationSelect}
             onChange={(text) => {
               setLocation(text)
               setLocationGeo(null) // Clear geo when user types manually
             }}
-            placeholder="City, state, or ZIP"
-            className="w-full bg-transparent px-3 py-4 text-sm text-stone-100 placeholder:text-stone-500 focus:outline-none"
+            placeholder={NEUTRAL_LOCATION_PLACEHOLDER}
+            className="w-full bg-transparent px-3 py-3.5 text-[15px] text-stone-100 placeholder:text-stone-500 focus:outline-none sm:py-4 sm:text-sm"
           />
         </div>
-        <div className="flex-1 flex items-center">
+        <div className="flex min-h-[54px] flex-1 items-center sm:min-h-0">
+          <label htmlFor="homepage-service" className="sr-only">
+            Service type
+          </label>
           <svg
-            className="ml-4 h-5 w-5 text-stone-500 flex-shrink-0"
+            className="ml-4 h-5 w-5 shrink-0 text-stone-500"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -98,9 +107,12 @@ export function HomepageSearch() {
             />
           </svg>
           <select
+            id="homepage-service"
+            name="serviceType"
+            aria-label="Service type"
             value={serviceType}
             onChange={(e) => setServiceType(e.target.value)}
-            className="w-full bg-transparent px-3 py-4 text-sm text-stone-100 focus:outline-none appearance-none cursor-pointer"
+            className="w-full cursor-pointer appearance-none bg-transparent px-3 py-3.5 text-[15px] text-stone-100 focus:outline-none sm:py-4 sm:text-sm"
           >
             {SERVICE_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value} className="bg-stone-900 text-stone-100">
@@ -118,20 +130,25 @@ export function HomepageSearch() {
           </svg>
         </div>
       </div>
-      <button
-        type="submit"
-        className="sm:ml-3 inline-flex h-[56px] items-center justify-center rounded-2xl gradient-accent px-8 text-sm font-semibold text-white glow-hover shadow-lg transition-transform active:scale-[0.97] touch-manipulation"
-      >
-        <svg className="h-5 w-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
-        </svg>
-        <span className="sm:inline">Search</span>
-      </button>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-xs leading-5 text-stone-500">
+          Search by place and service first, then compare live profiles in the directory.
+        </p>
+        <button
+          type="submit"
+          className="inline-flex h-[52px] items-center justify-center rounded-[1.25rem] border border-stone-700 bg-stone-900/80 px-6 text-sm font-semibold text-stone-100 shadow-lg transition-colors active:scale-[0.97] touch-manipulation hover:border-stone-600 hover:bg-stone-800 sm:h-[52px] sm:min-w-[188px]"
+        >
+          <svg className="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+          Browse chefs
+        </button>
+      </div>
     </form>
   )
 }

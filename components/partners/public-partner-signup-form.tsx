@@ -65,14 +65,15 @@ export function PublicPartnerSignupForm({ chefSlug, chefName, primaryColor }: Pr
 
   if (showSuccess) {
     return (
-      <Card className="bg-stone-900/90">
+      <Card className="border-stone-700/70 bg-stone-950/85 shadow-[var(--shadow-card)]">
         <CardContent className="py-12 text-center">
-          <h2 className="text-2xl font-bold text-stone-100 mb-2">Profile Submitted</h2>
-          <p className="text-stone-400 mb-6">
-            Thanks. Your partner profile was created for {chefName}.
+          <h2 className="mb-2 text-2xl font-bold text-stone-100">Partner Details Submitted</h2>
+          <p className="mb-6 text-stone-400">
+            Thanks. {chefName} can now review your partner details in ChefFlow and follow up
+            directly.
           </p>
           <Button type="button" variant="secondary" onClick={() => setShowSuccess(false)}>
-            Submit another profile
+            Submit another partner
           </Button>
         </CardContent>
       </Card>
@@ -80,17 +81,25 @@ export function PublicPartnerSignupForm({ chefSlug, chefName, primaryColor }: Pr
   }
 
   return (
-    <Card className="bg-stone-900/90">
+    <Card className="border-stone-700/70 bg-stone-950/85 shadow-[var(--shadow-card)]">
       <CardContent className="p-6 md:p-8">
+        <div className="mb-6 rounded-2xl border border-stone-800 bg-stone-900/70 p-4">
+          <h2 className="text-lg font-semibold text-stone-100">Partner details</h2>
+          <p className="mt-2 text-sm leading-relaxed text-stone-400">
+            This form sends your venue, supplier, or referral information to {chefName}. It does not
+            create a public account or booking page.
+          </p>
+        </div>
+
         {submitError && (
-          <div className="mb-6 p-4 bg-red-950 border border-red-200 rounded-md">
-            <p className="text-red-700 text-sm">{submitError}</p>
+          <div className="mb-6 rounded-md border border-red-900/40 bg-red-950 p-4">
+            <p className="text-sm text-red-200">{submitError}</p>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
-            label="Partner Name"
+            label="Partner or Business Name"
             name="name"
             required
             placeholder="Business or referral name"
@@ -151,8 +160,12 @@ export function PublicPartnerSignupForm({ chefSlug, chefName, primaryColor }: Pr
             className="w-full text-white hover:opacity-90"
             style={{ backgroundColor: primaryColor }}
           >
-            {isSubmitting ? 'Creating Profile...' : 'Create Partner Profile'}
+            {isSubmitting ? 'Submitting Partner Details...' : 'Submit Partner Details'}
           </Button>
+
+          <p className="text-xs leading-relaxed text-stone-500">
+            Submitted information is attached to {chefName}&apos;s partner records in ChefFlow.
+          </p>
         </form>
       </CardContent>
     </Card>

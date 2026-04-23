@@ -64,7 +64,7 @@ function ruleMatches(rule: CommunicationClassificationRule, values: Record<strin
   }
 }
 
-async function logCommunicationAction(input: {
+export async function logCommunicationAction(input: {
   tenantId: string
   communicationEventId?: string | null
   threadId?: string | null
@@ -420,16 +420,47 @@ export async function ingestCommunicationEvent(input: CommunicationEventInput) {
   const db: any = createServerClient({ admin: true })
   const timestamp = input.timestamp || new Date().toISOString()
   const normalizedContent = normalizeContent(input.rawContent)
-  const resolvedClientId = await resolveClientId(input.tenantId, input.senderIdentity)
+  const recipientAddress =
+    input.recipientAddress ??
+    (input.direction === 'inbound' ? input.managedChannelAddress || null : null)
+  let resolvedClientId = input.resolvedClientId ?? null
 
-  const threadId = await getOrCreateThread({
-    tenantId: input.tenantId,
-    source: input.source,
-    senderIdentity: input.senderIdentity,
-    resolvedClientId,
-    externalThreadKey: input.externalThreadKey,
-    timestamp,
-  })
+  if (!resolvedClientId && input.threadId) {
+    const { data: threadClient } = await db
+      .from('conversation_threads' as any)
+      .select('client_id')
+      .eq('id', input.threadId)
+      .eq('tenant_id', input.tenantId)
+      .maybeSingle()
+
+    resolvedClientId = threadClient?.client_id || null
+  }
+
+  if (!resolvedClientId) {
+    resolvedClientId = await resolveClientId(input.tenantId, input.senderIdentity)
+  }
+
+  const threadId =
+    input.threadId ||
+    (await getOrCreateThread({
+      tenantId: input.tenantId,
+      source: input.source,
+      senderIdentity: input.senderIdentity,
+      resolvedClientId,
+      externalThreadKey: input.externalThreadKey,
+      timestamp,
+    }))
+
+  if (input.threadId) {
+    await db
+      .from('conversation_threads' as any)
+      .update({
+        last_activity_at: timestamp,
+        ...(resolvedClientId ? { client_id: resolvedClientId } : {}),
+      })
+      .eq('id', threadId)
+      .eq('tenant_id', input.tenantId)
+  }
 
   const initialStatus = input.linkedEntityType && input.linkedEntityId ? 'linked' : 'unlinked'
 
@@ -439,6 +470,7 @@ export async function ingestCommunicationEvent(input: CommunicationEventInput) {
       tenant_id: input.tenantId,
       source: input.source,
       external_id: input.externalId || null,
+      external_thread_key: input.externalThreadKey || null,
       timestamp,
       sender_identity: input.senderIdentity,
       resolved_client_id: resolvedClientId,
@@ -446,24 +478,37 @@ export async function ingestCommunicationEvent(input: CommunicationEventInput) {
       raw_content: input.rawContent,
       normalized_content: normalizedContent,
       direction: input.direction,
+      provider_name: input.providerName || null,
+      managed_channel_address: input.managedChannelAddress || null,
+      recipient_address: recipientAddress,
       linked_entity_type: input.linkedEntityType || null,
       linked_entity_id: input.linkedEntityId || null,
       status: initialStatus,
       is_raw_signal_only: input.isRawSignalOnly ?? false,
     })
-    .select('id, status, linked_entity_type, linked_entity_id, is_raw_signal_only')
+    .select(
+      'id, status, linked_entity_type, linked_entity_id, is_raw_signal_only, external_thread_key, provider_name, managed_channel_address, recipient_address'
+    )
     .single()
 
   if (error?.message?.includes('uq_comm_events_external')) {
     const { data: existing } = await db
       .from('communication_events' as any)
-      .select('id')
+      .select('id, thread_id, resolved_client_id, linked_entity_type, linked_entity_id, timestamp')
       .eq('tenant_id', input.tenantId)
       .eq('source', input.source)
       .eq('external_id', input.externalId || '')
       .maybeSingle()
 
-    return { id: existing?.id || null, deduped: true }
+    return {
+      id: existing?.id || null,
+      threadId: existing?.thread_id || input.threadId || null,
+      resolvedClientId: existing?.resolved_client_id || resolvedClientId,
+      linkedEntityType: existing?.linked_entity_type || input.linkedEntityType || null,
+      linkedEntityId: existing?.linked_entity_id || input.linkedEntityId || null,
+      timestamp: existing?.timestamp || timestamp,
+      deduped: true,
+    }
   }
 
   if (error || !event?.id) {
@@ -484,6 +529,11 @@ export async function ingestCommunicationEvent(input: CommunicationEventInput) {
       linked_entity_id: event.linked_entity_id,
       direction: input.direction,
       source: input.source,
+      external_id: input.externalId || null,
+      external_thread_key: input.externalThreadKey || null,
+      provider_name: input.providerName || null,
+      managed_channel_address: input.managedChannelAddress || null,
+      recipient_address: recipientAddress,
     },
   })
 
@@ -554,7 +604,15 @@ export async function ingestCommunicationEvent(input: CommunicationEventInput) {
       .catch((err) => console.error('[push-notify] Failed:', err))
   }
 
-  return { id: event.id, threadId, deduped: false }
+  return {
+    id: event.id,
+    threadId,
+    resolvedClientId,
+    linkedEntityType: event.linked_entity_type,
+    linkedEntityId: event.linked_entity_id,
+    timestamp,
+    deduped: false,
+  }
 }
 
 // ─── Auto-staging: unknown sender creates staged client + inquiry ─────────────

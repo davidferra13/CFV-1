@@ -38,6 +38,12 @@ import { ChatNavUnreadBadge } from '@/components/chat/chat-nav-unread-badge'
 
 import { usePermissions } from '@/lib/context/permission-context'
 import { getStrictFocusGroupRank, isStrictFocusGroupVisible } from '@/lib/navigation/focus-mode-nav'
+import {
+  CHEF_SHELL_RESET_EVENT,
+  CHEF_SIDEBAR_COLLAPSED_STORAGE_KEY,
+  DEFAULT_CHEF_SIDEBAR_COLLAPSED,
+  readChefShellPresentationState,
+} from '@/lib/chef/shell-state'
 
 import {
   LogOut,
@@ -85,18 +91,30 @@ export function useSidebar() {
 }
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(DEFAULT_CHEF_SIDEBAR_COLLAPSED)
   const [mounted, setMounted] = useState(false)
 
-  useEffect(() => {
-    const stored = localStorage.getItem('chef-sidebar-collapsed')
-    if (stored === 'true') setCollapsed(true)
+  const syncCollapsedFromStorage = useCallback(() => {
+    setCollapsed(readChefShellPresentationState(window.localStorage).sidebarCollapsed)
     setMounted(true)
   }, [])
 
+  useEffect(() => {
+    syncCollapsedFromStorage()
+  }, [syncCollapsedFromStorage])
+
+  useEffect(() => {
+    window.addEventListener(CHEF_SHELL_RESET_EVENT, syncCollapsedFromStorage)
+    return () => window.removeEventListener(CHEF_SHELL_RESET_EVENT, syncCollapsedFromStorage)
+  }, [syncCollapsedFromStorage])
+
   const handleSetCollapsed = useCallback((v: boolean) => {
     setCollapsed(v)
-    localStorage.setItem('chef-sidebar-collapsed', String(v))
+    try {
+      localStorage.setItem(CHEF_SIDEBAR_COLLAPSED_STORAGE_KEY, String(v))
+    } catch {
+      // localStorage unavailable
+    }
   }, [])
 
   // Prevent flash of wrong width before hydration
@@ -560,6 +578,15 @@ export function ChefSidebar({
   const pathname = usePathname() ?? ''
   const searchParams = useSearchParams()
   const { collapsed, setCollapsed } = useSidebar()
+  const [isTablet, setIsTablet] = useState(false)
+  useEffect(() => {
+    const mql = window.matchMedia('(min-width: 768px) and (max-width: 1023px)')
+    setIsTablet(mql.matches)
+    const handler = (e: MediaQueryListEvent) => setIsTablet(e.matches)
+    mql.addEventListener('change', handler)
+    return () => mql.removeEventListener('change', handler)
+  }, [])
+  const effectiveCollapsed = isTablet || collapsed
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set())
   const [openItems, setOpenItems] = useState<Set<string>>(new Set())
   const [navFilter, setNavFilter] = useState('')
@@ -605,7 +632,7 @@ export function ChefSidebar({
     return strictGroups.sort(
       (a, b) => getStrictFocusGroupRank(a.id) - getStrictFocusGroupRank(b.id)
     )
-  }, [isAdmin, isPrivileged, focusMode, enabledSet])
+  }, [isAdmin, isPrivileged, focusMode, enabledSet, hasPermission])
   const groupEntries = useMemo(
     () => accessibleGroups.map((group) => ({ group, isLocked: false })),
     [accessibleGroups]
@@ -673,28 +700,36 @@ export function ChefSidebar({
       return next
     })
   }
+  const handleSignOut = useCallback(async () => {
+    try {
+      await signOut()
+    } catch (error) {
+      console.error('[sign-out]', error)
+    }
+    window.location.href = '/'
+  }, [])
 
   return (
     <aside
-      className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 glass-subtle sidebar-gradient border-r border-stone-800/40 transition-all duration-200 z-30 ${
+      className={`hidden md:flex md:flex-col md:fixed md:inset-y-0 glass-subtle sidebar-gradient border-r border-stone-800/40 transition-all duration-200 z-30 md:w-16 ${
         collapsed ? 'lg:w-16' : 'lg:w-60'
       }`}
     >
       {/* Logo + notification bell + collapse toggle */}
       <div
-        className={`flex items-center h-14 border-b border-stone-800/40 ${collapsed ? 'px-3 justify-center' : 'px-3 justify-between'}`}
+        className={`flex items-center h-14 border-b border-stone-800/40 ${effectiveCollapsed ? 'px-3 justify-center' : 'px-3 justify-between'}`}
       >
         <Link href="/dashboard" className="flex items-center gap-2 flex-shrink-0 group/logo">
           <span className="transition-transform duration-200 group-hover/logo:scale-110">
             <AppLogo />
           </span>
-          {!collapsed && (
+          {!effectiveCollapsed && (
             <span className="text-lg font-display text-stone-100 whitespace-nowrap transition-colors duration-200 group-hover/logo:text-brand-400">
               ChefFlow
             </span>
           )}
         </Link>
-        {!collapsed ? (
+        {!effectiveCollapsed ? (
           <div className="flex items-center flex-shrink-0">
             {isAdmin ? <OllamaStatusBadge /> : <AiStatusDot />}
             <SystemHeartbeat />
@@ -726,9 +761,9 @@ export function ChefSidebar({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto pt-3 pb-6 mb-28 custom-scrollbar">
+      <nav className="flex-1 overflow-y-auto pt-3 pb-6 custom-scrollbar">
         {/* COLLAPSED / RAIL MODE */}
-        {collapsed ? (
+        {effectiveCollapsed ? (
           <div className="flex flex-col items-center gap-1 px-1">
             {/* Expand toggle */}
             <button
@@ -833,24 +868,6 @@ export function ChefSidebar({
                   </Link>
                 )
               })}
-
-            {/* Sign Out - inside nav so it's above the Remy mascot */}
-            <button
-              type="button"
-              onClick={async () => {
-                try {
-                  await signOut()
-                } catch (e) {
-                  console.error('[sign-out]', e)
-                }
-                window.location.href = '/'
-              }}
-              title="Sign Out"
-              aria-label="Sign Out"
-              className="flex items-center justify-center w-10 h-10 rounded-lg text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors"
-            >
-              <LogOut className="w-[18px] h-[18px]" />
-            </button>
           </div>
         ) : (
           /* EXPANDED MODE */
@@ -861,7 +878,7 @@ export function ChefSidebar({
             <ActionBar navFilter={navFilter} archetype={archetype} />
 
             {/* ─── Nav Groups (always visible, collapse individually) ─── */}
-            {!focusMode && filteredGroupEntries.length > 0 && (
+            {filteredGroupEntries.length > 0 && (
               <>
                 <div className="mx-0 my-1 border-t border-stone-700/40" />
                 <div className="space-y-0.5">
@@ -924,26 +941,24 @@ export function ChefSidebar({
                 </Link>
               )
             })()}
-
-            {/* Sign Out - inside nav so it's above the Remy mascot */}
-            <button
-              type="button"
-              onClick={async () => {
-                try {
-                  await signOut()
-                } catch (e) {
-                  console.error('[sign-out]', e)
-                }
-                window.location.href = '/'
-              }}
-              className="flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors border-l-2 border-transparent"
-            >
-              <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
-              Sign Out
-            </button>
           </div>
         )}
       </nav>
+
+      <div className={`border-t border-stone-800/50 ${effectiveCollapsed ? 'p-1.5' : 'p-3'}`}>
+        <button
+          type="button"
+          onClick={handleSignOut}
+          title={collapsed ? 'Sign Out' : undefined}
+          aria-label={collapsed ? 'Sign Out' : undefined}
+          className={`flex items-center rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors ${
+            effectiveCollapsed ? 'mx-auto h-10 w-10 justify-center' : 'w-full gap-3 px-3 py-2'
+          }`}
+        >
+          <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
+          {!effectiveCollapsed && 'Sign Out'}
+        </button>
+      </div>
     </aside>
   )
 }

@@ -6,8 +6,7 @@ import { LAUNCH_MODE, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
 import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
 import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
-
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+import { buildMarketingMetadata } from '@/lib/site/public-site'
 
 type FaqCategory = {
   title: string
@@ -115,7 +114,7 @@ const FAQ_CATEGORIES: FaqCategory[] = [
       {
         question: 'How much does ChefFlow cost?',
         answer:
-          'The core platform is free: inquiries, events, menus, recipes, food costing, finances, staff, and client management. No commission, no hidden fees, no cut of your bookings. Paid plans unlock automation, AI intelligence, and scale features for operators who want to grow faster.',
+          'ChefFlow has a free core operator layer today: inquiries, events, menus, recipes, manual food costing, invoicing, ledger, calendar, and a public chef page. The current public $29/month charge is a voluntary supporter contribution, and a broader automation/intelligence/scale surface is still only classified or planned paid. See /pricing for the current breakdown instead of relying on older Pro-plan copy.',
       },
       {
         question: 'Can I start with a small operation and grow later?',
@@ -163,28 +162,17 @@ const FAQ_CATEGORIES: FaqCategory[] = [
 // Flatten for schema.org
 const ALL_FAQ_ITEMS = FAQ_CATEGORIES.flatMap((cat) => cat.items)
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMarketingMetadata({
   title: 'ChefFlow FAQ | Private Chef Business Questions Answered',
   description:
     'Answers to common questions about food costing, pricing, hiring a private chef, running a food business, and using ChefFlow to manage your operation.',
-  openGraph: {
-    title: 'ChefFlow FAQ',
-    description:
-      'Practical answers for private chef clients and food operators on pricing, food costing, business growth, and the ChefFlow platform.',
-    url: `${BASE_URL}/faq`,
-    siteName: 'ChefFlow',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary',
-    title: 'ChefFlow FAQ',
-    description:
-      'Practical answers for private chef clients and food operators on pricing, food costing, business growth, and the ChefFlow platform.',
-  },
-  alternates: {
-    canonical: `${BASE_URL}/faq`,
-  },
-}
+  path: '/faq',
+  imagePath: '/social/chefflow-faq.png',
+  imageAlt: 'ChefFlow FAQ preview',
+  openGraphTitle: 'ChefFlow FAQ',
+  twitterTitle: 'ChefFlow FAQ',
+  twitterCard: 'summary_large_image',
+})
 
 export default function FaqPage() {
   const isBeta = LAUNCH_MODE === 'beta'

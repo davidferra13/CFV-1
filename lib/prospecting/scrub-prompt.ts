@@ -27,7 +27,7 @@ Return a JSON array of prospect objects. Each object must have these fields:
   "city": "City name",
   "state": "State abbreviation or country",
   "zip": "ZIP code if known",
-  "region": "Broader area name (e.g. Cape Cod, Palm Beach, Hamptons)",
+  "region": "Broader area name (e.g. downtown district, wine country, lake communities)",
   "contactPerson": "Specific person to ask for by name, or likely title if name unknown",
   "contactTitle": "Their role (Events Director, GM, Personal Assistant, etc.)",
   "gatekeeperNotes": "How to get past the front desk to the decision maker",

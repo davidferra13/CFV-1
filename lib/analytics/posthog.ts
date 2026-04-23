@@ -25,6 +25,10 @@ export const ANALYTICS_EVENTS = {
   CONTACT_FORM_SUBMITTED: 'contact_form_submitted',
   NEWSLETTER_SUBSCRIBED: 'newsletter_subscribed',
   HOME_SEARCH_SUBMITTED: 'home_search_submitted',
+  BOOKING_FORM_STARTED: 'booking_form_started',
+  BOOKING_FORM_SUBMITTED: 'booking_form_submitted',
+  TRUST_MODULE_VIEWED: 'trust_module_viewed',
+  PRODUCT_DEMO_PLAYED: 'product_demo_played',
 
   // Inquiries
   INQUIRY_SUBMITTED: 'inquiry_submitted',
@@ -121,7 +125,7 @@ export function resetAnalytics(): void {
  */
 export function trackPageView(
   pageName: string,
-  properties?: Record<string, string | number | boolean>
+  properties?: Record<string, string | number | boolean | null>
 ): void {
   trackEvent(ANALYTICS_EVENTS.PAGE_VIEWED, {
     page: pageName,

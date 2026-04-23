@@ -60,6 +60,29 @@ export function getBusinessTypeLabel(value: string): string {
   return BUSINESS_TYPES.find((t) => t.value === value)?.label ?? value
 }
 
+export function getBusinessTypeCollectionLabel(value: string): string {
+  switch (value) {
+    case 'restaurant':
+      return 'Restaurants'
+    case 'private_chef':
+      return 'Private Chefs'
+    case 'caterer':
+      return 'Caterers'
+    case 'food_truck':
+      return 'Food Trucks'
+    case 'bakery':
+      return 'Bakeries'
+    case 'meal_prep':
+      return 'Meal Prep'
+    case 'pop_up':
+      return 'Pop-Ups'
+    case 'supper_club':
+      return 'Supper Clubs'
+    default:
+      return getBusinessTypeLabel(value)
+  }
+}
+
 export function getCuisineLabel(value: string): string {
   return CUISINE_CATEGORIES.find((c) => c.value === value)?.label ?? value
 }

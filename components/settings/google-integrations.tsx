@@ -337,11 +337,39 @@ export function GoogleIntegrations({
 
       <ServiceCard
         title="Google Calendar"
-        description="Connect your Google Calendar to automatically sync bookings and block off unavailable times."
+        description="Connect your Google Calendar to sync confirmed bookings out and verify external busy time during booking checks."
         status={connection.calendar}
         onConnect={() => handleConnect('calendar')}
         onDisconnect={() => handleDisconnect('calendar')}
-      />
+      >
+        <div
+          className={`rounded-md border px-3 py-2 text-xs ${
+            connection.calendar.health === 'ok'
+              ? 'border-emerald-800 bg-emerald-950/30 text-emerald-100'
+              : connection.calendar.health === 'warning'
+                ? 'border-amber-700 bg-amber-950/30 text-amber-100'
+                : connection.calendar.health === 'error'
+                  ? 'border-red-800 bg-red-950/30 text-red-100'
+                  : 'border-stone-700 bg-stone-900 text-stone-300'
+          }`}
+        >
+          <p className="font-medium">External calendar truth</p>
+          <p className="mt-1">
+            {connection.calendar.healthDetail ||
+              'ChefFlow will verify Google Calendar busy time during booking availability checks.'}
+          </p>
+          {connection.calendar.checkedAt && (
+            <p className="mt-1 opacity-80">
+              Last checked: {new Date(connection.calendar.checkedAt).toLocaleString()}
+            </p>
+          )}
+          {connection.calendar.lastSync && (
+            <p className="mt-1 opacity-80">
+              Latest ChefFlow event sync: {new Date(connection.calendar.lastSync).toLocaleString()}
+            </p>
+          )}
+        </div>
+      </ServiceCard>
     </div>
   )
 }

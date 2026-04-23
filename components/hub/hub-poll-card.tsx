@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition, memo } from 'react'
+import { useEffect, useState, useTransition, memo } from 'react'
 import { toast } from 'sonner'
 import type { HubPoll, HubPollOption } from '@/lib/hub/types'
 import { voteOnPoll, removeVote, closePoll } from '@/lib/hub/poll-actions'
@@ -9,11 +9,9 @@ interface HubPollCardProps {
   poll: HubPoll
   profileToken: string | null
   isOwnerOrAdmin?: boolean
-  onVoted?: () => void
+  onVoted?: () => void | Promise<void>
 }
 
-// Memoized: rendered inside message feed for poll messages. Receives stable poll data.
-// Note: parent should wrap onVoted with useCallback.
 export const HubPollCard = memo(function HubPollCard({
   poll,
   profileToken,
@@ -23,8 +21,25 @@ export const HubPollCard = memo(function HubPollCard({
   const [isPending, startTransition] = useTransition()
   const [localPoll, setLocalPoll] = useState(poll)
 
-  const totalVotes = localPoll.total_votes ?? 0
-  const hasVoted = (localPoll.options ?? []).some((o) => o.voted_by_me)
+  useEffect(() => {
+    setLocalPoll(poll)
+  }, [poll])
+
+  const participantCount = localPoll.participant_count ?? localPoll.total_votes ?? 0
+  const totalSelections = localPoll.total_selections ?? participantCount
+  const distributionBase =
+    localPoll.poll_type === 'single_choice'
+      ? Math.max(participantCount, 1)
+      : Math.max(totalSelections, 1)
+  const hasVoted = (localPoll.options ?? []).some((option) => option.voted_by_me)
+
+  const pollLabel = localPoll.poll_scope === 'menu_course' ? 'Menu Vote' : 'Poll'
+  const interactionHint =
+    localPoll.poll_type === 'ranked_choice'
+      ? 'Tap options in order of preference.'
+      : localPoll.poll_type === 'multi_choice'
+        ? `Select up to ${localPoll.max_selections ?? 'multiple'} option${localPoll.max_selections === 1 ? '' : 's'}.`
+        : 'Select one option.'
 
   const handleVote = (option: HubPollOption) => {
     if (!profileToken || localPoll.is_closed) return
@@ -44,37 +59,22 @@ export const HubPollCard = memo(function HubPollCard({
             profileToken,
           })
         }
-        // Optimistic update
-        setLocalPoll((prev) => {
-          const options = (prev.options ?? []).map((o) => {
-            if (o.id === option.id) {
-              return {
-                ...o,
-                voted_by_me: !o.voted_by_me,
-                vote_count: (o.vote_count ?? 0) + (o.voted_by_me ? -1 : 1),
-              }
-            }
-            // For single choice, unvote others
-            if (prev.poll_type === 'single_choice' && !option.voted_by_me && o.voted_by_me) {
-              return { ...o, voted_by_me: false, vote_count: (o.vote_count ?? 0) - 1 }
-            }
-            return o
-          })
-          return { ...prev, options }
-        })
-        onVoted?.()
-      } catch {
-        toast.error('Vote failed. Please try again.')
+
+        await onVoted?.()
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Vote failed. Please try again.')
       }
     })
   }
 
   const handleClose = () => {
     if (!profileToken) return
+
     startTransition(async () => {
       try {
         await closePoll({ pollId: localPoll.id, profileToken })
-        setLocalPoll((prev) => ({ ...prev, is_closed: true }))
+        setLocalPoll((previous) => ({ ...previous, is_closed: true }))
+        await onVoted?.()
       } catch {
         toast.error('Failed to close poll.')
       }
@@ -83,22 +83,45 @@ export const HubPollCard = memo(function HubPollCard({
 
   return (
     <div className="rounded-xl border border-stone-700 bg-stone-800/60 p-4">
-      <div className="mb-3 flex items-start justify-between">
+      <div className="mb-3 flex items-start justify-between gap-3">
         <div>
-          <div className="text-xs font-medium uppercase tracking-wider text-stone-500">📊 Poll</div>
+          <div className="flex flex-wrap items-center gap-2 text-xs font-medium uppercase tracking-wider text-stone-500">
+            <span>{pollLabel}</span>
+            {localPoll.course_name && (
+              <span className="rounded-full border border-stone-600 px-2 py-0.5 normal-case tracking-normal text-stone-400">
+                {localPoll.course_name}
+              </span>
+            )}
+            {localPoll.locked_option_id ? (
+              <span className="rounded-full bg-emerald-950/60 px-2 py-0.5 normal-case tracking-normal text-emerald-300">
+                Finalized
+              </span>
+            ) : localPoll.is_closed ? (
+              <span className="rounded-full bg-stone-700 px-2 py-0.5 normal-case tracking-normal text-stone-300">
+                Closed
+              </span>
+            ) : null}
+          </div>
           <h4 className="mt-1 text-sm font-semibold text-stone-200">{localPoll.question}</h4>
+          <p className="mt-1 text-xs text-stone-500">{interactionHint}</p>
         </div>
-        {localPoll.is_closed && (
-          <span className="rounded-full bg-stone-700 px-2 py-0.5 text-xs text-stone-400">
-            Closed
-          </span>
-        )}
       </div>
 
-      {/* Options */}
       <div className="space-y-2">
         {(localPoll.options ?? []).map((option) => {
-          const pct = totalVotes > 0 ? Math.round(((option.vote_count ?? 0) / totalVotes) * 100) : 0
+          const metadata = (option.metadata as Record<string, unknown> | null) ?? null
+          const description =
+            typeof metadata?.description === 'string' ? metadata.description : undefined
+          const dietaryTags = Array.isArray(metadata?.dietary_tags)
+            ? metadata.dietary_tags.filter((tag): tag is string => typeof tag === 'string')
+            : []
+          const componentNames = Array.isArray(metadata?.component_names)
+            ? metadata.component_names.filter((name): name is string => typeof name === 'string')
+            : []
+          const pct =
+            distributionBase > 0
+              ? Math.round(((option.vote_count ?? 0) / distributionBase) * 100)
+              : 0
 
           return (
             <button
@@ -108,10 +131,11 @@ export const HubPollCard = memo(function HubPollCard({
               className={`relative w-full overflow-hidden rounded-lg border p-3 text-left text-sm transition-colors ${
                 option.voted_by_me
                   ? 'border-[var(--hub-primary,#e88f47)] bg-[var(--hub-primary,#e88f47)]/10 text-stone-100'
-                  : 'border-stone-700 bg-stone-800 text-stone-300 hover:border-stone-600'
+                  : option.id === localPoll.locked_option_id
+                    ? 'border-emerald-700 bg-emerald-950/20 text-stone-100'
+                    : 'border-stone-700 bg-stone-800 text-stone-300 hover:border-stone-600'
               } disabled:cursor-default`}
             >
-              {/* Background progress bar */}
               {(hasVoted || localPoll.is_closed) && (
                 <div
                   className="absolute inset-y-0 left-0 bg-stone-700/30 transition-all duration-500"
@@ -119,15 +143,74 @@ export const HubPollCard = memo(function HubPollCard({
                 />
               )}
 
-              <div className="relative flex items-center justify-between">
-                <span>
-                  {option.voted_by_me && '✓ '}
-                  {option.label}
-                </span>
+              <div className="relative flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-medium">
+                      {option.voted_by_me ? 'Selected: ' : ''}
+                      {option.label}
+                    </span>
+                    {option.option_type === 'opt_out' && (
+                      <span className="rounded-full border border-stone-600 px-2 py-0.5 text-[11px] uppercase tracking-wide text-stone-400">
+                        Opt out
+                      </span>
+                    )}
+                    {localPoll.locked_option_id === option.id && (
+                      <span className="rounded-full bg-emerald-950/60 px-2 py-0.5 text-[11px] uppercase tracking-wide text-emerald-300">
+                        Locked
+                      </span>
+                    )}
+                    {localPoll.winning_option_ids?.includes(option.id) &&
+                      localPoll.locked_option_id !== option.id && (
+                        <span className="rounded-full bg-amber-950/50 px-2 py-0.5 text-[11px] uppercase tracking-wide text-amber-300">
+                          Leading
+                        </span>
+                      )}
+                    {localPoll.poll_type === 'ranked_choice' && option.ranked_by_me && (
+                      <span className="rounded-full bg-[var(--hub-primary,#e88f47)]/15 px-2 py-0.5 text-[11px] uppercase tracking-wide text-[var(--hub-primary,#e88f47)]">
+                        Rank {option.ranked_by_me}
+                      </span>
+                    )}
+                  </div>
+
+                  {description && (
+                    <p className="mt-1 line-clamp-2 text-xs text-stone-400">{description}</p>
+                  )}
+
+                  {(dietaryTags.length > 0 || componentNames.length > 0) && (
+                    <div className="mt-2 flex flex-wrap gap-1 text-[11px] text-stone-500">
+                      {dietaryTags.slice(0, 3).map((tag) => (
+                        <span
+                          key={`${option.id}-${tag}`}
+                          className="rounded-full border border-stone-700 px-2 py-0.5"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                      {componentNames.length > 0 && (
+                        <span className="rounded-full border border-stone-700 px-2 py-0.5">
+                          {componentNames.slice(0, 2).join(', ')}
+                          {componentNames.length > 2 ? ' +' : ''}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 {(hasVoted || localPoll.is_closed) && (
-                  <span className="text-xs text-stone-500">
-                    {option.vote_count ?? 0} ({pct}%)
-                  </span>
+                  <div className="shrink-0 text-right text-xs text-stone-500">
+                    <div>
+                      {option.vote_count ?? 0}
+                      {localPoll.poll_type === 'single_choice' ? ' vote' : ' picks'}
+                    </div>
+                    <div>{pct}%</div>
+                    {localPoll.poll_type === 'ranked_choice' && (
+                      <div className="mt-1 text-[11px] text-stone-400">
+                        {option.score ?? 0} pts
+                        {option.first_choice_count ? ` | ${option.first_choice_count} first` : ''}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </button>
@@ -135,12 +218,16 @@ export const HubPollCard = memo(function HubPollCard({
         })}
       </div>
 
-      {/* Footer */}
-      <div className="mt-3 flex items-center justify-between text-xs text-stone-500">
-        <span>
-          {totalVotes} vote{totalVotes !== 1 ? 's' : ''}
-        </span>
-        {!localPoll.is_closed && isOwnerOrAdmin && (
+      <div className="mt-3 flex items-center justify-between gap-3 text-xs text-stone-500">
+        <div className="space-y-0.5">
+          <div>
+            {participantCount} response{participantCount !== 1 ? 's' : ''}
+            {localPoll.poll_type !== 'single_choice' &&
+              ` | ${totalSelections} total selection${totalSelections !== 1 ? 's' : ''}`}
+          </div>
+          {localPoll.allow_opt_out && <div>Opt-out is available for this poll.</div>}
+        </div>
+        {!localPoll.is_closed && isOwnerOrAdmin && localPoll.poll_scope !== 'menu_course' && (
           <button
             onClick={handleClose}
             disabled={isPending}

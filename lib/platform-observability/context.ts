@@ -1,6 +1,5 @@
-import { readFileSync } from 'fs'
-import { join } from 'path'
 import { PATHNAME_HEADER } from '@/lib/auth/request-auth-context'
+import type { DerivedOutputProvenance } from '@/lib/analytics/source-provenance'
 
 type HeaderReader = {
   get(name: string): string | null
@@ -18,11 +17,14 @@ let cachedBuildId: string | null | undefined
 
 function readBuildId(): string | null {
   if (cachedBuildId !== undefined) return cachedBuildId
-  try {
-    cachedBuildId = readFileSync(join(process.cwd(), '.next', 'BUILD_ID'), 'utf-8').trim()
-  } catch {
-    cachedBuildId = null
-  }
+
+  cachedBuildId = firstNonEmpty(
+    process.env.NEXT_BUILD_ID,
+    process.env.BUILD_ID,
+    process.env.VERCEL_GIT_COMMIT_SHA,
+    process.env.GIT_COMMIT_SHA
+  )
+
   return cachedBuildId
 }
 
@@ -83,4 +85,41 @@ export function buildPlatformObservabilityMetadata(
     ...extractRequestMetadata(headersLike),
     ...(extra ?? {}),
   }
+}
+
+export function summarizeDerivedOutputProvenance(
+  provenance: DerivedOutputProvenance
+): Record<string, unknown> {
+  return {
+    contract_version: provenance.contractVersion,
+    derivation_method: provenance.derivationMethod,
+    derivation_source: provenance.derivationSource,
+    module_id: provenance.moduleId,
+    generated_at: provenance.generatedAt,
+    as_of: provenance.freshness.asOf,
+    freshness_status: provenance.freshness.status,
+    freshness_age_seconds: provenance.freshness.ageSeconds,
+    freshness_window_seconds: provenance.freshness.windowSeconds,
+    source_count: provenance.inputs.length,
+    source_kinds: provenance.inputs.map((input) => input.kind),
+    model_provider: provenance.model?.provider ?? null,
+    model: provenance.model?.model ?? null,
+    model_tier: provenance.model?.modelTier ?? null,
+    execution_location: provenance.model?.executionLocation ?? null,
+    endpoint_name: provenance.model?.endpointName ?? null,
+  }
+}
+
+export function buildDerivedOutputObservabilityMetadata(
+  provenance: DerivedOutputProvenance,
+  extra?: Record<string, unknown>,
+  headersLike?: HeaderReader | null
+): Record<string, unknown> {
+  return buildPlatformObservabilityMetadata(
+    {
+      derived_output: summarizeDerivedOutputProvenance(provenance),
+      ...(extra ?? {}),
+    },
+    headersLike
+  )
 }

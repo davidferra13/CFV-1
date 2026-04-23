@@ -7,22 +7,24 @@ export const metadata: Metadata = {
 
 export default function SocialLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="space-y-0">
-      <div className="border-b border-stone-700 bg-stone-900 px-4 py-0 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-end gap-1 pt-4 pb-0">
-            <div className="flex-1 pb-3">
+    <div className="space-y-6">
+      <div className="max-w-7xl mx-auto px-4 pt-6">
+        <div className="border-b border-stone-800/70 pb-4">
+          <div className="flex items-end gap-1">
+            <div className="flex-1">
               <h1 className="text-2xl font-bold text-stone-100">Content Planner</h1>
-              <p className="text-sm text-stone-500 mt-0.5">
+              <p className="mt-0.5 text-sm text-stone-500">
                 Build your content calendar. ChefFlow publishes to connected platforms based on what
                 each one supports.
               </p>
             </div>
           </div>
-          <SocialLayoutTabs />
+          <div className="mt-4">
+            <SocialLayoutTabs />
+          </div>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto px-4 py-6">{children}</div>
+      <div className="max-w-7xl mx-auto px-4 pb-6">{children}</div>
     </div>
   )
 }

@@ -190,7 +190,7 @@ export async function sendQuoteSentEmail(params: {
   occasion: string | null
   validUntil: string | null
 }) {
-  await sendEmail({
+  return sendEmail({
     to: params.clientEmail,
     subject: `New quote from ${params.chefName}: ${formatCents(params.totalCents)}`,
     react: createElement(QuoteSentEmail, {
@@ -906,7 +906,7 @@ export async function sendFollowUpDueChefEmail(params: {
   daysOverdue: number
   inquiryId: string
 }) {
-  await sendEmail({
+  return sendEmail({
     to: params.chefEmail,
     subject: `Follow-up due: ${params.clientName}`,
     react: createElement(FollowUpDueChefEmail, {

@@ -164,41 +164,68 @@ export async function transitionEvent({
   // System transitions (Stripe webhooks) run readiness checks but never block -
   // payment must always land. Hard blocks become warnings recorded in metadata. (Q18 fix)
   let readinessWarnings: string[] = []
+  let readinessSnapshotForStart: {
+    confidence: number
+    counts: {
+      blockers: number
+      risks: number
+      stale: number
+    }
+    mostLikelyFailurePoint: string | null
+    blockers: Array<{
+      gate: string
+      label: string
+      details?: string
+    }>
+  } | null = null
   {
     try {
       const { evaluateReadinessForTransition } = await import('@/lib/events/readiness')
       const readiness = await evaluateReadinessForTransition(eventId, fromStatus, toStatus)
 
+      if (toStatus === 'in_progress') {
+        readinessSnapshotForStart = {
+          confidence: readiness.confidence,
+          counts: readiness.counts,
+          mostLikelyFailurePoint: readiness.mostLikelyFailurePoint?.label ?? null,
+          blockers: readiness.blockers.map((blocker) => ({
+            gate: blocker.gate,
+            label: blocker.label,
+            details: blocker.details,
+          })),
+        }
+      }
+
       if (readiness.hardBlocked) {
         if (isSystemTransition) {
-          // System transitions: record hard blocks as warnings but proceed (Q18 fix)
-          const hardBlockLabels = readiness.blockers
-            .filter((b) => b.isHardBlock)
-            .map((b) => b.details || b.label)
+          const hardBlockLabels = readiness.blockers.map(
+            (blocker) => blocker.details || blocker.label
+          )
           log.events.warn('System transition bypassed hard readiness blocks', {
             context: { eventId, fromStatus, toStatus, hardBlocks: hardBlockLabels },
           })
           readinessWarnings.push(...hardBlockLabels.map((l) => `[SYSTEM BYPASS] ${l}`))
         } else {
           const hardBlockerDescriptions = readiness.blockers
-            .filter((b) => b.isHardBlock)
-            .map((b) => b.details || b.label)
+            .map((blocker) => blocker.details || blocker.label)
             .join('; ')
           throw new Error(`Cannot proceed: ${hardBlockerDescriptions}`)
         }
       }
 
-      // Collect soft warnings for metadata
       readinessWarnings.push(
-        ...readiness.blockers.filter((b) => !b.isHardBlock).map((b) => b.label)
+        ...readiness.warnings.map((warning) =>
+          warning.status === 'stale'
+            ? `Readiness stale: ${warning.label}`
+            : warning.status === 'overridden'
+              ? `Readiness override: ${warning.label}`
+              : `Readiness risk: ${warning.label}`
+        )
       )
     } catch (readinessErr: any) {
-      // Re-throw hard blocks (e.g., unconfirmed anaphylaxis)
       if (readinessErr.message?.startsWith('Cannot proceed:')) {
         throw readinessErr
       }
-      // Infrastructure errors: log at error level and record in transition metadata
-      // so the failure is visible, but don't hard-block on temporary DB blips (Q17 fix)
       log.events.error('Readiness evaluator crashed - transition proceeding without verification', {
         error: readinessErr,
         context: { eventId, fromStatus, toStatus },
@@ -262,6 +289,7 @@ export async function transitionEvent({
       sourceOverride || (isSystemTransition ? 'system' : parsed.actorContext ? 'api' : 'user'),
     actor_role: actor?.role ?? null,
     ...(readinessWarnings.length > 0 && { readiness_warnings: readinessWarnings }),
+    ...(readinessSnapshotForStart && { service_readiness_snapshot: readinessSnapshotForStart }),
   }
 
   const { error: transitionError } = await db.rpc('transition_event_atomic', {
@@ -1119,6 +1147,13 @@ export async function transitionEvent({
   // Create post-event survey and email client (non-blocking)
   if (toStatus === 'completed' && fromStatus === 'in_progress') {
     try {
+      const { ensureEventOutcomeSeedByTenant } = await import('@/lib/post-event/learning-actions')
+      await ensureEventOutcomeSeedByTenant(eventId, event.tenant_id)
+    } catch (learningErr) {
+      log.events.warn('Post-event outcome seed failed (non-blocking)', { error: learningErr })
+    }
+
+    try {
       const { sendPostEventSurveyForEvent } = await import('@/lib/post-event/trust-loop-actions')
       await sendPostEventSurveyForEvent(eventId, event.tenant_id)
     } catch (surveyErr) {
@@ -1385,18 +1420,18 @@ export async function transitionEvent({
     try {
       const { createAdminClient: createAdmin } = await import('@/lib/db/admin')
       const dbAdmin2 = createAdmin()
-      const aarUrl = `/events/${eventId}/aar`
+      const outcomeUrl = `/events/${eventId}/outcome`
       await dbAdmin2.from('remy_alerts').insert({
         tenant_id: event.tenant_id,
         alert_type: 'post_event_aar_prompt',
         entity_type: 'event',
         entity_id: eventId,
-        title: `How did ${event.occasion || 'tonight'} go?`,
-        body: `Capture what worked, what to tweak, and any client notes while it's still fresh. Takes 2 minutes. [Open AAR](${aarUrl})`,
+        title: `Capture actual outcome for ${event.occasion || 'tonight'}`,
+        body: `Confirm what was served, what changed, and any execution issues while it's still fresh. Takes 2 minutes. [Open Outcome Capture](${outcomeUrl})`,
         priority: 'high',
       })
     } catch (err) {
-      log.events.warn('Post-event AAR alert failed (non-blocking)', { error: err })
+      log.events.warn('Post-event outcome alert failed (non-blocking)', { error: err })
     }
   }
 

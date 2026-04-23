@@ -20,6 +20,7 @@ export type CommunicationSource =
   | 'manual_log'
 export type CommunicationDirection = 'inbound' | 'outbound'
 export type CommunicationStatus = 'unlinked' | 'linked' | 'resolved'
+export type CommunicationDeliveryStatus = 'pending' | 'sent' | 'delivered' | 'read' | 'failed'
 export type ThreadState = 'active' | 'snoozed' | 'closed'
 export type SuggestedLinkStatus = 'pending' | 'accepted' | 'rejected'
 export type FollowUpTimerStatus = 'active' | 'completed' | 'dismissed'
@@ -31,14 +32,19 @@ export type CommunicationEventInput = {
   source: CommunicationSource
   externalId?: string | null
   externalThreadKey?: string | null
+  threadId?: string | null
   timestamp?: string
   senderIdentity: string
   rawContent: string
   direction: CommunicationDirection
+  resolvedClientId?: string | null
   linkedEntityType?: 'inquiry' | 'event' | null
   linkedEntityId?: string | null
   ingestionSource: CommunicationActionSource
   actorId?: string | null
+  providerName?: string | null
+  managedChannelAddress?: string | null
+  recipientAddress?: string | null
   // When true: stored in raw feed only, not surfaced in triage tabs.
   // Use for personal/marketing/spam emails ingested for completeness.
   isRawSignalOnly?: boolean

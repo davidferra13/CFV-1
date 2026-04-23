@@ -63,7 +63,7 @@ export async function getProfitAndLossReport(
       .lte('created_at', `${parsed.endDate}T23:59:59Z`),
     db
       .from('commerce_payments')
-      .select('amount_cents, fee_cents, status, sale_id, ledger_entry_id')
+      .select('amount_cents, status, sale_id, ledger_entry_id')
       .eq('tenant_id', user.tenantId!)
       .gte('created_at', `${parsed.startDate}T00:00:00Z`)
       .lte('created_at', `${parsed.endDate}T23:59:59Z`)

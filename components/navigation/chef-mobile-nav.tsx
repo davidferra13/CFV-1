@@ -280,7 +280,7 @@ const MobileBottomTabBar = memo(function MobileBottomTabBar({
 
   return (
     <nav
-      className="lg:hidden fixed top-[calc(3.5rem+env(safe-area-inset-top,0px))] left-0 right-0 z-40 border-b border-white/[0.06]"
+      className="md:hidden fixed top-[calc(3.5rem+env(safe-area-inset-top,0px))] left-0 right-0 z-40 border-b border-white/[0.06]"
       style={{
         background: 'rgba(28, 25, 23, 0.85)',
         WebkitBackdropFilter: 'blur(16px) saturate(1.2)',
@@ -408,7 +408,7 @@ export function ChefMobileNav({
       focusMode && !isPrivileged
         ? resolveStandaloneTop([...STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS]).map((item) => ({
             ...item,
-            label: item.href === '/dashboard' ? 'Home' : item.label,
+            label: item.href === '/dashboard' ? 'Today' : item.label,
           }))
         : resolveMobileTabs(mobileTabHrefs),
     [focusMode, isPrivileged, mobileTabHrefs]
@@ -454,7 +454,7 @@ export function ChefMobileNav({
     return strictGroups.sort(
       (a, b) => getStrictFocusGroupRank(a.id) - getStrictFocusGroupRank(b.id)
     )
-  }, [isAdmin, isPrivileged, focusMode, enabledSet])
+  }, [isAdmin, isPrivileged, focusMode, enabledSet, hasPermission])
   const groupEntries = useMemo(
     () => accessibleGroups.map((group) => ({ group, isLocked: false })),
     [accessibleGroups]
@@ -524,7 +524,7 @@ export function ChefMobileNav({
     <>
       {/* Mobile top bar */}
       <header
-        className="lg:hidden fixed top-0 left-0 right-0 z-40 border-b border-white/[0.06] pt-safe"
+        className="md:hidden fixed top-0 left-0 right-0 z-40 border-b border-white/[0.06] pt-safe"
         style={{
           background: 'rgba(28, 25, 23, 0.85)',
           WebkitBackdropFilter: 'blur(16px) saturate(1.2)',
@@ -556,11 +556,11 @@ export function ChefMobileNav({
       {menuOpen && (
         <>
           <div
-            className="lg:hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
+            className="md:hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
             onClick={closeMenu}
           />
           <div
-            className="lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 border-r border-white/[0.06] shadow-2xl"
+            className="md:hidden fixed top-0 left-0 bottom-0 z-50 w-72 border-r border-white/[0.06] shadow-2xl"
             style={{
               background: 'rgba(28, 25, 23, 0.92)',
               WebkitBackdropFilter: 'blur(20px) saturate(1.3)',

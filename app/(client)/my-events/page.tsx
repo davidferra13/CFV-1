@@ -8,6 +8,7 @@ import {
   getClientDashboardPreferences,
   type ClientDashboardEvent,
 } from '@/lib/client-dashboard/actions'
+import type { ClientEventAction, ClientWorkItem } from '@/lib/client-work-graph/types'
 import type { Database } from '@/types/database'
 import type { ClientDashboardWidgetId } from '@/lib/client-dashboard/types'
 import {
@@ -61,12 +62,68 @@ function getStatusBadge(status: EventStatus) {
 function EventActionButton({
   event,
   hasOutstandingBalance,
+  workAction,
 }: {
   event: ClientDashboardEvent
   hasOutstandingBalance?: boolean
+  workAction?: ClientEventAction | null
 }) {
   const { id, status } = event
   const quotedPrice = event.quoted_price_cents ?? 0
+  const circleToken = event.hub_group?.group_token
+
+  if (workAction) {
+    return (
+      <div className="flex items-center gap-2">
+        <TrackedActivityLink
+          href={workAction.href}
+          entityType="event"
+          entityId={id}
+          metadata={{ action: workAction.kind, event_status: status }}
+        >
+          <Button variant="primary" size="sm">
+            {workAction.ctaLabel}
+          </Button>
+        </TrackedActivityLink>
+
+        {workAction.kind === 'event_balance' && (
+          <TrackedActivityLink
+            href={`/my-events/${id}`}
+            entityType="event"
+            entityId={id}
+            metadata={{ action: 'view_event_receipt', event_status: status }}
+          >
+            <Button variant="ghost" size="sm">
+              View Receipt
+            </Button>
+          </TrackedActivityLink>
+        )}
+
+        {workAction.kind === 'event_review' && (
+          <TrackedActivityLink
+            href={`/my-events/${id}`}
+            entityType="event"
+            entityId={id}
+            metadata={{ action: 'view_event_summary', event_status: status }}
+          >
+            <Button variant="ghost" size="sm">
+              View Summary
+            </Button>
+          </TrackedActivityLink>
+        )}
+
+        {!['event_balance', 'event_review'].includes(workAction.kind) &&
+          circleToken &&
+          ['paid', 'confirmed', 'in_progress'].includes(status) && (
+            <Link href={`/my-hub/g/${circleToken}`}>
+              <Button variant="secondary" size="sm">
+                Open Circle
+              </Button>
+            </Link>
+          )}
+      </div>
+    )
+  }
 
   if (status === 'proposed') {
     return (
@@ -99,11 +156,10 @@ function EventActionButton({
   }
 
   if (['paid', 'confirmed', 'in_progress'].includes(status)) {
-    const circleToken = event.hub_group?.group_token
     return (
       <div className="flex items-center gap-2">
         {circleToken && (
-          <Link href={`/hub/g/${circleToken}`}>
+          <Link href={`/my-hub/g/${circleToken}`}>
             <Button variant="primary" size="sm">
               Open Circle
             </Button>
@@ -194,9 +250,11 @@ function EventActionButton({
 function EventCard({
   event,
   hasOutstandingBalance,
+  workAction,
 }: {
   event: ClientDashboardEvent
   hasOutstandingBalance?: boolean
+  workAction?: ClientEventAction | null
 }) {
   const quotedPrice = event.quoted_price_cents ?? 0
   const location = [event.location_address, event.location_city].filter(Boolean).join(', ')
@@ -238,7 +296,11 @@ function EventCard({
           </div>
 
           <div className="sm:ml-4">
-            <EventActionButton event={event} hasOutstandingBalance={hasOutstandingBalance} />
+            <EventActionButton
+              event={event}
+              hasOutstandingBalance={hasOutstandingBalance}
+              workAction={workAction}
+            />
           </div>
         </div>
       </CardContent>
@@ -251,6 +313,34 @@ const TIER_LABELS: Record<string, string> = {
   silver: 'Silver',
   gold: 'Gold',
   platinum: 'Platinum',
+}
+
+const WORK_ITEM_CATEGORY_LABELS: Record<ClientWorkItem['category'], string> = {
+  event: 'Event',
+  quote: 'Quote',
+  inquiry: 'Inquiry',
+  profile: 'Profile',
+  rsvp: 'RSVP',
+  hub: 'Circle',
+  notification: 'Update',
+  planning: 'Planning',
+}
+
+const WORK_ITEM_CATEGORY_STYLES: Record<ClientWorkItem['category'], string> = {
+  event: 'border-amber-700/40 bg-amber-950/30 text-amber-300',
+  quote: 'border-sky-700/40 bg-sky-950/30 text-sky-300',
+  inquiry: 'border-indigo-700/40 bg-indigo-950/30 text-indigo-300',
+  profile: 'border-stone-700 bg-stone-900/60 text-stone-300',
+  rsvp: 'border-emerald-700/40 bg-emerald-950/30 text-emerald-300',
+  hub: 'border-pink-700/40 bg-pink-950/30 text-pink-300',
+  notification: 'border-cyan-700/40 bg-cyan-950/30 text-cyan-300',
+  planning: 'border-violet-700/40 bg-violet-950/30 text-violet-300',
+}
+
+const WORK_ITEM_URGENCY_STYLES: Record<ClientWorkItem['urgency'], string> = {
+  high: 'border-red-700/40 bg-red-950/30 text-red-300',
+  medium: 'border-amber-700/40 bg-amber-950/30 text-amber-300',
+  low: 'border-stone-700 bg-stone-900/60 text-stone-400',
 }
 
 function ComingSoonWidget({ id }: { id: ClientDashboardWidgetId }) {
@@ -309,6 +399,7 @@ export default async function MyEventsPage() {
     chefDisplayName,
     pastWithBalance,
     actionRequired,
+    workGraph,
   } = data
   const { upcoming, past, pastTotalCount, cancelled } = eventsResult
   const sentQuotes = quotes.filter((quote) => quote.status === 'sent').length
@@ -418,63 +509,71 @@ export default async function MyEventsPage() {
         description="Priority items that need your attention right now."
       >
         {actionRequired.totalItems > 0 ? (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            <TrackedActivityLink
-              href="/my-events"
-              className="rounded-lg border border-stone-700 bg-stone-900/60 p-4 hover:border-stone-600 transition-colors"
-              entityType="client_dashboard_widget"
-              entityId="action_required"
-              metadata={{ action: 'open_action_proposals' }}
-            >
-              <p className="text-2xl font-bold text-stone-100">{actionRequired.proposalCount}</p>
-              <p className="text-xs text-stone-400">Proposals to review</p>
-            </TrackedActivityLink>
-            <TrackedActivityLink
-              href="/my-events"
-              className="rounded-lg border border-stone-700 bg-stone-900/60 p-4 hover:border-stone-600 transition-colors"
-              entityType="client_dashboard_widget"
-              entityId="action_required"
-              metadata={{ action: 'open_action_payments' }}
-            >
-              <p className="text-2xl font-bold text-stone-100">{actionRequired.paymentDueCount}</p>
-              <p className="text-xs text-stone-400">Upcoming payments due</p>
-            </TrackedActivityLink>
-            <TrackedActivityLink
-              href="/my-events/history"
-              className="rounded-lg border border-stone-700 bg-stone-900/60 p-4 hover:border-stone-600 transition-colors"
-              entityType="client_dashboard_widget"
-              entityId="action_required"
-              metadata={{ action: 'open_action_balances' }}
-            >
-              <p className="text-2xl font-bold text-stone-100">
-                {actionRequired.outstandingBalanceCount}
-              </p>
-              <p className="text-xs text-stone-400">Past balances due</p>
-            </TrackedActivityLink>
-            <TrackedActivityLink
-              href="/my-quotes"
-              className="rounded-lg border border-stone-700 bg-stone-900/60 p-4 hover:border-stone-600 transition-colors"
-              entityType="client_dashboard_widget"
-              entityId="action_required"
-              metadata={{ action: 'open_action_quotes' }}
-            >
-              <p className="text-2xl font-bold text-stone-100">
-                {actionRequired.quotePendingCount}
-              </p>
-              <p className="text-xs text-stone-400">Quotes awaiting decision</p>
-            </TrackedActivityLink>
-            <TrackedActivityLink
-              href="/my-inquiries"
-              className="rounded-lg border border-stone-700 bg-stone-900/60 p-4 hover:border-stone-600 transition-colors"
-              entityType="client_dashboard_widget"
-              entityId="action_required"
-              metadata={{ action: 'open_action_inquiries' }}
-            >
-              <p className="text-2xl font-bold text-stone-100">
-                {actionRequired.inquiryAwaitingCount}
-              </p>
-              <p className="text-xs text-stone-400">Inquiry responses needed</p>
-            </TrackedActivityLink>
+          <div className="space-y-3">
+            {workGraph.items.slice(0, 5).map((item) => (
+              <div
+                key={item.id}
+                data-work-item-id={item.id}
+                className="rounded-lg border border-stone-700 bg-stone-900/60 p-4"
+              >
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0 space-y-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span
+                        className={`rounded-full border px-2 py-0.5 text-xxs font-semibold uppercase tracking-wide ${WORK_ITEM_CATEGORY_STYLES[item.category]}`}
+                      >
+                        {WORK_ITEM_CATEGORY_LABELS[item.category]}
+                      </span>
+                      <span
+                        className={`rounded-full border px-2 py-0.5 text-xxs font-semibold uppercase tracking-wide ${WORK_ITEM_URGENCY_STYLES[item.urgency]}`}
+                      >
+                        {item.urgency}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-stone-100">{item.title}</p>
+                      <p className="text-xs text-stone-400">{item.detail}</p>
+                    </div>
+                  </div>
+
+                  <TrackedActivityLink
+                    href={item.href}
+                    entityType="client_dashboard_widget"
+                    entityId="action_required"
+                    metadata={{ action: item.kind, source_id: item.sourceId }}
+                  >
+                    <Button variant="primary" size="sm">
+                      {item.ctaLabel}
+                    </Button>
+                  </TrackedActivityLink>
+                </div>
+              </div>
+            ))}
+
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div className="rounded-lg border border-stone-700 bg-stone-900/60 p-3">
+                <p className="text-lg font-bold text-stone-100">{actionRequired.proposalCount}</p>
+                <p className="text-xs text-stone-400">Proposals</p>
+              </div>
+              <div className="rounded-lg border border-stone-700 bg-stone-900/60 p-3">
+                <p className="text-lg font-bold text-stone-100">
+                  {actionRequired.paymentDueCount + actionRequired.outstandingBalanceCount}
+                </p>
+                <p className="text-xs text-stone-400">Payments</p>
+              </div>
+              <div className="rounded-lg border border-stone-700 bg-stone-900/60 p-3">
+                <p className="text-lg font-bold text-stone-100">
+                  {actionRequired.quotePendingCount}
+                </p>
+                <p className="text-xs text-stone-400">Quotes</p>
+              </div>
+              <div className="rounded-lg border border-stone-700 bg-stone-900/60 p-3">
+                <p className="text-lg font-bold text-stone-100">
+                  {actionRequired.inquiryAwaitingCount + workGraph.summary.rsvpPendingCount}
+                </p>
+                <p className="text-xs text-stone-400">Replies + RSVPs</p>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="space-y-3">
@@ -950,7 +1049,11 @@ export default async function MyEventsPage() {
         {upcoming.length > 0 ? (
           <div className="space-y-4">
             {upcoming.map((event: any) => (
-              <EventCard key={event.id} event={event as ClientDashboardEvent} />
+              <EventCard
+                key={event.id}
+                event={event as ClientDashboardEvent}
+                workAction={workGraph.eventActionsById[String(event.id)]}
+              />
             ))}
             <div className="flex flex-wrap gap-2">
               <TrackedActivityLink
@@ -1029,6 +1132,7 @@ export default async function MyEventsPage() {
                     key={event.id}
                     event={event as ClientDashboardEvent}
                     hasOutstandingBalance={pastWithBalance.has(event.id)}
+                    workAction={workGraph.eventActionsById[String(event.id)]}
                   />
                 ))}
                 {pastTotalCount > 5 ? (

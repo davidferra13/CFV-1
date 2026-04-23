@@ -915,7 +915,7 @@ export function useRemySend(config: UseRemySendConfig) {
             id: generateId(),
             role: 'remy',
             content: isOllamaOffline
-              ? "I'm offline right now - Ollama needs to be running for me to help. Start it up and try again!"
+              ? "I'm offline right now - I can't reach your configured AI endpoint. Check it and try again."
               : errMsg,
             timestamp: new Date().toISOString(),
             isRetryable: true,

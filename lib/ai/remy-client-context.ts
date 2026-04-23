@@ -1,8 +1,10 @@
 // Remy - Client Layer Context Loader
 // Loads ONLY this client's data - scoped by tenant + client ID.
-// PRIVACY: Client data = PII → must use Ollama. No cloud models.
+// PRIVACY: Client data = PII and must stay on the client-safe runtime path.
 
 import { createServerClient } from '@/lib/db/server'
+import { getClientWorkGraphSnapshot } from '@/lib/client-work-graph/actions'
+import type { ClientWorkGraph } from '@/lib/client-work-graph/types'
 
 export interface RemyClientContext {
   clientName: string | null
@@ -15,6 +17,10 @@ export interface RemyClientContext {
     status: string
     guestCount: number | null
     venueAddress: string | null
+    pendingGuestCountChange: {
+      previousCount: number
+      newCount: number
+    } | null
   }>
   pastEvents: Array<{
     id: string
@@ -36,11 +42,19 @@ export interface RemyClientContext {
   loyaltyLifetimePoints: number
   nextTierName: 'silver' | 'gold' | 'platinum' | null
   pointsToNextTier: number
+  actionableItemCount: number
+  workGraph: ClientWorkGraph
+  workItems: Array<{
+    title: string
+    detail: string
+    href: string
+    ctaLabel: string
+  }>
 }
 
 /**
  * Load client-scoped context for the authenticated client.
- * Uses the client's session - physically cannot access other clients' data.
+ * Uses the shared work-graph snapshot so Remy and the client UI see the same next actions.
  */
 export async function loadRemyClientContext(
   clientId: string,
@@ -48,82 +62,36 @@ export async function loadRemyClientContext(
 ): Promise<RemyClientContext> {
   const db: any = createServerClient()
 
-  // Load client profile
-  const { data: client } = await db
-    .from('clients')
-    .select('full_name, dietary_restrictions, allergies, loyalty_tier, loyalty_points')
-    .eq('id', clientId)
-    .eq('tenant_id', tenantId)
-    .single()
+  const [snapshot, { data: client }, { data: chef }, { data: earnedRows }, { data: config }] =
+    await Promise.all([
+      getClientWorkGraphSnapshot({ pastLimit: 5 }),
+      db
+        .from('clients')
+        .select('full_name, dietary_restrictions, allergies, loyalty_tier, loyalty_points')
+        .eq('id', clientId)
+        .eq('tenant_id', tenantId)
+        .single(),
+      db.from('chefs').select('display_name, business_name').eq('id', tenantId).single(),
+      db
+        .from('loyalty_transactions')
+        .select('points')
+        .eq('tenant_id', tenantId)
+        .eq('client_id', clientId)
+        .in('type', ['earned', 'bonus']),
+      db
+        .from('loyalty_config')
+        .select('tier_silver_min, tier_gold_min, tier_platinum_min')
+        .eq('tenant_id', tenantId)
+        .single(),
+    ])
 
-  // Load chef info
-  const { data: chef } = await db
-    .from('chefs')
-    .select('display_name, business_name')
-    .eq('id', tenantId)
-    .single()
-
-  // Load upcoming events (not completed/cancelled)
-  const { data: upcoming } = await db
-    .from('events')
-    .select('id, occasion, event_date, status, guest_count, location_address')
-    .eq('client_id', clientId)
-    .eq('tenant_id', tenantId)
-    .not('status', 'in', '("completed","cancelled")')
-    .order('event_date', { ascending: true })
-    .limit(10)
-
-  // Load past events
-  const { data: past } = await db
-    .from('events')
-    .select('id, occasion, event_date, status')
-    .eq('client_id', clientId)
-    .eq('tenant_id', tenantId)
-    .in('status', ['completed'])
-    .order('event_date', { ascending: false })
-    .limit(5)
-
-  // Load pending quotes for this client's events
-  const { data: quotes } = await db
-    .from('quotes')
-    .select('id, total_quoted_cents, status, event_id')
-    .eq('tenant_id', tenantId)
-    .in('status', ['draft', 'sent'])
-    .limit(10)
-
-  // Filter quotes to this client's events
-  const clientEventIds = new Set([
-    ...(upcoming ?? []).map((e: any) => e.id),
-    ...(past ?? []).map((e: any) => e.id),
-  ])
-  const clientQuotes = (quotes ?? []).filter((q: any) => {
-    return q.event_id && clientEventIds.has(q.event_id)
-  })
-
-  // Count open inquiries
-  const { count: inquiryCount } = await db
-    .from('inquiries')
-    .select('id', { count: 'exact', head: true })
-    .eq('client_id', clientId)
-    .eq('tenant_id', tenantId)
-    .in('status', ['new', 'awaiting_client', 'awaiting_chef'])
-
-  const [{ data: earnedRows }, { data: config }] = await Promise.all([
-    db
-      .from('loyalty_transactions')
-      .select('points')
-      .eq('tenant_id', tenantId)
-      .eq('client_id', clientId)
-      .in('type', ['earned', 'bonus']),
-    db
-      .from('loyalty_config')
-      .select('tier_silver_min, tier_gold_min, tier_platinum_min')
-      .eq('tenant_id', tenantId)
-      .single(),
-  ])
+  const openInquiryCount = (snapshot.inquiries ?? []).filter((inquiry: any) =>
+    ['new', 'awaiting_client', 'awaiting_chef'].includes(String(inquiry.status))
+  ).length
+  const pendingQuotes = (snapshot.quotes ?? []).filter((quote: any) => quote.status === 'sent')
 
   const lifetimePoints = (earnedRows || []).reduce(
-    (sum: any, row: any) => sum + (row.points || 0),
+    (sum: number, row: { points?: number | null }) => sum + (row.points || 0),
     0
   )
   const tier = ((client?.loyalty_tier as 'bronze' | 'silver' | 'gold' | 'platinum') || 'bronze') as
@@ -149,34 +117,48 @@ export async function loadRemyClientContext(
     clientName: client?.full_name ?? null,
     chefName: chef?.display_name ?? chef?.business_name ?? null,
     businessName: chef?.business_name ?? null,
-    upcomingEvents: (upcoming ?? []).map((e: any) => ({
-      id: e.id,
-      occasion: e.occasion,
-      date: e.event_date,
-      status: e.status,
-      guestCount: e.guest_count,
-      venueAddress: e.location_address,
+    upcomingEvents: (snapshot.eventsResult.upcoming ?? []).map((event: any) => ({
+      id: event.id,
+      occasion: event.occasion,
+      date: event.event_date,
+      status: event.status,
+      guestCount: event.guest_count,
+      venueAddress: event.location_address,
+      pendingGuestCountChange: event.pendingGuestCountChange
+        ? {
+            previousCount: Number(event.pendingGuestCountChange.previousCount),
+            newCount: Number(event.pendingGuestCountChange.newCount),
+          }
+        : null,
     })),
-    pastEvents: (past ?? []).map((e: any) => ({
-      id: e.id,
-      occasion: e.occasion,
-      date: e.event_date,
-      status: e.status,
+    pastEvents: (snapshot.eventsResult.past ?? []).map((event: any) => ({
+      id: event.id,
+      occasion: event.occasion,
+      date: event.event_date,
+      status: event.status,
     })),
-    pendingQuotes: clientQuotes.map((q: any) => ({
-      id: q.id,
-      totalCents: q.total_quoted_cents,
-      status: q.status,
-      eventOccasion: null, // Would need a join to get this
+    pendingQuotes: pendingQuotes.map((quote: any) => ({
+      id: quote.id,
+      totalCents: quote.total_quoted_cents,
+      status: quote.status,
+      eventOccasion: quote.quote_name ?? (quote.inquiry as any)?.confirmed_occasion ?? null,
     })),
     dietaryRestrictions: client?.dietary_restrictions?.join(', ') ?? null,
     allergies: client?.allergies?.join(', ') ?? null,
-    openInquiries: inquiryCount ?? 0,
+    openInquiries: openInquiryCount,
     loyaltyTier: tier,
     loyaltyPointsBalance: client?.loyalty_points ?? 0,
     loyaltyLifetimePoints: lifetimePoints,
     nextTierName,
     pointsToNextTier,
+    actionableItemCount: snapshot.workGraph.summary.totalItems,
+    workGraph: snapshot.workGraph,
+    workItems: snapshot.workGraph.items.slice(0, 5).map((item) => ({
+      title: item.title,
+      detail: item.detail,
+      href: item.href,
+      ctaLabel: item.ctaLabel,
+    })),
   }
 }
 
@@ -207,10 +189,15 @@ export function formatClientContext(ctx: RemyClientContext): string {
 
   if (ctx.upcomingEvents.length > 0) {
     parts.push(`\nYOUR UPCOMING EVENTS:`)
-    for (const e of ctx.upcomingEvents) {
+    for (const event of ctx.upcomingEvents) {
       parts.push(
-        `- ${e.occasion ?? 'Event'} on ${e.date ?? '(date TBD)'} - ${e.guestCount ?? '?'} guests - Status: ${e.status}${e.venueAddress ? ` - Venue: ${e.venueAddress}` : ''}`
+        `- ${event.occasion ?? 'Event'} on ${event.date ?? '(date TBD)'} - ${event.guestCount ?? '?'} guests - Status: ${event.status}${event.venueAddress ? ` - Venue: ${event.venueAddress}` : ''}`
       )
+      if (event.pendingGuestCountChange) {
+        parts.push(
+          `  Pending guest-count request: ${event.pendingGuestCountChange.previousCount} to ${event.pendingGuestCountChange.newCount} guests`
+        )
+      }
     }
   } else {
     parts.push(`\nNo upcoming events currently scheduled.`)
@@ -218,16 +205,16 @@ export function formatClientContext(ctx: RemyClientContext): string {
 
   if (ctx.pastEvents.length > 0) {
     parts.push(`\nPAST EVENTS:`)
-    for (const e of ctx.pastEvents) {
-      parts.push(`- ${e.occasion ?? 'Event'} on ${e.date ?? '(no date)'}`)
+    for (const event of ctx.pastEvents) {
+      parts.push(`- ${event.occasion ?? 'Event'} on ${event.date ?? '(no date)'}`)
     }
   }
 
   if (ctx.pendingQuotes.length > 0) {
     parts.push(`\nPENDING QUOTES:`)
-    for (const q of ctx.pendingQuotes) {
+    for (const quote of ctx.pendingQuotes) {
       parts.push(
-        `- ${q.eventOccasion ?? 'Quote'}: $${(q.totalCents / 100).toFixed(2)} (${q.status})`
+        `- ${quote.eventOccasion ?? 'Quote'}: $${(quote.totalCents / 100).toFixed(2)} (${quote.status})`
       )
     }
   }
@@ -236,17 +223,26 @@ export function formatClientContext(ctx: RemyClientContext): string {
     parts.push(`\nOpen inquiries: ${ctx.openInquiries}`)
   }
 
+  if (ctx.workItems.length > 0) {
+    parts.push(`\nCURRENT CLIENT WORK ITEMS (${ctx.actionableItemCount} total):`)
+    for (const item of ctx.workItems) {
+      parts.push(`- ${item.title} -> ${item.href} (${item.ctaLabel})`)
+    }
+  }
+
   parts.push(`\nCLIENT PORTAL PAGES:
 /my-events - Your events
 /my-quotes - Your quotes
 /my-spending - Payment history
 /my-chat - Message Chef directly
 /my-profile - Update your profile
+/my-hub - Circles, guests, and planning updates
 /book-now - Book a new event`)
 
   parts.push(`\nGROUNDING RULE (CRITICAL):
-You may ONLY reference events, quotes, and details that appear in the sections above.
+You may ONLY reference events, quotes, work items, and details that appear in the sections above.
 If a section is empty, that means there are none - do not invent any.
+When suggesting navigation, prefer the listed work-item routes above.
 NEVER fabricate event dates, amounts, or details.`)
 
   return parts.join('\n')

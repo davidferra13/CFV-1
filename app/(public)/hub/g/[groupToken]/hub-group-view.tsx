@@ -27,7 +27,24 @@ import { CircleClientStatus } from '@/components/hub/circle-client-status'
 import { LifecycleClientView } from '@/components/hub/lifecycle-client-view'
 import { HubQuickActions } from '@/components/hub/hub-quick-actions'
 import { HubPushPrompt } from '@/components/hub/hub-push-prompt'
+import { DinnerCircleMenuBoard } from '@/components/hub/dinner-circle-menu-board'
+import { CircleChefProof } from '@/components/hub/circle-chef-proof'
 import type { GuestCriticalPathResult } from '@/lib/lifecycle/critical-path'
+import type { CircleChefProofData } from '@/lib/hub/circle-chef-proof'
+
+function HubMenuPollingPanel({
+  isOwnerOrAdmin,
+  ...props
+}: {
+  eventId: string
+  groupId: string
+  groupToken: string
+  profileToken: string | null
+  currentProfileId: string | null
+  isOwnerOrAdmin: boolean
+}) {
+  return <DinnerCircleMenuBoard {...props} isManager={isOwnerOrAdmin} />
+}
 
 type Tab =
   | 'chat'
@@ -56,6 +73,7 @@ interface HubGroupViewProps {
     stageName: string
     checkpoints: { label: string; status: string; value?: string }[]
   }[]
+  chefProof?: CircleChefProofData | null
 }
 
 export function HubGroupView({
@@ -70,6 +88,7 @@ export function HubGroupView({
   guestStatus,
   linkedEventId,
   lifecycleStages,
+  chefProof,
 }: HubGroupViewProps) {
   const [activeTab, setActiveTab] = useState<Tab>(((group as any).default_tab as Tab) || 'chat')
   const [localGroup, setLocalGroup] = useState<HubGroup>(group)
@@ -466,6 +485,14 @@ export function HubGroupView({
 
         {activeTab === 'chat' && (
           <>
+            {chefProof && (
+              <CircleChefProof
+                groupId={group.id}
+                groupName={localGroup.name}
+                groupDescription={localGroup.description}
+                proof={chefProof}
+              />
+            )}
             {profileToken && <HubPushPrompt profileToken={profileToken} />}
             <HubFeed
               groupId={group.id}
@@ -490,6 +517,18 @@ export function HubGroupView({
         {activeTab === 'events' && (
           <div className="p-4">
             <h3 className="mb-4 text-sm font-semibold text-stone-300">Events</h3>
+            {linkedEventId && (
+              <div className="mb-4">
+                <HubMenuPollingPanel
+                  eventId={linkedEventId}
+                  groupId={group.id}
+                  groupToken={group.group_token}
+                  profileToken={profileToken}
+                  currentProfileId={currentProfileId}
+                  isOwnerOrAdmin={isOwnerOrAdmin}
+                />
+              </div>
+            )}
             {groupEvents.length === 0 ? (
               <div className="py-12 text-center text-sm text-stone-600">
                 No events scheduled yet. When a date is set and details are confirmed, event info,

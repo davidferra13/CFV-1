@@ -5,8 +5,10 @@
 
 import { createAdminClient } from '@/lib/db/admin'
 import { requireAdmin } from '@/lib/auth/admin'
+import { deriveProvenance } from '@/lib/analytics/source-provenance'
 import { resolveOwnerIdentity } from '@/lib/platform/owner-account'
 import { calculateDistanceMiles } from '@/lib/geo/public-location'
+import { PUBLIC_INTAKE_LANE_KEYS } from '@/lib/public/intake-lane-config'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -163,7 +165,7 @@ export async function getPlatformActivityFeed(
         let q = db
           .from('inquiries')
           .select(
-            'id, tenant_id, channel, status, confirmed_occasion, confirmed_guest_count, confirmed_location, first_contact_at, created_at, unknown_fields'
+            'id, tenant_id, channel, status, confirmed_occasion, confirmed_guest_count, confirmed_location, first_contact_at, created_at, unknown_fields, utm_medium'
           )
           .order('created_at', { ascending: false })
           .limit(perSourceLimit)
@@ -178,8 +180,12 @@ export async function getPlatformActivityFeed(
 
         return (data ?? [])
           .map((row: any) => {
-            const isOpenBooking =
-              row.unknown_fields?.open_booking === true || row.channel === 'website'
+            const provenance = deriveProvenance({
+              channel: row.channel,
+              unknown_fields: row.unknown_fields,
+              utm_medium: row.utm_medium,
+            })
+            const isOpenBooking = provenance.key === PUBLIC_INTAKE_LANE_KEYS.open_booking
             const actType = isOpenBooking ? 'booking' : 'inquiry'
             if (typeFilter && !typeFilter.has(actType)) return null
 
@@ -191,6 +197,10 @@ export async function getPlatformActivityFeed(
             let summary = ''
             if (isOpenBooking) {
               summary = `New open booking: ${occasion}`
+              if (guests) summary += ` for ${guests} guests`
+              if (location) summary += ` in ${location}`
+            } else if (provenance.key === PUBLIC_INTAKE_LANE_KEYS.instant_book) {
+              summary = `New instant-book request: ${occasion}`
               if (guests) summary += ` for ${guests} guests`
               if (location) summary += ` in ${location}`
             } else {
@@ -221,6 +231,8 @@ export async function getPlatformActivityFeed(
                 channel: row.channel,
                 distance_miles: distMiles,
                 matched_location: matchedLocation,
+                provenance_key: provenance.key,
+                provenance_label: provenance.label,
               },
               is_local: isLocal,
               link: `/admin/inquiries`,
@@ -499,49 +511,48 @@ export async function getPlatformVitals(): Promise<VitalsSummary> {
 
   // Run queries in parallel
   const [
-    todayBookingsResult,
-    todayInquiriesResult,
+    todayInquiryRowsResult,
     todayEventsResult,
-    unmatchedResult,
     allChefsResult,
     recentEventCounts,
     recentRevenue,
   ] = await Promise.all([
-    // Today's open bookings
     db
       .from('inquiries')
-      .select('id', { count: 'exact', head: true })
-      .gte('created_at', todayISO)
-      .eq('channel', 'website'),
-    // Today's non-website inquiries
-    db
-      .from('inquiries')
-      .select('id', { count: 'exact', head: true })
-      .gte('created_at', todayISO)
-      .not('channel', 'eq', 'website'),
-    // Today's events created
+      .select('id, channel, status, converted_to_event_id, unknown_fields, utm_medium')
+      .gte('created_at', todayISO),
     db.from('events').select('id', { count: 'exact', head: true }).gte('created_at', todayISO),
-    // Unmatched bookings (bookings with status 'new' that haven't converted)
-    db
-      .from('inquiries')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'new')
-      .eq('channel', 'website')
-      .is('converted_to_event_id', null),
-    // All chefs for quiet/leaderboard
     db.from('chefs').select('id, display_name, business_name, email, created_at'),
-    // Events per chef (last 30 days)
     db.from('events').select('id, tenant_id, created_at').gte('created_at', thirtyDaysISO),
-    // Revenue per chef (last 30 days)
     db
       .from('ledger_entries')
       .select('id, tenant_id, amount_cents, created_at')
       .gte('created_at', thirtyDaysISO),
   ])
 
+  const todayInquiryRows: any[] = todayInquiryRowsResult.data ?? []
   const allChefs: any[] = allChefsResult.data ?? []
   const recentEvents: any[] = recentEventCounts.data ?? []
   const recentLedger: any[] = recentRevenue.data ?? []
+  const todayOpenBookings = todayInquiryRows.filter((row) => {
+    const provenance = deriveProvenance({
+      channel: row.channel,
+      unknown_fields: row.unknown_fields,
+      utm_medium: row.utm_medium,
+    })
+    return provenance.key === PUBLIC_INTAKE_LANE_KEYS.open_booking
+  })
+  const todayDirectAndOtherInquiries = todayInquiryRows.filter((row) => {
+    const provenance = deriveProvenance({
+      channel: row.channel,
+      unknown_fields: row.unknown_fields,
+      utm_medium: row.utm_medium,
+    })
+    return provenance.key !== PUBLIC_INTAKE_LANE_KEYS.open_booking
+  })
+  const unmatchedBookings = todayOpenBookings.filter(
+    (row) => row.status === 'new' && row.converted_to_event_id == null
+  ).length
 
   // Aggregate events per chef
   const chefEventMap = new Map<string, number>()
@@ -593,10 +604,10 @@ export async function getPlatformVitals(): Promise<VitalsSummary> {
     .slice(0, 5)
 
   return {
-    todayBookings: todayBookingsResult.count ?? 0,
-    todayInquiries: todayInquiriesResult.count ?? 0,
+    todayBookings: todayOpenBookings.length,
+    todayInquiries: todayDirectAndOtherInquiries.length,
     todayEvents: todayEventsResult.count ?? 0,
-    unmatchedBookings: unmatchedResult.count ?? 0,
+    unmatchedBookings,
     quietChefs,
     topChefs,
   }

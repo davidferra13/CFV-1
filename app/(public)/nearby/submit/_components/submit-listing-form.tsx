@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { submitDirectoryListing } from '@/lib/discover/actions'
 import { BUSINESS_TYPES, CUISINE_CATEGORIES } from '@/lib/discover/constants'
+import { NEUTRAL_CITY_PLACEHOLDER } from '@/lib/site/national-brand-copy'
 
 const US_STATES = [
   { value: 'AL', label: 'Alabama' },
@@ -97,9 +98,22 @@ export function SubmitListingForm() {
         })
 
         if (result.success) {
+          if (result.mode === 'claimed_existing' && result.slug) {
+            toast.success(
+              'We found your existing listing and claimed it. Add your public details now.'
+            )
+            router.push(`/nearby/${result.slug}/enhance`)
+            return
+          }
+
           toast.success('Your business has been submitted! We will review it shortly.')
           router.push('/nearby')
         } else {
+          if (result.mode === 'already_claimed' && result.slug) {
+            toast.error(result.error || 'This business already has a Nearby listing.')
+            router.push(`/nearby/${result.slug}`)
+            return
+          }
           toast.error(result.error || 'Failed to submit. Please try again.')
         }
       } catch {
@@ -144,7 +158,7 @@ export function SubmitListingForm() {
             value={city}
             onChange={(e) => setCity(e.target.value)}
             required
-            placeholder="e.g. Austin"
+            placeholder={NEUTRAL_CITY_PLACEHOLDER}
             className="h-11 w-full rounded-lg border border-stone-700 bg-stone-900/80 px-4 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
           />
         </div>
@@ -252,7 +266,8 @@ export function SubmitListingForm() {
           {isPending ? 'Submitting...' : 'Submit your business'}
         </button>
         <p className="text-xs-tight text-stone-500">
-          Submissions are reviewed before appearing in the directory.
+          If your business is already listed, we will claim that listing instead of creating a
+          duplicate.
         </p>
       </div>
     </form>

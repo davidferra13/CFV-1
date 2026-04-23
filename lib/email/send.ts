@@ -2,7 +2,8 @@
 // Non-blocking: errors are logged, never thrown to callers
 // All email sends are fire-and-forget side effects
 
-import { getResendClient, FROM_EMAIL, FROM_NAME } from './resend-client'
+import { FROM_EMAIL, FROM_NAME } from './resend-client'
+import { getEmailProvider } from './provider'
 import { breakers } from '@/lib/resilience/circuit-breaker'
 import type { ReactElement } from 'react'
 
@@ -80,7 +81,7 @@ async function isEmailSuppressed(email: string, allowTransactional = false): Pro
 /**
  * Add an email to the suppression list (called on hard bounce/invalid).
  */
-async function suppressEmail(email: string, reason: string): Promise<void> {
+async function suppressEmail(email: string, reason: string, source = 'resend'): Promise<void> {
   const normalized = email.toLowerCase().trim()
   suppressionCache.set(normalized, reason)
 
@@ -89,44 +90,10 @@ async function suppressEmail(email: string, reason: string): Promise<void> {
     const db: any = createAdminClient()
     await db
       .from('email_suppressions')
-      .upsert({ email: normalized, reason, source: 'resend' }, { onConflict: 'email' })
+      .upsert({ email: normalized, reason, source }, { onConflict: 'email' })
   } catch (err) {
     console.error('[sendEmail] Failed to persist suppression (non-blocking):', err)
   }
-}
-
-/**
- * Check if a Resend error indicates a hard bounce or invalid address.
- */
-function isBounceError(error: any): boolean {
-  const msg = (error?.message || error?.name || '').toLowerCase()
-  return (
-    msg.includes('bounce') ||
-    msg.includes('invalid') ||
-    msg.includes('not found') ||
-    msg.includes('does not exist') ||
-    msg.includes('rejected') ||
-    msg.includes('undeliverable')
-  )
-}
-
-/**
- * Check if a Resend error is transient (worth retrying).
- * 5xx, timeout, and network errors are retryable. 4xx are not.
- */
-function isTransientError(error: any): boolean {
-  const statusCode = error?.statusCode || error?.status
-  if (statusCode && statusCode >= 400 && statusCode < 500) return false
-  if (statusCode && statusCode >= 500) return true
-  const msg = (error?.message || '').toLowerCase()
-  return (
-    msg.includes('timeout') ||
-    msg.includes('econnreset') ||
-    msg.includes('econnrefused') ||
-    msg.includes('network') ||
-    msg.includes('socket') ||
-    msg.includes('rate limit')
-  )
 }
 
 /**
@@ -169,13 +136,14 @@ export async function sendEmail({
     }
   }
 
+  const provider = getEmailProvider()
+
   const attemptSend = async (): Promise<{ sent: boolean; error?: any }> => {
     try {
-      const resend = getResendClient()
-
       // Circuit breaker: trips after 5 consecutive Resend failures (60s reset)
-      const { error } = await breakers.resend.execute(() =>
-        resend.emails.send({
+      await breakers.resend.execute(() =>
+        provider.send({
+          kind: 'transactional',
           from: from || `${FROM_NAME} <${FROM_EMAIL}>`,
           to,
           subject,
@@ -184,10 +152,6 @@ export async function sendEmail({
           attachments,
         })
       )
-
-      if (error) {
-        return { sent: false, error }
-      }
 
       return { sent: true }
     } catch (err) {
@@ -199,7 +163,10 @@ export async function sendEmail({
   let result = await attemptSend()
 
   // I1: Retry once on transient failure (1s backoff)
-  if (!result.sent && result.error && isTransientError(result.error)) {
+  const firstFailureClassification =
+    !result.sent && result.error ? provider.classifyError(result.error) : null
+
+  if (!result.sent && result.error && firstFailureClassification?.retry === 'retryable') {
     console.warn('[sendEmail] Transient failure, retrying in 1s...')
     await new Promise((r) => setTimeout(r, 1000))
     result = await attemptSend()
@@ -207,11 +174,16 @@ export async function sendEmail({
 
   if (!result.sent) {
     console.error('[sendEmail] Failed:', result.error)
+    const classification = result.error ? provider.classifyError(result.error) : null
 
     // FC-G25: Queue failed emails for retry (dead-letter queue)
     // Transient failures (circuit breaker, 5xx, network) get queued for later retry.
     // Hard bounces do NOT get queued (they get suppressed instead).
-    if (result.error && isTransientError(result.error) && !isBounceError(result.error)) {
+    if (
+      result.error &&
+      classification?.retry === 'retryable' &&
+      classification.suppression === 'none'
+    ) {
       try {
         const { createAdminClient } = await import('@/lib/db/admin')
         const db: any = createAdminClient()
@@ -221,7 +193,7 @@ export async function sendEmail({
           template_name: (typeof react?.type === 'function' ? react.type.name : null) || 'unknown',
           from_address: from || `${FROM_NAME} <${FROM_EMAIL}>`,
           reply_to: replyTo || null,
-          error_message: result.error?.message || 'Unknown transient error',
+          error_message: classification.message || 'Unknown transient error',
           retry_count: 0,
           max_retries: 3,
           next_retry_at: new Date(Date.now() + 5 * 60_000).toISOString(), // 5 min
@@ -233,9 +205,9 @@ export async function sendEmail({
     }
 
     // I2: If bounce/invalid error, suppress future sends to this address
-    if (result.error && isBounceError(result.error)) {
+    if (result.error && classification && classification.suppression !== 'none') {
       for (const addr of recipients) {
-        await suppressEmail(addr, 'hard_bounce')
+        await suppressEmail(addr, classification.suppression, provider.name)
       }
     }
 

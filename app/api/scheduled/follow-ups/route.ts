@@ -11,6 +11,8 @@ import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 import { runMonitoredCronJob } from '@/lib/cron/monitor'
 import { generateFollowUpSuggestion } from '@/lib/ai/follow-up-draft'
+import { FOLLOW_UP_DUE_EMAIL_REPAIR_KIND } from '@/lib/monitoring/failure-repair'
+import { sendFollowUpDueEmailDelivery } from '@/lib/inquiries/follow-up-delivery'
 
 async function handleFollowUps(request: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(request.headers.get('authorization'))
@@ -48,8 +50,7 @@ async function handleFollowUps(request: NextRequest): Promise<NextResponse> {
         }
       }
 
-      const { createNotification, getChefAuthUserId, getChefProfile } =
-        await import('@/lib/notifications/actions')
+      const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
 
       let notified = 0
       let skipped = 0
@@ -98,19 +99,14 @@ async function handleFollowUps(request: NextRequest): Promise<NextResponse> {
           })
 
           try {
-            const chefProfile = await getChefProfile(inquiry.tenant_id)
-            if (chefProfile) {
-              const { sendFollowUpDueChefEmail } = await import('@/lib/email/notifications')
-              await sendFollowUpDueChefEmail({
-                chefEmail: chefProfile.email,
-                chefName: chefProfile.name,
-                clientName,
-                occasion: inquiry.confirmed_occasion,
-                followUpNote: aiSuggestion?.suggestion || null,
-                daysOverdue,
-                inquiryId: inquiry.id,
-              })
-            }
+            await sendFollowUpDueEmailDelivery({
+              tenantId: inquiry.tenant_id,
+              inquiryId: inquiry.id,
+              clientName,
+              occasion: inquiry.confirmed_occasion,
+              followUpNote: aiSuggestion?.suggestion || null,
+              daysOverdue,
+            })
           } catch (emailErr) {
             console.error(
               `[Follow-ups Cron] Email failed for inquiry ${inquiry.id} (non-fatal):`,
@@ -124,6 +120,13 @@ async function handleFollowUps(request: NextRequest): Promise<NextResponse> {
               entityType: 'inquiry',
               entityId: inquiry.id,
               errorMessage: emailErr instanceof Error ? emailErr.message : String(emailErr),
+              context: {
+                repairKind: FOLLOW_UP_DUE_EMAIL_REPAIR_KIND,
+                clientName,
+                occasion: inquiry.confirmed_occasion ?? null,
+                followUpNote: aiSuggestion?.suggestion ?? null,
+                followUpDueAt: inquiry.follow_up_due_at,
+              },
             })
           }
 

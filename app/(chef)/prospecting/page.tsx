@@ -16,6 +16,10 @@ import { ConversionFunnelPanel } from '@/components/prospecting/conversion-funne
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
+  NEUTRAL_PROSPECTING_QUERY_EXAMPLE_COPY,
+  NEUTRAL_PROSPECTING_REGION_PLACEHOLDER,
+} from '@/lib/site/national-brand-copy'
+import {
   Search,
   Zap,
   Phone,
@@ -141,7 +145,7 @@ export default async function ProspectingPage({
             <input
               type="text"
               name="region"
-              placeholder="Region..."
+              placeholder={NEUTRAL_PROSPECTING_REGION_PLACEHOLDER}
               defaultValue={params.region ?? ''}
               className="rounded-lg border border-stone-700 px-3 py-1.5 text-sm w-40 focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
@@ -198,9 +202,8 @@ export default async function ProspectingPage({
                   <h3 className="font-semibold text-stone-100">AI Scrub</h3>
                 </div>
                 <p className="text-sm text-stone-400">
-                  Type any query like &ldquo;yacht clubs in Cape Cod&rdquo; or &ldquo;luxury wedding
-                  planners in the Hamptons.&rdquo; AI researches real businesses, finds their
-                  contact info, and writes you personalized approach strategies.
+                  {NEUTRAL_PROSPECTING_QUERY_EXAMPLE_COPY} AI researches real businesses, finds
+                  their contact info, and writes you personalized approach strategies.
                 </p>
                 <Link
                   href="/prospecting/scrub"

@@ -26,6 +26,7 @@ import {
   type IngredientKnowledge,
   type CategoryIngredient,
 } from '@/lib/openclaw/ingredient-knowledge-queries'
+import { isKnowledgeIngredientPubliclyIndexable } from '@/lib/openclaw/public-ingredient-publish'
 import { classifyFromCatalogDetail } from '@/lib/pricing/sourceability'
 import { AvailabilityDetail, AvailabilityBadge } from '@/components/pricing/availability-badge'
 import { formatCurrency } from '@/lib/utils/currency'
@@ -136,10 +137,17 @@ function JsonLd({ data }: { data: object }) {
 // Metadata
 // ---------------------------------------------------------------------------
 
-type Params = { params: Promise<{ id: string }> }
+type Params = { params: { id: string } }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
-  const { id } = await params
+  const { id } = params
+
+  if (!isKnowledgeIngredientPubliclyIndexable({ slug: id })) {
+    return {
+      title: 'Ingredient not found',
+      robots: { index: false, follow: false },
+    }
+  }
 
   // Try full mode first
   const detail = await getPublicIngredientDetail(id).catch(() => null)
@@ -175,7 +183,12 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
   // Fall back to knowledge slug
   const slugResult = await getIngredientKnowledgeBySlug(id).catch(() => null)
-  if (!slugResult) return { title: 'Ingredient not found' }
+  if (!slugResult) {
+    return {
+      title: 'Ingredient not found',
+      robots: { index: false, follow: false },
+    }
+  }
 
   const { name, knowledge: k } = slugResult
   const description = (k.wikiSummary ?? `${name} - culinary ingredient guide.`).slice(0, 160)
@@ -200,9 +213,17 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 // Page
 // ---------------------------------------------------------------------------
 
-export default async function IngredientPage({ params }: Params) {
-  const { id } = await params
+export default function IngredientPage({ params }: Params) {
+  const { id } = params
 
+  if (!isKnowledgeIngredientPubliclyIndexable({ slug: id })) {
+    notFound()
+  }
+
+  return <IngredientPageContent id={id} />
+}
+
+async function IngredientPageContent({ id }: { id: string }) {
   // --- Full mode: canonical ingredient with price data ---
   const detail = await getPublicIngredientDetail(id).catch(() => null)
 

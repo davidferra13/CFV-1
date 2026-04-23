@@ -17,6 +17,8 @@ export type ClientInquiryListItem = {
   confirmed_date: string | null
   confirmed_guest_count: number | null
   confirmed_location: string | null
+  follow_up_due_at: string | null
+  next_action_required: string | null
   first_contact_at: string
   updated_at: string
   converted_to_event_id: string | null
@@ -66,6 +68,8 @@ export async function getClientInquiries(): Promise<ClientInquiryListItem[]> {
       confirmed_date,
       confirmed_guest_count,
       confirmed_location,
+      follow_up_due_at,
+      next_action_required,
       first_contact_at,
       updated_at,
       converted_to_event_id

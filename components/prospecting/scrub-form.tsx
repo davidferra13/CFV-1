@@ -9,7 +9,11 @@ import {
   competitorIntelScrub,
 } from '@/lib/prospecting/scrub-actions'
 import { SCRUB_PRESETS } from '@/lib/prospecting/constants'
-import { Loader2, Search, Zap, Eye, Target } from '@/components/ui/icons'
+import { Loader2, Search, Zap, Eye } from '@/components/ui/icons'
+import {
+  NEUTRAL_PROSPECTING_QUERY_PLACEHOLDER,
+  NEUTRAL_PROSPECTING_REGION_PLACEHOLDER,
+} from '@/lib/site/national-brand-copy'
 
 type ScrubMode = 'standard' | 'competitor'
 
@@ -29,7 +33,6 @@ export function ScrubForm() {
   const [progressMessage, setProgressMessage] = useState<string | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  // Clean up polling on unmount
   useEffect(() => {
     return () => {
       if (pollRef.current) clearInterval(pollRef.current)
@@ -45,13 +48,13 @@ export function ScrubForm() {
         if (progress?.progress_message) {
           setProgressMessage(progress.progress_message)
         }
-        // Stop polling when done
+
         if (progress?.status === 'completed' || progress?.status === 'failed') {
           if (pollRef.current) clearInterval(pollRef.current)
           pollRef.current = null
         }
       } catch {
-        // Ignore polling errors - the main action will handle real failures
+        // Ignore polling errors. The primary action handles failures.
       }
     }, 3000)
   }, [])
@@ -60,6 +63,7 @@ export function ScrubForm() {
     if (isPending) return
     setResult(null)
     setProgressMessage('Starting scrub...')
+
     startTransition(async () => {
       try {
         let res: {
@@ -88,6 +92,7 @@ export function ScrubForm() {
         if (res.sessionId) {
           startPolling(res.sessionId)
         }
+
         setResult({
           success: true,
           totalGenerated: res.totalGenerated,
@@ -96,6 +101,7 @@ export function ScrubForm() {
           sessionId: res.sessionId,
         })
         setProgressMessage(null)
+
         if (pollRef.current) {
           clearInterval(pollRef.current)
           pollRef.current = null
@@ -106,6 +112,7 @@ export function ScrubForm() {
           error: err instanceof Error ? err.message : 'Scrub failed',
         })
         setProgressMessage(null)
+
         if (pollRef.current) {
           clearInterval(pollRef.current)
           pollRef.current = null
@@ -135,7 +142,6 @@ export function ScrubForm() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Mode Tabs */}
         <div className="flex gap-1 rounded-lg bg-stone-800 p-1">
           <button
             type="button"
@@ -165,7 +171,6 @@ export function ScrubForm() {
           </button>
         </div>
 
-        {/* Standard Scrub Input */}
         {mode === 'standard' && (
           <>
             <div>
@@ -175,7 +180,7 @@ export function ScrubForm() {
               <textarea
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder={`Type anything, e.g.:\n• "Top 50 wealthiest business owners in Massachusetts"\n• "All yacht clubs on Cape Cod"\n• "Top 100 car dealerships in Maine"\n• "Luxury wedding planners in the Hamptons"`}
+                placeholder={NEUTRAL_PROSPECTING_QUERY_PLACEHOLDER}
                 className="w-full h-32 rounded-lg border border-stone-600 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 resize-none"
                 disabled={isPending}
               />
@@ -198,7 +203,6 @@ export function ScrubForm() {
           </>
         )}
 
-        {/* Competitor Intel Input */}
         {mode === 'competitor' && (
           <div>
             <label className="block text-sm font-medium text-stone-300 mb-1">
@@ -208,7 +212,7 @@ export function ScrubForm() {
               type="text"
               value={region}
               onChange={(e) => setRegion(e.target.value)}
-              placeholder='e.g. "Cape Cod", "Palm Beach", "the Hamptons"'
+              placeholder={NEUTRAL_PROSPECTING_REGION_PLACEHOLDER}
               className="w-full rounded-lg border border-stone-600 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
               disabled={isPending}
             />
@@ -239,7 +243,6 @@ export function ScrubForm() {
           </Button>
         </div>
 
-        {/* Live progress bar */}
         {isPending && progressMessage && (
           <div className="flex items-center gap-3 p-3 rounded-lg bg-stone-800 border border-stone-700">
             <Loader2 className="h-4 w-4 animate-spin text-brand-500 flex-shrink-0" />
@@ -273,7 +276,6 @@ export function ScrubForm() {
           </div>
         )}
 
-        {/* How It Works - always visible */}
         <div className="rounded-lg bg-stone-800 border border-stone-700 p-4 space-y-3">
           <h4 className="text-sm font-medium text-stone-300">
             {mode === 'competitor' ? 'How Competitor Intel Works' : 'How AI Scrub Works'}

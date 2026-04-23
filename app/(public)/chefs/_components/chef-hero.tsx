@@ -1,8 +1,9 @@
 import Link from 'next/link'
 import {
+  PUBLIC_MATCHED_CHEF_HELPER,
   PUBLIC_PRIMARY_CONSUMER_CTA,
-  PUBLIC_SUPPORTING_DIRECTORY_ENTRY,
 } from '@/lib/public/public-surface-config'
+import { PUBLIC_REQUEST_ROUTING_COPY } from '@/lib/public/public-market-copy'
 
 // Chef Directory Hero - consumer-first food discovery framing
 
@@ -15,16 +16,16 @@ export function ChefHero() {
 
       <div className="relative mx-auto flex max-w-4xl flex-col items-center px-4 py-20 text-center sm:px-6 md:py-28 lg:px-8">
         <p className="mb-4 rounded-full border border-brand-400/30 bg-brand-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-brand-300">
-          Private Chef Directory
+          Curated Chef Directory
         </p>
 
         <h1 className="max-w-3xl text-4xl font-display tracking-tight text-white md:text-5xl lg:text-6xl">
-          Browse private chefs near you.
+          Browse our curated chef network.
         </h1>
 
         <p className="mt-6 max-w-xl text-base leading-relaxed text-stone-300 md:text-lg">
-          Filter by cuisine, service type, and location, then contact chefs directly. Need help
-          choosing? Use the booking lane and matched chefs can reach out to you directly.
+          Filter the chefs who are live now. If the right fit is not here yet,{' '}
+          {PUBLIC_MATCHED_CHEF_HELPER} {PUBLIC_REQUEST_ROUTING_COPY}
         </p>
 
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
@@ -35,10 +36,10 @@ export function ChefHero() {
             {PUBLIC_PRIMARY_CONSUMER_CTA.label}
           </Link>
           <Link
-            href={PUBLIC_SUPPORTING_DIRECTORY_ENTRY.href}
+            href="/how-it-works"
             className="inline-flex h-12 items-center justify-center rounded-xl border border-stone-700 bg-stone-900/60 px-6 text-sm font-medium text-stone-300 transition-all hover:bg-stone-800 hover:border-stone-600 hover:text-stone-100"
           >
-            {PUBLIC_SUPPORTING_DIRECTORY_ENTRY.label}
+            How matching works
           </Link>
         </div>
 
@@ -61,7 +62,7 @@ export function ChefHero() {
                 clipRule="evenodd"
               />
             </svg>
-            No middleman
+            Matched by event details
           </span>
           <span className="flex items-center gap-2">
             <svg className="h-4 w-4 text-brand-400" fill="currentColor" viewBox="0 0 20 20">
@@ -71,7 +72,7 @@ export function ChefHero() {
                 clipRule="evenodd"
               />
             </svg>
-            Connect directly
+            Final quote comes from the chef
           </span>
         </div>
       </div>

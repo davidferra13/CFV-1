@@ -23,6 +23,7 @@ export default async function PrintOrderSheetPage({
   const { generatedBy, printMode: defaultMode, customFooter } = await getDocumentContext()
   const printMode =
     searchParams.mode === 'thermal' ? ('thermal-80' as const) : (defaultMode ?? 'standard')
+  const printedAt = new Date().toLocaleString()
 
   const _opp = new Date()
   const today = `${_opp.getFullYear()}-${String(_opp.getMonth() + 1).padStart(2, '0')}-${String(_opp.getDate()).padStart(2, '0')}`
@@ -39,7 +40,7 @@ export default async function PrintOrderSheetPage({
     )
     .eq('chef_id', user.tenantId!)
     .eq('status', 'pending')
-    .order('created_at', { ascending: false })
+    .order('requested_at', { ascending: false })
 
   // Also load clipboard entries with need_to_order > 0 from today
   const { data: clipboardNeeds } = await db
@@ -72,9 +73,10 @@ export default async function PrintOrderSheetPage({
       subtitle={`Generated: ${dateLabel}`}
       footer={
         customFooter ??
-        `ChefFlow Order Sheet - Printed ${new Date().toLocaleString()}\nBlank "Ordered" column for manual checkoff when calling vendors.`
+        `ChefFlow Order Sheet - Printed ${printedAt}\nBlank "Ordered" column for manual checkoff when calling vendors.`
       }
       generatedBy={generatedBy}
+      printedAt={printedAt}
       mode={printMode}
     >
       {/* Pending Order Requests */}

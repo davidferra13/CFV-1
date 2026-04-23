@@ -54,6 +54,52 @@ export function getEndingMicroWindows(
 }
 
 /**
+ * Get micro-windows starting within N days.
+ * Active windows are excluded so "coming next" stays future-looking.
+ */
+export function getUpcomingMicroWindows(
+  palette: SeasonalPalette,
+  withinDays: number = 30,
+  date: Date = new Date()
+): MicroWindow[] {
+  const today = startOfDay(date)
+
+  return palette.micro_windows.filter((window) => {
+    if (isDateInRange(formatMonthDay(date), window.start_date, window.end_date)) {
+      return false
+    }
+
+    const startDate = getNextOccurrence(window.start_date, today)
+    const diffMs = startDate.getTime() - today.getTime()
+    const diffDays = diffMs / (1000 * 60 * 60 * 24)
+
+    return diffDays >= 0 && diffDays <= withinDays
+  })
+}
+
+/**
+ * Get the next palette in seasonal order.
+ * Sorts by start date so the helper works with both chef-defined and static public palettes.
+ */
+export function getNextSeason(
+  palettes: SeasonalPalette[],
+  date: Date = new Date()
+): SeasonalPalette | null {
+  if (palettes.length === 0) return null
+
+  const ordered = [...palettes].sort(
+    (a, b) => compareMonthDay(a.start_month_day, b.start_month_day) || a.sort_order - b.sort_order
+  )
+  const current = getCurrentSeason(ordered, date)
+  if (!current) return ordered[0] ?? null
+
+  const index = ordered.findIndex((palette) => palette.id === current.id)
+  if (index === -1) return ordered[0] ?? null
+
+  return ordered[(index + 1) % ordered.length] ?? null
+}
+
+/**
  * Get micro-windows active on a specific calendar date (for schedule sidebar).
  */
 export function getMicroWindowsForDate(palette: SeasonalPalette, targetDate: Date): MicroWindow[] {
@@ -72,6 +118,26 @@ export function formatMonthDay(date: Date): string {
 function parseMonthDay(monthDay: string, year: number): Date {
   const [m, d] = monthDay.split('-').map(Number)
   return new Date(year, m - 1, d)
+}
+
+function compareMonthDay(a: string, b: string): number {
+  if (a === b) return 0
+  return a < b ? -1 : 1
+}
+
+function getNextOccurrence(monthDay: string, fromDate: Date): Date {
+  const currentYear = fromDate.getFullYear()
+  let candidate = startOfDay(parseMonthDay(monthDay, currentYear))
+
+  if (candidate < fromDate) {
+    candidate = startOfDay(parseMonthDay(monthDay, currentYear + 1))
+  }
+
+  return candidate
+}
+
+function startOfDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate())
 }
 
 /**

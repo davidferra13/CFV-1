@@ -130,14 +130,33 @@ export async function buildPublicHealthSnapshot(
 
   const backgroundJobs = options.includeBackgroundJobs ? await getBackgroundJobSummary() : null
 
-  // Real DB connectivity check: a failing SELECT 1 means the pool is exhausted,
-  // the container is down, or the connection string is wrong - all critical.
-  let dbHealthy = true
-  try {
-    const { pgClient } = await import('@/lib/db')
-    await pgClient`SELECT 1`
-  } catch {
-    dbHealthy = false
+  let dbStatus = missingEnv.includes('DATABASE_URL') ? 'missing_env' : 'ok'
+  let dbHealthy = dbStatus === 'ok'
+  let dbDetails: Record<string, unknown> = {}
+
+  if (dbHealthy && process.env.PUBLIC_HEALTH_SKIP_DB_BOOT_CONTRACT !== '1') {
+    const { inspectLiveDbBootContract } = await import('@/lib/db/boot-contract')
+    const contract = await inspectLiveDbBootContract()
+
+    dbStatus = contract.status
+    dbHealthy = contract.status === 'ok'
+    dbDetails = {
+      dbContractCheckedAt: contract.checkedAt,
+      dbContractVersion: contract.contractVersion,
+      dbMissingObjects: contract.missingObjects.map((check) => check.id),
+      dbMissingReadinessObjects: contract.missingReadinessObjects.map((check) => check.id),
+      ...(contract.errorMessage ? { dbContractError: contract.errorMessage } : {}),
+    }
+  } else if (process.env.PUBLIC_HEALTH_SKIP_DB_BOOT_CONTRACT === '1') {
+    dbDetails = {
+      dbContractSkipped: true,
+      dbContractSkipReason: 'PUBLIC_HEALTH_SKIP_DB_BOOT_CONTRACT',
+    }
+  } else {
+    dbDetails = {
+      dbContractSkipped: true,
+      dbContractSkipReason: 'missing_database_url',
+    }
   }
 
   const envHealthy = missingEnv.length === 0
@@ -155,12 +174,13 @@ export async function buildPublicHealthSnapshot(
       requestId,
       checks: {
         env: envHealthy ? 'ok' : 'missing',
-        db: dbHealthy ? 'ok' : 'unreachable',
+        db: dbStatus,
         circuitBreakers: circuitBreakersHealthy ? 'ok' : 'degraded',
         ...(backgroundJobs ? { backgroundJobs: backgroundJobs.status } : {}),
       },
       details: {
         missingEnvCount: missingEnv.length,
+        ...dbDetails,
         circuitBreakers: degradedCircuitBreakers,
         ...(backgroundJobs
           ? {
