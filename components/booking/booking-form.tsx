@@ -17,6 +17,7 @@ import {
   type DietaryIntakeValue,
 } from '@/components/forms/dietary-intake-fields'
 import type { BookingConfig } from '@/app/book/[chefSlug]/booking-page-client'
+import { NEUTRAL_ADDRESS_PLACEHOLDER } from '@/lib/site/national-brand-copy'
 
 type Props = {
   chefSlug: string
@@ -27,6 +28,7 @@ type Props = {
 
 type MultiDayMealSlot = 'breakfast' | 'lunch' | 'dinner' | 'late_snack' | 'dropoff' | 'other'
 type MultiDayExecutionType = 'on_site' | 'drop_off' | 'prep_only' | 'hybrid'
+type CalendarTruthMode = 'verified_external' | 'internal_only' | 'degraded'
 
 type MultiDaySessionRow = {
   id: string
@@ -72,10 +74,17 @@ function formatDollars(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`
 }
 
+function createPublicAttemptId(): string {
+  const randomUUID = globalThis.crypto?.randomUUID
+  if (typeof randomUUID === 'function') return randomUUID.call(globalThis.crypto)
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
+
 export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: Props) {
   const router = useRouter()
 
   const isInstantBook = bookingConfig?.bookingModel === 'instant_book'
+  const [instantAttemptId] = useState(createPublicAttemptId)
 
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
@@ -98,6 +107,7 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
   const [address, setAddress] = useState('')
   const [notes, setNotes] = useState('')
   const [dietaryIntake, setDietaryIntake] = useState<DietaryIntakeValue>(emptyDietaryIntake())
+  const [websiteUrl, setWebsiteUrl] = useState('')
 
   /** Serialize structured dietary intake to a string for server actions */
   const serializeDietary = useCallback(() => {
@@ -122,6 +132,8 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
     blockedDates: string[]
     unavailableDates: string[]
     details: Record<string, string[]>
+    calendarTruthMode: CalendarTruthMode
+    calendarTruthMessage: string
   } | null>(null)
 
   // Compute live pricing for instant-book mode
@@ -190,18 +202,36 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
     fetch(
       `/book/${chefSlug}/availability?start_date=${encodeURIComponent(multiDayStartDate)}&end_date=${encodeURIComponent(multiDayEndDate)}`
     )
-      .then((response) => response.json())
+      .then(async (response) => {
+        const data = await response.json()
+        if (!response.ok) {
+          throw new Error((data?.error as string) || 'Availability could not be loaded')
+        }
+        return data
+      })
       .then((data) => {
         if (cancelled) return
         const availability = (data?.availability ?? {}) as Record<string, string>
         const details = (data?.conflict_details ?? {}) as Record<string, string[]>
+        const calendarTruth = (data?.calendar_truth ?? {}) as {
+          mode?: CalendarTruthMode
+          message?: string
+        }
         const blockedDates = Object.entries(availability)
           .filter(([, status]) => status === 'blocked')
           .map(([date]) => date)
         const unavailableDates = Object.entries(availability)
           .filter(([, status]) => status === 'unavailable')
           .map(([date]) => date)
-        setRangeAvailabilitySummary({ blockedDates, unavailableDates, details })
+        setRangeAvailabilitySummary({
+          blockedDates,
+          unavailableDates,
+          details,
+          calendarTruthMode: calendarTruth.mode ?? 'internal_only',
+          calendarTruthMessage:
+            calendarTruth.message ??
+            'Availability reflects confirmed ChefFlow events and chef blocked dates.',
+        })
       })
       .catch(() => {
         if (!cancelled) setRangeAvailabilitySummary(null)
@@ -345,6 +375,8 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
               ? parseInt(menuRecommendationLeadDays)
               : undefined,
           schedule_request_jsonb: multiDaySchedulePayload,
+          website_url: websiteUrl,
+          attempt_id: instantAttemptId,
         })
         if (!result.checkoutUrl) {
           setError('Could not create checkout session. Please try again.')
@@ -381,6 +413,7 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
               ? parseInt(menuRecommendationLeadDays)
               : undefined,
           schedule_request_jsonb: multiDaySchedulePayload,
+          website_url: websiteUrl,
         })
         router.push(`/book/${chefSlug}/thank-you`)
       }
@@ -392,6 +425,17 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="hidden" aria-hidden="true">
+        <input
+          type="text"
+          name="website_url"
+          tabIndex={-1}
+          autoComplete="off"
+          value={websiteUrl}
+          onChange={(e) => setWebsiteUrl(e.target.value)}
+        />
+      </div>
+
       <div className="rounded-lg bg-stone-800 border border-stone-700 px-4 py-2.5 flex items-center gap-3">
         <span className="text-sm font-medium text-stone-300">Date selected:</span>
         <span className="text-sm font-semibold text-stone-100">
@@ -706,7 +750,16 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
               </p>
             )}
             {rangeAvailabilitySummary && (
-              <div className="rounded-md border border-stone-700 bg-stone-950 p-3 text-xs text-stone-300 space-y-1">
+              <div
+                className={`rounded-md border p-3 text-xs space-y-1 ${
+                  rangeAvailabilitySummary.calendarTruthMode === 'verified_external'
+                    ? 'border-emerald-800 bg-emerald-950/30 text-emerald-100'
+                    : rangeAvailabilitySummary.calendarTruthMode === 'degraded'
+                      ? 'border-amber-700 bg-amber-950/30 text-amber-100'
+                      : 'border-stone-700 bg-stone-950 text-stone-300'
+                }`}
+              >
+                <p>{rangeAvailabilitySummary.calendarTruthMessage}</p>
                 <p>
                   Range check: {rangeAvailabilitySummary.blockedDates.length} blocked day(s),{' '}
                   {rangeAvailabilitySummary.unavailableDates.length} unavailable day(s).
@@ -714,7 +767,16 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
                 {Object.entries(rangeAvailabilitySummary.details)
                   .slice(0, 4)
                   .map(([date, reasons]) => (
-                    <p key={date} className="text-stone-400">
+                    <p
+                      key={date}
+                      className={
+                        rangeAvailabilitySummary.calendarTruthMode === 'verified_external'
+                          ? 'text-emerald-200/80'
+                          : rangeAvailabilitySummary.calendarTruthMode === 'degraded'
+                            ? 'text-amber-200/80'
+                            : 'text-stone-400'
+                      }
+                    >
                       {date}: {(reasons || []).join(', ')}
                     </p>
                   ))}
@@ -746,7 +808,7 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
       <Input
         label="Event Address"
         required
-        placeholder="123 Main St, San Francisco CA"
+        placeholder={NEUTRAL_ADDRESS_PLACEHOLDER}
         value={address}
         onChange={(e) => setAddress(e.target.value)}
       />

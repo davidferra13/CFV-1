@@ -1,4 +1,4 @@
-import { cache } from 'react'
+import * as React from 'react'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
@@ -9,6 +9,12 @@ import { isAdmin } from '@/lib/auth/admin'
 import { readRequestAuthContext } from '@/lib/auth/request-auth-context'
 
 const SESSION_EXPIRED_URL = '/auth/signin?message=Your+session+expired.+Please+sign+in+again.'
+
+const stableCache: typeof React.cache =
+  typeof React.cache === 'function'
+    ? React.cache
+    : (((fn: typeof React.cache extends (callback: infer T) => unknown ? T : never) =>
+        fn) as typeof React.cache)
 
 export type AuthUser = {
   id: string
@@ -41,7 +47,7 @@ export type PartnerAuthUser = {
  * Cached per request - single DB query
  * Returns null if not authenticated or no role assigned
  */
-export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
+export const getCurrentUser = stableCache(async (): Promise<AuthUser | null> => {
   // Fast path: middleware already resolved auth context into request headers
   const requestAuthContext = readRequestAuthContext(headers())
   if (requestAuthContext) {
@@ -120,7 +126,7 @@ export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
 
 // Cached per-request suspension check to avoid N+1 DB queries
 // when requireChef() is called multiple times in one render (e.g. inquiry scoring)
-const _checkSuspension = cache(async (entityId: string): Promise<boolean> => {
+const _checkSuspension = stableCache(async (entityId: string): Promise<boolean> => {
   const [chef] = await db
     .select({ accountStatus: chefs.accountStatus })
     .from(chefs)

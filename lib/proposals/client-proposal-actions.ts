@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { createAdminClient } from '@/lib/db/admin'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -362,6 +363,12 @@ export async function getPublicProposal(shareToken: string): Promise<PublicPropo
 export async function approveProposal(
   shareToken: string
 ): Promise<{ success: boolean; message: string }> {
+  try {
+    await checkRateLimit(`proposal-approve:${shareToken.slice(0, 16)}`, 10, 60 * 60 * 1000)
+  } catch {
+    return { success: false, message: 'Too many attempts. Please try again later.' }
+  }
+
   const db: any = createAdminClient()
 
   const { data: proposal, error: fetchError } = await db
@@ -425,6 +432,12 @@ export async function declineProposal(
   shareToken: string,
   _reason?: string
 ): Promise<{ success: boolean; message: string }> {
+  try {
+    await checkRateLimit(`proposal-decline:${shareToken.slice(0, 16)}`, 10, 60 * 60 * 1000)
+  } catch {
+    return { success: false, message: 'Too many attempts. Please try again later.' }
+  }
+
   const db: any = createAdminClient()
 
   const { data: proposal, error: fetchError } = await db

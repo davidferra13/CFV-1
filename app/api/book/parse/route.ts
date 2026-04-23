@@ -5,33 +5,33 @@
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { parseBookingFromNL } from '@/lib/ai/booking-nl-parser'
-
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now()
-  const entry = rateLimitMap.get(ip)
-  if (!entry || entry.resetAt < now) {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + 60_000 })
-    return false
-  }
-  entry.count++
-  return entry.count > 5 // 5 requests per minute
-}
+import { guardPublicIntent } from '@/lib/security/public-intent-guard'
 
 export async function POST(request: NextRequest) {
-  const ip =
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    request.headers.get('x-real-ip') ||
-    'unknown'
-
-  if (isRateLimited(ip)) {
-    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
-  }
-
   try {
-    const body = await request.json()
-    const text = typeof body.text === 'string' ? body.text.trim() : ''
+    const guard = await guardPublicIntent<{ text?: unknown }>({
+      action: 'open-booking-parser',
+      request,
+      body: {
+        maxBytes: 8 * 1024,
+        invalidJsonMessage: 'Invalid booking parser request body',
+        payloadTooLargeMessage: 'Booking parser request body is too large',
+      },
+      rateLimit: {
+        ip: {
+          keyPrefix: 'open-booking-parser:ip',
+          max: 5,
+          windowMs: 60_000,
+          message: 'Too many requests',
+        },
+      },
+    })
+    if (!guard.ok) {
+      return NextResponse.json({ error: guard.error.message }, { status: guard.error.status })
+    }
+
+    const body = guard.body
+    const text = typeof body?.text === 'string' ? body.text.trim() : ''
 
     if (!text || text.length < 10 || text.length > 1000) {
       return NextResponse.json(
