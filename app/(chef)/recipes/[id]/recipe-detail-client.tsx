@@ -321,6 +321,10 @@ export function RecipeDetailClient({ recipe, initialCompletion, provenance }: Pr
           storageMethod: (recipe as any).storage_method ?? null,
           freezable: (recipe as any).freezable ?? false,
           frozenExtendsHours: (recipe as any).frozen_extends_hours ?? null,
+          activeMinutes: null,
+          passiveMinutes: null,
+          holdClass: null,
+          prepTier: null,
         }).catch(() => null)
       }
 

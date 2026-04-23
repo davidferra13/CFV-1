@@ -399,6 +399,10 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
         storageMethod,
         freezable,
         frozenExtendsHours: frozenExtendsHours ? parseInt(frozenExtendsHours) : null,
+        activeMinutes: null,
+        passiveMinutes: null,
+        holdClass: null,
+        prepTier: null,
       }).catch(() => null)
 
       protection.markCommitted()

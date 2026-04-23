@@ -229,6 +229,17 @@ export const DANGER_ZONE: DangerZoneRule = {
   source: 'FDA Food Code 3-501.19',
 }
 
+export const HIGH_AMBIENT_RULE: DangerZoneRule = {
+  id: 'high-ambient',
+  label: 'High Ambient Temperature Rule (90F+)',
+  rangeFahrenheit: { min: 90, max: 999 },
+  rangeCelsius: { min: 32, max: 999 },
+  maxDuration: '1 hour',
+  action:
+    'When ambient temperature exceeds 90F (32C), food in the danger zone must be discarded after 1 hour instead of 4. Applies to outdoor events, hot kitchens without AC, and transport in summer.',
+  source: 'FDA Food Code 3-501.19, USDA Food Safety Education',
+}
+
 // ── Cooling Requirements (2-Stage Method) ────────────────────────────────────
 
 export const COOLING_REQUIREMENTS: CoolingRequirement[] = [
@@ -493,6 +504,13 @@ export function isTempSafe(item: string, tempF: number): { safe: boolean; messag
  */
 export function isInDangerZone(tempF: number): boolean {
   return tempF > DANGER_ZONE.rangeFahrenheit.min && tempF < DANGER_ZONE.rangeFahrenheit.max
+}
+
+/**
+ * Check if high-ambient rule applies (food must be discarded after 1 hour, not 4).
+ */
+export function isHighAmbientRisk(ambientTempF: number): boolean {
+  return ambientTempF >= 90
 }
 
 /**

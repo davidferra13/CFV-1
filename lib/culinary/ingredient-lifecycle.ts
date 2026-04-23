@@ -2,6 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { computeIngredientCost, lookupDensity } from '@/lib/units/conversion-engine'
 
 export type LifecycleItem = {
   ingredientId: string
@@ -19,6 +20,8 @@ export type LifecycleItem = {
   // Stage 5: null if either purchased or used is null
   computedLeftoverQty: number | null
   lastPriceCents: number
+  priceUnit: string
+  density: number | null
   // Variance: null if upstream stage is null
   purchaseVarianceQty: number | null
   usageVarianceQty: number | null
@@ -128,7 +131,9 @@ export async function getEventIngredientLifecycle(eventId: string): Promise<Life
   const [ingredientRows, purchaseRows, usageRows] = await Promise.all([
     db
       .from('ingredients')
-      .select('id, name, last_price_cents, default_yield_pct')
+      .select(
+        'id, name, last_price_cents, default_yield_pct, price_unit, default_unit, weight_to_volume_ratio'
+      )
       .eq('tenant_id', user.tenantId!)
       .in('id', ingredientIds),
     db
@@ -206,6 +211,10 @@ export async function getEventIngredientLifecycle(eventId: string): Promise<Life
         usedQty: hasUsage ? usedQty : null,
         computedLeftoverQty: hasPurchase && hasUsage ? purchased.qty - usedQty : null,
         lastPriceCents: Number(ingredient.last_price_cents) || 0,
+        priceUnit: ingredient.price_unit || ingredient.default_unit || 'each',
+        density: ingredient.weight_to_volume_ratio
+          ? Number(ingredient.weight_to_volume_ratio)
+          : null,
         purchaseVarianceQty: null,
         usageVarianceQty: null,
       })
@@ -231,8 +240,23 @@ export async function getEventIngredientLifecycle(eventId: string): Promise<Life
         ? round3(item.purchasedQty - item.usedQty)
         : null
 
-    recipeCostCents += Math.round(item.recipeQty * item.lastPriceCents)
-    buyCostCents += Math.round(item.buyQty * item.lastPriceCents)
+    const density = item.density ?? lookupDensity(item.ingredientName)
+    const recipeCost = computeIngredientCost(
+      item.recipeQty,
+      item.unit,
+      item.lastPriceCents,
+      item.priceUnit,
+      density
+    )
+    recipeCostCents += recipeCost ?? Math.round(item.recipeQty * item.lastPriceCents)
+    const buyCost = computeIngredientCost(
+      item.buyQty,
+      item.unit,
+      item.lastPriceCents,
+      item.priceUnit,
+      density
+    )
+    buyCostCents += buyCost ?? Math.round(item.buyQty * item.lastPriceCents)
     totalPurchasedCostCents += item.purchasedCostCents ?? 0
 
     items.push(item)

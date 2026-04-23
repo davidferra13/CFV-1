@@ -16,6 +16,7 @@ import {
   ShoppingCart,
   ListChecks,
   Calendar,
+  Thermometer,
 } from '@/components/ui/icons'
 import { SymbolKeyTrigger } from '@/components/ui/symbol-key'
 import type {
@@ -64,6 +65,18 @@ function SymbolIcon({ symbol }: { symbol: PrepSymbol }) {
           <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
         </span>
       )
+    case 'serve_immediately':
+      return (
+        <span title="Serve immediately">
+          <Flame className="h-3.5 w-3.5 text-red-400" />
+        </span>
+      )
+    case 'hold_warm':
+      return (
+        <span title="Can hold warm">
+          <Thermometer className="h-3.5 w-3.5 text-amber-400" />
+        </span>
+      )
     default:
       return null
   }
@@ -101,10 +114,17 @@ function PrepItemRow({
       </button>
 
       <div className="flex-1 min-w-0">
-        <div
-          className={`text-sm font-medium ${checked ? 'line-through text-stone-500' : 'text-stone-200'}`}
-        >
-          {item.recipeName}
+        <div className="flex items-center gap-1.5">
+          <span
+            className={`text-sm font-medium ${checked ? 'line-through text-stone-500' : 'text-stone-200'}`}
+          >
+            {item.recipeName}
+          </span>
+          {item.prepTier === 'base' && (
+            <Badge variant="default" className="text-[10px] px-1 py-0">
+              base
+            </Badge>
+          )}
         </div>
         {item.componentName !== item.recipeName && (
           <div className="text-xs text-stone-500">{item.dishName}</div>
@@ -137,7 +157,16 @@ function PrepItemRow({
 
       <div className="flex items-center gap-1 text-xs text-stone-500 flex-shrink-0">
         <Clock className="h-3 w-3" />
-        {formatPrepTime(item.prepTimeMinutes)}
+        {item.passiveMinutes > 0 ? (
+          <span
+            title={`${formatPrepTime(item.activeMinutes)} active + ${formatPrepTime(item.passiveMinutes)} passive`}
+          >
+            {formatPrepTime(item.activeMinutes)}
+            <span className="text-stone-600"> + {formatPrepTime(item.passiveMinutes)}</span>
+          </span>
+        ) : (
+          formatPrepTime(item.prepTimeMinutes)
+        )}
       </div>
     </div>
   )
@@ -199,7 +228,17 @@ function DayCard({
             <div className="text-right text-xs text-stone-500">
               {completedCount}/{day.items.length} done
               {day.totalPrepMinutes > 0 && (
-                <span className="ml-2">{formatPrepTime(day.totalPrepMinutes)} total</span>
+                <span className="ml-2">
+                  {day.activeMinutes > 0 && day.passiveMinutes > 0 ? (
+                    <span
+                      title={`${formatPrepTime(day.activeMinutes)} hands-on, ${formatPrepTime(day.passiveMinutes)} passive`}
+                    >
+                      {formatPrepTime(day.activeMinutes)} active
+                    </span>
+                  ) : (
+                    <span>{formatPrepTime(day.totalPrepMinutes)} total</span>
+                  )}
+                </span>
               )}
             </div>
           )}

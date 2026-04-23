@@ -19,6 +19,10 @@ export async function updateRecipePeakWindow(input: {
   storageMethod: string | null
   freezable: boolean
   frozenExtendsHours: number | null
+  activeMinutes: number | null
+  passiveMinutes: number | null
+  holdClass: string | null
+  prepTier: string | null
 }): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
 
@@ -46,6 +50,19 @@ export async function updateRecipePeakWindow(input: {
     }
   }
 
+  if (
+    input.holdClass != null &&
+    !['serve_immediately', 'hold_warm', 'hold_cold_reheat'].includes(input.holdClass)
+  ) {
+    return { success: false, error: 'Invalid hold class.' }
+  }
+  if (
+    input.prepTier != null &&
+    !['base', 'secondary', 'tertiary', 'finishing'].includes(input.prepTier)
+  ) {
+    return { success: false, error: 'Invalid prep tier.' }
+  }
+
   try {
     const db: any = createServerClient()
     await db
@@ -57,6 +74,10 @@ export async function updateRecipePeakWindow(input: {
         storage_method: input.storageMethod ?? 'fridge',
         freezable: input.freezable,
         frozen_extends_hours: input.frozenExtendsHours,
+        active_prep_minutes: input.activeMinutes,
+        passive_prep_minutes: input.passiveMinutes,
+        hold_class: input.holdClass,
+        prep_tier: input.prepTier,
         updated_at: new Date().toISOString(),
       })
       .eq('id', input.recipeId)
@@ -152,7 +173,7 @@ export async function getEventPrepTimeline(eventId: string): Promise<{
       const { data: recipeData } = await db
         .from('recipes')
         .select(
-          'id, name, category, peak_hours_min, peak_hours_max, safety_hours_max, storage_method, freezable, frozen_extends_hours, prep_time_minutes, dietary_tags'
+          'id, name, category, peak_hours_min, peak_hours_max, safety_hours_max, storage_method, freezable, frozen_extends_hours, prep_time_minutes, dietary_tags, active_prep_minutes, passive_prep_minutes, hold_class, prep_tier'
         )
         .in('id', recipeIds)
       recipes = recipeData ?? []
@@ -211,6 +232,10 @@ export async function getEventPrepTimeline(eventId: string): Promise<{
         freezable: recipe?.freezable ?? null,
         frozenExtendsHours: recipe?.frozen_extends_hours ?? null,
         prepTimeMinutes: recipe?.prep_time_minutes ?? 30,
+        activeMinutes: recipe?.active_prep_minutes ?? null,
+        passiveMinutes: recipe?.passive_prep_minutes ?? null,
+        holdClass: recipe?.hold_class ?? null,
+        prepTier: recipe?.prep_tier ?? null,
         allergenFlags: allergenMap[recipe?.id] ?? [],
         makeAheadWindowHours: comp.make_ahead_window_hours ?? null,
       }

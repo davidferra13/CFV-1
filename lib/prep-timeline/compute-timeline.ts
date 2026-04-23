@@ -11,11 +11,18 @@ import {
   format,
 } from 'date-fns'
 import { resolvePeakWindow, hasExplicitPeakWindow, hasCategoryDefaults } from './peak-defaults'
-import type { StorageMethod } from './peak-defaults'
+import type { StorageMethod, HoldClass, PrepTier } from './peak-defaults'
 
 // --- Types ---
 
-export type PrepSymbol = 'freezable' | 'day_of' | 'fresh' | 'safety_warning' | 'allergen'
+export type PrepSymbol =
+  | 'freezable'
+  | 'day_of'
+  | 'fresh'
+  | 'safety_warning'
+  | 'allergen'
+  | 'serve_immediately'
+  | 'hold_warm'
 
 export interface PrepItem {
   recipeId: string
@@ -31,6 +38,10 @@ export interface PrepItem {
   freezable: boolean
   frozenExtendsHours: number | null
   prepTimeMinutes: number
+  activeMinutes: number
+  passiveMinutes: number
+  holdClass: HoldClass
+  prepTier: PrepTier
   usingDefaults: boolean
   symbols: PrepSymbol[]
   allergenFlags: string[]
@@ -46,6 +57,8 @@ export interface PrepDay {
   deadlineType: 'grocery' | 'prep' | null
   items: PrepItem[]
   totalPrepMinutes: number
+  activeMinutes: number
+  passiveMinutes: number
 }
 
 export interface PrepTimeline {
@@ -72,6 +85,10 @@ export interface TimelineRecipeInput {
   freezable: boolean | null
   frozenExtendsHours: number | null
   prepTimeMinutes: number
+  activeMinutes: number | null
+  passiveMinutes: number | null
+  holdClass: string | null
+  prepTier: string | null
   allergenFlags: string[]
   // Fallback from components table
   makeAheadWindowHours: number | null
@@ -125,6 +142,12 @@ export function computePrepTimeline(
     if (resolved.peakHoursMax > resolved.safetyHoursMax) symbols.push('safety_warning')
     if (item.allergenFlags.length > 0) symbols.push('allergen')
 
+    // Hold class symbols
+    const itemHoldClass = (item.holdClass as HoldClass) ?? resolved.holdClass
+    const itemPrepTier = (item.prepTier as PrepTier) ?? resolved.prepTier
+    if (itemHoldClass === 'serve_immediately') symbols.push('serve_immediately')
+    else if (itemHoldClass === 'hold_warm') symbols.push('hold_warm')
+
     return {
       recipeId: item.recipeId,
       recipeName: item.recipeName,
@@ -139,6 +162,10 @@ export function computePrepTimeline(
       freezable: resolved.freezable,
       frozenExtendsHours: item.frozenExtendsHours ?? null,
       prepTimeMinutes: item.prepTimeMinutes,
+      activeMinutes: item.activeMinutes ?? item.prepTimeMinutes,
+      passiveMinutes: item.passiveMinutes ?? 0,
+      holdClass: itemHoldClass,
+      prepTier: itemPrepTier,
       usingDefaults,
       symbols,
       allergenFlags: item.allergenFlags,
@@ -206,6 +233,13 @@ export function computePrepTimeline(
     const date = addDays(serviceDay, -offset)
     const dayItems = dayMap.get(offset) ?? []
 
+    const TIER_ORDER: Record<PrepTier, number> = {
+      base: 0,
+      secondary: 1,
+      tertiary: 2,
+      finishing: 3,
+    }
+
     return {
       date,
       label: getDayLabel(offset),
@@ -214,8 +248,16 @@ export function computePrepTimeline(
       isPast: isBefore(date, today) && !isToday(date),
       isServiceDay: offset === 0,
       deadlineType: null, // set below
-      items: dayItems.sort((a, b) => b.prepTimeMinutes - a.prepTimeMinutes), // longest prep first
+      items: dayItems.sort((a, b) => {
+        // Primary: prep tier (base first)
+        const tierDiff = TIER_ORDER[a.prepTier] - TIER_ORDER[b.prepTier]
+        if (tierDiff !== 0) return tierDiff
+        // Secondary: longest active time first
+        return b.activeMinutes - a.activeMinutes
+      }),
       totalPrepMinutes: dayItems.reduce((sum, i) => sum + i.prepTimeMinutes, 0),
+      activeMinutes: dayItems.reduce((sum, i) => sum + i.activeMinutes, 0),
+      passiveMinutes: dayItems.reduce((sum, i) => sum + i.passiveMinutes, 0),
     }
   })
 
@@ -259,6 +301,8 @@ export function computePrepTimeline(
       deadlineType: 'grocery',
       items: [],
       totalPrepMinutes: 0,
+      activeMinutes: 0,
+      passiveMinutes: 0,
     })
     days.sort((a, b) => b.daysBeforeService - a.daysBeforeService)
   }

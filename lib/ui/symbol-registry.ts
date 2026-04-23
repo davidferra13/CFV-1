@@ -54,6 +54,27 @@ export const SYMBOL_REGISTRY: SymbolCategory[] = [
         icon: 'Clock',
         color: 'text-stone-400',
       },
+      {
+        id: 'serve_immediately',
+        label: 'Serve immediately',
+        description: 'Must be plated within minutes of cooking',
+        icon: 'Flame',
+        color: 'text-red-400',
+      },
+      {
+        id: 'hold_warm',
+        label: 'Can hold warm',
+        description: 'Holds safely at 135F+ for service',
+        icon: 'Thermometer',
+        color: 'text-amber-400',
+      },
+      {
+        id: 'prep_tier_base',
+        label: 'Base prep',
+        description: 'Stocks, blanching liquids, base preparations (prep first)',
+        icon: 'Layers',
+        color: 'text-violet-400',
+      },
     ],
   },
   {

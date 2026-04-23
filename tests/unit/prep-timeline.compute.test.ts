@@ -5,7 +5,7 @@ import {
   formatPrepTime,
   formatHoursAsReadable,
 } from '@/lib/prep-timeline/compute-timeline'
-import type { TimelineRecipeInput } from '@/lib/prep-timeline/compute-timeline'
+import type { TimelineRecipeInput, PrepItem } from '@/lib/prep-timeline/compute-timeline'
 
 // ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -25,6 +25,10 @@ function makeInput(overrides: Partial<TimelineRecipeInput> = {}): TimelineRecipe
     freezable: null,
     frozenExtendsHours: null,
     prepTimeMinutes: 60,
+    activeMinutes: null,
+    passiveMinutes: null,
+    holdClass: null,
+    prepTier: null,
     allergenFlags: [],
     makeAheadWindowHours: null,
     ...overrides,
@@ -380,6 +384,211 @@ test('grocery deadline card inserted when it does not overlap with a prep day', 
     const groceryCards = result.days.filter((d) => d.deadlineType === 'grocery')
     assert.ok(groceryCards.length > 0, 'Should have a grocery deadline card')
   }
+})
+
+// ── Active/passive minutes ──────────────────────────────────────────────
+
+test('active/passive minutes resolve from input', () => {
+  const result = computePrepTimeline(
+    [
+      makeInput({
+        category: 'sauce',
+        activeMinutes: 20,
+        passiveMinutes: 120,
+        prepTimeMinutes: 140,
+      }),
+    ],
+    futureServiceDate()
+  )
+  const items = result.days.flatMap((d) => d.items)
+  assert.equal(items[0].activeMinutes, 20)
+  assert.equal(items[0].passiveMinutes, 120)
+})
+
+test('active/passive fallback when null', () => {
+  const result = computePrepTimeline(
+    [
+      makeInput({
+        category: 'sauce',
+        activeMinutes: null,
+        passiveMinutes: null,
+        prepTimeMinutes: 60,
+      }),
+    ],
+    futureServiceDate()
+  )
+  const items = result.days.flatMap((d) => d.items)
+  assert.equal(items[0].activeMinutes, 60, 'activeMinutes should fallback to prepTimeMinutes')
+  assert.equal(items[0].passiveMinutes, 0, 'passiveMinutes should fallback to 0')
+})
+
+test('PrepDay.activeMinutes sums active time only', () => {
+  const result = computePrepTimeline(
+    [
+      makeInput({ recipeId: 'r1', category: 'sauce', activeMinutes: 20, passiveMinutes: 100 }),
+      makeInput({ recipeId: 'r2', category: 'sauce', activeMinutes: 30, passiveMinutes: 50 }),
+    ],
+    futureServiceDate()
+  )
+  const daysWithItems = result.days.filter((d) => d.items.length > 0)
+  assert.ok(daysWithItems.length > 0)
+  assert.equal(daysWithItems[0].activeMinutes, 50)
+})
+
+test('PrepDay.passiveMinutes sums passive time only', () => {
+  const result = computePrepTimeline(
+    [
+      makeInput({ recipeId: 'r1', category: 'sauce', activeMinutes: 20, passiveMinutes: 100 }),
+      makeInput({ recipeId: 'r2', category: 'sauce', activeMinutes: 30, passiveMinutes: 50 }),
+    ],
+    futureServiceDate()
+  )
+  const daysWithItems = result.days.filter((d) => d.items.length > 0)
+  assert.equal(daysWithItems[0].passiveMinutes, 150)
+})
+
+// ── Hold class ──────────────────────────────────────────────────────────
+
+test('holdClass resolves from input', () => {
+  const result = computePrepTimeline(
+    [makeInput({ category: 'sauce', holdClass: 'hold_cold_reheat' })],
+    futureServiceDate()
+  )
+  const items = result.days.flatMap((d) => d.items)
+  assert.equal(items[0].holdClass, 'hold_cold_reheat')
+})
+
+test('holdClass falls back to category default', () => {
+  const result = computePrepTimeline(
+    [makeInput({ category: 'protein', holdClass: null })],
+    futureServiceDate()
+  )
+  const items = result.days.flatMap((d) => d.items)
+  assert.equal(items[0].holdClass, 'serve_immediately')
+})
+
+test('serve_immediately symbol added for serve_immediately holdClass', () => {
+  const result = computePrepTimeline(
+    [makeInput({ category: 'protein', holdClass: null })],
+    futureServiceDate()
+  )
+  const items = result.days.flatMap((d) => d.items)
+  assert.ok(items[0].symbols.includes('serve_immediately'))
+})
+
+test('hold_warm symbol added for hold_warm holdClass', () => {
+  const result = computePrepTimeline(
+    [makeInput({ category: 'sauce', holdClass: null })],
+    futureServiceDate()
+  )
+  const items = result.days.flatMap((d) => d.items)
+  assert.ok(items[0].symbols.includes('hold_warm'))
+})
+
+test('hold_cold_reheat gets no hold symbol', () => {
+  const result = computePrepTimeline(
+    [makeInput({ category: 'sauce', holdClass: 'hold_cold_reheat' })],
+    futureServiceDate()
+  )
+  const items = result.days.flatMap((d) => d.items)
+  assert.ok(!items[0].symbols.includes('serve_immediately'))
+  assert.ok(!items[0].symbols.includes('hold_warm'))
+})
+
+// ── Prep tier ───────────────────────────────────────────────────────────
+
+test('prepTier resolves from input', () => {
+  const result = computePrepTimeline(
+    [makeInput({ category: 'sauce', prepTier: 'base' })],
+    futureServiceDate()
+  )
+  const items = result.days.flatMap((d) => d.items)
+  assert.equal(items[0].prepTier, 'base')
+})
+
+test('prepTier falls back to category default', () => {
+  const result = computePrepTimeline(
+    [makeInput({ category: 'condiment', prepTier: null })],
+    futureServiceDate()
+  )
+  const items = result.days.flatMap((d) => d.items)
+  assert.equal(items[0].prepTier, 'base')
+})
+
+test('items sorted by tier within a day (base before secondary before tertiary)', () => {
+  const result = computePrepTimeline(
+    [
+      makeInput({
+        recipeId: 'r1',
+        recipeName: 'Garnish',
+        category: 'salad',
+        prepTier: 'finishing',
+      }),
+      makeInput({ recipeId: 'r2', recipeName: 'Stock', category: 'sauce', prepTier: 'base' }),
+      makeInput({ recipeId: 'r3', recipeName: 'Sauce', category: 'sauce', prepTier: 'secondary' }),
+    ],
+    futureServiceDate()
+  )
+  // All items should land on same day since they share category defaults for peak windows
+  const daysWithItems = result.days.filter((d) => d.items.length > 1)
+  if (daysWithItems.length > 0) {
+    const items = daysWithItems[0].items
+    const tiers = items.map((i: PrepItem) => i.prepTier)
+    const tierOrder = { base: 0, secondary: 1, tertiary: 2, finishing: 3 }
+    for (let i = 1; i < tiers.length; i++) {
+      assert.ok(
+        tierOrder[tiers[i - 1] as keyof typeof tierOrder] <=
+          tierOrder[tiers[i] as keyof typeof tierOrder],
+        `Tier order violated: ${tiers[i - 1]} should come before ${tiers[i]}`
+      )
+    }
+  }
+})
+
+test('within same tier, sorted by active minutes descending', () => {
+  const result = computePrepTimeline(
+    [
+      makeInput({
+        recipeId: 'r1',
+        recipeName: 'Short',
+        category: 'sauce',
+        prepTier: 'secondary',
+        activeMinutes: 15,
+      }),
+      makeInput({
+        recipeId: 'r2',
+        recipeName: 'Long',
+        category: 'sauce',
+        prepTier: 'secondary',
+        activeMinutes: 90,
+      }),
+    ],
+    futureServiceDate()
+  )
+  const daysWithItems = result.days.filter((d) => d.items.length > 1)
+  if (daysWithItems.length > 0) {
+    const items = daysWithItems[0].items
+    assert.equal(items[0].recipeName, 'Long')
+    assert.equal(items[1].recipeName, 'Short')
+  }
+})
+
+test('condiment category defaults to prepTier=base', () => {
+  const result = computePrepTimeline(
+    [makeInput({ category: 'condiment', prepTier: null })],
+    futureServiceDate()
+  )
+  const items = result.days.flatMap((d) => d.items)
+  assert.equal(items[0].prepTier, 'base')
+})
+
+test('protein category defaults to prepTier=finishing', () => {
+  const result = computePrepTimeline(
+    [makeInput({ category: 'protein', prepTier: null })],
+    futureServiceDate()
+  )
+  const items = result.days.flatMap((d) => d.items)
+  assert.equal(items[0].prepTier, 'finishing')
 })
 
 // ── formatPrepTime ───────────────────────────────────────────────────────
