@@ -9,6 +9,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { normalizeUnit, canConvert, addQuantities, formatQuantity } from './unit-conversion'
+import { lookupDensity } from '@/lib/units/conversion-engine'
 import { assignStoreSection } from '@/lib/formulas/grocery-consolidation'
 import { PORTIONS_BY_SERVICE_STYLE } from '@/lib/finance/industry-benchmarks'
 
@@ -325,14 +326,15 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
     let totalQty = 0
     let recipeQty = 0
     let finalUnit = ''
+    const density = lookupDensity(entry.ingredientName)
 
     // Consolidate recipe quantities (pre-yield)
     if (entry.recipeQuantities.length > 0) {
       let result = { quantity: entry.recipeQuantities[0].qty, unit: entry.recipeQuantities[0].unit }
       for (let i = 1; i < entry.recipeQuantities.length; i++) {
         const next = entry.recipeQuantities[i]
-        if (canConvert(result.unit, next.unit)) {
-          result = addQuantities(result.quantity, result.unit, next.qty, next.unit)
+        if (canConvert(result.unit, next.unit, density)) {
+          result = addQuantities(result.quantity, result.unit, next.qty, next.unit, density)
         } else {
           result.quantity += next.qty
         }
@@ -351,8 +353,8 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
       let result = { quantity: entry.quantities[0].qty, unit: entry.quantities[0].unit }
       for (let i = 1; i < entry.quantities.length; i++) {
         const next = entry.quantities[i]
-        if (canConvert(result.unit, next.unit)) {
-          result = addQuantities(result.quantity, result.unit, next.qty, next.unit)
+        if (canConvert(result.unit, next.unit, density)) {
+          result = addQuantities(result.quantity, result.unit, next.qty, next.unit, density)
         } else {
           result.quantity += next.qty
         }

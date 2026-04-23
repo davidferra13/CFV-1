@@ -194,6 +194,8 @@ const CreateIngredientSchema = z.object({
   allergen_flags: z.array(z.string()).optional(),
   dietary_tags: z.array(z.string()).optional(),
   default_yield_pct: z.number().int().min(5).max(100).optional(),
+  weight_to_volume_ratio: z.number().min(0.01).max(3).optional(),
+  storage_requirement: z.enum(['ambient', 'refrigerated', 'frozen']).optional(),
 })
 
 export type CreateIngredientInput = z.infer<typeof CreateIngredientSchema>
@@ -208,6 +210,8 @@ const UpdateIngredientSchema = z.object({
   allergen_flags: z.array(z.string()).optional(),
   dietary_tags: z.array(z.string()).optional(),
   default_yield_pct: z.number().int().min(5).max(100).nullable().optional(),
+  weight_to_volume_ratio: z.number().min(0.01).max(3).nullable().optional(),
+  storage_requirement: z.enum(['ambient', 'refrigerated', 'frozen']).nullable().optional(),
 })
 
 export type UpdateIngredientInput = z.infer<typeof UpdateIngredientSchema>
@@ -1055,6 +1059,12 @@ export async function createIngredient(input: CreateIngredientInput) {
   if (validated.default_yield_pct !== undefined) {
     insertData.default_yield_pct = validated.default_yield_pct
   }
+  if (validated.weight_to_volume_ratio !== undefined) {
+    insertData.weight_to_volume_ratio = validated.weight_to_volume_ratio
+  }
+  if (validated.storage_requirement !== undefined) {
+    insertData.storage_requirement = validated.storage_requirement
+  }
 
   const { data: ingredient, error } = await db
     .from('ingredients')
@@ -1105,6 +1115,10 @@ export async function updateIngredient(ingredientId: string, input: UpdateIngred
   if (validated.dietary_tags !== undefined) updateData.dietary_tags = validated.dietary_tags
   if (validated.default_yield_pct !== undefined)
     updateData.default_yield_pct = validated.default_yield_pct
+  if (validated.weight_to_volume_ratio !== undefined)
+    updateData.weight_to_volume_ratio = validated.weight_to_volume_ratio
+  if (validated.storage_requirement !== undefined)
+    updateData.storage_requirement = validated.storage_requirement
 
   const { data: ingredient, error } = await db
     .from('ingredients')

@@ -34,6 +34,9 @@ export type SubstitutionSearchResult = {
     dietary_safe_for: string[]
     source: 'system' | 'chef'
     allergyConflicts?: Array<{ allergen: string; severity: string }> // Q14: conflicts with client allergies
+    originalCostCents: number | null
+    substituteCostCents: number | null
+    costDeltaCents: number | null // substitute - original (positive = more expensive)
   }>
 }
 
@@ -85,6 +88,9 @@ export async function searchSubstitutions(
       notes: sys.notes,
       dietary_safe_for: sys.dietary_safe_for,
       source: 'system' as const,
+      originalCostCents: null,
+      substituteCostCents: null,
+      costDeltaCents: null,
     })
   }
 
@@ -97,10 +103,56 @@ export async function searchSubstitutions(
       notes: sub.notes,
       dietary_safe_for: sub.dietary_safe_for ?? [],
       source: 'chef' as const,
+      originalCostCents: null,
+      substituteCostCents: null,
+      costDeltaCents: null,
     })
   }
 
   if (allSubstitutes.length === 0) return null
+
+  // Cost comparison: look up original and substitute prices
+  try {
+    const { data: originalIngredient } = await db
+      .from('ingredients')
+      .select('last_price_cents')
+      .eq('tenant_id', user.tenantId!)
+      .ilike('name', query)
+      .limit(1)
+      .maybeSingle()
+    const origRow = originalIngredient as any
+    const originalCost: number | null = origRow?.last_price_cents
+      ? Number(origRow.last_price_cents)
+      : null
+
+    const subNames = allSubstitutes.map((s) => s.substitute)
+    const { data: subIngredients } = await db
+      .from('ingredients')
+      .select('name, last_price_cents')
+      .eq('tenant_id', user.tenantId!)
+      .in('name', subNames)
+
+    const subPriceMap = new Map<string, number | null>(
+      (subIngredients ?? []).map((i: any) => [
+        i.name.toLowerCase(),
+        i.last_price_cents ? Number(i.last_price_cents) : null,
+      ])
+    )
+
+    for (const sub of allSubstitutes) {
+      const subCost: number | null = subPriceMap.get(sub.substitute.toLowerCase()) ?? null
+      sub.originalCostCents = originalCost
+      sub.substituteCostCents = subCost
+      sub.costDeltaCents = originalCost !== null && subCost !== null ? subCost - originalCost : null
+    }
+  } catch (err) {
+    console.error('[searchSubstitutions] Cost lookup failed (non-blocking):', err)
+    for (const sub of allSubstitutes) {
+      sub.originalCostCents = null
+      sub.substituteCostCents = null
+      sub.costDeltaCents = null
+    }
+  }
 
   // Q14: If clientId provided, cross-reference substitutes against client allergies
   if (clientId) {

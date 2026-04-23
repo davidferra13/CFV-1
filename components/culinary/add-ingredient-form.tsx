@@ -54,6 +54,9 @@ export function AddIngredientForm() {
     default_unit: 'unit',
     average_price_cents: '',
     is_staple: false,
+    default_yield_pct: '',
+    weight_to_volume_ratio: '',
+    storage_requirement: '',
   })
 
   function handleSubmit() {
@@ -69,6 +72,15 @@ export function AddIngredientForm() {
             ? Math.round(parseFloat(form.average_price_cents) * 100)
             : undefined,
           is_staple: form.is_staple,
+          default_yield_pct: form.default_yield_pct ? parseInt(form.default_yield_pct) : undefined,
+          weight_to_volume_ratio: form.weight_to_volume_ratio
+            ? parseFloat(form.weight_to_volume_ratio)
+            : undefined,
+          storage_requirement: (form.storage_requirement || undefined) as
+            | 'ambient'
+            | 'refrigerated'
+            | 'frozen'
+            | undefined,
         })
         setForm({
           name: '',
@@ -76,6 +88,9 @@ export function AddIngredientForm() {
           default_unit: 'unit',
           average_price_cents: '',
           is_staple: false,
+          default_yield_pct: '',
+          weight_to_volume_ratio: '',
+          storage_requirement: '',
         })
         setOpen(false)
         router.refresh()
@@ -161,6 +176,50 @@ export function AddIngredientForm() {
               />
               Staple item
             </label>
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          <div>
+            <label className="text-sm font-medium text-stone-300">Yield %</label>
+            <input
+              type="number"
+              min="5"
+              max="100"
+              className="mt-1 w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              value={form.default_yield_pct}
+              onChange={(e) => setForm({ ...form, default_yield_pct: e.target.value })}
+              placeholder="100"
+            />
+            <p className="text-[10px] text-stone-500 mt-0.5">
+              Usable % after prep (e.g. 55 for shrimp)
+            </p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-stone-300">Density (g/ml)</label>
+            <input
+              type="number"
+              step="0.01"
+              min="0.01"
+              max="3"
+              className="mt-1 w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              value={form.weight_to_volume_ratio}
+              onChange={(e) => setForm({ ...form, weight_to_volume_ratio: e.target.value })}
+              placeholder="e.g. 0.53 for flour"
+            />
+            <p className="text-[10px] text-stone-500 mt-0.5">For volume-to-weight conversion</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-stone-300">Storage</label>
+            <select
+              className="mt-1 w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              value={form.storage_requirement}
+              onChange={(e) => setForm({ ...form, storage_requirement: e.target.value })}
+            >
+              <option value="">Not specified</option>
+              <option value="ambient">Dry / Ambient</option>
+              <option value="refrigerated">Refrigerated</option>
+              <option value="frozen">Frozen</option>
+            </select>
           </div>
         </div>
         {error && <p className="text-sm text-red-600">{error}</p>}

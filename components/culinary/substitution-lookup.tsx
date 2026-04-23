@@ -118,6 +118,20 @@ export function SubstitutionLookup({
                   <span className="text-xs text-stone-400 font-mono bg-stone-900 px-1.5 py-0.5 rounded">
                     {sub.ratio}
                   </span>
+                  {sub.costDeltaCents !== null && sub.costDeltaCents !== undefined && (
+                    <span
+                      className={`text-xs font-mono px-1.5 py-0.5 rounded ${
+                        sub.costDeltaCents > 0
+                          ? 'bg-red-900/40 text-red-300'
+                          : sub.costDeltaCents < 0
+                            ? 'bg-emerald-900/40 text-emerald-300'
+                            : 'bg-stone-800 text-stone-400'
+                      }`}
+                    >
+                      {sub.costDeltaCents > 0 ? '+' : ''}${(sub.costDeltaCents / 100).toFixed(2)}
+                      /unit
+                    </span>
+                  )}
                 </div>
 
                 {sub.notes && <p className="text-xs text-stone-400">{sub.notes}</p>}

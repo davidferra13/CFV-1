@@ -3,7 +3,12 @@
 // Conversion factors sourced from canonical knowledge layer (lib/costing/knowledge.ts).
 
 import { WEIGHT_CONVERSIONS, VOLUME_CONVERSIONS } from '@/lib/costing/knowledge'
-import { normalizeUnit as engineNormalizeUnit } from '@/lib/units/conversion-engine'
+import {
+  normalizeUnit as engineNormalizeUnit,
+  canConvert as engineCanConvert,
+  lookupDensity,
+  convertWithDensity,
+} from '@/lib/units/conversion-engine'
 
 const UNIT_ALIASES: Record<string, string> = {
   oz: 'oz',
@@ -81,12 +86,24 @@ export function normalizeUnit(unit: string | null): string {
   return engineNormalizeUnit(unit)
 }
 
-export function canConvert(unitA: string, unitB: string): boolean {
+export function canConvert(
+  unitA: string,
+  unitB: string,
+  densityOrName?: number | string | null
+): boolean {
   const a = normalizeUnit(unitA)
   const b = normalizeUnit(unitB)
   if (a === b) return true
   if (a in WEIGHT_TO_G && b in WEIGHT_TO_G) return true
   if (a in VOLUME_TO_ML && b in VOLUME_TO_ML) return true
+  // Cross-type: resolve density from value or ingredient name
+  const density =
+    typeof densityOrName === 'number'
+      ? densityOrName
+      : typeof densityOrName === 'string'
+        ? lookupDensity(densityOrName)
+        : null
+  if (density && density > 0) return engineCanConvert(a, b, density)
   return false
 }
 
@@ -94,7 +111,8 @@ export function addQuantities(
   qtyA: number,
   unitA: string,
   qtyB: number,
-  unitB: string
+  unitB: string,
+  densityGPerMl?: number | null
 ): { quantity: number; unit: string } {
   const a = normalizeUnit(unitA)
   const b = normalizeUnit(unitB)
@@ -138,6 +156,14 @@ export function addQuantities(
         unit: 'tbsp',
       }
     return { quantity: Math.round(totalMl * 100) / 100, unit: 'ml' }
+  }
+
+  // Cross-type via density
+  if (densityGPerMl && densityGPerMl > 0) {
+    const converted = convertWithDensity(qtyB, b, a, densityGPerMl)
+    if (converted !== null) {
+      return { quantity: Math.round((qtyA + converted) * 100) / 100, unit: a }
+    }
   }
 
   // Incompatible units - just add and keep first unit

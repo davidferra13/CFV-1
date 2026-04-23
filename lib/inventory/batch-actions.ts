@@ -236,6 +236,39 @@ export async function markBatchExpired(batchId: string): Promise<void> {
 }
 
 /**
+ * Consume qty of an ingredient using FIFO order.
+ * Walks batches oldest-first, deducting from each until qty is fulfilled.
+ * Returns total actually consumed (may be less than requested if
+ * insufficient stock).
+ */
+export async function consumeFIFO(
+  ingredientId: string,
+  qty: number,
+  notes?: string
+): Promise<{ consumed: number; batches: number }> {
+  if (qty <= 0) return { consumed: 0, batches: 0 }
+
+  const batches = await getBatchesForIngredient(ingredientId)
+  // batches already ordered by received_date ASC (FIFO)
+
+  let remaining = qty
+  let batchCount = 0
+
+  for (const batch of batches) {
+    if (remaining <= 0) break
+    const available = batch.remainingQty
+    if (available <= 0) continue
+
+    const deduct = Math.min(available, remaining)
+    await consumeFromBatch(batch.id, deduct)
+    remaining -= deduct
+    batchCount++
+  }
+
+  return { consumed: qty - remaining, batches: batchCount }
+}
+
+/**
  * Get all active (non-depleted) batches for a specific ingredient, ordered by received_date ASC (FIFO).
  */
 export async function getBatchesForIngredient(ingredientId: string): Promise<IngredientBatch[]> {

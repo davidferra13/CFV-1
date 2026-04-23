@@ -5,6 +5,7 @@ import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { createPurchaseOrder, addPOItem } from '@/lib/inventory/purchase-order-actions'
 import { normalizeUnit, canConvert, addQuantities } from '@/lib/grocery/unit-conversion'
+import { lookupDensity } from '@/lib/units/conversion-engine'
 import { ingredientMatchesAllergen } from '@/lib/menus/allergen-check'
 import { PORTIONS_BY_SERVICE_STYLE } from '@/lib/finance/industry-benchmarks'
 
@@ -379,6 +380,7 @@ export async function generateShoppingList(input: {
 
   // Consolidate accumulated quantities with unit conversion
   for (const [, item] of aggregated) {
+    const density = lookupDensity(item.ingredientName)
     // Consolidate recipe quantities
     let rResult = {
       quantity: item._recipeAccum[0]?.qty ?? 0,
@@ -386,8 +388,8 @@ export async function generateShoppingList(input: {
     }
     for (let i = 1; i < item._recipeAccum.length; i++) {
       const next = item._recipeAccum[i]
-      if (canConvert(rResult.unit, next.unit)) {
-        rResult = addQuantities(rResult.quantity, rResult.unit, next.qty, next.unit)
+      if (canConvert(rResult.unit, next.unit, density)) {
+        rResult = addQuantities(rResult.quantity, rResult.unit, next.qty, next.unit, density)
       } else {
         rResult.quantity += next.qty
       }
@@ -401,8 +403,8 @@ export async function generateShoppingList(input: {
     }
     for (let i = 1; i < item._buyAccum.length; i++) {
       const next = item._buyAccum[i]
-      if (canConvert(bResult.unit, next.unit)) {
-        bResult = addQuantities(bResult.quantity, bResult.unit, next.qty, next.unit)
+      if (canConvert(bResult.unit, next.unit, density)) {
+        bResult = addQuantities(bResult.quantity, bResult.unit, next.qty, next.unit, density)
       } else {
         bResult.quantity += next.qty
       }
