@@ -7,6 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import type { Task } from './actions'
 import { dateToDateString } from '@/lib/utils/format'
+import { TASK_WITH_STAFF_SELECT } from './selects'
 
 export type CarriedTask = Task & {
   originalDate: string
@@ -23,7 +24,7 @@ export async function getCarriedOverTasks(today: string): Promise<CarriedTask[]>
 
   const { data, error } = await db
     .from('tasks')
-    .select('*, staff_member:staff_members!tasks_assigned_to_fkey(id, name, role)')
+    .select(TASK_WITH_STAFF_SELECT)
     .eq('chef_id', user.tenantId!)
     .lt('due_date', today)
     .in('status', ['pending', 'in_progress'])

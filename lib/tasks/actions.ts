@@ -8,6 +8,8 @@ import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { notifyTaskAssigned } from '@/lib/notifications/triggers'
+import { TASK_WITH_STAFF_SELECT } from '@/lib/tasks/selects'
+import { normalizeCreateTaskInput, normalizeUpdateTaskInput } from '@/lib/tasks/input-normalization'
 
 // ============================================
 // SCHEMAS
@@ -133,9 +135,9 @@ export async function getActiveStations() {
 // CREATE TASK
 // ============================================
 
-export async function createTask(input: CreateTaskInput) {
+export async function createTask(input: CreateTaskInput | FormData) {
   const user = await requireChef()
-  const validated = CreateTaskSchema.parse(input)
+  const validated = CreateTaskSchema.parse(normalizeCreateTaskInput(input))
   const db: any = createServerClient()
 
   const { data, error } = await db
@@ -305,9 +307,9 @@ export async function getTasksForEventAndStaff(
 // UPDATE TASK
 // ============================================
 
-export async function updateTask(id: string, input: UpdateTaskInput) {
+export async function updateTask(id: string, input: UpdateTaskInput | FormData) {
   const user = await requireChef()
-  const validated = UpdateTaskSchema.parse(input)
+  const validated = UpdateTaskSchema.parse(normalizeUpdateTaskInput(input))
   const db: any = createServerClient()
 
   // Build update payload - only include fields that were explicitly provided
@@ -370,7 +372,7 @@ export async function listTasks(filters?: ListTasksFilter) {
 
   let query = db
     .from('tasks')
-    .select('*, staff_member:staff_members!assigned_to(id, name, role)')
+    .select(TASK_WITH_STAFF_SELECT)
     .eq('chef_id', user.tenantId!)
     .order('due_date', { ascending: true })
     .order('due_time', { ascending: true, nullsFirst: false })
@@ -409,7 +411,7 @@ export async function getTasksByDate(date: string) {
 
   const { data, error } = await db
     .from('tasks')
-    .select('*, staff_member:staff_members!assigned_to(id, name, role)')
+    .select(TASK_WITH_STAFF_SELECT)
     .eq('chef_id', user.tenantId!)
     .eq('due_date', date)
     .order('due_time', { ascending: true, nullsFirst: false })
