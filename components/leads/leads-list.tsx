@@ -30,7 +30,8 @@ export function LeadsList({ submissions }: { submissions: Submission[] }) {
         <Globe className="w-12 h-12 text-stone-300 mx-auto mb-4" />
         <h2 className="text-lg font-semibold text-stone-300">No unclaimed leads</h2>
         <p className="text-stone-500 mt-1">
-          When someone submits the contact form on your website, it will appear here.
+          General contact-form leads from your website will appear here when they are ready to
+          claim.
         </p>
         <Link href="/inquiries/new" className="inline-block mt-4">
           <Button variant="secondary">Log Manual Lead</Button>
@@ -42,7 +43,7 @@ export function LeadsList({ submissions }: { submissions: Submission[] }) {
   return (
     <div className="space-y-3">
       <p className="text-sm text-stone-500">
-        {visible.length} unclaimed {visible.length === 1 ? 'lead' : 'leads'}
+        {visible.length} unclaimed {visible.length === 1 ? 'lead' : 'leads'} in the general queue
       </p>
       {visible.map((submission) => (
         <LeadCard

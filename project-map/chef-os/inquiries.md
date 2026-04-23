@@ -4,26 +4,30 @@
 
 **Routes:** `/inquiries`, `/quotes`, `/leads`, `/calls`, `/partners`, `/proposals`, `/testimonials`, `/rate-card`, `/guest-leads`, `/guest-analytics`, `/prospecting` (admin only)
 **Key files:** `app/(chef)/inquiries/`, `app/(chef)/quotes/`
-**Status:** 94% (quote prefill contract unified; broader validation still pending)
+**Status:** 94% (quote prefill and public intake-lane contracts unified; broader validation still pending)
 
 ## What's Here
 
 - Inquiries: smart priority grouping, 8 status filters, funnel analytics, Smart Fill (AI parse), Gmail integration, Critical Path card, Service Lifecycle panel
 - Quotes: 6 status tabs, pricing intelligence, AI per-guest suggestions, historical price ranges
 - Quote draft prefill contract: `lib/quotes/quote-prefill.ts` now owns the canonical `/quotes/new` search-param schema for inquiry, event, change-order, and consulting entry points; `/quotes/new` composes explicit URL values with inquiry/event enrichment instead of reparsing ad hoc query strings per surface
+- Canonical public intake lanes: `lib/public/intake-lane-config.ts` defines open booking, direct chef inquiry, embed, kiosk, Wix, and instant-book ingress; all public writers now stamp shared `submission_source` values, and admin provenance reads the same contract instead of inferring from raw `channel` values
+- Public intake body guard: open booking, embed inquiry, and kiosk inquiry now share explicit JSON body limits and honest malformed-body handling, so intake routes return `400` or `413` instead of generic `500`s on bad input
+- Public intent hardening: public chef inquiry, open booking, embed inquiry, and instant booking now run through one backend guard for IP and email throttles, silent honeypot handling, safe request metadata, and anonymous checkout dedupe before any client, inquiry, event, or Stripe checkout mutation
 - Rate Card: mobile-friendly pricing reference
-- Leads: website form submissions, claim/dismiss
+- Leads: shared `/leads` workspace where generic website submissions stay claimable and founder-reviewed operator walkthrough requests stay in a separate evaluation lane
 - Calls: upcoming/completed/no-show, agenda, outcome tracking
 - Partners: referral stats, locations, service history
 - Proposals: template builder, visual editor, selectable add-ons
-- Testimonials: approval workflow (pending/approved/featured)
 - Event-scoped quick proposal preview: proposal generation now accepts CP-Engine client profile guidance for preview only, exposing confidence, service depth, emotional state, hard vetoes, strong likes, novelty opportunities, and unresolved clarifications when profile persistence exists
+- Testimonials: approval workflow (pending/approved/featured)
 - Prospecting (admin only): dossier, call queue, AI scrub, scripts, pipeline kanban, clusters, import
 
 ## Open Items
 
 - Cross-surface action graph and intervention engine are still incomplete; quote prefill is now shared, but next-best-action routing is not yet unified across inquiries, events, and follow-up surfaces
-- Repo-wide lint/typecheck and the shared Playwright harness are currently noisy from unrelated schema/runtime drift outside the inquiry pipeline slice
+- Route-aware reassurance is still only partially shared; the intake-lane contract is canonical now, but the full pre-submit and post-submit reassurance spine is still the next missing slice
+- Shared end-to-end proof still relies on slice-specific runtime checks here; the direct browser verification is trustworthy, but the broader shared Playwright harness is still too noisy to treat as the authoritative proof path for this lane
 
 ## Integration Notes
 

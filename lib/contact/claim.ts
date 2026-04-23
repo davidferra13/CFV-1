@@ -9,8 +9,16 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
+import {
+  CONTACT_INTAKE_LANES,
+  OPERATOR_EVALUATION_STATUSES,
+  type ContactIntakeLane,
+  type OperatorEvaluationStatus,
+  parseOperatorWalkthroughSubmission,
+} from '@/lib/contact/operator-evaluation'
 import { createServerClient } from '@/lib/db/server'
 import { createInquiry } from '@/lib/inquiries/actions'
+import { resolveOwnerIdentity } from '@/lib/platform/owner-account'
 import { revalidatePath } from 'next/cache'
 
 type ContactSubmission = {
@@ -20,14 +28,36 @@ type ContactSubmission = {
   subject: string | null
   message: string
   created_at: string
+  intake_lane: ContactIntakeLane
+  operator_evaluation_status: OperatorEvaluationStatus | null
+  source_cta: string | null
+  source_page: string | null
   claimed_by_chef_id: string | null
   claimed_at: string | null
   inquiry_id: string | null
   read: boolean
 }
 
+export type OperatorEvaluationSubmission = {
+  id: string
+  name: string
+  email: string
+  submittedAt: string
+  businessName: string | null
+  operatorType: string | null
+  workflowStack: string | null
+  helpRequest: string | null
+  sourcePage: string | null
+  sourceCta: string | null
+  status: OperatorEvaluationStatus
+}
+
+function getOperatorEvaluationStatusRank(status: OperatorEvaluationStatus) {
+  return OPERATOR_EVALUATION_STATUSES.indexOf(status)
+}
+
 /**
- * Get all unclaimed contact submissions (chef-only).
+ * Get all unclaimed general contact submissions (chef-only).
  * Not tenant-scoped by design -- this is the shared lead pool.
  */
 export async function getUnclaimedSubmissions() {
@@ -37,6 +67,7 @@ export async function getUnclaimedSubmissions() {
   const { data, error } = await db
     .from('contact_submissions')
     .select('id, name, email, subject, message, created_at')
+    .eq('intake_lane', CONTACT_INTAKE_LANES.GENERAL_CONTACT)
     .is('claimed_by_chef_id', null)
     .order('created_at', { ascending: false })
 
@@ -61,6 +92,7 @@ export async function getUnclaimedCount(): Promise<number> {
   const { count, error } = await db
     .from('contact_submissions')
     .select('*', { count: 'exact', head: true })
+    .eq('intake_lane', CONTACT_INTAKE_LANES.GENERAL_CONTACT)
     .is('claimed_by_chef_id', null)
 
   if (error) {
@@ -69,6 +101,124 @@ export async function getUnclaimedCount(): Promise<number> {
   }
 
   return count ?? 0
+}
+
+export async function getOperatorEvaluationInbox(): Promise<{
+  isOwner: boolean
+  submissions: OperatorEvaluationSubmission[]
+}> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+  const ownerIdentity = await resolveOwnerIdentity(db)
+  const isOwner = ownerIdentity.ownerChefId === user.entityId
+
+  if (!isOwner) {
+    return { isOwner: false, submissions: [] }
+  }
+
+  const { data, error } = await db
+    .from('contact_submissions')
+    .select(
+      'id, name, email, subject, message, created_at, source_page, source_cta, operator_evaluation_status'
+    )
+    .eq('intake_lane', CONTACT_INTAKE_LANES.OPERATOR_WALKTHROUGH)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('[getOperatorEvaluationInbox] Error:', error)
+    throw new Error('Failed to fetch operator walkthrough requests')
+  }
+
+  const submissions = (
+    (data ?? []) as Array<
+      Pick<
+        ContactSubmission,
+        | 'id'
+        | 'name'
+        | 'email'
+        | 'subject'
+        | 'message'
+        | 'created_at'
+        | 'source_page'
+        | 'source_cta'
+        | 'operator_evaluation_status'
+      >
+    >
+  )
+    .map((submission) => {
+      const parsed = parseOperatorWalkthroughSubmission({
+        subject: submission.subject,
+        message: submission.message,
+        sourcePage: submission.source_page,
+        sourceCta: submission.source_cta,
+      })
+
+      return {
+        id: submission.id,
+        name: submission.name,
+        email: submission.email,
+        submittedAt: submission.created_at,
+        businessName: parsed?.businessName ?? null,
+        operatorType: parsed?.operatorType ?? null,
+        workflowStack: parsed?.workflowStack ?? null,
+        helpRequest: parsed?.helpRequest ?? null,
+        sourcePage: parsed?.sourcePage ?? submission.source_page ?? null,
+        sourceCta: parsed?.sourceCta ?? submission.source_cta ?? null,
+        status: submission.operator_evaluation_status ?? 'new',
+      } satisfies OperatorEvaluationSubmission
+    })
+    .sort((left, right) => {
+      const rankDifference =
+        getOperatorEvaluationStatusRank(left.status) - getOperatorEvaluationStatusRank(right.status)
+
+      if (rankDifference !== 0) return rankDifference
+      return new Date(right.submittedAt).getTime() - new Date(left.submittedAt).getTime()
+    })
+
+  return {
+    isOwner: true,
+    submissions,
+  }
+}
+
+export async function updateOperatorEvaluationStatus(
+  submissionId: string,
+  status: OperatorEvaluationStatus
+) {
+  const user = await requireChef()
+  const db: any = createServerClient()
+  const ownerIdentity = await resolveOwnerIdentity(db)
+
+  if (ownerIdentity.ownerChefId !== user.entityId) {
+    throw new Error('Only the founder workspace can update operator evaluations')
+  }
+
+  if (!OPERATOR_EVALUATION_STATUSES.includes(status)) {
+    throw new Error('Invalid operator evaluation status')
+  }
+
+  const { data: updatedSubmission, error } = await db
+    .from('contact_submissions')
+    .update({
+      operator_evaluation_status: status,
+      claimed_by_chef_id: user.entityId,
+      claimed_at: new Date().toISOString(),
+      read: true,
+    })
+    .eq('id', submissionId)
+    .eq('intake_lane', CONTACT_INTAKE_LANES.OPERATOR_WALKTHROUGH)
+    .select('id')
+    .single()
+
+  if (error || !updatedSubmission) {
+    console.error('[updateOperatorEvaluationStatus] Error:', error)
+    throw new Error('Failed to update walkthrough request status')
+  }
+
+  revalidatePath('/leads')
+  revalidatePath('/dashboard')
+
+  return { success: true }
 }
 
 /**
@@ -87,6 +237,7 @@ export async function claimContactSubmission(submissionId: string) {
     .from('contact_submissions')
     .select('id, name, email, subject, message, created_at')
     .eq('id', submissionId)
+    .eq('intake_lane', CONTACT_INTAKE_LANES.GENERAL_CONTACT)
     .is('claimed_by_chef_id', null)
     .single()
 
@@ -153,6 +304,7 @@ export async function dismissContactSubmission(submissionId: string) {
       // inquiry_id stays null -- dismissed, not converted
     })
     .eq('id', submissionId)
+    .eq('intake_lane', CONTACT_INTAKE_LANES.GENERAL_CONTACT)
     .is('claimed_by_chef_id', null)
 
   if (error) {
@@ -215,6 +367,7 @@ export async function releaseToMarketplace(inquiryId: string) {
     .from('contact_submissions')
     .select('id')
     .eq('inquiry_id', inquiryId)
+    .eq('intake_lane', CONTACT_INTAKE_LANES.GENERAL_CONTACT)
     .single()
 
   if (!submission) {

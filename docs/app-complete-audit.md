@@ -366,7 +366,7 @@
 - h1: event occasion, `EventStatusBadge`, date/time
 - Buttons: "Edit Event" (draft only) → `/events/[id]/edit`, "Schedule" → `/events/[id]/schedule`, "Packing List" (not draft/cancelled) → `/events/[id]/pack`, "Grocery Quote" (has menu, not cancelled) → `/events/[id]/grocery-quote`, "Travel Plan" → `/events/[id]/travel`, "Back to Events" → `/events`
 - Realtime sync component (auto-refreshes on FSM change)
-- Conditional button: " Quick Proposal\
+- Conditional button: "Quick Proposal" (shown when the event has a linked client and is not cancelled). Opens a generation-only proposal preview for the current event.
 
 #### Banners (conditional)
 
@@ -411,6 +411,7 @@
 - **Menu Approval:** status display + "Edit Menu" → `/menus/[id]/editor`
 - **Financial Summary:** 4 stats (Quoted, Deposit, Paid, Balance Due) + "View Invoice" → `/events/[id]/invoice` + export button
 - **AI Pricing Intelligence:** (proposed/accepted only)
+- **Menu Library Picker, CP-Engine note:** the displayed client taste summary keeps the legacy menu UI contract, but can now be sourced from the CP-Engine vector adapter instead of the legacy culinary snapshot helpers.
 - **Record Payment Panel:** "Record Deposit/Payment" button → opens modal (amount, payment method, submit)
 - **Process Refund Panel:** (cancelled, has payments) → opens modal
 - **Payment Plan:** installment schedule manager
@@ -427,6 +428,7 @@
 #### Tab: Ops
 
 - **Time Tracking:** 5 activity rows (Shopping/Prep/Packing/Driving/Execution) each with Start/Stop buttons, manual edit mode with number inputs
+- **Service Simulation:** deterministic 8-phase walkthrough generated from current event truth. Status badge shows unsimulated/current/stale. `Simulate Service` and `Re-simulate` persist rehearsal runs. Stale state names the material change. Every missing item and risk links to the exact fixing route.
 - **Event Staff Panel:** roster with add/remove/log-hours actions per staff member
 - **AI Staff Briefing, AI Prep Timeline, AI Service Timeline:** AI-generated documents
 - **Chef Collaborators:** invite other chefs panel
@@ -533,38 +535,41 @@
 
 The relationship timeline now runs on a canonical interaction ledger projection over authoritative events, inquiries, messages, notes, quotes, payments, reviews, high-intent client portal activity, menu revisions, and document versions. Quote, menu, and document entries surface revision identity inline.
 
+The next-best-action layer now projects from canonical interaction signals plus the existing booking-blocker override and relationship health inputs. Shared action copy and headings live in one contract, so the client card, dashboard relationship surface, and relationship route no longer keep separate action unions or route-local heading switches.
+
 ### 3.3 Client Sub-Sections
 
-| Route                                         | Content                                                                                                                                                                                                                                    |
-| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `/clients/new`                                | Full create form: Quick Add mode (essential fields) or Full Profile mode (8 collapsible sections covering identity, household, culinary preferences, access/security, kitchen profile, service defaults, personality, internal assessment) |
-| `/clients/[id]/recurring`                     | Recurring services + dish history + "Log Dish Served" form                                                                                                                                                                                 |
-| `/clients/active`, `/inactive`, `/vip`        | Filtered client tables                                                                                                                                                                                                                     |
-| `/clients/duplicates`                         | Duplicate pairs with confidence badges, links to both records                                                                                                                                                                              |
-| `/clients/segments`                           | Segment builder: name, color, description, filter rows (field/operator/value), save                                                                                                                                                        |
-| `/clients/gift-cards`                         | Issue gift cards/vouchers, stats, codes table with send/deactivate actions, redemption history                                                                                                                                             |
-| `/clients/communication`                      | Hub linking to Notes, Follow-Ups, Upcoming Touchpoints                                                                                                                                                                                     |
-| `/clients/communication/notes`                | All client notes across clients                                                                                                                                                                                                            |
-| `/clients/communication/follow-ups`           | Overdue/At-Risk/Check-In stats + table                                                                                                                                                                                                     |
-| `/clients/communication/upcoming-touchpoints` | This week/month/60-day stats + table                                                                                                                                                                                                       |
-| `/clients/history`                            | Hub linking to Event History, Past Menus, Spending History                                                                                                                                                                                 |
-| `/clients/history/event-history`              | All past events table                                                                                                                                                                                                                      |
-| `/clients/history/past-menus`                 | Menu library table                                                                                                                                                                                                                         |
-| `/clients/history/spending-history`           | Ranked spending table                                                                                                                                                                                                                      |
-| `/clients/preferences`                        | Hub linking to Dietary Restrictions, Allergies, Favorites, Dislikes                                                                                                                                                                        |
-| `/clients/preferences/allergies`              | Tag cloud + table                                                                                                                                                                                                                          |
-| `/clients/preferences/dietary-restrictions`   | Tag cloud + table                                                                                                                                                                                                                          |
-| `/clients/preferences/favorite-dishes`        | Tag cloud + table                                                                                                                                                                                                                          |
-| `/clients/preferences/dislikes`               | Tag cloud + table                                                                                                                                                                                                                          |
-| `/clients/insights`                           | Hub: Top Client, Most Frequent, Avg Spend, At-Risk, Active on Portal                                                                                                                                                                       |
-| `/clients/insights/top-clients`               | Ranked revenue table                                                                                                                                                                                                                       |
-| `/clients/insights/most-frequent`             | Ranked frequency table                                                                                                                                                                                                                     |
-| `/clients/insights/at-risk`                   | Days-since + priority table                                                                                                                                                                                                                |
-| `/clients/loyalty`                            | Hub: enrolled, points outstanding, tier distribution                                                                                                                                                                                       |
-| `/clients/loyalty/points`                     | Points balance table                                                                                                                                                                                                                       |
-| `/clients/loyalty/rewards`                    | Reward codes table                                                                                                                                                                                                                         |
-| `/clients/loyalty/referrals`                  | Referral source analysis with bars + top referrer cards                                                                                                                                                                                    |
-| `/clients/presence`                           | Real-time client portal monitoring (SSE realtime), online count, activity stream with high-intent badges                                                                                                                                   |
+| Route                                         | Content                                                                                                                                                                                                                                                                                                                                               |
+| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/clients/new`                                | Full create form: Quick Add mode (essential fields) or Full Profile mode (8 collapsible sections covering identity, household, culinary preferences, access/security, kitchen profile, service defaults, personality, internal assessment)                                                                                                            |
+| `/clients/[id]/relationship`                  | Dedicated relationship follow-through route. Header copy comes from the shared client action vocabulary. Summary card shows the winning action title, description, urgency/tier, primary signal badge, and reason/source explanation blocks. Direct outreach, canonical relationship snapshot, recent relationship history, and key dates live below. |
+| `/clients/[id]/recurring`                     | Recurring services + dish history + "Log Dish Served" form                                                                                                                                                                                                                                                                                            |
+| `/clients/active`, `/inactive`, `/vip`        | Filtered client tables                                                                                                                                                                                                                                                                                                                                |
+| `/clients/duplicates`                         | Duplicate pairs with confidence badges, links to both records                                                                                                                                                                                                                                                                                         |
+| `/clients/segments`                           | Segment builder: name, color, description, filter rows (field/operator/value), save                                                                                                                                                                                                                                                                   |
+| `/clients/gift-cards`                         | Issue gift cards/vouchers, stats, codes table with send/deactivate actions, redemption history                                                                                                                                                                                                                                                        |
+| `/clients/communication`                      | Hub linking to Notes, Follow-Ups, Upcoming Touchpoints                                                                                                                                                                                                                                                                                                |
+| `/clients/communication/notes`                | All client notes across clients                                                                                                                                                                                                                                                                                                                       |
+| `/clients/communication/follow-ups`           | Overdue/At-Risk/Check-In stats + table                                                                                                                                                                                                                                                                                                                |
+| `/clients/communication/upcoming-touchpoints` | This week/month/60-day stats + table                                                                                                                                                                                                                                                                                                                  |
+| `/clients/history`                            | Hub linking to Event History, Past Menus, Spending History                                                                                                                                                                                                                                                                                            |
+| `/clients/history/event-history`              | All past events table                                                                                                                                                                                                                                                                                                                                 |
+| `/clients/history/past-menus`                 | Menu library table                                                                                                                                                                                                                                                                                                                                    |
+| `/clients/history/spending-history`           | Ranked spending table                                                                                                                                                                                                                                                                                                                                 |
+| `/clients/preferences`                        | Hub linking to Dietary Restrictions, Allergies, Favorites, Dislikes                                                                                                                                                                                                                                                                                   |
+| `/clients/preferences/allergies`              | Tag cloud + table                                                                                                                                                                                                                                                                                                                                     |
+| `/clients/preferences/dietary-restrictions`   | Tag cloud + table                                                                                                                                                                                                                                                                                                                                     |
+| `/clients/preferences/favorite-dishes`        | Tag cloud + table                                                                                                                                                                                                                                                                                                                                     |
+| `/clients/preferences/dislikes`               | Tag cloud + table                                                                                                                                                                                                                                                                                                                                     |
+| `/clients/insights`                           | Hub: Top Client, Most Frequent, Avg Spend, At-Risk, Active on Portal                                                                                                                                                                                                                                                                                  |
+| `/clients/insights/top-clients`               | Ranked revenue table                                                                                                                                                                                                                                                                                                                                  |
+| `/clients/insights/most-frequent`             | Ranked frequency table                                                                                                                                                                                                                                                                                                                                |
+| `/clients/insights/at-risk`                   | Days-since + priority table                                                                                                                                                                                                                                                                                                                           |
+| `/clients/loyalty`                            | Hub: enrolled, points outstanding, tier distribution                                                                                                                                                                                                                                                                                                  |
+| `/clients/loyalty/points`                     | Points balance table                                                                                                                                                                                                                                                                                                                                  |
+| `/clients/loyalty/rewards`                    | Reward codes table                                                                                                                                                                                                                                                                                                                                    |
+| `/clients/loyalty/referrals`                  | Referral source analysis with bars + top referrer cards                                                                                                                                                                                                                                                                                               |
+| `/clients/presence`                           | Real-time client portal monitoring (SSE realtime), online count, activity stream with high-intent badges                                                                                                                                                                                                                                              |
 
 ---
 
@@ -615,6 +620,7 @@ Quick-access pricing reference designed for mobile use mid-conversation. Reads a
 
 ### 4.3 Leads
 
+Founder-owned operator walkthrough requests from `/for-operators/walkthrough` also appear on this route in a separate Operator Evaluation Inbox with status actions for New, Qualified, Replied, Scheduled, Pilot, and Not fit.
 **Route:** `/leads` — Website form submissions with "Claim →" and "Dismiss" buttons per lead. Sub-pages: contacted, qualified, converted, archived.
 
 ### 4.4 Calls & Meetings
@@ -656,6 +662,8 @@ Quick-access pricing reference designed for mobile use mid-conversation. Reads a
 
 **`/proposals/templates`** — Visual builder with create/edit forms.
 **`/proposals/addons`** — Selectable add-on cards with running per-person/total, create/edit/delete.
+
+**Event quick proposal preview** â€” launched from `/events/[id]` when the event has a linked client and is not cancelled. Preview is generation-only and does not persist quote changes by itself. The preview can render a compact **Client Profile Guidance** block with confidence, service depth, emotional state, hard vetoes, strong likes, novelty opportunities, and unresolved clarifications. Hidden when CP profile persistence is unavailable.
 
 ### 4.9 Testimonials
 
@@ -740,6 +748,8 @@ Quick-access pricing reference designed for mobile use mid-conversation. Reads a
 - **`/menus/[id]`** — Menu detail with two-column layout (main + intelligence sidebar on lg+). Main: hero image, **assembly browser** (collapsible "Add from Sources" panel with 4 tabs: Templates, Past Menus, Recipes, Quick Add; click-to-add with course position selector, deep copy with auto-scale adjustment; hidden for locked menus), menu editor (draft-only edit), cost breakdown tree (collapsible Course > Dish > Component > Ingredient with scaled quantities and costs), **Allergen Matrix** (allergen-vs-dish grid showing which dishes contain which allergens, FDA Big 9 highlighted, red/green cells). Sidebar: live cost summary (food cost %, total cost, cost/guest, margin alerts), context sidebar (season/guest tier badges, client allergies in red, dietary restrictions in amber, previous menus for same client, matching templates). Top bar: scale dialog (guest count auto-scaling with adjustment preview), "View Event" link. Showcase toggle, duplicate/delete. "Open Editor" → `/menus/[id]/editor`.
 - **`/menus/[id]/editor`** — Full document editor with auto-save (1.5s debounce), structured mode (courses/dishes with dietary toggles, allergen flags, chef notes, dish photos, hover reorder/delete) or freeform mode. Right sidebar split into three sections: **Context Dock** (top of sidebar; three toggleable assets: Season pill buttons for spring/summer/fall/winter, Target Date picker independent of event date, Client picker with lazy-loaded searchable list showing dietary restrictions and allergies inline; all auto-save via 1.5s debounce; works with or without an event linked), **MenuCostSidebar** (live cost summary: food cost %, total cost, cost/guest, margin alerts) and **MenuContextSidebar** (Intelligence panel). Sidebar also includes **AllergenConflictAlert** (deterministic, auto-runs when menu is linked to an event; shows per-guest allergen conflicts with FDA Big 9 classification). Intelligence header shows "Intelligence" title with "Configure" link to `/settings/menu-engine`. The context sidebar has 11 togglable feature sections: seasonal warnings, prep estimate, client taste profile, menu history, vendor hints, allergen validation, stock alerts, scale mismatch, inquiry link, budget compliance, dietary conflicts. Each section renders only if enabled in Menu Engine settings AND relevant data exists. Three empty states: all features disabled (directs to `/settings/menu-engine`), some features enabled but none have data, partial features disabled (shows count of disabled features with configure link). Additional sidebar widgets: **Budget Compliance** (auto-loads when event has a quote; compares food cost vs quoted price; shows ok/warning/critical status indicators), **Price Alerts** (shows ingredient price spikes affecting this menu; flags ingredients 30%+ above their average price), **Guest Scaling** (interactive widget; lets chef rescale menu to a different guest count; updates component scale factors in real time).
 - **`/menus/tasting`** — Tasting Menu hub page. List view of all tasting menus with create/edit/preview actions. "+ New Tasting Menu" button. Back link to `/menus`.
+
+- **`/menus/[id]/editor`, CP-Engine note** â€” the client taste profile and dietary conflict sections can now read the CP-Engine vector adapter. Dietary conflicts may surface hard vetoes, severe dislikes, and unresolved ambiguity overlaps under a clear conflict label while preserving the existing UI shape.
 
 ### 6.2 Recipes
 
@@ -1175,6 +1185,13 @@ Now includes **Reviews & Testimonials** section showing:
 - "View all X reviews" expand button (shows 6 initially)
 - JSON-LD `AggregateRating` markup for SEO star ratings in Google search results
 - Sources: consented client reviews, public chef feedback, external reviews (Google/website), approved guest testimonials
+
+**Route:** `/chef/[slug]/inquire` - Public direct-chef inquiry page (no auth). Surface includes:
+
+- Chef-specific heading and profile context for one named chef
+- Route-aware expectation stack: direct chef inquiry, one named chef, chef follows up after review
+- Shared `PublicInquiryForm` fields: name, email, phone, event date, service type, guest count, budget, and message
+- Success state after submission through the shared public inquiry action
 
 ---
 
@@ -1953,35 +1970,36 @@ Public-facing consumer marketplace pages. No auth required. These form the clien
 
 ### Homepage (`/`)
 
-Client-first marketplace landing. Hero with "Find a private chef near you." tagline.
+Operator-aware public landing. Hero now leads qualified operators into the proof page while preserving the consumer marketplace branch.
 
 | Element            | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Hero section       | Gradient background, headline, subtitle, "Book a Private Chef" CTA button                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| Search bar         | `HomepageSearch` component: `LocationAutocomplete` for location + service type dropdown + search button. Passes pre-geocoded lat/lng when available. Navigates to `/chefs?location=X&serviceType=Y&lat=N&lng=N`                                                                                                                                                                                                                                                                                                                  |
+| Hero section       | Operator-first headline/subtitle, primary CTA to `/for-operators`, inline walkthrough link, and proof cards for demo/screens/walkthrough truth                                                                                                                                                                                                                                                                                                                                                                                   |
+| Search bar         | Consumer-branch `HomepageSearch` card: `LocationAutocomplete` for location + service type dropdown + browse button. Passes pre-geocoded lat/lng when available. Navigates to `/chefs?location=X&serviceType=Y&lat=N&lng=N`                                                                                                                                                                                                                                                                                                       |
 | Service categories | 6 cards (Private Dining, Meal Prep, Cooking Classes, Corporate Events, Wedding Catering, Special Diets). Each links to `/chefs?serviceType=X`                                                                                                                                                                                                                                                                                                                                                                                    |
 | Featured chefs     | Grid of discoverable chefs from `getDiscoverableChefs()`, sorted by `sortDirectoryChefs()`. Chef cards: outer wrapper is a div (not Link), hero image area links to `/chef/[slug]` (Cloudinary-optimized via `getOptimizedImageUrl` for external URLs), social link icons row (conditional, links to chef's social profiles in new tabs), star rating badge overlay (top-right corner, shown when `avg_rating` and `review_count` exist), name, tagline, "Inquire" CTA button at card footer (shown when chef accepts inquiries) |
 | How it works       | 3-step: Describe Your Event, Get Matched, Enjoy. Icons + descriptions                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| Operator CTA       | Bottom section targeting chef operators with link to `/for-operators`                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Operator path band | Bottom proof-first operator band with live dashboard screenshot, CTA to `/for-operators`, and follow-on walkthrough CTA to `/for-operators/walkthrough`. Source attribution still carries into the downstream operator pages.                                                                                                                                                                                                                                                                                                    |
 
 ### Book a Private Chef (`/book`)
 
 Open booking form. Client describes event, gets matched to nearby chefs.
 
-| Element                          | Description                                                                                                                          |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Hero                             | "Book a private chef" headline, subtitle explaining the matching process                                                             |
-| Form section 1: About your event | Service type (dropdown), occasion (text), event date (date picker), serve time (text), location (text), guest count (select: 2-200+) |
-| Form section 2: Preferences      | Budget range (select), dietary restrictions (textarea), additional notes (textarea)                                                  |
-| Form section 3: Contact info     | Full name, email, phone (optional)                                                                                                   |
-| Honeypot                         | Hidden `website_url` field for bot detection                                                                                         |
-| Turnstile CAPTCHA                | Invisible Cloudflare Turnstile widget. Token required server-side before submission accepted.                                        |
-| sessionStorage draft recovery    | Form auto-saves to sessionStorage on every field change. Restores on page reload. Honeypot never persisted. Cleared on success.      |
-| Submit                           | Posts to `/api/book`. Shows spinner during submission                                                                                |
-| Success state                    | Shows matched count and location. If 0 matches, shows "browse directory" fallback link                                               |
-| Trust footer                     | 4 checkmarks: Free to submit, No obligation, Chefs contact you directly, Zero commission                                             |
+| Element                          | Description                                                                                                                                                         |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hero                             | "Book a private chef" headline, subtitle explaining the matching process                                                                                            |
+| Lane expectations                | Route-aware reassurance cards explain this is a matched-chef request, matched chefs contact the client directly, and availability is confirmed only after follow-up |
+| Form section 1: About your event | Service type (dropdown), occasion (text), event date (date picker), serve time (text), location (text), guest count (select: 2-200+)                                |
+| Form section 2: Preferences      | Budget range (select), dietary restrictions (textarea), additional notes (textarea)                                                                                 |
+| Form section 3: Contact info     | Full name, email, phone (optional)                                                                                                                                  |
+| Honeypot                         | Hidden `website_url` field for bot detection                                                                                                                        |
+| Turnstile CAPTCHA                | Invisible Cloudflare Turnstile widget. Token required server-side before submission accepted.                                                                       |
+| sessionStorage draft recovery    | Form auto-saves to sessionStorage on every field change. Restores on page reload. Honeypot never persisted. Cleared on success.                                     |
+| Submit                           | Posts to `/api/book`. Shows spinner during submission                                                                                                               |
+| Success state                    | Shows matched count and location. If 0 matches, shows "browse directory" fallback link                                                                              |
+| Trust footer                     | 4 checkmarks: Free to submit, No obligation, Chefs contact you directly, Zero commission                                                                            |
 
-**API:** `POST /api/book` - rate limited (5/10min per IP), Turnstile CAPTCHA server-side verification, email validation, honeypot. Matches chefs via `matchChefsForBooking()` (Haversine distance, service type, guest count). Creates inquiry + draft event under each matched chef (up to 10). Sends chef notification emails + client confirmation.
+**API:** `POST /api/book` - rate limited (5/10min per IP), Turnstile CAPTCHA server-side verification, email validation, honeypot. Matches chefs via `matchChefsForBooking()` (Haversine distance, service type, guest count). Creates inquiry + draft event under each matched chef (up to 10), stamps `unknown_fields.submission_source = open_booking`, and sends chef notification emails plus client confirmation.
 
 ### Ingredient Guide (`/ingredients`)
 
@@ -2048,16 +2066,40 @@ Full ingredient knowledge page. Wiki summary, flavor profile, dietary flags, ori
 
 ### For Operators (`/for-operators`)
 
-Operator landing page with research-backed pain points and capability grid.
+Operator proof page for chef-led businesses with proof-first acquisition, real-product evidence, and segmented next-step routing.
 
-| Element             | Description                                                                                                 |
-| ------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Hero                | "The operating system for food operators" with signup + sign in CTAs                                        |
-| Principles strip    | Free / Self-hosted / Zero commission / 100% private                                                         |
-| Pain points section | 4 cards: invisible labor, food cost tracking, client LTV, seasonality                                       |
-| Capabilities grid   | 8 cards: Clients, Events, Menus & Food Costing, Finances, Recipes, Inventory & Vendors, Staff, AI Assistant |
-| Origin story        | "Built by a chef who lived the problem" section                                                             |
-| Bottom CTA          | "Your craft deserves better tools" + signup                                                                 |
+| Element             | Description                                                                                                                                                                              |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hero                | "The operator workspace for private chefs, caterers, and meal prep businesses" with walkthrough CTA, demo jump link, inline self-serve signup, and sign-in link                          |
+| Product proof aside | Real dashboard screenshot with supporting proof cards so operators can see current-state product evidence instead of concept copy                                                        |
+| Entry path cards    | 3 segmented cards routing to `/marketplace-chefs`, `/compare`, and `/for-operators/walkthrough` when the operator needs a more specific frame than the default proof-to-walkthrough path |
+| Best-fit section    | Cards for private chefs, caterers and small teams, and meal prep or recurring service operators, plus "not a commission marketplace" framing                                             |
+| Workflow proof      | Screenshot-backed workflow map covering public intake, website widget, inquiry record, event operations, and finance                                                                     |
+| Truth cards         | Current pricing state, proof standard, and trust posture links so operators can evaluate the product without inflated claims                                                             |
+| Final CTA           | Three-way next-step panel with walkthrough emphasized as the default qualified move, plus secondary pricing and self-serve signup cards                                                  |
+
+### Operator Walkthrough (`/for-operators/walkthrough`)
+
+Founder-led operator evaluation page for qualified private chefs and small culinary businesses.
+
+| Element             | Description                                                                                                                        |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Hero                | "Request a founder-led evaluation of your operator workflow" with jump-to-form CTA and a back-to-proof CTA                         |
+| Qualification fit   | Three fit cards for private chefs, caterers and small teams, and meal prep or recurring service operators                          |
+| Scope section       | Walkthrough covers current-state workflow review, live operator workflow fit, and next-step guidance without generic demo language |
+| Founder review rail | Founder profile card plus post-submit expectations that explicitly avoid fake instant calendar booking                             |
+| Request form        | Name, email, business name, operator type, workflow stack, help request, source context, and honeypot-backed submission flow       |
+
+### Compare Hub (`/compare`)
+
+Operator comparison hub for chefs deciding against spreadsheets or generalized CRM tools.
+
+| Element              | Description                                                                                                         |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Hero                 | Comparison hub hero with workflow-proof CTA to `/for-operators` and walkthrough CTA to `/for-operators/walkthrough` |
+| How-to-use cards     | 3 guidance cards: start with the current stack, check migration friction, choose the next proof step                |
+| Compare guide grid   | Cards generated from `COMPARE_PAGES`, each with fit framing and a "Read comparison" CTA to `/compare/[slug]`        |
+| Next proof step band | 3 CTA cards for walkthrough, workflow proof, and operator pilot/signup                                              |
 
 ### Navigation (Public Header)
 

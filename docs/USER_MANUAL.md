@@ -30,6 +30,8 @@ ChefFlow is an all-in-one platform for food service professionals. It replaces s
 - **Enter a recipe:** Sidebar > Recipes > New Recipe. Add ingredients, instructions, and photos.
 - **Create your booking page:** Settings > Your Business > Booking Page. Customize it, then share the link with potential clients.
 
+ChefFlow also opens a guided **Setup** flow at `/onboarding` for first-run configuration. Dismissing the setup banner on the dashboard only hides that dashboard reminder. It does not mark setup complete, and you can return to `/onboarding` any time until the wizard is actually finished.
+
 ---
 
 ## Navigation
@@ -78,9 +80,11 @@ Your layout saves automatically.
 
 ### Receiving Inquiries
 
-Inquiries arrive from three sources:
+Inquiries arrive from several sources:
 
-- **Your booking page** (app.cheflowhq.com/book/your-name)
+- **Your booking page** (app.cheflowhq.com/book/your-name), for matched-chef requests
+- **Your direct chef inquiry page** (app.cheflowhq.com/chef/your-name/inquire), when someone already chose you
+- **Embedded forms or kiosk flows**, if you use them
 - **Gmail** (if connected in Settings > Connections)
 - **Manual entry** (Sidebar > Inquiries > New Inquiry)
 
@@ -113,9 +117,9 @@ Track quote status: Draft > Sent > Accepted > Rejected > Expired.
 
 For formal presentations, go to Sidebar > Proposals > New Proposal. Use the template editor to add service sections, customize branding, and generate a polished PDF.
 
-### Tracking Calls and Meetings
-
 Event-driven proposal previews can also show a compact **Client Profile Guidance** section when ChefFlow has a client profile vector available. That guidance may include confidence, service depth, emotional state, hard vetoes, strong likes, novelty opportunities, and clarifications still needed. If the client profile tables are not available yet, this section stays hidden instead of showing guessed data.
+
+### Tracking Calls and Meetings
 
 Click **Schedule Call** on any inquiry to set a date, time, and agenda. After the call, mark it as attended or no-show, and add outcome notes. Upcoming calls also appear in your dashboard widget.
 
@@ -152,13 +156,22 @@ Each event has four tabs:
 
 **Money:** Menu selection, per-event financials (revenue, cost, profit), payment tracking (deposits, installments, balance), expense tracking, and 30-day cost forecast.
 
-**Ops:** Staff assignments, time tracking, station assignments, temperature logging (food safety), ingredient substitutions, prep documents, readiness gates (5-point safety check before service starts), and kitchen clipboard.
+**Ops:** Prep planning, service simulation, staff assignments, time tracking, station assignments, temperature logging (food safety), ingredient substitutions, prep documents, readiness gates (5-point safety check before service starts), and kitchen clipboard.
 
 **Wrap-Up:** Post-event checklist, after-action report (AI-generated summary), lifecycle stage detection, photos, and link to client feedback survey.
 
-### Views
-
 When an event has a linked client and is not cancelled, the header also shows **Quick Proposal**. This opens a proposal preview for the event without changing quote persistence by itself.
+
+### Service Simulation
+
+Open the **Ops** tab and find **Service Simulation** when you want to mentally walk the event before service.
+
+- Click **Simulate Service** to save a rehearsal against the event's current conditions.
+- ChefFlow generates a deterministic walkthrough from Core Facts through Close-out using the event's real menu, prep, packing, travel, readiness, and wrap-up truth.
+- If guest count, timing, location, menu shape, dietary notes, or operational readiness changes later, the saved simulation becomes stale and ChefFlow tells you why.
+- Every blocker in the walkthrough links straight to the page or tab that fixes it.
+
+### Views
 
 Switch between **List view** and **Kanban view** on the Events page. The kanban shows events as cards in columns by status. Use the 9 status filters to narrow your view.
 
@@ -183,6 +196,10 @@ Every client has a detailed profile covering:
 - **Engagement:** HOT (active in last 14 days), WARM (active in 30 days), COLD (inactive 30+ days)
 
 The relationship timeline on the client profile is the canonical interaction feed. It combines authoritative events, inquiries, messages, notes, quotes, payments, reviews, client portal activity, menu revisions, and document version history into one chronological view. Quote, menu, and document revisions also show their revision identity directly in the timeline.
+
+The Next Best Action card on the client profile is projected from that same canonical interaction ledger, plus the existing relationship health and milestone inputs where those are already authoritative. The card now shows the winning action with short reason chips instead of a separate one-off summary.
+
+The dedicated relationship page uses the same shared action vocabulary. It shows the winning action title, primary signal, structured reasons, and authoritative source labels so you can see why that action outranked the other relationship moves.
 
 ### Search, Filter, and Bulk Actions
 
@@ -239,6 +256,8 @@ If you have years of recipes to get into ChefFlow, use the Import hub: Sidebar >
 
 In the event detail, go to the **Money** tab and click **Select Menu**. Choose from your library or create a new one. ChefFlow calculates the total menu cost from all ingredients.
 
+When the event is linked to a client, the menu intelligence sidebar also reads that client's profile vector when available. It keeps the existing taste summary format, and it can flag hard vetoes, severe dislikes, and unresolved ambiguities that overlap the menu. If the client profile tables are not present in the database yet, ChefFlow omits this guidance instead of inventing it.
+
 ### Ingredient Pricing
 
 The Ingredients page shows the price for each item, resolved through a multi-tier chain:
@@ -250,7 +269,6 @@ The Ingredients page shows the price for each item, resolved through a multi-tie
 5. Estimated fallback
 
 Each price shows its source (which store, which data point). Toggle the price history chart to see trends over time.
-When the event is linked to a client, the menu intelligence sidebar also reads that client's profile vector when available. It keeps the existing taste summary format, and it can flag hard vetoes, severe dislikes, and unresolved ambiguities that overlap the menu. If the client profile tables are not present in the database yet, ChefFlow omits this guidance instead of inventing it.
 
 ### Finding an Ingredient (Sourcing Intelligence)
 
@@ -506,7 +524,22 @@ Share your profile at **app.cheflowhq.com/chef/your-name**. It shows your avatar
 
 ### Your Booking Page
 
-Share **app.cheflowhq.com/book/your-name** with potential clients. They fill out a form (occasion, date, guest count, dietary needs, budget, contact info, and referral source) and it becomes an inquiry in your pipeline. The "How did you hear about this chef?" field tracks which channels bring clients to you.
+Share **app.cheflowhq.com/book/your-name** with potential clients when they want ChefFlow to match them with available chefs. The form captures occasion, date, guest count, dietary needs, budget, contact info, and referral source, then creates an inquiry in your pipeline. The page now tells visitors they are submitting a matched-chef request, not receiving instant confirmation.
+
+### Direct Chef Inquiry Page
+
+Share **app.cheflowhq.com/chef/your-name/inquire** when a client already knows they want you. This form routes to one named chef, lands in the same inquiry pipeline, and tells the client to expect direct follow-up from that chef after review.
+
+### Operator Evaluation Pages
+
+ChefFlow also has public operator pages for chefs evaluating the product before they sign up:
+
+- **`/for-operators`** is the main proof page. It shows real product framing, key capability areas, and the fastest next steps.
+- **`/marketplace-chefs`** is for chefs whose leads already start on marketplaces, travel platforms, concierge channels, or referrals. It frames ChefFlow as the system behind that demand, not a fake replacement marketplace.
+- **`/compare`** is the comparison hub for chefs moving away from spreadsheets or broad CRM tools. It links into individual comparison guides and then into proof or walkthrough routes.
+- **`/for-operators/walkthrough`** is the live-review form for operators who want a founder-led walkthrough before switching. Those requests go into the founder-owned operator evaluation lane on `/leads`, not the general lead pool.
+
+The homepage now sends qualified operators into `/for-operators` first, then the walkthrough lane once the proof is close. The marketplace and compare pages still exist as more specific follow-on routes.
 
 ### Remy (AI Concierge)
 
@@ -514,7 +547,7 @@ Remy appears as a chat widget on your homepage and booking page. Visitors can de
 
 ### Embedding on Your Own Website
 
-Go to Settings > Embed to get a code snippet. Paste it into your website (WordPress, Squarespace, or any platform). A booking form appears as a modal on your site, and submissions flow directly into your ChefFlow inquiry pipeline.
+Go to Settings > Embed to get a code snippet. Paste it into your website (WordPress, Squarespace, or any platform). A booking form appears as a modal on your site, and submissions flow directly into your ChefFlow inquiry pipeline while keeping their website-embed source attached.
 
 ---
 

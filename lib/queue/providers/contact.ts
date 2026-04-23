@@ -1,8 +1,9 @@
 // Priority Queue -- Contact Submission Provider
-// Surfaces unclaimed contact form submissions to all chefs.
+// Surfaces unclaimed general contact submissions to all chefs.
 // Domain: 'inquiry' (pre-inquiry leads, no new domain type needed)
 
 import type { QueueItem, ScoreInputs } from '../types'
+import { CONTACT_INTAKE_LANES } from '@/lib/contact/operator-evaluation'
 import { computeScore, urgencyFromScore } from '../score'
 
 type ContactRow = {
@@ -21,6 +22,7 @@ export async function getContactQueueItems(db: any, _tenantId: string): Promise<
   const { data } = await db
     .from('contact_submissions')
     .select('id, name, email, subject, created_at')
+    .eq('intake_lane', CONTACT_INTAKE_LANES.GENERAL_CONTACT)
     .is('claimed_by_chef_id', null)
     .order('created_at', { ascending: false })
 
