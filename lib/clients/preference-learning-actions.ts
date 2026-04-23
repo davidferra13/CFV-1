@@ -38,7 +38,10 @@ const ClientIdSchema = z.string().uuid()
  * preferred day of week, common occasions, and service style preferences.
  * Upserts findings into client_preference_patterns.
  */
-export async function learnClientPreferences(clientId: string): Promise<ClientPattern[]> {
+export async function learnClientPreferences(
+  clientId: string,
+  options?: { revalidate?: boolean }
+): Promise<ClientPattern[]> {
   const user = await requireChef()
   const db: any = createServerClient()
   const validatedClientId = ClientIdSchema.parse(clientId)
@@ -179,7 +182,9 @@ export async function learnClientPreferences(clientId: string): Promise<ClientPa
     throw new Error('Failed to save client preference patterns')
   }
 
-  revalidatePath(`/clients/${validatedClientId}`)
+  if (options?.revalidate !== false) {
+    revalidatePath(`/clients/${validatedClientId}`)
+  }
 
   return (upserted || []).map((row: any) => ({
     id: row.id,

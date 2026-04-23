@@ -105,6 +105,11 @@ export type ClientInteractionProvenance = {
   sourceFields: string[]
 }
 
+export type ClientInteractionLedgerState = {
+  status?: string | null
+  validUntil?: string | null
+}
+
 export type ClientInteractionLedgerEntry = {
   id: string
   source: ClientInteractionSource
@@ -117,6 +122,7 @@ export type ClientInteractionLedgerEntry = {
   detail?: string
   explanation?: string
   artifact?: ClientInteractionArtifactReference
+  state?: ClientInteractionLedgerState
   provenance: ClientInteractionProvenance
 }
 
@@ -689,6 +695,9 @@ export function buildClientInteractionLedgerEntries(
         label: row.occasion?.trim() || 'Event',
         href: `/events/${row.id}`,
       },
+      state: {
+        status: row.status ?? null,
+      },
       provenance: {
         table: 'events',
         recordId: row.id,
@@ -724,6 +733,9 @@ export function buildClientInteractionLedgerEntries(
         id: row.id,
         label: 'Inquiry',
         href: `/pipeline/inquiries/${row.id}`,
+      },
+      state: {
+        status: row.status ?? null,
       },
       provenance: {
         table: 'inquiries',
@@ -851,6 +863,10 @@ export function buildClientInteractionLedgerEntries(
               contract: 'quote_inline_lineage',
             }
           : undefined,
+      },
+      state: {
+        status: row.status ?? null,
+        validUntil: row.valid_until ?? null,
       },
       provenance: {
         table: 'quotes',

@@ -71,16 +71,34 @@ export async function getIntakeForms() {
 
   const { data: forms, error } = await (db as any)
     .from('client_intake_forms')
-    .select('*, client_intake_responses(count)')
+    .select('*')
     .eq('tenant_id', tenantId)
     .eq('is_deleted', false)
     .order('created_at', { ascending: false })
 
   if (error) throw new Error(`Failed to load intake forms: ${error.message}`)
 
+  const formIds = (forms || []).map((form: any) => form.id)
+  const responseCounts = new Map<string, number>()
+
+  if (formIds.length > 0) {
+    const { data: responses, error: responseError } = await (db as any)
+      .from('client_intake_responses')
+      .select('form_id')
+      .in('form_id', formIds)
+
+    if (responseError) {
+      throw new Error(`Failed to load intake response counts: ${responseError.message}`)
+    }
+
+    for (const response of responses || []) {
+      responseCounts.set(response.form_id, (responseCounts.get(response.form_id) || 0) + 1)
+    }
+  }
+
   return (forms || []).map((f: any) => ({
     ...f,
-    response_count: f.client_intake_responses?.[0]?.count || 0,
+    response_count: responseCounts.get(f.id) || 0,
   }))
 }
 

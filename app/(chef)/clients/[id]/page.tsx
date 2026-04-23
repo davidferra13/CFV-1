@@ -20,6 +20,7 @@ import {
 } from '@/app/(chef)/loyalty/client-loyalty-actions'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import Link from 'next/link'
@@ -39,7 +40,10 @@ import type { Milestone } from '@/lib/clients/milestones'
 import { ClientEmailToggle } from '@/components/clients/client-email-toggle'
 import { ClientFinancialPanel } from '@/components/clients/client-financial-panel'
 import { FunQADisplay } from '@/components/clients/fun-qa-display'
-import { getClientFunQA } from '@/lib/clients/client-profile-actions'
+import {
+  getClientFunQA,
+  getClientCulinaryProfileGuidance,
+} from '@/lib/clients/client-profile-actions'
 import { getClientAllergyRecords } from '@/lib/events/readiness'
 import { getTasteProfile } from '@/lib/clients/taste-profile-actions'
 import { TasteProfileForm } from '@/components/clients/taste-profile-form'
@@ -82,6 +86,7 @@ import { computeEngagementScore } from '@/lib/activity/engagement'
 import { EngagementBadge } from '@/components/activity/engagement-badge'
 import { KitchenProfilePanel } from '@/components/clients/kitchen-profile-panel'
 import { ClientIntelligencePanel } from '@/components/intelligence/client-intelligence-panel'
+import { CulinaryProfilePanel } from '@/components/clients/culinary-profile-panel'
 import { findPotentialClientMatches } from '@/lib/clients/cross-platform-matching'
 import { PotentialDuplicatesCard } from '@/components/clients/potential-duplicates-card'
 import { EntityPhotoUpload } from '@/components/entities/entity-photo-upload'
@@ -145,6 +150,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     portalTokenData,
     clientPhotos,
     tasteProfile,
+    culinaryGuidance,
   ] = await Promise.all([
     getClientWithStats(params.id).catch(() => null),
     getMessageThread('client', params.id).catch(() => []),
@@ -178,6 +184,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     })),
     getClientPhotos(params.id).catch(() => []),
     getTasteProfile(params.id).catch(() => null),
+    getClientCulinaryProfileGuidance(params.id).catch(() => null),
   ])
 
   const engagementScore = computeEngagementScore(clientPortalActivity as any[])
@@ -301,7 +308,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
       )}
 
       {/* Next Best Action */}
-      {clientNBA && clientNBA.actionType !== 'none' && <NextBestActionCard action={clientNBA} />}
+      {clientNBA ? <NextBestActionCard action={clientNBA} /> : null}
 
       {/* Potential Duplicates */}
       <WidgetErrorBoundary name="Duplicates" compact>
@@ -412,6 +419,68 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Favorites</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="rounded-lg border border-stone-700 bg-stone-800/60 p-3">
+            <p className="text-sm text-stone-200">
+              Treat favorites as positive planning signals from the client.
+            </p>
+            <p className="mt-1 text-xs text-stone-500">
+              Favorite dishes are explicit repeats they want back. Favorite cuisines are broader
+              menu direction. Allergies, dislikes, dietary protocols, and active avoid requests
+              still take priority over favorites.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-medium text-stone-300">Favorite Dishes</p>
+                <span className="text-xs text-stone-500">
+                  {((client as any).favorite_dishes as string[] | null)?.length ?? 0} saved
+                </span>
+              </div>
+              {(client as any).favorite_dishes &&
+              ((client as any).favorite_dishes as string[]).length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {((client as any).favorite_dishes as string[]).map((dish) => (
+                    <Badge key={dish} variant="info">
+                      {dish}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-stone-500">No favorite dishes saved yet.</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-medium text-stone-300">Favorite Cuisines</p>
+                <span className="text-xs text-stone-500">
+                  {((client as any).favorite_cuisines as string[] | null)?.length ?? 0} saved
+                </span>
+              </div>
+              {(client as any).favorite_cuisines &&
+              ((client as any).favorite_cuisines as string[]).length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {((client as any).favorite_cuisines as string[]).map((cuisine) => (
+                    <Badge key={cuisine} variant="default">
+                      {cuisine}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-stone-500">No favorite cuisines saved yet.</p>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Profitability History */}
       {profitabilityHistory &&
@@ -791,6 +860,13 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           </CardContent>
         </Card>
       </WidgetErrorBoundary>
+
+      {/* Culinary Profile Intelligence (CP-Engine vector) */}
+      {culinaryGuidance && (
+        <WidgetErrorBoundary name="Culinary Profile" compact>
+          <CulinaryProfilePanel guidance={culinaryGuidance} clientName={client.full_name} />
+        </WidgetErrorBoundary>
+      )}
 
       {/* NDA & Photo Permissions */}
       <NDAPanel

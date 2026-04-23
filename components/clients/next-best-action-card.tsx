@@ -2,31 +2,9 @@
 // Displayed on the client detail page under the header.
 
 import Link from 'next/link'
-import {
-  ArrowRight,
-  MessageCircle,
-  Calendar,
-  RefreshCw,
-  Gift,
-  Sparkles,
-  Heart,
-} from '@/components/ui/icons'
+import { ArrowRight } from '@/components/ui/icons'
+import { ClientActionIcon } from '@/components/clients/client-action-icon'
 import type { NextBestAction } from '@/lib/clients/next-best-action'
-
-const ACTION_ICONS: Record<
-  NextBestAction['actionType'],
-  React.ComponentType<{ className?: string }>
-> = {
-  reply_inquiry: MessageCircle,
-  follow_up_quote: MessageCircle,
-  re_engage: RefreshCw,
-  schedule_event: Calendar,
-  request_feedback: Heart,
-  send_birthday: Gift,
-  ask_referral: Sparkles,
-  reach_out: MessageCircle,
-  none: ArrowRight,
-}
 
 const URGENCY_STYLES: Record<NextBestAction['urgency'], string> = {
   critical: 'border-red-200 bg-red-950',
@@ -47,19 +25,39 @@ interface Props {
 }
 
 export function NextBestActionCard({ action }: Props) {
-  const Icon = ACTION_ICONS[action.actionType]
   const containerClass = URGENCY_STYLES[action.urgency]
   const iconClass = URGENCY_ICON_COLOR[action.urgency]
+  const explanation = action.reasons.slice(0, 2).map((reason) => reason.message)
 
   return (
     <Link
       href={action.href}
       className={`flex items-center gap-3 rounded-lg border px-4 py-3 transition-opacity hover:opacity-80 ${containerClass}`}
     >
-      <Icon className={`h-4 w-4 shrink-0 ${iconClass}`} />
+      <ClientActionIcon
+        actionType={action.actionType}
+        className={`h-4 w-4 shrink-0 ${iconClass}`}
+      />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-stone-900">{action.label}</p>
         <p className="text-xs text-stone-500 mt-0.5">{action.description}</p>
+        {action.interventionLabel ? (
+          <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-600">
+            {action.interventionLabel}
+          </p>
+        ) : null}
+        {explanation.length > 0 ? (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {explanation.map((message) => (
+              <span
+                key={message}
+                className="rounded-full border border-stone-300 px-2 py-0.5 text-[11px] text-stone-600"
+              >
+                {message}
+              </span>
+            ))}
+          </div>
+        ) : null}
       </div>
       <ArrowRight className="h-4 w-4 text-stone-400 shrink-0" />
     </Link>

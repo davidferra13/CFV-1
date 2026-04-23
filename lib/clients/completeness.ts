@@ -41,6 +41,28 @@ type FieldCheck = {
   filled: (c: ClientLike) => boolean
 }
 
+export const CLIENT_PROFILE_COMPLETENESS_FIELDS = [
+  'phone',
+  'email',
+  'allergies',
+  'dietary_restrictions',
+  'kitchen_constraints',
+  'favorite_cuisines',
+  'dislikes',
+  'vibe_notes',
+  'payment_behavior',
+  'regular_guests',
+  'partner_name',
+  'personal_milestones',
+  'what_they_care_about',
+  'birthday',
+  'anniversary',
+  'address',
+  'pets',
+  'preferred_service_style',
+  'formality_level',
+] as const satisfies ReadonlyArray<keyof ClientLike>
+
 const FIELDS: FieldCheck[] = [
   // Critical - allergies and safety (weighted heavily)
   {
@@ -140,20 +162,23 @@ const FIELDS: FieldCheck[] = [
   },
 ]
 
+const TOTAL_COMPLETENESS_WEIGHT = FIELDS.reduce((sum, field) => sum + field.weight, 0)
+
+function getFilledWeight(client: ClientLike): number {
+  return FIELDS.reduce((sum, field) => {
+    return sum + (field.filled(client) ? field.weight : 0)
+  }, 0)
+}
+
+function getCompletenessTier(score: number): ProfileCompletenessResult['tier'] {
+  return score >= 85 ? 'complete' : score >= 60 ? 'good' : score >= 35 ? 'basic' : 'minimal'
+}
+
 // Total weight must equal 100
 // 15 + 12 + 8 + 8 + 6 + 6 + 6 + 5 + 5 + 5 + 4 + 4 + 4 + 4 + 4 + 4 = 100 ✓
 
 export function getClientProfileCompleteness(client: ClientLike): ProfileCompletenessResult {
-  let score = 0
-  const missing: string[] = []
-
-  for (const field of FIELDS) {
-    if (field.filled(client)) {
-      score += field.weight
-    } else {
-      missing.push(field.label)
-    }
-  }
+  const score = getFilledWeight(client)
 
   // Show only the top missing fields by weight (most impactful first)
   const sortedMissing = FIELDS.filter((f) => !f.filled(client))
@@ -161,8 +186,13 @@ export function getClientProfileCompleteness(client: ClientLike): ProfileComplet
     .slice(0, 4)
     .map((f) => f.label)
 
-  const tier: ProfileCompletenessResult['tier'] =
-    score >= 85 ? 'complete' : score >= 60 ? 'good' : score >= 35 ? 'basic' : 'minimal'
+  return { score, missing: sortedMissing, tier: getCompletenessTier(score) }
+}
 
-  return { score, missing: sortedMissing, tier }
+export function getClientProfileEngagementPoints(client: ClientLike, maxPoints = 15): number {
+  if (maxPoints <= 0 || TOTAL_COMPLETENESS_WEIGHT === 0) {
+    return 0
+  }
+
+  return Math.round((getFilledWeight(client) / TOTAL_COMPLETENESS_WEIGHT) * maxPoints)
 }
