@@ -9,6 +9,14 @@ import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import {
+  buildStockCoverageMap,
+  consolidateIngredientRows,
+  estimateIngredientCostCents,
+  fetchCurrentStockRows,
+  fetchIngredientPlanningMeta,
+  getIngredientPlanningKey,
+} from './planning-support'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -29,6 +37,7 @@ export type DeductionPreview = {
 
 export type DeductionAdjustment = {
   ingredientId: string
+  unit?: string
   overrideQty: number
 }
 
@@ -52,6 +61,7 @@ const ReturnItemSchema = z.object({
 
 const AdjustmentSchema = z.object({
   ingredientId: z.string().uuid(),
+  unit: z.string().min(1).optional(),
   overrideQty: z.number().positive('Override quantity must be positive'),
 })
 
@@ -59,7 +69,6 @@ const AdjustmentSchema = z.object({
 function db(db: any) {
   return {
     transactions: () => db.from('inventory_transactions' as any) as any,
-    currentStock: () => db.from('inventory_current_stock' as any) as any,
   }
 }
 
@@ -84,59 +93,28 @@ export async function previewEventDeduction(eventId: string): Promise<DeductionP
 
   if (eventError || !event) throw new Error('Event not found')
 
-  // Walk the recipe chain to get aggregated ingredient needs
-  const ingredientNeeds = await walkEventRecipeChain(db, eventId, user.tenantId!)
+  const ingredientNeedRows = [...(await walkEventRecipeChain(db, eventId, user.tenantId!)).values()]
+  if (ingredientNeedRows.length === 0) return { items: [], totalCostCents: 0 }
 
-  // Get current stock for all needed ingredients
-  const ingredientIds = [
-    ...new Set(
-      Array.from(ingredientNeeds.values())
-        .map((n) => n.ingredientId)
-        .filter(Boolean)
-    ),
-  ]
+  const ingredientIds = [...new Set(ingredientNeedRows.map((need) => need.ingredientId))]
+  const metaByIngredient = await fetchIngredientPlanningMeta(db, ingredientIds)
+  const normalizedNeeds = consolidateIngredientRows(ingredientNeedRows, metaByIngredient)
+  const stockRows = await fetchCurrentStockRows(db, user.tenantId!, ingredientIds)
+  const stockCoverage = buildStockCoverageMap(normalizedNeeds, stockRows, metaByIngredient)
 
-  const onHandMap = new Map<string, number>()
-
-  if (ingredientIds.length > 0) {
-    // Query the inventory_current_stock view
-    const { data: stockData } = await db(db)
-      .currentStock()
-      .select('ingredient_id, current_qty')
-      .eq('chef_id', user.tenantId!)
-      .in('ingredient_id', ingredientIds)
-
-    for (const row of (stockData || []) as any[]) {
-      if (row.ingredient_id) {
-        onHandMap.set(row.ingredient_id, Number(row.current_qty ?? 0))
-      }
-    }
-  }
-
-  // Get latest prices for cost estimation
-  const priceMap = new Map<string, number>()
-  if (ingredientIds.length > 0) {
-    const { data: ingredients } = await db
-      .from('ingredients')
-      .select('id, last_price_cents')
-      .in('id', ingredientIds)
-
-    for (const ing of (ingredients || []) as any[]) {
-      if (ing.last_price_cents != null) {
-        priceMap.set(ing.id, ing.last_price_cents)
-      }
-    }
-  }
-
-  // Build preview items
   const items: DeductionPreviewItem[] = []
   let totalCostCents = 0
 
-  for (const need of ingredientNeeds.values()) {
-    const onHandQty = need.ingredientId ? (onHandMap.get(need.ingredientId) ?? 0) : 0
+  for (const need of normalizedNeeds) {
+    const coverage =
+      stockCoverage.get(getIngredientPlanningKey(need.ingredientId, need.unit)) ?? null
+    const onHandQty = Math.max(0, coverage?.onHandQty ?? 0)
     const shortfall = Math.max(0, need.quantity - onHandQty)
-    const unitPrice = need.ingredientId ? (priceMap.get(need.ingredientId) ?? 0) : 0
-    const estimatedCost = Math.round(need.quantity * unitPrice)
+    const estimatedCost = estimateIngredientCostCents(
+      need.quantity,
+      need.unit,
+      metaByIngredient.get(need.ingredientId)
+    )
     totalCostCents += estimatedCost
 
     items.push({
@@ -149,9 +127,6 @@ export async function previewEventDeduction(eventId: string): Promise<DeductionP
       estimatedCostCents: estimatedCost,
     })
   }
-
-  // Sort by ingredient name
-  items.sort((a, b) => a.ingredientName.localeCompare(b.ingredientName))
 
   return { items, totalCostCents }
 }
@@ -182,6 +157,9 @@ export async function executeEventDeduction(
   const adjustmentMap = new Map<string, number>()
   if (parsedAdjustments) {
     for (const adj of parsedAdjustments) {
+      if (adj.unit) {
+        adjustmentMap.set(getIngredientPlanningKey(adj.ingredientId, adj.unit), adj.overrideQty)
+      }
       adjustmentMap.set(adj.ingredientId, adj.overrideQty)
     }
   }
@@ -190,11 +168,16 @@ export async function executeEventDeduction(
   const transactionRows: Array<Record<string, any>> = []
 
   for (const item of preview.items) {
-    const deductQty = adjustmentMap.has(item.ingredientId)
-      ? adjustmentMap.get(item.ingredientId)!
-      : item.neededQty
+    const planningKey = getIngredientPlanningKey(item.ingredientId, item.unit)
+    const deductQty =
+      adjustmentMap.get(planningKey) ?? adjustmentMap.get(item.ingredientId) ?? item.neededQty
 
     if (deductQty <= 0) continue
+
+    const scaledCostCents =
+      item.estimatedCostCents > 0 && item.neededQty > 0
+        ? Math.round((item.estimatedCostCents * deductQty) / item.neededQty)
+        : null
 
     transactionRows.push({
       chef_id: user.tenantId!,
@@ -203,7 +186,7 @@ export async function executeEventDeduction(
       transaction_type: 'event_deduction',
       quantity: -Math.abs(deductQty), // Negative = removing from stock
       unit: item.unit,
-      cost_cents: item.estimatedCostCents > 0 ? item.estimatedCostCents : null,
+      cost_cents: scaledCostCents,
       event_id: eventId,
       notes: `Event deduction for ${item.ingredientName}`,
       created_by: user.id,

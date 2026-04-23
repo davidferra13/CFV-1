@@ -45,7 +45,7 @@ function loadClientCredentials() {
     const seed = JSON.parse(fs.readFileSync(seedPath, 'utf8'))
     if (seed.clientEmail && seed.clientPassword) return { email: seed.clientEmail, password: seed.clientPassword }
   }
-  return { email: 'e2e.client.20260227@chefflow.test', password: 'E2eClientTest!2026' }
+  return { email: 'emma@northandpine.co', password: 'E2eClientTest!2026' }
 }
 
 async function authenticate() {

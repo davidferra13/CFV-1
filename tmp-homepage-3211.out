@@ -1,0 +1,58 @@
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3211
+  - Network:      http://0.0.0.0:3211
+  - Environments: .env.local, .env
+  - Experiments (use with caution):
+    · instrumentationHook
+
+ ✓ Starting...
+   
+Your tsconfig.json extends another configuration, which means we cannot add the Next.js TypeScript plugin automatically. To improve your development experience, we recommend adding the Next.js plugin (`"plugins": [{ "name": "next" }]`) manually to your TypeScript configuration. Learn more: https://nextjs.org/docs/app/building-your-application/configuring/typescript#the-typescript-plugin
+
+
+   We detected TypeScript in your project and reconfigured your tsconfig.json file for you. Strict-mode is set to false by default.
+   The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:
+
+   	- include was updated to add '.next-dev-homepage-3211/types/**/*.ts'
+
+   Using tsconfig file: tsconfig.next.json
+ ○ Compiling /instrumentation ...
+ ✓ Compiled /instrumentation in 6.9s (1135 modules)
+[instrumentation] Background job startup disabled for E2E.
+ ✓ Ready in 14.6s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 6.6s (1392 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 35.6s (9388 modules)
+ ✓ Compiled in 3.9s (3811 modules)
+ ✓ Compiled in 984ms (3797 modules)
+ GET / 200 in 48702ms
+ ○ Compiling /api/storage/public/[...path] ...
+ ✓ Compiled /api/storage/public/[...path] in 7.1s (5586 modules)
+ GET /api/storage/public/chef-profile-images/bd72cf97-a0e5-4fe4-b049-0706ac81d100/1774734757311-ef0fd70e-4692-400d-af0c-4e5c83c441a4.jpg 200 in 14222ms
+ GET / 200 in 799ms
+ GET /api/storage/public/chef-profile-images/bd72cf97-a0e5-4fe4-b049-0706ac81d100/1774734757311-ef0fd70e-4692-400d-af0c-4e5c83c441a4.jpg 200 in 157ms
+ ○ Compiling /api/realtime/presence ...
+ ✓ Compiled /api/realtime/presence in 4.4s (5820 modules)
+ POST /api/realtime/presence 200 in 7884ms
+ POST /api/realtime/presence 200 in 7795ms
+ POST /api/realtime/presence 200 in 7798ms
+ POST /api/realtime/presence 200 in 7893ms
+ ○ Compiling /for-operators ...
+ ✓ Compiled /for-operators in 10.1s (12669 modules)
+ POST /api/realtime/presence 200 in 582ms
+ GET /for-operators?source_page=home&source_cta=hero_operator_proof&_rsc=alvia 200 in 592ms
+ ○ Compiling /for-operators/walkthrough ...
+ ✓ Compiled /for-operators/walkthrough in 6.7s (12994 modules)
+ POST /api/realtime/presence 200 in 2135ms
+ GET /for-operators/walkthrough?source_page=for_operators&source_cta=hero_walkthrough_primary&_rsc=zdbt8 200 in 140ms
+ POST /api/realtime/presence 200 in 157ms
+ GET /api/storage/public/chef-profile-images/bd72cf97-a0e5-4fe4-b049-0706ac81d100/1774734757311-ef0fd70e-4692-400d-af0c-4e5c83c441a4.jpg 200 in 170ms
+ GET / 200 in 488ms
+ GET /api/storage/public/chef-profile-images/bd72cf97-a0e5-4fe4-b049-0706ac81d100/1774734757311-ef0fd70e-4692-400d-af0c-4e5c83c441a4.jpg 200 in 103ms
+ POST /api/realtime/presence 200 in 284ms
+ POST /api/realtime/presence 200 in 287ms
+ POST /api/realtime/presence 200 in 250ms
+ POST /api/realtime/presence 200 in 253ms
+ ✓ Compiled in 6.3s (13008 modules)
+[?25h

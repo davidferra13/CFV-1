@@ -4,9 +4,11 @@ import { useMemo, useState, useTransition } from 'react'
 import {
   createMyMealRequest,
   respondToMyRecurringRecommendation,
+  updateMyMealFavorites,
   updateMyServedDishFeedback,
   withdrawMyMealRequest,
   type CreateMealRequestInput,
+  type ClientFavoritesSnapshot,
   type ServedDishHistoryEntry,
   type ClientMealRequestEntry,
   type RecurringRecommendationEntry,
@@ -17,12 +19,15 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
+import { TagInput } from '@/components/ui/tag-input'
+import { Heart } from '@/components/ui/icons'
 import { format } from 'date-fns'
 
 interface MealCollaborationPanelProps {
   history: ServedDishHistoryEntry[]
   requests: ClientMealRequestEntry[]
   recommendations: RecurringRecommendationEntry[]
+  favorites: ClientFavoritesSnapshot
 }
 
 const REQUEST_LABELS: Record<ClientMealRequestEntry['request_type'], string> = {
@@ -65,10 +70,33 @@ function formatStatus(status: ClientMealRequestEntry['status']) {
   return status.slice(0, 1).toUpperCase() + status.slice(1)
 }
 
+function normalizeFavoriteValue(value: string) {
+  return value.trim().replace(/\s+/g, ' ')
+}
+
+function normalizeFavoriteList(values: string[]) {
+  const seen = new Set<string>()
+  const normalized: string[] = []
+
+  for (const value of values) {
+    const trimmed = normalizeFavoriteValue(value)
+    if (!trimmed) continue
+
+    const key = trimmed.toLowerCase()
+    if (seen.has(key)) continue
+
+    seen.add(key)
+    normalized.push(trimmed)
+  }
+
+  return normalized
+}
+
 export function MealCollaborationPanel({
   history,
   requests,
   recommendations,
+  favorites,
 }: MealCollaborationPanelProps) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -81,6 +109,13 @@ export function MealCollaborationPanel({
   const [recommendationNotes, setRecommendationNotes] = useState<Record<string, string>>({})
   const [historyQuery, setHistoryQuery] = useState('')
   const [historyLimit, setHistoryLimit] = useState(80)
+  const [favoriteDishes, setFavoriteDishes] = useState<string[]>(favorites.favoriteDishes)
+  const [favoriteCuisines, setFavoriteCuisines] = useState<string[]>(favorites.favoriteCuisines)
+
+  const favoriteDishKeys = useMemo(
+    () => new Set(favoriteDishes.map((dish) => normalizeFavoriteValue(dish).toLowerCase())),
+    [favoriteDishes]
+  )
 
   const filteredHistory = useMemo(() => {
     const query = historyQuery.trim().toLowerCase()
@@ -145,9 +180,84 @@ export function MealCollaborationPanel({
       .slice(0, 5)
   }, [requests])
 
+  const favoriteSuggestions = useMemo(() => {
+    const suggestions: string[] = []
+    const seen = new Set<string>()
+
+    const candidates = [
+      ...history
+        .filter((entry) => entry.client_reaction === 'loved' || entry.client_reaction === 'liked')
+        .map((entry) => entry.dish_name),
+      ...preferenceInsights.map((dish) => dish.dishName),
+      ...repeatRequestLeaders.map((item) => item.dishName),
+    ]
+
+    for (const candidate of candidates) {
+      const normalized = normalizeFavoriteValue(candidate)
+      if (!normalized) continue
+
+      const key = normalized.toLowerCase()
+      if (seen.has(key) || favoriteDishKeys.has(key)) continue
+
+      seen.add(key)
+      suggestions.push(normalized)
+
+      if (suggestions.length >= 8) break
+    }
+
+    return suggestions
+  }, [favoriteDishKeys, history, preferenceInsights, repeatRequestLeaders])
+
   const clearMessage = () => {
     setError(null)
     setSuccess(null)
+  }
+
+  const persistFavorites = (
+    nextFavoriteDishesInput: string[],
+    nextFavoriteCuisinesInput: string[],
+    successMessage: string
+  ) => {
+    const previousFavoriteDishes = favoriteDishes
+    const previousFavoriteCuisines = favoriteCuisines
+    const nextFavoriteDishes = normalizeFavoriteList(nextFavoriteDishesInput)
+    const nextFavoriteCuisines = normalizeFavoriteList(nextFavoriteCuisinesInput)
+
+    clearMessage()
+    setFavoriteDishes(nextFavoriteDishes)
+    setFavoriteCuisines(nextFavoriteCuisines)
+
+    startTransition(async () => {
+      try {
+        const result = await updateMyMealFavorites({
+          favorite_dishes: nextFavoriteDishes,
+          favorite_cuisines: nextFavoriteCuisines,
+        })
+        setFavoriteDishes(result.favorites.favoriteDishes)
+        setFavoriteCuisines(result.favorites.favoriteCuisines)
+        setSuccess(successMessage)
+      } catch (err: any) {
+        setFavoriteDishes(previousFavoriteDishes)
+        setFavoriteCuisines(previousFavoriteCuisines)
+        setError(err?.message || 'Could not update favorites')
+      }
+    })
+  }
+
+  const toggleFavoriteDish = (dishName: string) => {
+    const normalized = normalizeFavoriteValue(dishName)
+    const isFavorited = favoriteDishKeys.has(normalized.toLowerCase())
+    const nextFavoriteDishes = isFavorited
+      ? favoriteDishes.filter(
+          (dish) => normalizeFavoriteValue(dish).toLowerCase() !== normalized.toLowerCase()
+        )
+      : [...favoriteDishes, normalized]
+
+    persistFavorites(
+      nextFavoriteDishes,
+      favoriteCuisines,
+      isFavorited ? `${normalized} removed from favorites.` : `${normalized} added to favorites.`
+    )
   }
 
   const submitRequest = (input: CreateMealRequestInput, successMessage: string) => {
@@ -219,6 +329,85 @@ export function MealCollaborationPanel({
           {error}
         </Alert>
       )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Favorites</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="rounded-lg border border-stone-700 bg-stone-800/60 p-3">
+            <p className="text-sm text-stone-200">
+              Favorites tell your chef what you want more of.
+            </p>
+            <p className="mt-1 text-xs text-stone-500">
+              Favorite dishes are specific meals you would happily repeat. Favorite cuisines are
+              broader menu direction. These are positive planning signals only, so allergies,
+              dislikes, and avoid requests always take priority.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <TagInput
+              label="Favorite Dishes"
+              value={favoriteDishes}
+              onChange={setFavoriteDishes}
+              placeholder="Add a dish you want again"
+            />
+            <TagInput
+              label="Favorite Cuisines"
+              value={favoriteCuisines}
+              onChange={setFavoriteCuisines}
+              placeholder="Add a cuisine direction"
+            />
+          </div>
+
+          {favoriteSuggestions.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-medium uppercase tracking-wide text-stone-500">
+                Suggested from your history
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {favoriteSuggestions.map((dish) => (
+                  <button
+                    key={dish}
+                    type="button"
+                    disabled={isPending}
+                    onClick={() =>
+                      persistFavorites(
+                        [...favoriteDishes, dish],
+                        favoriteCuisines,
+                        `${dish} added to favorites.`
+                      )
+                    }
+                    className="rounded-full border border-stone-600 bg-stone-900 px-3 py-1 text-xs text-stone-300 transition-colors hover:border-brand-500 hover:text-brand-400 disabled:opacity-50"
+                  >
+                    + {dish}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-stone-500">
+              You can also favorite dishes directly from the history list below.
+            </p>
+            <Button
+              variant="secondary"
+              disabled={isPending}
+              onClick={() =>
+                persistFavorites(
+                  favoriteDishes,
+                  favoriteCuisines,
+                  'Favorites updated for your chef.'
+                )
+              }
+            >
+              Save Favorites
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -421,6 +610,10 @@ export function MealCollaborationPanel({
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
+                        {request.request_type !== 'avoid_dish' &&
+                          favoriteDishKeys.has(
+                            normalizeFavoriteValue(request.dish_name).toLowerCase()
+                          ) && <Badge variant="info">Favorite</Badge>}
                         <Badge variant={STATUS_VARIANTS[request.status]}>
                           {formatStatus(request.status)}
                         </Badge>
@@ -532,24 +725,44 @@ export function MealCollaborationPanel({
                         ) : null}
                       </p>
                     </div>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      disabled={isPending}
-                      aria-label={`Request ${entry.dish_name} again`}
-                      onClick={() =>
-                        submitRequest(
-                          {
-                            request_type: 'repeat_dish',
-                            dish_name: entry.dish_name,
-                            priority: 'normal',
-                          },
-                          `${entry.dish_name} requested again.`
-                        )
-                      }
-                    >
-                      Request Again
-                    </Button>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        disabled={isPending}
+                        aria-label={`Request ${entry.dish_name} again`}
+                        onClick={() =>
+                          submitRequest(
+                            {
+                              request_type: 'repeat_dish',
+                              dish_name: entry.dish_name,
+                              priority: 'normal',
+                            },
+                            `${entry.dish_name} requested again.`
+                          )
+                        }
+                      >
+                        Request Again
+                      </Button>
+                      <Button
+                        variant={
+                          favoriteDishKeys.has(
+                            normalizeFavoriteValue(entry.dish_name).toLowerCase()
+                          )
+                            ? 'secondary'
+                            : 'ghost'
+                        }
+                        size="sm"
+                        disabled={isPending}
+                        aria-label={`Toggle ${entry.dish_name} as a favorite`}
+                        onClick={() => toggleFavoriteDish(entry.dish_name)}
+                      >
+                        <Heart className="h-4 w-4" />
+                        {favoriteDishKeys.has(normalizeFavoriteValue(entry.dish_name).toLowerCase())
+                          ? 'Favorited'
+                          : 'Favorite'}
+                      </Button>
+                    </div>
                   </div>
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     <span className="text-xs text-stone-500">Quick feedback:</span>

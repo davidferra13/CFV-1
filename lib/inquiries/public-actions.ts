@@ -5,7 +5,7 @@
 'use server'
 
 import { headers } from 'next/headers'
-import { checkRateLimit } from '@/lib/rateLimit'
+import { guardPublicIntent } from '@/lib/security/public-intent-guard'
 import { findChefByPublicSlug } from '@/lib/profile/public-chef'
 import { createServerClient } from '@/lib/db/server'
 import { createClientFromLead } from '@/lib/clients/actions'
@@ -23,6 +23,7 @@ import {
 } from '@/lib/dietary/intake'
 import { recordPlatformEvent } from '@/lib/platform-observability/events'
 import { extractRequestMetadata } from '@/lib/platform-observability/context'
+import { PUBLIC_INTAKE_LANE_KEYS, withSubmissionSource } from '@/lib/public/intake-lane-config'
 
 const DEFAULT_BOOKING_CHEF_EMAIL = FOUNDER_EMAIL
 
@@ -46,16 +47,65 @@ const PublicInquirySchema = z.object({
   additional_notes: z.string().optional().or(z.literal('')),
   referral_source: z.string().max(200).optional().or(z.literal('')),
   referral_partner_id: z.string().uuid().optional().nullable(),
+  partner_location_id: z.string().uuid().optional().nullable(),
   existing_circle_id: z.string().uuid().optional(),
   service_mode: BookingServiceModeSchema.optional(),
   recurring_frequency: z.enum(['weekly', 'biweekly', 'monthly']).optional(),
   recurring_duration_weeks: z.number().int().min(1).max(52).optional(),
   menu_recommendation_lead_days: z.number().int().min(1).max(21).optional(),
   schedule_request_jsonb: ScheduleRequestSchema.optional(),
-  website_url: z.string().max(0, 'Bot detected').optional().or(z.literal('')),
+  website_url: z.string().max(2048).optional().or(z.literal('')),
 })
 
 export type PublicInquiryInput = z.infer<typeof PublicInquirySchema>
+
+async function resolvePublicLocationAttribution(
+  db: any,
+  tenantId: string,
+  input: {
+    referralPartnerId?: string | null
+    partnerLocationId?: string | null
+  }
+) {
+  let resolvedPartnerId: string | null = null
+  let resolvedLocationId: string | null = null
+  let resolvedLocationName: string | null = null
+
+  if (input.partnerLocationId) {
+    const { data: location, error } = await db
+      .from('partner_locations')
+      .select('id, partner_id, name')
+      .eq('id', input.partnerLocationId)
+      .eq('tenant_id', tenantId)
+      .eq('is_active', true)
+      .maybeSingle()
+
+    if (!error && location) {
+      resolvedLocationId = location.id
+      resolvedLocationName = location.name ?? null
+      resolvedPartnerId = location.partner_id
+    }
+  }
+
+  if (!resolvedPartnerId && input.referralPartnerId) {
+    const { data: partner, error } = await db
+      .from('referral_partners')
+      .select('id')
+      .eq('id', input.referralPartnerId)
+      .eq('tenant_id', tenantId)
+      .maybeSingle()
+
+    if (!error && partner) {
+      resolvedPartnerId = partner.id
+    }
+  }
+
+  return {
+    referralPartnerId: resolvedPartnerId,
+    partnerLocationId: resolvedLocationId,
+    partnerLocationName: resolvedLocationName,
+  }
+}
 
 /**
  * Submit a public inquiry from the chef profile page.
@@ -66,20 +116,36 @@ export type PublicInquiryInput = z.infer<typeof PublicInquirySchema>
  */
 export async function submitPublicInquiry(input: PublicInquiryInput) {
   const validated = PublicInquirySchema.parse(input)
-
-  if (validated.website_url?.trim()) {
-    // Honeypot filled by bots; return success to avoid retries.
-    return { success: true, inquiryCreated: false, eventCreated: false }
-  }
-
   const hdrs = await headers()
-  const ip = hdrs.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-  await checkRateLimit(`public-inquiry:ip:${ip}`, 8, 5 * 60_000)
-  await checkRateLimit(
-    `public-inquiry:email:${validated.email.toLowerCase().trim()}`,
-    4,
-    60 * 60_000
-  )
+
+  const guard = await guardPublicIntent({
+    action: 'public-profile-inquiry',
+    headers: hdrs,
+    rateLimit: {
+      ip: {
+        keyPrefix: 'public-inquiry:ip',
+        max: 8,
+        windowMs: 5 * 60_000,
+        message: 'Too many submissions. Please try again later.',
+      },
+      email: {
+        keyPrefix: 'public-inquiry:email',
+        max: 4,
+        windowMs: 60 * 60_000,
+        message: 'Too many submissions from this email. Please try again later.',
+        value: validated.email,
+      },
+    },
+    honeypot: { value: validated.website_url },
+  })
+
+  if (!guard.ok) {
+    if (guard.error.code === 'honeypot') {
+      // Honeypot filled by bots; return success to avoid retries.
+      return { success: true, inquiryCreated: false, eventCreated: false }
+    }
+    throw new Error(guard.error.message)
+  }
 
   const db = createServerClient({ admin: true })
   const dietaryRecords = validated.allergies_food_restrictions
@@ -198,6 +264,10 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   const tenantId = chef.id as string
   const chefName = (chef.business_name as string | null) || 'Your Chef'
   const chefEmail = (chef as any).email as string | null
+  const resolvedAttribution = await resolvePublicLocationAttribution(db, tenantId, {
+    referralPartnerId: validated.referral_partner_id ?? null,
+    partnerLocationId: validated.partner_location_id ?? null,
+  })
 
   const { data: discoveryProfile, error: discoveryError } = await (db as any)
     .from('chef_marketplace_profiles')
@@ -284,10 +354,11 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       confirmed_dietary_restrictions: allergiesList,
       source_message: sourceMessage || null,
       referral_source: validated.referral_source?.trim() || null,
-      referral_partner_id: validated.referral_partner_id || null,
+      referral_partner_id: resolvedAttribution.referralPartnerId,
+      partner_location_id: resolvedAttribution.partnerLocationId,
       service_mode: serviceMode,
       schedule_request_jsonb: validated.schedule_request_jsonb ?? null,
-      unknown_fields: {
+      unknown_fields: withSubmissionSource(PUBLIC_INTAKE_LANE_KEYS.public_profile_inquiry, {
         address: validated.address.trim(),
         serve_time: validated.serve_time.trim(),
         allergy_flag: validated.allergy_flag ?? null,
@@ -305,7 +376,9 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
         menu_recommendation_lead_days:
           serviceMode === 'recurring' ? (validated.menu_recommendation_lead_days ?? 7) : null,
         schedule_request_jsonb: validated.schedule_request_jsonb ?? null,
-      },
+        partner_location_id: resolvedAttribution.partnerLocationId,
+        partner_location_name: resolvedAttribution.partnerLocationName,
+      }),
       status: 'new',
     })
     .select('id')
@@ -335,6 +408,9 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       budget_mode: budgetMode,
       budget_range: budgetRange,
       budget_cents: budgetCents,
+      referral_partner_id: resolvedAttribution.referralPartnerId,
+      partner_location_id: resolvedAttribution.partnerLocationId,
+      partner_location_name: resolvedAttribution.partnerLocationName,
     },
   })
 
@@ -500,6 +576,8 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       location_city: 'TBD',
       location_zip: /\b(\d{5}(?:-\d{4})?)\b/.exec(validated.address.trim())?.[1] || 'TBD',
       occasion: validated.occasion.trim(),
+      referral_partner_id: resolvedAttribution.referralPartnerId,
+      partner_location_id: resolvedAttribution.partnerLocationId,
       quoted_price_cents: null, // Client budget is not a quote; real price set when chef quote is accepted
       special_requests: sourceMessage || null,
     })
@@ -547,6 +625,8 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       ...extractRequestMetadata(hdrs),
       inquiry_id: inquiry.id,
       client_id: client.id,
+      referral_partner_id: resolvedAttribution.referralPartnerId,
+      partner_location_id: resolvedAttribution.partnerLocationId,
     },
     alertDedupeKey: `inquiry-draft-event:${inquiry.id}`,
   })

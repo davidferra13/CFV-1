@@ -29,9 +29,7 @@ export default async function DailyReportPage() {
     <div className="mx-auto max-w-4xl space-y-6 p-6">
       <div>
         <h1 className="text-2xl font-bold text-stone-900">Daily Report</h1>
-        <p className="text-sm text-stone-500">
-          Your daily business snapshot - emailed every morning at 7 AM
-        </p>
+        <p className="text-sm text-stone-500">Your daily business snapshot.</p>
       </div>
 
       <DailyReportView report={report} history={history} />

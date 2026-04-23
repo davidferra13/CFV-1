@@ -10,6 +10,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createVendor } from '@/lib/vendors/actions'
+import { NEUTRAL_VENDOR_SEARCH_PLACEHOLDER } from '@/lib/site/national-brand-copy'
 import { Search, MapPin, Phone, Globe, Plus, Check } from '@/components/ui/icons'
 import { toast } from 'sonner'
 
@@ -65,6 +66,60 @@ const TYPE_COLORS: Record<string, string> = {
   liquor: 'bg-purple-900/30 text-purple-400',
   bakery: 'bg-amber-900/30 text-amber-400',
 }
+
+const US_STATE_CODES = [
+  'AL',
+  'AK',
+  'AZ',
+  'AR',
+  'CA',
+  'CO',
+  'CT',
+  'DE',
+  'DC',
+  'FL',
+  'GA',
+  'HI',
+  'ID',
+  'IL',
+  'IN',
+  'IA',
+  'KS',
+  'KY',
+  'LA',
+  'ME',
+  'MD',
+  'MA',
+  'MI',
+  'MN',
+  'MS',
+  'MO',
+  'MT',
+  'NE',
+  'NV',
+  'NH',
+  'NJ',
+  'NM',
+  'NY',
+  'NC',
+  'ND',
+  'OH',
+  'OK',
+  'OR',
+  'PA',
+  'RI',
+  'SC',
+  'SD',
+  'TN',
+  'TX',
+  'UT',
+  'VT',
+  'VA',
+  'WA',
+  'WV',
+  'WI',
+  'WY',
+]
 
 export function NationalVendorSearch({ addedVendorIds }: { addedVendorIds?: Set<string> }) {
   const router = useRouter()
@@ -134,7 +189,7 @@ export function NationalVendorSearch({ addedVendorIds }: { addedVendorIds?: Set<
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder='Search by name or city (e.g. "Captain Marden" or "Haverhill")'
+            placeholder={NEUTRAL_VENDOR_SEARCH_PLACEHOLDER}
             className="w-full pl-9 pr-3 py-2 text-sm bg-stone-900 border border-stone-700 rounded-lg text-stone-200 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
           />
         </div>
@@ -156,58 +211,7 @@ export function NationalVendorSearch({ addedVendorIds }: { addedVendorIds?: Set<
           className="text-sm bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-stone-300 focus:outline-none focus:ring-2 focus:ring-violet-500"
         >
           <option value="">All states</option>
-          {[
-            'MA',
-            'NY',
-            'CA',
-            'FL',
-            'TX',
-            'IL',
-            'PA',
-            'OH',
-            'GA',
-            'NC',
-            'WA',
-            'CO',
-            'AZ',
-            'MI',
-            'NJ',
-            'VA',
-            'TN',
-            'MN',
-            'OR',
-            'MO',
-            'WI',
-            'MD',
-            'CT',
-            'SC',
-            'IN',
-            'AL',
-            'LA',
-            'KY',
-            'OK',
-            'UT',
-            'NV',
-            'AR',
-            'MS',
-            'KS',
-            'NE',
-            'NM',
-            'WV',
-            'ID',
-            'HI',
-            'NH',
-            'ME',
-            'RI',
-            'MT',
-            'DE',
-            'SD',
-            'ND',
-            'AK',
-            'VT',
-            'WY',
-            'DC',
-          ].map((s) => (
+          {US_STATE_CODES.map((s) => (
             <option key={s} value={s}>
               {s}
             </option>

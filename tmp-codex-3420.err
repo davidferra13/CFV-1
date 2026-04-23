@@ -1,0 +1,237 @@
+ ⚠ Invalid next.config.js options detected: 
+ ⚠     Unrecognized key(s) in object: 'serverActions'
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (1810kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (188kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (139kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (692kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (695kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (227kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+[submitContactForm] Owner resolution warnings: [
+  'owner_lookup_failed:write CONNECT_TIMEOUT 127.0.0.1:54322',
+  'owner_fallback_to_env_id'
+]
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: a0000000-0000-0000-0000-000000000099,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ 'a0000000-0000-0000-0000-000000000099', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\server-development\6.pack.gz_' -> 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\server-development\6.pack.gz'
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: EPERM: operation not permitted, rename 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\client-development\4.pack.gz_' -> 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\client-development\4.pack.gz'
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (./components/branding/app-logo.tsx:7:68)
+    at (rsc)/./components/branding/app-logo.tsx (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:1404:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (./components/navigation/public-footer.tsx:9:87)
+    at (rsc)/./components/navigation/public-footer.tsx (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:1415:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (layout.tsx:14:94)
+    at (rsc)/./app/(public)/layout.tsx (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:527:1)
+    at Function.__webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at async Promise.all (index 0)
+digest: "1802630913"
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (./components/branding/app-logo.tsx:7:68)
+    at (rsc)/./components/branding/app-logo.tsx (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:1404:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (./components/navigation/public-footer.tsx:9:87)
+    at (rsc)/./components/navigation/public-footer.tsx (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:1415:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (layout.tsx:14:94)
+    at (rsc)/./app/(public)/layout.tsx (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:527:1)
+    at Function.__webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at async Promise.all (index 0)
+digest: "1802630913"
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (./components/branding/app-logo.tsx:7:68)
+    at (rsc)/./components/branding/app-logo.tsx (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:1404:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (./components/navigation/public-footer.tsx:9:87)
+    at (rsc)/./components/navigation/public-footer.tsx (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:1415:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (layout.tsx:14:94)
+    at (rsc)/./app/(public)/layout.tsx (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:527:1)
+    at Function.__webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+digest: "3712412522"
+TypeError: Cannot read properties of undefined (reading 'call')
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (webpack-internal:///(rsc)/./components/branding/app-logo.tsx:7:68)
+    at (rsc)/./components/branding/app-logo.tsx (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:1404:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (webpack-internal:///(rsc)/./components/navigation/public-footer.tsx:9:87)
+    at (rsc)/./components/navigation/public-footer.tsx (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:1415:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (webpack-internal:///(rsc)/./app/(public)/layout.tsx:14:94)
+    at (rsc)/./app/(public)/layout.tsx (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:527:1)
+    at Function.__webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at async e7 (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:398677)
+    at async tS (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:402230)
+    at async tw (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:402791)
+    at async tw (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:402922)
+    at async tO (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:36:2320)
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:36:2989 {
+  digest: '3712412522'
+}
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (webpack-internal:///(rsc)/./components/branding/app-logo.tsx:7:68)
+    at (rsc)/./components/branding/app-logo.tsx (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:1404:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (webpack-internal:///(rsc)/./components/navigation/public-footer.tsx:9:87)
+    at (rsc)/./components/navigation/public-footer.tsx (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:1415:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (webpack-internal:///(rsc)/./app/(public)/layout.tsx:14:94)
+    at (rsc)/./app/(public)/layout.tsx (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:527:1)
+    at Function.__webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at async e7 (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:398677)
+    at async tS (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:402230)
+    at async tw (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:402791)
+    at async tw (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:402922)
+    at async tO (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:36:2320)
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:36:2989 {
+  digest: '3712412522',
+  page: '/'
+}
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (./lib/public/public-market-scope.ts:11:61)
+    at (ssr)/./lib/public/public-market-scope.ts (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:1181:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (./lib/public/public-market-copy.ts:10:89)
+    at (ssr)/./lib/public/public-market-copy.ts (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:1170:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (./lib/public/public-surface-config.ts:13:88)
+    at (ssr)/./lib/public/public-surface-config.ts (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:1192:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (./components/navigation/public-header.tsx:14:91)
+    at (ssr)/./components/navigation/public-header.tsx (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:867:1)
+    at Object.__webpack_require__ [as require] (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+digest: "3993728589"
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (./lib/public/public-market-scope.ts:11:61)
+    at (ssr)/./lib/public/public-market-scope.ts (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:1181:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (./lib/public/public-market-copy.ts:10:89)
+    at (ssr)/./lib/public/public-market-copy.ts (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:1170:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (./lib/public/public-surface-config.ts:13:88)
+    at (ssr)/./lib/public/public-surface-config.ts (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:1192:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (./components/navigation/public-header.tsx:14:91)
+    at (ssr)/./components/navigation/public-header.tsx (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:867:1)
+    at Object.__webpack_require__ [as require] (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+digest: "3993728589"
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (./lib/public/public-market-scope.ts:11:61)
+    at (ssr)/./lib/public/public-market-scope.ts (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:1181:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (./lib/public/public-market-copy.ts:10:89)
+    at (ssr)/./lib/public/public-market-copy.ts (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:1170:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (./lib/public/public-surface-config.ts:13:88)
+    at (ssr)/./lib/public/public-surface-config.ts (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:1192:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (./components/navigation/public-header.tsx:14:91)
+    at (ssr)/./components/navigation/public-header.tsx (C:\Users\david\Documents\CFv1\.next-dev\server\app\(public)\page.js:867:1)
+    at Object.__webpack_require__ [as require] (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+digest: "3993728589"
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+ ⨯ SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>)
+    at loadManifest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\load-manifest.js:36:25)
+    at getMaybePagePath (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\require.js:57:59)
+    at getPagePath (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\require.js:92:22)
+    at requirePage (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\require.js:99:22)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\load-components.js:103:84
+    at async loadComponentsImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\load-components.js:103:26)
+    at async DevServer.findPageComponentsImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\next-server.js:714:36)
+    at async DevServer.findPageComponents (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1910:24)
+    at async DevServer.renderToResponseImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:818:17)
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\Users\david\Documents\CFv1\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  page: '/'
+}
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: EPERM: operation not permitted, rename 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\client-development\8.pack.gz_' -> 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\client-development\8.pack.gz'
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: EPERM: operation not permitted, rename 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\client-development\10.pack.gz_' -> 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\client-development\10.pack.gz'

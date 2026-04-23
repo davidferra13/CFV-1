@@ -1,0 +1,1015 @@
+ ⚠ Invalid next.config.js options detected: 
+ ⚠     Unrecognized key(s) in object: 'serverActions'
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (1810kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (188kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (139kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (692kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (695kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (227kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+The user aborted a request.
+
+Retrying 1/3...
+The user aborted a request.
+
+Retrying 1/3...
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+Image with src "/api/storage/public/chef-profile-images/bd72cf97-a0e5-4fe4-b049-0706ac81d100/1774734757311-ef0fd70e-4692-400d-af0c-4e5c83c441a4.jpg" has a "loader" property that does not implement width. Please implement it or use the "unoptimized" property instead.
+Read more: https://nextjs.org/docs/messages/next-image-missing-loader-width
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: b62ecc3c-937e-47ee-a98b-078b50d1f768,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ 'b62ecc3c-937e-47ee-a98b-078b50d1f768', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}

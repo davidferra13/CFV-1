@@ -9,25 +9,8 @@ import {
 import type { CatalogItemV2, CatalogStore } from '@/lib/openclaw/catalog-actions'
 import { ProductCard } from './product-card'
 
-const STORE_BRANDING: Record<string, { color: string; initials: string }> = {
-  'whole foods': { color: '#00674b', initials: 'WF' },
-  'market basket': { color: '#e31837', initials: 'MB' },
-  walmart: { color: '#0071dc', initials: 'W' },
-  target: { color: '#cc0000', initials: 'T' },
-  hannaford: { color: '#e21836', initials: 'H' },
-  'stop & shop': { color: '#e31837', initials: 'S&S' },
-  "shaw's": { color: '#e4002b', initials: 'S' },
-  costco: { color: '#e31837', initials: 'C' },
-  "bj's": { color: '#00529b', initials: 'BJ' },
-  aldi: { color: '#00005f', initials: 'A' },
-}
-
-function getStoreBrand(name: string) {
-  const lower = name.toLowerCase()
-  for (const [key, val] of Object.entries(STORE_BRANDING)) {
-    if (lower.includes(key)) return val
-  }
-  return { color: '#6b7280', initials: name.charAt(0).toUpperCase() }
+function getStoreCoverageLabel(store: CatalogStore) {
+  return store.region?.trim() || 'Unspecified coverage'
 }
 
 interface StoreAisleBrowserProps {
@@ -53,12 +36,7 @@ export function StoreAisleBrowser({
   const [isPending, startTransition] = useTransition()
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [sort, setSort] = useState<string>('name')
-  const [region, setRegion] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('cf-region') || 'haverhill-ma'
-    }
-    return 'haverhill-ma'
-  })
+  const [region, setRegion] = useState('')
   const observerRef = useRef<HTMLDivElement>(null)
 
   // Load stores and categories on mount
@@ -74,25 +52,15 @@ export function StoreAisleBrowser({
     })
   }, [])
 
-  // Filter stores by region
-  const regionStores = stores.filter((s) => {
-    if (!region) return true
-    if (s.region) return s.region === region
-    // Fallback: match by city/state keywords
-    const id = s.id.toLowerCase()
-    if (region === 'haverhill-ma') {
-      return (
-        id.includes('haverhill') ||
-        id.includes('methuen') ||
-        id.includes('merrimack') ||
-        !id.includes('portland')
-      )
-    }
-    if (region === 'portland-me') {
-      return id.includes('portland')
-    }
-    return true
-  })
+  const coverageOptions = Array.from(new Set(stores.map(getStoreCoverageLabel))).sort((a, b) =>
+    a.localeCompare(b)
+  )
+
+  const regionStores = stores.filter((store) => !region || getStoreCoverageLabel(store) === region)
+  const selectedStoreRecord = stores.find((store) => store.id === selectedStore)
+  const selectedStoreLabel = selectedStoreRecord
+    ? `${selectedStoreRecord.name}${selectedStoreRecord.city ? ` - ${selectedStoreRecord.city}` : ''}`
+    : ''
 
   // Load items when store/category/search/sort changes
   const loadItems = useCallback(
@@ -155,24 +123,24 @@ export function StoreAisleBrowser({
 
   const handleRegionChange = (newRegion: string) => {
     setRegion(newRegion)
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('cf-region', newRegion)
-    }
     setSelectedStore('')
   }
 
   return (
     <div className="space-y-4">
-      {/* Header: Region + Store selector */}
+      {/* Header: Coverage + Store selector */}
       <div className="flex flex-col sm:flex-row gap-3">
         <select
           value={region}
           onChange={(e) => handleRegionChange(e.target.value)}
           className="bg-stone-800 border border-stone-700 rounded-lg px-3 py-2 text-sm text-stone-300"
         >
-          <option value="haverhill-ma">Haverhill / Merrimack Valley, MA</option>
-          <option value="portland-me">Portland, ME</option>
-          <option value="">All Regions</option>
+          <option value="">All Coverage ({stores.length})</option>
+          {coverageOptions.map((coverage) => (
+            <option key={coverage} value={coverage}>
+              {coverage}
+            </option>
+          ))}
         </select>
 
         <select
@@ -182,9 +150,8 @@ export function StoreAisleBrowser({
         >
           <option value="">All Stores ({regionStores.length})</option>
           {regionStores.map((s) => {
-            const brand = getStoreBrand(s.name)
             return (
-              <option key={s.id} value={s.name}>
+              <option key={s.id} value={s.id}>
                 {s.name}
                 {s.city ? ` - ${s.city}` : ''}
               </option>
@@ -243,7 +210,7 @@ export function StoreAisleBrowser({
       {/* Status line */}
       <div className="flex items-center gap-2 text-xs text-stone-500">
         <span>{total.toLocaleString()} items</span>
-        {selectedStore && <span>at {selectedStore}</span>}
+        {selectedStoreLabel && <span>at {selectedStoreLabel}</span>}
         {selectedCategory && <span>in {selectedCategory}</span>}
         {isPending && <span className="text-amber-500">Loading...</span>}
       </div>
@@ -264,7 +231,7 @@ export function StoreAisleBrowser({
       ) : !isPending ? (
         <div className="text-center py-12 text-stone-500">
           {search
-            ? `No items found for "${search}"${selectedStore ? ` at ${selectedStore}` : ''}. Try a different search or store.`
+            ? `No items found for "${search}"${selectedStoreLabel ? ` at ${selectedStoreLabel}` : ''}. Try a different search or store.`
             : selectedStore
               ? 'No catalog data for this store yet. Coverage for this store is still in progress.'
               : 'Select a store or search to browse the catalog.'}

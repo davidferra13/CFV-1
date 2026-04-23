@@ -23,6 +23,7 @@ import { getMessageThread, getResponseTemplates } from '@/lib/messages/actions'
 import { EventStatusBadge } from '@/components/events/event-status-badge'
 import { DietaryComplexityBadge } from '@/components/events/dietary-complexity-badge'
 import { EventRiskBadge } from '@/components/events/event-risk-badge'
+import { ServiceSimulationRollupCard } from '@/components/events/service-simulation-rollup-card'
 import { calculateDietaryComplexity } from '@/lib/formulas/dietary-complexity'
 import { calculateEventRisk } from '@/lib/formulas/event-risk-score'
 import { EventTransitions } from '@/components/events/event-transitions'
@@ -67,14 +68,16 @@ import { TempLogPanel } from '@/components/events/temp-log-panel'
 import { EventStaffPanel } from '@/components/events/event-staff-panel'
 import { MenuApprovalStatus } from '@/components/events/menu-approval-status'
 import { MenuLibraryPicker } from '@/components/events/menu-library-picker'
-import { PreServiceChecklistSection } from '@/components/events/pre-service-checklist-section'
 import { getMenuLibraryForEvent } from '@/lib/menus/showcase-actions'
 import { EventPrepSchedule } from '@/components/events/event-prep-schedule'
 import { PrepBlockNudgeBanner } from '@/components/events/prep-block-nudge'
 import { getEventPrepBlocks } from '@/lib/scheduling/prep-block-actions'
 import { getParAlerts } from '@/lib/inventory/count-actions'
 import { ReadinessGatePanel } from '@/components/events/readiness-gate-panel'
-import { getEventReadiness } from '@/lib/events/readiness'
+import {
+  evaluateReadinessForDocumentGeneration,
+  getEventReadiness,
+} from '@/lib/events/readiness'
 import { getTakeAChefConversionData } from '@/lib/inquiries/take-a-chef-capture-actions'
 import { getTakeAChefEventFinance } from '@/lib/integrations/take-a-chef-finance-actions'
 import { getMarketplaceConversionData } from '@/lib/marketplace/conversion-actions'
@@ -141,6 +144,8 @@ import { getChefArchetype } from '@/lib/archetypes/actions'
 import { LifecycleProgressPanel } from '@/components/lifecycle/lifecycle-progress-panel'
 import { CompletionCard, CompletionCardSkeleton } from '@/components/completion/completion-card'
 import { getCompletionForEntity } from '@/lib/completion/actions'
+import { getGuestCountHistory } from '@/lib/guests/count-changes'
+import { loadEventServiceSimulationPanelState } from '@/lib/service-simulation/state'
 
 async function EventCompletionSection({ eventId }: { eventId: string }) {
   const result = await getCompletionForEntity('event', eventId)
@@ -166,17 +171,6 @@ async function getEventMenuCostSummary(eventId: string) {
     totalComponentCount: data.total_component_count as number | null,
     hasAllRecipeCosts: data.has_all_recipe_costs as boolean | null,
   }
-}
-
-function isEventSoon(eventDate: Date | string): boolean {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const tomorrow = new Date(today)
-  tomorrow.setDate(tomorrow.getDate() + 1)
-  const dayAfter = new Date(today)
-  dayAfter.setDate(dayAfter.getDate() + 2)
-  const evDate = new Date(dateToDateString(eventDate) + 'T00:00:00')
-  return evDate >= today && evDate < dayAfter
 }
 
 function isEventToday(eventDate: Date | string): boolean {
@@ -315,11 +309,14 @@ export default async function EventDetailPage({
     unusedItems,
     substitutionItems,
     eventReadiness,
+    documentReadinessGate,
     timelineEntries,
     lifecycleProgress,
     menuCostSummary,
     chefArchetype,
     ledgerEntries,
+    guestCountChanges,
+    serviceSimulationState,
   ] = await Promise.all([
     getEventFinancialSummary(params.id).catch(() => ({
       totalPaid: 0,
@@ -367,6 +364,7 @@ export default async function EventDetailPage({
     isCompletedOrBeyond ? getUnusedIngredients(params.id) : Promise.resolve([]),
     getSubstitutions(params.id).catch(() => []),
     getEventReadiness(params.id).catch(() => null),
+    evaluateReadinessForDocumentGeneration(params.id).catch(() => null),
     getEntityActivityTimeline('event', params.id).catch(() => []),
     getLifecycleProgress(event.inquiry_id ?? undefined, params.id).catch(() => null),
     getEventMenuCostSummary(params.id).catch(() => null),
@@ -374,6 +372,8 @@ export default async function EventDetailPage({
     import('@/lib/events/offline-payment-actions')
       .then((m) => m.getEventLedgerEntries(params.id))
       .catch(() => []),
+    getGuestCountHistory(params.id).catch(() => []),
+    loadEventServiceSimulationPanelState(params.id).catch(() => null),
   ])
 
   const eventLoyaltyPoints = (eventLoyaltyTxs as { points: number }[]).reduce(
@@ -698,6 +698,16 @@ export default async function EventDetailPage({
         </div>
       </div>
 
+      {event.status !== 'cancelled' && serviceSimulationState ? (
+        <ServiceSimulationRollupCard
+          eventId={params.id}
+          panelState={serviceSimulationState}
+          compact
+          returnToHref={`/events/${params.id}?tab=ops#service-simulation`}
+          description="Day-of snapshot from live event truth. Keep the full walkthrough in Ops, but keep this signal visible above the fold."
+        />
+      ) : null}
+
       {/* Collaborator role banner â€” shown when viewing another chef's event */}
       {!isEventOwner && myCollaboratorRow && (
         <div className="rounded-lg border border-brand-700 bg-brand-950/50 px-4 py-3 flex items-center gap-3">
@@ -822,7 +832,7 @@ export default async function EventDetailPage({
                   href={`/events/${event.id}/pack`}
                   className="text-xs text-brand-500 hover:text-brand-400"
                 >
-                  Open checklist &rarr;
+                  Open packing view &rarr;
                 </Link>
               </div>
               {(event as any).car_packed ? (
@@ -833,7 +843,7 @@ export default async function EventDetailPage({
                   packed
                 </p>
               ) : (
-                <p className="text-sm text-stone-300">Not started â€” open checklist to begin</p>
+                <p className="text-sm text-stone-300">Not started â€” open packing view to begin</p>
               )}
             </div>
             {(event as any).car_packed && (
@@ -844,10 +854,6 @@ export default async function EventDetailPage({
           </div>
         </Card>
       )}
-
-      {/* Pre-Service Checklist (Phase 4) - shown for today/tomorrow events */}
-      {['confirmed', 'paid', 'in_progress', 'accepted'].includes(event.status) &&
-        isEventSoon(event.event_date) && <PreServiceChecklistSection eventId={event.id} />}
 
       {/* Prep Block Nudge - confirmed events with no prep blocks scheduled */}
       {event.status === 'confirmed' && (prepBlocks as any[]).length === 0 && (
@@ -942,6 +948,7 @@ export default async function EventDetailPage({
         menuCostSummary={menuCostSummary}
         chefArchetype={chefArchetype}
         ledgerEntries={ledgerEntries as any[]}
+        guestCountChanges={guestCountChanges}
       />
 
       {/* TAB: PREP - Peak window prep timeline         */}
@@ -987,10 +994,11 @@ export default async function EventDetailPage({
         unusedItems={unusedItems as any[]}
         contingencyNotes={contingencyNotes as any[]}
         emergencyContacts={emergencyContacts as any[]}
-        docReadiness={docReadiness}
-        businessDocs={businessDocs}
-        eventReadiness={eventReadiness}
-        closureStatus={closureStatus}
+          docReadiness={docReadiness}
+          businessDocs={businessDocs}
+          eventReadiness={eventReadiness}
+          documentReadinessGate={documentReadinessGate}
+          closureStatus={closureStatus}
         aar={aar}
         eventPhotos={eventPhotos}
         eventMenus={eventMenus as any}
@@ -998,6 +1006,7 @@ export default async function EventDetailPage({
         aiConfigured={aiConfigured}
         hasAllergyData={eventHasAllergyData as boolean}
         eventTotalCents={eventTotalCents}
+        serviceSimulationState={serviceSimulationState}
       />
       {/* TAB: WRAP-UP â€” Debrief, survey, history      */}
       {/* ============================================ */}

@@ -90,32 +90,42 @@ export const CHEF_PROTECTED_PATHS = [
 ] as const
 
 export const CLIENT_PROTECTED_PATHS = [
-  '/my-events',
-  '/my-quotes',
-  '/my-chat',
-  '/my-profile',
-  '/my-rewards',
   '/book-now',
+  '/my-bookings',
+  '/my-cannabis',
+  '/my-chat',
+  '/my-events',
+  '/my-hub',
+  '/my-inquiries',
+  '/my-profile',
+  '/my-quotes',
+  '/my-rewards',
+  '/my-spending',
 ] as const
 
 export const STAFF_PROTECTED_PATHS = [
   '/staff-dashboard',
-  '/staff-station',
   '/staff-recipes',
   '/staff-schedule',
+  '/staff-station',
   '/staff-tasks',
+  '/staff-time',
 ] as const
 
 export const PARTNER_PROTECTED_PATHS = ['/partner'] as const
 
 // Public website and tokenized pages that must remain reachable unauthenticated.
 export const PUBLIC_UNAUTHENTICATED_PATHS = [
+  '/account-security',
   '/about',
+  '/auth',
   '/compare',
   '/marketplace-chefs',
   '/customers',
+  '/data-request',
   '/faq',
   '/contact',
+  '/pricing',
   '/privacy',
   '/privacy-policy',
   '/terms',
@@ -155,6 +165,7 @@ export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/for-operators',
   '/gift-cards',
   '/how-it-works',
+  '/ingredients',
   '/services',
   '/ingredient',
 ] as const
@@ -174,6 +185,7 @@ export const API_SKIP_AUTH_PREFIXES = [
   '/auth',
   '/api/webhooks',
   '/api/auth',
+  '/api/build-version',
   '/api/gmail',
   '/api/scheduled',
   '/api/e2e',

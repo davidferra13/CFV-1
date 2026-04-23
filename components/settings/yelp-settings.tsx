@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { Search, Star, Loader2, RefreshCw, Unlink } from '@/components/ui/icons'
+import { NEUTRAL_LOCATION_TAG_PLACEHOLDER } from '@/lib/site/national-brand-copy'
 
 type YelpBusiness = {
   id: string
@@ -189,7 +190,7 @@ export function YelpSettings({
                   value={searchLocation}
                   onChange={(e) => setSearchLocation(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  placeholder="New York, NY"
+                  placeholder={NEUTRAL_LOCATION_TAG_PLACEHOLDER}
                   className="w-full rounded-md border border-stone-700 bg-stone-800 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-600"
                 />
               </div>

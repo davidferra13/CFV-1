@@ -82,6 +82,7 @@ export default async function RevenueByEventPage() {
                 <TableHead>Event Date</TableHead>
                 <TableHead>Client</TableHead>
                 <TableHead>Occasion</TableHead>
+                <TableHead>Attribution</TableHead>
                 <TableHead>Guests</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Revenue</TableHead>
@@ -108,6 +109,20 @@ export default async function RevenueByEventPage() {
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm capitalize">
                     {event.occasion?.replace(/_/g, ' ') ?? '-'}
+                  </TableCell>
+                  <TableCell className="text-stone-400 text-sm">
+                    {event.partner_location ? (
+                      <div>
+                        <p className="font-medium text-stone-200">{event.partner_location.name}</p>
+                        <p className="text-xs text-stone-500">
+                          {event.referral_partner?.name || 'Partner attribution'}
+                        </p>
+                      </div>
+                    ) : event.referral_partner ? (
+                      event.referral_partner.name
+                    ) : (
+                      '-'
+                    )}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">
                     {event.guest_count ?? '-'}

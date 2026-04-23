@@ -12745,11 +12745,25 @@ export type Database = {
           created_at: string
           direction: Database["public"]["Enums"]["communication_direction"]
           external_id: string | null
+          external_thread_key: string | null
           id: string
           linked_entity_id: string | null
           linked_entity_type: string | null
+          managed_channel_address: string | null
           normalized_content: string
+          provider_delivered_at: string | null
+          provider_delivery_status:
+            | Database["public"]["Enums"]["communication_delivery_status"]
+            | null
+          provider_error_code: string | null
+          provider_error_message: string | null
+          provider_failed_at: string | null
+          provider_name: string | null
+          provider_read_at: string | null
+          provider_status: string | null
+          provider_status_updated_at: string | null
           raw_content: string
+          recipient_address: string | null
           resolved_client_id: string | null
           sender_identity: string
           source: Database["public"]["Enums"]["communication_source"]
@@ -12763,11 +12777,25 @@ export type Database = {
           created_at?: string
           direction: Database["public"]["Enums"]["communication_direction"]
           external_id?: string | null
+          external_thread_key?: string | null
           id?: string
           linked_entity_id?: string | null
           linked_entity_type?: string | null
+          managed_channel_address?: string | null
           normalized_content: string
+          provider_delivered_at?: string | null
+          provider_delivery_status?:
+            | Database["public"]["Enums"]["communication_delivery_status"]
+            | null
+          provider_error_code?: string | null
+          provider_error_message?: string | null
+          provider_failed_at?: string | null
+          provider_name?: string | null
+          provider_read_at?: string | null
+          provider_status?: string | null
+          provider_status_updated_at?: string | null
           raw_content: string
+          recipient_address?: string | null
           resolved_client_id?: string | null
           sender_identity: string
           source: Database["public"]["Enums"]["communication_source"]
@@ -12781,11 +12809,25 @@ export type Database = {
           created_at?: string
           direction?: Database["public"]["Enums"]["communication_direction"]
           external_id?: string | null
+          external_thread_key?: string | null
           id?: string
           linked_entity_id?: string | null
           linked_entity_type?: string | null
+          managed_channel_address?: string | null
           normalized_content?: string
+          provider_delivered_at?: string | null
+          provider_delivery_status?:
+            | Database["public"]["Enums"]["communication_delivery_status"]
+            | null
+          provider_error_code?: string | null
+          provider_error_message?: string | null
+          provider_failed_at?: string | null
+          provider_name?: string | null
+          provider_read_at?: string | null
+          provider_status?: string | null
+          provider_status_updated_at?: string | null
           raw_content?: string
+          recipient_address?: string | null
           resolved_client_id?: string | null
           sender_identity?: string
           source?: Database["public"]["Enums"]["communication_source"]
@@ -13387,10 +13429,14 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          intake_lane: string
           inquiry_id: string | null
           message: string
           name: string
+          operator_evaluation_status: string | null
           read: boolean
+          source_cta: string | null
+          source_page: string | null
           subject: string | null
         }
         Insert: {
@@ -13399,10 +13445,14 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
+          intake_lane?: string
           inquiry_id?: string | null
           message: string
           name: string
+          operator_evaluation_status?: string | null
           read?: boolean
+          source_cta?: string | null
+          source_page?: string | null
           subject?: string | null
         }
         Update: {
@@ -13411,10 +13461,14 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          intake_lane?: string
           inquiry_id?: string | null
           message?: string
           name?: string
+          operator_evaluation_status?: string | null
           read?: boolean
+          source_cta?: string | null
+          source_page?: string | null
           subject?: string | null
         }
         Relationships: [
@@ -13869,6 +13923,15 @@ export type Database = {
           id: string
           is_starred: boolean
           last_activity_at: string
+          latest_outbound_attempted_at: string | null
+          latest_outbound_delivery_status:
+            | Database["public"]["Enums"]["communication_delivery_status"]
+            | null
+          latest_outbound_error_code: string | null
+          latest_outbound_error_message: string | null
+          latest_outbound_event_id: string | null
+          latest_outbound_provider_status: string | null
+          latest_outbound_status_updated_at: string | null
           snoozed_until: string | null
           state: Database["public"]["Enums"]["conversation_thread_state"]
           tenant_id: string
@@ -13881,6 +13944,15 @@ export type Database = {
           id?: string
           is_starred?: boolean
           last_activity_at?: string
+          latest_outbound_attempted_at?: string | null
+          latest_outbound_delivery_status?:
+            | Database["public"]["Enums"]["communication_delivery_status"]
+            | null
+          latest_outbound_error_code?: string | null
+          latest_outbound_error_message?: string | null
+          latest_outbound_event_id?: string | null
+          latest_outbound_provider_status?: string | null
+          latest_outbound_status_updated_at?: string | null
           snoozed_until?: string | null
           state?: Database["public"]["Enums"]["conversation_thread_state"]
           tenant_id: string
@@ -13893,6 +13965,15 @@ export type Database = {
           id?: string
           is_starred?: boolean
           last_activity_at?: string
+          latest_outbound_attempted_at?: string | null
+          latest_outbound_delivery_status?:
+            | Database["public"]["Enums"]["communication_delivery_status"]
+            | null
+          latest_outbound_error_code?: string | null
+          latest_outbound_error_message?: string | null
+          latest_outbound_event_id?: string | null
+          latest_outbound_provider_status?: string | null
+          latest_outbound_status_updated_at?: string | null
           snoozed_until?: string | null
           state?: Database["public"]["Enums"]["conversation_thread_state"]
           tenant_id?: string
@@ -13911,6 +13992,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_threads_latest_outbound_event_id_fkey"
+            columns: ["latest_outbound_event_id"]
+            isOneToOne: false
+            referencedRelation: "communication_events"
             referencedColumns: ["id"]
           },
           {
@@ -25364,8 +25452,12 @@ export type Database = {
           notes: string | null
           previous_count: number
           price_impact_cents: number | null
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           requested_by: string
           requested_by_role: string
+          status: string
           surcharge_applied: boolean | null
           surcharge_cents: number | null
           tenant_id: string
@@ -25382,8 +25474,12 @@ export type Database = {
           notes?: string | null
           previous_count: number
           price_impact_cents?: number | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           requested_by: string
           requested_by_role: string
+          status?: string
           surcharge_applied?: boolean | null
           surcharge_cents?: number | null
           tenant_id: string
@@ -25400,8 +25496,12 @@ export type Database = {
           notes?: string | null
           previous_count?: number
           price_impact_cents?: number | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           requested_by?: string
           requested_by_role?: string
+          status?: string
           surcharge_applied?: boolean | null
           surcharge_cents?: number | null
           tenant_id?: string
@@ -25433,6 +25533,13 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guest_count_changes_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
           {
@@ -51533,6 +51640,12 @@ export type Database = {
         | "webhook"
         | "automation"
         | "import"
+      communication_delivery_status:
+        | "pending"
+        | "sent"
+        | "delivered"
+        | "read"
+        | "failed"
       communication_direction: "inbound" | "outbound"
       communication_event_status: "unlinked" | "linked" | "resolved"
       communication_source:
@@ -52186,4 +52299,3 @@ export type Enums<
   : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
     ? PublicSchema["Enums"][PublicEnumNameOrOptions]
     : never
-

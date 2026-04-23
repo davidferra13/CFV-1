@@ -12,6 +12,8 @@ import { createConflictError } from '@/lib/mutations/conflict'
 import { AuthError, UnknownAppError, ValidationError } from '@/lib/errors/app-error'
 import { isMissingSoftDeleteColumn } from '@/lib/mutations/soft-delete-compat'
 import { invalidateRemyContextCache } from '@/lib/ai/remy-context'
+import { normalizeLocationTruthValue } from '@/lib/events/location-truth'
+import { normalizeEventTimeTruthValue } from '@/lib/events/time-truth'
 import {
   EVENT_TIME_ACTIVITY_TYPES,
   EVENT_TIME_ACTIVITY_CONFIG,
@@ -30,10 +32,10 @@ const CreateEventSchema = z.object({
     .refine((v) => !isNaN(Date.parse(v)), { message: 'Event date must be a valid date string' }),
   serve_time: z.string().optional().default(''),
   guest_count: z.number().int().positive().optional().default(1),
-  location_address: z.string().optional().default('TBD'),
-  location_city: z.string().optional().default('TBD'),
+  location_address: z.string().optional().default(''),
+  location_city: z.string().optional().default(''),
   location_state: z.string().optional(),
-  location_zip: z.string().optional().default('TBD'),
+  location_zip: z.string().optional().default(''),
   occasion: z.string().max(255).optional(),
   service_style: z
     .enum(['plated', 'family_style', 'buffet', 'cocktail', 'tasting_menu', 'other'])
@@ -63,10 +65,10 @@ const UpdateEventSchema = z.object({
   event_date: z.string().optional(),
   serve_time: z.string().optional(),
   guest_count: z.number().int().positive().optional(),
-  location_address: z.string().min(1).optional(),
-  location_city: z.string().min(1).optional(),
+  location_address: z.string().optional(),
+  location_city: z.string().optional(),
   location_state: z.string().optional(),
-  location_zip: z.string().min(1).optional(),
+  location_zip: z.string().optional(),
   occasion: z.string().max(255).optional(),
   service_style: z
     .enum(['plated', 'family_style', 'buffet', 'cocktail', 'tasting_menu', 'other'])
@@ -136,6 +138,19 @@ export async function createEvent(input: CreateEventInput) {
 
   const db: any = createServerClient()
 
+  const normalizedLocationAddress = normalizeLocationTruthValue(validated.location_address)
+  const normalizedLocationCity = normalizeLocationTruthValue(validated.location_city)
+  const normalizedLocationState = normalizeLocationTruthValue(validated.location_state)
+  const normalizedLocationZip = normalizeLocationTruthValue(validated.location_zip)
+  const normalizedServeTime = normalizeEventTimeTruthValue(validated.serve_time)
+  const normalizedArrivalTime = normalizeEventTimeTruthValue(validated.arrival_time)
+  const normalizedDepartureTime = normalizeEventTimeTruthValue(validated.departure_time)
+  const hasMeaningfulLocation =
+    normalizedLocationAddress !== null ||
+    normalizedLocationCity !== null ||
+    normalizedLocationState !== null ||
+    normalizedLocationZip !== null
+
   // Verify client belongs to this tenant (include dietary data for fallback)
   const { data: client } = await db
     .from('clients')
@@ -173,12 +188,12 @@ export async function createEvent(input: CreateEventInput) {
         tenant_id: user.tenantId!,
         client_id: validated.client_id,
         event_date: validated.event_date,
-        serve_time: validated.serve_time,
+        serve_time: normalizedServeTime,
         guest_count: validated.guest_count,
-        location_address: validated.location_address,
-        location_city: validated.location_city,
-        location_state: validated.location_state,
-        location_zip: validated.location_zip,
+        location_address: normalizedLocationAddress,
+        location_city: normalizedLocationCity,
+        location_state: normalizedLocationState,
+        location_zip: normalizedLocationZip,
         occasion: validated.occasion,
         service_style: validated.service_style,
         pricing_model:
@@ -196,11 +211,11 @@ export async function createEvent(input: CreateEventInput) {
         access_instructions: validated.access_instructions,
         kitchen_notes: validated.kitchen_notes,
         location_notes: validated.location_notes,
-        arrival_time: validated.arrival_time,
-        departure_time: validated.departure_time,
+        arrival_time: normalizedArrivalTime,
+        departure_time: normalizedDepartureTime,
         cannabis_preference: validated.cannabis_preference,
-        location_lat: validated.location_lat,
-        location_lng: validated.location_lng,
+        location_lat: hasMeaningfulLocation ? validated.location_lat ?? null : null,
+        location_lng: hasMeaningfulLocation ? validated.location_lng ?? null : null,
         referral_partner_id: validated.referral_partner_id ?? null,
         partner_location_id: validated.partner_location_id ?? null,
         event_timezone: validated.event_timezone ?? null,
@@ -293,7 +308,9 @@ export async function getEvents() {
       .select(
         `
       *,
-      client:clients(id, full_name, email)
+      client:clients(id, full_name, email),
+      referral_partner:referral_partners(id, name),
+      partner_location:partner_locations(id, name, city, state)
     `
       )
       .eq('tenant_id', user.tenantId!)
@@ -408,6 +425,31 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
   // Validate input
   const validated = UpdateEventSchema.parse(input)
   const { expected_updated_at, idempotency_key, ...updateFields } = validated
+  const normalizedUpdateFields: Record<string, unknown> = {
+    ...updateFields,
+  }
+
+  if (Object.prototype.hasOwnProperty.call(updateFields, 'location_address')) {
+    normalizedUpdateFields.location_address = normalizeLocationTruthValue(updateFields.location_address)
+  }
+  if (Object.prototype.hasOwnProperty.call(updateFields, 'location_city')) {
+    normalizedUpdateFields.location_city = normalizeLocationTruthValue(updateFields.location_city)
+  }
+  if (Object.prototype.hasOwnProperty.call(updateFields, 'location_state')) {
+    normalizedUpdateFields.location_state = normalizeLocationTruthValue(updateFields.location_state)
+  }
+  if (Object.prototype.hasOwnProperty.call(updateFields, 'location_zip')) {
+    normalizedUpdateFields.location_zip = normalizeLocationTruthValue(updateFields.location_zip)
+  }
+  if (Object.prototype.hasOwnProperty.call(updateFields, 'serve_time')) {
+    normalizedUpdateFields.serve_time = normalizeEventTimeTruthValue(updateFields.serve_time)
+  }
+  if (Object.prototype.hasOwnProperty.call(updateFields, 'arrival_time')) {
+    normalizedUpdateFields.arrival_time = normalizeEventTimeTruthValue(updateFields.arrival_time)
+  }
+  if (Object.prototype.hasOwnProperty.call(updateFields, 'departure_time')) {
+    normalizedUpdateFields.departure_time = normalizeEventTimeTruthValue(updateFields.departure_time)
+  }
 
   const db: any = createServerClient()
 
@@ -423,6 +465,39 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
     throw new ValidationError('Event not found')
   }
 
+  const touchedLocationFields = [
+    'location_address',
+    'location_city',
+    'location_state',
+    'location_zip',
+  ].some((field) => Object.prototype.hasOwnProperty.call(normalizedUpdateFields, field))
+
+  if (touchedLocationFields) {
+    const effectiveLocationValues = [
+      Object.prototype.hasOwnProperty.call(normalizedUpdateFields, 'location_address')
+        ? (normalizedUpdateFields.location_address as string | null | undefined)
+        : ((currentEvent as any).location_address as string | null | undefined),
+      Object.prototype.hasOwnProperty.call(normalizedUpdateFields, 'location_city')
+        ? (normalizedUpdateFields.location_city as string | null | undefined)
+        : ((currentEvent as any).location_city as string | null | undefined),
+      Object.prototype.hasOwnProperty.call(normalizedUpdateFields, 'location_state')
+        ? (normalizedUpdateFields.location_state as string | null | undefined)
+        : ((currentEvent as any).location_state as string | null | undefined),
+      Object.prototype.hasOwnProperty.call(normalizedUpdateFields, 'location_zip')
+        ? (normalizedUpdateFields.location_zip as string | null | undefined)
+        : ((currentEvent as any).location_zip as string | null | undefined),
+    ]
+
+    const hasMeaningfulLocation = effectiveLocationValues.some(
+      (value) => value !== null && value !== undefined && String(value).trim().length > 0
+    )
+
+    if (!hasMeaningfulLocation) {
+      normalizedUpdateFields.location_lat = null
+      normalizedUpdateFields.location_lng = null
+    }
+  }
+
   // Only allow updates if event is in draft or proposed state
   if (!['draft', 'proposed'].includes(currentEvent.status)) {
     throw new ValidationError('Cannot update event after it has been accepted')
@@ -430,7 +505,7 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
 
   const pricingFields = ['pricing_model', 'quoted_price_cents', 'deposit_amount_cents'] as const
   const isPricingFieldUpdate = pricingFields.some((field) =>
-    Object.prototype.hasOwnProperty.call(updateFields, field)
+    Object.prototype.hasOwnProperty.call(normalizedUpdateFields, field)
   )
 
   if (isPricingFieldUpdate) {
@@ -491,7 +566,7 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
         let query = db
           .from('events')
           .update({
-            ...updateFields,
+            ...normalizedUpdateFields,
             updated_by: user.id,
             updated_at: new Date().toISOString(),
           })

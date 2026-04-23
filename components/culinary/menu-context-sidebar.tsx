@@ -386,7 +386,8 @@ export function MenuContextSidebar({
                 <span className="font-medium text-amber-300">{c.ingredientName}</span> in{' '}
                 {c.dishName}
                 <p className="text-stone-500 mt-0.5">
-                  {dietaryConflicts.clientName} marked &quot;{c.clientPreference}&quot; as disliked
+                  {dietaryConflicts.clientName} flagged &quot;{c.clientPreference}&quot; via{' '}
+                  {c.sourceLabel.toLowerCase()}
                 </p>
               </div>
             ))}
@@ -537,8 +538,10 @@ export function MenuContextSidebar({
           </h4>
           {clientTaste.loved.length === 0 &&
           clientTaste.disliked.length === 0 &&
-          clientTaste.cuisinePreferences.length === 0 ? (
-            <p className="text-xs text-stone-500">No preferences recorded for this client.</p>
+          clientTaste.cuisinePreferences.length === 0 &&
+          clientTaste.favoriteDishes.length === 0 &&
+          !clientTaste.spicePreference ? (
+            <p className="text-xs text-stone-500">No culinary signals recorded for this client.</p>
           ) : (
             <>
               {clientTaste.cuisinePreferences.length > 0 && (
@@ -550,9 +553,27 @@ export function MenuContextSidebar({
                   ))}
                 </div>
               )}
+              {clientTaste.favoriteDishes.length > 0 && (
+                <div>
+                  <p className="text-xxs text-brand-400 font-medium mb-1">Favorites</p>
+                  <div className="flex flex-wrap gap-1">
+                    {clientTaste.favoriteDishes.map((item) => (
+                      <Badge key={item} variant="default">
+                        {item}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {clientTaste.spicePreference && (
+                <div>
+                  <p className="text-xxs text-stone-400 font-medium mb-1">Spice</p>
+                  <Badge variant="default">{clientTaste.spicePreference}</Badge>
+                </div>
+              )}
               {clientTaste.loved.length > 0 && (
                 <div>
-                  <p className="text-xxs text-emerald-400 font-medium mb-1">Loved</p>
+                  <p className="text-xxs text-emerald-400 font-medium mb-1">Likes / Requests</p>
                   <div className="flex flex-wrap gap-1">
                     {clientTaste.loved.map((item) => (
                       <Badge key={item} variant="success">

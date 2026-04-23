@@ -1,0 +1,288 @@
+{
+  "desktop": {
+    "name": "desktop",
+    "pageInfo": {
+      "title": "ChefFlow - Find a Private Chef Near You | ChefFlow",
+      "viewport": {
+        "innerWidth": 1440,
+        "innerHeight": 1200,
+        "scrollHeight": 2431
+      },
+      "bodyTextSample": "Skip to main content ChefFlow Hire a Chef For Operators Ingredients Sign In Book a Chef Hire a chef who actually does this. Private dinners, catering, meal prep, cooking classes. Browse real profiles, see what they specialize in, and reach out directly. No platform fee, no middleman. Book a Chef OR BROWSE CHEFS DIRECTLY Any service Private dinner Catering Meal prep Wedding Corporate dining Cooking class Event chef Personal chef Search Browse Chefs Looking for restaurants, caterers, or food trucks instead? Explore the food directory. 1 chef listed · Free to browse · You pay the chef directly Are you a chef or food operator? Free back-office software: clients, events, menus, food costing, finances, recipes. Learn more $50 - $150+ per person For private dinners. Weekly meal prep runs $200 - $800+ per week. Every chef sets their own pricing. You deal with the chef No call center, no algorithm matching. You pick who you want and message them directly. Menu to cleanup, handled Most chefs handle planning, shopping, cooking, plating, and cleanup. You host, they handle the rest. DINNER CIRCLES Shared guest pages for the dinner itself. Guests can use Dinner Circles to stay on top of event details, chat, coordinate, and come back to the same page before dinner. They are public guest pages, not chef-portal screens. Learn about Dinner Circles Featured chefs Browse profiles, see their work, reach out when you are ready. Browse Chefs Accepting new inquiries DF Private Chef Serves Haverhill, Massachusetts + 4000 mi Inquire ChefFlow Discover private chefs and chef-led dining experiences. ChefFlow also powers the operator back office. Hire a Chef Book a Chef Browse Chefs Dinner Circles Services Gift Cards How It Works FAQ Food Directory For Operators For Operators Marketplace Chefs Become a Partner Operator sign up Resources Ingredient Guide FAQ How It Works Company About Trust Center Contact Legal Privacy Policy Terms of Service Stay Updated Short guides for modern food-business operations. Subscribe © 2026 ChefFlow. All rights reserved. Discover private chefs and chef-led dining experiences. x This site uses cookies for basic functionality and analytics. See our Privacy Policy. Not now Decline Accept",
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "Hire a chef who actually does this."
+        },
+        {
+          "tag": "h2",
+          "text": "Shared guest pages for the dinner itself."
+        },
+        {
+          "tag": "h2",
+          "text": "Featured chefs"
+        },
+        {
+          "tag": "h3",
+          "text": "DF Private Chef"
+        }
+      ],
+      "buttons": [
+        "Hire a Chef",
+        "Search",
+        "Subscribe",
+        "x",
+        "Not now",
+        "Decline",
+        "Accept"
+      ]
+    },
+    "consoleMessages": [
+      {
+        "type": "warning",
+        "text": "As of March 1st, 2025, google.maps.places.Autocomplete is not available to new customers. Please use google.maps.places.PlaceAutocompleteElement instead. At this time, google.maps.places.Autocomplete is not scheduled to be discontinued, but google.maps.places.PlaceAutocompleteElement is recommended over google.maps.places.Autocomplete. While google.maps.places.Autocomplete will continue to receive bug fixes for any major regressions, existing bugs in google.maps.places.Autocomplete will not be addressed. At least 12 months notice will be given before support is discontinued. Please see https://developers.google.com/maps/legacy for additional details and https://developers.google.com/maps/documentation/javascript/places-migration-overview for the migration guide."
+      }
+    ],
+    "requestFailures": [
+      {
+        "url": "http://localhost:3000/chefs?_rsc=gdhdt",
+        "errorText": "net::ERR_ABORTED"
+      }
+    ],
+    "axe": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "nodes": [
+          {
+            "html": "<p class=\"mt-2 text-xs text-stone-500\">Serves <!-- -->Haverhill, Massachusetts + 4000 mi</p>",
+            "target": [
+              ".mt-2.text-xs.text-stone-500"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.64 (foreground color: #78716c, background color: #1c1917, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      },
+      {
+        "id": "landmark-main-is-top-level",
+        "impact": "moderate",
+        "help": "Main landmark should not be contained in another landmark",
+        "description": "Ensure the main landmark is at top level",
+        "nodes": [
+          {
+            "html": "<main>",
+            "target": [
+              "#main-content > main"
+            ],
+            "failureSummary": "Fix any of the following:\n  The main landmark is contained in another landmark."
+          }
+        ]
+      },
+      {
+        "id": "landmark-no-duplicate-main",
+        "impact": "moderate",
+        "help": "Document should not have more than one main landmark",
+        "description": "Ensure the document has at most one main landmark",
+        "nodes": [
+          {
+            "html": "<main id=\"main-content\" class=\"flex-1 animate-fade-slide-up\">",
+            "target": [
+              "#main-content"
+            ],
+            "failureSummary": "Fix any of the following:\n  Document has more than one main landmark"
+          }
+        ]
+      },
+      {
+        "id": "landmark-unique",
+        "impact": "moderate",
+        "help": "Landmarks should have a unique role or role/label/title (i.e. accessible name) combination",
+        "description": "Ensure landmarks are unique",
+        "nodes": [
+          {
+            "html": "<main id=\"main-content\" class=\"flex-1 animate-fade-slide-up\">",
+            "target": [
+              "#main-content"
+            ],
+            "failureSummary": "Fix any of the following:\n  The landmark must have a unique aria-label, aria-labelledby, or title to make landmarks distinguishable"
+          }
+        ]
+      },
+      {
+        "id": "region",
+        "impact": "moderate",
+        "help": "All page content should be contained by landmarks",
+        "description": "Ensure all page content is contained by landmarks",
+        "nodes": [
+          {
+            "html": "<span class=\"text-stone-300 text-sm flex-1\">This site uses cookies for basic functionality and analytics. See our <a class=\"underline hover:text-brand-400 transition-colors\" href=\"/privacy\">Privacy Policy</a>.</span>",
+            "target": [
+              ".text-stone-300.flex-1"
+            ],
+            "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+          }
+        ]
+      },
+      {
+        "id": "select-name",
+        "impact": "critical",
+        "help": "Select element must have an accessible name",
+        "description": "Ensure select element has an accessible name",
+        "nodes": [
+          {
+            "html": "<select class=\"w-full bg-transparent px-3 py-4 text-sm text-stone-100 focus:outline-none appearance-none cursor-pointer\">",
+            "target": [
+              "select"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+          }
+        ]
+      }
+    ]
+  },
+  "mobile": {
+    "name": "mobile",
+    "pageInfo": {
+      "title": "ChefFlow - Find a Private Chef Near You | ChefFlow",
+      "viewport": {
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "scrollHeight": 4051
+      },
+      "bodyTextSample": "Skip to main content ChefFlow BOOK Hire a chef who actually does this. Private dinners, catering, meal prep, cooking classes. Browse real profiles, see what they specialize in, and reach out directly. No platform fee, no middleman. Book a Chef OR BROWSE CHEFS DIRECTLY Any service Private dinner Catering Meal prep Wedding Corporate dining Cooking class Event chef Personal chef Search Browse Chefs Looking for restaurants, caterers, or food trucks instead? Explore the food directory. 1 chef listed · Free to browse · You pay the chef directly Are you a chef or food operator? Free back-office software: clients, events, menus, food costing, finances, recipes. $50 - $150+ per person For private dinners. Weekly meal prep runs $200 - $800+ per week. Every chef sets their own pricing. You deal with the chef No call center, no algorithm matching. You pick who you want and message them directly. Menu to cleanup, handled Most chefs handle planning, shopping, cooking, plating, and cleanup. You host, they handle the rest. DINNER CIRCLES Shared guest pages for the dinner itself. Guests can use Dinner Circles to stay on top of event details, chat, coordinate, and come back to the same page before dinner. They are public guest pages, not chef-portal screens. Learn about Dinner Circles Featured chefs Browse profiles, see their work, reach out when you are ready. Accepting new inquiries DF Private Chef Serves Haverhill, Massachusetts + 4000 mi Inquire Browse Chefs ChefFlow Discover private chefs and chef-led dining experiences. ChefFlow also powers the operator back office. Hire a Chef Book a Chef Browse Chefs Dinner Circles Services Gift Cards How It Works FAQ Food Directory For Operators For Operators Marketplace Chefs Become a Partner Operator sign up Resources Ingredient Guide FAQ How It Works Company About Trust Center Contact Legal Privacy Policy Terms of Service Stay Updated Short guides for modern food-business operations. Subscribe © 2026 ChefFlow. All rights reserved. Discover private chefs and chef-led dining experiences. x This site uses cookies for basic functionality and analytics. See our Privacy Policy. Not now Decline Accept",
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "Hire a chef who actually does this."
+        },
+        {
+          "tag": "h2",
+          "text": "Shared guest pages for the dinner itself."
+        },
+        {
+          "tag": "h2",
+          "text": "Featured chefs"
+        },
+        {
+          "tag": "h3",
+          "text": "DF Private Chef"
+        }
+      ],
+      "buttons": [
+        "Hire a Chef",
+        "Search",
+        "Subscribe",
+        "x",
+        "Not now",
+        "Decline",
+        "Accept"
+      ]
+    },
+    "consoleMessages": [
+      {
+        "type": "warning",
+        "text": "As of March 1st, 2025, google.maps.places.Autocomplete is not available to new customers. Please use google.maps.places.PlaceAutocompleteElement instead. At this time, google.maps.places.Autocomplete is not scheduled to be discontinued, but google.maps.places.PlaceAutocompleteElement is recommended over google.maps.places.Autocomplete. While google.maps.places.Autocomplete will continue to receive bug fixes for any major regressions, existing bugs in google.maps.places.Autocomplete will not be addressed. At least 12 months notice will be given before support is discontinued. Please see https://developers.google.com/maps/legacy for additional details and https://developers.google.com/maps/documentation/javascript/places-migration-overview for the migration guide."
+      }
+    ],
+    "requestFailures": [
+      {
+        "url": "http://localhost:3000/chefs?_rsc=gdhdt",
+        "errorText": "net::ERR_ABORTED"
+      }
+    ],
+    "axe": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "nodes": [
+          {
+            "html": "<p class=\"mt-2 text-xs text-stone-500\">Serves <!-- -->Haverhill, Massachusetts + 4000 mi</p>",
+            "target": [
+              ".mt-2.text-xs.text-stone-500"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.64 (foreground color: #78716c, background color: #1c1917, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      },
+      {
+        "id": "landmark-main-is-top-level",
+        "impact": "moderate",
+        "help": "Main landmark should not be contained in another landmark",
+        "description": "Ensure the main landmark is at top level",
+        "nodes": [
+          {
+            "html": "<main>",
+            "target": [
+              "#main-content > main"
+            ],
+            "failureSummary": "Fix any of the following:\n  The main landmark is contained in another landmark."
+          }
+        ]
+      },
+      {
+        "id": "landmark-no-duplicate-main",
+        "impact": "moderate",
+        "help": "Document should not have more than one main landmark",
+        "description": "Ensure the document has at most one main landmark",
+        "nodes": [
+          {
+            "html": "<main id=\"main-content\" class=\"flex-1 animate-fade-slide-up\">",
+            "target": [
+              "#main-content"
+            ],
+            "failureSummary": "Fix any of the following:\n  Document has more than one main landmark"
+          }
+        ]
+      },
+      {
+        "id": "landmark-unique",
+        "impact": "moderate",
+        "help": "Landmarks should have a unique role or role/label/title (i.e. accessible name) combination",
+        "description": "Ensure landmarks are unique",
+        "nodes": [
+          {
+            "html": "<main id=\"main-content\" class=\"flex-1 animate-fade-slide-up\">",
+            "target": [
+              "#main-content"
+            ],
+            "failureSummary": "Fix any of the following:\n  The landmark must have a unique aria-label, aria-labelledby, or title to make landmarks distinguishable"
+          }
+        ]
+      },
+      {
+        "id": "region",
+        "impact": "moderate",
+        "help": "All page content should be contained by landmarks",
+        "description": "Ensure all page content is contained by landmarks",
+        "nodes": [
+          {
+            "html": "<span class=\"text-stone-300 text-sm flex-1\">This site uses cookies for basic functionality and analytics. See our <a class=\"underline hover:text-brand-400 transition-colors\" href=\"/privacy\">Privacy Policy</a>.</span>",
+            "target": [
+              ".text-stone-300.flex-1"
+            ],
+            "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+          }
+        ]
+      },
+      {
+        "id": "select-name",
+        "impact": "critical",
+        "help": "Select element must have an accessible name",
+        "description": "Ensure select element has an accessible name",
+        "nodes": [
+          {
+            "html": "<select class=\"w-full bg-transparent px-3 py-4 text-sm text-stone-100 focus:outline-none appearance-none cursor-pointer\">",
+            "target": [
+              "select"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+          }
+        ]
+      }
+    ]
+  }
+}

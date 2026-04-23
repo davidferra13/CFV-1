@@ -5,6 +5,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { getGoogleGmailControl } from '@/lib/google/mailbox-control'
 
 export type TakeAChefStats = {
   newLeads: number
@@ -46,7 +47,7 @@ export async function getTakeAChefStats(): Promise<TakeAChefStats> {
     const db: any = createServerClient()
 
     // Run all count queries in parallel for speed
-    const [newRes, awaitingRes, confirmedRes, totalRes, syncRes, staleRes] = await Promise.all([
+    const [newRes, awaitingRes, confirmedRes, totalRes, control, staleRes] = await Promise.all([
       // New leads: channel = take_a_chef, status = new
       db
         .from('inquiries')
@@ -78,12 +79,12 @@ export async function getTakeAChefStats(): Promise<TakeAChefStats> {
         .eq('tenant_id', tenantId)
         .eq('channel', 'take_a_chef'),
 
-      // Last sync time from google_connections
-      db
-        .from('google_connections')
-        .select('gmail_last_sync_at')
-        .eq('chef_id', user.entityId)
-        .single(),
+      getGoogleGmailControl({
+        chefId: user.entityId!,
+        tenantId,
+        db,
+        allowRepair: true,
+      }),
 
       // Stale leads: new + take_a_chef + created more than 24 hours ago
       db
@@ -103,7 +104,7 @@ export async function getTakeAChefStats(): Promise<TakeAChefStats> {
       awaitingResponse: awaitingRes.count ?? 0,
       confirmed: confirmedRes.count ?? 0,
       totalAllTime: totalRes.count ?? 0,
-      lastSyncAt: syncRes.data?.gmail_last_sync_at ?? null,
+      lastSyncAt: control.mailbox?.gmailLastSyncAt ?? control.legacyConnection?.gmailLastSyncAt ?? null,
       untouchedCount: untouched,
       staleCount: stale,
     }

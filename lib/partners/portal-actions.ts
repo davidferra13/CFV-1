@@ -8,6 +8,13 @@
 
 import { requirePartner } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { revalidatePath } from 'next/cache'
+import {
+  getPartnerLocationProposalChangedFields,
+  sanitizePartnerLocationProposal,
+  type PartnerLocationProposalInput,
+  type PartnerLocationChangeRequestStatus,
+} from '@/lib/partners/location-change-requests'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -18,8 +25,12 @@ export type PartnerLocation = {
   city: string | null
   state: string | null
   zip: string | null
+  booking_url: string | null
   description: string | null
   max_guest_count: number | null
+  experience_tags: string[]
+  best_for: string[]
+  service_types: string[]
   is_active: boolean
   partner_images: PartnerImage[]
 }
@@ -49,6 +60,17 @@ export type PartnerStats = {
   totalPhotos: number
 }
 
+export type PartnerLocationChangeRequestRecord = {
+  id: string
+  location_id: string
+  status: PartnerLocationChangeRequestStatus
+  requested_payload: PartnerLocationProposalInput
+  partner_note: string | null
+  review_note: string | null
+  created_at: string
+  reviewed_at: string | null
+}
+
 export type PartnerPortalData = {
   partner: {
     id: string
@@ -74,6 +96,114 @@ export type PartnerPortalData = {
   originEventSummary: string | null
 }
 
+async function fetchPartnerPortalRecord(
+  db: any,
+  partnerId: string
+): Promise<Pick<PartnerPortalData, 'partner' | 'locations' | 'allImages'>> {
+  const { data: partnerRecord, error: partnerError } = await db
+    .from('referral_partners')
+    .select(
+      [
+        'id',
+        'name',
+        'description',
+        'contact_name',
+        'email',
+        'phone',
+        'website',
+        'booking_url',
+        'cover_image_url',
+        'is_showcase_visible',
+        'acquisition_source',
+        'origin_client_id',
+        'origin_event_id',
+        'claimed_at',
+      ].join(', ')
+    )
+    .eq('id', partnerId)
+    .single()
+
+  if (partnerError || !partnerRecord) {
+    throw new Error('Failed to load partner data')
+  }
+
+  const [{ data: locationRecords, error: locationError }, { data: imageRecords, error: imageError }] =
+    await Promise.all([
+      db
+        .from('partner_locations')
+        .select(
+          [
+            'id',
+            'name',
+            'address',
+            'city',
+            'state',
+            'zip',
+            'booking_url',
+            'description',
+            'max_guest_count',
+            'experience_tags',
+            'best_for',
+            'service_types',
+            'is_active',
+          ].join(', ')
+        )
+        .eq('partner_id', partnerId)
+        .order('name', { ascending: true }),
+      db
+        .from('partner_images')
+        .select('id, image_url, caption, season, display_order, location_id')
+        .eq('partner_id', partnerId)
+        .order('display_order', { ascending: true }),
+    ])
+
+  if (locationError) {
+    throw new Error('Failed to load partner locations')
+  }
+
+  if (imageError) {
+    throw new Error('Failed to load partner images')
+  }
+
+  const allImages: PartnerImage[] = ((imageRecords as PartnerImage[] | null) ?? []).sort(
+    (a, b) =>
+      (a.display_order ?? Number.MAX_SAFE_INTEGER) - (b.display_order ?? Number.MAX_SAFE_INTEGER) ||
+      a.id.localeCompare(b.id)
+  )
+
+  const imagesByLocationId = new Map<string, PartnerImage[]>()
+  for (const image of allImages) {
+    if (!image.location_id) continue
+
+    const existing = imagesByLocationId.get(image.location_id) ?? []
+    existing.push(image)
+    imagesByLocationId.set(image.location_id, existing)
+  }
+
+  const locations: PartnerLocation[] = ((locationRecords as any[]) ?? []).map((location) => ({
+    id: location.id,
+    name: location.name,
+    address: location.address ?? null,
+    city: location.city ?? null,
+    state: location.state ?? null,
+    zip: location.zip ?? null,
+    booking_url: location.booking_url ?? null,
+    description: location.description ?? null,
+    max_guest_count: location.max_guest_count ?? null,
+    experience_tags: Array.isArray(location.experience_tags) ? location.experience_tags : [],
+    best_for: Array.isArray(location.best_for) ? location.best_for : [],
+    service_types: Array.isArray(location.service_types) ? location.service_types : [],
+    is_active: location.is_active ?? true,
+    partner_images: (imagesByLocationId.get(location.id) ?? []).slice(),
+  }))
+
+  return {
+    partner: partnerRecord as PartnerPortalData['partner'],
+    locations,
+    allImages,
+  }
+}
+
 // ─── Read ────────────────────────────────────────────────────────────────────
 
 /**
@@ -85,33 +215,7 @@ export async function getPartnerPortalData(): Promise<PartnerPortalData> {
   const user = await requirePartner()
   const db = createServerClient({ admin: true })
 
-  // Fetch partner record with nested locations + images
-  const { data: partnerRecord, error } = await db
-    .from('referral_partners')
-    .select(
-      `
-      id, name, description, contact_name, email, phone, website, booking_url,
-      cover_image_url, is_showcase_visible, acquisition_source,
-      origin_client_id, origin_event_id, claimed_at,
-      partner_locations(
-        id, name, address, city, state, zip, description, max_guest_count, is_active,
-        partner_images(id, image_url, caption, season, display_order, location_id)
-      ),
-      partner_images!partner_images_partner_id_fkey(
-        id, image_url, caption, season, display_order, location_id
-      )
-    `
-    )
-    .eq('id', user.partnerId)
-    .single()
-
-  if (error || !partnerRecord) {
-    throw new Error('Failed to load partner data')
-  }
-
-  const record = partnerRecord as any
-  const locations: PartnerLocation[] = (record.partner_locations as any[]) || []
-  const allImages: PartnerImage[] = (record.partner_images as any[]) || []
+  const { partner, locations, allImages } = await fetchPartnerPortalRecord(db, user.partnerId)
   const activeLocations = locations.filter((l) => l.is_active)
   const locationIds = activeLocations.map((l) => l.id)
 
@@ -144,20 +248,20 @@ export async function getPartnerPortalData(): Promise<PartnerPortalData> {
   let originClientName: string | null = null
   let originEventSummary: string | null = null
 
-  if (record.origin_client_id) {
+  if (partner.origin_client_id) {
     const { data: client } = await db
       .from('clients')
       .select('full_name')
-      .eq('id', record.origin_client_id)
+      .eq('id', partner.origin_client_id)
       .single()
     originClientName = (client as any)?.full_name ?? null
   }
 
-  if (record.origin_event_id) {
+  if (partner.origin_event_id) {
     const { data: originEvent } = await db
       .from('events')
       .select('event_date, occasion')
-      .eq('id', record.origin_event_id)
+      .eq('id', partner.origin_event_id)
       .single()
     if (originEvent) {
       originEventSummary = `${originEvent.occasion || 'Event'} in ${new Date(originEvent.event_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`
@@ -165,7 +269,7 @@ export async function getPartnerPortalData(): Promise<PartnerPortalData> {
   }
 
   return {
-    partner: record,
+    partner,
     locations,
     allImages,
     recentEvents,
@@ -200,6 +304,37 @@ export async function getPartnerLocationEvents(locationId: string): Promise<Part
     .order('event_date', { ascending: false })
 
   return (events as PartnerEvent[]) || []
+}
+
+export async function getPartnerLocationChangeRequests(
+  locationId: string
+): Promise<PartnerLocationChangeRequestRecord[]> {
+  const user = await requirePartner()
+  const db: any = createServerClient({ admin: true })
+
+  const { data: loc } = await db
+    .from('partner_locations')
+    .select('id')
+    .eq('id', locationId)
+    .eq('partner_id', user.partnerId)
+    .single()
+
+  if (!loc) throw new Error('Location not found or access denied')
+
+  const { data, error } = await db
+    .from('partner_location_change_requests')
+    .select(
+      'id, location_id, status, requested_payload, partner_note, review_note, created_at, reviewed_at'
+    )
+    .eq('partner_id', user.partnerId)
+    .eq('location_id', locationId)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    throw new Error('Failed to load location change requests')
+  }
+
+  return (data as PartnerLocationChangeRequestRecord[]) || []
 }
 
 // ─── Write ───────────────────────────────────────────────────────────────────
@@ -261,6 +396,77 @@ export async function updatePartnerLocationDescription(
   if (!loc) throw new Error('Location not found')
 
   await db.from('partner_locations').update({ description }).eq('id', locationId)
+
+  return { success: true }
+}
+
+export async function requestPartnerLocationChange(
+  locationId: string,
+  input: PartnerLocationProposalInput & { partnerNote?: string | null }
+): Promise<{ success: true }> {
+  const user = await requirePartner()
+  const db: any = createServerClient({ admin: true })
+
+  const { data: location } = await db
+    .from('partner_locations')
+    .select(
+      `
+      id,
+      name,
+      address,
+      city,
+      state,
+      zip,
+      booking_url,
+      description,
+      max_guest_count,
+      experience_tags,
+      best_for,
+      service_types
+    `
+    )
+    .eq('id', locationId)
+    .eq('partner_id', user.partnerId)
+    .single()
+
+  if (!location) throw new Error('Location not found')
+
+  const { data: pendingRequest } = await db
+    .from('partner_location_change_requests')
+    .select('id')
+    .eq('partner_id', user.partnerId)
+    .eq('location_id', locationId)
+    .eq('status', 'pending')
+    .maybeSingle()
+
+  if (pendingRequest) {
+    throw new Error('There is already a pending location update request for this setting.')
+  }
+
+  const proposal = sanitizePartnerLocationProposal(input)
+  const changedFields = getPartnerLocationProposalChangedFields(location, proposal)
+
+  if (changedFields.length === 0) {
+    throw new Error('No public location changes were detected.')
+  }
+
+  const { error } = await db.from('partner_location_change_requests').insert({
+    tenant_id: user.tenantId,
+    partner_id: user.partnerId,
+    location_id: locationId,
+    status: 'pending',
+    requested_payload: proposal,
+    partner_note: input.partnerNote?.trim() || null,
+    requested_by_auth_user_id: user.id,
+  })
+
+  if (error) {
+    throw new Error('Failed to submit location update request')
+  }
+
+  revalidatePath('/partner/locations')
+  revalidatePath(`/partner/locations/${locationId}`)
+  revalidatePath(`/partners/${user.partnerId}`)
 
   return { success: true }
 }

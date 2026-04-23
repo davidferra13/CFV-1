@@ -18,9 +18,9 @@ describe('strict focus mode nav rules', () => {
     ])
   })
 
-  it('allows only remy/pipeline/events/clients for non-admin users', () => {
-    assert.equal(isStrictFocusGroupVisible('remy', false), true)
-    assert.equal(isStrictFocusGroupVisible('pipeline', false), true)
+  it('allows only events and clients groups for non-admin users', () => {
+    assert.equal(isStrictFocusGroupVisible('remy', false), false)
+    assert.equal(isStrictFocusGroupVisible('pipeline', false), false)
     assert.equal(isStrictFocusGroupVisible('events', false), true)
     assert.equal(isStrictFocusGroupVisible('clients', false), true)
     assert.equal(isStrictFocusGroupVisible('admin', false), false)
@@ -33,10 +33,9 @@ describe('strict focus mode nav rules', () => {
   })
 
   it('uses deterministic strict group ordering', () => {
-    assert.ok(getStrictFocusGroupRank('remy') < getStrictFocusGroupRank('pipeline'))
-    assert.ok(getStrictFocusGroupRank('pipeline') < getStrictFocusGroupRank('events'))
     assert.ok(getStrictFocusGroupRank('events') < getStrictFocusGroupRank('clients'))
     assert.ok(getStrictFocusGroupRank('clients') < getStrictFocusGroupRank('admin'))
+    assert.equal(getStrictFocusGroupRank('remy'), Number.MAX_SAFE_INTEGER)
   })
 })
 

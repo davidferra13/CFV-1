@@ -1,5 +1,11 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import {
+  CORE_DATA_PROCESSORS,
+  OPTIONAL_PRIVACY_INTEGRATIONS,
+  PRIVACY_COMMITMENTS,
+  PRIVACY_POLICY_LAST_UPDATED,
+} from '@/lib/compliance/privacy-policy'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -16,7 +22,7 @@ export default function PrivacyPage() {
     <main className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 md:py-16 lg:px-8">
       <div className="mb-10 border-b border-stone-700/60 pb-8">
         <h1 className="text-4xl font-bold tracking-tight text-stone-100">Privacy Policy</h1>
-        <p className="mt-3 text-sm text-stone-500">Last updated: April 11, 2026</p>
+        <p className="mt-3 text-sm text-stone-500">Last updated: {PRIVACY_POLICY_LAST_UPDATED}</p>
       </div>
 
       <div className="space-y-10 text-stone-300">
@@ -126,10 +132,13 @@ export default function PrivacyPage() {
             <li>To detect and prevent fraud or abuse</li>
             <li>To comply with legal obligations</li>
           </ul>
-          <p className="mt-4 leading-relaxed">
-            We do not sell your personal information to third parties. We do not use your data to
-            serve third-party advertising.
-          </p>
+          <ul className="mt-4 list-disc space-y-2 pl-5 leading-relaxed">
+            {PRIVACY_COMMITMENTS.map((commitment) => (
+              <li key={commitment.id}>
+                <strong className="text-stone-200">{commitment.title}</strong> {commitment.detail}
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section>
@@ -141,47 +150,47 @@ export default function PrivacyPage() {
             Service:
           </p>
           <ul className="list-disc space-y-2 pl-5 leading-relaxed">
-            <li>
-              <strong className="text-stone-200">Stripe</strong> - our payment processor. Client
-              payment details are submitted directly to Stripe and governed by{' '}
-              <a
-                href="https://stripe.com/privacy"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-brand-400 hover:underline"
-              >
-                Stripe&apos;s Privacy Policy
-              </a>
-              .
-            </li>
-            <li>
-              <strong className="text-stone-200">Resend</strong> - our email delivery provider. We
-              pass recipient email addresses and message content to Resend for transactional email
-              delivery only. See{' '}
-              <a
-                href="https://resend.com/legal/privacy-policy"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-brand-400 hover:underline"
-              >
-                Resend&apos;s Privacy Policy
-              </a>
-              .
-            </li>
-            <li>
-              <strong className="text-stone-200">Cloudflare</strong> - provides DNS, DDoS
-              protection, and tunneling for our web traffic. Requests pass through Cloudflare
-              infrastructure and are subject to{' '}
-              <a
-                href="https://www.cloudflare.com/privacypolicy/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-brand-400 hover:underline"
-              >
-                Cloudflare&apos;s Privacy Policy
-              </a>
-              .
-            </li>
+            {CORE_DATA_PROCESSORS.map((processor) => (
+              <li key={processor.id}>
+                <strong className="text-stone-200">{processor.name}</strong> - {processor.purpose}{' '}
+                {processor.dataShared}{' '}
+                <a
+                  href={processor.privacyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-brand-400 hover:underline"
+                >
+                  {processor.name}&apos;s Privacy Policy
+                </a>
+                .
+                {processor.notes ? ` ${processor.notes}` : ''}
+              </li>
+            ))}
+          </ul>
+
+          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-200">
+            Optional user-enabled integrations
+          </h3>
+          <p className="mb-4 leading-relaxed">
+            Some integrations are only used when a chef chooses to turn them on. When that happens,
+            ChefFlow sends the minimum data needed to operate the requested integration.
+          </p>
+          <ul className="list-disc space-y-2 pl-5 leading-relaxed">
+            {OPTIONAL_PRIVACY_INTEGRATIONS.map((processor) => (
+              <li key={processor.id}>
+                <strong className="text-stone-200">{processor.name}</strong> - {processor.purpose}{' '}
+                {processor.dataShared}{' '}
+                <a
+                  href={processor.privacyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-brand-400 hover:underline"
+                >
+                  {processor.name}&apos;s Privacy Policy
+                </a>
+                .
+              </li>
+            ))}
           </ul>
 
           <h3 className="mb-2 mt-6 text-base font-semibold text-stone-200">
@@ -280,10 +289,11 @@ export default function PrivacyPage() {
           <p className="leading-relaxed">
             We use cookies and similar technologies to keep you signed in, remember your
             preferences, and understand how the Service is used. We do not use third-party
-            advertising cookies. Session cookies are deleted when you close your browser. Persistent
-            cookies (such as authentication tokens) have a defined expiry and are stored securely.
-            You can configure your browser to reject cookies, but some features of the Service may
-            not function correctly without them.
+            advertising cookies. Product analytics is loaded only after you accept analytics
+            cookies, and we respect Do Not Track where supported. Session cookies are deleted when
+            you close your browser. Persistent cookies (such as authentication tokens) have a
+            defined expiry and are stored securely. You can configure your browser to reject
+            cookies, but some features of the Service may not function correctly without them.
           </p>
         </section>
 

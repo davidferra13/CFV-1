@@ -30,10 +30,10 @@ export default async function PlateCostsPage() {
             <span className="text-stone-600">/</span>
             <span className="text-sm text-stone-300">Plate Costs</span>
           </div>
-          <h1 className="text-3xl font-bold text-stone-100 flex items-center gap-2">
-            True Plate Cost
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold text-stone-100">True Plate Cost</h1>
             <CostingHelpPopover topic="cost_plus" />
-          </h1>
+          </div>
           <p className="text-stone-500 mt-1">
             Cost-per-plate breakdown across events, including ingredients, labor, travel, and
             overhead

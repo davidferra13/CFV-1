@@ -1,6 +1,8 @@
 // Reusable JSON-LD structured data components for SEO
 // These inject schema.org markup that Google uses for rich snippets
 
+import { COMPANY_NAME, SUPPORT_EMAIL, absoluteUrl } from '@/lib/site/public-site'
+
 type JsonLdProps = {
   data: Record<string, unknown>
 }
@@ -12,8 +14,6 @@ export function JsonLd({ data }: JsonLdProps) {
   )
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
-
 /** Organization schema - used on homepage / root layout */
 export function OrganizationJsonLd() {
   return (
@@ -21,16 +21,16 @@ export function OrganizationJsonLd() {
       data={{
         '@context': 'https://schema.org',
         '@type': 'Organization',
-        name: 'ChefFlow',
-        url: BASE_URL,
-        logo: `${BASE_URL}/logo.jpg`,
+        name: COMPANY_NAME,
+        url: absoluteUrl('/'),
+        logo: absoluteUrl('/logo.jpg'),
         description:
           'The business operating system built by a chef, for chefs. Events, clients, menus, and payments in one calm workspace.',
         foundingDate: '2025',
         sameAs: [],
         contactPoint: {
           '@type': 'ContactPoint',
-          email: 'support@cheflowhq.com',
+          email: SUPPORT_EMAIL,
           contactType: 'customer support',
           availableLanguage: 'English',
         },
@@ -46,10 +46,10 @@ export function SoftwareApplicationJsonLd() {
       data={{
         '@context': 'https://schema.org',
         '@type': 'SoftwareApplication',
-        name: 'ChefFlow',
+        name: COMPANY_NAME,
         applicationCategory: 'BusinessApplication',
         operatingSystem: 'Web',
-        url: BASE_URL,
+        url: absoluteUrl('/'),
         description:
           'Private chef business operating system - manage events, clients, menus, quotes, payments, and kitchen ops from one platform.',
         offers: {
@@ -101,12 +101,12 @@ export function WebSiteJsonLd() {
       data={{
         '@context': 'https://schema.org',
         '@type': 'WebSite',
-        name: 'ChefFlow',
-        url: BASE_URL,
+        name: COMPANY_NAME,
+        url: absoluteUrl('/'),
         description: 'Ops for Artists - Private chef business operating system',
         potentialAction: {
           '@type': 'SearchAction',
-          target: `${BASE_URL}/chefs?q={search_term_string}`,
+          target: `${absoluteUrl('/chefs')}?q={search_term_string}`,
           'query-input': 'required name=search_term_string',
         },
       }}

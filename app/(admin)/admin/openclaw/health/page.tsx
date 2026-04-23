@@ -31,6 +31,36 @@ export default async function OpenClawHealthPage() {
   const log = syncLog.status === 'fulfilled' ? syncLog.value.data : []
   const prices = quarantined.status === 'fulfilled' ? quarantined.value.data : []
   const coverageData = coverage.status === 'fulfilled' ? coverage.value.data : null
+  const governor = coverageData?.governor
+  const governorReady = Boolean(governor?.ready)
+
+  const legacyCoveragePct = coverageData
+    ? Math.round((coverageData.ingredientsWithPrice / Math.max(coverageData.totalIngredients, 1)) * 100)
+    : null
+
+  const sourceFrontierPct = governorReady
+    ? Math.round(
+        (governor!.summary.discoveredSourceSurfaces /
+          Math.max(governor!.summary.expectedSourceSurfaces, 1)) *
+          100
+      )
+    : legacyCoveragePct
+
+  const surfaceableIngredientPct = governorReady
+    ? Math.round(
+        (governor!.summary.surfaceableCanonicalIngredients /
+          Math.max(governor!.summary.expectedCanonicalIngredients, 1)) *
+          100
+      )
+    : null
+
+  const observedStorePct = governorReady
+    ? Math.round(
+        (governor!.summary.freshObservedStoreSurfaces /
+          Math.max(governor!.summary.discoveredStoreSurfaces, 1)) *
+          100
+      )
+    : null
 
   const anyError =
     (quarantineStats.status === 'fulfilled' && quarantineStats.value.error) ||
@@ -74,7 +104,7 @@ export default async function OpenClawHealthPage() {
       )}
 
       {/* KPI Strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
         <KPICard
           label="Quarantined"
           value={stats?.unreviewed ?? 0}
@@ -94,26 +124,65 @@ export default async function OpenClawHealthPage() {
           color={health?.lastSyncAt && isRecent(health.lastSyncAt, 24) ? 'green' : 'red'}
         />
         <KPICard
-          label="Price Coverage"
-          value={
-            coverageData
-              ? `${Math.round((coverageData.ingredientsWithPrice / Math.max(coverageData.totalIngredients, 1)) * 100)}%`
-              : 'N/A'
-          }
+          label={governorReady ? 'Source Frontier' : 'Price Coverage'}
+          value={sourceFrontierPct != null ? `${sourceFrontierPct}%` : 'N/A'}
           sub={
-            coverageData
-              ? `${coverageData.ingredientsWithPrice}/${coverageData.totalIngredients}`
-              : ''
+            governorReady
+              ? `${governor!.summary.discoveredSourceSurfaces}/${governor!.summary.expectedSourceSurfaces} sources`
+              : coverageData
+                ? `${coverageData.ingredientsWithPrice}/${coverageData.totalIngredients}`
+                : ''
           }
           color="green"
         />
         <KPICard
-          label="Fresh (7d)"
-          value={coverageData?.freshLast7d ?? 0}
-          sub={`${coverageData?.freshLast24h ?? 0} in 24h`}
+          label={governorReady ? 'Surfaceable' : 'Fresh (7d)'}
+          value={
+            governorReady
+              ? surfaceableIngredientPct != null
+                ? `${surfaceableIngredientPct}%`
+                : 'N/A'
+              : coverageData?.freshLast7d ?? 0
+          }
+          sub={
+            governorReady
+              ? `${governor!.summary.surfaceableCanonicalIngredients}/${governor!.summary.expectedCanonicalIngredients} ingredients`
+              : `${coverageData?.freshLast24h ?? 0} in 24h`
+          }
           color="blue"
         />
+        <KPICard
+          label={governorReady ? 'Observed Stores' : 'Fresh (24h)'}
+          value={
+            governorReady
+              ? observedStorePct != null
+                ? `${observedStorePct}%`
+                : 'N/A'
+              : coverageData?.freshLast24h ?? 0
+          }
+          sub={
+            governorReady
+              ? `${governor!.summary.freshObservedStoreSurfaces}/${governor!.summary.discoveredStoreSurfaces} stores`
+              : ''
+          }
+          color="green"
+        />
       </div>
+
+      {governorReady && (
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          <CoverageTable
+            title="State Frontier"
+            noun="stores"
+            rows={governor!.stateCoverage}
+          />
+          <CoverageTable
+            title="Category Frontier"
+            noun="ingredients"
+            rows={governor!.categoryCoverage}
+          />
+        </div>
+      )}
 
       {/* Quarantine Stats Breakdown */}
       {stats && (stats.byReason.length > 0 || stats.bySource.length > 0) && (
@@ -202,4 +271,61 @@ function formatSource(source: string): string {
     .replace('openclaw_', '')
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+function CoverageTable({
+  title,
+  noun,
+  rows,
+}: {
+  title: string
+  noun: string
+  rows: Array<{
+    key: string
+    label: string
+    expectedCount: number
+    discoveredCount: number
+    observedCount: number
+    inferableCount: number
+    surfaceableCount: number
+  }>
+}) {
+  return (
+    <div className="bg-stone-900 rounded-xl border border-stone-700 p-5">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-sm font-semibold text-stone-300">{title}</h2>
+        <span className="text-xs text-stone-500 uppercase tracking-wide">{noun}</span>
+      </div>
+      {rows.length === 0 ? (
+        <p className="text-sm text-stone-500">No governor rows yet.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-stone-500">
+                <th className="pb-2 font-medium">Scope</th>
+                <th className="pb-2 font-medium text-right">Expected</th>
+                <th className="pb-2 font-medium text-right">Seen</th>
+                <th className="pb-2 font-medium text-right">Observed</th>
+                <th className="pb-2 font-medium text-right">Inferable</th>
+                <th className="pb-2 font-medium text-right">Surfaceable</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.key} className="border-t border-stone-800">
+                  <td className="py-2 text-stone-300">{row.label}</td>
+                  <td className="py-2 text-right text-stone-400">{row.expectedCount}</td>
+                  <td className="py-2 text-right text-stone-400">{row.discoveredCount}</td>
+                  <td className="py-2 text-right text-emerald-400">{row.observedCount}</td>
+                  <td className="py-2 text-right text-blue-400">{row.inferableCount}</td>
+                  <td className="py-2 text-right text-amber-300">{row.surfaceableCount}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
 }

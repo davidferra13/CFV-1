@@ -87,6 +87,7 @@ const AdminNavGroupSection = memo(function AdminNavGroupSection({
   return (
     <div>
       <button
+        type="button"
         onClick={onToggle}
         className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider transition-colors ${
           hasActiveItem ? 'text-stone-200' : 'text-stone-500 hover:text-stone-300'
@@ -98,7 +99,6 @@ const AdminNavGroupSection = memo(function AdminNavGroupSection({
             <ChevronDown className={`h-3 w-3 transition-transform ${isOpen ? '' : '-rotate-90'}`} />
           </>
         )}
-        type="button"
         {collapsed && <span className="mx-auto h-px w-4 bg-stone-700" />}
       </button>
       {(isOpen || collapsed) && (
@@ -123,6 +123,14 @@ export function AdminSidebar({ userId }: { userId: string }) {
   const [openGroups, setOpenGroups] = useState<Set<string>>(
     () => new Set(['platform', 'operations', 'finance-compliance', 'system'])
   )
+  const handleSignOut = useCallback(async () => {
+    try {
+      await signOut()
+    } catch (error) {
+      console.error('[sign-out]', error)
+    }
+    window.location.href = '/auth/signin?redirect=/admin'
+  }, [])
 
   const toggleGroup = useCallback((id: string) => {
     setOpenGroups((prev) => {
@@ -199,11 +207,17 @@ export function AdminSidebar({ userId }: { userId: string }) {
         {adminBottomLinks.map((item) => (
           <AdminNavLink key={item.href} item={item} collapsed={collapsed} isActive={false} />
         ))}
+      </div>
+
+      <div className={`border-t border-stone-800/80 ${collapsed ? 'p-1.5' : 'px-2 py-3'}`}>
         <button
           type="button"
-          onClick={() => signOut()}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-stone-400 hover:bg-white/5 hover:text-stone-200 transition-colors"
-          title="Sign Out"
+          onClick={handleSignOut}
+          title={collapsed ? 'Sign Out' : undefined}
+          aria-label={collapsed ? 'Sign Out' : undefined}
+          className={`flex items-center rounded-lg text-sm text-stone-400 hover:bg-white/5 hover:text-stone-200 transition-colors ${
+            collapsed ? 'mx-auto h-10 w-10 justify-center' : 'w-full gap-3 px-3 py-2'
+          }`}
         >
           <LogOut className="h-4 w-4 shrink-0" />
           {!collapsed && <span>Sign Out</span>}
@@ -218,6 +232,14 @@ export function AdminSidebar({ userId }: { userId: string }) {
 export function AdminMobileNav({ userId }: { userId: string }) {
   const pathname = usePathname() ?? ''
   const [open, setOpen] = useState(false)
+  const handleSignOut = useCallback(async () => {
+    try {
+      await signOut()
+    } catch (error) {
+      console.error('[sign-out]', error)
+    }
+    window.location.href = '/auth/signin?redirect=/admin'
+  }, [])
 
   return (
     <>
@@ -319,6 +341,17 @@ export function AdminMobileNav({ userId }: { userId: string }) {
                   </Link>
                 )
               })}
+
+              <div className="mt-4 border-t border-stone-800 pt-4">
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-stone-400 hover:bg-white/5 hover:text-stone-200 transition-colors"
+                >
+                  <LogOut className="h-4 w-4 shrink-0" />
+                  <span>Sign Out</span>
+                </button>
+              </div>
             </nav>
           </div>
         </div>

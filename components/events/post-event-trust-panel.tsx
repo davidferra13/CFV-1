@@ -51,11 +51,20 @@ export async function PostEventTrustPanel({
 
   const trustLoop = await getEventTrustLoopState(eventId)
   const survey = trustLoop.survey
+  const surveyId = survey?.id ?? null
+  const surveyToken = survey?.token ?? null
+  const surveySentAt = survey?.sent_at ?? null
+  const surveyCompletedAt = survey?.completed_at ?? null
+  const surveyOverall = survey?.overall ?? null
+  const surveyWouldBookAgain = survey?.would_book_again
+  const surveyHighlight = survey?.what_they_loved ?? null
+  const reviewRequestSentAt = survey?.review_request_sent_at ?? null
+  const publicReviewShared = survey?.public_review_shared ?? false
   const reviewGate = survey
     ? getReviewRequestGate({
-        completedAt: survey.completed_at,
+        completedAt: surveyCompletedAt,
         reviewRequestEligible: survey.review_request_eligible,
-        reviewRequestSentAt: survey.review_request_sent_at,
+        reviewRequestSentAt,
       })
     : { ok: false as const, reason: 'incomplete' as const }
 
@@ -71,12 +80,12 @@ export async function PostEventTrustPanel({
 
   async function handleMarkReviewRequestSent() {
     'use server'
-    if (!survey) return
-    await markSurveyReviewRequestSent(survey.id)
+    if (!surveyId) return
+    await markSurveyReviewRequestSent(surveyId)
   }
 
   return (
-    <Card className="p-6 border-brand-200 bg-brand-950/40">
+    <Card className="p-6 border-brand-200 bg-brand-950/40" data-testid="event-post-event-trust-loop">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold text-stone-100">Post-Event Trust Loop</h2>
@@ -138,39 +147,37 @@ export async function PostEventTrustPanel({
               </p>
             </div>
             <StepStatus
-              label={
-                survey?.completed_at ? 'Responded' : survey?.sent_at ? 'Awaiting Response' : 'Ready'
-              }
-              variant={survey?.completed_at ? 'success' : survey?.sent_at ? 'info' : 'warning'}
+              label={surveyCompletedAt ? 'Responded' : surveySentAt ? 'Awaiting Response' : 'Ready'}
+              variant={surveyCompletedAt ? 'success' : surveySentAt ? 'info' : 'warning'}
             />
           </div>
 
           <div className="mt-3 space-y-1 text-xs text-stone-500">
             <p>
-              {survey?.sent_at
-                ? `Survey sent ${formatTimestamp(survey.sent_at) ?? 'recently'}.`
+              {surveySentAt
+                ? `Survey sent ${formatTimestamp(surveySentAt) ?? 'recently'}.`
                 : 'No survey has been sent from the canonical trust loop yet.'}
             </p>
-            {survey?.completed_at && (
+            {surveyCompletedAt && (
               <>
-                <p>Response recorded {formatTimestamp(survey.completed_at) ?? 'recently'}.</p>
-                {typeof survey.overall === 'number' && (
-                  <p className="text-stone-300">Overall rating: {survey.overall}/5.</p>
+                <p>Response recorded {formatTimestamp(surveyCompletedAt) ?? 'recently'}.</p>
+                {typeof surveyOverall === 'number' && (
+                  <p className="text-stone-300">Overall rating: {surveyOverall}/5.</p>
                 )}
               </>
             )}
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2">
-            {!survey?.sent_at && (
+            {!surveySentAt && (
               <form action={handleSendSurvey}>
                 <Button type="submit" variant="secondary" size="sm">
                   Send Survey
                 </Button>
               </form>
             )}
-            {survey?.token && (
-              <Button href={`/feedback/${survey.token}`} variant="ghost" size="sm">
+            {surveyToken && (
+              <Button href={`/feedback/${surveyToken}`} variant="ghost" size="sm">
                 View Survey Link
               </Button>
             )}
@@ -191,11 +198,11 @@ export async function PostEventTrustPanel({
             </div>
             <StepStatus
               label={
-                survey?.public_review_shared
+                publicReviewShared
                   ? 'Shared Publicly'
                   : reviewGate.ok
                     ? 'Ready'
-                    : survey?.review_request_sent_at
+                    : reviewRequestSentAt
                       ? 'Sent'
                       : reviewGate.reason === 'not_eligible'
                         ? 'Not Eligible'
@@ -204,7 +211,7 @@ export async function PostEventTrustPanel({
                           : 'Sent'
               }
               variant={
-                survey?.public_review_shared
+                publicReviewShared
                   ? 'success'
                   : reviewGate.ok
                     ? 'warning'
@@ -218,12 +225,11 @@ export async function PostEventTrustPanel({
           </div>
 
           <div className="mt-3 space-y-1 text-xs text-stone-500">
-            {survey?.public_review_shared ? (
+            {publicReviewShared ? (
               <p>A consented client review is already in the public proof feed for this event.</p>
-            ) : survey?.review_request_sent_at ? (
+            ) : reviewRequestSentAt ? (
               <p>
-                Review request tracked as sent{' '}
-                {formatTimestamp(survey.review_request_sent_at) ?? 'recently'}.
+                Review request tracked as sent {formatTimestamp(reviewRequestSentAt) ?? 'recently'}.
               </p>
             ) : reviewGate.ok ? (
               <p>Use the AI review-request draft below, then record the send here.</p>
@@ -234,7 +240,7 @@ export async function PostEventTrustPanel({
             )}
           </div>
 
-          {reviewGate.ok && !survey?.public_review_shared && (
+          {reviewGate.ok && !publicReviewShared && surveyId && (
             <form action={handleMarkReviewRequestSent} className="mt-4">
               <Button type="submit" variant="secondary" size="sm">
                 Mark Review Request Sent
@@ -257,20 +263,20 @@ export async function PostEventTrustPanel({
             </div>
             <StepStatus
               label={
-                survey?.would_book_again === true
+                surveyWouldBookAgain === true
                   ? 'Would Book Again'
-                  : survey?.would_book_again === false
+                  : surveyWouldBookAgain === false
                     ? 'Would Not Rebook'
-                    : survey?.completed_at
+                    : surveyCompletedAt
                       ? 'No Answer'
                       : 'Pending'
               }
               variant={
-                survey?.would_book_again === true
+                surveyWouldBookAgain === true
                   ? 'success'
-                  : survey?.would_book_again === false
+                  : surveyWouldBookAgain === false
                     ? 'error'
-                    : survey?.completed_at
+                    : surveyCompletedAt
                       ? 'default'
                       : 'warning'
               }
@@ -278,24 +284,24 @@ export async function PostEventTrustPanel({
           </div>
 
           <div className="mt-3 space-y-1 text-xs text-stone-500">
-            {survey?.would_book_again === true && (
+            {surveyWouldBookAgain === true && (
               <p className="text-stone-300">The client explicitly said they would book again.</p>
             )}
-            {survey?.would_book_again === false && (
+            {surveyWouldBookAgain === false && (
               <p className="text-stone-300">
                 The client would probably not rebook. Treat this as a service recovery signal.
               </p>
             )}
-            {survey?.would_book_again === null && (
+            {surveyWouldBookAgain === null && (
               <p>
-                {survey?.completed_at
+                {surveyCompletedAt
                   ? 'The client responded without giving a repeat-booking signal.'
                   : 'Repeat intent will appear here once the client responds.'}
               </p>
             )}
-            {survey?.what_they_loved && (
+            {surveyHighlight && (
               <p className="rounded-lg border border-amber-900/50 bg-amber-950/40 px-3 py-2 text-sm text-stone-300">
-                Highlight: {survey.what_they_loved}
+                Highlight: {surveyHighlight}
               </p>
             )}
           </div>

@@ -10,6 +10,29 @@
  */
 
 import { pgClient } from '@/lib/db'
+import { isKnowledgeIngredientPubliclyIndexable } from '@/lib/openclaw/public-ingredient-publish'
+
+async function withPgTrgmSimilarityThreshold<T>(
+  threshold: number,
+  runner: (client: typeof pgClient) => Promise<T>
+): Promise<T> {
+  const transactionalClient = pgClient as typeof pgClient & {
+    begin?: unknown
+  }
+  const begin = transactionalClient.begin as unknown as
+    | ((callback: (tx: typeof pgClient) => Promise<T>) => Promise<T>)
+    | undefined
+
+  if (typeof begin !== 'function') {
+    return runner(pgClient)
+  }
+
+  return begin(async (tx) => {
+    const transactionClient = tx as typeof pgClient
+    await transactionClient`SET LOCAL pg_trgm.similarity_threshold = ${threshold}`
+    return runner(transactionClient)
+  })
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -51,34 +74,36 @@ export async function getIngredientKnowledgeByName(
 ): Promise<IngredientKnowledge | null> {
   if (!name?.trim()) return null
 
-  const rows = await pgClient`
-    SELECT
-      k.wikidata_qid,
-      k.wikipedia_slug,
-      k.wikipedia_url,
-      k.wiki_summary,
-      k.wiki_extract,
-      k.origin_countries,
-      k.flavor_profile,
-      k.culinary_uses,
-      k.typical_pairings,
-      k.taxon_name,
-      k.dietary_flags,
-      k.image_url,
-      k.nutrition_json,
-      k.culinary_section,
-      k.enrichment_confidence,
-      k.enriched_at,
-      extensions.similarity(si.name, ${name}) AS sim
-    FROM system_ingredients si
-    JOIN ingredient_knowledge k ON k.system_ingredient_id = si.id
-    WHERE si.is_active = true
-      AND k.needs_review = false
-      AND k.wiki_summary IS NOT NULL
-      AND extensions.similarity(si.name, ${name}) > 0.30
-    ORDER BY sim DESC
-    LIMIT 1
-  `
+  const rows = await withPgTrgmSimilarityThreshold(0.30, (client) =>
+    client`
+      SELECT
+        k.wikidata_qid,
+        k.wikipedia_slug,
+        k.wikipedia_url,
+        k.wiki_summary,
+        k.wiki_extract,
+        k.origin_countries,
+        k.flavor_profile,
+        k.culinary_uses,
+        k.typical_pairings,
+        k.taxon_name,
+        k.dietary_flags,
+        k.image_url,
+        k.nutrition_json,
+        k.culinary_section,
+        k.enrichment_confidence,
+        k.enriched_at,
+        extensions.similarity(si.name, ${name}) AS sim
+      FROM system_ingredients si
+      JOIN ingredient_knowledge k ON k.system_ingredient_id = si.id
+      WHERE si.is_active = true
+        AND k.needs_review = false
+        AND k.wiki_summary IS NOT NULL
+        AND si.name OPERATOR(extensions.%) ${name}
+      ORDER BY sim DESC
+      LIMIT 1
+    `
+  )
 
   const row = (rows as any[])[0]
   if (!row) return null
@@ -155,6 +180,8 @@ export async function getIngredientKnowledgeById(
 export async function getIngredientKnowledgeBySlug(
   slug: string
 ): Promise<{ knowledge: IngredientKnowledge; name: string; category: string | null } | null> {
+  if (!isKnowledgeIngredientPubliclyIndexable({ slug })) return null
+
   const rows = await pgClient`
     SELECT
       si.name,
@@ -175,6 +202,7 @@ export async function getIngredientKnowledgeBySlug(
 
   const row = (rows as any[])[0]
   if (!row) return null
+  if (!isKnowledgeIngredientPubliclyIndexable({ slug, name: row.name ?? slug })) return null
 
   return {
     name: row.name ?? slug,
@@ -317,6 +345,7 @@ export async function getRelatedIngredients(
   excludeSlug: string,
   limit = 6
 ): Promise<CategoryIngredient[]> {
+  const searchLimit = Math.min(Math.max(limit, 1) * 4, 24)
   const rows = await pgClient`
     SELECT iks.slug, si.name, k.wiki_summary, k.flavor_profile, k.dietary_flags, k.image_url
     FROM ingredient_knowledge_slugs iks
@@ -326,34 +355,40 @@ export async function getRelatedIngredients(
       AND si.category = ${category}
       AND iks.slug != ${excludeSlug}
     ORDER BY RANDOM()
-    LIMIT ${limit}
+    LIMIT ${searchLimit}
   `
 
-  return (rows as any[]).map((r) => ({
-    slug: r.slug as string,
-    name: r.name as string,
-    wikiSummary: r.wiki_summary ?? null,
-    flavorProfile: r.flavor_profile ?? null,
-    dietaryFlags: (r.dietary_flags as string[]) ?? [],
-    imageUrl: r.image_url ?? null,
-  }))
+  return (rows as any[])
+    .filter((r) => isKnowledgeIngredientPubliclyIndexable({ slug: r.slug, name: r.name }))
+    .slice(0, limit)
+    .map((r) => ({
+      slug: r.slug as string,
+      name: r.name as string,
+      wikiSummary: r.wiki_summary ?? null,
+      flavorProfile: r.flavor_profile ?? null,
+      dietaryFlags: (r.dietary_flags as string[]) ?? [],
+      imageUrl: r.image_url ?? null,
+    }))
 }
 
 export async function getEnrichedIngredientSlugs(): Promise<
   Array<{ slug: string; enrichedAt: string }>
 > {
   const rows = await pgClient`
-    SELECT iks.slug, k.enriched_at
+    SELECT iks.slug, k.enriched_at, si.name
     FROM ingredient_knowledge_slugs iks
+    JOIN system_ingredients si ON si.id = iks.system_ingredient_id
     JOIN ingredient_knowledge k ON k.system_ingredient_id = iks.system_ingredient_id
     WHERE k.wiki_summary IS NOT NULL AND k.needs_review = false
     ORDER BY k.enriched_at DESC
   `
 
-  return (rows as any[]).map((r) => ({
-    slug: r.slug as string,
-    enrichedAt: r.enriched_at ? new Date(r.enriched_at).toISOString() : new Date().toISOString(),
-  }))
+  return (rows as any[])
+    .filter((r) => isKnowledgeIngredientPubliclyIndexable({ slug: r.slug, name: r.name }))
+    .map((r) => ({
+      slug: r.slug as string,
+      enrichedAt: r.enriched_at ? new Date(r.enriched_at).toISOString() : new Date().toISOString(),
+    }))
 }
 
 // ---------------------------------------------------------------------------

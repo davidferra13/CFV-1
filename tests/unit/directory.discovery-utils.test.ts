@@ -2,6 +2,8 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import type { DirectoryChef } from '@/lib/directory/actions'
 import {
+  buildLocationBestForFacets,
+  buildLocationExperienceFacets,
   buildCuisineFacets,
   buildDirectorySearchHaystack,
   buildStateFacets,
@@ -43,6 +45,7 @@ function makeChef(overrides: Partial<DirectoryChef>): DirectoryChef {
     is_founder: overrides.is_founder ?? false,
     distance_miles: overrides.distance_miles ?? null,
     directory_listing_location: overrides.directory_listing_location ?? null,
+    location_experiences: overrides.location_experiences,
     partners: overrides.partners ?? [
       {
         id: 'partner-1',
@@ -59,6 +62,10 @@ function makeChef(overrides: Partial<DirectoryChef>): DirectoryChef {
             city: 'Aspen',
             state: 'Colorado',
             zip: '81611',
+            description: 'Mountain venue hosting intimate dinners.',
+            experience_tags: ['outdoor'],
+            best_for: ['intimate_dinner'],
+            service_types: ['tasting_menu'],
           },
         ],
       },
@@ -107,6 +114,10 @@ test('filterDirectoryChefs applies cuisine, service, state, price, partner, and 
               city: 'Scottsdale',
               state: 'Arizona',
               zip: '85251',
+              description: 'Desert-facing private property.',
+              experience_tags: ['event'],
+              best_for: ['retreat'],
+              service_types: ['family_style'],
             },
           ],
         },
@@ -121,6 +132,9 @@ test('filterDirectoryChefs applies cuisine, service, state, price, partner, and 
     serviceTypeFilter: 'private_dinner',
     priceRangeFilter: 'premium',
     partnerTypeFilter: 'venue',
+    dietaryFilter: '',
+    locationExperienceFilter: '',
+    locationBestForFilter: '',
     acceptingOnly: true,
   })
 
@@ -176,6 +190,10 @@ test('buildStateFacets and buildCuisineFacets dedupe counts per chef', () => {
               city: 'Aspen',
               state: 'Colorado',
               zip: '81611',
+              description: null,
+              experience_tags: [],
+              best_for: [],
+              service_types: [],
             },
             {
               id: 'loc-2',
@@ -184,6 +202,10 @@ test('buildStateFacets and buildCuisineFacets dedupe counts per chef', () => {
               city: 'Vail',
               state: 'Colorado',
               zip: '81657',
+              description: null,
+              experience_tags: [],
+              best_for: [],
+              service_types: [],
             },
           ],
         },
@@ -209,6 +231,165 @@ test('buildStateFacets and buildCuisineFacets dedupe counts per chef', () => {
 
   assert.equal(colorado?.count, 2)
   assert.equal(italian?.count, 2)
+})
+
+test('buildLocation facets and filters use the shared public location read model', () => {
+  const chefs = [
+    makeChef({
+      id: 'chef-1',
+      location_experiences: [
+        {
+          id: 'loc-1',
+          name: 'River Room',
+          address: '123 River Road',
+          city: 'Aspen',
+          state: 'Colorado',
+          zip: '81611',
+          booking_url: null,
+          description: 'Windowed room for retreats.',
+          max_guest_count: 14,
+          experience_tags: ['outdoor'],
+          best_for: ['retreat'],
+          service_types: ['family_style'],
+          relationship_type: 'featured',
+          is_featured: true,
+          sort_order: 0,
+          partner: {
+            id: 'partner-1',
+            name: 'River Chalet',
+            partner_type: 'venue',
+            description: null,
+            booking_url: null,
+            cover_image_url: null,
+          },
+          images: [],
+        },
+      ],
+    }),
+  ]
+
+  const experienceFacets = buildLocationExperienceFacets(chefs)
+  const bestForFacets = buildLocationBestForFacets(chefs)
+  const filtered = filterDirectoryChefs(chefs, {
+    query: '',
+    stateFilter: '',
+    cuisineFilter: '',
+    serviceTypeFilter: '',
+    dietaryFilter: '',
+    priceRangeFilter: '',
+    partnerTypeFilter: '',
+    locationExperienceFilter: 'outdoor',
+    locationBestForFilter: 'retreat',
+    acceptingOnly: false,
+  })
+
+  assert.equal(experienceFacets.some((facet) => facet.value === 'outdoor'), true)
+  assert.equal(bestForFacets.some((facet) => facet.value === 'retreat'), true)
+  assert.equal(filtered.length, 1)
+})
+
+test('sortDirectoryChefs featured favors richer public location coverage before completeness ties', () => {
+  const oneLocation = makeChef({
+    id: 'one-location',
+    slug: 'one-location',
+    display_name: 'Chef One Location',
+    discovery: { completeness_score: 0.8, avg_rating: 4.6 },
+    location_experiences: [
+      {
+        id: 'loc-one',
+        name: 'One Room',
+        address: '1 Main St',
+        city: 'Aspen',
+        state: 'Colorado',
+        zip: '81611',
+        booking_url: null,
+        description: 'Single setting.',
+        max_guest_count: 12,
+        experience_tags: ['event'],
+        best_for: ['celebration'],
+        service_types: ['plated_service'],
+        relationship_type: 'featured',
+        is_featured: true,
+        sort_order: 0,
+        partner: {
+          id: 'partner-1',
+          name: 'River Chalet',
+          partner_type: 'venue',
+          description: null,
+          booking_url: null,
+          cover_image_url: null,
+        },
+        images: [],
+      },
+    ],
+  })
+  const twoLocations = makeChef({
+    id: 'two-locations',
+    slug: 'two-locations',
+    display_name: 'Chef Two Locations',
+    discovery: { completeness_score: 0.8, avg_rating: 4.6 },
+    location_experiences: [
+      {
+        id: 'loc-a',
+        name: 'Courtyard',
+        address: '2 Main St',
+        city: 'Aspen',
+        state: 'Colorado',
+        zip: '81611',
+        booking_url: null,
+        description: 'Courtyard dining.',
+        max_guest_count: 16,
+        experience_tags: ['outdoor'],
+        best_for: ['retreat'],
+        service_types: ['family_style'],
+        relationship_type: 'featured',
+        is_featured: true,
+        sort_order: 0,
+        partner: {
+          id: 'partner-2',
+          name: 'Summit House',
+          partner_type: 'venue',
+          description: null,
+          booking_url: null,
+          cover_image_url: null,
+        },
+        images: [],
+      },
+      {
+        id: 'loc-b',
+        name: 'Dining Room',
+        address: '3 Main St',
+        city: 'Aspen',
+        state: 'Colorado',
+        zip: '81611',
+        booking_url: null,
+        description: 'Private dining room.',
+        max_guest_count: 10,
+        experience_tags: ['plated'],
+        best_for: ['intimate_dinner'],
+        service_types: ['plated_service'],
+        relationship_type: 'preferred',
+        is_featured: false,
+        sort_order: 1,
+        partner: {
+          id: 'partner-2',
+          name: 'Summit House',
+          partner_type: 'venue',
+          description: null,
+          booking_url: null,
+          cover_image_url: null,
+        },
+        images: [],
+      },
+    ],
+  })
+
+  const sorted = sortDirectoryChefs([oneLocation, twoLocations], 'featured')
+
+  assert.deepEqual(
+    sorted.map((chef) => chef.slug),
+    ['two-locations', 'one-location']
+  )
 })
 
 test('sortDirectoryChefs featured prioritizes nearer chefs when distance is available', () => {

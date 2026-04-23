@@ -5,8 +5,11 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronDown, ChevronUp, Clock, X } from '@/components/ui/icons'
 import { useRecentPages, type RecentPage } from '@/hooks/use-recent-pages'
-
-const COLLAPSED_KEY = 'cf:recent-collapsed'
+import {
+  CHEF_RECENT_PAGES_COLLAPSED_STORAGE_KEY,
+  CHEF_SHELL_RESET_EVENT,
+  DEFAULT_CHEF_RECENT_PAGES_COLLAPSED,
+} from '@/lib/chef/shell-state'
 
 /**
  * Simple relative time formatter - avoids importing date-fns.
@@ -41,26 +44,34 @@ function relativeTime(isoString: string): string {
 export function RecentPagesSection() {
   const router = useRouter()
   const { recentPages, clearHistory } = useRecentPages()
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(DEFAULT_CHEF_RECENT_PAGES_COLLAPSED)
   const [mounted, setMounted] = useState(false)
 
-  // Load collapsed state from localStorage on mount; default to collapsed
+  // Load collapsed state from localStorage on mount; default to expanded
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(COLLAPSED_KEY)
-      // Default to collapsed unless user explicitly expanded
-      setCollapsed(stored === null ? false : stored === 'true')
+      const stored = localStorage.getItem(CHEF_RECENT_PAGES_COLLAPSED_STORAGE_KEY)
+      setCollapsed(stored === null ? DEFAULT_CHEF_RECENT_PAGES_COLLAPSED : stored === 'true')
     } catch {
       // ignore
     }
     setMounted(true)
   }, [])
 
+  useEffect(() => {
+    const handleShellReset = () => {
+      setCollapsed(DEFAULT_CHEF_RECENT_PAGES_COLLAPSED)
+    }
+
+    window.addEventListener(CHEF_SHELL_RESET_EVENT, handleShellReset)
+    return () => window.removeEventListener(CHEF_SHELL_RESET_EVENT, handleShellReset)
+  }, [])
+
   const toggleCollapsed = () => {
     setCollapsed((prev) => {
       const next = !prev
       try {
-        localStorage.setItem(COLLAPSED_KEY, String(next))
+        localStorage.setItem(CHEF_RECENT_PAGES_COLLAPSED_STORAGE_KEY, String(next))
       } catch {
         // ignore
       }

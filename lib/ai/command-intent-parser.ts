@@ -9,6 +9,8 @@ import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { buildTaskListForPrompt } from '@/lib/ai/command-task-descriptions'
 import type { CommandPlan, PlannedTask } from '@/lib/ai/command-types'
+import { resolveAiActionDecision } from '@/lib/ai/dispatch/router'
+import type { AiActionSafety } from '@/lib/ai/dispatch/types'
 
 // ─── Zod Schema for Ollama Output ─────────────────────────────────────────────
 
@@ -2109,6 +2111,82 @@ function tryDeterministicParse(rawInput: string): CommandPlan | null {
   return null
 }
 
+function isApprovalCapableTask(taskType: string): boolean {
+  return (
+    taskType.startsWith('agent.') ||
+    taskType.startsWith('email.') ||
+    taskType.startsWith('draft.') ||
+    taskType === 'event.create_draft'
+  )
+}
+
+function inferTaskSafety(taskType: string): AiActionSafety {
+  if (
+    taskType === 'agent.ledger_write' ||
+    taskType === 'agent.modify_roles' ||
+    taskType === 'agent.delete_data' ||
+    taskType === 'agent.send_email' ||
+    taskType === 'agent.refund'
+  ) {
+    return 'restricted'
+  }
+
+  if (isApprovalCapableTask(taskType)) {
+    return 'significant'
+  }
+
+  return 'reversible'
+}
+
+function normalizePlannedTask(task: PlannedTask, taskIds: Set<string>): PlannedTask {
+  const normalizedTask: PlannedTask = {
+    ...task,
+    dependsOn: task.dependsOn.filter((dep) => taskIds.has(dep)),
+  }
+
+  if (normalizedTask.tier === 3) {
+    return normalizedTask
+  }
+
+  const requiresApproval = isApprovalCapableTask(normalizedTask.taskType)
+  const decision = resolveAiActionDecision({
+    confidence: normalizedTask.confidence,
+    safety: inferTaskSafety(normalizedTask.taskType),
+    requiresApproval,
+    canAutoExecute: !requiresApproval,
+    canQueueForApproval: requiresApproval,
+  })
+
+  if (!decision) return normalizedTask
+
+  if (decision.disposition === 'execute') {
+    return {
+      ...normalizedTask,
+      tier: 1,
+      holdReason: undefined,
+    }
+  }
+
+  if (decision.disposition === 'queue_for_approval') {
+    return {
+      ...normalizedTask,
+      tier: 2,
+      holdReason: undefined,
+    }
+  }
+
+  return {
+    ...normalizedTask,
+    tier: 3,
+    holdReason: normalizedTask.holdReason ?? decision.reasoning,
+  }
+}
+
+function normalizePlannedTasks(tasks: PlannedTask[]): PlannedTask[] {
+  const taskIds = new Set(tasks.map((task) => task.id))
+  return tasks.map((task) => normalizePlannedTask(task, taskIds))
+}
+
 // ─── Public Server Action ─────────────────────────────────────────────────────
 
 export async function parseCommandIntent(rawInput: string): Promise<CommandPlan> {
@@ -2129,16 +2207,10 @@ export async function parseCommandIntent(rawInput: string): Promise<CommandPlan>
     })
 
     // Validate that all dependsOn references actually exist in this plan
-    const taskIds = new Set(parsed.tasks.map((t) => t.id))
-    const validatedTasks: PlannedTask[] = parsed.tasks.map((task) => ({
-      ...task,
-      dependsOn: task.dependsOn.filter((dep) => taskIds.has(dep)),
-    }))
-
     return {
       rawInput,
       overallConfidence: parsed.overallConfidence,
-      tasks: validatedTasks,
+      tasks: normalizePlannedTasks(parsed.tasks),
     }
   } catch (err) {
     if (err instanceof OllamaOfflineError) throw err

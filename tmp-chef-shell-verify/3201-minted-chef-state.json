@@ -1,0 +1,60 @@
+{
+  "cookies": [
+    {
+      "name": "authjs.session-token",
+      "value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwia2lkIjoiV1pDbVlxSXBtakxXT2QzajFfUXJveTNKajVEWDhjVHFiVzZXejUwZm8xQnV3ZmxWeC1hZGV0MHU5WTZNRFR3NDBTbDJCV1VLMkk2ZmFBR3FNS2xPWVEifQ..wUwWmy23b5KGMSOnK4JErw.5C_jq40aE8qYfrIYeB10CpQAE6y4v8iGB7JbbeCHwKA_eVpMX1o8cgatuiVp3D13cxYTYZtjKxck6pm5hMHy6fPCCr_SHe5DOEB1a5C-lCehe7jL8acYkPQTx_fNj0EuXkOpEnlDEuB6YAbLnIx5PASCZf5Z0nurxxY1562t7k4urPmDjFSRtAnC1gLxGhfY922GsszDR9pKtghe-3yuz_aYs_MbyKlOMBhJk1KreZUTyV7611kHYMreCpnT52gc_jb_-pC4N4VY818tjB2byfv3ytbGimgsdYahD9Q2qfxqBttGui7ODJZiQP1OgmaC6cMUWdGXQpe3_e85wAldL5LKzbQAQDSKU_x968HaIpgmU-4aVOOtqXex3D213Jtg.ZYqMtB4trsRi-9aoiDyM2-AYl-_6IqiFfwUGkPxqdMQ",
+      "domain": "127.0.0.1",
+      "path": "/",
+      "expires": 1777404025,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "authjs.callback-url",
+      "value": "http%3A%2F%2F127.0.0.1%3A3201",
+      "domain": "127.0.0.1",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "authjs.csrf-token",
+      "value": "4fe56a7f5fe7db1762475cb39cb3f2b21c30ee234175b99cb7ad0fd1b224a36b%7Cb6854ab8f0f4806c5d3859ee0b8f03052103f645a34b0b4a93f0cd37808b49d5",
+      "domain": "127.0.0.1",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "chefflow-role-cache",
+      "value": "chef",
+      "domain": "127.0.0.1",
+      "path": "/",
+      "expires": 1776799825,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "cookieConsent",
+      "value": "declined",
+      "domain": "127.0.0.1",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://127.0.0.1:3201",
+      "localStorage": []
+    }
+  ]
+}

@@ -66,6 +66,7 @@ export const HubMessageBubble = memo(function HubMessageBubble({
             pollId={pollId}
             currentProfileId={currentProfileId}
             profileToken={profileToken}
+            isOwnerOrAdmin={isOwnerOrAdmin}
           />
         ) : (
           <div className="rounded-lg border border-stone-700 bg-stone-800/50 px-4 py-3 text-sm text-stone-300">
@@ -370,10 +371,12 @@ function InlinePollCard({
   pollId,
   currentProfileId,
   profileToken,
+  isOwnerOrAdmin,
 }: {
   pollId: string
   currentProfileId: string | null
   profileToken: string | null
+  isOwnerOrAdmin?: boolean
 }) {
   const [poll, setPoll] = useState<HubPoll | null>(null)
   const [loading, setLoading] = useState(true)
@@ -416,6 +419,7 @@ function InlinePollCard({
     <HubPollCard
       poll={poll}
       profileToken={profileToken}
+      isOwnerOrAdmin={isOwnerOrAdmin}
       onVoted={() => {
         // Re-fetch poll after voting
         getPoll(pollId, currentProfileId ?? undefined).then((data) => {

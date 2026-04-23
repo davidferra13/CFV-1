@@ -32,6 +32,16 @@ Full blueprint: `docs/product-blueprint.md`
 - 54 settings pages
 - 90+ Mission Control API endpoints
 
+## Operator Acquisition Entry Routing (Apr 2026)
+
+**Status:** Started
+
+**What it is:** A truthful operator acquisition slice across the public marketing routes. Homepage traffic now routes operators into a proof-first path, and `/for-operators` then fans out into marketplace-led, compare, or walkthrough next steps.
+
+**What changed:** `lib/marketing/source-links.ts` now owns the canonical `source_page` / `source_cta` link contract. The homepage operator band now routes into `/for-operators` and the walkthrough lane with explicit source tags, and `/for-operators` then segments operators into marketplace, compare, and walkthrough routes. `/for-operators`, `/marketplace-chefs`, and `/compare` now read that source context into `PublicPageView` so attribution stays honest.
+
+**Design principle:** one acquisition entry contract, truthful destination choices, no generic operator CTA that hides funnel intent.
+
 ## Mobile App + PWA Activation (P0, Apr 2026)
 
 **Spec:** `docs/specs/cloud-mobile-unified-migration.md`
@@ -94,6 +104,16 @@ Full blueprint: `docs/product-blueprint.md`
 
 **Design principle:** one mutation inventory, one privilege classifier, no sibling policy registry.
 
+## Canonical Intake Lane Truth Pack (Apr 2026)
+
+**Status:** Built
+
+**What it is:** A shared public intake lane contract now tells the truth about how each external inquiry entered ChefFlow.
+
+**What changed:** `lib/public/intake-lane-config.ts` now owns the canonical lane keys, labels, and expectation copy for open booking, direct chef inquiry, embed, kiosk, Wix, and instant-book flows. Public intake writers stamp `unknown_fields.submission_source` through the shared helper, `components/public/intake-lane-expectations.tsx` renders truthful lane-specific expectations on `/book` and `/chef/[slug]/inquire`, and `lib/analytics/source-provenance.ts`, `lib/admin/activity-feed.ts`, and `lib/admin/inquiry-admin-actions.ts` now read the same lane contract instead of collapsing all website inquiries into open booking.
+
+**Design principle:** one intake-lane contract, one provenance classifier, no per-route source heuristics.
+
 ## Schema-Aware Quote Prefill Runtime (Apr 2026)
 
 **Status:** Built
@@ -111,5 +131,7 @@ Full blueprint: `docs/product-blueprint.md`
 **What it is:** A narrow ownership contract for ChefFlow's two existing work layers: structured operational tasks on `/tasks`, and lightweight reminders in `chef_todos`.
 
 **What changed:** Remy task summaries, overdue briefing/proactive reads, and AI-created structured work now route through `tasks` with the real task schema. Workflow reminder completion stays on `chef_todos` through the canonical todo helpers plus reminder-text matching, so reminder flows stop pretending they have task fields like `due_date` or `priority`.
+
+**Follow-up closed:** the real `/tasks` board create form now posts through the canonical `createTask()` owner from a server-rendered create panel, persists after refresh on the selected date, and keeps the chef's draft plus an honest validation error when creation fails.
 
 **Design principle:** one owner for structured work, one owner for lightweight reminders, no fake shared schema.

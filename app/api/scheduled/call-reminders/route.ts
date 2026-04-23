@@ -8,10 +8,14 @@
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/db/server'
-import type { CallType } from '@/lib/calls/actions'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { runMonitoredCronJob } from '@/lib/cron/monitor'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
+import {
+  CALL_REMINDER_1H_EMAIL_REPAIR_KIND,
+  CALL_REMINDER_24H_EMAIL_REPAIR_KIND,
+} from '@/lib/monitoring/failure-repair'
+import { sendCallReminderEmailDelivery } from '@/lib/calls/call-reminder-delivery'
 
 async function handleCallReminders(request: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(request.headers.get('authorization'))
@@ -22,7 +26,7 @@ async function handleCallReminders(request: NextRequest): Promise<NextResponse> 
       const db = createServerClient({ admin: true })
       const now = new Date()
 
-      // ── 24-hour window ────────────────────────────────────────────────────────
+      // 24-hour window
       const window24hStart = new Date(now.getTime() + 23 * 60 * 60 * 1000).toISOString()
       const window24hEnd = new Date(now.getTime() + 25 * 60 * 60 * 1000).toISOString()
 
@@ -40,7 +44,7 @@ async function handleCallReminders(request: NextRequest): Promise<NextResponse> 
         .lte('scheduled_at', window24hEnd)
         .is('reminder_24h_sent_at', null)
 
-      // ── 1-hour window ────────────────────────────────────────────────────────
+      // 1-hour window
       const window1hStart = new Date(now.getTime() + 45 * 60 * 1000).toISOString()
       const window1hEnd = new Date(now.getTime() + 75 * 60 * 1000).toISOString()
 
@@ -67,77 +71,53 @@ async function handleCallReminders(request: NextRequest): Promise<NextResponse> 
         throw new Error('Query failed (1h)')
       }
 
-      const { sendEmail } = await import('@/lib/email/send')
-      const { CallReminderEmail } = await import('@/lib/email/templates/call-reminder')
-
       let sent = 0
       let errors = 0
 
-      // Helper: find the chef's auth email for a tenant
-      async function getChefEmail(
-        tenantId: string
-      ): Promise<{ email: string; displayName: string } | null> {
-        const { data } = await db
-          .from('user_roles')
-          .select('auth_user_id')
-          .eq('entity_id', tenantId)
-          .eq('role', 'chef')
-          .single()
-
-        if (!data) return null
-
-        const { data: userData } = await db.auth.admin.getUserById(data.auth_user_id)
-        if (!userData?.user?.email) return null
-
-        // Get chef display name
-        const { data: chef } = await db
-          .from('chefs')
-          .select('display_name')
-          .eq('id', tenantId)
-          .single()
-
-        return {
-          email: userData.user.email,
-          displayName: (chef as any)?.display_name ?? 'Chef',
-        }
-      }
-
-      // ── Send 24h reminders ───────────────────────────────────────────────────
+      // Send 24h reminders
       for (const call of calls24h ?? []) {
         try {
-          const chef = await getChefEmail(call.tenant_id)
-          if (!chef) continue
+          const contactLabel =
+            (call.client as any)?.full_name ??
+            call.contact_name ??
+            call.contact_company ??
+            'your contact'
 
-          await sendEmail({
-            to: chef.email,
-            subject: `Reminder: call tomorrow with ${(call.client as any)?.full_name ?? call.contact_name ?? call.contact_company ?? 'your contact'}`,
-            react: CallReminderEmail({
-              recipientName: chef.displayName,
-              chefName: chef.displayName,
-              callType: call.call_type as CallType,
-              scheduledAt: call.scheduled_at,
-              durationMinutes: call.duration_minutes,
-              title: call.title ?? null,
-              isChefReminder: true,
-              hoursUntil: 24,
-            }),
+          const delivery = await sendCallReminderEmailDelivery({
+            tenantId: call.tenant_id,
+            callType: call.call_type,
+            title: call.title ?? null,
+            scheduledAt: call.scheduled_at,
+            durationMinutes: call.duration_minutes,
+            reminderType: '24h',
+            contactLabel,
           })
 
+          if (!delivery.emailSent) continue
+
+          const reminderSentAt = new Date().toISOString()
           const { error: updateError } = await db
             .from('scheduled_calls')
-            .update({ reminder_24h_sent_at: new Date().toISOString() })
+            .update({ reminder_24h_sent_at: reminderSentAt })
             .eq('id', call.id)
             .eq('tenant_id', call.tenant_id)
 
           if (updateError) {
-            console.error(
-              `[CallReminders] 24h sent_at update failed for call ${call.id} (email was sent, may re-send on next run):`,
-              updateError.message
-            )
+            await recordSideEffectFailure({
+              source: 'cron:call-reminders',
+              operation: 'mark_24h_reminder_sent',
+              severity: 'high',
+              entityType: 'scheduled_call',
+              entityId: call.id,
+              tenantId: call.tenant_id,
+              errorMessage: updateError.message,
+              context: { reminderSentAt },
+            })
             errors++
-          } else {
-            sent++
+            continue
           }
+
+          sent++
         } catch (err) {
           console.error(`[CallReminders] 24h reminder failed for call ${call.id}:`, err)
           await recordSideEffectFailure({
@@ -148,47 +128,60 @@ async function handleCallReminders(request: NextRequest): Promise<NextResponse> 
             entityId: call.id,
             tenantId: call.tenant_id,
             errorMessage: err instanceof Error ? err.message : String(err),
+            context: {
+              repairKind: CALL_REMINDER_24H_EMAIL_REPAIR_KIND,
+              reminderType: '24h',
+              scheduledAt: call.scheduled_at,
+            },
           })
           errors++
         }
       }
 
-      // ── Send 1h reminders ────────────────────────────────────────────────────
+      // Send 1h reminders
       for (const call of calls1h ?? []) {
         try {
-          const chef = await getChefEmail(call.tenant_id)
-          if (!chef) continue
+          const contactLabel =
+            (call.client as any)?.full_name ??
+            call.contact_name ??
+            call.contact_company ??
+            'your contact'
 
-          await sendEmail({
-            to: chef.email,
-            subject: `Your call starts in 1 hour`,
-            react: CallReminderEmail({
-              recipientName: chef.displayName,
-              chefName: chef.displayName,
-              callType: call.call_type as CallType,
-              scheduledAt: call.scheduled_at,
-              durationMinutes: call.duration_minutes,
-              title: call.title ?? null,
-              isChefReminder: true,
-              hoursUntil: 1,
-            }),
+          const delivery = await sendCallReminderEmailDelivery({
+            tenantId: call.tenant_id,
+            callType: call.call_type,
+            title: call.title ?? null,
+            scheduledAt: call.scheduled_at,
+            durationMinutes: call.duration_minutes,
+            reminderType: '1h',
+            contactLabel,
           })
 
+          if (!delivery.emailSent) continue
+
+          const reminderSentAt = new Date().toISOString()
           const { error: updateError } = await db
             .from('scheduled_calls')
-            .update({ reminder_1h_sent_at: new Date().toISOString() })
+            .update({ reminder_1h_sent_at: reminderSentAt })
             .eq('id', call.id)
             .eq('tenant_id', call.tenant_id)
 
           if (updateError) {
-            console.error(
-              `[CallReminders] 1h sent_at update failed for call ${call.id} (email was sent, may re-send on next run):`,
-              updateError.message
-            )
+            await recordSideEffectFailure({
+              source: 'cron:call-reminders',
+              operation: 'mark_1h_reminder_sent',
+              severity: 'high',
+              entityType: 'scheduled_call',
+              entityId: call.id,
+              tenantId: call.tenant_id,
+              errorMessage: updateError.message,
+              context: { reminderSentAt },
+            })
             errors++
-          } else {
-            sent++
+            continue
           }
+
+          sent++
         } catch (err) {
           console.error(`[CallReminders] 1h reminder failed for call ${call.id}:`, err)
           await recordSideEffectFailure({
@@ -199,6 +192,11 @@ async function handleCallReminders(request: NextRequest): Promise<NextResponse> 
             entityId: call.id,
             tenantId: call.tenant_id,
             errorMessage: err instanceof Error ? err.message : String(err),
+            context: {
+              repairKind: CALL_REMINDER_1H_EMAIL_REPAIR_KIND,
+              reminderType: '1h',
+              scheduledAt: call.scheduled_at,
+            },
           })
           errors++
         }

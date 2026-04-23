@@ -76,9 +76,9 @@ function csvEscape(value) {
   return `"${stringValue.replace(/"/g, '""')}"`
 }
 
-function loadSiteAuditSnapshot(siteAuditDir) {
+async function loadSiteAuditSnapshot(siteAuditDir) {
   const screenshotsDir = path.join(siteAuditDir, 'screenshots')
-  const manifest = discoverSiteAuditRoutes(ROOT)
+  const manifest = await discoverSiteAuditRoutes(ROOT)
   const routeMap = new Map()
 
   for (let index = 0; index < manifest.routes.length; index += 1) {
@@ -530,14 +530,14 @@ function writeOutputs(outDir, allResults, summary) {
   return { jsonPath, csvPath, summaryPath }
 }
 
-function main() {
+async function main() {
   const options = parseArgs(process.argv.slice(2))
   const outDir =
     options.outDir ||
     path.join(options.runDir, `partial-results-${timestampSlug(new Date())}`)
   ensureDir(outDir)
 
-  const siteAuditResults = loadSiteAuditSnapshot(options.siteAuditDir)
+  const siteAuditResults = await loadSiteAuditSnapshot(options.siteAuditDir)
   const hardeningResults = loadHardeningResults(options.runDir)
   const remyResults = loadRemyResults()
 
@@ -553,4 +553,4 @@ function main() {
   )
 }
 
-main()
+await main()

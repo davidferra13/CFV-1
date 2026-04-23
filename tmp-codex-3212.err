@@ -1,0 +1,520 @@
+ ⚠ Invalid next.config.js options detected: 
+ ⚠     Unrecognized key(s) in object: 'serverActions'
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (1809kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (188kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (139kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (692kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (695kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (227kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+Image with src "/api/storage/public/chef-profile-images/bd72cf97-a0e5-4fe4-b049-0706ac81d100/1774734757311-ef0fd70e-4692-400d-af0c-4e5c83c441a4.jpg" has a "loader" property that does not implement width. Please implement it or use the "unoptimized" property instead.
+Read more: https://nextjs.org/docs/messages/next-image-missing-loader-width
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+ ⨯ ./lib/clients/next-best-action.ts
+Error: 
+  [31mx[0m Server actions must be async functions
+     ,-[[36;1;4mC:\Users\david\Documents\CFv1\lib\clients\next-best-action.ts[0m:136:1]
+ [2m136[0m |   }
+ [2m137[0m | }
+ [2m138[0m | 
+ [2m139[0m | export function projectChefGraphActionToNextBestAction(input: {
+     : [31;1m                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+ [2m140[0m |   clientId: string
+ [2m141[0m |   clientName: string
+ [2m142[0m |   tier: ClientHealthTier
+     `----
+
+Import trace for requested module:
+./lib/clients/next-best-action.ts
+./lib/daily-ops/actions.ts
+./lib/ai/remy-context.ts
+./lib/clients/actions.ts
+./lib/inquiries/public-actions.ts
+ ⨯ ./lib/clients/next-best-action.ts
+Error: 
+  [31mx[0m Server actions must be async functions
+     ,-[[36;1;4mC:\Users\david\Documents\CFv1\lib\clients\next-best-action.ts[0m:136:1]
+ [2m136[0m |   }
+ [2m137[0m | }
+ [2m138[0m | 
+ [2m139[0m | export function projectChefGraphActionToNextBestAction(input: {
+     : [31;1m                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+ [2m140[0m |   clientId: string
+ [2m141[0m |   clientName: string
+ [2m142[0m |   tier: ClientHealthTier
+     `----
+
+Import trace for requested module:
+./lib/clients/next-best-action.ts
+./lib/daily-ops/actions.ts
+./lib/ai/remy-context.ts
+./lib/clients/actions.ts
+./lib/inquiries/public-actions.ts
+[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
+ ⨯ ./lib/clients/next-best-action.ts
+Error: 
+  [31mx[0m Server actions must be async functions
+     ,-[[36;1;4mC:\Users\david\Documents\CFv1\lib\clients\next-best-action.ts[0m:136:1]
+ [2m136[0m |   }
+ [2m137[0m | }
+ [2m138[0m | 
+ [2m139[0m | export function projectChefGraphActionToNextBestAction(input: {
+     : [31;1m                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+ [2m140[0m |   clientId: string
+ [2m141[0m |   clientName: string
+ [2m142[0m |   tier: ClientHealthTier
+     `----
+
+Import trace for requested module:
+./lib/clients/next-best-action.ts
+./lib/daily-ops/actions.ts
+./lib/ai/remy-context.ts
+./lib/clients/actions.ts
+./lib/inquiries/public-actions.ts
+ ⨯ ./lib/clients/next-best-action.ts
+Error: 
+  [31mx[0m Server actions must be async functions
+     ,-[[36;1;4mC:\Users\david\Documents\CFv1\lib\clients\next-best-action.ts[0m:198:1]
+ [2m198[0m |   return reasons
+ [2m199[0m | }
+ [2m200[0m | 
+ [2m201[0m | export function projectChefGraphActionToNextBestAction(input: {
+     : [31;1m                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+ [2m202[0m |   clientId: string
+ [2m203[0m |   clientName: string
+ [2m204[0m |   tier: ClientHealthTier
+     `----
+
+Import trace for requested module:
+./lib/clients/next-best-action.ts
+./lib/daily-ops/actions.ts
+./lib/ai/remy-context.ts
+./lib/clients/actions.ts
+./lib/inquiries/public-actions.ts
+ ⨯ ./lib/clients/next-best-action.ts
+Error: 
+  [31mx[0m Server actions must be async functions
+     ,-[[36;1;4mC:\Users\david\Documents\CFv1\lib\clients\next-best-action.ts[0m:198:1]
+ [2m198[0m |   return reasons
+ [2m199[0m | }
+ [2m200[0m | 
+ [2m201[0m | export function projectChefGraphActionToNextBestAction(input: {
+     : [31;1m                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+ [2m202[0m |   clientId: string
+ [2m203[0m |   clientName: string
+ [2m204[0m |   tier: ClientHealthTier
+     `----
+
+Import trace for requested module:
+./lib/clients/next-best-action.ts
+./lib/daily-ops/actions.ts
+./lib/ai/remy-context.ts
+./lib/clients/actions.ts
+./lib/inquiries/public-actions.ts
+ ⨯ ./lib/clients/next-best-action.ts
+Error: 
+  [31mx[0m Server actions must be async functions
+     ,-[[36;1;4mC:\Users\david\Documents\CFv1\lib\clients\next-best-action.ts[0m:198:1]
+ [2m198[0m |   return reasons
+ [2m199[0m | }
+ [2m200[0m | 
+ [2m201[0m | export function projectChefGraphActionToNextBestAction(input: {
+     : [31;1m                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+ [2m202[0m |   clientId: string
+ [2m203[0m |   clientName: string
+ [2m204[0m |   tier: ClientHealthTier
+     `----
+
+Import trace for requested module:
+./lib/clients/next-best-action.ts
+./lib/daily-ops/actions.ts
+./lib/ai/remy-context.ts
+./lib/clients/actions.ts
+./lib/inquiries/public-actions.ts
+ ⨯ ./lib/clients/next-best-action.ts
+Error: Failed to read source code from C:\Users\david\Documents\CFv1\lib\clients\next-best-action.ts
+
+Caused by:
+    The system cannot find the file specified. (os error 2)
+
+Import trace for requested module:
+./lib/clients/next-best-action.ts
+./lib/daily-ops/actions.ts
+./lib/ai/remy-context.ts
+./lib/clients/actions.ts
+./lib/inquiries/public-actions.ts
+ ⨯ ./lib/clients/next-best-action.ts
+Error: Failed to read source code from C:\Users\david\Documents\CFv1\lib\clients\next-best-action.ts
+
+Caused by:
+    The system cannot find the file specified. (os error 2)
+
+Import trace for requested module:
+./lib/clients/next-best-action.ts
+./lib/daily-ops/actions.ts
+./lib/ai/remy-context.ts
+./lib/clients/actions.ts
+./lib/inquiries/public-actions.ts
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ Error: aborted
+    at abortIncoming (node:_http_server:811:17)
+    at socketOnClose (node:_http_server:805:3)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:346:12)
+digest: "4115862311"
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+Image with src "/api/storage/public/chef-profile-images/bd72cf97-a0e5-4fe4-b049-0706ac81d100/1774734757311-ef0fd70e-4692-400d-af0c-4e5c83c441a4.jpg" has a "loader" property that does not implement width. Please implement it or use the "unoptimized" property instead.
+Read more: https://nextjs.org/docs/messages/next-image-missing-loader-width
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 94d9769a-0004-4239-b966-f4db2798b82b,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '94d9769a-0004-4239-b966-f4db2798b82b', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 94d9769a-0004-4239-b966-f4db2798b82b,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '94d9769a-0004-4239-b966-f4db2798b82b', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 94d9769a-0004-4239-b966-f4db2798b82b,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '94d9769a-0004-4239-b966-f4db2798b82b', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+ ⨯ lib\partners\portal-actions.ts (132:11) @ getPartnerPortalData
+ ⨯ Error: Failed to load partner data
+    at getPartnerPortalData (./lib/partners/portal-actions.ts:55:15)
+    at async Promise.all (index 0)
+    at async PartnerLocationDetailPage (partner/locations/[id]/page.tsx:42:44)
+digest: "3105616361"
+[0m [90m 130 |[39m[0m
+[0m [90m 131 |[39m   [36mif[39m (error [33m||[39m [33m![39mpartnerRecord) {[0m
+[0m[31m[1m>[22m[39m[90m 132 |[39m     [36mthrow[39m [36mnew[39m [33mError[39m([32m'Failed to load partner data'[39m)[0m
+[0m [90m     |[39m           [31m[1m^[22m[39m[0m
+[0m [90m 133 |[39m   }[0m
+[0m [90m 134 |[39m[0m
+[0m [90m 135 |[39m   [36mconst[39m record [33m=[39m partnerRecord [36mas[39m any[0m
+ ⨯ lib\partners\portal-actions.ts (132:11) @ getPartnerPortalData
+ ⨯ Error: Failed to load partner data
+    at getPartnerPortalData (./lib/partners/portal-actions.ts:55:15)
+    at async Promise.all (index 0)
+    at async PartnerLocationDetailPage (partner/locations/[id]/page.tsx:42:44)
+digest: "3105616361"
+[0m [90m 130 |[39m[0m
+[0m [90m 131 |[39m   [36mif[39m (error [33m||[39m [33m![39mpartnerRecord) {[0m
+[0m[31m[1m>[22m[39m[90m 132 |[39m     [36mthrow[39m [36mnew[39m [33mError[39m([32m'Failed to load partner data'[39m)[0m
+[0m [90m     |[39m           [31m[1m^[22m[39m[0m
+[0m [90m 133 |[39m   }[0m
+[0m [90m 134 |[39m[0m
+[0m [90m 135 |[39m   [36mconst[39m record [33m=[39m partnerRecord [36mas[39m any[0m
+ ⨯ lib\partners\portal-actions.ts (132:11) @ getPartnerPortalData
+ ⨯ Error: Failed to load partner data
+    at getPartnerPortalData (./lib/partners/portal-actions.ts:55:15)
+    at async PartnerDashboardPage (partner/dashboard/page.tsx:77:18)
+digest: "227208102"
+[0m [90m 130 |[39m[0m
+[0m [90m 131 |[39m   [36mif[39m (error [33m||[39m [33m![39mpartnerRecord) {[0m
+[0m[31m[1m>[22m[39m[90m 132 |[39m     [36mthrow[39m [36mnew[39m [33mError[39m([32m'Failed to load partner data'[39m)[0m
+[0m [90m     |[39m           [31m[1m^[22m[39m[0m
+[0m [90m 133 |[39m   }[0m
+[0m [90m 134 |[39m[0m
+[0m [90m 135 |[39m   [36mconst[39m record [33m=[39m partnerRecord [36mas[39m any[0m
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 94d9769a-0004-4239-b966-f4db2798b82b,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '94d9769a-0004-4239-b966-f4db2798b82b', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+ ⨯ lib\partners\portal-actions.ts (132:11) @ getPartnerPortalData
+ ⨯ Error: Failed to load partner data
+    at getPartnerPortalData (./lib/partners/portal-actions.ts:55:15)
+    at async Promise.all (index 0)
+    at async PartnerLocationDetailPage (partner/locations/[id]/page.tsx:42:44)
+digest: "3105616361"
+[0m [90m 130 |[39m[0m
+[0m [90m 131 |[39m   [36mif[39m (error [33m||[39m [33m![39mpartnerRecord) {[0m
+[0m[31m[1m>[22m[39m[90m 132 |[39m     [36mthrow[39m [36mnew[39m [33mError[39m([32m'Failed to load partner data'[39m)[0m
+[0m [90m     |[39m           [31m[1m^[22m[39m[0m
+[0m [90m 133 |[39m   }[0m
+[0m [90m 134 |[39m[0m
+[0m [90m 135 |[39m   [36mconst[39m record [33m=[39m partnerRecord [36mas[39m any[0m
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 94d9769a-0004-4239-b966-f4db2798b82b,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '94d9769a-0004-4239-b966-f4db2798b82b', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+ ⨯ lib\partners\portal-actions.ts (132:11) @ getPartnerPortalData
+ ⨯ Error: Failed to load partner data
+    at getPartnerPortalData (./lib/partners/portal-actions.ts:55:15)
+    at async Promise.all (index 0)
+    at async PartnerLocationDetailPage (partner/locations/[id]/page.tsx:42:44)
+digest: "3105616361"
+[0m [90m 130 |[39m[0m
+[0m [90m 131 |[39m   [36mif[39m (error [33m||[39m [33m![39mpartnerRecord) {[0m
+[0m[31m[1m>[22m[39m[90m 132 |[39m     [36mthrow[39m [36mnew[39m [33mError[39m([32m'Failed to load partner data'[39m)[0m
+[0m [90m     |[39m           [31m[1m^[22m[39m[0m
+[0m [90m 133 |[39m   }[0m
+[0m [90m 134 |[39m[0m
+[0m [90m 135 |[39m   [36mconst[39m record [33m=[39m partnerRecord [36mas[39m any[0m
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+Image with src "/api/storage/public/chef-profile-images/bd72cf97-a0e5-4fe4-b049-0706ac81d100/1774734757311-ef0fd70e-4692-400d-af0c-4e5c83c441a4.jpg" has a "loader" property that does not implement width. Please implement it or use the "unoptimized" property instead.
+Read more: https://nextjs.org/docs/messages/next-image-missing-loader-width
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (1809kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (188kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (139kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (692kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (695kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (227kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 94d9769a-0004-4239-b966-f4db2798b82b,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '94d9769a-0004-4239-b966-f4db2798b82b', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+ ⨯ lib\partners\portal-actions.ts (132:11) @ getPartnerPortalData
+ ⨯ Error: Failed to load partner data
+    at getPartnerPortalData (./lib/partners/portal-actions.ts:55:15)
+    at async Promise.all (index 0)
+    at async PartnerLocationDetailPage (partner/locations/[id]/page.tsx:42:44)
+digest: "3105616361"
+[0m [90m 130 |[39m[0m
+[0m [90m 131 |[39m   [36mif[39m (error [33m||[39m [33m![39mpartnerRecord) {[0m
+[0m[31m[1m>[22m[39m[90m 132 |[39m     [36mthrow[39m [36mnew[39m [33mError[39m([32m'Failed to load partner data'[39m)[0m
+[0m [90m     |[39m           [31m[1m^[22m[39m[0m
+[0m [90m 133 |[39m   }[0m
+[0m [90m 134 |[39m[0m
+[0m [90m 135 |[39m   [36mconst[39m record [33m=[39m partnerRecord [36mas[39m any[0m
+ ⨯ lib\partners\portal-actions.ts (132:11) @ getPartnerPortalData
+ ⨯ Error: Failed to load partner data
+    at getPartnerPortalData (./lib/partners/portal-actions.ts:55:15)
+    at async Promise.all (index 0)
+    at async PartnerLocationDetailPage (partner/locations/[id]/page.tsx:42:44)
+digest: "3105616361"
+[0m [90m 130 |[39m[0m
+[0m [90m 131 |[39m   [36mif[39m (error [33m||[39m [33m![39mpartnerRecord) {[0m
+[0m[31m[1m>[22m[39m[90m 132 |[39m     [36mthrow[39m [36mnew[39m [33mError[39m([32m'Failed to load partner data'[39m)[0m
+[0m [90m     |[39m           [31m[1m^[22m[39m[0m
+[0m [90m 133 |[39m   }[0m
+[0m [90m 134 |[39m[0m
+[0m [90m 135 |[39m   [36mconst[39m record [33m=[39m partnerRecord [36mas[39m any[0m
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+Image with src "/api/storage/public/chef-profile-images/bd72cf97-a0e5-4fe4-b049-0706ac81d100/1774734757311-ef0fd70e-4692-400d-af0c-4e5c83c441a4.jpg" has a "loader" property that does not implement width. Please implement it or use the "unoptimized" property instead.
+Read more: https://nextjs.org/docs/messages/next-image-missing-loader-width
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 94d9769a-0004-4239-b966-f4db2798b82b,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '94d9769a-0004-4239-b966-f4db2798b82b', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 94d9769a-0004-4239-b966-f4db2798b82b,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '94d9769a-0004-4239-b966-f4db2798b82b', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 94d9769a-0004-4239-b966-f4db2798b82b,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '94d9769a-0004-4239-b966-f4db2798b82b', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 94d9769a-0004-4239-b966-f4db2798b82b,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '94d9769a-0004-4239-b966-f4db2798b82b', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 435d1e04-e512-44c1-8c99-1eaa69bbb155,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '435d1e04-e512-44c1-8c99-1eaa69bbb155', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}

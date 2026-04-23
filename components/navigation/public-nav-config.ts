@@ -3,7 +3,8 @@
  * Single source of truth for all public-facing nav items, footer links,
  * and page metadata. Mirrors the discipline of nav-config.tsx (chef portal).
  *
- * Rule: nothing hidden. If it's built, it's findable within 1-2 clicks.
+ * Rule: the header carries only the few primary paths that deserve persistent visibility.
+ * Secondary discovery belongs in grouped menus, footer links, search, and page-level CTAs.
  */
 
 // ---------------------------------------------------------------------------
@@ -59,6 +60,7 @@ export const PUBLIC_NAV: PublicNavEntry[] = [
     ],
   },
   PUBLIC_OPERATOR_ENTRY,
+  { href: '/pricing', label: 'Pricing' },
   { href: '/ingredients', label: 'Ingredients' },
 ]
 
@@ -85,13 +87,13 @@ export const FOOTER_SECTIONS = {
     links: [
       PUBLIC_OPERATOR_ENTRY,
       { href: '/marketplace-chefs', label: 'Marketplace Chefs' },
-      { href: '/partner-signup', label: 'Become a Partner' },
     ],
   },
   resources: {
     heading: 'Resources',
     links: [
       { href: '/ingredients', label: 'Ingredient Guide' },
+      { href: '/pricing', label: 'Pricing' },
       { href: '/faq', label: 'FAQ' },
       { href: '/how-it-works', label: 'How It Works' },
     ],
@@ -100,6 +102,7 @@ export const FOOTER_SECTIONS = {
     heading: 'Company',
     links: [
       { href: '/about', label: 'About' },
+      { href: '/pricing', label: 'Pricing' },
       { href: '/trust', label: 'Trust Center' },
       { href: '/contact', label: 'Contact' },
     ],

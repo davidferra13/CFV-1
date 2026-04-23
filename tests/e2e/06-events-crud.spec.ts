@@ -4,6 +4,13 @@
 import { test, expect } from '../helpers/fixtures'
 import { ROUTES } from '../helpers/test-utils'
 
+function daysFromNow(days: number): string {
+  const date = new Date()
+  date.setHours(0, 0, 0, 0)
+  date.setDate(date.getDate() + days)
+  return date.toISOString().slice(0, 10)
+}
+
 test.describe('Events — List and CRUD', () => {
   test('events list loads', async ({ page }) => {
     await page.goto(ROUTES.events)
@@ -69,6 +76,35 @@ test.describe('Events — List and CRUD', () => {
     // EventForm labels: 'Client', 'Occasion', 'Event Date & Time'
     const field = page.getByLabel(/occasion|event date|client/i).first()
     await expect(field).toBeVisible({ timeout: 10_000 })
+  })
+
+  test('draft event can be created without a serve time', async ({ page, seedIds }) => {
+    const suffix = Date.now().toString()
+    const eventDate = `${daysFromNow(14)}T17:00`
+
+    await page.goto(ROUTES.eventsNew)
+    await expect(page).not.toHaveURL(/auth\/signin/)
+    await page.getByRole('heading', { name: 'Create Event' }).waitFor({ timeout: 30_000 })
+
+    // The client select can reset shortly after first paint in dev, so wait for settled options
+    // before interacting or the form can drop the selected client.
+    await page.waitForTimeout(5_000)
+    await page.getByLabel('Client').selectOption(seedIds.clientId)
+    await page.getByLabel('Occasion').fill(`TEST Blank Serve Time ${suffix}`)
+    await page.getByLabel('Event Date & Time').fill(eventDate)
+    await page.getByLabel('Number of Guests').fill('6')
+
+    await page.getByRole('button', { name: /Continue/ }).click()
+    await expect(page.getByLabel('Special Requests')).toBeVisible({ timeout: 30_000 })
+    await page.getByLabel('Special Requests').fill(
+      'Regression: creating a draft event should succeed even when serve time is left blank.'
+    )
+
+    await page.getByRole('button', { name: 'Create Event' }).click()
+    await expect(page).toHaveURL(/\/events\/[a-f0-9-]+(\?.*)?$/, { timeout: 60_000 })
+    await expect(page.getByText(`TEST Blank Serve Time ${suffix}`).first()).toBeVisible({
+      timeout: 10_000,
+    })
   })
 
   test('edit event page loads for draft event', async ({ page, seedIds }) => {

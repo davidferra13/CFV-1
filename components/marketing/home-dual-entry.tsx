@@ -17,6 +17,7 @@ import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 import { DISCOVERY_SERVICE_TYPE_OPTIONS } from '@/lib/discovery/constants'
 import { LAUNCH_MODE, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
 import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
+import { NEUTRAL_HOME_SEARCH_LOCATION_PLACEHOLDER } from '@/lib/site/national-brand-copy'
 
 const QUICK_SEARCH_LINKS = [
   {
@@ -197,7 +198,7 @@ export function HomeDualEntry() {
                       <input
                         type="text"
                         name="location"
-                        placeholder="Brooklyn, Miami, Austin, Napa"
+                        placeholder={NEUTRAL_HOME_SEARCH_LOCATION_PLACEHOLDER}
                         className="w-full rounded-2xl border border-stone-600 bg-stone-950 px-10 py-3 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
                       />
                     </div>

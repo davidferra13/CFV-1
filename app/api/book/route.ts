@@ -6,9 +6,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createAdminClient } from '@/lib/db/admin'
 import { validateEmailLocal, suggestEmailCorrection } from '@/lib/email/email-validator'
-import { checkRateLimit } from '@/lib/rateLimit'
+import { PUBLIC_INTAKE_JSON_BODY_MAX_BYTES } from '@/lib/api/request-body'
+import { guardPublicIntent } from '@/lib/security/public-intent-guard'
 import { matchChefsForBooking } from '@/lib/booking/match-chefs'
 import { resolveOwnerChefId } from '@/lib/platform/owner-account'
+import { resolvePublicMarketScope } from '@/lib/public/public-market-scope'
+import {
+  PublicSeasonalMarketPulseIntentSchema,
+  buildPublicSeasonalMarketPulseSourceMessageLine,
+} from '@/lib/public/public-seasonal-market-pulse'
+import { PUBLIC_INTAKE_LANE_KEYS, withSubmissionSource } from '@/lib/public/intake-lane-config'
 
 function stripHtml(value: string) {
   return value.replace(/<[^>]*>/g, '').trim()
@@ -51,26 +58,47 @@ const BookingSchema = z.object({
   budget_range: z.string().max(200).optional().or(z.literal('')),
   dietary_restrictions: z.string().max(2000).optional().or(z.literal('')),
   additional_notes: z.string().max(5000).optional().or(z.literal('')),
+  seasonal_intent: PublicSeasonalMarketPulseIntentSchema.nullable().optional(),
   // Anti-spam
   website_url: z.string().max(0, 'Bot detected').optional().or(z.literal('')),
 })
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-  const host = request.headers.get('host') || undefined
-
-  // Rate limit: 5 open bookings per 10 minutes per IP
   try {
-    await checkRateLimit(`open-booking:${ip}`, 5, 10 * 60_000)
-  } catch {
-    return NextResponse.json(
-      { error: 'Too many submissions. Please try again in a few minutes.' },
-      { status: 429 }
-    )
-  }
+    const guard = await guardPublicIntent<Record<string, unknown>>({
+      action: 'open-booking',
+      request,
+      body: {
+        maxBytes: PUBLIC_INTAKE_JSON_BODY_MAX_BYTES,
+        invalidJsonMessage: 'Invalid booking request body',
+        payloadTooLargeMessage: 'Booking request body is too large',
+      },
+      rateLimit: {
+        ip: {
+          keyPrefix: 'open-booking:ip',
+          max: 5,
+          windowMs: 10 * 60_000,
+          message: 'Too many submissions. Please try again in a few minutes.',
+        },
+        email: {
+          keyPrefix: 'open-booking:email',
+          max: 4,
+          windowMs: 60 * 60_000,
+          message: 'Too many submissions from this email. Please try again later.',
+          getValue: (body) => body?.email,
+        },
+      },
+      honeypot: { field: 'website_url' },
+    })
+    if (!guard.ok) {
+      if (guard.error.code === 'honeypot') {
+        return NextResponse.json({ success: true, message: 'Booking request submitted.' })
+      }
+      return NextResponse.json({ error: guard.error.message }, { status: guard.error.status })
+    }
 
-  try {
-    const body = await request.json()
+    const body = guard.body
+    const ip = guard.metadata.ip
     const parseResult = BookingSchema.safeParse(body)
     if (!parseResult.success) {
       const firstError = parseResult.error.issues[0]
@@ -81,11 +109,6 @@ export async function POST(request: NextRequest) {
     }
 
     const data = parseResult.data
-
-    // Honeypot
-    if (data.website_url && data.website_url.length > 0) {
-      return NextResponse.json({ success: true, message: 'Booking request submitted.' })
-    }
 
     // Email validation
     try {
@@ -120,6 +143,18 @@ export async function POST(request: NextRequest) {
 
     // Cap at 10 chefs to avoid spam
     const chefsToNotify = matchedChefs.slice(0, 10)
+    const seasonalIntent = data.seasonal_intent
+      ? {
+          ...data.seasonal_intent,
+          requestScope: (() => {
+            const resolvedScope = resolvePublicMarketScope({
+              explicitLabel: resolvedLocation.displayLabel || data.location,
+              source: 'request_location',
+            })
+            return resolvedScope.isFallback ? undefined : resolvedScope
+          })(),
+        }
+      : null
 
     // Founder first-dibs: always include the founder if they're within radius
     // but were excluded by the 10-chef cap. Founder slot doesn't count against cap.
@@ -171,10 +206,11 @@ export async function POST(request: NextRequest) {
     // Build the source message
     const sourceParts = [
       'Source: ChefFlow Open Booking',
-      `Location: ${stripHtml(data.location)}`,
+      `Location: ${resolvedLocation.displayLabel || stripHtml(data.location)}`,
       data.serve_time ? `Serve time: ${stripHtml(data.serve_time)}` : null,
       data.budget_range ? `Budget: ${stripHtml(data.budget_range)}` : null,
       data.service_type ? `Service type: ${stripHtml(data.service_type)}` : null,
+      seasonalIntent ? buildPublicSeasonalMarketPulseSourceMessageLine(seasonalIntent) : null,
       data.dietary_restrictions?.trim()
         ? `Dietary restrictions: ${stripHtml(data.dietary_restrictions)}`
         : null,
@@ -272,7 +308,7 @@ export async function POST(request: NextRequest) {
             confirmed_occasion: stripHtml(data.occasion),
             confirmed_dietary_restrictions: dietaryRestrictions,
             source_message: sourceMessage,
-            unknown_fields: {
+            unknown_fields: withSubmissionSource(PUBLIC_INTAKE_LANE_KEYS.open_booking, {
               open_booking: true,
               service_type: data.service_type?.trim() ? stripHtml(data.service_type) : null,
               budget_range: data.budget_range?.trim() ? stripHtml(data.budget_range) : null,
@@ -280,10 +316,11 @@ export async function POST(request: NextRequest) {
               additional_notes: data.additional_notes?.trim()
                 ? stripHtml(data.additional_notes)
                 : null,
+              seasonal_market_intent: seasonalIntent,
               matched_location: resolvedLocation.displayLabel,
               distance_miles: chef.distance_miles,
               referrer_ip: ip,
-            },
+            }),
             status: 'new',
             utm_source: 'chefflow_booking',
             utm_medium: 'open_booking',

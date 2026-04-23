@@ -5,7 +5,7 @@ import { trackPageView } from '@/lib/analytics/posthog'
 
 type PublicPageViewProps = {
   pageName: string
-  properties?: Record<string, string | number | boolean>
+  properties?: Record<string, string | number | boolean | null>
 }
 
 export function PublicPageView({ pageName, properties }: PublicPageViewProps) {

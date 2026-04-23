@@ -42,10 +42,9 @@ test.describe('Persistence — Seeded Data Exists', () => {
     const bodyText = await page.locator('body').innerText()
     // The E2E seed creates clients with recognizable names
     const hasSeededClients =
-      bodyText.includes('Alice') ||
-      bodyText.includes('alice') ||
+      bodyText.includes('Joy') ||
+      bodyText.includes('joy') ||
       bodyText.includes('TEST') ||
-      bodyText.includes('E2E') ||
       bodyText.trim().length > 50 // at minimum, the page has content
     expect(hasSeededClients).toBeTruthy()
   })

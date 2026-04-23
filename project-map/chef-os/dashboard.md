@@ -13,6 +13,7 @@
 - Real-time activity feed
 - Business snapshot (revenue, events, inquiries)
 - Price intelligence panels
+- Relationship Next now uses the shared client action vocabulary and includes the winning primary signal in its context chips
 - System health monitoring (admin only)
 - Onboarding banner (dismissible, non-blocking)
 

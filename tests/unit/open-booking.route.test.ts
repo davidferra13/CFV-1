@@ -103,6 +103,12 @@ function loadRouteModule() {
   const matchChefsPath = require.resolve('../../lib/booking/match-chefs.ts')
   const ownerAccountPath = require.resolve('../../lib/platform/owner-account.ts')
   const notificationsPath = require.resolve('../../lib/email/notifications.ts')
+  const allergySyncPath = require.resolve('../../lib/dietary/allergy-sync.ts')
+  const notificationsActionsPath = require.resolve('../../lib/notifications/actions.ts')
+  const automationsEnginePath = require.resolve('../../lib/automations/engine.ts')
+  const reactiveHooksPath = require.resolve('../../lib/ai/reactive/hooks.ts')
+  const autoResponsePath = require.resolve('../../lib/communication/auto-response.ts')
+  const inquiryCirclePath = require.resolve('../../lib/hub/inquiry-circle-actions.ts')
   const routePath = require.resolve('../../app/api/book/route.ts')
 
   const originalAdmin = require.cache[adminPath] ?? null
@@ -111,6 +117,12 @@ function loadRouteModule() {
   const originalMatchChefs = require.cache[matchChefsPath] ?? null
   const originalOwnerAccount = require.cache[ownerAccountPath] ?? null
   const originalNotifications = require.cache[notificationsPath] ?? null
+  const originalAllergySync = require.cache[allergySyncPath] ?? null
+  const originalNotificationsActions = require.cache[notificationsActionsPath] ?? null
+  const originalAutomationsEngine = require.cache[automationsEnginePath] ?? null
+  const originalReactiveHooks = require.cache[reactiveHooksPath] ?? null
+  const originalAutoResponse = require.cache[autoResponsePath] ?? null
+  const originalInquiryCircle = require.cache[inquiryCirclePath] ?? null
 
   const state: MockState = { inserts: {}, updates: [] }
   const notificationCalls = {
@@ -198,6 +210,67 @@ function loadRouteModule() {
     },
   } as any
 
+  require.cache[allergySyncPath] = {
+    id: allergySyncPath,
+    filename: allergySyncPath,
+    loaded: true,
+    exports: {
+      __esModule: true,
+      syncFlatToStructured: async () => {},
+    },
+  } as any
+
+  require.cache[notificationsActionsPath] = {
+    id: notificationsActionsPath,
+    filename: notificationsActionsPath,
+    loaded: true,
+    exports: {
+      __esModule: true,
+      getChefAuthUserId: async () => null,
+      createNotification: async () => {},
+    },
+  } as any
+
+  require.cache[automationsEnginePath] = {
+    id: automationsEnginePath,
+    filename: automationsEnginePath,
+    loaded: true,
+    exports: {
+      __esModule: true,
+      evaluateAutomations: async () => {},
+    },
+  } as any
+
+  require.cache[reactiveHooksPath] = {
+    id: reactiveHooksPath,
+    filename: reactiveHooksPath,
+    loaded: true,
+    exports: {
+      __esModule: true,
+      onInquiryCreated: async () => {},
+    },
+  } as any
+
+  require.cache[autoResponsePath] = {
+    id: autoResponsePath,
+    filename: autoResponsePath,
+    loaded: true,
+    exports: {
+      __esModule: true,
+      triggerAutoResponse: async () => {},
+    },
+  } as any
+
+  require.cache[inquiryCirclePath] = {
+    id: inquiryCirclePath,
+    filename: inquiryCirclePath,
+    loaded: true,
+    exports: {
+      __esModule: true,
+      createInquiryCircle: async () => ({ groupToken: 'group-token' }),
+    },
+  } as any
+
   delete require.cache[routePath]
   const mod = require(routePath)
 
@@ -219,6 +292,25 @@ function loadRouteModule() {
 
     if (originalNotifications) require.cache[notificationsPath] = originalNotifications
     else delete require.cache[notificationsPath]
+
+    if (originalAllergySync) require.cache[allergySyncPath] = originalAllergySync
+    else delete require.cache[allergySyncPath]
+
+    if (originalNotificationsActions)
+      require.cache[notificationsActionsPath] = originalNotificationsActions
+    else delete require.cache[notificationsActionsPath]
+
+    if (originalAutomationsEngine) require.cache[automationsEnginePath] = originalAutomationsEngine
+    else delete require.cache[automationsEnginePath]
+
+    if (originalReactiveHooks) require.cache[reactiveHooksPath] = originalReactiveHooks
+    else delete require.cache[reactiveHooksPath]
+
+    if (originalAutoResponse) require.cache[autoResponsePath] = originalAutoResponse
+    else delete require.cache[autoResponsePath]
+
+    if (originalInquiryCircle) require.cache[inquiryCirclePath] = originalInquiryCircle
+    else delete require.cache[inquiryCirclePath]
 
     delete require.cache[routePath]
   }
@@ -250,6 +342,27 @@ test('open booking preserves dietary context through client, inquiry, and event 
           budget_range: '$1,500-$2,000',
           dietary_restrictions: 'gluten-free, peanut allergy',
           additional_notes: 'No shellfish cross-contact',
+          seasonal_intent: {
+            source: 'seasonal_market_pulse',
+            pulseId: 'public-seasonal-market-pulse-spring-20260421',
+            season: 'Spring',
+            leadIngredients: ['Asparagus', 'Sugar Snap Peas', 'Morels'],
+            endingSoon: 'Rhubarb',
+            comingNext: 'Strawberries',
+            sourceMode: 'market-backed',
+            scope: {
+              label: 'United States',
+              mode: 'national_fallback',
+              source: 'default',
+              isFallback: true,
+            },
+            provenance: {
+              generatedAt: '2026-04-21T12:00:00.000Z',
+              marketAsOf: '2026-04-21T10:00:00.000Z',
+              marketStatus: 'fresh',
+              fallbackReason: 'none',
+            },
+          },
         }),
       })
     )
@@ -270,8 +383,22 @@ test('open booking preserves dietary context through client, inquiry, and event 
       'gluten-free',
       'peanut allergy',
     ])
+    assert.equal(inquiryInsert.unknown_fields.submission_source, 'open_booking')
+    assert.equal(inquiryInsert.unknown_fields.seasonal_market_intent.scope.label, 'United States')
+    assert.deepEqual(inquiryInsert.unknown_fields.seasonal_market_intent.leadIngredients, [
+      'Asparagus',
+      'Sugar Snap Peas',
+      'Morels',
+    ])
+    assert.equal(
+      inquiryInsert.unknown_fields.seasonal_market_intent.requestScope.label,
+      'Boston, MA'
+    )
     assert.deepEqual(eventInsert.dietary_restrictions, ['gluten-free', 'peanut allergy'])
     assert.deepEqual(eventInsert.allergies, ['gluten-free', 'peanut allergy'])
+    assert.match(eventInsert.special_requests, /Location: Boston, MA/)
+    assert.match(eventInsert.special_requests, /Market note: Spring/)
+    assert.match(eventInsert.special_requests, /Resolved request scope: Boston, MA/)
     assert.equal(
       notificationCalls.chef,
       0,

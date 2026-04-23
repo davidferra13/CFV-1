@@ -15,6 +15,25 @@ function areBackgroundJobsDisabled() {
   return process.env.DISABLE_BACKGROUND_JOBS_FOR_E2E === 'true'
 }
 
+function shouldStartBackgroundJobs() {
+  if (areBackgroundJobsDisabled()) {
+    return {
+      enabled: false,
+      reason: '[instrumentation] Background job startup disabled for E2E.',
+    }
+  }
+
+  if (process.env.NODE_ENV !== 'production' && process.env.ENABLE_BACKGROUND_JOBS_IN_DEV !== 'true') {
+    return {
+      enabled: false,
+      reason:
+        '[instrumentation] Background jobs disabled in local dev. Set ENABLE_BACKGROUND_JOBS_IN_DEV=true to opt in.',
+    }
+  }
+
+  return { enabled: true, reason: null }
+}
+
 export async function register() {
   // Fail loudly if critical production keys are missing.
   assertProductionSafetyEnv()
@@ -41,8 +60,10 @@ export async function register() {
       })
     }
 
-    if (areBackgroundJobsDisabled()) {
-      console.log('[instrumentation] Background job startup disabled for E2E.')
+    const backgroundJobs = shouldStartBackgroundJobs()
+
+    if (!backgroundJobs.enabled) {
+      console.log(backgroundJobs.reason)
     } else {
       const { scheduleSimulation } = await import('./lib/simulation/auto-schedule')
       scheduleSimulation()

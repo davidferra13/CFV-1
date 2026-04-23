@@ -1,0 +1,32 @@
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3213
+  - Network:      http://0.0.0.0:3213
+  - Environments: .env.local, .env
+  - Experiments (use with caution):
+    · instrumentationHook
+
+ ✓ Starting...
+   
+Your tsconfig.json extends another configuration, which means we cannot add the Next.js TypeScript plugin automatically. To improve your development experience, we recommend adding the Next.js plugin (`"plugins": [{ "name": "next" }]`) manually to your TypeScript configuration. Learn more: https://nextjs.org/docs/app/building-your-application/configuring/typescript#the-typescript-plugin
+
+   Using tsconfig file: tsconfig.next.json
+ ○ Compiling /instrumentation ...
+ ✓ Compiled /instrumentation in 3.5s (1135 modules)
+[instrumentation] Background jobs disabled in local dev. Set ENABLE_BACKGROUND_JOBS_IN_DEV=true to opt in.
+ ✓ Ready in 8.1s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 6.9s (1392 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 30.9s (9368 modules)
+ ✓ Compiled in 3s (3811 modules)
+ GET / 200 in 34297ms
+ ✓ Compiled in 543ms (3797 modules)
+ ○ Compiling /api/e2e/auth ...
+ ✓ Compiled /api/e2e/auth in 5.8s (5651 modules)
+ POST /api/e2e/auth 200 in 9828ms
+ ○ Compiling /partners/[id] ...
+ ✓ Compiled /partners/[id] in 50.7s (18393 modules)
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 7s (18380 modules)
+ GET /partners/47d77f08-b7af-40fa-bb21-8c6d3461ca26 404 in 59359ms
+[?25h

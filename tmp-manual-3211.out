@@ -1,0 +1,50 @@
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3211
+  - Network:      http://0.0.0.0:3211
+  - Environments: .env.local, .env
+  - Experiments (use with caution):
+    · instrumentationHook
+
+ ✓ Starting...
+   
+Your tsconfig.json extends another configuration, which means we cannot add the Next.js TypeScript plugin automatically. To improve your development experience, we recommend adding the Next.js plugin (`"plugins": [{ "name": "next" }]`) manually to your TypeScript configuration. Learn more: https://nextjs.org/docs/app/building-your-application/configuring/typescript#the-typescript-plugin
+
+
+   We detected TypeScript in your project and reconfigured your tsconfig.json file for you. Strict-mode is set to false by default.
+   The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:
+
+   	- include was updated to add '.next-dev-manual-3211/types/**/*.ts'
+
+   Using tsconfig file: tsconfig.next.json
+ ○ Compiling /instrumentation ...
+ ✓ Compiled /instrumentation in 5.8s (1135 modules)
+[instrumentation] Background job startup disabled for E2E.
+ ✓ Ready in 11.2s
+ ○ Compiling /api/health ...
+ ✓ Compiled /api/health in 5.5s (1805 modules)
+ GET /api/health 200 in 7063ms
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 6.3s (3197 modules)
+ ○ Compiling /quotes/new ...
+ ✓ Compiled /quotes/new in 56.9s (15363 modules)
+ ✓ Compiled in 4.4s (4270 modules)
+ GET /quotes/new?source=change_order&event_id=89fac158-0040-4c56-85a4-d71a608ad29b&quote_name=Schema+Prefill+Contract+Test&pricing_model=flat_rate&guest_count=12&total_cents=420000&deposit_required=true&deposit_percentage=25&deposit_amount_cents=105000&valid_until=2026-05-01&pricing_notes=Schema-prefilled+pricing+note. 200 in 62156ms
+ ✓ Compiled in 824ms (4256 modules)
+ ○ Compiling /api/ai/health ...
+ GET /api/health 200 in 5295ms
+ GET /api/health 200 in 5326ms
+ ✓ Compiled /inquiries/[id] in 45.4s (15350 modules)
+ ✓ Compiled in 20.1s (18622 modules)
+ ✓ Compiled in 2ms (14294 modules)
+ GET /api/ai/health 401 in 77992ms
+ GET /api/ai/health 401 in 77978ms
+ GET /api/ai/health 401 in 78020ms
+ POST /api/realtime/presence 200 in 72889ms
+ POST /api/realtime/presence 200 in 78229ms
+ GET /api/ai/health 401 in 300ms
+ POST /api/realtime/presence 200 in 462ms
+ POST /api/realtime/presence 200 in 456ms
+ ○ Compiling /api/realtime/[channel] ...
+ ✓ Compiled /api/realtime/[channel] in 5.4s (14296 modules)
+ GET /inquiries/df39e97d-cd3b-4358-b31c-318eb9f06bc4 200 in 79418ms
+ ✓ Compiled (14298 modules)

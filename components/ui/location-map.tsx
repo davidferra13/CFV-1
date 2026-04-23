@@ -3,8 +3,12 @@
 // falls back to an OpenStreetMap embed (free, no key) otherwise.
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useJsApiLoader, GoogleMap, MarkerF } from '@react-google-maps/api'
+import {
+  useGoogleMapsAuthFailure,
+  useGoogleMapsRuntimeFailure,
+} from '@/hooks/use-google-maps-auth-failure'
 
 type LocationMapProps = {
   lat: number
@@ -50,12 +54,29 @@ function GoogleMapEmbed({ lat, lng, zoom, className = '' }: LocationMapProps) {
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
   })
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const authFailed = useGoogleMapsAuthFailure(true)
+  const runtimeFailed = useGoogleMapsRuntimeFailure(containerRef, isLoaded && !loadError)
 
   const center = useMemo(() => ({ lat, lng }), [lat, lng])
 
-  // Fall back to OpenStreetMap if Google Maps SDK fails to load
-  if (loadError) {
+  useEffect(() => {
+    if (!loadError) return
     console.warn('[location-map] Google Maps SDK failed to load, falling back to OSM:', loadError)
+  }, [loadError])
+
+  useEffect(() => {
+    if (!authFailed) return
+    console.warn('[location-map] Google Maps authentication failed, falling back to OSM.')
+  }, [authFailed])
+
+  useEffect(() => {
+    if (!runtimeFailed) return
+    console.warn('[location-map] Google Maps rendered an error overlay, falling back to OSM.')
+  }, [runtimeFailed])
+
+  // Fall back to OpenStreetMap if Google Maps fails at either script load or auth time.
+  if (loadError || authFailed || runtimeFailed) {
     return <OsmMap lat={lat} lng={lng} className={className} />
   }
 
@@ -70,7 +91,7 @@ function GoogleMapEmbed({ lat, lng, zoom, className = '' }: LocationMapProps) {
   }
 
   return (
-    <div className={`rounded-lg overflow-hidden min-h-[200px] ${className}`}>
+    <div ref={containerRef} className={`rounded-lg overflow-hidden min-h-[200px] ${className}`}>
       <GoogleMap
         mapContainerClassName="w-full min-h-[200px]"
         center={center}

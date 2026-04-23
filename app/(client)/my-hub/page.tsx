@@ -11,7 +11,7 @@ import { HubGroupCard } from '@/components/hub/hub-group-card'
 import { Button } from '@/components/ui/button'
 import { Alert } from '@/components/ui/alert'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
-import { Bell, CalendarPlus, Users, Utensils, Share2 } from '@/components/ui/icons'
+import { Bell, CalendarPlus, CreditCard, Users, Utensils, Share2, Heart } from '@/components/ui/icons'
 
 export const metadata: Metadata = { title: 'My Circles' }
 
@@ -71,6 +71,18 @@ export default async function MyHubPage() {
                   {pendingRequests.length}
                 </span>
               )}
+            </Button>
+          </Link>
+          <Link href="/my-hub/favorite-operators">
+            <Button variant="secondary">
+              <Heart className="mr-2 h-4 w-4" />
+              Saved Operators
+            </Button>
+          </Link>
+          <Link href="/my-hub/purchases">
+            <Button variant="secondary">
+              <CreditCard className="mr-2 h-4 w-4" />
+              Purchases
             </Button>
           </Link>
           <Link href="/hub/circles">

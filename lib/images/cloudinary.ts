@@ -122,6 +122,18 @@ interface FetchOptimizeOptions {
   gravity?: 'face' | 'center' | 'auto'
 }
 
+interface CloudinaryFetchLoaderOptions extends Omit<FetchOptimizeOptions, 'width' | 'height' | 'quality'> {
+  aspectRatio?: number
+  defaultQuality?: number | 'auto'
+  maxWidth?: number
+}
+
+interface CloudinaryFetchLoaderArgs {
+  src: string
+  width: number
+  quality?: number
+}
+
 /**
  * Optimize any external image URL via Cloudinary's fetch delivery type.
  * No upload required - Cloudinary fetches the image from the original URL,
@@ -195,6 +207,29 @@ export function getOptimizedGalleryImage(
     width,
     ...(height ? { height, fit: 'fill' as ImageFit } : {}),
   })
+}
+
+/**
+ * Create a responsive Next.js image loader backed by Cloudinary fetch URLs.
+ * This avoids double-optimizing a single fixed-size image and lets the browser
+ * request sharper variants for high-density displays.
+ */
+export function createCloudinaryFetchLoader(options: CloudinaryFetchLoaderOptions = {}) {
+  return ({ src, width, quality }: CloudinaryFetchLoaderArgs): string => {
+    const { aspectRatio, defaultQuality = 'auto', maxWidth, ...transformOptions } = options
+    const requestedWidth = typeof maxWidth === 'number' ? Math.min(width, maxWidth) : width
+    const requestedHeight =
+      typeof aspectRatio === 'number' && aspectRatio > 0
+        ? Math.round(requestedWidth / aspectRatio)
+        : undefined
+
+    return getOptimizedImageUrl(src, {
+      ...transformOptions,
+      width: requestedWidth,
+      ...(requestedHeight ? { height: requestedHeight } : {}),
+      quality: quality ?? defaultQuality,
+    })
+  }
 }
 
 /**

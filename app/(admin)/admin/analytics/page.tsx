@@ -43,6 +43,8 @@ export default async function AdminAnalyticsPage() {
   const syncData = syncHealth.status === 'fulfilled' ? syncHealth.value.data : null
   const quarantineData = quarantine.status === 'fulfilled' ? quarantine.value.data : null
   const pricingData = pricing.status === 'fulfilled' ? pricing.value.data : null
+  const pricingGovernor = pricingData?.governor
+  const governorReady = Boolean(pricingGovernor?.ready)
 
   const maxRevenue = revenueData ? Math.max(...revenueData.map((d) => d.gmvCents), 1) : 1
   const maxGrowth = growthData
@@ -257,15 +259,26 @@ export default async function AdminAnalyticsPage() {
             )}
             {pricingData && (
               <div className="space-y-1">
-                <p className="text-xs text-stone-500">Price Coverage</p>
+                <p className="text-xs text-stone-500">
+                  {governorReady ? 'Surfaceable Coverage' : 'Price Coverage'}
+                </p>
                 <p className="text-sm font-medium text-emerald-400">
-                  {Math.round(
-                    (pricingData.ingredientsWithPrice / Math.max(pricingData.totalIngredients, 1)) *
-                      100
-                  )}
+                  {governorReady
+                    ? Math.round(
+                        (pricingGovernor!.summary.surfaceableCanonicalIngredients /
+                          Math.max(pricingGovernor!.summary.expectedCanonicalIngredients, 1)) *
+                          100
+                      )
+                    : Math.round(
+                        (pricingData.ingredientsWithPrice /
+                          Math.max(pricingData.totalIngredients, 1)) *
+                          100
+                      )}
                   %
                   <span className="text-stone-500 font-normal ml-1">
-                    ({pricingData.ingredientsWithPrice}/{pricingData.totalIngredients})
+                    {governorReady
+                      ? `(${pricingGovernor!.summary.surfaceableCanonicalIngredients}/${pricingGovernor!.summary.expectedCanonicalIngredients})`
+                      : `(${pricingData.ingredientsWithPrice}/${pricingData.totalIngredients})`}
                   </span>
                 </p>
               </div>

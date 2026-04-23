@@ -24,6 +24,8 @@ import {
   EventFoodCostInsight,
   type MenuCostData,
 } from '@/components/costing/event-food-cost-insight'
+import { EventDetailGuestCountRequests } from './event-detail-guest-count-requests'
+import type { GuestCountChange } from '@/lib/guests/count-changes'
 
 type EventDetailMoneyTabProps = {
   activeTab: EventDetailTab
@@ -56,6 +58,7 @@ type EventDetailMoneyTabProps = {
     received_at: string | null
     created_at: string
   }>
+  guestCountChanges: GuestCountChange[]
 }
 
 export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
@@ -81,6 +84,7 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
     menuCostSummary,
     chefArchetype,
     ledgerEntries,
+    guestCountChanges,
   } = props
 
   return (
@@ -222,6 +226,8 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
           </div>
         </div>
       </Card>
+
+      <EventDetailGuestCountRequests changes={guestCountChanges} />
 
       {takeAChefFinance?.isTakeAChef && <TakeAChefPayoutPanel finance={takeAChefFinance} />}
 

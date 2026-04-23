@@ -3,14 +3,20 @@
 // causing a redirect to the sign-in page.
 
 import { requirePartner } from '@/lib/auth/get-user'
+import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { createServerClient } from '@/lib/db/server'
 import { PartnerSidebar, PartnerMobileNav } from '@/components/navigation/partner-nav'
 import { ToastProvider } from '@/components/notifications/toast-provider'
 import { PresenceBeacon } from '@/components/admin/presence-beacon'
 import { TestAccountBanner } from '@/components/dev/test-account-banner'
+import { PATHNAME_HEADER } from '@/lib/auth/request-auth-context'
+import { resolvePartnerSurfaceMode } from '@/lib/interface/surface-governance'
 
 export default async function PartnerLayout({ children }: { children: React.ReactNode }) {
+  const pathname = headers().get(PATHNAME_HEADER) ?? '/partner/dashboard'
+  const surfaceMode = resolvePartnerSurfaceMode(pathname)
+
   let user
   try {
     user = await requirePartner()
@@ -29,7 +35,11 @@ export default async function PartnerLayout({ children }: { children: React.Reac
   const partnerName = partner?.name ?? 'Partner'
 
   return (
-    <div className="min-h-screen bg-stone-800 flex" data-cf-portal="partner">
+    <div
+      className="min-h-screen bg-stone-800 flex"
+      data-cf-portal="partner"
+      data-cf-surface={surfaceMode}
+    >
       <ToastProvider />
       <TestAccountBanner email={user.email} />
       <PartnerSidebar partnerName={partnerName} />

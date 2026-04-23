@@ -4,6 +4,7 @@
 
 import { test, expect } from '@playwright/test'
 import { readFileSync } from 'fs'
+import { ROUTES } from '../helpers/test-utils'
 
 async function gotoPublic(page: Parameters<Parameters<typeof test>[1]>[0]['page'], route: string) {
   for (let attempt = 1; attempt <= 2; attempt += 1) {
@@ -186,6 +187,50 @@ test.describe('Public Inquiry Form', () => {
     // Form should not crash after filling
     const bodyText = await readPageText(page)
     expect(bodyText).not.toMatch(/unhandled|error|crash/i)
+  })
+})
+
+test.describe('Operator Walkthrough Form', () => {
+  test('submits workflow context and reaches the success state', async ({ page }) => {
+    await page.route('**/api/realtime/**', (route) => route.abort())
+
+    const stamp = Date.now()
+    const requestRoute = `${ROUTES.forOperatorsWalkthrough}?source_page=launch_public_operator_test&source_cta=launch_suite`
+
+    await gotoPublic(page, requestRoute)
+    await expect(
+      page.getByRole('heading', { name: /request a founder-led evaluation of your operator workflow/i })
+    ).toBeVisible({ timeout: 20_000 })
+
+    const form = page.locator('section#walkthrough-request form').first()
+    await expect(form.locator('input[name="name"]')).toBeVisible()
+    await form.locator('input[name="name"]').fill('Launch Walkthrough QA')
+    await form.locator('input[name="email"]').fill(`launch-walkthrough-${stamp}@example.com`)
+    await form.locator('input[name="businessName"]').fill(`Launch Walkthrough ${stamp}`)
+    await form.locator('#operator-type').selectOption('catering')
+    await form
+      .locator('textarea[name="workflowStack"]')
+      .fill('Google Sheets, QuickBooks, HoneyBook, inbox threads, prep notes')
+    await form
+      .locator('textarea[name="helpRequest"]')
+      .fill('Pressure-test inquiry handoffs, staffing coordination, and payment follow-through.')
+
+    const submitResponsePromise = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'POST' &&
+        response.url().includes('/for-operators/walkthrough'),
+      { timeout: 90_000 }
+    )
+
+    await form.locator('button[type="submit"]').click()
+
+    const submitResponse = await submitResponsePromise
+    expect(submitResponse.ok()).toBeTruthy()
+
+    await expect(page.getByText('Request received', { exact: true })).toBeVisible({ timeout: 90_000 })
+    await expect(page.getByRole('heading', { name: 'The workflow context is in.' })).toBeVisible()
+    await expect(page.getByRole('button', { name: /submit another request/i })).toBeVisible()
+    await expect(page.locator('p.text-red-300')).toHaveCount(0)
   })
 })
 

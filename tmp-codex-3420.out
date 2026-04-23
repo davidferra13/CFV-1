@@ -1,0 +1,229 @@
+  ▲ Next.js 14.2.35
+  - Local:        http://127.0.0.1:3420
+  - Network:      http://127.0.0.1:3420
+  - Environments: .env.local, .env
+  - Experiments (use with caution):
+    · instrumentationHook
+
+ ✓ Starting...
+   
+Your tsconfig.json extends another configuration, which means we cannot add the Next.js TypeScript plugin automatically. To improve your development experience, we recommend adding the Next.js plugin (`"plugins": [{ "name": "next" }]`) manually to your TypeScript configuration. Learn more: https://nextjs.org/docs/app/building-your-application/configuring/typescript#the-typescript-plugin
+
+   Using tsconfig file: tsconfig.next.json
+ ○ Compiling /instrumentation ...
+ ✓ Compiled /instrumentation in 3.6s (1135 modules)
+[instrumentation] Background jobs disabled in local dev. Set ENABLE_BACKGROUND_JOBS_IN_DEV=true to opt in.
+ ✓ Ready in 10.2s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 1104ms (1392 modules)
+ ○ Compiling /for-operators/walkthrough ...
+ ✓ Compiled /for-operators/walkthrough in 28.7s (12665 modules)
+ ✓ Compiled in 2.8s (3806 modules)
+ GET /for-operators/walkthrough 200 in 4329ms
+ ✓ Compiled in 403ms (3792 modules)
+ GET /for-operators/walkthrough?source_page=codex_check&source_cta=manual_verify 200 in 330ms
+ GET /for-operators/walkthrough?source_page=codex_check&source_cta=manual_verify 200 in 252ms
+[sendEmail] Sent: "We received your message" → 1 recipient(s)
+[sendEmail] Sent: "[IMPORTANT] Contact Form Submitted" → 2 recipient(s)
+ ○ Compiling /_not-found ...
+ POST /for-operators/walkthrough?source_page=codex_check&source_cta=manual_verify 200 in 21005ms
+ ✓ Compiled /_not-found in 5.9s (12667 modules)
+ ○ Compiling /api/e2e/auth ...
+ ✓ Compiled /api/e2e/auth in 7.7s (8954 modules)
+ POST /api/e2e/auth 200 in 11169ms
+ ○ Compiling /leads ...
+ ✓ Compiled /leads in 40.4s (18580 modules)
+ GET /leads 200 in 43443ms
+ ✓ Compiled in 3.3s (4347 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 6.4s (13277 modules)
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 1892ms (8921 modules)
+ GET / 404 in 9030ms
+ GET /index.html 404 in 17ms
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 7.1s (13827 modules)
+ GET / 500 in 8970ms
+ GET / 500 in 690ms
+ GET / 500 in 187ms
+ GET / 500 in 186ms
+ GET / 404 in 187ms
+ GET /index.html 404 in 32ms
+ GET / 404 in 162ms
+ GET /index.html 404 in 25ms
+ GET / 404 in 152ms
+ GET /index.html 404 in 28ms
+ GET / 404 in 163ms
+ GET /index.html 404 in 25ms
+ GET / 404 in 168ms
+ GET /index.html 404 in 27ms
+ GET / 404 in 160ms
+ GET /index.html 404 in 27ms
+ GET / 404 in 182ms
+ GET /index.html 404 in 33ms
+ GET / 404 in 157ms
+ GET /index.html 404 in 29ms
+ GET / 404 in 159ms
+ GET /index.html 404 in 29ms
+ GET / 404 in 149ms
+ GET /index.html 404 in 26ms
+ GET / 404 in 166ms
+ GET /index.html 404 in 22ms
+ GET / 404 in 153ms
+ GET /index.html 404 in 24ms
+ GET / 404 in 143ms
+ GET /index.html 404 in 25ms
+ GET / 404 in 167ms
+ GET /index.html 404 in 27ms
+ GET / 404 in 145ms
+ GET /index.html 404 in 23ms
+ GET / 404 in 153ms
+ GET /index.html 404 in 24ms
+ GET / 404 in 144ms
+ GET /index.html 404 in 23ms
+ GET / 404 in 126ms
+ GET /index.html 404 in 25ms
+ GET / 404 in 162ms
+ GET /index.html 404 in 21ms
+ GET / 404 in 137ms
+ GET /index.html 404 in 27ms
+ GET / 404 in 159ms
+ GET /index.html 404 in 31ms
+ GET / 404 in 171ms
+ GET /index.html 404 in 28ms
+ GET / 404 in 153ms
+ GET /index.html 404 in 23ms
+ GET / 404 in 202ms
+ GET /index.html 404 in 27ms
+ GET / 404 in 149ms
+ GET /index.html 404 in 23ms
+ GET / 404 in 168ms
+ GET /index.html 404 in 26ms
+ GET / 404 in 146ms
+ GET /index.html 404 in 29ms
+ GET / 404 in 168ms
+ GET /index.html 404 in 25ms
+ GET / 404 in 165ms
+ GET /index.html 404 in 29ms
+ GET / 404 in 211ms
+ GET /index.html 404 in 30ms
+ GET / 404 in 161ms
+ GET /index.html 404 in 27ms
+ GET / 404 in 162ms
+ GET /index.html 404 in 25ms
+ GET / 404 in 155ms
+ GET /index.html 404 in 34ms
+ GET / 404 in 167ms
+ GET /index.html 404 in 31ms
+ GET / 404 in 212ms
+ GET /index.html 404 in 31ms
+ GET / 404 in 177ms
+ GET /index.html 404 in 33ms
+ GET / 404 in 175ms
+ GET /index.html 404 in 31ms
+ GET / 404 in 194ms
+ GET /index.html 404 in 34ms
+ GET / 404 in 194ms
+ GET /index.html 404 in 28ms
+ GET / 404 in 213ms
+ GET /index.html 404 in 33ms
+ GET / 404 in 176ms
+ GET /index.html 404 in 28ms
+ GET / 404 in 184ms
+ GET /index.html 404 in 30ms
+ GET / 404 in 172ms
+ GET /index.html 404 in 33ms
+ GET / 404 in 168ms
+ GET /index.html 404 in 32ms
+ GET / 404 in 898ms
+ GET /index.html 404 in 36ms
+ GET / 404 in 391ms
+ GET /index.html 404 in 34ms
+ GET / 404 in 187ms
+ GET /index.html 404 in 27ms
+ GET / 404 in 205ms
+ GET /index.html 404 in 39ms
+ GET / 404 in 173ms
+ GET /index.html 404 in 35ms
+ GET / 404 in 168ms
+ GET /index.html 404 in 28ms
+ GET / 404 in 164ms
+ GET /index.html 404 in 28ms
+ GET / 404 in 149ms
+ GET /index.html 404 in 27ms
+ GET / 404 in 169ms
+ GET /index.html 404 in 26ms
+ GET / 404 in 169ms
+ GET /index.html 404 in 26ms
+ GET / 404 in 168ms
+ GET /index.html 404 in 26ms
+ GET / 404 in 136ms
+ GET /index.html 404 in 25ms
+ GET / 404 in 179ms
+ GET /index.html 404 in 32ms
+ GET / 404 in 176ms
+ GET /index.html 404 in 30ms
+ GET / 404 in 145ms
+ GET /index.html 404 in 25ms
+ GET / 404 in 171ms
+ GET /index.html 404 in 29ms
+ GET / 404 in 170ms
+ GET /index.html 404 in 31ms
+ GET / 404 in 181ms
+ GET /index.html 404 in 26ms
+ GET / 500 in 164ms
+ GET / 404 in 208ms
+ GET /index.html 404 in 31ms
+ GET / 404 in 144ms
+ GET /index.html 404 in 30ms
+ GET / 404 in 155ms
+ GET /index.html 404 in 24ms
+ GET / 404 in 175ms
+ GET /index.html 404 in 31ms
+ GET / 404 in 154ms
+ GET /index.html 404 in 26ms
+ GET / 404 in 144ms
+ GET /index.html 404 in 26ms
+ GET / 404 in 134ms
+ GET /index.html 404 in 26ms
+ GET / 404 in 153ms
+ GET /index.html 404 in 22ms
+ GET / 404 in 139ms
+ GET /index.html 404 in 24ms
+ GET / 404 in 155ms
+ GET /index.html 404 in 24ms
+ GET / 404 in 131ms
+ GET /index.html 404 in 21ms
+ GET / 404 in 141ms
+ GET /index.html 404 in 26ms
+ GET / 404 in 138ms
+ GET /index.html 404 in 29ms
+ GET / 404 in 132ms
+ GET /index.html 404 in 24ms
+ GET / 404 in 145ms
+ GET /index.html 404 in 23ms
+ GET / 404 in 161ms
+ GET /index.html 404 in 26ms
+ GET / 404 in 169ms
+ GET /index.html 404 in 30ms
+ GET / 404 in 143ms
+ GET /index.html 404 in 26ms
+ GET / 404 in 135ms
+ GET /index.html 404 in 28ms
+ GET / 404 in 147ms
+ GET /index.html 404 in 27ms
+ GET / 404 in 149ms
+ GET /index.html 404 in 25ms
+ GET / 404 in 140ms
+ GET /index.html 404 in 22ms
+ GET / 404 in 142ms
+ GET /index.html 404 in 21ms
+ GET / 404 in 122ms
+ GET /index.html 404 in 21ms
+ GET / 404 in 123ms
+ GET /index.html 404 in 23ms
+ GET /for-operators/walkthrough 404 in 372ms
+ GET / 404 in 242ms
+ ✓ Compiled in 4s (4879 modules)
+ ✓ Compiled in 5.6s (4879 modules)
+[?25h

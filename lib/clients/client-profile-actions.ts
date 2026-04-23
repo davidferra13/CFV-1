@@ -64,8 +64,13 @@ const UpdateServedDishFeedbackSchema = z.object({
   client_reaction: z.enum(['loved', 'liked', 'neutral', 'disliked']),
   notes: z.string().max(2000).optional(),
 })
+const UpdateMyMealFavoritesSchema = z.object({
+  favorite_dishes: z.array(z.string().max(100)).max(50).optional(),
+  favorite_cuisines: z.array(z.string().max(100)).max(25).optional(),
+})
 
 export type CreateMealRequestInput = z.infer<typeof CreateMealRequestSchema>
+export type UpdateMyMealFavoritesInput = z.infer<typeof UpdateMyMealFavoritesSchema>
 export type ServedDishHistoryEntry = {
   id: string
   dish_name: string
@@ -93,6 +98,34 @@ export type RecurringRecommendationEntry = {
   client_response_notes: string | null
   sent_at: string
   responded_at: string | null
+}
+export type ClientFavoritesSnapshot = {
+  favoriteDishes: string[]
+  favoriteCuisines: string[]
+}
+
+function normalizeClientPreferenceList(values: string[] | undefined, maxItems: number): string[] {
+  const seen = new Set<string>()
+  const normalized: string[] = []
+
+  for (const value of values ?? []) {
+    const trimmed = value.trim().replace(/\s+/g, ' ')
+    if (!trimmed) continue
+
+    const key = trimmed.toLowerCase()
+    if (seen.has(key)) continue
+
+    seen.add(key)
+    normalized.push(trimmed)
+
+    if (normalized.length >= maxItems) break
+  }
+
+  return normalized
+}
+
+function serializePreferenceList(values: string[] | null | undefined): string {
+  return JSON.stringify(normalizeClientPreferenceList(values ?? [], 500))
 }
 
 /**
@@ -149,12 +182,16 @@ export async function updateMyProfile(input: UpdateClientProfileInput) {
     kitchen_constraints: validated.kitchen_constraints || null,
     house_rules: validated.house_rules || null,
     family_notes: validated.family_notes || null,
+    favorite_cuisines: normalizeClientPreferenceList(validated.favorite_cuisines, 25),
+    favorite_dishes: normalizeClientPreferenceList(validated.favorite_dishes, 50),
   }
 
   // Fetch current profile to detect allergy/dietary changes (food safety)
   const { data: oldProfile } = await db
     .from('clients')
-    .select('allergies, dietary_restrictions, tenant_id, email, phone, full_name')
+    .select(
+      'allergies, dietary_restrictions, favorite_dishes, favorite_cuisines, tenant_id, email, phone, full_name'
+    )
     .eq('id', user.entityId)
     .single()
 
@@ -170,6 +207,8 @@ export async function updateMyProfile(input: UpdateClientProfileInput) {
 
   // Chef-side cache
   revalidatePath(`/clients/${user.entityId}`)
+  revalidatePath('/clients/preferences')
+  revalidatePath('/clients/preferences/favorite-dishes')
 
   // Non-blocking: notify chef if allergy or dietary fields changed (food safety)
   try {
@@ -199,9 +238,54 @@ export async function updateMyProfile(input: UpdateClientProfileInput) {
           })
         }
       }
+
+      const oldFavoriteDishes = serializePreferenceList(
+        oldProfile.favorite_dishes as string[] | null
+      )
+      const newFavoriteDishes = serializePreferenceList(cleanedData.favorite_dishes)
+      const oldFavoriteCuisines = serializePreferenceList(
+        oldProfile.favorite_cuisines as string[] | null
+      )
+      const newFavoriteCuisines = serializePreferenceList(cleanedData.favorite_cuisines)
+
+      if (oldFavoriteDishes !== newFavoriteDishes || oldFavoriteCuisines !== newFavoriteCuisines) {
+        const chefAuthId = await getChefAuthUserId(oldProfile.tenant_id)
+        if (chefAuthId) {
+          const favoritesSummary: string[] = []
+          if (oldFavoriteDishes !== newFavoriteDishes) {
+            favoritesSummary.push(
+              cleanedData.favorite_dishes.length > 0
+                ? `Favorite dishes: ${cleanedData.favorite_dishes.slice(0, 6).join(', ')}`
+                : 'Favorite dishes cleared'
+            )
+          }
+          if (oldFavoriteCuisines !== newFavoriteCuisines) {
+            favoritesSummary.push(
+              cleanedData.favorite_cuisines.length > 0
+                ? `Favorite cuisines: ${cleanedData.favorite_cuisines.slice(0, 6).join(', ')}`
+                : 'Favorite cuisines cleared'
+            )
+          }
+
+          await createNotification({
+            tenantId: oldProfile.tenant_id,
+            recipientId: chefAuthId,
+            category: 'event',
+            action: 'menu_preferences_submitted',
+            title: `${validated.full_name} updated favorites`,
+            body: favoritesSummary.join('; '),
+            clientId: user.entityId,
+            actionUrl: `/clients/${user.entityId}`,
+            metadata: {
+              favoriteDishes: cleanedData.favorite_dishes,
+              favoriteCuisines: cleanedData.favorite_cuisines,
+            },
+          })
+        }
+      }
     }
   } catch (err) {
-    console.error('[updateMyProfile] Non-blocking allergy notification failed:', err)
+    console.error('[updateMyProfile] Non-blocking preference notification failed:', err)
   }
 
   // Loyalty trigger: profile completion (non-blocking)
@@ -234,6 +318,7 @@ export async function getMyMealCollaborationData() {
     { data: history, error: historyError },
     { data: requests, error: requestsError },
     { data: recommendations, error: recommendationsError },
+    { data: favorites, error: favoritesError },
   ] = await Promise.all([
     db
       .from('served_dish_history')
@@ -257,6 +342,11 @@ export async function getMyMealCollaborationData() {
       .eq('client_id', user.entityId)
       .order('created_at', { ascending: false })
       .limit(40),
+    db
+      .from('clients')
+      .select('favorite_dishes, favorite_cuisines')
+      .eq('id', user.entityId)
+      .single(),
   ])
 
   if (historyError) {
@@ -268,11 +358,143 @@ export async function getMyMealCollaborationData() {
   if (recommendationsError) {
     console.error('[getMyMealCollaborationData] Recommendations error:', recommendationsError)
   }
+  if (favoritesError) {
+    console.error('[getMyMealCollaborationData] Favorites error:', favoritesError)
+  }
 
   return {
     history: (history ?? []) as ServedDishHistoryEntry[],
     requests: (requests ?? []) as ClientMealRequestEntry[],
     recommendations: (recommendations ?? []) as RecurringRecommendationEntry[],
+    favorites: {
+      favoriteDishes: normalizeClientPreferenceList(
+        ((favorites as any)?.favorite_dishes as string[] | null) ?? [],
+        50
+      ),
+      favoriteCuisines: normalizeClientPreferenceList(
+        ((favorites as any)?.favorite_cuisines as string[] | null) ?? [],
+        25
+      ),
+    } satisfies ClientFavoritesSnapshot,
+  }
+}
+
+/**
+ * Client: update explicit meal favorites.
+ * Favorites are positive planning signals and never override allergies/dislikes.
+ */
+export async function updateMyMealFavorites(input: UpdateMyMealFavoritesInput) {
+  const user = await requireClient()
+  const validated = UpdateMyMealFavoritesSchema.parse(input)
+  const db: any = createServerClient()
+
+  const { data: client, error: clientError } = await db
+    .from('clients')
+    .select('id, tenant_id, full_name, favorite_dishes, favorite_cuisines')
+    .eq('id', user.entityId)
+    .single()
+
+  if (clientError || !client) {
+    console.error('[updateMyMealFavorites] Client lookup error:', clientError)
+    throw new Error('Failed to resolve your profile')
+  }
+
+  const previousFavoriteDishes = normalizeClientPreferenceList(
+    (client.favorite_dishes as string[] | null) ?? [],
+    50
+  )
+  const previousFavoriteCuisines = normalizeClientPreferenceList(
+    (client.favorite_cuisines as string[] | null) ?? [],
+    25
+  )
+  const nextFavoriteDishes =
+    validated.favorite_dishes === undefined
+      ? previousFavoriteDishes
+      : normalizeClientPreferenceList(validated.favorite_dishes, 50)
+  const nextFavoriteCuisines =
+    validated.favorite_cuisines === undefined
+      ? previousFavoriteCuisines
+      : normalizeClientPreferenceList(validated.favorite_cuisines, 25)
+
+  const dishChanged =
+    serializePreferenceList(previousFavoriteDishes) !== serializePreferenceList(nextFavoriteDishes)
+  const cuisineChanged =
+    serializePreferenceList(previousFavoriteCuisines) !==
+    serializePreferenceList(nextFavoriteCuisines)
+
+  if (!dishChanged && !cuisineChanged) {
+    return {
+      success: true,
+      favorites: {
+        favoriteDishes: previousFavoriteDishes,
+        favoriteCuisines: previousFavoriteCuisines,
+      } satisfies ClientFavoritesSnapshot,
+    }
+  }
+
+  const { error } = await db
+    .from('clients')
+    .update({
+      favorite_dishes: nextFavoriteDishes,
+      favorite_cuisines: nextFavoriteCuisines,
+    })
+    .eq('id', user.entityId)
+
+  if (error) {
+    console.error('[updateMyMealFavorites] Error:', error)
+    throw new Error('Could not update favorites')
+  }
+
+  revalidatePath('/my-profile')
+  revalidatePath('/clients/preferences')
+  revalidatePath('/clients/preferences/favorite-dishes')
+  revalidatePath(`/clients/${user.entityId}`)
+  revalidatePath(`/clients/${user.entityId}/recurring`)
+
+  try {
+    const chefAuthId = await getChefAuthUserId(client.tenant_id)
+    if (chefAuthId) {
+      const summaryParts: string[] = []
+      if (dishChanged) {
+        summaryParts.push(
+          nextFavoriteDishes.length > 0
+            ? `Favorite dishes: ${nextFavoriteDishes.slice(0, 6).join(', ')}`
+            : 'Favorite dishes cleared'
+        )
+      }
+      if (cuisineChanged) {
+        summaryParts.push(
+          nextFavoriteCuisines.length > 0
+            ? `Favorite cuisines: ${nextFavoriteCuisines.slice(0, 6).join(', ')}`
+            : 'Favorite cuisines cleared'
+        )
+      }
+
+      await createNotification({
+        tenantId: client.tenant_id,
+        recipientId: chefAuthId,
+        category: 'event',
+        action: 'menu_preferences_submitted',
+        title: `${client.full_name} updated favorites`,
+        body: summaryParts.join('; '),
+        clientId: client.id,
+        actionUrl: `/clients/${client.id}`,
+        metadata: {
+          favoriteDishes: nextFavoriteDishes,
+          favoriteCuisines: nextFavoriteCuisines,
+        },
+      })
+    }
+  } catch (notifyErr) {
+    console.error('[updateMyMealFavorites] Notification failed (non-blocking):', notifyErr)
+  }
+
+  return {
+    success: true,
+    favorites: {
+      favoriteDishes: nextFavoriteDishes,
+      favoriteCuisines: nextFavoriteCuisines,
+    } satisfies ClientFavoritesSnapshot,
   }
 }
 

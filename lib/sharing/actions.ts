@@ -24,6 +24,14 @@ import {
   type StructuredDietaryItem,
 } from '@/lib/sharing/policy'
 import { EventGuestRowSchema, EventShareSettingsRowSchema } from '@/lib/sharing/row-schemas'
+import {
+  buildPublicShareEventFields,
+  normalizePublicShareVisibilitySettings,
+} from '@/lib/sharing/public-contract'
+import {
+  getEventDishFeedbackChoicesByTenant,
+  refreshEventOutcomeLearningByTenant,
+} from '@/lib/post-event/learning-actions'
 
 // ============================================================
 // SCHEMAS
@@ -90,6 +98,8 @@ const VisibilitySettingsSchema = z.object({
   show_date_time: z.boolean().optional(),
   show_location: z.boolean().optional(),
   show_occasion: z.boolean().optional(),
+  show_guest_count: z.boolean().optional(),
+  show_service_style: z.boolean().optional(),
   show_menu: z.boolean().optional(),
   show_dietary_info: z.boolean().optional(),
   show_special_requests: z.boolean().optional(),
@@ -1932,7 +1942,9 @@ export async function getViewerEventByToken(viewerToken: string) {
   if (!context) return null
 
   const { invite, share, event, db } = context
-  const visibility = (share.visibility_settings || {}) as Record<string, boolean>
+  const visibility = normalizePublicShareVisibilitySettings(
+    (share.visibility_settings || {}) as Record<string, boolean>
+  )
 
   const { data: chef } = await db
     .from('chefs')
@@ -1980,25 +1992,13 @@ export async function getViewerEventByToken(viewerToken: string) {
     inviteToken: viewerToken,
     shareToken: share.token,
     eventId: event.id,
-    status: event.status,
-    occasion: visibility.show_occasion ? event.occasion : null,
-    eventDate: visibility.show_date_time ? event.event_date : null,
-    serveTime: visibility.show_date_time ? event.serve_time : null,
-    arrivalTime: visibility.show_date_time ? event.arrival_time : null,
-    guestCount: event.guest_count,
-    serviceStyle: event.service_style,
-    location: visibility.show_location
-      ? {
-          address: event.location_address,
-          city: event.location_city,
-          state: event.location_state,
-          zip: event.location_zip,
-          notes: event.location_notes,
-        }
-      : null,
-    chefName: visibility.show_chef_name ? chef?.display_name || chef?.business_name : null,
-    chefProfileUrl: chef?.booking_slug ? `/chef/${chef.booking_slug}` : null,
-    menus,
+    ...buildPublicShareEventFields({
+      visibility,
+      event,
+      chef,
+      menus,
+      guestList: [],
+    }),
     permissions: {
       allow_join_request: invite.allow_join_request ?? true,
       allow_book_own: invite.allow_book_own ?? true,
@@ -2008,13 +2008,6 @@ export async function getViewerEventByToken(viewerToken: string) {
       require_join_approval: share.require_join_approval ?? true,
       rsvp_deadline_at: share.rsvp_deadline_at || null,
     },
-    dietaryInfo: visibility.show_dietary_info
-      ? {
-          restrictions: event.dietary_restrictions,
-          allergies: event.allergies,
-        }
-      : null,
-    specialRequests: visibility.show_special_requests ? event.special_requests : null,
     inviteNote: invite.note as string | null,
   }
 }
@@ -2357,7 +2350,9 @@ async function loadGuestPortalContext(eventId: string, secureToken: string) {
     .eq('guest_token', secureToken)
     .maybeSingle() as any)
 
-  const visibility = (share.visibility_settings || {}) as Record<string, boolean>
+  const visibility = normalizePublicShareVisibilitySettings(
+    (share.visibility_settings || {}) as Record<string, boolean>
+  )
 
   let menus: {
     id: string
@@ -2505,7 +2500,9 @@ export async function getEventShareByToken(token: string) {
     .single()
 
   // Fetch menus if visibility allows
-  const visibility = share.visibility_settings as Record<string, boolean>
+  const visibility = normalizePublicShareVisibilitySettings(
+    share.visibility_settings as Record<string, boolean>
+  )
   let menus: {
     id: string
     name: string
@@ -2535,42 +2532,18 @@ export async function getEventShareByToken(token: string) {
     guestList = guests || []
   }
 
-  // Build response respecting visibility
+  // Build response respecting visibility.
+  // Lifecycle state remains public for RSVP gating, but tenant identity stays server-side.
   return {
     shareId: share.id,
     eventId: event.id,
-    tenantId: event.tenant_id,
-    status: event.status,
-    visibility,
-    // Always shown
-    occasion: visibility.show_occasion ? event.occasion : null,
-    // Conditional fields
-    eventDate: visibility.show_date_time ? event.event_date : null,
-    serveTime: visibility.show_date_time ? event.serve_time : null,
-    arrivalTime: visibility.show_date_time ? event.arrival_time : null,
-    eventTimezone: visibility.show_date_time ? event.event_timezone || null : null,
-    guestCount: event.guest_count,
-    location: visibility.show_location
-      ? {
-          address: event.location_address,
-          city: event.location_city,
-          state: event.location_state,
-          zip: event.location_zip,
-          notes: event.location_notes,
-        }
-      : null,
-    chefName: visibility.show_chef_name ? chef?.display_name || chef?.business_name : null,
-    chefProfileUrl: chef?.booking_slug ? `/chef/${chef.booking_slug}` : null,
-    menus,
-    dietaryInfo: visibility.show_dietary_info
-      ? {
-          restrictions: event.dietary_restrictions,
-          allergies: event.allergies,
-        }
-      : null,
-    specialRequests: visibility.show_special_requests ? event.special_requests : null,
-    guestList,
-    serviceStyle: event.service_style,
+    ...buildPublicShareEventFields({
+      visibility,
+      event,
+      chef,
+      menus,
+      guestList,
+    }),
     settings: {
       rsvp_deadline_at: share.rsvp_deadline_at || null,
       enforce_capacity: share.enforce_capacity || false,
@@ -3056,6 +3029,11 @@ export async function getGuestByToken(guestToken: string) {
 
 export async function getGuestEventPortal(eventId: string, secureToken: string) {
   const validated = GuestPortalLookupSchema.parse({ eventId, secureToken })
+  await enforcePublicActionRateLimit(
+    `guest-portal:${validated.secureToken.slice(0, 16)}`,
+    120,
+    15 * 60 * 1000
+  )
   const context = await loadGuestPortalContext(validated.eventId, validated.secureToken)
 
   if (!context) {
@@ -3473,6 +3451,14 @@ export async function getDayOfReminderStatus(eventId: string) {
 
 // --- Guest Post-Event Feedback ---
 
+const GuestDishFeedbackSchema = z.object({
+  dish_id: z.string().optional(),
+  dish_name: z.string().min(1).max(200),
+  sentiment: z.enum(['liked', 'neutral', 'disliked']).optional(),
+  rating: z.number().int().min(1).max(5).optional(),
+  comment: z.string().max(500).optional(),
+})
+
 const SubmitGuestFeedbackSchema = z.object({
   token: z.string().uuid(),
   overall_rating: z.number().min(1).max(5),
@@ -3481,6 +3467,7 @@ const SubmitGuestFeedbackSchema = z.object({
   highlight_text: z.string().max(2000).optional(),
   suggestion_text: z.string().max(2000).optional(),
   testimonial_consent: z.boolean().default(false),
+  dish_feedback: z.array(GuestDishFeedbackSchema).optional(),
 })
 
 export async function getGuestFeedbackByToken(token: string) {
@@ -3527,6 +3514,20 @@ export async function getGuestFeedbackByToken(token: string) {
     }
   }
 
+  let dishes: Array<{ id: string; name: string; course_name: string | null }> = []
+  if (tenantId && (data as any).event_id) {
+    try {
+      const choices = await getEventDishFeedbackChoicesByTenant((data as any).event_id, tenantId)
+      dishes = choices.map((dish) => ({
+        id: dish.id,
+        name: dish.name,
+        course_name: dish.courseName,
+      }))
+    } catch (dishError) {
+      console.error('[getGuestFeedbackByToken] Failed to load dish choices:', dishError)
+    }
+  }
+
   return {
     ...(data as any),
     eventTitle: (data as any).event?.occasion || 'Private Dinner',
@@ -3534,6 +3535,7 @@ export async function getGuestFeedbackByToken(token: string) {
     guestName: (data as any).guest?.full_name || 'Guest',
     chefSlug,
     chefName,
+    dishes,
   }
 }
 
@@ -3548,7 +3550,7 @@ export async function submitGuestFeedback(input: z.infer<typeof SubmitGuestFeedb
 
   const { data: existing } = await (db as any)
     .from('guest_feedback')
-    .select('id, submitted_at')
+    .select('id, submitted_at, event_id, tenant_id')
     .eq('token', validated.token)
     .maybeSingle()
 
@@ -3564,11 +3566,30 @@ export async function submitGuestFeedback(input: z.infer<typeof SubmitGuestFeedb
       highlight_text: validated.highlight_text || null,
       suggestion_text: validated.suggestion_text || null,
       testimonial_consent: validated.testimonial_consent,
+      dish_feedback: validated.dish_feedback ?? [],
       submitted_at: new Date().toISOString(),
     })
     .eq('token', validated.token)
 
   if (error) throw new Error('Failed to save feedback. Please try again.')
+
+  if ((existing as any).event_id) {
+    revalidatePath(`/events/${(existing as any).event_id}`)
+  }
+
+  if ((existing as any).event_id && (existing as any).tenant_id) {
+    try {
+      await refreshEventOutcomeLearningByTenant(
+        (existing as any).event_id,
+        (existing as any).tenant_id
+      )
+    } catch (learningError) {
+      console.error(
+        '[submitGuestFeedback] Failed to refresh event outcome learning:',
+        learningError
+      )
+    }
+  }
 
   return { success: true }
 }
@@ -3666,7 +3687,7 @@ export async function getGuestFeedbackForEvent(eventId: string) {
     .from('guest_feedback')
     .select(
       `
-      id, token, guest_id, overall_rating, food_rating, experience_rating,
+      id, token, guest_id, overall_rating, food_rating, experience_rating, dish_feedback,
       highlight_text, suggestion_text, testimonial_consent, submitted_at, sent_at,
       guest:event_guests!guest_feedback_guest_id_fkey(full_name, email)
     `

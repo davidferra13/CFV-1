@@ -31,6 +31,7 @@ export const ROUTES = {
   about: '/about',
   trust: '/trust',
   forOperators: '/for-operators',
+  forOperatorsWalkthrough: '/for-operators/walkthrough',
   marketplaceChefs: '/marketplace-chefs',
   contact: '/contact',
   privacy: '/privacy',

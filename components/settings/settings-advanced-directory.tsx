@@ -5,6 +5,7 @@ import { ChevronDown } from '@/components/ui/icons'
 
 type SettingsAdvancedDirectoryProps = {
   children: React.ReactNode
+  id?: string
   title?: string
   description?: string
   sectionCount?: number
@@ -12,6 +13,7 @@ type SettingsAdvancedDirectoryProps = {
 
 export function SettingsAdvancedDirectory({
   children,
+  id,
   title = 'Full settings directory',
   description = 'Every settings area, grouped by business function.',
   sectionCount,
@@ -31,7 +33,10 @@ export function SettingsAdvancedDirectory({
   }, [])
 
   return (
-    <div className="mt-8 overflow-hidden rounded-[24px] border border-stone-700/80 bg-[var(--glass-subtle-bg)] shadow-[var(--shadow-card)]">
+    <div
+      id={id}
+      className="mt-8 scroll-mt-24 overflow-hidden rounded-[24px] border border-stone-700/80 bg-[var(--glass-subtle-bg)] shadow-[var(--shadow-card)]"
+    >
       <button
         type="button"
         onClick={() => setCollapsed((prev) => !prev)}

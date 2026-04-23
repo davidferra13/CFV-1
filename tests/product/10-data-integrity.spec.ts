@@ -14,24 +14,21 @@ test.describe('Data Integrity — Event-Client Linkage', () => {
     await page.goto(`/events/${seedIds.eventIds.draft}`)
     await page.waitForLoadState('domcontentloaded')
 
-    // Draft event is linked to primary client (Alice E2E)
-    await expect(page.getByText(/Alice/i).first()).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByText(/Joy/i).first()).toBeVisible({ timeout: 10_000 })
   })
 
   test('completed event shows linked client name', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.completed}`)
     await page.waitForLoadState('domcontentloaded')
 
-    // Completed event is also linked to primary client (Alice)
-    await expect(page.getByText(/Alice/i).first()).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByText(/Joy/i).first()).toBeVisible({ timeout: 10_000 })
   })
 
-  test('proposed event shows linked client (Bob)', async ({ page, seedIds }) => {
+  test('proposed event shows linked primary client', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.proposed}`)
     await page.waitForLoadState('domcontentloaded')
 
-    // Proposed event is linked to secondary client (Bob E2E)
-    await expect(page.getByText(/Bob/i).first()).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByText(/Joy/i).first()).toBeVisible({ timeout: 10_000 })
   })
 })
 

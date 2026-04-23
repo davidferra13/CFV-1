@@ -4,7 +4,26 @@ import Link from 'next/link'
 
 export default async function EventStoryPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const data = await getStoryData(id)
+  let data
+
+  try {
+    data = await getStoryData(id)
+  } catch {
+    return (
+      <div className="max-w-2xl mx-auto py-8 px-4">
+        <Link href="/events" className="text-sm text-stone-500 hover:text-stone-300">
+          &larr; Back to events
+        </Link>
+        <div className="mt-6 rounded-lg border border-stone-800 bg-stone-900/50 p-6">
+          <h1 className="text-2xl font-bold text-stone-100">Event Story Unavailable</h1>
+          <p className="mt-2 text-sm text-stone-400">
+            This story could not be loaded. It may belong to another account, no longer exist, or
+            not be available until the event is completed.
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">

@@ -1,0 +1,564 @@
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3320
+  - Network:      http://0.0.0.0:3320
+  - Environments: .env.local, .env
+  - Experiments (use with caution):
+    · instrumentationHook
+
+ ✓ Starting...
+   
+Your tsconfig.json extends another configuration, which means we cannot add the Next.js TypeScript plugin automatically. To improve your development experience, we recommend adding the Next.js plugin (`"plugins": [{ "name": "next" }]`) manually to your TypeScript configuration. Learn more: https://nextjs.org/docs/app/building-your-application/configuring/typescript#the-typescript-plugin
+
+
+   We detected TypeScript in your project and reconfigured your tsconfig.json file for you. Strict-mode is set to false by default.
+   The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:
+
+   	- include was updated to add '.next-dev-3320/types/**/*.ts'
+
+   Using tsconfig file: tsconfig.next.json
+ ○ Compiling /instrumentation ...
+ ✓ Compiled /instrumentation in 6.5s (1135 modules)
+[instrumentation] Background jobs disabled in local dev. Set ENABLE_BACKGROUND_JOBS_IN_DEV=true to opt in.
+ ✓ Ready in 11s
+ ○ Compiling /api/health ...
+ ✓ Compiled /api/health in 12.1s (1805 modules)
+ GET /api/health 200 in 14242ms
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 5.4s (1392 modules)
+ ○ Compiling /partners/[id] ...
+ ✓ Compiled /partners/[id] in 69.7s (18169 modules)
+ ✓ Compiled in 3.5s (4259 modules)
+ ✓ Compiled in 801ms (4245 modules)
+ GET /partners/47d77f08-b7af-40fa-bb21-8c6d3461ca26 200 in 80700ms
+ ○ Compiling /api/realtime/[channel] ...
+ ✓ Compiled /api/realtime/[channel] in 46.1s (18156 modules)
+ GET /partners/47d77f08-b7af-40fa-bb21-8c6d3461ca26 200 in 9616ms
+ GET /api/ai/health 401 in 188ms
+ GET /api/ai/health 401 in 409ms
+ GET /api/health 200 in 466ms
+ GET /api/health 200 in 521ms
+ ○ Compiling /api/realtime/presence ...
+ ✓ Compiled /api/activity/breadcrumbs in 3.6s (13899 modules)
+ ✓ Compiled (13901 modules)
+ GET /api/ai/health 401 in 8526ms
+ GET /api/ai/health 401 in 8331ms
+ POST /api/realtime/presence 200 in 9325ms
+ POST /api/realtime/presence 200 in 9283ms
+ POST /api/realtime/presence 200 in 9024ms
+ POST /api/activity/breadcrumbs 200 in 8914ms
+ POST /api/realtime/presence 200 in 1006ms
+ GET /api/realtime/notifications%3A435d1e04-e512-44c1-8c99-1eaa69bbb155 200 in 1268ms
+ POST /partners/47d77f08-b7af-40fa-bb21-8c6d3461ca26 200 in 1373ms
+ ○ Compiling /api/partners/location-change-requests/[requestId]/review ...
+ GET /partners/47d77f08-b7af-40fa-bb21-8c6d3461ca26 200 in 2322ms
+ ✓ Compiled /api/partners/location-change-requests/[requestId]/review in 3.4s (13903 modules)
+ GET /api/ai/health 401 in 195ms
+ GET /api/ai/health 401 in 409ms
+[reviewPartnerLocationChangeRequest] start {
+  requestId: 'cb28f700-bc4c-43b0-8689-3e1a5fa69fae',
+  decision: 'approved',
+  tenantId: 'ef2e89c6-508a-487a-97da-5500cfaeaa97',
+  authUserId: '435d1e04-e512-44c1-8c99-1eaa69bbb155'
+}
+ GET /api/ai/health 401 in 588ms
+[reviewPartnerLocationChangeRequest] applying proposal {
+  requestId: 'cb28f700-bc4c-43b0-8689-3e1a5fa69fae',
+  locationId: 'a8459b2a-fbc7-4c71-b96f-004bfbf00352',
+  fields: [
+    'name',
+    'address',
+    'city',
+    'state',
+    'zip',
+    'booking_url',
+    'description',
+    'max_guest_count',
+    'experience_tags',
+    'best_for',
+    'service_types'
+  ]
+}
+ GET /api/health 200 in 834ms
+ GET /api/health 200 in 842ms
+ POST /api/realtime/presence 200 in 674ms
+[reviewPartnerLocationChangeRequest] complete {
+  requestId: 'cb28f700-bc4c-43b0-8689-3e1a5fa69fae',
+  status: 'approved'
+}
+ POST /api/partners/location-change-requests/cb28f700-bc4c-43b0-8689-3e1a5fa69fae/review 200 in 6390ms
+ POST /api/realtime/presence 200 in 512ms
+ GET /api/ai/health 200 in 229ms
+ ✓ Compiled in 8.7s (18158 modules)
+ ○ Compiling /partner/locations/[id] ...
+ ✓ Compiled /partner/locations/[id] in 33.4s (18149 modules)
+ GET /partner/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 40570ms
+ ○ Compiling /api/realtime/presence ...
+ ✓ Compiled /api/realtime/presence in 6.6s (13904 modules)
+ POST /api/realtime/presence 200 in 8788ms
+ POST /api/realtime/presence 200 in 8876ms
+ POST /api/realtime/presence 200 in 8805ms
+ POST /api/realtime/presence 200 in 8893ms
+ POST /partner/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 3952ms
+ GET /partners/47d77f08-b7af-40fa-bb21-8c6d3461ca26 200 in 2152ms
+ ○ Compiling /api/realtime/[channel] ...
+ ✓ Compiled /api/realtime/[channel] in 5.2s (13907 modules)
+ ✓ Compiled in 16ms (13914 modules)
+ ✓ Compiled in 1ms (13914 modules)
+ ✓ Compiled in 0ms (13914 modules)
+ GET /api/ai/health 401 in 24910ms
+ GET /api/ai/health 401 in 24807ms
+ ✓ Compiled in 1ms (13914 modules)
+ GET /api/health 200 in 32301ms
+ GET /api/health 200 in 32460ms
+ POST /partners/47d77f08-b7af-40fa-bb21-8c6d3461ca26 200 in 29561ms
+ ○ Compiling /api/activity/breadcrumbs ...
+ POST /api/realtime/presence 200 in 14304ms
+ GET /api/ai/health 200 in 11956ms
+ GET /api/ai/health 200 in 21894ms
+ GET /api/realtime/notifications%3A435d1e04-e512-44c1-8c99-1eaa69bbb155 200 in 46500ms
+ POST /api/realtime/presence 200 in 21896ms
+ ✓ Compiled /api/activity/breadcrumbs in 4.1s (13916 modules)
+ GET /partners/47d77f08-b7af-40fa-bb21-8c6d3461ca26 200 in 1498ms
+ GET /api/ai/health 401 in 494ms
+ GET /api/ai/health 401 in 767ms
+ GET /api/health 200 in 923ms
+ GET /api/health 200 in 1004ms
+ POST /partners/47d77f08-b7af-40fa-bb21-8c6d3461ca26 200 in 1139ms
+ POST /partners/47d77f08-b7af-40fa-bb21-8c6d3461ca26 200 in 530ms
+ GET /api/ai/health 401 in 202ms
+ POST /api/realtime/presence 200 in 528ms
+ GET /api/ai/health 401 in 378ms
+ POST /api/realtime/presence 200 in 540ms
+ POST /api/realtime/presence 200 in 554ms
+ POST /api/realtime/presence 200 in 440ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 406ms
+ POST /partners/47d77f08-b7af-40fa-bb21-8c6d3461ca26 200 in 565ms
+ POST /api/activity/breadcrumbs 200 in 308ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 471ms
+ POST /partners/47d77f08-b7af-40fa-bb21-8c6d3461ca26 200 in 808ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 380ms
+ POST /partners/47d77f08-b7af-40fa-bb21-8c6d3461ca26 200 in 562ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 250ms
+ POST /partners/47d77f08-b7af-40fa-bb21-8c6d3461ca26 200 in 369ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 162ms
+ POST /partners/47d77f08-b7af-40fa-bb21-8c6d3461ca26 200 in 273ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 171ms
+ POST /partners/47d77f08-b7af-40fa-bb21-8c6d3461ca26 200 in 356ms
+ GET /api/realtime/notifications%3A435d1e04-e512-44c1-8c99-1eaa69bbb155 200 in 29346ms
+ GET /partner/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 2870ms
+ POST /api/realtime/presence 200 in 515ms
+ POST /api/realtime/presence 200 in 436ms
+ POST /api/realtime/presence 200 in 442ms
+ POST /api/realtime/presence 200 in 550ms
+ POST /api/realtime/presence 200 in 482ms
+ POST /api/realtime/presence 200 in 232ms
+ POST /api/realtime/presence 200 in 378ms
+ ✓ Compiled in 17s (18168 modules)
+ GET /partners/47d77f08-b7af-40fa-bb21-8c6d3461ca26 200 in 2168ms
+ ○ Compiling /api/realtime/presence ...
+ ✓ Compiled /api/realtime/presence in 3.9s (13904 modules)
+ ✓ Compiled (13912 modules)
+ GET /api/ai/health 401 in 11273ms
+ GET /api/ai/health 401 in 11257ms
+ GET /api/ai/health 401 in 11392ms
+ GET /api/health 200 in 11820ms
+ GET /api/health 200 in 11713ms
+ POST /api/realtime/presence 200 in 11883ms
+ GET /api/ai/health 401 in 767ms
+ POST /api/realtime/presence 200 in 780ms
+ POST /api/realtime/presence 200 in 641ms
+ POST /api/realtime/presence 200 in 644ms
+ ○ Compiling /api/realtime/[channel] ...
+ ✓ Compiled /api/realtime/[channel] in 4.4s (13914 modules)
+ ○ Compiling /api/partners/location-change-requests/[requestId]/review ...
+ ✓ Compiled /api/partners/location-change-requests/[requestId]/review in 6.1s (13916 modules)
+ ✓ Compiled (13918 modules)
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 20797ms
+[reviewPartnerLocationChangeRequest] start {
+  requestId: '056e1aeb-7599-442e-9d76-480f989a2013',
+  decision: 'approved',
+  tenantId: 'ef2e89c6-508a-487a-97da-5500cfaeaa97',
+  authUserId: '435d1e04-e512-44c1-8c99-1eaa69bbb155'
+}
+ POST /api/activity/breadcrumbs 200 in 16662ms
+[reviewPartnerLocationChangeRequest] applying proposal {
+  requestId: '056e1aeb-7599-442e-9d76-480f989a2013',
+  locationId: 'a8459b2a-fbc7-4c71-b96f-004bfbf00352',
+  fields: [
+    'name',
+    'address',
+    'city',
+    'state',
+    'zip',
+    'booking_url',
+    'description',
+    'max_guest_count',
+    'experience_tags',
+    'best_for',
+    'service_types'
+  ]
+}
+ GET /api/health 200 in 2234ms
+[reviewPartnerLocationChangeRequest] complete {
+  requestId: '056e1aeb-7599-442e-9d76-480f989a2013',
+  status: 'approved'
+}
+ GET /api/realtime/notifications%3A435d1e04-e512-44c1-8c99-1eaa69bbb155 200 in 21745ms
+ POST /partners/47d77f08-b7af-40fa-bb21-8c6d3461ca26 200 in 17242ms
+ GET /api/ai/health 200 in 700ms
+ POST /api/partners/location-change-requests/056e1aeb-7599-442e-9d76-480f989a2013/review 200 in 17244ms
+ ✓ Compiled in 22.6s (18168 modules)
+ ○ Compiling /chef/[slug]/locations/[locationId]/book ...
+ ✓ Compiled /chef/[slug]/locations/[locationId]/book in 12.1s (13905 modules)
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/book 307 in 14297ms
+ ○ Compiling /chef/[slug]/locations/[locationId]/inquire ...
+ ✓ Compiled /chef/[slug]/locations/[locationId]/inquire in 5.4s (13907 modules)
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/inquire 307 in 7293ms
+ ○ Compiling /chefs ...
+ ✓ Compiled /chefs in 25.1s (18415 modules)
+ GET /chefs?locationExperience=outdoor 200 in 26530ms
+ ○ Compiling /api/realtime/presence ...
+ ✓ Compiled /chef/[slug]/locations/[locationId] in 4.2s (14068 modules)
+ ✓ Compiled in 8.7s (18432 modules)
+ POST /api/realtime/presence 200 in 17309ms
+ POST /api/realtime/presence 200 in 17249ms
+ POST /api/realtime/presence 200 in 17252ms
+ POST /api/realtime/presence 200 in 17321ms
+ GET /chefs?locationExperience=outdoor&_rsc=v69qm 200 in 11241ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 19191ms
+ POST /api/realtime/presence 200 in 416ms
+ POST /api/realtime/presence 200 in 546ms
+ POST /api/realtime/presence 200 in 564ms
+ POST /api/realtime/presence 200 in 503ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/book 307 in 1261ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/inquire 307 in 274ms
+ GET /chefs?locationExperience=outdoor 200 in 334ms
+ POST /api/realtime/presence 200 in 365ms
+ POST /api/realtime/presence 200 in 369ms
+ POST /api/realtime/presence 200 in 281ms
+ POST /api/realtime/presence 200 in 274ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 494ms
+ POST /api/realtime/presence 200 in 394ms
+ POST /api/realtime/presence 200 in 528ms
+ POST /api/realtime/presence 200 in 520ms
+ POST /api/realtime/presence 200 in 521ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/book 307 in 594ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/inquire 307 in 330ms
+ GET /chefs?locationExperience=outdoor 200 in 291ms
+ POST /api/realtime/presence 200 in 342ms
+ POST /api/realtime/presence 200 in 478ms
+ POST /api/realtime/presence 200 in 423ms
+ POST /api/realtime/presence 200 in 389ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 502ms
+ POST /api/realtime/presence 200 in 413ms
+ POST /api/realtime/presence 200 in 415ms
+ POST /api/realtime/presence 200 in 393ms
+ POST /api/realtime/presence 200 in 395ms
+ ○ Compiling /chef/[slug]/inquire ...
+ ✓ Compiled /chef/[slug]/inquire in 31.3s (18530 modules)
+ POST /api/realtime/presence 200 in 1034ms
+ GET /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 34871ms
+ POST /api/realtime/presence 200 in 501ms
+ GET /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352&_rsc=gwolw 200 in 680ms
+ POST /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 838ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/book 307 in 439ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/inquire 307 in 305ms
+ GET /chefs?locationExperience=outdoor 200 in 607ms
+ POST /api/realtime/presence 200 in 402ms
+ POST /api/realtime/presence 200 in 404ms
+ POST /api/realtime/presence 200 in 346ms
+ POST /api/realtime/presence 200 in 348ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 528ms
+ POST /api/realtime/presence 200 in 401ms
+ POST /api/realtime/presence 200 in 402ms
+ POST /api/realtime/presence 200 in 395ms
+ POST /api/realtime/presence 200 in 397ms
+ GET /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 436ms
+ POST /api/realtime/presence 200 in 500ms
+ GET /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352&_rsc=gwolw 200 in 1111ms
+ POST /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 470ms
+[sendEmail] Sent: "[IMPORTANT] Public Inquiry Submitted" → 2 recipient(s)
+[sendEmail] Sent: "Harbor & Hearth received your inquiry" → 1 recipient(s)
+[sendEmail] Sent: "New inquiry from Location E2E Tester" → 1 recipient(s)
+ POST /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 2762ms
+ ○ Compiling /partner/preview ...
+ ✓ Compiled /partner/preview in 25.9s (18549 modules)
+ POST /api/realtime/presence 200 in 18254ms
+ GET /partner/preview 200 in 28155ms
+ GET /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352&_rsc=1ol1e 200 in 1038ms
+ POST /api/realtime/presence 200 in 495ms
+ POST /api/realtime/presence 200 in 496ms
+ POST /api/realtime/presence 200 in 496ms
+ POST /api/realtime/presence 200 in 502ms
+ GET /partner/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 554ms
+ POST /api/realtime/presence 200 in 412ms
+ POST /api/realtime/presence 200 in 415ms
+ POST /api/realtime/presence 200 in 404ms
+ POST /api/realtime/presence 200 in 352ms
+ POST /partner/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 500 in 340ms
+ ○ Compiling /api/monitoring/report-error ...
+ ✓ Compiled /api/monitoring/report-error in 17.8s (9556 modules)
+ POST /api/realtime/presence 200 in 18312ms
+[sendEmail] Sent: "[CRITICAL] Client Error Reported" → 2 recipient(s)
+[sendEmail] Sent: "[CRITICAL] Client Error Reported" → 2 recipient(s)
+ POST /api/monitoring/report-error 200 in 24318ms
+ POST /api/monitoring/report-error 200 in 24322ms
+ POST /api/realtime/presence 200 in 253ms
+ POST /api/realtime/presence 200 in 216ms
+ POST /api/realtime/presence 200 in 383ms
+ POST /api/realtime/presence 200 in 252ms
+ POST /api/realtime/presence 200 in 2467ms
+ POST /api/realtime/presence 200 in 11283ms
+ POST /api/realtime/presence 200 in 228ms
+ GET /partner/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 1141ms
+ POST /api/realtime/presence 200 in 349ms
+ POST /api/realtime/presence 200 in 353ms
+ POST /api/realtime/presence 200 in 344ms
+ POST /api/realtime/presence 200 in 346ms
+ POST /partner/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 475ms
+ POST /api/realtime/presence 200 in 415ms
+ POST /api/realtime/presence 200 in 421ms
+ POST /api/realtime/presence 200 in 403ms
+ POST /api/realtime/presence 200 in 405ms
+ ○ Compiling /partners/[id] ...
+ ✓ Compiled /partners/[id] in 19.5s (14166 modules)
+ GET /partners/47d77f08-b7af-40fa-bb21-8c6d3461ca26 200 in 23319ms
+ ○ Compiling /api/health ...
+ ✓ Compiled /api/health in 7.1s (14169 modules)
+ ✓ Compiled (14174 modules)
+ GET /api/ai/health 401 in 22563ms
+ GET /api/ai/health 401 in 22442ms
+ GET /api/ai/health 401 in 22432ms
+ GET /api/health 200 in 23460ms
+ GET /api/health 200 in 23591ms
+ POST /api/realtime/presence 200 in 23654ms
+ GET /api/ai/health 401 in 895ms
+ POST /api/realtime/presence 200 in 922ms
+ POST /api/realtime/presence 200 in 946ms
+ POST /api/realtime/presence 200 in 951ms
+ ○ Compiling /api/realtime/[channel] ...
+ ✓ Compiled /api/partners/location-change-requests/[requestId]/review in 8.2s (14173 modules)
+ ✓ Compiled (14177 modules)
+ POST /api/activity/breadcrumbs 200 in 17839ms
+ GET /api/health 200 in 14508ms
+ POST /api/partners/location-change-requests/65163929-dbb1-48c5-b002-b9d86540cd2e/review 200 in 17318ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 21030ms
+ GET /api/ai/health 401 in 648ms
+ POST /api/realtime/presence 200 in 768ms
+ POST /partners/47d77f08-b7af-40fa-bb21-8c6d3461ca26 200 in 17989ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 761ms
+ POST /api/realtime/presence 200 in 396ms
+ POST /api/realtime/presence 200 in 399ms
+ POST /api/realtime/presence 200 in 348ms
+ POST /api/realtime/presence 200 in 304ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 298ms
+ POST /partners/47d77f08-b7af-40fa-bb21-8c6d3461ca26 200 in 570ms
+ ○ Compiling /partners/[id]/report ...
+ ✓ Compiled /partners/[id]/report in 33.7s (18568 modules)
+ ✓ Compiled in 1ms (14188 modules)
+ ✓ Compiled in 1ms (14188 modules)
+ ✓ Compiled in 1ms (14188 modules)
+ GET /api/ai/health 401 in 41434ms
+ POST /api/realtime/presence 200 in 24715ms
+ GET /api/health 200 in 42187ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 53258ms
+ POST /partners/47d77f08-b7af-40fa-bb21-8c6d3461ca26 200 in 55131ms
+ GET /api/realtime/notifications%3A435d1e04-e512-44c1-8c99-1eaa69bbb155 200 in 83678ms
+ GET /partners/47d77f08-b7af-40fa-bb21-8c6d3461ca26/report 200 in 57024ms
+ ✓ Compiled in 0ms (14188 modules)
+ ✓ Compiled (14184 modules)
+ GET /partners/47d77f08-b7af-40fa-bb21-8c6d3461ca26/report 200 in 1196ms
+ ✓ Compiled in 5s (4380 modules)
+ ✓ Compiled in 5.3s (4380 modules)
+ ✓ Compiled in 33.6s (18539 modules)
+ ✓ Compiled in 1730ms (4380 modules)
+ ✓ Compiled in 4s (4380 modules)
+ ✓ Compiled in 1712ms (4380 modules)
+ ✓ Compiled in 3.7s (4380 modules)
+ ✓ Compiled in 1641ms (4380 modules)
+ ✓ Compiled in 3.8s (4380 modules)
+ ✓ Compiled in 3.4s (4380 modules)
+ ✓ Compiled in 1755ms (4380 modules)
+ ✓ Compiled in 3.4s (4380 modules)
+ ✓ Compiled in 1648ms (4380 modules)
+ ✓ Compiled in 1778ms (4380 modules)
+ ✓ Compiled in 1606ms (4380 modules)
+ ✓ Compiled in 4.1s (4380 modules)
+ ✓ Compiled in 3.4s (4380 modules)
+ ✓ Compiled in 4.1s (4380 modules)
+ ✓ Compiled in 1604ms (4380 modules)
+ ✓ Compiled in 1873ms (4380 modules)
+ ✓ Compiled in 1575ms (4380 modules)
+ ✓ Compiled in 1658ms (4380 modules)
+ ✓ Compiled in 1576ms (4380 modules)
+ ✓ Compiled in 1517ms (4380 modules)
+ ✓ Compiled in 4.9s (4380 modules)
+ ✓ Compiled in 2.3s (4380 modules)
+ ✓ Compiled in 1806ms (4380 modules)
+ ✓ Compiled in 1609ms (4380 modules)
+ ✓ Compiled in 5.1s (4380 modules)
+ ✓ Compiled in 2.3s (4380 modules)
+ ✓ Compiled in 27.4s (14159 modules)
+ ✓ Compiled in 7.1s (14173 modules)
+ ✓ Compiled in 5.3s (4380 modules)
+ ✓ Compiled in 2.5s (4380 modules)
+ ✓ Compiled in 2.3s (4380 modules)
+ ✓ Compiled in 2.4s (4380 modules)
+ ✓ Compiled in 2.4s (4380 modules)
+ ✓ Compiled in 2.7s (4380 modules)
+ ✓ Compiled in 10.5s (4380 modules)
+ ✓ Compiled in 2.4s (4380 modules)
+ ✓ Compiled in 2.3s (4380 modules)
+ ✓ Compiled in 2.6s (4380 modules)
+ ✓ Compiled in 2.5s (4380 modules)
+ ✓ Compiled in 2.6s (4380 modules)
+ ✓ Compiled in 5.2s (4380 modules)
+ ✓ Compiled in 2.9s (4380 modules)
+ ✓ Compiled in 5.7s (4380 modules)
+ ✓ Compiled in 2.7s (4380 modules)
+ ✓ Compiled in 2.6s (4380 modules)
+ ✓ Compiled in 2.9s (4380 modules)
+ ✓ Compiled in 2.5s (4380 modules)
+ ✓ Compiled in 2.7s (4380 modules)
+ ✓ Compiled in 2.4s (4380 modules)
+ ✓ Compiled in 2.1s (4380 modules)
+ ✓ Compiled in 1743ms (4380 modules)
+ ✓ Compiled in 3.3s (14173 modules)
+ ✓ Compiled in 4.6s (4380 modules)
+ ✓ Compiled in 3.3s (14173 modules)
+ ✓ Compiled in 9.1s (14173 modules)
+ ✓ Compiled in 15.7s (18552 modules)
+ ✓ Compiled in 2.1s (4380 modules)
+ ✓ Compiled in 18.3s (14172 modules)
+ ✓ Compiled in 10.2s (14171 modules)
+ ✓ Compiled in 4.2s (4380 modules)
+ ✓ Compiled in 1704ms (4380 modules)
+ ✓ Compiled in 4.2s (4380 modules)
+ ✓ Compiled in 1913ms (4380 modules)
+ ✓ Compiled in 1873ms (4380 modules)
+ ✓ Compiled in 1891ms (4380 modules)
+ ✓ Compiled in 1648ms (4380 modules)
+ ✓ Compiled in 2.1s (4380 modules)
+ ✓ Compiled in 2s (4380 modules)
+ ✓ Compiled in 1835ms (4380 modules)
+ ✓ Compiled in 2.2s (4380 modules)
+ ✓ Compiled in 1992ms (4380 modules)
+ ✓ Compiled in 2.1s (4380 modules)
+ ✓ Compiled in 1954ms (4380 modules)
+ ✓ Compiled in 2.1s (4380 modules)
+ ✓ Compiled in 1993ms (4380 modules)
+ ✓ Compiled in 2.1s (4380 modules)
+ ✓ Compiled in 4.1s (4380 modules)
+ ✓ Compiled in 2.2s (4380 modules)
+ ✓ Compiled in 2.1s (4380 modules)
+ ✓ Compiled in 2.1s (4380 modules)
+ ✓ Compiled in 2.1s (4380 modules)
+ ✓ Compiled in 2s (4380 modules)
+ ✓ Compiled in 19.7s (19943 modules)
+ ✓ Compiled in 4.1s (4380 modules)
+ ✓ Compiled in 2.1s (4380 modules)
+ ✓ Compiled in 2.8s (4380 modules)
+ ✓ Compiled in 2.7s (4380 modules)
+ ✓ Compiled in 6.5s (14171 modules)
+ ✓ Compiled in 2.5s (4380 modules)
+ ✓ Compiled in 4.1s (4380 modules)
+ ✓ Compiled in 1882ms (4380 modules)
+ ✓ Compiled in 5.9s (4380 modules)
+ ✓ Compiled in 2.7s (4380 modules)
+ ✓ Compiled in 8s (4380 modules)
+ ✓ Compiled in 3.5s (4380 modules)
+ ✓ Compiled in 3.7s (4380 modules)
+ ✓ Compiled in 7.3s (4380 modules)
+ ✓ Compiled in 3.1s (4380 modules)
+ ✓ Compiled in 2.5s (4380 modules)
+ ✓ Compiled in 3.9s (4380 modules)
+ ✓ Compiled in 4.4s (4380 modules)
+ ✓ Compiled in 1833ms (4380 modules)
+ ✓ Compiled in 6.3s (4380 modules)
+ ✓ Compiled in 4s (4380 modules)
+ ✓ Compiled in 1625ms (4380 modules)
+ ✓ Compiled in 1568ms (4380 modules)
+ ✓ Compiled in 1504ms (4380 modules)
+ ✓ Compiled in 3.8s (4380 modules)
+ ✓ Compiled in 4s (4380 modules)
+ ✓ Compiled in 1863ms (4380 modules)
+ ✓ Compiled in 3.8s (4380 modules)
+ ✓ Compiled in 5.6s (4380 modules)
+ ✓ Compiled in 2.3s (4380 modules)
+ ✓ Compiled in 3.8s (4380 modules)
+ ✓ Compiled in 7.1s (4380 modules)
+ ✓ Compiled in 6.7s (4380 modules)
+ ✓ Compiled in 8.3s (4380 modules)
+ ✓ Compiled in 16.7s (14171 modules)
+ ✓ Compiled in 5.1s (4380 modules)
+ ✓ Compiled in 4.7s (4380 modules)
+ ✓ Compiled in 4.5s (4380 modules)
+ ✓ Compiled in 9.1s (14172 modules)
+ ✓ Compiled in 29.3s (14172 modules)
+ ✓ Compiled in 16.4s (14172 modules)
+ ✓ Compiled in 4.6s (4380 modules)
+ ✓ Compiled in 10.1s (4380 modules)
+ ✓ Compiled in 26.1s (19944 modules)
+ ✓ Compiled in 18.4s (18552 modules)
+ ✓ Compiled in 4.3s (4380 modules)
+ ✓ Compiled in 31.5s (15564 modules)
+ ✓ Compiled in 4.9s (4380 modules)
+ ✓ Compiled in 17.2s (14173 modules)
+ ✓ Compiled in 4.1s (4380 modules)
+ ✓ Compiled in 1640ms (4380 modules)
+ ✓ Compiled in 1736ms (4380 modules)
+ ✓ Compiled in 1700ms (4380 modules)
+ ✓ Compiled in 7.7s (14173 modules)
+ ✓ Compiled in 4.5s (14173 modules)
+ ✓ Compiled in 9.6s (18553 modules)
+ ✓ Compiled in 6.4s (4380 modules)
+ ✓ Compiled in 37.3s (18553 modules)
+ ✓ Compiled in 13.2s (18553 modules)
+ ✓ Compiled in 5.1s (4380 modules)
+ ✓ Compiled in 2.3s (4380 modules)
+ ✓ Compiled in 18.2s (19945 modules)
+ ✓ Compiled in 57.2s (18554 modules)
+ ✓ Compiled in 3.1s (4380 modules)
+ ○ Compiling /auth/signin ...
+ ✓ Compiled /auth/signin in 60.3s (18568 modules)
+ ✓ Compiled in 6.4s (4384 modules)
+ ✓ Compiled in 26.8s (4384 modules)
+ ✓ Compiled in 2.9s (4384 modules)
+ ✓ Compiled in 3.1s (4384 modules)
+ ✓ Compiled in 2.9s (4384 modules)
+ ✓ Compiled in 3s (4384 modules)
+ ✓ Compiled in 6.2s (4384 modules)
+ ✓ Compiled in 3.1s (4384 modules)
+ ✓ Compiled in 21.4s (19951 modules)
+ ✓ Compiled in 11.8s (19951 modules)
+ ✓ Compiled in 2.4s (4384 modules)
+ ✓ Compiled in 2.3s (4384 modules)
+ ✓ Compiled in 3.3s (4384 modules)
+ ✓ Compiled in 2.8s (4384 modules)
+ ✓ Compiled in 2.3s (4384 modules)
+ ✓ Compiled in 7.3s (4384 modules)
+ ✓ Compiled in 2.8s (4384 modules)
+ ✓ Compiled in 1996ms (4384 modules)
+ ✓ Compiled in 2.1s (4384 modules)
+ ✓ Compiled in 2.1s (4384 modules)
+ ✓ Compiled in 2.2s (4384 modules)
+ ✓ Compiled in 2.2s (4384 modules)
+ ✓ Compiled in 2.2s (4384 modules)
+ ✓ Compiled in 2.4s (4384 modules)
+ ✓ Compiled in 2.2s (4384 modules)
+ ✓ Compiled in 2.6s (4384 modules)
+ ✓ Compiled in 2.5s (4384 modules)
+ ✓ Compiled in 2.6s (4384 modules)
+ ✓ Compiled in 2.8s (4384 modules)
+ ✓ Compiled in 8.6s (14175 modules)
+ ✓ Compiled in 32.8s (15567 modules)
+ ✓ Compiled in 7s (4384 modules)
+ ✓ Compiled in 10.7s (4384 modules)
+ ✓ Compiled in 14.4s (14175 modules)
+ ✓ Compiled in 11.3s (14175 modules)
+ ✓ Compiled in 10.2s (14175 modules)
+ ✓ Compiled in 20.1s (14175 modules)
+ ✓ Compiled in 3.3s (14175 modules)
+ ✓ Compiled in 5.9s (4384 modules)
+ ✓ Compiled in 7.8s (4384 modules)
+[?25h

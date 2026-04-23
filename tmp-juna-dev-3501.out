@@ -1,0 +1,75 @@
+  ▲ Next.js 14.2.35
+  - Local:        http://127.0.0.1:3501
+  - Network:      http://127.0.0.1:3501
+  - Environments: .env.local, .env
+  - Experiments (use with caution):
+    · instrumentationHook
+
+ ✓ Starting...
+   
+Your tsconfig.json extends another configuration, which means we cannot add the Next.js TypeScript plugin automatically. To improve your development experience, we recommend adding the Next.js plugin (`"plugins": [{ "name": "next" }]`) manually to your TypeScript configuration. Learn more: https://nextjs.org/docs/app/building-your-application/configuring/typescript#the-typescript-plugin
+
+   Using tsconfig file: tsconfig.next.json
+ ○ Compiling /instrumentation ...
+ ✓ Compiled /instrumentation in 5.1s (1135 modules)
+[instrumentation] Background jobs disabled in local dev. Set ENABLE_BACKGROUND_JOBS_IN_DEV=true to opt in.
+ ✓ Ready in 13.4s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 4.6s (1392 modules)
+ ○ Compiling /auth/signin ...
+ ✓ Compiled /auth/signin in 20s (3306 modules)
+ GET /auth/signin 200 in 5203ms
+ ✓ Compiled in 2.1s (675 modules)
+ ✓ Compiled in 125ms (661 modules)
+ GET /auth/signin 200 in 107ms
+ GET /auth/signin 200 in 194ms
+ GET /auth/signin?redirect=/dashboard 200 in 138ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 2.6s (3307 modules)
+ POST /auth/signin 200 in 4664ms
+ POST /auth/signin?redirect=/dashboard 404 in 7423ms
+ GET /auth/signin?redirect=%2Fdashboard&_rsc=q1xd3 200 in 237ms
+ GET /auth/signin?redirect=%2Fdashboard 200 in 164ms
+ ✓ Compiled in 2.8s (675 modules)
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 9.2s (3869 modules)
+ GET /auth/signin?redirect=%2Fdashboard&_rsc=q1xd3 200 in 1211ms
+ GET /auth/signin?redirect=%2Fdashboard&_rsc=q1xd3 200 in 102ms
+ GET /auth/signin?redirect=%2Fdashboard&_rsc=q1xd3 200 in 96ms
+ GET /auth/signin?redirect=%2Fdashboard 200 in 157ms
+ GET /auth/signin?redirect=/dashboard 200 in 168ms
+ POST /auth/signin?redirect=/dashboard 500 in 378ms
+ GET /auth/signin?redirect=%2Fdashboard 500 in 103ms
+ ○ Compiling /events/[id] ...
+ ✓ Compiled /events/[id] in 46.2s (17170 modules)
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 3.4s (12210 modules)
+ GET /events/9e826f46-b96f-4608-904a-e8d2be00d220?tab=ops 404 in 51348ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 19.1s (20340 modules)
+ GET /dashboard 500 in 21451ms
+ ✓ Compiled in 4s (2671 modules)
+ ○ Compiling /api/e2e/auth ...
+ ✓ Compiled /api/e2e/auth in 1926ms (2765 modules)
+ POST /api/e2e/auth 200 in 4142ms
+ ○ Compiling /events/[id] ...
+ ✓ Compiled /events/[id] in 3.9s (12215 modules)
+ GET /events/9e826f46-b96f-4608-904a-e8d2be00d220?tab=ops 500 in 6942ms
+ GET /events/9e826f46-b96f-4608-904a-e8d2be00d220?tab=ops 500 in 302ms
+ GET /events/9e826f46-b96f-4608-904a-e8d2be00d220?tab=ops 500 in 294ms
+ GET /events/9e826f46-b96f-4608-904a-e8d2be00d220?tab=ops 500 in 289ms
+ GET /events/9e826f46-b96f-4608-904a-e8d2be00d220?tab=ops 500 in 291ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 2.2s (12216 modules)
+ GET /events/9e826f46-b96f-4608-904a-e8d2be00d220?tab=ops 500 in 4950ms
+ GET /events/9e826f46-b96f-4608-904a-e8d2be00d220?tab=ops 500 in 591ms
+ GET /events/9e826f46-b96f-4608-904a-e8d2be00d220?tab=ops 500 in 298ms
+ GET /events/9e826f46-b96f-4608-904a-e8d2be00d220?tab=ops 500 in 306ms
+ GET /events/9e826f46-b96f-4608-904a-e8d2be00d220?tab=ops 500 in 294ms
+ GET /events/9e826f46-b96f-4608-904a-e8d2be00d220?tab=ops 500 in 308ms
+ ✓ Compiled in 3.7s (2671 modules)
+ ✓ Compiled in 4.1s (4987 modules)
+ ✓ Compiled in 888ms (4973 modules)
+ ✓ Compiled in 2.4s (4987 modules)
+ ✓ Compiled in 3.9s (4987 modules)
+[?25h

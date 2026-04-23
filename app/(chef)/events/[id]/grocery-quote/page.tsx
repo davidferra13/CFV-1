@@ -8,11 +8,20 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getEventById } from '@/lib/events/actions'
 import { getLatestGroceryQuote } from '@/lib/grocery/pricing-actions'
 import { GroceryQuotePanel } from '@/components/events/grocery-quote-panel'
+import { ServiceSimulationReturnBanner } from '@/components/events/service-simulation-return-banner'
 import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
+import { sanitizeReturnTo } from '@/lib/navigation/return-to'
 
-export default async function GroceryQuotePage({ params }: { params: { id: string } }) {
+export default async function GroceryQuotePage({
+  params,
+  searchParams,
+}: {
+  params: { id: string }
+  searchParams?: { returnTo?: string }
+}) {
   await requireChef()
+  const returnTo = sanitizeReturnTo(searchParams?.returnTo)
 
   const event = await getEventById(params.id)
   if (!event) notFound()
@@ -26,12 +35,14 @@ export default async function GroceryQuotePage({ params }: { params: { id: strin
 
   return (
     <div className="space-y-6">
+      <ServiceSimulationReturnBanner returnTo={returnTo} />
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-stone-100">Grocery Price Quote</h1>
           <p className="text-stone-500 mt-1 text-sm">{eventLabel}</p>
         </div>
-        <Link href={`/events/${params.id}`}>
+        <Link href={returnTo ?? `/events/${params.id}`}>
           <Button variant="ghost">Back to Event</Button>
         </Link>
       </div>

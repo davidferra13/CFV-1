@@ -645,8 +645,12 @@ export type PublicPortfolioPhoto = {
   signedUrl: string
 }
 
-export async function getPublicPortfolio(chefId: string): Promise<PublicPortfolioPhoto[]> {
+export async function getPublicPortfolio(
+  chefId: string,
+  options?: { limit?: number | null }
+): Promise<PublicPortfolioPhoto[]> {
   const db: any = createServerClient()
+  const limit = options?.limit ?? 100
 
   const { data: photos, error } = await db
     .from('event_photos')
@@ -658,7 +662,7 @@ export async function getPublicPortfolio(chefId: string): Promise<PublicPortfoli
     .eq('is_portfolio', true)
     .is('deleted_at', null)
     .order('display_order', { ascending: true })
-    .limit(100)
+    .limit(limit)
 
   if (error || !photos?.length) {
     if (error) console.error('[getPublicPortfolio] Error:', error)

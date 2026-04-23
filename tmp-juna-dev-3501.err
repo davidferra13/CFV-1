@@ -1,0 +1,418 @@
+ ⚠ Invalid next.config.js options detected: 
+ ⚠     Unrecognized key(s) in object: 'serverActions'
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
+ ⨯ SyntaxError: Unexpected non-whitespace character after JSON at position 110 (line 4 column 2)
+    at JSON.parse (<anonymous>)
+    at loadManifest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\load-manifest.js:36:25)
+    at getMaybePagePath (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\require.js:57:59)
+    at getPagePath (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\require.js:92:22)
+    at requirePage (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\require.js:99:22)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\load-components.js:103:84
+    at async loadComponentsImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\load-components.js:103:26)
+    at async DevServer.findPageComponentsImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\next-server.js:714:36)
+    at async DevServer.findPageComponents (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1910:24)
+    at async DevServer.renderToResponseImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:818:17)
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\Users\david\Documents\CFv1\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  page: '/auth/signin'
+}
+ ⨯ SyntaxError: Unexpected non-whitespace character after JSON at position 110 (line 4 column 2)
+    at JSON.parse (<anonymous>)
+    at loadManifest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\load-manifest.js:36:25)
+    at getMaybePagePath (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\require.js:57:59)
+    at getPagePath (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\require.js:92:22)
+    at requirePage (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\require.js:99:22)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\load-components.js:103:84
+    at async loadComponentsImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\load-components.js:103:26)
+    at async DevServer.findPageComponentsImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\next-server.js:714:36)
+    at async DevServer.findPageComponents (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1910:24)
+    at async DevServer.renderToResponseImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:818:17)
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\Users\david\Documents\CFv1\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  page: '/auth/signin'
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 246cd048-e945-4e43-b986-0d2546102228,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '246cd048-e945-4e43-b986-0d2546102228', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 246cd048-e945-4e43-b986-0d2546102228,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '246cd048-e945-4e43-b986-0d2546102228', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (./lib/auth/get-user.ts:13:70)
+    at (rsc)/./lib/auth/get-user.ts (C:\Users\david\Documents\CFv1\.next-dev\server\app\(chef)\dashboard\page.js:6192:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (layout.tsx:13:76)
+    at __webpack_require__.a (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:108:13)
+    at eval (layout.tsx:1:21)
+    at (rsc)/./app/(chef)/layout.tsx (C:\Users\david\Documents\CFv1\.next-dev\server\app\(chef)\dashboard\page.js:670:1)
+    at Function.__webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at async Promise.all (index 0)
+digest: "1879824991"
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (./lib/auth/get-user.ts:13:70)
+    at (rsc)/./lib/auth/get-user.ts (C:\Users\david\Documents\CFv1\.next-dev\server\app\(chef)\dashboard\page.js:6192:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (layout.tsx:13:76)
+    at __webpack_require__.a (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:108:13)
+    at eval (layout.tsx:1:21)
+    at (rsc)/./app/(chef)/layout.tsx (C:\Users\david\Documents\CFv1\.next-dev\server\app\(chef)\dashboard\page.js:670:1)
+    at Function.__webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at async Promise.all (index 0)
+digest: "1879824991"
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (./lib/auth/get-user.ts:13:70)
+    at (rsc)/./lib/auth/get-user.ts (C:\Users\david\Documents\CFv1\.next-dev\server\app\(chef)\dashboard\page.js:6192:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (layout.tsx:13:76)
+    at __webpack_require__.a (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:108:13)
+    at eval (layout.tsx:1:21)
+    at (rsc)/./app/(chef)/layout.tsx (C:\Users\david\Documents\CFv1\.next-dev\server\app\(chef)\dashboard\page.js:670:1)
+    at Function.__webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at async Promise.all (index 0)
+digest: "1879824991"
+TypeError: Cannot read properties of undefined (reading 'call')
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (webpack-internal:///(rsc)/./lib/auth/get-user.ts:13:70)
+    at (rsc)/./lib/auth/get-user.ts (C:\Users\david\Documents\CFv1\.next-dev\server\app\(chef)\dashboard\page.js:6192:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (webpack-internal:///(rsc)/./app/(chef)/layout.tsx:13:76)
+    at __webpack_require__.a (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:108:13)
+    at eval (webpack-internal:///(rsc)/./app/(chef)/layout.tsx:1:21)
+    at (rsc)/./app/(chef)/layout.tsx (C:\Users\david\Documents\CFv1\.next-dev\server\app\(chef)\dashboard\page.js:670:1)
+    at Function.__webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at async e7 (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:398677)
+    at async rq (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:40:7341)
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:40:10388
+    at async Promise.all (index 0)
+    at async rq (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:40:10093)
+    at async r5 (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:40:17706) {
+  digest: '1879824991'
+}
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (webpack-internal:///(rsc)/./lib/auth/get-user.ts:13:70)
+    at (rsc)/./lib/auth/get-user.ts (C:\Users\david\Documents\CFv1\.next-dev\server\app\(chef)\dashboard\page.js:6192:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (webpack-internal:///(rsc)/./app/(chef)/layout.tsx:13:76)
+    at __webpack_require__.a (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:108:13)
+    at eval (webpack-internal:///(rsc)/./app/(chef)/layout.tsx:1:21)
+    at (rsc)/./app/(chef)/layout.tsx (C:\Users\david\Documents\CFv1\.next-dev\server\app\(chef)\dashboard\page.js:670:1)
+    at Function.__webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at async e7 (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:398677)
+    at async rq (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:40:7341)
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:40:10388
+    at async Promise.all (index 0)
+    at async rq (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:40:10093)
+    at async r5 (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:40:17706) {
+  digest: '1879824991',
+  page: '/dashboard'
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 246cd048-e945-4e43-b986-0d2546102228,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '246cd048-e945-4e43-b986-0d2546102228', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+ ⨯ TypeError: Cannot read properties of undefined (reading 'clientModules')
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:40:25679
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:191:62
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:25:19)
+    at ContextAPI.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NoopTracer.startActiveSpan (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:36:24)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:122:103
+    at NoopContextManager.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:25:19)
+    at ContextAPI.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NextTracerImpl.trace (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:122:28)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:191:31
+    at ne (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:42:1678)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async doRender (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1427:30)
+    at async cacheEntry.responseCache.get.routeKind (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1576:40) {
+  page: '/events/9e826f46-b96f-4608-904a-e8d2be00d220'
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 246cd048-e945-4e43-b986-0d2546102228,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '246cd048-e945-4e43-b986-0d2546102228', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+ ⨯ TypeError: Cannot read properties of undefined (reading 'clientModules')
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:40:25679
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:191:62
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:25:19)
+    at ContextAPI.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NoopTracer.startActiveSpan (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:36:24)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:122:103
+    at NoopContextManager.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:25:19)
+    at ContextAPI.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NextTracerImpl.trace (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:122:28)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:191:31
+    at ne (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:42:1678)
+    at async doRender (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1427:30)
+    at async cacheEntry.responseCache.get.routeKind (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1576:40) {
+  page: '/events/9e826f46-b96f-4608-904a-e8d2be00d220'
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 246cd048-e945-4e43-b986-0d2546102228,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '246cd048-e945-4e43-b986-0d2546102228', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+ ⨯ TypeError: Cannot read properties of undefined (reading 'clientModules')
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:40:25679
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:191:62
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:25:19)
+    at ContextAPI.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NoopTracer.startActiveSpan (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:36:24)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:122:103
+    at NoopContextManager.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:25:19)
+    at ContextAPI.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NextTracerImpl.trace (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:122:28)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:191:31
+    at ne (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:42:1678)
+    at async doRender (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1427:30)
+    at async cacheEntry.responseCache.get.routeKind (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1576:40) {
+  page: '/events/9e826f46-b96f-4608-904a-e8d2be00d220'
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 246cd048-e945-4e43-b986-0d2546102228,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '246cd048-e945-4e43-b986-0d2546102228', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+ ⨯ TypeError: Cannot read properties of undefined (reading 'clientModules')
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:40:25679
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:191:62
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:25:19)
+    at ContextAPI.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NoopTracer.startActiveSpan (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:36:24)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:122:103
+    at NoopContextManager.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:25:19)
+    at ContextAPI.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NextTracerImpl.trace (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:122:28)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:191:31
+    at ne (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:42:1678)
+    at async doRender (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1427:30)
+    at async cacheEntry.responseCache.get.routeKind (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1576:40) {
+  page: '/events/9e826f46-b96f-4608-904a-e8d2be00d220'
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 246cd048-e945-4e43-b986-0d2546102228,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '246cd048-e945-4e43-b986-0d2546102228', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+ ⨯ TypeError: Cannot read properties of undefined (reading 'clientModules')
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:40:25679
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:191:62
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:25:19)
+    at ContextAPI.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NoopTracer.startActiveSpan (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:36:24)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:122:103
+    at NoopContextManager.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:25:19)
+    at ContextAPI.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NextTracerImpl.trace (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:122:28)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:191:31
+    at ne (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:42:1678)
+    at async doRender (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1427:30)
+    at async cacheEntry.responseCache.get.routeKind (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1576:40) {
+  page: '/events/9e826f46-b96f-4608-904a-e8d2be00d220'
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 246cd048-e945-4e43-b986-0d2546102228,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '246cd048-e945-4e43-b986-0d2546102228', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+ ⨯ TypeError: Cannot read properties of undefined (reading 'clientModules')
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:40:25679
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:191:62
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:25:19)
+    at ContextAPI.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NoopTracer.startActiveSpan (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:36:24)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:122:103
+    at NoopContextManager.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:25:19)
+    at ContextAPI.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NextTracerImpl.trace (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:122:28)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:191:31
+    at ne (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:42:1678)
+    at async doRender (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1427:30)
+    at async cacheEntry.responseCache.get.routeKind (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1588:28)
+[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
+<w> [webpack.cache.PackFileCacheStrategy] Restoring pack failed from C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\client-development-fallback.pack.gz: Error: invalid stored block lengths
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 246cd048-e945-4e43-b986-0d2546102228,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '246cd048-e945-4e43-b986-0d2546102228', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+ ⨯ TypeError: Cannot read properties of undefined (reading 'clientModules')
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:40:25679
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:191:62
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:25:19)
+    at ContextAPI.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NoopTracer.startActiveSpan (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:36:24)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:122:103
+    at NoopContextManager.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:25:19)
+    at ContextAPI.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NextTracerImpl.trace (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:122:28)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:191:31
+    at ne (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:42:1678)
+    at async doRender (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1427:30)
+    at async cacheEntry.responseCache.get.routeKind (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1576:40) {
+  page: '/events/9e826f46-b96f-4608-904a-e8d2be00d220'
+}
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, lstat 'C:\Users\david\Documents\CFv1\.next-dev\server\app\(chef)\dashboard'
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving '../../../../.next-dev/server/app/(chef)/dashboard/page' in C:\Users\david\Documents\CFv1\node_modules\next\dist\server for build dependencies doesn't lead to expected result 'C:\Users\david\Documents\CFv1\.next-dev\server\app\(chef)\dashboard\page.js', but to 'Error: Can't resolve '../../../../.next-dev/server/app/(chef)/dashboard/page' in 'C:\Users\david\Documents\CFv1\node_modules\next\dist\server'' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ../../../../.next-dev/server/app/(chef)/dashboard/page (expected C:\Users\david\Documents\CFv1\.next-dev\server\app\(chef)\dashboard\page.js)
+<w>  at file dependencies C:\Users\david\Documents\CFv1\node_modules\next\dist\server\require.js
+<w>  at file C:\Users\david\Documents\CFv1\node_modules\next\dist\server\require.js
+<w>  at file dependencies C:\Users\david\Documents\CFv1\node_modules\next\dist\server\load-components.js
+<w>  at file C:\Users\david\Documents\CFv1\node_modules\next\dist\server\load-components.js
+<w>  at file dependencies C:\Users\david\Documents\CFv1\node_modules\next\dist\build\utils.js
+<w>  at file C:\Users\david\Documents\CFv1\node_modules\next\dist\build\utils.js
+<w>  at file dependencies C:\Users\david\Documents\CFv1\node_modules\next\dist\build\webpack\loaders\next-route-loader\index.js
+<w>  at file C:\Users\david\Documents\CFv1\node_modules\next\dist\build\webpack\loaders\next-route-loader\index.js
+<w>  at file dependencies C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\loader-runner\LoaderRunner.js
+<w>  at file C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\loader-runner\LoaderRunner.js
+<w>  at file dependencies C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\webpack\bundle5.js
+<w>  at file C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\webpack\bundle5.js
+<w>  at file dependencies C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\webpack\webpack.js
+<w>  at file C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\webpack\webpack.js
+<w>  at file dependencies C:\Users\david\Documents\CFv1\node_modules\next\dist\build\webpack\plugins\define-env-plugin.js
+<w>  at file C:\Users\david\Documents\CFv1\node_modules\next\dist\build\webpack\plugins\define-env-plugin.js
+<w>  at file dependencies C:\Users\david\Documents\CFv1\node_modules\next\dist\build\swc\index.js
+<w>  at file C:\Users\david\Documents\CFv1\node_modules\next\dist\build\swc\index.js
+<w>  at file dependencies C:\Users\david\Documents\CFv1\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at file C:\Users\david\Documents\CFv1\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at resolve commonjs C:\Users\david\Documents\CFv1\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 246cd048-e945-4e43-b986-0d2546102228,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '246cd048-e945-4e43-b986-0d2546102228', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+ ⨯ TypeError: Cannot read properties of undefined (reading 'clientModules')
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:40:25679
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:191:62
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:25:19)
+    at ContextAPI.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NoopTracer.startActiveSpan (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:36:24)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:122:103
+    at NoopContextManager.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:25:19)
+    at ContextAPI.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NextTracerImpl.trace (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:122:28)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:191:31
+    at ne (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:42:1678)
+    at async doRender (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1427:30)
+    at async cacheEntry.responseCache.get.routeKind (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1576:40) {
+  page: '/events/9e826f46-b96f-4608-904a-e8d2be00d220'
+}
+ ⨯ TypeError: Cannot read properties of undefined (reading 'clientModules')
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:40:25679
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:191:62
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:25:19)
+    at ContextAPI.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NoopTracer.startActiveSpan (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:36:24)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:122:103
+    at NoopContextManager.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:25:19)
+    at ContextAPI.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NextTracerImpl.trace (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:122:28)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:191:31
+    at ne (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:42:1678)
+    at async doRender (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1427:30)
+    at async cacheEntry.responseCache.get.routeKind (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1576:40) {
+  page: '/events/9e826f46-b96f-4608-904a-e8d2be00d220'
+}
+ ⨯ TypeError: Cannot read properties of undefined (reading 'clientModules')
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:40:25679
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:191:62
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:25:19)
+    at ContextAPI.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NoopTracer.startActiveSpan (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:36:24)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:122:103
+    at NoopContextManager.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:25:19)
+    at ContextAPI.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NextTracerImpl.trace (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:122:28)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:191:31
+    at ne (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:42:1678)
+    at async doRender (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1427:30)
+    at async cacheEntry.responseCache.get.routeKind (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1576:40) {
+  page: '/events/9e826f46-b96f-4608-904a-e8d2be00d220'
+}
+ ⨯ TypeError: Cannot read properties of undefined (reading 'clientModules')
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:40:25679
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:191:62
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:25:19)
+    at ContextAPI.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NoopTracer.startActiveSpan (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:36:24)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:122:103
+    at NoopContextManager.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:25:19)
+    at ContextAPI.with (C:\Users\david\Documents\CFv1\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NextTracerImpl.trace (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:122:28)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\trace\tracer.js:191:31
+    at ne (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:42:1678)
+    at async doRender (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1427:30)
+    at async cacheEntry.responseCache.get.routeKind (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1576:40) {
+  page: '/events/9e826f46-b96f-4608-904a-e8d2be00d220'
+}

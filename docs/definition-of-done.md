@@ -37,6 +37,7 @@ Every shipped feature must satisfy all of the following:
 
 Every UI change must comply with the Universal Interface Philosophy (`docs/specs/universal-interface-philosophy.md`). These checks are release blockers:
 
+- Every surface declares a mode from `docs/specs/surface-grammar-governance.md`, and its shell budget matches that mode
 - No more than one `primary` button per screen (Section 5)
 - No more than 7 items in any nav group, form section, or visible element group (Section 6)
 - No more than 2 hero metrics on any dashboard (Section 6)

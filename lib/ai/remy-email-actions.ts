@@ -8,6 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { z } from 'zod'
+import { getGoogleGmailControl } from '@/lib/google/mailbox-control'
 
 function localDateISO(d: Date): string {
   return [
@@ -180,11 +181,12 @@ export async function summarizeInbox() {
   const inquiryEmails = emails.filter((e: any) => e.action_taken === 'created_inquiry')
 
   // Get last sync time
-  const { data: conn } = await db
-    .from('google_connections')
-    .select('gmail_last_sync_at')
-    .eq('chef_id', user.entityId)
-    .maybeSingle()
+  const control = await getGoogleGmailControl({
+    chefId: user.entityId!,
+    tenantId,
+    db,
+    allowRepair: true,
+  })
 
   return {
     totalThisWeek,
@@ -194,7 +196,7 @@ export async function summarizeInbox() {
     threadReplies: byClassification['existing_thread'] ?? 0,
     personalSkipped: byClassification['personal'] ?? 0,
     spamSkipped: (byClassification['spam'] ?? 0) + (byClassification['marketing'] ?? 0),
-    lastSyncAt: conn?.gmail_last_sync_at ?? null,
+    lastSyncAt: control.mailbox?.gmailLastSyncAt ?? control.legacyConnection?.gmailLastSyncAt ?? null,
   }
 }
 

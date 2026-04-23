@@ -19,6 +19,16 @@ export const PUBLIC_PAGES_PAGE_INFO: Record<string, PageInfoEntry> = {
     features: ['Contact form', 'Support email', 'General inquiries'],
   },
 
+  '/for-operators/walkthrough': {
+    title: 'Operator Walkthrough',
+    description: 'Request a founder-led evaluation of your operator workflow in ChefFlow.',
+    features: [
+      'Qualified operator walkthrough request form',
+      'Fit guidance for chefs and culinary operators',
+      'Clear next-step expectations after submission',
+    ],
+  },
+
   '/pricing': {
     title: 'Pricing',
     description: 'ChefFlow pricing plans - free and professional tiers.',
@@ -52,7 +62,24 @@ export const PUBLIC_PAGES_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/chef/[slug]/gift-cards': {
     title: 'Gift Cards',
     description: "Purchase a gift card for this chef's services.",
-    features: ['Gift card amounts', 'Custom messages', 'Secure purchase'],
+    features: ['Auto-generated gift card amounts', 'Passive checkout', 'Instant stored credit'],
+  },
+
+  '/chef/[slug]/store': {
+    title: 'Chef Store',
+    description: 'Automatically generated storefront for this chef.',
+    features: [
+      'Menu packs from existing menus',
+      'Recipe collections from current recipes',
+      'Prepaid experiences from event history',
+      'Gift cards and instant checkout',
+    ],
+  },
+
+  '/chef/[slug]/store/orders/[token]': {
+    title: 'Store Order',
+    description: 'Guest-access order confirmation and fulfillment view.',
+    features: ['Digital product access', 'Stored credit codes', 'Order summary'],
   },
 
   '/chef/[slug]/gift-cards/success': {

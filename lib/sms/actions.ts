@@ -5,8 +5,8 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import { sendSMS, sendWhatsApp, isTwilioConfigured, isWhatsAppConfigured } from './twilio-client'
 import { revalidatePath } from 'next/cache'
+import { getManagedOutboundChannel, sendManagedTwilioMessage } from '@/lib/communication/managed-channels'
 
 export interface SmsChannelStatus {
   smsEnabled: boolean
@@ -14,9 +14,19 @@ export interface SmsChannelStatus {
 }
 
 export async function getSmsChannelStatus(): Promise<SmsChannelStatus> {
+  const user = await requireChef()
+  const smsChannel = await getManagedOutboundChannel({
+    tenantId: user.tenantId!,
+    channel: 'sms',
+  })
+  const whatsappChannel = await getManagedOutboundChannel({
+    tenantId: user.tenantId!,
+    channel: 'whatsapp',
+  })
+
   return {
-    smsEnabled: isTwilioConfigured(),
-    whatsappEnabled: isWhatsAppConfigured(),
+    smsEnabled: Boolean(smsChannel),
+    whatsappEnabled: Boolean(whatsappChannel),
   }
 }
 
@@ -43,7 +53,12 @@ export async function sendSmsToClient(input: {
 
   if (!client) return { success: false, error: 'Client not found' }
 
-  const result = await sendSMS(input.phone, input.body)
+  const result = await sendManagedTwilioMessage({
+    tenantId: user.tenantId!,
+    channel: 'sms',
+    to: input.phone,
+    body: input.body,
+  })
 
   // Log message regardless of send success (for visibility)
   await db.from('messages').insert({
@@ -52,15 +67,20 @@ export async function sendSmsToClient(input: {
     inquiry_id: input.inquiryId ?? null,
     event_id: input.eventId ?? null,
     direction: 'outbound',
-    channel: 'sms',
+    channel: 'text',
     body: input.body,
-    status: result.success ? 'sent' : 'failed',
-    metadata: result.sid ? { twilio_sid: result.sid } : { error: result.error },
+    status: result.success ? 'sent' : 'logged',
+    metadata: result.providerMessageId
+      ? { twilio_sid: result.providerMessageId, managed_from: result.managedAddress || null }
+      : { error: result.error, managed_from: result.managedAddress || null },
   })
 
   if (input.inquiryId) revalidatePath(`/inquiries/${input.inquiryId}`)
 
-  return result
+  return {
+    success: result.success,
+    error: result.error,
+  }
 }
 
 /**
@@ -86,7 +106,12 @@ export async function sendWhatsAppToClient(input: {
 
   if (!client) return { success: false, error: 'Client not found' }
 
-  const result = await sendWhatsApp(input.phone, input.body)
+  const result = await sendManagedTwilioMessage({
+    tenantId: user.tenantId!,
+    channel: 'whatsapp',
+    to: input.phone,
+    body: input.body,
+  })
 
   // Log message regardless of send success
   await db.from('messages').insert({
@@ -95,13 +120,18 @@ export async function sendWhatsAppToClient(input: {
     inquiry_id: input.inquiryId ?? null,
     event_id: input.eventId ?? null,
     direction: 'outbound',
-    channel: 'whatsapp',
+    channel: 'text',
     body: input.body,
-    status: result.success ? 'sent' : 'failed',
-    metadata: result.sid ? { twilio_sid: result.sid } : { error: result.error },
+    status: result.success ? 'sent' : 'logged',
+    metadata: result.providerMessageId
+      ? { twilio_sid: result.providerMessageId, managed_from: result.managedAddress || null }
+      : { error: result.error, managed_from: result.managedAddress || null },
   })
 
   if (input.inquiryId) revalidatePath(`/inquiries/${input.inquiryId}`)
 
-  return result
+  return {
+    success: result.success,
+    error: result.error,
+  }
 }

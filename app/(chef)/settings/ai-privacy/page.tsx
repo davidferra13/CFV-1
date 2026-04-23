@@ -155,8 +155,9 @@ export default function AiPrivacyPage() {
             <>
               <p>
                 You have local AI enabled. When you talk to Remy, your message context is assembled
-                by ChefFlow&apos;s server, then inference runs on your own machine via your local AI
-                setup. Your conversations never leave your device for AI processing.
+                by ChefFlow&apos;s server, then inference runs on the direct AI endpoint you
+                configured, including this computer or a Raspberry Pi you control. ChefFlow&apos;s
+                servers do not run inference for those messages.
               </p>
               <p>
                 If your local AI is unavailable, you will be asked before any message is sent to

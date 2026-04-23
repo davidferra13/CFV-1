@@ -1,4 +1,4 @@
-// Public Review Showcase - displays unified reviews and stats on chef profile
+﻿// Public Review Showcase - displays unified reviews and stats on chef profile
 // No authentication required. Shows consented reviews from all platforms.
 'use client'
 
@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { Star, ChevronDown, ExternalLink } from '@/components/ui/icons'
 import type { PublicReviewItem, PublicReviewStats } from '@/lib/reviews/public-actions'
 
-// ── Star Display ──
+// Star display
 
 function Stars({ rating, size = 'md' }: { rating: number; size?: 'sm' | 'md' | 'lg' }) {
   const rounded = Math.round(rating * 2) / 2 // round to nearest 0.5
@@ -61,7 +61,7 @@ function Stars({ rating, size = 'md' }: { rating: number; size?: 'sm' | 'md' | '
   )
 }
 
-// ── Stats Header ──
+// Stats header
 
 function ReviewStatsHeader({ stats }: { stats: PublicReviewStats }) {
   if (stats.totalReviews === 0) return null
@@ -87,7 +87,7 @@ function ReviewStatsHeader({ stats }: { stats: PublicReviewStats }) {
             >
               {p.platform}
               <span className="text-stone-500">
-                {p.count} &middot; {p.avgRating > 0 ? `${p.avgRating.toFixed(1)}★` : '--'}
+                {p.count} &middot; {p.avgRating > 0 ? `${p.avgRating.toFixed(1)} avg` : '--'}
               </span>
             </span>
           ))}
@@ -97,7 +97,7 @@ function ReviewStatsHeader({ stats }: { stats: PublicReviewStats }) {
   )
 }
 
-// ── Individual Review Card ──
+// Individual review card
 
 function ReviewCard({ review }: { review: PublicReviewItem }) {
   const dateLabel = formatReviewDate(review.reviewDate)
@@ -154,7 +154,7 @@ function ReviewCard({ review }: { review: PublicReviewItem }) {
   )
 }
 
-// ── Date Formatting ──
+// Date formatting
 
 function formatReviewDate(dateStr: string): string | null {
   const parsed = new Date(dateStr)
@@ -166,7 +166,7 @@ function formatReviewDate(dateStr: string): string | null {
   })
 }
 
-// ── Main Component ──
+// Main component
 
 const INITIAL_SHOW_COUNT = 6
 

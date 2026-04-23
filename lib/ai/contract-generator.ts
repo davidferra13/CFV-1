@@ -6,6 +6,11 @@
 // NOTE: Always surfaces disclaimer to consult attorney for binding contracts.
 
 import { z } from 'zod'
+import {
+  attachDerivedOutputProvenance,
+  resolveAiDerivedOutputModelMetadata,
+  type DerivedOutputProvenance,
+} from '@/lib/analytics/source-provenance'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
@@ -18,6 +23,7 @@ export interface GeneratedContract {
   fullMarkdown: string // complete contract as editable markdown
   disclaimer: string // legal disclaimer (always included)
   generatedAt: string
+  provenance?: DerivedOutputProvenance
   _aiSource?: string
 }
 
@@ -169,5 +175,32 @@ Return JSON: {
     }
   )
 
-  return { ...result, _aiSource: source }
+  return attachDerivedOutputProvenance(
+    { ...result, _aiSource: source },
+    {
+      derivationMethod: source === 'ai' ? 'ai-assisted' : 'deterministic',
+      derivationSource:
+        source === 'ai' ? 'withAiFallback(parseWithOllama)' : 'generateContractTemplate',
+      inputs: [
+        { kind: 'event', id: eventId, label: event.occasion ?? 'Private Event' },
+        { kind: 'chef', id: user.tenantId ?? null, label: chef?.business_name ?? chef?.full_name ?? null },
+        event.client_id
+          ? {
+              kind: 'client',
+              id: event.client_id,
+              label: client?.full_name ?? 'Client',
+            }
+          : null,
+        { kind: 'template', label: 'contract' },
+      ],
+      model:
+        source === 'ai'
+          ? resolveAiDerivedOutputModelMetadata({
+              modelTier: 'standard',
+              taskType: 'contract.generation',
+            })
+          : null,
+      moduleId: 'lib/ai/contract-generator.ts',
+    }
+  )
 }

@@ -3,13 +3,13 @@
 // pre- and post-payment cancellation, profile update, review submission,
 // fun Q&A, and reward redemption.
 //
-// Uses client storageState (interactions-client project — Alice's session).
+// Uses client storageState (interactions-client project — Joy's session).
 //
 // Seed data used:
-//   seedIds.clientActionTestIds.proposedEventId — Alice's proposed event (reset each run)
-//   seedIds.clientActionTestIds.sentQuoteId     — Alice's sent quote (reset each run)
-//   seedIds.clientActionTestIds.paidEventId     — Alice's paid event (reset each run)
-//   seedIds.eventIds.completed                  — Alice's completed event (for review)
+//   seedIds.clientActionTestIds.proposedEventId — Joy's proposed event (reset each run)
+//   seedIds.clientActionTestIds.sentQuoteId     — Joy's sent quote (reset each run)
+//   seedIds.clientActionTestIds.paidEventId     — Joy's paid event (reset each run)
+//   seedIds.eventIds.completed                  — Joy's completed event (for review)
 //
 // IMPORTANT — Serial tests:
 // Quote accept and proposal accept are destructive. The seed resets these records
@@ -225,7 +225,7 @@ test.describe('Client Actions — Pre-Payment Cancellation', () => {
       .or(page.locator('textarea').first())
 
     if (await reasonInput.isVisible().catch(() => false)) {
-      await reasonInput.fill('E2E test cancellation reason — automated. Please ignore.')
+      await reasonInput.fill('We may shift the date if Maya’s travel window changes next week.')
       await page.waitForTimeout(300)
     }
 
@@ -270,7 +270,7 @@ test.describe('Client Actions — Post-Payment Cancellation Request', () => {
         .or(page.locator('textarea').first())
 
       if (await reasonInput.isVisible().catch(() => false)) {
-        await reasonInput.fill('E2E test — post-payment cancellation request. Please ignore.')
+        await reasonInput.fill('If the weather turns, we may need to revisit the rooftop setup plan.')
         await page.waitForTimeout(300)
         // Don't submit — just verify UI works without crash
       }
@@ -298,7 +298,7 @@ test.describe('Client Actions — Profile Update', () => {
     if (await nameInput.isVisible().catch(() => false)) {
       await nameInput.click()
       await page.keyboard.press('Control+a')
-      await nameInput.fill('TEST - Alice E2E')
+      await nameInput.fill('Joy (Test User)')
     }
 
     const saveBtn = page.getByRole('button', { name: /save|update|submit/i }).first()
@@ -335,7 +335,9 @@ test.describe('Client Actions — Profile Update', () => {
       if (count > 2) {
         const qaInput = inputs.nth(2)
         if (await qaInput.isVisible().catch(() => false)) {
-          await qaInput.fill('Italian — E2E test answer')
+          await qaInput.fill(
+            'Mediterranean for hosting, Japanese for date nights, and pasta when I want comfort food.'
+          )
         }
       }
 
@@ -406,7 +408,9 @@ test.describe('Client Actions — Review Submission', () => {
       .or(page.locator('textarea').last())
 
     if (await feedbackArea.isVisible().catch(() => false)) {
-      await feedbackArea.fill('Great experience — E2E automated test review. Please ignore.')
+      await feedbackArea.fill(
+        'Everything felt polished, calm, and easy for our guests from the first bite through dessert.'
+      )
       await page.waitForTimeout(300)
     }
 

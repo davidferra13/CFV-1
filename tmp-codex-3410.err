@@ -1,0 +1,169 @@
+ ⚠ Invalid next.config.js options detected: 
+ ⚠     Unrecognized key(s) in object: 'serverActions'
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (1810kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (188kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (139kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (692kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (695kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (227kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: PostgresError: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at getCatalogDetailFromContract (webpack-internal:///(rsc)/./lib/openclaw/catalog-detail-contract.ts:97:73) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+Image with src "/api/storage/public/chef-profile-images/bd72cf97-a0e5-4fe4-b049-0706ac81d100/1774734757311-ef0fd70e-4692-400d-af0c-4e5c83c441a4.jpg" has a "loader" property that does not implement width. Please implement it or use the "unoptimized" property instead.
+Read more: https://nextjs.org/docs/messages/next-image-missing-loader-width
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (1810kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (188kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (139kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (692kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (695kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (227kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ ⨯ TypeError: __webpack_require__.C is not a function
+    at C:\Users\david\Documents\CFv1\.next-dev\server\app\api\realtime\presence\route.js:712:21
+    at Object.<anonymous> (C:\Users\david\Documents\CFv1\.next-dev\server\app\api\realtime\presence\route.js:717:3)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at requirePage (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\require.js:109:84)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\load-components.js:103:84
+    at async loadComponentsImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\load-components.js:103:26)
+    at async DevServer.findPageComponentsImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\next-server.js:714:36)
+    at async DevServer.findPageComponents (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1910:24)
+    at async DevServer.renderToResponseImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:818:17)
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\Users\david\Documents\CFv1\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  page: '/api/realtime/presence'
+}
+ ⨯ TypeError: __webpack_require__.C is not a function
+    at C:\Users\david\Documents\CFv1\.next-dev\server\app\api\realtime\presence\route.js:712:21
+    at Object.<anonymous> (C:\Users\david\Documents\CFv1\.next-dev\server\app\api\realtime\presence\route.js:717:3)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at requirePage (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\require.js:109:84)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\load-components.js:103:84
+    at async loadComponentsImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\load-components.js:103:26)
+    at async DevServer.findPageComponentsImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\next-server.js:714:36)
+    at async DevServer.findPageComponents (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1910:24)
+    at async DevServer.renderToResponseImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:818:17)
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\Users\david\Documents\CFv1\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  page: '/api/realtime/presence'
+}
+ ⨯ TypeError: __webpack_require__.C is not a function
+    at C:\Users\david\Documents\CFv1\.next-dev\server\app\api\realtime\presence\route.js:712:21
+    at Object.<anonymous> (C:\Users\david\Documents\CFv1\.next-dev\server\app\api\realtime\presence\route.js:717:3)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at requirePage (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\require.js:109:84)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\load-components.js:103:84
+    at async loadComponentsImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\load-components.js:103:26)
+    at async DevServer.findPageComponentsImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\next-server.js:714:36)
+    at async DevServer.findPageComponents (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1910:24)
+    at async DevServer.renderToResponseImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:818:17)
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\Users\david\Documents\CFv1\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  page: '/api/realtime/presence'
+}
+ ⨯ TypeError: __webpack_require__.C is not a function
+    at C:\Users\david\Documents\CFv1\.next-dev\server\app\api\realtime\presence\route.js:712:21
+    at Object.<anonymous> (C:\Users\david\Documents\CFv1\.next-dev\server\app\api\realtime\presence\route.js:717:3)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at requirePage (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\require.js:109:84)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\load-components.js:103:84
+    at async loadComponentsImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\load-components.js:103:26)
+    at async DevServer.findPageComponentsImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\next-server.js:714:36)
+    at async DevServer.findPageComponents (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1910:24)
+    at async DevServer.renderToResponseImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:818:17)
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\Users\david\Documents\CFv1\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  page: '/api/realtime/presence'
+}
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: EPERM: operation not permitted, rename 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\client-development\1.pack.gz_' -> 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\client-development\1.pack.gz'
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: EPERM: operation not permitted, rename 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\client-development\7.pack.gz_' -> 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\client-development\7.pack.gz'
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: EPERM: operation not permitted, rename 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\client-development\8.pack.gz_' -> 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\client-development\8.pack.gz'
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: EPERM: operation not permitted, rename 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\client-development\8.pack.gz_' -> 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\client-development\8.pack.gz'

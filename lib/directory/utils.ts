@@ -5,6 +5,10 @@ import {
 } from '@/lib/discovery/constants'
 import { getDiscoveryLocationLabel } from '@/lib/discovery/profile'
 import type { DirectoryChef } from '@/lib/directory/actions'
+import {
+  LOCATION_BEST_FOR_LABELS,
+  LOCATION_EXPERIENCE_TAG_LABELS,
+} from '@/lib/partners/location-experiences'
 
 export type DirectorySortMode = 'featured' | 'alpha' | 'partners' | 'availability'
 
@@ -16,6 +20,8 @@ export type DirectoryFilters = {
   dietaryFilter: string
   priceRangeFilter: string
   partnerTypeFilter: string
+  locationExperienceFilter: string
+  locationBestForFilter: string
   acceptingOnly: boolean
 }
 
@@ -40,6 +46,24 @@ export const DIRECTORY_SORT_OPTIONS: Array<{ value: DirectorySortMode; label: st
   { value: 'partners', label: 'Most partner venues' },
   { value: 'alpha', label: 'Name A-Z' },
 ]
+
+type DirectoryLocationExperienceLike = {
+  id: string
+  name: string
+  address: string | null
+  city: string | null
+  state: string | null
+  zip?: string | null
+  description: string | null
+  experience_tags: string[]
+  best_for: string[]
+  service_types: string[]
+  is_featured?: boolean | null
+  partner: {
+    id: string
+    name: string
+  }
+}
 
 export function normalizeDirectoryValue(value: string | null | undefined) {
   return (value ?? '').trim().toLowerCase()
@@ -83,6 +107,32 @@ function buildFacetFromValues(
     .sort((a, b) => a.label.localeCompare(b.label))
 }
 
+function getChefLocationExperiences(chef: DirectoryChef): DirectoryLocationExperienceLike[] {
+  if (Array.isArray(chef.location_experiences) && chef.location_experiences.length > 0) {
+    return chef.location_experiences
+  }
+
+  return chef.partners.flatMap((partner) =>
+    partner.partner_locations.map((location) => ({
+      id: location.id,
+      name: location.name,
+      address: location.address,
+      city: location.city,
+      state: location.state,
+      zip: location.zip,
+      description: location.description,
+      experience_tags: location.experience_tags || [],
+      best_for: location.best_for || [],
+      service_types: location.service_types || [],
+      is_featured: false,
+      partner: {
+        id: partner.id,
+        name: partner.name,
+      },
+    }))
+  )
+}
+
 export function buildStateFacets(chefs: DirectoryChef[]) {
   const entries: Array<{ chefId: string; value: string; label: string }> = []
 
@@ -94,13 +144,11 @@ export function buildStateFacets(chefs: DirectoryChef[]) {
       entries.push({ chefId: chef.id, value: discoveryState, label: discoveryState })
     }
 
-    for (const partner of chef.partners) {
-      for (const location of partner.partner_locations) {
-        const state = location.state?.trim()
-        if (!state || states.has(state)) continue
-        states.add(state)
-        entries.push({ chefId: chef.id, value: state, label: state })
-      }
+    for (const location of getChefLocationExperiences(chef)) {
+      const state = location.state?.trim()
+      if (!state || states.has(state)) continue
+      states.add(state)
+      entries.push({ chefId: chef.id, value: state, label: state })
     }
   }
 
@@ -151,33 +199,66 @@ export function buildPartnerTypeFacets(chefs: DirectoryChef[]) {
   )
 }
 
+export function buildLocationExperienceFacets(chefs: DirectoryChef[]) {
+  return buildFacetFromValues(
+    chefs.flatMap((chef) =>
+      getChefLocationExperiences(chef).flatMap((location) =>
+        location.experience_tags.map((value) => ({
+          chefId: chef.id,
+          value,
+          label:
+            LOCATION_EXPERIENCE_TAG_LABELS[
+              value as keyof typeof LOCATION_EXPERIENCE_TAG_LABELS
+            ] ?? value,
+        }))
+      )
+    )
+  )
+}
+
+export function buildLocationBestForFacets(chefs: DirectoryChef[]) {
+  return buildFacetFromValues(
+    chefs.flatMap((chef) =>
+      getChefLocationExperiences(chef).flatMap((location) =>
+        location.best_for.map((value) => ({
+          chefId: chef.id,
+          value,
+          label: LOCATION_BEST_FOR_LABELS[value as keyof typeof LOCATION_BEST_FOR_LABELS] ?? value,
+        }))
+      )
+    )
+  )
+}
+
 export function getChefCoverage(chef: DirectoryChef) {
   const coverage = new Set<string>()
   const discoveryLocation = getDiscoveryLocationLabel(chef.discovery)
   if (discoveryLocation) coverage.add(discoveryLocation)
 
-  for (const partner of chef.partners) {
-    for (const location of partner.partner_locations) {
-      const cityState = [location.city, location.state].filter(Boolean).join(', ').trim()
-      if (cityState) coverage.add(cityState)
-    }
+  for (const location of getChefLocationExperiences(chef)) {
+    const cityState = [location.city, location.state].filter(Boolean).join(', ').trim()
+    if (cityState) coverage.add(cityState)
   }
 
   return Array.from(coverage)
 }
 
 export function buildDirectorySearchHaystack(chef: DirectoryChef) {
+  const locationText = getChefLocationExperiences(chef).flatMap((location) => [
+    location.name,
+    location.address,
+    location.city,
+    location.state,
+    location.zip,
+    location.description,
+    ...location.experience_tags,
+    ...location.best_for,
+    ...location.service_types,
+  ])
   const partnerText = chef.partners.flatMap((partner) => [
     partner.name,
     partner.description,
     PARTNER_TYPE_LABELS[normalizeDirectoryValue(partner.partner_type)] ?? partner.partner_type,
-    ...partner.partner_locations.flatMap((location) => [
-      location.name,
-      location.address,
-      location.city,
-      location.state,
-      location.zip,
-    ]),
   ])
 
   return [
@@ -191,6 +272,7 @@ export function buildDirectorySearchHaystack(chef: DirectoryChef) {
     DISCOVERY_PRICE_RANGE_LABELS[chef.discovery.price_range ?? ''] ?? chef.discovery.price_range,
     ...chef.discovery.cuisine_types.map(getDiscoveryCuisineLabel),
     ...chef.discovery.service_types.map(getDiscoveryServiceTypeLabel),
+    ...locationText,
     ...partnerText,
   ]
     .filter((value): value is string => Boolean(value))
@@ -203,10 +285,8 @@ function hasStateCoverage(chef: DirectoryChef, stateFilter: string) {
 
   if (normalizeDirectoryValue(chef.discovery.service_area_state) === stateFilter) return true
 
-  return chef.partners.some((partner) =>
-    partner.partner_locations.some(
-      (location) => normalizeDirectoryValue(location.state) === stateFilter
-    )
+  return getChefLocationExperiences(chef).some(
+    (location) => normalizeDirectoryValue(location.state) === stateFilter
   )
 }
 
@@ -249,6 +329,22 @@ function matchesDietaryFilter(chef: DirectoryChef, filter: string): boolean {
   }
 }
 
+function matchesLocationExperienceFilter(chef: DirectoryChef, filter: string): boolean {
+  if (!filter) return true
+
+  return getChefLocationExperiences(chef).some((location) =>
+    location.experience_tags.some((value) => normalizeDirectoryValue(value) === filter)
+  )
+}
+
+function matchesLocationBestForFilter(chef: DirectoryChef, filter: string): boolean {
+  if (!filter) return true
+
+  return getChefLocationExperiences(chef).some((location) =>
+    location.best_for.some((value) => normalizeDirectoryValue(value) === filter)
+  )
+}
+
 export function filterDirectoryChefs(chefs: DirectoryChef[], filters: DirectoryFilters) {
   const normalizedQuery = filters.query.toLowerCase()
 
@@ -276,6 +372,18 @@ export function filterDirectoryChefs(chefs: DirectoryChef[], filters: DirectoryF
       return false
     }
     if (
+      filters.locationExperienceFilter &&
+      !matchesLocationExperienceFilter(chef, filters.locationExperienceFilter)
+    ) {
+      return false
+    }
+    if (
+      filters.locationBestForFilter &&
+      !matchesLocationBestForFilter(chef, filters.locationBestForFilter)
+    ) {
+      return false
+    }
+    if (
       filters.priceRangeFilter &&
       normalizeDirectoryValue(chef.discovery.price_range) !== filters.priceRangeFilter
     ) {
@@ -297,6 +405,14 @@ function compareDistance(a: DirectoryChef, b: DirectoryChef) {
   const aDistance = a.distance_miles ?? Number.MAX_SAFE_INTEGER
   const bDistance = b.distance_miles ?? Number.MAX_SAFE_INTEGER
   return aDistance - bDistance
+}
+
+function countPublicLocations(chef: DirectoryChef) {
+  return getChefLocationExperiences(chef).length
+}
+
+function countFeaturedLocations(chef: DirectoryChef) {
+  return getChefLocationExperiences(chef).filter((location) => location.is_featured).length
 }
 
 export function sortDirectoryChefs(chefs: DirectoryChef[], sortMode: DirectorySortMode) {
@@ -337,6 +453,10 @@ export function sortDirectoryChefs(chefs: DirectoryChef[], sortMode: DirectorySo
     if (a.discovery.accepting_inquiries !== b.discovery.accepting_inquiries) {
       return a.discovery.accepting_inquiries ? -1 : 1
     }
+    const byFeaturedLocations = countFeaturedLocations(b) - countFeaturedLocations(a)
+    if (byFeaturedLocations !== 0) return byFeaturedLocations
+    const byLocationCount = countPublicLocations(b) - countPublicLocations(a)
+    if (byLocationCount !== 0) return byLocationCount
     const byRating = (b.discovery.avg_rating ?? 0) - (a.discovery.avg_rating ?? 0)
     if (byRating !== 0) return byRating
     const byCompleteness = b.discovery.completeness_score - a.discovery.completeness_score

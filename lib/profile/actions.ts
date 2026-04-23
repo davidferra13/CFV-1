@@ -21,7 +21,15 @@ import { createAdminClient } from '@/lib/db/admin'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import { derivePublicTrustSummary } from '@/lib/dietary/public-trust'
-import { getServiceConfigForTenant } from '@/lib/chef-services/service-config-internal'
+import {
+  buildPublicLocationExperiences,
+  fetchShowcasePartnersByChefIds,
+  normalizeLocationOptionValues,
+  normalizeRelationshipType,
+  LOCATION_BEST_FOR_OPTIONS,
+  LOCATION_EXPERIENCE_TAG_OPTIONS,
+  LOCATION_SERVICE_TYPE_OPTIONS,
+} from '@/lib/partners/location-experiences'
 
 const SlugSchema = z
   .string()
@@ -127,7 +135,13 @@ export async function getPublicChefProfile(slug: string) {
       'show_availability_signals',
       'social_links',
       'google_review_url',
+      'booking_model',
       'booking_base_price_cents',
+      'booking_pricing_type',
+      'booking_deposit_type',
+      'booking_deposit_percent',
+      'booking_deposit_fixed_cents',
+      'booking_min_notice_days',
       'archetype',
     ].join(', ')
   )
@@ -157,20 +171,12 @@ export async function getPublicChefProfile(slug: string) {
   const chef = chefLookup.data
   if (chefLookup.error || !chef) return null
 
-  const [partnersResult, marketplaceResult, listingResult] = await Promise.all([
-    db
-      .from('referral_partners')
-      .select(
-        `
-        id, name, partner_type, booking_url, description, cover_image_url, showcase_order,
-        partner_locations(id, name, address, city, state, zip, booking_url, description, max_guest_count, is_active),
-        partner_images(id, image_url, caption, season, display_order, location_id)
-      `
-      )
-      .eq('tenant_id', chef.id)
-      .eq('is_showcase_visible', true)
-      .eq('status', 'active')
-      .order('showcase_order', { ascending: true }),
+  const [showcasePartnersByChefId, locationLinksResult, marketplaceResult, listingResult, serviceConfigResult] = await Promise.all([
+    fetchShowcasePartnersByChefIds(db, [chef.id]),
+    (db as any)
+      .from('chef_location_links')
+      .select('location_id, relationship_type, is_public, is_featured, sort_order')
+      .eq('chef_id', chef.id),
     (db as any)
       .from('chef_marketplace_profiles')
       .select(
@@ -219,31 +225,28 @@ export async function getPublicChefProfile(slug: string) {
       )
       .eq('chef_id', chef.id)
       .maybeSingle(),
+    (db as any).from('chef_service_config').select('*').eq('chef_id', chef.id).maybeSingle(),
   ])
 
-  // Fetch service config for dietary trust summary (non-blocking)
   let serviceConfig: any = null
-  try {
-    serviceConfig = await getServiceConfigForTenant(chef.id)
-  } catch {
-    // Service config table may not exist yet
+  if (serviceConfigResult.error && !isRelationMissingError(serviceConfigResult.error)) {
+    console.error('[getPublicChefProfile] service config fetch error:', serviceConfigResult.error)
+  } else {
+    serviceConfig = serviceConfigResult.data ?? null
   }
 
-  const showcasePartners = (partnersResult.data || []).map((partner: any) => ({
-    ...partner,
-    partner_locations: (partner.partner_locations || []).filter(
-      (location: { is_active: boolean }) => location.is_active
-    ),
-    partner_images: (partner.partner_images || []).sort(
-      (a: { display_order: number | null }, b: { display_order: number | null }) =>
-        (a.display_order ?? 0) - (b.display_order ?? 0)
-    ),
-  }))
+  const showcasePartners = showcasePartnersByChefId[chef.id] || []
 
   if (marketplaceResult.error && !isRelationMissingError(marketplaceResult.error)) {
     console.error(
       '[getPublicChefProfile] marketplace profile fetch error:',
       marketplaceResult.error
+    )
+  }
+  if (locationLinksResult.error && !isRelationMissingError(locationLinksResult.error)) {
+    console.error(
+      '[getPublicChefProfile] chef location links fetch error:',
+      locationLinksResult.error
     )
   }
   if (listingResult.error && !isRelationMissingError(listingResult.error)) {
@@ -259,6 +262,10 @@ export async function getPublicChefProfile(slug: string) {
   const inquirySlug = getPublicInquirySlug(chef)
 
   const dietaryTrust = derivePublicTrustSummary(serviceConfig, discovery.dietary_specialties)
+  const locationExperiences = buildPublicLocationExperiences(
+    showcasePartners,
+    locationLinksResult.data || []
+  )
 
   return {
     chef: {
@@ -283,12 +290,20 @@ export async function getPublicChefProfile(slug: string) {
       show_availability_signals: chef.show_availability_signals ?? false,
       social_links: chef.social_links ?? {},
       google_review_url: chef.google_review_url ?? null,
+      booking_model: chef.booking_model ?? 'inquiry_first',
       booking_base_price_cents: chef.booking_base_price_cents ?? null,
+      booking_pricing_type: chef.booking_pricing_type ?? null,
+      booking_deposit_type: chef.booking_deposit_type ?? null,
+      booking_deposit_percent: chef.booking_deposit_percent ?? null,
+      booking_deposit_fixed_cents: chef.booking_deposit_fixed_cents ?? null,
+      booking_min_notice_days: chef.booking_min_notice_days ?? null,
       archetype: chef.archetype ?? null,
       discovery,
       dietaryTrust,
+      service_config: serviceConfig,
     },
     partners: showcasePartners,
+    locationExperiences,
   }
 }
 

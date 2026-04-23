@@ -22,6 +22,7 @@ import { DocumentSection } from '@/components/documents/document-section'
 import { AllergyCardButton } from '@/components/events/allergy-card-button'
 import { ReadinessGatePanel } from '@/components/events/readiness-gate-panel'
 import { PrepPlanPanel } from '@/components/events/prep-plan-panel'
+import { ServiceSimulationPanel } from '@/components/events/service-simulation-panel'
 import { EventTransitions } from '@/components/events/event-transitions'
 import { EventClosureActions } from '@/components/events/event-closure-actions'
 import { EventPhotoGallery } from '@/components/events/event-photo-gallery'
@@ -29,6 +30,8 @@ import { RecipeCapturePrompt } from '@/components/recipes/recipe-capture-prompt'
 import { EventAmbiancePanel } from '@/components/events/event-ambiance-panel'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import type { ReadinessResult } from '@/lib/events/readiness'
+import type { ServiceSimulationPanelState } from '@/lib/service-simulation/types'
 
 type EventDetailOpsTabProps = {
   activeTab: EventDetailTab
@@ -52,6 +55,7 @@ type EventDetailOpsTabProps = {
   docReadiness: any
   businessDocs: any
   eventReadiness: any
+  documentReadinessGate: ReadinessResult | null
   closureStatus: any
   aar: any
   eventPhotos: any[]
@@ -60,6 +64,7 @@ type EventDetailOpsTabProps = {
   aiConfigured: boolean
   hasAllergyData: boolean
   eventTotalCents: number
+  serviceSimulationState: ServiceSimulationPanelState | null
 }
 
 export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
@@ -85,6 +90,7 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
     docReadiness,
     businessDocs,
     eventReadiness,
+    documentReadinessGate,
     closureStatus,
     aar,
     eventPhotos,
@@ -93,6 +99,7 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
     aiConfigured,
     hasAllergyData,
     eventTotalCents,
+    serviceSimulationState,
   } = props
 
   return (
@@ -132,6 +139,10 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
           eventStatus={event.status}
           hasMenu={!!eventMenus}
         />
+      )}
+
+      {event.status !== 'cancelled' && (
+        <ServiceSimulationPanel eventId={event.id} initialState={serviceSimulationState} />
       )}
 
       {/* Event Staff */}
@@ -237,7 +248,12 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
       {event.status !== 'cancelled' && <TravelIngredientsPanel eventId={event.id} />}
 
       {/* Printed Documents (8 Sheets) + Business Documents */}
-      <DocumentSection eventId={event.id} readiness={docReadiness} businessDocs={businessDocs} />
+      <DocumentSection
+        eventId={event.id}
+        readiness={docReadiness}
+        businessDocs={businessDocs}
+        readinessGate={documentReadinessGate}
+      />
 
       {/* Emergency Allergy Card (standalone landscape PDF for kitchen) */}
       <AllergyCardButton eventId={event.id} hasAllergyData={hasAllergyData} />
@@ -260,11 +276,11 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
       )}
 
       {/* Event Transitions (Actions) */}
-      <EventTransitions event={event} readiness={eventReadiness} />
+      <EventTransitions event={event} readiness={eventReadiness} simulation={serviceSimulationState} />
 
       {/* Closure Status â€” for completed events */}
       {event.status === 'completed' && closureStatus && (
-        <Card className="p-6">
+        <Card className="p-6" data-testid="event-post-event-closure">
           <div className="flex justify-between items-start mb-4">
             <h2 className="text-xl font-semibold">Post-Event Closure</h2>
             {closureStatus.allComplete && (

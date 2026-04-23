@@ -41,18 +41,22 @@ async function getTeamMembers(tenantId: string): Promise<TeamMember[]> {
       au.email,
       COALESCE(sm.name, au.email) as name,
       COALESCE(ur.tenant_role,
-        CASE WHEN ur.role = 'chef' THEN 'tenant_owner'
-             WHEN ur.role = 'staff' THEN 'team_member'
-             ELSE ur.role END
+        CASE WHEN ur.role::text = 'chef' THEN 'tenant_owner'
+             WHEN ur.role::text = 'staff' THEN 'team_member'
+             ELSE ur.role::text END
       ) as tenant_role,
-      sm.role_override as staff_role
+      sm.role::text as staff_role
     FROM user_roles ur
     JOIN auth.users au ON au.id = ur.auth_user_id
     LEFT JOIN staff_members sm ON sm.auth_user_id = ur.auth_user_id AND sm.chef_id = ${tenantId}
     WHERE (ur.role = 'chef' AND ur.entity_id = ${tenantId})
        OR (ur.role = 'staff' AND sm.chef_id = ${tenantId})
     ORDER BY
-      CASE COALESCE(ur.tenant_role, ur.role)
+      CASE COALESCE(ur.tenant_role,
+        CASE WHEN ur.role::text = 'chef' THEN 'tenant_owner'
+             WHEN ur.role::text = 'staff' THEN 'team_member'
+             ELSE ur.role::text END
+      )
         WHEN 'tenant_owner' THEN 0
         WHEN 'chef' THEN 0
         WHEN 'manager' THEN 1

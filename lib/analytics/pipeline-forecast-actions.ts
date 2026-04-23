@@ -6,6 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { STAGE_WEIGHTS } from '@/lib/finance/forecast-calculator'
 import { z } from 'zod'
 
 // --- Types ---
@@ -50,15 +51,6 @@ const GetFunnelMetricsSchema = z.object({
     .optional(),
 })
 
-// --- Pipeline Stage Weights ---
-
-const PIPELINE_WEIGHTS: Record<string, number> = {
-  proposed: 0.25,
-  accepted: 0.5,
-  paid: 0.9,
-  confirmed: 0.95,
-}
-
 // --- Actions ---
 
 /**
@@ -93,7 +85,7 @@ export async function getPipelineRevenueForecast(): Promise<PipelineRevenueForec
   const stageOrder = ['proposed', 'accepted', 'paid', 'confirmed']
   const stages: PipelineStage[] = stageOrder.map((status) => {
     const data = stageMap.get(status) || { count: 0, totalCents: 0 }
-    const weight = PIPELINE_WEIGHTS[status] || 0
+    const weight = STAGE_WEIGHTS[status] || 0
     return {
       status,
       eventCount: data.count,

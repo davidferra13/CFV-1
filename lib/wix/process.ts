@@ -8,6 +8,7 @@ import { parseInquiryFromText } from '@/lib/ai/parse-inquiry'
 import { createClientFromLead } from '@/lib/clients/actions'
 import { createNotification, getChefAuthUserId, getChefProfile } from '@/lib/notifications/actions'
 import { isCommTriageEnabled } from '@/lib/features'
+import { PUBLIC_INTAKE_LANE_KEYS, withSubmissionSource } from '@/lib/public/intake-lane-config'
 import type { Json } from '@/types/database'
 import type { ProcessResult } from './types'
 
@@ -145,7 +146,6 @@ export async function processWixSubmission(submissionId: string): Promise<Proces
     if (extracted.name) unknownFields.original_submitter_name = extracted.name
     if (extracted.email) unknownFields.original_submitter_email = extracted.email
     if (extracted.phone) unknownFields.client_phone = extracted.phone
-    unknownFields.submission_source = 'wix_form'
     if (submission.wix_form_id) unknownFields.wix_form_id = submission.wix_form_id
 
     // 8. Create the inquiry
@@ -168,7 +168,12 @@ export async function processWixSubmission(submissionId: string): Promise<Proces
         confirmed_cannabis_preference: parseResult.parsed.confirmed_cannabis_preference || null,
         source_message: sourceText,
         unknown_fields:
-          Object.keys(unknownFields).length > 0 ? (unknownFields as unknown as Json) : null,
+          Object.keys(unknownFields).length > 0
+            ? (withSubmissionSource(
+                PUBLIC_INTAKE_LANE_KEYS.wix_form,
+                unknownFields
+              ) as unknown as Json)
+            : null,
         next_action_required: 'Review Wix form submission',
         next_action_by: 'chef',
       })

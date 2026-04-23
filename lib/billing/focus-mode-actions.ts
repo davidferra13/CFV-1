@@ -8,11 +8,11 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { CHEF_LAYOUT_CACHE_TAG } from '@/lib/chef/layout-cache'
 import { ALL_MODULE_SLUGS } from '@/lib/billing/modules'
-import { CORE_MODULES } from '@/lib/billing/focus-mode'
+import { CORE_MODULES, DEFAULT_FOCUS_MODE_ENABLED } from '@/lib/billing/focus-mode'
 
 /**
  * Check if Focus Mode is enabled for the current chef.
- * Defaults to true (ON) to match the schema default for new chefs.
+ * Defaults to the shared governance default for new chefs.
  */
 export async function isFocusModeEnabled(): Promise<boolean> {
   const user = await requireChef()
@@ -24,7 +24,7 @@ export async function isFocusModeEnabled(): Promise<boolean> {
     .eq('chef_id', user.entityId)
     .single()
 
-  return (data as any)?.focus_mode ?? true
+  return (data as any)?.focus_mode ?? DEFAULT_FOCUS_MODE_ENABLED
 }
 
 /**

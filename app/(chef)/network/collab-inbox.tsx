@@ -35,6 +35,10 @@ import {
   type TrustedCircleMember,
 } from '@/lib/network/collab-actions'
 import { createIntroductionBridge, getBridgeForHandoff } from '@/lib/network/intro-bridge-actions'
+import {
+  NEUTRAL_LOCATION_PLACEHOLDER,
+  NEUTRAL_SERVICE_AREA_PLACEHOLDER,
+} from '@/lib/site/national-brand-copy'
 
 interface CollabInboxProps {
   trustedCircle: TrustedCircleMember[]
@@ -761,7 +765,7 @@ export function CollabInboxPanel({
               <input
                 value={locationText}
                 onChange={(event) => setLocationText(event.target.value)}
-                placeholder="Brooklyn, NY"
+                placeholder={NEUTRAL_LOCATION_PLACEHOLDER}
                 className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
                 disabled={isPending}
               />
@@ -1395,7 +1399,7 @@ export function CollabInboxPanel({
             <input
               value={signalRegion}
               onChange={(event) => setSignalRegion(event.target.value)}
-              placeholder="Region or city"
+              placeholder={NEUTRAL_SERVICE_AREA_PLACEHOLDER}
               className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
               disabled={isPending}
             />

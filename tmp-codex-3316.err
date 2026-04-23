@@ -1,0 +1,242 @@
+ ⚠ Invalid next.config.js options detected: 
+ ⚠     Unrecognized key(s) in object: 'serverActions'
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (1809kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (188kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (139kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (692kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (695kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (227kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 435d1e04-e512-44c1-8c99-1eaa69bbb155,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '435d1e04-e512-44c1-8c99-1eaa69bbb155', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+ ⚠ Blocked cross-origin request from 127.0.0.1 to /_next/* resource. To allow this, configure "allowedDevOrigins" in next.config
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 435d1e04-e512-44c1-8c99-1eaa69bbb155,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '435d1e04-e512-44c1-8c99-1eaa69bbb155', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 435d1e04-e512-44c1-8c99-1eaa69bbb155,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '435d1e04-e512-44c1-8c99-1eaa69bbb155', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 435d1e04-e512-44c1-8c99-1eaa69bbb155,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '435d1e04-e512-44c1-8c99-1eaa69bbb155', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 435d1e04-e512-44c1-8c99-1eaa69bbb155,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '435d1e04-e512-44c1-8c99-1eaa69bbb155', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 435d1e04-e512-44c1-8c99-1eaa69bbb155,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '435d1e04-e512-44c1-8c99-1eaa69bbb155', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 435d1e04-e512-44c1-8c99-1eaa69bbb155,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '435d1e04-e512-44c1-8c99-1eaa69bbb155', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 435d1e04-e512-44c1-8c99-1eaa69bbb155,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '435d1e04-e512-44c1-8c99-1eaa69bbb155', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 435d1e04-e512-44c1-8c99-1eaa69bbb155,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '435d1e04-e512-44c1-8c99-1eaa69bbb155', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 435d1e04-e512-44c1-8c99-1eaa69bbb155,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '435d1e04-e512-44c1-8c99-1eaa69bbb155', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[getCarriedOverTasks] Error: {
+  message: 'column tasks.tasks_assigned_to_fkey does not exist',
+  code: '42703',
+  details: undefined
+}

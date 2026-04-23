@@ -26,6 +26,7 @@ import { useUnsavedChangesGuard } from '@/lib/navigation/use-unsaved-changes-gua
 import { useIdempotentMutation } from '@/lib/offline/use-idempotent-mutation'
 import { ValidationError } from '@/lib/errors/app-error'
 import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
+import { NEUTRAL_ADDRESS_PLACEHOLDER } from '@/lib/site/national-brand-copy'
 
 type Client = {
   id: string
@@ -568,7 +569,7 @@ export function InquiryForm({
 
           <AddressAutocomplete
             label="Location"
-            placeholder="e.g., 123 Main St, Denver CO 80202"
+            placeholder={NEUTRAL_ADDRESS_PLACEHOLDER}
             value={location}
             onChange={(val) => setLocation(val)}
             onPlaceSelect={(data: AddressData) => setLocation(data.formattedAddress)}

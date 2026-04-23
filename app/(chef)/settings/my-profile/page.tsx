@@ -26,6 +26,16 @@ export default async function ChefMyProfilePage() {
         <p className="text-stone-400 mt-1">
           Manage the core profile details used across your client portal and public page.
         </p>
+        <p className="mt-3 text-sm text-stone-500">
+          Need to upload a resume or manage career history?{' '}
+          <Link
+            href="/settings/credentials"
+            className="text-stone-300 underline decoration-stone-600 underline-offset-4 transition-colors hover:text-stone-100"
+          >
+            Open Credentials
+          </Link>
+          .
+        </p>
       </div>
 
       <ChefProfileForm profile={profile} chefId={user.entityId} />

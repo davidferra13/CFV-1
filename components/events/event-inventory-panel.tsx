@@ -30,6 +30,8 @@ export function EventInventoryPanel({ eventId, eventStatus }: Props) {
   const canDeduct = ['confirmed', 'paid'].includes(eventStatus)
   const isActive = eventStatus === 'in_progress'
   const isComplete = eventStatus === 'completed'
+  const shortfallCount =
+    preview?.items?.filter((item: any) => (item.shortfallQty ?? 0) > 0).length ?? 0
 
   function handlePreview() {
     setError('')
@@ -119,13 +121,13 @@ export function EventInventoryPanel({ eventId, eventStatus }: Props) {
                       <tr key={idx} className="border-b border-stone-800">
                         <td className="px-3 py-2 text-stone-100">{item.ingredientName}</td>
                         <td className="px-3 py-2 text-right text-stone-300">
-                          {Number(item.requiredQty ?? 0).toFixed(2)} {item.unit}
+                          {Number(item.neededQty ?? 0).toFixed(2)} {item.unit}
                         </td>
                         <td className="px-3 py-2 text-right text-stone-300">
-                          {Number(item.currentStock ?? 0).toFixed(2)} {item.unit}
+                          {Number(item.onHandQty ?? 0).toFixed(2)} {item.unit}
                         </td>
                         <td className="px-3 py-2">
-                          {(item.currentStock ?? 0) >= (item.requiredQty ?? 0) ? (
+                          {(item.onHandQty ?? 0) >= (item.neededQty ?? 0) ? (
                             <Badge variant="success">OK</Badge>
                           ) : (
                             <Badge variant="error">Short</Badge>
@@ -136,10 +138,10 @@ export function EventInventoryPanel({ eventId, eventStatus }: Props) {
                   </tbody>
                 </table>
               </div>
-              {preview.shortfalls && preview.shortfalls.length > 0 && (
+              {shortfallCount > 0 && (
                 <p className="text-sm text-yellow-400">
-                  {preview.shortfalls.length} ingredient{preview.shortfalls.length !== 1 ? 's' : ''}{' '}
-                  below required levels.
+                  {shortfallCount} ingredient{shortfallCount !== 1 ? 's' : ''} below required
+                  levels.
                 </p>
               )}
               <p className="text-sm text-stone-400">

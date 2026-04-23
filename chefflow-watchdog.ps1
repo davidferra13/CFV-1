@@ -75,6 +75,7 @@ $prodPort = 3000
 $dbPort = 54322
 $prodBuildMarker = "$projectDir\.next\BUILD_ID"
 $trayScript = "$projectDir\scripts\launcher\tray.ps1"
+$liveIngestionScript = "$projectDir\scripts\start-live-ingestion.ps1"
 $prodTunnelId = 'f38df8e8-3b6d-463d-b39b-a9265ea5ebcd'
 $prodTunnelConfig = 'C:\Users\david\.cloudflared\config.yml'
 $betaTunnelId = '03fc407c-cfe6-4758-a239-299cfa615fcc'
@@ -579,6 +580,26 @@ function Ensure-MissionControlTrayRunning {
     }
 }
 
+function Ensure-LiveIngestionRunning {
+    Clear-ExitedManagedProcess 'liveIngestion'
+
+    if (-not (Test-Path $liveIngestionScript)) {
+        Write-Log '[live-ingestion] Starter script is missing.'
+        return
+    }
+
+    if (Test-ProcessCommandRunning @('live-ingestion-pipeline.mjs', '--watch') -or (Test-ManagedProcessRunning 'liveIngestion')) {
+        return
+    }
+
+    Write-Log '[live-ingestion] Starting MemPalace watcher.'
+    Start-ManagedProcess `
+        -Key 'liveIngestion' `
+        -Label '[live-ingestion] MemPalace watcher' `
+        -FileName $powershellExe `
+        -Arguments "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$liveIngestionScript`""
+}
+
 function Ensure-DevServerRunning {
     Clear-ExitedManagedProcess 'dev'
 
@@ -710,6 +731,7 @@ Write-Log '=== ChefFlow Watchdog Started ==='
 Ensure-OllamaRunning
 Ensure-MissionControlRunning
 Ensure-MissionControlTrayRunning
+Ensure-LiveIngestionRunning
 
 $loopCount = 0
 
@@ -725,6 +747,7 @@ while ($true) {
         Ensure-MissionControlTrayRunning
     }
 
+    Ensure-LiveIngestionRunning
     Ensure-ProdServerRunning
     Ensure-CloudflaredTunnelRunning `
         -Key 'prodTunnel' `

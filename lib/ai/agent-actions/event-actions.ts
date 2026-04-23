@@ -93,7 +93,7 @@ export const eventAgentActions: AgentActionDefinition[] = [
     description:
       'Create a new event from a natural language description. Extracts date, guest count, location, client, and more.',
     inputSchema:
-      '{ "description": "string - full event description, e.g. Dinner party for Sarah Johnson on March 20, 12 guests at 123 Main St Portland OR 97201, plated service, serve at 7pm" }',
+      '{ "description": "string - full event description, e.g. Dinner party for Sarah Johnson on March 20, 12 guests at 123 Main St, City, ST 12345, plated service, serve at 7pm" }',
     tierNote: 'ALWAYS tier 2 - chef must review all event details before saving.',
 
     async executor(inputs) {

@@ -132,16 +132,18 @@ export function DataFlowAnimated({ localAiEnabled = false }: { localAiEnabled?: 
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-900 text-xs">
               🖥️
             </div>
-            <div className="text-sm font-semibold text-violet-300">Your Local AI is Active</div>
+            <div className="text-sm font-semibold text-violet-300">
+              Your Direct AI Endpoint Is Active
+            </div>
           </div>
           <div className="text-xs text-violet-400 leading-relaxed">
-            With local AI enabled, Remy&apos;s conversational responses are generated on your own
-            machine. ChefFlow&apos;s server assembles the context (your business data), then your
-            browser streams directly from your local AI. Conversation content never reaches
-            ChefFlow&apos;s servers for AI processing.
+            With local AI enabled, Remy&apos;s conversational responses are generated on the direct
+            AI endpoint you configured. ChefFlow&apos;s server assembles the context (your business
+            data), then your browser streams directly from that endpoint. ChefFlow&apos;s servers do
+            not run inference for these messages.
           </div>
           <div className="flex items-center gap-3 text-xxs text-violet-500 pt-1">
-            <span>Your Browser → Your Local AI (inference)</span>
+            <span>Your Browser → Your Direct AI endpoint (inference)</span>
             <span>|</span>
             <span>ChefFlow Server → Context only (no inference)</span>
           </div>

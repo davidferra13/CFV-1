@@ -3,7 +3,8 @@
  */
 
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434'
-const TEXT_MODEL = process.env.OLLAMA_TEXT_MODEL || 'gemma4'
+const TEXT_MODEL = process.env.OPENCLAW_LOCAL_MODEL || process.env.OLLAMA_TEXT_MODEL || process.env.OLLAMA_MODEL || 'gemma4'
+const KEEP_ALIVE = process.env.OPENCLAW_OLLAMA_KEEP_ALIVE || '30m'
 
 export async function classifyDocument(filename, fileType, textContent) {
   const truncated = (textContent || '').substring(0, 2000)
@@ -56,6 +57,7 @@ async function callOllama(prompt) {
         model: TEXT_MODEL,
         prompt,
         stream: false,
+        keep_alive: KEEP_ALIVE,
         options: { temperature: 0.1, num_predict: 500 }
       }),
       signal: AbortSignal.timeout(60000)

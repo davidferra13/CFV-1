@@ -1,0 +1,63 @@
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3111
+  - Network:      http://0.0.0.0:3111
+  - Environments: .env.local, .env
+  - Experiments (use with caution):
+    · instrumentationHook
+
+ ✓ Starting...
+   
+Your tsconfig.json extends another configuration, which means we cannot add the Next.js TypeScript plugin automatically. To improve your development experience, we recommend adding the Next.js plugin (`"plugins": [{ "name": "next" }]`) manually to your TypeScript configuration. Learn more: https://nextjs.org/docs/app/building-your-application/configuring/typescript#the-typescript-plugin
+
+
+   We detected TypeScript in your project and reconfigured your tsconfig.json file for you. Strict-mode is set to false by default.
+   The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:
+
+   	- include was updated to add '.next-dev-playwright-3111/types/**/*.ts'
+
+   Using tsconfig file: tsconfig.next.json
+ ○ Compiling /instrumentation ...
+ ✓ Compiled /instrumentation in 13.5s (1135 modules)
+[instrumentation] Background job startup disabled for E2E.
+ ✓ Ready in 25.4s
+ ○ Compiling /api/health ...
+ ✓ Compiled /api/health in 28.4s (1804 modules)
+ HEAD /api/health 200 in 2660ms
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 10s (1392 modules)
+ ○ Compiling /my-events/[id] ...
+ ✓ Compiled /my-events/[id] in 83.6s (10918 modules)
+ ✓ Compiled in 4s (3848 modules)
+ ✓ Compiled in 732ms (3834 modules)
+ GET /my-events/12257cd9-8320-42a2-9e7d-c7ee79ec4901 200 in 95014ms
+ ○ Compiling /my-events/[id]/proposal ...
+ ✓ Compiled /api/activity/track in 35.9s (10905 modules)
+ POST /api/activity/track 401 in 36751ms
+ POST /api/activity/track 401 in 36752ms
+ POST /api/realtime/presence 200 in 37557ms
+ POST /api/realtime/presence 200 in 37739ms
+ POST /api/realtime/presence 200 in 37755ms
+ POST /api/realtime/presence 200 in 727ms
+ ○ Compiling /api/realtime/[channel] ...
+ ✓ Compiled /api/realtime/[channel] in 6.5s (7072 modules)
+ POST /my-events/12257cd9-8320-42a2-9e7d-c7ee79ec4901 200 in 7022ms
+ GET /my-events/12257cd9-8320-42a2-9e7d-c7ee79ec4901/proposal 200 in 46082ms
+ ✓ Compiled /my-events/[id]/contract in 0ms (7072 modules)
+ ✓ Compiled in 19.9s (11457 modules)
+ POST /api/activity/track 401 in 16790ms
+ POST /api/activity/track 401 in 12744ms
+ POST /api/realtime/presence 200 in 22758ms
+ POST /api/realtime/presence 200 in 22762ms
+ POST /api/realtime/presence 200 in 21407ms
+ POST /api/realtime/presence 200 in 647ms
+ GET /api/realtime/notifications%3A24f8ecda-1d85-4525-8342-f62da8db4f47 200 in 2536ms
+ GET /my-events/12257cd9-8320-42a2-9e7d-c7ee79ec4901/contract 200 in 31038ms
+ POST /api/realtime/presence 200 in 367ms
+ POST /api/realtime/presence 200 in 445ms
+ POST /api/realtime/presence 200 in 415ms
+ POST /api/realtime/presence 200 in 330ms
+ POST /api/activity/track 401 in 336ms
+ POST /api/activity/track 401 in 334ms
+ POST /my-events/12257cd9-8320-42a2-9e7d-c7ee79ec4901/contract 200 in 855ms
+ GET /api/realtime/notifications%3A24f8ecda-1d85-4525-8342-f62da8db4f47 200 in 4142ms
+ GET /my-events/12257cd9-8320-42a2-9e7d-c7ee79ec4901/proposal 200 in 678ms

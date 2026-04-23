@@ -1,130 +1,100 @@
 // Resend Webhook Handler
-// Receives email.opened and email.clicked events from Resend.
-// Updates campaign_recipients.opened_at / clicked_at for open/click tracking.
-//
-// Setup required:
-// 1. In the Resend dashboard → Webhooks → Add endpoint → this URL
-// 2. Select events: email.opened, email.clicked
-// 3. Copy the signing secret → set RESEND_WEBHOOK_SECRET env var
+// Receives Resend delivery events and maps them into the current campaign
+// recipient compatibility fields plus the shared suppression table.
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
+import {
+  mapNormalizedEventToCampaignRecipientField,
+  normalizeResendWebhookEvent,
+  verifyResendWebhookSignature,
+} from '@/lib/email/provider'
 import { logWebhookEvent } from '@/lib/webhooks/audit-log'
 
-// Resend signs webhooks with HMAC-SHA256. We verify to prevent spoofing.
-async function verifyResendSignature(
-  payload: string,
-  signature: string | null,
-  secret: string
-): Promise<boolean> {
-  if (!signature) return false
-
-  try {
-    const key = await crypto.subtle.importKey(
-      'raw',
-      new TextEncoder().encode(secret),
-      { name: 'HMAC', hash: 'SHA-256' },
-      false,
-      ['verify']
-    )
-
-    // Resend sends a timestamp+payload signature: "t=<ts>,v1=<sig>"
-    const parts = Object.fromEntries(
-      signature.split(',').map((p) => p.split('=') as [string, string])
-    )
-    const svix_ts = parts['t']
-    const svix_sig = parts['v1']
-
-    if (!svix_ts || !svix_sig) return false
-
-    const signedPayload = `${svix_ts}.${payload}`
-    const sigBytes = Uint8Array.from(atob(svix_sig.replace(/-/g, '+').replace(/_/g, '/')), (c) =>
-      c.charCodeAt(0)
-    )
-
-    return await crypto.subtle.verify(
-      'HMAC',
-      key,
-      sigBytes,
-      new TextEncoder().encode(signedPayload)
-    )
-  } catch {
-    return false
+function readRawEventMetadata(payload: unknown): { type: string; messageId: string | null } {
+  if (typeof payload !== 'object' || payload === null) {
+    return { type: 'unknown', messageId: null }
   }
+
+  const event = payload as { type?: unknown; data?: { email_id?: unknown } }
+  const type = typeof event.type === 'string' ? event.type : 'unknown'
+  const messageId = typeof event.data?.email_id === 'string' ? event.data.email_id : null
+
+  return { type, messageId }
 }
 
 export async function POST(req: NextRequest) {
   const webhookSecret = process.env.RESEND_WEBHOOK_SECRET
-
   const body = await req.text()
   const signature = req.headers.get('svix-signature') ?? req.headers.get('resend-signature')
 
-  // Fail-closed: reject if signing secret is not configured
   if (!webhookSecret) {
     console.error('[resend-webhook] RESEND_WEBHOOK_SECRET not configured - rejecting all webhooks')
     return NextResponse.json({ error: 'Webhook not configured' }, { status: 503 })
   }
 
-  // Verify HMAC-SHA256 signature
-  const valid = await verifyResendSignature(body, signature, webhookSecret)
+  const valid = await verifyResendWebhookSignature(body, signature, webhookSecret)
   if (!valid) {
     console.warn('[resend-webhook] Invalid signature')
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
   }
 
-  let event: { type: string; data: { email_id?: string; created_at?: string; to?: string[] } }
+  let rawEvent: unknown
   try {
-    event = JSON.parse(body)
+    rawEvent = JSON.parse(body)
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { type, data } = event
-  const messageId = data?.email_id
-
-  if (!messageId) {
+  const rawMetadata = readRawEventMetadata(rawEvent)
+  if (!rawMetadata.messageId) {
     return NextResponse.json({ ok: true, skipped: 'no email_id' })
   }
 
-  // Only process supported email events
-  const HANDLED_TYPES: Record<string, string> = {
-    'email.opened': 'opened_at',
-    'email.clicked': 'clicked_at',
-    'email.bounced': 'bounced_at',
-    'email.spam_complaint': 'spam_at',
-  }
-
-  if (!(type in HANDLED_TYPES)) {
+  const normalizedEvent = normalizeResendWebhookEvent(rawEvent as any)
+  if (!normalizedEvent) {
     await logWebhookEvent({
       provider: 'resend',
-      eventType: type,
-      providerEventId: messageId,
+      eventType: rawMetadata.type,
+      providerEventId: rawMetadata.messageId,
       status: 'skipped',
       result: { reason: 'unhandled type' },
       payloadSizeBytes: body.length,
     })
-    return NextResponse.json({ ok: true, skipped: `unhandled type: ${type}` })
+    return NextResponse.json({ ok: true, skipped: `unhandled type: ${rawMetadata.type}` })
   }
 
-  // Use admin client to bypass RLS
+  const providerMessageId = normalizedEvent.message.providerMessageId ?? rawMetadata.messageId
+  const updateField = mapNormalizedEventToCampaignRecipientField(normalizedEvent)
+  if (!updateField) {
+    await logWebhookEvent({
+      provider: 'resend',
+      eventType: normalizedEvent.providerEventType,
+      providerEventId: providerMessageId,
+      status: 'skipped',
+      result: { reason: 'no legacy field mapping' },
+      payloadSizeBytes: body.length,
+    })
+    return NextResponse.json({ ok: true, skipped: 'no legacy field mapping' })
+  }
+
   const db = createAdminClient()
-
-  const now = data.created_at ?? new Date().toISOString()
-
-  const updateField = HANDLED_TYPES[type]
 
   const { error } = await db
     .from('campaign_recipients' as any)
-    .update({ [updateField]: now })
-    .eq('resend_message_id', messageId)
-    .is(updateField, null) // only update if not already set
+    .update({ [updateField]: normalizedEvent.occurredAt })
+    .eq('resend_message_id', normalizedEvent.message.legacyResendMessageId)
+    .is(updateField, null)
 
   if (error) {
-    console.error(`[resend-webhook] DB update failed for ${messageId}:`, error.message)
+    console.error(
+      `[resend-webhook] DB update failed for ${providerMessageId}:`,
+      error.message
+    )
     await logWebhookEvent({
       provider: 'resend',
-      eventType: type,
-      providerEventId: messageId,
+      eventType: normalizedEvent.providerEventType,
+      providerEventId: providerMessageId,
       status: 'failed',
       errorText: error.message,
       payloadSizeBytes: body.length,
@@ -132,17 +102,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'Database update failed' }, { status: 500 })
   }
 
-  // Q55 fix: Cross-populate email_suppressions on bounce/spam
-  // Prevents future transactional emails to addresses that hard-bounced
-  if ((type === 'email.bounced' || type === 'email.spam_complaint') && data.to?.length) {
-    for (const recipientEmail of data.to) {
+  if (normalizedEvent.suppression !== 'none' && normalizedEvent.recipients.length) {
+    for (const recipientEmail of normalizedEvent.recipients) {
       try {
         const normalized = recipientEmail.toLowerCase().trim()
-        const reason = type === 'email.bounced' ? 'hard_bounce' : 'spam_complaint'
-        await db
-          .from('email_suppressions' as any)
-          .upsert({ email: normalized, reason, source: 'resend_webhook' }, { onConflict: 'email' })
-        console.log(`[resend-webhook] Suppressed ${normalized} (${reason})`)
+        await db.from('email_suppressions' as any).upsert(
+          {
+            email: normalized,
+            reason: normalizedEvent.suppression,
+            source: 'resend_webhook',
+          },
+          { onConflict: 'email' }
+        )
+        console.log(`[resend-webhook] Suppressed ${normalized} (${normalizedEvent.suppression})`)
       } catch (suppressErr) {
         console.error('[resend-webhook] Suppression insert failed (non-blocking):', suppressErr)
       }
@@ -151,12 +123,12 @@ export async function POST(req: NextRequest) {
 
   await logWebhookEvent({
     provider: 'resend',
-    eventType: type,
-    providerEventId: messageId,
+    eventType: normalizedEvent.providerEventType,
+    providerEventId: providerMessageId,
     status: 'processed',
-    result: { field: updateField },
+    result: { field: updateField, kind: normalizedEvent.kind },
     payloadSizeBytes: body.length,
   })
-  console.log(`[resend-webhook] ${type} → ${messageId}`)
+  console.log(`[resend-webhook] ${normalizedEvent.providerEventType} -> ${providerMessageId}`)
   return NextResponse.json({ ok: true })
 }

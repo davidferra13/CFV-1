@@ -4,19 +4,27 @@
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getRecentAARs, getAARStats } from '@/lib/aar/actions'
+import { getEventsNeedingClosure } from '@/lib/events/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ActionSurfaceCard } from '@/components/dashboard/action-surface-card'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { FileAARButton } from '@/components/aar/file-aar-button'
 import { format } from 'date-fns'
 import { NoReviewsIllustration } from '@/components/ui/branded-illustrations'
+import { type CloseOutCandidate, resolveCloseOutNextTask } from '@/lib/interface/action-layer'
 
 export const metadata: Metadata = { title: 'Event Reviews' }
 
 export default async function AARHistoryPage() {
   await requireChef()
 
-  const [aars, stats] = await Promise.all([getRecentAARs(20), getAARStats()])
+  const [aars, stats, eventsNeedingClosure] = await Promise.all([
+    getRecentAARs(20),
+    getAARStats(),
+    getEventsNeedingClosure(),
+  ])
+  const closeOutTask = resolveCloseOutNextTask(eventsNeedingClosure as CloseOutCandidate[])
 
   return (
     <div className="space-y-8">
@@ -36,6 +44,8 @@ export default async function AARHistoryPage() {
           </Link>
         </div>
       </div>
+
+      {closeOutTask && <ActionSurfaceCard sectionLabel="Close Out Next" task={closeOutTask} />}
 
       {/* Stats Summary */}
       {stats && stats.totalReviews > 0 && (

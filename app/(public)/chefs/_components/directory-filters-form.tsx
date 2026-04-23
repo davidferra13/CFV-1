@@ -9,6 +9,13 @@ import {
   resolveCurrentDirectoryLocation,
 } from '@/lib/directory/location-actions'
 import type { DirectoryFacetOption, DirectorySortMode } from '@/lib/directory/utils'
+import {
+  NEUTRAL_DIRECTORY_QUERY_EXAMPLE,
+  NEUTRAL_LOCATION_ACCESS_ERROR_TEXT,
+  NEUTRAL_LOCATION_HELPER_TEXT,
+  NEUTRAL_LOCATION_PLACEHOLDER,
+  NEUTRAL_LOCATION_UNAVAILABLE_TEXT,
+} from '@/lib/site/national-brand-copy'
 import { LocationAutocomplete, type LocationData } from '@/components/ui/location-autocomplete'
 
 type DirectoryLocationSource = 'manual' | 'current' | 'approximate'
@@ -22,12 +29,16 @@ type DirectoryFiltersFormProps = {
   dietaryFilter: string
   priceRangeFilter: string
   partnerTypeFilter: string
+  locationExperienceFilter: string
+  locationBestForFilter: string
   acceptingOnly: boolean
   sortMode: DirectorySortMode
   maxQueryLength: number
   cuisineOptions: DirectoryFacetOption[]
   serviceTypeOptions: DirectoryFacetOption[]
   partnerTypeOptions: DirectoryFacetOption[]
+  locationExperienceOptions: DirectoryFacetOption[]
+  locationBestForOptions: DirectoryFacetOption[]
 }
 
 type LocationFeedback =
@@ -44,12 +55,16 @@ export function DirectoryFiltersForm({
   dietaryFilter,
   priceRangeFilter,
   partnerTypeFilter,
+  locationExperienceFilter,
+  locationBestForFilter,
   acceptingOnly,
   sortMode,
   maxQueryLength,
   cuisineOptions,
   serviceTypeOptions,
   partnerTypeOptions,
+  locationExperienceOptions,
+  locationBestForOptions,
 }: DirectoryFiltersFormProps) {
   const formRef = useRef<HTMLFormElement>(null)
   const [locationValue, setLocationValue] = useState(locationFilter)
@@ -76,6 +91,8 @@ export function DirectoryFiltersForm({
     const nextServiceType = `${formData.get('serviceType') || ''}`.trim()
     const nextPriceRange = `${formData.get('priceRange') || ''}`.trim()
     const nextPartnerType = `${formData.get('partnerType') || ''}`.trim()
+    const nextLocationExperience = `${formData.get('locationExperience') || ''}`.trim()
+    const nextLocationBestFor = `${formData.get('locationBestFor') || ''}`.trim()
     const nextAcceptingOnly = formData.get('accepting') === '1'
     const nextSort = `${formData.get('sort') || 'featured'}`.trim()
 
@@ -88,6 +105,8 @@ export function DirectoryFiltersForm({
       has_service_type_filter: Boolean(nextServiceType),
       has_price_range_filter: Boolean(nextPriceRange),
       has_partner_type_filter: Boolean(nextPartnerType),
+      has_location_experience_filter: Boolean(nextLocationExperience),
+      has_location_best_for_filter: Boolean(nextLocationBestFor),
       accepting_only: nextAcceptingOnly,
       sort_mode: nextSort || 'featured',
     })
@@ -101,6 +120,8 @@ export function DirectoryFiltersForm({
       service_type_filter: nextServiceType || 'none',
       price_range_filter: nextPriceRange || 'none',
       partner_type_filter: nextPartnerType || 'none',
+      location_experience_filter: nextLocationExperience || 'none',
+      location_best_for_filter: nextLocationBestFor || 'none',
       accepting_only: nextAcceptingOnly,
       sort_mode: nextSort || 'featured',
     })
@@ -171,7 +192,7 @@ export function DirectoryFiltersForm({
       })
       setLocationFeedback({
         tone: 'error',
-        message: 'We could not determine your location. Enter a ZIP code or city, state.',
+        message: NEUTRAL_LOCATION_UNAVAILABLE_TEXT,
       })
       return
     }
@@ -244,7 +265,7 @@ export function DirectoryFiltersForm({
         })
         setLocationFeedback({
           tone: 'error',
-          message: 'We could not access your location. Enter a ZIP code or city, state.',
+          message: NEUTRAL_LOCATION_ACCESS_ERROR_TEXT,
         })
       } finally {
         setIsLocating(false)
@@ -269,7 +290,7 @@ export function DirectoryFiltersForm({
             type="text"
             name="q"
             defaultValue={query}
-            placeholder={'"Italian chef for a wedding near Boston" or just a name'}
+            placeholder={NEUTRAL_DIRECTORY_QUERY_EXAMPLE}
             maxLength={maxQueryLength}
             className="block w-full rounded-xl border border-stone-600 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
@@ -303,7 +324,7 @@ export function DirectoryFiltersForm({
               setLocationSourceValue('manual')
               setLocationFeedback(null)
             }}
-            placeholder="ZIP code or city, state"
+            placeholder={NEUTRAL_LOCATION_PLACEHOLDER}
             className="block w-full rounded-xl border border-stone-600 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
           <button
@@ -317,7 +338,7 @@ export function DirectoryFiltersForm({
         </div>
         <input type="hidden" name="locationSource" value={locationSourceValue} />
         <p className="mt-2 text-xs text-stone-500">
-          Enter a ZIP code or city, state. Browser location is only requested when you ask.
+          {NEUTRAL_LOCATION_HELPER_TEXT} Browser location is only requested when you ask.
         </p>
         {locationFeedback && (
           <p
@@ -383,6 +404,42 @@ export function DirectoryFiltersForm({
           <option value="allergy_aware">Allergy-Aware</option>
           <option value="medical_diets">Medical Diets</option>
           <option value="religious_diets">Religious Diets</option>
+        </select>
+      </label>
+
+      <label>
+        <span className="text-xs font-semibold uppercase tracking-wide text-stone-400">
+          Setting vibe
+        </span>
+        <select
+          name="locationExperience"
+          defaultValue={locationExperienceFilter}
+          className="mt-1 block w-full rounded-xl border border-stone-600 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+        >
+          <option value="">Any vibe</option>
+          {locationExperienceOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label} ({option.count})
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label>
+        <span className="text-xs font-semibold uppercase tracking-wide text-stone-400">
+          Best for
+        </span>
+        <select
+          name="locationBestFor"
+          defaultValue={locationBestForFilter}
+          className="mt-1 block w-full rounded-xl border border-stone-600 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+        >
+          <option value="">Any format</option>
+          {locationBestForOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label} ({option.count})
+            </option>
+          ))}
         </select>
       </label>
 

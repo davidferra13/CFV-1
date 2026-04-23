@@ -60,6 +60,10 @@ import { parseCityStateFromConversation } from '@/lib/inquiries/conversation-sca
 import { getDefaultTakeAChefCommissionPercent } from '@/lib/integrations/take-a-chef-defaults'
 import type { SyncResult, ParsedEmail } from './types'
 import type { Json } from '@/types/database'
+import type { CommunicationSource } from '@/lib/communication/types'
+import { logCommunicationAction } from '@/lib/communication/pipeline'
+import { logCommunicationMessageCompat } from '@/lib/communication/messages-compat'
+import { getGoogleGmailControl } from '@/lib/google/mailbox-control'
 
 // ─── Known Platform Domains ───────────────────────────────────────────────
 // Platform emails may be auto-archived by Gmail filters, so we run a second
@@ -84,9 +88,271 @@ function asUnknownFieldsRecord(value: Json | null | undefined): Record<string, u
   return value as Record<string, unknown>
 }
 
+type GmailMailboxContext = {
+  mailboxId: string | null
+  managedAddress: string | null
+}
+
+type CanonicalCommunicationContext = {
+  id: string | null
+  threadId: string | null
+  resolvedClientId: string | null
+  linkedEntityType: 'inquiry' | 'event' | null
+  linkedEntityId: string | null
+  timestamp: string | null
+}
+
+async function syncGmailMessageIntoCommunicationBridge(input: {
+  db: DbClient
+  tenantId: string
+  email: ParsedEmail
+  source: CommunicationSource
+  mailbox: GmailMailboxContext
+  canonicalCommunication?: CanonicalCommunicationContext | null
+  clientId?: string | null
+  linkedEntityType?: 'inquiry' | 'event' | null
+  linkedEntityId?: string | null
+  providerName?: string | null
+}): Promise<{
+  threadId: string | null
+  communicationEventId: string | null
+  messageId: string | null
+}> {
+  const db = input.db as any
+  let event =
+    input.canonicalCommunication?.id && input.canonicalCommunication.threadId
+      ? {
+          id: input.canonicalCommunication.id,
+          thread_id: input.canonicalCommunication.threadId,
+          resolved_client_id: input.canonicalCommunication.resolvedClientId,
+          linked_entity_type: input.canonicalCommunication.linkedEntityType,
+          linked_entity_id: input.canonicalCommunication.linkedEntityId,
+          status:
+            input.canonicalCommunication.linkedEntityType &&
+            input.canonicalCommunication.linkedEntityId
+              ? 'linked'
+              : 'unlinked',
+          external_thread_key: input.email.threadId || null,
+          provider_name: input.providerName || 'gmail',
+          managed_channel_address: input.mailbox.managedAddress,
+          recipient_address: input.mailbox.managedAddress,
+        }
+      : null
+
+  if (!event?.id && input.email.messageId) {
+    const { data } = await db
+      .from('communication_events')
+      .select(
+        'id, thread_id, resolved_client_id, linked_entity_type, linked_entity_id, status, external_thread_key, provider_name, managed_channel_address, recipient_address'
+      )
+      .eq('tenant_id', input.tenantId)
+      .eq('source', input.source)
+      .eq('external_id', input.email.messageId)
+      .maybeSingle()
+    event = data || null
+  }
+
+  if (!event?.thread_id) {
+    return { threadId: null, communicationEventId: event?.id || null, messageId: null }
+  }
+
+  const nextLinkedEntityType = input.linkedEntityType ?? event.linked_entity_type ?? null
+  const nextLinkedEntityId = input.linkedEntityId ?? event.linked_entity_id ?? null
+  const nextResolvedClientId = input.clientId ?? event.resolved_client_id ?? null
+  const nextStatus =
+    nextLinkedEntityType && nextLinkedEntityId ? 'linked' : (event.status as string) || 'unlinked'
+
+  const updatePayload: Record<string, unknown> = {}
+  if (!event.resolved_client_id && nextResolvedClientId) {
+    updatePayload.resolved_client_id = nextResolvedClientId
+  }
+  if (nextLinkedEntityType && nextLinkedEntityId) {
+    if (event.linked_entity_type !== nextLinkedEntityType) {
+      updatePayload.linked_entity_type = nextLinkedEntityType
+    }
+    if (event.linked_entity_id !== nextLinkedEntityId) {
+      updatePayload.linked_entity_id = nextLinkedEntityId
+    }
+    if (event.status !== 'linked') {
+      updatePayload.status = 'linked'
+    }
+  }
+  if (!event.external_thread_key && input.email.threadId) {
+    updatePayload.external_thread_key = input.email.threadId
+  }
+  if (!event.provider_name) {
+    updatePayload.provider_name = input.providerName || 'gmail'
+  }
+  if (!event.managed_channel_address && input.mailbox.managedAddress) {
+    updatePayload.managed_channel_address = input.mailbox.managedAddress
+  }
+  if (!event.recipient_address && input.mailbox.managedAddress) {
+    updatePayload.recipient_address = input.mailbox.managedAddress
+  }
+
+  if (Object.keys(updatePayload).length > 0) {
+    await db
+      .from('communication_events')
+      .update(updatePayload)
+      .eq('id', event.id)
+      .eq('tenant_id', input.tenantId)
+  }
+
+  if (
+    nextLinkedEntityType &&
+    nextLinkedEntityId &&
+    (event.linked_entity_type !== nextLinkedEntityType ||
+      event.linked_entity_id !== nextLinkedEntityId ||
+      event.status !== nextStatus)
+  ) {
+    await logCommunicationAction({
+      tenantId: input.tenantId,
+      communicationEventId: event.id,
+      threadId: event.thread_id,
+      action: nextLinkedEntityType === 'inquiry' ? 'link_to_inquiry' : 'attach_to_event',
+      source: 'import',
+      previousState: {
+        resolved_client_id: event.resolved_client_id || null,
+        linked_entity_type: event.linked_entity_type || null,
+        linked_entity_id: event.linked_entity_id || null,
+        status: event.status || 'unlinked',
+      },
+      newState: {
+        resolved_client_id: nextResolvedClientId,
+        linked_entity_type: nextLinkedEntityType,
+        linked_entity_id: nextLinkedEntityId,
+        status: nextStatus,
+      },
+    })
+  }
+
+  const messageId = await logCommunicationMessageCompat({
+    tenantId: input.tenantId,
+    threadId: event.thread_id,
+    direction: 'inbound',
+    channel: 'email',
+    subject: input.email.subject || null,
+    body: input.email.body,
+    timestamp: input.email.date
+      ? new Date(input.email.date).toISOString()
+      : new Date().toISOString(),
+    clientId: nextResolvedClientId,
+    linkedEntityType: nextLinkedEntityType,
+    linkedEntityId: nextLinkedEntityId,
+    externalId: input.email.messageId,
+    externalThreadKey: input.email.threadId,
+    recipientAddress: input.mailbox.managedAddress,
+    mailboxId: input.mailbox.mailboxId,
+  })
+
+  return {
+    threadId: event.thread_id,
+    communicationEventId: event.id,
+    messageId: messageId || null,
+  }
+}
+
+function mapPlatformToCommunicationSource(
+  platform: PlatformChannel | 'take_a_chef' | 'yhangry'
+): CommunicationSource {
+  switch (platform) {
+    case 'take_a_chef':
+      return 'takeachef'
+    case 'yhangry':
+      return 'yhangry'
+    case 'wix_forms':
+      return 'website_form'
+    default:
+      return platform
+  }
+}
+
+async function ingestGmailImportedCommunicationEvent(input: {
+  tenantId: string
+  email: ParsedEmail
+  mailbox: GmailMailboxContext
+  source: CommunicationSource
+  isRawSignalOnly?: boolean
+}): Promise<CanonicalCommunicationContext | null> {
+  if (!isCommTriageEnabled()) {
+    return null
+  }
+
+  try {
+    const { ingestCommunicationEvent } = await import('@/lib/communication/pipeline')
+    const canonicalResult = await ingestCommunicationEvent({
+      tenantId: input.tenantId,
+      source: input.source,
+      externalId: input.email.messageId,
+      externalThreadKey: input.email.threadId,
+      timestamp: input.email.date ? new Date(input.email.date).toISOString() : new Date().toISOString(),
+      senderIdentity: `${input.email.from.name || input.email.from.email} <${input.email.from.email}>`,
+      rawContent: `${input.email.subject || ''}\n\n${input.email.body || ''}`.trim(),
+      direction: 'inbound',
+      ingestionSource: 'import',
+      providerName: 'gmail',
+      managedChannelAddress: input.mailbox.managedAddress,
+      recipientAddress: input.mailbox.managedAddress,
+      isRawSignalOnly: input.isRawSignalOnly ?? false,
+    })
+
+    return {
+      id: canonicalResult.id || null,
+      threadId: canonicalResult.threadId || null,
+      resolvedClientId: canonicalResult.resolvedClientId || null,
+      linkedEntityType: canonicalResult.linkedEntityType || null,
+      linkedEntityId: canonicalResult.linkedEntityId || null,
+      timestamp: canonicalResult.timestamp || null,
+    }
+  } catch (intakeErr) {
+    console.error('[syncGmailInbox] Communication intake failed (non-fatal):', intakeErr)
+    return null
+  }
+}
+
+async function insertLegacyGmailMessage(input: {
+  db: DbClient
+  tenantId: string
+  email: ParsedEmail
+  mailbox: GmailMailboxContext
+  clientId?: string | null
+  inquiryId?: string | null
+  eventId?: string | null
+}) {
+  const db = input.db as any
+  const { data: message } = await db
+    .from('messages')
+    .insert({
+      tenant_id: input.tenantId,
+      inquiry_id: input.inquiryId || null,
+      event_id: input.eventId || null,
+      client_id: input.clientId || null,
+      mailbox_id: input.mailbox.mailboxId,
+      recipient_email: input.mailbox.managedAddress || null,
+      channel: 'email' as const,
+      direction: 'inbound' as const,
+      status: 'logged' as const,
+      subject: input.email.subject,
+      body: input.email.body,
+      sent_at: input.email.date
+        ? new Date(input.email.date).toISOString()
+        : new Date().toISOString(),
+      gmail_message_id: input.email.messageId,
+      gmail_thread_id: input.email.threadId,
+    })
+    .select('id')
+    .single()
+
+  return message?.id || null
+}
+
 // ─── Main Sync Function ─────────────────────────────────────────────────────
 
-export async function syncGmailInbox(chefId: string, tenantId: string): Promise<SyncResult> {
+export async function syncGmailInbox(
+  chefId: string,
+  tenantId: string,
+  options?: { mailboxId?: string | null }
+): Promise<SyncResult> {
   const result: SyncResult = {
     processed: 0,
     inquiriesCreated: 0,
@@ -96,25 +362,69 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
   }
 
   const db = createServerClient({ admin: true })
+  const control = await getGoogleGmailControl({
+    chefId,
+    tenantId,
+    db,
+    allowRepair: true,
+  })
+  let mailbox =
+    options?.mailboxId && options.mailboxId.trim()
+      ? (
+          await db
+            .from('google_mailboxes')
+            .select('id, normalized_email, gmail_history_id, gmail_connected, is_active')
+            .eq('id', options.mailboxId)
+            .eq('chef_id', chefId)
+            .eq('tenant_id', tenantId)
+            .maybeSingle()
+        ).data
+      : control.mailbox?.gmailConnected && control.mailbox.isActive
+        ? {
+            id: control.mailbox.id,
+            normalized_email: control.mailbox.normalizedEmail,
+            gmail_history_id: control.mailbox.gmailHistoryId,
+            gmail_connected: control.mailbox.gmailConnected,
+            is_active: control.mailbox.isActive,
+          }
+        : null
+
+  if (options?.mailboxId && !mailbox) {
+    result.errors.push(`Mailbox ${options.mailboxId} is not available for Gmail sync`)
+    return result
+  }
+
+  if (!mailbox && !control.legacyConnection?.gmailConnected) {
+    result.errors.push('No mailbox-native or legacy Gmail connection is available')
+    return result
+  }
 
   // 1. Get valid access token (auto-refreshes if needed)
   let accessToken: string
   try {
-    accessToken = await getGoogleAccessToken(chefId, { skipSessionCheck: true })
+    accessToken = await getGoogleAccessToken(chefId, {
+      skipSessionCheck: true,
+      mailboxId: mailbox?.id || null,
+    })
   } catch (err) {
     const error = err as Error
     result.errors.push(`Token error: ${error.message}`)
     return result
   }
 
-  // 2. Get current sync state
-  const { data: conn } = await db
-    .from('google_connections')
-    .select('gmail_history_id')
-    .eq('chef_id', chefId)
-    .single()
+  const historyId = mailbox?.gmail_history_id || control.legacyConnection?.gmailHistoryId
+  const mailboxContext: GmailMailboxContext = {
+    mailboxId: mailbox?.id || null,
+    managedAddress: mailbox?.normalized_email || control.legacyConnection?.connectedEmail || null,
+  }
 
-  const historyId = conn?.gmail_history_id
+  async function updateSyncState(updates: Record<string, unknown>) {
+    await db.from('google_connections').update(updates).eq('chef_id', chefId)
+
+    if (mailbox?.id) {
+      await db.from('google_mailboxes').update(updates).eq('id', mailbox.id)
+    }
+  }
 
   // 3. Fetch message IDs to process
   let messageIds: string[]
@@ -130,10 +440,7 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
 
       // Bootstrap the history ID for future incremental syncs
       const profile = await getGmailProfile(accessToken)
-      await db
-        .from('google_connections')
-        .update({ gmail_history_id: profile.historyId })
-        .eq('chef_id', chefId)
+      await updateSyncState({ gmail_history_id: profile.historyId })
     } else {
       // Incremental sync - only new messages since last history ID
       const historyResult = await listMessagesSinceHistory(accessToken, historyId)
@@ -147,21 +454,15 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
         })
         messageIds = messages.map((m) => m.id)
         const profile = await getGmailProfile(accessToken)
-        await db
-          .from('google_connections')
-          .update({ gmail_history_id: profile.historyId })
-          .eq('chef_id', chefId)
+        await updateSyncState({ gmail_history_id: profile.historyId })
       } else if (historyResult.latestHistoryId) {
-        await db
-          .from('google_connections')
-          .update({ gmail_history_id: historyResult.latestHistoryId })
-          .eq('chef_id', chefId)
+        await updateSyncState({ gmail_history_id: historyResult.latestHistoryId })
       }
     }
   } catch (err) {
     if (err instanceof GmailScopeError) {
       // Mark connection as needing reauth so the UI shows a reconnect prompt
-      await db.from('google_connections').update({ gmail_sync_errors: 99 }).eq('chef_id', chefId)
+      await updateSyncState({ gmail_sync_errors: 99 })
       result.errors.push(
         'Gmail permissions are insufficient. Please disconnect and reconnect your Gmail in Settings.'
       )
@@ -198,11 +499,16 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
   const knownClientEmails = (clients || []).map((c: any) => c.email).filter(Boolean) as string[]
 
   // 5. Batch-fetch already-synced message IDs to avoid N+1 dedup queries
-  const { data: alreadySynced } = await db
+  let alreadySyncedQuery = db
     .from('gmail_sync_log')
     .select('gmail_message_id')
-    .eq('tenant_id', tenantId)
     .in('gmail_message_id', messageIds)
+
+  alreadySyncedQuery = mailboxContext.mailboxId
+    ? alreadySyncedQuery.eq('mailbox_id', mailboxContext.mailboxId)
+    : alreadySyncedQuery.eq('tenant_id', tenantId)
+
+  const { data: alreadySynced } = await alreadySyncedQuery
   const syncedSet = new Set((alreadySynced ?? []).map((r: any) => r.gmail_message_id))
 
   // 6. Process each message
@@ -218,6 +524,7 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
         messageId,
         chefId,
         tenantId,
+        mailboxContext,
         knownClientEmails,
         result
       )
@@ -236,6 +543,16 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
     })
     .eq('chef_id', chefId)
 
+  if (mailbox?.id) {
+    await db
+      .from('google_mailboxes')
+      .update({
+        gmail_last_sync_at: new Date().toISOString(),
+        gmail_sync_errors: result.errors.length,
+      })
+      .eq('id', mailbox.id)
+  }
+
   return result
 }
 
@@ -247,6 +564,7 @@ async function processMessage(
   messageId: string,
   chefId: string,
   tenantId: string,
+  mailbox: GmailMailboxContext,
   knownClientEmails: string[],
   result: SyncResult
 ) {
@@ -257,17 +575,15 @@ async function processMessage(
   result.processed++
 
   // Skip emails sent by the chef themselves (outbound)
-  const { data: conn } = await db
-    .from('google_connections')
-    .select('connected_email')
-    .eq('chef_id', chefId)
-    .single()
-
-  if (conn?.connected_email && email.from.email === conn.connected_email) {
+  if (
+    mailbox.managedAddress &&
+    email.from.email?.trim().toLowerCase() === mailbox.managedAddress.toLowerCase()
+  ) {
     await logSyncEntry(db, tenantId, email, {
       classification: 'personal',
       confidence: 'high',
       action_taken: 'skipped',
+      mailbox_id: mailbox.mailboxId,
     })
     result.skipped++
     return
@@ -278,12 +594,12 @@ async function processMessage(
   // Skips Ollama classification entirely - platform emails are consistently
   // formatted and don't need AI to classify.
   if (isTakeAChefEmail(email.from.email)) {
-    await handleTakeAChefEmail(db, email, chefId, tenantId, result)
+    await handleTakeAChefEmail(db, email, chefId, tenantId, result, mailbox)
     return
   }
 
   if (isYhangryEmail(email.from.email)) {
-    await handleYhangryEmail(db, email, chefId, tenantId, result)
+    await handleYhangryEmail(db, email, chefId, tenantId, result, mailbox)
     return
   }
 
@@ -294,6 +610,7 @@ async function processMessage(
       chefId,
       tenantId,
       result,
+      mailbox,
       'thumbtack',
       parseThumbtackEmail
     )
@@ -307,6 +624,7 @@ async function processMessage(
       chefId,
       tenantId,
       result,
+      mailbox,
       'theknot',
       parseTheKnotEmail
     )
@@ -314,7 +632,16 @@ async function processMessage(
   }
 
   if (isBarkEmail(email.from.email)) {
-    await handleGenericPlatformEmail(db, email, chefId, tenantId, result, 'bark', parseBarkEmail)
+    await handleGenericPlatformEmail(
+      db,
+      email,
+      chefId,
+      tenantId,
+      result,
+      mailbox,
+      'bark',
+      parseBarkEmail
+    )
     return
   }
 
@@ -325,6 +652,7 @@ async function processMessage(
       chefId,
       tenantId,
       result,
+      mailbox,
       'cozymeal',
       parseCozymealEmail
     )
@@ -338,6 +666,7 @@ async function processMessage(
       chefId,
       tenantId,
       result,
+      mailbox,
       'gigsalad',
       parseGigSaladEmail
     )
@@ -351,6 +680,7 @@ async function processMessage(
       chefId,
       tenantId,
       result,
+      mailbox,
       'google_business',
       parseGoogleBusinessEmail
     )
@@ -364,6 +694,7 @@ async function processMessage(
       chefId,
       tenantId,
       result,
+      mailbox,
       'wix_forms',
       parseWixFormsEmail
     )
@@ -377,6 +708,7 @@ async function processMessage(
       chefId,
       tenantId,
       result,
+      mailbox,
       'privatechefmanager',
       parsePrivateChefManagerEmail
     )
@@ -390,6 +722,7 @@ async function processMessage(
       chefId,
       tenantId,
       result,
+      mailbox,
       'hireachef',
       parseHireAChefEmail
     )
@@ -403,6 +736,7 @@ async function processMessage(
       chefId,
       tenantId,
       result,
+      mailbox,
       'cuisineistchef',
       parseCuisineistChefEmail
     )
@@ -429,37 +763,40 @@ async function processMessage(
   // Non-actionable categories (personal, spam, marketing, newsletter) are
   // stored with is_raw_signal_only=true so they appear in the raw feed
   // but never surface in triage tabs or create follow-up timers.
-  if (isCommTriageEnabled()) {
-    const actionableCategories = ['inquiry', 'existing_thread']
-    const isRawSignalOnly = !actionableCategories.includes(classification.category)
-
-    try {
-      const { ingestCommunicationEvent } = await import('@/lib/communication/pipeline')
-      await ingestCommunicationEvent({
-        tenantId,
-        source: 'email',
-        externalId: email.messageId,
-        externalThreadKey: email.threadId,
-        timestamp: email.date ? new Date(email.date).toISOString() : new Date().toISOString(),
-        senderIdentity: `${email.from.name || email.from.email} <${email.from.email}>`,
-        rawContent: `${email.subject || ''}\n\n${email.body || ''}`.trim(),
-        direction: 'inbound',
-        ingestionSource: 'import',
-        isRawSignalOnly,
-      })
-    } catch (intakeErr) {
-      console.error('[processMessage] Communication intake failed (non-fatal):', intakeErr)
-    }
-  }
+  const actionableCategories = ['inquiry', 'existing_thread']
+  const canonicalCommunication = await ingestGmailImportedCommunicationEvent({
+    tenantId,
+    email,
+    mailbox,
+    source: 'email',
+    isRawSignalOnly: !actionableCategories.includes(classification.category),
+  })
 
   // Route by classification
   switch (classification.category) {
     case 'inquiry':
-      await handleInquiry(db, email, chefId, tenantId, classification, result)
+      await handleInquiry(
+        db,
+        email,
+        chefId,
+        tenantId,
+        classification,
+        result,
+        canonicalCommunication,
+        mailbox
+      )
       break
 
     case 'existing_thread':
-      await handleExistingThread(db, email, tenantId, classification, result)
+      await handleExistingThread(
+        db,
+        email,
+        tenantId,
+        classification,
+        result,
+        canonicalCommunication,
+        mailbox
+      )
       break
 
     default:
@@ -468,6 +805,7 @@ async function processMessage(
         classification: classification.category,
         confidence: classification.confidence,
         action_taken: 'skipped',
+        mailbox_id: mailbox.mailboxId,
       })
       result.skipped++
       break
@@ -482,7 +820,9 @@ async function handleInquiry(
   chefId: string,
   tenantId: string,
   classification: { category: string; confidence: string },
-  result: SyncResult
+  result: SyncResult,
+  canonicalCommunication: CanonicalCommunicationContext | null,
+  mailbox: GmailMailboxContext
 ) {
   try {
     // ─── Phase 1: Deterministic extraction (instant, free, always works) ───
@@ -618,24 +958,27 @@ async function handleInquiry(
 
     if (inquiryError) throw new Error(inquiryError.message)
 
-    // Log the raw message in the messages table
-    const { data: message } = await db
-      .from('messages')
-      .insert({
-        tenant_id: tenantId,
-        inquiry_id: inquiry.id,
-        client_id: clientId,
-        channel: 'email' as const,
-        direction: 'inbound' as const,
-        status: 'logged' as const,
-        subject: email.subject,
-        body: email.body,
-        sent_at: email.date ? new Date(email.date).toISOString() : new Date().toISOString(),
-        gmail_message_id: email.messageId,
-        gmail_thread_id: email.threadId,
-      })
-      .select('id')
-      .single()
+    const bridgeResult = await syncGmailMessageIntoCommunicationBridge({
+      db,
+      tenantId,
+      email,
+      source: 'email',
+      mailbox,
+      canonicalCommunication,
+      clientId,
+      linkedEntityType: 'inquiry',
+      linkedEntityId: inquiry.id,
+    })
+    const messageId =
+      bridgeResult.messageId ||
+      (await insertLegacyGmailMessage({
+        db,
+        tenantId,
+        email,
+        mailbox,
+        clientId,
+        inquiryId: inquiry.id,
+      }))
 
     // Log in sync log
     await logSyncEntry(db, tenantId, email, {
@@ -643,7 +986,8 @@ async function handleInquiry(
       confidence: classification.confidence,
       action_taken: 'created_inquiry',
       inquiry_id: inquiry.id,
-      message_id: message?.id || null,
+      message_id: messageId,
+      mailbox_id: mailbox.mailboxId,
     })
 
     // Notify the chef about new inquiry (non-blocking)
@@ -748,6 +1092,7 @@ async function handleInquiry(
       confidence: classification.confidence,
       action_taken: 'error',
       error: error.message,
+      mailbox_id: mailbox.mailboxId,
     })
     result.errors.push(`Inquiry creation for ${email.from.email}: ${error.message}`)
   }
@@ -760,7 +1105,9 @@ async function handleExistingThread(
   email: ParsedEmail,
   tenantId: string,
   classification: { category: string; confidence: string },
-  result: SyncResult
+  result: SyncResult,
+  canonicalCommunication: CanonicalCommunicationContext | null,
+  mailbox: GmailMailboxContext
 ) {
   try {
     // Find the client by email
@@ -769,24 +1116,6 @@ async function handleExistingThread(
       .select('id')
       .eq('tenant_id', tenantId)
       .eq('email', email.from.email)
-      .single()
-
-    // Log the message linked to the client (and optionally inquiry by thread)
-    const { data: message } = await db
-      .from('messages')
-      .insert({
-        tenant_id: tenantId,
-        client_id: client?.id || null,
-        channel: 'email' as const,
-        direction: 'inbound' as const,
-        status: 'logged' as const,
-        subject: email.subject,
-        body: email.body,
-        sent_at: email.date ? new Date(email.date).toISOString() : new Date().toISOString(),
-        gmail_message_id: email.messageId,
-        gmail_thread_id: email.threadId,
-      })
-      .select('id')
       .single()
 
     // Link message to inquiry by thread and auto-advance inquiry status
@@ -805,9 +1134,6 @@ async function handleExistingThread(
         linkedInquiryId = threadMessage.inquiry_id
 
         // Link this reply message to the same inquiry
-        if (message?.id) {
-          await db.from('messages').update({ inquiry_id: linkedInquiryId }).eq('id', message.id)
-        }
 
         // Auto-advance: awaiting_client → awaiting_chef (client replied)
         // DB trigger auto-logs to inquiry_state_transitions
@@ -990,11 +1316,34 @@ async function handleExistingThread(
       }
     }
 
+    const bridgeResult = await syncGmailMessageIntoCommunicationBridge({
+      db,
+      tenantId,
+      email,
+      source: 'email',
+      mailbox,
+      canonicalCommunication,
+      clientId: client?.id || null,
+      linkedEntityType: linkedInquiryId ? 'inquiry' : null,
+      linkedEntityId: linkedInquiryId,
+    })
+    const messageId =
+      bridgeResult.messageId ||
+      (await insertLegacyGmailMessage({
+        db,
+        tenantId,
+        email,
+        mailbox,
+        clientId: client?.id || null,
+        inquiryId: linkedInquiryId,
+      }))
+
     await logSyncEntry(db, tenantId, email, {
       classification: classification.category,
       confidence: classification.confidence,
       action_taken: 'logged_message',
-      message_id: message?.id || null,
+      message_id: messageId,
+      mailbox_id: mailbox.mailboxId,
     })
 
     // Notify chef about client reply (non-blocking)
@@ -1029,6 +1378,7 @@ async function handleExistingThread(
       confidence: classification.confidence,
       action_taken: 'error',
       error: error.message,
+      mailbox_id: mailbox.mailboxId,
     })
     result.errors.push(`Thread logging for ${email.from.email}: ${error.message}`)
   }
@@ -1041,9 +1391,21 @@ async function handleTakeAChefEmail(
   email: ParsedEmail,
   chefId: string,
   tenantId: string,
-  result: SyncResult
+  result: SyncResult,
+  mailbox: GmailMailboxContext
 ) {
   const parsed = parseTakeAChefEmail(email)
+  const canonicalCommunication = await ingestGmailImportedCommunicationEvent({
+    tenantId,
+    email,
+    mailbox,
+    source: 'takeachef',
+    isRawSignalOnly: ![
+      'tac_new_inquiry',
+      'tac_client_message',
+      'tac_booking_confirmed',
+    ].includes(parsed.emailType),
+  })
 
   if (parsed.parseWarnings.length > 0) {
     console.warn(`[TakeAChef] Parse warnings for ${email.messageId}:`, parsed.parseWarnings)
@@ -1052,23 +1414,65 @@ async function handleTakeAChefEmail(
   try {
     switch (parsed.emailType) {
       case 'tac_new_inquiry':
-        await handleTacNewInquiry(db, email, parsed, chefId, tenantId, result)
+        await handleTacNewInquiry(
+          db,
+          email,
+          parsed,
+          chefId,
+          tenantId,
+          result,
+          canonicalCommunication,
+          mailbox
+        )
         break
 
       case 'tac_client_message':
-        await handleTacClientMessage(db, email, parsed, tenantId, result)
+        await handleTacClientMessage(
+          db,
+          email,
+          parsed,
+          tenantId,
+          result,
+          canonicalCommunication,
+          mailbox
+        )
         break
 
       case 'tac_booking_confirmed':
-        await handleTacBookingConfirmed(db, email, parsed, chefId, tenantId, result)
+        await handleTacBookingConfirmed(
+          db,
+          email,
+          parsed,
+          chefId,
+          tenantId,
+          result,
+          canonicalCommunication,
+          mailbox
+        )
         break
 
       case 'tac_customer_info':
-        await handleTacCustomerInfo(db, email, parsed, tenantId, result)
+        await handleTacCustomerInfo(
+          db,
+          email,
+          parsed,
+          tenantId,
+          result,
+          canonicalCommunication,
+          mailbox
+        )
         break
 
       case 'tac_payment':
-        await handleTacPayment(db, email, parsed, tenantId, result)
+        await handleTacPayment(
+          db,
+          email,
+          parsed,
+          tenantId,
+          result,
+          canonicalCommunication,
+          mailbox
+        )
         break
 
       case 'tac_administrative':
@@ -1078,6 +1482,7 @@ async function handleTakeAChefEmail(
           confidence: 'high',
           action_taken: 'administrative_skipped',
           platform_email_type: parsed.emailType,
+          mailbox_id: mailbox.mailboxId,
         })
         result.skipped++
         break
@@ -1090,6 +1495,7 @@ async function handleTakeAChefEmail(
       action_taken: 'error',
       platform_email_type: parsed.emailType,
       error: error.message,
+      mailbox_id: mailbox.mailboxId,
     })
     result.errors.push(`TakeAChef ${parsed.emailType} for ${email.messageId}: ${error.message}`)
   }
@@ -1103,7 +1509,9 @@ async function handleTacNewInquiry(
   parsed: TacParseResult,
   chefId: string,
   tenantId: string,
-  result: SyncResult
+  result: SyncResult,
+  canonicalCommunication: CanonicalCommunicationContext | null,
+  mailbox: GmailMailboxContext
 ) {
   const inquiry = parsed.inquiry
   if (!inquiry) {
@@ -1113,6 +1521,7 @@ async function handleTacNewInquiry(
       action_taken: 'error',
       platform_email_type: 'tac_new_inquiry',
       error: 'Failed to parse inquiry fields from email body',
+      mailbox_id: mailbox.mailboxId,
     })
     result.errors.push(`TakeAChef inquiry parse failed for ${email.messageId}`)
     return
@@ -1134,6 +1543,7 @@ async function handleTacNewInquiry(
       action_taken: 'duplicate_skipped',
       platform_email_type: 'tac_new_inquiry',
       inquiry_id: dedup.existingInquiryId,
+      mailbox_id: mailbox.mailboxId,
     })
     result.skipped++
     return
@@ -1258,6 +1668,28 @@ async function handleTacNewInquiry(
     throw new Error(`Inquiry creation failed: ${inquiryError?.message}`)
   }
 
+  const bridgeResult = await syncGmailMessageIntoCommunicationBridge({
+    db,
+    tenantId,
+    email,
+    source: 'takeachef',
+    mailbox,
+    canonicalCommunication,
+    clientId,
+    linkedEntityType: 'inquiry',
+    linkedEntityId: newInquiry.id,
+  })
+  const messageId =
+    bridgeResult.messageId ||
+    (await insertLegacyGmailMessage({
+      db,
+      tenantId,
+      email,
+      mailbox,
+      clientId,
+      inquiryId: newInquiry.id,
+    }))
+
   // Write-through: create platform_record + email snapshot (non-blocking)
   try {
     const platformRecordId = await ensurePlatformRecord(db, {
@@ -1313,6 +1745,8 @@ async function handleTacNewInquiry(
     action_taken: 'created_inquiry',
     inquiry_id: newInquiry.id,
     platform_email_type: 'tac_new_inquiry',
+    message_id: messageId,
+    mailbox_id: mailbox.mailboxId,
   })
 
   // Notify chef (non-blocking)
@@ -1370,7 +1804,9 @@ async function handleTacClientMessage(
   email: ParsedEmail,
   parsed: TacParseResult,
   tenantId: string,
-  result: SyncResult
+  result: SyncResult,
+  canonicalCommunication: CanonicalCommunicationContext | null,
+  mailbox: GmailMailboxContext
 ) {
   const msg = parsed.message
   const clientName = msg?.clientName || null
@@ -1385,14 +1821,17 @@ async function handleTacClientMessage(
     externalIds: msg?.identityKeys,
   })
 
+  let clientId: string | null = null
   if (inquiryId) {
     // Advance status to awaiting_chef (client has messaged - chef needs to respond)
     const { data: inquiry } = await db
       .from('inquiries')
-      .select('status, external_link, unknown_fields')
+      .select('status, external_link, unknown_fields, client_id')
       .eq('id', inquiryId)
       .eq('tenant_id', tenantId)
       .single()
+
+    clientId = inquiry?.client_id || null
 
     if (inquiry && ['new', 'awaiting_client'].includes(inquiry.status)) {
       await db
@@ -1461,12 +1900,36 @@ async function handleTacClientMessage(
     }
   }
 
+  const bridgeResult = await syncGmailMessageIntoCommunicationBridge({
+    db,
+    tenantId,
+    email,
+    source: 'takeachef',
+    mailbox,
+    canonicalCommunication,
+    clientId,
+    linkedEntityType: inquiryId ? 'inquiry' : null,
+    linkedEntityId: inquiryId,
+  })
+  const messageId =
+    bridgeResult.messageId ||
+    (await insertLegacyGmailMessage({
+      db,
+      tenantId,
+      email,
+      mailbox,
+      clientId,
+      inquiryId,
+    }))
+
   await logSyncEntry(db, tenantId, email, {
     classification: 'existing_thread',
     confidence: 'high',
     action_taken: inquiryId ? 'logged_message' : 'unmatched_message',
     inquiry_id: inquiryId,
     platform_email_type: 'tac_client_message',
+    message_id: messageId,
+    mailbox_id: mailbox.mailboxId,
   })
 
   result.messagesLogged++
@@ -1630,7 +2093,9 @@ async function handleTacBookingConfirmed(
   parsed: TacParseResult,
   chefId: string,
   tenantId: string,
-  result: SyncResult
+  result: SyncResult,
+  canonicalCommunication: CanonicalCommunicationContext | null,
+  mailbox: GmailMailboxContext
 ) {
   const booking = parsed.booking
   if (!booking) {
@@ -1640,6 +2105,7 @@ async function handleTacBookingConfirmed(
       action_taken: 'error',
       platform_email_type: 'tac_booking_confirmed',
       error: 'Failed to parse booking fields from email body',
+      mailbox_id: mailbox.mailboxId,
     })
     return
   }
@@ -1670,6 +2136,7 @@ async function handleTacBookingConfirmed(
     external_link: string | null
     unknown_fields: Json | null
   } | null = null
+  let linkedEventId: string | null = null
 
   if (inquiryId) {
     const { data: fetchedInquiry } = await db
@@ -1682,6 +2149,7 @@ async function handleTacBookingConfirmed(
       .single()
 
     existingInquiry = fetchedInquiry
+    linkedEventId = fetchedInquiry?.converted_to_event_id || null
 
     // Extract service_mode and schedule_request from unknown_fields
     const uf = (existingInquiry?.unknown_fields ?? {}) as Record<string, unknown>
@@ -1738,6 +2206,7 @@ async function handleTacBookingConfirmed(
 
       if (eventId) {
         await db.from('inquiries').update({ converted_to_event_id: eventId }).eq('id', inquiryId)
+        linkedEventId = eventId
 
         try {
           const { logChefActivity } = await import('@/lib/activity/log-chef')
@@ -1799,6 +2268,7 @@ async function handleTacBookingConfirmed(
       if (event) {
         // Link inquiry to event
         await db.from('inquiries').update({ converted_to_event_id: event.id }).eq('id', inquiryId)
+        linkedEventId = event.id
 
         // Log event state transition
         await db.from('event_state_transitions').insert({
@@ -1837,6 +2307,29 @@ async function handleTacBookingConfirmed(
       }
     }
   }
+
+  const bridgeResult = await syncGmailMessageIntoCommunicationBridge({
+    db,
+    tenantId,
+    email,
+    source: 'takeachef',
+    mailbox,
+    canonicalCommunication,
+    clientId: existingInquiry?.client_id || null,
+    linkedEntityType: linkedEventId ? 'event' : inquiryId ? 'inquiry' : null,
+    linkedEntityId: linkedEventId || inquiryId,
+  })
+  const messageId =
+    bridgeResult.messageId ||
+    (await insertLegacyGmailMessage({
+      db,
+      tenantId,
+      email,
+      mailbox,
+      clientId: existingInquiry?.client_id || null,
+      inquiryId,
+      eventId: linkedEventId,
+    }))
 
   // Notify chef about confirmed booking
   try {
@@ -1933,6 +2426,8 @@ async function handleTacBookingConfirmed(
     action_taken: inquiryId ? 'booking_confirmed' : 'booking_confirmed_unmatched',
     inquiry_id: inquiryId,
     platform_email_type: 'tac_booking_confirmed',
+    message_id: messageId,
+    mailbox_id: mailbox.mailboxId,
   })
 
   result.messagesLogged++
@@ -1945,7 +2440,9 @@ async function handleTacCustomerInfo(
   email: ParsedEmail,
   parsed: TacParseResult,
   tenantId: string,
-  result: SyncResult
+  result: SyncResult,
+  canonicalCommunication: CanonicalCommunicationContext | null,
+  mailbox: GmailMailboxContext
 ) {
   const info = parsed.customerInfo
   if (!info) {
@@ -1955,6 +2452,7 @@ async function handleTacCustomerInfo(
       action_taken: 'error',
       platform_email_type: 'tac_customer_info',
       error: 'Failed to parse customer info fields',
+      mailbox_id: mailbox.mailboxId,
     })
     return
   }
@@ -1968,6 +2466,7 @@ async function handleTacCustomerInfo(
     externalIds: info.identityKeys,
   })
 
+  let clientId: string | null = null
   if (inquiryId) {
     // Get the linked client
     const { data: inquiry } = await db
@@ -1976,6 +2475,8 @@ async function handleTacCustomerInfo(
       .eq('id', inquiryId)
       .eq('tenant_id', tenantId)
       .single()
+
+    clientId = inquiry?.client_id || null
 
     if (inquiry?.client_id) {
       // Update client with revealed contact details
@@ -2062,12 +2563,36 @@ async function handleTacCustomerInfo(
     }
   }
 
+  const bridgeResult = await syncGmailMessageIntoCommunicationBridge({
+    db,
+    tenantId,
+    email,
+    source: 'takeachef',
+    mailbox,
+    canonicalCommunication,
+    clientId,
+    linkedEntityType: inquiryId ? 'inquiry' : null,
+    linkedEntityId: inquiryId,
+  })
+  const messageId =
+    bridgeResult.messageId ||
+    (await insertLegacyGmailMessage({
+      db,
+      tenantId,
+      email,
+      mailbox,
+      clientId,
+      inquiryId,
+    }))
+
   await logSyncEntry(db, tenantId, email, {
     classification: 'personal',
     confidence: 'high',
     action_taken: inquiryId ? 'customer_info_merged' : 'customer_info_unmatched',
     inquiry_id: inquiryId,
     platform_email_type: 'tac_customer_info',
+    message_id: messageId,
+    mailbox_id: mailbox.mailboxId,
   })
 
   result.messagesLogged++
@@ -2080,16 +2605,20 @@ async function handleTacPayment(
   email: ParsedEmail,
   parsed: TacParseResult,
   tenantId: string,
-  result: SyncResult
+  result: SyncResult,
+  canonicalCommunication: CanonicalCommunicationContext | null,
+  mailbox: GmailMailboxContext
 ) {
   const payment = parsed.payment
 
   // Try to match the payment to an existing inquiry by order ID
   let matchedInquiryId: string | null = null
+  let matchedClientId: string | null = null
+  let linkedEventId: string | null = null
   if (payment?.orderId) {
     const { data: match } = await db
       .from('inquiries')
-      .select('id, converted_to_event_id, unknown_fields')
+      .select('id, client_id, converted_to_event_id, unknown_fields')
       .eq('tenant_id', tenantId)
       .eq('external_platform', 'take_a_chef')
       .eq('external_inquiry_id', payment.orderId)
@@ -2097,6 +2626,8 @@ async function handleTacPayment(
       .maybeSingle()
 
     matchedInquiryId = match?.id ?? null
+    matchedClientId = match?.client_id ?? null
+    linkedEventId = match?.converted_to_event_id ?? null
 
     // Store payout details on the inquiry's unknown_fields
     if (match) {
@@ -2135,6 +2666,29 @@ async function handleTacPayment(
       }
     }
   }
+
+  const bridgeResult = await syncGmailMessageIntoCommunicationBridge({
+    db,
+    tenantId,
+    email,
+    source: 'takeachef',
+    mailbox,
+    canonicalCommunication,
+    clientId: matchedClientId,
+    linkedEntityType: linkedEventId ? 'event' : matchedInquiryId ? 'inquiry' : null,
+    linkedEntityId: linkedEventId || matchedInquiryId,
+  })
+  const messageId =
+    bridgeResult.messageId ||
+    (await insertLegacyGmailMessage({
+      db,
+      tenantId,
+      email,
+      mailbox,
+      clientId: matchedClientId,
+      inquiryId: matchedInquiryId,
+      eventId: linkedEventId,
+    }))
 
   // Notify chef with specifics if we have them
   try {
@@ -2212,6 +2766,8 @@ async function handleTacPayment(
     confidence: 'high',
     action_taken: matchedInquiryId ? 'payment_reconciled' : 'payment_logged',
     platform_email_type: 'tac_payment',
+    message_id: messageId,
+    mailbox_id: mailbox.mailboxId,
   })
 
   result.messagesLogged++
@@ -2224,9 +2780,21 @@ async function handleYhangryEmail(
   email: ParsedEmail,
   chefId: string,
   tenantId: string,
-  result: SyncResult
+  result: SyncResult,
+  mailbox: GmailMailboxContext
 ) {
   const parsed = parseYhangryEmail(email)
+  const canonicalCommunication = await ingestGmailImportedCommunicationEvent({
+    tenantId,
+    email,
+    mailbox,
+    source: 'yhangry',
+    isRawSignalOnly: ![
+      'yhangry_new_inquiry',
+      'yhangry_client_message',
+      'yhangry_booking_confirmed',
+    ].includes(parsed.emailType),
+  })
 
   if (parsed.parseWarnings.length > 0) {
     console.warn(`[Yhangry] Parse warnings for ${email.messageId}:`, parsed.parseWarnings)
@@ -2235,15 +2803,41 @@ async function handleYhangryEmail(
   try {
     switch (parsed.emailType) {
       case 'yhangry_new_inquiry':
-        await handleYhangryNewInquiry(db, email, parsed, chefId, tenantId, result)
+        await handleYhangryNewInquiry(
+          db,
+          email,
+          parsed,
+          chefId,
+          tenantId,
+          result,
+          canonicalCommunication,
+          mailbox
+        )
         break
 
       case 'yhangry_client_message':
-        await handleYhangryClientMessage(db, email, parsed, tenantId, result)
+        await handleYhangryClientMessage(
+          db,
+          email,
+          parsed,
+          tenantId,
+          result,
+          canonicalCommunication,
+          mailbox
+        )
         break
 
       case 'yhangry_booking_confirmed':
-        await handleYhangryBookingConfirmed(db, email, parsed, chefId, tenantId, result)
+        await handleYhangryBookingConfirmed(
+          db,
+          email,
+          parsed,
+          chefId,
+          tenantId,
+          result,
+          canonicalCommunication,
+          mailbox
+        )
         break
 
       case 'yhangry_administrative':
@@ -2253,6 +2847,7 @@ async function handleYhangryEmail(
           confidence: 'high',
           action_taken: 'administrative_skipped',
           platform_email_type: parsed.emailType,
+          mailbox_id: mailbox.mailboxId,
         })
         result.skipped++
         break
@@ -2265,6 +2860,7 @@ async function handleYhangryEmail(
       action_taken: 'error',
       platform_email_type: parsed.emailType,
       error: error.message,
+      mailbox_id: mailbox.mailboxId,
     })
     result.errors.push(`Yhangry ${parsed.emailType} for ${email.messageId}: ${error.message}`)
   }
@@ -2278,7 +2874,9 @@ async function handleYhangryNewInquiry(
   parsed: YhangryParseResult,
   chefId: string,
   tenantId: string,
-  result: SyncResult
+  result: SyncResult,
+  canonicalCommunication: CanonicalCommunicationContext | null,
+  mailbox: GmailMailboxContext
 ) {
   const inquiry = parsed.inquiry
   if (!inquiry) {
@@ -2288,6 +2886,7 @@ async function handleYhangryNewInquiry(
       action_taken: 'error',
       platform_email_type: 'yhangry_new_inquiry',
       error: 'Failed to parse inquiry fields from email body',
+      mailbox_id: mailbox.mailboxId,
     })
     result.errors.push(`Yhangry inquiry parse failed for ${email.messageId}`)
     return
@@ -2308,6 +2907,7 @@ async function handleYhangryNewInquiry(
       action_taken: 'duplicate_skipped',
       platform_email_type: 'yhangry_new_inquiry',
       inquiry_id: dedup.existingInquiryId,
+      mailbox_id: mailbox.mailboxId,
     })
     result.skipped++
     return
@@ -2392,6 +2992,28 @@ async function handleYhangryNewInquiry(
     throw new Error(`Inquiry creation failed: ${inquiryError?.message}`)
   }
 
+  const bridgeResult = await syncGmailMessageIntoCommunicationBridge({
+    db,
+    tenantId,
+    email,
+    source: 'yhangry',
+    mailbox,
+    canonicalCommunication,
+    clientId,
+    linkedEntityType: 'inquiry',
+    linkedEntityId: newInquiry.id,
+  })
+  const messageId =
+    bridgeResult.messageId ||
+    (await insertLegacyGmailMessage({
+      db,
+      tenantId,
+      email,
+      mailbox,
+      clientId,
+      inquiryId: newInquiry.id,
+    }))
+
   // Log in sync log
   await logSyncEntry(db, tenantId, email, {
     classification: 'inquiry',
@@ -2399,6 +3021,8 @@ async function handleYhangryNewInquiry(
     action_taken: 'created_inquiry',
     inquiry_id: newInquiry.id,
     platform_email_type: 'yhangry_new_inquiry',
+    message_id: messageId,
+    mailbox_id: mailbox.mailboxId,
   })
 
   // Notify chef (non-blocking)
@@ -2455,7 +3079,9 @@ async function handleYhangryClientMessage(
   email: ParsedEmail,
   parsed: YhangryParseResult,
   tenantId: string,
-  result: SyncResult
+  result: SyncResult,
+  canonicalCommunication: CanonicalCommunicationContext | null,
+  mailbox: GmailMailboxContext
 ) {
   // Find existing inquiry by quote URL or context
   const quoteId = parsed.inquiry?.quoteId || parsed.message?.quoteId || null
@@ -2466,13 +3092,16 @@ async function handleYhangryClientMessage(
     orderId: quoteId,
   })
 
+  let clientId: string | null = null
   if (inquiryId) {
     const { data: inquiry } = await db
       .from('inquiries')
-      .select('status, external_link')
+      .select('status, external_link, client_id')
       .eq('id', inquiryId)
       .eq('tenant_id', tenantId)
       .single()
+
+    clientId = inquiry?.client_id || null
 
     if (inquiry && ['new', 'awaiting_client'].includes(inquiry.status)) {
       await db
@@ -2505,12 +3134,36 @@ async function handleYhangryClientMessage(
     }
   }
 
+  const bridgeResult = await syncGmailMessageIntoCommunicationBridge({
+    db,
+    tenantId,
+    email,
+    source: 'yhangry',
+    mailbox,
+    canonicalCommunication,
+    clientId,
+    linkedEntityType: inquiryId ? 'inquiry' : null,
+    linkedEntityId: inquiryId,
+  })
+  const messageId =
+    bridgeResult.messageId ||
+    (await insertLegacyGmailMessage({
+      db,
+      tenantId,
+      email,
+      mailbox,
+      clientId,
+      inquiryId,
+    }))
+
   await logSyncEntry(db, tenantId, email, {
     classification: 'existing_thread',
     confidence: 'high',
     action_taken: inquiryId ? 'logged_message' : 'unmatched_message',
     inquiry_id: inquiryId,
     platform_email_type: 'yhangry_client_message',
+    message_id: messageId,
+    mailbox_id: mailbox.mailboxId,
   })
 
   result.messagesLogged++
@@ -2524,7 +3177,9 @@ async function handleYhangryBookingConfirmed(
   parsed: YhangryParseResult,
   chefId: string,
   tenantId: string,
-  result: SyncResult
+  result: SyncResult,
+  canonicalCommunication: CanonicalCommunicationContext | null,
+  mailbox: GmailMailboxContext
 ) {
   const quoteId = parsed.booking?.quoteId || null
   const inquiryId = await findPlatformInquiryByContext(db, tenantId, {
@@ -2534,7 +3189,17 @@ async function handleYhangryBookingConfirmed(
     orderId: quoteId,
   })
 
+  let clientId: string | null = null
   if (inquiryId) {
+    const { data: inquiry } = await db
+      .from('inquiries')
+      .select('client_id')
+      .eq('id', inquiryId)
+      .eq('tenant_id', tenantId)
+      .maybeSingle()
+
+    clientId = inquiry?.client_id || null
+
     await db
       .from('inquiries')
       .update({
@@ -2566,12 +3231,36 @@ async function handleYhangryBookingConfirmed(
     }
   }
 
+  const bridgeResult = await syncGmailMessageIntoCommunicationBridge({
+    db,
+    tenantId,
+    email,
+    source: 'yhangry',
+    mailbox,
+    canonicalCommunication,
+    clientId,
+    linkedEntityType: inquiryId ? 'inquiry' : null,
+    linkedEntityId: inquiryId,
+  })
+  const messageId =
+    bridgeResult.messageId ||
+    (await insertLegacyGmailMessage({
+      db,
+      tenantId,
+      email,
+      mailbox,
+      clientId,
+      inquiryId,
+    }))
+
   await logSyncEntry(db, tenantId, email, {
     classification: 'inquiry',
     confidence: 'high',
     action_taken: inquiryId ? 'booking_confirmed' : 'unmatched_booking',
     inquiry_id: inquiryId,
     platform_email_type: 'yhangry_booking_confirmed',
+    message_id: messageId,
+    mailbox_id: mailbox.mailboxId,
   })
 
   result.messagesLogged++
@@ -2658,6 +3347,7 @@ async function handleGenericPlatformEmail(
   chefId: string,
   tenantId: string,
   result: SyncResult,
+  mailbox: GmailMailboxContext,
   platform: PlatformChannel,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   parseFn: (email: ParsedEmail) => any
@@ -2669,41 +3359,55 @@ async function handleGenericPlatformEmail(
     console.warn(`[${displayName}] Parse warnings for ${email.messageId}:`, parsed.parseWarnings)
   }
 
-  // Ingest into unified communication pipeline (non-blocking)
-  if (isCommTriageEnabled()) {
-    try {
-      const { ingestCommunicationEvent } = await import('@/lib/communication/pipeline')
-      await ingestCommunicationEvent({
-        tenantId,
-        source:
-          platform === 'google_business'
-            ? 'google_business'
-            : platform === 'wix_forms'
-              ? 'website_form'
-              : platform,
-        externalId: email.messageId,
-        externalThreadKey: email.threadId,
-        timestamp: email.date ? new Date(email.date).toISOString() : new Date().toISOString(),
-        senderIdentity: `${email.from.name || email.from.email} <${email.from.email}>`,
-        rawContent: `${email.subject || ''}\n\n${email.body || ''}`.trim(),
-        direction: 'inbound',
-        ingestionSource: 'import',
-      })
-    } catch (intakeErr) {
-      console.error(`[${displayName}] Communication intake failed (non-fatal):`, intakeErr)
-    }
-  }
-
   try {
     const emailType = parsed.emailType
+    const isActionable =
+      NEW_LEAD_SUFFIXES.some((suffix) => emailType.endsWith(suffix)) ||
+      CLIENT_MESSAGE_SUFFIXES.some((suffix) => emailType.endsWith(suffix)) ||
+      BOOKING_CONFIRMED_SUFFIXES.some((suffix) => emailType.endsWith(suffix))
+    const canonicalCommunication = await ingestGmailImportedCommunicationEvent({
+      tenantId,
+      email,
+      mailbox,
+      source: mapPlatformToCommunicationSource(platform),
+      isRawSignalOnly: !isActionable,
+    })
 
     // Route by email type category
     if (NEW_LEAD_SUFFIXES.some((s) => emailType.endsWith(s))) {
-      await handleGenericNewLead(db, email, parsed, chefId, tenantId, result, platform)
+      await handleGenericNewLead(
+        db,
+        email,
+        parsed,
+        chefId,
+        tenantId,
+        result,
+        platform,
+        canonicalCommunication,
+        mailbox
+      )
     } else if (CLIENT_MESSAGE_SUFFIXES.some((s) => emailType.endsWith(s))) {
-      await handleGenericClientMessage(db, email, parsed, tenantId, result, platform)
+      await handleGenericClientMessage(
+        db,
+        email,
+        parsed,
+        tenantId,
+        result,
+        platform,
+        canonicalCommunication,
+        mailbox
+      )
     } else if (BOOKING_CONFIRMED_SUFFIXES.some((s) => emailType.endsWith(s))) {
-      await handleGenericBookingConfirmed(db, email, parsed, tenantId, result, platform)
+      await handleGenericBookingConfirmed(
+        db,
+        email,
+        parsed,
+        tenantId,
+        result,
+        platform,
+        canonicalCommunication,
+        mailbox
+      )
     } else {
       // Administrative, payment, etc. - log and skip
       await logSyncEntry(db, tenantId, email, {
@@ -2711,6 +3415,7 @@ async function handleGenericPlatformEmail(
         confidence: 'high',
         action_taken: 'administrative_skipped',
         platform_email_type: emailType,
+        mailbox_id: mailbox.mailboxId,
       })
       result.skipped++
     }
@@ -2722,6 +3427,7 @@ async function handleGenericPlatformEmail(
       action_taken: 'error',
       platform_email_type: parsed.emailType,
       error: error.message,
+      mailbox_id: mailbox.mailboxId,
     })
     result.errors.push(
       `${displayName} ${parsed.emailType} for ${email.messageId}: ${error.message}`
@@ -2797,7 +3503,9 @@ async function handleGenericNewLead(
   chefId: string,
   tenantId: string,
   result: SyncResult,
-  platform: PlatformChannel
+  platform: PlatformChannel,
+  canonicalCommunication: CanonicalCommunicationContext | null,
+  mailbox: GmailMailboxContext
 ) {
   const fields = extractLeadFields(parsed)
   const displayName = PLATFORM_DISPLAY_NAMES[platform]
@@ -2818,6 +3526,7 @@ async function handleGenericNewLead(
       action_taken: 'duplicate_skipped',
       platform_email_type: parsed.emailType,
       inquiry_id: dedup.existingInquiryId,
+      mailbox_id: mailbox.mailboxId,
     })
     result.skipped++
     return
@@ -2926,6 +3635,28 @@ async function handleGenericNewLead(
     throw new Error(`Inquiry creation failed: ${inquiryError?.message}`)
   }
 
+  const bridgeResult = await syncGmailMessageIntoCommunicationBridge({
+    db,
+    tenantId,
+    email,
+    source: mapPlatformToCommunicationSource(platform),
+    mailbox,
+    canonicalCommunication,
+    clientId,
+    linkedEntityType: 'inquiry',
+    linkedEntityId: newInquiry.id,
+  })
+  const messageId =
+    bridgeResult.messageId ||
+    (await insertLegacyGmailMessage({
+      db,
+      tenantId,
+      email,
+      mailbox,
+      clientId,
+      inquiryId: newInquiry.id,
+    }))
+
   // Write-through: create platform_record + email snapshot (non-blocking)
   try {
     const platformRecordId = await ensurePlatformRecord(db, {
@@ -2973,6 +3704,8 @@ async function handleGenericNewLead(
     action_taken: 'created_inquiry',
     inquiry_id: newInquiry.id,
     platform_email_type: parsed.emailType,
+    message_id: messageId,
+    mailbox_id: mailbox.mailboxId,
   })
 
   // Notify chef (non-blocking)
@@ -3031,7 +3764,9 @@ async function handleGenericClientMessage(
   parsed: GenericParseResult,
   tenantId: string,
   result: SyncResult,
-  platform: PlatformChannel
+  platform: PlatformChannel,
+  canonicalCommunication: CanonicalCommunicationContext | null,
+  mailbox: GmailMailboxContext
 ) {
   const displayName = PLATFORM_DISPLAY_NAMES[platform]
   const channelValue = PLATFORM_TO_INQUIRY_CHANNEL[platform]
@@ -3045,14 +3780,17 @@ async function handleGenericClientMessage(
     orderId: fields.externalId,
   })
 
+  let clientId: string | null = null
   if (inquiryId) {
     // Advance status to awaiting_chef (client has messaged - chef needs to respond)
     const { data: inquiry } = await db
       .from('inquiries')
-      .select('status, external_link')
+      .select('status, external_link, client_id')
       .eq('id', inquiryId)
       .eq('tenant_id', tenantId)
       .single()
+
+    clientId = inquiry?.client_id || null
 
     if (inquiry && ['new', 'awaiting_client'].includes(inquiry.status)) {
       await db
@@ -3087,12 +3825,36 @@ async function handleGenericClientMessage(
     }
   }
 
+  const bridgeResult = await syncGmailMessageIntoCommunicationBridge({
+    db,
+    tenantId,
+    email,
+    source: mapPlatformToCommunicationSource(platform),
+    mailbox,
+    canonicalCommunication,
+    clientId,
+    linkedEntityType: inquiryId ? 'inquiry' : null,
+    linkedEntityId: inquiryId,
+  })
+  const messageId =
+    bridgeResult.messageId ||
+    (await insertLegacyGmailMessage({
+      db,
+      tenantId,
+      email,
+      mailbox,
+      clientId,
+      inquiryId,
+    }))
+
   await logSyncEntry(db, tenantId, email, {
     classification: 'existing_thread',
     confidence: 'high',
     action_taken: inquiryId ? 'logged_message' : 'unmatched_message',
     inquiry_id: inquiryId,
     platform_email_type: parsed.emailType,
+    message_id: messageId,
+    mailbox_id: mailbox.mailboxId,
   })
 
   result.messagesLogged++
@@ -3106,7 +3868,9 @@ async function handleGenericBookingConfirmed(
   parsed: GenericParseResult,
   tenantId: string,
   result: SyncResult,
-  platform: PlatformChannel
+  platform: PlatformChannel,
+  canonicalCommunication: CanonicalCommunicationContext | null,
+  mailbox: GmailMailboxContext
 ) {
   const displayName = PLATFORM_DISPLAY_NAMES[platform]
   const channelValue = PLATFORM_TO_INQUIRY_CHANNEL[platform]
@@ -3120,7 +3884,17 @@ async function handleGenericBookingConfirmed(
     orderId: fields.externalId,
   })
 
+  let clientId: string | null = null
   if (inquiryId) {
+    const { data: inquiry } = await db
+      .from('inquiries')
+      .select('client_id')
+      .eq('id', inquiryId)
+      .eq('tenant_id', tenantId)
+      .maybeSingle()
+
+    clientId = inquiry?.client_id || null
+
     await db
       .from('inquiries')
       .update({
@@ -3194,12 +3968,36 @@ async function handleGenericBookingConfirmed(
     }
   }
 
+  const bridgeResult = await syncGmailMessageIntoCommunicationBridge({
+    db,
+    tenantId,
+    email,
+    source: mapPlatformToCommunicationSource(platform),
+    mailbox,
+    canonicalCommunication,
+    clientId,
+    linkedEntityType: inquiryId ? 'inquiry' : null,
+    linkedEntityId: inquiryId,
+  })
+  const messageId =
+    bridgeResult.messageId ||
+    (await insertLegacyGmailMessage({
+      db,
+      tenantId,
+      email,
+      mailbox,
+      clientId,
+      inquiryId,
+    }))
+
   await logSyncEntry(db, tenantId, email, {
     classification: 'inquiry',
     confidence: 'high',
     action_taken: inquiryId ? 'booking_confirmed' : 'unmatched_booking',
     inquiry_id: inquiryId,
     platform_email_type: parsed.emailType,
+    message_id: messageId,
+    mailbox_id: mailbox.mailboxId,
   })
 
   result.messagesLogged++
@@ -3219,6 +4017,7 @@ async function logSyncEntry(
     message_id?: string | null
     error?: string | null
     platform_email_type?: string | null
+    mailbox_id?: string | null
   }
 ) {
   // Parse received_at from email date header
@@ -3231,26 +4030,44 @@ async function logSyncEntry(
     }
   }
 
-  await db.from('gmail_sync_log').upsert(
-    {
-      tenant_id: tenantId,
-      gmail_message_id: email.messageId,
-      gmail_thread_id: email.threadId,
-      from_address: email.from.email,
-      subject: email.subject?.slice(0, 500) || null,
-      classification: entry.classification,
-      confidence: entry.confidence,
-      action_taken: entry.action_taken,
-      inquiry_id: entry.inquiry_id || null,
-      message_id: entry.message_id || null,
-      error: entry.error || null,
-      // Remy email awareness - store body content for search/context
-      body_preview: email.body?.slice(0, 2000) || null,
-      snippet: email.body?.slice(0, 200) || null,
-      to_address: email.to || null,
-      received_at: receivedAt,
-      platform_email_type: entry.platform_email_type || null,
-    },
-    { onConflict: 'tenant_id,gmail_message_id' }
-  )
+  const payload = {
+    tenant_id: tenantId,
+    mailbox_id: entry.mailbox_id || null,
+    gmail_message_id: email.messageId,
+    gmail_thread_id: email.threadId,
+    from_address: email.from.email,
+    subject: email.subject?.slice(0, 500) || null,
+    classification: entry.classification,
+    confidence: entry.confidence,
+    action_taken: entry.action_taken,
+    inquiry_id: entry.inquiry_id || null,
+    message_id: entry.message_id || null,
+    error: entry.error || null,
+    // Remy email awareness - store body content for search/context
+    body_preview: email.body?.slice(0, 2000) || null,
+    snippet: email.body?.slice(0, 200) || null,
+    to_address: email.to || null,
+    received_at: receivedAt,
+    platform_email_type: entry.platform_email_type || null,
+  }
+
+  if (entry.mailbox_id) {
+    await db.from('gmail_sync_log').upsert(payload, { onConflict: 'mailbox_id,gmail_message_id' })
+    return
+  }
+
+  const { data: existing } = await db
+    .from('gmail_sync_log')
+    .select('id')
+    .eq('tenant_id', tenantId)
+    .eq('gmail_message_id', email.messageId)
+    .limit(1)
+    .maybeSingle()
+
+  if (existing?.id) {
+    await db.from('gmail_sync_log').update(payload).eq('id', existing.id)
+    return
+  }
+
+  await db.from('gmail_sync_log').insert(payload)
 }

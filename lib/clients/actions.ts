@@ -7,7 +7,6 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
-import { appendLedgerEntryForChef } from '@/lib/ledger/append'
 import { z } from 'zod'
 import crypto from 'crypto'
 import { executeWithIdempotency } from '@/lib/mutations/idempotency'
@@ -476,19 +475,6 @@ export async function createClient(input: CreateClientInput) {
     }
   } catch (err) {
     console.error('[createClient] Allergy sync failed (non-blocking):', err)
-  }
-
-  // Append a zero-dollar ledger entry to record client creation (audit)
-  try {
-    await appendLedgerEntryForChef({
-      client_id: client.id,
-      entry_type: 'adjustment',
-      amount_cents: 0,
-      payment_method: 'cash',
-      description: 'Client record created',
-    })
-  } catch (err) {
-    console.error('[createClient] Ledger append failed (non-blocking):', err)
   }
 
   // Log chef activity (non-blocking)

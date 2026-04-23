@@ -5,30 +5,13 @@
 import Image from 'next/image'
 import { requirePartner } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { getPartnerPortalData } from '@/lib/partners/portal-actions'
 import { Eye, EyeOff, ExternalLink } from '@/components/ui/icons'
 
 export default async function PartnerPreviewPage() {
   const user = await requirePartner()
   const db = createServerClient({ admin: true })
-
-  // Fetch partner record with locations and images
-  const { data: partner } = await db
-    .from('referral_partners')
-    .select(
-      `
-      id, name, description, website, booking_url, cover_image_url,
-      is_showcase_visible,
-      partner_locations(
-        id, name, city, state, max_guest_count, description, is_active,
-        partner_images(id, image_url, caption, display_order)
-      ),
-      partner_images!partner_images_partner_id_fkey(
-        id, image_url, caption, display_order
-      )
-    `
-    )
-    .eq('id', user.partnerId)
-    .single()
+  const { partner, locations, allImages } = await getPartnerPortalData()
 
   // Fetch the chef's slug so we can link to the live public page
   const { data: chef } = await db
@@ -37,12 +20,7 @@ export default async function PartnerPreviewPage() {
     .eq('id', user.tenantId)
     .single()
 
-  const activeLocations = ((partner?.partner_locations as any[]) || []).filter(
-    (l: any) => l.is_active
-  )
-  const allImages = ((partner?.partner_images as any[]) || []).sort(
-    (a: any, b: any) => (a.display_order ?? 99) - (b.display_order ?? 99)
-  )
+  const activeLocations = locations.filter((location) => location.is_active)
 
   return (
     <div className="space-y-6">

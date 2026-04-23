@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "components/tasks/task-form.tsx",
+    "lib/tasks/actions.ts",
+    "lib/tasks/carry-forward.ts",
+    "lib/tasks/input-normalization.ts",
+    "lib/tasks/selects.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    ".next",
+    ".next-dev",
+    ".next-dev-*",
+    ".next-local-*",
+    ".next-verify-*",
+    "tests"
+  ]
+}

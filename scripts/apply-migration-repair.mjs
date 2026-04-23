@@ -163,7 +163,7 @@ export function buildApplyExecutionPlan(report, options = {}) {
   if (!options.skipTypes) {
     plan.push({
       label: 'types',
-      command: 'npm run db:types',
+      command: 'npm run typecheck',
     })
   }
 

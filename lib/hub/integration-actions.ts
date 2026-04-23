@@ -1,6 +1,7 @@
 'use server'
 
 import { createServerClient } from '@/lib/db/server'
+import { resolvePublicShareDinnerCircleAccess } from '@/lib/hub/public-share-access'
 
 // ---------------------------------------------------------------------------
 // Hub Integration Actions
@@ -320,14 +321,36 @@ export async function ensureEventDinnerCircle(input: {
 }
 
 /**
- * Backward-compatible wrapper used by existing public guest flows.
+ * Public Dinner Circle entrypoint for share-token holders.
+ * The token is the boundary contract. Public callers never pass tenant ids.
  */
 export async function getOrCreateEventHubGroup(input: {
   eventId: string
-  tenantId: string
+  shareToken: string
   eventTitle: string
 }): Promise<{ groupToken: string }> {
-  return ensureEventDinnerCircle(input)
+  const db = createServerClient({ admin: true })
+
+  const { data: share } = await db
+    .from('event_shares')
+    .select('event_id, tenant_id, is_active, expires_at')
+    .eq('token', input.shareToken)
+    .maybeSingle()
+
+  return ensureEventDinnerCircle(
+    resolvePublicShareDinnerCircleAccess({
+      share: share as
+        | {
+            event_id: string
+            tenant_id: string
+            is_active: boolean
+            expires_at: string | null
+          }
+        | null,
+      eventId: input.eventId,
+      eventTitle: input.eventTitle,
+    })
+  )
 }
 
 /**

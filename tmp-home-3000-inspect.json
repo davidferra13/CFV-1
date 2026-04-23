@@ -1,0 +1,280 @@
+{
+  "status": 200,
+  "url": "http://localhost:3000/",
+  "pageInfo": {
+    "title": "ChefFlow - Find a Private Chef Near You | ChefFlow",
+    "metaDescription": "Discover private chefs for dinners, catering, meal prep, and chef-led experiences. Browse profiles, check availability, and send an inquiry in minutes.",
+    "lang": "en",
+    "viewport": {
+      "innerWidth": 1440,
+      "innerHeight": 1200,
+      "scrollHeight": 2431
+    },
+    "bodyStyles": {
+      "fontFamily": "__DM_Sans_0d7163, __DM_Sans_Fallback_0d7163, system-ui, -apple-system, sans-serif",
+      "color": "rgb(231, 229, 228)",
+      "background": "rgb(12, 10, 9) url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E\") repeat scroll 0% 0% / auto padding-box border-box"
+    },
+    "headings": [
+      {
+        "tag": "h1",
+        "text": "Hire a chef who actually does this."
+      },
+      {
+        "tag": "h2",
+        "text": "Shared guest pages for the dinner itself."
+      },
+      {
+        "tag": "h2",
+        "text": "Featured chefs"
+      },
+      {
+        "tag": "h3",
+        "text": "DF Private Chef"
+      }
+    ],
+    "buttons": [
+      "Hire a Chef",
+      "Search",
+      "Subscribe",
+      "x",
+      "Not now",
+      "Decline",
+      "Accept"
+    ],
+    "links": [
+      {
+        "text": "Skip to main content",
+        "href": "#main-content"
+      },
+      {
+        "text": "ChefFlow",
+        "href": "/"
+      },
+      {
+        "text": "For Operators",
+        "href": "/for-operators"
+      },
+      {
+        "text": "Ingredients",
+        "href": "/ingredients"
+      },
+      {
+        "text": "Sign In",
+        "href": "/auth/signin"
+      },
+      {
+        "text": "Book a Chef",
+        "href": "/book"
+      },
+      {
+        "text": "Book",
+        "href": "/book"
+      },
+      {
+        "text": "Book a Chef",
+        "href": "/book"
+      },
+      {
+        "text": "Browse Chefs",
+        "href": "/chefs"
+      },
+      {
+        "text": "Explore the food directory",
+        "href": "/nearby"
+      },
+      {
+        "text": "Are you a chef or food operator? Free back-office software: clients, events, menus, food costing, finances, recipes. Lea",
+        "href": "/for-operators"
+      },
+      {
+        "text": "Learn about Dinner Circles",
+        "href": "/hub"
+      },
+      {
+        "text": "Browse Chefs",
+        "href": "/chefs"
+      },
+      {
+        "text": "Accepting new inquiries DF Private Chef",
+        "href": "/chef/df-private-chef"
+      },
+      {
+        "text": "",
+        "href": "https://www.facebook.com/ChefFerragamo"
+      },
+      {
+        "text": "",
+        "href": "https://www.instagram.com/crispybits/"
+      },
+      {
+        "text": "Inquire",
+        "href": "/chef/df-private-chef/inquire"
+      },
+      {
+        "text": "Browse Chefs",
+        "href": "/chefs"
+      },
+      {
+        "text": "ChefFlow",
+        "href": "/"
+      },
+      {
+        "text": "Book a Chef",
+        "href": "/book"
+      },
+      {
+        "text": "Browse Chefs",
+        "href": "/chefs"
+      },
+      {
+        "text": "Dinner Circles",
+        "href": "/hub"
+      },
+      {
+        "text": "Services",
+        "href": "/services"
+      },
+      {
+        "text": "Gift Cards",
+        "href": "/gift-cards"
+      },
+      {
+        "text": "How It Works",
+        "href": "/how-it-works"
+      },
+      {
+        "text": "FAQ",
+        "href": "/faq"
+      },
+      {
+        "text": "Food Directory",
+        "href": "/nearby"
+      },
+      {
+        "text": "For Operators",
+        "href": "/for-operators"
+      },
+      {
+        "text": "Marketplace Chefs",
+        "href": "/marketplace-chefs"
+      },
+      {
+        "text": "Become a Partner",
+        "href": "/partner-signup"
+      },
+      {
+        "text": "Operator sign up",
+        "href": "/auth/signup?source_page=footer&source_cta=operator_signup"
+      },
+      {
+        "text": "Ingredient Guide",
+        "href": "/ingredients"
+      },
+      {
+        "text": "FAQ",
+        "href": "/faq"
+      },
+      {
+        "text": "How It Works",
+        "href": "/how-it-works"
+      },
+      {
+        "text": "About",
+        "href": "/about"
+      },
+      {
+        "text": "Trust Center",
+        "href": "/trust"
+      },
+      {
+        "text": "Contact",
+        "href": "/contact"
+      },
+      {
+        "text": "Privacy Policy",
+        "href": "/privacy"
+      },
+      {
+        "text": "Terms of Service",
+        "href": "/terms"
+      },
+      {
+        "text": "Privacy Policy",
+        "href": "/privacy"
+      }
+    ],
+    "images": [
+      {
+        "alt": "ChefFlow logo",
+        "src": "/_next/image?url=%2Flogo.jpg&w=96&q=75",
+        "width": "36",
+        "height": "36"
+      },
+      {
+        "alt": "DF Private Chef",
+        "src": "/_next/image?url=%2Fapi%2Fstorage%2Fpublic%2Fchef-profile-images%2Fbd72cf97-a0e5-4fe4-b049-0706ac81d100%2F1774734757311-ef0fd70e-4692-400d-af0c-4e5c83c441a4.jpg&w=3840&q=75",
+        "width": "",
+        "height": ""
+      },
+      {
+        "alt": "ChefFlow logo",
+        "src": "/_next/image?url=%2Flogo.jpg&w=64&q=75",
+        "width": "32",
+        "height": "32"
+      }
+    ],
+    "sections": [
+      {
+        "index": 0,
+        "tag": "section",
+        "classes": "relative overflow-hidden",
+        "text": "Hire a chef who actually does this. Private dinners, catering, meal prep, cooking classes. Browse real profiles, see what they specialize in, and reach out directly. No platform fee, no middleman. Book a Chef OR BROWSE CHEFS DIRECTLY Any se"
+      },
+      {
+        "index": 1,
+        "tag": "section",
+        "classes": "mx-auto w-full max-w-5xl px-4 pt-2 pb-6 sm:px-6 lg:px-8",
+        "text": "Are you a chef or food operator? Free back-office software: clients, events, menus, food costing, finances, recipes. Learn more"
+      },
+      {
+        "index": 2,
+        "tag": "section",
+        "classes": "mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 lg:px-8",
+        "text": "$50 - $150+ per person For private dinners. Weekly meal prep runs $200 - $800+ per week. Every chef sets their own pricing. You deal with the chef No call center, no algorithm matching. You pick who you want and message them directly. Menu "
+      },
+      {
+        "index": 3,
+        "tag": "section",
+        "classes": "mx-auto w-full max-w-5xl px-4 pb-6 sm:px-6 lg:px-8",
+        "text": "DINNER CIRCLES Shared guest pages for the dinner itself. Guests can use Dinner Circles to stay on top of event details, chat, coordinate, and come back to the same page before dinner. They are public guest pages, not chef-portal screens. Le"
+      },
+      {
+        "index": 4,
+        "tag": "section",
+        "classes": "mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 md:py-16 lg:px-8",
+        "text": "Featured chefs Browse profiles, see their work, reach out when you are ready. Browse Chefs Accepting new inquiries DF Private Chef Serves Haverhill, Massachusetts + 4000 mi Inquire"
+      }
+    ],
+    "bodyTextSample": "Skip to main content ChefFlow Hire a Chef For Operators Ingredients Sign In Book a Chef Hire a chef who actually does this. Private dinners, catering, meal prep, cooking classes. Browse real profiles, see what they specialize in, and reach out directly. No platform fee, no middleman. Book a Chef OR BROWSE CHEFS DIRECTLY Any service Private dinner Catering Meal prep Wedding Corporate dining Cooking class Event chef Personal chef Search Browse Chefs Looking for restaurants, caterers, or food trucks instead? Explore the food directory. 1 chef listed · Free to browse · You pay the chef directly Are you a chef or food operator? Free back-office software: clients, events, menus, food costing, finances, recipes. Learn more $50 - $150+ per person For private dinners. Weekly meal prep runs $200 - $800+ per week. Every chef sets their own pricing. You deal with the chef No call center, no algorithm matching. You pick who you want and message them directly. Menu to cleanup, handled Most chefs handle planning, shopping, cooking, plating, and cleanup. You host, they handle the rest. DINNER CIRCLES Shared guest pages for the dinner itself. Guests can use Dinner Circles to stay on top of event details, chat, coordinate, and come back to the same page before dinner. They are public guest pages, not chef-portal screens. Learn about Dinner Circles Featured chefs Browse profiles, see their work, reach out when you are ready. Browse Chefs Accepting new inquiries DF Private Chef Serves Haverhill, Massachusetts + 4000 mi Inquire ChefFlow Discover private chefs and chef-led dining experiences. ChefFlow also powers the operator back office. Hire a Chef Book a Chef Browse Chefs Dinner Circles Services Gift Cards How It Works FAQ Food Directory For Operators For Operators Marketplace Chefs Become a Partner Operator sign up Resources Ingredient Guide FAQ How It Works Company About Trust Center Contact Legal Privacy Policy Terms of Service Stay Updated Short guides for modern food-business operations. Subscribe © 2026 ChefFlow. All rights reserved. Discover private chefs and chef-led dining experiences. x This site uses cookies for basic functionality and analytics. See our Privacy Policy. Not now Decline Accept"
+  },
+  "axeSummary": {
+    "error": "Please use browser.newContext()\n Please check out https://github.com/dequelabs/axe-core-npm/blob/develop/packages/playwright/error-handling.md"
+  },
+  "consoleMessages": [
+    {
+      "type": "warning",
+      "text": "As of March 1st, 2025, google.maps.places.Autocomplete is not available to new customers. Please use google.maps.places.PlaceAutocompleteElement instead. At this time, google.maps.places.Autocomplete is not scheduled to be discontinued, but google.maps.places.PlaceAutocompleteElement is recommended over google.maps.places.Autocomplete. While google.maps.places.Autocomplete will continue to receive bug fixes for any major regressions, existing bugs in google.maps.places.Autocomplete will not be addressed. At least 12 months notice will be given before support is discontinued. Please see https://developers.google.com/maps/legacy for additional details and https://developers.google.com/maps/documentation/javascript/places-migration-overview for the migration guide."
+    }
+  ],
+  "requestFailures": [
+    {
+      "url": "http://localhost:3000/chefs?_rsc=gdhdt",
+      "errorText": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/nearby?_rsc=gdhdt",
+      "errorText": "net::ERR_ABORTED"
+    }
+  ]
+}

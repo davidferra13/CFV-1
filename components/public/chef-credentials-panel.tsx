@@ -1,4 +1,4 @@
-// ChefCredentialsPanel - Public renderer for professional credentials.
+﻿// ChefCredentialsPanel - Public renderer for professional credentials.
 // Shows work history, awards/accomplishments, portfolio proof, charity impact,
 // and an optional resume-available note.
 // All data is pre-fetched server-side and passed as props.
@@ -74,6 +74,7 @@ export function ChefCredentialsPanel({
   const hasWorkHistory = workHistory.length > 0
   const hasAchievements = achievements.length > 0
   const hasPortfolio = portfolio.length > 0
+  const galleryPhotos = portfolio.slice(0, 12)
   const hasCharityContent =
     charityImpact.totalHours > 0 ||
     charityImpact.publicCharityPercent !== null ||
@@ -218,10 +219,12 @@ export function ChefCredentialsPanel({
         <section className="py-14 px-6 bg-stone-900/70">
           <div className="max-w-5xl mx-auto">
             <div className="mb-10 text-center">
-              <h2 className="text-2xl font-bold text-stone-100">Portfolio</h2>
-              <p className="text-stone-400 mt-2 text-sm">Selected work from past events.</p>
+              <h2 className="text-2xl font-bold text-stone-100">Gallery</h2>
+              <p className="text-stone-400 mt-2 text-sm">
+                {galleryPhotos.length} public photos from past events.
+              </p>
             </div>
-            <PortfolioShowcase photos={portfolio} chefName={chefName} />
+            <PortfolioShowcase photos={galleryPhotos} chefName={chefName} />
           </div>
         </section>
       )}
@@ -263,7 +266,7 @@ export function ChefCredentialsPanel({
                             className="inline-flex items-center gap-1.5 rounded-full border border-stone-700 bg-stone-900 px-3 py-1.5 text-xs font-medium text-stone-200 transition-colors hover:border-stone-600 hover:text-stone-100"
                           >
                             <span>
-                              {organization.organizationName} • {organization.totalHours}h
+                              {organization.organizationName} - {organization.totalHours}h
                             </span>
                             <ExternalLink className="h-3 w-3 text-stone-500" />
                           </a>
@@ -272,7 +275,7 @@ export function ChefCredentialsPanel({
                             key={`${organization.id ?? organization.organizationName}-public-impact`}
                             className="inline-flex items-center gap-1.5 rounded-full border border-stone-700 bg-stone-900 px-3 py-1.5 text-xs font-medium text-stone-200"
                           >
-                            {organization.organizationName} • {organization.totalHours}h
+                            {organization.organizationName} - {organization.totalHours}h
                           </span>
                         )
                       )}

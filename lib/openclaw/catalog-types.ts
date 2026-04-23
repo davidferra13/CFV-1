@@ -21,6 +21,11 @@ export type CatalogDetailPrice = {
   lastConfirmedAt: string
   lastChangedAt: string
   packageSize: string | null
+  provenanceLabel: string | null
+  confidenceScore: number
+  publicationEligibility: string
+  surfaceEligible: boolean
+  lifecycleState: string
 }
 
 export type CatalogDetailResult = {

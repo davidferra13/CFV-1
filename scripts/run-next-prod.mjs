@@ -3,6 +3,7 @@
 import { spawn, spawnSync } from 'node:child_process'
 import { createRequire } from 'node:module'
 import { resolve } from 'node:path'
+import { stampServiceWorker } from './stamp-service-worker.mjs'
 
 const require = createRequire(import.meta.url)
 
@@ -282,6 +283,16 @@ async function main() {
     if (buildExitCode !== 0) {
       process.exit(buildExitCode)
     }
+  }
+
+  try {
+    const distDirName = String(process.env.NEXT_DIST_DIR || '').trim() || '.next'
+    const { buildId, changed } = await stampServiceWorker(rootDir, distDirName)
+    console.log(
+      `[run-next-prod] ${changed ? 'Stamped' : 'Verified'} public/sw.js with BUILD_ID ${buildId}.`
+    )
+  } catch (error) {
+    console.warn('[run-next-prod] WARNING: Failed to stamp service worker BUILD_ID:', error)
   }
 
   console.log(`[run-next-prod] Starting ChefFlow production on http://${host}:${port}`)

@@ -8,6 +8,7 @@ import { createHash } from 'node:crypto'
 import { format } from 'date-fns'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { evaluateReadinessForDocumentGeneration } from '@/lib/events/readiness'
 import { getDocumentContext } from '@/lib/print/actions'
 import { fetchGroceryListData, renderGroceryList } from '@/lib/documents/generate-grocery-list'
 import { fetchTravelRouteData, renderTravelRoute } from '@/lib/documents/generate-travel-route'
@@ -365,6 +366,29 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
     }
 
     const { requestedType, selectedTypes, archiveRequested, idempotencyKey } = parsedRequest.value
+    const readinessOverride = request.nextUrl.searchParams.get('readinessOverride') === '1'
+
+    if ((requestedType === 'all' || requestedType === 'pack') && !readinessOverride) {
+      const readiness = await evaluateReadinessForDocumentGeneration(eventId).catch(() => null)
+      if (readiness && readiness.counts.blockers > 0) {
+        return NextResponse.json(
+          {
+            error: 'Readiness blockers must be fixed or explicitly overridden before generating the packet.',
+            readiness: {
+              confidence: readiness.confidence,
+              counts: readiness.counts,
+              blockers: readiness.blockers.map((blocker) => ({
+                gate: blocker.gate,
+                label: blocker.label,
+                details: blocker.details,
+                verifyRoute: blocker.verifyRoute,
+              })),
+            },
+          },
+          { status: 409 }
+        )
+      }
+    }
     const { generatedBy, customFooter } = await getDocumentContext()
     const dateSuffix = format(new Date(), 'yyyy-MM-dd')
     const docConfigs = getDocRenderConfigs(eventId)

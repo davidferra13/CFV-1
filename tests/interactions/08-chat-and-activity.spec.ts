@@ -81,7 +81,9 @@ test.describe('Chat — Individual Conversation', () => {
 
     const messageInput = page.locator('textarea, [contenteditable]').first()
     if (await messageInput.isVisible()) {
-      await messageInput.fill('TEST — automated E2E test message, please ignore')
+      await messageInput.fill(
+        'Quick check-in on menu pacing for the anniversary supper. Happy to revise dessert plating if that helps.'
+      )
       await page.waitForTimeout(500)
     }
 
@@ -100,7 +102,9 @@ test.describe('Chat — Individual Conversation', () => {
 
     const messageInput = page.locator('textarea').first()
     if (await messageInput.isVisible()) {
-      await messageInput.fill('TEST E2E automated test message')
+      await messageInput.fill(
+        'Sharing two dessert options for your parents’ dinner and a tighter timing plan for the evening.'
+      )
       const sendBtn = page.getByRole('button', { name: /send/i }).first()
       if (await sendBtn.isVisible()) {
         await sendBtn.click()

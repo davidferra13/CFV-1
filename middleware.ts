@@ -10,6 +10,7 @@ import {
   isStaffRoutePath,
   isPartnerRoutePath,
 } from '@/lib/auth/route-policy'
+import { isKnowledgeIngredientPubliclyIndexable } from '@/lib/openclaw/public-ingredient-publish'
 import {
   setPathnameHeader,
   setRequestAuthContext,
@@ -51,6 +52,19 @@ function buildRedirectUrl(request: NextRequest, path: string): URL {
   return new URL(path, `${proto}://${host}`)
 }
 
+function getBlockedIngredientSlug(pathname: string): string | null {
+  if (!pathname.startsWith('/ingredient/')) {
+    return null
+  }
+
+  const slug = pathname.slice('/ingredient/'.length).split('/')[0]?.trim().toLowerCase()
+  if (!slug) {
+    return null
+  }
+
+  return isKnowledgeIngredientPubliclyIndexable({ slug }) ? null : slug
+}
+
 /**
  * Auth.js v5 middleware wrapper.
  * The auth() function decodes the JWT from the session cookie and attaches
@@ -64,6 +78,7 @@ export default auth(async (request) => {
   const requestId = crypto.randomUUID()
 
   const { pathname } = request.nextUrl
+  const blockedIngredientSlug = getBlockedIngredientSlug(pathname)
   const { useSecureCookies } = resolveAuthCookieOptions({
     requestOrigin: request.nextUrl.origin,
     forwardedProto: request.headers.get('x-forwarded-proto'),
@@ -75,14 +90,26 @@ export default auth(async (request) => {
     return NextResponse.next()
   }
 
+  if (blockedIngredientSlug) {
+    const response = new NextResponse('Ingredient not found', {
+      status: 404,
+      headers: {
+        'content-type': 'text/plain; charset=utf-8',
+        'x-robots-tag': 'noindex, nofollow',
+      },
+    })
+    return withRequestId(response, requestId)
+  }
+
   // Strip internal auth headers on public and skip-auth paths so spoofed
   // x-cf-* values never reach downstream helpers like getCurrentUser().
-  // Note: x-pathname is intentionally NOT set here, which means the
-  // readRequestAuthContext sentinel check will also reject these paths.
+  // Restore x-pathname so layout-level surface governance and request
+  // observability can still classify the active route honestly.
   if (isApiSkipAuthPath(pathname)) {
     const sanitized = new Headers(request.headers)
     stripInternalRequestHeaders(sanitized)
     sanitized.set('x-request-id', requestId)
+    setPathnameHeader(sanitized, pathname)
     return withRequestId(NextResponse.next({ request: { headers: sanitized } }), requestId)
   }
 
@@ -90,6 +117,7 @@ export default auth(async (request) => {
     const sanitized = new Headers(request.headers)
     stripInternalRequestHeaders(sanitized)
     sanitized.set('x-request-id', requestId)
+    setPathnameHeader(sanitized, pathname)
     return withRequestId(NextResponse.next({ request: { headers: sanitized } }), requestId)
   }
 
@@ -199,6 +227,6 @@ export default auth(async (request) => {
 
 export const config = {
   matcher: [
-    '/((?!api/(?:auth|webhooks|gmail|scheduled|e2e|remy/client|remy/stream|remy/public|remy/landing|ollama-status|health|ai/health|ai/monitor|documents|embed|demo|monitoring|inngest|kiosk|feeds|v2|storage|realtime|book|cron|sentinel|openclaw/webhook|ingredients|calling)|_next/static|_next/image|favicon.ico|manifest.json|robots.txt|sitemap.xml|sw.js|inbox-sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html)$).*)',
+    '/((?!api/(?:auth|webhooks|build-version|gmail|scheduled|e2e|remy/client|remy/stream|remy/public|remy/landing|ollama-status|health|ai/health|ai/monitor|documents|embed|demo|monitoring|inngest|kiosk|feeds|v2|storage|realtime|book|cron|sentinel|openclaw/webhook|ingredients|calling)|_next/static|_next/image|favicon.ico|manifest.json|robots.txt|sitemap.xml|sw.js|inbox-sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html)$).*)',
   ],
 }

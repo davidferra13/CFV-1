@@ -25,7 +25,12 @@ export default async function MyProfilePage() {
     getMyProfile() as Promise<Parameters<typeof ClientProfileForm>[0]['profile']>,
     getMyFunQA().catch(() => ({})),
     getClientSignalNotificationPref().catch(() => false),
-    getMyMealCollaborationData().catch(() => ({ history: [], requests: [], recommendations: [] })),
+    getMyMealCollaborationData().catch(() => ({
+      history: [],
+      requests: [],
+      recommendations: [],
+      favorites: { favoriteDishes: [], favoriteCuisines: [] },
+    })),
   ])
 
   return (
@@ -45,6 +50,7 @@ export default async function MyProfilePage() {
         history={mealCollab.history}
         requests={mealCollab.requests}
         recommendations={mealCollab.recommendations}
+        favorites={mealCollab.favorites}
       />
 
       <FunQAForm initialAnswers={funQAAnswers} />

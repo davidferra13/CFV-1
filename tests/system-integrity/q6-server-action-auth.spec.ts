@@ -5,48 +5,26 @@
  * auth check (requireChef, requireClient, requireAdmin, or be explicitly
  * documented as intentionally public).
  *
- * This is a STRUCTURAL test — it scans all 'use server' files and looks
- * for exported async functions that lack an auth check in the first 20 lines
- * of the function body.
+ * This is a STRUCTURAL test. It scans all module-level 'use server' files
+ * under lib/ and app/ and fails if an exported async function lacks an auth
+ * guard inside the first 20 lines of the function body.
  *
  * Failure = an exported server action callable by any unauthenticated request
  * with no auth guard, creating a data exposure or mutation vector.
  *
- * Known public-by-design patterns (exempt from this rule):
- *  - lib/auth/actions.ts (signIn, signOut — auth IS the operation)
- *  - lib/hub/profile-actions.ts (public profile creation for embed/hub join)
- *  - lib/hub/group-actions.ts (joinHubGroup — public join link)
- *  - lib/email/actions.ts (unsubscribe flows — must be public)
- *  - app/api/embed/* (public widget endpoints, rate-limited separately)
- *
  * Run: npx playwright test -c playwright.system-integrity.config.ts tests/system-integrity/q6-server-action-auth.spec.ts
  */
 import { test, expect } from '@playwright/test'
-import { readdirSync, readFileSync, statSync } from 'fs'
+import { readdirSync, readFileSync } from 'fs'
 import { join, relative } from 'path'
+import { buildServerActionAuthInventory } from '@/lib/auth/server-action-inventory'
 
-// Files that are intentionally public — auth is not required
-const PUBLIC_EXEMPT_FILES = new Set([
-  'lib/auth/actions.ts',
-  'lib/auth/client-actions.ts',
-  'lib/hub/profile-actions.ts',
-  'lib/hub/group-actions.ts',
-  'lib/email/unsubscribe-actions.ts',
-  'lib/email/actions.ts',
-  'lib/clients/public-actions.ts',
-  'lib/reviews/public-actions.ts',
-])
-
-// Auth guard function names
-const AUTH_GUARDS = [
-  'requireChef',
-  'requireClient',
-  'requireAdmin',
-  'requireAuth',
-  'withApiAuth',
-  'getServerSession',
-  'auth()',
-]
+// Legacy public examples still recognized by the shared inventory:
+// lib/auth/actions.ts
+// lib/hub/profile-actions.ts
+// lib/hub/group-actions.ts
+// lib/email/unsubscribe-actions.ts
+// lib/email/actions.ts
 
 function walkDir(dir: string, exts: string[]): string[] {
   const results: string[] = []
@@ -68,95 +46,37 @@ function walkDir(dir: string, exts: string[]): string[] {
 }
 
 function hasUseServer(src: string): boolean {
-  // Must have 'use server' directive at the top
   return /^['"]use server['"]/m.test(src.slice(0, 500))
-}
-
-function extractExportedFunctions(src: string): Array<{ name: string; bodyStart: number }> {
-  const results: Array<{ name: string; bodyStart: number }> = []
-  // Match: export async function NAME or export async function NAME
-  const pattern = /export\s+async\s+function\s+(\w+)\s*\(/g
-  let match
-  while ((match = pattern.exec(src)) !== null) {
-    results.push({ name: match[1], bodyStart: match.index })
-  }
-  return results
-}
-
-function functionBodyFirst20Lines(src: string, bodyStart: number): string {
-  // Find the opening brace and extract the next 20 lines
-  const fromHere = src.slice(bodyStart)
-  const braceIdx = fromHere.indexOf('{')
-  if (braceIdx === -1) return ''
-  const body = fromHere.slice(braceIdx + 1)
-  return body.split('\n').slice(0, 20).join('\n')
-}
-
-function hasAuthGuard(body: string): boolean {
-  return AUTH_GUARDS.some((guard) => body.includes(guard))
 }
 
 const ROOT = process.cwd()
 
 test.describe('Q6: Server action auth completeness', () => {
   test('all exported server actions have auth guards', () => {
-    // Scan lib/ and app/ for 'use server' files
-    const libFiles = walkDir(join(ROOT, 'lib'), ['.ts'])
-    const appFiles = walkDir(join(ROOT, 'app'), ['.ts', '.tsx'])
-    const allFiles = [...libFiles, ...appFiles]
+    const inventory = buildServerActionAuthInventory({
+      includeRoots: ['lib', 'app'],
+      earlyGuardLineWindow: 20,
+      lateGuardLineWindow: 20,
+    })
 
-    const violations: string[] = []
-    let checkedCount = 0
-    let exemptCount = 0
-
-    for (const filePath of allFiles) {
-      const rel = relative(ROOT, filePath).replace(/\\/g, '/')
-
-      // Skip test files, type files, generated files
-      if (rel.includes('.test.') || rel.includes('.spec.') || rel.includes('types/')) continue
-      if (rel.includes('/node_modules/') || rel.includes('/.next/')) continue
-
-      let src: string
-      try {
-        src = readFileSync(filePath, 'utf-8')
-      } catch {
-        continue
-      }
-
-      if (!hasUseServer(src)) continue
-
-      // Check if file is in the exempt list
-      if (PUBLIC_EXEMPT_FILES.has(rel)) {
-        exemptCount++
-        continue
-      }
-
-      const fns = extractExportedFunctions(src)
-      for (const fn of fns) {
-        checkedCount++
-        const body = functionBodyFirst20Lines(src, fn.bodyStart)
-        if (!hasAuthGuard(body)) {
-          violations.push(`${rel}::${fn.name}`)
-        }
-      }
-    }
-
-    if (violations.length > 0) {
+    if (inventory.missingAuthFunctionCount > 0) {
       console.error(
-        `\nQ6 FAILURES — exported server actions missing auth guards (${violations.length}):\n` +
-          violations.map((v) => `  MISSING AUTH: ${v}`).join('\n')
+        `\nQ6 FAILURES - exported server actions missing auth guards (${inventory.missingAuthFunctionCount}):\n` +
+          inventory.missingAuthFunctionIds.map((id) => `  MISSING AUTH: ${id}`).join('\n')
       )
     }
 
-    // Report count even on pass
     console.log(
-      `Q6: Checked ${checkedCount} server actions across use-server files. ` +
-        `${exemptCount} files exempt. ${violations.length} violations.`
+      `Q6: Checked ${inventory.totalFunctions} server actions across ${inventory.totalFiles} use-server files. ` +
+        `${inventory.fileExemptFunctionCount} functions file-exempt, ` +
+        `${inventory.documentedPublicFunctionCount} documented public. ` +
+        `${inventory.missingAuthFunctionCount} violations.`
     )
 
     expect(
-      violations,
-      `${violations.length} server actions lack auth guards:\n${violations.join('\n')}`
+      inventory.missingAuthFunctionIds,
+      `${inventory.missingAuthFunctionCount} server actions lack auth guards:\n` +
+        inventory.missingAuthFunctionIds.join('\n')
     ).toHaveLength(0)
   })
 
@@ -193,15 +113,13 @@ test.describe('Q6: Server action auth completeness', () => {
 
     if (violations.length > 0) {
       console.warn(
-        `\nQ6 WARNING — possible tenant_id from request body in:\n` +
+        `\nQ6 WARNING - possible tenant_id from request body in:\n` +
           violations.map((v) => `  CHECK: ${v}`).join('\n') +
-          `\n(May be false positives — verify manually)`
+          `\n(May be false positives - verify manually)`
       )
     }
 
-    // This is a warning-level check, not a hard failure (too many false positives)
-    // Just log the count
     console.log(`Q6: ${violations.length} files with possible tenant_id-from-body patterns.`)
-    expect(true).toBe(true) // Always pass — logged for manual review
+    expect(true).toBe(true)
   })
 })

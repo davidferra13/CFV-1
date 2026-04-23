@@ -10,6 +10,12 @@ type Props = {
   chefName: string
 }
 
+type DishFeedbackState = {
+  sentiment: 'liked' | 'neutral' | 'disliked' | null
+  rating: number
+  comment: string
+}
+
 function StarRating({
   value,
   onChange,
@@ -21,14 +27,16 @@ function StarRating({
 }) {
   return (
     <div>
-      <label className="block text-sm text-stone-300 mb-1">{label}</label>
+      <label className="mb-1 block text-sm text-stone-300">{label}</label>
       <div className="flex gap-1">
         {[1, 2, 3, 4, 5].map((star) => (
           <button
             key={star}
             type="button"
             onClick={() => onChange(star)}
-            className={`text-2xl transition-colors ${star <= value ? 'text-amber-400' : 'text-stone-600 hover:text-stone-500'}`}
+            className={`text-2xl transition-colors ${
+              star <= value ? 'text-amber-400' : 'text-stone-600 hover:text-stone-500'
+            }`}
           >
             ★
           </button>
@@ -52,12 +60,22 @@ export function PostEventSurveyForm({ token, occasion, dishes, chefName }: Props
   const [additionalComments, setAdditionalComments] = useState('')
   const [publicReviewText, setPublicReviewText] = useState('')
   const [publicReviewConsent, setPublicReviewConsent] = useState(false)
-  const [dishFeedback, setDishFeedback] = useState<
-    Record<string, { rating: number; comment: string }>
-  >({})
+  const [dishFeedback, setDishFeedback] = useState<Record<string, DishFeedbackState>>({})
   const [submitted, setSubmitted] = useState(false)
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+
+  function updateDishFeedback(dishId: string, patch: Partial<DishFeedbackState>) {
+    setDishFeedback((current) => ({
+      ...current,
+      [dishId]: {
+        sentiment: current[dishId]?.sentiment ?? null,
+        rating: current[dishId]?.rating ?? 0,
+        comment: current[dishId]?.comment ?? '',
+        ...patch,
+      },
+    }))
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -87,21 +105,22 @@ export function PostEventSurveyForm({ token, occasion, dishes, chefName }: Props
           dish_feedback:
             dishes.length > 0
               ? dishes
-                  .filter((d) => dishFeedback[d.id]?.rating)
-                  .map((d) => ({
-                    dish_id: d.id,
-                    dish_name: d.name,
-                    rating: dishFeedback[d.id].rating,
-                    comment: dishFeedback[d.id].comment || undefined,
+                  .filter((dish) => {
+                    const entry = dishFeedback[dish.id]
+                    return Boolean(entry?.sentiment || entry?.rating || entry?.comment)
+                  })
+                  .map((dish) => ({
+                    dish_id: dish.id,
+                    dish_name: dish.name,
+                    sentiment: dishFeedback[dish.id].sentiment ?? undefined,
+                    rating: dishFeedback[dish.id].rating || undefined,
+                    comment: dishFeedback[dish.id].comment || undefined,
                   }))
               : undefined,
         })
 
-        if (result.success) {
-          setSubmitted(true)
-        } else {
-          setError(result.error ?? 'Failed to submit feedback.')
-        }
+        if (result.success) setSubmitted(true)
+        else setError(result.error ?? 'Failed to submit feedback.')
       } catch {
         setError('An unexpected error occurred.')
       }
@@ -110,9 +129,9 @@ export function PostEventSurveyForm({ token, occasion, dishes, chefName }: Props
 
   if (submitted) {
     return (
-      <div className="bg-stone-900 border border-stone-800 rounded-lg p-8 text-center">
-        <div className="text-4xl mb-4">&#x1F64F;</div>
-        <h2 className="text-xl font-bold text-stone-100 mb-2">Thank you for your feedback!</h2>
+      <div className="rounded-lg border border-stone-800 bg-stone-900 p-8 text-center">
+        <div className="mb-4 text-4xl">🙏</div>
+        <h2 className="mb-2 text-xl font-bold text-stone-100">Thank you for your feedback!</h2>
         <p className="text-stone-400">
           {chefName} will use your input to make future events even better.
         </p>
@@ -122,38 +141,37 @@ export function PostEventSurveyForm({ token, occasion, dishes, chefName }: Props
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Overall Rating */}
-      <div className="bg-stone-900 border border-stone-800 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-stone-100 mb-4">Overall Experience</h3>
+      <div className="rounded-lg border border-stone-800 bg-stone-900 p-6">
+        <h3 className="mb-4 text-lg font-semibold text-stone-100">Overall Experience</h3>
         <StarRating
           value={overall}
           onChange={setOverall}
-          label="How was your overall experience?"
+          label={`How was your ${occasion.toLowerCase()}?`}
         />
 
         <div className="mt-4">
-          <label className="block text-sm text-stone-300 mb-2">
+          <label className="mb-2 block text-sm text-stone-300">
             Would you book {chefName} again?
           </label>
           <div className="flex gap-3">
             <button
               type="button"
               onClick={() => setWouldBookAgain(true)}
-              className={`px-4 py-2 rounded text-sm font-medium border transition-colors ${
+              className={`rounded border px-4 py-2 text-sm font-medium transition-colors ${
                 wouldBookAgain === true
-                  ? 'bg-green-900/50 border-green-700 text-green-300'
-                  : 'bg-stone-800 border-stone-700 text-stone-400 hover:border-stone-600'
+                  ? 'border-green-700 bg-green-900/50 text-green-300'
+                  : 'border-stone-700 bg-stone-800 text-stone-400 hover:border-stone-600'
               }`}
             >
-              Yes, absolutely!
+              Yes, absolutely
             </button>
             <button
               type="button"
               onClick={() => setWouldBookAgain(false)}
-              className={`px-4 py-2 rounded text-sm font-medium border transition-colors ${
+              className={`rounded border px-4 py-2 text-sm font-medium transition-colors ${
                 wouldBookAgain === false
-                  ? 'bg-red-900/50 border-red-700 text-red-300'
-                  : 'bg-stone-800 border-stone-700 text-stone-400 hover:border-stone-600'
+                  ? 'border-red-700 bg-red-900/50 text-red-300'
+                  : 'border-stone-700 bg-stone-800 text-stone-400 hover:border-stone-600'
               }`}
             >
               Probably not
@@ -162,11 +180,10 @@ export function PostEventSurveyForm({ token, occasion, dishes, chefName }: Props
         </div>
       </div>
 
-      {/* Detailed Ratings */}
-      <div className="bg-stone-900 border border-stone-800 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-stone-100 mb-4">Details (optional)</h3>
+      <div className="rounded-lg border border-stone-800 bg-stone-900 p-6">
+        <h3 className="mb-4 text-lg font-semibold text-stone-100">Details (optional)</h3>
         <div className="grid grid-cols-2 gap-4">
-          <StarRating value={foodQuality} onChange={setFoodQuality} label="Food Quality" />
+          <StarRating value={foodQuality} onChange={setFoodQuality} label="Food quality" />
           <StarRating value={portionSize} onChange={setPortionSize} label="Portions" />
           <StarRating value={punctuality} onChange={setPunctuality} label="Punctuality" />
           <StarRating value={communication} onChange={setCommunication} label="Communication" />
@@ -175,59 +192,55 @@ export function PostEventSurveyForm({ token, occasion, dishes, chefName }: Props
         </div>
       </div>
 
-      {/* Open Text */}
-      <div className="bg-stone-900 border border-stone-800 rounded-lg p-6 space-y-4">
+      <div className="space-y-4 rounded-lg border border-stone-800 bg-stone-900 p-6">
         <div>
-          <label className="block text-sm text-stone-300 mb-1">What did you love?</label>
+          <label className="mb-1 block text-sm text-stone-300">What did you love?</label>
           <textarea
             value={whatTheyLoved}
-            onChange={(e) => setWhatTheyLoved(e.target.value)}
+            onChange={(event) => setWhatTheyLoved(event.target.value)}
             rows={2}
             placeholder="Tell us what stood out..."
-            className="w-full bg-stone-800 border border-stone-700 rounded px-3 py-2 text-stone-100 text-sm placeholder-stone-500"
+            className="w-full rounded border border-stone-700 bg-stone-800 px-3 py-2 text-sm text-stone-100 placeholder-stone-500"
           />
         </div>
         <div>
-          <label className="block text-sm text-stone-300 mb-1">What could be even better?</label>
+          <label className="mb-1 block text-sm text-stone-300">What could be even better?</label>
           <textarea
             value={whatCouldImprove}
-            onChange={(e) => setWhatCouldImprove(e.target.value)}
+            onChange={(event) => setWhatCouldImprove(event.target.value)}
             rows={2}
             placeholder="Any suggestions for improvement..."
-            className="w-full bg-stone-800 border border-stone-700 rounded px-3 py-2 text-stone-100 text-sm placeholder-stone-500"
+            className="w-full rounded border border-stone-700 bg-stone-800 px-3 py-2 text-sm text-stone-100 placeholder-stone-500"
           />
         </div>
         <div>
-          <label className="block text-sm text-stone-300 mb-1">Anything else? (optional)</label>
+          <label className="mb-1 block text-sm text-stone-300">Anything else? (optional)</label>
           <textarea
             value={additionalComments}
-            onChange={(e) => setAdditionalComments(e.target.value)}
+            onChange={(event) => setAdditionalComments(event.target.value)}
             rows={2}
-            className="w-full bg-stone-800 border border-stone-700 rounded px-3 py-2 text-stone-100 text-sm placeholder-stone-500"
+            className="w-full rounded border border-stone-700 bg-stone-800 px-3 py-2 text-sm text-stone-100 placeholder-stone-500"
           />
         </div>
       </div>
 
       {overall >= 4 && (
-        <div className="bg-stone-900 border border-stone-800 rounded-lg p-6 space-y-4">
+        <div className="space-y-4 rounded-lg border border-stone-800 bg-stone-900 p-6">
           <div>
-            <h3 className="text-lg font-semibold text-stone-100 mb-1">Optional public review</h3>
+            <h3 className="mb-1 text-lg font-semibold text-stone-100">Optional public review</h3>
             <p className="text-sm text-stone-400">
-              If you would like, you can leave a short public note that may appear on {chefName}
-              &apos;s profile.
+              If you want, leave a short public note that may appear on {chefName}&apos;s profile.
             </p>
           </div>
 
           <div>
-            <label className="block text-sm text-stone-300 mb-1">
-              Public review text (optional)
-            </label>
+            <label className="mb-1 block text-sm text-stone-300">Public review text</label>
             <textarea
               value={publicReviewText}
-              onChange={(e) => setPublicReviewText(e.target.value)}
+              onChange={(event) => setPublicReviewText(event.target.value)}
               rows={3}
               placeholder="The food was exceptional and the evening felt effortless..."
-              className="w-full bg-stone-800 border border-stone-700 rounded px-3 py-2 text-stone-100 text-sm placeholder-stone-500"
+              className="w-full rounded border border-stone-700 bg-stone-800 px-3 py-2 text-sm text-stone-100 placeholder-stone-500"
             />
           </div>
 
@@ -235,69 +248,107 @@ export function PostEventSurveyForm({ token, occasion, dishes, chefName }: Props
             <input
               type="checkbox"
               checked={publicReviewConsent}
-              onChange={(e) => setPublicReviewConsent(e.target.checked)}
+              onChange={(event) => setPublicReviewConsent(event.target.checked)}
               className="mt-1 h-4 w-4 rounded border-stone-600"
             />
             <span className="text-sm text-stone-400">
-              I consent to this note being used in ChefFlow&apos;s public review feed for {chefName}
-              .
+              I consent to this note being used in ChefFlow&apos;s public review feed for {chefName}.
             </span>
           </label>
         </div>
       )}
 
-      {/* Dish Feedback */}
       {dishes.length > 0 && (
-        <div className="bg-stone-900 border border-stone-800 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-stone-100 mb-4">Rate the Dishes (optional)</h3>
+        <div className="rounded-lg border border-stone-800 bg-stone-900 p-6">
+          <h3 className="mb-2 text-lg font-semibold text-stone-100">Dish Feedback (optional)</h3>
+          <p className="mb-4 text-sm text-stone-400">
+            Use the quick sentiment buttons first. Rating and notes are optional.
+          </p>
+
           <div className="space-y-3">
-            {dishes.map((dish) => (
-              <div key={dish.id} className="flex items-center gap-4 p-3 bg-stone-800 rounded">
-                <div className="flex-1">
-                  <p className="text-sm text-stone-200">{dish.name}</p>
-                  {dish.course_name && <p className="text-xs text-stone-500">{dish.course_name}</p>}
+            {dishes.map((dish) => {
+              const feedback = dishFeedback[dish.id]
+              return (
+                <div key={dish.id} className="space-y-3 rounded bg-stone-800 p-3">
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <p className="text-sm text-stone-200">{dish.name}</p>
+                      {dish.course_name && (
+                        <p className="text-xs text-stone-500">{dish.course_name}</p>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      {[
+                        { value: 'liked', label: 'Like' },
+                        { value: 'neutral', label: 'Neutral' },
+                        { value: 'disliked', label: 'Dislike' },
+                      ].map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() =>
+                            updateDishFeedback(dish.id, {
+                              sentiment: option.value as DishFeedbackState['sentiment'],
+                            })
+                          }
+                          className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                            feedback?.sentiment === option.value
+                              ? 'border-amber-500 bg-amber-950 text-amber-200'
+                              : 'border-stone-700 bg-stone-900 text-stone-400'
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <span className="text-xs text-stone-500">Optional rating</span>
+                    <div className="flex gap-0.5">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => updateDishFeedback(dish.id, { rating: star })}
+                          className={`text-lg ${
+                            star <= (feedback?.rating ?? 0) ? 'text-amber-400' : 'text-stone-600'
+                          }`}
+                        >
+                          ★
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <input
+                    type="text"
+                    value={feedback?.comment ?? ''}
+                    onChange={(event) =>
+                      updateDishFeedback(dish.id, {
+                        comment: event.target.value,
+                      })
+                    }
+                    placeholder="Optional note"
+                    className="w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-sm text-stone-100"
+                  />
                 </div>
-                <div className="flex gap-0.5">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() =>
-                        setDishFeedback((prev) => ({
-                          ...prev,
-                          [dish.id]: {
-                            ...prev[dish.id],
-                            rating: star,
-                            comment: prev[dish.id]?.comment ?? '',
-                          },
-                        }))
-                      }
-                      className={`text-lg ${
-                        star <= (dishFeedback[dish.id]?.rating ?? 0)
-                          ? 'text-amber-400'
-                          : 'text-stone-600'
-                      }`}
-                    >
-                      ★
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       )}
 
       {error && (
-        <div className="bg-red-900/30 border border-red-800 rounded-lg p-3">
-          <p className="text-red-300 text-sm">{error}</p>
+        <div className="rounded-lg border border-red-800 bg-red-900/30 p-3">
+          <p className="text-sm text-red-300">{error}</p>
         </div>
       )}
 
       <button
         type="submit"
         disabled={pending}
-        className="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+        className="w-full rounded-lg bg-amber-600 py-3 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50"
       >
         {pending ? 'Submitting...' : 'Submit Feedback'}
       </button>

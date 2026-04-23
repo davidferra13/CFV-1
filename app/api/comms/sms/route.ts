@@ -1,33 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/db/server'
-import { ingestInboundSms } from '@/lib/sms/ingest'
-import { resolveOwnerChefId } from '@/lib/platform/owner-account'
-import { timingSafeEqual, createHmac } from 'crypto'
+import { parseInboundWebhook } from '@/lib/sms/twilio-client'
+import { timingSafeEqual } from 'crypto'
 import { checkRateLimit } from '@/lib/rateLimit'
+import { ingestManagedInboundCommunication } from '@/lib/communication/managed-ingest'
+import { resolveManagedInboundChannel } from '@/lib/communication/managed-channels'
+import { validateTwilioSignature } from '@/lib/communication/twilio-webhook'
 
-/**
- * Validate Twilio request signature (HMAC-SHA1).
- * See: https://www.twilio.com/docs/usage/security#validating-requests
- */
-function validateTwilioSignature(
-  authToken: string,
-  url: string,
-  params: Record<string, string>,
-  signature: string
-): boolean {
-  const sortedKeys = Object.keys(params).sort()
-  let data = url
-  for (const key of sortedKeys) {
-    data += key + params[key]
+function buildInboundContent(input: {
+  body: string
+  channel: 'sms' | 'whatsapp'
+  numMedia: number
+}) {
+  const body = input.body.trim()
+  if (body) return body
+  if (input.numMedia > 0) {
+    return `${input.channel.toUpperCase()} media message (${input.numMedia} attachment${input.numMedia === 1 ? '' : 's'})`
   }
-  const expectedSignature = createHmac('sha1', authToken).update(data).digest('base64')
-  if (expectedSignature.length !== signature.length) return false
-  return timingSafeEqual(Buffer.from(expectedSignature), Buffer.from(signature))
+  return ''
+}
+
+function getWebhookUrl(pathname: string) {
+  const base =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.NEXTAUTH_URL ||
+    'https://app.cheflowhq.com'
+
+  return `${base.replace(/\/+$/, '')}${pathname}`
+}
+
+function twiml(status = 200) {
+  return new NextResponse('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {
+    status,
+    headers: { 'Content-Type': 'text/xml' },
+  })
 }
 
 // Twilio sends incoming SMS as x-www-form-urlencoded POST requests.
-// Also accepts JSON for manual forwarding from mobile share-to shortcuts.
-// Security: Validated by CRON_SECRET bearer token OR Twilio signature.
+// JSON + bearer auth remains as a compatibility path for manual forwarding,
+// but tenant ownership is still resolved by the managed channel record.
 export async function POST(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
   try {
@@ -36,113 +47,128 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Rate limited' }, { status: 429 })
   }
 
-  const authHeader = request.headers.get('authorization')
-  const cronSecret = process.env.CRON_SECRET
-
-  let isBearerAuth = false
-  if (cronSecret && authHeader) {
-    const expected = `Bearer ${cronSecret}`
-    isBearerAuth =
-      authHeader.length === expected.length &&
-      timingSafeEqual(Buffer.from(authHeader), Buffer.from(expected))
-  }
-
-  const isTwilioFormat = request.headers
-    .get('content-type')
-    ?.includes('application/x-www-form-urlencoded')
-  const twilioSignature = request.headers.get('x-twilio-signature')
-  const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN
-
-  let isTwilioVerified = false
-  let twilioParams: Record<string, string> = {}
-  if (isTwilioFormat && twilioSignature && twilioAuthToken) {
-    const rawText = await request.text()
-    twilioParams = Object.fromEntries(new URLSearchParams(rawText))
-    const webhookUrl = `${process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'}/api/comms/sms`
-    isTwilioVerified = validateTwilioSignature(
-      twilioAuthToken,
-      webhookUrl,
-      twilioParams,
-      twilioSignature
-    )
-    if (!isTwilioVerified) {
-      console.warn('[sms-inbound] Invalid Twilio signature - rejecting')
-    }
-  }
-
-  if (!isBearerAuth && !isTwilioVerified) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  let from: string
-  let body: string
-  let toNumber: string | undefined
-  let timestamp: string | undefined
-
-  if (isTwilioFormat) {
-    from = twilioParams['From'] ?? ''
-    body = twilioParams['Body'] ?? ''
-    toNumber = twilioParams['To'] ?? undefined
-    timestamp = undefined
-  } else {
-    const json = await request.json()
-    from = json.from ?? ''
-    body = json.body ?? ''
-    toNumber = json.to ?? undefined
-    timestamp = json.timestamp ?? undefined
-  }
-
-  if (!from || !body) {
-    return NextResponse.json({ error: 'Missing required fields: from, body' }, { status: 400 })
-  }
-
-  const db = createServerClient({ admin: true })
-  let tenantId: string | null = null
-
-  if (toNumber) {
-    const twilioNumber = process.env.TWILIO_FROM_NUMBER
-    if (twilioNumber && toNumber.includes(twilioNumber.replace(/\D/g, '').slice(-10))) {
-      tenantId = await resolveOwnerChefId(db)
-    }
-  }
-
-  // Fallback: if bearer auth was used, find tenant via matching client phone.
-  if (!tenantId && isBearerAuth) {
-    const normalizedPhone = from.replace(/\D/g, '').slice(-10)
-    const { data: clientMatch } = await db
-      .from('clients')
-      .select('tenant_id')
-      .or(`phone.ilike.%${normalizedPhone}%`)
-      .limit(1)
-      .maybeSingle()
-
-    tenantId = clientMatch?.tenant_id ?? null
-
-    if (!tenantId) {
-      tenantId = await resolveOwnerChefId(db)
-    }
-  }
-
-  if (!tenantId) {
-    return NextResponse.json(
-      { error: 'Could not determine which chef account this SMS belongs to' },
-      { status: 422 }
-    )
-  }
-
   try {
-    const result = await ingestInboundSms(tenantId, from, body, timestamp)
+    const authHeader = request.headers.get('authorization')
+    const cronSecret = process.env.CRON_SECRET
+
+    let isBearerAuth = false
+    if (cronSecret && authHeader) {
+      const expected = `Bearer ${cronSecret}`
+      isBearerAuth =
+        authHeader.length === expected.length &&
+        timingSafeEqual(Buffer.from(authHeader), Buffer.from(expected))
+    }
+
+    const isTwilioFormat = request.headers
+      .get('content-type')
+      ?.includes('application/x-www-form-urlencoded')
+
+    let from = ''
+    let toNumber = ''
+    let body = ''
+    let timestamp: string | undefined
+    let channel: 'sms' | 'whatsapp' = 'sms'
+    let messageSid: string | null = null
+    let numMedia = 0
+    let twilioParams: Record<string, string> = {}
 
     if (isTwilioFormat) {
-      return new NextResponse('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {
-        status: 200,
-        headers: { 'Content-Type': 'text/xml' },
+      const rawText = await request.text()
+      twilioParams = Object.fromEntries(new URLSearchParams(rawText))
+      const parsed = parseInboundWebhook(twilioParams)
+
+      from = parsed.from
+      toNumber = parsed.to
+      body = parsed.body
+      channel = parsed.channel
+      messageSid = parsed.messageSid || null
+      numMedia = parsed.numMedia
+
+      const managedChannel = await resolveManagedInboundChannel({
+        channel,
+        address: toNumber,
       })
+
+      const twilioSignature = request.headers.get('x-twilio-signature')
+      if (!managedChannel?.authToken || !twilioSignature) {
+        return twiml(401)
+      }
+
+      const webhookUrl = getWebhookUrl('/api/comms/sms')
+      const isTwilioVerified = validateTwilioSignature({
+        authToken: managedChannel.authToken,
+        url: webhookUrl,
+        params: twilioParams,
+        signature: twilioSignature,
+      })
+
+      if (!isTwilioVerified) {
+        console.warn('[sms-inbound] Invalid Twilio signature - rejecting')
+        return twiml(401)
+      }
+    } else {
+      if (!isBearerAuth) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+
+      let json: Record<string, unknown>
+      try {
+        json = await request.json()
+      } catch {
+        return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+      }
+
+      from = String(json.from ?? '')
+      body = String(json.body ?? '')
+      toNumber = String(json.to ?? '')
+      timestamp = typeof json.timestamp === 'string' ? json.timestamp : undefined
+      channel = json.channel === 'whatsapp' ? 'whatsapp' : 'sms'
     }
 
-    return NextResponse.json(result)
-  } catch (err) {
-    console.error('[SMS ingest] Error:', err)
-    return NextResponse.json({ error: 'SMS processing failed' }, { status: 500 })
+    if (!from || !toNumber) {
+      return NextResponse.json({ error: 'Missing required fields: from, to' }, { status: 400 })
+    }
+
+    const rawContent = buildInboundContent({ body, channel, numMedia })
+    if (!rawContent) {
+      return isTwilioFormat
+        ? twiml()
+        : NextResponse.json({ ok: true, routed: false, reason: 'empty_body' })
+    }
+
+    const result = await ingestManagedInboundCommunication({
+      channel,
+      toAddress: toNumber,
+      senderIdentity: from,
+      rawContent,
+      timestamp,
+      externalId: messageSid,
+      providerName: isTwilioFormat ? 'twilio' : 'manual_forward',
+      legacyMessage: {
+        enabled: true,
+        body: rawContent,
+      },
+    })
+
+    if (!result.routed) {
+      return isTwilioFormat
+        ? twiml()
+        : NextResponse.json(
+            { error: 'Could not determine which managed channel this message belongs to' },
+            { status: 422 }
+          )
+    }
+
+    return isTwilioFormat
+      ? twiml()
+      : NextResponse.json({
+          ok: true,
+          routed: true,
+          deduped: result.deduped,
+          tenantId: result.tenantId,
+        })
+  } catch (error) {
+    console.error('[sms-inbound] Error processing inbound message:', error)
+    return NextResponse.json({ error: 'Ingest failed' }, { status: 500 })
   }
 }

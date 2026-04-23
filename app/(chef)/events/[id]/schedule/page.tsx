@@ -11,22 +11,36 @@ import { TimelineView } from '@/components/scheduling/timeline-view'
 import { DOPView } from '@/components/scheduling/dop-view'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ServiceSimulationRollupCard } from '@/components/events/service-simulation-rollup-card'
+import { ServiceSimulationReturnBanner } from '@/components/events/service-simulation-return-banner'
+import { loadEventServiceSimulationPanelState } from '@/lib/service-simulation/state'
+import { sanitizeReturnTo } from '@/lib/navigation/return-to'
 import { format } from 'date-fns'
 
-export default async function EventSchedulePage({ params }: { params: { id: string } }) {
+export default async function EventSchedulePage({
+  params,
+  searchParams,
+}: {
+  params: { id: string }
+  searchParams?: { returnTo?: string }
+}) {
   await requireChef()
+  const returnTo = sanitizeReturnTo(searchParams?.returnTo)
 
-  const [event, timeline, dop, manualCompletions] = await Promise.all([
+  const [event, timeline, dop, manualCompletions, simulationState] = await Promise.all([
     getEventById(params.id),
     getEventTimeline(params.id),
     getEventDOPSchedule(params.id),
     getDOPManualCompletions(params.id).catch(() => new Set<string>()),
+    loadEventServiceSimulationPanelState(params.id).catch(() => null),
   ])
 
   if (!event) notFound()
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      <ServiceSimulationReturnBanner returnTo={returnTo} />
+
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
@@ -43,7 +57,7 @@ export default async function EventSchedulePage({ params }: { params: { id: stri
           </p>
         </div>
         <div className="flex gap-2">
-          <Link href={`/events/${event.id}`}>
+          <Link href={returnTo ?? `/events/${event.id}`}>
             <Button variant="secondary">Event Details</Button>
           </Link>
           <Link href="/schedule">
@@ -51,6 +65,16 @@ export default async function EventSchedulePage({ params }: { params: { id: stri
           </Link>
         </div>
       </div>
+
+      {simulationState ? (
+        <ServiceSimulationRollupCard
+          eventId={params.id}
+          panelState={simulationState}
+          compact
+          returnToHref={`/events/${params.id}?tab=ops#service-simulation`}
+          description="Schedule and DOP stay grounded in the same service simulation signal."
+        />
+      ) : null}
 
       {/* Timeline */}
       {timeline && (

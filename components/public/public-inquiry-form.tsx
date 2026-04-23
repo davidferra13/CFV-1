@@ -7,6 +7,8 @@ import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { AddressAutocomplete } from '@/components/ui/address-autocomplete'
+import { TrackedLink } from '@/components/analytics/tracked-link'
+import { IntakeLaneExpectations } from '@/components/public/intake-lane-expectations'
 import { submitPublicInquiry, checkPublicDateAvailability } from '@/lib/inquiries/public-actions'
 import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 import {
@@ -14,12 +16,23 @@ import {
   emptyDietaryIntake,
   type DietaryIntakeValue,
 } from '@/components/forms/dietary-intake-fields'
+import {
+  CHEF_LOCATION_RELATIONSHIP_LABELS,
+  LOCATION_BEST_FOR_LABELS,
+  LOCATION_SERVICE_TYPE_LABELS,
+  type PublicChefLocationExperience,
+} from '@/lib/partners/location-experiences'
+import { PUBLIC_INTAKE_LANE_KEYS } from '@/lib/public/intake-lane-config'
+import { ExternalLink, MapPin } from '@/components/ui/icons'
 
 interface Props {
   chefSlug: string
   chefName: string
   primaryColor: string
+  expectedResponseTime?: string | null
   referralPartnerId?: string | null
+  partnerLocationId?: string | null
+  selectedLocation?: PublicChefLocationExperience | null
   circleId?: string | null
 }
 
@@ -137,7 +150,10 @@ export function PublicInquiryForm({
   chefSlug,
   chefName,
   primaryColor,
+  expectedResponseTime,
   referralPartnerId,
+  partnerLocationId,
+  selectedLocation,
   circleId,
 }: Props) {
   const [formData, setFormData] = useState<FormData>({
@@ -346,6 +362,7 @@ export function PublicInquiryForm({
         referral_source: formData.referral_source.trim() || undefined,
         website_url: formData.website_url,
         referral_partner_id: referralPartnerId || undefined,
+        partner_location_id: partnerLocationId || undefined,
         existing_circle_id: circleId || undefined,
       })
 
@@ -401,12 +418,39 @@ export function PublicInquiryForm({
   }
 
   if (showSuccess) {
-    const steps = [
-      { n: '✓', label: 'Request received', sub: 'Your details are with the chef.' },
-      { n: '2', label: 'Chef reviews and responds', sub: 'Usually within 24 hours.' },
-      { n: '3', label: 'Menu and quote sent to you', sub: 'Review before committing.' },
-      { n: '4', label: 'Confirm and pay deposit', sub: 'Locks in your date.' },
-      { n: '5', label: 'Dinner', sub: 'Chef cooks, cleans up. You enjoy.' },
+    const successSteps = [
+      {
+        key: 'done',
+        display: '✓',
+        label: 'Request received',
+        sub: 'Your details are with the chef.',
+      },
+      {
+        key: '2',
+        display: '2',
+        label: 'Chef reviews fit and replies',
+        sub: expectedResponseTime
+          ? `Published response window: ${expectedResponseTime}.`
+          : 'Response timing varies by chef and event load.',
+      },
+      {
+        key: '3',
+        display: '3',
+        label: 'Menu, scope, and pricing clarified',
+        sub: 'Use the reply to confirm fit, ask questions, and refine the plan.',
+      },
+      {
+        key: '4',
+        display: '4',
+        label: 'Review written terms',
+        sub: 'Check deposit, cancellation, travel, and what-is-included terms before paying.',
+      },
+      {
+        key: '5',
+        display: '5',
+        label: 'Confirm the event if you want to move forward',
+        sub: 'An inquiry alone does not confirm the date.',
+      },
     ]
     return (
       <Card className="bg-stone-900/90">
@@ -428,23 +472,25 @@ export function PublicInquiryForm({
           </div>
           <h2 className="text-2xl font-bold text-stone-100 mb-2">Inquiry sent</h2>
           <p className="text-stone-400 mb-6">
-            {chefName} will review your details and reply within 24 hours.
+            {expectedResponseTime
+              ? `${chefName} publishes a response window of ${expectedResponseTime}.`
+              : `${chefName} will review your details and reply when they can.`}
           </p>
           <div className="text-left bg-stone-800 border border-stone-700 rounded-xl px-4 py-4 mb-6">
             <p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-3">
               What happens next
             </p>
             <div className="space-y-3">
-              {steps.map((s) => (
-                <div key={s.n} className="flex items-start gap-3">
+              {successSteps.map((s) => (
+                <div key={s.key} className="flex items-start gap-3">
                   <span
-                    className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5 ${s.n === '✓' ? 'bg-green-900 text-emerald-400' : 'bg-stone-700 text-stone-400'}`}
+                    className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5 ${s.key === 'done' ? 'bg-green-900 text-emerald-400' : 'bg-stone-700 text-stone-400'}`}
                   >
-                    {s.n}
+                    {s.display}
                   </span>
                   <div>
                     <p
-                      className={`text-sm font-semibold leading-tight ${s.n === '✓' ? 'text-emerald-400' : 'text-stone-200'}`}
+                      className={`text-sm font-semibold leading-tight ${s.key === 'done' ? 'text-emerald-400' : 'text-stone-200'}`}
                     >
                       {s.label}
                     </p>
@@ -489,7 +535,80 @@ export function PublicInquiryForm({
           <div className="text-center">
             <h1 className="text-3xl font-semibold text-stone-100">Send inquiry</h1>
             <p className="text-base text-stone-500 mt-2">
-              Share the basics and we&apos;ll follow up.
+              Share the basics so {chefName} can review fit, timing, and pricing.
+            </p>
+          </div>
+
+          {selectedLocation && (
+            <div className="rounded-2xl border border-amber-700/40 bg-amber-500/10 px-4 py-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-200">
+                Asking About A Specific Setting
+              </p>
+              <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-stone-100">{selectedLocation.name}</p>
+                  <p className="mt-1 text-sm text-stone-300">{selectedLocation.partner.name}</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <span className="rounded-full border border-amber-700/60 px-3 py-1 text-xs font-medium text-amber-100">
+                      {CHEF_LOCATION_RELATIONSHIP_LABELS[selectedLocation.relationship_type]}
+                    </span>
+                    {(selectedLocation.best_for || []).slice(0, 2).map((value) => (
+                      <span
+                        key={value}
+                        className="rounded-full border border-stone-700 px-3 py-1 text-xs font-medium text-stone-200"
+                      >
+                        {LOCATION_BEST_FOR_LABELS[value]}
+                      </span>
+                    ))}
+                    {(selectedLocation.service_types || []).slice(0, 2).map((value) => (
+                      <span
+                        key={value}
+                        className="rounded-full border border-stone-700 px-3 py-1 text-xs font-medium text-stone-200"
+                      >
+                        {LOCATION_SERVICE_TYPE_LABELS[value]}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="text-sm text-stone-300">
+                  {selectedLocation.city || selectedLocation.state ? (
+                    <p className="inline-flex items-center gap-1.5">
+                      <MapPin className="h-4 w-4 text-stone-500" />
+                      {[selectedLocation.city, selectedLocation.state].filter(Boolean).join(', ')}
+                    </p>
+                  ) : null}
+                  {selectedLocation.booking_url ? (
+                    <TrackedLink
+                      href={`/chef/${chefSlug}/locations/${selectedLocation.id}/book`}
+                      analyticsName="public_inquiry_selected_location_booking"
+                      analyticsProps={{
+                        chef_slug: chefSlug,
+                        location_id: selectedLocation.id,
+                        partner_id: selectedLocation.partner.id,
+                      }}
+                      prefetch={false}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-3 inline-flex items-center gap-2 rounded-full border border-stone-700 px-3 py-1.5 text-xs font-medium text-stone-100 hover:bg-stone-900"
+                    >
+                      View Venue Booking
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </TrackedLink>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <IntakeLaneExpectations
+              lane={PUBLIC_INTAKE_LANE_KEYS.public_profile_inquiry}
+              layout="stack"
+            />
+            <p className="px-1 text-xs leading-relaxed text-stone-500">
+              {expectedResponseTime
+                ? `Published response window: ${expectedResponseTime}.`
+                : 'Response timing is not published on this profile.'}
             </p>
           </div>
 
@@ -562,7 +681,10 @@ export function PublicInquiryForm({
                 placeholder="HH:MM AM"
               />
             </div>
-            <p className="text-sm text-amber-700">Chef typically arrives 2 hours before service.</p>
+            <p className="text-sm text-amber-700">
+              Share the serving time you want guests eating. Arrival and setup timing will be
+              confirmed by the chef if the event is a fit.
+            </p>
             {dateBusy && (
               <p className="text-sm text-amber-600 mt-1">
                 {chefName} may already have an event on this date. You can still submit your

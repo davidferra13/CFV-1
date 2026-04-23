@@ -8,6 +8,9 @@ import {
   getPaletteById,
   type ColorPalette,
 } from '@/lib/themes/color-palettes'
+import { CHEF_SHELL_RESET_EVENT } from '@/lib/chef/shell-state'
+
+const defaultPalette = getPaletteById(DEFAULT_PALETTE_ID)
 
 interface PaletteContextValue {
   palette: ColorPalette
@@ -16,7 +19,7 @@ interface PaletteContextValue {
 }
 
 const PaletteContext = createContext<PaletteContextValue>({
-  palette: PALETTES[0],
+  palette: defaultPalette,
   setPalette: () => {},
   palettes: PALETTES,
 })
@@ -34,20 +37,28 @@ function applyPalette(palette: ColorPalette) {
 }
 
 export function ColorPaletteProvider({ children }: { children: React.ReactNode }) {
-  const [palette, setPaletteState] = useState<ColorPalette>(PALETTES[0])
+  const [palette, setPaletteState] = useState<ColorPalette>(defaultPalette)
 
-  useEffect(() => {
+  const syncPaletteFromStorage = useCallback(() => {
     try {
       const stored = localStorage.getItem(PALETTE_STORAGE_KEY)
-      if (stored) {
-        const found = getPaletteById(stored)
-        setPaletteState(found)
-        applyPalette(found)
-      }
+      const nextPalette = stored ? getPaletteById(stored) : defaultPalette
+      setPaletteState(nextPalette)
+      applyPalette(nextPalette)
     } catch {
-      // localStorage unavailable
+      setPaletteState(defaultPalette)
+      applyPalette(defaultPalette)
     }
   }, [])
+
+  useEffect(() => {
+    syncPaletteFromStorage()
+  }, [syncPaletteFromStorage])
+
+  useEffect(() => {
+    window.addEventListener(CHEF_SHELL_RESET_EVENT, syncPaletteFromStorage)
+    return () => window.removeEventListener(CHEF_SHELL_RESET_EVENT, syncPaletteFromStorage)
+  }, [syncPaletteFromStorage])
 
   const setPalette = useCallback((id: string) => {
     const found = getPaletteById(id)

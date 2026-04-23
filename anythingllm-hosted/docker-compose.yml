@@ -1,0 +1,22 @@
+services:
+  anythingllm:
+    image: mintplexlabs/anythingllm:latest
+    container_name: anythingllm-hosted-54390
+    restart: unless-stopped
+    ports:
+      - "54390:3001"
+    volumes:
+      - C:/Users/david/Documents/AnythingLLM-Hosted-54390/storage:/app/server/storage
+      - ./MetaGenerator.js:/app/server/utils/boot/MetaGenerator.js:ro
+    environment:
+      STORAGE_DIR: /app/server/storage
+      LLM_PROVIDER: ollama
+      OLLAMA_BASE_PATH: http://host.docker.internal:11434
+      OLLAMA_MODEL_PREF: gemma4:e4b
+      OLLAMA_KEEP_ALIVE_TIMEOUT: "300"
+      EMBEDDING_ENGINE: ollama
+      EMBEDDING_BASE_PATH: http://host.docker.internal:11434
+      EMBEDDING_MODEL_PREF: gemma4:e4b
+      EMBEDDING_MODEL_MAX_CHUNK_LENGTH: "8192"
+      OLLAMA_EMBEDDING_BATCH_SIZE: "1"
+      VECTOR_DB: lancedb

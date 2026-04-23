@@ -13,7 +13,7 @@ import { TaskBoard } from './task-board'
 import { TaskForm } from './task-form'
 import type { Task } from '@/lib/tasks/actions'
 import type { CarriedTask } from '@/lib/tasks/carry-forward'
-import { completeTask, updateTask } from '@/lib/tasks/actions'
+import { completeTask } from '@/lib/tasks/actions'
 
 type StaffOption = { id: string; name: string; role: string }
 type StationOption = { id: string; name: string }
@@ -28,6 +28,8 @@ type Props = {
   stations: StationOption[]
   selectedDate: string
   today: string
+  showCreate?: boolean
+  createHref: string
 }
 
 export function TaskPageClient({
@@ -38,9 +40,10 @@ export function TaskPageClient({
   stations,
   selectedDate,
   today,
+  showCreate = false,
+  createHref,
 }: Props) {
   const router = useRouter()
-  const [showCreate, setShowCreate] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
 
   function handleDateChange(newDate: string) {
@@ -56,11 +59,9 @@ export function TaskPageClient({
 
   function handleEditTask(task: Task) {
     setEditingTask(task)
-    setShowCreate(false)
   }
 
   function handleFormDone() {
-    setShowCreate(false)
     setEditingTask(null)
   }
 
@@ -144,23 +145,9 @@ export function TaskPageClient({
             />
           </CardContent>
         </Card>
-      ) : showCreate ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">New Task</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <TaskForm
-              staff={staff}
-              stations={stations}
-              defaultDate={selectedDate}
-              onDone={handleFormDone}
-            />
-          </CardContent>
-        </Card>
-      ) : (
-        <Button onClick={() => setShowCreate(true)}>+ New Task</Button>
-      )}
+      ) : !showCreate ? (
+        <Button href={createHref}>+ New Task</Button>
+      ) : null}
 
       {/* Task board */}
       <TaskBoard

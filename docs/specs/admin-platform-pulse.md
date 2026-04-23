@@ -50,18 +50,18 @@ A single, reverse-chronological feed of everything that happens on the platform.
 
 **Activity types to surface:**
 
-| Activity                   | Source Table              | How to Detect                                            |
-| -------------------------- | ------------------------- | -------------------------------------------------------- |
-| New open booking submitted | `inquiries`               | `channel = 'website'`, `utm_medium = 'open_booking'`     |
-| New direct inquiry         | `inquiries`               | `channel != 'website'` or `utm_medium != 'open_booking'` |
-| Inquiry converted to event | `inquiries`               | `converted_to_event_id IS NOT NULL`                      |
-| Event status change        | `event_state_transitions` | Any new row                                              |
-| New recipe created         | `recipes`                 | Any new row                                              |
-| New menu created           | `menus`                   | Any new row                                              |
-| New client added           | `clients`                 | Any new row                                              |
-| Payment received           | `ledger_entries`          | `entry_type = 'payment'`                                 |
-| Chef signed up             | `chefs`                   | Any new row                                              |
-| Chef completed onboarding  | `chef_preferences`        | `onboarding_completed_at` changes from null              |
+| Activity                   | Source Table              | How to Detect                                                                                                                               |
+| -------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| New open booking submitted | `inquiries`               | `deriveProvenance(...) -> open_booking` using explicit `submission_source`, legacy `open_booking`, and `utm_medium` fallback                |
+| New direct inquiry         | `inquiries`               | `deriveProvenance(...) != open_booking` so direct profile, embed, kiosk, Wix, and other lanes do not collapse into generic website bookings |
+| Inquiry converted to event | `inquiries`               | `converted_to_event_id IS NOT NULL`                                                                                                         |
+| Event status change        | `event_state_transitions` | Any new row                                                                                                                                 |
+| New recipe created         | `recipes`                 | Any new row                                                                                                                                 |
+| New menu created           | `menus`                   | Any new row                                                                                                                                 |
+| New client added           | `clients`                 | Any new row                                                                                                                                 |
+| Payment received           | `ledger_entries`          | `entry_type = 'payment'`                                                                                                                    |
+| Chef signed up             | `chefs`                   | Any new row                                                                                                                                 |
+| Chef completed onboarding  | `chef_preferences`        | `onboarding_completed_at` changes from null                                                                                                 |
 
 **Display:** Each activity shows:
 

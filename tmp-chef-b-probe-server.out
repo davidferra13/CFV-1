@@ -1,0 +1,62 @@
+  ▲ Next.js 14.2.35
+  - Local:        http://127.0.0.1:3100
+  - Network:      http://127.0.0.1:3100
+  - Environments: .env.local, .env
+  - Experiments (use with caution):
+    · instrumentationHook
+
+ ✓ Starting...
+   
+Your tsconfig.json extends another configuration, which means we cannot add the Next.js TypeScript plugin automatically. To improve your development experience, we recommend adding the Next.js plugin (`"plugins": [{ "name": "next" }]`) manually to your TypeScript configuration. Learn more: https://nextjs.org/docs/app/building-your-application/configuring/typescript#the-typescript-plugin
+
+
+   We detected TypeScript in your project and reconfigured your tsconfig.json file for you. Strict-mode is set to false by default.
+   The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:
+
+   	- include was updated to add '.next-dev-chef-b-probe/types/**/*.ts'
+
+   Using tsconfig file: tsconfig.next.json
+ ○ Compiling /instrumentation ...
+ ✓ Compiled /instrumentation in 12.1s (1135 modules)
+[instrumentation] Background job startup disabled for E2E.
+ ✓ Ready in 18.6s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 13.9s (1392 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 81.1s (9386 modules)
+ ✓ Compiled in 6.1s (3811 modules)
+ ✓ Compiled in 1069ms (3797 modules)
+ GET / 200 in 1230ms
+ GET / 200 in 2321ms
+ GET / 200 in 357ms
+ GET / 200 in 285ms
+ GET / 200 in 363ms
+ GET / 200 in 300ms
+ GET / 200 in 567ms
+ GET / 200 in 276ms
+ GET / 200 in 256ms
+ GET / 200 in 191ms
+ GET / 200 in 339ms
+ GET / 200 in 387ms
+ GET / 200 in 256ms
+ GET / 200 in 204ms
+ GET / 200 in 486ms
+ GET / 200 in 344ms
+ GET / 200 in 283ms
+ GET / 200 in 354ms
+ GET / 200 in 195ms
+ GET / 200 in 425ms
+ GET / 200 in 225ms
+ GET / 200 in 309ms
+ GET / 200 in 360ms
+ GET / 200 in 385ms
+ GET / 200 in 203ms
+ GET / 200 in 238ms
+ GET / 200 in 326ms
+ GET / 200 in 167ms
+ GET / 200 in 121ms
+ GET / 200 in 134ms
+ GET / 200 in 134ms
+ GET / 200 in 115ms
+ GET / 200 in 110ms
+ ○ Compiling /_not-found ...

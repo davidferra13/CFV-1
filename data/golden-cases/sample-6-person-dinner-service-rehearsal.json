@@ -1,0 +1,352 @@
+{
+  "id": "sample-6-person-dinner-service-rehearsal",
+  "version": 1,
+  "status": "working-fixture",
+  "source": {
+    "type": "private-master-document",
+    "reference": "Internal master document notes and whiteboard transcriptions",
+    "source_section": "Project 2: 6-Person Sample Dinner / Scaling Exercise"
+  },
+  "privacy": {
+    "internal_only": true,
+    "shareable_fixture_requires_redaction": true,
+    "notes": [
+      "Derived from internal notes only.",
+      "No personal contact details are included.",
+      "Unknown facts stay unknown rather than inferred."
+    ]
+  },
+  "summary": {
+    "title": "6-person sample dinner / service rehearsal",
+    "guest_count": 6,
+    "group_description": "6 women",
+    "menu_shape": "light apps, entree, dessert",
+    "event_date_iso": null,
+    "event_date_text": null,
+    "occasion": "Private dinner rehearsal case",
+    "location_type": null,
+    "location_area": null,
+    "service_context": [
+      "Operational sample dinner with enough prep and service detail to rehearse execution",
+      "Multi-course dinner with make-ahead work and day-of finishing",
+      "Portioning and pacing were still unresolved in the notes"
+    ]
+  },
+  "event_seed": {
+    "client": {
+      "full_name": "Redacted Sample Host",
+      "phone": null,
+      "email": null,
+      "notes": [
+        "Internal golden-case placeholder client for service workflow testing",
+        "No real contact details carried into the fixture"
+      ]
+    },
+    "event": {
+      "occasion": "6-person sample dinner rehearsal",
+      "event_date_text": null,
+      "guest_count": 6,
+      "service_style": "plated",
+      "location_address": null,
+      "location_city": null,
+      "location_state": null,
+      "location_zip": null,
+      "access_instructions": null,
+      "special_requests": "Use this as an operational rehearsal case, not a client-facing promised event.",
+      "dietary_restrictions": [],
+      "allergies": [],
+      "menu_approval_status": "unknown"
+    }
+  },
+  "working_menu": {
+    "structure_note": "Notes describe a tighter sample menu built from a larger brainstorm.",
+    "courses": [
+      {
+        "course_number": 1,
+        "course_name": "Passed bite",
+        "dish_name": "French onion grilled cheese bites with dip",
+        "components": [
+          "grilled cheese bites",
+          "French onion dip"
+        ],
+        "service_notes": [
+          "Need 6 tiny bowls for individual dips to prevent double dipping"
+        ]
+      },
+      {
+        "course_number": 2,
+        "course_name": "Appetizer",
+        "dish_name": "Artichoke dip with tortilla chips and artichoke component",
+        "components": [
+          "artichoke dip",
+          "tortilla chips",
+          "artichoke leaves or stuffed artichoke component"
+        ],
+        "service_notes": [
+          "Notes conflict between breaded leaves and stuffed artichokes"
+        ]
+      },
+      {
+        "course_number": 3,
+        "course_name": "Pasta",
+        "dish_name": "Goat cheese ravioli with caramelized carrots, brown butter sage sauce, and black walnut",
+        "components": [
+          "ravioli",
+          "goat cheese filling",
+          "caramelized carrots",
+          "brown butter sage sauce",
+          "black walnut"
+        ],
+        "service_notes": []
+      },
+      {
+        "course_number": 4,
+        "course_name": "Entree",
+        "dish_name": "Golden chicken thighs with confit garlic butter",
+        "components": [
+          "marinated chicken thighs",
+          "confit garlic",
+          "confit garlic butter"
+        ],
+        "service_notes": []
+      },
+      {
+        "course_number": 5,
+        "course_name": "Dessert",
+        "dish_name": "Chocolate tart with salted caramel, blueberry, and chocolate-vanilla swirl gelato",
+        "components": [
+          "tart shell",
+          "chocolate ganache",
+          "blueberry mousse",
+          "chocolate mousse",
+          "salted caramel",
+          "blueberry component",
+          "chocolate crumble",
+          "chocolate-vanilla swirl gelato",
+          "mint garnish"
+        ],
+        "service_notes": []
+      },
+      {
+        "course_number": 6,
+        "course_name": "Optional sweet snack",
+        "dish_name": "Frozen fruit / fruit riot",
+        "components": [
+          "frozen fruit",
+          "sweet sugar-mix coating"
+        ],
+        "service_notes": [
+          "Unclear whether this is a locked dessert element or optional add-on"
+        ]
+      }
+    ]
+  },
+  "prep_timeline": [
+    {
+      "dish_name": "French onion grilled cheese bites with dip",
+      "before_service": [
+        "Portion bread",
+        "Portion cheese",
+        "Cook onions and make dip",
+        "Save half the onions for sandwich assembly"
+      ],
+      "day_of_service": [
+        "Assemble grilled cheese",
+        "Cook and slice sandwiches",
+        "Heat dip"
+      ]
+    },
+    {
+      "dish_name": "Artichoke dip with tortilla chips and artichoke component",
+      "before_service": [
+        "Mix and combine artichoke dip",
+        "Slice tortillas",
+        "Boil and portion artichokes",
+        "Prepare breadcrumb mix",
+        "Prep lemons"
+      ],
+      "day_of_service": [
+        "Heat dip",
+        "Assemble and heat stuffed artichokes or breaded leaves",
+        "Finish with lemon"
+      ]
+    },
+    {
+      "dish_name": "Goat cheese ravioli with carrots, sauce, and black walnut",
+      "before_service": [
+        "Make pasta",
+        "Prepare goat cheese mix",
+        "Portion carrots",
+        "Portion butter sauce",
+        "Portion nuts"
+      ],
+      "day_of_service": [
+        "Boil ravioli",
+        "Saute carrots",
+        "Brown butter sage sauce",
+        "Finish with black walnuts"
+      ]
+    },
+    {
+      "dish_name": "Golden chicken thighs with confit garlic butter",
+      "before_service": [
+        "Marinate chicken thighs with parsley stems, herbs, and butter",
+        "Make confit garlic",
+        "Make confit garlic butter"
+      ],
+      "day_of_service": [
+        "Slow-cook thighs until golden",
+        "Serve with confit garlic butter"
+      ]
+    },
+    {
+      "dish_name": "Chocolate tart with salted caramel, blueberry, and gelato",
+      "before_service": [
+        "Make tart shell",
+        "Make chocolate ganache",
+        "Make chocolate mousse",
+        "Make blueberry mousse",
+        "Make blueberry jam",
+        "Prep blueberries",
+        "Make salted caramel",
+        "Prep chocolate-vanilla swirl base",
+        "Prep mint",
+        "Make crispy chocolate crumb",
+        "Assemble and freeze"
+      ],
+      "day_of_service": [
+        "Slice tart",
+        "Churn gelato",
+        "Finish with mint"
+      ]
+    },
+    {
+      "dish_name": "Frozen fruit / fruit riot",
+      "before_service": [
+        "Freeze fruit",
+        "Prepare sugar-mix coating"
+      ],
+      "day_of_service": []
+    }
+  ],
+  "ingredient_breakdown": {
+    "french_onion_grilled_cheese_bites_with_dip": [
+      "sourdough bread",
+      "cheddar",
+      "provolone",
+      "Swiss",
+      "thyme",
+      "onion",
+      "beef stock",
+      "one additional cheese or pantry ingredient noted as unclear in source"
+    ],
+    "artichoke_dip_with_tortilla_chips_and_artichoke_component": [
+      "artichoke hearts",
+      "cream cheese",
+      "sour cream",
+      "parmesan",
+      "dried dill",
+      "lemon",
+      "mayonnaise",
+      "spinach",
+      "breadcrumbs",
+      "artichokes",
+      "parsley",
+      "tortillas",
+      "oil"
+    ],
+    "goat_cheese_ravioli_with_carrots_sauce_and_black_walnut": {
+      "pasta": [
+        "flour",
+        "eggs",
+        "oil"
+      ],
+      "filling": [
+        "goat cheese",
+        "egg yolk",
+        "parsley",
+        "basil",
+        "green onion",
+        "ricotta"
+      ],
+      "carrot_component": [
+        "carrots",
+        "butter",
+        "thyme"
+      ],
+      "sauce": [
+        "butter",
+        "sage",
+        "maple syrup",
+        "lemon",
+        "pasta water"
+      ],
+      "finish": [
+        "black walnut"
+      ]
+    },
+    "golden_chicken_thighs_with_confit_garlic_butter": [
+      "chicken thighs",
+      "parsley stems",
+      "thyme",
+      "rosemary",
+      "black walnut",
+      "garlic"
+    ],
+    "chocolate_tart_with_blueberry_and_gelato": {
+      "shell_or_base": [
+        "butter",
+        "graham cracker",
+        "flour",
+        "eggs",
+        "cocoa",
+        "oil"
+      ],
+      "mousse_and_ganache": [
+        "heavy cream",
+        "chocolate"
+      ],
+      "blueberry_component": [
+        "blueberry"
+      ],
+      "mousse_support": [
+        "eggs"
+      ]
+    },
+    "frozen_fruit": [
+      "frozen fruit",
+      "Kool-Aid mix"
+    ]
+  },
+  "open_questions": [
+    "Exact event date is unknown.",
+    "Location, travel plan, and access instructions are unknown.",
+    "Dietary restrictions and allergies are unknown.",
+    "Final artichoke format is unresolved between breaded leaves and stuffed artichokes.",
+    "Whether the frozen fruit element is optional or locked is unknown.",
+    "The correct portion size for six guests is unresolved.",
+    "Whether the guest group typically eats average portions or clears all food is unknown.",
+    "Whether pasta should be made raw earlier or closer to service is unresolved.",
+    "Documents, equipment plan, packing list, and arrival targets are not specified in the notes."
+  ],
+  "simulation_expectations": {
+    "known_truths": [
+      "There is enough menu and prep detail to build a realistic menu, components, and prep chain.",
+      "Guest count is concrete enough for scaling and service rehearsal.",
+      "The dinner clearly requires make-ahead work plus day-of finishing."
+    ],
+    "must_remain_unknown_until_captured": [
+      "venue logistics",
+      "dietary truth",
+      "travel and arrival truth",
+      "document readiness",
+      "equipment and packing confirmation",
+      "close-out requirements"
+    ],
+    "why_this_case_matters": [
+      "It tests whether ChefFlow can connect menu planning, prep, travel, service, and readiness without relying on clean inquiry data.",
+      "It stresses operational detail instead of only menu ideation.",
+      "It exposes whether service simulation stays truthful when the notes contain real ambiguity."
+    ]
+  }
+}

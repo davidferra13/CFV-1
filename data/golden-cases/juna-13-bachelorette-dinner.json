@@ -1,0 +1,304 @@
+{
+  "id": "juna-13-bachelorette-dinner",
+  "version": 1,
+  "status": "working-fixture",
+  "source": {
+    "type": "sms-screenshots",
+    "folder_path": "C:\\Users\\david\\Desktop\\Juna 13 Dinner",
+    "master_document": "C:\\Users\\david\\Desktop\\Juna 13 Dinner\\MASTER_DOCUMENT.md",
+    "transcription": "C:\\Users\\david\\Desktop\\Juna 13 Dinner\\TRANSCRIPTION.txt"
+  },
+  "privacy": {
+    "internal_only": true,
+    "shareable_fixture_requires_redaction": true,
+    "notes": [
+      "Use this as an internal golden case first.",
+      "Do not reuse the raw contact card or raw screenshots in shared demos.",
+      "Any cross-tenant or public demo version should swap names and remove contact details."
+    ]
+  },
+  "summary": {
+    "chef_name": "David Ferragamo",
+    "client_contact_name": "Becca",
+    "referral_source": "Anthony",
+    "occasion": "Bachelorette dinner",
+    "event_date_text": "Saturday, June 13",
+    "event_date_iso": null,
+    "event_year_known": false,
+    "guest_count": 18,
+    "group_description": "18 girls",
+    "cuisine_direction": "Mexican-inspired",
+    "venue_type": "House",
+    "location_area": "Kennebunkport",
+    "space_notes": [
+      "Open kitchen / living room area",
+      "Client may bring in long tables so everyone can eat together",
+      "Tables may be decorated"
+    ],
+    "day_plan": [
+      "Coffee downtown in Kennebunkport",
+      "Sandwiches",
+      "Pool for most of the day",
+      "Return to the house for dinner"
+    ],
+    "client_preference_notes": [
+      "Becca's sister likes Mexican-inspired food",
+      "She is not super picky",
+      "She is open to the chef's creativity"
+    ]
+  },
+  "conversation": {
+    "channel": "SMS / Android Messages screenshots",
+    "tone_notes": [
+      "Warm and appreciative on both sides",
+      "Long response delays occurred, but the conversation recovered positively",
+      "Becca explicitly gave the chef creative control"
+    ],
+    "timeline": [
+      {
+        "date_text": "Tuesday, March 24",
+        "timestamp_text": "12:12 PM",
+        "sender": "chef",
+        "text": "Hey! I'm glad Anthony could get us connected. Let me know when you're free, we can chat about the 13th.",
+        "tags": ["intro", "availability", "relationship-start"]
+      },
+      {
+        "date_text": "Tuesday, March 24",
+        "timestamp_text": "12:14 PM",
+        "sender": "client",
+        "text": "Awesome! Thank you so much! Is it okay if I reach back out Thursday and we can start figuring some stuff out?",
+        "tags": ["follow-up", "timing"]
+      },
+      {
+        "date_text": "Tuesday, March 24",
+        "timestamp_text": "6:07 PM",
+        "sender": "chef",
+        "text": "Absolutely no rush at all. Thursday works for me!",
+        "tags": ["tone", "availability"]
+      },
+      {
+        "date_text": "Tuesday, March 24",
+        "timestamp_text": "6:11 PM",
+        "sender": "client",
+        "text": "And i'll be sure to talk to my sister before then and get an idea of the type of food she is looking for ishh haha",
+        "tags": ["requirements-gathering"]
+      },
+      {
+        "date_text": "Thursday, March 26",
+        "timestamp_text": "9:30 PM",
+        "sender": "client",
+        "text": "Hi David! I'm so sorry! Today got away from me catching up on things I needed to do! Any chance we can connect next week about dinner? Im off this sunday Sunday, and I'm off Monday Thursday and Friday if that works!",
+        "tags": ["delay", "availability"]
+      },
+      {
+        "date_text": "Sunday, March 29",
+        "timestamp_text": "1:38 PM",
+        "sender": "chef",
+        "text": "Hey sorry! I didn't see this. I'll be around, just let me know when. There's not rush",
+        "tags": ["delay", "availability"]
+      },
+      {
+        "date_text": "Sunday, March 29",
+        "timestamp_text": "3:27 PM",
+        "sender": "client",
+        "text": "No worries! So what info can I provide to help you? Haha- it is gonna be 18 girls! My sister does like Mexican inspired food things- but she isn't super picky. but she is totally open to your creativity as well! We were figuring it'll be that Saturday night, June 13th- we were planning on doing like a chill day- prob coffee downtown in Kennebunkport and then grabbing sandwiches and hanging at the pool for most of the day- then get ready for the dinner at the house. I can send you some pics of the kitchen/ living room area- it's super open. We might bring some long tables in to eat all together and decorate those! Maybe thinking some hors d'oeuvres and - main course/ dessert? What are your thoughts?",
+        "tags": ["core-brief", "guest-count", "location", "menu-direction", "service-format"]
+      },
+      {
+        "date_text": "Thursday, April 9",
+        "timestamp_text": null,
+        "sender": "chef",
+        "text": "Hey!!! This is a cute place. I can't believe I didn't see this message. I'm very sorry. This sounds perfect I can start making you guys a menu.",
+        "tags": ["apology", "menu-start"]
+      },
+      {
+        "date_text": "Thursday, April 9",
+        "timestamp_text": "7:43 PM",
+        "sender": "client",
+        "text": "No worries! I didn't want to bombard you if you were busy at all! Yeah that would be great! I'm leaving the creativity in your hands! I can give you a call the end of next week some time if that gives you time to work something up?",
+        "tags": ["creative-control", "call-planning"]
+      },
+      {
+        "date_text": "Sunday, April 19",
+        "timestamp_text": "11:47 AM",
+        "sender": "client",
+        "text": "Hey- it's Becca! Just checking in from last time we talked! Seeing where you are at with the possible menu for the Saturday bachelorette dinner! Thanks so much!",
+        "tags": ["follow-up", "menu-status"]
+      },
+      {
+        "date_text": "Wednesday, April 22",
+        "timestamp_text": "2:52 PM",
+        "sender": "chef",
+        "text": "Hey! I'm so sorry for my awful response time. I'll be finishing up you options tonight, so we can discuss them on the phone. Youll have lots to pick from.",
+        "tags": ["apology", "menu-promise"]
+      },
+      {
+        "date_text": "Wednesday, April 22",
+        "timestamp_text": "2:54 PM",
+        "sender": "client",
+        "text": "Sounds good! I unfortunately am away on vacation with friends this week-But I'll be free Sunday! Is there anytime that would be good to call?",
+        "tags": ["call-planning"]
+      },
+      {
+        "date_text": "Wednesday, April 22",
+        "timestamp_text": "2:54 PM",
+        "sender": "chef",
+        "text": "Want to do 1pm?",
+        "tags": ["call-time"]
+      },
+      {
+        "date_text": "Wednesday, April 22",
+        "timestamp_text": "2:55 PM",
+        "sender": "client",
+        "text": "That works!",
+        "tags": ["call-confirmed"]
+      },
+      {
+        "date_text": "Wednesday, April 22",
+        "timestamp_text": "6:08 PM",
+        "sender": "chef",
+        "text": "Sent menu proposal titled Mexican-Inspired Dinner | June 13",
+        "tags": ["menu-sent"]
+      },
+      {
+        "date_text": "Wednesday, April 22",
+        "timestamp_text": "6:09 PM",
+        "sender": "chef",
+        "text": "Hopefully that message is good enough to just shoot out to everybody and up to your expectations. Enjoy your vacation.",
+        "tags": ["menu-expectations", "group-circulation"]
+      },
+      {
+        "date_text": "Wednesday, April 22",
+        "timestamp_text": "6:12 PM",
+        "sender": "client",
+        "text": "This looks phenomenal-the message is above and beyond haha. I will look at it with my sister when I'm back and I look forward talking to you Sunday about what choices we want! Thank you again so much!!",
+        "tags": ["menu-positive", "review-with-sister", "selection-pending"]
+      }
+    ]
+  },
+  "event_seed": {
+    "client": {
+      "full_name": "Becca",
+      "phone": null,
+      "email": null,
+      "notes": [
+        "Referral through Anthony",
+        "Primary planner for her sister's bachelorette dinner"
+      ]
+    },
+    "event": {
+      "occasion": "Bachelorette dinner",
+      "event_date_text": "Saturday, June 13",
+      "guest_count": 18,
+      "service_style": "Private dinner at house",
+      "location_address": null,
+      "location_city": "Kennebunkport",
+      "location_state": null,
+      "location_zip": null,
+      "access_instructions": null,
+      "special_requests": "Mexican-inspired direction; enough variety for a group decision",
+      "dietary_restrictions": [],
+      "allergies": [],
+      "menu_approval_status": "pending-selection"
+    },
+    "service_notes": {
+      "pre_event_day_flow": [
+        "Coffee downtown",
+        "Sandwiches",
+        "Pool day",
+        "Dinner at house"
+      ],
+      "space": [
+        "Open kitchen / living room area",
+        "Potential long tables for shared dining"
+      ]
+    }
+  },
+  "menu_proposal": {
+    "title": "Mexican-Inspired Dinner | June 13",
+    "selection_rules": {
+      "hors_doeuvres": "Select 3-4",
+      "entrees": "Select 1-2",
+      "dessert": "Select 1"
+    },
+    "hors_doeuvres": [
+      "Melon gazpacho with pickled peppers, cucumber, basil, cilantro, and cumin seed vinaigrette",
+      "Marinated cucumber salad with tomatillo cilantro vinaigrette",
+      "Tajin fruit cup",
+      "Grilled vegetable salad with lime vinaigrette, sweet corn, zucchini, red onion, peppers, and green beans",
+      "Guacamole, pico de gallo, and chips",
+      "Street corn with grilled corn, cotija, pimenton, and lime",
+      "Warm queso with fresh pickled vegetables, crema, and chips",
+      "Fried plantains with chipotle crema, lime, and cilantro",
+      "Scallop ceviche tostadas with orange, cilantro, and chili on a fried tostada",
+      "Crispy potato cheese wraps with jicama slaw and chipotle crema",
+      "Braised beef nachos with braised beef, cheddar, queso, salsa, sour cream, lime, and pickled onions",
+      "Marinated grilled skewers (choice of chicken, beef, or shrimp)"
+    ],
+    "entrees": [
+      "Fish tacos with bronzed haddock, pineapple salsa, chipotle mayo, avocado, and cotija",
+      "Birria tacos with braised beef, consomme, crispy cheese taco shell, and cilantro",
+      "Mini pork chalupas with a fried dough shell, smoked pork shoulder, cotija, and chipotle lime crema",
+      "Braised chicken thighs with mole enchiladas and Spanish rice",
+      "Marinated grilled flank steak with pupusas and cabbage slaw",
+      "Crunchwrap Supreme - literally"
+    ],
+    "desserts": [
+      "Flan or chocoflan with blueberry gelato",
+      "Fried churros with chocolate sauce and strawberry gelato",
+      "Sweet corn gelato with candied corn and roasted strawberries",
+      "Strawberry tres leches with candied lime balm gelato",
+      "Chocolate and blueberry tart with salted caramel gelato"
+    ],
+    "menu_note": "Menus are typically built around one primary entree. If the client includes two, they can be served split-style or divided across the group."
+  },
+  "open_questions": [
+    "Final selected hors d'oeuvres are unknown.",
+    "Final selected entree or entrees are unknown.",
+    "Final selected dessert is unknown.",
+    "Exact event year is unknown.",
+    "Exact address and access instructions are unknown.",
+    "Allergies and dietary restrictions beyond broad preference are unknown.",
+    "Pricing and deposit terms are not shown in this thread.",
+    "Whether the Sunday 1 PM call happened is unknown."
+  ],
+  "product_leverage": {
+    "why_this_case_matters": [
+      "Real client thread with partial information, delays, emotional tone, and a strong menu handoff.",
+      "Captures the transition from referral to brief to menu proposal to pending selection.",
+      "Good test case for both customer-facing communication and event-readiness systems."
+    ],
+    "applicable_systems": [
+      {
+        "system": "Inquiry parsing",
+        "value": "Tests extraction from informal, fragmented SMS instead of clean inquiry forms."
+      },
+      {
+        "system": "Client profile parsing",
+        "value": "Tests turning conversational notes into a usable client record."
+      },
+      {
+        "system": "Correspondence drafting",
+        "value": "Tests tone recovery after response delays and maintaining trust."
+      },
+      {
+        "system": "Menu suggestion workflow",
+        "value": "Tests converting a loose brief into a structured choice menu."
+      },
+      {
+        "system": "Menu approval workflow",
+        "value": "Tests group-circulation messaging and pending-selection states."
+      },
+      {
+        "system": "Service simulation",
+        "value": "Tests whether an event can be rehearsed with incomplete logistics and missing operational proof."
+      }
+    ]
+  },
+  "recommended_next_steps": [
+    "Create a redacted clone of this case for reusable cross-tenant testing.",
+    "Seed this case into a dummy tenant as a real client, event, and menu.",
+    "Run the event through the Service Simulation panel, not just the generic Simulation Lab.",
+    "Capture the blockers Chef Flow surfaces and convert them into product requirements."
+  ]
+}

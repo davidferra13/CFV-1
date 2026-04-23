@@ -8,6 +8,20 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import {
+  buildLocationExperienceImages,
+  CHEF_LOCATION_RELATIONSHIP_OPTIONS,
+  evaluatePublicLocationExperienceReadiness,
+  LOCATION_BEST_FOR_OPTIONS,
+  LOCATION_EXPERIENCE_TAG_OPTIONS,
+  LOCATION_SERVICE_TYPE_OPTIONS,
+  normalizeLocationOptionValues,
+  normalizeRelationshipType,
+} from '@/lib/partners/location-experiences'
+import {
+  sanitizePartnerLocationProposal,
+  type PartnerLocationChangeRequestStatus,
+} from '@/lib/partners/location-change-requests'
 
 // ============================================
 // VALIDATION SCHEMAS
@@ -54,6 +68,11 @@ const UpdatePartnerSchema = z.object({
   commission_flat_cents: z.number().int().min(0).nullable().optional(),
 })
 
+const LocationExperienceTagSchema = z.enum(LOCATION_EXPERIENCE_TAG_OPTIONS)
+const LocationBestForSchema = z.enum(LOCATION_BEST_FOR_OPTIONS)
+const LocationServiceTypeSchema = z.enum(LOCATION_SERVICE_TYPE_OPTIONS)
+const ChefLocationRelationshipSchema = z.enum(CHEF_LOCATION_RELATIONSHIP_OPTIONS)
+
 const CreateLocationSchema = z.object({
   partner_id: z.string().uuid(),
   name: z.string().min(1, 'Location name is required'),
@@ -65,6 +84,13 @@ const CreateLocationSchema = z.object({
   description: z.string().optional().or(z.literal('')),
   notes: z.string().optional().or(z.literal('')),
   max_guest_count: z.number().int().positive().nullable().optional(),
+  experience_tags: z.array(LocationExperienceTagSchema).optional().default([]),
+  best_for: z.array(LocationBestForSchema).optional().default([]),
+  service_types: z.array(LocationServiceTypeSchema).optional().default([]),
+  relationship_type: ChefLocationRelationshipSchema.optional().default('preferred'),
+  is_public: z.boolean().optional(),
+  is_featured: z.boolean().optional(),
+  sort_order: z.number().int().min(0).optional(),
 })
 
 const UpdateLocationSchema = z.object({
@@ -77,6 +103,13 @@ const UpdateLocationSchema = z.object({
   description: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
   max_guest_count: z.number().int().positive().nullable().optional(),
+  experience_tags: z.array(LocationExperienceTagSchema).optional(),
+  best_for: z.array(LocationBestForSchema).optional(),
+  service_types: z.array(LocationServiceTypeSchema).optional(),
+  relationship_type: ChefLocationRelationshipSchema.optional(),
+  is_public: z.boolean().optional(),
+  is_featured: z.boolean().optional(),
+  sort_order: z.number().int().min(0).optional(),
   is_active: z.boolean().optional(),
 })
 
@@ -95,6 +128,195 @@ export type CreateLocationInput = z.infer<typeof CreateLocationSchema>
 export type UpdateLocationInput = z.infer<typeof UpdateLocationSchema>
 export type AddImageInput = z.infer<typeof AddImageSchema>
 export type PublicCreatePartnerInput = z.infer<typeof CreatePartnerSchema>
+
+export type PartnerLocationChangeRequestRecord = {
+  id: string
+  partner_id: string
+  location_id: string
+  status: PartnerLocationChangeRequestStatus
+  requested_payload: Record<string, unknown>
+  partner_note: string | null
+  review_note: string | null
+  created_at: string
+  reviewed_at: string | null
+}
+
+function buildLocationWritePayload(input: {
+  name?: string
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  zip?: string | null
+  booking_url?: string | null
+  description?: string | null
+  notes?: string | null
+  max_guest_count?: number | null
+  experience_tags?: readonly string[] | null
+  best_for?: readonly string[] | null
+  service_types?: readonly string[] | null
+  is_active?: boolean
+}) {
+  return {
+    ...(input.name !== undefined ? { name: input.name } : {}),
+    ...(input.address !== undefined ? { address: input.address || null } : {}),
+    ...(input.city !== undefined ? { city: input.city || null } : {}),
+    ...(input.state !== undefined ? { state: input.state || null } : {}),
+    ...(input.zip !== undefined ? { zip: input.zip || null } : {}),
+    ...(input.booking_url !== undefined ? { booking_url: input.booking_url || null } : {}),
+    ...(input.description !== undefined ? { description: input.description || null } : {}),
+    ...(input.notes !== undefined ? { notes: input.notes || null } : {}),
+    ...(input.max_guest_count !== undefined ? { max_guest_count: input.max_guest_count ?? null } : {}),
+    ...(input.experience_tags !== undefined
+      ? {
+          experience_tags: normalizeLocationOptionValues(
+            input.experience_tags,
+            LOCATION_EXPERIENCE_TAG_OPTIONS
+          ),
+        }
+      : {}),
+    ...(input.best_for !== undefined
+      ? {
+          best_for: normalizeLocationOptionValues(input.best_for, LOCATION_BEST_FOR_OPTIONS),
+        }
+      : {}),
+    ...(input.service_types !== undefined
+      ? {
+          service_types: normalizeLocationOptionValues(
+            input.service_types,
+            LOCATION_SERVICE_TYPE_OPTIONS
+          ),
+        }
+      : {}),
+    ...(input.is_active !== undefined ? { is_active: input.is_active } : {}),
+  }
+}
+
+async function upsertChefLocationLink(
+  db: any,
+  input: {
+    tenantId: string
+    chefId: string
+    locationId: string
+    relationshipType?: string | null
+    isPublic?: boolean
+    isFeatured?: boolean
+    sortOrder?: number
+  }
+) {
+  const { error } = await db.from('chef_location_links').upsert(
+    {
+      tenant_id: input.tenantId,
+      chef_id: input.chefId,
+      location_id: input.locationId,
+      relationship_type: normalizeRelationshipType(input.relationshipType),
+      is_public: input.isPublic ?? true,
+      is_featured: input.isFeatured ?? true,
+      sort_order: input.sortOrder ?? 0,
+    },
+    { onConflict: 'chef_id,location_id' }
+  )
+
+  if (error) {
+    throw error
+  }
+}
+
+async function getChefLocationLinkMap(db: any, chefId: string, locationIds: string[]) {
+  if (locationIds.length === 0) return {} as Record<string, any>
+
+  const { data, error } = await db
+    .from('chef_location_links')
+    .select('location_id, relationship_type, is_public, is_featured, sort_order')
+    .eq('chef_id', chefId)
+    .in('location_id', locationIds)
+
+  if (error) {
+    console.error('[getChefLocationLinkMap] Error:', error)
+    return {} as Record<string, any>
+  }
+
+  return Object.fromEntries((data || []).map((link: any) => [link.location_id, link]))
+}
+
+function mergeLocationRelationship(location: any, link?: any) {
+  return {
+    ...location,
+    experience_tags: normalizeLocationOptionValues(
+      location.experience_tags,
+      LOCATION_EXPERIENCE_TAG_OPTIONS
+    ),
+    best_for: normalizeLocationOptionValues(location.best_for, LOCATION_BEST_FOR_OPTIONS),
+    service_types: normalizeLocationOptionValues(
+      location.service_types,
+      LOCATION_SERVICE_TYPE_OPTIONS
+    ),
+    relationship_type: normalizeRelationshipType(link?.relationship_type),
+    is_public: link?.is_public ?? true,
+    is_featured: link?.is_featured ?? true,
+    sort_order: link?.sort_order ?? 0,
+  }
+}
+
+async function persistPartnerLocationMutation(
+  db: any,
+  tenantId: string,
+  id: string,
+  input: UpdateLocationInput
+) {
+  const updates = buildLocationWritePayload(input)
+  let location: any = null
+  let error: any = null
+
+  if (Object.keys(updates).length > 0) {
+    const result = await db
+      .from('partner_locations')
+      .update(updates)
+      .eq('id', id)
+      .eq('tenant_id', tenantId)
+      .select()
+      .single()
+    location = result.data
+    error = result.error
+  } else {
+    const result = await db
+      .from('partner_locations')
+      .select('*')
+      .eq('id', id)
+      .eq('tenant_id', tenantId)
+      .single()
+    location = result.data
+    error = result.error
+  }
+
+  if (error) {
+    console.error('[persistPartnerLocationMutation] Error:', error)
+    throw new Error('Failed to update location')
+  }
+
+  if (
+    input.relationship_type !== undefined ||
+    input.is_public !== undefined ||
+    input.is_featured !== undefined ||
+    input.sort_order !== undefined
+  ) {
+    try {
+      await upsertChefLocationLink(db, {
+        tenantId,
+        chefId: tenantId,
+        locationId: id,
+        relationshipType: input.relationship_type,
+        isPublic: input.is_public,
+        isFeatured: input.is_featured,
+        sortOrder: input.sort_order,
+      })
+    } catch (linkError) {
+      console.error('[persistPartnerLocationMutation] Link upsert error:', linkError)
+      throw new Error('Failed to update location relationship')
+    }
+  }
+
+  return location
+}
 
 // ============================================
 // 1. CREATE PARTNER
@@ -320,17 +542,11 @@ export async function getPartners(filters?: { partner_type?: string; status?: st
 
 export async function getPartnerById(id: string) {
   const user = await requireChef()
-  const db: any = createServerClient()
+  const db: any = createServerClient({ admin: true })
 
   const { data: partner, error } = await db
     .from('referral_partners')
-    .select(
-      `
-      *,
-      partner_locations(*),
-      partner_images(*)
-    `
-    )
+    .select('*')
     .eq('id', id)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -339,6 +555,20 @@ export async function getPartnerById(id: string) {
     console.error('[getPartnerById] Error:', error)
     return null
   }
+
+  const [{ data: partnerLocations, error: locationError }, { data: partnerImages, error: imageError }] =
+    await Promise.all([
+      db.from('partner_locations').select('*').eq('partner_id', id).eq('tenant_id', user.tenantId!),
+      db.from('partner_images').select('*').eq('partner_id', id).eq('tenant_id', user.tenantId!),
+    ])
+
+  if (locationError || imageError) {
+    console.error('[getPartnerById] Related data error:', { locationError, imageError })
+    throw new Error('Failed to load partner details')
+  }
+
+  partner.partner_locations = partnerLocations || []
+  partner.partner_images = partnerImages || []
 
   // Get stats
   const [{ count: inquiryCount }, { count: eventCount }] = await Promise.all([
@@ -373,9 +603,36 @@ export async function getPartnerById(id: string) {
   const completedEventCount = completedEvents?.length || 0
 
   // Get per-location stats
-  const locationStats: Record<string, { inquiry_count: number; event_count: number }> = {}
+  const locationStats: Record<
+    string,
+    {
+      inquiry_click_count: number
+      booking_click_count: number
+      inquiry_count: number
+      event_count: number
+      completed_event_count: number
+      total_revenue_cents: number
+      total_guests: number
+    }
+  > = {}
   if (partner.partner_locations && partner.partner_locations.length > 0) {
     const locIds = partner.partner_locations.map((l: { id: string }) => l.id)
+    const linkMap = await getChefLocationLinkMap(db, user.tenantId!, locIds)
+
+    const ensureLocationStats = (locationId: string) => {
+      if (!locationStats[locationId]) {
+        locationStats[locationId] = {
+          inquiry_click_count: 0,
+          booking_click_count: 0,
+          inquiry_count: 0,
+          event_count: 0,
+          completed_event_count: 0,
+          total_revenue_cents: 0,
+          total_guests: 0,
+        }
+      }
+      return locationStats[locationId]
+    }
 
     const { data: locInquiries } = await db
       .from('inquiries')
@@ -385,25 +642,79 @@ export async function getPartnerById(id: string) {
 
     const { data: locEvents } = await db
       .from('events')
-      .select('partner_location_id')
+      .select('partner_location_id, status, quoted_price_cents, guest_count')
       .eq('tenant_id', user.tenantId!)
       .in('partner_location_id', locIds)
 
+    const observabilityDb: any = createServerClient({ admin: true })
+    const { data: locationClickEvents } = await observabilityDb
+      .from('platform_observability_events')
+      .select('event_key, subject_id')
+      .eq('tenant_id', user.tenantId!)
+      .eq('subject_type', 'location')
+      .in('subject_id', locIds)
+      .in('event_key', [
+        'conversion.location_inquiry_link_clicked',
+        'conversion.location_booking_link_clicked',
+      ])
+
     for (const inq of locInquiries || []) {
       if (inq.partner_location_id) {
-        if (!locationStats[inq.partner_location_id])
-          locationStats[inq.partner_location_id] = { inquiry_count: 0, event_count: 0 }
-        locationStats[inq.partner_location_id].inquiry_count++
+        ensureLocationStats(inq.partner_location_id).inquiry_count++
       }
     }
 
     for (const evt of locEvents || []) {
       if (evt.partner_location_id) {
-        if (!locationStats[evt.partner_location_id])
-          locationStats[evt.partner_location_id] = { inquiry_count: 0, event_count: 0 }
-        locationStats[evt.partner_location_id].event_count++
+        const stats = ensureLocationStats(evt.partner_location_id)
+        stats.event_count++
+        if (evt.status === 'completed') {
+          stats.completed_event_count++
+          stats.total_revenue_cents += evt.quoted_price_cents || 0
+          stats.total_guests += evt.guest_count || 0
+        }
       }
     }
+
+    for (const clickEvent of locationClickEvents || []) {
+      if (!clickEvent.subject_id) continue
+      const stats = ensureLocationStats(clickEvent.subject_id)
+      if (clickEvent.event_key === 'conversion.location_inquiry_link_clicked') {
+        stats.inquiry_click_count++
+      }
+      if (clickEvent.event_key === 'conversion.location_booking_link_clicked') {
+        stats.booking_click_count++
+      }
+    }
+
+    partner.partner_locations = (partner.partner_locations || [])
+      .map((location: any) => {
+        const mergedLocation = mergeLocationRelationship(location, linkMap[location.id])
+        const readiness = evaluatePublicLocationExperienceReadiness({
+          name: mergedLocation.name,
+          address: mergedLocation.address,
+          city: mergedLocation.city,
+          state: mergedLocation.state,
+          description: mergedLocation.description,
+          experience_tags: mergedLocation.experience_tags,
+          best_for: mergedLocation.best_for,
+          service_types: mergedLocation.service_types,
+          images: buildLocationExperienceImages({
+            locationId: mergedLocation.id,
+            images: partner.partner_images || [],
+            coverImageUrl: partner.cover_image_url ?? null,
+          }),
+        })
+
+        return {
+          ...mergedLocation,
+          public_readiness: readiness,
+        }
+      })
+      .sort(
+        (a: any, b: any) =>
+          (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.name.localeCompare(b.name)
+      )
   }
 
   return {
@@ -494,21 +805,29 @@ export async function createPartnerLocation(input: CreateLocationInput) {
     .insert({
       tenant_id: user.tenantId!,
       partner_id: validated.partner_id,
-      name: validated.name,
-      address: validated.address || null,
-      city: validated.city || null,
-      state: validated.state || null,
-      zip: validated.zip || null,
-      booking_url: validated.booking_url || null,
-      description: validated.description || null,
-      notes: validated.notes || null,
-      max_guest_count: validated.max_guest_count ?? null,
+      ...buildLocationWritePayload(validated),
     })
     .select()
     .single()
 
   if (error) {
     console.error('[createPartnerLocation] Error:', error)
+    throw new Error('Failed to create location')
+  }
+
+  try {
+    await upsertChefLocationLink(db, {
+      tenantId: user.tenantId!,
+      chefId: user.tenantId!,
+      locationId: location.id,
+      relationshipType: validated.relationship_type,
+      isPublic: validated.is_public,
+      isFeatured: validated.is_featured,
+      sortOrder: validated.sort_order,
+    })
+  } catch (linkError) {
+    console.error('[createPartnerLocation] Link upsert error:', linkError)
+    await db.from('partner_locations').delete().eq('id', location.id).eq('tenant_id', user.tenantId!)
     throw new Error('Failed to create location')
   }
 
@@ -525,25 +844,7 @@ export async function updatePartnerLocation(id: string, input: UpdateLocationInp
   const validated = UpdateLocationSchema.parse(input)
   const db: any = createServerClient()
 
-  const updates: Record<string, unknown> = {}
-  for (const [key, value] of Object.entries(validated)) {
-    if (value !== undefined) {
-      updates[key] = value === '' ? null : value
-    }
-  }
-
-  const { data: location, error } = await db
-    .from('partner_locations')
-    .update(updates)
-    .eq('id', id)
-    .eq('tenant_id', user.tenantId!)
-    .select()
-    .single()
-
-  if (error) {
-    console.error('[updatePartnerLocation] Error:', error)
-    throw new Error('Failed to update location')
-  }
+  const location = await persistPartnerLocationMutation(db, user.tenantId!, id, validated)
 
   revalidatePath(`/partners/${location.partner_id}`)
   return { success: true, location }
@@ -569,7 +870,15 @@ export async function getPartnerLocations(partnerId: string) {
     throw new Error('Failed to fetch locations')
   }
 
-  return locations
+  const locIds = (locations || []).map((location: any) => location.id)
+  const linkMap = await getChefLocationLinkMap(db, user.tenantId!, locIds)
+
+  return (locations || [])
+    .map((location: any) => mergeLocationRelationship(location, linkMap[location.id]))
+    .sort(
+      (a: any, b: any) =>
+        (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.name.localeCompare(b.name)
+    )
 }
 
 // ============================================
@@ -628,6 +937,100 @@ export async function deletePartnerLocation(id: string) {
 
   revalidatePath(`/partners/${location.partner_id}`)
   return { success: true, soft_deleted: false }
+}
+
+export async function getPartnerLocationChangeRequests(
+  partnerId: string
+): Promise<PartnerLocationChangeRequestRecord[]> {
+  const user = await requireChef()
+  const db: any = createServerClient({ admin: true })
+
+  const { data, error } = await db
+    .from('partner_location_change_requests')
+    .select(
+      'id, partner_id, location_id, status, requested_payload, partner_note, review_note, created_at, reviewed_at'
+    )
+    .eq('tenant_id', user.tenantId!)
+    .eq('partner_id', partnerId)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('[getPartnerLocationChangeRequests] Error:', error)
+    throw new Error('Failed to fetch location change requests')
+  }
+
+  return (data as PartnerLocationChangeRequestRecord[]) || []
+}
+
+const ReviewPartnerLocationChangeRequestSchema = z.object({
+  requestId: z.string().uuid(),
+  decision: z.enum(['approved', 'rejected']),
+  reviewNote: z.string().trim().max(2000).optional().or(z.literal('')),
+})
+
+export async function reviewPartnerLocationChangeRequest(input: {
+  requestId: string
+  decision: 'approved' | 'rejected'
+  reviewNote?: string
+}) {
+  const user = await requireChef()
+  const validated = ReviewPartnerLocationChangeRequestSchema.parse(input)
+  const db: any = createServerClient({ admin: true })
+
+  const { data: request, error } = await db
+    .from('partner_location_change_requests')
+    .select(
+      'id, partner_id, location_id, status, requested_payload, tenant_id, partner_note, review_note'
+    )
+    .eq('id', validated.requestId)
+    .eq('tenant_id', user.tenantId!)
+    .maybeSingle()
+
+  if (error || !request) {
+    throw new Error('Location change request not found')
+  }
+
+  if (request.status !== 'pending') {
+    throw new Error('Location change request has already been reviewed')
+  }
+
+  if (validated.decision === 'approved') {
+    const proposal = sanitizePartnerLocationProposal(request.requested_payload as any)
+    await persistPartnerLocationMutation(db, user.tenantId!, request.location_id, proposal)
+  }
+
+  const timestamp = new Date().toISOString()
+  const patch =
+    validated.decision === 'approved'
+      ? {
+          status: 'approved',
+          review_note: validated.reviewNote || null,
+          reviewed_by_auth_user_id: user.id,
+          reviewed_at: timestamp,
+          applied_at: timestamp,
+        }
+      : {
+          status: 'rejected',
+          review_note: validated.reviewNote || null,
+          reviewed_by_auth_user_id: user.id,
+          reviewed_at: timestamp,
+          applied_at: null,
+        }
+
+  const { error: updateError } = await db
+    .from('partner_location_change_requests')
+    .update(patch)
+    .eq('id', request.id)
+
+  if (updateError) {
+    throw new Error('Failed to update location change request')
+  }
+
+  revalidatePath(`/partners/${request.partner_id}`)
+  revalidatePath(`/partner/locations/${request.location_id}`)
+  revalidatePath('/partner/locations')
+
+  return { success: true }
 }
 
 // ============================================
@@ -792,7 +1195,7 @@ export async function getPartnersWithLocations() {
  */
 export async function getPartnerEvents(partnerId: string) {
   const user = await requireChef()
-  const db: any = createServerClient()
+  const db: any = createServerClient({ admin: true })
 
   // Verify partner belongs to this tenant
   const { data: partner } = await db
@@ -844,7 +1247,7 @@ export async function getPartnerEvents(partnerId: string) {
  */
 export async function getEventsNotAssignedToPartner(partnerId: string) {
   const user = await requireChef()
-  const db: any = createServerClient()
+  const db: any = createServerClient({ admin: true })
 
   // Verify partner belongs to this tenant
   const { data: partner } = await db
@@ -1127,7 +1530,10 @@ export async function getShowcasePartners(chefSlug: string) {
     .select(
       `
       id, name, partner_type, booking_url, description, cover_image_url, showcase_order,
-      partner_locations(id, name, city, state, booking_url, description, max_guest_count, is_active),
+      partner_locations(
+        id, name, city, state, booking_url, description, max_guest_count,
+        experience_tags, best_for, service_types, is_active
+      ),
       partner_images(id, image_url, caption, season, display_order, location_id)
     `
     )

@@ -5,8 +5,15 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-
-// ─── Types ───────────────────────────────────────────────────────
+import {
+  buildStockCoverageMap,
+  consolidateIngredientRows,
+  estimateIngredientCostCents,
+  fetchCurrentStockRows,
+  fetchIngredientPlanningMeta,
+  getIngredientPlanningKey,
+  type IngredientQuantityRow,
+} from './planning-support'
 
 export type ForecastItem = {
   ingredientId: string
@@ -43,37 +50,23 @@ export type ShortageAlert = {
   costImpactCents: number
 }
 
-// ─── DB helper ────────────────────────────────────────────
-function db(db: any) {
-  return {
-    transactions: () => db.from('inventory_transactions' as any) as any,
-  }
+function round2(value: number): number {
+  return Math.round(value * 100) / 100
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────
+function round3(value: number): number {
+  return Math.round(value * 1000) / 1000
+}
 
 /**
  * Walk the event -> menu -> dishes -> components -> recipes -> recipe_ingredients chain
- * and aggregate ingredient demand. Returns a Map of ingredientId -> aggregate info.
+ * and return raw ingredient-demand rows plus the event dates that drive each ingredient.
  */
-async function aggregateIngredientDemand(
+async function aggregateIngredientDemandRows(
   db: any,
   tenantId: string,
   eventFilter: { ids?: string[]; daysAhead?: number }
-): Promise<
-  Map<
-    string,
-    {
-      ingredientId: string
-      ingredientName: string
-      unit: string
-      totalNeeded: number
-      lastPriceCents: number
-      eventDates: string[]
-    }
-  >
-> {
-  // Fetch upcoming confirmed/paid events within the window
+): Promise<{ rows: IngredientQuantityRow[]; eventDatesByIngredient: Map<string, string[]> }> {
   let eventsQuery = db
     .from('events')
     .select('id, event_date, status')
@@ -84,28 +77,29 @@ async function aggregateIngredientDemand(
     eventsQuery = eventsQuery.in('id', eventFilter.ids)
   } else if (eventFilter.daysAhead != null) {
     const now = new Date()
-    const _liso = (d: Date) =>
-      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    const formatLocalDate = (value: Date) =>
+      `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`
+
     eventsQuery = eventsQuery
-      .gte('event_date', _liso(now))
+      .gte('event_date', formatLocalDate(now))
       .lte(
         'event_date',
-        _liso(new Date(now.getFullYear(), now.getMonth(), now.getDate() + eventFilter.daysAhead))
+        formatLocalDate(
+          new Date(now.getFullYear(), now.getMonth(), now.getDate() + eventFilter.daysAhead)
+        )
       )
   }
 
   const { data: events, error: eventsError } = await eventsQuery
-
   if (eventsError) throw new Error(`Failed to fetch events: ${eventsError.message}`)
-  if (!events || events.length === 0) return new Map()
+  if (!events || events.length === 0) return { rows: [], eventDatesByIngredient: new Map() }
 
-  const eventIds = (events as any[]).map((e: any) => e.id)
+  const eventIds = (events as any[]).map((event) => event.id)
   const eventDateMap = new Map<string, string>()
-  for (const e of events as any[]) {
-    eventDateMap.set(e.id, e.event_date)
+  for (const event of events as any[]) {
+    eventDateMap.set(event.id, event.event_date)
   }
 
-  // Fetch menus for these events
   const { data: menus, error: menusError } = await db
     .from('menus')
     .select('id, event_id')
@@ -113,220 +107,169 @@ async function aggregateIngredientDemand(
     .in('event_id', eventIds)
 
   if (menusError) throw new Error(`Failed to fetch menus: ${menusError.message}`)
-  if (!menus || menus.length === 0) return new Map()
+  if (!menus || menus.length === 0) return { rows: [], eventDatesByIngredient: new Map() }
 
-  const menuIds = (menus as any[]).map((m: any) => m.id)
+  const menuIds = (menus as any[]).map((menu) => menu.id)
   const menuEventMap = new Map<string, string>()
-  for (const m of menus as any[]) {
-    menuEventMap.set(m.id, m.event_id)
+  for (const menu of menus as any[]) {
+    menuEventMap.set(menu.id, menu.event_id)
   }
 
-  // Fetch dishes
   const { data: dishes, error: dishesError } = await db
     .from('dishes')
     .select('id, menu_id')
     .in('menu_id', menuIds)
 
   if (dishesError) throw new Error(`Failed to fetch dishes: ${dishesError.message}`)
-  if (!dishes || dishes.length === 0) return new Map()
+  if (!dishes || dishes.length === 0) return { rows: [], eventDatesByIngredient: new Map() }
 
-  const dishIds = (dishes as any[]).map((d: any) => d.id)
+  const dishIds = (dishes as any[]).map((dish) => dish.id)
   const dishMenuMap = new Map<string, string>()
-  for (const d of dishes as any[]) {
-    dishMenuMap.set(d.id, d.menu_id)
+  for (const dish of dishes as any[]) {
+    dishMenuMap.set(dish.id, dish.menu_id)
   }
 
-  // Fetch components with recipe links and scale factors
-  const { data: components, error: compsError } = await db
+  const { data: components, error: componentsError } = await db
     .from('components')
-    .select('id, dish_id, recipe_id, scale_factor')
+    .select('dish_id, recipe_id, scale_factor')
     .in('dish_id', dishIds)
     .not('recipe_id', 'is', null)
 
-  if (compsError) throw new Error(`Failed to fetch components: ${compsError.message}`)
-  if (!components || components.length === 0) return new Map()
+  if (componentsError) throw new Error(`Failed to fetch components: ${componentsError.message}`)
+  if (!components || components.length === 0) return { rows: [], eventDatesByIngredient: new Map() }
 
-  // Build recipe_id -> [{scaleFactor, eventId}]
   const recipeToUsages = new Map<string, Array<{ scaleFactor: number; eventId: string }>>()
-  for (const comp of components as any[]) {
-    const menuId = dishMenuMap.get(comp.dish_id)
+  for (const component of components as any[]) {
+    const menuId = dishMenuMap.get(component.dish_id)
     if (!menuId) continue
+
     const eventId = menuEventMap.get(menuId)
     if (!eventId) continue
 
     const usage = {
-      scaleFactor: Number(comp.scale_factor) || 1,
+      scaleFactor: Number(component.scale_factor) || 1,
       eventId,
     }
-    const existing = recipeToUsages.get(comp.recipe_id) || []
+    const existing = recipeToUsages.get(component.recipe_id) ?? []
     existing.push(usage)
-    recipeToUsages.set(comp.recipe_id, existing)
+    recipeToUsages.set(component.recipe_id, existing)
   }
 
   const recipeIds = [...recipeToUsages.keys()]
-  if (recipeIds.length === 0) return new Map()
+  if (recipeIds.length === 0) return { rows: [], eventDatesByIngredient: new Map() }
 
-  // Fetch recipe_ingredients with ingredient details
-  const { data: recipeIngredients, error: riError } = await (db.from('recipe_ingredients') as any)
+  const { data: recipeIngredients, error: recipeIngredientsError } = await (
+    db.from('recipe_ingredients') as any
+  )
     .select(
       `
       recipe_id, ingredient_id, quantity, unit,
-      ingredient:ingredients(id, name, last_price_cents)
+      ingredient:ingredients(id, name)
     `
     )
     .in('recipe_id', recipeIds)
 
-  if (riError) throw new Error(`Failed to fetch recipe ingredients: ${(riError as any).message}`)
-  if (!recipeIngredients) return new Map()
+  if (recipeIngredientsError) {
+    throw new Error(
+      `Failed to fetch recipe ingredients: ${(recipeIngredientsError as any).message}`
+    )
+  }
+  if (!recipeIngredients) return { rows: [], eventDatesByIngredient: new Map() }
 
-  // Aggregate by ingredient across all recipe usages
-  const demand = new Map<
-    string,
-    {
-      ingredientId: string
-      ingredientName: string
-      unit: string
-      totalNeeded: number
-      lastPriceCents: number
-      eventDates: string[]
-    }
-  >()
+  const rows: IngredientQuantityRow[] = []
+  const eventDateSets = new Map<string, Set<string>>()
 
-  for (const ri of recipeIngredients as any[]) {
-    const ingredient = ri.ingredient as any
-    if (!ingredient || !ingredient.id) continue
+  for (const recipeIngredient of recipeIngredients as any[]) {
+    const ingredient = recipeIngredient.ingredient as any
+    if (!ingredient?.id) continue
 
-    const usages = recipeToUsages.get(ri.recipe_id) || []
-    const qty = Number(ri.quantity) || 0
+    const usages = recipeToUsages.get(recipeIngredient.recipe_id) ?? []
+    const baseQty = Number(recipeIngredient.quantity) || 0
 
     for (const usage of usages) {
-      const scaledQty = qty * usage.scaleFactor
-      const eventDate = eventDateMap.get(usage.eventId) || null
+      const scaledQty = baseQty * usage.scaleFactor
+      if (scaledQty === 0) continue
 
-      const existing = demand.get(ingredient.id) || {
+      rows.push({
         ingredientId: ingredient.id,
         ingredientName: ingredient.name,
-        unit: ri.unit || '',
-        totalNeeded: 0,
-        lastPriceCents: Number(ingredient.last_price_cents) || 0,
-        eventDates: [] as string[],
-      }
+        quantity: scaledQty,
+        unit: recipeIngredient.unit || '',
+      })
 
-      existing.totalNeeded += scaledQty
-      if (eventDate && !existing.eventDates.includes(eventDate)) {
-        existing.eventDates.push(eventDate)
+      const eventDate = eventDateMap.get(usage.eventId)
+      if (eventDate) {
+        const existing = eventDateSets.get(ingredient.id) ?? new Set<string>()
+        existing.add(eventDate)
+        eventDateSets.set(ingredient.id, existing)
       }
-
-      demand.set(ingredient.id, existing)
     }
   }
 
-  return demand
+  return {
+    rows,
+    eventDatesByIngredient: new Map(
+      [...eventDateSets.entries()].map(([ingredientId, dates]) => [ingredientId, [...dates]])
+    ),
+  }
 }
 
-/**
- * Get current on-hand stock for a set of ingredient IDs by summing inventory_transactions.
- */
-async function getCurrentStock(
-  db: any,
-  tenantId: string,
-  ingredientIds: string[]
-): Promise<Map<string, number>> {
-  const stockMap = new Map<string, number>()
-  if (ingredientIds.length === 0) return stockMap
-
-  // Sum inventory_transactions per ingredient
-  const { data: transactions, error } = await db(db)
-    .transactions()
-    .select('ingredient_id, quantity')
-    .eq('chef_id', tenantId)
-    .in('ingredient_id', ingredientIds)
-
-  if (error) {
-    console.error(
-      '[getCurrentStock] Failed to fetch inventory transactions:',
-      (error as any).message
-    )
-    return stockMap
-  }
-
-  for (const tx of (transactions as any[]) || []) {
-    if (!tx.ingredient_id) continue
-    const current = stockMap.get(tx.ingredient_id) || 0
-    stockMap.set(tx.ingredient_id, current + (Number(tx.quantity) || 0))
-  }
-
-  return stockMap
-}
-
-// ─── Actions ─────────────────────────────────────────────────────
-
-/**
- * Get demand forecast for the next N days.
- * Walks upcoming events -> menus -> dishes -> components -> recipes -> recipe_ingredients.
- * Compares to current stock (from inventory_transactions).
- * Returns ForecastItem[] with deficit = max(0, totalNeeded - currentStock).
- */
 export async function getDemandForecast(daysAhead: number = 14): Promise<ForecastItem[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const demand = await aggregateIngredientDemand(db, user.tenantId!, { daysAhead })
+  const { rows, eventDatesByIngredient } = await aggregateIngredientDemandRows(db, user.tenantId!, {
+    daysAhead,
+  })
+  if (rows.length === 0) return []
 
-  if (demand.size === 0) return []
+  const ingredientIds = [...new Set(rows.map((row) => row.ingredientId))]
+  const metaByIngredient = await fetchIngredientPlanningMeta(db, ingredientIds)
+  const normalizedDemand = consolidateIngredientRows(rows, metaByIngredient)
+  const stockRows = await fetchCurrentStockRows(db, user.tenantId!, ingredientIds)
+  const stockCoverage = buildStockCoverageMap(normalizedDemand, stockRows, metaByIngredient)
 
-  const ingredientIds = [...demand.keys()]
-  const stockMap = await getCurrentStock(db, user.tenantId!, ingredientIds)
+  const result = normalizedDemand.map((need) => {
+    const coverage =
+      stockCoverage.get(getIngredientPlanningKey(need.ingredientId, need.unit)) ?? null
+    const currentStock = Math.max(0, coverage?.onHandQty ?? 0)
+    const deficit = Math.max(0, need.quantity - currentStock)
+    const eventDates = [...(eventDatesByIngredient.get(need.ingredientId) ?? [])].sort()
+    const meta = metaByIngredient.get(need.ingredientId)
 
-  const result: ForecastItem[] = []
+    return {
+      ingredientId: need.ingredientId,
+      ingredientName: need.ingredientName,
+      unit: need.unit,
+      totalNeeded: round2(need.quantity),
+      currentStock: round2(currentStock),
+      deficit: round2(deficit),
+      firstEventDate: eventDates[0] ?? null,
+      eventCount: eventDates.length,
+      estimatedCostCents: estimateIngredientCostCents(deficit, need.unit, meta),
+    }
+  })
 
-  for (const [ingredientId, info] of demand.entries()) {
-    const currentStock = Math.max(0, stockMap.get(ingredientId) || 0)
-    const deficit = Math.max(0, info.totalNeeded - currentStock)
-    const estimatedCostCents = Math.round(deficit * info.lastPriceCents)
-
-    // Sort event dates to get the first one
-    const sortedDates = info.eventDates.sort()
-
-    result.push({
-      ingredientId,
-      ingredientName: info.ingredientName,
-      unit: info.unit,
-      totalNeeded: Math.round(info.totalNeeded * 100) / 100,
-      currentStock: Math.round(currentStock * 100) / 100,
-      deficit: Math.round(deficit * 100) / 100,
-      firstEventDate: sortedDates[0] ?? null,
-      eventCount: info.eventDates.length,
-      estimatedCostCents,
-    })
-  }
-
-  // Sort by deficit descending (most urgent first)
   result.sort((a, b) => b.deficit - a.deficit)
-
   return result
 }
 
 /**
  * Get reorder suggestions grouped by vendor.
  * Combines demand forecast (14-day lookahead) with par-level shortfalls from inventory_counts.
- * Groups by ingredient's preferred vendor for easy ordering.
  */
 export async function getReorderSuggestions(): Promise<ReorderGroup[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  // Get demand forecast items with a deficit
   const forecast = await getDemandForecast(14)
   const deficitItems = forecast.filter((item) => item.deficit > 0)
 
-  // Also check inventory_counts for items below par_level
   const { data: parAlerts } = await (db.from('inventory_counts') as any)
     .select('ingredient_id, ingredient_name, current_qty, par_level, unit, vendor_id')
     .eq('chef_id', user.tenantId!)
     .not('par_level', 'is', null)
 
-  // Merge par-level shortfalls into the deficit items map
   const mergedMap = new Map<
     string,
     {
@@ -338,9 +281,8 @@ export async function getReorderSuggestions(): Promise<ReorderGroup[]> {
     }
   >()
 
-  // Add forecast deficits
   for (const item of deficitItems) {
-    mergedMap.set(item.ingredientId, {
+    mergedMap.set(getIngredientPlanningKey(item.ingredientId, item.unit), {
       ingredientId: item.ingredientId,
       ingredientName: item.ingredientName,
       deficit: item.deficit,
@@ -349,52 +291,45 @@ export async function getReorderSuggestions(): Promise<ReorderGroup[]> {
     })
   }
 
-  // Add par-level shortfalls (merge if already in forecast)
-  for (const row of (parAlerts as any[]) || []) {
+  for (const row of (parAlerts as any[]) ?? []) {
     const currentQty = Number(row.current_qty) || 0
     const parLevel = Number(row.par_level) || 0
-    if (currentQty >= parLevel) continue
-    if (!row.ingredient_id) continue
+    if (currentQty >= parLevel || !row.ingredient_id) continue
 
     const parDeficit = parLevel - currentQty
+    const key = getIngredientPlanningKey(row.ingredient_id, row.unit || '')
 
-    if (mergedMap.has(row.ingredient_id)) {
-      // Take the larger deficit between forecast and par-level
-      const existing = mergedMap.get(row.ingredient_id)!
-      if (parDeficit > existing.deficit) {
-        existing.deficit = parDeficit
-      }
+    if (mergedMap.has(key)) {
+      const existing = mergedMap.get(key)!
+      if (parDeficit > existing.deficit) existing.deficit = parDeficit
     } else {
-      mergedMap.set(row.ingredient_id, {
+      mergedMap.set(key, {
         ingredientId: row.ingredient_id,
         ingredientName: row.ingredient_name,
         deficit: parDeficit,
         unit: row.unit,
-        estimatedCostCents: 0, // no price data from par alerts alone
+        estimatedCostCents: 0,
       })
     }
   }
 
   if (mergedMap.size === 0) return []
 
-  // Look up preferred vendors for these ingredients
-  // Note: ingredients table has preferred_vendor (not preferred_vendor_id)
-  const ingredientIds = [...mergedMap.keys()]
-
+  const ingredientIds = [...new Set([...mergedMap.values()].map((item) => item.ingredientId))]
   const { data: ingredients } = await db
     .from('ingredients')
     .select('id, preferred_vendor')
     .in('id', ingredientIds)
 
-  // Build ingredient -> vendorId mapping
   const ingredientVendorMap = new Map<string, string | null>()
-  for (const ing of (ingredients as any[]) || []) {
-    ingredientVendorMap.set(ing.id, ing.preferred_vendor ?? null)
+  for (const ingredient of (ingredients ?? []) as any[]) {
+    ingredientVendorMap.set(ingredient.id, ingredient.preferred_vendor ?? null)
   }
 
-  // Fetch vendor names
   const vendorIds = [
-    ...new Set([...ingredientVendorMap.values()].filter((id): id is string => !!id)),
+    ...new Set(
+      [...ingredientVendorMap.values()].filter((vendorId): vendorId is string => !!vendorId)
+    ),
   ]
   const vendorNameMap = new Map<string, string>()
 
@@ -403,16 +338,15 @@ export async function getReorderSuggestions(): Promise<ReorderGroup[]> {
       .select('id, name')
       .in('id', vendorIds)
 
-    for (const v of (vendors as any[]) || []) {
-      vendorNameMap.set(v.id, v.name)
+    for (const vendor of (vendors ?? []) as any[]) {
+      vendorNameMap.set(vendor.id, vendor.name)
     }
   }
 
-  // Group items by vendor
   const groups = new Map<string | null, ReorderGroup>()
 
-  for (const [ingredientId, item] of mergedMap.entries()) {
-    const vendorId = ingredientVendorMap.get(ingredientId) ?? null
+  for (const item of mergedMap.values()) {
+    const vendorId = ingredientVendorMap.get(item.ingredientId) ?? null
     const vendorName = vendorId ? (vendorNameMap.get(vendorId) ?? null) : null
 
     if (!groups.has(vendorId)) {
@@ -428,14 +362,13 @@ export async function getReorderSuggestions(): Promise<ReorderGroup[]> {
     group.items.push({
       ingredientId: item.ingredientId,
       ingredientName: item.ingredientName,
-      deficit: item.deficit,
+      deficit: round3(item.deficit),
       unit: item.unit,
       estimatedCostCents: item.estimatedCostCents,
     })
     group.totalCostCents += item.estimatedCostCents
   }
 
-  // Sort: named vendors first, null vendor last
   return Array.from(groups.values()).sort((a, b) => {
     if (a.vendorId === null) return 1
     if (b.vendorId === null) return -1
@@ -446,42 +379,42 @@ export async function getReorderSuggestions(): Promise<ReorderGroup[]> {
 /**
  * Get shortage alerts for a specific event.
  * Walks event -> menu -> recipes -> ingredients and compares to current stock.
- * Returns items where on-hand stock is less than what the event requires.
  */
 export async function getShortageAlerts(eventId: string): Promise<ShortageAlert[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const demand = await aggregateIngredientDemand(db, user.tenantId!, { ids: [eventId] })
+  const { rows } = await aggregateIngredientDemandRows(db, user.tenantId!, { ids: [eventId] })
+  if (rows.length === 0) return []
 
-  if (demand.size === 0) return []
-
-  const ingredientIds = [...demand.keys()]
-  const stockMap = await getCurrentStock(db, user.tenantId!, ingredientIds)
+  const ingredientIds = [...new Set(rows.map((row) => row.ingredientId))]
+  const metaByIngredient = await fetchIngredientPlanningMeta(db, ingredientIds)
+  const normalizedDemand = consolidateIngredientRows(rows, metaByIngredient)
+  const stockRows = await fetchCurrentStockRows(db, user.tenantId!, ingredientIds)
+  const stockCoverage = buildStockCoverageMap(normalizedDemand, stockRows, metaByIngredient)
 
   const alerts: ShortageAlert[] = []
 
-  for (const [ingredientId, info] of demand.entries()) {
-    const onHand = Math.max(0, stockMap.get(ingredientId) || 0)
+  for (const need of normalizedDemand) {
+    const coverage =
+      stockCoverage.get(getIngredientPlanningKey(need.ingredientId, need.unit)) ?? null
+    const onHand = Math.max(0, coverage?.onHandQty ?? 0)
+    if (onHand >= need.quantity) continue
 
-    if (onHand >= info.totalNeeded) continue // no shortage
-
-    const shortfall = info.totalNeeded - onHand
-    const costImpactCents = Math.round(shortfall * info.lastPriceCents)
+    const shortfall = need.quantity - onHand
+    const meta = metaByIngredient.get(need.ingredientId)
 
     alerts.push({
-      ingredientId,
-      ingredientName: info.ingredientName,
-      unit: info.unit,
-      needed: Math.round(info.totalNeeded * 100) / 100,
-      onHand: Math.round(onHand * 100) / 100,
-      shortfall: Math.round(shortfall * 100) / 100,
-      costImpactCents,
+      ingredientId: need.ingredientId,
+      ingredientName: need.ingredientName,
+      unit: need.unit,
+      needed: round2(need.quantity),
+      onHand: round2(onHand),
+      shortfall: round2(shortfall),
+      costImpactCents: estimateIngredientCostCents(shortfall, need.unit, meta),
     })
   }
 
-  // Sort by cost impact descending
   alerts.sort((a, b) => b.costImpactCents - a.costImpactCents)
-
   return alerts
 }

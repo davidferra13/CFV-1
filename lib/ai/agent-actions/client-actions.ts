@@ -79,7 +79,7 @@ export const clientAgentActions: AgentActionDefinition[] = [
     description:
       'Create a new client from a natural language description. Extracts name, email, phone, dietary info, and more.',
     inputSchema:
-      '{ "description": "string - natural language description of the new client, e.g. Sarah Johnson, email sarah@example.com, gluten free, lives in Portland" }',
+      '{ "description": "string - natural language description of the new client, e.g. Sarah Johnson, email sarah@example.com, gluten free, lives in your area" }',
     tierNote: 'ALWAYS tier 2 - chef must review client details before saving.',
 
     async executor(inputs) {

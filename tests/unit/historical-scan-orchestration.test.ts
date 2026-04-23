@@ -12,7 +12,8 @@ test('background token retrieval can skip request-scoped session checks', () => 
   const historicalScanSource = readSource('lib/gmail/historical-scan.ts')
   const syncSource = readSource('lib/gmail/sync.ts')
 
-  assert.match(authSource, /options\?:\s*\{\s*skipSessionCheck\?: boolean\s*\}/)
+  assert.match(authSource, /skipSessionCheck\?: boolean/)
+  assert.match(authSource, /mailboxId\?: string \| null/)
   assert.match(authSource, /if\s*\(!options\?\.skipSessionCheck\)/)
   assert.doesNotMatch(
     authSource,
@@ -20,9 +21,12 @@ test('background token retrieval can skip request-scoped session checks', () => 
   )
   assert.match(
     historicalScanSource,
-    /getGoogleAccessToken\(chefId,\s*\{\s*skipSessionCheck:\s*true\s*\}\)/
+    /getGoogleAccessToken\(chefId,\s*\{[\s\S]*?skipSessionCheck:\s*true,[\s\S]*?mailboxId:\s*scanConn\.mailbox_id[\s\S]*?\}\)/
   )
-  assert.match(syncSource, /getGoogleAccessToken\(chefId,\s*\{\s*skipSessionCheck:\s*true\s*\}\)/)
+  assert.match(
+    syncSource,
+    /getGoogleAccessToken\(chefId,\s*\{[\s\S]*?skipSessionCheck:\s*true,[\s\S]*?mailboxId:\s*mailbox\?\.id \|\| null[\s\S]*?\}\)/
+  )
 })
 
 test('historical scan marks itself in progress before listing Gmail pages', () => {
@@ -36,12 +40,14 @@ test('historical scan marks itself in progress before listing Gmail pages', () =
   assert.ok(inProgressIndex < listMessagesIndex)
   assert.match(
     source,
-    /checkpointHistoricalScanProgress\(\s*db,\s*chefId,\s*baseTotalProcessed \+ result\.processed,\s*baseTotalSeen \+ result\.seen\s*\)/
+    /checkpointHistoricalScanProgress\(\s*db,\s*chefId,\s*scanConn\.mailbox_id,\s*baseTotalProcessed \+ result\.processed,\s*baseTotalSeen \+ result\.seen\s*\)/
   )
   assert.match(
     source,
     /const baseTotalSeen = Math\.max\(scanConn\.historical_scan_total_seen \?\? 0,\s*baseTotalProcessed\)/
   )
+  assert.match(source, /getGoogleGmailControl\(/)
+  assert.match(source, /mailbox_id:\s*mailboxId/)
 })
 
 test('historical scan classification reuses Gmail metadata before AI fallback', () => {
@@ -56,7 +62,7 @@ test('historical scan classification reuses Gmail metadata before AI fallback', 
   assert.match(source, /TRANSIENT_MESSAGE_MAX_ATTEMPTS = 3/)
   assert.match(source, /TRANSIENT_CLASSIFICATION_MAX_ATTEMPTS = 3/)
   assert.match(source, /saveHistoricalFinding/)
-  assert.match(source, /\.eq\('tenant_id', finding\.tenant_id\)/)
+  assert.match(source, /\.eq\('mailbox_id', finding\.mailbox_id\)/)
   assert.match(source, /\.eq\('gmail_message_id', finding\.gmail_message_id\)/)
   assert.match(source, /Historical finding insert failed:/)
 })

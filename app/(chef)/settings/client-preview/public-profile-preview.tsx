@@ -4,7 +4,7 @@
 
 import type { CSSProperties } from 'react'
 import Link from 'next/link'
-import { PartnerShowcase } from '@/components/public/partner-showcase'
+import { LocationExperienceShowcase } from '@/components/public/location-experience-showcase'
 import { ChefProofSummary } from '@/components/public/chef-proof-summary'
 import { ReviewShowcase } from '@/components/public/review-showcase'
 import { ChefCredentialsPanel } from '@/components/public/chef-credentials-panel'
@@ -20,6 +20,7 @@ import {
   getDiscoveryLocationLabel,
 } from '@/lib/discovery/profile'
 import type { PublicReviewItem, PublicReviewStats } from '@/lib/reviews/public-actions'
+import type { PublicChefLocationExperience } from '@/lib/partners/location-experiences'
 
 type PublicProfileData = {
   chef: {
@@ -52,7 +53,7 @@ type PublicProfileData = {
       highlight_text: string | null
     }
   }
-  partners: any[]
+  locationExperiences: PublicChefLocationExperience[]
 } | null
 
 type ReviewFeed = {
@@ -149,7 +150,7 @@ export function PublicProfilePreview({
     )
   }
 
-  const { chef, partners } = publicProfileData
+  const { chef, locationExperiences } = publicProfileData
   const primaryColor = chef.portal_primary_color || '#1c1917'
   const backgroundColor = chef.portal_background_color || '#fafaf9'
   const backgroundImageUrl = chef.portal_background_image_url
@@ -157,6 +158,7 @@ export function PublicProfilePreview({
   const preferWebsite = chef.preferred_inquiry_destination === 'website_only'
   const preferChefFlow = chef.preferred_inquiry_destination === 'chefflow_only'
   const publicSlug = chef.public_slug || slug
+  const inquirySlug = chef.inquiry_slug || publicSlug
 
   const pageBackgroundStyle: CSSProperties = backgroundImageUrl
     ? {
@@ -322,16 +324,20 @@ export function PublicProfilePreview({
             />
           )}
 
-          {partners.length > 0 && (
+          {locationExperiences.length > 0 && (
             <section className="py-16 px-6 bg-stone-900/70">
               <div className="max-w-6xl mx-auto">
                 <div className="text-center mb-12">
-                  <h2 className="text-3xl font-bold text-stone-100">Where I Cook</h2>
+                  <h2 className="text-3xl font-bold text-stone-100">Book In Real Settings</h2>
                   <p className="text-stone-300 mt-3 max-w-xl mx-auto">
-                    Venues where {chef.display_name} is available for service.
+                    Published spaces, venue context, and direct booking paths for {chef.display_name}.
                   </p>
                 </div>
-                <PartnerShowcase partners={partners as any} chefName={chef.display_name} />
+                <LocationExperienceShowcase
+                  locations={locationExperiences}
+                  chefName={chef.display_name}
+                  profileSlug={publicSlug}
+                />
               </div>
             </section>
           )}

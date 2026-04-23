@@ -1,0 +1,69 @@
+{
+  "cookies": [
+    {
+      "name": "authjs.csrf-token",
+      "value": "a9bff898003b3fd91fbbecdd8b2168f26af45051fc07ac1556cf7e4adf7c1319%7C3e1e14c8a8176e4a0a5e0c8a34521436c2008d91c59ffe9e4693bcc0fcc93ca5",
+      "domain": "localhost",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "authjs.callback-url",
+      "value": "http%3A%2F%2F127.0.0.1%3A3101",
+      "domain": "localhost",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "chefflow-role-cache",
+      "value": "chef",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1776645988.290917,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "authjs.session-token",
+      "value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwia2lkIjoiV1pDbVlxSXBtakxXT2QzajFfUXJveTNKajVEWDhjVHFiVzZXejUwZm8xQnV3ZmxWeC1hZGV0MHU5WTZNRFR3NDBTbDJCV1VLMkk2ZmFBR3FNS2xPWVEifQ..qHMqRqSH60DrzpQ07ybX5A.wfhNKw0ug3WHVz6dc35aVZcWrTx8XUQ5TbBK2e15OpKaG0IHW_MMP5_Vx-192JjiNjdikaI_MhEa0LtE6R-YVcCyWUyxTM_M-6BZtLlp0Bl02pkUfCjB4PrzIb6Vcw3LulHPfaiRda14zvTFWYS1G5NWEAM7E9uE3E_MYKyTUirDFxJ8OdenT1GU_8K688Qv6IXQdKfO7cgamXjnQEyBmUBZpDTBeN1Iq0qu1y-j3kDREQxf8KqAEdozyBJd_T3mh3_NyD0m3AiPUlBX8R79ovEneKigzX4GWJXADtRUXBoptkJjLIziTNgMh07G0mFIMDB5ryLUjyZojL024pFLuYQAI-jpG6VhfxRCF40gFG3zz3Sermok8GuH1w5a01ho.NSSoAY-8XRKQp7StEzOOltdX60zaRsle-ZtZEZC0j24",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1777250488.290833,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "cookieConsent",
+      "value": "declined",
+      "domain": "localhost",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:3000",
+      "localStorage": [
+        {
+          "name": "cf:last-active-path",
+          "value": "{\"path\":\"/dashboard\",\"timestamp\":1776645716979}"
+        },
+        {
+          "name": "cf:recent-pages",
+          "value": "[{\"path\":\"/dashboard\",\"label\":\"Dashboard\",\"visitedAt\":\"2026-04-20T00:41:56.957Z\"}]"
+        }
+      ]
+    }
+  ]
+}

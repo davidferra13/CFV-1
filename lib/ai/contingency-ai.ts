@@ -11,6 +11,11 @@ import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
 import { parseWithOllama } from './parse-ollama'
 import { OllamaOfflineError } from './ollama-errors'
+import {
+  attachDerivedOutputProvenance,
+  resolveAiDerivedOutputModelMetadata,
+  type DerivedOutputProvenance,
+} from '@/lib/analytics/source-provenance'
 
 export interface ContingencyPlan {
   scenarioType: string // maps to existing SCENARIO_LABELS if possible
@@ -25,6 +30,7 @@ export interface ContingencyAIResult {
   plans: ContingencyPlan[]
   topRisk: string // the single most likely risk for this event
   generatedAt: string
+  provenance?: DerivedOutputProvenance
 }
 
 const ContingencyPlanSchema = z.object({
@@ -113,11 +119,26 @@ ${menu.map((m) => `  - [${m.course_type ?? 'Course'}] ${m.name}`).join('\n') || 
       modelTier: 'standard',
       timeoutMs: 60_000,
     })
-    return {
-      plans: parsed.plans ?? [],
-      topRisk: parsed.topRisk ?? '',
-      generatedAt: new Date().toISOString(),
-    }
+    return attachDerivedOutputProvenance(
+      {
+        plans: parsed.plans ?? [],
+        topRisk: parsed.topRisk ?? '',
+        generatedAt: new Date().toISOString(),
+      },
+      {
+        derivationMethod: 'ai-assisted',
+        derivationSource: 'parseWithOllama',
+        inputs: [
+          { kind: 'event', id: eventId, label: event.occasion ?? 'Private Event' },
+          { kind: 'menu', id: eventId, label: `${menu.length} menu items` },
+        ],
+        model: resolveAiDerivedOutputModelMetadata({
+          modelTier: 'standard',
+          taskType: 'contingency.planning',
+        }),
+        moduleId: 'lib/ai/contingency-ai.ts',
+      }
+    )
   } catch (err) {
     if (err instanceof OllamaOfflineError) throw err
     console.error('[contingency-ai] Failed:', err)

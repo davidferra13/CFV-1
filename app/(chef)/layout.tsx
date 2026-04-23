@@ -3,6 +3,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import dynamic from 'next/dynamic'
+import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { ChefSidebar, ChefMobileNav, SidebarProvider } from '@/components/navigation/chef-nav'
 import { ChefMainContent } from '@/components/navigation/chef-main-content'
@@ -29,12 +30,13 @@ import {
 } from '@/lib/chef/layout-data-cache'
 import { TestAccountBanner } from '@/components/dev/test-account-banner'
 import { CommandPalette } from '@/components/search/command-palette'
-import { SymbolKeyTrigger } from '@/components/ui/symbol-key'
 import { NavigationPendingProvider } from '@/components/navigation/navigation-pending-provider'
 import { AppContextProvider } from '@/lib/context/app-context'
 import { PermissionProvider } from '@/lib/context/permission-context'
 import { resolveCurrentUserPermissions } from '@/lib/auth/permissions'
 import { isAiEnabledForTenant } from '@/lib/ai/privacy-internal'
+import { PATHNAME_HEADER } from '@/lib/auth/request-auth-context'
+import { resolveChefShellBudget } from '@/lib/interface/surface-governance'
 
 const FeedbackNudgeCard = dynamic(
   () => import('@/components/feedback/feedback-nudge-card').then((m) => m.FeedbackNudgeCard),
@@ -78,6 +80,9 @@ const ChefLiveAlerts = dynamic(
 import { RouteProgress } from '@/components/ui/route-progress'
 
 export default async function ChefLayout({ children }: { children: React.ReactNode }) {
+  const pathname = headers().get(PATHNAME_HEADER) ?? '/dashboard'
+  const shellBudget = resolveChefShellBudget(pathname)
+
   // Server-side role check - happens BEFORE any client code ships
   let user
   try {
@@ -127,7 +132,6 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
   const effectiveAdmin = userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true'
   const effectivePrivileged = userIsPrivileged || process.env.DEMO_MODE_ENABLED === 'true'
 
-  const profile = layoutData
   const primaryNavHrefs = layoutData.primary_nav_hrefs
   const mobileTabHrefs = layoutData.mobile_tab_hrefs
   const enabledModules =
@@ -151,16 +155,8 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                 <KeyboardShortcutsWrapper>
                   <div
                     data-cf-portal="chef"
-                    className="min-h-screen text-stone-100"
-                    style={{
-                      backgroundColor: profile.portal_background_color || 'var(--surface-0)',
-                      backgroundImage: profile.portal_background_image_url
-                        ? `url(${profile.portal_background_image_url})`
-                        : undefined,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center center',
-                      backgroundRepeat: 'no-repeat',
-                    }}
+                    data-cf-surface={shellBudget.mode}
+                    className="min-h-screen bg-[var(--surface-0)] text-stone-100"
                   >
                     {/* Skip navigation link for keyboard/screen reader users */}
                     <a
@@ -193,44 +189,53 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                     {/* AI outage banner - shown after 2+ minutes of sustained AI downtime */}
                     <AiOutageBanner />
                     {/* Desktop sidebar */}
-                    <ChefSidebar
-                      primaryNavHrefs={primaryNavHrefs}
-                      enabledModules={enabledModules}
-                      isAdmin={effectiveAdmin}
-                      isPrivileged={effectivePrivileged}
-                      focusMode={focusMode}
-                      userId={user.id}
-                      tenantId={user.tenantId ?? user.entityId}
-                      archetype={chefArchetype}
-                    />
+                    {shellBudget.showDesktopSidebar ? (
+                      <ChefSidebar
+                        primaryNavHrefs={primaryNavHrefs}
+                        enabledModules={enabledModules}
+                        isAdmin={effectiveAdmin}
+                        isPrivileged={effectivePrivileged}
+                        focusMode={focusMode}
+                        userId={user.id}
+                        tenantId={user.tenantId ?? user.entityId}
+                        archetype={chefArchetype}
+                      />
+                    ) : null}
                     {/* Mobile nav (top bar + bottom tabs) */}
-                    <ChefMobileNav
-                      primaryNavHrefs={primaryNavHrefs}
-                      mobileTabHrefs={mobileTabHrefs}
-                      enabledModules={enabledModules}
-                      isAdmin={effectiveAdmin}
-                      isPrivileged={effectivePrivileged}
-                      focusMode={focusMode}
-                      userId={user.id}
-                      tenantId={user.tenantId ?? user.entityId}
-                    />
+                    {shellBudget.showMobileNav ? (
+                      <ChefMobileNav
+                        primaryNavHrefs={primaryNavHrefs}
+                        mobileTabHrefs={mobileTabHrefs}
+                        enabledModules={enabledModules}
+                        isAdmin={effectiveAdmin}
+                        isPrivileged={effectivePrivileged}
+                        focusMode={focusMode}
+                        userId={user.id}
+                        tenantId={user.tenantId ?? user.entityId}
+                      />
+                    ) : null}
 
                     {/* Main content - offset adjusts dynamically based on sidebar state */}
-                    <ChefMainContent>
-                      <MarketResearchBannerWrapper
-                        surveyType="market_research_operator"
-                        channel="chef_portal"
-                      />
+                    <ChefMainContent
+                      showDesktopSidebar={shellBudget.showDesktopSidebar}
+                      showMobileNav={shellBudget.showMobileNav}
+                      showBreadcrumbBar={shellBudget.showBreadcrumbBar}
+                      showQuickExpenseTrigger={shellBudget.showQuickExpenseTrigger}
+                      contentWidth={shellBudget.contentWidth}
+                    >
+                      {shellBudget.showMarketResearchBanner && (
+                        <MarketResearchBannerWrapper
+                          surveyType="market_research_operator"
+                          channel="chef_portal"
+                        />
+                      )}
                       {children}
                     </ChefMainContent>
 
-                    {/* Global symbol key - accessible from every page */}
-                    <div className="fixed bottom-4 left-4 z-40 hidden md:block">
-                      <SymbolKeyTrigger />
-                    </div>
-
-                    {/* Feedback nudge - slide-in card, idle-detected, queued behind onboarding */}
-                    <FeedbackNudgeCard daysSinceCreation={daysSinceCreation} />
+                    {/* Feedback nudge - keep ambient prompts on triage surfaces only */}
+                    {shellBudget.showFeedbackNudge && (
+                      <FeedbackNudgeCard daysSinceCreation={daysSinceCreation} />
+                    )}
 
                     {/* Offline connectivity bar - shows status, queue count, sync progress */}
                     <OfflineStatusBar />
@@ -239,10 +244,10 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                     <CommandPalette userId={user.id} tenantId={user.tenantId ?? user.entityId} />
 
                     {/* Remy - AI companion chatbot, available to all chefs */}
-                    {shouldRenderRemy && <RemyWrapper />}
+                    {shouldRenderRemy && shellBudget.showRemy ? <RemyWrapper /> : null}
 
                     {/* Mobile quick capture FAB - mobile-only, hidden on desktop */}
-                    <QuickCapture />
+                    {shellBudget.showQuickCapture ? <QuickCapture /> : null}
 
                     {/* Breadcrumb tracker - silent navigation tracking for retrace mode */}
                     <BreadcrumbTracker />
@@ -267,7 +272,9 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                     <RouteTracker />
 
                     {/* Live alerts - inbound calls, new inquiries, call completions, voicemails */}
-                    <ChefLiveAlerts tenantId={user.tenantId ?? user.entityId} />
+                    {shellBudget.showLiveAlerts ? (
+                      <ChefLiveAlerts tenantId={user.tenantId ?? user.entityId} />
+                    ) : null}
                   </div>
                 </KeyboardShortcutsWrapper>
               </NotificationProvider>

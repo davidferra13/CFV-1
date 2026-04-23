@@ -20,18 +20,16 @@ import { db } from '@/lib/db'
 import { ingredients } from '@/lib/db/schema/schema'
 import { eq, sql } from 'drizzle-orm'
 import { revalidatePath, revalidateTag } from 'next/cache'
+import {
+  getOpenClawStatsInternal,
+  OPENCLAW_API,
+  piHeaders,
+  type OpenClawStats,
+} from '@/lib/openclaw/pi-stats'
+import { buildOpenClawQuarantineRawData } from '@/lib/openclaw/quarantine-review'
 import { normalizeIngredientName } from '@/lib/pricing/name-normalizer'
 import { refreshPriceViews } from '@/lib/pricing/cross-store-average'
 import { validatePrice, validatePriceChange } from '@/lib/openclaw/price-validator'
-
-const OPENCLAW_API = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
-const OPENCLAW_TOKEN = process.env.OPENCLAW_API_TOKEN || null
-
-function piHeaders(extra?: Record<string, string>): Record<string, string> {
-  const h: Record<string, string> = { ...extra }
-  if (OPENCLAW_TOKEN) h['Authorization'] = `Bearer ${OPENCLAW_TOKEN}`
-  return h
-}
 
 // --- Types ---
 
@@ -46,15 +44,6 @@ export interface OpenClawPrice {
   pricing_tier: string
   confidence: string
   last_confirmed_at: string
-}
-
-export interface OpenClawStats {
-  sources: number
-  canonicalIngredients: number
-  currentPrices: number
-  priceChanges: number
-  lastScrapeAt: string | null
-  timestamp: string
 }
 
 export interface SyncResult {
@@ -97,30 +86,12 @@ interface EnrichedResult {
 
 // --- Pi Communication ---
 
-/**
- * Internal: fetch stats without auth check (for cron routes).
- */
-export async function getOpenClawStatsInternal(): Promise<OpenClawStats | null> {
-  try {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 10000)
-    const res = await fetch(`${OPENCLAW_API}/api/stats`, {
-      signal: controller.signal,
-      cache: 'no-store',
-      headers: piHeaders(),
-    })
-    clearTimeout(timeout)
-    if (!res.ok) return null
-    return await res.json()
-  } catch {
-    return null
-  }
-}
-
 export async function getOpenClawStats(): Promise<OpenClawStats | null> {
   await requireChef()
   return getOpenClawStatsInternal()
 }
+
+export { getOpenClawStatsInternal, type OpenClawStats }
 
 export async function getOpenClawPrices(params?: {
   tier?: string
@@ -438,6 +409,7 @@ async function syncCore(
     let notFound = 0
     let quarantined = 0
     const notFoundNames: string[] = []
+    const updatedIngredientIdsByTenant = new Map<string, Set<string>>()
 
     for (const [name, result] of Object.entries(enrichedResults)) {
       // Try exact name match first, then check if this was a normalized name
@@ -471,6 +443,7 @@ async function syncCore(
           // 5a. Upsert ALL store prices to ingredient_price_history
           // Validate each price before insert; quarantine rejects
           for (const storePrice of result.all_prices) {
+            const granularSource = tierToSource(storePrice.tier)
             const priceCheck = validatePrice(storePrice.cents, name)
             if (!priceCheck.valid) {
               try {
@@ -479,7 +452,27 @@ async function syncCore(
                     (source, ingredient_name, price_cents, rejection_reason, raw_data)
                   VALUES (
                     ${storePrice.store}, ${name}, ${storePrice.cents},
-                    ${priceCheck.reason}, ${JSON.stringify(storePrice)}::jsonb
+                    ${priceCheck.reason},
+                    ${JSON.stringify(
+                      buildOpenClawQuarantineRawData({
+                        rawPrice: storePrice as unknown as Record<string, unknown>,
+                        reviewContext: {
+                          ingredientId: ing.id,
+                          tenantId: ing.tenantId ?? null,
+                          ingredientName: name,
+                          priceCents: storePrice.cents,
+                          normalizedPricePerUnitCents: storePrice.normalized_cents,
+                          normalizedUnit: storePrice.normalized_unit,
+                          originalUnit: storePrice.original_unit,
+                          purchaseDate: today,
+                          confirmedAt: storePrice.confirmed_at ?? null,
+                          storeName: storePrice.store,
+                          storeState: chefHomeState,
+                          tier: storePrice.tier,
+                          granularSource,
+                        },
+                      })
+                    )}::jsonb
                   )
                 `)
               } catch {
@@ -501,7 +494,27 @@ async function syncCore(
                     (source, ingredient_name, price_cents, old_price_cents, rejection_reason, raw_data)
                   VALUES (
                     ${storePrice.store}, ${name}, ${storePrice.cents},
-                    ${baselinePrice}, ${changeCheck.reason}, ${JSON.stringify(storePrice)}::jsonb
+                    ${baselinePrice}, ${changeCheck.reason},
+                    ${JSON.stringify(
+                      buildOpenClawQuarantineRawData({
+                        rawPrice: storePrice as unknown as Record<string, unknown>,
+                        reviewContext: {
+                          ingredientId: ing.id,
+                          tenantId: ing.tenantId ?? null,
+                          ingredientName: name,
+                          priceCents: storePrice.cents,
+                          normalizedPricePerUnitCents: storePrice.normalized_cents,
+                          normalizedUnit: storePrice.normalized_unit,
+                          originalUnit: storePrice.original_unit,
+                          purchaseDate: today,
+                          confirmedAt: storePrice.confirmed_at ?? null,
+                          storeName: storePrice.store,
+                          storeState: chefHomeState,
+                          tier: storePrice.tier,
+                          granularSource,
+                        },
+                      })
+                    )}::jsonb
                   )
                 `)
               } catch {
@@ -511,7 +524,6 @@ async function syncCore(
               continue
             }
 
-            const granularSource = tierToSource(storePrice.tier)
             try {
               await db.execute(sql`
                 INSERT INTO ingredient_price_history
@@ -577,6 +589,14 @@ async function syncCore(
           }
 
           updated++
+          if (ing.tenantId) {
+            let tenantIngredientIds = updatedIngredientIdsByTenant.get(ing.tenantId)
+            if (!tenantIngredientIds) {
+              tenantIngredientIds = new Set<string>()
+              updatedIngredientIdsByTenant.set(ing.tenantId, tenantIngredientIds)
+            }
+            tenantIngredientIds.add(ing.id)
+          }
         } else {
           updated++
         }
@@ -599,10 +619,21 @@ async function syncCore(
     // Step 6b: Trigger cost refresh for all synced ingredients (non-blocking)
     if (updated > 0 && !dryRun) {
       try {
-        const { refreshIngredientCostsAction } = await import('@/lib/pricing/cost-refresh-actions')
+        const { refreshIngredientCostsForTenant } = await import('@/lib/pricing/cost-refresh-actions')
+        const tenantRefreshes = [...updatedIngredientIdsByTenant.entries()]
+          .filter(([tenantId, ingredientIds]) => tenantId && ingredientIds.size > 0)
+          .map(([tenantId, ingredientIds]) =>
+            refreshIngredientCostsForTenant(tenantId, [...ingredientIds])
+          )
+
         // Fire-and-forget: don't await, don't block the sync result
-        refreshIngredientCostsAction().catch((err: unknown) => {
-          console.error('[syncPrices] Post-sync cost refresh failed (non-blocking):', err)
+        Promise.allSettled(tenantRefreshes).then((results) => {
+          const failures = results.filter((result) => result.status === 'rejected')
+          if (failures.length > 0) {
+            console.error(
+              `[syncPrices] Post-sync cost refresh failed for ${failures.length} tenant refreshes`
+            )
+          }
         })
       } catch (err) {
         console.error('[syncPrices] Could not trigger cost refresh (non-blocking):', err)

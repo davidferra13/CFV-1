@@ -7,6 +7,7 @@
 // they already know the swap (they're the expert, not AI).
 
 import { WEIGHT_CONVERSIONS, VOLUME_CONVERSIONS } from '@/lib/costing/knowledge'
+import type { DerivedOutputProvenance } from '@/lib/analytics/source-provenance'
 
 //── Store Section Lookup ────────────────────────────────────────────────
 // Maps ingredient names (lowercase) to store sections.
@@ -641,6 +642,7 @@ export interface ConsolidatedIngredient {
 }
 
 export interface GroceryConsolidationResult {
+  provenance?: DerivedOutputProvenance
   ingredients: ConsolidatedIngredient[]
   bySection: Record<string, ConsolidatedIngredient[]>
   dietaryFlags: string[]

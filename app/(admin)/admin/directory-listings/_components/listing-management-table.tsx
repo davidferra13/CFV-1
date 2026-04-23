@@ -32,6 +32,7 @@ function ListingRow({ listing }: { listing: DirectoryListing }) {
   const [isPending, startTransition] = useTransition()
   const location = [listing.city, listing.state].filter(Boolean).join(', ')
   const hasRemovalRequest = !!(listing as any).removal_requested_at
+  const linkedChef = listing.linked_chef
 
   function handleStatusChange(newStatus: string) {
     startTransition(async () => {
@@ -88,6 +89,24 @@ function ListingRow({ listing }: { listing: DirectoryListing }) {
       <td className="px-3 py-3 text-xs text-stone-500">
         {listing.claimed_by_name || (listing as any).claimed_by_email || '-'}
       </td>
+      <td className="px-3 py-3 text-xs text-stone-500">
+        {linkedChef ? (
+          linkedChef.slug ? (
+            <a
+              href={`/chef/${linkedChef.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-sky-300 hover:text-sky-200"
+            >
+              {linkedChef.display_name}
+            </a>
+          ) : (
+            <span className="font-medium text-sky-300">{linkedChef.display_name}</span>
+          )
+        ) : (
+          '-'
+        )}
+      </td>
       <td className="px-3 py-3">
         <div className="flex gap-1">
           {listing.status !== 'verified' && listing.status !== 'removed' && (
@@ -142,7 +161,8 @@ export function ListingManagementTable({ listings }: Props) {
         (l) =>
           l.name.toLowerCase().includes(q) ||
           l.city?.toLowerCase().includes(q) ||
-          (l as any).claimed_by_email?.toLowerCase().includes(q)
+          (l as any).claimed_by_email?.toLowerCase().includes(q) ||
+          l.linked_chef?.display_name.toLowerCase().includes(q)
       )
     }
 
@@ -221,6 +241,9 @@ export function ListingManagementTable({ listings }: Props) {
                 Claimed by
               </th>
               <th className="px-3 py-2 text-left text-xs-tight font-semibold text-stone-300">
+                Linked chef
+              </th>
+              <th className="px-3 py-2 text-left text-xs-tight font-semibold text-stone-300">
                 Actions
               </th>
             </tr>
@@ -228,7 +251,7 @@ export function ListingManagementTable({ listings }: Props) {
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-3 py-8 text-center text-sm text-stone-500">
+                <td colSpan={7} className="px-3 py-8 text-center text-sm text-stone-500">
                   No listings match this filter.
                 </td>
               </tr>

@@ -87,7 +87,7 @@ export async function listPendingOrders() {
     )
     .eq('chef_id', user.tenantId!)
     .eq('status', 'pending')
-    .order('created_at', { ascending: false })
+    .order('requested_at', { ascending: false })
 
   if (error) {
     console.error('[listPendingOrders] Error:', error)
@@ -158,7 +158,7 @@ export async function listStationOrders(stationId: string) {
     )
     .eq('chef_id', user.tenantId!)
     .eq('station_id', stationId)
-    .order('created_at', { ascending: false })
+    .order('requested_at', { ascending: false })
 
   if (error) {
     console.error('[listStationOrders] Error:', error)
@@ -180,7 +180,6 @@ export async function markOrderAsOrdered(ids: string[]) {
     .from('order_requests')
     .update({
       status: 'ordered',
-      ordered_at: new Date().toISOString(),
     })
     .in('id', validated.ids)
     .eq('chef_id', user.tenantId!)
@@ -235,9 +234,9 @@ export async function getOrderHistory(startDate: string, endDate: string) {
     `
     )
     .eq('chef_id', user.tenantId!)
-    .gte('created_at', `${startDate}T00:00:00`)
-    .lte('created_at', `${endDate}T23:59:59`)
-    .order('created_at', { ascending: false })
+    .gte('requested_at', `${startDate}T00:00:00`)
+    .lte('requested_at', `${endDate}T23:59:59`)
+    .order('requested_at', { ascending: false })
 
   if (error) {
     console.error('[getOrderHistory] Error:', error)

@@ -9,11 +9,13 @@
 //   ensureAuthUser → upsertChef → ensureChefRole → ensureChefPreferences
 //   ensureAuthUser → upsertClient → ensureClientRole
 
-import { createAdminClient } from '@/lib/db/admin'
+import adminDbModule from '@/lib/db/admin'
 import { mkdirSync, writeFileSync } from 'fs'
 import dotenv from 'dotenv'
 
 dotenv.config({ path: '.env.local' })
+
+const { createAdminClient } = adminDbModule
 
 const DEMO_CHEF_EMAIL = 'demo@chefflow.test'
 const DEMO_CHEF_PASSWORD = 'DemoChefFlow!2026'
@@ -25,6 +27,8 @@ const DEMO_PARTNER_EMAIL = 'demo-partner@chefflow.test'
 const DEMO_PARTNER_PASSWORD = 'DemoPartnerFlow!2026'
 const DEMO_CHEF_B_EMAIL = 'demo-chef-b@chefflow.test'
 const DEMO_CHEF_B_PASSWORD = 'DemoChefB!2026'
+const CHEF_BOB_EMAIL = 'chef-bob@chefflow.test'
+const CHEF_BOB_PASSWORD = 'ChefBobFlow!2026'
 
 async function ensureAuthUser(
   admin: any,
@@ -439,6 +443,91 @@ async function main() {
   writeFileSync('.auth/demo-chef-b.json', JSON.stringify(chefBState, null, 2))
   console.log(`[demo-setup] Wrote .auth/demo-chef-b.json`)
 
+  // 6. Chef Bob (golden-case rehearsal tenant)
+  const chefBobAuthId = await ensureAuthUser(admin, {
+    email: CHEF_BOB_EMAIL,
+    password: CHEF_BOB_PASSWORD,
+    metadata: { role: 'chef', demo: true, golden_case: true },
+  })
+
+  const chefBobFields = {
+    business_name: 'Chef Bob Rehearsal Kitchen',
+    display_name: 'Chef Bob',
+    email: CHEF_BOB_EMAIL,
+    phone: '207-555-0613',
+    slug: 'chef-bob-rehearsal',
+    tagline: 'Internal rehearsal tenant for real event golden cases.',
+    bio: 'Chef Bob is an internal demo chef account used to rehearse real-world event workflows and regression fixtures inside Chef Flow.',
+    show_website_on_public_profile: false,
+    preferred_inquiry_destination: 'both' as const,
+    show_availability_signals: false,
+    subscription_status: 'active',
+    onboarding_completed_at: new Date().toISOString(),
+    timezone: 'America/New_York',
+  }
+
+  const { data: existingChefBob } = await admin
+    .from('chefs')
+    .select('id')
+    .eq('auth_user_id', chefBobAuthId)
+    .maybeSingle()
+  let chefBobId: string
+
+  if (existingChefBob?.id) {
+    await admin.from('chefs').update(chefBobFields).eq('id', existingChefBob.id)
+    chefBobId = existingChefBob.id as string
+    console.log(`[demo-setup] Updated Chef Bob: ${chefBobId}`)
+  } else {
+    const { data: inserted, error } = await admin
+      .from('chefs')
+      .insert({ auth_user_id: chefBobAuthId, ...chefBobFields })
+      .select('id')
+      .single()
+    if (error || !inserted)
+      throw new Error(`[demo-setup] Failed to create Chef Bob: ${error?.message}`)
+    chefBobId = inserted.id as string
+    console.log(`[demo-setup] Created Chef Bob: ${chefBobId}`)
+  }
+
+  const { error: chefBobRoleError } = await admin
+    .from('user_roles')
+    .upsert(
+      { auth_user_id: chefBobAuthId, role: 'chef', entity_id: chefBobId },
+      { onConflict: 'auth_user_id' }
+    )
+  if (chefBobRoleError) {
+    throw new Error(`[demo-setup] Failed to upsert Chef Bob role: ${chefBobRoleError.message}`)
+  }
+
+  const { error: chefBobPrefError } = await admin.from('chef_preferences').upsert(
+    {
+      chef_id: chefBobId,
+      tenant_id: chefBobId,
+      home_city: 'Portland',
+      home_state: 'ME',
+      network_discoverable: false,
+      archetype: 'private-chef',
+    },
+    { onConflict: 'chef_id' }
+  )
+  if (chefBobPrefError) {
+    throw new Error(
+      `[demo-setup] Failed to upsert Chef Bob preferences: ${chefBobPrefError.message}`
+    )
+  }
+  console.log(`[demo-setup] Chef Bob role + preferences set`)
+
+  const chefBobState = {
+    email: CHEF_BOB_EMAIL,
+    password: CHEF_BOB_PASSWORD,
+    authUserId: chefBobAuthId,
+    chefId: chefBobId,
+    tenantId: chefBobId,
+    slug: 'chef-bob-rehearsal',
+  }
+  writeFileSync('.auth/chef-bob.json', JSON.stringify(chefBobState, null, 2))
+  console.log(`[demo-setup] Wrote .auth/chef-bob.json`)
+
   // ──────────────────────────────────────────────────────────────────────────
   // Summary
   // ──────────────────────────────────────────────────────────────────────────
@@ -481,6 +570,14 @@ async function main() {
   console.log(`    Chef ID:   ${chefBId}`)
   console.log(`    Slug:      chef-demo-b`)
   console.log(`    State:     .auth/demo-chef-b.json`)
+  console.log('')
+  console.log('  Chef Bob:')
+  console.log(`    Email:     ${CHEF_BOB_EMAIL}`)
+  console.log(`    Password:  ${CHEF_BOB_PASSWORD}`)
+  console.log(`    Auth ID:   ${chefBobAuthId}`)
+  console.log(`    Chef ID:   ${chefBobId}`)
+  console.log(`    Slug:      chef-bob-rehearsal`)
+  console.log(`    State:     .auth/chef-bob.json`)
   console.log('')
   console.log('  Public Profile: /chef/chef-demo-showcase')
   console.log('  Demo Panel:     /demo (requires DEMO_MODE_ENABLED=true)')

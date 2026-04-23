@@ -27,7 +27,7 @@ export function CostingHelpPopover({
   operationType,
 }: CostingHelpPopoverProps) {
   const [open, setOpen] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLSpanElement>(null)
 
   const content = HELP_CONTENT[topic]
   if (!content) return null
@@ -57,7 +57,7 @@ export function CostingHelpPopover({
   }, [open])
 
   return (
-    <div ref={containerRef} className="relative inline-flex items-center">
+    <span ref={containerRef} className="relative inline-flex items-center">
       <button
         type="button"
         onClick={() => setOpen(!open)}
@@ -69,34 +69,36 @@ export function CostingHelpPopover({
       </button>
 
       {open && (
-        <div
+        <span
           role="tooltip"
-          className="absolute left-6 top-0 z-50 w-72 rounded-lg border border-stone-700 bg-stone-800 p-3 shadow-lg text-sm"
+          className="absolute left-6 top-0 z-50 block w-72 rounded-lg border border-stone-700 bg-stone-800 p-3 shadow-lg text-sm"
         >
-          <h4 className="font-semibold text-stone-100 mb-1">{content.title}</h4>
+          <span className="mb-1 block font-semibold text-stone-100">{content.title}</span>
 
-          <p className="text-stone-400 mb-2">{content.summary}</p>
+          <span className="mb-2 block text-stone-400">{content.summary}</span>
 
           {content.formula && (
-            <p className="text-xs font-mono text-stone-500 bg-stone-900 rounded px-2 py-1 mb-2">
+            <span className="mb-2 block rounded bg-stone-900 px-2 py-1 font-mono text-xs text-stone-500">
               {content.formula}
-            </p>
+            </span>
           )}
 
           {content.targetRange && (
-            <p className="text-xs text-stone-400 mb-2">
+            <span className="mb-2 block text-xs text-stone-400">
               <span className="text-stone-500">Target:</span> {content.targetRange}
-            </p>
+            </span>
           )}
 
-          {contextual && <p className="text-xs text-amber-400/90 mb-2">{contextual}</p>}
+          {contextual && (
+            <span className="mb-2 block text-xs text-amber-400/90">{contextual}</span>
+          )}
 
-          <p className="text-xs text-stone-500">{content.guidance}</p>
+          <span className="block text-xs text-stone-500">{content.guidance}</span>
 
           {content.industryContext && (
-            <p className="text-xs text-stone-500/80 mt-2 border-t border-stone-700/50 pt-2 italic">
+            <span className="mt-2 block border-t border-stone-700/50 pt-2 text-xs italic text-stone-500/80">
               {content.industryContext}
-            </p>
+            </span>
           )}
 
           <a
@@ -105,8 +107,8 @@ export function CostingHelpPopover({
           >
             Read full guide section &rarr;
           </a>
-        </div>
+        </span>
       )}
-    </div>
+    </span>
   )
 }

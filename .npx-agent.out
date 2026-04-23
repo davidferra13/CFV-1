@@ -1,0 +1,152 @@
+{
+  "runId": "codex-local-test-20260419-3",
+  "status": "ok",
+  "summary": "completed",
+  "result": {
+    "payloads": [
+      {
+        "text": "Request timed out before a response was generated. Please try again, or increase `agents.defaults.timeoutSeconds` in your config.",
+        "mediaUrl": null
+      }
+    ],
+    "meta": {
+      "durationMs": 242519,
+      "agentMeta": {
+        "sessionId": "93f1f831-ee61-4631-b611-f4fc0820a709",
+        "provider": "ollama",
+        "model": "gemma4:e2b-it-q4_K_M"
+      },
+      "aborted": true,
+      "systemPromptReport": {
+        "source": "run",
+        "generatedAt": 1776632758165,
+        "sessionId": "93f1f831-ee61-4631-b611-f4fc0820a709",
+        "sessionKey": "agent:main:main",
+        "provider": "ollama",
+        "model": "gemma4:e2b-it-q4_K_M",
+        "workspaceDir": "/home/davidferra/.openclaw/sandboxes/agent-main-f331f052",
+        "bootstrapMaxChars": 20000,
+        "bootstrapTotalMaxChars": 150000,
+        "bootstrapTruncation": {
+          "warningMode": "once",
+          "warningShown": false,
+          "truncatedFiles": 0,
+          "nearLimitFiles": 0,
+          "totalNearLimit": false
+        },
+        "sandbox": {
+          "mode": "all",
+          "sandboxed": true
+        },
+        "systemPrompt": {
+          "chars": 24007,
+          "projectContextChars": 13458,
+          "nonProjectContextChars": 10549
+        },
+        "injectedWorkspaceFiles": [
+          {
+            "name": "AGENTS.md",
+            "path": "/home/davidferra/.openclaw/sandboxes/agent-main-f331f052/AGENTS.md",
+            "missing": false,
+            "rawChars": 7809,
+            "injectedChars": 7809,
+            "truncated": false
+          },
+          {
+            "name": "SOUL.md",
+            "path": "/home/davidferra/.openclaw/sandboxes/agent-main-f331f052/SOUL.md",
+            "missing": false,
+            "rawChars": 2445,
+            "injectedChars": 2445,
+            "truncated": false
+          },
+          {
+            "name": "TOOLS.md",
+            "path": "/home/davidferra/.openclaw/sandboxes/agent-main-f331f052/TOOLS.md",
+            "missing": false,
+            "rawChars": 759,
+            "injectedChars": 759,
+            "truncated": false
+          },
+          {
+            "name": "IDENTITY.md",
+            "path": "/home/davidferra/.openclaw/sandboxes/agent-main-f331f052/IDENTITY.md",
+            "missing": false,
+            "rawChars": 545,
+            "injectedChars": 545,
+            "truncated": false
+          },
+          {
+            "name": "USER.md",
+            "path": "/home/davidferra/.openclaw/sandboxes/agent-main-f331f052/USER.md",
+            "missing": false,
+            "rawChars": 719,
+            "injectedChars": 719,
+            "truncated": false
+          },
+          {
+            "name": "HEARTBEAT.md",
+            "path": "/home/davidferra/.openclaw/sandboxes/agent-main-f331f052/HEARTBEAT.md",
+            "missing": false,
+            "rawChars": 366,
+            "injectedChars": 366,
+            "truncated": false
+          },
+          {
+            "name": "BOOTSTRAP.md",
+            "path": "/home/davidferra/.openclaw/sandboxes/agent-main-f331f052/BOOTSTRAP.md",
+            "missing": true,
+            "rawChars": 0,
+            "injectedChars": 92,
+            "truncated": false
+          }
+        ],
+        "skills": {
+          "promptChars": 3292,
+          "entries": [
+            {
+              "name": "prose",
+              "blockChars": 308
+            },
+            {
+              "name": "discord",
+              "blockChars": 206
+            },
+            {
+              "name": "healthcheck",
+              "blockChars": 482
+            },
+            {
+              "name": "node-connect",
+              "blockChars": 532
+            },
+            {
+              "name": "skill-creator",
+              "blockChars": 750
+            },
+            {
+              "name": "video-frames",
+              "blockChars": 220
+            },
+            {
+              "name": "weather",
+              "blockChars": 407
+            }
+          ]
+        },
+        "tools": {
+          "listChars": 185,
+          "schemaChars": 89,
+          "entries": [
+            {
+              "name": "session_status",
+              "summaryChars": 207,
+              "schemaChars": 89,
+              "propertiesCount": 2
+            }
+          ]
+        }
+      }
+    }
+  }
+}

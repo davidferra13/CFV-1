@@ -3,44 +3,455 @@
 // Uses google_connections table (not chef_settings - that table does not exist).
 // All token management is delegated to lib/gmail/google-auth.ts.
 
-'use server'
-
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { getGoogleAccessToken } from '@/lib/google/auth'
+import type { GoogleCalendarServiceStatus } from '@/lib/google/types'
 import { dateToDateString } from '@/lib/utils/format'
 
 const GCAL_API = 'https://www.googleapis.com/calendar/v3/calendars/primary/events'
+const GCAL_API_ROOT = 'https://www.googleapis.com/calendar/v3'
+const DEFAULT_CALENDAR_TRUTH_LOOKAHEAD_DAYS = 45
+const GOOGLE_CALENDAR_SYNC_STATUSES = ['confirmed', 'in_progress', 'paid', 'accepted'] as const
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+type DbClient = any
 
-export interface CalendarConnection {
-  connected: boolean
-  email: string | null
-  lastSync: string | null
+type GoogleCalendarListEntry = {
+  id: string
+  label: string
 }
 
-// ─── Calendar Connection Status ───────────────────────────────────────────────
+type ExternalCalendarBusyRange = {
+  startAt: string
+  endAt: string
+  source: string
+  calendarId: string
+  calendarLabel: string
+  googleEventId: string | null
+  summary: string | null
+  startDay: string
+  endDay: string
+  allDay: boolean
+}
 
-export async function getCalendarConnection(): Promise<CalendarConnection> {
-  const chef = await requireChef()
-  const db: any = createServerClient()
+type ChefFlowSyncedEventMeta = {
+  dateKey: string
+  googleEventId: string | null
+}
 
-  const { data } = await db
-    .from('google_connections')
-    .select('connected_email, calendar_connected')
-    .eq('chef_id', chef.entityId)
-    .single()
+type CalendarTruthWindow = {
+  connection: CalendarConnection
+  externalBusy: ExternalCalendarBusyRange[]
+  busyDates: string[]
+}
 
-  if (!data) {
-    return { connected: false, email: null, lastSync: null }
+export type CalendarConnection = GoogleCalendarServiceStatus
+
+function defaultCalendarConnection(
+  input?: Partial<Pick<CalendarConnection, 'connected' | 'email' | 'lastSync'>>
+): CalendarConnection {
+  return {
+    connected: input?.connected === true,
+    email: input?.email ?? null,
+    lastSync: input?.lastSync ?? null,
+    checkedAt: null,
+    health: 'unknown',
+    healthDetail: null,
+    busyRangeCount: 0,
+    conflictCount: 0,
+    calendarCount: 0,
+  }
+}
+
+function getDefaultTruthWindow() {
+  const windowStart = new Date()
+  windowStart.setUTCHours(0, 0, 0, 0)
+  const windowEnd = new Date(windowStart)
+  windowEnd.setUTCDate(windowEnd.getUTCDate() + DEFAULT_CALENDAR_TRUTH_LOOKAHEAD_DAYS)
+
+  return {
+    windowStart: windowStart.toISOString(),
+    windowEnd: windowEnd.toISOString(),
+  }
+}
+
+async function getLatestOutboundCalendarSync(chefId: string, db: DbClient): Promise<string | null> {
+  const { data, error } = await db
+    .from('events')
+    .select('google_calendar_synced_at')
+    .eq('tenant_id', chefId)
+    .not('google_calendar_synced_at', 'is', null)
+    .order('google_calendar_synced_at', { ascending: false })
+    .limit(1)
+
+  if (error) {
+    throw new Error(`Failed to load Google Calendar sync state: ${error.message}`)
+  }
+
+  return (data?.[0] as any)?.google_calendar_synced_at ?? null
+}
+
+function getDatePart(value: { date?: string | null; dateTime?: string | null } | null | undefined) {
+  if (typeof value?.date === 'string' && value.date.length >= 10) {
+    return value.date.slice(0, 10)
+  }
+  if (typeof value?.dateTime === 'string' && value.dateTime.length >= 10) {
+    return value.dateTime.slice(0, 10)
+  }
+  return null
+}
+
+function toIsoBoundary(value: { date?: string | null; dateTime?: string | null } | null | undefined) {
+  if (typeof value?.dateTime === 'string') {
+    const normalized = new Date(value.dateTime)
+    if (!Number.isNaN(normalized.getTime())) {
+      return normalized.toISOString()
+    }
+  }
+
+  const datePart = getDatePart(value)
+  return datePart ? `${datePart}T00:00:00.000Z` : null
+}
+
+function shiftDateKey(dateKey: string, days: number) {
+  const date = new Date(`${dateKey}T00:00:00.000Z`)
+  date.setUTCDate(date.getUTCDate() + days)
+  return date.toISOString().slice(0, 10)
+}
+
+function expandDateKeys(startDay: string, endDayInclusive: string) {
+  const keys: string[] = []
+  const cursor = new Date(`${startDay}T00:00:00.000Z`)
+  const end = new Date(`${endDayInclusive}T00:00:00.000Z`)
+
+  while (cursor.getTime() <= end.getTime()) {
+    keys.push(cursor.toISOString().slice(0, 10))
+    cursor.setUTCDate(cursor.getUTCDate() + 1)
+  }
+
+  return keys
+}
+
+function getBusyDateKeys(range: ExternalCalendarBusyRange) {
+  const endDayInclusive = range.allDay ? shiftDateKey(range.endDay, -1) : range.endDay
+  if (endDayInclusive < range.startDay) {
+    return [range.startDay]
+  }
+  return expandDateKeys(range.startDay, endDayInclusive)
+}
+
+function normalizeBusyRange(
+  item: any,
+  calendar: GoogleCalendarListEntry
+): ExternalCalendarBusyRange | null {
+  if (!item || item.status === 'cancelled' || item.transparency === 'transparent') {
+    return null
+  }
+
+  const startDay = getDatePart(item.start)
+  const endDay = getDatePart(item.end)
+  const startAt = toIsoBoundary(item.start)
+  const endAt = toIsoBoundary(item.end)
+  if (!startDay || !endDay || !startAt || !endAt) return null
+
+  if (Date.parse(endAt) <= Date.parse(startAt)) {
+    return null
   }
 
   return {
-    connected: (data as any)?.calendar_connected || false,
-    email: (data as any)?.connected_email || null,
-    lastSync: null,
+    startAt,
+    endAt,
+    source: `google:${calendar.label}`,
+    calendarId: calendar.id,
+    calendarLabel: calendar.label,
+    googleEventId: typeof item.id === 'string' ? item.id : null,
+    summary: typeof item.summary === 'string' ? item.summary : null,
+    startDay,
+    endDay,
+    allDay: Boolean(item.start?.date || item.end?.date),
   }
+}
+
+async function listGoogleCalendars(accessToken: string): Promise<GoogleCalendarListEntry[]> {
+  const calendars: GoogleCalendarListEntry[] = []
+  let pageToken: string | null = null
+
+  do {
+    const params = new URLSearchParams({
+      showHidden: 'false',
+      minAccessRole: 'reader',
+    })
+    if (pageToken) params.set('pageToken', pageToken)
+
+    const response = await fetch(`${GCAL_API_ROOT}/users/me/calendarList?${params.toString()}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      cache: 'no-store',
+    })
+
+    if (!response.ok) {
+      throw new Error(`Google Calendar list failed: ${await response.text()}`)
+    }
+
+    const payload = await response.json()
+    for (const item of payload.items ?? []) {
+      if (!item?.id || item.deleted === true || item.hidden === true) continue
+      if (item.selected === false && item.primary !== true) continue
+
+      calendars.push({
+        id: String(item.id),
+        label:
+          typeof item.summaryOverride === 'string'
+            ? item.summaryOverride
+            : typeof item.summary === 'string'
+              ? item.summary
+              : item.primary
+                ? 'Primary'
+                : 'Google Calendar',
+      })
+    }
+
+    pageToken = typeof payload.nextPageToken === 'string' ? payload.nextPageToken : null
+  } while (pageToken)
+
+  if (calendars.length === 0) {
+    return [{ id: 'primary', label: 'Primary' }]
+  }
+
+  const unique = new Map<string, GoogleCalendarListEntry>()
+  for (const calendar of calendars) {
+    if (!unique.has(calendar.id)) {
+      unique.set(calendar.id, calendar)
+    }
+  }
+
+  return Array.from(unique.values()).sort((left, right) => {
+    if (left.id === 'primary') return -1
+    if (right.id === 'primary') return 1
+    return left.label.localeCompare(right.label)
+  })
+}
+
+async function listBusyGoogleCalendarRanges(
+  accessToken: string,
+  calendars: GoogleCalendarListEntry[],
+  windowStart: string,
+  windowEnd: string
+) {
+  const calendarResults = await Promise.all(
+    calendars.map(async (calendar) => {
+      const busyRanges: ExternalCalendarBusyRange[] = []
+      let pageToken: string | null = null
+
+      do {
+        const params = new URLSearchParams({
+          singleEvents: 'true',
+          orderBy: 'startTime',
+          timeMin: windowStart,
+          timeMax: windowEnd,
+          maxResults: '2500',
+          fields: 'items(id,status,summary,transparency,start,end),nextPageToken',
+        })
+        if (pageToken) params.set('pageToken', pageToken)
+
+        const response = await fetch(
+          `${GCAL_API_ROOT}/calendars/${encodeURIComponent(calendar.id)}/events?${params.toString()}`,
+          {
+            headers: { Authorization: `Bearer ${accessToken}` },
+            cache: 'no-store',
+          }
+        )
+
+        if (!response.ok) {
+          throw new Error(
+            `Google Calendar events failed for ${calendar.label}: ${await response.text()}`
+          )
+        }
+
+        const payload = await response.json()
+        for (const item of payload.items ?? []) {
+          const normalized = normalizeBusyRange(item, calendar)
+          if (normalized) busyRanges.push(normalized)
+        }
+
+        pageToken = typeof payload.nextPageToken === 'string' ? payload.nextPageToken : null
+      } while (pageToken)
+
+      return busyRanges
+    })
+  )
+
+  return calendarResults.flat()
+}
+
+async function listChefFlowSyncedEventMeta(
+  chefId: string,
+  startDate: string,
+  endDate: string,
+  db: DbClient
+) {
+  const { data, error } = await db
+    .from('events')
+    .select('event_date, google_calendar_event_id')
+    .eq('tenant_id', chefId)
+    .in('status', [...GOOGLE_CALENDAR_SYNC_STATUSES])
+    .gte('event_date', startDate)
+    .lte('event_date', `${endDate}T23:59:59Z`)
+
+  if (error) {
+    throw new Error(`Failed to load ChefFlow calendar events: ${error.message}`)
+  }
+
+  return ((data ?? []) as Array<any>).map((event) => ({
+    dateKey: dateToDateString(event.event_date as Date | string),
+    googleEventId:
+      typeof event.google_calendar_event_id === 'string' && event.google_calendar_event_id.length > 0
+        ? event.google_calendar_event_id
+        : null,
+  })) satisfies ChefFlowSyncedEventMeta[]
+}
+
+function reconcileBusyRanges(
+  busyRanges: ExternalCalendarBusyRange[],
+  syncedEvents: ChefFlowSyncedEventMeta[]
+) {
+  const syncedGoogleIds = new Set(
+    syncedEvents
+      .map((event) => event.googleEventId)
+      .filter((value): value is string => typeof value === 'string' && value.length > 0)
+  )
+  const syncedDateKeys = new Set(syncedEvents.map((event) => event.dateKey))
+
+  const reconciled = busyRanges.filter(
+    (range) => !(range.googleEventId && syncedGoogleIds.has(range.googleEventId))
+  )
+
+  const externalBusyDates = new Set<string>()
+  for (const range of reconciled) {
+    for (const dateKey of getBusyDateKeys(range)) {
+      externalBusyDates.add(dateKey)
+    }
+  }
+
+  let conflictCount = 0
+  for (const dateKey of syncedDateKeys) {
+    if (externalBusyDates.has(dateKey)) {
+      conflictCount += 1
+    }
+  }
+
+  return {
+    reconciled,
+    externalBusyDates: Array.from(externalBusyDates).sort(),
+    conflictCount,
+  }
+}
+
+export const __calendarTruthTestUtils = {
+  getBusyDateKeys,
+  normalizeBusyRange,
+  reconcileBusyRanges,
+}
+
+export async function getGoogleCalendarTruthForRange(
+  chefId: string,
+  windowStart: string,
+  windowEnd: string,
+  options?: { db?: DbClient }
+): Promise<CalendarTruthWindow> {
+  const db = (options?.db || createServerClient({ admin: true })) as DbClient
+  const [{ data: connectionRow, error: connectionError }, lastSync] = await Promise.all([
+    db
+      .from('google_connections')
+      .select('connected_email, calendar_connected')
+      .eq('chef_id', chefId)
+      .maybeSingle(),
+    getLatestOutboundCalendarSync(chefId, db),
+  ])
+
+  if (connectionError) {
+    throw new Error(`Failed to load Google Calendar connection: ${connectionError.message}`)
+  }
+
+  const baseConnection = defaultCalendarConnection({
+    connected: connectionRow?.calendar_connected === true,
+    email: connectionRow?.connected_email || null,
+    lastSync,
+  })
+
+  if (!baseConnection.connected) {
+    return {
+      connection: baseConnection,
+      externalBusy: [],
+      busyDates: [],
+    }
+  }
+
+  try {
+    const accessToken = await getGoogleAccessToken(chefId, {
+      skipSessionCheck: true,
+      service: 'calendar',
+    })
+    const calendars = await listGoogleCalendars(accessToken)
+    const startDate = windowStart.slice(0, 10)
+    const endDate = windowEnd.slice(0, 10)
+
+    const [busyRanges, syncedEvents] = await Promise.all([
+      listBusyGoogleCalendarRanges(accessToken, calendars, windowStart, windowEnd),
+      listChefFlowSyncedEventMeta(chefId, startDate, endDate, db),
+    ])
+
+    const { reconciled, externalBusyDates, conflictCount } = reconcileBusyRanges(
+      busyRanges,
+      syncedEvents
+    )
+    const checkedAt = new Date().toISOString()
+    const healthDetail =
+      conflictCount > 0
+        ? `${conflictCount} upcoming date${conflictCount === 1 ? '' : 's'} already carry other Google Calendar busy time.`
+        : `Live Google Calendar verification succeeded across ${calendars.length} calendar${calendars.length === 1 ? '' : 's'}.`
+
+    return {
+      connection: {
+        ...baseConnection,
+        checkedAt,
+        health: conflictCount > 0 ? 'warning' : 'ok',
+        healthDetail,
+        busyRangeCount: reconciled.length,
+        conflictCount,
+        calendarCount: calendars.length,
+      },
+      externalBusy: reconciled,
+      busyDates: externalBusyDates,
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Google Calendar busy time could not be verified'
+    return {
+      connection: {
+        ...baseConnection,
+        checkedAt: null,
+        health: 'error',
+        healthDetail: message,
+        busyRangeCount: 0,
+        conflictCount: 0,
+        calendarCount: 0,
+      },
+      externalBusy: [],
+      busyDates: [],
+    }
+  }
+}
+
+export async function getCalendarConnectionForChef(chefId: string): Promise<CalendarConnection> {
+  const { windowStart, windowEnd } = getDefaultTruthWindow()
+  const truth = await getGoogleCalendarTruthForRange(chefId, windowStart, windowEnd)
+  return truth.connection
+}
+
+// Calendar Connection Status
+
+export async function getCalendarConnection(): Promise<CalendarConnection> {
+  const chef = await requireChef()
+  return getCalendarConnectionForChef(chef.entityId)
 }
 
 // ─── Initiate Google Calendar OAuth ──────────────────────────────────────────
@@ -63,8 +474,8 @@ export async function disconnectGoogleCalendar() {
 // ─── Availability Check ───────────────────────────────────────────────────────
 
 /**
- * Check if a date is available by querying ChefFlow's own events table.
- * Returns available=true if no confirmed/in-progress events exist on that date.
+ * Check if a date is available by querying ChefFlow events and live Google Calendar busy time.
+ * Returns available=true only when neither internal nor external conflicts are found.
  * Used by the Ask Remy orchestrator for calendar.availability tasks.
  */
 export async function checkCalendarAvailability(date: string): Promise<{
@@ -89,6 +500,25 @@ export async function checkCalendarAvailability(date: string): Promise<{
     occasion: (e.occasion as string) || 'Event',
     time: (e.serve_time as string) || 'TBD',
   }))
+
+  const truth = await getGoogleCalendarTruthForRange(
+    chef.entityId,
+    `${date}T00:00:00.000Z`,
+    `${date}T23:59:59.999Z`,
+    { db }
+  )
+
+  if (truth.connection.connected && truth.connection.health === 'error') {
+    conflicts.push({
+      occasion: 'Google Calendar verification unavailable',
+      time: truth.connection.healthDetail || 'Unknown issue',
+    })
+  } else if (truth.busyDates.includes(date)) {
+    conflicts.push({
+      occasion: 'Google Calendar busy time',
+      time: 'External calendar busy',
+    })
+  }
 
   return {
     available: conflicts.length === 0,
@@ -135,7 +565,7 @@ export async function syncEventToGoogleCalendar(
     if (!event) return { success: false, error: 'Event not found' }
 
     // Get valid access token (auto-refreshes if expired)
-    const accessToken = await getGoogleAccessToken(chef.entityId!)
+    const accessToken = await getGoogleAccessToken(chef.entityId!, { service: 'calendar' })
 
     // Build event date+time strings
     const dateStr = dateToDateString(event.event_date as Date | string)
@@ -211,12 +641,6 @@ export async function syncEventToGoogleCalendar(
       })
       .eq('id', eventId)
 
-    // Update last_sync on the connection
-    await db
-      .from('google_connections')
-      .update({ calendar_last_sync_at: new Date().toISOString() } as any)
-      .eq('chef_id', chef.entityId)
-
     return { success: true, googleEventId }
   } catch (err) {
     return {
@@ -251,7 +675,7 @@ export async function deleteEventFromGoogleCalendar(
       return { success: true } // Nothing to delete
     }
 
-    const accessToken = await getGoogleAccessToken(chef.entityId!)
+    const accessToken = await getGoogleAccessToken(chef.entityId!, { service: 'calendar' })
 
     const response = await fetch(`${GCAL_API}/${googleEventId}`, {
       method: 'DELETE',

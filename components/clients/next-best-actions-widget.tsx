@@ -1,28 +1,10 @@
 // Next Best Actions Widget - shows top 5 client actions needed on the dashboard
 
 import Link from 'next/link'
-import {
-  ArrowRight,
-  MessageCircle,
-  Calendar,
-  RefreshCw,
-  Gift,
-  Sparkles,
-} from '@/components/ui/icons'
+import { ArrowRight } from '@/components/ui/icons'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ClientActionIcon } from '@/components/clients/client-action-icon'
 import type { NextBestAction } from '@/lib/clients/next-best-action'
-
-const ACTION_ICONS: Partial<
-  Record<NextBestAction['actionType'], React.ComponentType<{ className?: string }>>
-> = {
-  reply_inquiry: MessageCircle,
-  follow_up_quote: MessageCircle,
-  re_engage: RefreshCw,
-  schedule_event: Calendar,
-  send_birthday: Gift,
-  ask_referral: Sparkles,
-  reach_out: MessageCircle,
-}
 
 const URGENCY_DOT: Record<NextBestAction['urgency'], string> = {
   critical: 'bg-red-500',
@@ -55,22 +37,35 @@ export function NextBestActionsWidget({ actions }: Props) {
       <CardContent>
         <ul className="space-y-2">
           {actions.map((action) => {
-            const Icon = ACTION_ICONS[action.actionType]
+            const primaryReason = action.reasons[0]?.message ?? null
             return (
               <li key={action.clientId}>
                 <Link
                   href={action.href}
-                  className="flex items-center gap-2.5 rounded-md px-1 py-1.5 hover:bg-stone-800 transition-colors"
+                  className="flex items-start gap-2.5 rounded-md px-1 py-1.5 hover:bg-stone-800 transition-colors"
                 >
                   <span
                     className={`w-2 h-2 rounded-full shrink-0 ${URGENCY_DOT[action.urgency]}`}
                   />
-                  {Icon && <Icon className="h-3.5 w-3.5 text-stone-400 shrink-0" />}
+                  <ClientActionIcon
+                    actionType={action.actionType}
+                    className="h-3.5 w-3.5 shrink-0 text-stone-400"
+                  />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-stone-200 truncate">
                       {action.clientName}
                     </p>
                     <p className="text-xs-tight text-stone-500 truncate">{action.label}</p>
+                    {action.interventionLabel ? (
+                      <p className="mt-0.5 text-[11px] uppercase tracking-[0.12em] text-stone-400">
+                        {action.interventionLabel}
+                      </p>
+                    ) : null}
+                    {primaryReason ? (
+                      <p className="mt-0.5 text-[11px] leading-4 text-stone-400 line-clamp-2">
+                        {primaryReason}
+                      </p>
+                    ) : null}
                   </div>
                 </Link>
               </li>

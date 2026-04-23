@@ -365,7 +365,9 @@ test.describe('Client Portal — Profile', () => {
     const bodyText = await page.locator('body').innerText()
     // Should have pre-filled data
     const hasData =
-      bodyText.includes('alice') || bodyText.includes('Alice') || bodyText.includes('e2e')
+      bodyText.includes('Joy') ||
+      bodyText.includes('joy') ||
+      bodyText.includes('emma@northandpine.co')
     expect(hasData || bodyText.trim().length > 50).toBeTruthy()
   })
 
@@ -415,4 +417,18 @@ test.describe('Client Portal — Inquiry Detail', () => {
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
   })
+})
+
+test('client event detail shows the booking change center', async ({ page, seedIds }) => {
+  await page.goto(`/my-events/${seedIds.eventIds.confirmed}`)
+  await page.waitForLoadState('networkidle')
+
+  await expect(page.getByText('Booking Change Center')).toBeVisible()
+
+  const requestButton = page.getByRole('button', { name: /submit guest-count request/i })
+  const pendingBanner = page.getByText(/chef review needed|requested \d+ guests/i).first()
+  const requestButtonVisible = await requestButton.isVisible().catch(() => false)
+  const pendingBannerVisible = await pendingBanner.isVisible().catch(() => false)
+
+  expect(requestButtonVisible || pendingBannerVisible).toBeTruthy()
 })

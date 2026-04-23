@@ -47,6 +47,15 @@ type OutreachRecord = {
   sent_at: string
 }
 
+function formatOutreachSentAt(value: string | null | undefined): string {
+  if (!value) return 'Unknown'
+
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) return 'Unknown'
+
+  return format(parsed, 'MMM d')
+}
+
 export function DirectOutreachPanel({
   clientId,
   clientEmail,
@@ -78,6 +87,7 @@ export function DirectOutreachPanel({
   const [channel, setChannel] = useState<Channel>(defaultChannel)
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
+  const safeHistory = Array.isArray(history) ? history : []
 
   const needsSubject = channel === 'email'
   const bodyPlaceholder =
@@ -228,12 +238,12 @@ export function DirectOutreachPanel({
       )}
 
       {/* Outreach history */}
-      {history.length > 0 && (
+      {safeHistory.length > 0 && (
         <div className="space-y-1.5 mt-2">
           <p className="text-xs font-medium text-stone-400 uppercase tracking-wide">
             Outreach history
           </p>
-          {history.map((record) => (
+          {safeHistory.map((record) => (
             <div
               key={record.id}
               className="flex items-start gap-2 text-xs text-stone-400 rounded-md border border-stone-800 bg-stone-900 px-3 py-2"
@@ -243,10 +253,12 @@ export function DirectOutreachPanel({
                 {record.subject && (
                   <p className="font-medium text-stone-200 truncate">{record.subject}</p>
                 )}
-                <p className="text-stone-500 truncate">{record.body.slice(0, 120)}</p>
+                <p className="text-stone-500 truncate">
+                  {typeof record.body === 'string' ? record.body.slice(0, 120) : ''}
+                </p>
               </div>
               <div className="shrink-0 text-right text-stone-400">
-                <p>{format(new Date(record.sent_at), 'MMM d')}</p>
+                <p>{formatOutreachSentAt(record.sent_at)}</p>
                 {record.delivered === false && <p className="text-red-400">Failed</p>}
               </div>
             </div>

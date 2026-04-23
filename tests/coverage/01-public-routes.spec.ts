@@ -122,11 +122,17 @@ test.describe('Public — Landing & Marketing Pages', () => {
     await assertPageLoads(page, '/trust')
   })
 
-  test('/for-operators — operator landing page loads', async ({ page }) => {
+  test('/for-operators - operator landing page loads', async ({ page }) => {
     await assertPageLoads(page, '/for-operators')
   })
 
-  test('/marketplace-chefs — marketplace chefs page loads', async ({ page }) => {
+  test('/for-operators/walkthrough - operator walkthrough page loads', async ({ page }) => {
+    await assertPageLoads(page, '/for-operators/walkthrough')
+    const bodyText = await page.locator('body').innerText()
+    expect(bodyText).toMatch(/operator walkthrough|founder-led evaluation|request form/i)
+  })
+
+  test('/marketplace-chefs - marketplace chefs page loads', async ({ page }) => {
     await assertPageLoads(page, '/marketplace-chefs')
   })
 

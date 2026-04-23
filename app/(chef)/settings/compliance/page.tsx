@@ -85,6 +85,14 @@ export default async function CompliancePage() {
         </p>
       </div>
 
+      <div className="rounded-lg border border-stone-700 bg-stone-900/70 px-4 py-3">
+        <p className="text-sm text-stone-300">
+          Active food safety, permit, and business records can surface as public current-record
+          badges on your chef profile. If a record expires or is no longer active, the public badge
+          can disappear even if the topic still appears in your service copy.
+        </p>
+      </div>
+
       {/* HACCP Plan */}
       <Card>
         <CardContent className="pt-4 pb-4">

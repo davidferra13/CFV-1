@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { buildApplyExecutionPlan } from '../../scripts/apply-db-migration-repair.mjs'
+import { buildApplyExecutionPlan } from '../../scripts/apply-migration-repair.mjs'
 
 function makeReport(overrides = {}) {
   return {
@@ -13,13 +13,13 @@ function makeReport(overrides = {}) {
         {
           version: '20260305',
           action: 'reverted',
-          command: 'npx db migration repair --linked --status reverted 20260305',
+          command: 'npx database migration repair --linked --status reverted 20260305',
           reason: 'legacy remote short version',
         },
         {
           version: '20260313000011',
           action: 'applied',
-          command: 'npx db migration repair --linked --status applied 20260313000011',
+          command: 'npx database migration repair --linked --status applied 20260313000011',
           reason: 'historical overlap',
         },
       ],
@@ -70,7 +70,7 @@ describe('Database migration repair apply plan', () => {
           {
             version: '20260305',
             action: 'reverted',
-            command: 'npx db migration repair --linked --status reverted 20260305',
+            command: 'npx database migration repair --linked --status reverted 20260305',
             reason: 'legacy remote short version',
           },
         ],

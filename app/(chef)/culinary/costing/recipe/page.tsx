@@ -58,19 +58,19 @@ export default async function RecipeCostPage() {
           <p className="text-2xl font-bold text-stone-100">
             {withCost.length > 0 ? `$${(maxCostCents / 100).toFixed(2)}` : '-'}
           </p>
-          <p className="text-sm text-stone-500 mt-1 flex items-center justify-center gap-1">
+          <div className="text-sm text-stone-500 mt-1 flex items-center justify-center gap-1">
             Most expensive (est.)
             <CostingHelpPopover topic="food_cost_pct" />
-          </p>
+          </div>
         </Card>
         <Card className="p-4 text-center">
           <p className="text-2xl font-bold text-stone-100">
             {avgCostCents > 0 ? `$${(avgCostCents / 100).toFixed(2)}` : '-'}
           </p>
-          <p className="text-sm text-stone-500 mt-1 flex items-center justify-center gap-1">
+          <div className="text-sm text-stone-500 mt-1 flex items-center justify-center gap-1">
             Average cost (est.)
             <CostingHelpPopover topic="per_person" />
-          </p>
+          </div>
         </Card>
         <Card className="p-4 text-center">
           <p className="text-2xl font-bold text-stone-100">{noCost.length}</p>

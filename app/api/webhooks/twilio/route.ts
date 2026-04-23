@@ -1,194 +1,213 @@
-// Twilio Inbound Webhook - receives SMS and WhatsApp messages
-// Stores them in the messages table for the unified inbox
-// URL: POST /api/webhooks/twilio (configure in Twilio console)
+// Twilio inbound webhook compatibility route.
+// Canonical ingress now runs through communication_events/conversation_threads
+// via the shared managed-channel adapter.
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/db/admin'
 import { parseInboundWebhook } from '@/lib/sms/twilio-client'
-import { createHmac, timingSafeEqual } from 'crypto'
+import { ingestManagedInboundCommunication } from '@/lib/communication/managed-ingest'
+import {
+  normalizeManagedPhoneAddress,
+  resolveManagedInboundChannel,
+} from '@/lib/communication/managed-channels'
+import { reconcileCommunicationDeliveryState } from '@/lib/communication/delivery-reconciliation'
+import { validateTwilioSignature } from '@/lib/communication/twilio-webhook'
+import { createServerClient } from '@/lib/db/server'
+import { logCommunicationAction } from '@/lib/communication/pipeline'
 
-/**
- * Validate Twilio request signature to prevent forged webhook submissions.
- * See: https://www.twilio.com/docs/usage/security#validating-requests
- */
-function validateTwilioSignature(
-  authToken: string,
-  url: string,
-  params: Record<string, string>,
-  signature: string
-): boolean {
-  // Build the data string: URL + sorted param key/value pairs
-  const sortedKeys = Object.keys(params).sort()
-  let data = url
-  for (const key of sortedKeys) {
-    data += key + params[key]
+function buildInboundContent(input: {
+  body: string
+  channel: 'sms' | 'whatsapp'
+  numMedia: number
+}) {
+  const body = input.body.trim()
+  if (body) return body
+  if (input.numMedia > 0) {
+    return `${input.channel.toUpperCase()} media message (${input.numMedia} attachment${input.numMedia === 1 ? '' : 's'})`
+  }
+  return ''
+}
+
+function twiml(status = 200) {
+  return new NextResponse('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {
+    status,
+    headers: { 'Content-Type': 'text/xml' },
+  })
+}
+
+function getWebhookUrl(pathname: string) {
+  const base =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.NEXTAUTH_URL ||
+    'https://app.cheflowhq.com'
+
+  return `${base.replace(/\/+$/, '')}${pathname}`
+}
+
+function normalizeTwilioAddress(value: string | null | undefined) {
+  const raw = String(value || '').trim()
+  const channel = raw.startsWith('whatsapp:') ? 'whatsapp' : 'sms'
+  const address = raw.replace(/^whatsapp:/, '')
+  return {
+    channel,
+    address: channel === 'whatsapp' ? normalizeManagedPhoneAddress(address) || address : address,
+  } as const
+}
+
+function extractTwilioStatusCallback(params: Record<string, string>) {
+  const rawStatus = String(params.MessageStatus || params.SmsStatus || '')
+    .trim()
+    .toLowerCase()
+  const messageSid = String(params.MessageSid || params.SmsSid || '').trim()
+
+  if (!rawStatus || rawStatus === 'received' || !messageSid) {
+    return null
   }
 
-  const expectedSignature = createHmac('sha1', authToken).update(data).digest('base64')
+  const from = normalizeTwilioAddress(params.From)
+  const to = normalizeTwilioAddress(params.To)
 
-  // Timing-safe comparison using crypto.timingSafeEqual
-  if (expectedSignature.length !== signature.length) return false
-  return timingSafeEqual(Buffer.from(expectedSignature), Buffer.from(signature))
+  return {
+    channel: from.channel === 'whatsapp' || to.channel === 'whatsapp' ? 'whatsapp' : 'sms',
+    managedAddress: from.address,
+    recipientAddress: to.address,
+    providerStatus: rawStatus,
+    rawProviderStatus: rawStatus,
+    messageSid,
+    errorCode: params.ErrorCode || null,
+    errorMessage: params.ErrorMessage || null,
+  } as const
 }
 
 export async function POST(request: NextRequest) {
   try {
-    // Twilio sends form-encoded data
-    const text = await request.text()
-    const params = Object.fromEntries(new URLSearchParams(text))
+    const rawText = await request.text()
+    const params = Object.fromEntries(new URLSearchParams(rawText))
+    const statusCallback = extractTwilioStatusCallback(params)
+    const msg = statusCallback ? null : parseInboundWebhook(params)
 
-    // Validate Twilio signature - reject forged requests
-    const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN
+    if (msg && !msg.body && msg.numMedia === 0) {
+      return twiml()
+    }
+
+    const managedChannel = await resolveManagedInboundChannel({
+      channel: statusCallback?.channel || msg!.channel,
+      address: statusCallback?.managedAddress || msg!.to,
+    })
+
+    if (!managedChannel?.authToken) {
+      console.warn(
+        '[twilio-webhook] Unmanaged Twilio destination:',
+        statusCallback?.managedAddress || msg?.to
+      )
+      return twiml()
+    }
+
     const twilioSignature = request.headers.get('x-twilio-signature')
-    if (twilioAuthToken && twilioSignature) {
-      const webhookUrl = `${process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'}/api/webhooks/twilio`
-      if (!validateTwilioSignature(twilioAuthToken, webhookUrl, params, twilioSignature)) {
-        console.warn('[twilio-webhook] Invalid signature - rejecting forged request')
-        return new NextResponse('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {
-          headers: { 'Content-Type': 'text/xml' },
-          status: 403,
-        })
-      }
-    } else if (twilioAuthToken && !twilioSignature) {
-      // Auth token configured but no signature header - reject
+    if (!twilioSignature) {
       console.warn('[twilio-webhook] Missing X-Twilio-Signature header - rejecting')
-      return new NextResponse('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {
-        headers: { 'Content-Type': 'text/xml' },
-        status: 403,
-      })
-    } else {
-      // Fail-closed: reject if TWILIO_AUTH_TOKEN is not configured
-      console.error('[twilio-webhook] TWILIO_AUTH_TOKEN not configured - rejecting all webhooks')
-      return new NextResponse('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {
-        headers: { 'Content-Type': 'text/xml' },
-        status: 503,
-      })
-    }
-    const msg = parseInboundWebhook(params)
-
-    if (!msg.body && msg.numMedia === 0) {
-      // Empty message - acknowledge but don't store
-      return new NextResponse('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {
-        headers: { 'Content-Type': 'text/xml' },
-      })
+      return twiml(403)
     }
 
-    const db: any = createAdminClient()
+    const webhookUrl = getWebhookUrl('/api/webhooks/twilio')
+    if (
+      !validateTwilioSignature({
+        authToken: managedChannel.authToken,
+        url: webhookUrl,
+        params,
+        signature: twilioSignature,
+      })
+    ) {
+      console.warn('[twilio-webhook] Invalid signature - rejecting forged request')
+      return twiml(403)
+    }
 
-    // Try to match inbound phone to a client
-    // Strip formatting: +1 (555) 123-4567 → search for various formats
-    const digits = msg.from.replace(/\D/g, '')
-    const searchPatterns = [msg.from, `+${digits}`, digits]
+    if (statusCallback) {
+      const db: any = createServerClient({ admin: true })
+      const { data: event } = await db
+        .from('communication_events')
+        .select('id, thread_id, timestamp')
+        .eq('tenant_id', managedChannel.tenantId)
+        .eq('source', statusCallback.channel)
+        .eq('external_id', statusCallback.messageSid)
+        .eq('direction', 'outbound')
+        .maybeSingle()
 
-    let clientId: string | null = null
-    let tenantId: string | null = null
-
-    for (const pattern of searchPatterns) {
-      const { data: client } = await (db
-        .from('clients')
-        .select('id, tenant_id')
-        .ilike('phone', `%${pattern.slice(-10)}%`)
-        .limit(1)
-        .single() as any)
-
-      if (client) {
-        clientId = (client as any).id
-        tenantId = (client as any).tenant_id
-        break
+      if (!event?.id) {
+        console.warn(
+          '[twilio-webhook] Status callback did not match an outbound communication event:',
+          statusCallback.messageSid
+        )
+        return twiml()
       }
+
+      const deliveryState = await reconcileCommunicationDeliveryState({
+        tenantId: managedChannel.tenantId,
+        threadId: event.thread_id,
+        communicationEventId: event.id,
+        kind: 'provider_update',
+        providerName: 'twilio',
+        rawProviderStatus: statusCallback.providerStatus,
+        occurredAt: new Date().toISOString(),
+        attemptedAt: event.timestamp,
+        errorCode: statusCallback.errorCode,
+        errorMessage: statusCallback.errorMessage,
+      })
+
+      await logCommunicationAction({
+        tenantId: managedChannel.tenantId,
+        communicationEventId: event.id,
+        threadId: event.thread_id || null,
+        action: 'provider_message_status_updated',
+        source: 'webhook',
+        previousState: {
+          provider: 'twilio',
+          provider_status: deliveryState.previousProviderStatus,
+          delivery_status: deliveryState.previousDeliveryStatus,
+        },
+        newState: {
+          provider: 'twilio',
+          provider_status: deliveryState.nextProviderStatus,
+          delivery_status: deliveryState.nextDeliveryStatus,
+          raw_provider_status: statusCallback.rawProviderStatus,
+          external_id: statusCallback.messageSid,
+          managed_channel_address: statusCallback.managedAddress,
+          recipient_address: statusCallback.recipientAddress,
+          error_code: statusCallback.errorCode,
+          error_message: statusCallback.errorMessage,
+        },
+      })
+
+      return twiml()
     }
 
-    // Store the message (even if we can't match a client - it'll show as unlinked)
-    const { error: insertError } = await (db as any).from('messages').insert({
-      tenant_id: tenantId,
-      client_id: clientId,
-      direction: 'inbound',
-      channel: msg.channel,
-      body: msg.body,
-      status: 'received',
-      metadata: {
-        twilio_sid: msg.messageSid,
-        from_phone: msg.from,
-        media_count: msg.numMedia,
-        media_urls: msg.mediaUrls,
+    const rawContent = buildInboundContent({
+      body: msg!.body,
+      channel: msg!.channel,
+      numMedia: msg!.numMedia,
+    })
+
+    const result = await ingestManagedInboundCommunication({
+      channel: msg!.channel,
+      toAddress: msg!.to,
+      senderIdentity: msg!.from,
+      rawContent,
+      timestamp: new Date().toISOString(),
+      externalId: msg!.messageSid || null,
+      providerName: 'twilio',
+      legacyMessage: {
+        enabled: true,
+        body: rawContent,
       },
     })
 
-    if (insertError) {
-      console.error('[twilio-webhook] Failed to store inbound message:', insertError.message)
-      try {
-        const { recordSideEffectFailure } = await import('@/lib/monitoring/non-blocking')
-        await recordSideEffectFailure({
-          source: 'twilio-webhook',
-          operation: 'insert_message',
-          severity: 'critical',
-          entityType: 'message',
-          tenantId,
-          errorMessage: insertError.message,
-          context: { from: msg.from, twilio_sid: msg.messageSid },
-        })
-      } catch {
-        // Already logged above
-      }
-      // Return 500 so Twilio retries delivery rather than silently dropping the message
-      return new NextResponse('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {
-        headers: { 'Content-Type': 'text/xml' },
-        status: 500,
-      })
+    if (!result.routed) {
+      console.warn('[twilio-webhook] Message was accepted but not routed:', result.reason)
     }
 
-    // Mid-service alert: if chef has an in_progress event today, surface via Remy (non-blocking)
-    if (clientId && tenantId && !insertError) {
-      try {
-        const _twt = new Date()
-        const today = `${_twt.getFullYear()}-${String(_twt.getMonth() + 1).padStart(2, '0')}-${String(_twt.getDate()).padStart(2, '0')}`
-        const { data: activeEvent } = await (db as any)
-          .from('events')
-          .select('id, occasion')
-          .eq('tenant_id', tenantId)
-          .eq('status', 'in_progress')
-          .eq('event_date', today)
-          .limit(1)
-          .single()
-
-        if (activeEvent) {
-          const { data: clientRow } = await (db as any)
-            .from('clients')
-            .select('full_name')
-            .eq('id', clientId)
-            .single()
-
-          const clientName = clientRow?.full_name ?? 'A client'
-          const raw = (msg.body ?? '').trim()
-          const excerpt = raw.length > 120 ? raw.slice(0, 117) + '...' : raw
-
-          await (db as any).from('remy_alerts').insert({
-            tenant_id: tenantId,
-            alert_type: 'mid_service_message',
-            entity_type: 'event',
-            entity_id: activeEvent.id,
-            title: `Message from ${clientName} during service`,
-            body: excerpt
-              ? `"${excerpt}" - Queued for after service. Check /inbox when done.`
-              : 'New inbound message while you are in service. Review inbox after service.',
-            priority: 'high',
-          })
-        }
-      } catch {
-        // Non-blocking - do not interrupt the Twilio response
-      }
-    }
-
-    // Twilio expects TwiML response
-    return new NextResponse('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {
-      headers: { 'Content-Type': 'text/xml' },
-    })
+    return twiml()
   } catch (err) {
     console.error('[twilio-webhook] Error processing inbound message:', err)
-    // Return 500 so Twilio retries - a 200 here would silently drop the message
-    return new NextResponse('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {
-      headers: { 'Content-Type': 'text/xml' },
-      status: 500,
-    })
+    return twiml(500)
   }
 }

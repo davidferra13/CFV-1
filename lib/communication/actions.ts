@@ -7,10 +7,16 @@ import { createInquiry } from '@/lib/inquiries/actions'
 import { addClientNote } from '@/lib/notes/actions'
 import { isTakeAChefEmail, parseTakeAChefEmail } from '@/lib/gmail/take-a-chef-parser'
 import { isYhangryEmail, parseYhangryEmail } from '@/lib/gmail/yhangry-parser'
-import { ingestCommunicationEvent, seedDefaultCommunicationRules } from './pipeline'
+import {
+  ingestCommunicationEvent,
+  logCommunicationAction as logAction,
+  seedDefaultCommunicationRules,
+} from './pipeline'
+import { reconcileCommunicationDeliveryState } from './delivery-reconciliation'
 import { recordSenderAction } from '@/lib/gmail/sender-reputation'
 import type {
   CommunicationClassificationRule,
+  CommunicationDeliveryStatus,
   CommunicationInboxItem,
   CommunicationInboxStats,
   CommunicationTab,
@@ -62,29 +68,6 @@ function parseSenderIdentity(senderIdentity: string) {
     .trim()
   const clientName = stripped || email?.split('@')[0] || 'Unknown client'
   return { clientName, email }
-}
-
-async function logAction(input: {
-  tenantId: string
-  communicationEventId?: string | null
-  threadId?: string | null
-  actorId?: string | null
-  action: string
-  source: 'manual' | 'webhook' | 'automation' | 'import'
-  previousState: Record<string, unknown>
-  newState: Record<string, unknown>
-}) {
-  const db: any = createServerClient({ admin: true })
-  await db.from('communication_action_log' as any).insert({
-    tenant_id: input.tenantId,
-    communication_event_id: input.communicationEventId || null,
-    thread_id: input.threadId || null,
-    actor_id: input.actorId || null,
-    action: input.action,
-    source: input.source,
-    previous_state: input.previousState,
-    new_state: input.newState,
-  })
 }
 
 export async function getCommunicationInbox(
@@ -934,6 +917,13 @@ export type ThreadDetail = {
     client_id: string | null
     client_name: string | null
     client_email: string | null
+    latest_outbound_event_id: string | null
+    latest_outbound_attempted_at: string | null
+    latest_outbound_delivery_status: CommunicationDeliveryStatus | null
+    latest_outbound_provider_status: string | null
+    latest_outbound_status_updated_at: string | null
+    latest_outbound_error_code: string | null
+    latest_outbound_error_message: string | null
   }
   events: Array<{
     id: string
@@ -942,6 +932,19 @@ export type ThreadDetail = {
     source: string
     sender_identity: string
     raw_content: string
+    external_id: string | null
+    external_thread_key: string | null
+    provider_name: string | null
+    managed_channel_address: string | null
+    recipient_address: string | null
+    provider_delivery_status: CommunicationDeliveryStatus | null
+    provider_status: string | null
+    provider_status_updated_at: string | null
+    provider_delivered_at: string | null
+    provider_read_at: string | null
+    provider_failed_at: string | null
+    provider_error_code: string | null
+    provider_error_message: string | null
     linked_entity_type: 'inquiry' | 'event' | null
     linked_entity_id: string | null
     status: string
@@ -966,7 +969,9 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
 
   const { data: thread, error: threadError } = await db
     .from('conversation_threads' as any)
-    .select('id, state, snoozed_until, is_starred, last_activity_at, client_id')
+    .select(
+      'id, state, snoozed_until, is_starred, last_activity_at, client_id, latest_outbound_event_id, latest_outbound_attempted_at, latest_outbound_delivery_status, latest_outbound_provider_status, latest_outbound_status_updated_at, latest_outbound_error_code, latest_outbound_error_message'
+    )
     .eq('id', threadId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -995,7 +1000,7 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
   const { data: events, error: eventsError } = await db
     .from('communication_events' as any)
     .select(
-      'id, timestamp, direction, source, sender_identity, raw_content, linked_entity_type, linked_entity_id, status'
+      'id, timestamp, direction, source, sender_identity, raw_content, external_id, external_thread_key, provider_name, managed_channel_address, recipient_address, provider_delivery_status, provider_status, provider_status_updated_at, provider_delivered_at, provider_read_at, provider_failed_at, provider_error_code, provider_error_message, linked_entity_type, linked_entity_id, status'
     )
     .eq('thread_id', threadId)
     .eq('tenant_id', user.tenantId!)
@@ -1109,7 +1114,7 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
   // 1. Communication action log entries for this thread
   const { data: actionLogs } = await db
     .from('communication_action_log' as any)
-    .select('id, action, source, created_at, new_state')
+    .select('id, action, source, created_at, communication_event_id, new_state')
     .eq('tenant_id', user.tenantId!)
     .eq('thread_id', threadId)
     .order('created_at', { ascending: true })
@@ -1130,14 +1135,17 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
     internal_note_added: 'Note added',
     suggested_links_generated: 'Suggested links found',
     message_logged_to_thread: 'Message logged',
+    reply_send_failed: 'Reply send failed',
+    provider_message_status_updated: 'Provider status updated',
     bulk_unassign: 'Unassigned',
   }
 
   for (const log of actionLogs ?? []) {
-    // Skip ingested/classified - these are implicit from the messages themselves
+    // Skip ingested/classified/send-success - these are implicit from the messages themselves
     if (
       log.action === 'communication_event_ingested' ||
-      log.action === 'communication_classified'
+      log.action === 'communication_classified' ||
+      log.action === 'reply_sent_via_channel'
     ) {
       continue
     }
@@ -1149,7 +1157,17 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
       detail:
         log.action === 'follow_up_timer_created' && log.new_state?.due_at
           ? `Due: ${new Date(log.new_state.due_at as string).toLocaleString()}`
-          : null,
+          : log.action === 'reply_send_failed' && log.new_state?.error
+            ? String(log.new_state.error)
+            : log.action === 'provider_message_status_updated' && log.new_state?.provider_status
+              ? [
+                  String(log.new_state.provider_status),
+                  log.new_state?.error_code ? `code ${String(log.new_state.error_code)}` : null,
+                  log.new_state?.error_message ? String(log.new_state.error_message) : null,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')
+              : null,
     })
   }
 
@@ -1203,6 +1221,13 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
       client_id: thread.client_id ?? null,
       client_name,
       client_email,
+      latest_outbound_event_id: thread.latest_outbound_event_id ?? null,
+      latest_outbound_attempted_at: thread.latest_outbound_attempted_at ?? null,
+      latest_outbound_delivery_status: thread.latest_outbound_delivery_status ?? null,
+      latest_outbound_provider_status: thread.latest_outbound_provider_status ?? null,
+      latest_outbound_status_updated_at: thread.latest_outbound_status_updated_at ?? null,
+      latest_outbound_error_code: thread.latest_outbound_error_code ?? null,
+      latest_outbound_error_message: thread.latest_outbound_error_message ?? null,
     },
     events: events ?? [],
     systemEvents,
@@ -1432,6 +1457,43 @@ export async function getRawCommunicationFeed(limit = 100): Promise<
   return rows
 }
 
+function extractEmailSubjectLine(rawContent: string, senderIdentity: string) {
+  const normalized = String(rawContent || '')
+    .replace(/\r\n/g, '\n')
+    .trim()
+  if (!normalized) return `Re: ${senderIdentity}`
+
+  const splitIndex = normalized.indexOf('\n\n')
+  const firstLine =
+    splitIndex > 0
+      ? normalized.slice(0, splitIndex).trim()
+      : normalized
+          .split('\n')
+          .find((line) => line.trim().length > 0)
+          ?.trim() || ''
+
+  return firstLine ? `Re: ${firstLine}` : `Re: ${senderIdentity}`
+}
+
+function extractEmailThreadIdFromKey(externalThreadKey: string | null | undefined) {
+  const value = String(externalThreadKey || '')
+  if (!value.startsWith('email:')) return null
+
+  const threadId = value.slice('email:'.length).trim()
+  if (!threadId) return null
+
+  if (
+    threadId.startsWith('client:') ||
+    threadId.startsWith('email:') ||
+    threadId.startsWith('phone:') ||
+    threadId.startsWith('sender:')
+  ) {
+    return null
+  }
+
+  return threadId
+}
+
 // ─── Send Reply via Channel ───────────────────────────────────
 
 export async function sendReplyViaChannel(input: {
@@ -1443,28 +1505,50 @@ export async function sendReplyViaChannel(input: {
   const user = await requireChef()
   const db: any = createServerClient({ admin: true })
 
-  const { threadId, content, channel, recipientAddress } = input
+  const { threadId, channel, recipientAddress } = input
+  const content = input.content.trim()
+  if (!content) throw new Error('Reply content is required')
 
   // Verify thread belongs to this chef
   const { data: thread, error: threadErr } = await db
     .from('conversation_threads' as any)
-    .select('id, client_id')
+    .select('id, client_id, external_thread_key')
     .eq('id', threadId)
     .eq('tenant_id', user.tenantId!)
     .single()
 
   if (threadErr || !thread) throw new Error('Thread not found')
 
-  // Validate recipient matches thread's known contact
-  const { data: latestInboundForValidation } = await db
+  const { data: threadEvents } = await db
     .from('communication_events' as any)
-    .select('sender_identity')
+    .select(
+      'sender_identity, direction, raw_content, linked_entity_type, linked_entity_id, timestamp'
+    )
     .eq('thread_id', threadId)
     .eq('tenant_id', user.tenantId!)
-    .eq('direction', 'inbound')
     .order('timestamp', { ascending: false })
-    .limit(1)
-    .maybeSingle()
+    .limit(12)
+
+  const latestInboundForValidation = (threadEvents || []).find(
+    (event: any) => event.direction === 'inbound'
+  ) as
+    | {
+        sender_identity: string
+        raw_content: string
+        linked_entity_type: 'inquiry' | 'event' | null
+        linked_entity_id: string | null
+        timestamp: string
+      }
+    | undefined
+
+  const latestLinkedContext = (threadEvents || []).find(
+    (event: any) => event.linked_entity_type && event.linked_entity_id
+  ) as
+    | {
+        linked_entity_type: 'inquiry' | 'event'
+        linked_entity_id: string
+      }
+    | undefined
 
   if (latestInboundForValidation) {
     const senderIdentity = String((latestInboundForValidation as any).sender_identity || '')
@@ -1490,66 +1574,223 @@ export async function sendReplyViaChannel(input: {
   }
 
   const now = new Date().toISOString()
+  let providerName = channel === 'email' ? 'gmail' : 'twilio'
+  let managedChannelAddress: string | null = null
+  let externalId: string | null = null
+  let externalThreadKey: string | null = null
+  let senderIdentity = 'Chef'
+  let subject: string | null = null
+  let mailboxId: string | null = null
+  let providerStatus: string | null = null
+  const recordReplySendFailure = async (input: {
+    provider: string
+    managedChannelAddress?: string | null
+    errorMessage: string
+    errorCode?: string | null
+  }) => {
+    const deliveryState = await reconcileCommunicationDeliveryState({
+      tenantId: user.tenantId!,
+      threadId,
+      kind: 'send_failure',
+      providerName: input.provider,
+      occurredAt: now,
+      attemptedAt: now,
+      errorCode: input.errorCode || null,
+      errorMessage: input.errorMessage,
+    })
+
+    await logAction({
+      tenantId: user.tenantId!,
+      threadId,
+      actorId: user.id,
+      action: 'reply_send_failed',
+      source: 'manual',
+      previousState: {
+        provider: input.provider,
+        provider_status: deliveryState.previousProviderStatus,
+        delivery_status: deliveryState.previousDeliveryStatus,
+      },
+      newState: {
+        channel,
+        recipient: recipientAddress,
+        provider: input.provider,
+        managed_channel_address: input.managedChannelAddress || null,
+        provider_status: deliveryState.nextProviderStatus,
+        delivery_status: deliveryState.nextDeliveryStatus,
+        error_code: input.errorCode || null,
+        error: input.errorMessage,
+      },
+    })
+  }
 
   if (channel === 'email') {
-    // Send via Gmail API
+    const { getManagedOutboundChannel } = await import('./managed-channels')
     const { getGoogleAccessToken } = await import('@/lib/google/auth')
     const { sendEmail } = await import('@/lib/gmail/client')
 
-    const token = await getGoogleAccessToken(user.tenantId!)
+    const managedChannel = await getManagedOutboundChannel({
+      tenantId: user.tenantId!,
+      channel: 'email',
+    })
 
-    // Get thread context for email subject
-    const { data: lastInbound } = await db
-      .from('communication_events' as any)
-      .select('raw_content, sender_identity')
-      .eq('thread_id', threadId)
-      .eq('direction', 'inbound')
-      .order('timestamp', { ascending: false })
-      .limit(1)
-      .maybeSingle()
+    if (!managedChannel) {
+      throw new Error('No managed email channel is configured for this tenant')
+    }
 
-    const subject = lastInbound
-      ? `Re: ${(lastInbound as any).sender_identity}`
+    const token = await getGoogleAccessToken(user.entityId!, {
+      mailboxId: managedChannel.mailboxId || null,
+    })
+    const gmailThreadId = extractEmailThreadIdFromKey(thread.external_thread_key)
+
+    subject = latestInboundForValidation
+      ? extractEmailSubjectLine(
+          latestInboundForValidation.raw_content,
+          latestInboundForValidation.sender_identity
+        )
       : 'Message from your chef'
 
-    await sendEmail(token, {
+    let sendResult: { messageId: string; threadId: string }
+    try {
+      sendResult = await sendEmail(token, {
+        to: recipientAddress,
+        subject,
+        body: content,
+        ...(gmailThreadId ? { threadId: gmailThreadId } : {}),
+      })
+    } catch (error) {
+      await recordReplySendFailure({
+        provider: 'gmail',
+        managedChannelAddress: managedChannel.managedAddress,
+        errorMessage: error instanceof Error ? error.message : 'Unknown Gmail send failure',
+      })
+
+      throw error
+    }
+
+    externalId = sendResult.messageId
+    externalThreadKey = sendResult.threadId || gmailThreadId || null
+    managedChannelAddress = managedChannel.managedAddress
+    mailboxId = managedChannel.mailboxId || null
+    senderIdentity = managedChannel.managedAddress
+    providerName = managedChannel.provider === 'google_mailbox' ? 'gmail' : 'google_connection'
+  } else if (channel === 'sms') {
+    const { sendManagedTwilioMessage } = await import('./managed-channels')
+    const sendResult = await sendManagedTwilioMessage({
+      tenantId: user.tenantId!,
+      channel: 'sms',
       to: recipientAddress,
-      subject,
       body: content,
     })
-  } else if (channel === 'sms') {
-    const { sendSMS } = await import('@/lib/sms/twilio-client')
-    await sendSMS(recipientAddress, content)
+
+    if (!sendResult.success) {
+      await recordReplySendFailure({
+        provider: sendResult.provider,
+        managedChannelAddress: sendResult.managedAddress || null,
+        errorMessage: sendResult.error || 'Unknown Twilio send failure',
+      })
+
+      throw new Error(sendResult.error || 'Failed to send SMS reply')
+    }
+
+    externalId = sendResult.providerMessageId || null
+    managedChannelAddress = sendResult.managedAddress || null
+    providerStatus = sendResult.providerStatus || null
+    senderIdentity = sendResult.managedAddress || 'Chef'
   } else if (channel === 'whatsapp') {
-    const { sendWhatsApp } = await import('@/lib/sms/twilio-client')
-    await sendWhatsApp(recipientAddress, content)
+    const { sendManagedTwilioMessage } = await import('./managed-channels')
+    const sendResult = await sendManagedTwilioMessage({
+      tenantId: user.tenantId!,
+      channel: 'whatsapp',
+      to: recipientAddress,
+      body: content,
+    })
+
+    if (!sendResult.success) {
+      await recordReplySendFailure({
+        provider: sendResult.provider,
+        managedChannelAddress: sendResult.managedAddress || null,
+        errorMessage: sendResult.error || 'Unknown Twilio send failure',
+      })
+
+      throw new Error(sendResult.error || 'Failed to send WhatsApp reply')
+    }
+
+    externalId = sendResult.providerMessageId || null
+    managedChannelAddress = sendResult.managedAddress || null
+    providerStatus = sendResult.providerStatus || null
+    senderIdentity = sendResult.managedAddress || 'Chef'
   }
 
-  // Log the sent message as an outbound event
-  await db.from('communication_events' as any).insert({
-    tenant_id: user.tenantId!,
-    thread_id: threadId,
+  const { ingestCommunicationEvent } = await import('./pipeline')
+  const outboundEvent = await ingestCommunicationEvent({
+    tenantId: user.tenantId!,
     source: channel === 'email' ? 'email' : channel,
+    externalId,
+    externalThreadKey,
+    threadId,
     timestamp: now,
-    sender_identity: 'Chef',
-    raw_content: content,
-    normalized_content: content.toLowerCase().replace(/\s+/g, ' ').trim(),
+    senderIdentity,
+    rawContent: channel === 'email' && subject ? `${subject}\n\n${content}` : content,
     direction: 'outbound',
+    resolvedClientId: thread.client_id ?? null,
+    linkedEntityType: latestLinkedContext?.linked_entity_type ?? null,
+    linkedEntityId: latestLinkedContext?.linked_entity_id ?? null,
+    ingestionSource: 'manual',
+    actorId: user.id,
+    providerName,
+    managedChannelAddress,
+    recipientAddress,
   })
 
-  await db
-    .from('conversation_threads' as any)
-    .update({ last_activity_at: now })
-    .eq('id', threadId)
+  const { logCommunicationMessageCompat } = await import('./messages-compat')
+  await logCommunicationMessageCompat({
+    tenantId: user.tenantId!,
+    threadId,
+    direction: 'outbound',
+    channel,
+    subject,
+    body: content,
+    timestamp: now,
+    clientId: thread.client_id ?? null,
+    linkedEntityType: latestLinkedContext?.linked_entity_type ?? null,
+    linkedEntityId: latestLinkedContext?.linked_entity_id ?? null,
+    externalId,
+    externalThreadKey,
+    recipientAddress,
+    mailboxId,
+  })
+
+  const deliveryState = await reconcileCommunicationDeliveryState({
+    tenantId: user.tenantId!,
+    threadId,
+    communicationEventId: outboundEvent.id,
+    kind: 'send_success',
+    providerName,
+    rawProviderStatus: providerStatus,
+    occurredAt: now,
+    attemptedAt: outboundEvent.timestamp,
+  })
 
   await logAction({
     tenantId: user.tenantId!,
+    communicationEventId: outboundEvent.id,
     threadId,
     actorId: user.id,
     action: 'reply_sent_via_channel',
     source: 'manual',
     previousState: {},
-    newState: { channel, recipient: recipientAddress },
+    newState: {
+      channel,
+      recipient: recipientAddress,
+      provider: providerName,
+      provider_status: deliveryState.nextProviderStatus,
+      delivery_status: deliveryState.nextDeliveryStatus,
+      managed_channel_address: managedChannelAddress,
+      external_id: externalId,
+      external_thread_key: externalThreadKey,
+      linked_entity_type: latestLinkedContext?.linked_entity_type ?? null,
+      linked_entity_id: latestLinkedContext?.linked_entity_id ?? null,
+    },
   })
 
   revalidatePath(`/inbox/triage/${threadId}`)

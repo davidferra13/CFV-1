@@ -6,21 +6,45 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { requireFocusAccess } from '@/lib/billing/require-focus-access'
-import { getTasksByDate, getActiveStaff, getActiveStations } from '@/lib/tasks/actions'
+import {
+  getTasksByDate,
+  getActiveStaff,
+  getActiveStations,
+} from '@/lib/tasks/actions'
 import { getCarriedOverTasks } from '@/lib/tasks/carry-forward'
 import { generateRecurringTasks } from '@/lib/tasks/recurring-engine'
+import {
+  readTaskCreateDraftFromSearchParams,
+  readTaskCreateErrorFromSearchParams,
+} from '@/lib/tasks/create-form-state'
 import { Button } from '@/components/ui/button'
+import { TaskCreatePanel } from '@/components/tasks/task-create-panel'
 import { TaskPageClient } from '@/components/tasks/task-page-client'
 
 export const metadata: Metadata = { title: 'Tasks' }
 
-export default async function TasksPage({ searchParams }: { searchParams: { date?: string } }) {
-  const user = await requireChef()
+function getSingleSearchParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value
+}
+
+type TasksPageSearchParams = Record<string, string | string[] | undefined>
+
+export default async function TasksPage({
+  searchParams,
+}: {
+  searchParams: TasksPageSearchParams
+}) {
+  await requireChef()
   await requireFocusAccess()
 
   const _tkp = new Date()
   const today = `${_tkp.getFullYear()}-${String(_tkp.getMonth() + 1).padStart(2, '0')}-${String(_tkp.getDate()).padStart(2, '0')}`
-  const selectedDate = searchParams.date ?? today
+  const selectedDate = getSingleSearchParam(searchParams.date) ?? today
+  const showCreate = getSingleSearchParam(searchParams.new) === '1'
+  const createDraft = showCreate
+    ? readTaskCreateDraftFromSearchParams(searchParams, selectedDate)
+    : null
+  const createError = showCreate ? readTaskCreateErrorFromSearchParams(searchParams) : null
 
   // Generate any recurring tasks for this date (idempotent)
   try {
@@ -54,6 +78,17 @@ export default async function TasksPage({ searchParams }: { searchParams: { date
         </div>
       </div>
 
+      {showCreate ? (
+        <TaskCreatePanel
+          staff={staff}
+          stations={stations}
+          defaultDate={selectedDate}
+          cancelHref={`/tasks?date=${selectedDate}`}
+          draft={createDraft!}
+          errorMessage={createError}
+        />
+      ) : null}
+
       <TaskPageClient
         grouped={taskData.grouped}
         unassigned={taskData.unassigned}
@@ -62,6 +97,8 @@ export default async function TasksPage({ searchParams }: { searchParams: { date
         stations={stations}
         selectedDate={selectedDate}
         today={today}
+        showCreate={showCreate}
+        createHref={`/tasks?date=${selectedDate}&new=1`}
       />
     </div>
   )

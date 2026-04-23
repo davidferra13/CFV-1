@@ -58,7 +58,7 @@ export function ChefBackgroundSettings({
         portal_background_image_url: nextBackgroundImageUrl,
       })
 
-      setSuccess('Chef background saved.')
+      setSuccess('Public profile background saved.')
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save background')
@@ -70,11 +70,15 @@ export function ChefBackgroundSettings({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Chef App Background</CardTitle>
+        <CardTitle>Public Profile Background</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {error && <Alert variant="error">{error}</Alert>}
         {success && <Alert variant="success">{success}</Alert>}
+        <p className="text-sm text-stone-500">
+          Applies to your public profile and client-facing preview. The internal chef workspace keeps
+          a stable shell background.
+        </p>
 
         <div>
           <label className="block text-sm font-medium text-stone-300 mb-1">Background Color</label>
@@ -84,7 +88,9 @@ export function ChefBackgroundSettings({
             onChange={(e) => setBackgroundColor(e.target.value)}
             className="h-10 w-full rounded-md border border-stone-600 bg-stone-900 px-2"
           />
-          <p className="text-xs text-stone-500 mt-1">Used as fallback when no image is set.</p>
+          <p className="mt-1 text-xs text-stone-500">
+            Used as the public page fallback when no image is set.
+          </p>
         </div>
 
         <div>
@@ -108,7 +114,7 @@ export function ChefBackgroundSettings({
         </div>
 
         <div>
-          <p className="text-xs text-stone-500 mb-2">Preview</p>
+          <p className="text-xs text-stone-500 mb-2">Public profile preview</p>
           <div
             className="h-28 w-full rounded-md border border-stone-700 bg-cover bg-center"
             style={{
@@ -123,7 +129,7 @@ export function ChefBackgroundSettings({
 
         <div className="flex justify-end">
           <Button type="button" onClick={handleSave} disabled={saving}>
-            {saving ? 'Saving...' : 'Save Background'}
+            {saving ? 'Saving...' : 'Save Public Profile Background'}
           </Button>
         </div>
       </CardContent>

@@ -3,67 +3,461 @@
  * Simple HTTP server for PC to pull price data and view status.
  */
 
-import { createServer } from 'http';
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { getDb, getStats, DB_PATH, upsertPrice } from '../lib/db.mjs';
-import { smartLookup, batchLookup, COMMON_ALIASES } from '../lib/smart-lookup.mjs';
-import { normalizeByRules, isFoodItem, loadCachedMappings, saveMapping } from '../lib/normalize-rules.mjs';
+import { createServer, request as httpRequest } from 'http'
+import { readFileSync } from 'fs'
+import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
+import {
+  getDb,
+  getStats,
+  DB_PATH,
+  upsertPrice,
+  listRuntimeSlices,
+  getRuntimeSlice,
+  upsertRuntimeSliceBundle,
+  refreshSliceGate,
+  refreshAllSliceGates,
+  getRuntimeQueueOverview,
+  listAgentTasks,
+  enqueueAgentTask,
+  recoverExpiredAgentTasks,
+  listAgentRuns,
+  listSourceIncidents,
+  listPriceInferenceCacheEntries,
+  getPriceInferenceAuditOverview,
+} from '../lib/db.mjs'
+import { smartLookup, batchLookup, COMMON_ALIASES } from '../lib/smart-lookup.mjs'
+import {
+  normalizeByRules,
+  isFoodItem,
+  loadCachedMappings,
+  saveMapping,
+} from '../lib/normalize-rules.mjs'
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const PORT = 8081;
-
-function jsonResponse(res, data, status = 200) {
-  res.writeHead(status, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-  res.end(JSON.stringify(data, null, 2));
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const PORT = Number(process.env.OPENCLAW_PORT || 8081)
+const OLLAMA_URL = process.env.OPENCLAW_OLLAMA_URL || 'http://127.0.0.1:11434'
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 }
 
-const server = createServer((req, res) => {
-  const url = new URL(req.url, `http://localhost:${PORT}`);
-  const path = url.pathname;
+function withCors(headers = {}) {
+  return { ...CORS_HEADERS, ...headers }
+}
+
+function jsonResponse(res, data, status = 200) {
+  res.writeHead(status, withCors({ 'Content-Type': 'application/json' }))
+  res.end(JSON.stringify(data, null, 2))
+}
+
+function emptyResponse(res, status = 204, headers = {}) {
+  res.writeHead(status, withCors(headers))
+  res.end()
+}
+
+function requireGovernanceAuth(req, res) {
+  const token = process.env.OPENCLAW_API_TOKEN
+  if (!token) {
+    jsonResponse(res, { error: 'Governance API not configured' }, 503)
+    return false
+  }
+
+  if (req.headers.authorization !== `Bearer ${token}`) {
+    jsonResponse(res, { error: 'Unauthorized' }, 401)
+    return false
+  }
+
+  return true
+}
+
+function readRequestBody(req, maxBytes = 5 * 1024 * 1024) {
+  return new Promise((resolve, reject) => {
+    const chunks = []
+    let totalBytes = 0
+
+    req.on('data', (chunk) => {
+      totalBytes += chunk.length
+      if (totalBytes > maxBytes) {
+        reject(new Error('Request body too large'))
+        req.destroy()
+        return
+      }
+      chunks.push(chunk)
+    })
+
+    req.on('end', () => resolve(Buffer.concat(chunks)))
+    req.on('error', reject)
+  })
+}
+
+async function proxyOllamaRequest(req, res, upstreamPath) {
+  const body = req.method === 'POST' ? await readRequestBody(req) : undefined
+  let shouldStreamResponse = req.method === 'POST'
+
+  if (body && req.headers['content-type']?.includes('application/json')) {
+    try {
+      const parsed = JSON.parse(body.toString('utf8'))
+      shouldStreamResponse = parsed?.stream !== false
+    } catch {
+      shouldStreamResponse = req.method === 'POST'
+    }
+  }
+  const upstreamUrl = new URL(`${OLLAMA_URL}${upstreamPath}`)
+
+  await new Promise((resolve, reject) => {
+    const upstreamReq = httpRequest(
+      {
+        protocol: upstreamUrl.protocol,
+        hostname: upstreamUrl.hostname,
+        port: upstreamUrl.port,
+        path: `${upstreamUrl.pathname}${upstreamUrl.search}`,
+        method: req.method,
+        headers: {
+          ...(req.headers['content-type']
+            ? { 'Content-Type': req.headers['content-type'] }
+            : {}),
+          ...(body ? { 'Content-Length': body.length } : {}),
+        },
+      },
+      (upstreamRes) => {
+        const responseHeaders = withCors({
+          'Content-Type': upstreamRes.headers['content-type'] || 'application/json',
+          'Cache-Control': upstreamRes.headers['cache-control'] || 'no-store',
+        })
+        const contentLength = upstreamRes.headers['content-length']
+        if (contentLength) responseHeaders['Content-Length'] = contentLength
+
+        res.writeHead(upstreamRes.statusCode || 502, responseHeaders)
+
+        if (req.method === 'GET' || !shouldStreamResponse) {
+          const chunks = []
+          upstreamRes.on('data', (chunk) => chunks.push(chunk))
+          upstreamRes.on('end', () => {
+            res.end(Buffer.concat(chunks))
+            resolve()
+          })
+          upstreamRes.on('error', reject)
+          return
+        }
+
+        upstreamRes.on('data', (chunk) => res.write(chunk))
+        upstreamRes.on('end', () => {
+          res.end()
+          resolve()
+        })
+        upstreamRes.on('error', reject)
+      }
+    )
+
+    upstreamReq.on('error', reject)
+    upstreamReq.setTimeout(300000, () => {
+      upstreamReq.destroy(new Error('Ollama relay timed out'))
+    })
+
+    if (body) upstreamReq.write(body)
+    upstreamReq.end()
+  })
+}
+
+const server = createServer(async (req, res) => {
+  const url = new URL(req.url, `http://localhost:${PORT}`)
+  const path = url.pathname
 
   try {
-    const db = getDb();
+    if (req.method === 'OPTIONS') {
+      return emptyResponse(res)
+    }
 
-    // Health check
+    // Health check must not depend on SQLite being available.
     if (path === '/health') {
-      return jsonResponse(res, { status: 'ok', timestamp: new Date().toISOString() });
+      return jsonResponse(res, { status: 'ok', timestamp: new Date().toISOString() })
+    }
+
+    if (path === '/api/ollama/tags') {
+      if (req.method !== 'GET') return jsonResponse(res, { error: 'Method not allowed' }, 405)
+      await proxyOllamaRequest(req, res, '/api/tags')
+      return
+    }
+
+    if (path === '/api/ollama/version') {
+      if (req.method !== 'GET') return jsonResponse(res, { error: 'Method not allowed' }, 405)
+      await proxyOllamaRequest(req, res, '/api/version')
+      return
+    }
+
+    if (path === '/api/ollama/chat') {
+      if (req.method !== 'POST') return jsonResponse(res, { error: 'Method not allowed' }, 405)
+      await proxyOllamaRequest(req, res, '/api/chat')
+      return
+    }
+
+    if (path === '/api/ollama/generate') {
+      if (req.method !== 'POST') return jsonResponse(res, { error: 'Method not allowed' }, 405)
+      await proxyOllamaRequest(req, res, '/api/generate')
+      return
+    }
+
+    const db = getDb()
+
+    // Runtime slice registry + KPI gate (internal-only, token required)
+    if (path === '/api/runtime/slices') {
+      if (!requireGovernanceAuth(req, res)) return
+
+      if (req.method === 'GET') {
+        const slices = listRuntimeSlices(db)
+        return jsonResponse(res, {
+          total: slices.length,
+          ready: slices.filter((slice) => slice.gateStatus === 'ready').length,
+          blocked: slices.filter((slice) => slice.gateStatus === 'blocked').length,
+          slices,
+        })
+      }
+
+      if (req.method === 'POST') {
+        try {
+          const rawBody = await readRequestBody(req)
+          const payload = rawBody.length
+            ? JSON.parse(rawBody.toString('utf8'))
+            : {}
+          const slice = payload.slice || payload
+          const kpis = Array.isArray(payload.kpis) ? payload.kpis : []
+          const registered = upsertRuntimeSliceBundle(db, slice, kpis)
+          const refreshed = refreshSliceGate(db, registered.sliceKey)
+          return jsonResponse(res, {
+            slice: getRuntimeSlice(db, registered.sliceKey),
+            gate: refreshed,
+          })
+        } catch (err) {
+          return jsonResponse(
+            res,
+            { error: err instanceof Error ? err.message : 'Invalid runtime slice payload' },
+            400
+          )
+        }
+      }
+
+      return jsonResponse(res, { error: 'Method not allowed' }, 405)
+    }
+
+    if (path === '/api/runtime/slices/evaluate') {
+      if (!requireGovernanceAuth(req, res)) return
+      if (req.method !== 'POST') {
+        return jsonResponse(res, { error: 'Method not allowed' }, 405)
+      }
+
+      const results = refreshAllSliceGates(db)
+      return jsonResponse(res, {
+        total: results.length,
+        ready: results.filter((gate) => gate.status === 'ready').length,
+        blocked: results.filter((gate) => gate.status === 'blocked').length,
+        gates: results,
+      })
+    }
+
+    if (path.startsWith('/api/runtime/slices/')) {
+      if (!requireGovernanceAuth(req, res)) return
+
+      const suffix = path.replace('/api/runtime/slices/', '')
+
+      if (suffix.endsWith('/evaluate')) {
+        if (req.method !== 'POST') {
+          return jsonResponse(res, { error: 'Method not allowed' }, 405)
+        }
+
+        const sliceKey = decodeURIComponent(suffix.replace(/\/evaluate$/, ''))
+        const slice = getRuntimeSlice(db, sliceKey)
+        if (!slice) return jsonResponse(res, { error: 'Slice not found' }, 404)
+
+        const gate = refreshSliceGate(db, sliceKey)
+        return jsonResponse(res, {
+          slice: getRuntimeSlice(db, sliceKey),
+          gate,
+        })
+      }
+
+      if (req.method !== 'GET') {
+        return jsonResponse(res, { error: 'Method not allowed' }, 405)
+      }
+
+      const sliceKey = decodeURIComponent(suffix)
+      const slice = getRuntimeSlice(db, sliceKey)
+      if (!slice) return jsonResponse(res, { error: 'Slice not found' }, 404)
+      return jsonResponse(res, { slice })
+    }
+
+    if (path === '/api/runtime/overview') {
+      if (!requireGovernanceAuth(req, res)) return
+      if (req.method !== 'GET') {
+        return jsonResponse(res, { error: 'Method not allowed' }, 405)
+      }
+
+      return jsonResponse(res, {
+        overview: getRuntimeQueueOverview(db),
+      })
+    }
+
+    if (path === '/api/runtime/tasks') {
+      if (!requireGovernanceAuth(req, res)) return
+
+      if (req.method === 'GET') {
+        const tasks = listAgentTasks(db, {
+          status: url.searchParams.get('status') || undefined,
+          queueName: url.searchParams.get('queue') || undefined,
+          taskType: url.searchParams.get('taskType') || undefined,
+          sourceId: url.searchParams.get('sourceId') || undefined,
+          claimedByRunId: url.searchParams.get('runId') || undefined,
+          limit: url.searchParams.get('limit') || undefined,
+        })
+
+        return jsonResponse(res, {
+          total: tasks.length,
+          tasks,
+        })
+      }
+
+      if (req.method === 'POST') {
+        try {
+          const rawBody = await readRequestBody(req)
+          const payload = rawBody.length
+            ? JSON.parse(rawBody.toString('utf8'))
+            : {}
+          const result = enqueueAgentTask(db, payload.task || payload)
+
+          return jsonResponse(res, result)
+        } catch (err) {
+          return jsonResponse(
+            res,
+            { error: err instanceof Error ? err.message : 'Invalid runtime task payload' },
+            400
+          )
+        }
+      }
+
+      return jsonResponse(res, { error: 'Method not allowed' }, 405)
+    }
+
+    if (path === '/api/runtime/tasks/recover') {
+      if (!requireGovernanceAuth(req, res)) return
+      if (req.method !== 'POST') {
+        return jsonResponse(res, { error: 'Method not allowed' }, 405)
+      }
+
+      return jsonResponse(res, {
+        recovery: recoverExpiredAgentTasks(db),
+      })
+    }
+
+    if (path === '/api/runtime/runs') {
+      if (!requireGovernanceAuth(req, res)) return
+      if (req.method !== 'GET') {
+        return jsonResponse(res, { error: 'Method not allowed' }, 405)
+      }
+
+      const runs = listAgentRuns(db, {
+        agentType: url.searchParams.get('agentType') || undefined,
+        status: url.searchParams.get('status') || undefined,
+        queueName: url.searchParams.get('queue') || undefined,
+        limit: url.searchParams.get('limit') || undefined,
+      })
+
+      return jsonResponse(res, {
+        total: runs.length,
+        runs,
+      })
+    }
+
+    if (path === '/api/runtime/incidents') {
+      if (!requireGovernanceAuth(req, res)) return
+      if (req.method !== 'GET') {
+        return jsonResponse(res, { error: 'Method not allowed' }, 405)
+      }
+
+      const incidents = listSourceIncidents(db, {
+        sourceId: url.searchParams.get('sourceId') || undefined,
+        status: url.searchParams.get('status') || undefined,
+        severity: url.searchParams.get('severity') || undefined,
+        limit: url.searchParams.get('limit') || undefined,
+      })
+
+      return jsonResponse(res, {
+        total: incidents.length,
+        incidents,
+      })
+    }
+
+    if (path === '/api/runtime/inference') {
+      if (!requireGovernanceAuth(req, res)) return
+      if (req.method !== 'GET') {
+        return jsonResponse(res, { error: 'Method not allowed' }, 405)
+      }
+
+      const filters = {
+        cacheId: url.searchParams.get('cacheId') || undefined,
+        canonicalIngredientId: url.searchParams.get('canonicalIngredientId') || undefined,
+        geographyType: url.searchParams.get('geographyType') || undefined,
+        geographyKey: url.searchParams.get('geographyKey') || undefined,
+        pricingTier: url.searchParams.get('pricingTier') || undefined,
+        method: url.searchParams.get('method') || undefined,
+        state: url.searchParams.get('state') || 'active',
+        limit: url.searchParams.get('limit') || undefined,
+      }
+
+      const entries = listPriceInferenceCacheEntries(db, filters)
+      const summary = getPriceInferenceAuditOverview(db, {
+        cacheId: filters.cacheId,
+        canonicalIngredientId: filters.canonicalIngredientId,
+        geographyType: filters.geographyType,
+        geographyKey: filters.geographyKey,
+        pricingTier: filters.pricingTier,
+        method: filters.method,
+      })
+
+      return jsonResponse(res, {
+        state: filters.state,
+        total: entries.length,
+        summary,
+        entries,
+      })
     }
 
     // Database stats
     if (path === '/api/stats') {
-      const stats = getStats(db);
-      const lastScrape = db.prepare('SELECT MAX(last_scraped_at) as last FROM source_registry').get();
+      const stats = getStats(db)
+      const lastScrape = db
+        .prepare('SELECT MAX(last_scraped_at) as last FROM source_registry')
+        .get()
       return jsonResponse(res, {
         ...stats,
         lastScrapeAt: lastScrape?.last,
         dbPath: DB_PATH,
-        timestamp: new Date().toISOString()
-      });
+        timestamp: new Date().toISOString(),
+      })
     }
 
     // Download the SQLite database file (for PC sync)
     if (path === '/api/sync/database') {
       try {
-        const dbFile = readFileSync(DB_PATH);
+        const dbFile = readFileSync(DB_PATH)
         res.writeHead(200, {
+          ...withCors(),
           'Content-Type': 'application/octet-stream',
           'Content-Disposition': 'attachment; filename="prices.db"',
-          'Content-Length': dbFile.length
-        });
-        return res.end(dbFile);
+          'Content-Length': dbFile.length,
+        })
+        return res.end(dbFile)
       } catch (err) {
-        return jsonResponse(res, { error: 'Database file not found' }, 404);
+        return jsonResponse(res, { error: 'Database file not found' }, 404)
       }
     }
 
     // Get all current prices (JSON)
     if (path === '/api/prices') {
-      const tier = url.searchParams.get('tier'); // retail, wholesale, farm_direct
-      const ingredient = url.searchParams.get('ingredient');
-      const source = url.searchParams.get('source');
-      const limit = parseInt(url.searchParams.get('limit') || '500');
+      const tier = url.searchParams.get('tier') // retail, wholesale, farm_direct
+      const ingredient = url.searchParams.get('ingredient')
+      const source = url.searchParams.get('source')
+      const limit = parseInt(url.searchParams.get('limit') || '500')
 
       let query = `
         SELECT cp.*, ci.name as ingredient_name, ci.category, sr.name as source_name, sr.city, sr.state
@@ -71,32 +465,47 @@ const server = createServer((req, res) => {
         JOIN canonical_ingredients ci ON cp.canonical_ingredient_id = ci.ingredient_id
         JOIN source_registry sr ON cp.source_id = sr.source_id
         WHERE 1=1
-      `;
-      const params = [];
+      `
+      const params = []
 
-      if (tier) { query += ' AND cp.pricing_tier = ?'; params.push(tier); }
-      if (ingredient) { query += ' AND (ci.name LIKE ? OR cp.canonical_ingredient_id LIKE ?)'; params.push(`%${ingredient}%`, `%${ingredient}%`); }
-      if (source) { query += ' AND (sr.name LIKE ? OR cp.source_id LIKE ?)'; params.push(`%${source}%`, `%${source}%`); }
+      if (tier) {
+        query += ' AND cp.pricing_tier = ?'
+        params.push(tier)
+      }
+      if (ingredient) {
+        query += ' AND (ci.name LIKE ? OR cp.canonical_ingredient_id LIKE ?)'
+        params.push(`%${ingredient}%`, `%${ingredient}%`)
+      }
+      if (source) {
+        query += ' AND (sr.name LIKE ? OR cp.source_id LIKE ?)'
+        params.push(`%${source}%`, `%${source}%`)
+      }
 
-      query += ' ORDER BY ci.name, cp.price_cents ASC LIMIT ?';
-      params.push(limit);
+      query += ' ORDER BY ci.name, cp.price_cents ASC LIMIT ?'
+      params.push(limit)
 
-      const rows = db.prepare(query).all(...params);
-      return jsonResponse(res, { count: rows.length, prices: rows });
+      const rows = db.prepare(query).all(...params)
+      return jsonResponse(res, { count: rows.length, prices: rows })
     }
 
     // Get price for a specific ingredient across all sources
     if (path.startsWith('/api/prices/ingredient/')) {
-      const ingredientId = path.split('/').pop();
-      const rows = db.prepare(`
+      const ingredientId = path.split('/').pop()
+      const rows = db
+        .prepare(
+          `
         SELECT cp.*, sr.name as source_name, sr.city, sr.state, sr.pricing_tier as source_tier
         FROM current_prices cp
         JOIN source_registry sr ON cp.source_id = sr.source_id
         WHERE cp.canonical_ingredient_id = ?
         ORDER BY cp.price_cents ASC
-      `).all(ingredientId);
+      `
+        )
+        .all(ingredientId)
 
-      const ingredient = db.prepare('SELECT * FROM canonical_ingredients WHERE ingredient_id = ?').get(ingredientId);
+      const ingredient = db
+        .prepare('SELECT * FROM canonical_ingredients WHERE ingredient_id = ?')
+        .get(ingredientId)
 
       return jsonResponse(res, {
         ingredient,
@@ -104,25 +513,34 @@ const server = createServer((req, res) => {
         prices: rows,
         cheapest: rows[0] || null,
         mostExpensive: rows[rows.length - 1] || null,
-        avgCents: rows.length > 0 ? Math.round(rows.reduce((s, r) => s + r.price_cents, 0) / rows.length) : null
-      });
+        avgCents:
+          rows.length > 0
+            ? Math.round(rows.reduce((s, r) => s + r.price_cents, 0) / rows.length)
+            : null,
+      })
     }
 
     // Get all sources
     if (path === '/api/sources') {
-      const rows = db.prepare('SELECT * FROM source_registry ORDER BY name').all();
-      return jsonResponse(res, { count: rows.length, sources: rows });
+      const rows = db.prepare('SELECT * FROM source_registry ORDER BY name').all()
+      return jsonResponse(res, { count: rows.length, sources: rows })
     }
 
     // Get all distinct categories
     if (path === '/api/categories') {
-      const rows = db.prepare('SELECT DISTINCT category FROM canonical_ingredients WHERE category IS NOT NULL ORDER BY category').all();
-      return jsonResponse(res, { categories: rows.map(r => r.category) });
+      const rows = db
+        .prepare(
+          'SELECT DISTINCT category FROM canonical_ingredients WHERE category IS NOT NULL ORDER BY category'
+        )
+        .all()
+      return jsonResponse(res, { categories: rows.map((r) => r.category) })
     }
 
     // Category coverage: how many ingredients in each category have at least one price
     if (path === '/api/stats/category-coverage') {
-      const rows = db.prepare(`
+      const rows = db
+        .prepare(
+          `
         SELECT
           ci.category,
           COUNT(*) as total,
@@ -131,17 +549,23 @@ const server = createServer((req, res) => {
         LEFT JOIN current_prices cp ON cp.canonical_ingredient_id = ci.ingredient_id
         GROUP BY ci.category
         ORDER BY ci.category
-      `).all();
-      return jsonResponse(res, { categories: rows });
+      `
+        )
+        .all()
+      return jsonResponse(res, { categories: rows })
     }
 
     // Detail for one ingredient across all stores
     if (path.startsWith('/api/ingredients/detail/')) {
-      const ingredientId = decodeURIComponent(path.replace('/api/ingredients/detail/', ''));
-      const ingredient = db.prepare('SELECT * FROM canonical_ingredients WHERE ingredient_id = ?').get(ingredientId);
-      if (!ingredient) return jsonResponse(res, { error: 'Ingredient not found' }, 404);
+      const ingredientId = decodeURIComponent(path.replace('/api/ingredients/detail/', ''))
+      const ingredient = db
+        .prepare('SELECT * FROM canonical_ingredients WHERE ingredient_id = ?')
+        .get(ingredientId)
+      if (!ingredient) return jsonResponse(res, { error: 'Ingredient not found' }, 404)
 
-      const prices = db.prepare(`
+      const prices = db
+        .prepare(
+          `
         SELECT cp.price_cents, cp.price_unit, cp.price_type, cp.pricing_tier, cp.confidence,
                cp.in_stock, cp.source_url, cp.image_url, cp.brand, cp.aisle_category,
                cp.last_confirmed_at, cp.last_changed_at, cp.package_size,
@@ -150,13 +574,16 @@ const server = createServer((req, res) => {
         JOIN source_registry sr ON cp.source_id = sr.source_id
         WHERE cp.canonical_ingredient_id = ?
         ORDER BY cp.in_stock DESC, cp.price_cents ASC
-      `).all(ingredientId);
+      `
+        )
+        .all(ingredientId)
 
-      const inStockPrices = prices.filter(p => p.in_stock === 1);
-      const cheapest = inStockPrices.length > 0 ? inStockPrices[0] : (prices[0] || null);
-      const avgCents = inStockPrices.length > 0
-        ? Math.round(inStockPrices.reduce((s, p) => s + p.price_cents, 0) / inStockPrices.length)
-        : null;
+      const inStockPrices = prices.filter((p) => p.in_stock === 1)
+      const cheapest = inStockPrices.length > 0 ? inStockPrices[0] : prices[0] || null
+      const avgCents =
+        inStockPrices.length > 0
+          ? Math.round(inStockPrices.reduce((s, p) => s + p.price_cents, 0) / inStockPrices.length)
+          : null
 
       return jsonResponse(res, {
         ingredient: {
@@ -165,7 +592,7 @@ const server = createServer((req, res) => {
           category: ingredient.category,
           standardUnit: ingredient.standard_unit,
         },
-        prices: prices.map(p => ({
+        prices: prices.map((p) => ({
           store: p.store_name,
           storeCity: p.city || null,
           storeState: p.state || null,
@@ -191,41 +618,49 @@ const server = createServer((req, res) => {
           cheapestCents: cheapest ? cheapest.price_cents : null,
           cheapestStore: cheapest ? cheapest.store_name : null,
           avgCents,
-          hasSourceUrls: prices.some(p => p.source_url),
+          hasSourceUrls: prices.some((p) => p.source_url),
         },
-      });
+      })
     }
 
     // Get price changes (recent)
     if (path === '/api/changes') {
-      const limit = parseInt(url.searchParams.get('limit') || '50');
-      const rows = db.prepare(`
+      const limit = parseInt(url.searchParams.get('limit') || '50')
+      const rows = db
+        .prepare(
+          `
         SELECT pc.*, ci.name as ingredient_name, sr.name as source_name
         FROM price_changes pc
         JOIN canonical_ingredients ci ON pc.canonical_ingredient_id = ci.ingredient_id
         JOIN source_registry sr ON pc.source_id = sr.source_id
         ORDER BY pc.observed_at DESC
         LIMIT ?
-      `).all(limit);
-      return jsonResponse(res, { count: rows.length, changes: rows });
+      `
+        )
+        .all(limit)
+      return jsonResponse(res, { count: rows.length, changes: rows })
     }
 
     // Smart lookup - find an ingredient with price priority
     if (path === '/api/lookup') {
-      const q = url.searchParams.get('q');
-      if (!q) return jsonResponse(res, { error: 'Missing ?q= parameter' }, 400);
+      const q = url.searchParams.get('q')
+      if (!q) return jsonResponse(res, { error: 'Missing ?q= parameter' }, 400)
 
-      const result = smartLookup(db, q);
-      if (!result) return jsonResponse(res, { query: q, found: false, ingredient: null });
+      const result = smartLookup(db, q)
+      if (!result) return jsonResponse(res, { query: q, found: false, ingredient: null })
 
       // Get all prices for this ingredient
-      const prices = db.prepare(`
+      const prices = db
+        .prepare(
+          `
         SELECT cp.price_cents, cp.price_unit, cp.raw_product_name, sr.name as source_name, sr.pricing_tier
         FROM current_prices cp
         JOIN source_registry sr ON cp.source_id = sr.source_id
         WHERE cp.canonical_ingredient_id = ?
         ORDER BY cp.price_cents ASC
-      `).all(result.ingredient_id);
+      `
+        )
+        .all(result.ingredient_id)
 
       return jsonResponse(res, {
         query: q,
@@ -234,101 +669,130 @@ const server = createServer((req, res) => {
           id: result.ingredient_id,
           name: result.name,
           category: result.category,
-          bestPrice: result.best_price ? {
-            cents: result.best_price,
-            display: `$${(result.best_price / 100).toFixed(2)}`,
-            unit: result.best_unit,
-            store: result.best_store,
-          } : null,
+          bestPrice: result.best_price
+            ? {
+                cents: result.best_price,
+                display: `$${(result.best_price / 100).toFixed(2)}`,
+                unit: result.best_unit,
+                store: result.best_store,
+              }
+            : null,
           priceCount: result.price_count,
           prices,
-        }
-      });
+        },
+      })
     }
 
     // Batch lookup - look up multiple items at once
     if (path === '/api/lookup/batch') {
       if (req.method === 'POST') {
-        let body = '';
-        req.on('data', chunk => body += chunk);
+        let body = ''
+        req.on('data', (chunk) => (body += chunk))
         req.on('end', () => {
           try {
-            const { items } = JSON.parse(body);
-            if (!Array.isArray(items)) return jsonResponse(res, { error: 'items must be an array' }, 400);
+            const { items } = JSON.parse(body)
+            if (!Array.isArray(items))
+              return jsonResponse(res, { error: 'items must be an array' }, 400)
 
-            const results = {};
+            const results = {}
             for (const item of items.slice(0, 200)) {
-              const result = smartLookup(db, item);
-              results[item] = result ? {
-                id: result.ingredient_id,
-                name: result.name,
-                category: result.category,
-                bestPrice: result.best_price ? {
-                  cents: result.best_price,
-                  display: `$${(result.best_price / 100).toFixed(2)}`,
-                  unit: result.best_unit,
-                  store: result.best_store,
-                } : null,
-                priceCount: result.price_count,
-              } : null;
+              const result = smartLookup(db, item)
+              results[item] = result
+                ? {
+                    id: result.ingredient_id,
+                    name: result.name,
+                    category: result.category,
+                    bestPrice: result.best_price
+                      ? {
+                          cents: result.best_price,
+                          display: `$${(result.best_price / 100).toFixed(2)}`,
+                          unit: result.best_unit,
+                          store: result.best_store,
+                        }
+                      : null,
+                    priceCount: result.price_count,
+                  }
+                : null
             }
 
-            return jsonResponse(res, { count: items.length, results });
+            return jsonResponse(res, { count: items.length, results })
           } catch (err) {
-            return jsonResponse(res, { error: 'Invalid JSON body' }, 400);
+            return jsonResponse(res, { error: 'Invalid JSON body' }, 400)
           }
-        });
-        return; // async handler
+        })
+        return // async handler
       }
-      return jsonResponse(res, { error: 'POST required with { items: ["chicken breast", "salmon", ...] }' }, 405);
+      return jsonResponse(
+        res,
+        { error: 'POST required with { items: ["chicken breast", "salmon", ...] }' },
+        405
+      )
     }
 
     // Enriched price lookup - used by ChefFlow sync (V2)
     // Returns normalized prices, all store variants, and trend data
     if (path === '/api/prices/enriched' && req.method === 'POST') {
-      let body = '';
-      req.on('data', chunk => body += chunk);
+      let body = ''
+      req.on('data', (chunk) => (body += chunk))
       req.on('end', () => {
         try {
-          const { items } = JSON.parse(body);
-          if (!Array.isArray(items)) return jsonResponse(res, { error: 'items must be an array' }, 400);
+          const { items } = JSON.parse(body)
+          if (!Array.isArray(items))
+            return jsonResponse(res, { error: 'items must be an array' }, 400)
 
-          const results = {};
+          const results = {}
 
           // Unit normalization map
           const UNIT_NORM = {
-            'lb': 'lb', 'lbs': 'lb', 'pound': 'lb', 'pounds': 'lb',
-            'oz': 'oz', 'ounce': 'oz', 'ounces': 'oz',
-            'gallon': 'gallon', 'gal': 'gallon',
-            'dozen': 'dozen', 'doz': 'dozen',
-            'each': 'each', 'ea': 'each', 'ct': 'each', 'count': 'each',
-            'bunch': 'bunch', 'head': 'head', 'bag': 'bag', 'pint': 'pint',
-            'quart': 'quart', 'qt': 'quart', 'liter': 'liter',
-          };
+            lb: 'lb',
+            lbs: 'lb',
+            pound: 'lb',
+            pounds: 'lb',
+            oz: 'oz',
+            ounce: 'oz',
+            ounces: 'oz',
+            gallon: 'gallon',
+            gal: 'gallon',
+            dozen: 'dozen',
+            doz: 'dozen',
+            each: 'each',
+            ea: 'each',
+            ct: 'each',
+            count: 'each',
+            bunch: 'bunch',
+            head: 'head',
+            bag: 'bag',
+            pint: 'pint',
+            quart: 'quart',
+            qt: 'quart',
+            liter: 'liter',
+          }
 
           function normalizeUnit(unit) {
-            if (!unit) return 'each';
-            const lower = unit.toLowerCase().trim();
-            return UNIT_NORM[lower] || lower;
+            if (!unit) return 'each'
+            const lower = unit.toLowerCase().trim()
+            return UNIT_NORM[lower] || lower
           }
 
           // Price-per-standard-unit normalization
           function normalizeCents(cents, unit) {
-            const u = normalizeUnit(unit);
+            const u = normalizeUnit(unit)
             // Convert oz to lb equivalent for comparison
-            if (u === 'oz') return Math.round(cents * 16);
-            return cents;
+            if (u === 'oz') return Math.round(cents * 16)
+            return cents
           }
 
           for (const item of items.slice(0, 200)) {
-            const result = smartLookup(db, item);
+            const result = smartLookup(db, item)
             if (!result) {
-              results[item] = null;
-              continue;
+              results[item] = null
+              continue
             }
 
             // Get ALL prices for this ingredient
-            const allPrices = db.prepare(`
+            const allPrices = db
+              .prepare(
+                `
               SELECT cp.price_cents, cp.price_unit, cp.raw_product_name,
                      sr.name as source_name, sr.pricing_tier,
                      cp.last_confirmed_at, cp.source_id, cp.in_stock
@@ -336,10 +800,12 @@ const server = createServer((req, res) => {
               JOIN source_registry sr ON cp.source_id = sr.source_id
               WHERE cp.canonical_ingredient_id = ?
               ORDER BY cp.price_cents ASC
-            `).all(result.ingredient_id);
+            `
+              )
+              .all(result.ingredient_id)
 
             // Build enriched price objects
-            const enrichedPrices = allPrices.map(p => ({
+            const enrichedPrices = allPrices.map((p) => ({
               cents: p.price_cents,
               normalized_cents: normalizeCents(p.price_cents, p.price_unit),
               normalized_unit: normalizeUnit(p.price_unit),
@@ -348,32 +814,37 @@ const server = createServer((req, res) => {
               tier: p.pricing_tier || 'retail',
               confirmed_at: p.last_confirmed_at || new Date().toISOString(),
               in_stock: p.in_stock === 1,
-            }));
+            }))
 
             // Best price = lowest normalized cents
-            const bestPrice = enrichedPrices.length > 0
-              ? enrichedPrices.reduce((a, b) => a.normalized_cents < b.normalized_cents ? a : b)
-              : null;
+            const bestPrice =
+              enrichedPrices.length > 0
+                ? enrichedPrices.reduce((a, b) => (a.normalized_cents < b.normalized_cents ? a : b))
+                : null
 
             // Trend: compare current best to 7-day-old prices (if we have history)
-            let trend = null;
+            let trend = null
             try {
-              const weekAgo = db.prepare(`
+              const weekAgo = db
+                .prepare(
+                  `
                 SELECT AVG(price_cents) as avg_price
                 FROM price_changes
                 WHERE canonical_ingredient_id = ?
                   AND observed_at >= datetime('now', '-14 days')
                   AND observed_at < datetime('now', '-7 days')
-              `).get(result.ingredient_id);
+              `
+                )
+                .get(result.ingredient_id)
 
               if (weekAgo?.avg_price && bestPrice) {
-                const oldAvg = weekAgo.avg_price;
-                const changePct = Math.round(((bestPrice.cents - oldAvg) / oldAvg) * 100);
+                const oldAvg = weekAgo.avg_price
+                const changePct = Math.round(((bestPrice.cents - oldAvg) / oldAvg) * 100)
                 trend = {
                   direction: changePct > 2 ? 'up' : changePct < -2 ? 'down' : 'flat',
                   change_7d_pct: changePct,
                   change_30d_pct: null,
-                };
+                }
               }
             } catch (e) {}
 
@@ -385,92 +856,102 @@ const server = createServer((req, res) => {
               all_prices: enrichedPrices,
               trend,
               price_count: enrichedPrices.length,
-            };
+            }
           }
 
-          return jsonResponse(res, { results });
+          return jsonResponse(res, { results })
         } catch (err) {
-          return jsonResponse(res, { error: 'Invalid JSON: ' + err.message }, 400);
+          return jsonResponse(res, { error: 'Invalid JSON: ' + err.message }, 400)
         }
-      });
-      return;
+      })
+      return
     }
 
     // Catalog suggestion - ChefFlow feeds back unmatched ingredient names
     if (path === '/api/catalog/suggest' && req.method === 'POST') {
-      let body = '';
-      req.on('data', chunk => body += chunk);
+      let body = ''
+      req.on('data', (chunk) => (body += chunk))
       req.on('end', () => {
         try {
-          const { items } = JSON.parse(body);
-          if (!Array.isArray(items)) return jsonResponse(res, { error: 'items must be an array' }, 400);
+          const { items } = JSON.parse(body)
+          if (!Array.isArray(items))
+            return jsonResponse(res, { error: 'items must be an array' }, 400)
 
-          let added = 0;
+          let added = 0
           for (const name of items.slice(0, 500)) {
-            if (!name || typeof name !== 'string') continue;
-            const ingredientId = name.toLowerCase().trim()
+            if (!name || typeof name !== 'string') continue
+            const ingredientId = name
+              .toLowerCase()
+              .trim()
               .replace(/[^a-z0-9\s-]/g, '')
               .replace(/\s+/g, '-')
               .replace(/-+/g, '-')
-              .substring(0, 80);
+              .substring(0, 80)
 
-            if (!ingredientId) continue;
+            if (!ingredientId) continue
 
             try {
-              db.prepare(`
+              db.prepare(
+                `
                 INSERT OR IGNORE INTO canonical_ingredients (ingredient_id, name, category, standard_unit)
                 VALUES (?, ?, ?, ?)
-              `).run(ingredientId, name.substring(0, 100), 'suggested', 'each');
-              added++;
+              `
+              ).run(ingredientId, name.substring(0, 100), 'suggested', 'each')
+              added++
             } catch (e) {}
           }
 
-          return jsonResponse(res, { received: items.length, added });
+          return jsonResponse(res, { received: items.length, added })
         } catch (err) {
-          return jsonResponse(res, { error: 'Invalid JSON' }, 400);
+          return jsonResponse(res, { error: 'Invalid JSON' }, 400)
         }
-      });
-      return;
+      })
+      return
     }
 
     // Shopping optimizer - find cheapest store combination for a list of ingredients
     if (path === '/api/optimize/shopping-list' && req.method === 'POST') {
-      let body = '';
-      req.on('data', chunk => body += chunk);
+      let body = ''
+      req.on('data', (chunk) => (body += chunk))
       req.on('end', () => {
         try {
-          const { items } = JSON.parse(body);
-          if (!Array.isArray(items)) return jsonResponse(res, { error: 'items must be an array' }, 400);
+          const { items } = JSON.parse(body)
+          if (!Array.isArray(items))
+            return jsonResponse(res, { error: 'items must be an array' }, 400)
 
-          const ingredientPrices = [];
-          const allStores = new Set();
+          const ingredientPrices = []
+          const allStores = new Set()
 
           for (const item of items.slice(0, 100)) {
-            const name = typeof item === 'string' ? item : item.name;
-            if (!name) continue;
+            const name = typeof item === 'string' ? item : item.name
+            if (!name) continue
 
-            const result = smartLookup(db, name);
+            const result = smartLookup(db, name)
             if (!result) {
-              ingredientPrices.push({ name, found: false, prices: {} });
-              continue;
+              ingredientPrices.push({ name, found: false, prices: {} })
+              continue
             }
 
-            const prices = db.prepare(`
+            const prices = db
+              .prepare(
+                `
               SELECT cp.price_cents, cp.price_unit, cp.in_stock, sr.name as store_name
               FROM current_prices cp
               JOIN source_registry sr ON cp.source_id = sr.source_id
               WHERE cp.canonical_ingredient_id = ?
               ORDER BY cp.price_cents ASC
-            `).all(result.ingredient_id);
+            `
+              )
+              .all(result.ingredient_id)
 
             // Only include in-stock items for optimization
-            const inStockPrices = prices.filter(p => p.in_stock === 1);
+            const inStockPrices = prices.filter((p) => p.in_stock === 1)
 
-            const byStore = {};
+            const byStore = {}
             for (const p of inStockPrices) {
-              allStores.add(p.store_name);
+              allStores.add(p.store_name)
               if (!byStore[p.store_name] || p.price_cents < byStore[p.store_name]) {
-                byStore[p.store_name] = p.price_cents;
+                byStore[p.store_name] = p.price_cents
               }
             }
 
@@ -481,64 +962,90 @@ const server = createServer((req, res) => {
               bestPrice: inStockPrices[0]?.price_cents || null,
               bestStore: inStockPrices[0]?.store_name || null,
               prices: byStore,
-              outOfStockStores: prices.filter(p => p.in_stock === 0).map(p => p.store_name),
-            });
+              outOfStockStores: prices.filter((p) => p.in_stock === 0).map((p) => p.store_name),
+            })
           }
 
           // Single-store totals
-          const storeNames = [...allStores];
-          const singleStoreTotals = {};
+          const storeNames = [...allStores]
+          const singleStoreTotals = {}
           for (const store of storeNames) {
-            let total = 0, missing = 0;
+            let total = 0,
+              missing = 0
             for (const ing of ingredientPrices) {
-              if (!ing.found) { missing++; continue; }
-              if (ing.prices[store]) { total += ing.prices[store]; }
-              else { missing++; }
+              if (!ing.found) {
+                missing++
+                continue
+              }
+              if (ing.prices[store]) {
+                total += ing.prices[store]
+              } else {
+                missing++
+              }
             }
-            singleStoreTotals[store] = { totalCents: total, missing, available: ingredientPrices.length - missing };
+            singleStoreTotals[store] = {
+              totalCents: total,
+              missing,
+              available: ingredientPrices.length - missing,
+            }
           }
 
           // Optimal multi-store split
-          let optimalTotal = 0, optimalMissing = 0;
-          const optimalList = [];
+          let optimalTotal = 0,
+            optimalMissing = 0
+          const optimalList = []
           for (const ing of ingredientPrices) {
-            if (!ing.found || !ing.bestPrice) { optimalMissing++; continue; }
-            optimalTotal += ing.bestPrice;
-            optimalList.push({ name: ing.canonicalName || ing.name, priceCents: ing.bestPrice, store: ing.bestStore });
+            if (!ing.found || !ing.bestPrice) {
+              optimalMissing++
+              continue
+            }
+            optimalTotal += ing.bestPrice
+            optimalList.push({
+              name: ing.canonicalName || ing.name,
+              priceCents: ing.bestPrice,
+              store: ing.bestStore,
+            })
           }
 
           const ranked = Object.entries(singleStoreTotals)
             .filter(([, v]) => v.available > 0)
-            .sort((a, b) => (a[1].totalCents / a[1].available) - (b[1].totalCents / b[1].available))
+            .sort((a, b) => a[1].totalCents / a[1].available - b[1].totalCents / b[1].available)
             .map(([store, data]) => ({
-              store, totalCents: data.totalCents, totalDisplay: `$${(data.totalCents / 100).toFixed(2)}`,
-              available: data.available, missing: data.missing,
-            }));
+              store,
+              totalCents: data.totalCents,
+              totalDisplay: `$${(data.totalCents / 100).toFixed(2)}`,
+              available: data.available,
+              missing: data.missing,
+            }))
 
           return jsonResponse(res, {
             itemCount: items.length,
-            found: ingredientPrices.filter(i => i.found).length,
-            notFound: ingredientPrices.filter(i => !i.found).length,
+            found: ingredientPrices.filter((i) => i.found).length,
+            notFound: ingredientPrices.filter((i) => !i.found).length,
             optimal: {
-              totalCents: optimalTotal, totalDisplay: `$${(optimalTotal / 100).toFixed(2)}`,
-              missing: optimalMissing, items: optimalList,
+              totalCents: optimalTotal,
+              totalDisplay: `$${(optimalTotal / 100).toFixed(2)}`,
+              missing: optimalMissing,
+              items: optimalList,
               savings: ranked[0] ? ranked[0].totalCents - optimalTotal : 0,
             },
             singleStoreRanking: ranked,
-          });
+          })
         } catch (err) {
-          return jsonResponse(res, { error: 'Invalid JSON: ' + err.message }, 400);
+          return jsonResponse(res, { error: 'Invalid JSON: ' + err.message }, 400)
         }
-      });
-      return;
+      })
+      return
     }
 
     // Price drop alerts
     if (path === '/api/alerts/price-drops') {
-      const threshold = parseInt(url.searchParams.get('threshold') || '15');
-      const limit = parseInt(url.searchParams.get('limit') || '50');
+      const threshold = parseInt(url.searchParams.get('threshold') || '15')
+      const limit = parseInt(url.searchParams.get('limit') || '50')
 
-      const alerts = db.prepare(`
+      const alerts = db
+        .prepare(
+          `
         SELECT
           ci.ingredient_id, ci.name, ci.category,
           MIN(cp.price_cents) as current_best,
@@ -559,24 +1066,28 @@ const server = createServer((req, res) => {
           AND current_best < avg_30d * (1 - ? / 100.0)
         ORDER BY (avg_30d - current_best) * 100.0 / avg_30d DESC
         LIMIT ?
-      `).all(threshold / 100, limit);
+      `
+        )
+        .all(threshold / 100, limit)
 
-      const formatted = alerts.map(a => ({
+      const formatted = alerts.map((a) => ({
         ingredientId: a.ingredient_id,
         name: a.name,
         category: a.category,
         currentBestCents: Math.round(a.current_best),
         avg30dCents: Math.round(a.avg_30d),
-        dropPct: Math.round((a.avg_30d - a.current_best) * 100 / a.avg_30d),
+        dropPct: Math.round(((a.avg_30d - a.current_best) * 100) / a.avg_30d),
         cheapestStore: a.cheapest_store,
-      }));
+      }))
 
-      return jsonResponse(res, { threshold, count: formatted.length, alerts: formatted });
+      return jsonResponse(res, { threshold, count: formatted.length, alerts: formatted })
     }
 
     // Price freshness report
     if (path === '/api/freshness') {
-      const report = db.prepare(`
+      const report = db
+        .prepare(
+          `
         SELECT
           CASE
             WHEN julianday('now') - julianday(last_confirmed_at) <= 3 THEN 'current'
@@ -588,83 +1099,92 @@ const server = createServer((req, res) => {
         FROM current_prices
         WHERE last_confirmed_at IS NOT NULL
         GROUP BY freshness
-      `).all();
+      `
+        )
+        .all()
 
-      const total = report.reduce((s, r) => s + r.count, 0);
+      const total = report.reduce((s, r) => s + r.count, 0)
       return jsonResponse(res, {
         total,
         breakdown: report,
-        percentCurrent: total > 0 ? Math.round((report.find(r => r.freshness === 'current')?.count || 0) * 100 / total) : 0,
-      });
+        percentCurrent:
+          total > 0
+            ? Math.round(
+                ((report.find((r) => r.freshness === 'current')?.count || 0) * 100) / total
+              )
+            : 0,
+      })
     }
 
     // Get canonical ingredients list (with full filtering, stock counts, cursor pagination)
     if (path === '/api/ingredients') {
-      const search = url.searchParams.get('search');
-      const category = url.searchParams.get('category');
-      const store = url.searchParams.get('store');
-      const pricedOnly = url.searchParams.get('priced_only') === '1';
-      const inStockOnly = url.searchParams.get('in_stock_only') === '1';
-      const tier = url.searchParams.get('tier'); // retail, wholesale
-      const sort = url.searchParams.get('sort') || 'name';
-      const limit = Math.min(parseInt(url.searchParams.get('limit') || '0'), 500);
-      const page = Math.max(parseInt(url.searchParams.get('page') || '1'), 1);
-      const after = url.searchParams.get('after'); // cursor-based pagination
-      const offset = after ? 0 : (page - 1) * (limit || 50);
+      const search = url.searchParams.get('search')
+      const category = url.searchParams.get('category')
+      const store = url.searchParams.get('store')
+      const pricedOnly = url.searchParams.get('priced_only') === '1'
+      const inStockOnly = url.searchParams.get('in_stock_only') === '1'
+      const tier = url.searchParams.get('tier') // retail, wholesale
+      const sort = url.searchParams.get('sort') || 'name'
+      const limit = Math.min(parseInt(url.searchParams.get('limit') || '0'), 500)
+      const page = Math.max(parseInt(url.searchParams.get('page') || '1'), 1)
+      const after = url.searchParams.get('after') // cursor-based pagination
+      const offset = after ? 0 : (page - 1) * (limit || 50)
 
-      const needsPriceJoin = pricedOnly || store || tier || sort === 'price' || sort === 'stores' || sort === 'updated';
+      const needsPriceJoin =
+        pricedOnly || store || tier || sort === 'price' || sort === 'stores' || sort === 'updated'
 
-      let countQuery, dataQuery;
-      const countParams = [];
-      const dataParams = [];
+      let countQuery, dataQuery
+      const countParams = []
+      const dataParams = []
 
       // Always use the join variant now (we need stock counts)
       const baseFrom = `
         FROM canonical_ingredients ci
         LEFT JOIN current_prices cp ON cp.canonical_ingredient_id = ci.ingredient_id
         LEFT JOIN source_registry sr ON cp.source_id = sr.source_id
-      `;
-      let where = ' WHERE 1=1';
+      `
+      let where = ' WHERE 1=1'
 
       if (search) {
-        where += ' AND (ci.name LIKE ? OR ci.ingredient_id LIKE ?)';
-        countParams.push(`%${search}%`, `%${search}%`);
-        dataParams.push(`%${search}%`, `%${search}%`);
+        where += ' AND (ci.name LIKE ? OR ci.ingredient_id LIKE ?)'
+        countParams.push(`%${search}%`, `%${search}%`)
+        dataParams.push(`%${search}%`, `%${search}%`)
       }
       if (category) {
-        where += ' AND ci.category = ?';
-        countParams.push(category);
-        dataParams.push(category);
+        where += ' AND ci.category = ?'
+        countParams.push(category)
+        dataParams.push(category)
       }
       if (store) {
-        where += ' AND (sr.name LIKE ? OR cp.source_id LIKE ?)';
-        countParams.push(`%${store}%`, `%${store}%`);
-        dataParams.push(`%${store}%`, `%${store}%`);
+        where += ' AND (sr.name LIKE ? OR cp.source_id LIKE ?)'
+        countParams.push(`%${store}%`, `%${store}%`)
+        dataParams.push(`%${store}%`, `%${store}%`)
       }
       if (pricedOnly) {
-        where += ' AND cp.price_cents IS NOT NULL';
+        where += ' AND cp.price_cents IS NOT NULL'
       }
       if (tier) {
-        where += ' AND cp.pricing_tier = ?';
-        countParams.push(tier);
-        dataParams.push(tier);
+        where += ' AND cp.pricing_tier = ?'
+        countParams.push(tier)
+        dataParams.push(tier)
       }
       // Cursor-based pagination for name sort
       if (after && sort === 'name') {
-        where += ' AND ci.ingredient_id > ?';
-        dataParams.push(after);
+        where += ' AND ci.ingredient_id > ?'
+        dataParams.push(after)
       }
 
-      countQuery = `SELECT COUNT(DISTINCT ci.ingredient_id) as total ${baseFrom} ${where}`;
+      countQuery = `SELECT COUNT(DISTINCT ci.ingredient_id) as total ${baseFrom} ${where}`
 
-      let orderBy = ' ORDER BY ci.name';
-      if (sort === 'price') orderBy = ' ORDER BY MIN(cp.price_cents) ASC NULLS LAST, ci.name';
-      if (sort === 'stores') orderBy = ' ORDER BY COUNT(DISTINCT cp.source_id) DESC, ci.name';
-      if (sort === 'updated') orderBy = ' ORDER BY MAX(cp.last_confirmed_at) DESC NULLS LAST, ci.name';
+      let orderBy = ' ORDER BY ci.name'
+      if (sort === 'price') orderBy = ' ORDER BY MIN(cp.price_cents) ASC NULLS LAST, ci.name'
+      if (sort === 'stores') orderBy = ' ORDER BY COUNT(DISTINCT cp.source_id) DESC, ci.name'
+      if (sort === 'updated')
+        orderBy = ' ORDER BY MAX(cp.last_confirmed_at) DESC NULLS LAST, ci.name'
 
-      let having = '';
+      let having = ''
       if (inStockOnly) {
-        having = ' HAVING SUM(CASE WHEN cp.in_stock = 1 THEN 1 ELSE 0 END) > 0';
+        having = ' HAVING SUM(CASE WHEN cp.in_stock = 1 THEN 1 ELSE 0 END) > 0'
       }
 
       dataQuery = `
@@ -690,19 +1210,19 @@ const server = createServer((req, res) => {
         GROUP BY ci.ingredient_id
         ${having}
         ${orderBy}
-      `;
+      `
 
-      const totalRow = db.prepare(countQuery).get(...countParams);
-      const total = totalRow?.total || 0;
+      const totalRow = db.prepare(countQuery).get(...countParams)
+      const total = totalRow?.total || 0
 
       if (limit > 0) {
-        dataQuery += ' LIMIT ? OFFSET ?';
-        dataParams.push(limit, after ? 0 : offset);
+        dataQuery += ' LIMIT ? OFFSET ?'
+        dataParams.push(limit, after ? 0 : offset)
       }
 
-      const rows = db.prepare(dataQuery).all(...dataParams);
-      const lastItem = rows.length > 0 ? rows[rows.length - 1] : null;
-      const hasMore = limit > 0 && rows.length === limit;
+      const rows = db.prepare(dataQuery).all(...dataParams)
+      const lastItem = rows.length > 0 ? rows[rows.length - 1] : null
+      const hasMore = limit > 0 && rows.length === limit
 
       return jsonResponse(res, {
         count: rows.length,
@@ -711,7 +1231,7 @@ const server = createServer((req, res) => {
         pages: limit > 0 ? Math.ceil(total / limit) : 1,
         hasMore,
         nextCursor: hasMore && lastItem ? lastItem.ingredient_id : null,
-        ingredients: rows.map(r => ({
+        ingredients: rows.map((r) => ({
           ingredient_id: r.ingredient_id,
           name: r.name,
           category: r.category,
@@ -726,50 +1246,68 @@ const server = createServer((req, res) => {
           last_updated: r.last_updated || null,
           in_stock_count: r.in_stock_count || 0,
           out_of_stock_count: r.out_of_stock_count || 0,
-          has_source_url: !!(r.has_source_url),
+          has_source_url: !!r.has_source_url,
         })),
-      });
+      })
     }
 
     // Get full detail for one ingredient across all stores
     if (path.startsWith('/api/ingredients/detail/')) {
-      const ingredientId = decodeURIComponent(path.replace('/api/ingredients/detail/', ''));
+      const ingredientId = decodeURIComponent(path.replace('/api/ingredients/detail/', ''))
       if (!ingredientId) {
-        return jsonResponse(res, { error: 'Missing ingredient ID' }, 400);
+        return jsonResponse(res, { error: 'Missing ingredient ID' }, 400)
       }
 
       // Look up the ingredient
-      let resolvedId = ingredientId;
-      const directCheck = db.prepare('SELECT 1 FROM canonical_ingredients WHERE ingredient_id = ?').get(ingredientId);
+      let resolvedId = ingredientId
+      const directCheck = db
+        .prepare('SELECT 1 FROM canonical_ingredients WHERE ingredient_id = ?')
+        .get(ingredientId)
       if (!directCheck) {
         // Try smart lookup by name
-        const lookup = smartLookup(db, ingredientId);
+        const lookup = smartLookup(db, ingredientId)
         if (lookup && lookup.ingredient_id) {
-          resolvedId = lookup.ingredient_id;
+          resolvedId = lookup.ingredient_id
         } else {
-          return jsonResponse(res, { error: 'Ingredient not found' }, 404);
+          return jsonResponse(res, { error: 'Ingredient not found' }, 404)
         }
       }
 
-      const ingredient = db.prepare('SELECT * FROM canonical_ingredients WHERE ingredient_id = ?').get(resolvedId);
+      const ingredient = db
+        .prepare('SELECT * FROM canonical_ingredients WHERE ingredient_id = ?')
+        .get(resolvedId)
       if (!ingredient) {
-        return jsonResponse(res, { error: 'Ingredient not found' }, 404);
+        return jsonResponse(res, { error: 'Ingredient not found' }, 404)
       }
 
-      const prices = db.prepare(`
+      const prices = db
+        .prepare(
+          `
         SELECT cp.*, sr.name as source_name, sr.city, sr.state, sr.website as store_website
         FROM current_prices cp
         JOIN source_registry sr ON cp.source_id = sr.source_id
         WHERE cp.canonical_ingredient_id = ?
         ORDER BY cp.in_stock DESC, cp.price_cents ASC
-      `).all(resolvedId);
+      `
+        )
+        .all(resolvedId)
 
-      const inStockCount = prices.filter(p => p.in_stock === 1).length;
-      const outOfStockCount = prices.filter(p => p.in_stock === 0).length;
-      const pricedPrices = prices.filter(p => p.price_cents != null);
-      const cheapest = pricedPrices.length > 0 ? pricedPrices.reduce((a, b) => a.price_cents < b.price_cents ? a : b) : null;
-      const avgCents = pricedPrices.length > 0 ? Math.round(pricedPrices.reduce((sum, p) => sum + p.price_cents, 0) / pricedPrices.length) : null;
-      const hasSourceUrls = prices.some(p => (p.source_url && p.source_url !== '') || (p.store_website && p.store_website !== ''));
+      const inStockCount = prices.filter((p) => p.in_stock === 1).length
+      const outOfStockCount = prices.filter((p) => p.in_stock === 0).length
+      const pricedPrices = prices.filter((p) => p.price_cents != null)
+      const cheapest =
+        pricedPrices.length > 0
+          ? pricedPrices.reduce((a, b) => (a.price_cents < b.price_cents ? a : b))
+          : null
+      const avgCents =
+        pricedPrices.length > 0
+          ? Math.round(
+              pricedPrices.reduce((sum, p) => sum + p.price_cents, 0) / pricedPrices.length
+            )
+          : null
+      const hasSourceUrls = prices.some(
+        (p) => (p.source_url && p.source_url !== '') || (p.store_website && p.store_website !== '')
+      )
 
       return jsonResponse(res, {
         ingredient: {
@@ -778,7 +1316,7 @@ const server = createServer((req, res) => {
           category: ingredient.category,
           standardUnit: ingredient.standard_unit,
         },
-        prices: prices.map(p => ({
+        prices: prices.map((p) => ({
           store: p.source_name,
           storeCity: p.city || null,
           storeState: p.state || null,
@@ -806,24 +1344,31 @@ const server = createServer((req, res) => {
           avgCents,
           hasSourceUrls,
         },
-      });
+      })
     }
 
     // Simple status page (HTML)
     if (path === '/' || path === '/dashboard') {
-      const stats = getStats(db);
-      const recentPrices = db.prepare(`
+      const stats = getStats(db)
+      const recentPrices = db
+        .prepare(
+          `
         SELECT ci.name, cp.price_cents, cp.price_unit, sr.name as source_name, cp.last_confirmed_at
         FROM current_prices cp
         JOIN canonical_ingredients ci ON cp.canonical_ingredient_id = ci.ingredient_id
         JOIN source_registry sr ON cp.source_id = sr.source_id
         ORDER BY cp.last_confirmed_at DESC
         LIMIT 25
-      `).all();
+      `
+        )
+        .all()
 
-      const priceRows = recentPrices.map(p =>
-        `<tr><td>${p.name}</td><td>$${(p.price_cents / 100).toFixed(2)}/${p.price_unit}</td><td>${p.source_name}</td><td>${p.last_confirmed_at || '-'}</td></tr>`
-      ).join('\n');
+      const priceRows = recentPrices
+        .map(
+          (p) =>
+            `<tr><td>${p.name}</td><td>$${(p.price_cents / 100).toFixed(2)}/${p.price_unit}</td><td>${p.source_name}</td><td>${p.last_confirmed_at || '-'}</td></tr>`
+        )
+        .join('\n')
 
       const html = `<!DOCTYPE html>
 <html><head><title>OpenClaw Price Intelligence</title>
@@ -862,152 +1407,197 @@ ${priceRows}
   <li><strong><a href="/api/lookup?q=chicken+breast">/api/lookup?q=</a> - Smart lookup (alias-aware, price-prioritized)</strong></li>
   <li><a href="/api/sync/database">/api/sync/database</a> - Download SQLite database file</li>
 </ul>
-</body></html>`;
-      res.writeHead(200, { 'Content-Type': 'text/html' });
-      return res.end(html);
+</body></html>`
+      res.writeHead(200, { 'Content-Type': 'text/html' })
+      return res.end(html)
     }
 
     // Enriched price lookup - full context for ChefFlow sync (Phase 3)
     if (path === '/api/prices/enriched' && req.method === 'POST') {
-      let body = '';
-      req.on('data', chunk => body += chunk);
+      let body = ''
+      req.on('data', (chunk) => (body += chunk))
       req.on('end', () => {
         try {
-          const start = Date.now();
-          const { items } = JSON.parse(body);
-          if (!Array.isArray(items)) return jsonResponse(res, { error: 'items must be an array' }, 400);
+          const start = Date.now()
+          const { items } = JSON.parse(body)
+          if (!Array.isArray(items))
+            return jsonResponse(res, { error: 'items must be an array' }, 400)
 
-          const results = {};
+          const results = {}
           for (const item of items.slice(0, 500)) {
-            results[item] = smartLookupEnriched(db, item);
+            results[item] = smartLookupEnriched(db, item)
           }
 
           return jsonResponse(res, {
             results,
             lookup_ms: Date.now() - start,
             timestamp: new Date().toISOString(),
-          });
+          })
         } catch (err) {
-          return jsonResponse(res, { error: 'Invalid JSON body: ' + err.message }, 400);
+          return jsonResponse(res, { error: 'Invalid JSON body: ' + err.message }, 400)
         }
-      });
-      return;
+      })
+      return
     }
 
     // Catalog suggest - add unmatched ingredient names for catalog growth (Phase 3.5)
     if (path === '/api/catalog/suggest' && req.method === 'POST') {
-      let body = '';
-      req.on('data', chunk => body += chunk);
+      let body = ''
+      req.on('data', (chunk) => (body += chunk))
       req.on('end', () => {
         try {
-          const { items } = JSON.parse(body);
-          if (!Array.isArray(items)) return jsonResponse(res, { error: 'items must be an array' }, 400);
+          const { items } = JSON.parse(body)
+          if (!Array.isArray(items))
+            return jsonResponse(res, { error: 'items must be an array' }, 400)
 
-          let added = 0;
-          let skipped = 0;
+          let added = 0
+          let skipped = 0
 
           for (const name of items.slice(0, 500)) {
             if (!name || typeof name !== 'string' || name.trim().length < 2) {
-              skipped++;
-              continue;
+              skipped++
+              continue
             }
 
-            const slug = name.toLowerCase().trim()
+            const slug = name
+              .toLowerCase()
+              .trim()
               .replace(/[^a-z0-9\s-]/g, '')
               .replace(/\s+/g, '-')
               .replace(/-+/g, '-')
-              .substring(0, 80);
+              .substring(0, 80)
 
-            if (!slug) { skipped++; continue; }
+            if (!slug) {
+              skipped++
+              continue
+            }
 
             // Check if already exists
-            const existing = db.prepare('SELECT 1 FROM canonical_ingredients WHERE ingredient_id = ?').get(slug);
+            const existing = db
+              .prepare('SELECT 1 FROM canonical_ingredients WHERE ingredient_id = ?')
+              .get(slug)
             if (existing) {
-              skipped++;
-              continue;
+              skipped++
+              continue
             }
 
             // Insert as unpriced, uncategorized entry
             try {
-              db.prepare(`
+              db.prepare(
+                `
                 INSERT INTO canonical_ingredients (ingredient_id, name, category, standard_unit)
                 VALUES (?, ?, 'uncategorized', 'each')
-              `).run(slug, name.trim().substring(0, 100));
-              added++;
+              `
+              ).run(slug, name.trim().substring(0, 100))
+              added++
             } catch {
-              skipped++; // duplicate or constraint violation
+              skipped++ // duplicate or constraint violation
             }
           }
 
-          const totalCatalog = db.prepare('SELECT COUNT(*) as count FROM canonical_ingredients').get();
+          const totalCatalog = db
+            .prepare('SELECT COUNT(*) as count FROM canonical_ingredients')
+            .get()
           return jsonResponse(res, {
             added,
             skipped,
             total_catalog: totalCatalog.count,
-          });
+          })
         } catch (err) {
-          return jsonResponse(res, { error: 'Invalid JSON body: ' + err.message }, 400);
+          return jsonResponse(res, { error: 'Invalid JSON body: ' + err.message }, 400)
         }
-      });
-      return;
+      })
+      return
     }
 
     // Batch import prices (from Windows scraper)
     if (path === '/api/prices/batch' && req.method === 'POST') {
-      let body = '';
-      req.on('data', chunk => body += chunk);
+      let body = ''
+      req.on('data', (chunk) => (body += chunk))
       req.on('end', () => {
         try {
-          const { prices } = JSON.parse(body);
-          if (!Array.isArray(prices)) return jsonResponse(res, { error: 'prices must be an array' }, 400);
+          const { prices } = JSON.parse(body)
+          if (!Array.isArray(prices))
+            return jsonResponse(res, { error: 'prices must be an array' }, 400)
 
-          const cachedMappings = loadCachedMappings(db);
+          const cachedMappings = loadCachedMappings(db)
 
-          let imported = 0, skipped = 0, errors = 0;
+          let imported = 0,
+            skipped = 0,
+            errors = 0
 
           // Ensure source exists
           const ensureSource = db.prepare(`
             INSERT OR IGNORE INTO source_registry (source_id, name, type, chain_id, state, scrape_method, has_online_pricing, pricing_tier, status, notes)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-          `);
+          `)
 
-          const seenSources = new Set();
+          const seenSources = new Set()
 
           for (const p of prices) {
             try {
-              if (!p.rawProductName || !p.priceCents) { skipped++; continue; }
+              if (!p.rawProductName || !p.priceCents) {
+                skipped++
+                continue
+              }
 
               // Ensure source
               if (!seenSources.has(p.sourceId)) {
                 ensureSource.run(
-                  p.sourceId, p.sourceId, 'instacart_api', p.sourceId.replace('-instacart', ''),
-                  'MA', 'instacart_catalog', 1, p.pricingTier || 'retail', 'active',
+                  p.sourceId,
+                  p.sourceId,
+                  'instacart_api',
+                  p.sourceId.replace('-instacart', ''),
+                  'MA',
+                  'instacart_catalog',
+                  1,
+                  p.pricingTier || 'retail',
+                  'active',
                   `Imported from Windows Playwright scraper. Markup adjustment: ${p.instacartMarkupPct || 0}%`
-                );
-                seenSources.add(p.sourceId);
+                )
+                seenSources.add(p.sourceId)
               }
 
               // Normalize product name to canonical ingredient
-              const normalized = normalizeByRules(p.rawProductName, cachedMappings);
-              let ingredientId;
+              const normalized = normalizeByRules(p.rawProductName, cachedMappings)
+              let ingredientId
 
               if (normalized) {
-                ingredientId = normalized.ingredientId;
-                saveMapping(db, p.rawProductName, normalized.ingredientId, normalized.variantId, normalized.method, normalized.confidence);
+                ingredientId = normalized.ingredientId
+                saveMapping(
+                  db,
+                  p.rawProductName,
+                  normalized.ingredientId,
+                  normalized.variantId,
+                  normalized.method,
+                  normalized.confidence
+                )
               } else {
                 // Create a raw ingredient entry
-                ingredientId = p.rawProductName.toLowerCase().trim()
+                ingredientId = p.rawProductName
+                  .toLowerCase()
+                  .trim()
                   .replace(/[^a-z0-9\s-]/g, '')
                   .replace(/\s+/g, '-')
                   .replace(/-+/g, '-')
-                  .substring(0, 80);
+                  .substring(0, 80)
 
-                if (!ingredientId) { skipped++; continue; }
+                if (!ingredientId) {
+                  skipped++
+                  continue
+                }
 
-                db.prepare(`
+                db.prepare(
+                  `
                   INSERT OR IGNORE INTO canonical_ingredients (ingredient_id, name, category, standard_unit)
                   VALUES (?, ?, ?, ?)
-                `).run(ingredientId, p.rawProductName.substring(0, 100), 'uncategorized', p.priceUnit || 'each');
+                `
+                ).run(
+                  ingredientId,
+                  p.rawProductName.substring(0, 100),
+                  'uncategorized',
+                  p.priceUnit || 'each'
+                )
               }
 
               const result = upsertPrice(db, {
@@ -1026,50 +1616,56 @@ ${priceRows}
                 instacartMarkupPct: p.instacartMarkupPct || null,
                 sourceUrl: null,
                 inStock: p.inStock !== undefined ? p.inStock : true,
-              });
+              })
 
-              imported++;
+              imported++
             } catch (err) {
-              errors++;
+              errors++
             }
           }
 
-          return jsonResponse(res, { imported, skipped, errors, total: prices.length });
+          return jsonResponse(res, { imported, skipped, errors, total: prices.length })
         } catch (err) {
-          return jsonResponse(res, { error: 'Invalid JSON: ' + err.message }, 400);
+          return jsonResponse(res, { error: 'Invalid JSON: ' + err.message }, 400)
         }
-      });
-      return;
+      })
+      return
     }
 
     // Single price import
     if (path === '/api/price' && req.method === 'POST') {
-      let body = '';
-      req.on('data', chunk => body += chunk);
+      let body = ''
+      req.on('data', (chunk) => (body += chunk))
       req.on('end', () => {
         try {
-          const price = JSON.parse(body);
+          const price = JSON.parse(body)
           // Redirect to batch with single item
-          const batchReq = { ...req, url: '/api/prices/batch', method: 'POST' };
-          return jsonResponse(res, { status: 'use /api/prices/batch with { prices: [...] }' }, 200);
+          const batchReq = { ...req, url: '/api/prices/batch', method: 'POST' }
+          return jsonResponse(res, { status: 'use /api/prices/batch with { prices: [...] }' }, 200)
         } catch (err) {
-          return jsonResponse(res, { error: err.message }, 400);
+          return jsonResponse(res, { error: err.message }, 400)
         }
-      });
-      return;
+      })
+      return
     }
 
     // Stock status summary - overall availability stats
     if (path === '/api/stock/summary') {
-      const summary = db.prepare(`
+      const summary = db
+        .prepare(
+          `
         SELECT
           COUNT(*) as total,
           SUM(CASE WHEN in_stock = 1 THEN 1 ELSE 0 END) as in_stock,
           SUM(CASE WHEN in_stock = 0 THEN 1 ELSE 0 END) as out_of_stock
         FROM current_prices
-      `).get();
+      `
+        )
+        .get()
 
-      const outOfStockItems = db.prepare(`
+      const outOfStockItems = db
+        .prepare(
+          `
         SELECT ci.name, ci.ingredient_id, sr.name as store_name, cp.last_confirmed_at
         FROM current_prices cp
         JOIN canonical_ingredients ci ON cp.canonical_ingredient_id = ci.ingredient_id
@@ -1077,81 +1673,97 @@ ${priceRows}
         WHERE cp.in_stock = 0
         ORDER BY cp.last_confirmed_at DESC
         LIMIT 50
-      `).all();
+      `
+        )
+        .all()
 
       return jsonResponse(res, {
         total: summary.total,
         inStock: summary.in_stock,
         outOfStock: summary.out_of_stock,
-        availabilityPct: summary.total > 0 ? Math.round(summary.in_stock * 100 / summary.total) : 100,
+        availabilityPct:
+          summary.total > 0 ? Math.round((summary.in_stock * 100) / summary.total) : 100,
         outOfStockItems,
-      });
+      })
     }
 
     // Stock status for a specific ingredient across all stores
     if (path.startsWith('/api/stock/ingredient/')) {
-      const ingredientId = path.split('/').pop();
-      const rows = db.prepare(`
+      const ingredientId = path.split('/').pop()
+      const rows = db
+        .prepare(
+          `
         SELECT cp.in_stock, cp.price_cents, cp.price_unit, cp.last_confirmed_at,
                sr.name as store_name, sr.source_id
         FROM current_prices cp
         JOIN source_registry sr ON cp.source_id = sr.source_id
         WHERE cp.canonical_ingredient_id = ?
         ORDER BY cp.in_stock DESC, cp.price_cents ASC
-      `).all(ingredientId);
+      `
+        )
+        .all(ingredientId)
 
-      const ingredient = db.prepare('SELECT * FROM canonical_ingredients WHERE ingredient_id = ?').get(ingredientId);
+      const ingredient = db
+        .prepare('SELECT * FROM canonical_ingredients WHERE ingredient_id = ?')
+        .get(ingredientId)
 
       return jsonResponse(res, {
-        ingredient: ingredient ? { id: ingredient.ingredient_id, name: ingredient.name, category: ingredient.category } : null,
-        stores: rows.map(r => ({
+        ingredient: ingredient
+          ? { id: ingredient.ingredient_id, name: ingredient.name, category: ingredient.category }
+          : null,
+        stores: rows.map((r) => ({
           store: r.store_name,
           inStock: r.in_stock === 1,
           priceCents: r.price_cents,
           priceUnit: r.price_unit,
           lastConfirmed: r.last_confirmed_at,
         })),
-        availableAt: rows.filter(r => r.in_stock === 1).length,
-        unavailableAt: rows.filter(r => r.in_stock === 0).length,
-      });
+        availableAt: rows.filter((r) => r.in_stock === 1).length,
+        unavailableAt: rows.filter((r) => r.in_stock === 0).length,
+      })
     }
 
     // Store scorecards - which stores are cheapest for YOUR ingredients
     if (path === '/api/stores/scorecard' && req.method === 'POST') {
-      let body = '';
-      req.on('data', chunk => body += chunk);
+      let body = ''
+      req.on('data', (chunk) => (body += chunk))
       req.on('end', () => {
         try {
-          const { items } = JSON.parse(body);
-          if (!Array.isArray(items)) return jsonResponse(res, { error: 'items must be an array' }, 400);
+          const { items } = JSON.parse(body)
+          if (!Array.isArray(items))
+            return jsonResponse(res, { error: 'items must be an array' }, 400)
 
-          const storeStats = {};  // storeName -> { totalCents, itemCount, wins }
+          const storeStats = {} // storeName -> { totalCents, itemCount, wins }
 
           for (const item of items.slice(0, 200)) {
-            const name = typeof item === 'string' ? item : item.name;
-            if (!name) continue;
+            const name = typeof item === 'string' ? item : item.name
+            if (!name) continue
 
-            const result = smartLookup(db, name);
-            if (!result) continue;
+            const result = smartLookup(db, name)
+            if (!result) continue
 
-            const prices = db.prepare(`
+            const prices = db
+              .prepare(
+                `
               SELECT cp.price_cents, cp.in_stock, sr.name as store_name
               FROM current_prices cp
               JOIN source_registry sr ON cp.source_id = sr.source_id
               WHERE cp.canonical_ingredient_id = ? AND cp.in_stock = 1
               ORDER BY cp.price_cents ASC
-            `).all(result.ingredient_id);
+            `
+              )
+              .all(result.ingredient_id)
 
-            if (prices.length === 0) continue;
+            if (prices.length === 0) continue
 
-            const cheapest = prices[0].store_name;
+            const cheapest = prices[0].store_name
             for (const p of prices) {
               if (!storeStats[p.store_name]) {
-                storeStats[p.store_name] = { totalCents: 0, itemCount: 0, wins: 0, items: [] };
+                storeStats[p.store_name] = { totalCents: 0, itemCount: 0, wins: 0, items: [] }
               }
-              storeStats[p.store_name].totalCents += p.price_cents;
-              storeStats[p.store_name].itemCount++;
-              if (p.store_name === cheapest) storeStats[p.store_name].wins++;
+              storeStats[p.store_name].totalCents += p.price_cents
+              storeStats[p.store_name].itemCount++
+              if (p.store_name === cheapest) storeStats[p.store_name].wins++
             }
           }
 
@@ -1161,40 +1773,45 @@ ${priceRows}
               avgCents: Math.round(stats.totalCents / stats.itemCount),
               itemCount: stats.itemCount,
               wins: stats.wins,
-              coveragePct: items.length > 0 ? Math.round(stats.itemCount * 100 / items.length) : 0,
+              coveragePct:
+                items.length > 0 ? Math.round((stats.itemCount * 100) / items.length) : 0,
               score: stats.itemCount > 0 ? Math.round(stats.totalCents / stats.itemCount) : 999999,
             }))
-            .sort((a, b) => a.score - b.score);
+            .sort((a, b) => a.score - b.score)
 
           return jsonResponse(res, {
             ingredientCount: items.length,
             storeCount: ranked.length,
             stores: ranked,
-          });
+          })
         } catch (err) {
-          return jsonResponse(res, { error: 'Invalid JSON: ' + err.message }, 400);
+          return jsonResponse(res, { error: 'Invalid JSON: ' + err.message }, 400)
         }
-      });
-      return;
+      })
+      return
     }
 
     // Price history for one ingredient (for sparklines/charts)
     // Accepts canonical_ingredient_id OR ingredient name (resolved via smart lookup)
     if (path.startsWith('/api/prices/history/')) {
-      const rawId = decodeURIComponent(path.replace('/api/prices/history/', ''));
-      const days = parseInt(url.searchParams.get('days') || '90');
+      const rawId = decodeURIComponent(path.replace('/api/prices/history/', ''))
+      const days = parseInt(url.searchParams.get('days') || '90')
 
       // Try as canonical ID first; if not found, resolve name via smart lookup
-      let resolvedId = rawId;
-      const directCheck = db.prepare('SELECT 1 FROM canonical_ingredients WHERE ingredient_id = ?').get(rawId);
+      let resolvedId = rawId
+      const directCheck = db
+        .prepare('SELECT 1 FROM canonical_ingredients WHERE ingredient_id = ?')
+        .get(rawId)
       if (!directCheck) {
-        const lookup = smartLookup(db, rawId);
+        const lookup = smartLookup(db, rawId)
         if (lookup && lookup.ingredient_id) {
-          resolvedId = lookup.ingredient_id;
+          resolvedId = lookup.ingredient_id
         }
       }
 
-      const history = db.prepare(`
+      const history = db
+        .prepare(
+          `
         SELECT pc.new_price_cents, pc.old_price_cents, pc.change_pct,
                pc.observed_at, sr.name as store_name
         FROM price_changes pc
@@ -1202,26 +1819,32 @@ ${priceRows}
         WHERE pc.canonical_ingredient_id = ?
           AND pc.observed_at >= datetime('now', '-' || ? || ' days')
         ORDER BY pc.observed_at ASC
-      `).all(resolvedId, days);
+      `
+        )
+        .all(resolvedId, days)
 
       // Also get current best price
-      const current = db.prepare(`
+      const current = db
+        .prepare(
+          `
         SELECT MIN(cp.price_cents) as best_cents, cp.price_unit
         FROM current_prices cp
         WHERE cp.canonical_ingredient_id = ? AND cp.in_stock = 1
-      `).get(resolvedId);
+      `
+        )
+        .get(resolvedId)
 
       // Condensed daily minimums for sparkline
-      const dailyMap = {};
+      const dailyMap = {}
       for (const h of history) {
-        const day = h.observed_at.split('T')[0];
+        const day = h.observed_at.split('T')[0]
         if (!dailyMap[day] || h.new_price_cents < dailyMap[day]) {
-          dailyMap[day] = h.new_price_cents;
+          dailyMap[day] = h.new_price_cents
         }
       }
       const daily = Object.entries(dailyMap)
         .sort(([a], [b]) => a.localeCompare(b))
-        .map(([date, cents]) => ({ date, cents }));
+        .map(([date, cents]) => ({ date, cents }))
 
       return jsonResponse(res, {
         ingredientId: resolvedId,
@@ -1229,7 +1852,7 @@ ${priceRows}
         days,
         currentBestCents: current?.best_cents || null,
         priceUnit: current?.price_unit || null,
-        history: history.map(h => ({
+        history: history.map((h) => ({
           cents: h.new_price_cents,
           previousCents: h.old_price_cents,
           changePct: h.change_pct ? Math.round(h.change_pct * 10) / 10 : null,
@@ -1237,29 +1860,32 @@ ${priceRows}
           date: h.observed_at,
         })),
         daily,
-      });
+      })
     }
 
     // Cost impact - which of YOUR ingredients changed price recently
     if (path === '/api/prices/cost-impact' && req.method === 'POST') {
-      let body = '';
-      req.on('data', chunk => body += chunk);
+      let body = ''
+      req.on('data', (chunk) => (body += chunk))
       req.on('end', () => {
         try {
-          const { items, days } = JSON.parse(body);
-          if (!Array.isArray(items)) return jsonResponse(res, { error: 'items must be an array' }, 400);
-          const lookbackDays = days || 7;
+          const { items, days } = JSON.parse(body)
+          if (!Array.isArray(items))
+            return jsonResponse(res, { error: 'items must be an array' }, 400)
+          const lookbackDays = days || 7
 
-          const impacts = [];
+          const impacts = []
 
           for (const item of items.slice(0, 200)) {
-            const name = typeof item === 'string' ? item : item.name;
-            if (!name) continue;
+            const name = typeof item === 'string' ? item : item.name
+            if (!name) continue
 
-            const result = smartLookup(db, name);
-            if (!result) continue;
+            const result = smartLookup(db, name)
+            if (!result) continue
 
-            const recentChange = db.prepare(`
+            const recentChange = db
+              .prepare(
+                `
               SELECT pc.old_price_cents, pc.new_price_cents, pc.change_pct, pc.observed_at,
                      sr.name as store_name
               FROM price_changes pc
@@ -1269,7 +1895,9 @@ ${priceRows}
                 AND pc.old_price_cents IS NOT NULL
               ORDER BY ABS(pc.change_pct) DESC
               LIMIT 1
-            `).get(result.ingredient_id, lookbackDays);
+            `
+              )
+              .get(result.ingredient_id, lookbackDays)
 
             if (recentChange && recentChange.change_pct && Math.abs(recentChange.change_pct) >= 3) {
               impacts.push({
@@ -1281,38 +1909,41 @@ ${priceRows}
                 direction: recentChange.change_pct > 0 ? 'up' : 'down',
                 store: recentChange.store_name,
                 date: recentChange.observed_at,
-              });
+              })
             }
           }
 
-          impacts.sort((a, b) => Math.abs(b.changePct) - Math.abs(a.changePct));
+          impacts.sort((a, b) => Math.abs(b.changePct) - Math.abs(a.changePct))
 
           return jsonResponse(res, {
             lookbackDays,
             totalChecked: items.length,
             impactCount: impacts.length,
             impacts,
-            totalIncreaseCents: impacts.filter(i => i.direction === 'up').reduce((s, i) => s + (i.newCents - i.oldCents), 0),
-            totalDecreaseCents: impacts.filter(i => i.direction === 'down').reduce((s, i) => s + (i.oldCents - i.newCents), 0),
-          });
+            totalIncreaseCents: impacts
+              .filter((i) => i.direction === 'up')
+              .reduce((s, i) => s + (i.newCents - i.oldCents), 0),
+            totalDecreaseCents: impacts
+              .filter((i) => i.direction === 'down')
+              .reduce((s, i) => s + (i.oldCents - i.newCents), 0),
+          })
         } catch (err) {
-          return jsonResponse(res, { error: 'Invalid JSON: ' + err.message }, 400);
+          return jsonResponse(res, { error: 'Invalid JSON: ' + err.message }, 400)
         }
-      });
-      return;
+      })
+      return
     }
 
     // 404
-    jsonResponse(res, { error: 'Not found' }, 404);
-
+    jsonResponse(res, { error: 'Not found' }, 404)
   } catch (err) {
-    console.error('Request error:', err);
-    jsonResponse(res, { error: err.message }, 500);
+    console.error('Request error:', err)
+    jsonResponse(res, { error: err.message }, 500)
   }
-});
+})
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`OpenClaw Sync API running on http://0.0.0.0:${PORT}`);
-  console.log(`Dashboard: http://10.0.0.177:${PORT}/dashboard`);
-  console.log(`Sync endpoint: http://10.0.0.177:${PORT}/api/sync/database`);
-});
+  console.log(`OpenClaw Sync API running on http://0.0.0.0:${PORT}`)
+  console.log(`Dashboard: http://10.0.0.177:${PORT}/dashboard`)
+  console.log(`Sync endpoint: http://10.0.0.177:${PORT}/api/sync/database`)
+})

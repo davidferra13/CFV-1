@@ -95,3 +95,27 @@ test('drops invalid values and lets explicit later prefills override earlier one
     total_cents: 560000,
   })
 })
+
+test('supports quote revision prefills through the shared runtime', () => {
+  const parsed = readQuoteDraftPrefillFromSearchParams(
+    new URLSearchParams({
+      source: 'quote_revision',
+      event_id: '66666666-6666-4666-8666-666666666666',
+      inquiry_id: '77777777-7777-4777-8777-777777777777',
+      quote_name: 'Birthday Dinner Quote Revised',
+      internal_notes: 'Prepared from rejected quote quote-1.',
+    })
+  )
+
+  assert.deepEqual(parsed, {
+    source: 'quote_revision',
+    event_id: '66666666-6666-4666-8666-666666666666',
+    inquiry_id: '77777777-7777-4777-8777-777777777777',
+    quote_name: 'Birthday Dinner Quote Revised',
+    internal_notes: 'Prepared from rejected quote quote-1.',
+  })
+
+  const href = buildQuoteDraftHref(parsed)
+  assert.match(href, /^\/quotes\/new\?/)
+  assert.match(href, /source=quote_revision/)
+})

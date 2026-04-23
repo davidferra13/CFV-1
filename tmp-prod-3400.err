@@ -1,0 +1,1525 @@
+ ⚠ Invalid next.config.js options detected: 
+ ⚠     Unrecognized key(s) in object: 'serverActions'
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: a0000000-0000-0000-0000-000000000099,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ 'a0000000-0000-0000-0000-000000000099', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: a0000000-0000-0000-0000-000000000099,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ 'a0000000-0000-0000-0000-000000000099', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: a0000000-0000-0000-0000-000000000099,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ 'a0000000-0000-0000-0000-000000000099', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: a0000000-0000-0000-0000-000000000099,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ 'a0000000-0000-0000-0000-000000000099', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: a0000000-0000-0000-0000-000000000099,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ 'a0000000-0000-0000-0000-000000000099', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: a0000000-0000-0000-0000-000000000099,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ 'a0000000-0000-0000-0000-000000000099', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: a0000000-0000-0000-0000-000000000099,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ 'a0000000-0000-0000-0000-000000000099', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: a0000000-0000-0000-0000-000000000099,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ 'a0000000-0000-0000-0000-000000000099', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: a0000000-0000-0000-0000-000000000099,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ 'a0000000-0000-0000-0000-000000000099', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: a0000000-0000-0000-0000-000000000099,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ 'a0000000-0000-0000-0000-000000000099', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[getClientWithStats] Error: {
+  message: 'JSON object requested, multiple (or no) rows returned',
+  code: 'PGRST116'
+}
+[getClientFunQA] Error: {
+  message: 'JSON object requested, multiple (or no) rows returned',
+  code: 'PGRST116'
+}
+[ollama-warmup] Warmup returned HTTP 404
+[cron-ticker] db-backup returned 405
+[compat] Unmapped filter operator: not.eq
+[email-retry] Query failed: relation "email_dead_letter_queue" does not exist
+[inquiry-client-followup] Query failed: {
+  message: 'column inquiries.client_email does not exist',
+  code: '42703',
+  details: undefined
+}
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:44f7d10c-a683-4a26-94c4-def97758a502
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[sim:generator] Failed to generate scenarios for inquiry_parse: k [ResponseError]: model 'gemma4:4b' not found
+    at T (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\clients\[id]\relationship\page.js:10:48143)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async F (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\clients\[id]\relationship\page.js:10:49664)
+    at async G.processStreamableRequest (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\clients\[id]\relationship\page.js:10:51449)
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\76549.js:101:22)
+    at async v (C:\Users\david\Documents\CFv1\.next\server\chunks\76549.js:307:609)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\simulation\route.js:1:4343 {
+  error: "model 'gemma4:4b' not found",
+  status_code: 404
+}
+[sim] No scenarios generated for module: inquiry_parse
+[compat] Unmapped filter operator: not.eq
+[sim:generator] Failed to generate scenarios for client_parse: k [ResponseError]: model 'gemma4:4b' not found
+    at T (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\clients\[id]\relationship\page.js:10:48143)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async F (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\clients\[id]\relationship\page.js:10:49664)
+    at async G.processStreamableRequest (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\clients\[id]\relationship\page.js:10:51449)
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\76549.js:101:22)
+    at async v (C:\Users\david\Documents\CFv1\.next\server\chunks\76549.js:307:609)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\simulation\route.js:1:4343 {
+  error: "model 'gemma4:4b' not found",
+  status_code: 404
+}
+[sim] No scenarios generated for module: client_parse
+[sim:generator] Failed to generate scenarios for allergen_risk: k [ResponseError]: model 'gemma4:4b' not found
+    at T (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\clients\[id]\relationship\page.js:10:48143)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async F (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\clients\[id]\relationship\page.js:10:49664)
+    at async G.processStreamableRequest (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\clients\[id]\relationship\page.js:10:51449)
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\76549.js:101:22)
+    at async v (C:\Users\david\Documents\CFv1\.next\server\chunks\76549.js:307:609)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\simulation\route.js:1:4343 {
+  error: "model 'gemma4:4b' not found",
+  status_code: 404
+}
+[sim] No scenarios generated for module: allergen_risk
+[sim:generator] Failed to generate scenarios for correspondence: k [ResponseError]: model 'gemma4:4b' not found
+    at T (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\clients\[id]\relationship\page.js:10:48143)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async F (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\clients\[id]\relationship\page.js:10:49664)
+    at async G.processStreamableRequest (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\clients\[id]\relationship\page.js:10:51449)
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\76549.js:101:22)
+    at async v (C:\Users\david\Documents\CFv1\.next\server\chunks\76549.js:307:609)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\simulation\route.js:1:4343 {
+  error: "model 'gemma4:4b' not found",
+  status_code: 404
+}
+[sim] No scenarios generated for module: correspondence
+[sim:generator] Failed to generate scenarios for menu_suggestions: k [ResponseError]: model 'gemma4:4b' not found
+    at T (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\clients\[id]\relationship\page.js:10:48143)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async F (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\clients\[id]\relationship\page.js:10:49664)
+    at async G.processStreamableRequest (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\clients\[id]\relationship\page.js:10:51449)
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\76549.js:101:22)
+    at async v (C:\Users\david\Documents\CFv1\.next\server\chunks\76549.js:307:609)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\simulation\route.js:1:4343 {
+  error: "model 'gemma4:4b' not found",
+  status_code: 404
+}
+[sim] No scenarios generated for module: menu_suggestions
+[sim:generator] Failed to generate scenarios for quote_draft: k [ResponseError]: model 'gemma4:4b' not found
+    at T (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\clients\[id]\relationship\page.js:10:48143)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async F (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\clients\[id]\relationship\page.js:10:49664)
+    at async G.processStreamableRequest (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\clients\[id]\relationship\page.js:10:51449)
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\76549.js:101:22)
+    at async v (C:\Users\david\Documents\CFv1\.next\server\chunks\76549.js:307:609)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\simulation\route.js:1:4343 {
+  error: "model 'gemma4:4b' not found",
+  status_code: 404
+}
+[sim] No scenarios generated for module: quote_draft
+{"timestamp":"2026-04-23T02:34:34.381Z","level":"error","scope":"events","message":"Readiness evaluator crashed - transition proceeding without verification","context":{"eventId":"5228b77b-d4c9-4582-b3c0-c6ae0b1b9ac1","fromStatus":"confirmed","toStatus":"in_progress"},"error":{"name":"Error","message":"column events.event_time does not exist"}}
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:44f7d10c-a683-4a26-94c4-def97758a502
+[compat] Unmapped filter operator: not.eq
+{"timestamp":"2026-04-23T02:34:34.701Z","level":"error","scope":"events","message":"Atomic transition failed","error":{"name":"Error","message":"[object Object]"}}
+[event-progression] Failed to start event 5228b77b-d4c9-4582-b3c0-c6ae0b1b9ac1: Error: Failed to transition event status
+    at p (C:\Users\david\Documents\CFv1\.next\server\chunks\77938.js:1:5719)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\cron\event-progression\route.js:1:4678
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async p (C:\Users\david\Documents\CFv1\.next\server\app\api\cron\event-progression\route.js:1:4280)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411
+    at async e_.execute (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:27880)
+    at async e_.handle (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:39943)
+    at async doRender (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1366:42)
+[sim-report] Ollama unavailable for report generation: k [ResponseError]: model 'gemma4:4b' not found
+    at T (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\clients\[id]\relationship\page.js:10:48143)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async F (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\clients\[id]\relationship\page.js:10:49664)
+    at async G.processStreamableRequest (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\clients\[id]\relationship\page.js:10:51449)
+    at async y (C:\Users\david\Documents\CFv1\.next\server\chunks\76549.js:288:72) {
+  error: "model 'gemma4:4b' not found",
+  status_code: 404
+}
+[sync] Could not load ingredient aliases (non-blocking): RangeError: Maximum call stack size exceeded
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:59701
+    at f.buildQueryFromSourceParams (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:59804)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:59220
+    at Object.startActiveSpan (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:65742)
+    at f.toQuery (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:59170)
+    at x.sqlToQuery (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:8156)
+    at U.execute (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:45129)
+    at I (C:\Users\david\Documents\CFv1\.next\server\chunks\61196.js:1:5484)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Object.syncHandler (C:\Users\david\Documents\CFv1\.next\server\chunks\61196.js:71:1655)
+[compat] Unmapped filter operator: not.eq
+[email-retry] Cron failed: Failed to query dead-letter queue
+[cron-ticker] email-retry returned 500
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:44f7d10c-a683-4a26-94c4-def97758a502
+[inquiry-client-followup] Cron failed: Error: Failed to query stale inquiries
+    at C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\inquiry-client-followup\route.js:3:219
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\inquiry-client-followup\route.js:1:3741)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411
+    at async e_.execute (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:27880)
+    at async e_.handle (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:39943)
+    at async doRender (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1366:42)
+    at async cacheEntry.responseCache.get.routeKind (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1588:28)
+[cron-ticker] inquiry-client-followup returned 500
+[sync] Could not load ingredient aliases (non-blocking): RangeError: Maximum call stack size exceeded
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:59701
+    at f.buildQueryFromSourceParams (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:59804)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:59220
+    at Object.startActiveSpan (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:65742)
+    at f.toQuery (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:59170)
+    at x.sqlToQuery (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:8156)
+    at U.execute (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:45129)
+    at I (C:\Users\david\Documents\CFv1\.next\server\chunks\61196.js:1:5484)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Object.syncHandler (C:\Users\david\Documents\CFv1\.next\server\chunks\61196.js:71:1655)
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+{"timestamp":"2026-04-23T02:34:37.271Z","level":"error","scope":"events","message":"Readiness evaluator crashed - transition proceeding without verification","context":{"eventId":"50f980ce-ca1c-4876-b865-fa1265e29b2e","fromStatus":"confirmed","toStatus":"in_progress"},"error":{"name":"Error","message":"column events.event_time does not exist"}}
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:6a6a04ab-cc5e-41c9-995f-1a5a2c71ae87
+[compat] Unmapped filter operator: not.eq
+{"timestamp":"2026-04-23T02:34:37.309Z","level":"error","scope":"events","message":"Atomic transition failed","error":{"name":"Error","message":"[object Object]"}}
+[event-progression] Failed to start event 50f980ce-ca1c-4876-b865-fa1265e29b2e: Error: Failed to transition event status
+    at p (C:\Users\david\Documents\CFv1\.next\server\chunks\77938.js:1:5719)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\cron\event-progression\route.js:1:4678
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async p (C:\Users\david\Documents\CFv1\.next\server\app\api\cron\event-progression\route.js:1:4280)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411
+    at async e_.execute (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:27880)
+    at async e_.handle (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:39943)
+    at async doRender (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1366:42)
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:6a6a04ab-cc5e-41c9-995f-1a5a2c71ae87
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:lifecycle-cron/query_expired_quotes] column quotes.expires_at does not exist 
+{"timestamp":"2026-04-23T02:34:37.361Z","level":"error","scope":"events","message":"Readiness evaluator crashed - transition proceeding without verification","context":{"eventId":"81a5433c-65e8-4ae7-a087-6ea75f6b8ac7","fromStatus":"in_progress","toStatus":"completed"},"error":{"name":"Error","message":"column events.event_time does not exist"}}
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:6a6a04ab-cc5e-41c9-995f-1a5a2c71ae87
+{"timestamp":"2026-04-23T02:34:37.392Z","level":"error","scope":"events","message":"Atomic transition failed","error":{"name":"Error","message":"[object Object]"}}
+[event-progression] Failed to complete event 81a5433c-65e8-4ae7-a087-6ea75f6b8ac7: Error: Failed to transition event status
+    at p (C:\Users\david\Documents\CFv1\.next\server\chunks\77938.js:1:5719)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\cron\event-progression\route.js:1:5393
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async p (C:\Users\david\Documents\CFv1\.next\server\app\api\cron\event-progression\route.js:1:4280)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411
+    at async e_.execute (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:27880)
+    at async e_.handle (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:39943)
+    at async doRender (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1366:42)
+[event-progression] 3 transition(s) failed. started=0 completed=0
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:1ff5e62e-7bc9-47b7-875e-91a594aa88ab
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:1ff5e62e-7bc9-47b7-875e-91a594aa88ab
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:1ff5e62e-7bc9-47b7-875e-91a594aa88ab
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:f8d4a8f0-1d8e-4e8d-b1d3-908494aaa333
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:f8d4a8f0-1d8e-4e8d-b1d3-908494aaa333
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:f8d4a8f0-1d8e-4e8d-b1d3-908494aaa333
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:3fa08829-d00f-4d74-a3f1-675cbc203d23
+{"timestamp":"2026-04-23T02:34:37.609Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:3fa08829-d00f-4d74-a3f1-675cbc203d23
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:3fa08829-d00f-4d74-a3f1-675cbc203d23
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:bd72cf97-a0e5-4fe4-b049-0706ac81d100
+{"timestamp":"2026-04-23T02:34:37.795Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:bd72cf97-a0e5-4fe4-b049-0706ac81d100
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:bd72cf97-a0e5-4fe4-b049-0706ac81d100
+{"timestamp":"2026-04-23T02:34:37.864Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:d5a17baa-3b51-4923-9617-c262cb2d2c9d
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:d5a17baa-3b51-4923-9617-c262cb2d2c9d
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:d5a17baa-3b51-4923-9617-c262cb2d2c9d
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:8d9a1ab1-0e27-4e8f-ab11-caf0eba6c2fd
+{"timestamp":"2026-04-23T02:34:37.945Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:8d9a1ab1-0e27-4e8f-ab11-caf0eba6c2fd
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:8d9a1ab1-0e27-4e8f-ab11-caf0eba6c2fd
+{"timestamp":"2026-04-23T02:34:38.025Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:a9a7db55-e780-4f1a-b95a-bcc52a325ee0
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:a9a7db55-e780-4f1a-b95a-bcc52a325ee0
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:a9a7db55-e780-4f1a-b95a-bcc52a325ee0
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:6785c617-e884-4663-b573-4b2358ec241c
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:6785c617-e884-4663-b573-4b2358ec241c
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:6785c617-e884-4663-b573-4b2358ec241c
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:f06c75c6-5f72-4ff8-8134-4e518a7d57bb
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:f06c75c6-5f72-4ff8-8134-4e518a7d57bb
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:f06c75c6-5f72-4ff8-8134-4e518a7d57bb
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:e85cfd47-24cc-48b6-a3dc-f300bf2a1b1a
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:e85cfd47-24cc-48b6-a3dc-f300bf2a1b1a
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:e85cfd47-24cc-48b6-a3dc-f300bf2a1b1a
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:c0000000-0000-0000-0000-000000000099
+{"timestamp":"2026-04-23T02:34:38.321Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:c0000000-0000-0000-0000-000000000099
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:c0000000-0000-0000-0000-000000000099
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:68322b5d-516c-4959-be23-be344e84c9fc
+{"timestamp":"2026-04-23T02:34:38.401Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:68322b5d-516c-4959-be23-be344e84c9fc
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:68322b5d-516c-4959-be23-be344e84c9fc
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:c41f9c74-fc62-45ec-bb29-ec1fed4b8ea6
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:c41f9c74-fc62-45ec-bb29-ec1fed4b8ea6
+{"timestamp":"2026-04-23T02:34:38.463Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:c41f9c74-fc62-45ec-bb29-ec1fed4b8ea6
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:0d120d0f-45e3-44d7-82ef-d61609b8ebbd
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:0d120d0f-45e3-44d7-82ef-d61609b8ebbd
+{"timestamp":"2026-04-23T02:34:38.512Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:0d120d0f-45e3-44d7-82ef-d61609b8ebbd
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:14d2fd0a-8db9-4bc6-9be4-aded0dea3e4b
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:14d2fd0a-8db9-4bc6-9be4-aded0dea3e4b
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:14d2fd0a-8db9-4bc6-9be4-aded0dea3e4b
+{"timestamp":"2026-04-23T02:34:38.629Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:562868a0-716e-4689-9d54-a56eeae91898
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:562868a0-716e-4689-9d54-a56eeae91898
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:562868a0-716e-4689-9d54-a56eeae91898
+{"timestamp":"2026-04-23T02:34:38.707Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:d3895213-d9e6-4cac-b210-e86e94f1c48c
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:d3895213-d9e6-4cac-b210-e86e94f1c48c
+{"timestamp":"2026-04-23T02:34:38.753Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:d3895213-d9e6-4cac-b210-e86e94f1c48c
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:e96193d6-f914-4072-8b6a-b2a904ac72e7
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:e96193d6-f914-4072-8b6a-b2a904ac72e7
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:e96193d6-f914-4072-8b6a-b2a904ac72e7
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:e6a2569e-897c-408b-b867-e0505dd2c1b1
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:e6a2569e-897c-408b-b867-e0505dd2c1b1
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:e6a2569e-897c-408b-b867-e0505dd2c1b1
+[compat] Unmapped filter operator: not.eq
+{"timestamp":"2026-04-23T02:34:38.891Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:ef2e89c6-508a-487a-97da-5500cfaeaa97
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:ef2e89c6-508a-487a-97da-5500cfaeaa97
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:ef2e89c6-508a-487a-97da-5500cfaeaa97
+{"timestamp":"2026-04-23T02:34:38.937Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:7bc09988-f38a-42a3-9a55-a3f1c48927c2
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:7bc09988-f38a-42a3-9a55-a3f1c48927c2
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:7bc09988-f38a-42a3-9a55-a3f1c48927c2
+{"timestamp":"2026-04-23T02:34:38.979Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:90cf03a0-389b-414f-813b-d74c98188e5e
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:90cf03a0-389b-414f-813b-d74c98188e5e
+[compat] Unmapped filter operator: not.eq
+{"timestamp":"2026-04-23T02:34:39.017Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:90cf03a0-389b-414f-813b-d74c98188e5e
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:9646a727-a0b8-436c-a87a-e62027eaf13c
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+{"timestamp":"2026-04-23T02:34:39.068Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:9646a727-a0b8-436c-a87a-e62027eaf13c
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:9646a727-a0b8-436c-a87a-e62027eaf13c
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:f18d5302-784b-41ef-8309-135cafc11bf8
+{"timestamp":"2026-04-23T02:34:39.120Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:f18d5302-784b-41ef-8309-135cafc11bf8
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:f18d5302-784b-41ef-8309-135cafc11bf8
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:8215b219-1454-4337-aa4e-1412697cf519
+{"timestamp":"2026-04-23T02:34:39.178Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:8215b219-1454-4337-aa4e-1412697cf519
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:8215b219-1454-4337-aa4e-1412697cf519
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:a6be3806-a57d-431f-b858-1deac0efdcfc
+{"timestamp":"2026-04-23T02:34:39.242Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:a6be3806-a57d-431f-b858-1deac0efdcfc
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:a6be3806-a57d-431f-b858-1deac0efdcfc
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:c0000000-0000-0000-0000-000000000001
+{"timestamp":"2026-04-23T02:34:39.293Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:c0000000-0000-0000-0000-000000000001
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[side-effect-failure:cron:revenue-forecast/generate_revenue_forecast_snapshot] relation "planning_runs" does not exist chef:c0000000-0000-0000-0000-000000000001
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+{"timestamp":"2026-04-23T02:34:39.377Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+{"timestamp":"2026-04-23T02:34:39.422Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+{"timestamp":"2026-04-23T02:34:39.462Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[compat] Unmapped filter operator: not.eq
+{"timestamp":"2026-04-23T02:34:39.502Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+{"timestamp":"2026-04-23T02:34:39.543Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+{"timestamp":"2026-04-23T02:34:39.583Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+{"timestamp":"2026-04-23T02:34:39.626Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+{"timestamp":"2026-04-23T02:34:39.694Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[daily-report] aiNarrative failed: i [OllamaOfflineError]: AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+    at y (C:\Users\david\Documents\CFv1\.next\server\chunks\9241.js:29:13185)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:7615)
+    at async c (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:8096)
+    at async d (C:\Users\david\Documents\CFv1\.next\server\chunks\68342.js:3:17751)
+    at async C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:4243
+    at async o (C:\Users\david\Documents\CFv1\.next\server\chunks\93822.js:1:11883)
+    at async m (C:\Users\david\Documents\CFv1\.next\server\app\api\scheduled\daily-report\route.js:1:3729)
+    at async C:\Users\david\Documents\CFv1\.next\server\chunks\21967.js:19:73586
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38411 {
+  code: 'model_missing'
+}
+[sync] Enriched endpoint unreachable: fetch failed
+[sync] Pi enriched endpoint not available. Aborting sync.
+[compat] Unmapped filter operator: not.eq
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: u: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at J (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:2280)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3235
+    at Socket.eI (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3240)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69131
+    at new c (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69173)
+    at r (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:28:8477)
+    at s (C:\Users\david\Documents\CFv1\.next\server\chunks\27013.js:10:285) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: u: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at J (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:2280)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3235
+    at Socket.eI (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3240)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69131
+    at new c (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69173)
+    at r (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:28:8477)
+    at s (C:\Users\david\Documents\CFv1\.next\server\chunks\27013.js:10:285) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: u: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at J (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:2280)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3235
+    at Socket.eI (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3240)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69131
+    at new c (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69173)
+    at r (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:28:8477)
+    at s (C:\Users\david\Documents\CFv1\.next\server\chunks\27013.js:10:285) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: u: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at J (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:2280)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3235
+    at Socket.eI (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3240)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69131
+    at new c (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69173)
+    at r (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:28:8477)
+    at s (C:\Users\david\Documents\CFv1\.next\server\chunks\27013.js:10:285) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: u: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at J (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:2280)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3235
+    at Socket.eI (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3240)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69131
+    at new c (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69173)
+    at r (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:28:8477)
+    at s (C:\Users\david\Documents\CFv1\.next\server\chunks\27013.js:10:285) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: u: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at J (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:2280)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3235
+    at Socket.eI (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3240)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69131
+    at new c (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69173)
+    at r (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:28:8477)
+    at s (C:\Users\david\Documents\CFv1\.next\server\chunks\27013.js:10:285) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: u: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at J (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:2280)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3235
+    at Socket.eI (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3240)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69131
+    at new c (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69173)
+    at r (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:28:8477)
+    at s (C:\Users\david\Documents\CFv1\.next\server\chunks\27013.js:10:285) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[getPublicShowcaseMenus] Error: {
+  message: 'Invalid SQL identifier: dishes (\n' +
+    '        id,\n' +
+    '        name,\n' +
+    '        course_name,\n' +
+    '        course_number,\n' +
+    '        description,\n' +
+    '        dietary_tags,\n' +
+    '        allergen_flags,\n' +
+    '        sort_order\n' +
+    '      )',
+  code: undefined,
+  details: undefined
+}
+[cron-ticker] openclaw-sync failed: fetch failed
+[cron-ticker] openclaw-polish failed: fetch failed
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: u: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at J (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:2280)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3235
+    at Socket.eI (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3240)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69131
+    at new c (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69173)
+    at r (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:28:8477)
+    at s (C:\Users\david\Documents\CFv1\.next\server\chunks\27013.js:10:285) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: u: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at J (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:2280)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3235
+    at Socket.eI (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3240)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69131
+    at new c (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69173)
+    at r (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:28:8477)
+    at s (C:\Users\david\Documents\CFv1\.next\server\chunks\27013.js:10:285) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[public-seasonal-market-pulse] Ingredient spotlight lookup failed, falling back to seasonal-only mode: u: relation "openclaw.price_intelligence_contract_v1" does not exist
+    at J (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:2280)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3235
+    at Socket.eI (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3240)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69131
+    at new c (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69173)
+    at r (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:28:8477)
+    at s (C:\Users\david\Documents\CFv1\.next\server\chunks\27013.js:10:285) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '1416',
+  file: 'parse_relation.c',
+  line: '1371',
+  routine: 'parserOpenTable'
+}
+[getPublicShowcaseMenus] Error: {
+  message: 'Invalid SQL identifier: dishes (\n' +
+    '        id,\n' +
+    '        name,\n' +
+    '        course_name,\n' +
+    '        course_number,\n' +
+    '        description,\n' +
+    '        dietary_tags,\n' +
+    '        allergen_flags,\n' +
+    '        sort_order\n' +
+    '      )',
+  code: undefined,
+  details: undefined
+}
+[sendSms] Twilio API error 400: {"code":21211,"message":"Invalid 'To' Phone Number: +1555123XXXX","more_info":"https://www.twilio.com/docs/errors/21211","status":400}
+{"timestamp":"2026-04-23T02:40:22.380Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[ai-worker] [pc] Failed: reactive.inquiry_created after 82ms - AI processing is temporarily unavailable. Please try again in a few moments. (Model "gemma4:4b" not found. Run: ollama pull gemma4:4b)
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] FK map miss: invoices::clients - guessing "client_id". Run "npm run db:fk-cache" to regenerate.
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[Dashboard/SmartSuggestions] clientGaps failed: u: column "first_name" does not exist
+    at J (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:2280)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3235
+    at Socket.eI (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3240)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69131
+    at new c (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69173)
+    at r (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:28:8477)
+    at b (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:108:52) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42703',
+  position: '49',
+  file: 'parse_relation.c',
+  line: '3665',
+  routine: 'errorMissingColumn'
+}
+[Dashboard] serviceReadyCandidates failed: {
+  message: 'column events.prep_sheet_generated_at does not exist',
+  code: '42703',
+  details: undefined
+}
+{"timestamp":"2026-04-23T02:40:26.198Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[Dashboard] weeklyBriefing failed: s [Error]: Failed query: SELECT home_state FROM chefs WHERE id = $1 LIMIT 1
+params: c0000000-0000-0000-0000-000000000099
+    at F.queryWithCache (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:46232)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:394:478)
+    at async h (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:503:673)
+    at async f (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:340:76)
+    at async ef (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:1:7328)
+    at async eH (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:46:2935) {
+  query: 'SELECT home_state FROM chefs WHERE id = $1 LIMIT 1',
+  params: [ 'c0000000-0000-0000-0000-000000000099' ],
+  cause: u: column "home_state" does not exist
+      at J (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:2280)
+      at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3235
+      at Socket.eI (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3240)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5)
+      at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+      at TCP.callbackTrampoline (node:internal/async_hooks:130:17) {
+    severity_local: 'ERROR',
+    severity: 'ERROR',
+    code: '42703',
+    position: '8',
+    file: 'parse_relation.c',
+    line: '3665',
+    routine: 'errorMissingColumn'
+  }
+}
+[compat] FK map miss: chef_collab_handoff_recipients::chef_handoffs - guessing "chef_handoff_id". Run "npm run db:fk-cache" to regenerate.
+[Completion] dashboard event 1f2235d4-3627-400f-a93d-01810ef99db1 failed: u: column r.allergen_flags does not exist
+    at J (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:2280)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3235
+    at Socket.eI (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3240)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69131
+    at new c (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69173)
+    at r (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:28:8477)
+    at o (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:179:69) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42703',
+  hint: 'Perhaps you meant to reference the column "d.allergen_flags".',
+  position: '186',
+  file: 'parse_relation.c',
+  line: '3665',
+  routine: 'errorMissingColumn'
+}
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] FK map miss: invoices::clients - guessing "client_id". Run "npm run db:fk-cache" to regenerate.
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[Dashboard/SmartSuggestions] clientGaps failed: u: column "first_name" does not exist
+    at J (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:2280)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3235
+    at Socket.eI (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3240)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69131
+    at new c (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69173)
+    at r (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:28:8477)
+    at b (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:108:52) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42703',
+  position: '49',
+  file: 'parse_relation.c',
+  line: '3665',
+  routine: 'errorMissingColumn'
+}
+{"timestamp":"2026-04-23T02:40:29.826Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[Dashboard] serviceReadyCandidates failed: {
+  message: 'column events.prep_sheet_generated_at does not exist',
+  code: '42703',
+  details: undefined
+}
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[Dashboard] weeklyBriefing failed: s [Error]: Failed query: SELECT home_state FROM chefs WHERE id = $1 LIMIT 1
+params: c0000000-0000-0000-0000-000000000099
+    at F.queryWithCache (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:46232)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:394:478)
+    at async h (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:503:673)
+    at async f (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:340:76)
+    at async ef (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:1:7328)
+    at async eH (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:46:2935) {
+  query: 'SELECT home_state FROM chefs WHERE id = $1 LIMIT 1',
+  params: [ 'c0000000-0000-0000-0000-000000000099' ],
+  cause: u: column "home_state" does not exist
+      at J (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:2280)
+      at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3235
+      at Socket.eI (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3240)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5)
+      at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+      at TCP.callbackTrampoline (node:internal/async_hooks:130:17) {
+    severity_local: 'ERROR',
+    severity: 'ERROR',
+    code: '42703',
+    position: '8',
+    file: 'parse_relation.c',
+    line: '3665',
+    routine: 'errorMissingColumn'
+  }
+}
+[compat] FK map miss: chef_collab_handoff_recipients::chef_handoffs - guessing "chef_handoff_id". Run "npm run db:fk-cache" to regenerate.
+[Completion] dashboard event 1f2235d4-3627-400f-a93d-01810ef99db1 failed: u: column r.allergen_flags does not exist
+    at J (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:2280)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3235
+    at Socket.eI (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3240)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69131
+    at new c (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69173)
+    at r (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:28:8477)
+    at o (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:179:69) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42703',
+  hint: 'Perhaps you meant to reference the column "d.allergen_flags".',
+  position: '186',
+  file: 'parse_relation.c',
+  line: '3665',
+  routine: 'errorMissingColumn'
+}
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] FK map miss: invoices::clients - guessing "client_id". Run "npm run db:fk-cache" to regenerate.
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[Dashboard/SmartSuggestions] clientGaps failed: u: column "first_name" does not exist
+    at J (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:2280)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3235
+    at Socket.eI (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3240)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69131
+    at new c (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69173)
+    at r (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:28:8477)
+    at b (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:108:52) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42703',
+  position: '49',
+  file: 'parse_relation.c',
+  line: '3665',
+  routine: 'errorMissingColumn'
+}
+{"timestamp":"2026-04-23T02:40:32.680Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[Dashboard] serviceReadyCandidates failed: {
+  message: 'column events.prep_sheet_generated_at does not exist',
+  code: '42703',
+  details: undefined
+}
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[Dashboard] weeklyBriefing failed: s [Error]: Failed query: SELECT home_state FROM chefs WHERE id = $1 LIMIT 1
+params: c0000000-0000-0000-0000-000000000099
+    at F.queryWithCache (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:46232)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:394:478)
+    at async h (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:503:673)
+    at async f (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:340:76)
+    at async ef (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:1:7328)
+    at async eH (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:46:2935) {
+  query: 'SELECT home_state FROM chefs WHERE id = $1 LIMIT 1',
+  params: [ 'c0000000-0000-0000-0000-000000000099' ],
+  cause: u: column "home_state" does not exist
+      at J (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:2280)
+      at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3235
+      at Socket.eI (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3240)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5)
+      at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+      at TCP.callbackTrampoline (node:internal/async_hooks:130:17) {
+    severity_local: 'ERROR',
+    severity: 'ERROR',
+    code: '42703',
+    position: '8',
+    file: 'parse_relation.c',
+    line: '3665',
+    routine: 'errorMissingColumn'
+  }
+}
+[compat] FK map miss: chef_collab_handoff_recipients::chef_handoffs - guessing "chef_handoff_id". Run "npm run db:fk-cache" to regenerate.
+[email-retry] Query failed: relation "email_dead_letter_queue" does not exist
+[email-retry] Cron failed: Failed to query dead-letter queue
+[cron-ticker] email-retry returned 500
+[Completion] dashboard event 1f2235d4-3627-400f-a93d-01810ef99db1 failed: u: column r.allergen_flags does not exist
+    at J (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:2280)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3235
+    at Socket.eI (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3240)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69131
+    at new c (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69173)
+    at r (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:28:8477)
+    at o (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:179:69) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42703',
+  hint: 'Perhaps you meant to reference the column "d.allergen_flags".',
+  position: '186',
+  file: 'parse_relation.c',
+  line: '3665',
+  routine: 'errorMissingColumn'
+}
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] FK map miss: invoices::clients - guessing "client_id". Run "npm run db:fk-cache" to regenerate.
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[Dashboard/SmartSuggestions] clientGaps failed: u: column "first_name" does not exist
+    at J (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:2280)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3235
+    at Socket.eI (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3240)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69131
+    at new c (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69173)
+    at r (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:28:8477)
+    at b (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:108:52) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42703',
+  position: '49',
+  file: 'parse_relation.c',
+  line: '3665',
+  routine: 'errorMissingColumn'
+}
+{"timestamp":"2026-04-23T02:40:37.685Z","level":"error","scope":"ai","message":"Model not found","context":{"model":"gemma4:4b","baseUrl":"http://localhost:11434"},"error":{"name":"ResponseError","message":"model 'gemma4:4b' not found"}}
+[Dashboard] serviceReadyCandidates failed: {
+  message: 'column events.prep_sheet_generated_at does not exist',
+  code: '42703',
+  details: undefined
+}
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[Dashboard] weeklyBriefing failed: s [Error]: Failed query: SELECT home_state FROM chefs WHERE id = $1 LIMIT 1
+params: c0000000-0000-0000-0000-000000000099
+    at F.queryWithCache (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:46232)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:394:478)
+    at async h (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:503:673)
+    at async f (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:340:76)
+    at async ef (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:1:7328)
+    at async eH (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:46:2935) {
+  query: 'SELECT home_state FROM chefs WHERE id = $1 LIMIT 1',
+  params: [ 'c0000000-0000-0000-0000-000000000099' ],
+  cause: u: column "home_state" does not exist
+      at J (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:2280)
+      at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3235
+      at Socket.eI (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3240)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5)
+      at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+      at TCP.callbackTrampoline (node:internal/async_hooks:130:17) {
+    severity_local: 'ERROR',
+    severity: 'ERROR',
+    code: '42703',
+    position: '8',
+    file: 'parse_relation.c',
+    line: '3665',
+    routine: 'errorMissingColumn'
+  }
+}
+[compat] FK map miss: chef_collab_handoff_recipients::chef_handoffs - guessing "chef_handoff_id". Run "npm run db:fk-cache" to regenerate.
+[Completion] dashboard event 1f2235d4-3627-400f-a93d-01810ef99db1 failed: u: column r.allergen_flags does not exist
+    at J (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:2280)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3235
+    at Socket.eI (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:11:3240)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69131
+    at new c (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:8:69173)
+    at r (C:\Users\david\Documents\CFv1\.next\server\chunks\94928.js:28:8477)
+    at o (C:\Users\david\Documents\CFv1\.next\server\app\(chef)\dashboard\page.js:179:69) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42703',
+  hint: 'Perhaps you meant to reference the column "d.allergen_flags".',
+  position: '186',
+  file: 'parse_relation.c',
+  line: '3665',
+  routine: 'errorMissingColumn'
+}

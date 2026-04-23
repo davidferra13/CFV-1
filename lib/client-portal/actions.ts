@@ -1,14 +1,13 @@
 'use server'
 
 // Client Portal Actions
-// Token-based magic-link access for clients - no account required.
-// Chefs generate a token on the client detail page and share it.
-// The token URL gives the client a read-mostly view of their events, quotes, and payments.
+// Token-based magic-link access for clients with no account required.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { dateToDateString } from '@/lib/utils/format'
+import { createPaymentCheckoutUrl } from '@/lib/stripe/checkout'
 import {
   generateClientPortalTokenValue,
   getClientPortalTokenExpiry,
@@ -19,12 +18,18 @@ import {
 export type ClientPortalData = {
   clientId: string
   clientName: string
+  chefName: string | null
+  chefBusinessName: string | null
+  chefSlug: string | null
+  chefBookingSlug: string | null
+  chefBookingEnabled: boolean
   upcomingEvents: Array<{
     id: string
     occasion: string | null
     event_date: string
     status: string
     guest_count: number | null
+    outstandingCents: number
   }>
   pastEvents: Array<{
     id: string
@@ -32,13 +37,15 @@ export type ClientPortalData = {
     event_date: string
     status: string
   }>
-  activeQuotes: Array<{
+  pendingProposals: Array<{
     id: string
-    event_id: string
-    event_occasion: string | null
-    amount_cents: number
-    valid_until: string | null
+    eventId: string | null
+    title: string
+    eventOccasion: string | null
+    amountCents: number
+    expiresAt: string | null
     status: string
+    publicUrl: string
   }>
   pendingPayments: Array<{
     eventId: string
@@ -55,6 +62,11 @@ export type ClientPortalData = {
   }>
 }
 
+export type ClientPortalPaymentLinkResult =
+  | { status: 'ok'; checkoutUrl: string }
+  | { status: 'not_found' }
+  | { status: 'unavailable' }
+
 export type ClientPortalTokenState = {
   token: string | null
   createdAt: string | null
@@ -65,6 +77,7 @@ export type ClientPortalTokenState = {
 
 type ClientPortalLookupRow = {
   id: string
+  tenant_id: string | null
   full_name: string | null
   portal_access_token: string | null
   portal_access_token_hash: string | null
@@ -72,6 +85,13 @@ type ClientPortalLookupRow = {
   portal_token_expires_at: string | null
   portal_token_last_used_at?: string | null
   portal_token_revoked_at: string | null
+}
+
+type ResolvedClientPortalAccess = {
+  normalizedToken: string
+  clientId: string
+  clientName: string
+  tenantId: string
 }
 
 function resolvePortalTokenExpiry(
@@ -90,7 +110,82 @@ function hasActivePortalLink(row: Partial<ClientPortalLookupRow> | null | undefi
   return !isClientPortalTokenExpired(resolvePortalTokenExpiry(row))
 }
 
-// ─── Chef action: generate or rotate portal token ─────────────────────────────
+async function resolveClientPortalAccess(
+  db: any,
+  token: string
+): Promise<ResolvedClientPortalAccess | null> {
+  const normalizedToken = token.trim()
+  if (!normalizedToken) return null
+
+  const tokenHash = hashClientPortalToken(normalizedToken)
+  const selectColumns = [
+    'id',
+    'tenant_id',
+    'full_name',
+    'portal_access_token',
+    'portal_access_token_hash',
+    'portal_token_created_at',
+    'portal_token_expires_at',
+    'portal_token_revoked_at',
+  ].join(', ')
+
+  const { data: hashedClient } = await db
+    .from('clients')
+    .select(selectColumns)
+    .eq('portal_access_token_hash', tokenHash)
+    .is('deleted_at', null)
+    .maybeSingle()
+
+  let client = (hashedClient ?? null) as ClientPortalLookupRow | null
+  let matchedLegacyToken = false
+
+  if (!client) {
+    const { data: legacyClient } = await db
+      .from('clients')
+      .select(selectColumns)
+      .eq('portal_access_token', normalizedToken)
+      .is('deleted_at', null)
+      .maybeSingle()
+
+    client = (legacyClient ?? null) as ClientPortalLookupRow | null
+    matchedLegacyToken = !!client
+  }
+
+  if (!client || !hasActivePortalLink(client) || !client.tenant_id) {
+    return null
+  }
+
+  const nowIso = new Date().toISOString()
+  const expiresAt = resolvePortalTokenExpiry(client)
+  if (!expiresAt) return null
+
+  if (matchedLegacyToken) {
+    await db
+      .from('clients')
+      .update({
+        portal_access_token: null,
+        portal_access_token_hash: tokenHash,
+        portal_token_expires_at: expiresAt,
+        portal_token_last_used_at: nowIso,
+        portal_token_revoked_at: null,
+      })
+      .eq('id', client.id)
+  } else {
+    await db
+      .from('clients')
+      .update({
+        portal_token_last_used_at: nowIso,
+      })
+      .eq('id', client.id)
+  }
+
+  return {
+    normalizedToken,
+    clientId: client.id,
+    clientName: client.full_name || 'Valued Client',
+    tenantId: client.tenant_id,
+  }
+}
 
 export async function generateClientPortalToken(
   clientId: string
@@ -98,7 +193,6 @@ export async function generateClientPortalToken(
   const user = await requireChef()
   const db: any = createServerClient()
 
-  // Verify ownership
   const { data: client } = await db
     .from('clients')
     .select('id')
@@ -128,8 +222,6 @@ export async function generateClientPortalToken(
   return { token, expiresAt }
 }
 
-// ─── Chef action: revoke portal token ─────────────────────────────────────────
-
 export async function revokeClientPortalToken(clientId: string): Promise<void> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -150,138 +242,120 @@ export async function revokeClientPortalToken(clientId: string): Promise<void> {
   revalidatePath(`/clients/${clientId}`)
 }
 
-// ─── Public: look up client by portal token ────────────────────────────────────
-// No auth required - token IS the credential.
-
 export async function getClientPortalData(token: string): Promise<ClientPortalData | null> {
-  // Use admin client for public read (no user session)
   const db: any = createServerClient({ admin: true })
-  const normalizedToken = token.trim()
-  if (!normalizedToken) return null
-  const tokenHash = hashClientPortalToken(normalizedToken)
+  const access = await resolveClientPortalAccess(db, token)
+  if (!access) return null
 
-  // Prefer hashed token lookup; fall back to legacy raw token rows during migration.
-  const selectColumns =
-    'id, full_name, portal_access_token, portal_access_token_hash, portal_token_created_at, portal_token_expires_at, portal_token_revoked_at'
+  const { clientId, clientName, tenantId, normalizedToken } = access
+  const today = dateToDateString(new Date())
 
-  const { data: hashedClient } = await db
-    .from('clients')
-    .select(selectColumns)
-    .eq('portal_access_token_hash', tokenHash)
-    .is('deleted_at', null)
-    .maybeSingle()
+  const [{ data: chef }, { data: rawEvents }, { data: rawProposals }] = await Promise.all([
+    db
+      .from('chefs')
+      .select('display_name, business_name, slug, booking_slug, booking_enabled')
+      .eq('id', tenantId)
+      .maybeSingle(),
+    db
+      .from('events')
+      .select('id, occasion, event_date, status, guest_count')
+      .eq('client_id', clientId)
+      .eq('tenant_id', tenantId)
+      .not('status', 'eq', 'cancelled')
+      .order('event_date', { ascending: true }),
+    db
+      .from('client_proposals')
+      .select('id, event_id, title, total_price_cents, expires_at, status, share_token, created_at')
+      .eq('client_id', clientId)
+      .in('status', ['sent', 'viewed'])
+      .order('created_at', { ascending: false }),
+  ])
 
-  let client = (hashedClient ?? null) as ClientPortalLookupRow | null
-  let matchedLegacyToken = false
+  const events = (rawEvents ?? []) as Array<{
+    id: string
+    occasion: string | null
+    event_date: string
+    status: string
+    guest_count: number | null
+  }>
+  const eventIds = events.map((event) => event.id)
+  const eventMap = new Map(events.map((event) => [event.id, event]))
 
-  if (!client) {
-    const { data: legacyClient } = await db
-      .from('clients')
-      .select(selectColumns)
-      .eq('portal_access_token', normalizedToken)
-      .is('deleted_at', null)
-      .maybeSingle()
-
-    client = (legacyClient ?? null) as ClientPortalLookupRow | null
-    matchedLegacyToken = !!client
-  }
-
-  if (!client || !hasActivePortalLink(client)) return null
-
-  const nowIso = new Date().toISOString()
-  const expiresAt = resolvePortalTokenExpiry(client)
-  if (!expiresAt) return null
-
-  if (matchedLegacyToken) {
-    await db
-      .from('clients')
-      .update({
-        portal_access_token: null,
-        portal_access_token_hash: tokenHash,
-        portal_token_expires_at: expiresAt,
-        portal_token_last_used_at: nowIso,
-        portal_token_revoked_at: null,
-      })
-      .eq('id', client.id)
-  } else {
-    await db
-      .from('clients')
-      .update({
-        portal_token_last_used_at: nowIso,
-      })
-      .eq('id', client.id)
-  }
-
-  const clientId = client.id
-  const clientName = client.full_name || 'Valued Client'
-
-  const now = new Date().toISOString()
-
-  // Fetch events for this client
-  const { data: events } = await db
-    .from('events')
-    .select('id, occasion, event_date, status, guest_count')
-    .eq('client_id', clientId)
-    .not('status', 'eq', 'cancelled')
-    .order('event_date', { ascending: true })
-
-  const upcoming = (events ?? []).filter(
-    (e: any) =>
-      dateToDateString(e.event_date as Date | string) >= now && !['completed'].includes(e.status)
-  )
-  const past = (events ?? [])
-    .filter(
-      (e: any) => e.status === 'completed' || dateToDateString(e.event_date as Date | string) < now
-    )
-    .slice(-5)
-
-  // Fetch active (sent) quotes for this client's events
-  const eventIds = (events ?? []).map((e: any) => e.id)
-  let activeQuotes: ClientPortalData['activeQuotes'] = []
-
-  if (eventIds.length > 0) {
-    const { data: quotes } = await db
-      .from('quotes')
-      .select('id, event_id, total_quoted_cents, valid_until, status')
-      .in('event_id', eventIds)
-      .eq('status', 'sent')
-
-    const eventMap = new Map((events ?? []).map((e: any) => [e.id, e]))
-    activeQuotes = (quotes ?? [])
-      .filter((q: any) => q.event_id != null)
-      .map((q: any) => ({
-        id: q.id,
-        event_id: q.event_id!,
-        event_occasion: (eventMap.get(q.event_id!) as any)?.occasion ?? null,
-        amount_cents: q.total_quoted_cents ?? 0,
-        valid_until: q.valid_until,
-        status: q.status,
-      }))
-  }
-
-  // Fetch outstanding payments from event_financial_summary
-  const pendingPayments: ClientPortalData['pendingPayments'] = []
+  const outstandingByEvent = new Map<string, number>()
   if (eventIds.length > 0) {
     const { data: summaries } = await db
       .from('event_financial_summary')
-      .select('event_id, outstanding_balance_cents, payment_status')
+      .select('event_id, outstanding_balance_cents')
       .in('event_id', eventIds)
-      .gt('outstanding_balance_cents', 0)
 
-    const eventMap = new Map((events ?? []).map((e: any) => [e.id, e]))
-    for (const s of (summaries ?? []).filter((s: any) => s.event_id != null)) {
-      const ev = eventMap.get(s.event_id!)
-      if (!ev) continue
-      pendingPayments.push({
-        eventId: s.event_id!,
-        occasion: (ev as any).occasion,
-        outstandingCents: s.outstanding_balance_cents ?? 0,
-        paymentUrl: `/my-events/${s.event_id!}/pay`,
-      })
+    for (const summary of (summaries ?? []).filter((row: any) => row.event_id != null)) {
+      outstandingByEvent.set(
+        String(summary.event_id),
+        Number(summary.outstanding_balance_cents ?? 0)
+      )
     }
   }
 
-  // Fetch payment history from ledger (payments client has made)
+  const upcomingEvents = events
+    .filter(
+      (event) =>
+        dateToDateString(event.event_date as Date | string) >= today && event.status !== 'completed'
+    )
+    .map((event) => ({
+      ...event,
+      outstandingCents: outstandingByEvent.get(event.id) ?? 0,
+    }))
+
+  const pastEvents = events
+    .filter(
+      (event) =>
+        event.status === 'completed' || dateToDateString(event.event_date as Date | string) < today
+    )
+    .slice(-5)
+    .reverse()
+
+  const pendingPayments: ClientPortalData['pendingPayments'] = upcomingEvents
+    .filter(
+      (event) =>
+        (outstandingByEvent.get(event.id) ?? 0) > 0 &&
+        ['accepted', 'paid', 'confirmed', 'in_progress', 'completed'].includes(event.status)
+    )
+    .map((event) => ({
+      eventId: event.id,
+      occasion: event.occasion,
+      outstandingCents: outstandingByEvent.get(event.id) ?? 0,
+      paymentUrl: `/client/${normalizedToken}/pay/${event.id}`,
+    }))
+
+  const seenProposalKeys = new Set<string>()
+  const pendingProposals: ClientPortalData['pendingProposals'] = []
+  for (const proposal of (rawProposals ?? []) as Array<{
+    id: string
+    event_id: string | null
+    title: string | null
+    total_price_cents: number | null
+    expires_at: string | null
+    status: string
+    share_token: string | null
+  }>) {
+    if (!proposal.share_token) continue
+
+    const dedupeKey = proposal.event_id || proposal.id
+    if (seenProposalKeys.has(dedupeKey)) continue
+    seenProposalKeys.add(dedupeKey)
+
+    pendingProposals.push({
+      id: proposal.id,
+      eventId: proposal.event_id,
+      title: proposal.title?.trim() || 'Proposal ready for review',
+      eventOccasion: proposal.event_id ? eventMap.get(proposal.event_id)?.occasion ?? null : null,
+      amountCents: proposal.total_price_cents ?? 0,
+      expiresAt: proposal.expires_at,
+      status: proposal.status,
+      publicUrl: `/proposal/${proposal.share_token}`,
+    })
+  }
+
   let paymentHistory: ClientPortalData['paymentHistory'] = []
   if (eventIds.length > 0) {
     const { data: payments } = await db
@@ -293,28 +367,69 @@ export async function getClientPortalData(token: string): Promise<ClientPortalDa
       .order('created_at', { ascending: false })
       .limit(20)
 
-    const eventMap = new Map((events ?? []).map((e: any) => [e.id, e]))
-    paymentHistory = (payments ?? []).map((p: any) => ({
-      id: p.id,
-      date: p.created_at,
-      amountCents: p.amount_cents ?? 0,
-      type: p.entry_type ?? 'payment',
-      eventOccasion: (eventMap.get(p.event_id) as any)?.occasion ?? null,
+    paymentHistory = (payments ?? []).map((payment: any) => ({
+      id: payment.id,
+      date: payment.created_at,
+      amountCents: payment.amount_cents ?? 0,
+      type: payment.entry_type ?? 'payment',
+      eventOccasion: eventMap.get(payment.event_id)?.occasion ?? null,
     }))
   }
 
   return {
     clientId,
     clientName,
-    upcomingEvents: upcoming,
-    pastEvents: past,
+    chefName: chef?.display_name ?? null,
+    chefBusinessName: chef?.business_name ?? null,
+    chefSlug: chef?.slug ?? null,
+    chefBookingSlug: chef?.booking_slug ?? null,
+    chefBookingEnabled: chef?.booking_enabled === true,
+    upcomingEvents,
+    pastEvents,
+    pendingProposals,
     pendingPayments,
-    activeQuotes,
     paymentHistory,
   }
 }
 
-// ─── Chef: get portal token for a client (for display on client detail) ───────
+export async function getClientPortalPaymentCheckoutUrl(
+  token: string,
+  eventId: string
+): Promise<ClientPortalPaymentLinkResult> {
+  const db: any = createServerClient({ admin: true })
+  const access = await resolveClientPortalAccess(db, token)
+  if (!access) {
+    return { status: 'not_found' }
+  }
+
+  const { clientId, tenantId, normalizedToken } = access
+  const { data: event } = await db
+    .from('events')
+    .select('id')
+    .eq('id', eventId)
+    .eq('client_id', clientId)
+    .eq('tenant_id', tenantId)
+    .maybeSingle()
+
+  if (!event) {
+    return { status: 'not_found' }
+  }
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
+  const successUrl = `${appUrl}/client/${normalizedToken}?payment=success&event=${encodeURIComponent(eventId)}`
+  const cancelUrl = `${appUrl}/client/${normalizedToken}?payment=cancelled&event=${encodeURIComponent(eventId)}`
+
+  const checkoutUrl = await createPaymentCheckoutUrl(eventId, tenantId, {
+    successUrl,
+    cancelUrl,
+  })
+
+  if (!checkoutUrl) {
+    return { status: 'unavailable' }
+  }
+
+  return { status: 'ok', checkoutUrl }
+}
 
 export async function getClientPortalToken(clientId: string): Promise<ClientPortalTokenState> {
   const user = await requireChef()

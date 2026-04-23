@@ -1,10 +1,11 @@
 // Google Places store autocomplete.
 'use client'
 
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Autocomplete, useJsApiLoader } from '@react-google-maps/api'
 import { Input } from '@/components/ui/input'
 import { useDeferredGoogleMapsLoader } from '@/hooks/use-deferred-google-maps-loader'
+import { useGoogleMapsAuthFailure } from '@/hooks/use-google-maps-auth-failure'
 
 const LIBRARIES: ['places'] = ['places']
 
@@ -66,6 +67,7 @@ function LoadedStoreAutocomplete({
 }: LoadedStoreAutocompleteProps) {
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const authFailed = useGoogleMapsAuthFailure(true)
 
   // Only load Google Maps script when we have an API key.
   // Empty key triggers an infinite retry loop in the loader.
@@ -75,10 +77,17 @@ function LoadedStoreAutocomplete({
     preventGoogleFontsLoading: true,
   })
 
-  if (sdkError && !loadError) {
+  useEffect(() => {
+    if (!sdkError) return
     console.warn('[store-autocomplete] Google Maps SDK failed to load:', sdkError)
-    setLoadError('Store search unavailable')
-  }
+    setLoadError((current) => current ?? 'Store search unavailable')
+  }, [sdkError])
+
+  useEffect(() => {
+    if (!authFailed) return
+    console.warn('[store-autocomplete] Google Maps authentication failed.')
+    setLoadError((current) => current ?? 'Store search unavailable')
+  }, [authFailed])
 
   const ready = isLoaded && !!apiKey && !loadError
 

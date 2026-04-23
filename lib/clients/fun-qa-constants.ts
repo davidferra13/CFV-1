@@ -56,7 +56,7 @@ export const FUN_QA_QUESTIONS = [
     key: 'dream_menu_theme',
     emoji: '🌊',
     question:
-      'What\'s your dream menu theme: seafood night, steakhouse, Italian, coastal New England, or "surprise me"?',
+      'What\'s your dream menu theme: seafood night, steakhouse, Italian, chef\'s tasting menu, or "surprise me"?',
     placeholder: 'e.g. Full Italian spread, Sunday gravy and all',
   },
   {

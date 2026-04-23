@@ -12,6 +12,18 @@ import { deletePartnerLocation } from '@/lib/partners/actions'
 import { MapPin, ExternalLink, Users, Inbox, CalendarCheck } from '@/components/ui/icons'
 import { toast } from 'sonner'
 import { useDeferredAction } from '@/hooks/use-deferred-action'
+import {
+  CHEF_LOCATION_RELATIONSHIP_LABELS,
+  LOCATION_BEST_FOR_LABELS,
+  LOCATION_EXPERIENCE_TAG_LABELS,
+  LOCATION_SERVICE_TYPE_LABELS,
+} from '@/lib/partners/location-experiences'
+
+const READINESS_BLOCKER_LABELS: Record<string, string> = {
+  missing_name: 'name',
+  missing_location: 'address or city/state',
+  missing_context: 'description, imagery, or structured context',
+}
 
 type Location = {
   id: string
@@ -25,9 +37,24 @@ type Location = {
   description: string | null
   notes: string | null
   max_guest_count: number | null
+  experience_tags: string[]
+  best_for: string[]
+  service_types: string[]
+  relationship_type: keyof typeof CHEF_LOCATION_RELATIONSHIP_LABELS
+  is_public: boolean
+  is_featured: boolean
+  sort_order: number
   is_active: boolean
+  public_readiness?: {
+    isReady: boolean
+    blockers: string[]
+  }
+  inquiry_click_count: number
+  booking_click_count: number
   inquiry_count: number
   event_count: number
+  completed_event_count: number
+  total_revenue_cents: number
 }
 
 type Image = {
@@ -51,6 +78,7 @@ export function PartnerDetailClient({
   const router = useRouter()
   const [showAddLocation, setShowAddLocation] = useState(false)
   const [deletedLocationId, setDeletedLocationId] = useState<string | null>(null)
+  const [editingLocationId, setEditingLocationId] = useState<string | null>(null)
 
   const { execute: deferLocationDelete } = useDeferredAction({
     delay: 8000,
@@ -81,6 +109,12 @@ export function PartnerDetailClient({
     return images.filter((img) => !img.location_id)
   }
 
+  function formatCurrency(cents: number) {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(
+      cents / 100
+    )
+  }
+
   return (
     <div className="space-y-4">
       {/* Location Cards */}
@@ -102,21 +136,62 @@ export function PartnerDetailClient({
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-stone-400" />
                   <span className="font-medium text-stone-100">{loc.name}</span>
+                  {loc.is_featured && <Badge>Featured</Badge>}
+                  {!loc.is_public && <Badge variant="warning">Hidden</Badge>}
                   {!loc.is_active && <Badge variant="error">Inactive</Badge>}
                 </div>
                 {cityState && <p className="text-sm text-stone-500 mt-1 ml-6">{cityState}</p>}
                 {loc.description && (
                   <p className="text-sm text-stone-400 mt-1 ml-6">{loc.description}</p>
                 )}
+                <div className="ml-6 mt-2 flex flex-wrap gap-2">
+                  <Badge>{CHEF_LOCATION_RELATIONSHIP_LABELS[loc.relationship_type]}</Badge>
+                  {loc.best_for.slice(0, 2).map((value) => (
+                    <Badge key={value}>
+                      {LOCATION_BEST_FOR_LABELS[value as keyof typeof LOCATION_BEST_FOR_LABELS] ?? value}
+                    </Badge>
+                  ))}
+                  {loc.service_types.slice(0, 2).map((value) => (
+                    <Badge key={value}>
+                      {LOCATION_SERVICE_TYPE_LABELS[
+                        value as keyof typeof LOCATION_SERVICE_TYPE_LABELS
+                      ] ?? value}
+                    </Badge>
+                  ))}
+                  {loc.experience_tags.slice(0, 2).map((value) => (
+                    <Badge key={value}>
+                      {LOCATION_EXPERIENCE_TAG_LABELS[
+                        value as keyof typeof LOCATION_EXPERIENCE_TAG_LABELS
+                      ] ?? value}
+                    </Badge>
+                  ))}
+                </div>
                 {loc.max_guest_count && (
                   <p className="text-xs text-stone-400 mt-1 ml-6 flex items-center gap-1">
                     <Users className="h-3 w-3" /> Up to {loc.max_guest_count} guests
                   </p>
                 )}
+                {loc.public_readiness && !loc.public_readiness.isReady && (
+                  <p className="ml-6 mt-2 text-xs text-amber-300">
+                    Public location page blocked until this setting has{' '}
+                    {loc.public_readiness.blockers
+                      .map((blocker) => READINESS_BLOCKER_LABELS[blocker] ?? blocker)
+                      .join(', ')}
+                    .
+                  </p>
+                )}
               </div>
 
               <div className="flex items-center gap-4 flex-shrink-0">
-                <div className="flex gap-3 text-xs text-center">
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-center">
+                  <div>
+                    <p className="text-stone-400">Inquiry Clicks</p>
+                    <p className="font-semibold text-stone-300">{loc.inquiry_click_count}</p>
+                  </div>
+                  <div>
+                    <p className="text-stone-400">Booking Clicks</p>
+                    <p className="font-semibold text-stone-300">{loc.booking_click_count}</p>
+                  </div>
                   <div>
                     <p className="text-stone-400">Referrals</p>
                     <p className="font-semibold text-stone-300">{loc.inquiry_count}</p>
@@ -125,9 +200,29 @@ export function PartnerDetailClient({
                     <p className="text-stone-400">Events</p>
                     <p className="font-semibold text-stone-300">{loc.event_count}</p>
                   </div>
+                  <div>
+                    <p className="text-stone-400">Completed</p>
+                    <p className="font-semibold text-stone-300">{loc.completed_event_count}</p>
+                  </div>
+                  <div>
+                    <p className="text-stone-400">Revenue</p>
+                    <p className="font-semibold text-stone-300">
+                      {formatCurrency(loc.total_revenue_cents)}
+                    </p>
+                  </div>
                 </div>
 
                 <div className="flex gap-1">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditingLocationId((current) => (current === loc.id ? null : loc.id))
+                    }
+                    className="p-1.5 rounded hover:bg-stone-700 text-stone-400 hover:text-stone-200 text-xs"
+                    title="Edit location"
+                  >
+                    {editingLocationId === loc.id ? 'Close' : 'Edit'}
+                  </button>
                   {loc.booking_url && (
                     <a
                       href={loc.booking_url}
@@ -150,6 +245,20 @@ export function PartnerDetailClient({
                 </div>
               </div>
             </div>
+
+            {editingLocationId === loc.id && (
+              <Card className="mt-4 border-stone-800 bg-stone-900/70 p-4">
+                <h4 className="mb-3 text-sm font-semibold text-stone-100">Edit location</h4>
+                <LocationForm
+                  partnerId={partnerId}
+                  location={loc}
+                  onSuccess={() => {
+                    setEditingLocationId(null)
+                    router.refresh()
+                  }}
+                />
+              </Card>
+            )}
 
             {/* Location Images */}
             {locImages.length > 0 && (

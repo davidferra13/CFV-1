@@ -1,0 +1,90 @@
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3211
+  - Network:      http://0.0.0.0:3211
+  - Environments: .env.local, .env
+  - Experiments (use with caution):
+    · instrumentationHook
+
+ ✓ Starting...
+   
+Your tsconfig.json extends another configuration, which means we cannot add the Next.js TypeScript plugin automatically. To improve your development experience, we recommend adding the Next.js plugin (`"plugins": [{ "name": "next" }]`) manually to your TypeScript configuration. Learn more: https://nextjs.org/docs/app/building-your-application/configuring/typescript#the-typescript-plugin
+
+
+   We detected TypeScript in your project and reconfigured your tsconfig.json file for you. Strict-mode is set to false by default.
+   The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:
+
+   	- include was updated to add '.next-dev-playwright-3211-codex/types/**/*.ts'
+
+   Using tsconfig file: tsconfig.next.json
+ ○ Compiling /instrumentation ...
+ ✓ Compiled /instrumentation in 4.5s (1135 modules)
+[instrumentation] Background job startup disabled for E2E.
+ ✓ Ready in 7.5s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 3.9s (1392 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 20.8s (9386 modules)
+ GET / 200 in 7799ms
+ ✓ Compiled in 2.3s (3811 modules)
+ ✓ Compiled in 289ms (3797 modules)
+ GET / 200 in 527ms
+ ○ Compiling /chefs ...
+ ✓ Compiled /chefs in 1359ms (9471 modules)
+ GET /chefs?locationExperience=outdoor&locationBestFor=retreat 200 in 1806ms
+ ○ Compiling /chef/[slug]/locations/[locationId] ...
+ ✓ Compiled /chef/[slug]/locations/[locationId] in 7.3s (12768 modules)
+ GET /chef/e2e-chef-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 10229ms
+ ✓ Compiled in 4.1s (4603 modules)
+ ✓ Compiled in 2.5s (3821 modules)
+ ○ Compiling /chefs ...
+ ✓ Compiled /chefs in 2.6s (5639 modules)
+ GET /chefs?locationExperience=outdoor&locationBestFor=retreat 200 in 6040ms
+ ○ Compiling /chef/[slug]/locations/[locationId] ...
+ ✓ Compiled /api/realtime/presence in 1378ms (5667 modules)
+ ✓ Compiled (8947 modules)
+ POST /api/realtime/presence 200 in 10452ms
+ POST /api/realtime/presence 200 in 10418ms
+ POST /api/realtime/presence 200 in 10420ms
+ POST /api/realtime/presence 200 in 10461ms
+ GET /api/storage/public/chef-profile-images/bd72cf97-a0e5-4fe4-b049-0706ac81d100/1774734757311-ef0fd70e-4692-400d-af0c-4e5c83c441a4.jpg 200 in 12378ms
+ GET /chef/e2e-chef-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 12139ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 522ms
+ GET /chefs?locationExperience=outdoor&locationBestFor=retreat 200 in 366ms
+ ✓ Compiled in 3.5s (3821 modules)
+ ✓ Compiled in 2.8s (3821 modules)
+ ✓ Compiled in 2.4s (3821 modules)
+ ✓ Compiled in 2.4s (3821 modules)
+ ✓ Compiled in 1682ms (3821 modules)
+ ✓ Compiled in 1735ms (3821 modules)
+ ✓ Compiled in 2.1s (3821 modules)
+ ✓ Compiled in 2.7s (3821 modules)
+ ✓ Compiled in 2s (3821 modules)
+ ✓ Compiled in 2.3s (3821 modules)
+ ✓ Compiled in 1735ms (3821 modules)
+ ✓ Compiled in 1916ms (3821 modules)
+ ✓ Compiled in 2.9s (3821 modules)
+ ✓ Compiled in 2.2s (3821 modules)
+ ✓ Compiled in 2.2s (3821 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 4.1s (5667 modules)
+ GET / 200 in 7499ms
+ ✓ Compiled in 2.5s (3821 modules)
+ ✓ Compiled in 1849ms (3821 modules)
+ ✓ Compiled in 3.4s (3821 modules)
+ ✓ Compiled in 1960ms (3821 modules)
+ ✓ Compiled in 2.9s (3821 modules)
+ ✓ Compiled in 6.8s (7031 modules)
+ ✓ Compiled in 3s (3821 modules)
+ ✓ Compiled in 2.1s (3821 modules)
+ ○ Compiling /api/e2e/auth ...
+ ✓ Compiled /api/e2e/auth in 4.2s (5734 modules)
+ POST /api/e2e/auth 200 in 7759ms
+ ○ Compiling /events/[id] ...
+ ✓ Compiled /events/[id] in 55.1s (16851 modules)
+ GET /events/1f2235d4-3627-400f-a93d-01810ef99db1 200 in 69513ms
+ ✓ Compiled in 5.2s (4543 modules)
+ ✓ Compiled in 4.1s (4543 modules)
+ ✓ Compiled in 4.2s (4543 modules)
+ ✓ Compiled in 3.5s (5639 modules)
+ ○ Compiling /auth/signin ...
+ ✓ Compiled /auth/signin in 11.6s (10407 modules)

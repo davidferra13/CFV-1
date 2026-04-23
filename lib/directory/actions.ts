@@ -17,6 +17,12 @@ import {
   mergeDiscoveryProfile,
   type DiscoveryProfile,
 } from '@/lib/discovery/profile'
+import {
+  buildPublicLocationExperiences,
+  fetchShowcasePartnersByChefIds,
+  type LocationExperienceImage,
+  type PublicChefLocationExperience,
+} from '@/lib/partners/location-experiences'
 import { isFounderEmail } from '@/lib/platform/owner-account'
 import { createServerClient } from '@/lib/db/server'
 import type { ChefSocialLinks } from '@/lib/chef/profile-actions'
@@ -28,6 +34,12 @@ export type DirectoryPartnerLocation = {
   city: string | null
   state: string | null
   zip: string | null
+  booking_url: string | null
+  description: string | null
+  max_guest_count: number | null
+  experience_tags: string[]
+  best_for: string[]
+  service_types: string[]
 }
 
 export type DirectoryPartner = {
@@ -37,6 +49,7 @@ export type DirectoryPartner = {
   cover_image_url: string | null
   description: string | null
   booking_url: string | null
+  partner_images: LocationExperienceImage[]
   partner_locations: DirectoryPartnerLocation[]
 }
 
@@ -57,6 +70,8 @@ export type DirectoryChef = {
   is_founder: boolean
   /** Showcase-visible partners with their locations */
   partners: DirectoryPartner[]
+  /** Shared public location read model used across profile, discovery, and previews. */
+  location_experiences?: PublicChefLocationExperience[]
   /** Optional distance from the active search location. */
   distance_miles?: number | null
   /** Legacy listing data used to backfill location search anchors. */
@@ -138,30 +153,17 @@ async function getDiscoverableChefsUncached(): Promise<DirectoryChef[]> {
 
   const chefIds = approved.map((c: any) => c.id)
   let partnersMap: Record<string, DirectoryPartner[]> = {}
+  let locationLinksMap: Record<string, any[]> = {}
   let marketplaceProfilesMap: Record<string, any> = {}
   let listingProfilesMap: Record<string, any> = {}
 
   if (chefIds.length > 0) {
-    const [partnerResult, marketplaceResult, listingResult] = await Promise.all([
-      db
-        .from('referral_partners')
-        .select(
-          `
-          id,
-          tenant_id,
-          name,
-          partner_type,
-          cover_image_url,
-          description,
-          booking_url,
-          showcase_order,
-          partner_locations(id, name, address, city, state, zip, is_active)
-        `
-        )
-        .in('tenant_id', chefIds)
-        .eq('is_showcase_visible', true)
-        .eq('status', 'active')
-        .order('showcase_order', { ascending: true }),
+    const [showcasePartnersByChefId, locationLinksResult, marketplaceResult, listingResult] = await Promise.all([
+      fetchShowcasePartnersByChefIds(db, chefIds),
+      (db as any)
+        .from('chef_location_links')
+        .select('chef_id, location_id, relationship_type, is_public, is_featured, sort_order')
+        .in('chef_id', chefIds),
       (db as any)
         .from('chef_marketplace_profiles')
         .select(
@@ -210,31 +212,45 @@ async function getDiscoverableChefsUncached(): Promise<DirectoryChef[]> {
         .in('chef_id', chefIds),
     ])
 
-    if (!partnerResult.error && partnerResult.data) {
-      for (const partner of partnerResult.data as any[]) {
-        const chefId = partner.tenant_id as string
-        if (!partnersMap[chefId]) partnersMap[chefId] = []
-        partnersMap[chefId].push({
-          id: partner.id,
-          name: partner.name,
-          partner_type: partner.partner_type,
-          cover_image_url: partner.cover_image_url ?? null,
-          description: partner.description ?? null,
-          booking_url: partner.booking_url ?? null,
-          partner_locations: (partner.partner_locations || [])
-            .filter((location: any) => location.is_active !== false)
-            .map((location: any) => ({
-              id: location.id,
-              name: location.name,
-              address: location.address ?? null,
-              city: location.city ?? null,
-              state: location.state ?? null,
-              zip: location.zip ?? null,
-            })),
-        })
+    for (const chefId of Object.keys(showcasePartnersByChefId)) {
+      partnersMap[chefId] = (showcasePartnersByChefId[chefId] || []).map((partner: any) => ({
+        id: partner.id,
+        name: partner.name,
+        partner_type: partner.partner_type,
+        cover_image_url: partner.cover_image_url ?? null,
+        description: partner.description ?? null,
+        booking_url: partner.booking_url ?? null,
+        partner_images: ((partner.partner_images || []) as LocationExperienceImage[]).sort(
+          (a, b) => (a.display_order ?? 0) - (b.display_order ?? 0)
+        ),
+        partner_locations: (partner.partner_locations || []).map((location: any) => ({
+          id: location.id,
+          name: location.name,
+          address: location.address ?? null,
+          city: location.city ?? null,
+          state: location.state ?? null,
+          zip: location.zip ?? null,
+          booking_url: location.booking_url ?? null,
+          description: location.description ?? null,
+          max_guest_count: location.max_guest_count ?? null,
+          experience_tags: location.experience_tags ?? [],
+          best_for: location.best_for ?? [],
+          service_types: location.service_types ?? [],
+        })),
+      }))
+    }
+
+    if (!locationLinksResult.error && locationLinksResult.data) {
+      for (const link of locationLinksResult.data as any[]) {
+        const chefId = link.chef_id as string
+        if (!locationLinksMap[chefId]) locationLinksMap[chefId] = []
+        locationLinksMap[chefId].push(link)
       }
-    } else if (partnerResult.error) {
-      console.error('[getDiscoverableChefs] partner fetch error:', partnerResult.error)
+    } else if (locationLinksResult.error && !isRelationMissingError(locationLinksResult.error)) {
+      console.error(
+        '[getDiscoverableChefs] chef location links fetch error:',
+        locationLinksResult.error
+      )
     }
 
     if (!marketplaceResult.error && marketplaceResult.data) {
@@ -258,6 +274,7 @@ async function getDiscoverableChefsUncached(): Promise<DirectoryChef[]> {
   }
 
   return approved.map((chef: any) => {
+    const partners = partnersMap[chef.id] || []
     const discovery = mergeDiscoveryProfile(
       legacyChefToDiscoveryProfile(chef),
       directoryListingToDiscoveryProfile(listingProfilesMap[chef.id]),
@@ -281,7 +298,11 @@ async function getDiscoverableChefsUncached(): Promise<DirectoryChef[]> {
         completeness_score: computeDiscoveryCompleteness(discovery),
       },
       is_founder: isFounderEmail(chef.email),
-      partners: partnersMap[chef.id] || [],
+      partners,
+      location_experiences: buildPublicLocationExperiences(
+        partners,
+        locationLinksMap[chef.id] || []
+      ),
       distance_miles: null,
       directory_listing_location: {
         city: listingProfilesMap[chef.id]?.city ?? null,

@@ -3,7 +3,11 @@ import assert from 'node:assert/strict'
 import { NextRequest } from 'next/server'
 import { HEAD, GET } from '../../app/api/health/readiness/route'
 
-const REQUIRED_ENV_KEYS = ['DATABASE_URL', 'PUBLIC_HEALTH_REQUIRED_CRONS'] as const
+const REQUIRED_ENV_KEYS = [
+  'DATABASE_URL',
+  'PUBLIC_HEALTH_REQUIRED_CRONS',
+  'PUBLIC_HEALTH_SKIP_DB_BOOT_CONTRACT',
+] as const
 
 function withEnv(
   values: Partial<Record<(typeof REQUIRED_ENV_KEYS)[number], string>>,
@@ -39,6 +43,7 @@ test('GET /api/health/readiness?strict=1 returns degraded when required env is m
   await withEnv(
     {
       DATABASE_URL: undefined,
+      PUBLIC_HEALTH_SKIP_DB_BOOT_CONTRACT: '1',
     },
     async () => {
       const response = await GET(new NextRequest('http://localhost/api/health/readiness?strict=1'))
@@ -58,6 +63,7 @@ test('HEAD /api/health/readiness mirrors strict degraded status and readiness he
   await withEnv(
     {
       DATABASE_URL: undefined,
+      PUBLIC_HEALTH_SKIP_DB_BOOT_CONTRACT: '1',
     },
     async () => {
       const response = await HEAD(new NextRequest('http://localhost/api/health/readiness?strict=1'))
@@ -75,6 +81,7 @@ test('GET /api/health/readiness skips cron gating when no required cron list is 
     {
       DATABASE_URL: 'postgresql://user:pass@example.com:5432/postgres',
       PUBLIC_HEALTH_REQUIRED_CRONS: undefined,
+      PUBLIC_HEALTH_SKIP_DB_BOOT_CONTRACT: '1',
     },
     async () => {
       const response = await GET(new NextRequest('http://localhost/api/health/readiness?strict=1'))
@@ -94,6 +101,7 @@ test('GET /api/health/readiness degrades background jobs when required crons are
     {
       DATABASE_URL: undefined,
       PUBLIC_HEALTH_REQUIRED_CRONS: 'db-backup',
+      PUBLIC_HEALTH_SKIP_DB_BOOT_CONTRACT: '1',
     },
     async () => {
       const response = await GET(new NextRequest('http://localhost/api/health/readiness?strict=1'))

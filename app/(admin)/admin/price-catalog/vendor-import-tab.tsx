@@ -165,7 +165,7 @@ export function VendorImportTab() {
                 type="text"
                 value={vendorName}
                 onChange={(e) => setVendorName(e.target.value)}
-                placeholder="e.g. Portland Fish Exchange"
+                placeholder="e.g. Blue Harbor Seafood"
                 className="w-full rounded-md border border-stone-600 bg-stone-800 px-3 py-2 text-sm"
                 disabled={phase === 'parsing'}
               />

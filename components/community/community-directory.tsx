@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useTransition } from 'react'
 import { searchChefs, type CommunityProfile } from '@/lib/community/community-actions'
+import { NEUTRAL_SERVICE_AREA_PLACEHOLDER } from '@/lib/site/national-brand-copy'
 
 type DirectoryFilters = {
   cuisine: string
@@ -75,7 +76,7 @@ export function CommunityDirectory({
           </label>
           <input
             type="text"
-            placeholder="e.g. San Francisco..."
+            placeholder={NEUTRAL_SERVICE_AREA_PLACEHOLDER}
             value={filters.area}
             onChange={(e) => setFilters((f) => ({ ...f, area: e.target.value }))}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"

@@ -61,13 +61,7 @@ export async function getSequences() {
 
   const { data, error } = await (db as any)
     .from('email_sequences')
-    .select(
-      `
-      *,
-      email_sequence_steps(count),
-      email_sequence_enrollments(count)
-    `
-    )
+    .select('*')
     .eq('chef_id', user.tenantId!)
     .order('created_at', { ascending: false })
 
@@ -76,7 +70,46 @@ export async function getSequences() {
     throw new Error('Failed to load sequences')
   }
 
-  return data ?? []
+  const sequences = data ?? []
+  const sequenceIds = sequences.map((sequence: any) => sequence.id)
+  const stepCounts = new Map<string, number>()
+  const enrollmentCounts = new Map<string, number>()
+
+  if (sequenceIds.length > 0) {
+    const [{ data: steps, error: stepsError }, { data: enrollments, error: enrollmentsError }] =
+      await Promise.all([
+        (db as any).from('email_sequence_steps').select('sequence_id').in('sequence_id', sequenceIds),
+        (db as any)
+          .from('email_sequence_enrollments')
+          .select('sequence_id')
+          .in('sequence_id', sequenceIds),
+      ])
+
+    if (stepsError) {
+      console.error('[getSequences] Step count error:', stepsError)
+      throw new Error('Failed to load sequence step counts')
+    }
+    if (enrollmentsError) {
+      console.error('[getSequences] Enrollment count error:', enrollmentsError)
+      throw new Error('Failed to load sequence enrollment counts')
+    }
+
+    for (const step of steps ?? []) {
+      stepCounts.set(step.sequence_id, (stepCounts.get(step.sequence_id) ?? 0) + 1)
+    }
+    for (const enrollment of enrollments ?? []) {
+      enrollmentCounts.set(
+        enrollment.sequence_id,
+        (enrollmentCounts.get(enrollment.sequence_id) ?? 0) + 1
+      )
+    }
+  }
+
+  return sequences.map((sequence: any) => ({
+    ...sequence,
+    email_sequence_steps: [{ count: stepCounts.get(sequence.id) ?? 0 }],
+    email_sequence_enrollments: [{ count: enrollmentCounts.get(sequence.id) ?? 0 }],
+  }))
 }
 
 export async function getSequence(id: string) {

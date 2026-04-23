@@ -1,13 +1,32 @@
 import type { MetadataRoute } from 'next'
 import { createAdminClient } from '@/lib/db/admin'
+import { listNearbyCollections } from '@/lib/discover/nearby-collections'
+import { isDirectoryListingIndexable } from '@/lib/discover/trust'
 import {
   getEnrichedIngredientSlugs,
   getIngredientCategories,
 } from '@/lib/openclaw/ingredient-knowledge-queries'
+import { isKnowledgeIngredientPubliclyIndexable } from '@/lib/openclaw/public-ingredient-publish'
 import { COMPARE_PAGES } from '@/lib/marketing/compare-pages'
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+const BASE_URL = (
+  process.env.NEXT_PUBLIC_APP_URL ||
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  'https://app.cheflowhq.com'
+).replace(/\/+$/, '')
 const SITEMAP_QUERY_TIMEOUT_MS = Number(process.env.SITEMAP_QUERY_TIMEOUT_MS ?? 5000)
+
+function withSitemapTimeout<T>(promise: PromiseLike<T>, label: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) => {
+      setTimeout(
+        () => reject(new Error(`sitemap ${label} query timeout`)),
+        SITEMAP_QUERY_TIMEOUT_MS
+      )
+    }),
+  ])
+}
 
 // Static public routes that are always indexable
 const STATIC_ROUTES: MetadataRoute.Sitemap = [
@@ -60,6 +79,12 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
     priority: 0.55,
   },
   {
+    url: `${BASE_URL}/nearby/collections`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly',
+    priority: 0.6,
+  },
+  {
     url: `${BASE_URL}/how-it-works`,
     lastModified: new Date(),
     changeFrequency: 'monthly',
@@ -70,6 +95,12 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
     lastModified: new Date(),
     changeFrequency: 'monthly',
     priority: 0.65,
+  },
+  {
+    url: `${BASE_URL}/for-operators/walkthrough`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.6,
   },
   {
     url: `${BASE_URL}/marketplace-chefs`,
@@ -108,12 +139,6 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
     priority: 0.4,
   },
   {
-    url: `${BASE_URL}/partner-signup`,
-    lastModified: new Date(),
-    changeFrequency: 'yearly',
-    priority: 0.5,
-  },
-  {
     url: `${BASE_URL}/privacy`,
     lastModified: new Date(),
     changeFrequency: 'yearly',
@@ -131,19 +156,42 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const db: any = createAdminClient()
 
-    // Fetch all chefs who have public profiles enabled and a slug
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('sitemap chef query timeout')), SITEMAP_QUERY_TIMEOUT_MS)
-    })
-
-    const { data: chefs } = (await Promise.race([
+    const { data: chefs } = (await withSitemapTimeout(
       db
         .from('chefs')
         .select('slug, updated_at')
         .not('slug', 'is', null)
         .eq('profile_public', true),
-      timeoutPromise,
-    ])) as { data: Array<{ slug: string; updated_at: string | null }> | null }
+      'chef'
+    )) as { data: Array<{ slug: string; updated_at: string | null }> | null }
+
+    const { data: nearbyListings } = (await withSitemapTimeout(
+      db
+        .from('directory_listings')
+        .select(
+          'slug, status, claimed_at, updated_at, city, state, address, phone, email, website_url, description, hours, photo_urls, menu_url, price_range'
+        )
+        .in('status', ['claimed', 'verified']),
+      'nearby'
+    )) as {
+      data: Array<{
+        slug: string
+        status: string
+        claimed_at: string | null
+        updated_at: string | null
+        city: string | null
+        state: string | null
+        address: string | null
+        phone: string | null
+        email: string | null
+        website_url: string | null
+        description: string | null
+        hours: Record<string, string> | string | null
+        photo_urls: string[] | null
+        menu_url: string | null
+        price_range: string | null
+      }> | null
+    }
 
     const chefRoutes: MetadataRoute.Sitemap = (chefs ?? []).map((chef: any) => ({
       url: `${BASE_URL}/chef/${chef.slug}`,
@@ -160,6 +208,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }))
 
+    const storeRoutes: MetadataRoute.Sitemap = (chefs ?? []).map((chef: any) => ({
+      url: `${BASE_URL}/chef/${chef.slug}/store`,
+      lastModified: chef.updated_at ? new Date(chef.updated_at) : new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    }))
+
     // Inquiry pages for each public chef
     const inquiryRoutes: MetadataRoute.Sitemap = (chefs ?? []).map((chef: any) => ({
       url: `${BASE_URL}/chef/${chef.slug}/inquire`,
@@ -167,6 +222,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly' as const,
       priority: 0.7,
     }))
+
+    const nearbyRoutes: MetadataRoute.Sitemap = (nearbyListings ?? [])
+      .filter((listing) => isDirectoryListingIndexable(listing))
+      .map((listing) => ({
+        url: `${BASE_URL}/nearby/${listing.slug}`,
+        lastModified: listing.updated_at ? new Date(listing.updated_at) : new Date(),
+        changeFrequency: 'weekly' as const,
+        priority: listing.status === 'verified' ? 0.7 : 0.6,
+      }))
+
+    const nearbyCollectionRoutes: MetadataRoute.Sitemap = listNearbyCollections().map(
+      (collection) => ({
+        url: `${BASE_URL}${collection.href}`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly' as const,
+        priority: 0.6,
+      })
+    )
 
     // Comparison guides
     const compareRoutes: MetadataRoute.Sitemap = COMPARE_PAGES.map((page) => ({
@@ -181,12 +254,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       getEnrichedIngredientSlugs().catch(() => []),
       getIngredientCategories().catch(() => []),
     ])
-    const ingredientRoutes: MetadataRoute.Sitemap = ingredientSlugs.map(({ slug, enrichedAt }) => ({
-      url: `${BASE_URL}/ingredient/${slug}`,
-      lastModified: new Date(enrichedAt),
-      changeFrequency: 'monthly' as const,
-      priority: 0.65,
-    }))
+    const ingredientRoutes: MetadataRoute.Sitemap = ingredientSlugs
+      .filter(({ slug }) => isKnowledgeIngredientPubliclyIndexable({ slug }))
+      .map(({ slug, enrichedAt }) => ({
+        url: `${BASE_URL}/ingredient/${slug}`,
+        lastModified: new Date(enrichedAt),
+        changeFrequency: 'monthly' as const,
+        priority: 0.65,
+      }))
     const PAGE_SIZE = 96
     const categoryRoutes: MetadataRoute.Sitemap = ingredientCats.flatMap(({ category, count }) => {
       const totalPages = Math.ceil(count / PAGE_SIZE)
@@ -213,8 +288,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ...STATIC_ROUTES,
       ...compareRoutes,
       ...chefRoutes,
+      ...storeRoutes,
       ...giftCardRoutes,
       ...inquiryRoutes,
+      ...nearbyRoutes,
+      ...nearbyCollectionRoutes,
       ...categoryRoutes,
       ...ingredientRoutes,
     ]

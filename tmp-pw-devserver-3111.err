@@ -1,0 +1,126 @@
+ ⚠ Invalid next.config.js options detected: 
+ ⚠     Unrecognized key(s) in object: 'serverActions'
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 24f8ecda-1d85-4525-8342-f62da8db4f47,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '24f8ecda-1d85-4525-8342-f62da8db4f47', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (1793kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (188kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (139kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (692kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (695kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (227kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 24f8ecda-1d85-4525-8342-f62da8db4f47,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '24f8ecda-1d85-4525-8342-f62da8db4f47', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 24f8ecda-1d85-4525-8342-f62da8db4f47,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '24f8ecda-1d85-4525-8342-f62da8db4f47', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 24f8ecda-1d85-4525-8342-f62da8db4f47,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '24f8ecda-1d85-4525-8342-f62da8db4f47', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[compat] db.auth.getUser() called - use Auth.js auth() instead
+[compat] db.auth.getUser() called - use Auth.js auth() instead
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 24f8ecda-1d85-4525-8342-f62da8db4f47,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '24f8ecda-1d85-4525-8342-f62da8db4f47', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 24f8ecda-1d85-4525-8342-f62da8db4f47,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '24f8ecda-1d85-4525-8342-f62da8db4f47', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 24f8ecda-1d85-4525-8342-f62da8db4f47,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '24f8ecda-1d85-4525-8342-f62da8db4f47', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 24f8ecda-1d85-4525-8342-f62da8db4f47,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '24f8ecda-1d85-4525-8342-f62da8db4f47', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 24f8ecda-1d85-4525-8342-f62da8db4f47,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '24f8ecda-1d85-4525-8342-f62da8db4f47', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+ ⨯ Error: aborted
+    at abortIncoming (node:_http_server:811:17)
+    at socketOnClose (node:_http_server:805:3)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:346:12)
+digest: "4115862311"
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 24f8ecda-1d85-4525-8342-f62da8db4f47,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '24f8ecda-1d85-4525-8342-f62da8db4f47', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+{
+  scope: 'activity',
+  level: 'error',
+  message: 'activity track endpoint failed',
+  context: { error: 'Unexpected end of JSON input' },
+  at: '2026-04-22T04:42:18.568Z'
+}
+{
+  scope: 'activity',
+  level: 'error',
+  message: 'activity track endpoint failed',
+  context: { error: 'Unexpected end of JSON input' },
+  at: '2026-04-22T04:42:18.571Z'
+}
+{
+  scope: 'activity',
+  level: 'error',
+  message: 'activity track endpoint failed',
+  context: { error: 'Unexpected end of JSON input' },
+  at: '2026-04-22T04:42:18.571Z'
+}
+[compat] db.auth.getUser() called - use Auth.js auth() instead
+[compat] db.auth.getUser() called - use Auth.js auth() instead
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] db.auth.getUser() called - use Auth.js auth() instead
+[compat] db.auth.getUser() called - use Auth.js auth() instead
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq
+[compat] Unmapped filter operator: not.eq

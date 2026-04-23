@@ -12,6 +12,10 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import {
+  CLIENT_PROFILE_COMPLETENESS_FIELDS,
+  getClientProfileEngagementPoints,
+} from '@/lib/clients/completeness'
 
 export type ClientHealthTier = 'champion' | 'loyal' | 'at_risk' | 'dormant' | 'new'
 
@@ -97,12 +101,10 @@ export async function getClientHealthScores(): Promise<ClientHealthSummary> {
     .select('client_id, lifetime_value_cents, total_events, days_since_last_event')
     .eq('tenant_id', user.tenantId!)
 
-  // Fetch client profile completeness indicators
+  // Fetch the fields required by the canonical profile completeness contract.
   const { data: clients } = await db
     .from('clients')
-    .select(
-      'id, allergies, dietary_restrictions, kitchen_constraints, what_they_care_about, personal_milestones'
-    )
+    .select(['id', ...CLIENT_PROFILE_COMPLETENESS_FIELDS].join(', '))
     .eq('tenant_id', user.tenantId!)
     .is('deleted_at', null)
 
@@ -153,14 +155,7 @@ export async function getClientHealthScores(): Promise<ClientHealthSummary> {
     const eventsPerYear = totalEvents // simplified - if we have event history we can refine
 
     // Engagement: profile completeness (0–15) + referrals (0–5)
-    let engagementScore = 0
-    if (client) {
-      if (client.allergies) engagementScore += 4
-      if (client.dietary_restrictions) engagementScore += 3
-      if (client.kitchen_constraints) engagementScore += 3
-      if (client.what_they_care_about) engagementScore += 3
-      if (client.personal_milestones) engagementScore += 2
-    }
+    let engagementScore = getClientProfileEngagementPoints(client, 15)
     const refs = referralMap.get(clientId) ?? 0
     engagementScore += Math.min(refs * 2, 5) // up to 5 pts for referrals
     engagementScore = Math.min(engagementScore, 20)

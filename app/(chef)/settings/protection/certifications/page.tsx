@@ -3,6 +3,7 @@
 // (distinct from compliance/food-safety certs tracked in /settings/compliance).
 
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { CertificationList } from '@/components/protection/certification-list'
@@ -26,6 +27,18 @@ export default async function ProtectionCertificationsPage() {
         <p className="mt-1 text-sm text-stone-500">
           Track your active certifications, renewal dates, and issuing bodies. Expiry alerts help
           ensure credentials never lapse.
+        </p>
+      </div>
+
+      <div className="rounded-lg border border-stone-700 bg-stone-900/70 px-4 py-3">
+        <p className="text-sm text-stone-300">
+          Active certification records can surface as public current-record badges on your chef
+          profile. Public buyers should only see those badges when ChefFlow has an active record on
+          file. Review the public model in the{' '}
+          <Link href="/trust" className="font-medium text-brand-400 hover:text-brand-300">
+            Trust Center
+          </Link>
+          .
         </p>
       </div>
 

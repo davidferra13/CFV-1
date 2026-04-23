@@ -107,7 +107,9 @@ export function LocalAiSettings({ initialPrefs }: { initialPrefs?: LocalAiPrefer
           </div>
           <div>
             <p className="text-sm font-semibold text-stone-100">Local AI (Optional)</p>
-            <p className="text-xs text-stone-500">Run Remy on your own computer</p>
+            <p className="text-xs text-stone-500">
+              Use Ollama on this computer or a Raspberry Pi you control
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -137,7 +139,7 @@ export function LocalAiSettings({ initialPrefs }: { initialPrefs?: LocalAiPrefer
             <div>
               <p className="text-sm font-medium text-stone-200">Use my own AI</p>
               <p className="text-xs text-stone-500">
-                Route Remy conversations to your local Ollama instance
+                Route Remy conversations to Ollama directly, including a Raspberry Pi relay
               </p>
             </div>
             <button
@@ -160,11 +162,12 @@ export function LocalAiSettings({ initialPrefs }: { initialPrefs?: LocalAiPrefer
               {/* Explanation */}
               <div className="rounded-lg bg-stone-800 border border-stone-700 p-4 text-xs text-stone-300 space-y-2">
                 <p>
-                  When enabled, Remy chat messages are sent directly from your browser to your local
-                  Ollama instance. Your conversations never touch ChefFlow&apos;s servers.
+                  When enabled, Remy chat messages are sent directly from your browser to the Ollama
+                  endpoint you configure. That can be Ollama on this computer or a Raspberry Pi
+                  relay. ChefFlow&apos;s servers do not run inference for those messages.
                 </p>
                 <p>
-                  If your local AI is unreachable, Remy automatically falls back to ChefFlow&apos;s
+                  If your local AI is unreachable, Remy asks before falling back to ChefFlow&apos;s
                   server AI.
                 </p>
               </div>
@@ -176,7 +179,7 @@ export function LocalAiSettings({ initialPrefs }: { initialPrefs?: LocalAiPrefer
                     htmlFor="local-ai-url"
                     className="block text-xs font-medium text-stone-400 mb-1"
                   >
-                    Ollama URL
+                    Ollama Base URL
                   </label>
                   <input
                     id="local-ai-url"
@@ -184,8 +187,14 @@ export function LocalAiSettings({ initialPrefs }: { initialPrefs?: LocalAiPrefer
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
                     className="w-full rounded-lg bg-stone-800 border border-stone-600 px-3 py-2 text-sm text-stone-200 placeholder-stone-500 focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none"
-                    placeholder="http://localhost:11434"
+                    placeholder="http://localhost:11434 or http://10.0.0.177:8081/api/ollama"
                   />
+                  <p className="mt-1 text-[11px] text-stone-500">
+                    Raw Ollama host example:{' '}
+                    <code className="text-stone-300">http://localhost:11434</code>. Pi relay
+                    example:{' '}
+                    <code className="text-stone-300">http://10.0.0.177:8081/api/ollama</code>.
+                  </p>
                 </div>
                 <div>
                   <label
@@ -248,6 +257,10 @@ export function LocalAiSettings({ initialPrefs }: { initialPrefs?: LocalAiPrefer
                       before starting Ollama
                     </li>
                     <li>Check the URL matches your Ollama port (default: 11434)</li>
+                    <li>
+                      If you are using the Raspberry Pi relay, make sure sync-api is running on port
+                      8081
+                    </li>
                   </ol>
                 </div>
               )}
@@ -270,6 +283,10 @@ export function LocalAiSettings({ initialPrefs }: { initialPrefs?: LocalAiPrefer
                   </li>
                   <li>
                     Restart Ollama: <code className="text-stone-300">ollama serve</code>
+                  </li>
+                  <li>
+                    Or point the URL at your Pi relay:{' '}
+                    <code className="text-stone-300">http://10.0.0.177:8081/api/ollama</code>
                   </li>
                   <li>Come back here and click &ldquo;Test Connection&rdquo;</li>
                 </ol>

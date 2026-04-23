@@ -372,12 +372,13 @@ export const CHEF_PORTAL_FINANCE_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/finance/forecast': {
     title: 'Revenue Forecast',
-    description: 'Projected revenue based on historical data and current pipeline.',
+    description:
+      'Forecasted revenue from booked events, weighted pipeline, seasonal baseline, and calibrated confidence ranges.',
     features: [
-      'Average monthly revenue',
-      'Projected annual total',
-      'Trend indicator (up/down/stable)',
-      '3-month projection cards',
+      'Expected revenue ranges by month',
+      'Pipeline stage weighting and raw upside',
+      'Forecast basis with backtest error and volatility',
+      'Quarterly outlook from live coverage plus seasonal fill',
     ],
   },
 

@@ -18,6 +18,7 @@ import {
   type HistoricalEventResult,
 } from '@/lib/events/historical-import-actions'
 import { parseEventsCsv } from '@/lib/ai/parse-csv-events'
+import { NEUTRAL_PAST_EVENTS_CSV_PLACEHOLDER } from '@/lib/site/national-brand-copy'
 
 type Phase = 'form' | 'review' | 'saving' | 'done'
 type InputMode = 'manual' | 'csv'
@@ -261,7 +262,7 @@ export function PastEventsImport({
             <textarea
               value={csvText}
               onChange={(e) => setCsvText(e.target.value)}
-              placeholder={`Date,Client,Occasion,Guests,City,Amount,Method\n2024-03-15,Sarah Johnson,Birthday dinner,12,Austin,1800,venmo\n2024-01-20,Mark & Tina,Anniversary,4,Houston,600,cash`}
+              placeholder={NEUTRAL_PAST_EVENTS_CSV_PLACEHOLDER}
               rows={10}
               className="w-full text-sm font-mono border border-stone-600 rounded-lg px-3 py-2 text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-y"
             />

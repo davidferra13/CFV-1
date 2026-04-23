@@ -4,7 +4,7 @@
  * Flyer Archiver (Phase K)
  * Archives current flyer prices before overwrite into openclaw.flyer_archive.
  * After a year, this becomes the most accurate historical price database
- * for New England groceries (and eventually nationally).
+ * for the currently covered grocery footprint before it expands further.
  *
  * Storage: ~1,000 products/week * 52 weeks * ~200 bytes/row = ~10MB/year. Negligible.
  */

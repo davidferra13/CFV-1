@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { searchDirectory, type DirectorySearchFilters } from '@/lib/community/directory-actions'
 import { DirectoryListingCard } from './directory-listing-card'
+import { NEUTRAL_CITY_PLACEHOLDER } from '@/lib/site/national-brand-copy'
 
 const CUISINE_OPTIONS = [
   'American', 'Italian', 'French', 'Japanese', 'Mexican', 'Thai',
@@ -103,7 +104,7 @@ export function DirectorySearch() {
               type="text"
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              placeholder="e.g. Austin"
+              placeholder={NEUTRAL_CITY_PLACEHOLDER}
               className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
             />
           </div>

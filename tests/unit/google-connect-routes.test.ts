@@ -107,6 +107,7 @@ test('google connect callback stores merged Gmail state and redirects back to th
   let selectedChefId: string | null = null
   let upsertPayload: Record<string, unknown> | null = null
   let upsertOptions: Record<string, unknown> | null = null
+  let mailboxUpsertPayload: Record<string, unknown> | null = null
 
   require.cache[authPath] = {
     exports: {
@@ -122,31 +123,97 @@ test('google connect callback stores merged Gmail state and redirects back to th
     exports: {
       createServerClient: () => ({
         from(table: string) {
-          assert.equal(table, 'google_connections')
+          if (table === 'google_connections') {
+            return {
+              select(_columns: string) {
+                return {
+                  eq(column: string, value: string) {
+                    assert.equal(column, 'chef_id')
+                    selectedChefId = value
+                    return {
+                      maybeSingle: async () => ({
+                        data: {
+                          gmail_connected: false,
+                          calendar_connected: true,
+                          scopes: ['https://www.googleapis.com/auth/calendar.events'],
+                          refresh_token: 'existing-refresh-token',
+                          connected_email: 'chef@example.com',
+                        },
+                      }),
+                    }
+                  },
+                }
+              },
+              upsert(payload: Record<string, unknown>, options: Record<string, unknown>) {
+                upsertPayload = payload
+                upsertOptions = options
+                return Promise.resolve({ error: null })
+              },
+            }
+          }
 
+          assert.equal(table, 'google_mailboxes')
           return {
             select(_columns: string) {
               return {
                 eq(column: string, value: string) {
                   assert.equal(column, 'chef_id')
-                  selectedChefId = value
+                  assert.equal(value, 'chef-1')
                   return {
-                    single: async () => ({
-                      data: {
-                        gmail_connected: false,
-                        calendar_connected: true,
-                        scopes: ['https://www.googleapis.com/auth/calendar.events'],
-                        refresh_token: 'existing-refresh-token',
-                      },
-                    }),
+                    order() {
+                      return {
+                        order: async () => ({
+                          data: [],
+                        }),
+                      }
+                    },
                   }
                 },
               }
             },
-            upsert(payload: Record<string, unknown>, options: Record<string, unknown>) {
-              upsertPayload = payload
-              upsertOptions = options
-              return Promise.resolve({ error: null })
+            upsert(payload: Record<string, unknown>, _options: Record<string, unknown>) {
+              mailboxUpsertPayload = payload
+              return {
+                select() {
+                  return {
+                    single: async () => ({
+                      data: {
+                        id: 'mailbox-1',
+                        chef_id: 'chef-1',
+                        tenant_id: 'tenant-1',
+                        email: 'chef@example.com',
+                        normalized_email: 'chef@example.com',
+                        access_token: 'access-token-1',
+                        refresh_token: 'existing-refresh-token',
+                        token_expires_at: '2030-01-01T00:00:00.000Z',
+                        scopes: [
+                          'https://www.googleapis.com/auth/calendar.events',
+                          'https://www.googleapis.com/auth/gmail.readonly',
+                          'https://www.googleapis.com/auth/gmail.send',
+                        ],
+                        gmail_connected: true,
+                        gmail_history_id: null,
+                        gmail_last_sync_at: null,
+                        gmail_sync_errors: 0,
+                        historical_scan_enabled: false,
+                        historical_scan_include_spam_trash: true,
+                        historical_scan_status: 'idle',
+                        historical_scan_page_token: null,
+                        historical_scan_total_processed: 0,
+                        historical_scan_total_seen: 0,
+                        historical_scan_result_size_estimate: null,
+                        historical_scan_lookback_days: 0,
+                        historical_scan_started_at: null,
+                        historical_scan_completed_at: null,
+                        historical_scan_last_run_at: null,
+                        is_primary: true,
+                        is_active: true,
+                      },
+                      error: null,
+                    }),
+                  }
+                },
+              }
             },
           }
         },
@@ -251,6 +318,11 @@ test('google connect callback stores merged Gmail state and redirects back to th
           'https://www.googleapis.com/auth/gmail.send',
         ])
         assert.equal(upsertPayload?.gmail_sync_errors, 0)
+        assert.equal(mailboxUpsertPayload?.chef_id, 'chef-1')
+        assert.equal(mailboxUpsertPayload?.tenant_id, 'tenant-1')
+        assert.equal(mailboxUpsertPayload?.normalized_email, 'chef@example.com')
+        assert.equal(mailboxUpsertPayload?.gmail_connected, true)
+        assert.equal(mailboxUpsertPayload?.refresh_token, 'existing-refresh-token')
         assert.equal(response.cookies.get('google-oauth-csrf')?.value, '')
 
         assert.equal(fetchCalls.length, 2)

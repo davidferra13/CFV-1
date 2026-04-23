@@ -252,7 +252,7 @@ export function PermitForm() {
           <Input
             value={form.name}
             onChange={(e) => update('name', e.target.value)}
-            placeholder="e.g. Boston Health Permit 2025"
+            placeholder="e.g. County health permit 2025"
             required
           />
         </div>
@@ -261,7 +261,7 @@ export function PermitForm() {
           <Input
             value={form.issuing_authority}
             onChange={(e) => update('issuing_authority', e.target.value)}
-            placeholder="City of Boston ISD"
+            placeholder="City or county health department"
           />
         </div>
         <div>

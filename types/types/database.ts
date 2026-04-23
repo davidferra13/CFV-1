@@ -7967,10 +7967,14 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          intake_lane: string
           inquiry_id: string | null
           message: string
           name: string
+          operator_evaluation_status: string | null
           read: boolean
+          source_cta: string | null
+          source_page: string | null
           subject: string | null
         }
         Insert: {
@@ -7979,10 +7983,14 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
+          intake_lane?: string
           inquiry_id?: string | null
           message: string
           name: string
+          operator_evaluation_status?: string | null
           read?: boolean
+          source_cta?: string | null
+          source_page?: string | null
           subject?: string | null
         }
         Update: {
@@ -7991,10 +7999,14 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          intake_lane?: string
           inquiry_id?: string | null
           message?: string
           name?: string
+          operator_evaluation_status?: string | null
           read?: boolean
+          source_cta?: string | null
+          source_page?: string | null
           subject?: string | null
         }
         Relationships: [

@@ -9,7 +9,7 @@ import {
   createMigrationRepairReport,
   inspectLocalMigrationDirectory,
   parseMigrationListOutput,
-} from '../../scripts/plan-db-migration-repair.mjs'
+} from '../../scripts/plan-migration-repair.mjs'
 
 describe('Database migration repair plan', () => {
   it('parses local and remote versions independently from the CLI table', () => {
@@ -61,8 +61,8 @@ describe('Database migration repair plan', () => {
     assert.deepEqual(
       plan.repairCommands.map((item) => item.command),
       [
-        'npx db migration repair --linked --status reverted 20260305',
-        'npx db migration repair --linked --status applied 20260313000011',
+        'npx database migration repair --linked --status reverted 20260305',
+        'npx database migration repair --linked --status applied 20260313000011',
       ]
     )
     assert.deepEqual(plan.pushableLocalOnly, [

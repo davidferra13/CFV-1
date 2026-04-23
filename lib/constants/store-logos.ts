@@ -27,7 +27,7 @@ export const STORE_LOGOS: Record<string, string> = {
   'Sprouts Farmers Market': '/images/stores/sprouts.png',
   WinCo: '/images/stores/winco.png',
 
-  // Northeast / New England (developer region)
+  // Regional chains that still appear in current store coverage
   'Stop & Shop': '/images/stores/stop-and-shop.png',
   'Stop and Shop': '/images/stores/stop-and-shop.png',
   'Market Basket': '/images/stores/market-basket.png',

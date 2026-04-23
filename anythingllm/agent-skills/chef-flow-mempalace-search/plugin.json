@@ -1,0 +1,68 @@
+{
+  "active": true,
+  "hubId": "chef-flow-mempalace-search",
+  "name": "ChefFlow MemPalace Search",
+  "schema": "skill-1.0.0",
+  "version": "1.0.0",
+  "description": "Search the live ChefFlow MemPalace corpus in palace2 when the answer may live in prior sessions, mined docs, or semantic memory not obvious from the current workspace documents.",
+  "author": "@codex",
+  "license": "MIT",
+  "setup_args": {
+    "PALACE_PATH": {
+      "type": "string",
+      "required": false,
+      "input": {
+        "type": "text",
+        "default": "C:\\Users\\david\\.mempalace\\palace2",
+        "placeholder": "C:\\Users\\david\\.mempalace\\palace2",
+        "hint": "Path to the active MemPalace corpus. Leave pointed at palace2."
+      }
+    },
+    "PYTHON_EXE": {
+      "type": "string",
+      "required": false,
+      "input": {
+        "type": "text",
+        "default": "py",
+        "placeholder": "py",
+        "hint": "Python launcher to run the bundled MemPalace query script."
+      }
+    }
+  },
+  "examples": [
+    {
+      "prompt": "Find what ChefFlow knows about invoice numbering race conditions.",
+      "call": "{\"query\":\"invoice numbering race conditions\", \"wing\":\"cfv1\", \"limit\":\"5\"}"
+    },
+    {
+      "prompt": "Search prior ChefFlow sessions about MemPalace and AnythingLLM.",
+      "call": "{\"query\":\"MemPalace AnythingLLM integration\", \"limit\":\"6\"}"
+    },
+    {
+      "prompt": "Look in the codex conversation wing for prior work on ChefFlow SEO deploy issues.",
+      "call": "{\"query\":\"ChefFlow SEO deploy issue\", \"wing\":\"codex-conversations\", \"limit\":\"5\"}"
+    }
+  ],
+  "entrypoint": {
+    "file": "handler.js",
+    "params": {
+      "query": {
+        "description": "Search query to run against MemPalace.",
+        "type": "string"
+      },
+      "wing": {
+        "description": "Optional MemPalace wing filter like cfv1, chefflow-conversations, or codex-conversations.",
+        "type": "string"
+      },
+      "room": {
+        "description": "Optional MemPalace room filter like lib, docs, app, or conversation-summaries.",
+        "type": "string"
+      },
+      "limit": {
+        "description": "Optional result count. Defaults to 5.",
+        "type": "string"
+      }
+    }
+  },
+  "imported": true
+}

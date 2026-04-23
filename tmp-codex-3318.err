@@ -1,0 +1,372 @@
+ ⚠ Invalid next.config.js options detected: 
+ ⚠     Unrecognized key(s) in object: 'serverActions'
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 435d1e04-e512-44c1-8c99-1eaa69bbb155,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '435d1e04-e512-44c1-8c99-1eaa69bbb155', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (1810kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (188kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (139kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (692kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (695kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (227kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 435d1e04-e512-44c1-8c99-1eaa69bbb155,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '435d1e04-e512-44c1-8c99-1eaa69bbb155', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 435d1e04-e512-44c1-8c99-1eaa69bbb155,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '435d1e04-e512-44c1-8c99-1eaa69bbb155', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 435d1e04-e512-44c1-8c99-1eaa69bbb155,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '435d1e04-e512-44c1-8c99-1eaa69bbb155', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 435d1e04-e512-44c1-8c99-1eaa69bbb155,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '435d1e04-e512-44c1-8c99-1eaa69bbb155', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 435d1e04-e512-44c1-8c99-1eaa69bbb155,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '435d1e04-e512-44c1-8c99-1eaa69bbb155', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 435d1e04-e512-44c1-8c99-1eaa69bbb155,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '435d1e04-e512-44c1-8c99-1eaa69bbb155', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 435d1e04-e512-44c1-8c99-1eaa69bbb155,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '435d1e04-e512-44c1-8c99-1eaa69bbb155', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 435d1e04-e512-44c1-8c99-1eaa69bbb155,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '435d1e04-e512-44c1-8c99-1eaa69bbb155', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: 435d1e04-e512-44c1-8c99-1eaa69bbb155,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ '435d1e04-e512-44c1-8c99-1eaa69bbb155', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[breadcrumbs] Unexpected error: SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>)
+    at parseJSONFromBytes (node:internal/deps/undici/undici:5738:19)
+    at successSteps (node:internal/deps/undici/undici:5719:27)
+    at consumeBody (node:internal/deps/undici/undici:5725:9)
+    at NextRequest.json (node:internal/deps/undici/undici:5665:18)
+    at POST$1 (webpack-internal:///(rsc)/./app/api/activity/breadcrumbs/route.ts:62:36)
+    at async eval (webpack-internal:///(rsc)/./node_modules/@sentry/nextjs/build/cjs/common/wrapRouteHandlerWithSentry.js:36:30)
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:57228
+    at async eT.execute (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:46851)
+    at async eT.handle (C:\Users\david\Documents\CFv1\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:58760)
+    at async doRender (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1366:42)
+    at async cacheEntry.responseCache.get.routeKind (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1588:28)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1496:28)
+    at async DevServer.renderPageComponent (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1924:24)
+    at async DevServer.renderToResponseImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:818:17)
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\Users\david\Documents\CFv1\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\start-server.js:141:13)
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+[getPartnerPayouts] Error: {
+  message: 'relation "partner_payouts" does not exist',
+  code: '42P01',
+  details: undefined
+}
+ ⨯ ./lib/service-simulation/types.ts
+Error: Failed to read source code from C:\Users\david\Documents\CFv1\lib\service-simulation\types.ts
+
+Caused by:
+    The system cannot find the file specified. (os error 2)
+
+Import trace for requested module:
+./lib/service-simulation/types.ts
+./lib/service-simulation/state.ts
+./lib/events/transitions.ts
+./lib/ai/agent-actions/event-actions.ts
+./lib/ai/agent-actions/index.ts
+./lib/ai/command-orchestrator.ts
+ ⨯ ./lib/service-simulation/staleness.ts
+Error: Failed to read source code from C:\Users\david\Documents\CFv1\lib\service-simulation\staleness.ts
+
+Caused by:
+    The system cannot find the file specified. (os error 2)
+
+Import trace for requested module:
+./lib/service-simulation/staleness.ts
+./lib/service-simulation/state.ts
+./lib/events/transitions.ts
+./lib/ai/agent-actions/event-actions.ts
+./lib/ai/agent-actions/index.ts
+./lib/ai/command-orchestrator.ts
+ ⨯ ./lib/service-simulation/engine.ts
+Error: Failed to read source code from C:\Users\david\Documents\CFv1\lib\service-simulation\engine.ts
+
+Caused by:
+    The system cannot find the file specified. (os error 2)
+
+Import trace for requested module:
+./lib/service-simulation/engine.ts
+./lib/service-simulation/state.ts
+./lib/events/transitions.ts
+./lib/ai/agent-actions/event-actions.ts
+./lib/ai/agent-actions/index.ts
+./lib/ai/command-orchestrator.ts
+ ⨯ ./lib/service-simulation/state.ts
+Error: Failed to read source code from C:\Users\david\Documents\CFv1\lib\service-simulation\state.ts
+
+Caused by:
+    The system cannot find the file specified. (os error 2)
+
+Import trace for requested module:
+./lib/service-simulation/state.ts
+./lib/events/transitions.ts
+./lib/ai/agent-actions/event-actions.ts
+./lib/ai/agent-actions/index.ts
+./lib/ai/command-orchestrator.ts
+ ⨯ ./lib/events/readiness.ts
+Error: Failed to read source code from C:\Users\david\Documents\CFv1\lib\events\readiness.ts
+
+Caused by:
+    The system cannot find the file specified. (os error 2)
+
+Import trace for requested module:
+./lib/events/readiness.ts
+./lib/events/transitions.ts
+./lib/ai/agent-actions/event-actions.ts
+./lib/ai/agent-actions/index.ts
+./lib/ai/command-orchestrator.ts
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (1810kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (188kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (139kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (692kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (695kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (227kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (1810kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (1810kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)

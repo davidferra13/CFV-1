@@ -38,6 +38,12 @@ import { ChatNavUnreadBadge } from '@/components/chat/chat-nav-unread-badge'
 
 import { usePermissions } from '@/lib/context/permission-context'
 import { getStrictFocusGroupRank, isStrictFocusGroupVisible } from '@/lib/navigation/focus-mode-nav'
+import {
+  CHEF_SHELL_RESET_EVENT,
+  CHEF_SIDEBAR_COLLAPSED_STORAGE_KEY,
+  DEFAULT_CHEF_SIDEBAR_COLLAPSED,
+  readChefShellPresentationState,
+} from '@/lib/chef/shell-state'
 
 import {
   LogOut,
@@ -85,18 +91,30 @@ export function useSidebar() {
 }
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(DEFAULT_CHEF_SIDEBAR_COLLAPSED)
   const [mounted, setMounted] = useState(false)
 
-  useEffect(() => {
-    const stored = localStorage.getItem('chef-sidebar-collapsed')
-    if (stored === 'true') setCollapsed(true)
+  const syncCollapsedFromStorage = useCallback(() => {
+    setCollapsed(readChefShellPresentationState(window.localStorage).sidebarCollapsed)
     setMounted(true)
   }, [])
 
+  useEffect(() => {
+    syncCollapsedFromStorage()
+  }, [syncCollapsedFromStorage])
+
+  useEffect(() => {
+    window.addEventListener(CHEF_SHELL_RESET_EVENT, syncCollapsedFromStorage)
+    return () => window.removeEventListener(CHEF_SHELL_RESET_EVENT, syncCollapsedFromStorage)
+  }, [syncCollapsedFromStorage])
+
   const handleSetCollapsed = useCallback((v: boolean) => {
     setCollapsed(v)
-    localStorage.setItem('chef-sidebar-collapsed', String(v))
+    try {
+      localStorage.setItem(CHEF_SIDEBAR_COLLAPSED_STORAGE_KEY, String(v))
+    } catch {
+      // localStorage unavailable
+    }
   }, [])
 
   // Prevent flash of wrong width before hydration
@@ -605,7 +623,7 @@ export function ChefSidebar({
     return strictGroups.sort(
       (a, b) => getStrictFocusGroupRank(a.id) - getStrictFocusGroupRank(b.id)
     )
-  }, [isAdmin, isPrivileged, focusMode, enabledSet])
+  }, [isAdmin, isPrivileged, focusMode, enabledSet, hasPermission])
   const groupEntries = useMemo(
     () => accessibleGroups.map((group) => ({ group, isLocked: false })),
     [accessibleGroups]
@@ -673,6 +691,14 @@ export function ChefSidebar({
       return next
     })
   }
+  const handleSignOut = useCallback(async () => {
+    try {
+      await signOut()
+    } catch (error) {
+      console.error('[sign-out]', error)
+    }
+    window.location.href = '/'
+  }, [])
 
   return (
     <aside
@@ -726,7 +752,7 @@ export function ChefSidebar({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto pt-3 pb-6 mb-28 custom-scrollbar">
+      <nav className="flex-1 overflow-y-auto pt-3 pb-6 custom-scrollbar">
         {/* COLLAPSED / RAIL MODE */}
         {collapsed ? (
           <div className="flex flex-col items-center gap-1 px-1">
@@ -833,24 +859,6 @@ export function ChefSidebar({
                   </Link>
                 )
               })}
-
-            {/* Sign Out - inside nav so it's above the Remy mascot */}
-            <button
-              type="button"
-              onClick={async () => {
-                try {
-                  await signOut()
-                } catch (e) {
-                  console.error('[sign-out]', e)
-                }
-                window.location.href = '/'
-              }}
-              title="Sign Out"
-              aria-label="Sign Out"
-              className="flex items-center justify-center w-10 h-10 rounded-lg text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors"
-            >
-              <LogOut className="w-[18px] h-[18px]" />
-            </button>
           </div>
         ) : (
           /* EXPANDED MODE */
@@ -861,7 +869,7 @@ export function ChefSidebar({
             <ActionBar navFilter={navFilter} archetype={archetype} />
 
             {/* ─── Nav Groups (always visible, collapse individually) ─── */}
-            {!focusMode && filteredGroupEntries.length > 0 && (
+            {filteredGroupEntries.length > 0 && (
               <>
                 <div className="mx-0 my-1 border-t border-stone-700/40" />
                 <div className="space-y-0.5">
@@ -924,26 +932,24 @@ export function ChefSidebar({
                 </Link>
               )
             })()}
-
-            {/* Sign Out - inside nav so it's above the Remy mascot */}
-            <button
-              type="button"
-              onClick={async () => {
-                try {
-                  await signOut()
-                } catch (e) {
-                  console.error('[sign-out]', e)
-                }
-                window.location.href = '/'
-              }}
-              className="flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors border-l-2 border-transparent"
-            >
-              <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
-              Sign Out
-            </button>
           </div>
         )}
       </nav>
+
+      <div className={`border-t border-stone-800/50 ${collapsed ? 'p-1.5' : 'p-3'}`}>
+        <button
+          type="button"
+          onClick={handleSignOut}
+          title={collapsed ? 'Sign Out' : undefined}
+          aria-label={collapsed ? 'Sign Out' : undefined}
+          className={`flex items-center rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors ${
+            collapsed ? 'mx-auto h-10 w-10 justify-center' : 'w-full gap-3 px-3 py-2'
+          }`}
+        >
+          <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
+          {!collapsed && 'Sign Out'}
+        </button>
+      </div>
     </aside>
   )
 }

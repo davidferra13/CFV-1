@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
+import { PUBLIC_SITE_URL } from '@/lib/site/public-site'
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+const BASE_URL = PUBLIC_SITE_URL
 
 export default function robots(): MetadataRoute.Robots {
   return {

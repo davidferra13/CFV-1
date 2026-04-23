@@ -582,14 +582,14 @@ export async function savePrivateResume(
   // Check for existing resume to replace after successful upload
   const { data: existing } = await db
     .from('chef_documents')
-    .select('id, tags')
+    .select('id, storage_path, tags')
     .eq('tenant_id', chef.tenantId!)
     .eq('document_type', 'resume_private')
     .order('updated_at', { ascending: false })
     .limit(1)
 
-  const ext = file.name.split('.').pop() || 'pdf'
-  const storagePath = `resumes/${chef.id}/resume-${Date.now()}.${ext}`
+  const ext = file.name.split('.').pop()?.toLowerCase() || 'pdf'
+  const storagePath = `${chef.tenantId}/resumes/resume-${Date.now()}.${ext}`
   const buffer = Buffer.from(await file.arrayBuffer())
 
   // Upload new file first
@@ -600,6 +600,14 @@ export async function savePrivateResume(
 
   if (!uploaded) {
     return { success: false, error: 'File upload failed' }
+  }
+
+  async function cleanupUploadedResume() {
+    try {
+      await remove(RESUME_BUCKET, [storagePath])
+    } catch (cleanupError) {
+      console.error('[savePrivateResume] cleanup error', cleanupError)
+    }
   }
 
   const now = new Date().toISOString()
@@ -624,7 +632,16 @@ export async function savePrivateResume(
 
     if (updateError) {
       console.error('[savePrivateResume] update error', updateError)
+      await cleanupUploadedResume()
       return { success: false, error: 'Failed to update resume record' }
+    }
+
+    if (existing[0].storage_path && existing[0].storage_path !== storagePath) {
+      try {
+        await remove(RESUME_BUCKET, [existing[0].storage_path])
+      } catch (cleanupError) {
+        console.error('[savePrivateResume] old file cleanup error', cleanupError)
+      }
     }
   } else {
     // Insert new resume document record
@@ -649,6 +666,7 @@ export async function savePrivateResume(
 
     if (insertError) {
       console.error('[savePrivateResume] insert error', insertError)
+      await cleanupUploadedResume()
       return { success: false, error: 'Failed to save resume record' }
     }
   }

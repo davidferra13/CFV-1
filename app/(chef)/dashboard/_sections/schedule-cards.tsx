@@ -1,15 +1,13 @@
-// Dashboard Schedule Cards - renders stat/list cards instead of accordions
+﻿// Dashboard Schedule Cards - renders stat/list cards instead of accordions
 // Data fetching is identical to schedule-section.tsx
 
-import { requireChef } from '@/lib/auth/get-user'
 import {
   getTodaysScheduleEnriched,
-  getAllPrepPrompts,
   getWeekSchedule,
 } from '@/lib/scheduling/actions'
 import { getNextUpcomingEvent } from '@/lib/dashboard/actions'
 import { getDOPTaskDigest, type DOPTaskDigest } from '@/lib/scheduling/task-digest'
-import { getDailyPlanStats } from '@/lib/daily-ops/actions'
+import { loadEventServiceSimulationPanelState } from '@/lib/service-simulation/state'
 import { getWeatherForEvents, type InlineWeather } from '@/lib/weather/open-meteo'
 import { createServerClient } from '@/lib/db/server'
 import { StatCard } from '@/components/dashboard/widget-cards/stat-card'
@@ -44,12 +42,10 @@ const emptyDOPDigest: DOPTaskDigest = {
 }
 
 export async function ScheduleCards() {
-  const [prepPrompts, weekSchedule, nextEvent, dopTaskDigest, dailyPlanStats] = await Promise.all([
-    safe('prepPrompts', getAllPrepPrompts, []),
+  const [weekSchedule, nextEvent, dopTaskDigest] = await Promise.all([
     safe('weekSchedule', () => getWeekSchedule(0), emptyWeekSchedule),
     safe('nextEvent', getNextUpcomingEvent, null),
     safe('dopTaskDigest', getDOPTaskDigest, emptyDOPDigest),
-    safe('dailyPlanStats', getDailyPlanStats, null),
   ])
 
   // Weather fetch
@@ -84,6 +80,14 @@ export async function ScheduleCards() {
     () => getTodaysScheduleEnriched(weatherByEventId),
     null
   )
+  const todaysReadiness =
+    todaysSchedule?.event?.id
+      ? await safe(
+          'todaysServiceReadiness',
+          () => loadEventServiceSimulationPanelState(todaysSchedule.event.id),
+          null
+        )
+      : null
 
   // Build list items for today's schedule
   const scheduleItems: ListCardItem[] = []
@@ -93,7 +97,7 @@ export async function ScheduleCards() {
     scheduleItems.push({
       id: e.id,
       label: `${e.serve_time || 'TBD'} - ${e.occasion || 'Event'}`,
-      sublabel: `${e.client?.full_name || 'Client'} - ${e.guest_count ?? '?'} guests${weather ? ` - ${weather.emoji} ${weather.tempMaxF}\u00B0F` : ''}`,
+      sublabel: `${e.client?.full_name || 'Client'} - ${e.guest_count ?? '?'} guests${weather ? ` - ${weather.emoji} ${weather.tempMaxF}\u00B0F` : ''}${todaysReadiness ? ` - ${todaysReadiness.simulation.readiness.overallScore}% confidence` : ''}`,
       href: `/events/${e.id}`,
       status: 'green',
     })
@@ -124,6 +128,14 @@ export async function ScheduleCards() {
                     ? `· ${todaysSchedule.event.guest_count} guests`
                     : ''}
                 </p>
+                {todaysReadiness ? (
+                  <p className="mt-1 text-xs text-stone-500">
+                    Confidence {todaysReadiness.simulation.readiness.overallScore}% ·{' '}
+                    {todaysReadiness.simulation.readiness.counts.blockers} blockers ·{' '}
+                    {todaysReadiness.simulation.readiness.counts.risks} risks ·{' '}
+                    {todaysReadiness.simulation.readiness.counts.stale} stale
+                  </p>
+                ) : null}
               </div>
               <div className="flex flex-wrap gap-2">
                 <Link
@@ -213,22 +225,7 @@ export async function ScheduleCards() {
         />
       )}
 
-      {/* Prep Prompts - stat card */}
-      {prepPrompts.length > 0 && (
-        <StatCard
-          widgetId="prep_prompts"
-          title="Prep"
-          value={`${prepPrompts.length}`}
-          subtitle="active prep prompts"
-          trend={
-            prepPrompts.some((p: any) => p.urgency === 'overdue')
-              ? 'Overdue items'
-              : 'All on schedule'
-          }
-          trendDirection={prepPrompts.some((p: any) => p.urgency === 'overdue') ? 'down' : 'up'}
-          href="/prep"
-        />
-      )}
     </>
   )
 }
+

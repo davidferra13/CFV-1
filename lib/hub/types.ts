@@ -212,7 +212,9 @@ export interface HubPinnedNote {
 
 // ---- Polls ----
 
-export type HubPollType = 'single_choice' | 'multi_choice'
+export type HubPollType = 'single_choice' | 'multi_choice' | 'ranked_choice'
+export type HubPollScope = 'general' | 'menu_course'
+export type HubPollOptionType = 'standard' | 'opt_out'
 
 export interface HubPoll {
   id: string
@@ -224,9 +226,24 @@ export interface HubPoll {
   is_closed: boolean
   closes_at: string | null
   created_at: string
+  poll_scope?: HubPollScope
+  event_id?: string | null
+  source_menu_id?: string | null
+  source_revision_id?: string | null
+  course_number?: number | null
+  course_name?: string | null
+  allow_opt_out?: boolean
+  max_selections?: number | null
+  locked_option_id?: string | null
+  locked_at?: string | null
+  locked_by_profile_id?: string | null
+  lock_reason?: string | null
   // Joined
   options?: HubPollOption[]
   total_votes?: number
+  participant_count?: number
+  total_selections?: number
+  winning_option_ids?: string[]
 }
 
 export interface HubPollOption {
@@ -235,9 +252,14 @@ export interface HubPollOption {
   label: string
   metadata: Record<string, unknown> | null
   sort_order: number
+  option_type?: HubPollOptionType
+  dish_index_id?: string | null
   // Computed
   vote_count?: number
+  first_choice_count?: number
+  score?: number
   voted_by_me?: boolean
+  ranked_by_me?: number | null
 }
 
 export interface HubPollVote {
@@ -246,6 +268,9 @@ export interface HubPollVote {
   option_id: string
   profile_id: string
   created_at: string
+  ballot_id?: string
+  rank?: number | null
+  revoked_at?: string | null
 }
 
 // ---- Themes ----

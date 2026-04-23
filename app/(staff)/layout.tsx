@@ -4,11 +4,14 @@
 
 import { requireStaff } from '@/lib/auth/get-user'
 import { getMyProfile } from '@/lib/staff/staff-portal-actions'
+import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { StaffNav } from '@/components/staff/staff-nav'
 import { PresenceBeacon } from '@/components/admin/presence-beacon'
 import { TestAccountBanner } from '@/components/dev/test-account-banner'
 import { StaffTourWrapper } from '@/components/onboarding/staff-tour-wrapper'
+import { PATHNAME_HEADER } from '@/lib/auth/request-auth-context'
+import { resolveStaffSurfaceMode } from '@/lib/interface/surface-governance'
 
 export const metadata = {
   title: {
@@ -18,6 +21,9 @@ export const metadata = {
 }
 
 export default async function StaffLayout({ children }: { children: React.ReactNode }) {
+  const pathname = headers().get(PATHNAME_HEADER) ?? '/staff-dashboard'
+  const surfaceMode = resolveStaffSurfaceMode(pathname)
+
   let user
   try {
     user = await requireStaff()
@@ -29,7 +35,11 @@ export default async function StaffLayout({ children }: { children: React.ReactN
   const staffName = profile?.name ?? 'Staff Member'
 
   return (
-    <div className="min-h-screen bg-stone-900 text-stone-100" data-cf-portal="staff">
+    <div
+      className="min-h-screen bg-stone-900 text-stone-100"
+      data-cf-portal="staff"
+      data-cf-surface={surfaceMode}
+    >
       <TestAccountBanner email={user.email} />
       <a
         href="#main-content"

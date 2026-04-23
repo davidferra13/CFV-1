@@ -4,7 +4,12 @@ import { spawn, spawnSync } from 'node:child_process'
 import { access, cp, mkdir, rename, rm } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { dirname, join, resolve } from 'node:path'
-import { resolveBuildSurfaceManifest } from './build-surface-manifest.mjs'
+import {
+  getBuildSurfaceIncludePaths,
+  resolveBuildSurfaceManifest,
+  validateBuildSurfaceFilesystem,
+} from './build-surface-manifest.mjs'
+import { stampServiceWorker } from './stamp-service-worker.mjs'
 
 const require = createRequire(import.meta.url)
 
@@ -77,6 +82,23 @@ async function stageBuildSurface(rootDir, surfaceName) {
     return null
   }
 
+  const filesystemValidation = await validateBuildSurfaceFilesystem(rootDir, surfaceName)
+  if (filesystemValidation && !filesystemValidation.ok) {
+    const details = [
+      ...filesystemValidation.missingIncludePaths.map(
+        (relativePath) => `missing include path ${relativePath}`
+      ),
+      ...filesystemValidation.missingOverlayPaths.map(
+        (relativePath) => `missing overlay path ${relativePath}`
+      ),
+    ]
+
+    throw new Error(
+      `[run-next-build] Build surface "${surfaceName}" failed preflight:\n` +
+        details.map((detail) => `  - ${detail}`).join('\n')
+    )
+  }
+
   const appDir = join(rootDir, 'app')
   const backupDir = join(rootDir, `.app-build-backup-${surfaceName}-${process.pid}-${Date.now()}`)
 
@@ -98,7 +120,7 @@ async function stageBuildSurface(rootDir, surfaceName) {
   try {
     await mkdir(appDir, { recursive: true })
 
-    for (const relativePath of manifest.include) {
+    for (const relativePath of getBuildSurfaceIncludePaths(manifest)) {
       const sourcePath = resolveManifestSourcePath(rootDir, backupDir, relativePath)
       const destinationPath = join(rootDir, relativePath)
       await mkdir(dirname(destinationPath), { recursive: true })
@@ -198,6 +220,13 @@ async function main() {
         reject(error)
       })
     })
+
+    if (exitCode === 0) {
+      const { buildId, changed } = await stampServiceWorker(rootDir, distDirName)
+      console.log(
+        `[run-next-build] ${changed ? 'Stamped' : 'Verified'} public/sw.js with BUILD_ID ${buildId}.`
+      )
+    }
 
   } finally {
     if (restoreBuildSurface) {

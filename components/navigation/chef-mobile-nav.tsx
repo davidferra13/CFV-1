@@ -408,7 +408,7 @@ export function ChefMobileNav({
       focusMode && !isPrivileged
         ? resolveStandaloneTop([...STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS]).map((item) => ({
             ...item,
-            label: item.href === '/dashboard' ? 'Home' : item.label,
+            label: item.href === '/dashboard' ? 'Today' : item.label,
           }))
         : resolveMobileTabs(mobileTabHrefs),
     [focusMode, isPrivileged, mobileTabHrefs]
@@ -454,7 +454,7 @@ export function ChefMobileNav({
     return strictGroups.sort(
       (a, b) => getStrictFocusGroupRank(a.id) - getStrictFocusGroupRank(b.id)
     )
-  }, [isAdmin, isPrivileged, focusMode, enabledSet])
+  }, [isAdmin, isPrivileged, focusMode, enabledSet, hasPermission])
   const groupEntries = useMemo(
     () => accessibleGroups.map((group) => ({ group, isLocked: false })),
     [accessibleGroups]

@@ -6,7 +6,7 @@ import { getOrCreateEventHubGroup } from '@/lib/hub/integration-actions'
 
 interface JoinHubCTAProps {
   eventId: string
-  tenantId: string
+  shareToken: string
   eventTitle: string
 }
 
@@ -14,7 +14,7 @@ interface JoinHubCTAProps {
  * Dinner Circle call-to-action shown on the share page after RSVP.
  * Creates or finds the hub group for this event, then redirects to the join page.
  */
-export function JoinHubCTA({ eventId, tenantId, eventTitle }: JoinHubCTAProps) {
+export function JoinHubCTA({ eventId, shareToken, eventTitle }: JoinHubCTAProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -24,7 +24,7 @@ export function JoinHubCTA({ eventId, tenantId, eventTitle }: JoinHubCTAProps) {
       try {
         const { groupToken } = await getOrCreateEventHubGroup({
           eventId,
-          tenantId,
+          shareToken,
           eventTitle,
         })
         router.push(`/hub/join/${groupToken}`)

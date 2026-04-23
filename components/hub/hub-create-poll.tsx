@@ -13,7 +13,9 @@ interface HubCreatePollProps {
 export function HubCreatePoll({ groupId, profileToken, onCreated, onCancel }: HubCreatePollProps) {
   const [question, setQuestion] = useState('')
   const [options, setOptions] = useState(['', ''])
-  const [pollType, setPollType] = useState<'single_choice' | 'multi_choice'>('single_choice')
+  const [pollType, setPollType] = useState<
+    'single_choice' | 'multi_choice' | 'ranked_choice'
+  >('single_choice')
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
 
@@ -154,6 +156,16 @@ export function HubCreatePoll({ groupId, profileToken, onCreated, onCancel }: Hu
             className="accent-[#e88f47]"
           />
           Multiple choice
+        </label>
+        <label className="flex items-center gap-1.5 text-xs text-stone-400">
+          <input
+            type="radio"
+            name="pollType"
+            checked={pollType === 'ranked_choice'}
+            onChange={() => setPollType('ranked_choice')}
+            className="accent-[#e88f47]"
+          />
+          Ranked choice
         </label>
       </div>
 

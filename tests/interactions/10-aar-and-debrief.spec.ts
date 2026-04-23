@@ -109,7 +109,9 @@ test.describe('AAR — Form Filling', () => {
     // Fill a notes field
     const textarea = page.locator('textarea').first()
     if (await textarea.isVisible()) {
-      await textarea.fill('TEST AAR note — automated E2E test, please ignore')
+      await textarea.fill(
+        'Service stayed calm, the crudo landing was strong, and dessert pacing improved once the coffee reset happened earlier.'
+      )
     }
 
     // Click save
@@ -177,7 +179,9 @@ test.describe('Debrief — Structure', () => {
 
     const textarea = page.locator('textarea').first()
     if (await textarea.isVisible()) {
-      await textarea.fill('TEST debrief note — automated E2E test')
+      await textarea.fill(
+        'Bring one extra induction burner next time and confirm rooftop wind conditions by noon for smoother final plating.'
+      )
     }
 
     expect(errors).toHaveLength(0)

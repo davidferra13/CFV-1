@@ -1,13 +1,15 @@
-// Document Section - shows document readiness and view/print buttons
+﻿// Document Section - shows document readiness and view/print buttons
 // Placed on the event detail page (and inquiry pages with a linked event) for chef access
-// "View PDF" opens an inline iframe modal. ↗ opens in a new tab as a fallback.
+// "View PDF" opens an inline iframe modal. Open opens in a new tab as a fallback.
 'use client'
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { PdfViewerModal } from '@/components/documents/pdf-viewer-modal'
+import { ReadinessAwareDocumentButton } from '@/components/documents/readiness-aware-document-button'
 import type { DocumentReadiness, BusinessDocInfo } from '@/lib/documents/actions'
+import type { ReadinessResult } from '@/lib/events/readiness'
 import {
   TEMPLATE_SLUG_BY_DOC_TYPE,
   type OperationalDocumentType,
@@ -46,6 +48,7 @@ type DocumentSectionProps = {
   eventId: string
   readiness: DocumentReadiness
   businessDocs?: BusinessDocInfo | null
+  readinessGate?: ReadinessResult | null
 }
 
 type DocEntry = {
@@ -63,7 +66,12 @@ function ReadinessIndicator({ ready, missing }: { ready: boolean; missing: strin
   return <span className="text-amber-600 text-sm">Needs: {missing.join(', ')}</span>
 }
 
-export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSectionProps) {
+export function DocumentSection({
+  eventId,
+  readiness,
+  businessDocs,
+  readinessGate = null,
+}: DocumentSectionProps) {
   const baseUrl = `/api/documents/${eventId}`
   const [viewingDoc, setViewingDoc] = useState<{ type: string; label: string } | null>(null)
 
@@ -210,7 +218,7 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
                   View PDF
                 </Button>
 
-                {/* ↗ escape hatch - opens PDF in a new tab */}
+                {/* Open in a new tab as a fallback */}
                 {doc.ready && (
                   <a
                     href={`${baseUrl}?type=${doc.type}`}
@@ -218,9 +226,9 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
                     rel="noopener noreferrer"
                     className="text-stone-400 hover:text-stone-300 text-sm"
                     title="Open in new tab"
-                    aria-label={`Open ${doc.label} in new tab`}
+                    aria-label={`Open ${doc.label} in a new tab`}
                   >
-                    ↗
+                    Open
                   </a>
                 )}
               </div>
@@ -230,15 +238,13 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
 
         {/* Print All - combined 8-page PDF; stays as new-tab link for multi-page print */}
         <div className="mt-5 pt-4 border-t border-stone-700">
-          <Button
-            variant="primary"
-            className="w-full"
+          <ReadinessAwareDocumentButton
+            eventId={eventId}
             href={`${baseUrl}?type=all&archive=1`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Print All (8 Sheets)
-          </Button>
+            label="Print All (8 Sheets)"
+            readiness={readinessGate}
+            className="w-full"
+          />
         </div>
       </Card>
 
@@ -305,7 +311,7 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Print Route ↗
+                Print Route
               </Button>
             )}
           </div>
@@ -363,9 +369,9 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
               rel="noopener noreferrer"
               className="text-stone-400 hover:text-stone-300 text-sm"
               title="Open in new tab"
-              aria-label="Open Content Asset Capture Sheet in new tab"
+              aria-label="Open Content Asset Capture Sheet in a new tab"
             >
-              ↗
+              Open
             </a>
           </div>
         </div>
@@ -419,7 +425,7 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
                 rel="noopener noreferrer"
                 className="text-sm text-stone-500 hover:text-stone-200 font-medium shrink-0"
               >
-                Download PDF ↗
+                Download PDF Open
               </a>
             </div>
           ) : (
@@ -457,8 +463,8 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
                   className="text-sm text-stone-500 hover:text-stone-200 font-medium shrink-0"
                 >
                   {businessDocs.contract.status === 'signed'
-                    ? 'Download Signed PDF ↗'
-                    : 'Preview PDF ↗'}
+                    ? 'Download Signed PDF Open'
+                    : 'Preview PDF Open'}
                 </a>
               )}
             </div>
@@ -495,7 +501,7 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
                   rel="noopener noreferrer"
                   className="text-sm text-stone-500 hover:text-stone-200 font-medium"
                 >
-                  Download PDF ↗
+                  Download PDF Open
                 </a>
               )}
             </div>
@@ -515,3 +521,4 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
     </>
   )
 }
+

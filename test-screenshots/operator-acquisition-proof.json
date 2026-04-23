@@ -1,0 +1,13 @@
+{
+  "homeTitle": "ChefFlow | Operator Workspace for Private Chefs and Live Chef Marketplace | ChefFlow",
+  "homeProofHref": "/for-operators?source_page=home&source_cta=operator_band_proof",
+  "homeWalkthroughHref": "/for-operators/walkthrough?source_page=home&source_cta=operator_band_walkthrough",
+  "forOperatorsUrl": "http://127.0.0.1:3350/for-operators?source_page=home&source_cta=operator_band_proof",
+  "marketplaceSegmentHref": "/marketplace-chefs?source_page=for_operators&source_cta=segment_marketplace",
+  "compareSegmentHref": "/compare?source_page=for_operators&source_cta=segment_compare",
+  "walkthroughSegmentHref": "/for-operators/walkthrough?source_page=for_operators&source_cta=segment_walkthrough",
+  "compareUrl": "http://127.0.0.1:3350/compare?source_page=for_operators&source_cta=segment_compare",
+  "compareWalkthroughHref": "/for-operators/walkthrough?source_page=compare_index&source_cta=hero_walkthrough",
+  "marketplaceUrl": "http://127.0.0.1:3350/marketplace-chefs?source_page=for_operators&source_cta=segment_marketplace",
+  "marketplaceWalkthroughHref": "/for-operators/walkthrough?source_page=marketplace_chefs&source_cta=hero_walkthrough"
+}

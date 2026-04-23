@@ -1,6 +1,7 @@
 // Client Payment Page - Pay for accepted events
 
 import { requireClient } from '@/lib/auth/get-user'
+import { getClientEventContract } from '@/lib/contracts/actions'
 import { getClientEventById } from '@/lib/events/client-actions'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
@@ -16,7 +17,10 @@ import { CancellationPolicyDisplay } from '@/components/events/cancellation-poli
 export default async function PaymentPage({ params }: { params: { id: string } }) {
   await requireClient()
 
-  const event = await getClientEventById(params.id)
+  const [event, contract] = await Promise.all([
+    getClientEventById(params.id),
+    getClientEventContract(params.id).catch(() => null),
+  ])
 
   if (!event) {
     notFound()
@@ -32,6 +36,14 @@ export default async function PaymentPage({ params }: { params: { id: string } }
   const totalPaidCents = financial?.totalPaidCents ?? 0
   const quotedPriceCents = financial?.quotedPriceCents ?? event.quoted_price_cents ?? 0
   const outstandingBalanceCents = financial?.outstandingBalanceCents ?? quotedPriceCents
+  const contractStatus = event.hasContract ? (contract?.status ?? event.contractStatus ?? null) : null
+
+  if (event.status === 'accepted' && event.hasContract && !event.contractSignedAt) {
+    if (contractStatus === 'sent' || contractStatus === 'viewed') {
+      redirect(`/my-events/${params.id}/contract?next=payment`)
+    }
+    redirect(`/my-events/${params.id}/proposal`)
+  }
 
   // Determine payment amount (deposit or full balance)
   const depositAmountCents = event.deposit_amount_cents ?? 0

@@ -33,12 +33,12 @@ export const PUBLIC_SECONDARY_ENTRY_CONFIG: Record<SecondaryEntrySurface, Second
     {
       label: 'Browse Chefs',
       href: '/chefs',
-      description: 'Pick a specific chef instead',
+      description: 'Start from the live directory instead',
     },
     {
       label: 'How it works',
       href: '/how-it-works',
-      description: 'See what to expect step by step',
+      description: 'See matching, reply, and payment steps',
     },
     { label: 'Contact us', href: '/contact', description: 'Questions before you book' },
   ],
@@ -85,9 +85,21 @@ export const PUBLIC_SECONDARY_ENTRY_CONFIG: Record<SecondaryEntrySurface, Second
     { label: 'How it works', href: '/how-it-works', description: 'Learn what to expect' },
   ],
   directory: [
-    { label: 'Book a Chef', href: '/book', description: 'Request a private dining experience' },
-    { label: 'Browse Chefs', href: '/chefs', description: 'Find reviewed private chefs' },
-    { label: 'Food near you', href: '/nearby', description: 'Restaurants, caterers, food trucks' },
+    {
+      label: 'Book a Chef',
+      href: '/book',
+      description: 'Describe your event once and let matched chefs review it',
+    },
+    {
+      label: 'How it works',
+      href: '/how-it-works',
+      description: 'See matching, quote, and payment expectations',
+    },
+    {
+      label: 'Trust Center',
+      href: '/trust',
+      description: 'See what ChefFlow verifies and what it does not',
+    },
   ],
   nearby: [
     { label: 'Book a Chef', href: '/book', description: 'Request a private dining experience' },
@@ -137,9 +149,21 @@ export const PUBLIC_SECONDARY_ENTRY_CONFIG: Record<SecondaryEntrySurface, Second
     { label: 'For operators', href: '/for-operators', description: 'Run your food business here' },
   ],
   for_operators: [
-    { label: 'Book a Chef', href: '/book', description: 'Looking to hire, not join?' },
-    { label: 'Browse Chefs', href: '/chefs', description: 'See who is already on ChefFlow' },
-    { label: 'How it works', href: '/how-it-works', description: 'The full process explained' },
+    {
+      label: 'Request walkthrough',
+      href: '/for-operators/walkthrough',
+      description: 'Get the workflow mapped to your current process',
+    },
+    {
+      label: 'Compare ChefFlow',
+      href: '/compare',
+      description: 'Judge migration friction against your current stack',
+    },
+    {
+      label: 'Marketplace chef path',
+      href: '/marketplace-chefs',
+      description: 'For operators whose leads start elsewhere',
+    },
   ],
   hub: [
     { label: 'Book a Chef', href: '/book', description: 'Plan your own private dining event' },

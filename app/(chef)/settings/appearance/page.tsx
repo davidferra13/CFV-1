@@ -11,7 +11,7 @@ export default async function AppearancePage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-stone-100">Appearance</h1>
-        <p className="text-stone-400 mt-1">Theme, color palette, and display preferences</p>
+        <p className="text-stone-400 mt-1">Accent color and display preferences</p>
       </div>
 
       <Card>
@@ -20,7 +20,8 @@ export default async function AppearancePage() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-stone-500 mb-4">
-            Choose a color palette for your ChefFlow workspace. This only changes what you see.
+            Choose a color palette for your ChefFlow workspace accents. This only changes your local
+            visuals. It does not change navigation structure or route access.
           </p>
           <ColorPalettePicker />
         </CardContent>

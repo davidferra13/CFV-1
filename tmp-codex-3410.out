@@ -1,0 +1,54 @@
+  ▲ Next.js 14.2.35
+  - Local:        http://127.0.0.1:3410
+  - Network:      http://127.0.0.1:3410
+  - Environments: .env.local, .env
+  - Experiments (use with caution):
+    · instrumentationHook
+
+ ✓ Starting...
+   
+Your tsconfig.json extends another configuration, which means we cannot add the Next.js TypeScript plugin automatically. To improve your development experience, we recommend adding the Next.js plugin (`"plugins": [{ "name": "next" }]`) manually to your TypeScript configuration. Learn more: https://nextjs.org/docs/app/building-your-application/configuring/typescript#the-typescript-plugin
+
+   Using tsconfig file: tsconfig.next.json
+ ○ Compiling /instrumentation ...
+ ✓ Compiled /instrumentation in 6.4s (1135 modules)
+[instrumentation] Background jobs disabled in local dev. Set ENABLE_BACKGROUND_JOBS_IN_DEV=true to opt in.
+ ✓ Ready in 15.5s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 1623ms (1392 modules)
+ ○ Compiling /for-operators/walkthrough ...
+ ✓ Compiled / in 80.8s (14128 modules)
+ GET /for-operators/walkthrough 200 in 959ms
+ ✓ Compiled in 6.4s (12736 modules)
+ GET /for-operators/walkthrough?source_page=codex_check&source_cta=manual_verify 200 in 444ms
+ ○ Compiling /api/storage/public/[...path] ...
+ ✓ Compiled /api/storage/public/[...path] in 1038ms (8885 modules)
+ GET /api/storage/public/chef-profile-images/bd72cf97-a0e5-4fe4-b049-0706ac81d100/1774734757311-ef0fd70e-4692-400d-af0c-4e5c83c441a4.jpg 200 in 3338ms
+ GET /for-operators/walkthrough?source_page=codex_check&source_cta=manual_verify 200 in 353ms
+ ○ Compiling /api/realtime/presence ...
+ ✓ Compiled /api/realtime/presence in 5.1s (9145 modules)
+ ○ Compiling /_error ...
+ ✓ Compiled /_not-found in 7.7s (13524 modules)
+ ✓ Compiled in 3.7s (4326 modules)
+ POST /api/realtime/presence 500 in 25656ms
+ POST /api/realtime/presence 500 in 25647ms
+ POST /api/realtime/presence 500 in 25637ms
+ POST /api/realtime/presence 500 in 25659ms
+ GET /_next/static/webpack/f31b16636d5623bb.webpack.hot-update.json 404 in 15316ms
+ GET /for-operators/walkthrough?source_page=codex_check&source_cta=manual_verify&_rsc=7ccw5 200 in 15929ms
+ GET /for-operators/walkthrough?source_page=codex_check&source_cta=manual_verify 200 in 926ms
+ POST /api/realtime/presence 200 in 684ms
+ POST /api/realtime/presence 200 in 687ms
+ POST /api/realtime/presence 200 in 657ms
+ POST /api/realtime/presence 200 in 664ms
+ ○ Compiling /api/realtime/[channel] ...
+ ✓ Compiled /api/realtime/[channel] in 1691ms (9187 modules)
+ POST /api/realtime/presence 200 in 2263ms
+ POST /api/realtime/presence 200 in 183ms
+ POST /api/realtime/presence 200 in 184ms
+ GET /for-operators/walkthrough?source_page=codex_check&source_cta=manual_verify 404 in 207ms
+ GET /for-operators/walkthrough 404 in 167ms
+ ✓ Compiled in 6.1s (4340 modules)
+ ✓ Compiled in 3.6s (4340 modules)
+ ✓ Compiled in 4.3s (4340 modules)
+[?25h

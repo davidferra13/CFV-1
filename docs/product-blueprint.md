@@ -29,12 +29,12 @@ ChefFlow is an operating system for food service professionals. It replaces 10+ 
 
 ```
 BUILD COMPLETENESS    [=============================-] 95%
-SECURITY HARDENING    [=====================-------] 80%
+SECURITY HARDENING    [======================------] 82%
 POLISH & UX           [====================---------] 75%
 VALIDATION            [===-------------------------] 10%
 LAUNCH READINESS      [======----------------------] 25%
 
-OVERALL V1 PROGRESS   [====================--------] 70%
+OVERALL V1 PROGRESS   [=====================-------] 71%
 ```
 
 **What this means:** The software is 93% built. But shipping a product requires more than code. Validation (proving people want this) and launch readiness (marketing, onboarding, acquisition) are the remaining work.
@@ -52,6 +52,8 @@ Get clients, close deals, manage the pipeline.
 - [x] Inquiry pipeline (submit, parse, respond, track, priority grouping)
 - [x] Quote builder (create, send, accept, reject, pricing intelligence)
 - [x] Schema-aware quote draft prefill runtime (built Apr 22: `/quotes/new` now reads one canonical prefill contract shared by inquiry detail, event/menu detail, scope-drift change orders, and the consulting calculator; explicit URL values win before inquiry/event enrichment fills missing context)
+- [x] Canonical intake lane truth pack (built Apr 22: public booking, direct chef inquiry, embed, kiosk, Wix, and instant-book ingress now stamp one shared intake-lane contract, admin provenance reads the same classifier instead of inferring from `channel === 'website'`, and public intake surfaces now show truthful lane-specific expectations)
+- [x] Public intent hardening pass (built Apr 23: open booking, direct chef inquiry, embed inquiry, and instant booking now share one backend guard for IP and email throttles, bounded JSON bodies, honeypot handling, and short-window anonymous checkout dedupe without changing the public product gating model)
 - [x] Public booking page (shareable slug-based link)
 - [x] Lead management (website leads, guest leads, conversion tracking)
 - [x] Calls and meetings (agenda, outcome tracking, no-show handling)
@@ -68,8 +70,8 @@ Get clients, close deals, manage the pipeline.
 Organize the work, see the schedule, know what's next.
 
 - [x] Menu builder (create, edit, assign to events, drag-drop dishes)
-- [x] Calendar (day/week/month views, iCal sync, Google Calendar)
 - [x] CP-Engine menu intelligence wiring (built Apr 22: menu intelligence now maps client profile vectors into the legacy taste summary surface, detects hard veto, severe dislike, and unresolved ambiguity overlaps against dishes, and fails closed when `client_profile_*` tables are absent)
+- [x] Calendar (day/week/month views, iCal sync, Google Calendar)
 - [x] Daily Ops (AI-generated daily plan, 4 swim lanes, checkboxes)
 - [x] Morning Briefing (alerts, yesterday recap, today's events, staff, tasks)
 - [x] Prep Timeline (active timers, countdowns, station assignments, alerts)
@@ -79,6 +81,7 @@ Organize the work, see the schedule, know what's next.
 - [x] Production Calendar (monthly grid, color-coded by status)
 - [x] Travel Planning (weekly travel legs, stop counts)
 - [x] Pre-Service Checklist (auto-generated, safety/prep/venue/staff/service)
+- [x] Service Simulation (built Apr 22: the event Ops tab now generates a deterministic service walkthrough from current event truth, records chef rehearsal runs, detects stale runs when guest/menu/location/readiness conditions change, and links every blocker to the exact fixing surface)
 - [x] Weekly Meal Board (family/household meal planning)
 - [x] Weekly Template Cloning
 
@@ -136,7 +139,7 @@ Track every dollar in and out. Immutable, auditable, real.
 
 Build relationships, understand the business, get visible.
 
-- [x] Client CRM (30-panel relationship hub, canonical interaction ledger with revision-aware relationship timeline)
+- [x] Client CRM (30-panel relationship hub, canonical interaction ledger with revision-aware relationship timeline, ledger-backed interaction signals, shared action vocabulary, explainable next-best-action projection)
 - [x] Analytics hub (inquiry funnel, revenue trends, utilization, cost tracking; 5 metrics deferred with honest "N/A" states)
 - [x] Public chef profile (avatar, bio, reviews, JSON-LD SEO)
 - [x] Reviews management (internal + external, approval workflow)
@@ -149,7 +152,7 @@ Build relationships, understand the business, get visible.
 - [x] Client portal (events, RSVP, dietary, feedback, rewards)
 - [x] Universal community circles (any user, topic-based, public/private, discovery page, rate limited)
 - [x] Gift cards and vouchers
-- [ ] **User acquisition strategy** - ZERO (no channels, no marketing, no growth plan)
+- [ ] **User acquisition strategy** - STARTED (homepage and operator pages now route traffic into proof, marketplace, compare, and walkthrough paths with source attribution; live channels and nurture are still not validated)
 - [ ] **Survey validation** - designed and ready, not launched
 
 ---
@@ -270,6 +273,7 @@ These are explicitly out of scope for V1. Do not build, spec, or plan these:
 | 3 interface philosophy violations | Fixed    | Found April 4 | Fixed Apr 5: inquiries filter, event header, quotes panels |
 | 179/184 forms lack auto-save      | Low      | Always        | UX debt, not blocking                                      |
 | Share token scope drift           | Fixed    | Always        | Fixed Apr 22: explicit public contract, no chef UUID leak  |
+| Relationship route AI import crash | Cleared | 2026-04-22    | Not reproducible on the current checkout when verified on an isolated local dev server; the earlier local `500` report came from a stale verification baseline rather than an active product blocker |
 
 ---
 
@@ -329,6 +333,6 @@ OpenClaw is a separate system running on a Raspberry Pi. It does ALL data collec
 
 ---
 
-_Last updated: 2026-04-22_
+_Last updated: 2026-04-23_
 _Document owner: Developer (David)_
 _Canonical location: `docs/product-blueprint.md`_

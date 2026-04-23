@@ -57,6 +57,9 @@ const SEGMENT_LABELS: Record<string, string> = {
 
   // Grocery / event sub-paths
   'grocery-quote': 'Grocery Quote',
+  procurement: 'Procurement',
+  'prep-plan': 'Prep Flow',
+  execution: 'Execution',
   'prep-timeline': 'Prep Timeline',
   'staff-briefing': 'Staff Briefing',
 }

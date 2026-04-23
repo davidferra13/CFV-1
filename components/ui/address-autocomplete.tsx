@@ -5,12 +5,14 @@
 import {
   useRef,
   useCallback,
+  useEffect,
   useState,
   type PointerEventHandler,
   type TouchEventHandler,
 } from 'react'
 import { useJsApiLoader, Autocomplete } from '@react-google-maps/api'
 import { useDeferredGoogleMapsLoader } from '@/hooks/use-deferred-google-maps-loader'
+import { useGoogleMapsAuthFailure } from '@/hooks/use-google-maps-auth-failure'
 
 const LIBRARIES: ['places'] = ['places']
 
@@ -126,6 +128,7 @@ function LoadedAddressAutocomplete({
 }: LoadedAddressAutocompleteProps) {
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const authFailed = useGoogleMapsAuthFailure(true)
 
   // Only load Google Maps script when we have an API key.
   // Empty key triggers an infinite retry loop in the loader.
@@ -136,10 +139,17 @@ function LoadedAddressAutocomplete({
   })
 
   // Detect SDK load failures (wrong key, network, referrer restriction)
-  if (sdkError && !loadError) {
+  useEffect(() => {
+    if (!sdkError) return
     console.warn('[address-autocomplete] Google Maps SDK failed to load:', sdkError)
-    setLoadError('Address autocomplete unavailable')
-  }
+    setLoadError((current) => current ?? 'Address autocomplete unavailable')
+  }, [sdkError])
+
+  useEffect(() => {
+    if (!authFailed) return
+    console.warn('[address-autocomplete] Google Maps authentication failed.')
+    setLoadError((current) => current ?? 'Address autocomplete unavailable')
+  }, [authFailed])
 
   const ready = isLoaded && !!apiKey && !loadError
 

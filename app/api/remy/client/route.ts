@@ -19,6 +19,7 @@ import {
   REMY_CLIENT_ANTI_INJECTION,
 } from '@/lib/ai/remy-client-personality'
 import { loadRemyClientContext, formatClientContext } from '@/lib/ai/remy-client-context'
+import { suggestClientNavFromWorkGraph } from '@/lib/client-work-graph/build'
 import {
   createSurfaceLatencyTracker,
   getSurfaceRuntimeOptions,
@@ -30,6 +31,11 @@ import {
 interface StreamEvent {
   type: 'token' | 'done' | 'error'
   data: unknown
+}
+
+type NavSuggestion = {
+  label: string
+  href: string
 }
 
 // ─── SSE Helpers ────────────────────────────────────────────────────────────
@@ -79,6 +85,23 @@ function formatHistory(history: Array<{ role: string; content: string }>): strin
     .map((m) => `${m.role === 'user' ? 'Client' : 'Remy'}: ${m.content}`)
     .join('\n')
   return `Previous conversation:\n${formatted}\n\n`
+}
+
+function extractNavSuggestions(content: string): NavSuggestion[] {
+  const navMatch = content.match(/NAV_SUGGESTIONS:\s*(\[[\s\S]*?\])/)
+  if (!navMatch) return []
+
+  try {
+    const parsed = JSON.parse(navMatch[1]) as Array<Record<string, unknown>>
+    return parsed
+      .filter((item) => typeof item.label === 'string' && typeof item.href === 'string')
+      .map((item) => ({
+        label: item.label as string,
+        href: item.href as string,
+      }))
+  } catch {
+    return []
+  }
 }
 
 // ─── POST Handler ───────────────────────────────────────────────────────────
@@ -196,6 +219,7 @@ export async function POST(req: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         try {
+          let fullResponse = ''
           const ollamaStream = await ollama.chat({
             model,
             messages: [
@@ -214,8 +238,23 @@ export async function POST(req: NextRequest) {
             if (abortController.signal.aborted) break
             if (chunk.message?.content) {
               latency.markFirstToken()
+              fullResponse += chunk.message.content
               controller.enqueue(
                 encoder.encode(encodeSSE({ type: 'token', data: chunk.message.content }))
+              )
+            }
+          }
+
+          if (extractNavSuggestions(fullResponse).length === 0) {
+            const navSuggestions = suggestClientNavFromWorkGraph(message, context.workGraph)
+            if (navSuggestions.length > 0) {
+              controller.enqueue(
+                encoder.encode(
+                  encodeSSE({
+                    type: 'token',
+                    data: `\n\nNAV_SUGGESTIONS: ${JSON.stringify(navSuggestions)}`,
+                  })
+                )
               )
             }
           }

@@ -43,6 +43,7 @@ import {
 } from '@/components/ui/icons'
 import { useProtectedForm } from '@/lib/qol/use-protected-form'
 import { FormShield } from '@/components/forms/form-shield'
+import { NEUTRAL_LOCATION_TAG_PLACEHOLDER } from '@/lib/site/national-brand-copy'
 
 type Tab = 'caption' | 'platforms' | 'media' | 'settings'
 
@@ -372,7 +373,7 @@ export function SocialPostEditor({
                     label="Location Tag"
                     value={editor.location_tag}
                     onChange={(e) => update('location_tag', e.target.value)}
-                    placeholder="e.g. San Francisco, CA"
+                    placeholder={NEUTRAL_LOCATION_TAG_PLACEHOLDER}
                   />
                 </div>
                 <div>

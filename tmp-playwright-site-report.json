@@ -1,0 +1,1147 @@
+{
+  "steps": [
+    {
+      "label": "goto_root",
+      "status": 200,
+      "error": null
+    },
+    {
+      "label": "after_root_load",
+      "state": {
+        "href": "https://cheflowhq.com/",
+        "title": "ChefFlow - Find a Private Chef Near You | ChefFlow",
+        "hasController": false,
+        "registrations": 0,
+        "active": false,
+        "waiting": false,
+        "caches": []
+      },
+      "body": "Skip to main content\nChefFlow\nHire a Chef\nFor Operators\nIngredients\nSign In\nBook a Chef\nHire a chef who actually does this.\n\nPrivate dinners, catering, meal prep, cooking classes. Browse real profiles, see what they specialize in, and reach out directly. No platform fee, no middleman.\n\nBook a Chef\nOR BROWSE CHEFS DIRECTLY\nAny service\nPrivate dinner\nCatering\nMeal prep\nWedding\nCorporate dining\nCooking class\nEvent chef\nPersonal chef\nSearch\nBrowse Chefs\n\nLooking for restaurants, caterers, or food trucks instead? Explore the food directory.\n\n1 chef listed · Free to browse · You pay the chef directly\n\nAre you a chef or food operator?\n\nFree back-office software: clients, events, menus, food costing, finances, recipes.\n\nLearn more\n\n$50 - $150+ per person\n\nFor private dinners. Weekly meal prep runs $200 - $800+ per week. Every chef sets their own pricing.\n\nYou deal with the chef\n\nNo call center, no algorithm matching. You pick who you want and message them directly.\n\nMenu to cleanup, handled\n\nMost chefs handle planning, shopping, cooking, plating, and cleanup. You host, they handle the rest.\n\nDINNER CIRCLES\n\nShared guest pages for the dinner itself.\n\nGuests can use Dinner Circles to stay on"
+    },
+    {
+      "label": "reload_root",
+      "status": 200,
+      "error": null
+    },
+    {
+      "label": "after_root_reload",
+      "state": {
+        "href": "https://cheflowhq.com/",
+        "title": "ChefFlow - Find a Private Chef Near You | ChefFlow",
+        "hasController": true,
+        "registrations": 1,
+        "active": true,
+        "waiting": false,
+        "caches": [
+          "chefflow-v-__BUILD_VERSION__"
+        ]
+      },
+      "body": "Skip to main content\nUpdating app...\n\nA new version of ChefFlow is available. Clearing cache and reloading...\n\nReload Now\nx\nThis site uses cookies for basic functionality and analytics. See our Privacy Policy.\nNot now\nDecline\nAccept"
+    },
+    {
+      "label": "goto_signin_from_stuck",
+      "status": 200,
+      "error": null
+    },
+    {
+      "label": "after_signin_navigation",
+      "state": {
+        "href": "https://cheflowhq.com/auth/signin?redirect=%2Fdashboard",
+        "title": "Authentication | ChefFlow",
+        "hasController": true,
+        "registrations": 1,
+        "active": true,
+        "waiting": false,
+        "caches": [
+          "chefflow-v-__BUILD_VERSION__"
+        ]
+      },
+      "body": "Skip to main content\nChefFlow\n\nSign in to your account\n\nSign In\nEmail*\nPassword*\nStay signed in\nForgot password?\nSign In\nDon't have an account? Chef sign up or Client sign up\nx\nThis site uses cookies for basic functionality and analytics. See our Privacy Policy.\nNot now\nDecline\nAccept"
+    }
+  ],
+  "events": [
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/css/0a99a9ed6f523739.css"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/css/95d23848609af31c.css"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/70679-366d27dc3e0af8d0.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/65878-720d9a2635bd3fe5.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/webpack-6ab3a33c9c90441b.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/72972-2adf447b60e44cac.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/39892-7207910d28e635cd.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/6292-6a0b92591c9f8089.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/80377-51737b104496d117.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/27600-dd01718a796c2e8a.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(public)/loading-6c0fc2b83634f0b9.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/global-error-70f31aff3b6246cd.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(staff)/layout-034169796233bdc3.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/83303-77e202744231c21d.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(admin)/layout-bc08b5fd09a37747.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/main-app-ec1a6fb8e53fa7bc.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/error-40f27a6ffe48f103.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(public)/page-5a8a170162024fdf.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/14438-a3921f7e565c1e2c.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/49945-ea16d234fbf0e301.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/2140-5f27cc8712b7e051.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(public)/layout-d2858dd7cd0bc558.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(public)/error-96df42bd46ccd62c.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/25650-dc86199abea5c0aa.js"
+    },
+    {
+      "type": "response",
+      "status": 404,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(admin)/not-found-4e9da2acb3d45ed6.js"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 ()"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Refused to execute script from 'https://cheflowhq.com/_next/static/chunks/app/(admin)/not-found-4e9da2acb3d45ed6.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled."
+    },
+    {
+      "type": "requestfailed",
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(admin)/not-found-4e9da2acb3d45ed6.js",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/98297-c278492e08e5f61a.js"
+    },
+    {
+      "type": "response",
+      "status": 404,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/not-found-89f5344f22ed0d29.js"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 ()"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Refused to execute script from 'https://cheflowhq.com/_next/static/chunks/app/not-found-89f5344f22ed0d29.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled."
+    },
+    {
+      "type": "requestfailed",
+      "url": "https://cheflowhq.com/_next/static/chunks/app/not-found-89f5344f22ed0d29.js",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/88298-7abac9b45e698d32.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/5489-c6d527ef57a61c43.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/84052-0dfca87c1e724165.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/82916-50799306e4ccac32.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/27942-de94cfe84c470241.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/10397-57a55e370e5e8408.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/media/fa3e259cafa8f47e-s.p.woff2"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/layout-197da40936b20a23.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/4e6af11a-18a41f2234a570c6.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/41102-189cb26cf19f6f9a.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/11384-b1370a2ffe4e7932.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/fd9d1056-88a1015b840e427e.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/media/13971731025ec697-s.p.woff2"
+    },
+    {
+      "type": "requestfailed",
+      "url": "https://cheflowhq.com/cdn-cgi/rum?",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/css/0a99a9ed6f523739.css"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/css/95d23848609af31c.css"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/webpack-6ab3a33c9c90441b.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/fd9d1056-88a1015b840e427e.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/main-app-ec1a6fb8e53fa7bc.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/27600-dd01718a796c2e8a.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/72972-2adf447b60e44cac.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/14438-a3921f7e565c1e2c.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/65878-720d9a2635bd3fe5.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/39892-7207910d28e635cd.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/27942-de94cfe84c470241.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/6292-6a0b92591c9f8089.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/41102-189cb26cf19f6f9a.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/82916-50799306e4ccac32.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/98297-c278492e08e5f61a.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/70679-366d27dc3e0af8d0.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/10397-57a55e370e5e8408.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/83303-77e202744231c21d.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/25650-dc86199abea5c0aa.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/80377-51737b104496d117.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/84052-0dfca87c1e724165.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/5489-c6d527ef57a61c43.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/11384-b1370a2ffe4e7932.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(admin)/layout-bc08b5fd09a37747.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/2140-5f27cc8712b7e051.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/49945-ea16d234fbf0e301.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(staff)/layout-034169796233bdc3.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/88298-7abac9b45e698d32.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(public)/layout-d2858dd7cd0bc558.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(public)/error-96df42bd46ccd62c.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/4e6af11a-18a41f2234a570c6.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(public)/page-5a8a170162024fdf.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(public)/loading-6c0fc2b83634f0b9.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/layout-197da40936b20a23.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/error-40f27a6ffe48f103.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/global-error-70f31aff3b6246cd.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/media/13971731025ec697-s.p.woff2"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/media/fa3e259cafa8f47e-s.p.woff2"
+    },
+    {
+      "type": "response",
+      "status": 404,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/not-found-89f5344f22ed0d29.js"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 ()"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Refused to execute script from 'https://cheflowhq.com/_next/static/chunks/app/not-found-89f5344f22ed0d29.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled."
+    },
+    {
+      "type": "requestfailed",
+      "url": "https://cheflowhq.com/_next/static/chunks/app/not-found-89f5344f22ed0d29.js",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "type": "response",
+      "status": 404,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(admin)/not-found-4e9da2acb3d45ed6.js"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 ()"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Refused to execute script from 'https://cheflowhq.com/_next/static/chunks/app/(admin)/not-found-4e9da2acb3d45ed6.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled."
+    },
+    {
+      "type": "requestfailed",
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(admin)/not-found-4e9da2acb3d45ed6.js",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "ChunkLoadError: Loading chunk 73184 failed.\n(error: https://cheflowhq.com/_next/static/chunks/app/(admin)/not-found-4e9da2acb3d45ed6.js)\n    at s.f.j (https://cheflowhq.com/_next/static/chunks/webpack-6ab3a33c9c90441b.js:1:4603)\n    at https://cheflowhq.com/_next/static/chunks/webpack-6ab3a33c9c90441b.js:1:1783\n    at Array.reduce (<anonymous>)\n    at s.e (https://cheflowhq.com/_next/static/chunks/webpack-6ab3a33c9c90441b.js:1:1749)\n    at https://cheflowhq.com/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js:2:18941\n    at https://cheflowhq.com/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js:2:19143\n    at t (https://cheflowhq.com/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js:2:19346)"
+    },
+    {
+      "type": "pageerror",
+      "text": "Minified React error #423; visit https://react.dev/errors/423 for the full message or use the non-minified dev environment for full errors and additional helpful warnings."
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Error boundary caught: ChunkLoadError: Loading chunk 73184 failed.\n(error: https://cheflowhq.com/_next/static/chunks/app/(admin)/not-found-4e9da2acb3d45ed6.js)\n    at s.f.j (https://cheflowhq.com/_next/static/chunks/webpack-6ab3a33c9c90441b.js:1:4603)\n    at https://cheflowhq.com/_next/static/chunks/webpack-6ab3a33c9c90441b.js:1:1783\n    at Array.reduce (<anonymous>)\n    at s.e (https://cheflowhq.com/_next/static/chunks/webpack-6ab3a33c9c90441b.js:1:1749)\n    at https://cheflowhq.com/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js:2:18941\n    at https://cheflowhq.com/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js:2:19143\n    at t (https://cheflowhq.com/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js:2:19346)"
+    },
+    {
+      "type": "requestfailed",
+      "url": "https://cheflowhq.com/privacy?_rsc=gdhdt",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "type": "requestfailed",
+      "url": "https://cheflowhq.com/api/monitoring/report-error",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "type": "requestfailed",
+      "url": "https://cheflowhq.com/cdn-cgi/rum?",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Failed to fetch RSC payload for https://cheflowhq.com/privacy. Falling back to browser navigation. TypeError: Failed to fetch\n    at f (https://cheflowhq.com/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js:1:46128)\n    at https://cheflowhq.com/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js:1:59680\n    at Object.u [as task] (https://cheflowhq.com/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js:1:32483)\n    at c.s (https://cheflowhq.com/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js:1:33188)\n    at c.enqueue (https://cheflowhq.com/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js:1:32613)\n    at s (https://cheflowhq.com/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js:1:59643)\n    at i (https://cheflowhq.com/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js:1:59183)\n    at a (https://cheflowhq.com/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js:1:66009)\n    at f (https://cheflowhq.com/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js:1:75923)\n    at Object.action (https://cheflowhq.com/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js:2:7102)"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/css/0a99a9ed6f523739.css"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/css/95d23848609af31c.css"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/webpack-6ab3a33c9c90441b.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/fd9d1056-88a1015b840e427e.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/main-app-ec1a6fb8e53fa7bc.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/27600-dd01718a796c2e8a.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/72972-2adf447b60e44cac.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/14438-a3921f7e565c1e2c.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/65878-720d9a2635bd3fe5.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/39892-7207910d28e635cd.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/27942-de94cfe84c470241.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/6292-6a0b92591c9f8089.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/41102-189cb26cf19f6f9a.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/82916-50799306e4ccac32.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/98297-c278492e08e5f61a.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/70679-366d27dc3e0af8d0.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/10397-57a55e370e5e8408.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/83303-77e202744231c21d.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/25650-dc86199abea5c0aa.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/80377-51737b104496d117.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/84052-0dfca87c1e724165.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/5489-c6d527ef57a61c43.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/11384-b1370a2ffe4e7932.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(admin)/layout-bc08b5fd09a37747.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/2140-5f27cc8712b7e051.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/49945-ea16d234fbf0e301.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(staff)/layout-034169796233bdc3.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/88298-7abac9b45e698d32.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(public)/layout-d2858dd7cd0bc558.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(public)/error-96df42bd46ccd62c.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/4e6af11a-18a41f2234a570c6.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(public)/page-5a8a170162024fdf.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(public)/loading-6c0fc2b83634f0b9.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/layout-197da40936b20a23.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/error-40f27a6ffe48f103.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/global-error-70f31aff3b6246cd.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/media/13971731025ec697-s.p.woff2"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/media/fa3e259cafa8f47e-s.p.woff2"
+    },
+    {
+      "type": "response",
+      "status": 404,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(admin)/not-found-4e9da2acb3d45ed6.js"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 ()"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Refused to execute script from 'https://cheflowhq.com/_next/static/chunks/app/(admin)/not-found-4e9da2acb3d45ed6.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled."
+    },
+    {
+      "type": "requestfailed",
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(admin)/not-found-4e9da2acb3d45ed6.js",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "ChunkLoadError: Loading chunk 73184 failed.\n(error: https://cheflowhq.com/_next/static/chunks/app/(admin)/not-found-4e9da2acb3d45ed6.js)\n    at s.f.j (https://cheflowhq.com/_next/static/chunks/webpack-6ab3a33c9c90441b.js:1:4603)\n    at https://cheflowhq.com/_next/static/chunks/webpack-6ab3a33c9c90441b.js:1:1783\n    at Array.reduce (<anonymous>)\n    at s.e (https://cheflowhq.com/_next/static/chunks/webpack-6ab3a33c9c90441b.js:1:1749)\n    at https://cheflowhq.com/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js:2:18941\n    at https://cheflowhq.com/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js:2:19143\n    at t (https://cheflowhq.com/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js:2:19346)"
+    },
+    {
+      "type": "pageerror",
+      "text": "Minified React error #423; visit https://react.dev/errors/423 for the full message or use the non-minified dev environment for full errors and additional helpful warnings."
+    },
+    {
+      "type": "response",
+      "status": 404,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/not-found-89f5344f22ed0d29.js"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 ()"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Refused to execute script from 'https://cheflowhq.com/_next/static/chunks/app/not-found-89f5344f22ed0d29.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled."
+    },
+    {
+      "type": "requestfailed",
+      "url": "https://cheflowhq.com/_next/static/chunks/app/not-found-89f5344f22ed0d29.js",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Error boundary caught: ChunkLoadError: Loading chunk 73184 failed.\n(error: https://cheflowhq.com/_next/static/chunks/app/(admin)/not-found-4e9da2acb3d45ed6.js)\n    at s.f.j (https://cheflowhq.com/_next/static/chunks/webpack-6ab3a33c9c90441b.js:1:4603)\n    at https://cheflowhq.com/_next/static/chunks/webpack-6ab3a33c9c90441b.js:1:1783\n    at Array.reduce (<anonymous>)\n    at s.e (https://cheflowhq.com/_next/static/chunks/webpack-6ab3a33c9c90441b.js:1:1749)\n    at https://cheflowhq.com/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js:2:18941\n    at https://cheflowhq.com/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js:2:19143\n    at t (https://cheflowhq.com/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js:2:19346)"
+    },
+    {
+      "type": "console",
+      "level": "info",
+      "text": "[SW] Service worker registered"
+    },
+    {
+      "type": "response",
+      "status": 400,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(public)/privacy/page-89992570ad570ce8.js"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 ()"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Refused to execute script from 'https://cheflowhq.com/_next/static/chunks/app/(public)/privacy/page-89992570ad570ce8.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled."
+    },
+    {
+      "type": "requestfailed",
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(public)/privacy/page-89992570ad570ce8.js",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "type": "requestfailed",
+      "url": "https://cheflowhq.com/cdn-cgi/rum?",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/css/0a99a9ed6f523739.css"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/css/95d23848609af31c.css"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/webpack-6ab3a33c9c90441b.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/fd9d1056-88a1015b840e427e.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/main-app-ec1a6fb8e53fa7bc.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/27600-dd01718a796c2e8a.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/72972-2adf447b60e44cac.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/25650-dc86199abea5c0aa.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/error-40f27a6ffe48f103.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/layout-197da40936b20a23.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/65878-720d9a2635bd3fe5.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/14438-a3921f7e565c1e2c.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/39892-7207910d28e635cd.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/6292-6a0b92591c9f8089.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/27942-de94cfe84c470241.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/98297-c278492e08e5f61a.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/70679-366d27dc3e0af8d0.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/82916-50799306e4ccac32.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/83303-77e202744231c21d.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/80377-51737b104496d117.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/10397-57a55e370e5e8408.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/5489-c6d527ef57a61c43.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/global-error-70f31aff3b6246cd.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(admin)/layout-bc08b5fd09a37747.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/84052-0dfca87c1e724165.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/media/13971731025ec697-s.p.woff2"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/41102-189cb26cf19f6f9a.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/11384-b1370a2ffe4e7932.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/auth/signin/page-53de03b01956e317.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/auth/layout-e695a41c0f47d086.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/auth/error-6d18dc736d71617d.js"
+    },
+    {
+      "type": "console",
+      "level": "info",
+      "text": "[SW] Service worker registered"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/media/fa3e259cafa8f47e-s.p.woff2"
+    },
+    {
+      "type": "response",
+      "status": 400,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(admin)/not-found-77b432aacc79ae0d.js"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 ()"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Refused to execute script from 'https://cheflowhq.com/_next/static/chunks/app/(admin)/not-found-77b432aacc79ae0d.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled."
+    },
+    {
+      "type": "requestfailed",
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(admin)/not-found-77b432aacc79ae0d.js",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "type": "response",
+      "status": 400,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/not-found-c431a0951f55ab12.js"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 ()"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Refused to execute script from 'https://cheflowhq.com/_next/static/chunks/app/not-found-c431a0951f55ab12.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled."
+    },
+    {
+      "type": "requestfailed",
+      "url": "https://cheflowhq.com/_next/static/chunks/app/not-found-c431a0951f55ab12.js",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/2140-5f27cc8712b7e051.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/49945-ea16d234fbf0e301.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(staff)/layout-034169796233bdc3.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/88298-7abac9b45e698d32.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(public)/layout-d2858dd7cd0bc558.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(public)/error-96df42bd46ccd62c.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(public)/page-5a8a170162024fdf.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(public)/loading-6c0fc2b83634f0b9.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/4e6af11a-18a41f2234a570c6.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/auth/forgot-password/page-a5d6b5f882b82089.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/auth/signup/page-251032da7bddae14.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/auth/client-signup/page-c7b52aabb1d46404.js"
+    },
+    {
+      "type": "response",
+      "status": 200,
+      "url": "https://cheflowhq.com/_next/static/chunks/31963-25e748743bcf9d05.js"
+    },
+    {
+      "type": "response",
+      "status": 400,
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(public)/privacy/page-89992570ad570ce8.js"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 ()"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Refused to execute script from 'https://cheflowhq.com/_next/static/chunks/app/(public)/privacy/page-89992570ad570ce8.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled."
+    },
+    {
+      "type": "requestfailed",
+      "url": "https://cheflowhq.com/_next/static/chunks/app/(public)/privacy/page-89992570ad570ce8.js",
+      "error": "net::ERR_ABORTED"
+    }
+  ]
+}

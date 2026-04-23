@@ -16,10 +16,13 @@ import { convertCostToUnit, lookupDensity, normalizeUnit } from '@/lib/units/con
  * that use the ingredient, then flag affected events for review.
  * This is a NON-BLOCKING side effect: wrap calls in try/catch.
  */
-export async function propagatePriceChange(ingredientIds: string[]) {
+export async function propagatePriceChange(
+  ingredientIds: string[],
+  options?: { admin?: boolean }
+) {
   if (ingredientIds.length === 0) return
 
-  const db: any = createServerClient()
+  const db: any = createServerClient(options?.admin ? { admin: true } : undefined)
 
   // Find all recipe_ingredients referencing these ingredients
   const { data: riRows } = await db
@@ -152,6 +155,10 @@ export interface CostRefreshResult {
   reason?: string
 }
 
+type RefreshIngredientCostsOptions = {
+  admin?: boolean
+}
+
 /**
  * Batch-resolve prices for ingredients and update cost_per_unit_cents.
  * Callable from UI ("Refresh All Prices" button) or after sync.
@@ -160,8 +167,22 @@ export async function refreshIngredientCostsAction(
   ingredientIds?: string[]
 ): Promise<CostRefreshResult> {
   const user = await requireChef()
-  const tenantId = user.tenantId!
-  const db: any = createServerClient()
+  return refreshIngredientCostsForTenantInternal(user.tenantId!, ingredientIds)
+}
+
+export async function refreshIngredientCostsForTenant(
+  tenantId: string,
+  ingredientIds?: string[]
+): Promise<CostRefreshResult> {
+  return refreshIngredientCostsForTenantInternal(tenantId, ingredientIds, { admin: true })
+}
+
+async function refreshIngredientCostsForTenantInternal(
+  tenantId: string,
+  ingredientIds?: string[],
+  options?: RefreshIngredientCostsOptions
+): Promise<CostRefreshResult> {
+  const db: any = createServerClient(options?.admin ? { admin: true } : undefined)
 
   // Advisory lock to prevent concurrent refreshes
   try {
@@ -291,7 +312,7 @@ export async function refreshIngredientCostsAction(
         const updatedIds = ids.filter(
           (id) => resolvedMap.has(id) && resolvedMap.get(id)?.cents != null
         )
-        await propagatePriceChange(updatedIds)
+        await propagatePriceChange(updatedIds, { admin: options?.admin })
       } catch (err) {
         console.error('[refreshIngredientCosts] Cascade failed (non-blocking):', err)
       }

@@ -268,7 +268,7 @@ export function SocialPostComposer({
                 type="text"
                 value={oppCity}
                 onChange={(e) => setOppCity(e.target.value)}
-                placeholder="e.g. Haverhill"
+                placeholder="City"
                 maxLength={100}
                 className="w-full text-sm border border-stone-700 rounded-lg px-3 py-1.5 bg-stone-900 text-stone-100 placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
               />
@@ -279,7 +279,7 @@ export function SocialPostComposer({
                 type="text"
                 value={oppState}
                 onChange={(e) => setOppState(e.target.value.toUpperCase().slice(0, 2))}
-                placeholder="MA"
+                placeholder="ST"
                 maxLength={2}
                 className="w-full text-sm border border-stone-700 rounded-lg px-3 py-1.5 bg-stone-900 text-stone-100 placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-400 uppercase"
               />

@@ -1,7 +1,8 @@
-// Build version is stamped by the deploy script (scripts/deploy-beta.sh, scripts/deploy-prod.sh).
-// The placeholder __BUILD_VERSION__ is replaced with the actual BUILD_ID at deploy time.
-// If not stamped (e.g. dev), falls back to a static key.
-const BUILD_VERSION = '__BUILD_VERSION__'
+// Build version is stamped by the local build/start scripts when a production
+// BUILD_ID exists. If it is ever not stamped, the worker falls back to a
+// fail-safe mode that refuses to cache Next.js runtime assets.
+const BUILD_VERSION = '150ad5152'
+const IS_BUILD_VERSION_STAMPED = BUILD_VERSION !== '__BUILD_VERSION__'
 const CACHE_NAME = 'chefflow-v-' + BUILD_VERSION
 const OFFLINE_URL = '/offline.html'
 const CORE_ASSETS = [
@@ -31,15 +32,32 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
-      // Delete ALL caches that don't match the current build version.
-      // This is the key fix: every deploy rotates the cache name, so stale
-      // assets from previous builds are evicted immediately on activation.
+      // Delete caches from previous stamped builds. If the build version is
+      // missing, also strip stale Next.js runtime assets from the fallback cache
+      // so an old worker cannot pin removed chunk files forever.
       const cacheNames = await caches.keys()
       await Promise.all(
         cacheNames
           .filter((name) => name !== CACHE_NAME)
           .map((name) => caches.delete(name))
       )
+
+      if (!IS_BUILD_VERSION_STAMPED) {
+        const cache = await caches.open(CACHE_NAME)
+        const cachedRequests = await cache.keys()
+        await Promise.all(
+          cachedRequests
+            .filter((request) => {
+              try {
+                return isNextStaticAssetPath(new URL(request.url).pathname)
+              } catch {
+                return false
+              }
+            })
+            .map((request) => cache.delete(request))
+        )
+      }
+
       await self.clients.claim()
 
       // Start periodic version checking
@@ -66,6 +84,10 @@ self.addEventListener('fetch', (event) => {
 
   // Never cache the build-version endpoint or any API routes
   if (url.pathname.startsWith('/api/')) {
+    return
+  }
+
+  if (!IS_BUILD_VERSION_STAMPED && isNextStaticAssetPath(url.pathname)) {
     return
   }
 
@@ -197,7 +219,7 @@ function startVersionPolling() {
 
 async function checkForNewVersion() {
   // Don't poll if build version was never stamped
-  if (BUILD_VERSION === '__BUILD_VERSION__') return
+  if (!IS_BUILD_VERSION_STAMPED) return
 
   try {
     const response = await fetch('/api/build-version', { cache: 'no-store' })
@@ -252,6 +274,10 @@ async function staleWhileRevalidate(request) {
 }
 
 function isCacheableAsset(pathname) {
+  if (isNextStaticAssetPath(pathname)) {
+    return IS_BUILD_VERSION_STAMPED
+  }
+
   return (
     pathname === OFFLINE_URL ||
     pathname === '/manifest.json' ||
@@ -259,9 +285,12 @@ function isCacheableAsset(pathname) {
     pathname.startsWith('/icon-') ||
     pathname.startsWith('/favicon') ||
     pathname.startsWith('/logo.') ||
-    pathname.startsWith('/_next/static/') ||
     /\.(?:css|js|png|jpg|jpeg|svg|gif|webp|ico|woff|woff2)$/i.test(pathname)
   )
+}
+
+function isNextStaticAssetPath(pathname) {
+  return pathname.startsWith('/_next/static/')
 }
 
 function serializeSubscription(subscription) {

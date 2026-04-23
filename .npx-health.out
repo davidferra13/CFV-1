@@ -1,0 +1,182 @@
+{
+  "ok": true,
+  "ts": 1776632608712,
+  "durationMs": 0,
+  "channels": {},
+  "channelOrder": [],
+  "channelLabels": {},
+  "heartbeatSeconds": 1800,
+  "defaultAgentId": "main",
+  "agents": [
+    {
+      "agentId": "main",
+      "isDefault": true,
+      "heartbeat": {
+        "enabled": true,
+        "every": "30m",
+        "everyMs": 1800000,
+        "prompt": "Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.",
+        "target": "none",
+        "ackMaxChars": 300
+      },
+      "sessions": {
+        "path": "/home/davidferra/.openclaw/agents/main/sessions/sessions.json",
+        "count": 6,
+        "recent": [
+          {
+            "key": "agent:main:main",
+            "updatedAt": 1776631240659,
+            "age": 1368052
+          },
+          {
+            "key": "agent:main:warm-1776627300",
+            "updatedAt": 1776627315687,
+            "age": 5293024
+          },
+          {
+            "key": "agent:main:diag-1776626774",
+            "updatedAt": 1776626803976,
+            "age": 5804735
+          },
+          {
+            "key": "agent:main:repair-direct-final",
+            "updatedAt": 1774988285852,
+            "age": 1644322859
+          },
+          {
+            "key": "agent:main:repair-direct",
+            "updatedAt": 1774988271401,
+            "age": 1644337310
+          }
+        ]
+      }
+    },
+    {
+      "agentId": "research",
+      "name": "architect",
+      "isDefault": false,
+      "heartbeat": {
+        "enabled": false,
+        "every": "disabled",
+        "everyMs": null,
+        "prompt": "Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.",
+        "target": "none",
+        "ackMaxChars": 300
+      },
+      "sessions": {
+        "path": "/home/davidferra/.openclaw/agents/research/sessions/sessions.json",
+        "count": 1,
+        "recent": [
+          {
+            "key": "agent:research:main",
+            "updatedAt": 1774453868520,
+            "age": 2178740192
+          }
+        ]
+      }
+    },
+    {
+      "agentId": "exec",
+      "name": "coder",
+      "isDefault": false,
+      "heartbeat": {
+        "enabled": false,
+        "every": "disabled",
+        "everyMs": null,
+        "prompt": "Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.",
+        "target": "none",
+        "ackMaxChars": 300
+      },
+      "sessions": {
+        "path": "/home/davidferra/.openclaw/agents/exec/sessions/sessions.json",
+        "count": 1,
+        "recent": [
+          {
+            "key": "agent:exec:main",
+            "updatedAt": 1774453928211,
+            "age": 2178680501
+          }
+        ]
+      }
+    },
+    {
+      "agentId": "rescue",
+      "name": "reviewer",
+      "isDefault": false,
+      "heartbeat": {
+        "enabled": false,
+        "every": "disabled",
+        "everyMs": null,
+        "prompt": "Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.",
+        "target": "none",
+        "ackMaxChars": 300
+      },
+      "sessions": {
+        "path": "/home/davidferra/.openclaw/agents/rescue/sessions/sessions.json",
+        "count": 1,
+        "recent": [
+          {
+            "key": "agent:rescue:main",
+            "updatedAt": 1774453869740,
+            "age": 2178738972
+          }
+        ]
+      }
+    },
+    {
+      "agentId": "gemma",
+      "name": "gemma",
+      "isDefault": false,
+      "heartbeat": {
+        "enabled": false,
+        "every": "disabled",
+        "everyMs": null,
+        "prompt": "Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.",
+        "target": "none",
+        "ackMaxChars": 300
+      },
+      "sessions": {
+        "path": "/home/davidferra/.openclaw/agents/gemma/sessions/sessions.json",
+        "count": 1,
+        "recent": [
+          {
+            "key": "agent:gemma:main",
+            "updatedAt": 1776629514629,
+            "age": 3094083
+          }
+        ]
+      }
+    }
+  ],
+  "sessions": {
+    "path": "/home/davidferra/.openclaw/agents/main/sessions/sessions.json",
+    "count": 6,
+    "recent": [
+      {
+        "key": "agent:main:main",
+        "updatedAt": 1776631240659,
+        "age": 1368052
+      },
+      {
+        "key": "agent:main:warm-1776627300",
+        "updatedAt": 1776627315687,
+        "age": 5293024
+      },
+      {
+        "key": "agent:main:diag-1776626774",
+        "updatedAt": 1776626803976,
+        "age": 5804735
+      },
+      {
+        "key": "agent:main:repair-direct-final",
+        "updatedAt": 1774988285852,
+        "age": 1644322859
+      },
+      {
+        "key": "agent:main:repair-direct",
+        "updatedAt": 1774988271401,
+        "age": 1644337310
+      }
+    ]
+  }
+}

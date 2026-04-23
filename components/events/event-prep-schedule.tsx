@@ -10,7 +10,6 @@ import { useRouter } from 'next/navigation'
 import { format, parseISO } from 'date-fns'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 import {
   autoSuggestEventBlocks,
@@ -19,7 +18,6 @@ import {
   completePrepBlock,
   uncompletePrepBlock,
   deletePrepBlock,
-  updatePrepBlock,
 } from '@/lib/scheduling/prep-block-actions'
 import type {
   PrepBlock,
@@ -476,18 +474,18 @@ function PrepBlockCard({ block, onToggleComplete, onDelete }: PrepBlockCardProps
 type Props = {
   eventId: string
   initialBlocks: PrepBlock[]
+  initialSuggestions?: PrepBlockSuggestion[] | null
 }
 
-export function EventPrepSchedule({ eventId, initialBlocks }: Props) {
+export function EventPrepSchedule({ eventId, initialBlocks, initialSuggestions = null }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
-
-  const [blocks, setBlocks] = useState<PrepBlock[]>(initialBlocks)
   const [showAddForm, setShowAddForm] = useState(false)
-  const [suggestions, setSuggestions] = useState<PrepBlockSuggestion[] | null>(null)
+  const [suggestions, setSuggestions] = useState<PrepBlockSuggestion[] | null>(initialSuggestions)
   const [suggestLoading, setSuggestLoading] = useState(false)
   const [suggestError, setSuggestError] = useState('')
   const [confirmPending, setConfirmPending] = useState(false)
+  const blocks = initialBlocks
 
   async function handleAutoSuggest() {
     setSuggestLoading(true)

@@ -1,11 +1,12 @@
 'use server'
 
-// Admin Email Actions - direct and broadcast email via Resend
-// Uses the service role to query all chefs, then sends via Resend.
+// Admin Email Actions - direct and broadcast email via the active email provider.
+// Uses the service role to query all chefs, then sends through the provider layer.
 
 import { createAdminClient } from '@/lib/db/admin'
 import { requireAdmin } from '@/lib/auth/admin'
-import { getResendClient, FROM_EMAIL, FROM_NAME } from '@/lib/email/resend-client'
+import { FROM_EMAIL, FROM_NAME } from '@/lib/email/resend-client'
+import { getEmailProvider } from '@/lib/email/provider'
 import { logAdminAction } from './audit'
 
 /**
@@ -23,13 +24,14 @@ export async function sendAdminDirectEmail(
   const admin = await requireAdmin()
 
   try {
-    const resend = getResendClient()
+    const provider = getEmailProvider()
     const htmlBody = body
       .split('\n')
       .map((line) => `<p style="margin:0 0 8px 0">${line || '&nbsp;'}</p>`)
       .join('')
 
-    const { error } = await resend.emails.send({
+    await provider.send({
+      kind: 'operational',
       from: `${FROM_NAME} <${FROM_EMAIL}>`,
       to: to.trim(),
       subject: subject.trim(),
@@ -37,16 +39,11 @@ export async function sendAdminDirectEmail(
         <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
           ${htmlBody}
           <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0"/>
-          <p style="font-size:12px;color:#94a3b8">Sent by ChefFlow Admin · <a href="https://cheflowhq.com">cheflowhq.com</a></p>
+          <p style="font-size:12px;color:#94a3b8">Sent by ChefFlow Admin Â· <a href="https://cheflowhq.com">cheflowhq.com</a></p>
         </div>
       `,
       replyTo: admin.email,
     })
-
-    if (error) {
-      console.error('[Admin] sendAdminDirectEmail Resend error:', error)
-      return { success: false, error: (error as any).message ?? 'Email failed to send.' }
-    }
 
     await logAdminAction({
       actorEmail: admin.email,
@@ -78,7 +75,6 @@ export async function sendAdminBroadcastEmail(
   const admin = await requireAdmin()
   const db: any = createAdminClient()
 
-  // Fetch target chefs
   let query = db.from('chefs').select('id, email, business_name')
 
   if (target === 'inactive_chefs') {
@@ -94,7 +90,7 @@ export async function sendAdminBroadcastEmail(
   }
 
   const recipients: string[] = (chefs ?? [])
-    .map((c: { email: string | null }) => c.email)
+    .map((chef: { email: string | null }) => chef.email)
     .filter(Boolean) as string[]
 
   if (recipients.length === 0) {
@@ -102,36 +98,37 @@ export async function sendAdminBroadcastEmail(
   }
 
   try {
-    const resend = getResendClient()
+    const provider = getEmailProvider()
     const htmlBody = body
       .split('\n')
       .map((line) => `<p style="margin:0 0 8px 0">${line || '&nbsp;'}</p>`)
       .join('')
 
-    // Send in batches of 50 to respect Resend rate limits
-    const BATCH = 50
+    const batchSize = 50
     let sentCount = 0
-    for (let i = 0; i < recipients.length; i += BATCH) {
-      const batch = recipients.slice(i, i + BATCH)
-      const { error } = await resend.emails.send({
-        from: `${FROM_NAME} <${FROM_EMAIL}>`,
-        bcc: batch,
-        to: FROM_EMAIL, // BCC pattern - "to" is the sender, everyone else is BCC
-        subject: subject.trim(),
-        html: `
-          <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
-            ${htmlBody}
-            <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0"/>
-            <p style="font-size:12px;color:#94a3b8">Sent by ChefFlow Admin · <a href="https://cheflowhq.com">cheflowhq.com</a></p>
-          </div>
-        `,
-        replyTo: admin.email,
-      })
 
-      if (error) {
-        console.error('[Admin] broadcast batch error:', error)
-      } else {
+    for (let i = 0; i < recipients.length; i += batchSize) {
+      const batch = recipients.slice(i, i + batchSize)
+
+      try {
+        await provider.send({
+          kind: 'operational',
+          from: `${FROM_NAME} <${FROM_EMAIL}>`,
+          bcc: batch,
+          to: FROM_EMAIL,
+          subject: subject.trim(),
+          html: `
+            <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
+              ${htmlBody}
+              <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0"/>
+              <p style="font-size:12px;color:#94a3b8">Sent by ChefFlow Admin Â· <a href="https://cheflowhq.com">cheflowhq.com</a></p>
+            </div>
+          `,
+          replyTo: admin.email,
+        })
         sentCount += batch.length
+      } catch (error) {
+        console.error('[Admin] broadcast batch error:', error)
       }
     }
 

@@ -7,9 +7,16 @@
 
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { PublicPageView } from '@/components/analytics/public-page-view'
+import { TrackedLink } from '@/components/analytics/tracked-link'
 import { pgClient } from '@/lib/db'
 import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
 import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
+import { PUBLIC_MARKET_SCOPE } from '@/lib/public/public-market-scope'
+import {
+  buildPublicSeasonalMarketPulseSearchParamsFromContext,
+  readPublicSeasonalMarketPulseContext,
+} from '@/lib/public/public-seasonal-market-pulse'
 import {
   getIngredientCategories,
   getRecentlyEnrichedIngredients,
@@ -119,13 +126,65 @@ async function getIngredients(
 // ---------------------------------------------------------------------------
 
 type Props = {
-  searchParams: Promise<{ q?: string; page?: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }
 
 export default async function IngredientsPage({ searchParams }: Props) {
-  const { q = '', page = '1' } = await searchParams
+  const resolvedSearchParams = await searchParams
+  const qParam = resolvedSearchParams.q
+  const pageParam = resolvedSearchParams.page
+  const q =
+    typeof qParam === 'string' ? qParam : Array.isArray(qParam) ? (qParam[0] ?? '') : ''
+  const page =
+    typeof pageParam === 'string'
+      ? pageParam
+      : Array.isArray(pageParam)
+        ? (pageParam[0] ?? '1')
+        : '1'
   const pageNum = Math.max(1, parseInt(page) || 1)
   const offset = (pageNum - 1) * 48
+  const seasonalContext = readPublicSeasonalMarketPulseContext(resolvedSearchParams)
+  const seasonalContextParams = seasonalContext
+    ? buildPublicSeasonalMarketPulseSearchParamsFromContext(seasonalContext)
+    : null
+  const marketScope = seasonalContext?.scope.label ?? PUBLIC_MARKET_SCOPE
+  const seasonalAnalytics = seasonalContext
+    ? {
+        season: seasonalContext.season,
+        source_mode: seasonalContext.sourceMode,
+        market_scope: seasonalContext.scope.label,
+        market_scope_mode: seasonalContext.scope.mode,
+        lead_ingredients: seasonalContext.peakNow.join(' | '),
+        fallback_reason:
+          seasonalContext.intent.provenance.fallbackReason === 'none'
+            ? null
+            : seasonalContext.intent.provenance.fallbackReason,
+        market_freshness_status: seasonalContext.intent.provenance.marketStatus,
+      }
+    : null
+
+  function buildHref(
+    pathname: string,
+    extraParams: Record<string, string | number | undefined> = {}
+  ) {
+    const params = new URLSearchParams()
+
+    if (seasonalContext) {
+      for (const [key, value] of seasonalContextParams!.entries()) {
+        params.set(key, value)
+      }
+    }
+
+    for (const [key, value] of Object.entries(extraParams)) {
+      if (value == null) continue
+      const normalized = String(value).trim()
+      if (!normalized) continue
+      params.set(key, normalized)
+    }
+
+    const query = params.toString()
+    return query ? `${pathname}?${query}` : pathname
+  }
 
   const [{ items, total, hasMore }, categories, recentlyAdded] = await Promise.all([
     getIngredients(q, offset).catch(() => ({ items: [], total: 0, hasMore: false })),
@@ -163,6 +222,14 @@ export default async function IngredientsPage({ searchParams }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionLd) }}
       />
       <div className="mx-auto max-w-6xl px-4 py-10">
+        <PublicPageView
+          pageName="ingredients"
+          properties={{
+            section: 'public_growth',
+            entry_context: seasonalContext?.entryContext ?? 'direct',
+            ...(seasonalAnalytics ?? { market_scope: marketScope }),
+          }}
+        />
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-stone-100 mb-2">Ingredient Guide</h1>
@@ -172,13 +239,41 @@ export default async function IngredientsPage({ searchParams }: Props) {
           </p>
         </div>
 
+        {seasonalContext && (
+          <div className="mb-8 rounded-2xl border border-stone-700 bg-stone-900/60 p-5 sm:p-6">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-300">
+              {seasonalContext.summary.eyebrow}
+            </p>
+            <h2 className="mt-2 text-xl font-semibold text-stone-100">
+              {seasonalContext.summary.headline}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-stone-300">{seasonalContext.summary.body}</p>
+            <p className="mt-3 text-xs leading-5 text-stone-500">
+              {seasonalContext.summary.sourceNote} {seasonalContext.summary.scopeNote}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <TrackedLink
+                href={buildHref('/book')}
+                analyticsName="ingredients_market_note_book"
+                analyticsProps={{
+                  section: 'market_note_continuity',
+                  ...(seasonalAnalytics ?? {}),
+                }}
+                className="inline-flex items-center justify-center rounded-xl gradient-accent px-4 py-2.5 text-sm font-semibold text-white"
+              >
+                Carry This Note Into Booking
+              </TrackedLink>
+            </div>
+          </div>
+        )}
+
         {/* Category tabs */}
         {!q && categories.length > 0 && (
           <div className="mb-6 flex flex-wrap gap-2">
             {categories.map((c) => (
               <Link
                 key={c.category}
-                href={`/ingredients/${c.category}`}
+                href={buildHref(`/ingredients/${c.category}`)}
                 className="px-3 py-1.5 rounded-full text-xs border border-stone-700 text-stone-400 hover:border-stone-500 hover:text-stone-200 transition-colors"
               >
                 {c.label}
@@ -190,6 +285,10 @@ export default async function IngredientsPage({ searchParams }: Props) {
 
         {/* Search */}
         <form method="get" className="mb-8">
+          {seasonalContext &&
+            Array.from(seasonalContextParams!.entries()).map(([key, value]) => (
+              <input key={key} type="hidden" name={key} value={value} />
+            ))}
           <div className="relative max-w-md">
             <input
               name="q"
@@ -216,7 +315,7 @@ export default async function IngredientsPage({ searchParams }: Props) {
               {recentlyAdded.map((item) => (
                 <Link
                   key={item.slug}
-                  href={`/ingredient/${item.slug}`}
+                  href={buildHref(`/ingredient/${item.slug}`)}
                   className="group flex flex-col items-center text-center gap-1.5"
                 >
                   {item.imageUrl ? (
@@ -251,7 +350,7 @@ export default async function IngredientsPage({ searchParams }: Props) {
             {items.map((item) => (
               <Link
                 key={item.slug}
-                href={`/ingredient/${item.slug}`}
+                href={buildHref(`/ingredient/${item.slug}`)}
                 className="group block rounded-xl border border-stone-800 bg-stone-900 hover:border-stone-600 hover:bg-stone-800/60 transition-colors overflow-hidden"
               >
                 {/* Image */}
@@ -310,7 +409,7 @@ export default async function IngredientsPage({ searchParams }: Props) {
           <div className="flex items-center justify-center gap-4 mt-10">
             {pageNum > 1 && (
               <Link
-                href={`/ingredients?${new URLSearchParams({ q, page: String(pageNum - 1) })}`}
+                href={buildHref('/ingredients', { q, page: String(pageNum - 1) })}
                 className="px-4 py-2 text-sm rounded-lg border border-stone-700 text-stone-300 hover:bg-stone-800 transition-colors"
               >
                 Previous
@@ -321,7 +420,7 @@ export default async function IngredientsPage({ searchParams }: Props) {
             </span>
             {hasMore && (
               <Link
-                href={`/ingredients?${new URLSearchParams({ q, page: String(pageNum + 1) })}`}
+                href={buildHref('/ingredients', { q, page: String(pageNum + 1) })}
                 className="px-4 py-2 text-sm rounded-lg border border-stone-700 text-stone-300 hover:bg-stone-800 transition-colors"
               >
                 Next

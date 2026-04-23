@@ -1,309 +1,198 @@
 # Communication Ingestion Pipeline
 
-## Overview
+Date: 2026-04-21
+
+This document supersedes the earlier `communication_signals` proposal. ChefFlow did not adopt a separate `communication_signals` table. The production-direction model for external business communications is:
+
+- `conversation_threads`: canonical thread container
+- `communication_events`: immutable inbound and outbound event record
+- `communication_action_log`: operator, automation, and delivery audit log
+
+`messages` and `unified_inbox` remain compatibility surfaces for older UI and workflow dependencies.
+
+## Current-State Map
 
-Every inbound communication (email, SMS, any channel) is automatically ingested, stored, classified, and surfaced in the chef's inbox without manual action. The system auto-creates staged clients, inquiries, and event drafts. Chef confirms or dismisses from the triage inbox.
+Inbound endpoints:
 
-The pipeline operates in four layers: ingestion captures raw signals, staging creates unverified records, system state holds confirmed entities, and AI optionally enhances classification.
+- `/api/webhooks/email/inbound`
+  - Status: canonical
+  - Purpose: Cloudflare-routed or managed mailbox email ingress
+  - Behavior: resolves tenant by managed channel ownership, ingests into `communication_events`, mirrors a narrow compatibility row into `messages`
+- `/api/webhooks/twilio`
+  - Status: legacy-but-active compatibility route
+  - Purpose: Twilio inbound webhook
+  - Behavior: validates signature with tenant-owned Twilio credentials, then uses the same canonical managed-ingest adapter as email
+- `/api/comms/sms`
+  - Status: legacy-but-active compatibility/manual-forward route
+  - Purpose: Twilio-form ingress and authenticated JSON forwarding
+  - Behavior: validates tenant ownership from managed channel records, then uses the same canonical managed-ingest adapter as `/api/webhooks/twilio`
+
+Storage models:
+
+- `conversation_threads`
+  - Canonical thread model for external business communication
+- `communication_events`
+  - Canonical immutable ingress and outbound event record
+- `communication_action_log`
+  - Canonical audit log for ingestion, classification, follow-up state, reply send success, and reply send failure
+- `messages`
+  - Legacy-but-active compatibility store for inbox surfaces and older contextual messaging dependencies
+- `unified_inbox`
+  - Legacy-but-active compatibility view over `messages`, conversations, and notifications
+- `notification_delivery_log`
+  - Notification-specific provider audit
+  - Not used as the canonical store for business-thread communication
+- `sms_messages`
+  - Notification-specific SMS audit
+  - Not used as the canonical store for business-thread communication
+
+Thread models:
+
+- Canonical: `conversation_threads` joined to `communication_events`
+- Legacy: `messages.conversation_thread_id` as a bridge back to old inbox and contextual messaging surfaces
 
-## Architecture
+Outbound send paths:
 
-Inbound Channel (Email, SMS, Platform) flows to Ingestion Layer (Webhook, OAuth Poller), which writes to communication_signals Table (Immutable Log), then to Staging Pipeline (Extract, Classify, Hydrate), creating Staged Entities (Clients, Inquiries, Events), which surface in Chef Triage Inbox (Confirm or Dismiss), finally reaching System State (Real Data).
+- `lib/communication/actions.ts::sendReplyViaChannel`
+  - Status: canonical for thread replies
+  - Sends via tenant-owned Gmail or Twilio channel
+  - Persists outbound canonical event in `communication_events`
+  - Persists delivery/send audit in `communication_action_log`
+  - Mirrors a compatibility row into `messages`
+- `lib/sms/actions.ts`
+  - Status: legacy-but-active
+  - Still writes `messages`, but now sends with the same tenant-owned Twilio channel resolver used by canonical thread replies
 
-Ingestion and staging always work. AI classification is optional and paid. If Ollama is unavailable, regex and heuristic rules classify signals.
+Provider dependencies:
 
-## Components
+- Email ownership:
+  - `chef_email_channels`
+  - `google_mailboxes`
+  - `google_connections`
+- SMS/WhatsApp ownership:
+  - `chef_twilio_credentials`
+- Provider APIs:
+  - Gmail API for outbound managed email
+  - Twilio Messages API for outbound SMS and WhatsApp
+  - Cloudflare Email Routing for alias ingress
 
-### 1. communication_signals Table Migration
+UI surfaces:
 
-New table to store every inbound communication as an immutable record.
+- `app/(chef)/inbox/page.tsx`
+  - Canonical-capable when communication triage is enabled
+  - Legacy-compatible when older inbox feed remains active
+- No new inbox surface is introduced by this pipeline
 
-Schema columns:
+## Canonical Contract
 
-- id (uuid): Primary key
-- chef_id (uuid): FK to chefs(id), not null
-- source (enum): email / sms / whatsapp / platform
-- raw_body (text): Full message body, never truncated
-- raw_headers (jsonb): Email headers, SMS metadata, platform metadata
-- sender_email (varchar): Null for SMS/platform
-- sender_phone (varchar): Null for email/platform
-- sender_name (varchar): Display name if available
-- subject (varchar): Email subject or SMS preview
-- received_at (timestamptz): When signal arrived
-- processed_at (timestamptz): When staging pipeline ran (null until processed)
-- signal_status (enum): pending / processed / ignored
-- staged_client_id (uuid): FK to clients(id) if created, null otherwise
-- staged_inquiry_id (uuid): FK to inquiries(id) if created, null otherwise
-- staged_event_id (uuid): FK to events(id) if created, null otherwise
-- created_at (timestamptz): Immutable timestamp
+### Managed Channel Registry
 
-Rules:
+ChefFlow uses existing verified channel tables as the logical managed-channel registry:
 
-- Immutable once written. No updates to existing rows.
-- Periodic job processes pending signals (staging pipeline runs async).
-- No TTL. All signals retained permanently for audit trail.
+- `chef_email_channels` for ChefFlow-managed inbound aliases
+- `google_mailboxes` for verified mailbox ownership
+- `google_connections` for legacy verified mailbox ownership
+- `chef_twilio_credentials` for tenant-owned Twilio phone channels
 
-### 2. Staging Columns on Existing Tables
+No new registry table is required for this integration cut because these tables already hold the ownership facts needed for routing.
 
-Add staging flags to clients, inquiries, and events tables.
+### Inbound Normalization
 
-For clients table:
+All direct business-channel ingress should normalize through one adapter:
 
-- ALTER TABLE clients ADD COLUMN is_staged boolean DEFAULT false
-- ALTER TABLE clients ADD COLUMN staged_from_signal_id uuid REFERENCES communication_signals(id)
-- CREATE INDEX idx_clients_staged ON clients(chef_id, is_staged) WHERE is_staged = true
+- `lib/communication/managed-ingest.ts::ingestManagedInboundCommunication`
 
-For inquiries table:
+That adapter is responsible for:
 
-- ALTER TABLE inquiries ADD COLUMN is_staged boolean DEFAULT false
-- ALTER TABLE inquiries ADD COLUMN staged_from_signal_id uuid REFERENCES communication_signals(id)
-- CREATE INDEX idx_inquiries_staged ON inquiries(chef_id, is_staged) WHERE is_staged = true
+1. Resolving tenant ownership from the managed channel registry
+2. Rejecting unmanaged destinations instead of falling back to owner-account assumptions
+3. Writing the canonical event through `ingestCommunicationEvent`
+4. Writing a narrow `messages` compatibility row only when needed for older surfaces
 
-For events table:
+### Canonical Event Persistence
 
-- ALTER TABLE events ADD COLUMN is_staged boolean DEFAULT false
-- ALTER TABLE events ADD COLUMN staged_from_signal_id uuid REFERENCES communication_signals(id)
-- CREATE INDEX idx_events_staged ON events(chef_id, is_staged) WHERE is_staged = true
+`lib/communication/pipeline.ts::ingestCommunicationEvent` is the single canonical writer for direct inbound and outbound business-thread events.
 
-Staged entities never appear in primary lists (events view, client roster) unless explicitly filtered. Confirmation UI updates these flags to false.
+It is responsible for:
 
-### 3. Per-Chef Inbound Email Address
+- resolving or reusing the canonical thread
+- resolving client linkage when deterministically possible
+- writing immutable `communication_events` rows
+- persisting immutable transport metadata on the event row itself:
+  - `external_thread_key`
+  - `provider_name`
+  - `managed_channel_address`
+  - `recipient_address`
+- logging ingestion metadata to `communication_action_log`
+- preserving thread activity timestamps
+- triggering classification, suggested links, and follow-up timers
 
-Every chef gets a unique inbound address: {chef-slug}@cheflowhq.com.
+### Outbound Delivery Audit
 
-Cloudflare Email Routing setup:
+Outbound thread replies are audited through:
 
-- Domain: cheflowhq.com
-- Catch-all rule: \*@cheflowhq.com routes to /api/webhooks/email/inbound
-- Cloudflare forwards email as JSON webhook payload
+- canonical outbound `communication_events` rows
+- `communication_action_log` entries for:
+  - `reply_sent_via_channel`
+  - `reply_send_failed`
+  - `provider_message_status_updated`
 
-Webhook Handler (app/api/webhooks/email/inbound/route.ts):
+Audit state includes:
 
-1. Parses incoming email (Cloudflare email routing format)
-2. Extracts: sender email, sender name, subject, body, attachments (metadata only)
-3. Derives chef_id from recipient address slug
-4. Writes immutable record to communication_signals with source: email, signal_status: pending
-5. Triggers staging pipeline (async, background job)
-6. Returns 200 OK
+- provider name
+- provider message id when available
+- provider lifecycle status when available
+- managed channel address used to send
+- recipient
+- linked inquiry or event context when present
 
-No authentication required on webhook (Cloudflare validates sender).
+This gives provider-linked delivery/send state without creating another communications store.
 
-### 4. Email OAuth Connectors
+## Classification
 
-Settings page at /app/(chef)/settings/integrations/email allows chef to connect Gmail and Outlook.
+Canonical:
 
-Gmail Integration:
+- `conversation_threads`
+- `communication_events`
+- `communication_action_log`
+- `lib/communication/pipeline.ts`
+- `lib/communication/actions.ts::sendReplyViaChannel`
+- `app/api/webhooks/email/inbound/route.ts`
 
-- OAuth2 flow (Google API, scopes: gmail.readonly, gmail.modify)
-- Cron job (every 5 min) queries Gmail API for new messages via watch/list
-- For each new message: extract headers (from, subject, body), write to communication_signals
-- Store OAuth refresh token encrypted per chef in new chef_email_oauth table
+Legacy-but-active:
 
-Outlook/Microsoft Integration:
+- `app/api/webhooks/twilio/route.ts`
+- `app/api/comms/sms/route.ts`
+- `messages`
+- `unified_inbox`
+- `lib/sms/actions.ts`
 
-- OAuth2 flow (Microsoft Graph API, scopes: mail.read)
-- Same polling cadence, same pipeline
-- Refresh token stored encrypted per chef
+Duplicate:
 
-Schema for chef_email_oauth table:
+- Twilio direct ingress into `messages`
+  - Removed in favor of canonical ingest plus compatibility mirroring
+- Divergent SMS senders based on global env defaults
+  - Replaced for thread replies and managed SMS sends with tenant-owned channel resolution
 
-- id (uuid): Primary key
-- chef_id (uuid): FK to chefs(id), not null
-- provider (enum): gmail / outlook
-- oauth_access_token (text): Encrypted (tRPC/viaduct pattern)
-- oauth_refresh_token (text): Encrypted
-- oauth_expires_at (timestamptz): Token expiry
-- enabled (boolean): Chef can toggle off/on
-- created_at (timestamptz)
-- updated_at (timestamptz)
+Incomplete:
 
-Credentials always encrypted at rest. Never logged or exposed.
+- Historical finding import still inserts its compatibility `messages` row directly instead of reusing the shared canonical link/update bridge.
+- UI actions for mailbox health are still limited to connect/disconnect/sync; no new operator workflow was added in this cut.
 
-### 5. Twilio Bring-Your-Own
+## Intentional Non-Changes
 
-Settings page at /app/(chef)/settings/integrations/sms allows chef to enter Twilio credentials.
+- No new inbox page
+- No new `communication_signals` table
+- No reuse of `notification_delivery_log` or `sms_messages` for business-thread persistence
+- No owner-account fallback for managed channel attribution
+- No automatic identity merging without deterministic evidence
+- `google_connections` remains the Calendar row and Gmail auth-token compatibility fallback, but `google_mailboxes` is now the operational Gmail mailbox control plane.
 
-Setup:
+## Validation Rules
 
-- Chef enters: Account SID, Auth Token, Phone Number
-- Stored encrypted in new chef_sms_credentials table (follows same pattern as email OAuth)
-- Chef configures Twilio webhook to point to /api/webhooks/twilio/inbound
+Before extending this pipeline further:
 
-Existing webhook handler (app/api/webhooks/twilio/inbound/route.ts):
-
-- Already receives inbound SMS
-- Looks up chef by phone number in chef_sms_credentials
-- Writes communication_signals record with source: sms
-- Triggers staging pipeline
-
-No new webhook needed. Existing Twilio endpoint just needs credential lookup.
-
-Schema for chef_sms_credentials table:
-
-- id (uuid): Primary key
-- chef_id (uuid): FK to chefs(id), not null
-- phone_number (varchar): Chef's Twilio number
-- account_sid (text): Encrypted
-- auth_token (text): Encrypted
-- enabled (boolean): Chef can toggle off/on
-- created_at (timestamptz)
-- updated_at (timestamptz)
-
-### 6. Staging Pipeline
-
-Server action in lib/comms/staging-pipeline.ts.
-
-Process (triggered by cron or webhook on new communication_signal):
-
-1. Fetch pending signal: Query communication_signals WHERE signal_status = pending (batch process)
-
-2. Extract sender identity:
-   - Email: extract from sender_email, derive sender_name from email headers or raw_body heuristic
-   - SMS: extract from raw_headers phone field
-   - Platform: extract from raw_headers user metadata
-
-3. Match or create staged client:
-   - Query existing clients for matching email or phone (case-insensitive)
-   - If found: link staged_client_id to existing client, skip client creation
-   - If not found: create new clients record with is_staged: true, email (if email source) or phone (if SMS), populate staged_from_signal_id
-
-4. Classify intent (optional Ollama):
-   - If Ollama available: prompt with signal body, extract: intent (inquiry/order/complaint/other), estimated_headcount, estimated_event_date, location, dietary_notes
-   - If Ollama unavailable: regex fallback (detect date patterns, numbers, keywords like request, order, event, dinner)
-   - Store classification in new communication_signal_classification jsonb column (or separate table)
-
-5. Create staged inquiry (if inquiry intent detected):
-   - Create inquiries record: is_staged: true, client_id: staged_client_id, chef_id, subject: signal.subject, initial_message: signal.raw_body, staged_from_signal_id
-   - Default status: new (or staged if new enum added)
-
-6. Create staged event (if event signals detected):
-   - If classification extracted: estimated_headcount, estimated_event_date, location
-   - Create events record: is_staged: true, client_id: staged_client_id, chef_id, headcount: extracted_headcount, event_date: extracted_date, location: extracted_location, status: draft, staged_from_signal_id
-   - Event remains draft until confirmed (can be edited before confirmation)
-
-7. Mark signal processed:
-   - Update signal_status: processed, processed_at: now()
-
-8. Broadcast to SSE:
-   - Call broadcast('communications:{chefId}', { type: 'signal_ingested', signal }) to notify live-connected clients
-
-Error handling:
-
-- If staging fails: log error, mark signal signal_status: ignored, do not block pipeline
-- Retry ignored signals on next cron run
-- Chef sees signal in raw feed even if staging failed
-
-### 7. Raw Feed Tab in Communication Inbox
-
-Extend existing CommunicationInboxClient component.
-
-New tab: All
-
-- Shows every communication_signal in real-time, unfiltered, chronological (newest first)
-- Powered by SSE on communications:{chefId} channel
-- Displays per signal:
-  - Source badge (email/SMS/platform/etc)
-  - Sender name and address (email) or phone (SMS)
-  - Subject line (if email) or preview (SMS)
-  - Received timestamp, relative (5 min ago)
-  - Linked staged entities below (if any): Staged client: John Doe with confirm/dismiss buttons
-- No filtering. No search. No interpretation. Raw data.
-- Positioned as last tab (after Unassigned, Active, etc)
-
-Styling:
-
-- Signal rows in light neutral background to distinguish from primary inbox
-- Staged entity pills with STAGED badge and icon
-- Confirm button confirms all linked entities (client, inquiry, event) in one action
-
-### 8. Staged Entity Confirmation UI
-
-Staged clients, inquiries, and events surface in existing Unassigned tab with STAGED badge.
-
-Behavior:
-
-- Staged records appear inline with regular records, marked visually (badge, lighter styling, or grouped)
-- Confirm button:
-  - Updates is_staged: false on client/inquiry/event
-  - Entity immediately appears in normal lists and workflows
-  - Removes from staging view
-- Dismiss button:
-  - Soft-delete or archive (new flag: dismissed_from_staging: true on entity)
-  - Entity removed from normal views
-  - Original communication_signal retained in audit log
-  - If inquiry/event, remains visible in raw feed (signal never deleted)
-
-Server actions (lib/comms/confirm-staged-entity.ts):
-
-- confirmStagedEntity(chefId, entityType, entityId): Verify ownership, update is_staged: false, broadcast SSE, return success
-- dismissStagedEntity(chefId, entityType, entityId): Verify ownership, set dismissed_from_staging: true, broadcast SSE, return success
-
-## Data Model
-
-### communication_signals
-
-Immutable inbound log. Schema defined in Component 1.
-
-### chef_email_oauth
-
-OAuth credentials for Gmail, Outlook. Schema defined in Component 4.
-
-### chef_sms_credentials
-
-Bring-your-own SMS credentials. Schema defined in Component 5.
-
-### Staging Columns
-
-Added to clients, inquiries, events: is_staged boolean, staged_from_signal_id uuid.
-
-### communication_signal_classification (optional)
-
-If storing classifications, separate table or jsonb column on communication_signals with columns:
-
-- id (uuid)
-- signal_id (uuid): FK to communication_signals(id)
-- intent (varchar): inquiry / order / complaint / other
-- headcount (int): Estimated from signal
-- event_date (date): Extracted date (null if unclear)
-- location (varchar): Extracted location
-- dietary_notes (text): Extracted dietary/allergy info
-- confidence (numeric): 0-1 score (Ollama only)
-- created_at (timestamptz)
-
-Alternatively, embed as jsonb on communication_signals to keep immutable log complete in one row.
-
-## Build Order
-
-1. Database migrations (communication_signals table, staging columns, OAuth/SMS credential tables)
-2. Webhook handler (/api/webhooks/email/inbound)
-3. Staging pipeline (lib/comms/staging-pipeline.ts) with regex fallback
-4. Cron job to process pending signals every 5 minutes
-5. Twilio credential integration (update existing /api/webhooks/twilio/inbound)
-6. Email OAuth settings page (/app/(chef)/settings/integrations/email)
-7. SMS settings page (/app/(chef)/settings/integrations/sms)
-8. Raw feed tab (Communication Inbox All tab with SSE)
-9. Staged entity confirmation UI (confirm/dismiss buttons on Unassigned tab)
-10. Ollama classification integration (optional, added after step 9)
-
-## Rules
-
-- Ingestion always works. No AI required. Email webhook and SMS webhook operate independently of Ollama.
-- Ingestion is complete without Twilio. Email-only setup (per-chef address plus OAuth connectors) is a full ingestion pipeline.
-- Remy never gates ingestion. Chat-based triage is optional and future. Ingestion happens regardless of Remy availability.
-- Raw feed shows everything unfiltered. No deduplication, no filtering, no interpretation. Every signal visible.
-- Staged entities never appear in primary views without confirmation. Clients list shows only confirmed clients. Events list shows only confirmed events. Inquiries list shows only confirmed inquiries.
-- All signal data is immutable and permanent. No soft-deletes on communication_signals. Audit trail is complete.
-- Credentials encrypted at rest. Email OAuth tokens, SMS auth tokens stored encrypted in database.
-- Graceful degradation. If Ollama unavailable, regex fallback classifies. If email OAuth unavailable, per-chef address still works. If SMS credentials missing, email ingestion continues.
-
-## Success Criteria
-
-- Email signals ingested via per-chef address (@cheflowhq.com)
-- SMS signals ingested via Twilio webhook with bring-your-own credentials
-- OAuth integrations (Gmail, Outlook) poll and ingest new messages
-- Staging pipeline creates client, inquiry, event drafts in less than 2 seconds
-- Chef confirms 5 signals from raw feed in under 30 seconds (UI responsive)
-- Confirmed entity appears in normal lists immediately
-- Dismissed entity stays in signal log (immutable)
-- All communication_signals rows marked processed within 5 minutes of receipt
-- Ollama classification (if enabled) detects date/headcount/location in 80% of signals
+1. Prefer extending `communication_events`, `conversation_threads`, or `communication_action_log`
+2. Only write `messages` when a compatibility dependency still requires it
+3. Resolve tenant ownership from verified managed channel records, never from global sender env vars
+4. Keep inbound email and SMS on the same normalization and canonical ingest path

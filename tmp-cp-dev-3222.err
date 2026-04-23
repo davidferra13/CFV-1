@@ -1,0 +1,237 @@
+ ⚠ Invalid next.config.js options detected: 
+ ⚠     Unrecognized key(s) in object: 'serverActions'
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
+<w> [webpack.cache.PackFileCacheStrategy] Restoring pack from C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\server-development.pack.gz failed: TypeError: Cannot read properties of undefined (reading 'hasStartTime')
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: a0000000-0000-0000-0000-000000000099,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ 'a0000000-0000-0000-0000-000000000099', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (1809kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (188kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (139kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (692kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (695kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (227kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: EPERM: operation not permitted, rename 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\server-development\1.pack.gz_' -> 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\server-development\1.pack.gz'
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: a0000000-0000-0000-0000-000000000099,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ 'a0000000-0000-0000-0000-000000000099', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: a0000000-0000-0000-0000-000000000099,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ 'a0000000-0000-0000-0000-000000000099', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: a0000000-0000-0000-0000-000000000099,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ 'a0000000-0000-0000-0000-000000000099', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: a0000000-0000-0000-0000-000000000099,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ 'a0000000-0000-0000-0000-000000000099', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: a0000000-0000-0000-0000-000000000099,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ 'a0000000-0000-0000-0000-000000000099', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: a0000000-0000-0000-0000-000000000099,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ 'a0000000-0000-0000-0000-000000000099', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: a0000000-0000-0000-0000-000000000099,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ 'a0000000-0000-0000-0000-000000000099', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: a0000000-0000-0000-0000-000000000099,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ 'a0000000-0000-0000-0000-000000000099', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+[account-access] Failed to load session control row:  [Error: Failed query: select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2
+params: a0000000-0000-0000-0000-000000000099,1] {
+  query: 'select "raw_app_meta_data", "banned_until", "deleted_at" from "auth"."users" where "auth"."users"."id" = $1 limit $2',
+  params: [ 'a0000000-0000-0000-0000-000000000099', 1 ],
+  cause: [Error: The edge runtime does not support Node.js 'net' module.
+Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime]
+}
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: EPERM: operation not permitted, rename 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\server-development\1.pack.gz_' -> 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\server-development\1.pack.gz'
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (webpack-internal:///(rsc)/./node_modules/next/dist/server/app-render/entry-base.js:83:38)
+    at (rsc)/./node_modules/next/dist/server/app-render/entry-base.js (C:\Users\david\Documents\CFv1\.next-dev\server\vendor-chunks\next.js:3539:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (webpack-internal:///(rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2F_not-found%2Fpage&page=%2F_not-found%2Fpage&appPaths=&pagePath=private-next-app-dir%2Fnot-found.tsx&appDir=C%3A%5CUsers%5Cdavid%5CDocuments%5CCFv1%5Capp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=C%3A%5CUsers%5Cdavid%5CDocuments%5CCFv1&isDev=true&tsconfigPath=tsconfig.next.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!:14:96)
+    at (rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2F_not-found%2Fpage&page=%2F_not-found%2Fpage&appPaths=&pagePath=private-next-app-dir%2Fnot-found.tsx&appDir=C%3A%5CUsers%5Cdavid%5CDocuments%5CCFv1%5Capp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=C%3A%5CUsers%5Cdavid%5CDocuments%5CCFv1&isDev=true&tsconfigPath=tsconfig.next.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D! (C:\Users\david\Documents\CFv1\.next-dev\server\app\_not-found\page.js:538:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at __webpack_exec__ (C:\Users\david\Documents\CFv1\.next-dev\server\app\_not-found\page.js:1078:39)
+    at C:\Users\david\Documents\CFv1\.next-dev\server\app\_not-found\page.js:1079:678
+    at __webpack_require__.X (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:240:21)
+    at C:\Users\david\Documents\CFv1\.next-dev\server\app\_not-found\page.js:1079:47
+    at Object.<anonymous> (C:\Users\david\Documents\CFv1\.next-dev\server\app\_not-found\page.js:1082:3)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+    at mod.require (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+    at requirePage (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\require.js:109:84)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\load-components.js:103:84
+    at async loadComponentsImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\load-components.js:103:26)
+    at async DevServer.findPageComponentsImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\next-server.js:714:36)
+    at async DevServer.findPageComponents (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderErrorToResponseImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:2090:30)
+    at async DevServer.pipeImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\next-server.js:231:21)
+    at async DevServer.handleRequestImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\base-server.js:818:17)
+    at async C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\Users\david\Documents\CFv1\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\lib\start-server.js:141:13)
+[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: EPERM: operation not permitted, rename 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\server-development\1.pack.gz_' -> 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\server-development\1.pack.gz'
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: EPERM: operation not permitted, rename 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\server-development\1.pack.gz_' -> 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\server-development\1.pack.gz'
+ ⨯ lib\auth\actions.ts (456:34) @ parse
+ ⨯ ZodError: [
+  {
+    "origin": "string",
+    "code": "invalid_format",
+    "format": "email",
+    "pattern": "/^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$/",
+    "path": [
+      "email"
+    ],
+    "message": "Valid email required"
+  },
+  {
+    "origin": "string",
+    "code": "too_small",
+    "minimum": 1,
+    "inclusive": true,
+    "path": [
+      "password"
+    ],
+    "message": "Password required"
+  }
+]
+    at signIn (./lib/auth/actions.ts:443:36)
+digest: "1018512271"
+[0m [90m 454 |[39m [90m */[39m[0m
+[0m [90m 455 |[39m [36mexport[39m [36masync[39m [36mfunction[39m signIn(input[33m:[39m [33mSignInInput[39m) {[0m
+[0m[31m[1m>[22m[39m[90m 456 |[39m   [36mconst[39m validated [33m=[39m [33mSignInSchema[39m[33m.[39mparse(input)[0m
+[0m [90m     |[39m                                  [31m[1m^[22m[39m[0m
+[0m [90m 457 |[39m   [36mconst[39m email [33m=[39m validated[33m.[39memail[33m.[39mtrim()[33m.[39mtoLowerCase()[0m
+[0m [90m 458 |[39m   [36mconst[39m requestHeaders [33m=[39m headers()[0m
+[0m [90m 459 |[39m   [36mconst[39m isSyntheticTestAccount [33m=[39m email[33m.[39mendsWith([32m'@chefflow.test'[39m)[0m
+[getAvailableCarryForwardItems] {
+  message: 'Invalid SQL identifier: events!unused_ingredients_event_id_fkey!inner(id, occasion, event_date)',
+  code: undefined,
+  details: undefined
+}
+[getMenuLibraryForEvent] Error: {
+  message: 'Invalid SQL identifier: dishes (id, course_name, course_number, description, dietary_tags, allergen_flags)',
+  code: undefined,
+  details: undefined
+}
+[getEventCollaborators] {
+  message: 'column event_collaborators.event_collaborators_chef_id_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[compat] FK map miss: event_tickets::event_ticket_types - guessing "event_ticket_type_id". Run "npm run db:fk-cache" to regenerate.
+[Completion] event/1f2235d4-3627-400f-a93d-01810ef99db1 failed: PostgresError: column r.allergen_flags does not exist
+    at ErrorResponse (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:830:70)
+    at handle (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:504:6)
+    at Socket.data (webpack-internal:///(rsc)/./node_modules/postgres/src/connection.js:339:9)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+    at TCP.callbackTrampoline (node:internal/async_hooks:130:17)
+    at cachedError (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:175:23)
+    at new Query (webpack-internal:///(rsc)/./node_modules/postgres/src/query.js:41:24)
+    at sql (webpack-internal:///(rsc)/./node_modules/postgres/src/index.js:110:11)
+    at evaluateEvent (webpack-internal:///(rsc)/./lib/completion/evaluators/event.ts:85:89) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '42703',
+  hint: 'Perhaps you meant to reference the column "d.allergen_flags".',
+  position: '186',
+  file: 'parse_relation.c',
+  line: '3665',
+  routine: 'errorMissingColumn'
+}
+ ⨯ Failed to generate static paths for /culinary/menus/[id]:
+Error [PageNotFoundError]: Cannot find module for page: /(chef)/culinary/menus/[id]/page
+    at getPagePath (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\require.js:94:15)
+    at requirePage (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\require.js:99:22)
+    at C:\Users\david\Documents\CFv1\node_modules\next\dist\server\load-components.js:103:84
+    at async loadComponentsImpl (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\load-components.js:103:26)
+    at async Object.loadStaticPaths (C:\Users\david\Documents\CFv1\node_modules\next\dist\server\dev\static-paths-worker.js:23:24) {
+  type: 'PageNotFoundError',
+  code: 'ENOENT'
+}
+[getAvailableCarryForwardItems] {
+  message: 'Invalid SQL identifier: events!unused_ingredients_event_id_fkey!inner(id, occasion, event_date)',
+  code: undefined,
+  details: undefined
+}
+[getMenuLibraryForEvent] Error: {
+  message: 'Invalid SQL identifier: dishes (id, course_name, course_number, description, dietary_tags, allergen_flags)',
+  code: undefined,
+  details: undefined
+}
+[getEventCollaborators] {
+  message: 'column event_collaborators.event_collaborators_chef_id_fkey does not exist',
+  code: '42703',
+  details: undefined
+}
+[compat] FK map miss: event_tickets::event_ticket_types - guessing "event_ticket_type_id". Run "npm run db:fk-cache" to regenerate.
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: EPERM: operation not permitted, rename 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\server-development\1.pack.gz_' -> 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\server-development\1.pack.gz'
+ ⨯ TypeError: Cannot read properties of undefined (reading 'call')
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (webpack-internal:///(rsc)/./node_modules/next/dist/server/app-render/entry-base.js:83:38)
+    at (rsc)/./node_modules/next/dist/server/app-render/entry-base.js (C:\Users\david\Documents\CFv1\.next-dev\server\vendor-chunks\next.js:3539:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at eval (webpack-internal:///(rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2F(chef)%2Fculinary%2Fmenus%2F%5Bid%5D%2Fpage&page=%2F(chef)%2Fculinary%2Fmenus%2F%5Bid%5D%2Fpage&appPaths=%2F(chef)%2Fculinary%2Fmenus%2F%5Bid%5D%2Fpage&pagePath=private-next-app-dir%2F(chef)%2Fculinary%2Fmenus%2F%5Bid%5D%2Fpage.tsx&appDir=C%3A%5CUsers%5Cdavid%5CDocuments%5CCFv1%5Capp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=C%3A%5CUsers%5Cdavid%5CDocuments%5CCFv1&isDev=true&tsconfigPath=tsconfig.next.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!:14:96)
+    at (rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2F(chef)%2Fculinary%2Fmenus%2F%5Bid%5D%2Fpage&page=%2F(chef)%2Fculinary%2Fmenus%2F%5Bid%5D%2Fpage&appPaths=%2F(chef)%2Fculinary%2Fmenus%2F%5Bid%5D%2Fpage&pagePath=private-next-app-dir%2F(chef)%2Fculinary%2Fmenus%2F%5Bid%5D%2Fpage.tsx&appDir=C%3A%5CUsers%5Cdavid%5CDocuments%5CCFv1%5Capp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=C%3A%5CUsers%5Cdavid%5CDocuments%5CCFv1&isDev=true&tsconfigPath=tsconfig.next.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D! (C:\Users\david\Documents\CFv1\.next-dev\server\app\(chef)\culinary\menus\[id]\page.js:703:1)
+    at __webpack_require__ (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:33:43)
+    at __webpack_exec__ (C:\Users\david\Documents\CFv1\.next-dev\server\app\(chef)\culinary\menus\[id]\page.js:10436:39)
+    at C:\Users\david\Documents\CFv1\.next-dev\server\app\(chef)\culinary\menus\[id]\page.js:10437:4115
+    at __webpack_require__.X (C:\Users\david\Documents\CFv1\.next-dev\server\webpack-runtime.js:240:21) {
+  type: 'TypeError',
+  page: '/culinary/menus/43071d0d-0793-4496-bd31-4506daf76193'
+}
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\server-development\0.pack.gz_' -> 'C:\Users\david\Documents\CFv1\.next-dev\cache\webpack\server-development\0.pack.gz'

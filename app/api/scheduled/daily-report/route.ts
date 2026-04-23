@@ -1,18 +1,19 @@
-// Daily Report Cron - generates and emails daily reports for all chefs
+// Daily Report Cron - generates daily reports for all chefs
 // Schedule: 0 11 * * * (7 AM ET)
 
 import { NextResponse } from 'next/server'
-import { createElement } from 'react'
 import { createServerClient } from '@/lib/db/server'
 import { computeDailyReport } from '@/lib/reports/compute-daily-report'
-import { sendEmail } from '@/lib/email/send'
-import { DailyReportEmail } from '@/lib/email/templates/daily-report'
-import type { DailyReportContent } from '@/lib/reports/types'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { runMonitoredCronJob } from '@/lib/cron/monitor'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
+import { DAILY_REPORT_EMAIL_REPAIR_KIND } from '@/lib/monitoring/failure-repair'
+import { sendDailyReportEmailDelivery } from '@/lib/reports/daily-report-delivery'
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
+const DAILY_REPORT_EMAILS_ENABLED =
+  String(process.env.ENABLE_DAILY_REPORT_EMAILS ?? '')
+    .trim()
+    .toLowerCase() === 'true'
 
 export async function GET(request: Request) {
   const authError = verifyCronAuth(request.headers.get('authorization'))
@@ -39,6 +40,10 @@ export async function GET(request: Request) {
       let sent = 0
       let failed = 0
 
+      if (!DAILY_REPORT_EMAILS_ENABLED) {
+        console.info('[daily-report-cron] Email delivery disabled; generating reports only')
+      }
+
       for (const chef of chefs) {
         try {
           const content = await computeDailyReport(db, chef.id, today)
@@ -53,46 +58,71 @@ export async function GET(request: Request) {
             { onConflict: 'tenant_id,report_date' }
           )
 
-          if (!chef.auth_user_id) continue
-          const { data: authUser } = await db.auth.admin.getUserById(chef.auth_user_id)
-          if (!authUser?.user?.email) continue
+          if (!DAILY_REPORT_EMAILS_ENABLED) continue
 
-          const chefName = chef.business_name || 'Chef'
-          const emailSent = await sendEmail({
-            to: authUser.user.email,
-            subject: `Daily Report - ${new Date(today + 'T00:00:00Z').toLocaleDateString('en-US', {
-              weekday: 'long',
-              month: 'long',
-              day: 'numeric',
-            })}`,
-            react: createElement(DailyReportEmail, {
-              chefName,
+          try {
+            const delivery = await sendDailyReportEmailDelivery({
+              tenantId: chef.id,
               reportDate: today,
               content,
-              reportUrl: `${APP_URL}/analytics/daily-report`,
-            }),
-          })
+            })
 
-          if (emailSent) {
-            await db
+            if (!delivery.emailSent) continue
+
+            const emailedAt = new Date().toISOString()
+            const { error: markSentError } = await db
               .from('daily_reports')
-              .update({ email_sent_at: new Date().toISOString() })
+              .update({ email_sent_at: emailedAt })
               .eq('tenant_id', chef.id)
               .eq('report_date', today)
+
+            if (markSentError) {
+              await recordSideEffectFailure({
+                source: 'cron:daily-report',
+                operation: 'mark_daily_report_email_sent',
+                severity: 'high',
+                entityType: 'chef',
+                entityId: chef.id,
+                tenantId: chef.id,
+                errorMessage: markSentError.message,
+                context: { reportDate: today, emailedAt },
+              })
+              failed++
+              continue
+            }
+
             sent++
-          } else {
+          } catch (emailErr) {
+            console.error(`[daily-report-cron] Email failed for chef ${chef.id}:`, emailErr)
+            await recordSideEffectFailure({
+              source: 'cron:daily-report',
+              operation: 'send_daily_report_email',
+              severity: 'medium',
+              entityType: 'chef',
+              entityId: chef.id,
+              tenantId: chef.id,
+              errorMessage: emailErr instanceof Error ? emailErr.message : String(emailErr),
+              context: {
+                repairKind: DAILY_REPORT_EMAIL_REPAIR_KIND,
+                reportDate: today,
+              },
+            })
             failed++
           }
-        } catch (err) {
-          console.error(`[daily-report-cron] Failed for chef ${chef.id}:`, err)
+        } catch (reportErr) {
+          console.error(
+            `[daily-report-cron] Report generation failed for chef ${chef.id}:`,
+            reportErr
+          )
           await recordSideEffectFailure({
             source: 'cron:daily-report',
-            operation: 'send_daily_report',
-            severity: 'medium',
+            operation: 'generate_daily_report',
+            severity: 'high',
             entityType: 'chef',
             entityId: chef.id,
             tenantId: chef.id,
-            errorMessage: err instanceof Error ? err.message : String(err),
+            errorMessage: reportErr instanceof Error ? reportErr.message : String(reportErr),
+            context: { reportDate: today },
           })
           failed++
         }
@@ -102,6 +132,7 @@ export async function GET(request: Request) {
         success: true,
         date: today,
         chefs: chefs.length,
+        emailsEnabled: DAILY_REPORT_EMAILS_ENABLED,
         sent,
         failed,
       }

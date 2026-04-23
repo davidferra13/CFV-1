@@ -118,8 +118,8 @@ export function PublicHeader() {
           : 'border-transparent bg-transparent'
       }`}
     >
-      <nav className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-8">
+      <nav className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-5 sm:gap-8">
           <Link href="/" className="flex items-center gap-2.5">
             <AppLogo size={36} className="shadow-sm" />
             <span className="text-base font-display tracking-tight text-stone-100">ChefFlow</span>
@@ -178,14 +178,14 @@ export function PublicHeader() {
             href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
             analyticsName="header_mobile_book_a_chef_quick"
             analyticsProps={{ section: 'public_header_mobile' }}
-            className="inline-flex min-h-[44px] items-center justify-center rounded-lg border border-brand-700/50 bg-brand-950/50 px-3 text-xs-tight font-semibold uppercase tracking-[0.08em] text-brand-200 touch-manipulation"
+            className="inline-flex min-h-[40px] items-center justify-center rounded-xl border border-brand-700/50 bg-brand-950/50 px-2.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-200 touch-manipulation"
           >
             Book
           </TrackedLink>
           <button
             type="button"
             onClick={() => setMobileMenuOpen((open) => !open)}
-            className="flex items-center justify-center w-11 h-11 rounded-lg text-muted-soft hover:bg-stone-700 touch-manipulation"
+            className="flex h-10 w-10 items-center justify-center rounded-xl text-muted-soft hover:bg-stone-700 touch-manipulation"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}

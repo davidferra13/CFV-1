@@ -1,0 +1,154 @@
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3316
+  - Network:      http://0.0.0.0:3316
+  - Environments: .env.local, .env
+  - Experiments (use with caution):
+    · instrumentationHook
+
+ ✓ Starting...
+   
+Your tsconfig.json extends another configuration, which means we cannot add the Next.js TypeScript plugin automatically. To improve your development experience, we recommend adding the Next.js plugin (`"plugins": [{ "name": "next" }]`) manually to your TypeScript configuration. Learn more: https://nextjs.org/docs/app/building-your-application/configuring/typescript#the-typescript-plugin
+
+
+   We detected TypeScript in your project and reconfigured your tsconfig.json file for you. Strict-mode is set to false by default.
+   The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:
+
+   	- include was updated to add '.next-dev-playwright-3316/types/**/*.ts'
+
+   Using tsconfig file: tsconfig.next.json
+ ○ Compiling /instrumentation ...
+ ✓ Compiled /instrumentation in 9.1s (1135 modules)
+[instrumentation] Background job startup disabled for E2E.
+ ✓ Ready in 13.7s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 4.4s (1392 modules)
+ ○ Compiling /auth/signin ...
+ ✓ Compiled /auth/signin in 21.9s (3325 modules)
+ ✓ Compiled in 2.7s (675 modules)
+ GET /auth/signin?redirect=%2Ftasks 200 in 188ms
+ ✓ Compiled in 216ms (661 modules)
+ GET /auth/signin?redirect=%2Ftasks 200 in 123ms
+ ○ Compiling /api/e2e/auth ...
+ ✓ Compiled /api/e2e/auth in 4.4s (2725 modules)
+ POST /api/e2e/auth 200 in 8438ms
+ ○ Compiling /tasks ...
+ ✓ Compiled /tasks in 40.5s (14994 modules)
+ GET /tasks 200 in 42998ms
+ ○ Compiling /api/realtime/presence ...
+ ✓ Compiled /api/realtime/presence in 12.5s (10774 modules)
+ ✓ Compiled (10782 modules)
+ GET /api/ai/health 401 in 16812ms
+ GET /api/ai/health 401 in 16810ms
+ GET /api/ai/health 401 in 16702ms
+ GET /api/health 200 in 17474ms
+ GET /api/health 200 in 17482ms
+ POST /api/realtime/presence 200 in 17529ms
+ GET /api/ai/health 401 in 435ms
+ POST /api/realtime/presence 200 in 492ms
+ POST /api/realtime/presence 200 in 570ms
+ POST /api/realtime/presence 200 in 571ms
+ ○ Compiling /api/realtime/[channel] ...
+ ✓ Compiled /api/realtime/[channel] in 2.8s (10784 modules)
+ ✓ Compiled (10786 modules)
+ POST /api/activity/breadcrumbs 200 in 8564ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 8970ms
+ POST /tasks 200 in 8879ms
+ POST /tasks 200 in 560ms
+ POST /tasks 200 in 372ms
+ POST /tasks 200 in 361ms
+ POST /tasks 200 in 468ms
+ POST /tasks 200 in 486ms
+ POST /tasks 200 in 381ms
+ POST /tasks 200 in 762ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 177ms
+ GET /api/health 200 in 211ms
+ GET /api/ai/health 401 in 218ms
+ POST /api/realtime/presence 200 in 273ms
+ POST /tasks 200 in 205ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 148ms
+ POST /tasks 200 in 157ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 175ms
+ POST /tasks 200 in 172ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 157ms
+ POST /tasks 200 in 548ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 241ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 318ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 5020ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 194ms
+ GET /api/ai/health 401 in 350ms
+ GET /api/ai/health 401 in 473ms
+ POST /api/realtime/presence 200 in 490ms
+ GET /api/health 200 in 510ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 235ms
+ POST /tasks 200 in 491ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 370ms
+ POST /tasks 200 in 227ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 179ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 253ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 215ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 186ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 166ms
+ POST /tasks 200 in 435ms
+ GET /api/ai/health 401 in 17316ms
+ GET /api/health 200 in 17644ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 18724ms
+ POST /api/realtime/presence 200 in 431ms
+ GET /tasks?_rsc=hm8yn 200 in 19204ms
+ GET /api/realtime/notifications%3A435d1e04-e512-44c1-8c99-1eaa69bbb155 200 in 92060ms
+ GET /tasks 200 in 19349ms
+ GET /api/ai/health 401 in 267ms
+ GET /api/ai/health 401 in 501ms
+ GET /api/health 200 in 636ms
+ GET /api/health 200 in 579ms
+ GET /api/ai/health 401 in 644ms
+ POST /api/realtime/presence 200 in 713ms
+ POST /api/realtime/presence 200 in 699ms
+ GET /api/ai/health 401 in 427ms
+ POST /api/realtime/presence 200 in 524ms
+ POST /api/realtime/presence 200 in 463ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 189ms
+ POST /api/activity/breadcrumbs 200 in 125ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 191ms
+ POST /tasks 200 in 466ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 305ms
+ POST /tasks 200 in 355ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 252ms
+ POST /tasks 200 in 226ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 380ms
+ POST /tasks 200 in 443ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 369ms
+ POST /tasks 200 in 443ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 276ms
+ POST /tasks 200 in 298ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 257ms
+ POST /tasks 200 in 240ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 242ms
+ POST /tasks 200 in 253ms
+ GET /api/health 200 in 275ms
+ GET /api/ai/health 401 in 315ms
+ POST /api/realtime/presence 200 in 320ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 263ms
+ POST /tasks 200 in 318ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 154ms
+ POST /tasks 200 in 298ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 183ms
+ POST /tasks 200 in 230ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 286ms
+ POST /tasks 200 in 358ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 120ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 130ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 115ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 137ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 266ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 140ms
+ GET /api/ai/health 401 in 302ms
+ GET /api/health 200 in 395ms
+ GET /api/ai/health 401 in 348ms
+ POST /api/realtime/presence 200 in 380ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 178ms
+ POST /tasks 200 in 265ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 163ms
+ POST /tasks 200 in 456ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 126ms
+ GET /api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97 403 in 130ms
+ GET /api/realtime/notifications%3A435d1e04-e512-44c1-8c99-1eaa69bbb155 200 in 72023ms

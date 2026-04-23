@@ -3,20 +3,13 @@
 // Task Form - Create or edit a task
 // Fields: title, description, assignee, station, due date, due time, priority, notes, recurring rule
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { RecurringTaskConfig } from './recurring-task-config'
-import {
-  createTask,
-  updateTask,
-  type CreateTaskInput,
-  type UpdateTaskInput,
-  type Task,
-  type RecurringRule,
-} from '@/lib/tasks/actions'
+import { updateTask, type Task, type RecurringRule } from '@/lib/tasks/actions'
 
 type StaffOption = { id: string; name: string; role: string }
 type StationOption = { id: string; name: string }
@@ -36,10 +29,15 @@ const PRIORITY_OPTIONS = [
   { value: 'urgent', label: 'Urgent' },
 ]
 
-export function TaskForm({ task, staff, stations, defaultDate, onDone }: Props) {
+export function TaskForm({
+  task,
+  staff,
+  stations,
+  defaultDate,
+  onDone,
+}: Props) {
   const router = useRouter()
-  const isEditing = !!task
-
+  const isEditing = Boolean(task)
   const [form, setForm] = useState({
     title: task?.title ?? '',
     description: task?.description ?? '',
@@ -59,76 +57,43 @@ export function TaskForm({ task, staff, stations, defaultDate, onDone }: Props) 
   const [recurringRule, setRecurringRule] = useState<RecurringRule | null>(
     task?.recurring_rule ?? null
   )
-  const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
 
   function update(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    setSaving(true)
     setError(null)
 
-    try {
-      if (isEditing) {
-        const input: UpdateTaskInput = {
-          title: form.title,
-          description: form.description || null,
-          assigned_to: form.assigned_to || null,
-          station_id: form.station_id || null,
-          due_date: form.due_date,
-          due_time: form.due_time || null,
-          priority: form.priority as CreateTaskInput['priority'],
-          notes: form.notes || null,
-          recurring_rule: recurringRule,
-        }
-        await updateTask(task!.id, input)
-      } else {
-        const input: CreateTaskInput = {
-          title: form.title,
-          description: form.description || undefined,
-          assigned_to: form.assigned_to || null,
-          station_id: form.station_id || null,
-          due_date: form.due_date,
-          due_time: form.due_time || null,
-          priority: form.priority as CreateTaskInput['priority'],
-          notes: form.notes || undefined,
-          recurring_rule: recurringRule,
-        }
-        await createTask(input)
-      }
+    const formData = new FormData(e.currentTarget)
 
-      router.refresh()
-      onDone?.()
+    startTransition(async () => {
+      try {
+        await updateTask(task!.id, formData)
 
-      // Reset form if creating new
-      if (!isEditing) {
-        setForm({
-          title: '',
-          description: '',
-          assigned_to: '',
-          station_id: '',
-          due_date: form.due_date,
-          due_time: '',
-          priority: 'medium',
-          notes: '',
-        })
-        setRecurringRule(null)
+        router.refresh()
+        onDone?.()
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Save failed')
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Save failed')
-    } finally {
-      setSaving(false)
-    }
+    })
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      <input
+        type="hidden"
+        name="recurring_rule"
+        value={recurringRule ? JSON.stringify(recurringRule) : ''}
+      />
+
       {/* Title */}
       <div>
         <Input
+          name="title"
           label="Title"
           value={form.title}
           onChange={(e) => update('title', e.target.value)}
@@ -140,6 +105,7 @@ export function TaskForm({ task, staff, stations, defaultDate, onDone }: Props) 
       {/* Description */}
       <div>
         <Textarea
+          name="description"
           label="Description"
           value={form.description}
           onChange={(e) => update('description', e.target.value)}
@@ -153,6 +119,7 @@ export function TaskForm({ task, staff, stations, defaultDate, onDone }: Props) 
         <div>
           <label className="block text-sm font-medium text-stone-300 mb-1.5">Assign to</label>
           <select
+            name="assigned_to"
             value={form.assigned_to}
             onChange={(e) => update('assigned_to', e.target.value)}
             className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
@@ -169,6 +136,7 @@ export function TaskForm({ task, staff, stations, defaultDate, onDone }: Props) 
         <div>
           <label className="block text-sm font-medium text-stone-300 mb-1.5">Station</label>
           <select
+            name="station_id"
             value={form.station_id}
             onChange={(e) => update('station_id', e.target.value)}
             className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
@@ -187,6 +155,7 @@ export function TaskForm({ task, staff, stations, defaultDate, onDone }: Props) 
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Input
+            name="due_date"
             label="Due date"
             type="date"
             value={form.due_date}
@@ -197,6 +166,7 @@ export function TaskForm({ task, staff, stations, defaultDate, onDone }: Props) 
 
         <div>
           <Input
+            name="due_time"
             label="Due time"
             type="time"
             value={form.due_time}
@@ -209,6 +179,7 @@ export function TaskForm({ task, staff, stations, defaultDate, onDone }: Props) 
       <div>
         <label className="block text-sm font-medium text-stone-300 mb-1.5">Priority</label>
         <select
+          name="priority"
           value={form.priority}
           onChange={(e) => update('priority', e.target.value)}
           className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
@@ -224,6 +195,7 @@ export function TaskForm({ task, staff, stations, defaultDate, onDone }: Props) 
       {/* Notes */}
       <div>
         <Textarea
+          name="notes"
           label="Notes"
           value={form.notes}
           onChange={(e) => update('notes', e.target.value)}
@@ -236,15 +208,19 @@ export function TaskForm({ task, staff, stations, defaultDate, onDone }: Props) 
       <RecurringTaskConfig value={recurringRule} onChange={setRecurringRule} />
 
       {/* Error */}
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && (
+        <p role="alert" className="text-sm text-red-500">
+          {error}
+        </p>
+      )}
 
       {/* Actions */}
       <div className="flex gap-2">
-        <Button type="submit" disabled={saving}>
-          {saving ? 'Saving...' : isEditing ? 'Update Task' : 'Create Task'}
+        <Button type="submit" disabled={isPending}>
+          {isPending ? 'Saving...' : isEditing ? 'Update Task' : 'Save Task'}
         </Button>
         {onDone && (
-          <Button type="button" variant="ghost" onClick={onDone}>
+          <Button type="button" variant="ghost" onClick={onDone} disabled={isPending}>
             Cancel
           </Button>
         )}

@@ -422,12 +422,16 @@ export async function recordClientView(contractId: string) {
 
   const { data: contract } = await db
     .from('event_contracts')
-    .select('id, status, client_id, event_id')
+    .select('id, status, client_id, event_id, events(status)')
     .eq('id', contractId)
     .eq('client_id', user.entityId)
     .single()
 
   if (!contract) throw new Error('Contract not found')
+  const eventStatus = (contract as any).events?.status ?? null
+  if (eventStatus === 'draft' || eventStatus === 'proposed') {
+    return
+  }
   if (contract.status === 'sent') {
     await db
       .from('event_contracts')
@@ -449,12 +453,16 @@ export async function signContract(input: SignContractInput) {
 
   const { data: contract } = await db
     .from('event_contracts')
-    .select('id, status, event_id')
+    .select('id, status, event_id, events(status)')
     .eq('id', validated.contract_id)
     .eq('client_id', user.entityId)
     .single()
 
   if (!contract) throw new Error('Contract not found')
+  const eventStatus = (contract as any).events?.status ?? null
+  if (eventStatus === 'draft' || eventStatus === 'proposed') {
+    throw new Error('Accept the proposal before signing the contract')
+  }
   if (contract.status === 'signed') throw new Error('Already signed')
   if (contract.status === 'voided') throw new Error('Contract voided - contact your chef')
   if (!['sent', 'viewed'].includes(contract.status)) {

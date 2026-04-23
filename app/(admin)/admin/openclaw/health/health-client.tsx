@@ -53,21 +53,62 @@ function QuarantineTable({ items }: { items: QuarantinedPrice[] }) {
   const [rows, setRows] = useState(items)
   const [isPending, startTransition] = useTransition()
   const [bulkPending, setBulkPending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const unreviewed = rows.filter((r) => !r.reviewed)
 
-  async function handleReview(id: number, action: 'approved' | 'rejected') {
+  async function handleReview(input: {
+    id: number
+    action: 'approved' | 'rejected' | 'corrected'
+    correctedPriceCents?: number
+  }) {
+    setError(null)
     const prev = [...rows]
-    setRows(rows.map((r) => (r.id === id ? { ...r, reviewed: true, reviewed_action: action } : r)))
+    setRows(
+      rows.map((r) =>
+        r.id === input.id
+          ? {
+              ...r,
+              reviewed: true,
+              reviewed_action: input.action,
+              price_cents: input.correctedPriceCents ?? r.price_cents,
+            }
+          : r
+      )
+    )
     startTransition(async () => {
       try {
-        const result = await reviewQuarantinedPrice(id, action)
+        const result = await reviewQuarantinedPrice(input)
         if (!result.success) {
           setRows(prev)
+          setError(result.error ?? 'Failed to apply quarantine review.')
         }
       } catch {
         setRows(prev)
+        setError('Failed to apply quarantine review.')
       }
+    })
+  }
+
+  function handleCorrect(row: QuarantinedPrice) {
+    const defaultValue =
+      row.price_cents != null && Number.isFinite(row.price_cents)
+        ? (row.price_cents / 100).toFixed(2)
+        : ''
+    const nextValue = window.prompt('Corrected price in dollars', defaultValue)
+    if (nextValue === null) return
+
+    const normalized = nextValue.trim().replace(/^\$/, '')
+    const correctedDollars = Number(normalized)
+    if (!Number.isFinite(correctedDollars) || correctedDollars <= 0) {
+      setError('Corrected price must be a positive dollar amount.')
+      return
+    }
+
+    handleReview({
+      id: row.id,
+      action: 'corrected',
+      correctedPriceCents: Math.round(correctedDollars * 100),
     })
   }
 
@@ -110,6 +151,11 @@ function QuarantineTable({ items }: { items: QuarantinedPrice[] }) {
           >
             {bulkPending ? 'Processing...' : 'Reject All'}
           </button>
+        </div>
+      )}
+      {error && (
+        <div className="border-b border-stone-800 px-4 py-3 text-sm text-amber-300">
+          {error}
         </div>
       )}
       <div className="overflow-x-auto">
@@ -155,26 +201,56 @@ function QuarantineTable({ items }: { items: QuarantinedPrice[] }) {
                 <td className="px-4 py-2">
                   {row.reviewed ? (
                     <span
-                      className={`text-xs ${row.reviewed_action === 'approved' ? 'text-emerald-400' : 'text-red-400'}`}
+                      className={`text-xs ${
+                        row.reviewed_action === 'approved'
+                          ? 'text-emerald-400'
+                          : row.reviewed_action === 'corrected'
+                            ? 'text-amber-300'
+                            : 'text-red-400'
+                      }`}
                     >
                       {row.reviewed_action}
                     </span>
                   ) : (
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => handleReview(row.id, 'approved')}
-                        disabled={isPending}
-                        className="text-xs px-2 py-1 rounded bg-emerald-900/50 text-emerald-300 hover:bg-emerald-900 transition"
-                      >
-                        Accept
-                      </button>
-                      <button
-                        onClick={() => handleReview(row.id, 'rejected')}
-                        disabled={isPending}
-                        className="text-xs px-2 py-1 rounded bg-red-900/50 text-red-300 hover:bg-red-900 transition"
-                      >
-                        Reject
-                      </button>
+                    <div className="flex flex-col gap-2">
+                      {!row.writeback_ready && (
+                        <span className="text-[11px] text-amber-400">
+                          Legacy row: reject only until a fresh sync regenerates review context.
+                        </span>
+                      )}
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => handleReview({ id: row.id, action: 'approved' })}
+                          disabled={isPending || !row.writeback_ready}
+                          title={
+                            row.writeback_ready
+                              ? 'Write this quarantined price into authoritative price history.'
+                              : 'Legacy quarantine rows cannot be approved safely.'
+                          }
+                          className="text-xs px-2 py-1 rounded bg-emerald-900/50 text-emerald-300 hover:bg-emerald-900 transition disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          Accept
+                        </button>
+                        <button
+                          onClick={() => handleCorrect(row)}
+                          disabled={isPending || !row.writeback_ready}
+                          title={
+                            row.writeback_ready
+                              ? 'Correct the price before writing it back into authoritative history.'
+                              : 'Legacy quarantine rows cannot be corrected safely.'
+                          }
+                          className="text-xs px-2 py-1 rounded bg-amber-900/50 text-amber-300 hover:bg-amber-900 transition disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          Correct
+                        </button>
+                        <button
+                          onClick={() => handleReview({ id: row.id, action: 'rejected' })}
+                          disabled={isPending}
+                          className="text-xs px-2 py-1 rounded bg-red-900/50 text-red-300 hover:bg-red-900 transition"
+                        >
+                          Reject
+                        </button>
+                      </div>
                     </div>
                   )}
                 </td>

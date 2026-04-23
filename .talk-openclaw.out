@@ -1,0 +1,166 @@
+{
+  "runId": "talk-openclaw-1776648589",
+  "status": "ok",
+  "summary": "completed",
+  "result": {
+    "payloads": [
+      {
+        "text": "Hey David. How can I help you?",
+        "mediaUrl": null
+      }
+    ],
+    "meta": {
+      "durationMs": 56151,
+      "agentMeta": {
+        "sessionId": "7fd91036-347a-4543-ba6c-e5ce05b6aa1f",
+        "provider": "ollama",
+        "model": "gemma4:e4b",
+        "usage": {
+          "input": 3397,
+          "output": 103,
+          "total": 3500
+        },
+        "lastCallUsage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        },
+        "compactionCount": 1
+      },
+      "aborted": false,
+      "systemPromptReport": {
+        "source": "run",
+        "generatedAt": 1776648611445,
+        "sessionId": "7fd91036-347a-4543-ba6c-e5ce05b6aa1f",
+        "sessionKey": "agent:gemma:direct:latency-1776648586",
+        "provider": "ollama",
+        "model": "gemma4:e4b",
+        "workspaceDir": "/home/davidferra/.openclaw/sandboxes/agent-gemma-0750f9aa",
+        "bootstrapMaxChars": 20000,
+        "bootstrapTotalMaxChars": 150000,
+        "bootstrapTruncation": {
+          "warningMode": "once",
+          "warningShown": false,
+          "truncatedFiles": 0,
+          "nearLimitFiles": 0,
+          "totalNearLimit": false
+        },
+        "sandbox": {
+          "mode": "all",
+          "sandboxed": true
+        },
+        "systemPrompt": {
+          "chars": 12276,
+          "projectContextChars": 1902,
+          "nonProjectContextChars": 10374
+        },
+        "injectedWorkspaceFiles": [
+          {
+            "name": "AGENTS.md",
+            "path": "/home/davidferra/.openclaw/sandboxes/agent-gemma-0750f9aa/AGENTS.md",
+            "missing": false,
+            "rawChars": 248,
+            "injectedChars": 248,
+            "truncated": false
+          },
+          {
+            "name": "SOUL.md",
+            "path": "/home/davidferra/.openclaw/sandboxes/agent-gemma-0750f9aa/SOUL.md",
+            "missing": false,
+            "rawChars": 352,
+            "injectedChars": 352,
+            "truncated": false
+          },
+          {
+            "name": "TOOLS.md",
+            "path": "/home/davidferra/.openclaw/sandboxes/agent-gemma-0750f9aa/TOOLS.md",
+            "missing": false,
+            "rawChars": 129,
+            "injectedChars": 129,
+            "truncated": false
+          },
+          {
+            "name": "IDENTITY.md",
+            "path": "/home/davidferra/.openclaw/sandboxes/agent-gemma-0750f9aa/IDENTITY.md",
+            "missing": false,
+            "rawChars": 141,
+            "injectedChars": 141,
+            "truncated": false
+          },
+          {
+            "name": "USER.md",
+            "path": "/home/davidferra/.openclaw/sandboxes/agent-gemma-0750f9aa/USER.md",
+            "missing": false,
+            "rawChars": 150,
+            "injectedChars": 150,
+            "truncated": false
+          },
+          {
+            "name": "HEARTBEAT.md",
+            "path": "/home/davidferra/.openclaw/sandboxes/agent-gemma-0750f9aa/HEARTBEAT.md",
+            "missing": false,
+            "rawChars": 59,
+            "injectedChars": 59,
+            "truncated": false
+          },
+          {
+            "name": "BOOTSTRAP.md",
+            "path": "/home/davidferra/.openclaw/sandboxes/agent-gemma-0750f9aa/BOOTSTRAP.md",
+            "missing": true,
+            "rawChars": 0,
+            "injectedChars": 93,
+            "truncated": false
+          }
+        ],
+        "skills": {
+          "promptChars": 3292,
+          "entries": [
+            {
+              "name": "prose",
+              "blockChars": 308
+            },
+            {
+              "name": "discord",
+              "blockChars": 206
+            },
+            {
+              "name": "healthcheck",
+              "blockChars": 482
+            },
+            {
+              "name": "node-connect",
+              "blockChars": 532
+            },
+            {
+              "name": "skill-creator",
+              "blockChars": 750
+            },
+            {
+              "name": "video-frames",
+              "blockChars": 220
+            },
+            {
+              "name": "weather",
+              "blockChars": 407
+            }
+          ]
+        },
+        "tools": {
+          "listChars": 185,
+          "schemaChars": 89,
+          "entries": [
+            {
+              "name": "session_status",
+              "summaryChars": 207,
+              "schemaChars": 89,
+              "propertiesCount": 2
+            }
+          ]
+        }
+      },
+      "stopReason": "stop"
+    }
+  }
+}

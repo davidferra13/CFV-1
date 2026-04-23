@@ -7,7 +7,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
 import { z } from 'zod'
 import { validateEmailLocal, suggestEmailCorrection } from '@/lib/email/email-validator'
-import { checkRateLimit } from '@/lib/rateLimit'
+import { PUBLIC_INTAKE_JSON_BODY_MAX_BYTES } from '@/lib/api/request-body'
+import { guardPublicIntent } from '@/lib/security/public-intent-guard'
+import { PUBLIC_INTAKE_LANE_KEYS, withSubmissionSource } from '@/lib/public/intake-lane-config'
 
 // ── CORS headers for cross-origin embeds ──
 const corsHeaders = {
@@ -54,20 +56,47 @@ export async function OPTIONS() {
 
 // ── Main submission handler ──
 export async function POST(request: NextRequest) {
-  // Rate limit by IP: 10 submissions per 5 minutes (uses Upstash Redis when configured)
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-  const host = request.headers.get('host') || undefined
   try {
-    await checkRateLimit(`embed-inquiry:${ip}`, 10, 5 * 60_000)
-  } catch {
-    return NextResponse.json(
-      { error: 'Too many submissions. Please try again later.' },
-      { status: 429, headers: corsHeaders }
-    )
-  }
+    const guard = await guardPublicIntent<Record<string, unknown>>({
+      action: 'embed-inquiry',
+      request,
+      body: {
+        maxBytes: PUBLIC_INTAKE_JSON_BODY_MAX_BYTES,
+        invalidJsonMessage: 'Invalid inquiry request body',
+        payloadTooLargeMessage: 'Inquiry request body is too large',
+      },
+      rateLimit: {
+        ip: {
+          keyPrefix: 'embed-inquiry:ip',
+          max: 10,
+          windowMs: 5 * 60_000,
+          message: 'Too many submissions. Please try again later.',
+        },
+        email: {
+          keyPrefix: 'embed-inquiry:email',
+          max: 3,
+          windowMs: 60 * 60_000,
+          message: 'Too many submissions from this email. Please try again later.',
+          getValue: (body) => body?.email,
+        },
+      },
+      honeypot: { field: 'website_url' },
+    })
+    if (!guard.ok) {
+      if (guard.error.code === 'honeypot') {
+        return NextResponse.json(
+          { success: true, message: 'Inquiry submitted successfully.' },
+          { status: 200, headers: corsHeaders }
+        )
+      }
+      return NextResponse.json(
+        { error: guard.error.message },
+        { status: guard.error.status, headers: corsHeaders }
+      )
+    }
 
-  try {
-    const body = await request.json()
+    const body = guard.body
+    const ip = guard.metadata.ip
 
     // Validate input
     const parseResult = EmbedInquirySchema.safeParse(body)
@@ -81,29 +110,10 @@ export async function POST(request: NextRequest) {
 
     const data = parseResult.data
 
-    // F2 fix: Email-based rate limit (prevents same email flooding across IPs)
-    try {
-      await checkRateLimit(`embed-inquiry-email:${data.email.toLowerCase().trim()}`, 3, 60 * 60_000)
-    } catch {
-      return NextResponse.json(
-        { error: 'Too many submissions from this email. Please try again later.' },
-        { status: 429, headers: corsHeaders }
-      )
-    }
-
     // Strip HTML tags from all free-text fields to prevent stored XSS.
     // These fields come from unauthenticated external users and are stored in
     // the database, so they must be sanitized before any DB insertion.
     const stripHtml = (s: string) => s.replace(/<[^>]*>/g, '').trim()
-
-    // Honeypot check - bots fill hidden fields
-    if (data.website_url && data.website_url.length > 0) {
-      // Silently accept but don't create anything (don't reveal bot detection)
-      return NextResponse.json(
-        { success: true, message: 'Inquiry submitted successfully.' },
-        { status: 200, headers: corsHeaders }
-      )
-    }
 
     // Email validation (local-only - no external API call during form submission)
     try {
@@ -277,7 +287,7 @@ export async function POST(request: NextRequest) {
         confirmed_service_expectations: `Serve time ${data.serve_time.trim()}. Chef will arrive 2hr prior.`,
         confirmed_dietary_restrictions: allergiesList,
         source_message: sourceMessage,
-        unknown_fields: {
+        unknown_fields: withSubmissionSource(PUBLIC_INTAKE_LANE_KEYS.embed_inquiry, {
           embed_source: true,
           address: data.address?.trim() || null,
           serve_time: data.serve_time.trim(),
@@ -289,7 +299,7 @@ export async function POST(request: NextRequest) {
           allergies_food_restrictions: data.allergies_food_restrictions?.trim() || null,
           additional_notes: data.additional_notes?.trim() || null,
           referrer_ip: ip,
-        },
+        }),
         status: 'new',
         utm_source: data.utm_source?.trim() || null,
         utm_medium: data.utm_medium?.trim() || null,

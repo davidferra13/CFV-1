@@ -1,5 +1,7 @@
 // Daily Report Type Definitions
 
+import type { DerivedOutputProvenance } from '@/lib/analytics/source-provenance'
+
 export type DailyReportEvent = {
   eventId: string
   occasion: string | null
@@ -103,6 +105,7 @@ export type DailyReportContent = {
 
   // Metadata
   generatedAt: string
+  provenance?: DerivedOutputProvenance
 
   // AI-generated narrative summary (non-blocking, may be null if AI unavailable)
   aiNarrative?: string | null

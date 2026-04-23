@@ -1,20 +1,16 @@
-// LLM Router - Single-Endpoint Routing for Ollama-compatible runtime
+// LLM Router - local-first routing for Ollama-compatible runtime endpoints
 // No 'use server' - pure utility, importable anywhere server-side.
-//
-// Routes all AI tasks to the configured Ollama-compatible endpoint.
-// Cloud endpoint in production (OLLAMA_BASE_URL env var). Local dev falls back to localhost.
 
-import { getOllamaConfig, getModelForEndpoint } from './providers'
+import { getAiRuntimePolicy } from './dispatch/routing-table'
+import { resolveAiDispatch } from './dispatch/router'
+import type { AiExecutionLocation } from './dispatch/types'
 import type { LlmEndpoint } from './queue/types'
 import { AI_PRIORITY } from './queue/types'
 import { reportHealthDegraded } from '../incidents/reporter'
 
-// ============================================
-// ENDPOINT TYPES
-// ============================================
-
 export interface OllamaEndpoint {
-  name: 'pc'
+  name: 'local' | 'cloud'
+  location: AiExecutionLocation
   url: string
   healthy: boolean
   lastCheckedAt: Date | null
@@ -24,13 +20,15 @@ export interface OllamaEndpoint {
 interface RouterState {
   endpoints: OllamaEndpoint[]
   lastHealthCheck: Date | null
-  /** Minimum 30s between health checks. Fast enough to detect recovery quickly. */
   healthCheckCooldownMs: number
 }
 
-// ============================================
-// SINGLETON STATE
-// ============================================
+export interface RouteTaskHints {
+  taskType?: string
+  payload?: Record<string, unknown>
+  modelTier?: 'fast' | 'standard' | 'complex'
+  surface?: string
+}
 
 const state: RouterState = {
   endpoints: [],
@@ -38,85 +36,101 @@ const state: RouterState = {
   healthCheckCooldownMs: 30_000,
 }
 
-// ============================================
-// PUBLIC API
-// ============================================
-
-/**
- * Returns the configured Ollama-compatible endpoint with current health status.
- * Runs health check if stale (>60s since last check).
- */
 export async function getEndpoints(): Promise<OllamaEndpoint[]> {
   await refreshIfStale()
   return [...state.endpoints]
 }
 
-/**
- * Picks the primary endpoint for a task.
- * Kept for API compatibility with callers that use routing logic.
- */
 export async function routeTask(
   _preferredEndpoint: LlmEndpoint = 'auto',
-  _priority: number = AI_PRIORITY.SCHEDULED
-): Promise<{ url: string; endpointName: 'pc' }> {
+  priority: number = AI_PRIORITY.SCHEDULED,
+  hints?: RouteTaskHints
+): Promise<{
+  url: string
+  endpointName: 'local' | 'cloud'
+  executionLocation: AiExecutionLocation
+  model: string
+}> {
   await refreshIfStale()
 
-  const pc = state.endpoints.find((e) => e.name === 'pc')
-  if (pc?.healthy) {
-    return { url: pc.url, endpointName: 'pc' }
+  const decision = resolveAiDispatch({
+    taskType: hints?.taskType,
+    modelTier: hints?.modelTier ?? 'standard',
+    surface: hints?.surface ?? 'queue.worker',
+    source: priority >= AI_PRIORITY.ON_DEMAND ? 'queue.on_demand' : 'queue.background',
+    metadata: hints?.payload,
+    latencySensitive: priority >= AI_PRIORITY.ON_DEMAND,
+    confidence:
+      typeof hints?.payload?._aiConfidence === 'number'
+        ? (hints.payload._aiConfidence as number)
+        : null,
+  })
+
+  const preferredLocation = decision.endpoint?.location ?? decision.runtimePolicy.defaultLocation
+  const healthyEndpoint =
+    state.endpoints.find((endpoint) => endpoint.location === preferredLocation && endpoint.healthy) ??
+    state.endpoints.find((endpoint) => endpoint.healthy) ??
+    null
+
+  const routedEndpoint = healthyEndpoint ?? decision.endpoint
+  if (routedEndpoint) {
+    const routedUrl = 'url' in routedEndpoint ? routedEndpoint.url : routedEndpoint.baseUrl
+    const routedModel = decision.model ?? ('model' in routedEndpoint ? routedEndpoint.model : null)
+
+    return {
+      url: routedUrl,
+      endpointName: routedEndpoint.location,
+      executionLocation: routedEndpoint.location,
+      model: routedModel ?? 'gemma4',
+    }
   }
 
-  // PC unhealthy - return URL anyway and let the caller handle the error
-  const defaultUrl = getOllamaConfig().baseUrl
-  return { url: defaultUrl, endpointName: 'pc' }
+  const policy = getAiRuntimePolicy()
+  const fallbackLocation = policy.defaultLocation
+  const fallback =
+    policy.endpoints.find((endpoint) => endpoint.location === fallbackLocation) ?? policy.endpoints[0]
+
+  return {
+    url: fallback.baseUrl,
+    endpointName: fallback.location,
+    executionLocation: fallback.location,
+    model: decision.model ?? fallback.model,
+  }
 }
 
-/**
- * Route a Remy chat request. Returns full endpoint config or null if unavailable.
- * Convenience wrapper around routeTask() for the Remy streaming route.
- */
 export async function routeForRemy(): Promise<{
   host: string
   model: string
-  endpointName: 'pc'
+  endpointName: 'local' | 'cloud'
 } | null> {
   const healthy = await isAnyEndpointHealthy()
   if (!healthy) return null
 
-  const { url } = await routeTask('auto', AI_PRIORITY.ON_DEMAND)
+  const routed = await routeTask('auto', AI_PRIORITY.ON_DEMAND, {
+    taskType: 'remy.chat',
+    modelTier: 'standard',
+    surface: 'remy.stream',
+  })
 
   return {
-    host: url,
-    // Standard tier for Remy - Gemma 4 is fast enough that standard has no latency penalty.
-    model: getModelForEndpoint('pc', 'standard'),
-    endpointName: 'pc',
+    host: routed.url,
+    model: routed.model,
+    endpointName: routed.endpointName,
   }
 }
 
-/**
- * Force a fresh health check on the primary endpoint. Call this after
- * configuration changes or when you suspect it recovered.
- */
 export async function forceHealthCheck(): Promise<OllamaEndpoint[]> {
   await checkAllEndpoints()
   return [...state.endpoints]
 }
 
-/**
- * Returns true if the configured Ollama-compatible endpoint is healthy.
- */
 export async function isAnyEndpointHealthy(): Promise<boolean> {
   await refreshIfStale()
-  return state.endpoints.some((e) => e.healthy)
+  return state.endpoints.some((endpoint) => endpoint.healthy)
 }
-
-// ============================================
-// INTERNAL
-// ============================================
 
 async function refreshIfStale(): Promise<void> {
   if (state.endpoints.length === 0) {
-    // First call - discover and check endpoints
     await checkAllEndpoints()
     return
   }
@@ -129,35 +143,40 @@ async function refreshIfStale(): Promise<void> {
 }
 
 async function checkAllEndpoints(): Promise<void> {
-  const endpoints: OllamaEndpoint[] = []
+  const policy = getAiRuntimePolicy()
+  const enabled = policy.endpoints.filter((endpoint) => endpoint.enabled)
 
-  // PC endpoint (always configured)
-  const pcUrl = getOllamaConfig().baseUrl
-  const pcHealth = await pingEndpoint(pcUrl)
-  endpoints.push({
-    name: 'pc',
-    url: pcUrl,
-    healthy: pcHealth.healthy,
-    lastCheckedAt: new Date(),
-    latencyMs: pcHealth.latencyMs,
-  })
+  const endpointsToCheck = enabled.length > 0 ? enabled : policy.endpoints.slice(0, 1)
+  const checks = await Promise.all(
+    endpointsToCheck.map(async (endpoint) => {
+      const health = await pingEndpoint(endpoint.baseUrl)
+      return {
+        name: endpoint.name,
+        location: endpoint.location,
+        url: endpoint.baseUrl,
+        healthy: health.healthy,
+        lastCheckedAt: new Date(),
+        latencyMs: health.latencyMs,
+      } satisfies OllamaEndpoint
+    })
+  )
 
-  state.endpoints = endpoints
+  state.endpoints = checks
   state.lastHealthCheck = new Date()
 
-  // Report if primary endpoint is down
-  const pcEp = endpoints.find((e) => e.name === 'pc')
-  if (pcEp && !pcEp.healthy && shouldReportHealth()) {
+  const degraded = checks.find(
+    (endpoint) => endpoint.location === policy.defaultLocation && !endpoint.healthy
+  )
+  if (degraded && shouldReportHealth()) {
     reportHealthDegraded({
       pcHealthy: false,
-      pcLatencyMs: pcEp.latencyMs,
+      pcLatencyMs: degraded.latencyMs,
     })
   }
 }
 
-/** Throttle health incident reports - max one every 10 minutes per state change */
 let lastHealthReportAt = 0
-const HEALTH_REPORT_COOLDOWN_MS = 600_000 // 10 minutes
+const HEALTH_REPORT_COOLDOWN_MS = 600_000
 
 function shouldReportHealth(): boolean {
   const now = Date.now()

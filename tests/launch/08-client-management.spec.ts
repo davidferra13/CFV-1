@@ -9,8 +9,7 @@ test.describe('Client Directory', () => {
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
     expect(bodyText).not.toMatch(/500|internal server error/i)
-    // Should show client names (seed has Alice, Bob, Carol, Dave)
-    const hasClients = /alice|bob|carol|dave|client/i.test(bodyText)
+    const hasClients = /joy|bob|carol|dave|client/i.test(bodyText)
     expect(hasClients).toBeTruthy()
   })
 
@@ -23,10 +22,10 @@ test.describe('Client Directory', () => {
       .or(page.getByPlaceholder(/search|find/i).first())
       .or(page.locator('input[type="search"]').first())
     if (await searchInput.isVisible().catch(() => false)) {
-      await searchInput.fill('Alice')
+      await searchInput.fill('Joy')
       await page.waitForTimeout(1000) // Wait for filter
       const bodyText = await page.locator('body').innerText()
-      expect(bodyText).toMatch(/alice/i)
+      expect(bodyText).toMatch(/joy/i)
     }
   })
 
@@ -56,8 +55,7 @@ test.describe('Client Detail', () => {
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
     expect(bodyText).not.toMatch(/500|internal server error/i)
-    // Should show client name (Alice)
-    expect(bodyText).toMatch(/alice|e2e|client/i)
+    expect(bodyText).toMatch(/joy|north & pine|client/i)
   })
 
   test('client detail shows contact and event info', async ({ page, seedIds }) => {

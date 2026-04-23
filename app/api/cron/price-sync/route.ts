@@ -20,7 +20,7 @@ export async function GET(request: Request) {
       const { syncCartridgeInternal } = await import('@/lib/openclaw/sync-receiver')
       const syncResult = await syncCartridgeInternal('price-intel')
 
-      const { getOpenClawStatsInternal } = await import('@/lib/openclaw/sync')
+      const { getOpenClawStatsInternal } = await import('@/lib/openclaw/pi-stats')
       const stats = await getOpenClawStatsInternal()
 
       return {

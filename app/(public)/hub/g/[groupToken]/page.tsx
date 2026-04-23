@@ -9,6 +9,7 @@ import { getGroupAvailability } from '@/lib/hub/availability-actions'
 import { getMealBoard } from '@/lib/hub/meal-board-actions'
 import { getCriticalPathForGuest } from '@/lib/lifecycle/critical-path'
 import { getLifecycleProgressForClient } from '@/lib/lifecycle/actions'
+import { getCircleChefProofData } from '@/lib/hub/circle-chef-proof'
 import { HubGroupView } from './hub-group-view'
 import { HubBridgeView } from '@/components/hub/hub-bridge-view'
 import { CircleArchiveView } from '@/components/hub/circle-archive-view'
@@ -78,6 +79,7 @@ export default async function HubGroupPage({ params }: Props) {
     mealBoardEntries,
     guestStatus,
     lifecycleClient,
+    chefProof,
   ] = await Promise.all([
     getGroupMembers(group.id).catch(() => []),
     getGroupNotes(group.id).catch(() => []),
@@ -92,6 +94,12 @@ export default async function HubGroupPage({ params }: Props) {
     group.group_type === 'community'
       ? Promise.resolve(null)
       : getLifecycleProgressForClient(groupToken).catch(() => null),
+    group.group_type === 'community' || !group.tenant_id
+      ? Promise.resolve(null)
+      : getCircleChefProofData({
+          groupId: group.id,
+          tenantId: group.tenant_id,
+        }).catch(() => null),
   ])
 
   // Branch: bridge groups get the slim intro view, not the full Dinner Circle
@@ -127,6 +135,7 @@ export default async function HubGroupPage({ params }: Props) {
       guestStatus={guestStatus}
       lifecycleStages={lifecycleClient?.stages || []}
       linkedEventId={groupEvents[0]?.event_id ?? null}
+      chefProof={chefProof}
     />
   )
 }

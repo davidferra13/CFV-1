@@ -1,21 +1,27 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { getChefPreferences } from '@/lib/chef/actions'
-import { PrimaryNavForm } from '@/components/settings/primary-nav-form'
 import { MobileTabForm } from '@/components/settings/mobile-tab-form'
 import { ArchetypePicker } from '@/components/settings/archetype-picker'
 import { getChefArchetype, hasCustomNavDefault } from '@/lib/archetypes/actions'
+import { getChefLayoutData } from '@/lib/chef/layout-cache'
+import { getCachedIsPrivileged } from '@/lib/chef/layout-data-cache'
+import { DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
+import { ShellDiagnosticsCard } from '@/components/settings/shell-diagnostics-card'
 
 export const metadata: Metadata = { title: 'Navigation Settings' }
 
 export default async function NavigationSettingsPage() {
-  await requireChef()
-  const [preferences, currentArchetype, hasCustom] = await Promise.all([
-    getChefPreferences(),
+  const user = await requireChef()
+  const [layoutData, currentArchetype, hasCustom, isPrivileged] = await Promise.all([
+    getChefLayoutData(user.entityId),
     getChefArchetype(),
     hasCustomNavDefault(),
+    getCachedIsPrivileged(user.id).catch(() => false),
   ])
+  const enabledModules =
+    layoutData.enabled_modules.length > 0 ? layoutData.enabled_modules : DEFAULT_ENABLED_MODULES
+  const privilegedBypassEnabled = isPrivileged || process.env.DEMO_MODE_ENABLED === 'true'
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -23,8 +29,8 @@ export default async function NavigationSettingsPage() {
         <div>
           <h1 className="text-3xl font-bold text-stone-100">Navigation Settings</h1>
           <p className="mt-1 text-stone-400">
-            Customize your sidebar and mobile bottom tabs without changing the underlying feature
-            set.
+            Review chef shell behavior and customize mobile bottom tabs without changing access,
+            billing, or enabled modules.
           </p>
         </div>
         <Link
@@ -40,11 +46,24 @@ export default async function NavigationSettingsPage() {
         <ArchetypePicker currentArchetype={currentArchetype} hasCustomDefault={hasCustom} />
       </div>
 
-      {/* Desktop sidebar customization */}
-      <PrimaryNavForm initialPrimaryNavHrefs={preferences.primary_nav_hrefs ?? []} />
+      <div className="rounded-xl border border-stone-700 bg-stone-900/50 p-6">
+        <h2 className="text-lg font-semibold text-stone-100">Desktop Sidebar</h2>
+        <p className="mt-2 text-sm text-stone-400">
+          Desktop quick actions, grouped sections, and ordering stay fixed so the outer chef shell
+          feels stable across routes. Focus Mode, permissions, billing, and enabled modules still
+          control what appears.
+        </p>
+      </div>
+
+      <ShellDiagnosticsCard
+        focusMode={layoutData.focus_mode}
+        privilegedBypassEnabled={privilegedBypassEnabled}
+        enabledModuleCount={enabledModules.length}
+        savedMobileTabHrefs={layoutData.mobile_tab_hrefs}
+      />
 
       {/* Mobile bottom tab customization */}
-      <MobileTabForm initialMobileTabHrefs={(preferences as any).mobile_tab_hrefs ?? []} />
+      <MobileTabForm initialMobileTabHrefs={layoutData.mobile_tab_hrefs} />
     </div>
   )
 }

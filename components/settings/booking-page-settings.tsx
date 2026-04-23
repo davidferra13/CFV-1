@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Alert } from '@/components/ui/alert'
 import { Card } from '@/components/ui/card'
 import { upsertBookingSettings, type BookingSettings } from '@/lib/booking/booking-settings-actions'
+import { NEUTRAL_BOOKING_PAGE_HEADLINE_EXAMPLE } from '@/lib/site/national-brand-copy'
 
 type Props = {
   initialSettings: BookingSettings
@@ -150,7 +151,7 @@ export function BookingPageSettings({ initialSettings }: Props) {
 
           <Input
             label="Headline"
-            placeholder="Private chef for intimate gatherings in San Francisco"
+            placeholder={NEUTRAL_BOOKING_PAGE_HEADLINE_EXAMPLE}
             value={headline}
             onChange={(e) => setHeadline(e.target.value)}
             helperText="Shown below your name on the booking page"

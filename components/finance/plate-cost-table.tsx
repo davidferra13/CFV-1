@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { Fragment, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
@@ -99,10 +99,10 @@ export function PlateCostTable({ summary }: PlateCostTableProps) {
           >
             {summary.avgMarginPercent.toFixed(1)}%
           </p>
-          <p className="text-xs text-stone-500 mt-1 flex items-center gap-1">
+          <div className="text-xs text-stone-500 mt-1 flex items-center gap-1">
             Avg Margin
             <CostingHelpPopover topic="contribution_margin" />
-          </p>
+          </div>
         </Card>
         <Card className="p-4">
           <p className="text-2xl font-bold text-stone-100">{summary.totalEvents}</p>
@@ -187,9 +187,8 @@ export function PlateCostTable({ summary }: PlateCostTableProps) {
                 const rating = getMarginRating(row.marginPercent)
                 const isExpanded = expandedEvent === row.eventId
                 return (
-                  <>
+                  <Fragment key={row.eventId}>
                     <tr
-                      key={row.eventId}
                       className="border-b border-stone-800 hover:bg-stone-800/50 cursor-pointer"
                       onClick={() => setExpandedEvent(isExpanded ? null : row.eventId)}
                     >
@@ -226,7 +225,7 @@ export function PlateCostTable({ summary }: PlateCostTableProps) {
                       </td>
                     </tr>
                     {isExpanded && row.breakdown.length > 0 && (
-                      <tr key={`${row.eventId}-detail`} className="bg-stone-900/50">
+                      <tr className="bg-stone-900/50">
                         <td colSpan={5} className="px-6 py-3">
                           <p className="text-xs font-semibold text-stone-400 mb-2">
                             Cost Breakdown
@@ -247,7 +246,7 @@ export function PlateCostTable({ summary }: PlateCostTableProps) {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 )
               })}
             </tbody>

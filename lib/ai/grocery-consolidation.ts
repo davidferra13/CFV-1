@@ -18,6 +18,7 @@ import {
   type GroceryConsolidationResult,
   type ConsolidatedIngredient,
 } from '@/lib/formulas/grocery-consolidation'
+import { attachDerivedOutputProvenance } from '@/lib/analytics/source-provenance'
 
 // Re-export types for consumers
 export type { ConsolidatedIngredient, GroceryConsolidationResult }
@@ -89,14 +90,22 @@ export async function consolidateGroceryList(eventId: string): Promise<GroceryCo
   }
 
   if (allIngredients.length === 0) {
-    return {
-      ingredients: [],
-      bySection: {},
-      dietaryFlags: [],
-      shoppingNotes:
-        'No recipes with ingredients found for this event. Add recipes with ingredient lists to generate a grocery list.',
-      generatedAt: new Date().toISOString(),
-    }
+    return attachDerivedOutputProvenance(
+      {
+        ingredients: [],
+        bySection: {},
+        dietaryFlags: [],
+        shoppingNotes:
+          'No recipes with ingredients found for this event. Add recipes with ingredient lists to generate a grocery list.',
+        generatedAt: new Date().toISOString(),
+      },
+      {
+        derivationMethod: 'deterministic',
+        derivationSource: 'consolidateGroceryFormula',
+        inputs: [{ kind: 'event', id: eventId, label: event.occasion ?? 'Private Event' }],
+        moduleId: 'lib/ai/grocery-consolidation.ts',
+      }
+    )
   }
 
   const restrictions = [...(event.dietary_restrictions ?? []), ...(event.allergies ?? [])].filter(
@@ -104,5 +113,15 @@ export async function consolidateGroceryList(eventId: string): Promise<GroceryCo
   )
 
   // Pure formula. No AI. Instant. Free. Consistent.
-  return consolidateGroceryFormula(allIngredients, restrictions)
+  const result = consolidateGroceryFormula(allIngredients, restrictions)
+
+  return attachDerivedOutputProvenance(result, {
+    derivationMethod: 'deterministic',
+    derivationSource: 'consolidateGroceryFormula',
+    inputs: [
+      { kind: 'event', id: eventId, label: event.occasion ?? 'Private Event' },
+      { kind: 'menu', id: eventId, label: `${menuItems.length} menu items` },
+    ],
+    moduleId: 'lib/ai/grocery-consolidation.ts',
+  })
 }

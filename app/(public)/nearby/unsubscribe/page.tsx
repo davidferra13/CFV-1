@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { UnsubscribeForm } from './_components/unsubscribe-form'
 
 export const metadata: Metadata = {
-  title: 'Unsubscribe - Nearby',
+  title: 'Unsubscribe - Nearby Alerts',
   robots: { index: false },
 }
 
@@ -31,9 +31,10 @@ export default function UnsubscribePage({ searchParams }: PageProps) {
   return (
     <div className="min-h-screen bg-stone-950">
       <div className="mx-auto max-w-md px-4 py-20 text-center">
-        <h1 className="text-xl font-bold text-stone-100">Unsubscribe from directory emails</h1>
+        <h1 className="text-xl font-bold text-stone-100">Unsubscribe from Nearby alerts</h1>
         <p className="mt-2 text-sm text-stone-400">
-          We respect your inbox. Click below to stop receiving emails about your directory listing.
+          We respect your inbox. Use this page to stop Nearby saved-search and directory update
+          emails for this address.
         </p>
         <div className="mt-8">
           <UnsubscribeForm initialEmail={email} />

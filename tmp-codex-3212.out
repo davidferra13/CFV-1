@@ -1,0 +1,352 @@
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3212
+  - Network:      http://0.0.0.0:3212
+  - Environments: .env.local, .env
+  - Experiments (use with caution):
+    · instrumentationHook
+
+ ✓ Starting...
+   
+Your tsconfig.json extends another configuration, which means we cannot add the Next.js TypeScript plugin automatically. To improve your development experience, we recommend adding the Next.js plugin (`"plugins": [{ "name": "next" }]`) manually to your TypeScript configuration. Learn more: https://nextjs.org/docs/app/building-your-application/configuring/typescript#the-typescript-plugin
+
+
+   We detected TypeScript in your project and reconfigured your tsconfig.json file for you. Strict-mode is set to false by default.
+   The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:
+
+   	- include was updated to add '.next-dev-playwright-3212-codex/types/**/*.ts'
+
+   Using tsconfig file: tsconfig.next.json
+ ○ Compiling /instrumentation ...
+ ✓ Compiled /instrumentation in 5.1s (1135 modules)
+[instrumentation] Background job startup disabled for E2E.
+ ✓ Ready in 9.3s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 3.5s (1392 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 41.2s (9386 modules)
+ ✓ Compiled in 3.8s (3811 modules)
+ ✓ Compiled in 516ms (3797 modules)
+ GET / 200 in 9697ms
+ ○ Compiling /chefs ...
+ ✓ Compiled /chefs in 4.1s (9471 modules)
+ GET /chefs?locationExperience=outdoor&locationBestFor=retreat 200 in 5056ms
+ ○ Compiling /chef/[slug]/locations/[locationId] ...
+ ✓ Compiled /api/realtime/presence in 21.5s (12786 modules)
+ POST /api/realtime/presence 200 in 24559ms
+ POST /api/realtime/presence 200 in 24558ms
+ POST /api/realtime/presence 200 in 24572ms
+ POST /api/realtime/presence 200 in 24589ms
+ GET /chefs?locationExperience=outdoor&locationBestFor=retreat&_rsc=v69qm 200 in 344ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 28408ms
+ ✓ Compiled in 2.4s (3821 modules)
+ ✓ Compiled in 3.2s (3821 modules)
+ ✓ Compiled in 2.2s (3821 modules)
+ ✓ Compiled in 2.4s (3821 modules)
+ ✓ Compiled in 1577ms (3821 modules)
+ GET /chefs?locationExperience=outdoor&locationBestFor=retreat 200 in 118ms
+ POST /api/realtime/presence 200 in 99ms
+ POST /api/realtime/presence 200 in 173ms
+ POST /api/realtime/presence 200 in 170ms
+ POST /api/realtime/presence 200 in 165ms
+ ○ Compiling /chef/[slug]/locations/[locationId]/book ...
+ ✓ Compiled /chef/[slug]/locations/[locationId]/book in 1623ms (5907 modules)
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/book 307 in 2907ms
+ ○ Compiling /chef/[slug]/locations/[locationId] ...
+ ✓ Compiled /chef/[slug]/locations/[locationId] in 2.8s (12768 modules)
+ GET /chefs?locationExperience=outdoor&locationBestFor=retreat&_rsc=v69qm 200 in 171ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 3805ms
+ POST /api/realtime/presence 200 in 350ms
+ POST /api/realtime/presence 200 in 404ms
+ POST /api/realtime/presence 200 in 406ms
+ POST /api/realtime/presence 200 in 406ms
+ ○ Compiling /chef/[slug]/locations/[locationId]/inquire ...
+ ✓ Compiled /chef/[slug]/locations/[locationId]/inquire in 1438ms (8949 modules)
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/inquire 307 in 151ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/book 307 in 162ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/inquire 307 in 103ms
+ ✓ Compiled in 1713ms (3821 modules)
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/inquire 307 in 100ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/inquire 307 in 91ms
+ ✓ Compiled in 1923ms (3821 modules)
+ ✓ Compiled in 5.2s (12766 modules)
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/inquire 307 in 354ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/inquire 307 in 91ms
+ ○ Compiling /chef/[slug]/inquire ...
+ GET /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 500 in 25302ms
+ ✓ Compiled /_error in 2.9s (8979 modules)
+ GET /chefs?locationExperience=outdoor&locationBestFor=retreat 200 in 2813ms
+ ○ Compiling /api/realtime/presence ...
+ ✓ Compiled /api/realtime/presence in 11s (13343 modules)
+ POST /api/realtime/presence 200 in 11710ms
+ POST /api/realtime/presence 200 in 11712ms
+ POST /api/realtime/presence 200 in 11714ms
+ POST /api/realtime/presence 200 in 11717ms
+ GET /chefs?locationExperience=outdoor&locationBestFor=retreat&_rsc=v69qm 200 in 292ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/book 307 in 12115ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 745ms
+ POST /api/realtime/presence 200 in 254ms
+ POST /api/realtime/presence 200 in 256ms
+ POST /api/realtime/presence 200 in 207ms
+ POST /api/realtime/presence 200 in 210ms
+ ○ Compiling /chef/[slug]/locations/[locationId]/inquire ...
+ ✓ Compiled /chef/[slug]/locations/[locationId]/inquire in 2.2s (8989 modules)
+ ○ Compiling /chef/[slug]/inquire ...
+ GET /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 500 in 125ms
+ ✓ Compiled /_error in 2.2s (4357 modules)
+ GET /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 500 in 179ms
+ ✓ Compiled in 2.5s (4357 modules)
+ GET /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 500 in 170ms
+ GET /_next/static/webpack/ee050c6001fe3615.webpack.hot-update.json 500 in 3806ms
+ GET /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 500 in 132ms
+ ✓ Compiled in 3.3s (9506 modules)
+ ✓ Compiled in 1ms (9506 modules)
+ ✓ Compiled in 0ms (9506 modules)
+ ✓ Compiled in 1ms (9506 modules)
+ GET /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 5812ms
+ GET /_next/static/webpack/ee050c6001fe3615.webpack.hot-update.json 404 in 8880ms
+ GET /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 7848ms
+ ○ Compiling /api/realtime/presence ...
+ ✓ Compiled /api/realtime/presence in 2.4s (9511 modules)
+ GET /chefs?locationExperience=outdoor&locationBestFor=retreat 200 in 449ms
+ POST /api/realtime/presence 200 in 233ms
+ POST /api/realtime/presence 200 in 323ms
+ POST /api/realtime/presence 200 in 298ms
+ POST /api/realtime/presence 200 in 308ms
+ ○ Compiling /chef/[slug]/locations/[locationId]/book ...
+ ✓ Compiled /chef/[slug]/locations/[locationId]/book in 10.1s (8988 modules)
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/book 307 in 13299ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 935ms
+ POST /api/realtime/presence 200 in 314ms
+ POST /api/realtime/presence 200 in 485ms
+ POST /api/realtime/presence 200 in 487ms
+ POST /api/realtime/presence 200 in 441ms
+ ○ Compiling /chef/[slug]/locations/[locationId]/inquire ...
+ ✓ Compiled /chef/[slug]/locations/[locationId]/inquire in 2.3s (8990 modules)
+ ○ Compiling /chef/[slug]/inquire ...
+ ✓ Compiled /chef/[slug]/inquire in 1964ms (9515 modules)
+ GET /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 5067ms
+ POST /api/realtime/presence 200 in 316ms
+ GET /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352&_rsc=gwolw 200 in 562ms
+ POST /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 792ms
+[sendEmail] Sent: "[IMPORTANT] Public Inquiry Submitted" → 2 recipient(s)
+[sendEmail] Sent: "Harbor & Hearth received your inquiry" → 1 recipient(s)
+[sendEmail] Sent: "New inquiry from Codex Validation Guest" → 1 recipient(s)
+ POST /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 1891ms
+ ✓ Compiled in 5.5s (9505 modules)
+ ✓ Compiled in 2.2s (9505 modules)
+ GET /chefs?locationExperience=outdoor&locationBestFor=retreat 200 in 753ms
+ ○ Compiling /chef/[slug]/locations/[locationId]/book ...
+ ✓ Compiled /chef/[slug]/locations/[locationId]/book in 1980ms (9510 modules)
+ ✓ Compiled in 0ms (9513 modules)
+ ✓ Compiled in 1ms (9513 modules)
+ ✓ Compiled in 1ms (9513 modules)
+ POST /api/realtime/presence 200 in 8972ms
+ POST /api/realtime/presence 200 in 8947ms
+ POST /api/realtime/presence 200 in 9001ms
+ POST /api/realtime/presence 200 in 9003ms
+ GET /chefs?locationExperience=outdoor&locationBestFor=retreat&_rsc=v69qm 200 in 7949ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/book 307 in 10694ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 910ms
+ ○ Compiling /chef/[slug]/locations/[locationId]/inquire ...
+ ✓ Compiled /chef/[slug]/locations/[locationId]/inquire in 14.1s (13872 modules)
+ POST /api/realtime/presence 200 in 13804ms
+ POST /api/realtime/presence 200 in 13801ms
+ POST /api/realtime/presence 200 in 13793ms
+ POST /api/realtime/presence 200 in 13849ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/inquire 307 in 15302ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352?_rsc=1gkow 200 in 1275ms
+ GET /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 857ms
+ POST /api/realtime/presence 200 in 321ms
+ POST /api/realtime/presence 200 in 322ms
+ POST /api/realtime/presence 200 in 243ms
+ POST /api/realtime/presence 200 in 245ms
+ POST /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 633ms
+[sendEmail] Sent: "[IMPORTANT] Public Inquiry Submitted" → 2 recipient(s)
+[sendEmail] Sent: "Harbor & Hearth received your inquiry" → 1 recipient(s)
+[sendEmail] Sent: "New inquiry from Codex Validation Guest" → 1 recipient(s)
+ POST /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 2235ms
+ ✓ Compiled in 13.6s (13862 modules)
+ GET /chefs?locationExperience=outdoor&locationBestFor=retreat 200 in 6161ms
+ ○ Compiling /chef/[slug]/locations/[locationId]/book ...
+ ✓ Compiled /chef/[slug]/locations/[locationId]/book in 2.2s (9510 modules)
+ ✓ Compiled in 6ms (9513 modules)
+ ✓ Compiled in 1ms (9513 modules)
+ ✓ Compiled in 1ms (9513 modules)
+ POST /api/realtime/presence 200 in 10801ms
+ POST /api/realtime/presence 200 in 10766ms
+ POST /api/realtime/presence 200 in 10845ms
+ POST /api/realtime/presence 200 in 10847ms
+ GET /chefs?locationExperience=outdoor&locationBestFor=retreat&_rsc=v69qm 200 in 10447ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/book 307 in 12725ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 1057ms
+ POST /api/realtime/presence 200 in 352ms
+ POST /api/realtime/presence 200 in 355ms
+ POST /api/realtime/presence 200 in 344ms
+ POST /api/realtime/presence 200 in 346ms
+ ○ Compiling /chef/[slug]/locations/[locationId]/inquire ...
+ ✓ Compiled /chef/[slug]/locations/[locationId]/inquire in 7.4s (9515 modules)
+ GET /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 851ms
+ POST /api/realtime/presence 200 in 317ms
+ GET /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352&_rsc=gwolw 200 in 630ms
+ POST /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 834ms
+[sendEmail] Sent: "[IMPORTANT] Public Inquiry Submitted" → 2 recipient(s)
+[sendEmail] Sent: "Harbor & Hearth received your inquiry" → 1 recipient(s)
+[sendEmail] Sent: "New inquiry from Codex Validation Guest" → 1 recipient(s)
+ POST /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 1845ms
+ GET /chefs?locationExperience=outdoor&locationBestFor=retreat 200 in 558ms
+ POST /api/realtime/presence 200 in 324ms
+ POST /api/realtime/presence 200 in 325ms
+ POST /api/realtime/presence 200 in 310ms
+ POST /api/realtime/presence 200 in 276ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/book 307 in 273ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 489ms
+ POST /api/realtime/presence 200 in 451ms
+ POST /api/realtime/presence 200 in 449ms
+ POST /api/realtime/presence 200 in 438ms
+ POST /api/realtime/presence 200 in 441ms
+ GET /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 238ms
+ POST /api/realtime/presence 200 in 420ms
+ GET /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352&_rsc=gwolw 200 in 558ms
+ POST /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 282ms
+[sendEmail] Sent: "[IMPORTANT] Public Inquiry Submitted" → 2 recipient(s)
+[sendEmail] Sent: "Harbor & Hearth received your inquiry" → 1 recipient(s)
+[sendEmail] Sent: "New inquiry from Codex Validation Guest" → 1 recipient(s)
+ POST /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 1531ms
+ ○ Compiling / ...
+ ✓ Compiled / in 7.4s (9535 modules)
+ GET / 200 in 8414ms
+ ○ Compiling /api/e2e/auth ...
+ ✓ Compiled /api/e2e/auth in 2.8s (9537 modules)
+ ✓ Compiled (9540 modules)
+ POST /api/realtime/presence 200 in 10063ms
+ POST /api/realtime/presence 200 in 10068ms
+ POST /api/realtime/presence 200 in 10071ms
+ POST /api/realtime/presence 200 in 10077ms
+ POST /api/e2e/auth 200 in 10625ms
+ ○ Compiling /partner/locations/[id] ...
+ GET /api/storage/public/chef-profile-images/bd72cf97-a0e5-4fe4-b049-0706ac81d100/1774734757311-ef0fd70e-4692-400d-af0c-4e5c83c441a4.jpg 200 in 11509ms
+ ✓ Compiled /partner/locations/[id] in 18.2s (13979 modules)
+ POST /api/realtime/presence 200 in 12851ms
+ POST /api/realtime/presence 200 in 561ms
+ GET /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352&_rsc=1ol1e 200 in 1443ms
+ ○ Compiling /partner/dashboard ...
+ GET /partner/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 21693ms
+ ✓ Compiled /partner/dashboard in 5.7s (13970 modules)
+ ○ Compiling /api/monitoring/report-error ...
+ ✓ Compiled /api/monitoring/report-error in 3.3s (9623 modules)
+ POST /api/realtime/presence 200 in 7484ms
+ POST /api/realtime/presence 200 in 7490ms
+ POST /api/realtime/presence 200 in 7524ms
+ POST /api/realtime/presence 200 in 7529ms
+[sendEmail] Sent: "[CRITICAL] Client Error Reported" → 2 recipient(s)
+[sendEmail] Sent: "[CRITICAL] Client Error Reported" → 2 recipient(s)
+ POST /api/monitoring/report-error 200 in 7617ms
+ POST /api/monitoring/report-error 200 in 7620ms
+ POST /api/realtime/presence 200 in 8681ms
+ POST /api/realtime/presence 200 in 380ms
+ POST /api/realtime/presence 200 in 286ms
+ ✓ Compiled in 20.7s (13979 modules)
+ POST /api/realtime/presence 200 in 4309ms
+ POST /api/realtime/presence 200 in 13055ms
+ GET /partner/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352?_rsc=1vewv 200 in 1149ms
+ GET /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352&_rsc=1ol1e 200 in 1469ms
+ ✓ Compiled in 18.1s (10996 modules)
+ ✓ Compiled in 1ms (9604 modules)
+ ✓ Compiled in 1ms (9604 modules)
+ POST /api/realtime/presence 200 in 23556ms
+ POST /api/realtime/presence 200 in 14582ms
+ ✓ Compiled in 1ms (9604 modules)
+ GET / 200 in 3447ms
+ ○ Compiling /api/e2e/auth ...
+ ✓ Compiled /api/e2e/auth in 35s (13976 modules)
+ POST /api/realtime/presence 200 in 34661ms
+ POST /api/realtime/presence 200 in 34522ms
+ POST /api/realtime/presence 200 in 34537ms
+ POST /api/realtime/presence 200 in 34684ms
+ GET /api/storage/public/chef-profile-images/bd72cf97-a0e5-4fe4-b049-0706ac81d100/1774734757311-ef0fd70e-4692-400d-af0c-4e5c83c441a4.jpg 200 in 36201ms
+ POST /api/e2e/auth 200 in 36498ms
+ POST /api/realtime/presence 200 in 662ms
+ GET /?_rsc=qt7ii 200 in 1241ms
+ GET /partner/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 860ms
+ ✓ Compiled in 5.2s (9610 modules)
+ ✓ Compiled in 3.3s (9610 modules)
+ ✓ Compiled in 3.2s (9610 modules)
+ ✓ Compiled in 12.1s (9599 modules)
+ ✓ Compiled in 3.9s (9599 modules)
+ ✓ Compiled in 5.3s (4366 modules)
+ ✓ Compiled in 4.5s (4366 modules)
+ ✓ Compiled in 4.7s (4366 modules)
+ GET / 200 in 1358ms
+ GET /chefs?locationExperience=outdoor&locationBestFor=retreat 200 in 630ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 1034ms
+ ○ Compiling /api/realtime/presence ...
+ ✓ Compiled /api/realtime/presence in 12.2s (9604 modules)
+ ✓ Compiled in 1ms (9607 modules)
+ ✓ Compiled in 1ms (9607 modules)
+ ✓ Compiled in 1ms (9607 modules)
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/book 307 in 25793ms
+ ✓ Compiled /chef/[slug]/locations/[locationId]/inquire in 0ms (9607 modules)
+ POST /api/realtime/presence 200 in 28989ms
+ POST /api/realtime/presence 200 in 28992ms
+ POST /api/realtime/presence 200 in 28997ms
+ POST /api/realtime/presence 200 in 28999ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352?_rsc=1gkow 200 in 17677ms
+ ✓ Compiled in 2ms (9609 modules)
+ POST /api/realtime/presence 200 in 8776ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/inquire 307 in 14624ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352?_rsc=1gkow 200 in 11366ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352?_rsc=1gkow 200 in 713ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/inquire 307 in 453ms
+ GET /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 1055ms
+ POST /api/realtime/presence 200 in 863ms
+ POST /api/realtime/presence 200 in 1335ms
+ POST /api/realtime/presence 200 in 1308ms
+ POST /api/realtime/presence 200 in 1328ms
+ POST /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 1103ms
+[sendEmail] Sent: "[IMPORTANT] Public Inquiry Submitted" → 2 recipient(s)
+[sendEmail] Sent: "Harbor & Hearth received your inquiry" → 1 recipient(s)
+[sendEmail] Sent: "New inquiry from Codex Location Validation codex-1776885535210" → 1 recipient(s)
+ POST /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 2036ms
+ GET /chefs?locationExperience=outdoor&locationBestFor=retreat 200 in 545ms
+ POST /api/realtime/presence 200 in 872ms
+ POST /api/realtime/presence 200 in 874ms
+ POST /api/realtime/presence 200 in 817ms
+ POST /api/realtime/presence 200 in 820ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 1514ms
+ POST /api/realtime/presence 200 in 904ms
+ POST /api/realtime/presence 200 in 907ms
+ POST /api/realtime/presence 200 in 909ms
+ POST /api/realtime/presence 200 in 912ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/book 307 in 1236ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/inquire 307 in 490ms
+ GET /chef/harbor-hearth-canonical/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352/inquire 307 in 460ms
+ GET /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 650ms
+ POST /api/realtime/presence 200 in 797ms
+ POST /api/realtime/presence 200 in 800ms
+ POST /api/realtime/presence 200 in 774ms
+ POST /api/realtime/presence 200 in 776ms
+ POST /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 540ms
+[sendEmail] Sent: "[IMPORTANT] Public Inquiry Submitted" → 2 recipient(s)
+[sendEmail] Sent: "Harbor & Hearth received your inquiry" → 1 recipient(s)
+[sendEmail] Sent: "New inquiry from Codex Location Validation codex-1776885678598" → 1 recipient(s)
+ POST /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 2172ms
+ ○ Compiling /api/e2e/auth ...
+ ✓ Compiled /api/e2e/auth in 11.8s (9612 modules)
+ POST /api/e2e/auth 200 in 15156ms
+ GET /partner/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 1315ms
+ POST /api/realtime/presence 200 in 674ms
+ POST /api/realtime/presence 200 in 678ms
+ POST /api/realtime/presence 200 in 657ms
+ POST /api/realtime/presence 200 in 659ms
+ POST /partner/locations/a8459b2a-fbc7-4c71-b96f-004bfbf00352 200 in 572ms
+ ○ Compiling /partner/preview ...
+ ✓ Compiled /partner/preview in 13.2s (13983 modules)
+ POST /api/realtime/presence 200 in 4692ms
+ GET /chef/harbor-hearth-canonical/inquire?ref=47d77f08-b7af-40fa-bb21-8c6d3461ca26&loc=a8459b2a-fbc7-4c71-b96f-004bfbf00352&_rsc=1ol1e 200 in 1604ms
+ GET /partner/preview 200 in 16125ms
+ POST /api/realtime/presence 200 in 711ms
+ POST /api/realtime/presence 200 in 715ms
+ POST /api/realtime/presence 200 in 717ms
+ POST /api/realtime/presence 200 in 720ms
+ POST /api/e2e/auth 200 in 939ms
+ ○ Compiling /partners/[id] ...

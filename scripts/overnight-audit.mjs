@@ -56,6 +56,7 @@ let serverProcess = null;
 const TEST_SUITES = [
   'smoke',
   'coverage-public', 'coverage-chef', 'coverage-client', 'coverage-admin',
+  'coverage-staff', 'coverage-partner',
   'coverage-auth-boundaries', 'coverage-api',
   'interactions-chef', 'interactions-admin', 'interactions-client', 'interactions-public',
   'isolation-tests',

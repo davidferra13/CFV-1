@@ -11,10 +11,12 @@ import { fetchPackingListData } from '@/lib/documents/generate-packing-list'
 import { getPackingStatus } from '@/lib/packing/actions'
 import { getEventWeather, type EventWeather } from '@/lib/weather/open-meteo'
 import { PackingListClient } from '@/components/events/packing-list-client'
+import { ServiceSimulationReturnBanner } from '@/components/events/service-simulation-return-banner'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { format, parseISO } from 'date-fns'
 import { dateToDateString } from '@/lib/utils/format'
+import { sanitizeReturnTo } from '@/lib/navigation/return-to'
 
 /**
  * Fetch weather for the event - non-blocking, returns null on any failure.
@@ -39,8 +41,16 @@ async function fetchEventWeather(eventId: string, tenantId: string): Promise<Eve
   }
 }
 
-export default async function PackPage({ params }: { params: { id: string } }) {
+export default async function PackPage({
+  params,
+  searchParams,
+}: {
+  params: { id: string }
+  searchParams?: { returnTo?: string }
+}) {
   const user = await requireChef()
+  const returnTo = sanitizeReturnTo(searchParams?.returnTo)
+  const backHref = returnTo ?? `/events/${params.id}`
 
   const [packingData, packingStatus, weather] = await Promise.all([
     fetchPackingListData(params.id),
@@ -60,11 +70,13 @@ export default async function PackPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+      <ServiceSimulationReturnBanner returnTo={returnTo} />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <Link
-            href={`/events/${params.id}`}
+            href={backHref}
             className="text-sm text-stone-500 hover:text-stone-300 mb-1 block"
           >
             ← Back to event

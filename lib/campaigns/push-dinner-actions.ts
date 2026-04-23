@@ -8,9 +8,9 @@
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
-import { getResendClient, FROM_EMAIL } from '@/lib/email/resend-client'
+import { FROM_EMAIL } from '@/lib/email/resend-client'
+import { getEmailProvider } from '@/lib/email/provider'
 import { CampaignEmail } from '@/lib/email/templates/campaign'
-import { splitName } from '@/lib/marketing/tokens'
 import React from 'react'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
@@ -369,7 +369,7 @@ export async function launchCampaign(campaignId: string): Promise<LaunchResult> 
   let failed = 0
   let skipped = 0
 
-  const resend = process.env.RESEND_API_KEY ? getResendClient() : null
+  const provider = process.env.RESEND_API_KEY ? getEmailProvider() : null
 
   for (const recipient of recipients ?? []) {
     if (!recipient.email) {
@@ -386,7 +386,7 @@ export async function launchCampaign(campaignId: string): Promise<LaunchResult> 
 
     const unsubscribeUrl = `${unsubscribeBase}${recipient.id}`
 
-    if (!resend) {
+    if (!provider) {
       console.log(
         '[push-dinner] RESEND_API_KEY not set - skipping email to recipient',
         recipient.id
@@ -400,12 +400,8 @@ export async function launchCampaign(campaignId: string): Promise<LaunchResult> 
     }
 
     try {
-      const { first } = splitName(
-        // We try to resolve the client name if possible - graceful fallback to email
-        recipient.email.split('@')[0] ?? 'there'
-      )
-
-      const { error: sendError } = await resend.emails.send({
+      await provider.send({
+        kind: 'marketing',
         from: `${chefName} via ChefFlow <${FROM_EMAIL}>`,
         to: recipient.email,
         subject: recipient.draft_subject,
@@ -417,19 +413,11 @@ export async function launchCampaign(campaignId: string): Promise<LaunchResult> 
         }),
       })
 
-      if (sendError) {
-        await db
-          .from('campaign_recipients')
-          .update({ error_message: sendError.message })
-          .eq('id', recipient.id)
-        failed++
-      } else {
-        await db
-          .from('campaign_recipients')
-          .update({ sent_at: new Date().toISOString() })
-          .eq('id', recipient.id)
-        sent++
-      }
+      await db
+        .from('campaign_recipients')
+        .update({ sent_at: new Date().toISOString() })
+        .eq('id', recipient.id)
+      sent++
     } catch (err) {
       await db
         .from('campaign_recipients')

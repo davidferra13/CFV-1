@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { dismissFailure } from '@/lib/monitoring/failure-actions'
+import { useRouter } from 'next/navigation'
+import { dismissFailure, repairSideEffectFailure } from '@/lib/monitoring/failure-actions'
 import type { SideEffectFailure } from '@/lib/monitoring/failure-actions'
+import { getFailureRepairKind, getFailureRepairLabel } from '@/lib/monitoring/failure-repair'
 import { toast } from 'sonner'
 
 const severityColors: Record<string, string> = {
@@ -24,8 +26,10 @@ function timeAgo(dateStr: string): string {
 }
 
 function FailureRow({ failure }: { failure: SideEffectFailure }) {
+  const router = useRouter()
   const [dismissed, setDismissed] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const repairKind = getFailureRepairKind(failure)
 
   if (dismissed) return null
 
@@ -34,10 +38,28 @@ function FailureRow({ failure }: { failure: SideEffectFailure }) {
     setDismissed(true)
     startTransition(async () => {
       try {
-        await dismissFailure(failure.id, 'admin')
+        await dismissFailure(failure.id)
+        router.refresh()
       } catch {
         setDismissed(previous)
         toast.error('Failed to dismiss failure')
+      }
+    })
+  }
+
+  const handleRepair = () => {
+    if (!repairKind) return
+
+    const previous = dismissed
+    setDismissed(true)
+    startTransition(async () => {
+      try {
+        const result = await repairSideEffectFailure(failure.id)
+        toast.success(result.message)
+        router.refresh()
+      } catch (err) {
+        setDismissed(previous)
+        toast.error(err instanceof Error ? err.message : 'Failed to repair failure')
       }
     })
   }
@@ -68,13 +90,24 @@ function FailureRow({ failure }: { failure: SideEffectFailure }) {
           : '-'}
       </td>
       <td className="px-3 py-2">
-        <button
-          onClick={handleDismiss}
-          disabled={isPending}
-          className="text-slate-400 hover:text-stone-300 text-xxs underline disabled:opacity-50"
-        >
-          dismiss
-        </button>
+        <div className="flex items-center gap-3">
+          {repairKind && (
+            <button
+              onClick={handleRepair}
+              disabled={isPending}
+              className="text-emerald-400 hover:text-emerald-300 text-xxs underline disabled:opacity-50"
+            >
+              {getFailureRepairLabel(repairKind).toLowerCase()}
+            </button>
+          )}
+          <button
+            onClick={handleDismiss}
+            disabled={isPending}
+            className="text-slate-400 hover:text-stone-300 text-xxs underline disabled:opacity-50"
+          >
+            dismiss
+          </button>
+        </div>
       </td>
     </tr>
   )
