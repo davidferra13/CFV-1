@@ -15,7 +15,7 @@ test.describe('Clients', () => {
     await page.goto(ROUTES.clients)
     // Wait for streaming Suspense / data fetch to complete
     await page.waitForLoadState('networkidle')
-    await expect(page.getByText('TEST - Alice E2E').first()).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByText('Joy (Test User)').first()).toBeVisible({ timeout: 10_000 })
   })
 
   test('additional test clients appear', async ({ page }) => {
@@ -28,7 +28,7 @@ test.describe('Clients', () => {
     await page.goto(ROUTES.clients)
     await page.waitForLoadState('networkidle')
     // Click the first TEST client link
-    const clientLink = page.getByRole('link').filter({ hasText: 'TEST - Alice E2E' }).first()
+    const clientLink = page.getByRole('link').filter({ hasText: 'Joy (Test User)' }).first()
     await clientLink.click()
     await expect(page).toHaveURL(new RegExp(`/clients/${seedIds.clientIds.primary}`))
   })
@@ -37,15 +37,14 @@ test.describe('Clients', () => {
     await page.goto(`/clients/${seedIds.clientIds.primary}`)
     await expect(page).not.toHaveURL(/auth\/signin/)
     await page.waitForLoadState('networkidle')
-    await expect(page.getByText('TEST - Alice E2E').first()).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByText('Joy (Test User)').first()).toBeVisible({ timeout: 10_000 })
   })
 
   test('client detail has email displayed', async ({ page, seedIds }) => {
     await page.goto(`/clients/${seedIds.clientIds.primary}`)
     await page.waitForLoadState('networkidle')
     // Email should appear somewhere on the detail page
-    const emailText = 'e2e.client.'
-    await expect(page.getByText(emailText, { exact: false }).first()).toBeVisible({
+    await expect(page.getByText(seedIds.clientEmail, { exact: false }).first()).toBeVisible({
       timeout: 10_000,
     })
   })

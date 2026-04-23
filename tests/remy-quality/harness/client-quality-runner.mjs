@@ -67,7 +67,7 @@ function loadClientCredentials() {
   }
   // Fallback to hardcoded e2e client
   return {
-    email: 'e2e.client.20260227@chefflow.test',
+    email: 'emma@northandpine.co',
     password: 'E2eClientTest!2026',
   }
 }

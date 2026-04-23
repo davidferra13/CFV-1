@@ -4,6 +4,25 @@
 
 import { test, expect } from '../helpers/fixtures'
 
+async function gotoEventDetail(
+  page: Parameters<Parameters<typeof test>[1]>[0]['page'],
+  path: string
+) {
+  try {
+    await page.goto(path, { waitUntil: 'commit', timeout: 90_000 })
+  } catch (error) {
+    const message = String(error)
+    const retryable = message.includes('ERR_ABORTED') || message.includes('frame was detached')
+    if (!retryable) throw error
+  }
+
+  await expect(page).toHaveURL(new RegExp(path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), {
+    timeout: 60_000,
+  })
+  await expect(page.locator('body')).toBeVisible({ timeout: 60_000 })
+  await page.waitForTimeout(1_500)
+}
+
 test.describe('Event List', () => {
   test('event list page loads with seed data', async ({ page }) => {
     await page.goto('/events')
@@ -197,5 +216,35 @@ test.describe('Event Transitions — FSM Verification', () => {
     const startVisible = await hasStart.isVisible().catch(() => false)
     // Start should not be directly available on draft
     expect(startVisible).toBeFalsy()
+  })
+})
+
+test.describe('Event Workflow Contract', () => {
+  test('completed event exposes debrief, follow-up, and closure surfaces', async ({
+    page,
+    seedIds,
+  }) => {
+    test.slow()
+    await gotoEventDetail(page, `/events/${seedIds.eventIds.completed}`)
+
+    const trustLoop = page.getByTestId('event-post-event-trust-loop')
+    await expect(trustLoop).toBeVisible()
+    await expect(trustLoop.getByRole('heading', { name: /thank the client/i })).toBeVisible()
+    await expect(trustLoop.getByRole('heading', { name: /capture satisfaction/i })).toBeVisible()
+    await expect(trustLoop.getByRole('heading', { name: /request a public review/i })).toBeVisible()
+    await expect(trustLoop.getByRole('heading', { name: /track repeat intent/i })).toBeVisible()
+
+    const debriefLink = page.getByTestId('event-wrap-debrief-link').first()
+    await expect(debriefLink).toBeVisible()
+    await expect(debriefLink).toHaveAttribute(
+      'href',
+      `/events/${seedIds.eventIds.completed}/debrief`
+    )
+
+    const closure = page.getByTestId('event-post-event-closure')
+    await expect(closure).toBeVisible()
+    await expect(
+      closure.getByRole('link', { name: /open financial summary|view financial summary/i })
+    ).toBeVisible()
   })
 })

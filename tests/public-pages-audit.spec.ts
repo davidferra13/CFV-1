@@ -19,6 +19,7 @@ const pages = [
   { path: '/faq', name: '08-faq' },
   { path: '/contact', name: '09-contact' },
   { path: '/partner-signup', name: '10-partner-signup' },
+  { path: '/for-operators/walkthrough', name: '11-operator-walkthrough' },
 ]
 
 for (const { path: pagePath, name } of pages) {

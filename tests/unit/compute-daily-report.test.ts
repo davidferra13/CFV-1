@@ -384,6 +384,9 @@ test('computeDailyReport aggregates core metrics and mappings', async () => {
   assert.equal(report.clientLoginsYesterday, 1)
   assert.equal(report.highIntentVisits.length, 3)
   assert.equal(report.nextBestActions.length, 2)
+  assert.equal(report.provenance?.contractVersion, 'derived-output.v1')
+  assert.equal(report.provenance?.derivationMethod, 'deterministic')
+  assert.equal(report.provenance?.freshness.asOf, '2026-03-10T23:59:59.000Z')
 })
 
 test('computeDailyReport computes trends, streaks, and schedule conflicts', async () => {

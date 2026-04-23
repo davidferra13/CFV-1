@@ -18,9 +18,16 @@ const PUBLIC_ONLY_PROJECTS = new Set([
   'launch-public',
   'six-pillars', // authenticates via /api/e2e/auth directly, no seed needed
 ])
-const CHEF_ONLY_PROJECTS = new Set(['chef', 'coverage-chef', 'interactions-chef', 'journey-chef'])
+const CHEF_ONLY_PROJECTS = new Set([
+  'chef',
+  'coverage-chef',
+  'coverage-api',
+  'interactions-chef',
+  'journey-chef',
+])
 const CLIENT_ONLY_PROJECTS = new Set(['client', 'coverage-client', 'interactions-client'])
-const STAFF_ONLY_PROJECTS = new Set(['interactions-staff'])
+const STAFF_ONLY_PROJECTS = new Set(['coverage-staff', 'interactions-staff'])
+const PARTNER_ONLY_PROJECTS = new Set(['coverage-partner'])
 const ADMIN_ONLY_PROJECTS = new Set(['coverage-admin', 'interactions-admin', 'launch-admin'])
 
 type RequiredAuthStates = {
@@ -82,6 +89,10 @@ function getRequiredAuthStates(config: FullConfig): RequiredAuthStates {
     }
     if (STAFF_ONLY_PROJECTS.has(projectName)) {
       required.staff = true
+      continue
+    }
+    if (PARTNER_ONLY_PROJECTS.has(projectName)) {
+      required.partner = true
       continue
     }
     if (ADMIN_ONLY_PROJECTS.has(projectName)) {

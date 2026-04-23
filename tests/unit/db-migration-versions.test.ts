@@ -5,7 +5,7 @@ import { join } from 'node:path'
 
 describe('Database migration versions', () => {
   it('has unique numeric version prefixes', () => {
-    const migrationsDir = join(process.cwd(), 'db', 'migrations')
+    const migrationsDir = join(process.cwd(), 'database', 'migrations')
     const files = readdirSync(migrationsDir).filter((name) => name.endsWith('.sql'))
 
     const seen = new Map<string, string>()

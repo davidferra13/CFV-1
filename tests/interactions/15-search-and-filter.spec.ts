@@ -37,7 +37,7 @@ test.describe('Search — Clients', () => {
       .or(page.locator('input[type="search"]').first())
 
     if (await searchInput.isVisible()) {
-      await searchInput.fill('Alice')
+      await searchInput.fill('Joy')
       await page.waitForTimeout(500)
       // The list should update — no crash is the key assertion
       expect(errors).toHaveLength(0)
@@ -56,7 +56,7 @@ test.describe('Search — Clients', () => {
       .or(page.locator('input[type="search"]').first())
 
     if (await searchInput.isVisible()) {
-      await searchInput.fill('Alice')
+      await searchInput.fill('Joy')
       await page.waitForTimeout(400)
       await searchInput.clear()
       await page.waitForTimeout(400)

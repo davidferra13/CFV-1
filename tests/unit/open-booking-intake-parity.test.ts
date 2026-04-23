@@ -17,6 +17,16 @@ test('open booking route parses dietary text once and propagates it through inqu
     /const dietaryRestrictions = parseDietaryRestrictions\(data\.dietary_restrictions\)/
   )
   assert.match(source, /confirmed_dietary_restrictions:\s*dietaryRestrictions/)
+  assert.match(
+    source,
+    /seasonal_intent:\s*PublicSeasonalMarketPulseIntentSchema\.nullable\(\)\.optional\(\)/
+  )
+  assert.match(
+    source,
+    /withSubmissionSource\(\s*PUBLIC_INTAKE_LANE_KEYS\.open_booking,\s*\{\s*open_booking:\s*true,/
+  )
+  assert.match(source, /seasonal_market_intent:\s*seasonalIntent/)
+  assert.match(source, /buildPublicSeasonalMarketPulseSourceMessageLine\(seasonalIntent\)/)
 
   const propagatedArrays =
     source.match(

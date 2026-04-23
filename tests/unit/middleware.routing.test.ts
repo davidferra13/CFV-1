@@ -49,7 +49,13 @@ describe('Route Policy - source of truth coverage', () => {
   })
 
   it('includes expected API bypass namespaces', () => {
-    for (const path of ['/api/remy/client', '/api/remy/stream', '/api/webhooks', '/api/e2e']) {
+    for (const path of [
+      '/api/build-version',
+      '/api/remy/client',
+      '/api/remy/stream',
+      '/api/webhooks',
+      '/api/e2e',
+    ]) {
       assert.equal(API_SKIP_AUTH_PREFIXES.includes(path), true)
     }
   })
@@ -135,6 +141,11 @@ describe('Middleware - public unauthenticated paths', () => {
     assert.equal(isPublicUnauthenticatedPath('/my-events'), false)
     assert.equal(isPublicUnauthenticatedPath('/settings'), false)
   })
+
+  it('restores pathname headers for public route surface classification', () => {
+    const source = fs.readFileSync(path.join(process.cwd(), 'middleware.ts'), 'utf8')
+    assert.equal(source.includes('setPathnameHeader(sanitized, pathname)'), true)
+  })
 })
 
 describe('Middleware - public asset paths', () => {
@@ -155,6 +166,7 @@ describe('Middleware - public asset paths', () => {
 
 describe('Middleware - API skip paths', () => {
   it('skips auth for configured API namespaces', () => {
+    assert.equal(isApiSkipAuthPath('/api/build-version'), true)
     assert.equal(isApiSkipAuthPath('/api/webhooks/stripe'), true)
     assert.equal(isApiSkipAuthPath('/api/e2e/auth'), true)
     assert.equal(isApiSkipAuthPath('/api/remy/client'), true)
@@ -169,7 +181,8 @@ describe('Middleware - API skip paths', () => {
 
   it('matcher excludes key skip-auth API namespaces from edge execution', () => {
     const source = fs.readFileSync(path.join(process.cwd(), 'middleware.ts'), 'utf8')
-    assert.equal(source.includes('api/(?:auth|webhooks|gmail|scheduled'), true)
+    assert.equal(source.includes('api/(?:auth|webhooks|build-version|gmail|scheduled'), true)
+    assert.equal(source.includes('|build-version|'), true)
     assert.equal(source.includes('|health|'), true)
     assert.equal(source.includes('|monitoring|'), true)
     assert.equal(source.includes('|cron|'), true)

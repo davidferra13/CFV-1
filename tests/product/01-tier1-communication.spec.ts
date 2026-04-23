@@ -30,8 +30,8 @@ test.describe('Tier 1B — Inquiry Pipeline', () => {
     await expect(page).not.toHaveURL(/auth\/signin/)
 
     // The inquiry should show the client name or message content
-    const hasAlice = await page
-      .getByText(/Alice/i)
+    const hasJoy = await page
+      .getByText(/Joy/i)
       .first()
       .isVisible()
       .catch(() => false)
@@ -40,7 +40,7 @@ test.describe('Tier 1B — Inquiry Pipeline', () => {
       .first()
       .isVisible()
       .catch(() => false)
-    expect(hasAlice || hasInquiryContent).toBeTruthy()
+    expect(hasJoy || hasInquiryContent).toBeTruthy()
   })
 
   test('1B.3 — inquiry shows status badge', async ({ page, seedIds }) => {

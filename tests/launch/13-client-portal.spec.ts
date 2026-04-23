@@ -73,6 +73,24 @@ test.describe('Client Portal — Event List', () => {
     console.log('[INFO] Date/guest info visible:', hasDateInfo)
   })
 
+  test('shared work graph keeps proposed-event CTAs aligned between my-events and my-bookings', async ({
+    page,
+    seedIds,
+  }) => {
+    const proposalHref = `/my-events/${seedIds.eventIds.proposed}/proposal`
+
+    await goto(page, '/my-events/settings/dashboard')
+    await expect(page.getByRole('heading', { name: 'Dashboard Widgets' })).toBeVisible()
+    await page.getByRole('button', { name: 'Reset to Default' }).click()
+    await saveLayout(page)
+
+    await goto(page, '/my-events')
+    await expect(page.locator(`a[href="${proposalHref}"]`).first()).toBeVisible()
+
+    await goto(page, '/my-bookings?tab=events')
+    await expect(page.locator(`a[href="${proposalHref}"]`).first()).toBeVisible()
+  })
+
   test('dashboard widget preferences persist between settings and my-events', async ({ page }) => {
     await goto(page, '/my-events/settings/dashboard')
     await page.waitForLoadState('domcontentloaded')
@@ -151,7 +169,7 @@ test.describe('Client Portal — Event List', () => {
 
 test.describe('Client Portal - Event Detail', () => {
   test('client can view event detail', async ({ page, seedIds }) => {
-    // Client's events — draft birthday dinner is linked to primary client (Alice)
+    // Client's events — draft birthday dinner is linked to the primary client (Joy)
     await goto(page, `/my-events/${seedIds.eventIds.draft}`)
     await page.waitForLoadState('domcontentloaded')
     const bodyText = await page.locator('body').innerText()
@@ -164,6 +182,14 @@ test.describe('Client Portal - Event Detail', () => {
     await page.waitForLoadState('domcontentloaded')
     const bodyText = await page.locator('body').innerText()
     expect(bodyText).not.toMatch(/500|internal server error/i)
+  })
+
+  test('proposed event detail keeps acceptance on the page instead of bouncing to another route', async ({
+    page,
+    seedIds,
+  }) => {
+    await goto(page, `/my-events/${seedIds.eventIds.proposed}`)
+    await expect(page.getByRole('button', { name: 'Accept This Proposal' })).toBeVisible()
   })
 })
 
@@ -186,6 +212,31 @@ test.describe('Client Portal — Event Sub-Pages', () => {
       expect(status).not.toBe(500)
     })
   }
+
+  test('proposed event proposal page exposes the live accept action in place', async ({
+    page,
+    seedIds,
+  }) => {
+    await goto(page, `/my-events/${seedIds.eventIds.proposed}/proposal`)
+    await expect(page.getByRole('button', { name: 'Accept Proposal' })).toBeVisible()
+    await expect(page.getByText('Agreement ready')).toBeVisible()
+    await expect(page.getByText('Accept the proposal first')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Sign Contract' })).toHaveCount(0)
+    await expect(
+      page.locator(`a[href="/my-events/${seedIds.eventIds.proposed}"]`).filter({
+        hasText: 'Accept Proposal',
+      })
+    ).toHaveCount(0)
+  })
+
+  test('proposed contract route sends the client back to proposal review until acceptance', async ({
+    page,
+    seedIds,
+  }) => {
+    await goto(page, `/my-events/${seedIds.eventIds.proposed}/contract`)
+    await expect(page).toHaveURL(new RegExp(`/my-events/${seedIds.eventIds.proposed}/proposal$`))
+    await expect(page.getByRole('button', { name: 'Accept Proposal' })).toBeVisible()
+  })
 })
 
 test.describe('Client Portal — Quotes', () => {

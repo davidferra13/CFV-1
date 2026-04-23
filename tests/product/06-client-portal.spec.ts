@@ -16,7 +16,7 @@ test.describe('Client Portal — Core', () => {
     await page.goto('/my-events')
     await page.waitForLoadState('domcontentloaded')
 
-    // Primary client (Alice) has events in draft and completed states
+    // Primary client (Joy) has events in draft and completed states
     const main = page.locator('main').first()
     await expect(main).toBeVisible({ timeout: 10_000 })
   })

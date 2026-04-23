@@ -105,4 +105,32 @@ describe('Runtime Surface Contract', () => {
       'Chef layout must have data-cf-portal="chef"'
     )
   })
+
+  it('root layouts publish surface mode markers for drift detection', () => {
+    const layoutChecks = [
+      { path: join(ROOT, 'app', '(public)', 'layout.tsx'), requiresPathnameHeader: false },
+      { path: join(ROOT, 'app', '(chef)', 'layout.tsx'), requiresPathnameHeader: true },
+      { path: join(ROOT, 'app', '(client)', 'layout.tsx'), requiresPathnameHeader: true },
+      { path: join(ROOT, 'app', '(admin)', 'layout.tsx'), requiresPathnameHeader: true },
+      {
+        path: join(ROOT, 'app', '(partner)', 'partner', 'layout.tsx'),
+        requiresPathnameHeader: true,
+      },
+      { path: join(ROOT, 'app', '(staff)', 'layout.tsx'), requiresPathnameHeader: true },
+    ]
+
+    for (const layoutCheck of layoutChecks) {
+      const content = readFileSync(layoutCheck.path, 'utf-8')
+      assert.ok(
+        content.includes('data-cf-surface='),
+        `${layoutCheck.path} must publish data-cf-surface for runtime contract auditing`
+      )
+      if (layoutCheck.requiresPathnameHeader) {
+        assert.ok(
+          content.includes('PATHNAME_HEADER'),
+          `${layoutCheck.path} must bind to the pathname header contract`
+        )
+      }
+    }
+  })
 })

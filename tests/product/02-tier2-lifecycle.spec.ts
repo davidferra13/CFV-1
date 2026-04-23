@@ -17,7 +17,7 @@ test.describe('Tier 2A — Client Management', () => {
     await page.waitForLoadState('domcontentloaded')
 
     // Should show all 4 test clients
-    await expect(page.getByText('TEST - Alice E2E').first()).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByText('Joy (Test User)').first()).toBeVisible({ timeout: 10_000 })
   })
 
   test('2A.2 — client detail page shows full profile', async ({ page, seedIds }) => {
@@ -25,9 +25,11 @@ test.describe('Tier 2A — Client Management', () => {
     await page.waitForLoadState('domcontentloaded')
 
     // Client name
-    await expect(page.getByText('TEST - Alice E2E').first()).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByText('Joy (Test User)').first()).toBeVisible({ timeout: 10_000 })
     // Client email
-    await expect(page.getByText(/e2e\.client/i).first()).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByText(seedIds.clientEmail, { exact: false }).first()).toBeVisible({
+      timeout: 10_000,
+    })
   })
 
   test('2A.3 — VIP client is tagged correctly', async ({ page, seedIds }) => {
@@ -72,10 +74,12 @@ test.describe('Tier 2B — Event Lifecycle FSM', () => {
     await page.waitForLoadState('domcontentloaded')
 
     // Should show occasion
-    await expect(page.getByText(/Draft Birthday/i).first()).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByText(/Birthday Weekend Dinner/i).first()).toBeVisible({
+      timeout: 10_000,
+    })
 
     // Should show client name
-    await expect(page.getByText(/Alice/i).first()).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByText(/Joy/i).first()).toBeVisible({ timeout: 10_000 })
   })
 
   test('2B.3 — draft event shows correct status badge', async ({ page, seedIds }) => {
