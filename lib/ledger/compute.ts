@@ -49,6 +49,9 @@ export async function getEventFinancialSummaryInternal(eventId: string, tenantId
     outstandingBalanceCents: data.outstanding_balance_cents ?? 0,
     profitCents: data.profit_cents ?? 0,
     profitMargin: data.profit_margin ?? 0,
+    // food_cost_percentage from the view is a 0-1 ratio (e.g. 0.30 = 30%).
+    // The view uses total_expenses (all categories), not just food costs.
+    // For food-only percentage, use getEventProfitSummary() or calculateFoodCostPercentage().
     foodCostPercentage: data.food_cost_percentage ?? 0,
     paymentStatus: data.payment_status,
   }

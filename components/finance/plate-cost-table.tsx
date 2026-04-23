@@ -88,15 +88,7 @@ export function PlateCostTable({ summary }: PlateCostTableProps) {
           <p className="text-xs text-stone-500 mt-1">Avg Revenue / Plate</p>
         </Card>
         <Card className="p-4">
-          <p
-            className={`text-2xl font-bold ${
-              summary.avgMarginPercent >= 35
-                ? 'text-emerald-400'
-                : summary.avgMarginPercent >= 20
-                  ? 'text-amber-400'
-                  : 'text-red-400'
-            }`}
-          >
+          <p className={`text-2xl font-bold ${getMarginRating(summary.avgMarginPercent).color}`}>
             {summary.avgMarginPercent.toFixed(1)}%
           </p>
           <div className="text-xs text-stone-500 mt-1 flex items-center gap-1">

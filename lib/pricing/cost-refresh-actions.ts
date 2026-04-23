@@ -72,6 +72,25 @@ export async function propagatePriceChange(ingredientIds: string[], options?: { 
     }
   }
 
+  // Walk upward: if any affected recipe is a child in recipe_sub_recipes, refresh the parent too
+  try {
+    const { data: parentLinks } = await db
+      .from('recipe_sub_recipes')
+      .select('parent_recipe_id')
+      .in('child_recipe_id', recipeIds)
+
+    if (parentLinks && parentLinks.length > 0) {
+      const parentIds = Array.from(new Set<string>(parentLinks.map((p: any) => p.parent_recipe_id)))
+      for (const parentId of parentIds) {
+        if (!recipeIds.includes(parentId)) {
+          await refreshRecipeTotalCost(db, tenantId, parentId)
+        }
+      }
+    }
+  } catch (err) {
+    console.error('[propagatePriceChange] Parent recipe cascade failed (non-blocking):', err)
+  }
+
   // Find events whose menus use affected recipes and flag them
   try {
     const { data: eventRows } = await db.rpc('raw_sql', {

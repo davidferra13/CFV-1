@@ -168,13 +168,19 @@ export async function getEventFinancialSummaryFull(
     console.error('[non-blocking] compute_projected_food_cost_cents failed', err)
   }
 
-  // Margins
-  const grossProfitCents = quotedPriceCents - totalCostCents
+  // Margins - use actual revenue (collected), not quoted price (invoice)
+  const actualRevenueCents = basePaymentCents + tipCents
+  const grossProfitCents = actualRevenueCents - totalCostCents
   const grossMarginPercent =
-    quotedPriceCents > 0 ? parseFloat(((grossProfitCents / quotedPriceCents) * 100).toFixed(1)) : 0
+    actualRevenueCents > 0
+      ? parseFloat(((grossProfitCents / actualRevenueCents) * 100).toFixed(1))
+      : 0
   const foodCostPercent =
-    quotedPriceCents > 0 ? parseFloat(((netFoodCostCents / quotedPriceCents) * 100).toFixed(1)) : 0
-  const netProfitWithTipCents = grossProfitCents + tipCents
+    actualRevenueCents > 0
+      ? parseFloat(((netFoodCostCents / actualRevenueCents) * 100).toFixed(1))
+      : 0
+  // Tips already included in actualRevenueCents, so grossProfitCents already reflects them
+  const netProfitWithTipCents = grossProfitCents
 
   // Time tracking - from profitSummary.timeInvested (already computed by getEventProfitSummary)
   const timeInvested = profitSummary?.timeInvested ?? null

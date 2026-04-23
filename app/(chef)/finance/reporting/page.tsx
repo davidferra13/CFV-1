@@ -77,6 +77,7 @@ export default async function ReportingPage() {
     getStageConversionData().catch(() => null),
   ])
 
+  const summaryFailed = summary === null
   const ytdRevenue = summary?.netRevenueCents ?? 0
   const ytdEvents = eventCounts?.ytd ?? 0
   const monthExpenses = expenses?.businessCents ?? 0
@@ -104,8 +105,17 @@ export default async function ReportingPage() {
       {/* YTD KPI snapshot */}
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-700">{formatCurrency(ytdRevenue)}</p>
-          <p className="text-sm text-stone-500 mt-1">YTD net revenue</p>
+          {summaryFailed ? (
+            <>
+              <p className="text-2xl font-bold text-red-600">--</p>
+              <p className="text-sm text-red-500 mt-1">Could not load revenue data</p>
+            </>
+          ) : (
+            <>
+              <p className="text-2xl font-bold text-green-700">{formatCurrency(ytdRevenue)}</p>
+              <p className="text-sm text-stone-500 mt-1">YTD net revenue</p>
+            </>
+          )}
         </Card>
         <Card className="p-4">
           <p className="text-2xl font-bold text-stone-100">{ytdEvents}</p>

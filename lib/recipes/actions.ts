@@ -2013,7 +2013,7 @@ export async function computeRecipeIngredientCost(
     .eq('tenant_id', tenantId)
     .single()
 
-  if (!ingredient) return { costCents: null, warning: null }
+  if (!ingredient) return { costCents: null, warning: 'ingredient_not_found' }
 
   // Determine the cost and its unit
   const costPerUnit = ingredient.cost_per_unit_cents ?? ingredient.last_price_cents
@@ -2175,24 +2175,57 @@ async function ensureIngredientHasPrice(
 
 /**
  * Refresh a recipe's total_cost_cents and cost_per_serving_cents
- * by summing all recipe_ingredients.computed_cost_cents.
+ * by summing all recipe_ingredients.computed_cost_cents + sub-recipe costs + Q-factor.
  */
 export async function refreshRecipeTotalCost(
   db: ReturnType<typeof createServerClient>,
   tenantId: string,
   recipeId: string
 ) {
-  // Sum computed costs from all ingredients
+  // Sum computed costs from all direct ingredients
   const { data: ingredients } = await db
     .from('recipe_ingredients')
     .select('computed_cost_cents')
     .eq('recipe_id', recipeId)
 
-  const totalCents = (ingredients ?? []).reduce(
+  const directCents = (ingredients ?? []).reduce(
     (sum: number, ri: { computed_cost_cents: number | null }) =>
       sum + (ri.computed_cost_cents ?? 0),
     0
   )
+
+  // Sum sub-recipe costs (child recipe total * quantity)
+  const { data: subRecipes } = await db
+    .from('recipe_sub_recipes')
+    .select('child_recipe_id, quantity')
+    .eq('parent_recipe_id', recipeId)
+
+  let subRecipeCostCents = 0
+  if (subRecipes && subRecipes.length > 0) {
+    for (const sr of subRecipes) {
+      const { data: child } = await db
+        .from('recipes')
+        .select('total_cost_cents')
+        .eq('id', sr.child_recipe_id)
+        .single()
+      if (child?.total_cost_cents) {
+        subRecipeCostCents += Math.round(child.total_cost_cents * (Number(sr.quantity) || 1))
+      }
+    }
+  }
+
+  const baseTotalCents = directCents + subRecipeCostCents
+
+  // Apply Q-factor (incidental ingredients: oil, salt, wrap, foil)
+  const { getTargetsForArchetype } = await import('@/lib/costing/knowledge')
+  const { data: prefs } = await db
+    .from('chef_preferences')
+    .select('archetype')
+    .eq('chef_id', tenantId)
+    .single()
+
+  const targets = getTargetsForArchetype(prefs?.archetype)
+  const grandTotal = Math.round(baseTotalCents * (1 + targets.qFactorDefault / 100))
 
   // Get yield quantity for per-serving calc
   const { data: recipe } = await db
@@ -2203,12 +2236,12 @@ export async function refreshRecipeTotalCost(
     .single()
 
   const yieldQty = recipe?.yield_quantity ? Number(recipe.yield_quantity) : null
-  const costPerServing = yieldQty && yieldQty > 0 ? Math.round(totalCents / yieldQty) : null
+  const costPerServing = yieldQty && yieldQty > 0 ? Math.round(grandTotal / yieldQty) : null
 
   await db
     .from('recipes')
     .update({
-      total_cost_cents: totalCents > 0 ? totalCents : null,
+      total_cost_cents: grandTotal > 0 ? grandTotal : null,
       cost_per_serving_cents: costPerServing,
     } as any)
     .eq('id', recipeId)

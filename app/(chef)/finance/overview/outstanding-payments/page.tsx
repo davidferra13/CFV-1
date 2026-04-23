@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getEvents } from '@/lib/events/actions'
+import { createServerClient } from '@/lib/db/server'
 import { Card } from '@/components/ui/card'
 import {
   Table,
@@ -17,21 +18,50 @@ import { format, differenceInDays } from 'date-fns'
 export const metadata: Metadata = { title: 'Outstanding Payments' }
 
 export default async function OutstandingPaymentsPage() {
-  await requireChef()
-  const events = await getEvents()
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  // Fetch events and financial summaries in parallel
+  const [events, financialResult] = await Promise.all([
+    getEvents(),
+    db
+      .from('event_financial_summary')
+      .select('event_id, outstanding_balance_cents, total_paid_cents, quoted_price_cents')
+      .eq('tenant_id', user.tenantId!)
+      .gt('outstanding_balance_cents', 0),
+  ])
+
+  if (financialResult.error) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <Link href="/finance/overview" className="text-sm text-stone-500 hover:text-stone-300">
+            &larr; Overview
+          </Link>
+          <h1 className="text-3xl font-bold text-stone-100 mt-1">Outstanding Payments</h1>
+        </div>
+        <Card className="p-6 text-center">
+          <p className="text-red-500">Could not load outstanding payment data</p>
+        </Card>
+      </div>
+    )
+  }
+
+  // Build a map of event_id -> outstanding balance
+  const balanceMap = new Map<string, number>()
+  for (const row of financialResult.data || []) {
+    if (row.outstanding_balance_cents > 0) {
+      balanceMap.set(row.event_id, row.outstanding_balance_cents)
+    }
+  }
 
   const now = new Date()
   const outstanding = events
-    .filter(
-      (e: any) =>
-        new Date(e.event_date) < now &&
-        !['completed', 'cancelled'].includes(e.status) &&
-        (e.quoted_price_cents ?? 0) > 0
-    )
+    .filter((e: any) => balanceMap.has(e.id))
     .sort((a: any, b: any) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
 
   const totalOutstanding = outstanding.reduce(
-    (sum: any, e: any) => sum + (e.quoted_price_cents ?? 0),
+    (sum: number, e: any) => sum + (balanceMap.get(e.id) ?? 0),
     0
   )
 
@@ -39,7 +69,7 @@ export default async function OutstandingPaymentsPage() {
     <div className="space-y-6">
       <div>
         <Link href="/finance/overview" className="text-sm text-stone-500 hover:text-stone-300">
-          ← Overview
+          &larr; Overview
         </Link>
         <div className="flex items-center gap-3 mt-1">
           <h1 className="text-3xl font-bold text-stone-100">Outstanding Payments</h1>
@@ -49,9 +79,7 @@ export default async function OutstandingPaymentsPage() {
             {outstanding.length}
           </span>
         </div>
-        <p className="text-stone-500 mt-1">
-          Past events that haven&apos;t been marked as completed or cancelled
-        </p>
+        <p className="text-stone-500 mt-1">Events with remaining balance owed</p>
       </div>
 
       {outstanding.length > 0 && (
@@ -66,7 +94,7 @@ export default async function OutstandingPaymentsPage() {
       {outstanding.length === 0 ? (
         <Card className="p-12 text-center">
           <p className="text-stone-400 font-medium">No outstanding payments</p>
-          <p className="text-stone-400 text-sm mt-1">All past events are resolved</p>
+          <p className="text-stone-400 text-sm mt-1">All events are fully paid</p>
         </Card>
       ) : (
         <Card>
@@ -74,17 +102,18 @@ export default async function OutstandingPaymentsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Event Date</TableHead>
-                <TableHead>Days Overdue</TableHead>
+                <TableHead>Days Since</TableHead>
                 <TableHead>Client</TableHead>
                 <TableHead>Occasion</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Amount</TableHead>
+                <TableHead>Balance Due</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {outstanding.map((event: any) => {
                 const daysOver = differenceInDays(now, new Date(event.event_date))
+                const balance = balanceMap.get(event.id) ?? 0
                 return (
                   <TableRow key={event.id}>
                     <TableCell className="text-stone-400 text-sm">
@@ -116,9 +145,7 @@ export default async function OutstandingPaymentsPage() {
                       </span>
                     </TableCell>
                     <TableCell className="text-stone-100 font-semibold text-sm">
-                      {event.quoted_price_cents != null
-                        ? formatCurrency(event.quoted_price_cents)
-                        : '-'}
+                      {formatCurrency(balance)}
                     </TableCell>
                     <TableCell>
                       <Link href={`/events/${event.id}`}>

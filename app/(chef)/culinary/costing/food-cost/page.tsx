@@ -5,17 +5,26 @@ import { getRecipes } from '@/lib/recipes/actions'
 import { getExpenses } from '@/lib/expenses/actions'
 import { getTenantFinancialSummary } from '@/lib/ledger/compute'
 import { Card } from '@/components/ui/card'
+import { formatCurrency } from '@/lib/utils/currency'
+import { getFoodCostRating } from '@/lib/finance/food-cost-calculator'
+import { archetypeToOperatorType } from '@/lib/costing/knowledge'
+import { createServerClient } from '@/lib/db/server'
 
 export const metadata: Metadata = { title: 'Food Cost %' }
 
-function pctColor(pct: number) {
-  if (pct <= 28) return 'text-green-700'
-  if (pct <= 35) return 'text-amber-700'
-  return 'text-red-700'
-}
-
 export default async function FoodCostPage() {
-  await requireChef()
+  const chef = await requireChef()
+  const db = createServerClient()
+  const { data: prefs } = await (db as any)
+    .from('chef_preferences')
+    .select('archetype')
+    .eq('chef_id', chef.id)
+    .single()
+  const operatorType = archetypeToOperatorType(prefs?.archetype)
+
+  function pctColor(pct: number) {
+    return getFoodCostRating(pct, operatorType).color
+  }
   const [recipes, allExpenses, summary] = await Promise.all([
     getRecipes(),
     getExpenses({}),
@@ -101,9 +110,7 @@ export default async function FoodCostPage() {
       {/* Supporting KPIs */}
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4 text-center">
-          <p className="text-2xl font-bold text-stone-100">
-            ${(totalFoodCostCents / 100).toFixed(0)}
-          </p>
+          <p className="text-2xl font-bold text-stone-100">{formatCurrency(totalFoodCostCents)}</p>
           <p className="text-sm text-stone-500 mt-1">Total food spend</p>
         </Card>
         <Card className="p-4 text-center">
@@ -112,7 +119,7 @@ export default async function FoodCostPage() {
         </Card>
         <Card className="p-4 text-center">
           <p className="text-2xl font-bold text-stone-100">
-            {avgRecipeCostCents > 0 ? `$${(avgRecipeCostCents / 100).toFixed(2)}` : '-'}
+            {avgRecipeCostCents > 0 ? formatCurrency(avgRecipeCostCents) : '-'}
           </p>
           <p className="text-sm text-stone-500 mt-1">Avg recipe ingredient cost</p>
         </Card>
@@ -145,7 +152,7 @@ export default async function FoodCostPage() {
                       {r.name}
                     </Link>
                     <span className="text-stone-300 font-semibold text-sm">
-                      ${((r.total_cost_cents ?? 0) / 100).toFixed(2)}
+                      {formatCurrency(r.total_cost_cents ?? 0)}
                     </span>
                   </div>
                 ))}

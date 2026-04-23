@@ -3,6 +3,7 @@
 // Conversion factors sourced from canonical knowledge layer (lib/costing/knowledge.ts).
 
 import { WEIGHT_CONVERSIONS, VOLUME_CONVERSIONS } from '@/lib/costing/knowledge'
+import { normalizeUnit as engineNormalizeUnit } from '@/lib/units/conversion-engine'
 
 const UNIT_ALIASES: Record<string, string> = {
   oz: 'oz',
@@ -70,10 +71,14 @@ const VOLUME_TO_ML: Record<string, number> = {
   gallon: VOLUME_CONVERSIONS.GALLON_TO_ML,
 }
 
+/**
+ * Normalize a unit string. Delegates to the canonical conversion engine normalizer
+ * which has a richer alias set (fl oz, dl, mg, sprig, slice, stick, package, bag, bottle, jar).
+ * This wrapper handles the null case (conversion engine requires string).
+ */
 export function normalizeUnit(unit: string | null): string {
   if (!unit) return 'each'
-  const lower = unit.trim().toLowerCase()
-  return UNIT_ALIASES[lower] ?? lower
+  return engineNormalizeUnit(unit)
 }
 
 export function canConvert(unitA: string, unitB: string): boolean {

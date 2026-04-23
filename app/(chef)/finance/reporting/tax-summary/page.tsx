@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { getTenantFinancialSummary } from '@/lib/ledger/compute'
+import { computeProfitAndLoss } from '@/lib/ledger/compute'
 import { getExpenses } from '@/lib/expenses/actions'
 import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories'
 import { Card } from '@/components/ui/card'
@@ -14,7 +14,6 @@ import {
   TableCell,
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
-import { startOfYear } from 'date-fns'
 
 export const metadata: Metadata = { title: 'Tax Summary' }
 
@@ -24,8 +23,8 @@ export default async function TaxSummaryPage() {
   const currentYear = new Date().getFullYear()
   const yearStart = `${new Date().getFullYear()}-01-01`
 
-  const [summary, allExpenses] = await Promise.all([
-    getTenantFinancialSummary(),
+  const [pnl, allExpenses] = await Promise.all([
+    computeProfitAndLoss(currentYear),
     getExpenses({ start_date: yearStart, is_business: true }),
   ])
 
@@ -41,7 +40,7 @@ export default async function TaxSummaryPage() {
   const sortedCategories = Array.from(categoryTotals.entries()).sort((a, b) => b[1] - a[1])
 
   const totalBusinessExpenses = allExpenses.reduce((s: any, e: any) => s + e.amount_cents, 0)
-  const estimatedProfit = summary.netRevenueCents - totalBusinessExpenses
+  const estimatedProfit = pnl.netRevenueCents - totalBusinessExpenses
 
   return (
     <div className="space-y-6">
@@ -67,9 +66,9 @@ export default async function TaxSummaryPage() {
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4">
           <p className="text-2xl font-bold text-green-700">
-            {formatCurrency(summary.totalRevenueCents)}
+            {formatCurrency(pnl.totalRevenueCents)}
           </p>
-          <p className="text-sm text-stone-500 mt-1">Gross income (all-time)</p>
+          <p className="text-sm text-stone-500 mt-1">Gross income ({currentYear})</p>
         </Card>
         <Card className="p-4">
           <p className="text-2xl font-bold text-red-600">{formatCurrency(totalBusinessExpenses)}</p>

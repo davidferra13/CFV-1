@@ -13,8 +13,10 @@ function groupByCategory(sales: SaleItem[]): Record<string, SaleItem[]> {
   return groups
 }
 
+import { formatCurrency } from '@/lib/utils/currency'
+
 function formatPrice(cents: number, unit: string): string {
-  return `$${(cents / 100).toFixed(2)}/${unit}`
+  return `${formatCurrency(cents)}/${unit}`
 }
 
 export function SalesPageClient({

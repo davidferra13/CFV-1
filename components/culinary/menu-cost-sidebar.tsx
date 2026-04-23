@@ -11,11 +11,14 @@ import type { MarginAlert, MenuVendorHint } from '@/lib/menus/menu-intelligence-
 import { getMenuCostingGaps } from '@/lib/menus/actions'
 import type { CostingGap } from '@/lib/menus/actions'
 import { formatCurrency } from '@/lib/utils/currency'
+import { getFoodCostRating } from '@/lib/finance/food-cost-calculator'
+import type { OperatorType } from '@/lib/costing/knowledge'
 
 interface MenuCostSidebarProps {
   menuId: string
   className?: string
   vendorHintsEnabled?: boolean
+  operatorType?: OperatorType
 }
 
 function formatCentsOrNA(cents: number | null): string {
@@ -29,18 +32,16 @@ function getAlertBadgeVariant(level: string): 'success' | 'warning' | 'error' {
   return 'success'
 }
 
-function getFoodCostColor(pct: number | null): string {
+function getFoodCostColor(pct: number | null, operatorType: OperatorType = 'private_chef'): string {
   if (pct === null) return 'text-stone-400'
-  if (pct > 45) return 'text-red-400'
-  if (pct > 35) return 'text-amber-400'
-  if (pct > 30) return 'text-yellow-400'
-  return 'text-emerald-400'
+  return getFoodCostRating(pct, operatorType).color
 }
 
 export function MenuCostSidebar({
   menuId,
   className = '',
   vendorHintsEnabled = true,
+  operatorType = 'private_chef',
 }: MenuCostSidebarProps) {
   const [isPending, startTransition] = useTransition()
   const [costData, setCostData] = useState<{
@@ -129,7 +130,7 @@ export function MenuCostSidebar({
     )
   }
 
-  const foodCostColor = getFoodCostColor(costData.foodCostPercent)
+  const foodCostColor = getFoodCostColor(costData.foodCostPercent, operatorType)
 
   return (
     <div

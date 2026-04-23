@@ -260,7 +260,19 @@ export default async function FinancePage() {
 
       {/* Monthly P&L Snapshot */}
       <WidgetErrorBoundary name="Monthly P&L" compact>
-        <Suspense fallback={null}>
+        <Suspense
+          fallback={
+            <Card className="p-4 animate-pulse">
+              <div className="h-6 bg-stone-800 rounded w-1/3 mb-3" />
+              <div className="grid grid-cols-4 gap-4">
+                <div className="h-16 bg-stone-800 rounded" />
+                <div className="h-16 bg-stone-800 rounded" />
+                <div className="h-16 bg-stone-800 rounded" />
+                <div className="h-16 bg-stone-800 rounded" />
+              </div>
+            </Card>
+          }
+        >
           <MonthlyPLSnapshot />
         </Suspense>
       </WidgetErrorBoundary>

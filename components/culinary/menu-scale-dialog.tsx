@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { scaleMenuToGuestCount } from '@/lib/menus/menu-intelligence-actions'
 import type { ScalingSummary } from '@/lib/menus/menu-intelligence-actions'
+import { formatCurrency } from '@/lib/utils/currency'
 
 interface MenuScaleDialogProps {
   menuId: string
@@ -155,7 +156,7 @@ export function MenuScaleDialog({
             </p>
             {result.newCostPerGuest !== null && (
               <p className="text-xs text-emerald-400 mt-1">
-                New cost per guest: ${(result.newCostPerGuest / 100).toFixed(2)}
+                New cost per guest: {formatCurrency(result.newCostPerGuest)}
               </p>
             )}
           </div>

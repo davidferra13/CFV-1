@@ -7,6 +7,7 @@ import { safeFetchAll } from '@/lib/utils/safe-fetch'
 import { ErrorState } from '@/components/ui/error-state'
 import { Card } from '@/components/ui/card'
 import { CostingHelpPopover } from '@/components/costing/costing-help-popover'
+import { formatCurrency } from '@/lib/utils/currency'
 import { UpgradePrompt } from '@/components/billing/upgrade-prompt'
 import {
   Table,
@@ -172,7 +173,7 @@ export default async function MenuCostPage() {
                       <TableCell className="font-semibold text-stone-100">
                         {estimatedCostCents > 0 ? (
                           <span>
-                            ${(estimatedCostCents / 100).toFixed(2)}
+                            {formatCurrency(estimatedCostCents)}
                             {pricedCount < componentCount && componentCount > 0 && (
                               <span className="ml-1 text-xs text-amber-600 font-normal">
                                 partial

@@ -2,14 +2,12 @@
 
 import { useEffect, useState, useTransition } from 'react'
 import { getTruePlateCost, type PlateCostResult } from '@/lib/pricing/plate-cost-actions'
+import { formatCurrency } from '@/lib/utils/currency'
+import { getMarginRating } from '@/lib/finance/plate-cost-calculator'
 
 interface TrueCostBreakdownProps {
   menuId?: string
   eventId?: string
-}
-
-function centsToDisplay(cents: number): string {
-  return `$${(cents / 100).toFixed(2)}`
 }
 
 function Skeleton() {
@@ -113,12 +111,8 @@ export function TrueCostBreakdown({ menuId, eventId }: TrueCostBreakdownProps) {
     { label: 'Overhead', cents: overheadPerPlateCents, pct: overheadPct, color: 'bg-stone-500' },
   ]
 
-  // Margin color
-  let marginColor = 'text-red-400'
-  if (marginPercent !== null) {
-    if (marginPercent >= 40) marginColor = 'text-emerald-400'
-    else if (marginPercent >= 20) marginColor = 'text-amber-400'
-  }
+  // Margin color (single source of truth: plate-cost-calculator)
+  const marginColor = marginPercent !== null ? getMarginRating(marginPercent).color : 'text-red-400'
 
   return (
     <div className="rounded-lg border border-stone-700 bg-stone-800/50 p-4 space-y-4">
@@ -126,7 +120,7 @@ export function TrueCostBreakdown({ menuId, eventId }: TrueCostBreakdownProps) {
       <div>
         <h3 className="text-sm font-semibold text-stone-300">True Plate Cost</h3>
         <p className="text-2xl font-bold text-white mt-1">
-          {centsToDisplay(totalPerPlateCents)}
+          {formatCurrency(totalPerPlateCents)}
           <span className="text-sm font-normal text-stone-400 ml-1">/ plate</span>
         </p>
       </div>
@@ -154,7 +148,7 @@ export function TrueCostBreakdown({ menuId, eventId }: TrueCostBreakdownProps) {
               <span className="text-stone-400">{seg.label}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-stone-200 font-medium">{centsToDisplay(seg.cents)}</span>
+              <span className="text-stone-200 font-medium">{formatCurrency(seg.cents)}</span>
               <span className="text-stone-500 text-xs w-8 text-right">{seg.pct}%</span>
             </div>
           </div>
@@ -167,7 +161,7 @@ export function TrueCostBreakdown({ menuId, eventId }: TrueCostBreakdownProps) {
           <div className="flex items-center justify-between text-sm">
             <span className="text-stone-400">Quoted</span>
             <span className="text-stone-200 font-medium">
-              {centsToDisplay(quotedPerPlateCents)} / plate
+              {formatCurrency(quotedPerPlateCents)} / plate
             </span>
           </div>
           {marginPercent !== null && (
@@ -184,7 +178,7 @@ export function TrueCostBreakdown({ menuId, eventId }: TrueCostBreakdownProps) {
         <div className="flex items-center justify-between text-sm">
           <span className="text-stone-400">Total cost</span>
           <span className="text-stone-200 font-medium">
-            {centsToDisplay(totalCostCents)} for {guestCount} guest{guestCount !== 1 ? 's' : ''}
+            {formatCurrency(totalCostCents)} for {guestCount} guest{guestCount !== 1 ? 's' : ''}
           </span>
         </div>
       </div>

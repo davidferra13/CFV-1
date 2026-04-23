@@ -90,7 +90,7 @@ export default async function RevenueSummaryPage() {
           <p className="text-2xl font-bold text-amber-700">
             {revenueEvents.length > 0
               ? formatCurrency(Math.round(totalRevenue / revenueEvents.length))
-              : '$0'}
+              : formatCurrency(0)}
           </p>
           <p className="text-sm text-stone-500 mt-1">Average per event</p>
         </Card>

@@ -4,6 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getRecipes } from '@/lib/recipes/actions'
 import { Card } from '@/components/ui/card'
 import { CostingHelpPopover } from '@/components/costing/costing-help-popover'
+import { formatCurrency } from '@/lib/utils/currency'
 import {
   Table,
   TableHeader,
@@ -56,7 +57,7 @@ export default async function RecipeCostPage() {
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4 text-center">
           <p className="text-2xl font-bold text-stone-100">
-            {withCost.length > 0 ? `$${(maxCostCents / 100).toFixed(2)}` : '-'}
+            {withCost.length > 0 ? formatCurrency(maxCostCents) : '-'}
           </p>
           <div className="text-sm text-stone-500 mt-1 flex items-center justify-center gap-1">
             Most expensive (est.)
@@ -65,7 +66,7 @@ export default async function RecipeCostPage() {
         </Card>
         <Card className="p-4 text-center">
           <p className="text-2xl font-bold text-stone-100">
-            {avgCostCents > 0 ? `$${(avgCostCents / 100).toFixed(2)}` : '-'}
+            {avgCostCents > 0 ? formatCurrency(avgCostCents) : '-'}
           </p>
           <div className="text-sm text-stone-500 mt-1 flex items-center justify-center gap-1">
             Average cost (est.)
@@ -129,7 +130,7 @@ export default async function RecipeCostPage() {
                     {recipe.ingredient_count ?? 0}
                   </TableCell>
                   <TableCell className="font-semibold text-stone-100">
-                    ${((recipe.total_cost_cents ?? 0) / 100).toFixed(2)}
+                    {formatCurrency(recipe.total_cost_cents ?? 0)}
                   </TableCell>
                   <TableCell>{costBar(recipe.total_cost_cents ?? 0, maxCostCents)}</TableCell>
                   <TableCell>
