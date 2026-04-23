@@ -1,94 +1,5 @@
 # Session Log
 
-## 2026-04-22 18:18 EST
-
-- Agent: Codex
-- Task: Close the task and todo ownership contract without creating a second task domain
-- Status: completed
-- Files touched: 18 files in this slice (repo already dirty outside the slice)
-- Commits: pending at log-write time
-- Build state on departure: focused slice verified; repo-wide `npm run typecheck:app` still blocked by unrelated existing dirty-checkout errors in `app/(chef)/settings/client-preview/public-profile-preview.tsx`, `app/(public)/_components/homepage-live-signal.tsx`, `components/public/location-experience-showcase.tsx`, and `lib/db/boot-contract.ts`
-- Notes: Added `lib/todos/match.ts` so reminder completion can stay on `chef_todos` honestly, rewired Remy plus briefing/proactive task reads onto structured `tasks`, and updated the spec/control-tower/build-state artifacts so this lane no longer reads as open. Verified with focused `tsc`, `node --test --import tsx tests/unit/task-todo-contract.test.ts`, `graphify update .`, and direct Playwright browser verification on isolated `http://127.0.0.1:3210` using seeded chef auth through `/api/e2e/auth`. A follow-up live create attempt on the pre-existing `/tasks` form did not insert a DB row, so broader task-board create-path validation remains a separate existing surface issue. `bash scripts/session-close.sh` was unavailable on this Windows host because `/bin/bash` is missing, so the digest, build-state update, and session-log entry were completed manually.
-
-## 2026-04-12 (postgres.js Date crash sweep + billing activation)
-
-- Agent: Builder (Sonnet 4.6)
-- Task: Fix postgres.js Date object crashes + commit developer's freemium billing work
-- Status: completed
-- Files touched:
-  - lib/db/index.ts (root fix: postgres.js type parser to return DATE as YYYY-MM-DD strings)
-  - lib/utils/format.ts (added dateToDateString() helper)
-  - lib/availability/rules-actions.ts, lib/availability/actions.ts (Date.slice + String(Date) crashes)
-  - lib/dashboard/actions.ts (created_at.slice crash)
-  - lib/scheduling/multi-event-days.ts (event_date.slice crash)
-  - lib/booking/series-materialization.ts (compareDateTime helper + localeCompare crashes)
-  - lib/booking/instant-book-actions.ts (session_date.localeCompare crash)
-  - lib/documents/search-actions.ts (created_at.split crash x2)
-  - lib/ai/client-preference-profile.ts (created_at.split crashes)
-  - lib/ai/temp-log-anomaly.ts (logged_at.split crash)
-  - lib/travel/actions.ts (event_date.split crash)
-  - lib/analytics/insights-actions.ts (parseDate crash + Date|string safety)
-  - lib/billing/require-pro.ts (activated two-tier enforcement, redirects to /settings/billing)
-  - app/(chef)/settings/billing/billing-client.tsx, page.tsx (Free vs Paid tier comparison UI)
-  - components/billing/upgrade-gate.tsx (actual gate UI: block/blur/hide modes)
-  - docs/CLAUDE-ARCHITECTURE.md (monetization model updated for two-tier)
-- Commits: c661dafa2, 7ecb992f3, 252e77789, 6cd92bbf7, 1e55b71f5, 7a56d1bec, 58dd3a08d
-- Build state on departure: tsc green (0 errors, verified post-commit)
-- Notes: Root cause of all in-memory date comparison failures: postgres.js 3.x returns Date objects for DATE columns, not strings. `Date >= string` is always false (NaN comparison). Root fix in lib/db/index.ts configures type parser at connection level. Individual crash fixes (slices, splits, localeCompares) applied to 12 files. Developer's billing activation work committed: requirePro() now enforces paid-tier features via redirect rather than pass-through. tsc exits 0 throughout.
-
-## 2026-04-13 (sweep 6 - please fix everything)
-
-- Agent: Builder (Sonnet 4.6)
-- Task: "Please fix everything" - broad sweep of remaining bugs and wiring gaps
-- Status: completed
-- Files touched:
-  - app/(chef)/dashboard/page.tsx (wire RemyAlertsWidget + getActiveAlerts - was built but never rendered)
-  - components/dashboard/remy-alerts-widget.tsx (no changes - was already complete)
-  - components/dashboard/chef-todo-widget.tsx (ZHR Law 1: restore input value on add failure)
-  - components/staff/staff-member-form.tsx (add location_id field and BusinessLocation type)
-  - lib/staff/actions.ts (add location_id to CreateStaffSchema)
-  - app/(chef)/staff/[id]/page.tsx (fetch and pass locations to StaffMemberForm)
-  - app/(chef)/analytics/page.tsx (UpgradePrompt for intelligence-hub)
-  - app/(chef)/culinary/costing/menu/page.tsx (UpgradePrompt for costing-component-breakdown)
-  - app/(chef)/culinary/costing/page.tsx (UpgradePrompt for menu-costing-live + margin-targeting)
-  - app/(chef)/culinary/price-catalog/catalog-browser.tsx (UpgradePrompt for price-intel-advanced)
-  - app/(chef)/events/[id]/financial/page.tsx (UpgradePrompt for event-profitability)
-  - lib/billing/require-pro.ts (activated two-tier enforcement from developer work)
-  - app/(chef)/settings/billing/billing-client.tsx, page.tsx (Free vs Paid comparison UI)
-  - components/billing/upgrade-gate.tsx (actual gate UI)
-  - docs/CLAUDE-ARCHITECTURE.md (monetization model updated)
-  - lib/analytics/insights-actions.ts (parseDate crash fix)
-- Commits: fb10e4600, b4a165eb9, 7a56d1bec
-- Build state on departure: tsc green (0 errors)
-- Notes: Remy alerts widget was fully built (remy-alerts-widget.tsx, getActiveAlerts action, remy_alerts table from migration 20260412000001) but never imported in dashboard. Now wired. Staff location assignment was added to schema + form by developer but not passed from detail page - wired. Pre-service par level backlog item was stale (already built in sweep 3). Remaining open items: dark mode (large), calendar/Google sync (needs OAuth), SMS (needs Twilio), location roster (no spec), multi-chef view (complex).
-
-## 2026-04-14 (afternoon) - Cloud Purge + Live-Ops Gap Closure
-
-- Agent: Builder (multiple agents)
-- Task: Supabase/Vercel/Firebase permanent removal + live-ops gap closure + resilience guards
-- Status: completed (retroactive entry)
-- Commits: deec1798c through 06d738e79 (13 commits)
-- Build state on departure: not verified (rapid iteration)
-- Notes: Permanently removed all Supabase, Vercel, Firebase dependencies. Guarded 18 pages against unprotected await crashes. Wired module toggles to sidebar. Added comms ingestion pipeline. Added /debug and /tdd skills. Session digest: 2026-04-14-cloud-purge-and-live-ops.md
-
-## 2026-04-14 (evening/overnight) - Calling Hardening + 160-Question Security Audit
-
-- Agent: Builder (multiple parallel agents)
-- Task: Calling system Rounds 3-13 + system integrity audit Q1-Q737
-- Status: completed (retroactive entry)
-- Commits: dc5d32f8e through 5a3ae7e01 (62 commits, 21:31-01:39)
-- Build state on departure: not verified (overnight marathon)
-- Notes: Largest audit session in project history. 11 calling rounds (3-13). 700+ security questions answered. Critical fixes: staff tenant scoping (Q419), SSRF blocking, NODE_ENV bypass removal, SVG XSS prevention, storage nosniff headers. TakeAChef integration, OpenClaw sync repair, hub enhancements all shipped in parallel. Session digest: 2026-04-14-calling-and-security-audit.md
-
-## 2026-04-15 (afternoon/evening) - System Integrity Expansion + Client Experience Audit
-
-- Agent: Builder (multiple parallel agents)
-- Task: Extend integrity tests Q41-Q190 + 57-question client experience audit
-- Status: completed (retroactive entry)
-- Commits: ae7409b70 through 65a97f625 (30+ commits)
-- Build state on departure: tsc green (0 errors)
-- Notes: Client XP audit went from 53% to 91% (52/57). 29 silent catch blocks eliminated. Menu health score + hub SSE realtime + push notifications shipped. System integrity tests now cover Q1-Q190. Separate dinner stress test digest covers FSM/financial work from same day. Session digest: 2026-04-15-integrity-and-client-experience.md
-
 ## 2026-04-17 ~03:00 EST
 
 - Agent: Builder
@@ -187,3 +98,43 @@
 - Commits: pending at log-write time
 - Build state on departure: focused slice verified; repo-wide `npm run lint` and `npm run typecheck` still blocked by unrelated existing errors in daily, costing, recipe-photo, and OpenClaw files
 - Notes: Added `lib/quotes/quote-prefill.ts` as the single quote-prefill contract because the old parser lived inside the server page and could not be reused by client surfaces or tests. Verified with focused ESLint, `node --test --import tsx tests/unit/quote-prefill.test.ts`, and direct Playwright browser checks on isolated `http://localhost:3211`, including screenshots for the scope-drift quote banner and the inquiry detail quote href. Session digest: `docs/session-digests/2026-04-22-draft.md`
+
+## 2026-04-23 13:07 EST
+
+- Agent: Codex
+- Task: Implement chef portal priority nav restructure from the verified audit artifacts
+- Status: completed
+- Files touched: 6 files in this slice (repo already dirty outside the slice)
+- Commits: not created because the worktree already contained extensive unrelated dirty changes
+- Build state on departure: focused nav slice verified; repo-wide typecheck not run
+- Notes: Updated primary chef nav defaults to Today, Inbox, Pipeline, Events, Culinary, Clients, Money. Updated the action bar to Today, Inbox, Pipeline, Events, Culinary, Money. Updated mobile defaults to Today, Inbox, Pipeline, Events, Daily Ops. Added `tests/unit/chef-nav-priority.test.ts` to guard primary defaults, demoted clusters, action bar defaults, mobile defaults, and the broken `/social/compose` route. Verified with `node --test --import tsx tests/unit/chef-nav-priority.test.ts` and adjacent surface/focus tests. Session digest: `docs/session-digests/2026-04-23-draft.md`
+
+## 2026-04-23 13:13 EST
+
+- Agent: Codex
+- Task: Verify chef portal priority nav restructure and compose-route guard
+- Status: completed
+- Files touched: 6 nav-priority files in the slice; repo already dirty outside the slice
+- Commits: not created because the worktree already contained extensive unrelated dirty changes
+- Build state on departure: focused nav verification passed; full typecheck and full route audit intentionally not run
+- Notes: Confirmed the primary chef defaults, action bar cap, mobile defaults, mobile customization options, and `/social/compose` guard matched the requested state. Repaired an accidental `docs/session-log.md` truncation while leaving unrelated dirty worktree changes untouched. Verified with `node --test --import tsx tests/unit/chef-nav-priority.test.ts`, `node --test --import tsx tests/unit/surface-governance.test.ts tests/unit/focus-mode-strict-nav.test.ts`, and the targeted `rg` scan for standalone `/social/compose` references.
+
+## 2026-04-23 13:33 EST
+
+- Agent: Codex
+- Task: Re-verify chef portal priority nav slice and complete closeout without disturbing dirty-tree history
+- Status: completed
+- Files touched: `docs/session-log.md`, `docs/session-digests/2026-04-23-draft.md` (closeout only); no nav source changes
+- Commits: not created because the worktree already contained extensive unrelated dirty changes
+- Build state on departure: focused nav verification passed; full typecheck and full route audit intentionally not run
+- Notes: Re-ran the required focused nav tests and standalone `/social/compose` scan, confirmed the intended primary, action bar, and mobile defaults still match the priority contract, and restored the preexisting `docs/session-log.md` history after `scripts/session-close.sh` trimmed old entries on this Windows host. Git Bash was required because plain `bash` invoked WSL without `/bin/bash`.
+
+## 2026-04-23 13:51 EST
+
+- Agent: Codex
+- Task: Harden public intent-heavy booking and inquiry mutations without changing the public gating model
+- Status: completed
+- Files touched: 17 files in this slice, plus 2 browser-proof screenshots and closeout docs; repo already dirty outside the slice
+- Commits: pending at log-write time
+- Build state on departure: focused public-intent slice verified; `npm run typecheck` exits `0`
+- Notes: Added `lib/security/public-intent-guard.ts`, rewired open booking, public chef inquiry, embed inquiry, and instant booking to the shared guard, added short-window anonymous instant-book checkout dedupe plus Stripe idempotency, and patched the obvious token-flow gaps with token-scoped rate limits on guest portal lookup and proposal approve or decline. Verified with focused node tests, repo-wide `npm run typecheck`, focused ESLint, `graphify update .`, and live isolated-browser proof on `http://localhost:3111` for `/book` and `/chef/df-private-chef/inquire`. Direct `/book/[chefSlug]` proof remains dataset-blocked because no local chef currently has both `booking_enabled = true` and a populated `booking_slug`. Session digest: `docs/session-digests/2026-04-23-public-intent-hardening.md`

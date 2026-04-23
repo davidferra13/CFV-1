@@ -2,12 +2,13 @@
 
 **What:** Food operator discovery and public chef profiles. How the world finds chefs.
 
-**Routes:** `/chef/[slug]` (public profile), `/nearby` (food operator directory, canonical), `/for-operators` (operator landing page)
+**Routes:** `/chef/[slug]` (public profile), `/chef/[slug]/inquire` (direct chef inquiry), `/nearby` (food operator directory, canonical)
 **Status:** PARTIALLY COMPLETE
 
 ## What's Here
 
 - Public chef profile: avatar, display name, tagline, highlight text, social icons (Instagram, TikTok, Facebook, YouTube, Linktree), bio, cuisine tags, service types, reviews & testimonials, featured testimonials (gold border), JSON-LD AggregateRating for SEO
+- Direct chef inquiry page: route-specific inquiry form for one named chef, with truthful expectation copy about direct follow-up instead of matched-chef routing
 - Food operator directory: public discovery page at `/nearby` with search, filters (type, cuisine, state, city, price), pagination
 - Directory import from OpenClaw crawler data (OSM-sourced, ODbL attribution)
 - Post-claim enhancement flow for operators

@@ -6,9 +6,11 @@
  */
 
 import { openDb } from '../lib/db.mjs'
+import { mapWithConcurrency } from '../lib/async-pool.mjs'
 import { classifyDocument } from '../lib/ollama-prompts.mjs'
 
-const BATCH_SIZE = parseInt(process.env.CLASSIFY_BATCH_SIZE || '20', 10)
+const BATCH_SIZE = parseInt(process.env.CLASSIFY_BATCH_SIZE || '64', 10)
+const CLASSIFY_CONCURRENCY = parseInt(process.env.CLASSIFY_CONCURRENCY || '8', 10)
 
 async function main() {
   const db = openDb()
@@ -44,18 +46,18 @@ async function main() {
 
   let succeeded = 0, failed = 0
 
-  for (const file of pending) {
+  await mapWithConcurrency(pending, CLASSIFY_CONCURRENCY, async (file) => {
     try {
       const filename = file.original_path.split(/[/\\]/).pop()
       const result = await classifyDocument(filename, file.file_type, file.ocr_text)
 
       if (result && result.classification) {
         updateClassification.run(result.classification, result.confidence || 0, file.id)
-        console.log(`  [${result.classification}] ${filename} (${(result.confidence * 100).toFixed(0)}%)`)
+        console.log(`  [${result.classification}] ${filename} (${((result.confidence || 0) * 100).toFixed(0)}%)`)
         succeeded++
       } else {
         updateClassification.run('unknown', 0, file.id)
-        console.log(`  [unknown] ${filename} (Ollama returned no classification)`)
+        console.log(`  [unknown] ${filename} (Gemma returned no classification)`)
         succeeded++
       }
     } catch (err) {
@@ -63,7 +65,7 @@ async function main() {
       console.error(`  [FAIL] ${file.original_path}: ${err.message}`)
       failed++
     }
-  }
+  })
 
   const durationMs = Date.now() - startTime
 

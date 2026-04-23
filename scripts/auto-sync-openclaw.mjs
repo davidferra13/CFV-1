@@ -21,7 +21,8 @@
  */
 
 import { execSync } from 'child_process'
-import { writeFileSync, readFileSync, existsSync, appendFileSync, statSync } from 'fs'
+import { writeFileSync, readFileSync, existsSync, appendFileSync, statSync, unlinkSync } from 'fs'
+import { tmpdir } from 'os'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
@@ -50,8 +51,12 @@ const BACKOFF_STEPS_MS = [60000, 120000, 240000, 480000, 960000, 1800000]
 
 let consecutiveFailures = 0
 
+function nowIso() {
+  return new Date().toISOString()
+}
+
 function log(msg) {
-  const line = `[${new Date().toISOString()}] ${msg}\n`
+  const line = `[${nowIso()}] ${msg}\n`
   process.stdout.write(line)
   try {
     let rotate = false
@@ -66,15 +71,24 @@ function updateStatus(status, extra = {}) {
     const current = existsSync(STATUS_FILE)
       ? JSON.parse(readFileSync(STATUS_FILE, 'utf8'))
       : {}
+    const completedAt = extra.completed_at || nowIso()
     const data = {
       ...current,
-      last_sync: new Date().toISOString(),
+      last_sync: completedAt,
       status,
-      next_sync: isDaemon
-        ? new Date(Date.now() + DELTA_INTERVAL_MS).toISOString()
-        : null,
+      next_sync:
+        Object.prototype.hasOwnProperty.call(extra, 'next_sync')
+          ? extra.next_sync
+          : isDaemon
+            ? new Date(Date.now() + DELTA_INTERVAL_MS).toISOString()
+            : null,
       interval_hours: isDaemon ? 2 : null,
       consecutive_failures: consecutiveFailures,
+      last_success_at:
+        status === 'success' || status === 'partial'
+          ? completedAt
+          : current.last_success_at || null,
+      last_failure_at: status === 'failed' ? completedAt : current.last_failure_at || null,
       ...extra,
     }
     writeFileSync(STATUS_FILE, JSON.stringify(data, null, 2))
@@ -94,14 +108,62 @@ function needsFullSync() {
 
 function markFullSyncDone() {
   try {
-    writeFileSync(LAST_FULL_SYNC_FILE, new Date().toISOString())
+    writeFileSync(LAST_FULL_SYNC_FILE, nowIso())
   } catch {}
+}
+
+function buildSummaryFilePath(syncType) {
+  return join(tmpdir(), `openclaw-sync-${syncType}-${process.pid}-${Date.now()}.json`)
+}
+
+function readSyncSummary(summaryFile) {
+  if (!existsSync(summaryFile)) {
+    return null
+  }
+
+  try {
+    return JSON.parse(readFileSync(summaryFile, 'utf8'))
+  } catch {
+    return null
+  }
+}
+
+function cleanupSummaryFile(summaryFile) {
+  try {
+    if (existsSync(summaryFile)) {
+      unlinkSync(summaryFile)
+    }
+  } catch {}
+}
+
+function classifyError(err, elapsedSeconds) {
+  if (err?.code === 'ETIMEDOUT') {
+    return {
+      errorKind: 'timeout',
+      reason: `timed out after ${elapsedSeconds}s`,
+    }
+  }
+
+  if (typeof err?.status === 'number') {
+    return {
+      errorKind: 'exit_code',
+      reason: err.message || `exited with code ${err.status}`,
+    }
+  }
+
+  return {
+    errorKind: 'runtime',
+    reason: err?.message || 'unknown runtime failure',
+  }
 }
 
 async function runSync(useDelta) {
   const syncType = useDelta ? 'delta' : 'full'
   const timeoutMs = useDelta ? DELTA_TIMEOUT_MS : FULL_TIMEOUT_MS
   const extraArgs = useDelta ? ' --delta' : ''
+  const summaryFile = buildSummaryFilePath(syncType)
+  const startedAt = nowIso()
+  const runId = `openclaw-${syncType}-${Date.now()}`
 
   log(`Starting ${syncType} sync (timeout: ${timeoutMs / 60000}min)...`)
   const start = Date.now()
@@ -112,26 +174,57 @@ async function runSync(useDelta) {
       timeout: timeoutMs,
       encoding: 'utf8',
       stdio: 'inherit',
-      env: { ...process.env },
+      env: {
+        ...process.env,
+        OPENCLAW_SYNC_SUMMARY_FILE: summaryFile,
+      },
     })
 
     const elapsed = ((Date.now() - start) / 1000).toFixed(1)
-    log(`Sync complete (${syncType}) in ${elapsed}s`)
-    consecutiveFailures = 0
-    updateStatus('success', { last_sync_type: syncType, last_elapsed_s: parseFloat(elapsed) })
-    if (!useDelta) markFullSyncDone()
-    return true
+    const summary = readSyncSummary(summaryFile)
+    const status =
+      summary?.status === 'partial' || (summary?.failedStepNames?.length ?? 0) > 0
+        ? 'partial'
+        : 'success'
+
+    log(`Sync complete (${syncType}) in ${elapsed}s${status === 'partial' ? ' with partial success' : ''}`)
+
+    if (!useDelta && status === 'success') markFullSyncDone()
+
+    return {
+      completedAt: nowIso(),
+      elapsedSeconds: parseFloat(elapsed),
+      errorKind: null,
+      exitCode: null,
+      lastError: null,
+      ok: true,
+      runId,
+      startedAt,
+      status,
+      summary,
+      syncType,
+    }
   } catch (err) {
     const elapsed = ((Date.now() - start) / 1000).toFixed(1)
-    const reason = err.code === 'ETIMEDOUT' ? `timed out after ${elapsed}s` : err.message
+    const summary = readSyncSummary(summaryFile)
+    const { errorKind, reason } = classifyError(err, elapsed)
     log(`Sync FAILED (${syncType}) after ${elapsed}s: ${reason}`)
-    consecutiveFailures++
-    updateStatus('failed', {
-      last_error: reason,
-      last_sync_type: syncType,
-      consecutive_failures: consecutiveFailures,
-    })
-    return false
+
+    return {
+      completedAt: nowIso(),
+      elapsedSeconds: parseFloat(elapsed),
+      errorKind,
+      exitCode: typeof err?.status === 'number' ? err.status : null,
+      lastError: reason,
+      ok: false,
+      runId,
+      startedAt,
+      status: 'failed',
+      summary,
+      syncType,
+    }
+  } finally {
+    cleanupSummaryFile(summaryFile)
   }
 }
 
@@ -154,19 +247,39 @@ async function daemonLoop() {
 
   while (true) {
     const doFull = Date.now() >= nextFullAt
-    const ok = await runSync(!doFull)
+    const result = await runSync(!doFull)
 
-    if (ok && doFull) {
+    if (result.ok) {
+      consecutiveFailures = 0
+    } else {
+      consecutiveFailures += 1
+    }
+
+    if (result.ok && result.status === 'success' && doFull) {
       nextFullAt = Date.now() + FULL_SYNC_INTERVAL_MS
     }
 
-    if (!ok) {
-      const delay = backoffDelay()
+    const delay = result.ok ? DELTA_INTERVAL_MS : backoffDelay()
+    const nextSyncAt = new Date(Date.now() + delay).toISOString()
+
+    updateStatus(result.status, {
+      completed_at: result.completedAt,
+      error_kind: result.errorKind,
+      exit_code: result.exitCode,
+      last_elapsed_s: result.elapsedSeconds,
+      last_error: result.lastError,
+      last_sync_type: result.syncType,
+      next_sync: nextSyncAt,
+      run_id: result.runId,
+      started_at: result.startedAt,
+      summary: result.summary ?? null,
+    })
+
+    if (!result.ok) {
       log(`Retry in ${delay / 1000}s (failure #${consecutiveFailures})`)
-      await sleep(delay)
-    } else {
-      await sleep(DELTA_INTERVAL_MS)
     }
+
+    await sleep(delay)
   }
 }
 
@@ -175,7 +288,24 @@ async function main() {
     await daemonLoop()
   } else {
     const useDelta = !forceFull
-    await runSync(useDelta)
+    const result = await runSync(useDelta)
+    consecutiveFailures = result.ok ? 0 : 1
+    updateStatus(result.status, {
+      completed_at: result.completedAt,
+      error_kind: result.errorKind,
+      exit_code: result.exitCode,
+      last_elapsed_s: result.elapsedSeconds,
+      last_error: result.lastError,
+      last_sync_type: result.syncType,
+      next_sync: null,
+      run_id: result.runId,
+      started_at: result.startedAt,
+      summary: result.summary ?? null,
+    })
+
+    if (!result.ok) {
+      process.exitCode = 1
+    }
   }
 }
 

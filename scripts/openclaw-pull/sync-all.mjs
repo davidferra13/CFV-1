@@ -5,8 +5,10 @@
  * Runs the complete pipeline in order:
  *   1. Pull SQLite from Pi -> populate openclaw.* tables
  *   2. Sync normalization map + auto-link ingredient aliases
- *   3. Sync prices from Pi API -> ingredient_price_history
- *   4. Refresh materialized views
+ *   3. Promote canonical food items into system_ingredients
+ *   4. Refresh system_ingredient market prices
+ *   5. Sync prices from Pi API -> ingredient_price_history
+ *   6. Refresh materialized views
  *
  * Usage: node scripts/openclaw-pull/sync-all.mjs
  */
@@ -22,29 +24,102 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const rootDir = resolve(__dirname, '../..')
 const DELTA_FLAG = process.argv.includes('--delta')
 const LAST_SYNC_FILE = resolve(__dirname, '.last-sync-time')
+const SUMMARY_FILE = process.env.OPENCLAW_SYNC_SUMMARY_FILE || null
 
 const log = (msg) => console.log(`[${new Date().toISOString()}] ${msg}`)
 
-function runScript(name, path, timeoutMs = 3600000) {
+const pipelineSummary = {
+  runId: `openclaw-${DELTA_FLAG ? 'delta' : 'full'}-${Date.now()}`,
+  syncType: DELTA_FLAG ? 'delta' : 'full',
+  status: 'running',
+  partialSuccess: false,
+  startedAt: new Date().toISOString(),
+  completedAt: null,
+  durationSeconds: null,
+  failedStepNames: [],
+  steps: [],
+}
+
+function persistSummary() {
+  if (!SUMMARY_FILE) return
+
+  pipelineSummary.failedStepNames = pipelineSummary.steps
+    .filter((step) => step.status === 'failed')
+    .map((step) => step.name)
+  pipelineSummary.partialSuccess =
+    pipelineSummary.status !== 'failed' && pipelineSummary.failedStepNames.length > 0
+
+  try {
+    writeFileSync(SUMMARY_FILE, JSON.stringify(pipelineSummary, null, 2))
+  } catch {}
+}
+
+function recordStep(name, status, startedAt, extra = {}) {
+  const completedAt = new Date()
+  pipelineSummary.steps.push({
+    name,
+    status,
+    startedAt: startedAt.toISOString(),
+    completedAt: completedAt.toISOString(),
+    durationSeconds: Math.round((completedAt.getTime() - startedAt.getTime()) / 100) / 10,
+    ...extra,
+  })
+  persistSummary()
+}
+
+function finalizeSummary(status, extra = {}) {
+  const completedAt = new Date()
+  pipelineSummary.status = status
+  pipelineSummary.completedAt = completedAt.toISOString()
+  pipelineSummary.durationSeconds =
+    Math.round((completedAt.getTime() - new Date(pipelineSummary.startedAt).getTime()) / 100) / 10
+  Object.assign(pipelineSummary, extra)
+  persistSummary()
+}
+
+persistSummary()
+
+function parseNonNegativeInt(value, fallback) {
+  const parsed = Number.parseInt(value ?? '', 10)
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback
+}
+
+function runScript(name, path, timeoutMs = 3600000, options = {}) {
+  const stepStartedAt = new Date()
   log(`\n${'='.repeat(60)}`)
   log(`STEP: ${name}`)
   log('='.repeat(60))
   try {
-    execFileSync('node', [path], {
+    const nodeArgs = options.nodeArgs ?? []
+    const scriptArgs = options.scriptArgs ?? []
+    execFileSync('node', [...nodeArgs, path, ...scriptArgs], {
       cwd: rootDir,
       stdio: 'inherit',
       timeout: timeoutMs, // default 1 hour; caller can override
-      env: { ...process.env, DATABASE_URL: config.pg.connectionString },
+      env: {
+        ...process.env,
+        DATABASE_URL: config.pg.connectionString,
+        ...(options.env ?? {}),
+      },
     })
     log(`${name}: DONE`)
+    recordStep(name, 'success', stepStartedAt)
     return true
   } catch (err) {
     log(`${name}: FAILED (exit ${err.status})`)
+    recordStep(name, 'failed', stepStartedAt, {
+      error: err instanceof Error ? err.message : String(err),
+      details: {
+        exitCode: typeof err?.status === 'number' ? err.status : null,
+        timeoutMs,
+      },
+    })
     return false
   }
 }
 
 async function refreshViews() {
+  const stepStartedAt = new Date()
   log(`\n${'='.repeat(60)}`)
   log('STEP: Refresh materialized views')
   log('='.repeat(60))
@@ -63,6 +138,17 @@ async function refreshViews() {
     const cpb = await sql`SELECT COUNT(*) as cnt FROM category_price_baselines`
     log(`  Regional averages: ${rpa[0].cnt}`)
     log(`  Category baselines: ${cpb[0].cnt}`)
+    recordStep('Refresh materialized views', 'success', stepStartedAt, {
+      details: {
+        categoryBaselines: Number(cpb[0].cnt),
+        regionalPriceAverages: Number(rpa[0].cnt),
+      },
+    })
+  } catch (err) {
+    recordStep('Refresh materialized views', 'failed', stepStartedAt, {
+      error: err instanceof Error ? err.message : String(err),
+    })
+    throw err
   } finally {
     await sql.end()
   }
@@ -97,6 +183,7 @@ async function printSummary() {
 }
 
 function pullDocketDocs() {
+  const stepStartedAt = new Date()
   log(`\n${'='.repeat(60)}`)
   log('STEP: Pull docket output documents')
   log('='.repeat(60))
@@ -114,6 +201,9 @@ function pullDocketDocs() {
 
     if (!fileList) {
       log('  No docket output files to pull.')
+      recordStep('Pull docket output documents', 'success', stepStartedAt, {
+        details: { filesSynced: 0 },
+      })
       return
     }
 
@@ -162,12 +252,19 @@ function pullDocketDocs() {
     }
 
     log(`  Docket pull: ${files.length} document(s) synced`)
+    recordStep('Pull docket output documents', 'success', stepStartedAt, {
+      details: { filesSynced: files.length },
+    })
   } catch (err) {
     log(`  Docket pull failed: ${err.message}`)
+    recordStep('Pull docket output documents', 'failed', stepStartedAt, {
+      error: err instanceof Error ? err.message : String(err),
+    })
   }
 }
 
 async function deltaSync() {
+  const stepStartedAt = new Date()
   log(`\n${'='.repeat(60)}`)
   log('STEP: Delta sync (incremental)')
   log('='.repeat(60))
@@ -194,6 +291,13 @@ async function deltaSync() {
     if (data.price_changes.count === 0 && data.updated_prices.count === 0) {
       log('  No changes since last sync.')
       writeFileSync(LAST_SYNC_FILE, data.server_time)
+      recordStep('Delta sync', 'success', stepStartedAt, {
+        details: {
+          appliedHistoryRows: 0,
+          priceChanges: 0,
+          updatedPrices: 0,
+        },
+      })
       return true
     }
 
@@ -228,9 +332,19 @@ async function deltaSync() {
     // Save sync timestamp
     writeFileSync(LAST_SYNC_FILE, data.server_time)
     log(`  Sync timestamp saved: ${data.server_time}`)
+    recordStep('Delta sync', 'success', stepStartedAt, {
+      details: {
+        appliedHistoryRows: data.price_changes.count,
+        priceChanges: data.price_changes.count,
+        updatedPrices: data.updated_prices.count,
+      },
+    })
     return true
   } catch (err) {
     log(`  Delta sync failed: ${err.message}`)
+    recordStep('Delta sync', 'failed', stepStartedAt, {
+      error: err instanceof Error ? err.message : String(err),
+    })
     return false
   }
 }
@@ -253,6 +367,9 @@ async function main() {
 
     const elapsed = Math.round((Date.now() - start) / 1000)
     log(`\nTotal time: ${elapsed}s (delta)`)
+    finalizeSummary(
+      pipelineSummary.failedStepNames.length > 0 ? 'partial' : 'success'
+    )
     return
   }
 
@@ -268,16 +385,57 @@ async function main() {
     log('Normalization sync failed. Continuing...')
   }
 
-  // Step 3: Sync prices from Pi API
+  // Step 3: Promote canonical food items into system_ingredients
+  const promoteOk = runScript(
+    'Promote canonical foods to system ingredients',
+    resolve(rootDir, 'scripts/openclaw-promote-foods.ts'),
+    3600000,
+    {
+      nodeArgs: ['--import', 'tsx'],
+    }
+  )
+  if (!promoteOk) {
+    log('Food promotion failed. Continuing...')
+  }
+
+  // Step 4: Refresh system ingredient market prices
+  const marketAggOk = runScript(
+    'Refresh system ingredient market prices',
+    resolve(rootDir, 'scripts/sync-system-ingredient-prices.mjs')
+  )
+  if (!marketAggOk) {
+    log('System ingredient market-price refresh failed. Continuing...')
+  }
+
+  // Step 5: Sync prices from Pi API
   const priceOk = runScript('Sync prices from Pi API', resolve(rootDir, 'scripts/run-openclaw-sync.mjs'))
   if (!priceOk) {
     log('Price sync failed.')
   }
 
-  // Step 4: Pull docket output documents from Pi
+  // Step 6: Incrementally document promoted ingredients
+  const knowledgeLimit = parseNonNegativeInt(process.env.OPENCLAW_FOOD_PROMOTION_WIKI_LIMIT, 50)
+  if (knowledgeLimit > 0) {
+    const wikiOk = runScript(
+      'Incremental ingredient knowledge enrichment',
+      resolve(rootDir, 'scripts/openclaw-wiki-enrichment.mjs'),
+      3600000,
+      {
+        scriptArgs: ['--resume', '--limit', String(knowledgeLimit)],
+      }
+    )
+    if (!wikiOk) {
+      log('Knowledge enrichment failed. Continuing...')
+    }
+  } else {
+    log('Skipping incremental ingredient knowledge enrichment (limit=0)')
+  }
+
+  // Step 7: Pull docket output documents from Pi
   pullDocketDocs()
 
-  // Step 5: Snapshot current prices for time-series tracking
+  // Step 8: Snapshot current prices for time-series tracking
+  const snapshotStepStartedAt = new Date()
   try {
     const sql = postgres(config.pg.connectionString)
     const snapshotResult = await sql`
@@ -289,18 +447,26 @@ async function main() {
       ON CONFLICT DO NOTHING
     `
     log(`  Price snapshots: ${snapshotResult.count} observations recorded`)
+    recordStep('Snapshot current prices', 'success', snapshotStepStartedAt, {
+      details: {
+        snapshotCount: snapshotResult.count,
+      },
+    })
     await sql.end()
   } catch (err) {
     log(`  Price snapshots failed (non-blocking): ${err.message}`)
+    recordStep('Snapshot current prices', 'failed', snapshotStepStartedAt, {
+      error: err instanceof Error ? err.message : String(err),
+    })
   }
 
-  // Step 6: Refresh materialized views
+  // Step 9: Refresh materialized views
   await refreshViews()
 
   // Summary
   await printSummary()
 
-  // Step 7: Price probe - verify key ingredients have prices
+  // Step 10: Price probe - verify key ingredients have prices
   runScript('Price probe', resolve(__dirname, 'price-probe.mjs'))
 
   // Save sync timestamp for future delta syncs
@@ -308,9 +474,15 @@ async function main() {
 
   const elapsed = Math.round((Date.now() - start) / 1000)
   log(`\nTotal time: ${elapsed}s`)
+  finalizeSummary(
+    pipelineSummary.failedStepNames.length > 0 ? 'partial' : 'success'
+  )
 }
 
 main().catch((err) => {
+  finalizeSummary('failed', {
+    fatalError: err instanceof Error ? err.message : String(err),
+  })
   console.error('[sync-all] Fatal:', err.message)
   process.exit(1)
 })

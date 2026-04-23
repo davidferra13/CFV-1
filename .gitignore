@@ -19,6 +19,13 @@ chroma.sqlite3
 # misc
 .DS_Store
 *.pem
+*.key
+*.p12
+*.pfx
+.npmrc
+credentials.json
+service-account.json
+service-account-*.json
 
 # debug
 npm-debug.log*
@@ -207,6 +214,8 @@ cfv1-e2e-cookies.txt
 
 # Screenshots (ad-hoc debug captures)
 *.png
+!public/proof/*.png
+!public/social/*.png
 
 # RL Agent data (local SQLite, checkpoints, screenshots, session logs)
 /data/rl-db/

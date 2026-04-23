@@ -14,6 +14,7 @@
 - Canonical public intake lanes: `lib/public/intake-lane-config.ts` defines open booking, direct chef inquiry, embed, kiosk, Wix, and instant-book ingress; all public writers now stamp shared `submission_source` values, and admin provenance reads the same contract instead of inferring from raw `channel` values
 - Public intake body guard: open booking, embed inquiry, and kiosk inquiry now share explicit JSON body limits and honest malformed-body handling, so intake routes return `400` or `413` instead of generic `500`s on bad input
 - Public intent hardening: public chef inquiry, open booking, embed inquiry, and instant booking now run through one backend guard for IP and email throttles, silent honeypot handling, safe request metadata, and anonymous checkout dedupe before any client, inquiry, event, or Stripe checkout mutation
+- Instant-book duplicate suppression: repeated anonymous checkout attempts for the same chef, email, date, time, and booking intent now reuse a short-window cached checkout result plus Stripe idempotency instead of creating parallel draft records and sessions
 - Rate Card: mobile-friendly pricing reference
 - Leads: shared `/leads` workspace where generic website submissions stay claimable and founder-reviewed operator walkthrough requests stay in a separate evaluation lane
 - Calls: upcoming/completed/no-show, agenda, outcome tracking

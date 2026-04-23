@@ -6,9 +6,11 @@
  */
 
 import { openDb } from '../lib/db.mjs'
+import { mapWithConcurrency } from '../lib/async-pool.mjs'
 import { extractEntities } from '../lib/ollama-prompts.mjs'
 
-const BATCH_SIZE = parseInt(process.env.EXTRACT_BATCH_SIZE || '20', 10)
+const BATCH_SIZE = parseInt(process.env.EXTRACT_BATCH_SIZE || '64', 10)
+const EXTRACT_CONCURRENCY = parseInt(process.env.EXTRACT_CONCURRENCY || '8', 10)
 
 async function main() {
   const db = openDb()
@@ -44,7 +46,7 @@ async function main() {
 
   let succeeded = 0, failed = 0
 
-  for (const file of pending) {
+  await mapWithConcurrency(pending, EXTRACT_CONCURRENCY, async (file) => {
     try {
       const entities = await extractEntities(file.classification, file.ocr_text)
 
@@ -65,7 +67,7 @@ async function main() {
       console.error(`  [FAIL] ${file.original_path}: ${err.message}`)
       failed++
     }
-  }
+  })
 
   const durationMs = Date.now() - startTime
 

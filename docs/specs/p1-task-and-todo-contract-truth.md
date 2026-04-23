@@ -18,6 +18,7 @@ _Every status change, every claim, every verification gets a row. This is the au
 | Build completed       | 2026-04-22 15:22 EDT | Builder (Codex) |        |
 | Type check passed     | 2026-04-22 15:31 EDT | Builder (Codex) |        |
 | Playwright verified   | 2026-04-22 18:05 EDT | Builder (Codex) |        |
+| Follow-up closed      | 2026-04-22 20:53 EDT | Builder (Codex) |        |
 | Status: verified      | 2026-04-22 18:11 EDT | Builder (Codex) |        |
 
 ---
@@ -77,6 +78,8 @@ The current repo already has enough task infrastructure to be useful. What is br
 - Morning briefing, proactive overdue-task lookups, and Remy task summaries all read structured work from `tasks` with `chef_id` plus real `status`, `due_date`, and `priority` fields.
 - Workflow reminder completion stays on `chef_todos`, now using the canonical todo helpers and a reminder-text matcher instead of pretending reminders have structured task columns.
 - Remy prompt assembly now labels the structured work section as `TASK LIST`, matching the actual source.
+- The `/tasks` create panel now submits through the canonical `createTask()` path from a server-rendered form, so creation no longer depends on the page hydrating before the chef can save work.
+- Failed `/tasks` creates now redirect back to the same canonical create URL with a real error message and the chef's draft preserved instead of silently resetting or faking success.
 
 ---
 
@@ -218,7 +221,7 @@ Builder note:
 4. Run `graphify update .` after the slice lands.
 5. Start an isolated local server and authenticate a seeded chef through `/api/e2e/auth`.
 6. Open `/tasks` in Playwright and verify the page renders `Tasks`, `No tasks`, and the `New Task` modal without route or runtime failure.
-7. Treat the existing `/tasks` form create-path separately from this contract if it still fails to persist a new row during browser verification. That mutation path is not the owner of this spec's task/reminder source split.
+7. Follow-up closed on 2026-04-22: the canonical `/tasks` create form now persists real `tasks` rows through `createTask()`, survives refresh on the selected date, and keeps the draft open with an honest validation error when creation fails.
 
 ---
 

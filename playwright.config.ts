@@ -96,27 +96,52 @@ export default defineConfig({
     // Run: npm run test:coverage
     {
       name: 'coverage-public',
-      testMatch: ['**/coverage/01-public-routes.spec.ts'],
+      testMatch: [
+        '**/coverage/01-public-routes.spec.ts',
+        '**/coverage/07-public-static-inventory.spec.ts',
+        '**/coverage/13-public-seo-guards.spec.ts',
+      ],
       timeout: 120_000,
       // No storageState — unauthenticated
     },
     {
       name: 'coverage-chef',
-      testMatch: ['**/coverage/02-chef-routes.spec.ts'],
+      testMatch: [
+        '**/coverage/02-chef-routes.spec.ts',
+        '**/coverage/08-chef-static-inventory.spec.ts',
+      ],
       timeout: 120_000,
       use: { storageState: '.auth/chef.json' },
     },
     {
       name: 'coverage-client',
-      testMatch: ['**/coverage/03-client-routes.spec.ts'],
+      testMatch: [
+        '**/coverage/03-client-routes.spec.ts',
+        '**/coverage/09-client-static-inventory.spec.ts',
+      ],
       timeout: 120_000,
       use: { storageState: '.auth/client.json' },
     },
     {
       name: 'coverage-admin',
-      testMatch: ['**/coverage/04-admin-routes.spec.ts'],
+      testMatch: [
+        '**/coverage/04-admin-routes.spec.ts',
+        '**/coverage/10-admin-static-inventory.spec.ts',
+      ],
       timeout: 120_000,
       use: { storageState: '.auth/admin.json' },
+    },
+    {
+      name: 'coverage-staff',
+      testMatch: ['**/coverage/11-staff-routes.spec.ts'],
+      timeout: 120_000,
+      use: { storageState: '.auth/staff.json' },
+    },
+    {
+      name: 'coverage-partner',
+      testMatch: ['**/coverage/12-partner-routes.spec.ts'],
+      timeout: 120_000,
+      use: { storageState: '.auth/partner.json' },
     },
     {
       name: 'coverage-auth-boundaries',

@@ -437,6 +437,7 @@ function writeReports(runDir, options, results, skipped, manifestMeta) {
     runDir: relativePath(ROOT, runDir),
     manifest: {
       discoveredRoutes: manifestMeta.discoveredRoutes,
+      dynamicResolverSummary: manifestMeta.summary ?? null,
       selectedRoutes: manifestMeta.selectedRoutes.length,
       skippedDynamicRoutes: skipped.length,
       selectedRoles: options.roles.length > 0 ? options.roles : ROLE_ORDER,
@@ -536,7 +537,7 @@ async function main() {
   ensureDir(runDir)
 
   const serverState = await ensureServer(options.baseUrl, options.startServer, runDir)
-  const manifest = discoverSiteAuditRoutes(ROOT)
+  const manifest = await discoverSiteAuditRoutes(ROOT)
   const selectedRoutes = pickRoutesForRun(
     manifest.routes,
     options.roles,
@@ -598,6 +599,7 @@ async function main() {
   const report = writeReports(runDir, options, results, skipped, {
     discoveredRoutes: manifest.routes.length,
     selectedRoutes,
+    summary: manifest.summary ?? null,
   })
 
   console.log(`[site-audit] report: ${report.reportPath}`)

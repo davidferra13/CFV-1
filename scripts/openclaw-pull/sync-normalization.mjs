@@ -25,93 +25,172 @@ try {
 const BATCH_SIZE = 500
 const log = (msg) => console.log(`[${new Date().toISOString()}] ${msg}`)
 
-// Pi's Ollama endpoint for embeddings
+// Pi's Ollama endpoint for local Gemma 4 matching
 const OLLAMA_URL = `http://${config.pi.host}:11434`
+const GEMMA_MODEL = process.env.OPENCLAW_LOCAL_MODEL || process.env.OLLAMA_MODEL || 'gemma4'
+const GEMMA_KEEP_ALIVE = process.env.OPENCLAW_OLLAMA_KEEP_ALIVE || '30m'
+const MATCH_CONCURRENCY = parsePositiveInt(process.env.OPENCLAW_MATCH_CONCURRENCY, 8)
+const GEMMA_SHORTLIST_SIZE = parsePositiveInt(process.env.OPENCLAW_GEMMA_SHORTLIST_SIZE, 12)
+const TRIGRAM_EXACT_THRESHOLD = parseFloat(process.env.OPENCLAW_TRIGRAM_EXACT_THRESHOLD || '0.8')
+const TRIGRAM_SHORTLIST_THRESHOLD = parseFloat(process.env.OPENCLAW_TRIGRAM_SHORTLIST_THRESHOLD || '0.18')
+const GEMMA_MIN_CONFIDENCE = parseFloat(process.env.OPENCLAW_GEMMA_MIN_CONFIDENCE || '0.7')
 
-/**
- * Get embedding vector from Pi's Ollama (nomic-embed-text model)
- */
-async function getEmbedding(text) {
+function parsePositiveInt(value, fallback) {
+  const parsed = Number.parseInt(value || '', 10)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback
+}
+
+function chunk(items, size) {
+  const batches = []
+  for (let i = 0; i < items.length; i += size) {
+    batches.push(items.slice(i, i + size))
+  }
+  return batches
+}
+
+function extractJsonObject(text) {
+  const match = text.match(/\{[\s\S]*\}/)
+  if (!match) return null
   try {
-    const res = await fetch(`${OLLAMA_URL}/api/embeddings`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'nomic-embed-text', prompt: text }),
-      signal: AbortSignal.timeout(10000),
-    })
-    if (!res.ok) return null
-    const data = await res.json()
-    return data.embedding
+    return JSON.parse(match[0])
   } catch {
     return null
   }
 }
 
 /**
- * Cosine similarity between two vectors
+ * Build a deterministic shortlist, then let Gemma 4 decide whether
+ * any candidate is actually the same ingredient.
  */
-function cosineSim(a, b) {
-  if (!a || !b || a.length !== b.length) return 0
-  let dot = 0, magA = 0, magB = 0
-  for (let i = 0; i < a.length; i++) {
-    dot += a[i] * b[i]
-    magA += a[i] * a[i]
-    magB += b[i] * b[i]
+async function getCandidateShortlist(sql, ingredientName) {
+  let candidates = await sql`
+    SELECT
+      id,
+      name,
+      extensions.similarity(LOWER(name), ${ingredientName}) AS sim
+    FROM system_ingredients
+    WHERE extensions.similarity(LOWER(name), ${ingredientName}) > ${TRIGRAM_SHORTLIST_THRESHOLD}
+    ORDER BY sim DESC, name ASC
+    LIMIT ${GEMMA_SHORTLIST_SIZE}
+  `
+
+  if (candidates.length === 0) {
+    candidates = await sql`
+      SELECT
+        id,
+        name,
+        extensions.similarity(LOWER(name), ${ingredientName}) AS sim
+      FROM system_ingredients
+      ORDER BY sim DESC, name ASC
+      LIMIT ${GEMMA_SHORTLIST_SIZE}
+    `
   }
-  return dot / (Math.sqrt(magA) * Math.sqrt(magB))
+
+  return candidates.map((candidate) => ({
+    id: candidate.id,
+    name: candidate.name,
+    sim: Number(candidate.sim || 0),
+  }))
 }
 
-// Cache of system ingredient embeddings (built lazily)
-let _systemEmbeddingsCache = null
+async function reviewShortlistWithGemma(ingredientName, candidates) {
+  if (candidates.length === 0) return null
 
-/**
- * Semantic search: find best system_ingredient match using embeddings.
- * Falls back gracefully if Ollama is unavailable.
- */
-async function semanticSearch(sql, ingredientName) {
-  // Get embedding for the query ingredient
-  const queryEmb = await getEmbedding(ingredientName)
-  if (!queryEmb) return null
+  const prompt = [
+    'You are matching a chef ingredient name to a curated canonical ingredient shortlist.',
+    'Choose exactly one candidate only if it is clearly the same ingredient.',
+    'If none are a strong match, return null.',
+    'Do not generalize across different foods, cuts, species, or substitutes.',
+    'Respond with JSON only in this exact shape:',
+    '{"matchId": "candidate-id-or-null", "confidence": 0.0, "reason": "short reason"}',
+    '',
+    `Ingredient: ${ingredientName}`,
+    'Candidates:',
+    ...candidates.map((candidate, index) => (
+      `${index + 1}. id=${candidate.id}; name=${candidate.name}; trigram=${candidate.sim.toFixed(2)}`
+    )),
+  ].join('\n')
 
-  // Build cache of system ingredient embeddings (first call only)
-  if (!_systemEmbeddingsCache) {
-    log('  Building semantic embedding cache (first use)...')
-    const sysIngredients = await sql`
-      SELECT id, name FROM system_ingredients
-      ORDER BY name
-    `
-    _systemEmbeddingsCache = []
-    // Batch embed in groups of 10 to avoid overwhelming Ollama
-    for (let i = 0; i < sysIngredients.length; i += 10) {
-      const batch = sysIngredients.slice(i, i + 10)
-      const results = await Promise.all(
-        batch.map(async (si) => {
-          const emb = await getEmbedding(si.name)
-          return emb ? { id: si.id, name: si.name, embedding: emb } : null
-        })
-      )
-      _systemEmbeddingsCache.push(...results.filter(Boolean))
+  try {
+    const res = await fetch(`${OLLAMA_URL}/api/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: GEMMA_MODEL,
+        prompt,
+        stream: false,
+        keep_alive: GEMMA_KEEP_ALIVE,
+        options: { temperature: 0, num_predict: 180 },
+      }),
+      signal: AbortSignal.timeout(30000),
+    })
+    if (!res.ok) return null
+
+    const data = await res.json()
+    const parsed = extractJsonObject(data.response || '')
+    if (!parsed) return null
+
+    const confidence = Number(parsed.confidence || 0)
+    const matchId = typeof parsed.matchId === 'string' ? parsed.matchId : null
+    if (!matchId) return null
+
+    const selected = candidates.find((candidate) => candidate.id === matchId)
+    if (!selected) return null
+
+    return {
+      id: selected.id,
+      name: selected.name,
+      confidence,
+      reason: typeof parsed.reason === 'string' ? parsed.reason : '',
     }
-    log(`  Cached ${_systemEmbeddingsCache.length} system ingredient embeddings`)
+  } catch {
+    return null
   }
+}
 
-  // Find best cosine similarity match
-  let bestMatch = null
-  let bestScore = 0
-  for (const si of _systemEmbeddingsCache) {
-    const score = cosineSim(queryEmb, si.embedding)
-    if (score > bestScore) {
-      bestScore = score
-      bestMatch = si
+async function createAlias(sql, ingredient, systemIngredientId, method, score) {
+  await sql`
+    INSERT INTO ingredient_aliases (
+      id, tenant_id, ingredient_id, system_ingredient_id,
+      match_method, similarity_score, confirmed_at, created_at
+    ) VALUES (
+      gen_random_uuid(), ${ingredient.tenant_id}, ${ingredient.id}, ${systemIngredientId},
+      ${method}, ${score}, NULL, now()
+    )
+    ON CONFLICT (tenant_id, ingredient_id) DO NOTHING
+  `
+}
+
+async function processIngredient(sql, ingredient) {
+  const stripped = ingredient.name.replace(/\s*\[.*?\]\s*$/, '')
+  const cleanName = stripped.trim().toLowerCase()
+  const candidates = await getCandidateShortlist(sql, cleanName)
+  const bestCandidate = candidates[0] || null
+
+  if (bestCandidate && bestCandidate.sim >= TRIGRAM_EXACT_THRESHOLD) {
+    const method = bestCandidate.sim >= 0.95 ? 'exact' : 'trigram'
+    const score = Math.round(bestCandidate.sim * 100) / 100
+    await createAlias(sql, ingredient, bestCandidate.id, method, score)
+    return {
+      outcome: 'matched',
+      message: `  "${ingredient.name}" -> "${bestCandidate.name}" (${(score * 100).toFixed(0)}%)`,
     }
   }
 
-  // Only accept matches above 0.75 cosine similarity
-  if (bestMatch && bestScore >= 0.75) {
-    return { id: bestMatch.id, name: bestMatch.name, score: Math.round(bestScore * 100) / 100 }
+  const gemmaMatch = await reviewShortlistWithGemma(cleanName, candidates)
+  if (gemmaMatch && gemmaMatch.confidence >= GEMMA_MIN_CONFIDENCE) {
+    const score = Math.round(gemmaMatch.confidence * 100) / 100
+    await createAlias(sql, ingredient, gemmaMatch.id, 'semantic', score)
+    return {
+      outcome: 'matched',
+      message: `  "${ingredient.name}" -> "${gemmaMatch.name}" (gemma, ${(score * 100).toFixed(0)}%)`,
+    }
   }
 
-  return null
+  return {
+    outcome: 'unmatched',
+    message: `  No match for "${ingredient.name}"`,
+  }
 }
 
 async function main() {
@@ -195,8 +274,7 @@ async function main() {
 
   // Ensure pg_trgm is accessible (installed in extensions schema)
   try {
-    await sql.unsafe('SET search_path TO public, extensions')
-    const test = await sql`SELECT similarity('test', 'test') as sim`
+    const test = await sql`SELECT extensions.similarity('test', 'test') as sim`
     log('pg_trgm ready (similarity=' + test[0].sim + ')')
   } catch (err) {
     log('WARN: pg_trgm not available: ' + err.message)
@@ -215,60 +293,21 @@ async function main() {
 
   let aliasesCreated = 0
 
-  for (const ing of chefIngredients) {
-    // Strip recipe context in brackets, e.g. "Honey [Pistachio Baklava...]" -> "Honey"
-    const stripped = ing.name.replace(/\s*\[.*?\]\s*$/, '')
-    const cleanName = stripped.trim().toLowerCase()
-
-    try {
-      // Trigram similarity match against system_ingredients
-      const match = await sql`
-        SELECT id, name,
-          similarity(LOWER(name), ${cleanName}) as sim
-        FROM system_ingredients
-        WHERE similarity(LOWER(name), ${cleanName}) > 0.3
-        ORDER BY sim DESC
-        LIMIT 1
-      `
-
-      if (match.length > 0) {
-        const method = match[0].sim >= 0.8 ? 'exact' : 'trigram'
-        await sql`
-          INSERT INTO ingredient_aliases (
-            id, tenant_id, ingredient_id, system_ingredient_id,
-            match_method, similarity_score, confirmed_at, created_at
-          ) VALUES (
-            gen_random_uuid(), ${ing.tenant_id}, ${ing.id}, ${match[0].id},
-            ${method}, ${Math.round(match[0].sim * 100) / 100}, NULL, now()
-          )
-          ON CONFLICT (tenant_id, ingredient_id) DO NOTHING
-        `
-        aliasesCreated++
-        if (aliasesCreated <= 10) {
-          log(`  "${ing.name}" -> "${match[0].name}" (${(match[0].sim * 100).toFixed(0)}%)`)
-        }
-      } else {
-        // Semantic fallback: use embedding similarity via Pi's Ollama
-        const semanticMatch = await semanticSearch(sql, cleanName)
-        if (semanticMatch) {
-          await sql`
-            INSERT INTO ingredient_aliases (
-              id, tenant_id, ingredient_id, system_ingredient_id,
-              match_method, similarity_score, confirmed_at, created_at
-            ) VALUES (
-              gen_random_uuid(), ${ing.tenant_id}, ${ing.id}, ${semanticMatch.id},
-              'semantic', ${semanticMatch.score}, NULL, now()
-            )
-            ON CONFLICT (tenant_id, ingredient_id) DO NOTHING
-          `
-          aliasesCreated++
-          log(`  "${ing.name}" -> "${semanticMatch.name}" (semantic, ${(semanticMatch.score * 100).toFixed(0)}%)`)
-        } else {
-          log(`  No match for "${ing.name}"`)
+  for (const batch of chunk(chefIngredients, MATCH_CONCURRENCY)) {
+    const results = await Promise.all(batch.map(async (ingredient) => {
+      try {
+        return await processIngredient(sql, ingredient)
+      } catch (err) {
+        return {
+          outcome: 'error',
+          message: `  Error matching "${ingredient.name}": ${err.message.substring(0, 80)}`,
         }
       }
-    } catch (err) {
-      log(`  Error matching "${ing.name}": ${err.message.substring(0, 80)}`)
+    }))
+
+    for (const result of results) {
+      if (result.outcome === 'matched') aliasesCreated++
+      log(result.message)
     }
   }
 

@@ -26,6 +26,8 @@ const PROJECTS = [
   'coverage-chef',
   'coverage-client',
   'coverage-admin',
+  'coverage-staff',
+  'coverage-partner',
   'coverage-auth-boundaries',
   'coverage-api',
 ]

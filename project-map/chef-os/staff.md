@@ -8,7 +8,7 @@
 ## What's Here
 
 - Staff directory: roles, hours tracking, performance metrics
-- Task board: kanban by priority/status, assignment, carry-forward, overdue badges
+- Task board: kanban by priority/status, assignment, carry-forward, overdue badges, and a server-handled `New Task` create form that persists through the canonical `createTask()` path and preserves honest failure state
 - Stations (Kitchen Clipboard): station setup, daily ops, per-station task queues
 - Staff portal (staff-facing): read-only tasks, performance, hours log
 - Staff activity board: real-time active/idle/offline, current tasks, heat map

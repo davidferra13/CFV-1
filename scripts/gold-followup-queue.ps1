@@ -99,7 +99,7 @@ $primaryQueue = @(
   [pscustomobject]@{
     Name = "coverage-full"
     MinRemainingMin = 180
-    Command = "npx playwright test --project=coverage-public --project=coverage-chef --project=coverage-client --project=coverage-admin --project=coverage-auth-boundaries --project=coverage-api$pwFlag"
+    Command = "npx playwright test --project=coverage-public --project=coverage-chef --project=coverage-client --project=coverage-admin --project=coverage-staff --project=coverage-partner --project=coverage-auth-boundaries --project=coverage-api$pwFlag"
   },
   [pscustomobject]@{
     Name = "interactions-core"

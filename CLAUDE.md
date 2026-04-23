@@ -54,6 +54,7 @@ Requires: Ollama running locally (`ollama serve`). If Ollama is down, fall back 
 - **Project Map:** `project-map/` is the browsable product mirror. 20 files in 4 folders (chef-os, consumer-os, public, infrastructure). Update the relevant file when you build or change features.
 - **Definition of done:** a feature is only done when it is verified in the real UI, honest about failure, and protected against drift. See `docs/definition-of-done.md`
 - **Interface philosophy:** all UI work must comply with `docs/specs/universal-interface-philosophy.md`. Mandatory read for all builder agents before any UI implementation.
+- **Surface grammar:** every UI surface must declare and follow a mode from `docs/specs/surface-grammar-governance.md` before layout or component work begins.
 
 - **Stack:** Next.js · PostgreSQL (Drizzle ORM via postgres.js) · Auth.js v5 · Stripe · Local FS storage · SSE realtime
 - **Data safety first:** all migrations are additive, all destructive ops require explicit approval
@@ -158,7 +159,7 @@ Run `bash scripts/hallucination-scan.sh` for the full 7-pattern audit. Report fo
 
 ## DEFINITION OF DONE
 
-`built` is not `done`. A feature requires: (1) verified in real app, (2) failure handled honestly, (3) automated drift protection, (4) UI matches reality, (5) complies with `docs/specs/universal-interface-philosophy.md`. Full criteria: `docs/definition-of-done.md`.
+`built` is not `done`. A feature requires: (1) verified in real app, (2) failure handled honestly, (3) automated drift protection, (4) UI matches reality, (5) complies with `docs/specs/universal-interface-philosophy.md`, (6) respects `docs/specs/surface-grammar-governance.md`. Full criteria: `docs/definition-of-done.md`.
 
 Tours/onboarding: every step must target a real element. Missing targets fail closed. Visiting a route is not proof of completion.
 

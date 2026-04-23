@@ -8,7 +8,8 @@ import fs from 'fs'
 import path from 'path'
 
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434'
-const VISION_MODEL = process.env.OLLAMA_VISION_MODEL || 'gemma4'
+const VISION_MODEL = process.env.OPENCLAW_LOCAL_MODEL || process.env.OLLAMA_VISION_MODEL || process.env.OLLAMA_MODEL || 'gemma4'
+const KEEP_ALIVE = process.env.OPENCLAW_OLLAMA_KEEP_ALIVE || '30m'
 
 /**
  * Extract text from an image file using the OCR pipeline.
@@ -59,6 +60,7 @@ async function tryOllamaVision(filePath) {
         prompt: 'Read ALL text visible in this image. Output the text exactly as written, preserving formatting. If this is a receipt, invoice, or document, extract every line.',
         images: [base64],
         stream: false,
+        keep_alive: KEEP_ALIVE,
         options: { temperature: 0.1, num_predict: 2000 }
       }),
       signal: AbortSignal.timeout(120000)

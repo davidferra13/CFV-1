@@ -260,6 +260,22 @@ const PLAYWRIGHT_PHASES = [
     estimateMin: 15,
   },
   {
+    id: 'pw-coverage-staff',
+    name: 'Playwright Coverage - Staff',
+    type: 'npx',
+    command: 'playwright',
+    args: ['test', '--project=coverage-staff', '--reporter=json'],
+    estimateMin: 10,
+  },
+  {
+    id: 'pw-coverage-partner',
+    name: 'Playwright Coverage - Partner',
+    type: 'npx',
+    command: 'playwright',
+    args: ['test', '--project=coverage-partner', '--reporter=json'],
+    estimateMin: 10,
+  },
+  {
     id: 'pw-interactions-admin',
     name: 'Playwright Interactions - Admin',
     type: 'npx',

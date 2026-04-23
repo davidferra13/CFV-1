@@ -87,6 +87,7 @@ These are the most relevant recent supporting documents for current-state unders
 - [Multi-Persona Workflows for Food Discovery, Private-Chef Booking, and Dinner Planning - 2026-04-02](./multi-persona-workflows-for-food-discovery-private-chef-booking-and-planning-2026-04-02.md)
 - [Developer and Chef Workflow Research for Surface Classification - 2026-04-02](./developer-and-chef-workflow-research-for-surface-classification-2026-04-02.md)
 - [Directory Operator and Developer Workflows - 2026-04-02](./directory-operator-and-developer-workflows-2026-04-02.md)
+- [ChefFlow Homepage Improvement Framework - 2026-04-22](./2026-04-22-chefflow-homepage-improvement-framework.md)
 - [Route Discoverability Report](./route-discoverability-report.md)
 - [Cross System Continuity Audit](./cross-system-continuity-audit.md)
 - [Chef Shell Clarity Intent Audit](./chef-shell-clarity-intent-audit.md)
@@ -145,6 +146,12 @@ If someone asks what research/specs matter for the website build specifically, s
 
 - [Website Build Research and Spec Cross-Reference - 2026-04-02](./foundations/2026-04-02-website-build-research-and-spec-cross-reference.md)
 - [Source-to-Close Funnel Truth Map - 2026-04-03](./foundations/2026-04-03-source-to-close-funnel-truth-map.md)
+
+If someone asks how external homepage research should translate into ChefFlow improvements, or how to judge "best websites" without drifting away from ChefFlow's operator acquisition goals, start with:
+
+- [ChefFlow Homepage Improvement Framework - 2026-04-22](./2026-04-22-chefflow-homepage-improvement-framework.md)
+- [Canonical Project Definition and Scope](../project-definition-and-scope.md)
+- [Product Definition](../chefflow-product-definition.md)
 
 If someone asks about website performance hardening, render-path optimization, or the current state of public-shell loading work, start with:
 

@@ -11,6 +11,7 @@
 //   .auth/staff.json       (demo staff - Maria Santos)
 //   .auth/partner.json     (demo partner - The Langham)
 //   .auth/demo-b.json      (demo chef B - Chef Marcus Rivera)
+//   .auth/chef-bob.state.json (Chef Bob - golden-case rehearsal)
 
 import { chromium } from 'playwright'
 import { readFileSync, existsSync } from 'fs'
@@ -26,6 +27,7 @@ const ACCOUNTS = [
   { credFile: '.auth/demo-staff.json',   outputFile: '.auth/staff.json',   label: 'Demo Staff',   landingPath: '/my-schedule' },
   { credFile: '.auth/demo-partner.json', outputFile: '.auth/partner.json', label: 'Demo Partner', landingPath: '/partner' },
   { credFile: '.auth/demo-chef-b.json',  outputFile: '.auth/demo-b.json',  label: 'Demo Chef B',  landingPath: '/dashboard' },
+  { credFile: '.auth/chef-bob.json',     outputFile: '.auth/chef-bob.state.json', label: 'Chef Bob', landingPath: '/dashboard' },
 ]
 
 async function authAccount(browser, account) {
