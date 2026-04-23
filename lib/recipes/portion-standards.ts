@@ -45,8 +45,8 @@ export type PortionInfo = {
   rawFactor: number | null // multiply cooked oz × rawFactor = raw purchase oz
   rawNote: string | null // e.g. "25% cooking loss - buy ~8 oz raw per guest"
   totalOz: number // portionOz × guestCount
-  totalLabel: string // formatted total e.g. "4.5 lbs cooked" or "6 cups"
-  rawTotalLabel: string | null // formatted raw purchase total e.g. "5.8 lbs raw"
+  totalLabel: string // formatted total e.g. "4.5 lb cooked" or "6 cups"
+  rawTotalLabel: string | null // formatted raw purchase total e.g. "5.8 lb raw"
 }
 
 // ─── Portion Standards ───────────────────────────────────────────────────────
@@ -376,7 +376,7 @@ function formatOz(totalOz: number, guestCount: number, portionOz: number): strin
 
   if (totalOz >= 32) {
     const lbs = totalOz / 16
-    return `${fmtNum(lbs)} lbs (${breakdown})`
+    return `${fmtNum(lbs)} lb (${breakdown})`
   }
   if (totalOz >= 8) {
     const cups = totalOz / 8

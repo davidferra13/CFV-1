@@ -91,7 +91,7 @@ export function MenuWhatIfPanel({ menuId }: MenuWhatIfPanelProps) {
             <>
               {data.currentDishes.length === 0 ? (
                 <p className="text-xs text-stone-500">
-                  Add dishes to the menu to use the simulator.
+                  Add items to the menu to use the simulator.
                 </p>
               ) : (
                 <>

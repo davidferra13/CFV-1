@@ -74,7 +74,7 @@ const ENTRY_TYPE_STYLES: Record<string, { label: string; className: string }> = 
   deposit: { label: 'Deposit', className: 'bg-brand-900 text-brand-300' },
   installment: { label: 'Installment', className: 'bg-brand-900 text-brand-800' },
   final_payment: { label: 'Final Payment', className: 'bg-green-900 text-green-800' },
-  tip: { label: 'Tip', className: 'bg-purple-900 text-purple-800' },
+  tip: { label: 'Gratuity', className: 'bg-purple-900 text-purple-800' },
   refund: { label: 'Refund', className: 'bg-red-900 text-red-800' },
   adjustment: { label: 'Adjustment', className: 'bg-stone-800 text-stone-300' },
   add_on: { label: 'Add-On', className: 'bg-orange-900 text-orange-800' },
@@ -128,7 +128,9 @@ export function ClientFinancialPanel({ eventBreakdown, ledgerEntries, summary }:
             </div>
 
             <div className="p-4 rounded-lg bg-purple-950 border border-purple-100">
-              <p className="text-xs font-medium text-purple-600 uppercase tracking-wide">Tips</p>
+              <p className="text-xs font-medium text-purple-600 uppercase tracking-wide">
+                Gratuities
+              </p>
               <p className="text-xl font-bold text-purple-900 mt-1">
                 {formatCurrency(summary.totalTipsCents)}
               </p>

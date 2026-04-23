@@ -82,7 +82,7 @@ export function CancellationPolicyDisplay({ variant, policy = DEFAULT_POLICY }: 
         {/* Deposit line */}
         <div className="flex items-center justify-between px-4 py-3 bg-stone-800">
           <div>
-            <p className="text-sm font-medium text-stone-300">Security deposit</p>
+            <p className="text-sm font-medium text-stone-300">Retainer</p>
           </div>
           <span
             className={`text-sm font-medium px-2.5 py-0.5 rounded-full ${

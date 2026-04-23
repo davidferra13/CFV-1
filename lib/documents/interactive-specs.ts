@@ -426,7 +426,7 @@ export function resetChecklistToSpec(data: ResetChecklistData): InteractiveDocSp
           initialState: paymentReceived ? (2 as ItemState) : (0 as ItemState),
         },
         { id: 'e-1', label: 'All receipts photographed and uploaded', checkable: true },
-        { id: 'e-2', label: 'Tip recorded (if applicable)', checkable: true },
+        { id: 'e-2', label: 'Gratuity recorded (if applicable)', checkable: true },
       ],
     },
     {

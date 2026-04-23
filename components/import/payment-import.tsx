@@ -45,7 +45,7 @@ const PAYMENT_METHODS = [
 const ENTRY_TYPES = [
   { value: 'payment', label: 'Payment' },
   { value: 'deposit', label: 'Deposit' },
-  { value: 'tip', label: 'Tip' },
+  { value: 'tip', label: 'Gratuity' },
   { value: 'refund', label: 'Refund' },
 ]
 

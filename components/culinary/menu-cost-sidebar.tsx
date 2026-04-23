@@ -124,7 +124,7 @@ export function MenuCostSidebar({
       <div className={`rounded-lg border border-stone-700 bg-stone-800/50 p-4 ${className}`}>
         <h3 className="text-sm font-medium text-stone-300 mb-2">Cost Summary</h3>
         <p className="text-xs text-stone-500">
-          Add dishes and link recipes to see live cost tracking, food cost %, and margin alerts.
+          Add items and link recipes to see live cost tracking, food cost %, and margin alerts.
         </p>
       </div>
     )

@@ -52,9 +52,9 @@ export type EventFinancialSummaryData = {
   }
   // Section 4: Margins
   margins: {
-    foodCostPercent: number
+    foodCostPercent: number | null
     grossProfitCents: number
-    grossMarginPercent: number
+    grossMarginPercent: number | null
     netProfitWithTipCents: number
   }
   // Section 5: Time (from existing time_tracking fields on events)
@@ -174,11 +174,11 @@ export async function getEventFinancialSummaryFull(
   const grossMarginPercent =
     actualRevenueCents > 0
       ? parseFloat(((grossProfitCents / actualRevenueCents) * 100).toFixed(1))
-      : 0
+      : null
   const foodCostPercent =
     actualRevenueCents > 0
       ? parseFloat(((netFoodCostCents / actualRevenueCents) * 100).toFixed(1))
-      : 0
+      : null
   // Tips already included in actualRevenueCents, so grossProfitCents already reflects them
   const netProfitWithTipCents = grossProfitCents
 
@@ -224,8 +224,14 @@ export async function getEventFinancialSummaryFull(
         validSummaries.length
 
       comparison = {
-        vsAverageFoodCostPercent: parseFloat((foodCostPercent - avgFoodCost * 100).toFixed(1)),
-        vsAverageMarginPercent: parseFloat((grossMarginPercent - avgMargin * 100).toFixed(1)),
+        vsAverageFoodCostPercent:
+          foodCostPercent != null
+            ? parseFloat((foodCostPercent - avgFoodCost * 100).toFixed(1))
+            : null,
+        vsAverageMarginPercent:
+          grossMarginPercent != null
+            ? parseFloat((grossMarginPercent - avgMargin * 100).toFixed(1))
+            : null,
         vsClientHistoryNotes: null,
       }
     }
@@ -427,10 +433,10 @@ export type CloseOutData = {
     actualGrocerySpendCents: number
     totalCostCents: number
     grossProfitCents: number
-    grossMarginPercent: number
+    grossMarginPercent: number | null
     netProfitWithTipCents: number
     effectiveHourlyRateCents: number | null
-    foodCostPercent: number
+    foodCostPercent: number | null
     deductionValueCents: number | null
   }
   existingTip: { amountCents: number; paymentMethod: string } | null
@@ -514,17 +520,17 @@ export async function getEventCloseOutData(eventId: string): Promise<CloseOutDat
   const totalExpenses = Number((financialRow as any)?.total_expenses_cents) || 0
   const grossProfit = Number((financialRow as any)?.profit_cents) || quoted - totalExpenses
   const rawMargin = parseFloat(String((financialRow as any)?.profit_margin ?? ''))
-  const grossMargin = Number.isFinite(rawMargin) ? rawMargin * 100 : 0
+  const grossMargin = Number.isFinite(rawMargin) ? rawMargin * 100 : null
   const rawFoodCost = parseFloat(String((financialRow as any)?.food_cost_percentage ?? ''))
-  const foodCostPct = Number.isFinite(rawFoodCost) ? rawFoodCost * 100 : 0
+  const foodCostPct = Number.isFinite(rawFoodCost) ? rawFoodCost * 100 : null
 
   const mileageMiles = event.mileage_miles ? parseFloat(String(event.mileage_miles)) : null
   const deductionValueCents = mileageMiles
     ? Math.round(mileageMiles * IRS_MILEAGE_RATE_CENTS_PER_MILE)
     : null
 
-  // Net profit = gross + tip
-  const netProfitWithTipCents = grossProfit + tipCents
+  // Net profit = gross (tips already included in net_revenue from view)
+  const netProfitWithTipCents = grossProfit
 
   // Effective hourly rate - columns use time_ prefix (added in 20260216000003_operational_refinements.sql)
   const { data: timeRow } = await db
@@ -569,10 +575,10 @@ export async function getEventCloseOutData(eventId: string): Promise<CloseOutDat
       actualGrocerySpendCents: totalExpenses,
       totalCostCents: totalExpenses,
       grossProfitCents: grossProfit,
-      grossMarginPercent: Math.round(grossMargin * 10) / 10,
+      grossMarginPercent: grossMargin != null ? Math.round(grossMargin * 10) / 10 : null,
       netProfitWithTipCents,
       effectiveHourlyRateCents,
-      foodCostPercent: Math.round(foodCostPct * 10) / 10,
+      foodCostPercent: foodCostPct != null ? Math.round(foodCostPct * 10) / 10 : null,
       deductionValueCents,
     },
     existingTip: tipRow

@@ -162,7 +162,7 @@ export default async function ProspectingPage({
               <option value="follow_up">Follow Up</option>
               <option value="converted">Converted</option>
               <option value="not_interested">Not Interested</option>
-              <option value="dead">Dead</option>
+              <option value="dead">Closed - Lost</option>
             </select>
             <Button type="submit" variant="secondary" size="sm">
               Filter

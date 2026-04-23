@@ -71,7 +71,7 @@ export function CashFlowChart({ initialForecast }: Props) {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <Card>
           <CardContent className="py-3">
-            <p className="text-xs text-stone-500">Confirmed Income</p>
+            <p className="text-xs text-stone-500">Confirmed Revenue</p>
             <p className="text-xl font-semibold text-emerald-600">
               {formatCents(forecast.totalConfirmedInCents)}
             </p>
@@ -79,7 +79,7 @@ export function CashFlowChart({ initialForecast }: Props) {
         </Card>
         <Card>
           <CardContent className="py-3">
-            <p className="text-xs text-stone-500">Projected Income</p>
+            <p className="text-xs text-stone-500">Projected Revenue</p>
             <p className="text-xl font-semibold text-brand-600">
               {formatCents(forecast.totalProjectedInCents)}
             </p>

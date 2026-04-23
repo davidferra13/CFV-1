@@ -73,7 +73,7 @@ export default async function AARPage({ params }: { params: { id: string } }) {
             {existingAAR ? 'Edit Review' : 'Event Review'}
           </h1>
           <p className="text-stone-400 mt-1">
-            {existingAAR ? 'Update your post-service notes' : 'How did the dinner go?'}
+            {existingAAR ? 'Update your post-service notes' : 'How did the service go?'}
           </p>
         </div>
         <Link href={`/events/${params.id}`}>

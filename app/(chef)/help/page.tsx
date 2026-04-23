@@ -34,7 +34,7 @@ const HELP_CATEGORIES = [
     icon: ChefHat,
     label: 'Menus & Recipes',
     slug: 'culinary',
-    desc: 'Recipe library, menu building, costing',
+    desc: 'Recipe book, menu building, costing',
   },
   {
     icon: Settings,

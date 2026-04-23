@@ -204,7 +204,7 @@ export function generateCommerceReceiptPdf(data: CommerceReceiptData): Promise<B
       addTotalLine('Discount', data.discountCents, false, true)
     }
     if (data.tipCents > 0) {
-      addTotalLine('Tip', data.tipCents)
+      addTotalLine('Gratuity', data.tipCents)
     }
 
     y = divider(doc, y + 2)

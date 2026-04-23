@@ -54,7 +54,7 @@ export function EventDetailWrapTab({
         <Card className="p-6 border-brand-700 bg-brand-950">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h2 className="font-semibold text-brand-200">Ready to review this dinner?</h2>
+              <h2 className="font-semibold text-brand-200">Ready to review this service?</h2>
               <p className="text-sm text-brand-400 mt-1">
                 File your Event Review to track what went well and what to improve.
               </p>

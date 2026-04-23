@@ -100,7 +100,7 @@ const sections = [
       {
         href: '/finance/cash-flow',
         label: 'Cash Flow',
-        description: 'Monthly view of income, expenses, and upcoming installments',
+        description: 'Monthly view of revenue, expenses, and upcoming installments',
         icon: '📅',
       },
     ],

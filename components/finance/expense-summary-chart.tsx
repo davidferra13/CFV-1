@@ -15,7 +15,7 @@ const CATEGORY_LABELS: Record<ExpenseCategory, string> = {
   marketing: 'Marketing',
   rent: 'Rent',
   utilities: 'Utilities',
-  professional_services: 'Prof. Services',
+  professional_services: 'Professional Services',
   training: 'Training',
   other: 'Other',
 }
@@ -77,7 +77,9 @@ export function ExpenseSummaryChart() {
     }
 
     load()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   if (error) {
@@ -153,9 +155,7 @@ export function ExpenseSummaryChart() {
                           className="inline-block w-3 h-3 rounded-full"
                           style={{ backgroundColor: CATEGORY_COLORS[s.category] }}
                         />
-                        <span className="text-stone-700">
-                          {CATEGORY_LABELS[s.category]}
-                        </span>
+                        <span className="text-stone-700">{CATEGORY_LABELS[s.category]}</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-stone-500">{pct}%</span>
@@ -232,9 +232,7 @@ export function ExpenseSummaryChart() {
 
               {/* Total for period */}
               <div className="pt-3 border-t border-stone-100 flex justify-between text-sm">
-                <span className="text-stone-500">
-                  {trends.length}-month total
-                </span>
+                <span className="text-stone-500">{trends.length}-month total</span>
                 <span className="font-mono font-semibold text-stone-900">
                   {formatCents(trends.reduce((s, t) => s + t.total_cents, 0))}
                 </span>

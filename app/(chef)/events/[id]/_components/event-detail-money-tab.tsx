@@ -201,13 +201,21 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
           <div>
             <dt className="text-sm font-medium text-stone-500">Quoted Price</dt>
             <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
-              {formatCurrency(event.quoted_price_cents ?? 0)}
+              {event.quoted_price_cents != null ? (
+                formatCurrency(event.quoted_price_cents)
+              ) : (
+                <span className="text-stone-500">Not set</span>
+              )}
             </dd>
           </div>
           <div>
             <dt className="text-sm font-medium text-stone-500">Deposit Amount</dt>
             <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
-              {formatCurrency(event.deposit_amount_cents ?? 0)}
+              {event.deposit_amount_cents != null ? (
+                formatCurrency(event.deposit_amount_cents)
+              ) : (
+                <span className="text-stone-500">Not set</span>
+              )}
             </dd>
           </div>
           <div>
@@ -274,7 +282,7 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
       {/* Tip Log */}
       {(event.status === 'in_progress' || event.status === 'completed') && (
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Tips Received</h2>
+          <h2 className="text-xl font-semibold mb-4">Gratuity Received</h2>
           <TipLogPanel eventId={event.id} initialTips={eventTips} />
         </Card>
       )}

@@ -221,7 +221,7 @@ export function ShoppingListGenerator({ initialResult, initialEventIds }: Props)
   return (
     <Card>
       <CardHeader>
-        <CardTitle>ShoppingListGenerator</CardTitle>
+        <CardTitle>Grocery List</CardTitle>
         <p className="text-sm text-stone-500">
           Consolidated ingredient demand minus inventory, grouped by category or supplier.
         </p>

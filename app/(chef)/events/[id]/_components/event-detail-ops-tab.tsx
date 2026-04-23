@@ -421,7 +421,7 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
         </Card>
       )}
 
-      {/* Dinner Photos â€” upload and manage dish photos after the event */}
+      {/* Service Photos â€” upload and manage dish photos after the event */}
       {isCompletedOrBeyond && <EventPhotoGallery eventId={event.id} initialPhotos={eventPhotos} />}
 
       {/* Recipe Capture â€” for completed/in_progress events with menus */}

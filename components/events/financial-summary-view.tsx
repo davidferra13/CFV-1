@@ -142,7 +142,7 @@ export function FinancialSummaryView({ data }: Props) {
           value={formatCurrency(revenue.basePaymentReceivedCents)}
         />
         <DataRow
-          label="Tip / gratuity"
+          label="Gratuity"
           value={revenue.tipCents > 0 ? formatCurrency(revenue.tipCents) : '-'}
         />
         <DataRow label="Total received" value={formatCurrency(revenue.totalReceivedCents)} />
@@ -206,7 +206,7 @@ export function FinancialSummaryView({ data }: Props) {
         <DataRow label="Gross profit" value={formatCurrency(margins.grossProfitCents)} />
         <DataRow label="Gross margin %" value={`${margins.grossMarginPercent}%`} />
         <DataRow
-          label="Net profit (with tip)"
+          label="Net profit (with gratuity)"
           value={formatCurrency(margins.netProfitWithTipCents)}
         />
       </SectionCard>

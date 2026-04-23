@@ -38,7 +38,7 @@ const GroceryParseSchema = z.object({
 
 /**
  * Parse natural language grocery input into structured items.
- * Example: "2 lbs chicken breast, 1 bunch cilantro, 3 avocados, olive oil"
+ * Example: "2 lb chicken breast, 1 bunch cilantro, 3 avocados, olive oil"
  */
 export async function parseGroceryItems(rawInput: string): Promise<GroceryQuickAddResult> {
   if (!rawInput.trim()) {
@@ -51,7 +51,7 @@ Parse the following natural language grocery list into structured items.
 For each item, extract:
 - name: the ingredient name (clean, no quantity)
 - quantity: the numeric quantity (e.g., "2", "1.5", "a bunch of")
-- unit: the unit of measurement (e.g., "lbs", "oz", "each", "bunch", "can", "bottle")
+- unit: the unit of measurement (e.g., "lb", "oz", "each", "bunch", "can", "bottle")
 - category: produce, protein, dairy, pantry, spices, bakery, frozen, beverages, other
 - notes: any special notes (e.g., "organic", "ripe", "boneless skinless")
 

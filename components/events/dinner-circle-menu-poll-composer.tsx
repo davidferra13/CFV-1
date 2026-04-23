@@ -225,7 +225,7 @@ export function DinnerCircleMenuPollComposer({
       {dishes.length === 0 ? (
         <div className="rounded-2xl border border-amber-900/40 bg-amber-950/20 p-4">
           <p className="text-sm text-amber-200">
-            No canonical dishes are available yet. Add dishes to the dish index before publishing
+            No canonical dishes are available yet. Add items to the dish index before publishing
             Dinner Circle menu polling.
           </p>
         </div>

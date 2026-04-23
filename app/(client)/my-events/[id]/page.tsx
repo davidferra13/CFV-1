@@ -590,7 +590,17 @@ export default async function EventDetailPage({
                     )}
                     {menu.service_style && (
                       <Badge variant="info" className="mt-2">
-                        {menu.service_style.replace('_', ' ')}
+                        {(
+                          {
+                            plated: 'Plated',
+                            plated_dinner: 'Plated',
+                            family_style: 'Family Style',
+                            buffet: 'Buffet',
+                            cocktail: 'Cocktail / Passed',
+                            stations: 'Stations',
+                            tasting: 'Tasting Menu',
+                          } as Record<string, string>
+                        )[menu.service_style] || menu.service_style.replace(/_/g, ' ')}
                       </Badge>
                     )}
                   </div>

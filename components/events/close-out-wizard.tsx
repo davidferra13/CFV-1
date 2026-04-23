@@ -28,7 +28,7 @@ import {
   type WasteEntryInput,
 } from '@/lib/events/waste-tracking-actions'
 
-const STEPS = ['Tip', 'Receipts', 'Mileage', 'Reflection', 'Leftovers', 'Close Out']
+const STEPS = ['Gratuity', 'Receipts', 'Mileage', 'Reflection', 'Leftovers', 'Close Out']
 const TOTAL_STEPS = STEPS.length
 
 // ─── Progress Bar ─────────────────────────────────────────────────────────────
@@ -166,7 +166,7 @@ function TipStep({ data, onNext }: { data: CloseOutData; onNext: () => void }) {
   const handleSave = async () => {
     const cents = Math.round(parseFloat(dollars) * 100)
     if (!dollars || isNaN(cents) || cents <= 0) {
-      setError('Enter a valid tip amount')
+      setError('Enter a valid gratuity amount')
       return
     }
     setLoading(true)
@@ -225,7 +225,7 @@ function TipStep({ data, onNext }: { data: CloseOutData; onNext: () => void }) {
       {hasTip === true && (
         <div className="space-y-5">
           <Input
-            label="Tip amount"
+            label="Gratuity amount"
             type="number"
             inputMode="decimal"
             step="0.01"
@@ -588,7 +588,7 @@ const WASTE_CATEGORIES: { value: WasteCategory; label: string }[] = [
 ]
 
 const WASTE_REASONS: { value: WasteReason; label: string }[] = [
-  { value: 'overproduction', label: 'Made too much' },
+  { value: 'overproduction', label: 'Overproduction' },
   { value: 'spoilage', label: 'Spoiled' },
   { value: 'guest_no_show', label: 'Guest no-show' },
   { value: 'dietary_change', label: 'Dietary change' },
@@ -813,9 +813,9 @@ function CelebrationAndFollowUp({
   }, [])
 
   const marginColor =
-    financial.grossMarginPercent >= 60
+    financial.grossMarginPercent != null && financial.grossMarginPercent >= 60
       ? 'text-emerald-700'
-      : financial.grossMarginPercent >= 40
+      : financial.grossMarginPercent != null && financial.grossMarginPercent >= 40
         ? 'text-amber-700'
         : 'text-red-700'
 
@@ -852,7 +852,7 @@ function CelebrationAndFollowUp({
           {formatCurrency(financial.netProfitWithTipCents)}
         </p>
         <p className="text-sm text-stone-500">
-          {financial.grossMarginPercent}% margin
+          {financial.grossMarginPercent != null ? `${financial.grossMarginPercent}% margin` : 'N/A'}
           {financial.effectiveHourlyRateCents
             ? ` · ${formatCurrency(financial.effectiveHourlyRateCents)}/hr`
             : ''}
@@ -960,13 +960,13 @@ function CloseStep({ data }: { data: CloseOutData }) {
   }
 
   const marginColor =
-    financial.grossMarginPercent >= 60
+    financial.grossMarginPercent != null && financial.grossMarginPercent >= 60
       ? 'text-emerald-700'
-      : financial.grossMarginPercent >= 40
+      : financial.grossMarginPercent != null && financial.grossMarginPercent >= 40
         ? 'text-amber-700'
         : 'text-red-700'
 
-  const foodCostOk = financial.foodCostPercent <= 30
+  const foodCostOk = financial.foodCostPercent != null && financial.foodCostPercent <= 30
 
   return (
     <div>
@@ -1000,12 +1000,12 @@ function CloseStep({ data }: { data: CloseOutData }) {
               Food &amp; expenses
               {!foodCostOk && (
                 <span className="ml-2 text-xs text-amber-600">
-                  ({financial.foodCostPercent}% food cost)
+                  ({financial.foodCostPercent ?? 'N/A'}% food cost)
                 </span>
               )}
               {foodCostOk && (
                 <span className="ml-2 text-xs text-emerald-600">
-                  ({financial.foodCostPercent}% ✓)
+                  ({financial.foodCostPercent ?? 'N/A'}% ✓)
                 </span>
               )}
             </span>
@@ -1029,7 +1029,7 @@ function CloseStep({ data }: { data: CloseOutData }) {
               {formatCurrency(financial.netProfitWithTipCents)}
             </span>
             <span className={`ml-2 text-sm font-medium ${marginColor}`}>
-              ({financial.grossMarginPercent}%)
+              ({financial.grossMarginPercent ?? 'N/A'}%)
             </span>
           </div>
         </div>

@@ -730,13 +730,13 @@ export function RecipeDetailClient({ recipe, initialCompletion, provenance }: Pr
             )}
             {(recipe as any).calories_per_serving && (
               <div>
-                <dt className="text-sm font-medium text-stone-500">Calories / Serving</dt>
+                <dt className="text-sm font-medium text-stone-500">Calories per Serving</dt>
                 <dd className="text-stone-100 mt-1">{(recipe as any).calories_per_serving} kcal</dd>
               </div>
             )}
             {(recipe as any).protein_per_serving_g != null && (
               <div>
-                <dt className="text-sm font-medium text-stone-500">Protein / Serving</dt>
+                <dt className="text-sm font-medium text-stone-500">Protein per Serving</dt>
                 <dd className="text-stone-100 mt-1">{(recipe as any).protein_per_serving_g} g</dd>
               </div>
             )}
@@ -798,7 +798,7 @@ export function RecipeDetailClient({ recipe, initialCompletion, provenance }: Pr
 
           {(recipe as any).equipment && (recipe as any).equipment.length > 0 && (
             <div className="mt-4 pt-4 border-t border-stone-800">
-              <p className="text-sm font-medium text-stone-500 mb-2">Equipment Needed</p>
+              <p className="text-sm font-medium text-stone-500 mb-2">Equipment</p>
               <div className="flex flex-wrap gap-1">
                 {(recipe as any).equipment.map((item: string) => (
                   <Badge key={item} variant="info">

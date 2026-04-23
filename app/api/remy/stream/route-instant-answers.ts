@@ -1749,7 +1749,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
     pattern:
       /^(?:what(?:'s|\s+is)\s+(?:the\s+)?cost[\s-]?plus|how\s+does\s+cost[\s-]?plus\s+work|explain\s+cost[\s-]?plus)/i,
     answer: () => ({
-      text: `**Cost-Plus Pricing** builds your price from the bottom up: food cost + labor + overhead + incidentals + profit margin.\n\n**Formula:** Price = (Food + Labor + Overhead + Incidentals) x (1 + Profit Margin %)\n\n**When to use it:** Catering, private chef events, and any job where labor and overhead vary significantly between jobs.\n\n**Typical profit margin:** 15-25% after all costs are covered.\n\nCost-plus ensures every cost is accounted for before adding profit. Food cost percentage (Method 1) works backward from a revenue target instead.`,
+      text: `**Cost-Plus Pricing** builds your price from the bottom up: food cost + labor + overhead + incidentals + markup.\n\n**Formula:** Price = (Food + Labor + Overhead + Incidentals) x (1 + Markup %)\n\n**When to use it:** Catering, private chef events, and any job where labor and overhead vary significantly between jobs.\n\n**Typical markup:** 15-25% after all costs are covered.\n\nCost-plus ensures every cost is accounted for before adding markup. Food cost percentage (Method 1) works backward from a revenue target instead.`,
       navSuggestions: [
         { label: 'Food Costing Guide', href: '/help/food-costing' },
         { label: 'Costing Dashboard', href: '/culinary/costing' },

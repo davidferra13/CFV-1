@@ -110,8 +110,8 @@ export const TRIGGER_REGISTRY: TriggerDefinition[] = [
   },
   {
     key: 'tip_added',
-    label: 'Tip added',
-    description: 'Client includes a tip with payment',
+    label: 'Gratuity added',
+    description: 'Client includes a gratuity with payment',
     defaultPoints: 10,
     frequency: 'per_event',
     category: 'financial',

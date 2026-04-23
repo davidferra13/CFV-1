@@ -165,7 +165,19 @@ export function MenuApprovalClient({
             <div className="flex gap-2 mt-2">
               {menu.cuisine_type && <Badge variant="default">{menu.cuisine_type}</Badge>}
               {menu.service_style && (
-                <Badge variant="info">{menu.service_style.replace('_', ' ')}</Badge>
+                <Badge variant="info">
+                  {(
+                    {
+                      plated: 'Plated',
+                      plated_dinner: 'Plated',
+                      family_style: 'Family Style',
+                      buffet: 'Buffet',
+                      cocktail: 'Cocktail / Passed',
+                      stations: 'Stations',
+                      tasting: 'Tasting Menu',
+                    } as Record<string, string>
+                  )[menu.service_style] || menu.service_style.replace(/_/g, ' ')}
+                </Badge>
               )}
             </div>
           </div>
@@ -182,7 +194,7 @@ export function MenuApprovalClient({
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <span className="text-xs font-medium text-brand-400 uppercase tracking-wider">
-                              Course {course.courseNumber}
+                              {course.courseName || `Course ${course.courseNumber}`}
                             </span>
                           </div>
                           <h4 className="font-medium text-stone-100 mt-0.5">{course.courseName}</h4>

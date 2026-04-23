@@ -145,7 +145,7 @@ export const HELP_CONTENT: Record<HelpTopic, HelpContent> = {
     title: 'Cost-Plus Pricing',
     summary:
       'Build up the total price by adding food cost, labor, overhead, incidentals, and a profit margin.',
-    formula: 'Price = (Food + Labor + Overhead + Incidentals) x (1 + Profit Margin %)',
+    formula: 'Price = (Food + Labor + Overhead + Incidentals) x (1 + Markup %)',
     targetRange: '15-25% profit margin after all costs',
     guidance:
       'Cost-plus is best for catering, private chef events, and any job where labor and overhead vary significantly. It ensures every cost is covered before profit.',

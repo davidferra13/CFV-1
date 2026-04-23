@@ -14,7 +14,7 @@ import { ClientWorksheetForm } from './worksheet-form'
 type Props = { params: { token: string } }
 
 export const metadata: Metadata = {
-  title: 'Pre-Dinner Details',
+  title: 'Pre-Service Details',
   description: 'Share your preferences and dietary needs with your chef before your dinner.',
 }
 
@@ -38,7 +38,7 @@ export default async function WorksheetPage({ params }: Props) {
     <div className="min-h-screen bg-stone-50">
       <div className="mx-auto max-w-xl px-4 py-12">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-stone-900">Pre-Dinner Details</h1>
+          <h1 className="text-2xl font-bold text-stone-900">Pre-Service Details</h1>
           <p className="mt-2 text-sm text-stone-600">
             Help your chef prepare the perfect experience by sharing your preferences below.
           </p>

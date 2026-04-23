@@ -360,7 +360,7 @@ export default async function MyBookingsPage({
                         <InquiryStatusBadge status={inquiry.status as any} />
                       </div>
                       <p className="font-semibold text-stone-100 truncate">
-                        {inquiry.confirmed_occasion || 'Catering Inquiry'}
+                        {inquiry.confirmed_occasion || 'Service Inquiry'}
                       </p>
                       <p className="text-sm text-stone-500">
                         {inquiry.confirmed_date

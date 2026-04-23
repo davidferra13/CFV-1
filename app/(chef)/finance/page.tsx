@@ -75,7 +75,7 @@ const SECTIONS = [
   {
     href: '/finance/cash-flow',
     label: 'Cash Flow Calendar',
-    description: 'Monthly view of income, expenses, and upcoming payment plan installments',
+    description: 'Monthly view of revenue, expenses, and upcoming payment plan installments',
     icon: '📅',
   },
   {

@@ -107,7 +107,7 @@ export type GiftTagTemplate = {
 }
 
 export const GIFT_TAG_TEMPLATES: GiftTagTemplate[] = [
-  { id: 'gtt-1', tag: 'dinner_for_two', label: 'Dinner for Two', peopleServed: 2 },
+  { id: 'gtt-1', tag: 'dinner_for_two', label: 'Experience for Two', peopleServed: 2 },
   { id: 'gtt-2', tag: 'celebration_for_four', label: 'Celebration for Four', peopleServed: 4 },
   { id: 'gtt-3', tag: 'custom_amount', label: 'Custom Amount', peopleServed: 1 },
 ]

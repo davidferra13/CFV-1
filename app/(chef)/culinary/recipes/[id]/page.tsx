@@ -36,6 +36,7 @@ const WEIGHT_UNITS = new Set([
   'grams',
   'kg',
   'kilogram',
+  'kilograms',
   'oz',
   'ounce',
   'ounces',

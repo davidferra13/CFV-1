@@ -12,7 +12,7 @@ import { ChevronRight, ClipboardList } from '@/components/ui/icons'
 
 export const metadata: Metadata = {
   title: 'My Inquiries',
-  description: 'Track the status of your catering inquiries.',
+  description: 'Track the status of your chef inquiries.',
 }
 
 function InquiryCard({ inquiry }: { inquiry: ClientInquiryListItem }) {
@@ -25,7 +25,7 @@ function InquiryCard({ inquiry }: { inquiry: ClientInquiryListItem }) {
               <InquiryStatusBadge status={inquiry.status as any} />
             </div>
             <p className="font-semibold text-stone-100 truncate">
-              {inquiry.confirmed_occasion || 'Catering Inquiry'}
+              {inquiry.confirmed_occasion || 'Chef Inquiry'}
             </p>
             <p className="text-sm text-stone-500">
               {inquiry.confirmed_date
@@ -51,7 +51,7 @@ export default async function MyInquiriesPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-stone-100">My Inquiries</h1>
-        <p className="text-stone-500 mt-1">Track the status of your catering requests.</p>
+        <p className="text-stone-500 mt-1">Track the status of your chef requests.</p>
       </div>
 
       {inquiries.length === 0 ? (

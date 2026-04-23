@@ -1,6 +1,6 @@
 // Printable Guest Table Card - /events/[id]/guest-card
 // Print-optimized page showing chef name + QR code.
-// Chef prints these and places them on the dinner table.
+// Chef prints these and places them at the table.
 
 import { notFound } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'

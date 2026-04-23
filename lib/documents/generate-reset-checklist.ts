@@ -243,7 +243,7 @@ export function renderResetChecklist(pdf: PDFLayout, data: ResetChecklistData) {
     item('Payment collected or Venmo / payment request sent')
   }
   item('All receipts photographed and uploaded')
-  item('Tip recorded (if applicable)')
+  item('Gratuity recorded (if applicable)')
   pdf.space(1)
 
   // ─── SECTION F: Next Day (by noon) ──────────────────────────────────────────

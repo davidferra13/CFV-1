@@ -252,7 +252,7 @@ export function MenuBreakdownView({ menuId, className = '' }: MenuBreakdownViewP
       <div className="p-4 space-y-2">
         {!hasCourses ? (
           <p className="text-sm text-stone-500 text-center py-4">
-            No courses added yet. Add dishes to see the cost breakdown.
+            No courses added yet. Add courses to see the cost breakdown.
           </p>
         ) : (
           breakdown.courses.map((course) => <CourseSection key={course.dishId} course={course} />)

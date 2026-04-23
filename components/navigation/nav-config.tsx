@@ -9,6 +9,7 @@ import {
   Activity,
   AlertTriangle,
   BarChart3,
+  Bell,
   BellRing,
   BookOpen,
   Bot,
@@ -878,8 +879,8 @@ export const navGroups: NavGroup[] = [
         label: 'Email Campaigns',
         icon: Mail,
         children: [
-          { href: '/marketing/push-dinners/new', label: 'New Push Dinner' },
-          { href: '/marketing/push-dinners', label: 'Push Dinners' },
+          { href: '/marketing/push-dinners/new', label: 'New Push Event' },
+          { href: '/marketing/push-dinners', label: 'Push Events' },
           { href: '/marketing/sequences', label: 'Sequences' },
           { href: '/marketing/templates', label: 'Templates' },
         ],
@@ -1029,6 +1030,11 @@ export const navGroups: NavGroup[] = [
           { href: '/stations/orders', label: 'Order Sheet' },
           { href: '/stations/waste', label: 'Waste Log' },
         ],
+      },
+      {
+        href: '/reminders',
+        label: 'Reminders',
+        icon: Bell,
       },
       {
         href: '/tasks',

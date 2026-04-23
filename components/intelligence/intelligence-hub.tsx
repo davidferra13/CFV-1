@@ -233,7 +233,7 @@ export async function IntelligenceHubContent() {
             <div className="space-y-3">
               <div className="grid grid-cols-3 gap-2 text-sm">
                 <div>
-                  <span className="text-muted-foreground">Avg income/mo:</span>
+                  <span className="text-muted-foreground">Avg revenue/mo:</span>
                   <p className="font-semibold text-green-600">
                     {formatCents(cashflow.avgMonthlyIncomeCents)}
                   </p>

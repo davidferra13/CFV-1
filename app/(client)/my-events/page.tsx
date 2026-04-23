@@ -473,7 +473,7 @@ export default async function MyEventsPage() {
     documentActions.push({
       id: 'menu',
       label: 'Download Menu PDF',
-      detail: 'Export your current front-of-house menu PDF.',
+      detail: 'Export your printable menu as a PDF.',
       href: `/api/documents/foh-menu/${documentsSummary.nextEventId}`,
       target: '_blank',
       rel: 'noreferrer',

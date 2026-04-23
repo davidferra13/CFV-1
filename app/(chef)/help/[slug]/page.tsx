@@ -108,7 +108,7 @@ Settings > Profile. Upload your logo, set your business name, and configure bran
     content: `## First Steps
 1. Complete the setup wizard: profile, bank details, Stripe Connect
 2. Import your existing clients (Clients > Import)
-3. Build your recipe library (Culinary > Recipes)
+3. Build your recipe book (Culinary > Recipes)
 4. Create your first event (Events > New Event)
 
 ## Key Concepts

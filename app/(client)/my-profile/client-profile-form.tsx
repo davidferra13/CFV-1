@@ -443,7 +443,7 @@ export function ClientProfileForm({ profile }: ClientProfileFormProps) {
       {/* Kitchen & Logistics */}
       <Card>
         <CardHeader>
-          <CardTitle>Kitchen & Logistics</CardTitle>
+          <CardTitle>Home & Kitchen Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -456,7 +456,7 @@ export function ClientProfileForm({ profile }: ClientProfileFormProps) {
           </div>
 
           <Textarea
-            label="Kitchen Constraints"
+            label="Kitchen Notes"
             value={kitchenConstraints}
             onChange={(e) => setKitchenConstraints(e.target.value)}
             rows={2}
@@ -464,7 +464,7 @@ export function ClientProfileForm({ profile }: ClientProfileFormProps) {
           />
 
           <TagInput
-            label="Equipment Available"
+            label="Kitchen Equipment"
             value={equipmentAvailable}
             onChange={setEquipmentAvailable}
             placeholder="e.g. Stand mixer, Sous vide, Pizza oven"

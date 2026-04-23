@@ -1,5 +1,5 @@
 // Post-Event Debrief Page
-// Guided fill-in-the-blanks flow after a dinner is completed.
+// Guided fill-in-the-blanks flow after a service is completed.
 // Only available for events with status === 'completed'.
 
 import { notFound } from 'next/navigation'
@@ -36,7 +36,7 @@ export default async function EventDebriefPage({ params }: { params: { id: strin
               </Button>
             </Link>
           </div>
-          <h1 className="text-2xl font-bold text-stone-100">Post-Dinner Debrief</h1>
+          <h1 className="text-2xl font-bold text-stone-100">Post-Service Debrief</h1>
           <p className="text-stone-500 mt-1">
             {eventTitle} &middot; {eventDateFormatted}
             {blanks.client && <> &middot; {blanks.client.name}</>}
@@ -54,7 +54,7 @@ export default async function EventDebriefPage({ params }: { params: { id: strin
       {/* Intro blurb - shown only before debrief is complete */}
       {!blanks.event.debriefCompletedAt && (
         <div className="text-sm text-stone-400 bg-stone-800 border border-stone-700 rounded-lg px-4 py-3">
-          You just finished a dinner. Capture what you learned while it&#39;s fresh &#8212; client
+          You just finished a service. Capture what you learned while it&#39;s fresh : client
           details, recipe notes, dish photos. Skip anything that doesn&#39;t apply.
         </div>
       )}

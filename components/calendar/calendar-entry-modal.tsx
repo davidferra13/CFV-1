@@ -371,7 +371,7 @@ export function CalendarEntryModal({ defaultDate, defaultStartTime, onClose, onC
                         onChange={() => setRevenueType('income')}
                         className="text-teal-600"
                       />
-                      <span className="text-sm text-stone-300">Income (paid)</span>
+                      <span className="text-sm text-stone-300">Revenue (paid)</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input

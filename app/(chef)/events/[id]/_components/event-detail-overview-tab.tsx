@@ -320,7 +320,7 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
           <ClientPortalQR eventId={event.id} />
           <div className="mt-4 pt-4 border-t border-stone-800">
             <p className="text-sm text-stone-500 mb-3">
-              Send a pre-dinner worksheet for your client to fill out their preferences, allergies,
+              Send a pre-service worksheet for your client to fill out their preferences, allergies,
               and details.
             </p>
             <SendWorksheetButton

@@ -221,7 +221,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     description:
       'Parse a natural language grocery list into structured items with quantities, units, and categories.',
     inputSchema:
-      '{ "items": "string - comma-separated list of grocery items, e.g. 2 lbs chicken, 1 bunch cilantro" }',
+      '{ "items": "string - comma-separated list of grocery items, e.g. 2 lb chicken, 1 bunch cilantro" }',
   },
   {
     type: 'document.search',

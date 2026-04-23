@@ -126,7 +126,7 @@ export default async function PackPage({
               : ''}
           </p>
           <p className="text-emerald-600 text-sm mt-1">
-            You marked the car as packed. Have a great dinner!
+            You marked the car as packed. Have a great service!
           </p>
         </Card>
       )}

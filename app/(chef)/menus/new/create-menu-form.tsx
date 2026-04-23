@@ -482,7 +482,8 @@ export function CreateMenuForm({ tenantId }: { tenantId: string }) {
                   <option value="plated">Plated</option>
                   <option value="family_style">Family Style</option>
                   <option value="buffet">Buffet</option>
-                  <option value="cocktail">Cocktail</option>
+                  <option value="cocktail">Cocktail / Passed</option>
+                  <option value="stations">Stations</option>
                   <option value="tasting_menu">Tasting Menu</option>
                   <option value="other">Other</option>
                 </select>

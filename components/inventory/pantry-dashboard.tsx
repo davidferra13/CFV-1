@@ -295,7 +295,7 @@ export function PantryDashboard() {
                   onChange={(e) => setNewItem({ ...newItem, quantity: e.target.value })}
                 />
                 <Input
-                  placeholder="Unit (e.g. kg, lbs, each)"
+                  placeholder="Unit (e.g. kg, lb, each)"
                   value={newItem.unit}
                   onChange={(e) => setNewItem({ ...newItem, unit: e.target.value })}
                 />

@@ -329,7 +329,7 @@ export function DishDetailClient({
               ?.calories_per_serving != null && (
               <div className="flex flex-wrap gap-2">
                 <span className="text-xs rounded bg-stone-800 px-2 py-1 text-stone-300">
-                  {(dish.recipes as any).calories_per_serving} kcal/serving
+                  {(dish.recipes as any).calories_per_serving} cal/serving
                 </span>
                 {(dish.recipes as any).protein_per_serving_g != null && (
                   <span className="text-xs rounded bg-stone-800 px-2 py-1 text-stone-300">

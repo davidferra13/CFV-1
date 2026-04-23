@@ -15,7 +15,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   marketing: 'Marketing',
   rent: 'Rent',
   utilities: 'Utilities',
-  professional_services: 'Prof. Services',
+  professional_services: 'Professional Services',
   training: 'Training',
   other: 'Other',
 }
@@ -67,7 +67,9 @@ export function ExpenseWidget() {
     }
 
     load()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   if (error) {
@@ -99,9 +101,10 @@ export function ExpenseWidget() {
     )
   }
 
-  const change = lastMonthTotal && lastMonthTotal > 0
-    ? ((thisMonthTotal! - lastMonthTotal) / lastMonthTotal) * 100
-    : null
+  const change =
+    lastMonthTotal && lastMonthTotal > 0
+      ? ((thisMonthTotal! - lastMonthTotal) / lastMonthTotal) * 100
+      : null
 
   return (
     <Card>
@@ -125,7 +128,8 @@ export function ExpenseWidget() {
         {change !== null && (
           <p className="text-sm">
             <span className={change > 0 ? 'text-red-600' : 'text-emerald-600'}>
-              {change > 0 ? '+' : ''}{change.toFixed(1)}%
+              {change > 0 ? '+' : ''}
+              {change.toFixed(1)}%
             </span>
             <span className="text-stone-500"> vs last month</span>
           </p>

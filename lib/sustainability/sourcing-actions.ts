@@ -7,7 +7,7 @@ import { revalidatePath } from 'next/cache'
 import { type SourceType } from './sourcing-constants'
 // SOURCE_TYPE_LABELS and SOURCE_TYPE_COLORS moved to ./sourcing-constants.ts
 
-// CO2 estimates: lbs CO2 per lb of food (simplified model)
+// CO2 estimates: lb CO2 per lb of food (simplified model)
 const CO2_PER_LB: Record<string, number> = {
   local: 0.5,
   conventional: 2.5,

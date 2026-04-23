@@ -105,7 +105,7 @@ export default async function ChefRecipesPage() {
               <TableRow>
                 <TableHead>Recipe</TableHead>
                 <TableHead>Category</TableHead>
-                <TableHead>Total Time</TableHead>
+                <TableHead>Cook Time</TableHead>
                 <TableHead>Yield</TableHead>
                 <TableHead>Ingredients</TableHead>
                 <TableHead>Cost</TableHead>

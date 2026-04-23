@@ -483,7 +483,7 @@ export function CateringBidCalculator({
                 </p>
               </div>
               <div>
-                <Label htmlFor="profit-pct">Profit Margin %</Label>
+                <Label htmlFor="profit-pct">Markup %</Label>
                 <Input
                   id="profit-pct"
                   type="number"

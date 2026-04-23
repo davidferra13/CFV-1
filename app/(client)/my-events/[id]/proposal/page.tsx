@@ -197,7 +197,20 @@ export default async function UnifiedProposalPage({ params }: { params: { id: st
                 </div>
                 {menu.description && <p className="text-stone-400 text-sm">{menu.description}</p>}
                 {menu.service_style && (
-                  <p className="text-stone-500 text-xs mt-1">Service style: {menu.service_style}</p>
+                  <p className="text-stone-500 text-xs mt-1">
+                    Dining style:{' '}
+                    {(
+                      {
+                        plated: 'Plated',
+                        plated_dinner: 'Plated',
+                        family_style: 'Family Style',
+                        buffet: 'Buffet',
+                        cocktail: 'Cocktail / Passed',
+                        stations: 'Stations',
+                        tasting: 'Tasting Menu',
+                      } as Record<string, string>
+                    )[menu.service_style] || menu.service_style.replace(/_/g, ' ')}
+                  </p>
                 )}
               </div>
             ))}
@@ -259,8 +272,8 @@ export default async function UnifiedProposalPage({ params }: { params: { id: st
               {/* What's included note */}
               <div className="pt-3 border-t">
                 <p className="text-xs text-stone-500">
-                  The service fee covers menu planning, ingredient sourcing, on-site preparation,
-                  service, and full kitchen cleanup.
+                  This covers everything from menu planning and shopping to cooking, serving, and
+                  cleanup, so you can simply enjoy the evening.
                 </p>
               </div>
             </div>

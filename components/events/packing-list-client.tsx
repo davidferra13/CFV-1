@@ -231,6 +231,8 @@ export function PackingListClient({
     standardKitItems,
     mustBringEquipment,
     eventEquipment,
+    servicewareItems,
+    personalGear,
     courseVerification,
     totalFoodItems,
   } = packingData
@@ -285,6 +287,17 @@ export function PackingListClient({
     sublabel: 'This event',
   }))
 
+  const servicewareSection = servicewareItems.map((item, i) => ({
+    id: `sw-${i}`,
+    label: item,
+  }))
+
+  const gearSection = personalGear.map((item, i) => ({
+    id: `gear-${i}`,
+    label: item.name,
+    sublabel: item.category,
+  }))
+
   const allEquipment = [...kitSection, ...clientEquipmentSection, ...eventEquipmentSection]
 
   // All items in a flat list for total progress calculation
@@ -294,6 +307,8 @@ export function PackingListClient({
     ...roomTempSection,
     ...fragileSection,
     ...allEquipment,
+    ...servicewareSection,
+    ...gearSection,
   ]
 
   // ─── State ──────────────────────────────────────────────────────────────────
@@ -302,6 +317,9 @@ export function PackingListClient({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(alreadyPacked)
   const [error, setError] = useState<string | null>(null)
+  const [customItems, setCustomItems] = useState<string[]>([])
+  const [newCustomItem, setNewCustomItem] = useState('')
+  const customStorageKey = `cf-pack-custom-${eventId}`
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -310,10 +328,14 @@ export function PackingListClient({
       if (saved) {
         setChecked(JSON.parse(saved))
       }
+      const savedCustom = localStorage.getItem(customStorageKey)
+      if (savedCustom) {
+        setCustomItems(JSON.parse(savedCustom))
+      }
     } catch {
       // localStorage unavailable (SSR safety, private browsing)
     }
-  }, [storageKey])
+  }, [storageKey, customStorageKey])
 
   const toggle = useCallback(
     (id: string) => {
@@ -362,10 +384,48 @@ export function PackingListClient({
     }
   }
 
+  // ─── Custom Items ─────────────────────────────────────────────────────────
+
+  const addCustomItem = useCallback(() => {
+    const trimmed = newCustomItem.trim()
+    if (!trimmed) return
+    setCustomItems((prev) => {
+      const next = [...prev, trimmed]
+      try {
+        localStorage.setItem(customStorageKey, JSON.stringify(next))
+      } catch {
+        /* ignore */
+      }
+      return next
+    })
+    setNewCustomItem('')
+  }, [newCustomItem, customStorageKey])
+
+  const removeCustomItem = useCallback(
+    (index: number) => {
+      setCustomItems((prev) => {
+        const next = prev.filter((_, i) => i !== index)
+        try {
+          localStorage.setItem(customStorageKey, JSON.stringify(next))
+        } catch {
+          /* ignore */
+        }
+        return next
+      })
+    },
+    [customStorageKey]
+  )
+
+  const customSection = customItems.map((item, i) => ({
+    id: `custom-${i}`,
+    label: item,
+  }))
+
   // ─── Progress ───────────────────────────────────────────────────────────────
 
-  const totalItems = allItems.length
-  const checkedCount = allItems.filter((item) => checked[item.id]).length
+  const allWithCustom = [...allItems, ...customSection]
+  const totalItems = allWithCustom.length
+  const checkedCount = allWithCustom.filter((item) => checked[item.id]).length
   const allChecked = totalItems > 0 && checkedCount === totalItems
 
   // ─── Render ─────────────────────────────────────────────────────────────────
@@ -494,6 +554,78 @@ export function PackingListClient({
         onToggle={toggle}
       />
 
+      {/* Serviceware */}
+      <Section
+        title="Serviceware"
+        subtitle="Plates, flatware, glassware, and serving pieces."
+        items={servicewareSection}
+        checkedState={checked}
+        onToggle={toggle}
+      />
+
+      {/* Personal Gear */}
+      <Section
+        title="Personal Gear"
+        subtitle="Chef uniform, tools, and compliance items."
+        items={gearSection}
+        checkedState={checked}
+        onToggle={toggle}
+      />
+
+      {/* Custom Items */}
+      <Card className="p-4 space-y-2">
+        <h3 className="font-semibold text-stone-100 text-sm uppercase tracking-wide">
+          Custom Items
+        </h3>
+        <p className="text-xs text-stone-500">Event-specific items not in the standard list.</p>
+        {customSection.length > 0 && (
+          <div className="space-y-1.5">
+            {customSection.map((item, i) => (
+              <div key={item.id} className="flex items-center gap-2">
+                <div className="flex-1">
+                  <ItemRow
+                    id={item.id}
+                    label={item.label}
+                    checked={checked[item.id] ?? false}
+                    onToggle={toggle}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeCustomItem(i)}
+                  className="text-xs text-red-400 hover:text-red-300 px-2 py-1 flex-shrink-0"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="flex gap-2 mt-2">
+          <input
+            type="text"
+            value={newCustomItem}
+            onChange={(e) => setNewCustomItem(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                addCustomItem()
+              }
+            }}
+            placeholder="Add custom item..."
+            className="flex-1 px-3 py-2 text-sm bg-stone-900 border border-stone-700 rounded-lg text-stone-200 placeholder:text-stone-600 focus:outline-none focus:ring-1 focus:ring-brand-600"
+          />
+          <Button
+            onClick={addCustomItem}
+            variant="secondary"
+            disabled={!newCustomItem.trim()}
+            className="text-sm"
+          >
+            Add
+          </Button>
+        </div>
+      </Card>
+
       {/* Component verification */}
       {courseVerification.length > 0 && (
         <Card className="p-4">
@@ -538,7 +670,9 @@ export function PackingListClient({
           </Button>
         ) : (
           <div className="text-center py-2">
-            <p className="text-green-700 font-semibold text-lg">Car packed. Have a great dinner!</p>
+            <p className="text-green-700 font-semibold text-lg">
+              Car packed. Have a great service!
+            </p>
           </div>
         )}
 

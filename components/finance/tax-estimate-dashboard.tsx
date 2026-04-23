@@ -75,7 +75,7 @@ export function TaxEstimateDashboard({ summary, currentYear }: Props) {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <Card>
           <CardContent className="py-3">
-            <p className="text-xs text-stone-500">Estimated Income</p>
+            <p className="text-xs text-stone-500">Estimated Revenue</p>
             <p className="text-xl font-semibold text-stone-900">
               {formatCents(summary.totalIncomeCents)}
             </p>
@@ -204,7 +204,7 @@ export function TaxEstimateDashboard({ summary, currentYear }: Props) {
                 {editingQuarter === q && (
                   <div className="pt-3 border-t border-stone-200 space-y-2">
                     <Input
-                      label="Estimated Income ($)"
+                      label="Estimated Revenue ($)"
                       type="number"
                       min="0"
                       step="0.01"

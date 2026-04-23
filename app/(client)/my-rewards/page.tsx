@@ -231,7 +231,7 @@ export default async function MyRewardsPage() {
                 {status.totalEventsCompleted !== 1 ? 's' : ''}
               </p>
             </div>
-            <Badge variant="info">{status.totalGuestsServed} guests served</Badge>
+            <Badge variant="info">{status.totalGuestsServed} guests hosted</Badge>
           </div>
 
           <div className="mt-5">

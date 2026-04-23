@@ -276,11 +276,11 @@ export function EventDetailPrepTab({
   eventId,
   hasMenu,
 }: EventDetailPrepTabProps) {
-  // Checkbox state persisted in localStorage
+  // Checkbox state: localStorage for instant UX, server for cross-device sync
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    // Load checked state from localStorage
+    // 1. Load from localStorage instantly
     const loaded = new Set<string>()
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i)
@@ -289,18 +289,55 @@ export function EventDetailPrepTab({
       }
     }
     setCheckedItems(loaded)
+
+    // 2. Merge server state (async, overwrites localStorage on conflict)
+    import('@/lib/prep-timeline/actions').then(({ getPrepCompletions }) => {
+      getPrepCompletions(eventId)
+        .then((serverKeys) => {
+          if (serverKeys.length > 0) {
+            setCheckedItems((prev) => {
+              const merged = new Set(prev)
+              for (const key of serverKeys) {
+                merged.add(key)
+                try {
+                  localStorage.setItem(key, '1')
+                } catch {
+                  /* ignore */
+                }
+              }
+              return merged
+            })
+          }
+        })
+        .catch(() => {
+          /* server unavailable, localStorage is fine */
+        })
+    })
   }, [eventId])
 
   function toggleItem(key: string) {
     setCheckedItems((prev) => {
       const next = new Set(prev)
-      if (next.has(key)) {
-        next.delete(key)
-        localStorage.removeItem(key)
-      } else {
+      const completed = !next.has(key)
+      if (completed) {
         next.add(key)
-        localStorage.setItem(key, '1')
+        try {
+          localStorage.setItem(key, '1')
+        } catch {
+          /* ignore */
+        }
+      } else {
+        next.delete(key)
+        try {
+          localStorage.removeItem(key)
+        } catch {
+          /* ignore */
+        }
       }
+      // Sync to server in background
+      import('@/lib/prep-timeline/actions').then(({ togglePrepCompletion }) => {
+        togglePrepCompletion(eventId, key, completed).catch(() => {})
+      })
       return next
     })
   }
@@ -341,7 +378,7 @@ export function EventDetailPrepTab({
         {hasMenu && !timeline && (
           <Card className="border-stone-700 p-6 text-center">
             <p className="text-stone-500">
-              No components found on this menu. Add dishes and components to generate a prep
+              No components found on this menu. Add items and components to generate a prep
               timeline.
             </p>
           </Card>

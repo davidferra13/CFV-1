@@ -25,7 +25,7 @@ export type InquirySource = (typeof INQUIRY_SOURCE_OPTIONS)[number]
 // ============================================================
 
 export const MENU_TYPE_OPTIONS = [
-  'Plated Dinner',
+  'Plated Service',
   'Family Style',
   'Buffet',
   'Tasting Menu',
@@ -48,7 +48,7 @@ export type PriorityLevel = (typeof PRIORITY_LEVELS)[number]
 // Income Sources
 // ============================================================
 
-export const INCOME_SOURCES = [
+export const REVENUE_SOURCES = [
   { value: 'catering', label: 'Catering' },
   { value: 'personal_chef', label: 'Personal Chef' },
   { value: 'cooking_class', label: 'Cooking Class' },
@@ -57,7 +57,7 @@ export const INCOME_SOURCES = [
   { value: 'other', label: 'Other' },
 ] as const
 
-export type IncomeSource = (typeof INCOME_SOURCES)[number]['value']
+export type RevenueSource = (typeof REVENUE_SOURCES)[number]['value']
 
 // ============================================================
 // Expense Categories

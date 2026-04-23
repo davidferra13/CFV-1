@@ -366,7 +366,7 @@ export const CHEF_PORTAL_FINANCE_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/finance/cash-flow': {
     title: 'Cash Flow Calendar',
-    description: 'Monthly view of projected income, expenses, and payment plan installments.',
+    description: 'Monthly view of projected revenue, expenses, and payment plan installments.',
     features: ['Cash position projection', 'Interactive forecast chart', '30-day outlook'],
   },
 

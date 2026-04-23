@@ -541,7 +541,7 @@ export function MenuContextSidebar({
           clientTaste.cuisinePreferences.length === 0 &&
           clientTaste.favoriteDishes.length === 0 &&
           !clientTaste.spicePreference ? (
-            <p className="text-xs text-stone-500">No culinary signals recorded for this client.</p>
+            <p className="text-xs text-stone-500">No taste preferences recorded for this client.</p>
           ) : (
             <>
               {clientTaste.cuisinePreferences.length > 0 && (
@@ -789,7 +789,9 @@ export function MenuContextSidebar({
                     })}
                   </span>
                 )}
-                {pm.guestCount && <span className="text-stone-600 text-xxs">{pm.guestCount}g</span>}
+                {pm.guestCount && (
+                  <span className="text-stone-600 text-xxs">{pm.guestCount} guests</span>
+                )}
               </Link>
             ))}
           </div>

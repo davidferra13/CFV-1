@@ -92,7 +92,7 @@ export default async function YearEndTaxPage({
               <p className="text-2xl font-bold text-stone-100">{taxData.completedEventCount}</p>
             </div>
             <div>
-              <p className="text-sm text-stone-500">Tips Received</p>
+              <p className="text-sm text-stone-500">Gratuity Received</p>
               <p className="text-2xl font-bold text-stone-100">
                 {formatCurrency(taxData.tipsCents)}
               </p>

@@ -99,7 +99,7 @@ export async function addTip(formData: FormData): Promise<{ success: boolean; er
 
   if (error) {
     log.error('Failed to add tip', { error })
-    return { success: false, error: 'Failed to save tip' }
+    return { success: false, error: 'Failed to save gratuity' }
   }
 
   // Append ledger entry so tip appears in financial summary, P&L, and CPA export
@@ -117,7 +117,7 @@ export async function addTip(formData: FormData): Promise<{ success: boolean; er
         client_id: evt.client_id,
         entry_type: 'tip',
         amount_cents: amountCents,
-        description: `Tip recorded (${method})${notes ? `: ${notes}` : ''}`,
+        description: `Gratuity recorded (${method})${notes ? `: ${notes}` : ''}`,
         event_id: eventId,
         transaction_reference: `manual_tip_${tipRow?.id ?? eventId}_${Date.now()}`,
         payment_method: (method === 'venmo' ? 'venmo' : method === 'card' ? 'card' : 'cash') as any,
@@ -148,7 +148,7 @@ export async function deleteTip(
     .single()
 
   if (!tip) {
-    return { success: false, error: 'Tip not found' }
+    return { success: false, error: 'Gratuity not found' }
   }
 
   const { error } = await db
@@ -159,7 +159,7 @@ export async function deleteTip(
 
   if (error) {
     log.error('Failed to delete tip', { error })
-    return { success: false, error: 'Failed to delete tip' }
+    return { success: false, error: 'Failed to delete gratuity' }
   }
 
   // Create reversing ledger entry so ledger stays accurate
@@ -176,7 +176,7 @@ export async function deleteTip(
         client_id: evt.client_id,
         entry_type: 'tip',
         amount_cents: -(tip as any).amount_cents,
-        description: `Tip deleted (reversal)`,
+        description: `Gratuity deleted (reversal)`,
         event_id: eventId,
         transaction_reference: `tip_reversal_${id}_${Date.now()}`,
         payment_method: 'other' as any,
@@ -257,7 +257,7 @@ export async function createTipRequest(
   }
 
   if (event.status !== 'completed') {
-    throw new Error('Tip requests can only be created for completed events')
+    throw new Error('Gratuity requests can only be created for completed events')
   }
 
   const insertData: Record<string, unknown> = {
@@ -282,10 +282,10 @@ export async function createTipRequest(
 
   if (error) {
     if (error.code === '23505') {
-      throw new Error('A tip request already exists for this event')
+      throw new Error('A gratuity request already exists for this event')
     }
     log.error('Failed to create tip request', { error })
-    throw new Error('Failed to create tip request')
+    throw new Error('Failed to create gratuity request')
   }
 
   // Log activity (non-blocking)
@@ -298,7 +298,7 @@ export async function createTipRequest(
       domain: 'financial',
       entityType: 'tip_request',
       entityId: data.id,
-      summary: `Created tip request for event`,
+      summary: `Created gratuity request for event`,
       context: { event_id: eventId },
       clientId: event.client_id,
     })
@@ -334,7 +334,7 @@ export async function getTipRequests(dateRange?: {
 
   if (error) {
     log.error('Failed to fetch tip requests', { error })
-    throw new Error('Failed to fetch tip requests')
+    throw new Error('Failed to fetch gratuity requests')
   }
 
   return ((data ?? []) as any[]).map(mapTipRequest)
@@ -402,11 +402,11 @@ export async function recordTip(
   notes?: string
 ): Promise<{ success: boolean; error?: string }> {
   if (!Number.isInteger(amountCents) || amountCents <= 0) {
-    return { success: false, error: 'Invalid tip amount' }
+    return { success: false, error: 'Invalid gratuity amount' }
   }
   // Cap at $10,000 per tip to prevent fat-finger entry errors
   if (amountCents > 1_000_000) {
-    return { success: false, error: 'Tip amount cannot exceed $10,000' }
+    return { success: false, error: 'Gratuity amount cannot exceed $10,000' }
   }
 
   const db: any = createServerClient({ admin: true })
@@ -419,15 +419,15 @@ export async function recordTip(
     .single()
 
   if (fetchError || !request) {
-    return { success: false, error: 'Tip request not found' }
+    return { success: false, error: 'Gratuity request not found' }
   }
 
   if (request.status === 'completed') {
-    return { success: false, error: 'This tip has already been recorded' }
+    return { success: false, error: 'This gratuity has already been recorded' }
   }
 
   if (request.status === 'declined') {
-    return { success: false, error: 'This tip request was declined' }
+    return { success: false, error: 'This gratuity request was declined' }
   }
 
   // Update the tip request (CAS guard: only if still pending/sent, prevents double-recording)
@@ -448,7 +448,10 @@ export async function recordTip(
 
   if (updateError || !updated) {
     log.error('Failed to update tip request (may already be completed)', { error: updateError })
-    return { success: false, error: 'Failed to record tip. It may have already been submitted.' }
+    return {
+      success: false,
+      error: 'Failed to record gratuity. It may have already been submitted.',
+    }
   }
 
   // Append to ledger as tip income (using internal/admin since this is a public action)
@@ -461,7 +464,7 @@ export async function recordTip(
       entry_type: 'tip',
       amount_cents: amountCents,
       payment_method: paymentMethod as any,
-      description: `Tip received via tip request`,
+      description: `Gratuity received via request`,
       event_id: request.event_id,
       transaction_reference: `tip_req_${requestId}`,
       created_by: null,
@@ -477,7 +480,7 @@ export async function recordTip(
       tenant_id: request.tenant_id,
       amount_cents: amountCents,
       method,
-      notes: notes ? `Via tip request: ${notes}` : 'Via tip request',
+      notes: notes ? `Via gratuity request: ${notes}` : 'Via gratuity request',
     })
   } catch (err) {
     log.warn('Failed to mirror tip to event_tips (non-blocking)', { error: err })

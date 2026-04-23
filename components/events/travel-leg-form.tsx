@@ -228,7 +228,7 @@ function IngredientRow({
             type="text"
             value={ingredient.unit ?? ''}
             onChange={(e) => onUpdate({ unit: e.target.value || null })}
-            placeholder="lbs"
+            placeholder="lb"
             className="w-full border border-stone-600 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>

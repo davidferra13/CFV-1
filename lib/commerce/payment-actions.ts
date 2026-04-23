@@ -150,7 +150,7 @@ export async function recordPayment(input: RecordPaymentInput) {
       if (input.tipCents && input.tipCents > 0) {
         await fireTrigger('tip_added', user.tenantId!, (sale as any).client_id, {
           eventId: (sale as any).event_id,
-          description: 'Tip added',
+          description: 'Gratuity added',
         })
       }
     }

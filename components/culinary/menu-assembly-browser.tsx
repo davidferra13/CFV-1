@@ -407,7 +407,7 @@ function RecipeBrowser({ menuId }: { menuId: string }) {
 
       {search.length < 2 && (
         <p className="text-stone-500 text-xs">
-          Type at least 2 characters to search your recipe bible.
+          Type at least 2 characters to search your recipe book.
         </p>
       )}
 

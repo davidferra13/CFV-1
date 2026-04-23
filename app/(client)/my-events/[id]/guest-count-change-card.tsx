@@ -202,7 +202,7 @@ export function GuestCountChangeCard({
                       </p>
                     </div>
                     <p className="text-xs text-stone-400">
-                      Price delta: {describePriceDelta(change)}
+                      Price adjustment: {describePriceDelta(change)}
                     </p>
                   </div>
 

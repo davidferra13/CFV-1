@@ -116,7 +116,7 @@ export default async function CostingPage() {
                   <TableHead>Category</TableHead>
                   <TableHead>Ingredients</TableHead>
                   <TableHead>Total Cost</TableHead>
-                  <TableHead>Cost / Portion</TableHead>
+                  <TableHead>Cost per Portion</TableHead>
                   <TableHead>Freshness</TableHead>
                   <TableHead>Price Trust</TableHead>
                 </TableRow>
