@@ -1,70 +1,14 @@
 # Session Log
 
-## 2026-04-24 ~11:00 EST
-
-- Agent: Opus 4.6 (main session)
-- Task: Full product gap analysis + builder prompt generation
-- Status: completed
-- Files touched: 10 new files in `prompts/`, session digest
-- Commits: `f4b53e22a` docs(prompts): add 10 gap-analysis builder prompts for fresh agents
-- Build state on departure: unchanged
-- Digest: `docs/session-digests/2026-04-24-gap-analysis.md`
-- Notes: ~90 gaps identified across 12 categories. 10 self-contained prompts for fresh agents. Recommended build order: yield UI -> codex review -> safety -> backups -> booking -> disclosure -> tickets -> residency -> discovery -> monetization.
-
-## 2026-04-24 ~09:41 EST
-
-- Agent: Planner (Opus 4.6)
-- Task: Dinner Circle Unification & Chef-to-Chef Collaboration spec
-- Status: completed
-- Files touched: `docs/specs/dinner-circle-unification.md` (created)
-- Commits: none (spec-only session)
-- Build state on departure: unchanged from 2026-04-22 green baseline
-- Digest: `docs/session-digests/2026-04-24-draft.md`
-- Notes: Full planner gate. 514-line spec with 7 circle types, 2 new (chef_collab, event_collab), 1 new table, 10 new server actions, 21 integrity questions. Draft status, awaiting developer review.
-
-## 2026-04-24 ~09:30 EST
+## 2026-04-24 14:41 EST
 
 - Agent: Builder (Opus 4.6)
-- Task: Event Ops Quality Bar Build (20 findings, 5 tiers)
-- Status: completed (not committed)
-- Spec: docs/specs/event-ops-quality-bar-build.md
-- Files touched: 27 files (25 modified + 2 new)
-- Commits: none yet (all changes in working tree, ready to stage)
-- Build state on departure: GREEN (tsc 0 errors, next build exit 0)
-- Digest: docs/session-digests/2026-04-24-quality-bar.md
-- Notes: All 20 findings implemented. tsc + build pass. Working tree has ~50 additional files from prior stash (Codex recovery, terminology). Quality bar files must be committed separately by name. Migration 20260423000004 not applied. packing-list-client.tsx may need re-impl (no diff detected).
-
-## 2026-04-17 ~06:00 EST
-
-- Agent: Builder (Opus 4.6)
-- Task: L10/L11 Cross-Actor Cohesiveness Audit - stale verdict sweep + code fixes
+- Task: Palace Audit Agent 3 - Runtime blocker fixes, Codex triage, build spec engineering
 - Status: completed
-- Files touched:
-  - lib/commerce/register-actions.ts (FQ11 tip auto-sync on register close)
-  - app/(chef)/events/[id]/page.tsx (Q49 multi-menu query refactor)
-  - app/(chef)/events/[id]/\_components/event-detail-money-tab.tsx (Q49 type + FQ27 labels)
-  - app/(chef)/events/[id]/\_components/event-detail-overview-tab.tsx (Q49 type)
-  - app/(chef)/events/[id]/\_components/event-detail-ops-tab.tsx (Q49 type)
-  - components/finance/ProfitAndLossReport.tsx (FQ27 net revenue label)
-  - components/commerce/shift-report.tsx (FQ27 gross revenue label)
-  - app/(chef)/dashboard/\_sections/restaurant-metrics.tsx (FQ27 subtitle)
-  - docs/specs/chef-user-journey-interrogation.md (Q7/Q19/Q41/Q49 verdicts + scorecard)
-  - docs/specs/commerce-financial-integrity-interrogation.md (FQ11/FQ15/FQ16/FQ27 + scorecard corrected 17/2/7 -> 28/2/0)
-  - docs/specs/restaurant-adoption-interrogation.md (RQ13 missing from scorecard)
-  - docs/specs/scheduled-jobs-integrity-interrogation.md (SQ3 count fix)
-- Commits: 17595351b, 0795d4dad, 7c69dd368, 3b9e1befd, fc444088b, a5c8af3fb
-- Build state on departure: not verified (no structural changes, business logic + labels only)
-- Notes: 6 stale verdicts corrected (features existed, verdicts not updated). 3 scorecard counting errors fixed. 3 code fixes shipped (FQ11 tip sync, FQ27 gross/net labels, Q49 multi-menu). Final tally: 179 PASS, 17 PARTIAL, 1 FAIL across all 6 specs. 17 remaining PARTIALs are genuine gaps. Session digest written.
-
-## 2026-04-17 (tsc sweep)
-
-- Agent: Builder (Opus)
-- Task: Fix all 17 tsc errors to reach 0-error build state
-- Status: completed
-- Files touched: components/ui/icons.ts, lib/events/transitions.ts, lib/hub/integration-actions.ts, lib/hub/message-actions.ts, lib/prep-timeline/actions.ts, app/(chef)/events/[id]/\_components/event-detail-prep-tab.tsx
-- Commits: 7fbb222c3
-- Build state on departure: green (tsc 0 errors)
-- Notes: 6 files fixed. Icon imports, log types, redeclared vars, optional params, wrong DB API, icon props. Session digest written.
+- Files touched: 7 files (2 code fixes, 4 memory updates, 5 build specs)
+- Commits: 66b5d2149, 60363400d
+- Build state on departure: tsc clean, both servers down, runtime verify pending
+- Notes: Original prompt had stale intelligence. Import chain parse-ollama->chat-insights->insights/actions does NOT connect to relationship page. CP-Engine event surface bug doesn't exist. All 4 "uncommitted" Codex items already committed on main. Applied defensive try/catch fixes. Wrote 4 Codex-ready build specs for remaining palace audit work.
 
 ## 2026-04-22 15:43 EST
 
@@ -145,3 +89,23 @@
 - Commits: not created because the worktree already contained extensive unrelated dirty changes and this session was analysis-only
 - Build state on departure: unchanged; no fresh build or test run in this session
 - Notes: Verified the richer stats live behind the authenticated client dashboard and work-graph stack, while chef-side reuse on `app/(chef)/clients/[id]/page.tsx` is still limited to coarse financial cards, engagement scoring, and portal-link state. Verified the token magic-link portal and chef-side preview are intentionally smaller and not the right reuse target. Read-only DB check showed 141 clients, 86 client-linked events, 0 active portal links, 0 used portal links, and 0 client activity events in the last 30 days. Produced the next-step recommendation and a compact copy-paste handoff prompt. `bash scripts/session-close.sh` was unavailable on this Windows host because `/bin/bash` is missing, so closeout was completed manually. Session digest: `docs/session-digests/2026-04-23-draft.md`
+
+## 2026-04-24 13:09 EST
+
+- Agent: Codex
+- Task: Wire public showcase menu dish photos into public chef profile Sample Menus and prepare the next fresh-agent prompt
+- Status: completed
+- Files touched: `app/(public)/chef/[slug]/page.tsx`, `lib/public/chef-profile-readiness.ts`, `docs/USER_MANUAL.md`, `docs/app-complete-audit.md`, `project-map/public/directory.md`, `docs/changes/2026-04-24-public-showcase-menu-photos.md`, `prompts/11-public-showcase-menu-photo-enablement.md`, `docs/session-digests/2026-04-24-draft.md`, `docs/session-log.md`
+- Commits: not created because the checkout already contained extensive unrelated dirty changes and the session standing order prohibited pushes
+- Build state on departure: `npm run typecheck` green; no production build run by instruction
+- Notes: Added `PublicShowcaseMenu.photoUrl`, selected `dishes.photo_url`, preserved showcase and non-archived filters, and rendered public Sample Menu photo heroes through `CloudinaryFetchImage` when a representative dish photo exists. Verified current local DB has 19 non-archived menus, 0 showcase menus, 0 dishes with non-empty `photo_url`, `dishes.photo_url` present, and public `dish-photos` bucket present. Positive image selection was verified with a non-mutating mocked read path. Local UI fallback was verified on `http://127.0.0.1:3101/chef/harbor-hearth-canonical` with Playwright and no browser errors. `graphify update .` completed. Session digest: `docs/session-digests/2026-04-24-draft.md`
+
+## 2026-04-24 14:34 EST
+
+- Agent: Builder (Opus 4.6)
+- Task: Deep audit of Codex-built ticketed events feature (palace-audit-agent-6)
+- Status: completed (research only, no code changes)
+- Files touched: 0 product files (digest + session log only)
+- Commits: none (audit session)
+- Build state on departure: unchanged
+- Notes: Full audit of `lib/tickets/*.ts`, `app/(public)/e/[shareToken]/page.tsx`, `app/(chef)/events/[id]/_components/event-detail-tickets-tab.tsx`, and `database/migrations/20260416000004_event_ticketing.sql`. Found 5 critical bugs: (1) `event_share_settings` table never created (migration ALTERs non-existent table), (2) `public-event-view.tsx` client component missing, (3) wrong shareToken passed in event detail page, (4) `event_guests.event_share_id` NOT NULL blocks ticket guests, (5) no ledger entries for ticket revenue. Drafted migration SQL (CREATE TABLE event_share_settings, DROP NOT NULL on event_share_id, add is_co_host). Produced refined handoff prompt for next agent. Session digest: `docs/session-digests/2026-04-24-ticketed-events-audit.md`
