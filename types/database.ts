@@ -26971,6 +26971,107 @@ export type Database = {
           },
         ]
       }
+      hub_group_candidates: {
+        Row: {
+          added_by_profile_id: string
+          candidate_type: string
+          chef_id: string | null
+          created_at: string
+          directory_listing_id: string | null
+          experience_package_id: string | null
+          group_id: string
+          id: string
+          meal_prep_item_id: string | null
+          menu_id: string | null
+          notes: string | null
+          snapshot: Json
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          added_by_profile_id: string
+          candidate_type: string
+          chef_id?: string | null
+          created_at?: string
+          directory_listing_id?: string | null
+          experience_package_id?: string | null
+          group_id: string
+          id?: string
+          meal_prep_item_id?: string | null
+          menu_id?: string | null
+          notes?: string | null
+          snapshot: Json
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          added_by_profile_id?: string
+          candidate_type?: string
+          chef_id?: string | null
+          created_at?: string
+          directory_listing_id?: string | null
+          experience_package_id?: string | null
+          group_id?: string
+          id?: string
+          meal_prep_item_id?: string | null
+          menu_id?: string | null
+          notes?: string | null
+          snapshot?: Json
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_group_candidates_added_by_profile_id_fkey"
+            columns: ["added_by_profile_id"]
+            isOneToOne: false
+            referencedRelation: "hub_guest_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_group_candidates_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_group_candidates_directory_listing_id_fkey"
+            columns: ["directory_listing_id"]
+            isOneToOne: false
+            referencedRelation: "directory_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_group_candidates_experience_package_id_fkey"
+            columns: ["experience_package_id"]
+            isOneToOne: false
+            referencedRelation: "experience_packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_group_candidates_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "hub_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_group_candidates_meal_prep_item_id_fkey"
+            columns: ["meal_prep_item_id"]
+            isOneToOne: false
+            referencedRelation: "meal_prep_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_group_candidates_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hub_groups: {
         Row: {
           allow_anonymous_posts: boolean
@@ -27000,6 +27101,7 @@ export type Database = {
           message_count: number
           name: string
           open_seats: number | null
+          planning_brief: Json | null
           tenant_id: string | null
           theme_id: string | null
           updated_at: string
@@ -27033,6 +27135,7 @@ export type Database = {
           message_count?: number
           name: string
           open_seats?: number | null
+          planning_brief?: Json | null
           tenant_id?: string | null
           theme_id?: string | null
           updated_at?: string
@@ -27066,6 +27169,7 @@ export type Database = {
           message_count?: number
           name?: string
           open_seats?: number | null
+          planning_brief?: Json | null
           tenant_id?: string | null
           theme_id?: string | null
           updated_at?: string
@@ -28401,9 +28505,13 @@ export type Database = {
           nutrition_source: string | null
           nutrition_updated_at: string | null
           preferred_vendor: string | null
+          price_flag_new_cents: number | null
+          price_flag_pending: boolean
+          price_flag_reason: string | null
           price_trend_direction: string | null
           price_trend_pct: number | null
           price_unit: string | null
+          scaling_category: string | null
           tenant_id: string
           unit_type: string | null
           updated_at: string
@@ -28443,9 +28551,13 @@ export type Database = {
           nutrition_source?: string | null
           nutrition_updated_at?: string | null
           preferred_vendor?: string | null
+          price_flag_new_cents?: number | null
+          price_flag_pending?: boolean
+          price_flag_reason?: string | null
           price_trend_direction?: string | null
           price_trend_pct?: number | null
           price_unit?: string | null
+          scaling_category?: string | null
           tenant_id: string
           unit_type?: string | null
           updated_at?: string
@@ -28485,9 +28597,13 @@ export type Database = {
           nutrition_source?: string | null
           nutrition_updated_at?: string | null
           preferred_vendor?: string | null
+          price_flag_new_cents?: number | null
+          price_flag_pending?: boolean
+          price_flag_reason?: string | null
           price_trend_direction?: string | null
           price_trend_pct?: number | null
           price_unit?: string | null
+          scaling_category?: string | null
           tenant_id?: string
           unit_type?: string | null
           updated_at?: string
@@ -39607,6 +39723,54 @@ export type Database = {
           },
         ]
       }
+      receipt_ingredient_mappings: {
+        Row: {
+          created_at: string
+          id: string
+          ingredient_id: string
+          match_count: number
+          receipt_text: string
+          store_name: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ingredient_id: string
+          match_count?: number
+          receipt_text: string
+          store_name?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ingredient_id?: string
+          match_count?: number
+          receipt_text?: string
+          store_name?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receipt_ingredient_mappings_ingredient_id_fkey"
+            columns: ["ingredient_id"]
+            isOneToOne: false
+            referencedRelation: "ingredients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receipt_ingredient_mappings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       receipt_line_items: {
         Row: {
           created_at: string
@@ -39616,8 +39780,10 @@ export type Database = {
           id: string
           ingredient_category: string | null
           price_cents: number | null
+          quantity: number | null
           receipt_extraction_id: string
           tenant_id: string
+          unit: string | null
         }
         Insert: {
           created_at?: string
@@ -39627,8 +39793,10 @@ export type Database = {
           id?: string
           ingredient_category?: string | null
           price_cents?: number | null
+          quantity?: number | null
           receipt_extraction_id: string
           tenant_id: string
+          unit?: string | null
         }
         Update: {
           created_at?: string
@@ -39638,8 +39806,10 @@ export type Database = {
           id?: string
           ingredient_category?: string | null
           price_cents?: number | null
+          quantity?: number | null
           receipt_extraction_id?: string
           tenant_id?: string
+          unit?: string | null
         }
         Relationships: [
           {
