@@ -1,41 +1,38 @@
 # Session Log
 
-## 2026-04-17 ~03:00 EST
+## 2026-04-24 ~11:00 EST
 
-- Agent: Builder
-- Task: Interrogation spec PARTIAL sweep - stale verdict detection + code fixes
+- Agent: Opus 4.6 (main session)
+- Task: Full product gap analysis + builder prompt generation
 - Status: completed
-- Files touched:
-  - components/finance/ProfitAndLossReport.tsx (FQ27: "Total Revenue" -> "Net Revenue")
-  - components/commerce/shift-report.tsx (FQ27: "Revenue" -> "Gross Revenue")
-  - app/(chef)/dashboard/\_sections/restaurant-metrics.tsx (FQ27: subtitle "net revenue")
-  - docs/specs/commerce-financial-integrity-interrogation.md (FQ27 PASS, FQ15 verdict fix, FQ16 PARTIAL->PASS, P1 count fix)
-  - docs/specs/chef-user-journey-interrogation.md (Q7/Q19/Q41 stale->PASS, score 48->51 PASS, fix priority list cleaned)
-  - docs/specs/restaurant-adoption-interrogation.md (RQ13 missing from scorecard, corrected 3->4 PARTIALs)
-  - docs/specs/scheduled-jobs-integrity-interrogation.md (SQ3 text 4/29->12/29, total count 12->13 PASS)
-- Commits: 17595351b, 0795d4dad, 7c69dd368
-- Build state on departure: not verified (doc-only + label changes, no structural code changes)
-- Notes: Found 6 stale verdicts across specs (features already built, verdicts not updated). FQ27 was the only real code change (UI label fixes). Remaining 18 PARTIALs are genuine gaps. Best candidates for next session: FQ9 (commerce-to-ledger), Q20 (client auto-invite), FQ11 (tip auto-sync).
+- Files touched: 10 new files in `prompts/`, session digest
+- Commits: `f4b53e22a` docs(prompts): add 10 gap-analysis builder prompts for fresh agents
+- Build state on departure: unchanged
+- Digest: `docs/session-digests/2026-04-24-gap-analysis.md`
+- Notes: ~90 gaps identified across 12 categories. 10 self-contained prompts for fresh agents. Recommended build order: yield UI -> codex review -> safety -> backups -> booking -> disclosure -> tickets -> residency -> discovery -> monetization.
 
-## 2026-04-17 ~04:00 EST
+## 2026-04-24 ~09:41 EST
+
+- Agent: Planner (Opus 4.6)
+- Task: Dinner Circle Unification & Chef-to-Chef Collaboration spec
+- Status: completed
+- Files touched: `docs/specs/dinner-circle-unification.md` (created)
+- Commits: none (spec-only session)
+- Build state on departure: unchanged from 2026-04-22 green baseline
+- Digest: `docs/session-digests/2026-04-24-draft.md`
+- Notes: Full planner gate. 514-line spec with 7 circle types, 2 new (chef_collab, event_collab), 1 new table, 10 new server actions, 21 integrity questions. Draft status, awaiting developer review.
+
+## 2026-04-24 ~09:30 EST
 
 - Agent: Builder (Opus 4.6)
-- Task: Cross-Boundary Flow Interrogation - full 57-question audit + priority fixes
-- Status: completed
-- Files touched:
-  - docs/specs/cross-boundary-flow-interrogation.md (NEW - full spec, 57 questions graded)
-  - lib/events/transitions.ts (Q19: guest cancellation email notification)
-  - lib/email/templates/contract-signed-client.tsx (NEW - Q10: client signature confirmation template)
-  - lib/email/notifications.ts (Q10: sendContractSignedClientEmail function)
-  - lib/contracts/actions.ts (Q10: wire client email after contract sign)
-  - app/api/webhooks/resend/route.ts (Q55: bounce/spam -> email_suppressions upsert)
-  - lib/sharing/actions.ts (Q48: return eventTimezone in share data)
-  - app/(client)/my-events/[id]/page.tsx (Q48: timezone display)
-  - app/(public)/share/[token]/page.tsx (Q48: timezone display)
-  - docs/session-digests/2026-04-17-cross-boundary-interrogation.md (NEW)
-- Commits: d12e2090b
-- Build state on departure: tsc has 6 pre-existing errors (none from this session)
-- Notes: Scorecard 43/57 Working, 12 Partial, 2 Missing, 0 Broken (75%). 4 fixes shipped. 12 Partial items documented in spec Gap Inventory with severity ranking. Highest remaining: Q9 (contract merge fields), Q28 (guest dietary -> menu editor). Session digest written.
+- Task: Event Ops Quality Bar Build (20 findings, 5 tiers)
+- Status: completed (not committed)
+- Spec: docs/specs/event-ops-quality-bar-build.md
+- Files touched: 27 files (25 modified + 2 new)
+- Commits: none yet (all changes in working tree, ready to stage)
+- Build state on departure: GREEN (tsc 0 errors, next build exit 0)
+- Digest: docs/session-digests/2026-04-24-quality-bar.md
+- Notes: All 20 findings implemented. tsc + build pass. Working tree has ~50 additional files from prior stash (Codex recovery, terminology). Quality bar files must be committed separately by name. Migration 20260423000004 not applied. packing-list-client.tsx may need re-impl (no diff detected).
 
 ## 2026-04-17 ~06:00 EST
 
@@ -138,3 +135,13 @@
 - Commits: pending at log-write time
 - Build state on departure: focused public-intent slice verified; `npm run typecheck` exits `0`
 - Notes: Added `lib/security/public-intent-guard.ts`, rewired open booking, public chef inquiry, embed inquiry, and instant booking to the shared guard, added short-window anonymous instant-book checkout dedupe plus Stripe idempotency, and patched the obvious token-flow gaps with token-scoped rate limits on guest portal lookup and proposal approve or decline. Verified with focused node tests, repo-wide `npm run typecheck`, focused ESLint, `graphify update .`, and live isolated-browser proof on `http://localhost:3111` for `/book` and `/chef/df-private-chef/inquire`. Direct `/book/[chefSlug]` proof remains dataset-blocked because no local chef currently has both `booking_enabled = true` and a populated `booking_slug`. Session digest: `docs/session-digests/2026-04-23-public-intent-hardening.md`
+
+## 2026-04-23 23:06 EST
+
+- Agent: Codex
+- Task: Survey whether the chef portal fully leverages the richer client-portal stats and prepare a clean handoff prompt for a fresh agent
+- Status: completed
+- Files touched: `docs/session-digests/2026-04-23-draft.md`, `docs/session-log.md` (manual closeout only); no product code changes
+- Commits: not created because the worktree already contained extensive unrelated dirty changes and this session was analysis-only
+- Build state on departure: unchanged; no fresh build or test run in this session
+- Notes: Verified the richer stats live behind the authenticated client dashboard and work-graph stack, while chef-side reuse on `app/(chef)/clients/[id]/page.tsx` is still limited to coarse financial cards, engagement scoring, and portal-link state. Verified the token magic-link portal and chef-side preview are intentionally smaller and not the right reuse target. Read-only DB check showed 141 clients, 86 client-linked events, 0 active portal links, 0 used portal links, and 0 client activity events in the last 30 days. Produced the next-step recommendation and a compact copy-paste handoff prompt. `bash scripts/session-close.sh` was unavailable on this Windows host because `/bin/bash` is missing, so closeout was completed manually. Session digest: `docs/session-digests/2026-04-23-draft.md`
