@@ -83,14 +83,24 @@ export async function getClientRelationshipSnapshot(
     getClientHistory(clientId, 8).catch(() => []),
     getClientIntelligenceContext(clientId).catch(() => null),
     getRepeatClientIntelligence(clientId).catch(() => null),
-    getRelationshipPatterns(clientId),
+    getRelationshipPatterns(clientId).catch(() => []),
     db
       .from('events')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', user.tenantId!)
       .eq('client_id', clientId)
-      .eq('status', 'completed'),
+      .eq('status', 'completed')
+      .then((res: any) => res)
+      .catch(() => ({ count: 0 })),
   ])
+
+  let signals: ReturnType<typeof buildClientRelationshipSignalSnapshot>
+  try {
+    signals = buildClientRelationshipSignalSnapshot(client as RelationshipClientRecord, patterns)
+  } catch (err) {
+    console.error('[relationship-snapshot] signal snapshot build failed:', err)
+    signals = { canonical: [], profile: [], learned: [], secondaryLearned: [] }
+  }
 
   return {
     client: client as RelationshipClientRecord,
@@ -100,7 +110,7 @@ export async function getClientRelationshipSnapshot(
     history: relationshipHistory,
     relationshipHealth,
     repeat,
-    signals: buildClientRelationshipSignalSnapshot(client as RelationshipClientRecord, patterns),
+    signals,
     generatedAt: new Date().toISOString(),
   }
 }

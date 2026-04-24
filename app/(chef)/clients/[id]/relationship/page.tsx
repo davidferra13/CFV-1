@@ -26,7 +26,12 @@ function getPrimarySignalLabel(signal: NextBestActionPrimarySignal): string {
 
 export default async function ClientRelationshipPage({ params }: { params: { id: string } }) {
   await requireChef()
-  const snapshot = await getClientRelationshipSnapshot(params.id)
+  let snapshot: Awaited<ReturnType<typeof getClientRelationshipSnapshot>> | null = null
+  try {
+    snapshot = await getClientRelationshipSnapshot(params.id)
+  } catch (err) {
+    console.error('[relationship-page] snapshot load failed:', err)
+  }
   if (!snapshot) notFound()
 
   const { client, nextAction, outreachHistory } = snapshot
