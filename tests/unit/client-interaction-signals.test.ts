@@ -5,7 +5,7 @@ import { buildClientInteractionLedgerEntries } from '@/lib/clients/interaction-l
 import {
   buildClientInteractionSignalSnapshot,
   getClientInteractionSignalShortLabel,
-} from '@/lib/clients/interaction-signals'
+} from '@/lib/clients/interaction-signal-utils'
 import type { ClientHealthScore } from '@/lib/clients/health-score'
 
 function buildHealthScore(overrides: Partial<ClientHealthScore> = {}): ClientHealthScore {

@@ -15,7 +15,7 @@ import type {
   ClientInteractionSignal,
   ClientInteractionSignalReason,
   ClientInteractionSignalType,
-} from './interaction-signals'
+} from './interaction-signal-utils'
 
 export type NextBestActionPrimarySignal =
   | ClientInteractionSignalType

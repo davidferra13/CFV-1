@@ -4,7 +4,7 @@ import {
   getRelationshipActionLayerCopy,
   type RelationshipActionLayerSource,
 } from '@/lib/clients/action-vocabulary'
-import { getClientInteractionSignalShortLabel } from '@/lib/clients/interaction-signals'
+import { getClientInteractionSignalShortLabel } from '@/lib/clients/interaction-signal-utils'
 import type { NextBestAction } from '@/lib/clients/next-best-action'
 import type { GoogleConnectionStatus } from '@/lib/google/types'
 import type { OnboardingProgress } from '@/lib/onboarding/progress-actions'

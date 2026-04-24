@@ -3,7 +3,7 @@ import { describe, it } from 'node:test'
 
 import { selectNextBestAction } from '@/lib/clients/next-best-action-core'
 import type { ClientHealthScore } from '@/lib/clients/health-score'
-import type { ClientInteractionSignal } from '@/lib/clients/interaction-signals'
+import type { ClientInteractionSignal } from '@/lib/clients/interaction-signal-utils'
 
 function buildHealthScore(overrides: Partial<ClientHealthScore> = {}): ClientHealthScore {
   return {
