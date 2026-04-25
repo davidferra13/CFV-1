@@ -79,14 +79,29 @@ function extractName(filename) {
   return titleCase(stem.replace(/[-_]/g, " ").trim());
 }
 
-async function submitToCodex(specContent, slug, envId) {
+async function pushSpecs() {
+  try {
+    await execFileAsync("git", ["add", "system/codex-queue/persona-*.md"], { cwd: ROOT, shell: true });
+    await execFileAsync("git", ["commit", "-m", "chore: queue persona specs for Codex"], { cwd: ROOT });
+    await execFileAsync("git", ["push"], { cwd: ROOT, timeout: 30000 });
+    return true;
+  } catch (err) {
+    const detail = err.stderr || err.stdout || err.message;
+    if (detail.includes("nothing to commit")) return true;
+    console.log(`${TAG} Git push failed: ${detail.trim()}`);
+    return false;
+  }
+}
+
+async function submitToCodex(slug, envId) {
+  const prompt = `Read and execute the task spec at system/codex-queue/persona-${slug}.md. Follow every instruction in that file exactly.`;
   try {
     const { stdout, stderr } = await execFileAsync("npx", [
       "@openai/codex", "cloud", "exec",
       "--env", envId,
       "--branch", `codex/persona-${slug}`,
-      specContent,
-    ], { cwd: ROOT, timeout: 60000, maxBuffer: 1024 * 1024 });
+      prompt,
+    ], { cwd: ROOT, timeout: 60000, maxBuffer: 1024 * 1024, shell: true });
     const output = (stdout + stderr).trim();
     return { success: true, output };
   } catch (err) {
@@ -265,6 +280,7 @@ async function cycle(options) {
   const date = new Date().toISOString().slice(0, 10);
   let generated = 0;
   let submitted = 0;
+  const slugsToSubmit = [];
 
   for (const { type, filename, path: filePath } of toProcess) {
     const stem = basename(filename, extname(filename));
@@ -316,16 +332,26 @@ async function cycle(options) {
     console.log(`${TAG} Generated: system/codex-queue/persona-${slug}.md (${type})`);
     generated++;
 
-    // Submit to Codex if --submit
-    if (options.submit && envId) {
-      console.log(`${TAG} Submitting to Codex: persona-${slug}...`);
-      const result = await submitToCodex(spec, slug, envId);
-      if (result.success) {
-        console.log(`${TAG} Submitted: persona-${slug} -> Codex cloud`);
-        submitted++;
-      } else {
-        console.log(`${TAG} Submit failed: persona-${slug}: ${result.output}`);
+    slugsToSubmit.push(slug);
+  }
+
+  // Push specs to repo then submit to Codex
+  if (!options.dryRun && options.submit && envId && slugsToSubmit.length > 0) {
+    console.log(`${TAG} Pushing specs to repo...`);
+    const pushed = await pushSpecs();
+    if (pushed) {
+      for (const slug of slugsToSubmit) {
+        console.log(`${TAG} Submitting to Codex: persona-${slug}...`);
+        const result = await submitToCodex(slug, envId);
+        if (result.success) {
+          console.log(`${TAG} Submitted: persona-${slug} -> Codex cloud (${result.output})`);
+          submitted++;
+        } else {
+          console.log(`${TAG} Submit failed: persona-${slug}: ${result.output}`);
+        }
       }
+    } else {
+      console.log(`${TAG} Skipped Codex submission (push failed)`);
     }
   }
 
