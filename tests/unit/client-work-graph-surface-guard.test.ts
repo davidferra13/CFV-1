@@ -18,6 +18,8 @@ test('client route surfaces and Remy stay wired to the shared work graph', () =>
     'app/(client)/my-events/[id]/contract/contract-signing-client.tsx'
   )
   const dashboardActions = read('lib/client-dashboard/actions.ts')
+  const workGraphActions = read('lib/client-work-graph/actions.ts')
+  const sharedSnapshot = read('lib/client-work-graph/shared-snapshot.ts')
   const remyContext = read('lib/ai/remy-client-context.ts')
   const remyRoute = read('app/api/remy/client/route.ts')
 
@@ -46,11 +48,15 @@ test('client route surfaces and Remy stay wired to the shared work graph', () =>
   assert.match(contractSigningClient, /continueToPayment/)
   assert.match(contractSigningClient, /router\.push\(`\/my-events\/\$\{eventId\}\/pay`\)/)
 
-  assert.match(
-    dashboardActions,
-    /actionRequired:\s*\{\s*proposalCount: workGraph\.summary\.proposalCount/s
-  )
-  assert.match(dashboardActions, /paymentDueCount: workGraph\.summary\.paymentDueCount/)
+  assert.match(dashboardActions, /buildClientActionRequiredSummary\(workGraph\.summary\)/)
+
+  assert.match(workGraphActions, /getSharedClientWorkGraphSnapshot/)
+  assert.doesNotMatch(workGraphActions, /from\('event_financial_summary'\)/)
+  assert.doesNotMatch(workGraphActions, /from\('event_contracts'\)/)
+
+  assert.match(sharedSnapshot, /from\('client_meal_requests'\)/)
+  assert.match(sharedSnapshot, /from\('event_shares'\)/)
+  assert.match(sharedSnapshot, /buildClientActionRequiredSummary/)
 
   assert.match(remyContext, /getClientWorkGraphSnapshot/)
   assert.match(remyContext, /workGraph: snapshot\.workGraph/)

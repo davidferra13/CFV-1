@@ -7,7 +7,7 @@ function read(relativePath: string) {
   return readFileSync(join(process.cwd(), relativePath), 'utf8')
 }
 
-test('open booking route parses dietary text once and propagates it through inquiry, client, and event creation', () => {
+test('open booking route parses dietary text once and keeps intake inquiry-first', () => {
   const source = read('app/api/book/route.ts')
 
   assert.match(source, /function stripHtml\(value: string\)/)
@@ -17,6 +17,9 @@ test('open booking route parses dietary text once and propagates it through inqu
     /const dietaryRestrictions = parseDietaryRestrictions\(data\.dietary_restrictions\)/
   )
   assert.match(source, /confirmed_dietary_restrictions:\s*dietaryRestrictions/)
+  assert.match(source, /confirmed_budget_cents:\s*budgetCentsPerPerson/)
+  assert.match(source, /referral_partner_id:\s*referralPartnerId/)
+  assert.match(source, /guest_count_range_label:\s*guestRange\?\.label/)
   assert.match(
     source,
     /seasonal_intent:\s*PublicSeasonalMarketPulseIntentSchema\.nullable\(\)\.optional\(\)/
@@ -27,6 +30,9 @@ test('open booking route parses dietary text once and propagates it through inqu
   )
   assert.match(source, /seasonal_market_intent:\s*seasonalIntent/)
   assert.match(source, /buildPublicSeasonalMarketPulseSourceMessageLine\(seasonalIntent\)/)
+  assert.match(source, /\.from\('open_bookings'\)/)
+  assert.match(source, /\.from\('open_booking_inquiries'\)/)
+  assert.match(source, /sendBookingConfirmationEmail/)
 
   const propagatedArrays =
     source.match(
@@ -35,7 +41,8 @@ test('open booking route parses dietary text once and propagates it through inqu
 
   assert.equal(
     propagatedArrays.length,
-    2,
-    'dietary/allergy safety context should be written into both client and event records'
+    1,
+    'dietary/allergy safety context should be written into the client record before commitment'
   )
+  assert.doesNotMatch(source, /converted_to_event_id:\s*event\.id/)
 })

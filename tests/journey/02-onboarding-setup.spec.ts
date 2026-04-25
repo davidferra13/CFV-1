@@ -1,45 +1,71 @@
-// Journey Tests — Onboarding & Setup (Week 1, Day 1)
-// Verifies the onboarding flow, profile setup, archetype selection,
-// pricing configuration, module toggles, and calendar sync.
-//
-// Scenarios: #1-10 (Every archetype — Starter)
-//
+// Journey Tests - Onboarding & Setup (Week 1, Day 1)
 // Run: npx playwright test --project=journey-chef tests/journey/02-onboarding-setup.spec.ts
 
+import type { Page } from '@playwright/test'
 import { test, expect } from '../helpers/fixtures'
 import { assertPageLoads, assertNoPageErrors, JOURNEY_ROUTES } from './helpers/journey-helpers'
 
-// ─── Onboarding Hub ─────────────────────────────────────────────────────────────
+async function loginAsChef(page: Page, email: string, password: string) {
+  const response = await page.request.post('/api/e2e/auth', {
+    data: { email, password },
+    timeout: 90_000,
+  })
+  expect(response.ok()).toBeTruthy()
+}
 
-test.describe('Onboarding — Hub & Wizard (#1-2)', () => {
-  test('onboarding page loads or redirects to dashboard', async ({ page }) => {
+test.describe('Onboarding - Hub & Wizard (#1-2)', () => {
+  test('new-chef stays on the first-run setup flow', async ({ page, seedIds }) => {
+    const chef = seedIds.activationChefs.newChef
+    await loginAsChef(page, chef.email, chef.password)
+
     await page.goto(JOURNEY_ROUTES.onboarding, { waitUntil: 'domcontentloaded', timeout: 60_000 })
-    await page.waitForTimeout(2_000)
-    // Chef with completed onboarding will redirect to /dashboard — both outcomes are valid
-    const url = page.url()
-    expect(url).toMatch(/\/(onboarding|dashboard)/)
+    await expect(page).toHaveURL(/\/onboarding/)
+    await expect(page.getByText(/ChefFlow Setup|Skip setup/i).first()).toBeVisible({
+      timeout: 10_000,
+    })
   })
 
-  test('onboarding or dashboard has no JS errors', async ({ page }) => {
+  test('wizard-complete-not-activated sees the first-week activation hub', async ({
+    page,
+    seedIds,
+  }) => {
+    const chef = seedIds.activationChefs.wizardCompleteNotActivated
+    await loginAsChef(page, chef.email, chef.password)
+
+    await page.goto(JOURNEY_ROUTES.onboarding, { waitUntil: 'domcontentloaded', timeout: 60_000 })
+    await expect(page).toHaveURL(/\/onboarding/)
+    await expect(page.getByRole('heading', { name: /Activate Your First Week/i })).toBeVisible({
+      timeout: 10_000,
+    })
+    await expect(page.getByText(/profile, lead, quote, event, prep, and invoice/i)).toBeVisible()
+    await expect(page.getByText(/Now bring in your data/i)).toHaveCount(0)
+  })
+
+  test('onboarding has no JS errors', async ({ page, seedIds }) => {
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
+    const chef = seedIds.activationChefs.wizardCompleteNotActivated
+    await loginAsChef(page, chef.email, chef.password)
+
     await page.goto(JOURNEY_ROUTES.onboarding, { waitUntil: 'domcontentloaded', timeout: 60_000 })
     await page.waitForTimeout(3_000)
     expect(errors).toHaveLength(0)
   })
 
-  test('onboarding or dashboard shows content', async ({ page }) => {
+  test('onboarding hub shows activation content and secondary setup', async ({ page, seedIds }) => {
+    const chef = seedIds.activationChefs.wizardCompleteNotActivated
+    await loginAsChef(page, chef.email, chef.password)
+
     await page.goto(JOURNEY_ROUTES.onboarding, { waitUntil: 'domcontentloaded', timeout: 60_000 })
-    await page.waitForTimeout(2_000)
-    const bodyText = await page.locator('body').innerText()
-    expect(bodyText.trim().length).toBeGreaterThan(50)
+    await expect(page.getByText(/More setup you can do next/i)).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByText(/Client import/i)).toBeVisible()
+    await expect(page.getByText(/Recipe library/i)).toBeVisible()
   })
 })
 
-// ─── Profile Setup ──────────────────────────────────────────────────────────────
 // Note: /onboarding/profile does not exist. Profile setup lives at /settings/my-profile.
 
-test.describe('Onboarding — Profile Setup (#2)', () => {
+test.describe('Onboarding - Profile Setup (#2)', () => {
   test('profile setup page loads', async ({ page }) => {
     await assertPageLoads(page, JOURNEY_ROUTES.settingsMyProfile)
   })
@@ -50,18 +76,14 @@ test.describe('Onboarding — Profile Setup (#2)', () => {
 
     if (page.url().includes('auth/signin')) return
 
-    // Look for profile-related input fields
     const nameField = page.getByLabel(/name/i).first().or(page.getByPlaceholder(/name/i).first())
     const fieldExists = await nameField.isVisible().catch(() => false)
-    // Profile should have a name field or a similar structure
     const bodyText = await page.locator('body').innerText()
     expect(fieldExists || bodyText.length > 50).toBeTruthy()
   })
 })
 
-// ─── Archetype Selection ────────────────────────────────────────────────────────
-
-test.describe('Onboarding — Archetype Selection (#3)', () => {
+test.describe('Onboarding - Archetype Selection (#3)', () => {
   test('settings modules page loads (archetype/module selection)', async ({ page }) => {
     await assertPageLoads(page, JOURNEY_ROUTES.settingsModules)
   })
@@ -72,10 +94,8 @@ test.describe('Onboarding — Archetype Selection (#3)', () => {
 
     if (page.url().includes('auth/signin')) return
 
-    // Should show toggle switches or module cards
     const toggles = page.locator('button[role="switch"], input[type="checkbox"], [class*="toggle"]')
     const count = await toggles.count()
-    // Should have at least a few module toggles
     expect(count).toBeGreaterThanOrEqual(0)
 
     const bodyText = await page.locator('body').innerText()
@@ -83,9 +103,7 @@ test.describe('Onboarding — Archetype Selection (#3)', () => {
   })
 })
 
-// ─── Pricing & Service Defaults ─────────────────────────────────────────────────
-
-test.describe('Onboarding — Pricing & Service Defaults (#6-7)', () => {
+test.describe('Onboarding - Pricing & Service Defaults (#6-7)', () => {
   test('settings profile page loads (pricing/service setup)', async ({ page }) => {
     await assertPageLoads(page, JOURNEY_ROUTES.settingsMyProfile)
   })
@@ -100,16 +118,13 @@ test.describe('Onboarding — Pricing & Service Defaults (#6-7)', () => {
 
     if (page.url().includes('auth/signin')) return
 
-    // Should have input fields for profile data
     const inputs = page.locator('input, textarea, select')
     const count = await inputs.count()
     expect(count).toBeGreaterThan(0)
   })
 })
 
-// ─── Module Toggles ─────────────────────────────────────────────────────────────
-
-test.describe('Onboarding — Module Toggles (#5, #9)', () => {
+test.describe('Onboarding - Module Toggles (#5, #9)', () => {
   test('modules page loads without errors', async ({ page }) => {
     await assertNoPageErrors(page, JOURNEY_ROUTES.settingsModules)
   })
@@ -121,14 +136,11 @@ test.describe('Onboarding — Module Toggles (#5, #9)', () => {
     if (page.url().includes('auth/signin')) return
 
     const bodyText = await page.locator('body').innerText()
-    // Should mention modules or features
     expect(bodyText.trim().length).toBeGreaterThan(100)
   })
 })
 
-// ─── Calendar Sync ──────────────────────────────────────────────────────────────
-
-test.describe('Onboarding — Calendar Setup (#10)', () => {
+test.describe('Onboarding - Calendar Setup (#10)', () => {
   test('calendar page loads', async ({ page }) => {
     await assertPageLoads(page, JOURNEY_ROUTES.calendar)
   })
@@ -139,7 +151,6 @@ test.describe('Onboarding — Calendar Setup (#10)', () => {
 
     if (page.url().includes('auth/signin')) return
 
-    // Check for month heading (e.g., "February 2026")
     const monthHeading = page
       .getByRole('heading', {
         name: /january|february|march|april|may|june|july|august|september|october|november|december/i,
@@ -153,9 +164,7 @@ test.describe('Onboarding — Calendar Setup (#10)', () => {
   })
 })
 
-// ─── Dashboard After Setup ──────────────────────────────────────────────────────
-
-test.describe('Onboarding — Dashboard Post-Setup (#1)', () => {
+test.describe('Onboarding - Dashboard Post-Setup (#1)', () => {
   test('dashboard loads after setup', async ({ page }) => {
     await assertPageLoads(page, JOURNEY_ROUTES.dashboard)
   })
@@ -174,16 +183,35 @@ test.describe('Onboarding — Dashboard Post-Setup (#1)', () => {
     expect(bodyText.trim().length).toBeGreaterThan(100)
   })
 
-  test('dashboard may show onboarding checklist', async ({ page }) => {
+  test('activated-chef dashboard does not show the primary activation checklist', async ({
+    page,
+    seedIds,
+  }) => {
+    const chef = seedIds.activationChefs.activatedChef
+    await loginAsChef(page, chef.email, chef.password)
+
     await page.goto(JOURNEY_ROUTES.dashboard)
     await page.waitForLoadState('domcontentloaded')
 
-    if (page.url().includes('auth/signin')) return
+    await expect(page).toHaveURL(/\/dashboard/)
+    await expect(page.getByText(/Prove ChefFlow with one paid workflow/i)).toHaveCount(0)
+    await expect(page.getByText(/^First Booking Loop$/i)).toHaveCount(0)
+  })
 
-    // Onboarding checklist appears for incomplete profiles
-    const checklist = page.getByText(/onboarding|get started|set up|complete/i).first()
-    const hasChecklist = await checklist.isVisible().catch(() => false)
-    // Either has checklist or doesn't — both are valid states
-    expect(typeof hasChecklist).toBe('boolean')
+  test('dismissed dashboard banner alone does not satisfy activation', async ({
+    page,
+    seedIds,
+  }) => {
+    const chef = seedIds.activationChefs.wizardCompleteNotActivated
+    await loginAsChef(page, chef.email, chef.password)
+
+    await page.goto(JOURNEY_ROUTES.dashboard)
+    await page.waitForLoadState('domcontentloaded')
+
+    await expect(page).toHaveURL(/\/dashboard/)
+    await expect(page.getByText(/Prove ChefFlow with one paid workflow/i)).toBeVisible({
+      timeout: 10_000,
+    })
+    await expect(page.getByText(/^First Booking Loop$/i).first()).toBeVisible()
   })
 })

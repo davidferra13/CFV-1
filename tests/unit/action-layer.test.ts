@@ -22,6 +22,7 @@ import {
   resolveTravelConfirmTask,
   resolveTrustLoopNextTask,
 } from '@/lib/interface/action-layer'
+import { buildFirstWeekActivationProgress } from '@/lib/onboarding/first-week-activation'
 import type { PriorityQueue } from '@/lib/queue/types'
 import type { DashboardWorkSurface } from '@/lib/workflow/types'
 
@@ -121,15 +122,19 @@ describe('action layer', () => {
 
     const task = resolveDashboardNextTask({
       priorityQueue: queue,
-      onboardingProgress: {
-        profile: false,
-        clients: { done: false, count: 0 },
-        loyalty: { done: false },
-        recipes: { done: false, count: 0 },
-        staff: { done: false, count: 0 },
-        completedPhases: 0,
-        totalPhases: 5,
-      },
+      onboardingProgress: buildFirstWeekActivationProgress({
+        profileBasicsReady: false,
+        serviceSetupReady: false,
+        inquiriesCount: 0,
+        clientsCount: 0,
+        sentQuotesCount: 0,
+        eventsCount: 0,
+        prepEvidenceCount: 0,
+        invoiceArtifactCount: 0,
+        recipesCount: 0,
+        loyaltyConfigured: false,
+        staffCount: 0,
+      }),
       profileGated: true,
     })
 
@@ -142,21 +147,25 @@ describe('action layer', () => {
   it('falls back to onboarding when the live queue is clear', () => {
     const task = resolveDashboardNextTask({
       priorityQueue: emptyQueue,
-      onboardingProgress: {
-        profile: true,
-        clients: { done: false, count: 0 },
-        loyalty: { done: false },
-        recipes: { done: true, count: 3 },
-        staff: { done: true, count: 2 },
-        completedPhases: 3,
-        totalPhases: 5,
-      },
+      onboardingProgress: buildFirstWeekActivationProgress({
+        profileBasicsReady: true,
+        serviceSetupReady: true,
+        inquiriesCount: 1,
+        clientsCount: 1,
+        sentQuotesCount: 0,
+        eventsCount: 0,
+        prepEvidenceCount: 0,
+        invoiceArtifactCount: 0,
+        recipesCount: 3,
+        loyaltyConfigured: false,
+        staffCount: 2,
+      }),
       profileGated: false,
     })
 
     assert.equal(task.source, 'onboarding')
-    assert.equal(task.href, '/onboarding/clients')
-    assert.equal(task.ctaLabel, 'Continue Setup')
+    assert.equal(task.href, '/quotes/new')
+    assert.equal(task.ctaLabel, 'Resolve Next')
   })
 
   it('detects when scheduling rules are still effectively empty', () => {

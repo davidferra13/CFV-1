@@ -77,6 +77,15 @@ class QueryBuilder implements PromiseLike<{ data: any; error: null }> {
         if (this.table === 'inquiries') {
           return { data: { id: `inquiry-${entries.length}` }, error: null }
         }
+        if (this.table === 'open_bookings') {
+          return {
+            data: { id: `booking-${entries.length}`, booking_token: 'abc123def4567890' },
+            error: null,
+          }
+        }
+        if (this.table === 'open_booking_inquiries') {
+          return { data: { id: `booking-inquiry-${entries.length}` }, error: null }
+        }
         if (this.table === 'events') {
           return { data: { id: `event-${entries.length}` }, error: null }
         }
@@ -199,11 +208,17 @@ function loadRouteModule() {
       sendInquiryReceivedEmail: async () => {
         notificationCalls.client += 1
       },
+      sendBookingConfirmationEmail: async () => {
+        notificationCalls.client += 1
+      },
       default: {
         sendNewInquiryChefEmail: async () => {
           notificationCalls.chef += 1
         },
         sendInquiryReceivedEmail: async () => {
+          notificationCalls.client += 1
+        },
+        sendBookingConfirmationEmail: async () => {
           notificationCalls.client += 1
         },
       },
@@ -368,21 +383,33 @@ test('open booking preserves dietary context through client, inquiry, and event 
     )
 
     assert.equal(response.status, 200)
+    const responseBody = await response.json()
+    assert.equal(responseBody.booking_token, 'abc123def4567890')
 
     const clientInsert = state.inserts.clients?.[0]
     const inquiryInsert = state.inserts.inquiries?.[0]
-    const eventInsert = state.inserts.events?.[0]
-
+    const bookingInsert = state.inserts.open_bookings?.[0]
+    const bookingLinkInsert = state.inserts.open_booking_inquiries?.[0]
     assert.ok(clientInsert, 'client should be created')
     assert.ok(inquiryInsert, 'inquiry should be created')
-    assert.ok(eventInsert, 'event should be created')
+    assert.ok(bookingInsert, 'parent booking should be created')
+    assert.ok(bookingLinkInsert, 'inquiry should be linked to parent booking')
+    assert.equal(state.inserts.events?.length ?? 0, 0, 'event should not be created at intake')
 
     assert.deepEqual(clientInsert.dietary_restrictions, ['gluten-free', 'peanut allergy'])
     assert.deepEqual(clientInsert.allergies, ['gluten-free', 'peanut allergy'])
+    assert.equal(bookingInsert.status, 'sent')
+    assert.equal(bookingInsert.budget_cents_per_person, 175000)
+    assert.equal(bookingInsert.guest_count_range_label, '7-12 (dinner party)')
+    assert.equal(bookingInsert.matched_chef_count, 1)
     assert.deepEqual(inquiryInsert.confirmed_dietary_restrictions, [
       'gluten-free',
       'peanut allergy',
     ])
+    assert.equal(inquiryInsert.confirmed_budget_cents, 175000)
+    assert.equal(inquiryInsert.unknown_fields.guest_count_range_label, '7-12 (dinner party)')
+    assert.equal(bookingLinkInsert.booking_id, 'booking-1')
+    assert.equal(bookingLinkInsert.inquiry_id, 'inquiry-1')
     assert.equal(inquiryInsert.unknown_fields.submission_source, 'open_booking')
     assert.equal(inquiryInsert.unknown_fields.seasonal_market_intent.scope.label, 'United States')
     assert.deepEqual(inquiryInsert.unknown_fields.seasonal_market_intent.leadIngredients, [
@@ -394,25 +421,16 @@ test('open booking preserves dietary context through client, inquiry, and event 
       inquiryInsert.unknown_fields.seasonal_market_intent.requestScope.label,
       'Boston, MA'
     )
-    assert.deepEqual(eventInsert.dietary_restrictions, ['gluten-free', 'peanut allergy'])
-    assert.deepEqual(eventInsert.allergies, ['gluten-free', 'peanut allergy'])
-    assert.match(eventInsert.special_requests, /Location: Boston, MA/)
-    assert.match(eventInsert.special_requests, /Market note: Spring/)
-    assert.match(eventInsert.special_requests, /Resolved request scope: Boston, MA/)
     assert.equal(
       notificationCalls.chef,
       0,
       'chef email should be skipped when no chef email exists'
     )
     assert.equal(notificationCalls.client, 1, 'client confirmation email should still be attempted')
-    assert.ok(
-      state.updates.some(
-        (update) =>
-          update.table === 'inquiries' &&
-          update.values.converted_to_event_id === 'event-1' &&
-          update.filters.some((filter) => filter.column === 'id' && filter.value === 'inquiry-1')
-      ),
-      'created event should be linked back to the inquiry'
+    assert.equal(
+      state.updates.some((update) => update.table === 'inquiries'),
+      false,
+      'intake should not link inquiries to draft events before commitment'
     )
   } finally {
     restore()

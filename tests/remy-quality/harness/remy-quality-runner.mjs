@@ -25,7 +25,7 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { createClient } from '../../../scripts/lib/db.mjs'
+import { signInAgent } from '../../../scripts/lib/db.mjs'
 import { parseSSEStream } from './sse-parser.mjs'
 import { evaluateResponse } from './evaluator.mjs'
 import { generateReports, printSummary } from './report-generator.mjs'
@@ -212,49 +212,14 @@ Options:
 
 //  Environment & Auth 
 
-function loadEnv() {
-  const envPath = path.join(ROOT, '.env.local')
-  if (!fs.existsSync(envPath)) {
-    console.error('ERROR: .env.local not found at', envPath)
+async function authenticate() {
+  try {
+    const port = Number(new URL(REMY_TEST_BASE_URL).port || 80)
+    return await signInAgent(port)
+  } catch (err) {
+    console.error('AUTH FAILED:', formatError(err))
     process.exit(1)
   }
-  const env = fs.readFileSync(envPath, 'utf8')
-  const getEnv = (k) => {
-    const m = env.match(new RegExp(k + '=(.+)'))
-    return m ? m[1].trim() : ''
-  }
-  return {
-    dbUrl: getEnv('NEXT_PUBLIC_DB_URL'),
-    dbKey: getEnv('NEXT_PUBLIC_DB_ANON_KEY'),
-    agentEmail: getEnv('AGENT_EMAIL') || 'agent@chefflow.test',
-    agentPassword: getEnv('AGENT_PASSWORD') || 'AgentChefFlow!2026',
-  }
-}
-
-async function authenticate(env) {
-  const sb = createClient(env.dbUrl, env.dbKey)
-  const { data, error } = await sb.auth.signInWithPassword({
-    email: env.agentEmail,
-    password: env.agentPassword,
-  })
-  if (error) {
-    console.error('AUTH FAILED:', error.message)
-    process.exit(1)
-  }
-
-  const session = data.session
-  const projectRef = 'luefkpakzvxcsqroxyhz'
-  const cookieBaseName = `sb-${projectRef}-auth-token`
-  const sessionPayload = JSON.stringify({
-    access_token: session.access_token,
-    refresh_token: session.refresh_token,
-    expires_in: session.expires_in,
-    expires_at: session.expires_at,
-    token_type: session.token_type,
-    user: session.user,
-  })
-  const encoded = 'base64-' + Buffer.from(sessionPayload).toString('base64url')
-  return `${cookieBaseName}=${encoded}`
 }
 
 //  Prerequisite Checks 
@@ -439,8 +404,7 @@ async function main() {
 
   // 2. Authenticate
   console.log('  Authenticating as agent...')
-  const env = loadEnv()
-  const cookie = await authenticate(env)
+  const cookie = await authenticate()
   console.log('  OK Authenticated')
 
   // 3. Pre-warm models

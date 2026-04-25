@@ -54,6 +54,26 @@ export type SeedResult = {
   chefBPassword: string
   chefBEventId: string
   chefBClientId: string
+  activationChefs: {
+    newChef: {
+      chefId: string
+      authId: string
+      email: string
+      password: string
+    }
+    wizardCompleteNotActivated: {
+      chefId: string
+      authId: string
+      email: string
+      password: string
+    }
+    activatedChef: {
+      chefId: string
+      authId: string
+      email: string
+      password: string
+    }
+  }
   // Staff — test staff member with portal login + kiosk PIN
   staffId: string
   staffAuthId: string
@@ -568,6 +588,59 @@ async function upsertChefB(admin, authUserId: string, suffix: string): Promise<s
   return inserted.id as string
 }
 
+async function upsertActivationChef(
+  admin,
+  authUserId: string,
+  input: {
+    email: string
+    businessName: string
+    displayName: string
+    slug: string
+    onboardingCompletedAt: string | null
+    onboardingBannerDismissedAt: string | null
+  }
+): Promise<string> {
+  const fields: Record<string, unknown> = {
+    business_name: input.businessName,
+    display_name: input.displayName,
+    email: input.email,
+    phone: '617-555-9020',
+    slug: input.slug,
+    tagline: 'E2E activation state account.',
+    bio: 'Used by onboarding activation journey tests.',
+    show_website_on_public_profile: false,
+    preferred_inquiry_destination: 'both',
+    onboarding_completed_at: input.onboardingCompletedAt,
+    onboarding_banner_dismissed_at: input.onboardingBannerDismissedAt,
+    subscription_status: 'grandfathered',
+  }
+
+  const { data: existing } = await admin
+    .from('chefs')
+    .select('id')
+    .eq('auth_user_id', authUserId)
+    .maybeSingle()
+
+  if (existing?.id) {
+    await safeUpdateById(admin, 'chefs', existing.id, fields, `activation chef ${input.email}`)
+    return existing.id as string
+  }
+
+  let payload = { auth_user_id: authUserId, ...fields }
+  let { data: inserted, error } = await admin.from('chefs').insert(payload).select('id').single()
+
+  const missingColumn = getMissingColumnName(error)
+  if (missingColumn && Object.prototype.hasOwnProperty.call(payload, missingColumn)) {
+    delete payload[missingColumn]
+    ;({ data: inserted, error } = await admin.from('chefs').insert(payload).select('id').single())
+  }
+
+  if (error || !inserted) {
+    throw new Error(`[e2e-seed] Failed to insert activation chef: ${error?.message}`)
+  }
+  return inserted.id as string
+}
+
 async function ensureChefRole(admin, authUserId: string, chefId: string) {
   const { error } = await admin
     .from('user_roles')
@@ -591,6 +664,19 @@ async function ensureChefPreferences(admin, chefId: string) {
     { onConflict: 'chef_id' }
   )
   if (error) throw new Error(`[e2e-seed] Failed to upsert chef preferences: ${error.message}`)
+}
+
+async function ensureChefPricingConfig(admin, chefId: string) {
+  const { error } = await admin.from('chef_pricing_config').upsert(
+    {
+      chef_id: chefId,
+      group_rate_3_course: 15500,
+      minimum_booking_cents: 30000,
+      deposit_percentage: 50,
+    },
+    { onConflict: 'chef_id' }
+  )
+  if (error) throw new Error(`[e2e-seed] Failed to upsert chef pricing config: ${error.message}`)
 }
 
 // ─── Clients ──────────────────────────────────────────────────────────────────
@@ -1877,6 +1963,7 @@ export async function seedE2EData(): Promise<SeedResult> {
   const chefId = await upsertChef(admin, chefAuth.id, suffix)
   await ensureChefRole(admin, chefAuth.id, chefId)
   await ensureChefPreferences(admin, chefId)
+  await ensureChefPricingConfig(admin, chefId)
 
   // 2. Primary client (has auth user for client-portal tests)
   const clientAuth = await ensureAuthUser(admin, {
@@ -3218,6 +3305,43 @@ The client must first accept the proposal pricing and event details before signi
   )
 
   // 12. Staff — test staff member with portal login + kiosk PIN
+  const activationNewChefPassword = 'E2eChefTest!2026'
+  const activationNewChefEmail = `e2e.activation-new.${suffix}@chefflow.test`
+  const activationNewChefAuth = await ensureAuthUser(admin, {
+    email: activationNewChefEmail,
+    password: activationNewChefPassword,
+    metadata: { role: 'chef', e2e: true, suffix, label: 'activation-new-chef' },
+  })
+  const activationNewChefId = await upsertActivationChef(admin, activationNewChefAuth.id, {
+    email: activationNewChefEmail,
+    businessName: 'TEST - Activation New Chef',
+    displayName: 'Activation New Chef',
+    slug: `activation-new-${suffix}`,
+    onboardingCompletedAt: null,
+    onboardingBannerDismissedAt: null,
+  })
+  await ensureChefRole(admin, activationNewChefAuth.id, activationNewChefId)
+  await ensureChefPreferences(admin, activationNewChefId)
+
+  const activationIncompletePassword = 'E2eChefTest!2026'
+  const activationIncompleteEmail = `e2e.activation-incomplete.${suffix}@chefflow.test`
+  const activationIncompleteAuth = await ensureAuthUser(admin, {
+    email: activationIncompleteEmail,
+    password: activationIncompletePassword,
+    metadata: { role: 'chef', e2e: true, suffix, label: 'activation-incomplete-chef' },
+  })
+  const activationIncompleteId = await upsertActivationChef(admin, activationIncompleteAuth.id, {
+    email: activationIncompleteEmail,
+    businessName: 'TEST - Activation Incomplete Chef',
+    displayName: 'Activation Incomplete Chef',
+    slug: `activation-incomplete-${suffix}`,
+    onboardingCompletedAt: new Date().toISOString(),
+    onboardingBannerDismissedAt: new Date().toISOString(),
+  })
+  await ensureChefRole(admin, activationIncompleteAuth.id, activationIncompleteId)
+  await ensureChefPreferences(admin, activationIncompleteId)
+  await ensureChefPricingConfig(admin, activationIncompleteId)
+
   const staffEmail = `e2e.staff.${suffix}@chefflow.test`
   const staffPassword = 'E2eStaffTest!2026'
   const staffKioskPin = '1234'
@@ -3282,6 +3406,26 @@ The client must first accept the proposal pricing and event details before signi
     chefBPassword: 'E2eChefTest!2026',
     chefBEventId,
     chefBClientId,
+    activationChefs: {
+      newChef: {
+        chefId: activationNewChefId,
+        authId: activationNewChefAuth.id,
+        email: activationNewChefEmail,
+        password: activationNewChefPassword,
+      },
+      wizardCompleteNotActivated: {
+        chefId: activationIncompleteId,
+        authId: activationIncompleteAuth.id,
+        email: activationIncompleteEmail,
+        password: activationIncompletePassword,
+      },
+      activatedChef: {
+        chefId,
+        authId: chefAuth.id,
+        email: `e2e.chef.${suffix}@chefflow.test`,
+        password: 'E2eChefTest!2026',
+      },
+    },
     staffId,
     staffAuthId: staffAuth.id,
     staffEmail,

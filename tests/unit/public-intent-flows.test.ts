@@ -440,14 +440,13 @@ test('public inquiry accepts a valid public submission shape', async () => {
       website_url: '',
     })
 
-    assert.deepEqual(result, { success: true, inquiryCreated: true, eventCreated: true })
+    assert.deepEqual(result, { success: true, inquiryCreated: true, eventCreated: false })
     assert.equal(state.inserts.inquiries?.length, 1)
-    assert.equal(state.inserts.events?.length, 1)
-    assert.ok(
-      state.updates.some(
-        (update) =>
-          update.table === 'inquiries' && update.values.converted_to_event_id === 'event-1'
-      )
+    assert.equal(state.inserts.events?.length ?? 0, 0)
+    assert.equal(
+      state.updates.some((update) => update.table === 'inquiries'),
+      false,
+      'public inquiry should not link an inquiry to an event before commitment'
     )
   } finally {
     restore()
