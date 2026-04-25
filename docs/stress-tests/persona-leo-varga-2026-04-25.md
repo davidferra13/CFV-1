@@ -1,91 +1,94 @@
-# Persona Stress Test — Leo Varga (Yacht / Ultra-Luxury Travel Chef)
+# Persona Stress Test: Leo Varga
 
-_Date: 2026-04-25_
+## Generated: 2026-04-25
+
+## Type: Chef
 
 ## Persona Summary
 
-Leo Varga is a high-end private chef working in unstable, mobile environments (yachts, remote villas, moving ports) with limited connectivity, variable provisioning windows, and rapidly changing guest preferences. He needs an operations system that is resilient while offline, fast for frequent roster churn, precise for long-horizon provisioning, and reliable for solo execution under high expectations.
+Leo Varga is a high-end private chef working in unstable, mobile environments such as yachts, remote villas, and moving ports. He needs ChefFlow to keep core menus, guest preferences, provisioning, inventory, and day-of plans reliable when connectivity is weak or absent. ChefFlow has strong connected-operation coverage, but Leo exposes a major need for offline-first resilience and voyage-aware provisioning.
 
-## Capability Fit Ratings
+## Capability Fit (rate each as SUPPORTED / PARTIAL / MISSING)
 
-### 1) Offline-first, self-contained operation
-
-**Rating: MISSING**
-
-ChefFlow’s own blueprint still lists “Mobile app + PWA activation” as not complete, and there is no explicit documented offline-first guarantee with local-first conflict-safe sync for core operational objects (menus, inventory, preferences, plans).
-
-### 2) Dynamic guest preference onboarding/offboarding
-
-**Rating: PARTIAL**
-
-ChefFlow has strong household profiles, client portal dietary capture, and rich client/event detail surfaces, but Leo’s scenario requires very rapid rotation handling as guests arrive/depart mid-charter with near-zero friction and isolated reliability.
-
-### 3) Long-range provisioning for isolated service windows
-
-**Rating: PARTIAL**
-
-The platform has inventory tracking, reorder alerts, grocery list generation, cost forecasting, vendor history, and price intelligence. However, explicit “voyage window” depletion modeling (days-at-sea coverage, no-restock confidence, contingency substitutions by shelf life/storage constraints) is not clearly represented.
-
-### 4) Inventory risk visibility (critical stock awareness)
-
-**Rating: SUPPORTED**
-
-ChefFlow is strong here: on-hand tracking, movement logs, reorder alerts, and stock/vendor infrastructure are mature and should materially reduce shortage risk versus manual methods.
-
-### 5) Menu adaptation from onboard availability
-
-**Rating: PARTIAL**
-
-ChefFlow has menu tools, costing, allergens, and operational planning. But “inventory-constrained menu recommendation” (what can be executed now from actual remaining stock + preference constraints) is not explicitly described as a deterministic first-class workflow.
-
-### 6) Fluid timing + daily routine complexity
-
-**Rating: SUPPORTED**
-
-Daily Ops, Morning Briefing, Task Board, Prep Timeline, and event operating spine together offer substantial support for volatile schedules and changing service flow.
-
-### 7) Solo-operator resilience under isolation
-
-**Rating: PARTIAL**
-
-The system is broad and operationally rich, which helps solo chefs. Yet without guaranteed offline continuity and robust degraded-mode UX, isolation resilience remains incomplete for Leo’s environment.
+- Offline-first operation for critical plans, preferences, menus, and inventory: **MISSING**
+- Dynamic guest preference onboarding and offboarding: **PARTIAL**
+- Long-range provisioning for isolated service windows: **PARTIAL**
+- Inventory risk visibility and critical stock awareness: **SUPPORTED**
+- Menu adaptation from onboard availability: **PARTIAL**
+- Fluid timing and daily routine management: **SUPPORTED**
+- Solo-operator resilience under isolation: **PARTIAL**
+- Conflict-safe sync after disconnected edits: **MISSING**
+- Charter or voyage depletion modeling: **MISSING**
+- Inventory-constrained menu feasibility filtering: **PARTIAL**
 
 ## Top 5 Gaps
 
-1. **No explicit offline-first guarantee for mission-critical workflows** (inventory, preferences, plans, menus).
-2. **No documented conflict-safe sync model** for multi-day disconnected edits and eventual reconnection.
-3. **No charter/voyage provisioning mode** with depletion simulation for fixed no-restock windows.
-4. **No explicit rapid guest roster churn flow** optimized for “arrive/depart today” preference lifecycle.
-5. **No deterministic inventory-to-menu execution assistant** that answers “what can I serve now with what remains?”
+1. **No explicit offline-first guarantee for mission-critical workflows**
+   - What's missing: reliable local access to inventory, preferences, plans, menus, and task timelines during disconnected work.
+   - File to change first: `app/(chef)/dashboard/page.tsx` and the PWA/offline shell.
+   - Effort estimate: **Large** (offline cache contract, sync policy, degraded-mode UX)
 
-## Quick Wins (Under 20 Lines Each)
+2. **No documented conflict-safe sync model**
+   - What's missing: safe handling for multi-day disconnected edits and eventual reconnection.
+   - File to change first: shared persistence and sync infrastructure.
+   - Effort estimate: **Large** (data contract and reconciliation rules)
 
-1. **Connectivity state banner (global)**
-   - Add a persistent header chip: Online / Degraded / Offline.
-   - Show “last sync time” and queued changes count.
+3. **No charter or voyage provisioning mode**
+   - What's missing: depletion simulation for fixed no-restock windows, storage limits, shelf life, and contingency substitutions.
+   - File to change first: `app/(chef)/inventory/page.tsx` and provisioning planning surfaces.
+   - Effort estimate: **Medium-Large** (inventory projections plus planning UI)
 
-2. **Offline critical view preset**
-   - Add one dashboard action: “Offline Essentials”.
-   - Opens a compact view of today’s timeline, guest restrictions, critical stock, and next prep tasks.
+4. **No rapid guest roster churn flow**
+   - What's missing: arrive-today and depart-today actions that update preference relevance in active plans.
+   - File to change first: event guest list surfaces under `app/(chef)/events/[id]`.
+   - Effort estimate: **Medium** (guest state and active-plan filtering)
 
-3. **Guest roster fast actions**
-   - Add “Arrive today” / “Depart today” one-click actions in event guest list.
-   - Automatically toggles preference relevance in active plans.
+5. **No deterministic inventory-to-menu execution assistant**
+   - What's missing: a first-class answer to "what can I serve now with what remains?" across current stock and guest constraints.
+   - File to change first: `app/(chef)/menus/page.tsx` and menu filtering components.
+   - Effort estimate: **Medium-Large** (ingredient matching plus constraint display)
 
-4. **Inventory criticality badge**
-   - Add “service-critical” badge + threshold on inventory items.
-   - Surface a daily “critical at risk” list in Morning Briefing.
+## Quick Wins Found
 
-5. **Menu feasibility quick filter**
-   - Add menu filter: “Show dishes executable with current stock”.
-   - First pass can be deterministic exact-match on ingredient availability.
+1. **Add connectivity state copy to the dashboard header**
+   - Exact file: `app/(chef)/dashboard/page.tsx`
+   - Change: Add text for Online, Degraded, Offline, and last sync time once state is available.
+   - Why: Makes degraded-operation expectations visible before full offline sync exists.
+   - Size: **< 20 lines**
 
-## Persona Fit Score
+2. **Add an "Offline Essentials" action label**
+   - Exact file: `app/(chef)/dashboard/page.tsx`
+   - Change: Add a compact action label for today's timeline, guest restrictions, critical stock, and prep tasks.
+   - Why: Establishes the mental model for Leo's isolated-service workflow.
+   - Size: **< 20 lines**
 
-**68 / 100**
+3. **Add guest roster fast-action labels**
+   - Exact file: `app/(chef)/events/[id]/page.tsx`
+   - Change: Add "Arrive today" and "Depart today" action labels where guest list controls already exist.
+   - Why: Reduces friction for active charter roster changes.
+   - Size: **< 20 lines**
 
-ChefFlow is very strong on breadth of chef operations, planning, and stock visibility, but the absence of clearly defined offline-first behavior and isolated-environment provisioning intelligence creates meaningful risk for Leo’s specific reality.
+4. **Add critical stock helper text**
+   - Exact file: `app/(chef)/inventory/page.tsx`
+   - Change: Add helper copy explaining service-critical stock thresholds.
+   - Why: Clarifies how chefs should identify isolated-service shortages.
+   - Size: **< 20 lines**
 
-## 2-Sentence Verdict
+5. **Add menu feasibility filter copy**
+   - Exact file: `app/(chef)/menus/page.tsx`
+   - Change: Add "Show dishes executable with current stock" as a planned filter label or disabled hint.
+   - Why: Makes the inventory-to-menu gap explicit without pretending the logic is complete.
+   - Size: **< 20 lines**
 
-ChefFlow already solves much of Leo’s operational chaos in connected environments and offers strong planning, stock, and day-of execution foundations. For true yacht/remote reliability, it still needs an explicit offline-first operating layer plus voyage-aware provisioning and inventory-constrained menu execution workflows.
+## Score: 68/100
+
+- Workflow Coverage (35%): **23/35**
+- Data Model Fit (25%): **16/25**
+- UX Alignment (25%): **16/25**
+- Isolation Reliability (15%): **13/15**
+
+Weighted final score: **68/100**. ChefFlow is strong on planning, stock visibility, and day-of execution, but Leo's use case depends on offline-first reliability and voyage-aware provisioning that are not yet first-class.
+
+## Verdict
+
+Leo can use ChefFlow for connected planning, inventory visibility, and service execution today. It is not yet a dependable yacht or remote-service backbone until offline continuity, conflict-safe sync, and no-restock provisioning are explicit system behaviors.
