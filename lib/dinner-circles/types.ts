@@ -179,6 +179,48 @@ export type DinnerCirclePriceTolerance = {
   withinTolerance: boolean
 }
 
+export type CorporateApprovalGateStatus =
+  | 'pending'
+  | 'in_review'
+  | 'approved'
+  | 'rejected'
+  | 'skipped'
+
+export type CorporatePaymentTerms = 'net_15' | 'net_30' | 'net_60' | 'on_receipt' | 'prepaid'
+
+export type CorporateDocType = 'insurance' | 'w9' | 'food_handler' | 'business_license' | 'other'
+
+export type CorporateDocStatus = 'missing' | 'submitted' | 'approved' | 'expired'
+
+export type CorporateContact = {
+  name: string
+  role: string
+  email?: string
+  phone?: string
+  isDecisionMaker: boolean
+}
+
+export type CorporateRequiredDoc = {
+  type: CorporateDocType
+  label: string
+  required: boolean
+  status: CorporateDocStatus
+  expiresAt?: string
+  notes?: string
+}
+
+export type CorporateConfig = {
+  enabled: boolean
+  companyName?: string
+  departmentName?: string
+  poNumber?: string
+  costCenter?: string
+  paymentTerms?: CorporatePaymentTerms
+  budgetCeilingCents?: number
+  contacts: CorporateContact[]
+  requiredDocs: CorporateRequiredDoc[]
+}
+
 export type DinnerCircleConfig = {
   money?: {
     paySplit: string
@@ -238,6 +280,7 @@ export type DinnerCircleConfig = {
   popUp?: PopUpConfig
   theme?: DinnerCircleTheme
   vendorInquiries?: DinnerCircleVendorInquiry[]
+  corporate?: CorporateConfig
 }
 
 export type DinnerCircleAdaptiveSnapshot = {

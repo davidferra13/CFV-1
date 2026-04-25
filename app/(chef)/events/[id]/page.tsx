@@ -75,12 +75,14 @@ import { getEventPrepBlocks } from '@/lib/scheduling/prep-block-actions'
 import { getParAlerts } from '@/lib/inventory/count-actions'
 import { ReadinessGatePanel } from '@/components/events/readiness-gate-panel'
 import { evaluateReadinessForDocumentGeneration, getEventReadiness } from '@/lib/events/readiness'
+import { getEventReadinessAssistant } from '@/lib/events/event-readiness-assistant-actions'
 import { getTakeAChefConversionData } from '@/lib/inquiries/take-a-chef-capture-actions'
 import { getTakeAChefEventFinance } from '@/lib/integrations/take-a-chef-finance-actions'
 import { getMarketplaceConversionData } from '@/lib/marketplace/conversion-actions'
 import { MarketplaceConvertBanner } from '@/components/events/marketplace-convert-banner'
 import { EventCollaboratorsPanel } from '@/components/events/event-collaborators-panel'
 import { getEventCollaborators } from '@/lib/collaboration/actions'
+import { getEventSettlement } from '@/lib/collaboration/settlement-actions'
 import { ContractSection } from '@/components/contracts/contract-section'
 import { QuickReceiptCapture } from '@/components/events/quick-receipt-capture'
 import { AvailableLeftovers } from '@/components/events/available-leftovers'
@@ -91,6 +93,7 @@ import { PaymentPlanPanel } from '@/components/finance/payment-plan-panel'
 import { getMileageLogs } from '@/lib/finance/mileage-actions'
 import { MileageLogPanel } from '@/components/finance/mileage-log-panel'
 import { getEventTips } from '@/lib/finance/tip-actions'
+import { getEventPricingIntelligence } from '@/lib/finance/event-pricing-intelligence-actions'
 import { TipLogPanel } from '@/components/finance/tip-log-panel'
 import { QuickDebriefPrompt } from '@/components/events/quick-debrief-prompt'
 import { BudgetTracker } from '@/components/events/budget-tracker'
@@ -110,7 +113,6 @@ import { CarryForwardMatchPanel } from '@/components/ai/carry-forward-match-pane
 import { GroceryConsolidationPanel } from '@/components/ai/grocery-consolidation-panel'
 import { MenuNutritionalPanel } from '@/components/ai/menu-nutritional-panel'
 import { TempSafetyPanel } from '@/components/ai/temp-safety-panel'
-import { PricingIntelligencePanel } from '@/components/ai/pricing-intelligence-panel'
 import { ContractGeneratorPanel } from '@/components/ai/contract-generator-panel'
 import { GuestCodePanel } from '@/components/events/guest-code-panel'
 import { getEventGuestLeadCount } from '@/lib/guest-leads/actions'
@@ -123,7 +125,10 @@ import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
 import { getQrCodeUrl } from '@/lib/qr/qr-code'
 import { shortenUrl } from '@/lib/links/url-shortener'
 import { EventHubLinkPanel } from '@/components/hub/event-hub-link-panel'
-import { getEventHubGroupToken } from '@/lib/hub/integration-actions'
+import {
+  getOrCreateChefCircleTokenForEvent,
+  getOrCreateChefHubProfileToken,
+} from '@/lib/hub/chef-circle-actions'
 import { getEventTicketTypes, getEventTickets, getEventTicketSummary } from '@/lib/tickets/actions'
 import { EventDetailOverviewTab } from './_components/event-detail-overview-tab'
 import { EventDetailMoneyTab } from './_components/event-detail-money-tab'
@@ -143,6 +148,29 @@ import { CompletionCard, CompletionCardSkeleton } from '@/components/completion/
 import { getCompletionForEntity } from '@/lib/completion/actions'
 import { getGuestCountHistory } from '@/lib/guests/count-changes'
 import { loadEventServiceSimulationPanelState } from '@/lib/service-simulation/state'
+import { EventOperatingSpineCard } from '@/components/events/event-operating-spine-card'
+import { buildChefEventOperatingSpine } from '@/lib/events/operating-spine'
+import { getCourseProgress } from '@/lib/service-execution/actions'
+import { DinnerCircleCommandCenter } from '@/components/events/dinner-circle-command-center'
+import {
+  PopUpOperatingPanel,
+  type PopUpOperatingSnapshot,
+} from '@/components/events/pop-up-operating-panel'
+import {
+  normalizePopUpConfig,
+  type PopUpConfig,
+  type PopUpMenuItemPlan,
+  type PopUpProductLibraryItem,
+} from '@/components/events/pop-up-model'
+import {
+  buildDinnerCircleSnapshot,
+  getDinnerCircleConfig,
+  normalizeDinnerCircleConfig,
+} from '@/lib/dinner-circles/event-circle'
+import { getApprovalGates } from '@/lib/dinner-circles/corporate-actions'
+import { EventDefaultFlowPanel } from '@/components/events/event-default-flow-panel'
+import { getEventDefaultFlowSnapshotForTenant } from '@/lib/events/default-event-flow-data'
+import { EventCloneButton } from '@/components/events/event-clone-button'
 
 async function EventCompletionSection({ eventId }: { eventId: string }) {
   const result = await getCompletionForEntity('event', eventId)
@@ -203,6 +231,7 @@ async function getEventFinancialSummary(eventId: string) {
     totalRefunded: summary?.total_refunded_cents ?? 0,
     outstandingBalance: summary?.outstanding_balance_cents ?? 0,
     paymentStatus: summary?.payment_status ?? null,
+    financialAvailable: Boolean(summary),
   }
 }
 
@@ -218,6 +247,17 @@ async function getEventTransitions(eventId: string) {
   return transitions || []
 }
 
+async function getEventPublicTicketShare(eventId: string): Promise<string | null> {
+  const db: any = createServerClient()
+  const { data } = await db
+    .from('event_share_settings')
+    .select('share_token')
+    .eq('event_id', eventId)
+    .maybeSingle()
+
+  return data?.share_token ?? null
+}
+
 async function getEventMenusForCheck(eventId: string): Promise<string[] | null> {
   const db: any = createServerClient()
 
@@ -225,6 +265,327 @@ async function getEventMenusForCheck(eventId: string): Promise<string[] | null> 
 
   if (!menus || menus.length === 0) return null
   return menus.map((m: any) => m.id)
+}
+
+async function getRawCircleConfigForEvent(eventId: string): Promise<Record<string, unknown>> {
+  const db: any = createServerClient({ admin: true })
+  const { data } = await db
+    .from('event_share_settings')
+    .select('circle_config')
+    .eq('event_id', eventId)
+    .maybeSingle()
+
+  return data?.circle_config && typeof data.circle_config === 'object'
+    ? (data.circle_config as Record<string, unknown>)
+    : {}
+}
+
+async function getPopUpProductLibrary(tenantId: string): Promise<PopUpProductLibraryItem[]> {
+  const db: any = createServerClient()
+  const { data } = await db
+    .from('dish_index_summary')
+    .select(
+      'id, name, course, linked_recipe_id, recipe_name, season_affinity, tags, prep_complexity, times_served, avg_rating, per_portion_cost_cents'
+    )
+    .eq('tenant_id', tenantId)
+    .eq('archived', false)
+    .order('times_served', { ascending: false })
+    .limit(30)
+
+  const rows = (data ?? []) as any[]
+  const ids = rows.map((row) => row.id).filter(Boolean)
+  const equipmentById = new Map<string, string[]>()
+
+  if (ids.length > 0) {
+    const { data: dishRows } = await db
+      .from('dish_index')
+      .select('id, special_equipment')
+      .eq('tenant_id', tenantId)
+      .in('id', ids)
+
+    for (const row of (dishRows ?? []) as any[]) {
+      equipmentById.set(row.id, Array.isArray(row.special_equipment) ? row.special_equipment : [])
+    }
+  }
+
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    course: row.course ?? null,
+    recipeId: row.linked_recipe_id ?? null,
+    recipeName: row.recipe_name ?? null,
+    seasonTags: [...(row.season_affinity ?? []), ...(row.tags ?? [])].filter(Boolean),
+    specialEquipment: equipmentById.get(row.id) ?? [],
+    prepComplexity: row.prep_complexity ?? null,
+    timesServed: Number(row.times_served ?? 0),
+    avgRating: Number(row.avg_rating ?? 0),
+    unitCostCents:
+      row.per_portion_cost_cents === null || row.per_portion_cost_cents === undefined
+        ? null
+        : Number(row.per_portion_cost_cents),
+  }))
+}
+
+function extractPopUpSource(ticket: any): string {
+  const notes = String(ticket.notes ?? '')
+  const match = notes.match(/Pop-Up source:\s*([^|]+)/i)
+  if (match?.[1]) return match[1].trim()
+  if (ticket.source === 'chefflow') return 'online'
+  return ticket.source ?? 'online'
+}
+
+function buildPopUpOperatingSnapshot(input: {
+  event: any
+  config: PopUpConfig
+  ticketTypes: any[]
+  tickets: any[]
+  productLibrary: PopUpProductLibraryItem[]
+}): PopUpOperatingSnapshot {
+  const ticketTypesById = new Map(
+    input.ticketTypes.map((ticketType) => [ticketType.id, ticketType])
+  )
+  const productById = new Map(input.productLibrary.map((product) => [product.id, product]))
+  const ticketSoldByType = new Map<string, number>()
+  const ticketsByType = new Map<string, any[]>()
+  const paidTickets = input.tickets.filter((ticket) => ticket.payment_status === 'paid')
+
+  for (const ticket of paidTickets) {
+    if (!ticket.ticket_type_id) continue
+    ticketSoldByType.set(
+      ticket.ticket_type_id,
+      (ticketSoldByType.get(ticket.ticket_type_id) ?? 0) + Number(ticket.quantity ?? 0)
+    )
+    const list = ticketsByType.get(ticket.ticket_type_id) ?? []
+    list.push(ticket)
+    ticketsByType.set(ticket.ticket_type_id, list)
+  }
+
+  const plannedItems = input.config.menuItems
+  const plannedTicketIds = new Set(plannedItems.map((item) => item.ticketTypeId).filter(Boolean))
+  const ticketOnlyItems: PopUpMenuItemPlan[] = input.ticketTypes
+    .filter((ticketType) => ticketType.is_active && !plannedTicketIds.has(ticketType.id))
+    .map((ticketType) => ({
+      ticketTypeId: ticketType.id,
+      dishIndexId: null,
+      recipeId: null,
+      name: ticketType.name,
+      plannedUnits: ticketType.capacity ?? Math.max(ticketType.sold_count ?? 0, 24),
+      priceCents: ticketType.price_cents,
+      unitCostCents: null,
+      batchSize: null,
+      equipmentNeeded: [],
+      productionStatus: 'not_started' as const,
+    }))
+
+  const bufferPercent =
+    input.config.dropType === 'cafe_collab'
+      ? 10
+      : input.config.dropType === 'private_dessert_event'
+        ? 5
+        : 15
+  const now = new Date()
+  const closeDate = input.config.preorderClosesAt ? new Date(input.config.preorderClosesAt) : null
+  const daysUntilClose =
+    closeDate && Number.isFinite(closeDate.getTime())
+      ? Math.max(0, Math.ceil((closeDate.getTime() - now.getTime()) / 86400000))
+      : 0
+
+  const menuItems = [...plannedItems, ...ticketOnlyItems].map((item) => {
+    const ticketType = item.ticketTypeId ? ticketTypesById.get(item.ticketTypeId) : null
+    const itemTickets = item.ticketTypeId ? (ticketsByType.get(item.ticketTypeId) ?? []) : []
+    const soldUnits = ticketType?.sold_count ?? ticketSoldByType.get(item.ticketTypeId ?? '') ?? 0
+    const plannedUnits = item.plannedUnits ?? ticketType?.capacity ?? 24
+    const remainingUnits =
+      ticketType?.capacity === null || ticketType?.capacity === undefined
+        ? Math.max(0, plannedUnits - soldUnits)
+        : Math.max(0, Number(ticketType.capacity) - soldUnits)
+    const firstTicketTime = itemTickets.length
+      ? Math.min(...itemTickets.map((ticket) => new Date(ticket.created_at).getTime()))
+      : now.getTime()
+    const sellingDays = Math.max(1, Math.ceil((now.getTime() - firstTicketTime) / 86400000))
+    const averageUnitsPerDay = soldUnits / sellingDays
+    const velocityUnits = soldUnits + Math.max(0, Math.round(daysUntilClose * averageUnitsPerDay))
+    const product = item.dishIndexId ? productById.get(item.dishIndexId) : null
+    const baseUnits =
+      product && product.timesServed > 0 ? input.event.guest_count || 24 : plannedUnits || 24
+    const suggestedUnits = Math.max(
+      1,
+      Math.ceil(Math.max(baseUnits, velocityUnits) * (1 + bufferPercent / 100))
+    )
+    const priceCents = item.priceCents ?? ticketType?.price_cents ?? 0
+    const unitCostCents = item.unitCostCents ?? product?.unitCostCents ?? null
+    const marginPercent =
+      unitCostCents === null || priceCents <= 0
+        ? null
+        : Math.round(((priceCents - unitCostCents) / priceCents) * 100)
+
+    return {
+      name: item.name,
+      ticketTypeId: item.ticketTypeId ?? null,
+      dishIndexId: item.dishIndexId ?? null,
+      recipeId: item.recipeId ?? product?.recipeId ?? null,
+      plannedUnits,
+      producedUnits:
+        input.config.closeout?.itemResults.find((result) => result.name === item.name)
+          ?.producedUnits ?? 0,
+      soldUnits,
+      remainingUnits,
+      suggestedUnits,
+      priceCents,
+      unitCostCents,
+      marginPercent,
+      sellThroughPercent: plannedUnits > 0 ? Math.round((soldUnits / plannedUnits) * 100) : 0,
+      productionStatus: item.productionStatus ?? 'not_started',
+      forecastReason:
+        product && product.timesServed > 0
+          ? `Based on ${product.timesServed} prior serves, ${soldUnits} sold, ${bufferPercent}% buffer.`
+          : `Uses planned units, ${soldUnits} sold, preorder velocity, and ${bufferPercent}% buffer.`,
+      batchSize: item.batchSize ?? null,
+      equipmentNeeded: item.equipmentNeeded ?? product?.specialEquipment ?? [],
+    }
+  })
+
+  const orderRows = paidTickets.map((ticket) => ({
+    id: ticket.id,
+    ticketTypeId: ticket.ticket_type_id ?? null,
+    itemName: ticket.ticket_type?.name ?? ticket.event_ticket_types?.name ?? 'Unassigned',
+    buyerName: ticket.buyer_name ?? 'Guest',
+    quantity: Number(ticket.quantity ?? 0),
+    totalCents: Number(ticket.total_cents ?? 0),
+    source: extractPopUpSource(ticket),
+    createdAt: ticket.created_at,
+  }))
+  const bySource = orderRows.reduce<Record<string, number>>((acc, row) => {
+    acc[row.source] = (acc[row.source] ?? 0) + row.quantity
+    return acc
+  }, {})
+  const totalPlannedUnits = menuItems.reduce((sum, item) => sum + item.plannedUnits, 0)
+  const totalSoldUnits = menuItems.reduce((sum, item) => sum + item.soldUnits, 0)
+  const totalRemainingUnits = menuItems.reduce((sum, item) => sum + item.remainingUnits, 0)
+  const estimatedIngredientCostCents = menuItems.reduce(
+    (sum, item) => sum + (item.unitCostCents ?? 0) * item.plannedUnits,
+    0
+  )
+  const estimatedRevenueCents = menuItems.reduce(
+    (sum, item) => sum + item.priceCents * item.plannedUnits,
+    0
+  )
+  const availableEquipment = new Set(
+    (input.config.locationProfile?.equipmentAvailable ?? []).map((item) => item.toLowerCase())
+  )
+  const locationWarnings = menuItems.flatMap((item) =>
+    item.equipmentNeeded
+      .filter((equipment) => !availableEquipment.has(equipment.toLowerCase()))
+      .map((equipment) => `${item.name} needs ${equipment}, not listed at location.`)
+  )
+  const coldHoldUnits = menuItems
+    .filter((item) =>
+      item.equipmentNeeded.some((equipment) => /cold|freezer|fridge|refriger/i.test(equipment))
+    )
+    .reduce((sum, item) => sum + item.plannedUnits, 0)
+  if (
+    input.config.locationProfile?.coldStorage?.toLowerCase().includes('limited') &&
+    coldHoldUnits > 36
+  ) {
+    locationWarnings.push(`${coldHoldUnits} planned cold-hold units exceed limited storage.`)
+  }
+
+  const batchWarnings = menuItems.flatMap((item) => {
+    const warnings: string[] = []
+    if (item.unitCostCents === null) warnings.push(`${item.name} is missing unit cost.`)
+    if (!item.recipeId) warnings.push(`${item.name} is missing a linked recipe.`)
+    if (!item.batchSize) warnings.push(`${item.name} needs a batch size.`)
+    return warnings
+  })
+  const closeoutItems = input.config.closeout?.itemResults ?? []
+  const closeoutSold = closeoutItems.reduce((sum, item) => sum + item.soldUnits, 0)
+  const closeoutProduced = closeoutItems.reduce((sum, item) => sum + item.producedUnits, 0)
+  const wasteUnits = closeoutItems.reduce((sum, item) => sum + item.wastedUnits, 0)
+  const topItem =
+    closeoutItems.length > 0
+      ? ([...closeoutItems].sort((a, b) => b.soldUnits - a.soldUnits)[0]?.name ?? null)
+      : null
+
+  return {
+    event: {
+      id: input.event.id,
+      title: input.event.occasion || input.event.title || 'Untitled Event',
+      date: input.event.event_date ?? null,
+      status: input.event.status,
+      location:
+        input.event.location || input.event.location_name || input.event.location_address || null,
+    },
+    stage: input.config.stage,
+    nextActions: [
+      menuItems.length === 0
+        ? {
+            id: 'menu',
+            label: 'Add products to the menu',
+            href: '#popup-menu',
+            severity: 'critical' as const,
+          }
+        : null,
+      menuItems.some((item) => !item.ticketTypeId)
+        ? {
+            id: 'tickets',
+            label: 'Sync menu items to ticket inventory',
+            href: '#popup-menu',
+            severity: 'warning' as const,
+          }
+        : null,
+      locationWarnings.length > 0
+        ? {
+            id: 'location',
+            label: 'Resolve location constraints',
+            href: '#popup-location',
+            severity: 'warning' as const,
+          }
+        : null,
+      input.config.stage === 'closed'
+        ? {
+            id: 'closeout',
+            label: 'Capture closeout results',
+            href: '#popup-closeout',
+            severity: 'info' as const,
+          }
+        : null,
+    ].filter(Boolean) as PopUpOperatingSnapshot['nextActions'],
+    menuItems,
+    orderRows,
+    orders: {
+      totalOrders: paidTickets.length,
+      totalUnits: orderRows.reduce((sum, row) => sum + row.quantity, 0),
+      revenueCents: orderRows.reduce((sum, row) => sum + row.totalCents, 0),
+      bySource,
+      pickupWindows: (input.config.pickupWindows ?? []).map((label) => ({
+        label,
+        orderCount: 0,
+        unitCount: 0,
+      })),
+    },
+    production: {
+      totalPlannedUnits,
+      totalSoldUnits,
+      totalRemainingUnits,
+      estimatedIngredientCostCents,
+      estimatedMarginCents: estimatedRevenueCents - estimatedIngredientCostCents,
+      batchWarnings,
+      locationWarnings,
+    },
+    closeout:
+      closeoutItems.length > 0
+        ? {
+            sellThroughPercent:
+              closeoutProduced > 0 ? Math.round((closeoutSold / closeoutProduced) * 100) : 0,
+            wasteUnits,
+            wasteCostCents: closeoutItems.reduce((sum, item) => sum + item.estimatedCostCents, 0),
+            topItem,
+            underperformers: closeoutItems
+              .filter((item) => item.producedUnits > 0 && item.soldUnits / item.producedUnits < 0.6)
+              .map((item) => item.name),
+          }
+        : undefined,
+  }
 }
 
 /**
@@ -267,6 +628,7 @@ export default async function EventDetailPage({
 }) {
   const activeTab = (searchParams?.tab ?? 'overview') as
     | 'overview'
+    | 'popup'
     | 'money'
     | 'prep'
     | 'tickets'
@@ -285,7 +647,7 @@ export default async function EventDetailPage({
   const canTrackTime = !['draft', 'cancelled'].includes(event.status)
 
   const [
-    { totalPaid, totalRefunded, outstandingBalance },
+    { totalPaid, totalRefunded, outstandingBalance, financialAvailable },
     transitions,
     closureStatus,
     aar,
@@ -314,11 +676,14 @@ export default async function EventDetailPage({
     ledgerEntries,
     guestCountChanges,
     serviceSimulationState,
+    courseProgress,
+    pricingIntelligence,
   ] = await Promise.all([
     getEventFinancialSummary(params.id).catch(() => ({
       totalPaid: 0,
       totalRefunded: 0,
       outstandingBalance: 0,
+      financialAvailable: false,
     })),
     getEventTransitions(params.id).catch(() => []),
     isCompletedOrBeyond
@@ -371,7 +736,14 @@ export default async function EventDetailPage({
       .catch(() => []),
     getGuestCountHistory(params.id).catch(() => []),
     loadEventServiceSimulationPanelState(params.id).catch(() => null),
+    event.status === 'in_progress'
+      ? getCourseProgress(params.id).catch(() => [])
+      : Promise.resolve([]),
+    getEventPricingIntelligence(params.id).catch(() => null),
   ])
+  const readinessAssistant = await getEventReadinessAssistant(params.id, pricingIntelligence).catch(
+    () => null
+  )
 
   const eventLoyaltyPoints = (eventLoyaltyTxs as { points: number }[]).reduce(
     (sum, tx) => sum + tx.points,
@@ -410,8 +782,10 @@ export default async function EventDetailPage({
     menuApprovalData,
     prepBlocks,
     eventCollaborators,
+    settlement,
     packingConfirmedCount,
     hubGroupToken,
+    chefHubProfileToken,
     menuLibraryData,
     chefDisplayName,
     takeAChefFinance,
@@ -473,10 +847,12 @@ export default async function EventDetailPage({
       ? getEventPrepBlocks(params.id).catch(() => [])
       : Promise.resolve([]),
     getEventCollaborators(params.id).catch(() => []),
+    getEventSettlement(params.id).catch(() => null),
     ['confirmed', 'in_progress'].includes(event.status)
       ? getPackingConfirmationCount(params.id).catch(() => 0)
       : Promise.resolve(0),
-    getEventHubGroupToken(params.id).catch(() => null),
+    getOrCreateChefCircleTokenForEvent(params.id).catch(() => null),
+    getOrCreateChefHubProfileToken().catch(() => null),
     event.status !== 'cancelled'
       ? getMenuLibraryForEvent(params.id).catch(() => ({ menus: [], preferences: null }))
       : Promise.resolve({ menus: [], preferences: null }),
@@ -524,6 +900,26 @@ export default async function EventDetailPage({
     getEventTickets(params.id).catch(() => []),
     getEventTicketSummary(params.id).catch(() => null),
   ])
+  const [
+    dinnerCircleConfig,
+    approvalGates,
+    rawCircleConfig,
+    publicTicketShareToken,
+    popUpProductLibrary,
+  ] = await Promise.all([
+    getDinnerCircleConfig(params.id).catch(() => null),
+    getApprovalGates(params.id).catch(() => []),
+    getRawCircleConfigForEvent(params.id).catch(() => ({})),
+    getEventPublicTicketShare(params.id).catch(() => null),
+    getPopUpProductLibrary(user.tenantId!).catch(() => []),
+  ])
+  const defaultFlowSnapshot = await getEventDefaultFlowSnapshotForTenant(
+    params.id,
+    user.tenantId!,
+    {
+      pricing: pricingIntelligence,
+    }
+  ).catch(() => null)
 
   // Prep timeline
   const { timeline: prepTimeline } = await getEventPrepTimeline(params.id).catch(() => ({
@@ -581,6 +977,9 @@ export default async function EventDetailPage({
   const fullShareUrl = activeShare
     ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'}/share/${activeShare.token}`
     : null
+  const publicTicketShareUrl = publicTicketShareToken
+    ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'}/e/${publicTicketShareToken}`
+    : null
   let shortShareUrl = fullShareUrl
   if (fullShareUrl) {
     try {
@@ -597,6 +996,53 @@ export default async function EventDetailPage({
         (c: any) => c.chef_id === user.entityId && c.status === 'accepted'
       )
     : null
+  const prepTimelineReady = Boolean(
+    prepTimeline &&
+    (((prepTimeline as any).days ?? []).some((day: any) => (day.items ?? []).length > 0) ||
+      ((prepTimeline as any).untimedItems ?? []).length > 0)
+  )
+  const operatingSpine = buildChefEventOperatingSpine({
+    event,
+    eventMenus: eventMenus as any,
+    guestList: guestList as any[],
+    rsvpSummary: rsvpSummary as any,
+    totalPaidCents: totalPaid,
+    totalRefundedCents: totalRefunded,
+    outstandingBalanceCents: outstandingBalance,
+    financialAvailable,
+    messagesCount: messages.length,
+    hasActiveShare: Boolean(activeShare),
+    prepTimelineReady,
+    prepBlocksCount: (prepBlocks as any[]).length,
+    parAlertCount: (parAlerts as any[]).length,
+    packingConfirmedCount,
+    hasAAR: Boolean(aar),
+  })
+  const dinnerCircleSnapshot = buildDinnerCircleSnapshot({
+    event,
+    config: dinnerCircleConfig ?? normalizeDinnerCircleConfig(null),
+    ticketTypes: ticketTypes as any[],
+    tickets: ticketList as any[],
+    ticketSummary,
+    collaborators: eventCollaborators as any[],
+    eventMenus: eventMenus as any,
+    eventPhotos: eventPhotos as any[],
+    shareUrl: publicTicketShareUrl ?? fullShareUrl,
+    hubGroupToken: hubGroupToken as string | null,
+    prepTimelineReady,
+    locationReady: Boolean(event.location_address || (event as any).location),
+    totalPaidCents: totalPaid,
+    outstandingBalanceCents: outstandingBalance,
+    menuCostCents: menuCostSummary?.totalRecipeCostCents ?? null,
+  })
+  const popUpConfig = normalizePopUpConfig((rawCircleConfig as any).popUp ?? null)
+  const popUpSnapshot = buildPopUpOperatingSnapshot({
+    event,
+    config: popUpConfig,
+    ticketTypes: ticketTypes as any[],
+    tickets: ticketList as any[],
+    productLibrary: popUpProductLibrary,
+  })
 
   return (
     <div className="space-y-6">
@@ -673,6 +1119,12 @@ export default async function EventDetailPage({
           {event.client_id && !['cancelled'].includes(event.status) && (
             <QuickProposalButton eventId={event.id} />
           )}
+          {event.status !== 'cancelled' && (
+            <EventCloneButton
+              sourceEventId={event.id}
+              sourceEventName={event.occasion || 'Untitled Event'}
+            />
+          )}
           <EventActionsOverflow
             actions={[
               ...(!isEventToday(event.event_date) && !['draft', 'cancelled'].includes(event.status)
@@ -704,6 +1156,22 @@ export default async function EventDetailPage({
           description="Day-of snapshot from live event truth. Keep the full walkthrough in Ops, but keep this signal visible above the fold."
         />
       ) : null}
+
+      <EventOperatingSpineCard
+        spine={operatingSpine}
+        audience="chef"
+        title="Event operating spine"
+        description="One event view connects booking status, client readiness, menu, prep, stock, finance, communication, and follow-up."
+      />
+
+      <EventDefaultFlowPanel eventId={params.id} snapshot={defaultFlowSnapshot} />
+
+      <DinnerCircleCommandCenter
+        snapshot={dinnerCircleSnapshot}
+        collaborators={eventCollaborators as any[]}
+        ticketHolders={ticketList as any[]}
+        approvalGates={approvalGates}
+      />
 
       {/* Collaborator role banner â€” shown when viewing another chef's event */}
       {!isEventOwner && myCollaboratorRow && (
@@ -894,6 +1362,14 @@ export default async function EventDetailPage({
       {/* ============================================ */}
       <EventDetailMobileNav />
 
+      <EventDetailSection tab="popup" activeTab={activeTab}>
+        <PopUpOperatingPanel
+          initialConfig={popUpConfig}
+          snapshot={popUpSnapshot}
+          productLibrary={popUpProductLibrary}
+        />
+      </EventDetailSection>
+
       {/* ============================================ */}
       {/* ============================================ */}
       {/* TAB: OVERVIEW - Event details, client, comms */}
@@ -911,6 +1387,7 @@ export default async function EventDetailPage({
         fullShareUrl={fullShareUrl}
         eventMenus={eventMenus as any}
         hubGroupToken={hubGroupToken as string | null}
+        hubProfileToken={chefHubProfileToken as string | null}
         guestList={guestList as any[]}
         rsvpSummary={rsvpSummary as any}
         chefDisplayName={chefDisplayName}
@@ -919,6 +1396,7 @@ export default async function EventDetailPage({
         messages={messages}
         templates={templates}
         chatConversationId={eventChatConversationId as string | null}
+        collaborators={eventCollaborators as any[]}
       />
 
       {/* TAB: MONEY â€” Financials, payments, expenses  */}
@@ -944,6 +1422,9 @@ export default async function EventDetailPage({
         costForecast={costForecast}
         menuCostSummary={menuCostSummary}
         chefArchetype={chefArchetype}
+        pricingIntelligence={pricingIntelligence}
+        readinessAssistant={readinessAssistant}
+        settlement={settlement}
         ledgerEntries={ledgerEntries as any[]}
         guestCountChanges={guestCountChanges}
       />
@@ -966,7 +1447,7 @@ export default async function EventDetailPage({
         ticketTypes={ticketTypes as any[]}
         tickets={ticketList as any[]}
         summary={ticketSummary}
-        shareToken={(activeShare as any)?.share_token ?? null}
+        shareToken={publicTicketShareToken}
       />
 
       {/* ============================================ */}
@@ -1004,6 +1485,7 @@ export default async function EventDetailPage({
         hasAllergyData={eventHasAllergyData as boolean}
         eventTotalCents={eventTotalCents}
         serviceSimulationState={serviceSimulationState}
+        courseProgress={courseProgress}
       />
       {/* TAB: WRAP-UP â€” Debrief, survey, history      */}
       {/* ============================================ */}
