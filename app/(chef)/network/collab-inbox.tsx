@@ -92,6 +92,36 @@ function renderRecipientStatus(status: HandoffRecipientStatus): string {
   return 'Converted'
 }
 
+type GuestPreference = {
+  name: string
+  allergies: string[] | null
+  dietary: string[] | null
+}
+
+function renderGuestDietaryNotes(handoff: { client_context: Record<string, any> }) {
+  const guestPreferences = (handoff.client_context as any)?.guestPreferences
+  if (!Array.isArray(guestPreferences) || guestPreferences.length === 0) return null
+
+  return (
+    <div className="mt-2 border-t border-stone-800 pt-2">
+      <p className="text-xs font-medium uppercase tracking-wide text-stone-500">
+        Guest Dietary Notes
+      </p>
+      <div className="mt-1 space-y-1">
+        {guestPreferences.map((guest: GuestPreference, index: number) => (
+          <div key={`${guest.name}-${index}`} className="text-xs text-stone-400">
+            <span className="font-medium text-stone-300">{guest.name}:</span>{' '}
+            {[
+              ...(guest.allergies || []).map((allergy: string) => `${allergy} (allergy)`),
+              ...(guest.dietary || []),
+            ].join(', ') || 'None noted'}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function formatTimelineEvent(eventType: CollabHandoffTimelineEvent['event_type']): string {
   if (eventType === 'created') return 'Created'
   if (eventType === 'viewed') return 'Viewed'
@@ -981,6 +1011,7 @@ export function CollabInboxPanel({
                         {(handoff.client_context as any).desired_cuisines.join(', ')}
                       </p>
                     )}
+                  {renderGuestDietaryNotes(handoff)}
 
                   {handoff.private_note && (
                     <p className="text-sm text-stone-300 mt-2 whitespace-pre-wrap">
@@ -1205,6 +1236,7 @@ export function CollabInboxPanel({
                         {(handoff.client_context as any).desired_cuisines.join(', ')}
                       </p>
                     )}
+                  {renderGuestDietaryNotes(handoff)}
 
                   {handoff.private_note && (
                     <p className="text-sm text-stone-300 mt-2 whitespace-pre-wrap">

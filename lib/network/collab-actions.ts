@@ -1404,6 +1404,69 @@ export async function getHandoffDataFromInquiry(inquiryId: string): Promise<{
 
   if (!inquiry) return null
 
+  const clientContext: Record<string, unknown> | null = inquiry.clients
+    ? { clientName: inquiry.clients.full_name, dietary: inquiry.clients.dietary_restrictions }
+    : null
+
+  let guestPreferences: Array<{
+    name: string
+    allergies: string[] | null
+    dietary: string[] | null
+  }> = []
+
+  try {
+    const { data: event } = await (db as any)
+      .from('events')
+      .select('id')
+      .eq('inquiry_id', inquiryId)
+      .eq('tenant_id', chef.tenantId!)
+      .limit(1)
+      .maybeSingle()
+
+    let circleQuery: { data: { id: string } | null } | null = null
+    if (event?.id) {
+      circleQuery = await (db as any)
+        .from('hub_groups')
+        .select('id')
+        .eq('event_id', event.id)
+        .eq('is_active', true)
+        .limit(1)
+        .maybeSingle()
+    }
+
+    if (!circleQuery?.data) {
+      circleQuery = await (db as any)
+        .from('hub_groups')
+        .select('id')
+        .eq('inquiry_id', inquiryId)
+        .eq('is_active', true)
+        .limit(1)
+        .maybeSingle()
+    }
+
+    if (circleQuery?.data) {
+      const { data: members } = await (db as any)
+        .from('hub_group_members')
+        .select('profile:hub_guest_profiles(display_name, known_allergies, known_dietary)')
+        .eq('group_id', circleQuery.data.id)
+
+      guestPreferences = ((members ?? []) as any[])
+        .filter((member) => member.profile)
+        .map((member) => ({
+          name: member.profile.display_name,
+          allergies: member.profile.known_allergies,
+          dietary: member.profile.known_dietary,
+        }))
+        .filter(
+          (preference) =>
+            (preference.allergies && preference.allergies.length > 0) ||
+            (preference.dietary && preference.dietary.length > 0)
+        )
+    }
+  } catch {
+    // Non-blocking: if circle lookup fails, handoff still works without preferences.
+  }
+
   return {
     title: inquiry.confirmed_occasion || 'Lead Handoff',
     occasion: inquiry.confirmed_occasion || null,
@@ -1411,9 +1474,14 @@ export async function getHandoffDataFromInquiry(inquiryId: string): Promise<{
     guestCount: inquiry.confirmed_guest_count || null,
     locationText: null,
     budgetCents: inquiry.confirmed_budget_cents || null,
-    clientContext: inquiry.clients
-      ? { clientName: inquiry.clients.full_name, dietary: inquiry.clients.dietary_restrictions }
-      : null,
+    clientContext: clientContext
+      ? {
+          ...clientContext,
+          guestPreferences: guestPreferences.length > 0 ? guestPreferences : undefined,
+        }
+      : guestPreferences.length > 0
+        ? { guestPreferences }
+        : null,
   }
 }
 
