@@ -74,8 +74,7 @@ export default async function CirclesDiscoveryPage({ searchParams }: Props) {
           </h2>
           <p className="mt-3 text-sm leading-7 text-stone-300 sm:text-base">
             Guests can use Dinner Circles to stay aligned on dinner details, chat, and come back to
-            the same page before the event. This entry point moved here so community and shared
-            guest pages live together instead of competing for the homepage hook.
+            the same page before the event.
           </p>
           <TrackedLink
             href={PUBLIC_DINNER_CIRCLES_ENTRY.href}

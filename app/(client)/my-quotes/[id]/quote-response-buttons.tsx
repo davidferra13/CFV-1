@@ -91,7 +91,7 @@ export default function QuoteResponseButtons({
       <ConfirmModal
         open={showAcceptConfirm}
         title="Accept This Quote?"
-        description={`You are accepting a quote for ${formatCurrency(totalCents)}. By accepting, you agree to the pricing and terms. Your chef will be notified.`}
+        description={`You are accepting a quote for ${formatCurrency(totalCents)}. By accepting, you confirm this pricing works for you. Your chef will be notified and will follow up with next steps.`}
         confirmLabel="Accept Quote"
         loading={loading}
         onConfirm={handleAccept}

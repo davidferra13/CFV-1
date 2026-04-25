@@ -51,12 +51,15 @@ export function ChatInbox({
   }, [tenantId, currentUserId])
 
   if (conversations.length === 0) {
+    const isClient = basePath === '/my-chat'
     return (
       <div className="text-center py-16">
         <MessageCircle className="w-12 h-12 text-stone-300 mx-auto mb-3" />
         <p className="text-stone-500 text-sm">No conversations yet</p>
         <p className="text-stone-400 text-xs mt-1">
-          Click &quot;+ New Conversation&quot; above to start chatting with a client
+          {isClient
+            ? 'Your chef will start a conversation when your booking is confirmed.'
+            : 'Click \u201c+ New Conversation\u201d above to start chatting with a client'}
         </p>
       </div>
     )
