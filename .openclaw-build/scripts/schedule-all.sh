@@ -49,6 +49,12 @@ run_scraper "Walmart" "services/scraper-walmart.mjs"
 # 4. Target
 run_scraper "Target" "services/scraper-target.mjs"
 
+# 4b. Walmart Nationwide (52 stores, all 50 states)
+run_scraper "Walmart Nationwide" "services/scraper-walmart-nationwide.mjs"
+
+# 4c. Target Nationwide (24 stores, 24 states)
+run_scraper "Target Nationwide" "services/scraper-target-nationwide.mjs"
+
 # 5. Hannaford direct
 run_scraper "Hannaford" "services/scraper-hannaford.mjs"
 

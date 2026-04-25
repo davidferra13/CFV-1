@@ -27,10 +27,13 @@ echo "[1/5] Deploying nationwide store registry..."
 scp "$LOCAL_BUILD/services/nationwide-stores.mjs" "$PI_HOST:$PI_DIR/services/"
 
 # 2. Copy updated scrapers
-echo "[2/5] Deploying updated scrapers..."
+echo "[2/7] Deploying updated scrapers..."
 scp "$LOCAL_BUILD/services/scraper-instacart-bulk.mjs" "$PI_HOST:$PI_DIR/services/"
 scp "$LOCAL_BUILD/services/scraper-wholefoodsapfresh.mjs" "$PI_HOST:$PI_DIR/services/"
 scp "$LOCAL_BUILD/services/scraper-flipp.mjs" "$PI_HOST:$PI_DIR/services/"
+scp "$LOCAL_BUILD/services/scraper-walmart-nationwide.mjs" "$PI_HOST:$PI_DIR/services/"
+scp "$LOCAL_BUILD/services/scraper-target-nationwide.mjs" "$PI_HOST:$PI_DIR/services/"
+scp "$LOCAL_BUILD/services/nationwide-config.mjs" "$PI_HOST:$PI_DIR/services/"
 
 # 3. Copy updated orchestrator
 echo "[3/5] Deploying catalog orchestrator..."

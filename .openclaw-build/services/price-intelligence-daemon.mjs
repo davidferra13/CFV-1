@@ -66,6 +66,24 @@ const SCRAPERS = [
     requires_env: [],
     enabled: false, // disabled until captcha resolved
   },
+  {
+    id: 'walmart-nationwide',
+    script: 'services/scraper-walmart-nationwide.mjs',
+    name: 'Walmart Nationwide (52 stores)',
+    tier: 3,
+    interval_hours: 168, // weekly - ~6h run time, all 50 states
+    requires_env: [],
+    enabled: true,
+  },
+  {
+    id: 'target-nationwide',
+    script: 'services/scraper-target-nationwide.mjs',
+    name: 'Target Nationwide (24 stores)',
+    tier: 3,
+    interval_hours: 168, // weekly - ~1.5h run time, 24 states
+    requires_env: [],
+    enabled: true,
+  },
 ];
 
 // ── STATE ──

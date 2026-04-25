@@ -38,6 +38,12 @@ OPENCLAW_DIR=/home/davidferra/openclaw-prices
 0 12 * * 6 cd $OPENCLAW_DIR && bash run-full-catalog.sh hannaford >> logs/instacart-walker.log 2>&1
 0 12 * * 0 cd $OPENCLAW_DIR && bash run-full-catalog.sh stop-and-shop >> logs/instacart-walker.log 2>&1
 
+# === Walmart Nationwide (Sunday overnight - ~6h run) ===
+0 0 * * 0 cd $OPENCLAW_DIR && node services/scraper-walmart-nationwide.mjs >> logs/scraper-walmart-nationwide.log 2>&1
+
+# === Target Nationwide (Saturday overnight - ~1.5h run) ===
+0 0 * * 6 cd $OPENCLAW_DIR && node services/scraper-target-nationwide.mjs >> logs/scraper-target-nationwide.log 2>&1
+
 # === Wholesale Catalog (Wednesday) ===
 0 15 * * 3 cd $OPENCLAW_DIR && node services/scraper-wholesale.mjs >> logs/scraper-wholesale.log 2>&1
 
