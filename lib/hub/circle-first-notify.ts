@@ -31,6 +31,7 @@ const NOTIFICATION_LABELS: Record<HubNotificationType, string> = {
   dietary_updated: 'Dietary Update',
   running_late: 'Timing Update',
   repeat_booking_request: 'Booking Request',
+  event_reminder: 'Event Reminder',
 }
 
 interface CircleFirstInput {

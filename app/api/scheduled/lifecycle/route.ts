@@ -11,6 +11,7 @@ import { recordCronHeartbeat, recordCronError } from '@/lib/cron/heartbeat'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 import { dateToDateString } from '@/lib/utils/format'
+import { circleFirstNotify } from '@/lib/hub/circle-first-notify'
 
 function localDateISO(d: Date): string {
   return [
@@ -61,6 +62,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
       quotesExpired: 0,
       quotesSkipped: 0,
       eventReminders: 0,
+      circleReminders: 0,
       remindersSkipped: 0,
       midpointCheckins: 0,
       midpointSkipped: 0,
@@ -795,6 +797,40 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
                   specialRequests: event.special_requests ?? null,
                   coHostNames: coHostNames5,
                 })
+
+                // Post to Dinner Circle (non-blocking)
+                try {
+                  const tomorrowFormatted = new Date(
+                    `${event.event_date}T12:00:00`
+                  ).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    month: 'long',
+                    day: 'numeric',
+                  })
+                  const { data: shareSettings } = await db
+                    .from('event_share_settings')
+                    .select('share_token')
+                    .eq('event_id', event.id)
+                    .eq('tenant_id', event.tenant_id)
+                    .maybeSingle()
+
+                  await circleFirstNotify({
+                    eventId: event.id,
+                    notificationType: 'event_reminder',
+                    body: `Reminder: Your dinner is tomorrow, ${tomorrowFormatted}. ${
+                      event.guest_count ? event.guest_count + ' guests expected.' : ''
+                    }`,
+                    actionUrl: `/e/${shareSettings?.share_token || ''}`,
+                    actionLabel: 'View Event Details',
+                  })
+                  results.circleReminders++
+                } catch (circleErr) {
+                  // Non-blocking: circle notification failure must not affect the cron
+                  console.error(
+                    `[lifecycle] Circle reminder failed for event ${event.id}:`,
+                    circleErr
+                  )
+                }
               }
 
               if (threshold.days === 7) {

@@ -137,6 +137,7 @@ export type HubNotificationType =
   | 'dietary_updated'
   | 'running_late'
   | 'repeat_booking_request'
+  | 'event_reminder'
 
 export type HubMessageSource = 'circle' | 'email' | 'remy' | 'system'
 

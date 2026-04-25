@@ -107,6 +107,13 @@ const NOTIFICATION_CONFIG: Record<
     bgColor: 'bg-brand-900/30 border-brand-700/50',
     actionCategory: 'action',
   },
+  event_reminder: {
+    icon: '1d',
+    label: 'Event Reminder',
+    color: 'text-brand-300',
+    bgColor: 'bg-brand-900/30 border-brand-700/50',
+    actionCategory: 'info',
+  },
 }
 
 // Memoized: rendered in .map() inside hub message feed. Props are stable data objects.
