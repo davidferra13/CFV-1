@@ -47,11 +47,19 @@ export default async function WasteLogPage() {
         &larr; Back to Stations
       </Link>
 
-      <div>
-        <h1 className="text-2xl font-bold text-stone-100">Waste Log</h1>
-        <p className="mt-1 text-sm text-stone-500">
-          Track waste and spoilage across all stations. Feeds into true food cost calculations.
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-stone-100">Waste Log</h1>
+          <p className="mt-1 text-sm text-stone-500">
+            Track waste and spoilage across all stations. Feeds into true food cost calculations.
+          </p>
+        </div>
+        <Link
+          href="/stations/waste/patterns"
+          className="inline-flex items-center gap-2 rounded-lg bg-stone-800 border border-stone-600 px-3 py-2 text-sm text-stone-300 hover:bg-stone-700 transition-colors"
+        >
+          View Patterns
+        </Link>
       </div>
 
       {/* Summary */}

@@ -34,6 +34,7 @@ import {
 } from '@/lib/directory/location-search'
 import { resolvePublicLocationQuery } from '@/lib/geo/public-location'
 import {
+  PUBLIC_CONSUMER_DISCOVERY_ENTRY,
   PUBLIC_MATCHED_CHEF_FOLLOWUP,
   PUBLIC_MATCHED_CHEF_HELPER,
   PUBLIC_PRIMARY_CONSUMER_CTA,
@@ -144,6 +145,7 @@ type PageProps = {
     locationBestFor?: string | string[]
     accepting?: string | string[]
     sort?: string | string[]
+    visual?: string | string[]
   }
 }
 
@@ -220,7 +222,7 @@ function DiscoveryChip({ label }: { label: string }) {
   )
 }
 
-function ChefTile({ chef }: { chef: DirectoryChef }) {
+function ChefTile({ chef, visualMode = false }: { chef: DirectoryChef; visualMode?: boolean }) {
   const visiblePartners = chef.partners.slice(0, 3)
   const hasPartners = visiblePartners.length > 0
   const extraCount = chef.partners.length - visiblePartners.length
@@ -258,9 +260,13 @@ function ChefTile({ chef }: { chef: DirectoryChef }) {
     .filter(Boolean)
     .join(', ')
 
+  const imageAspectClass = visualMode ? 'aspect-[3/4]' : 'aspect-[4/3]'
+
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-2xl bg-stone-900 shadow-[0_2px_20px_rgb(0,0,0,0.06)] ring-1 ring-stone-700 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_40px_rgb(0,0,0,0.25)] hover:ring-brand-600">
-      <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-brand-100 to-brand-50">
+      <div
+        className={`relative ${imageAspectClass} overflow-hidden bg-gradient-to-br from-brand-100 to-brand-50`}
+      >
         {heroImage ? (
           <CloudinaryFetchImage
             src={heroImage}
@@ -486,6 +492,7 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
   )
   const acceptingOnly = parseDirectoryBooleanParam(firstParam(searchParams?.accepting))
   const sortMode = parseDirectorySortMode(firstParam(searchParams?.sort))
+  const visualMode = firstParam(searchParams?.visual) === '1'
 
   const legacyStateFilter = stateFacets.some((option) => option.value === requestedState)
     ? requestedState
@@ -611,6 +618,7 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
     activeFilters.push(`Setting vibe: ${selectedLocationExperienceLabel}`)
   if (selectedLocationBestForLabel) activeFilters.push(`Best for: ${selectedLocationBestForLabel}`)
   if (acceptingOnly) activeFilters.push('Accepting inquiries only')
+  if (visualMode) activeFilters.push('Visual mode')
   if (sortMode !== 'featured') activeFilters.push(`Sort: ${selectedSortLabel}`)
 
   const directoryStructuredData = {
@@ -640,6 +648,17 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
       },
     })),
   }
+  const visualParams = new URLSearchParams()
+  for (const [key, value] of Object.entries(searchParams ?? {})) {
+    const firstValue = firstParam(value)
+    if (firstValue) visualParams.set(key, firstValue)
+  }
+  if (visualMode) {
+    visualParams.delete('visual')
+  } else {
+    visualParams.set('visual', '1')
+  }
+  const visualToggleHref = `/chefs${visualParams.toString() ? `?${visualParams.toString()}` : ''}`
 
   return (
     <div className="min-h-screen bg-stone-800">
@@ -686,6 +705,25 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
             locationExperienceOptions={locationExperienceFacets}
             locationBestForOptions={locationBestForFacets}
           />
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-stone-800 pt-4">
+            <p className="text-xs leading-relaxed text-stone-500">
+              Want a craving-first path across chefs, menus, meal prep, and places?
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href={PUBLIC_CONSUMER_DISCOVERY_ENTRY.href}
+                className="inline-flex min-h-10 items-center justify-center rounded-xl border border-stone-700 bg-stone-950 px-4 text-xs font-medium text-stone-200 transition-colors hover:border-stone-600 hover:bg-stone-900"
+              >
+                {PUBLIC_CONSUMER_DISCOVERY_ENTRY.label}
+              </Link>
+              <Link
+                href={visualToggleHref}
+                className="inline-flex min-h-10 items-center justify-center rounded-xl border border-stone-700 bg-stone-950 px-4 text-xs font-medium text-stone-200 transition-colors hover:border-stone-600 hover:bg-stone-900"
+              >
+                {visualMode ? 'Compact cards' : 'Picture-first cards'}
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -878,9 +916,15 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
             </TrackedLink>
           </div>
 
-          <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <div
+            className={
+              visualMode
+                ? 'mt-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-3'
+                : 'mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3'
+            }
+          >
             {featuredPreview.map((chef) => (
-              <ChefTile key={`featured-${chef.id}`} chef={chef} />
+              <ChefTile key={`featured-${chef.id}`} chef={chef} visualMode={visualMode} />
             ))}
           </div>
         </section>
@@ -971,9 +1015,15 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
             </div>
           </div>
         ) : (
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <div
+            className={
+              visualMode
+                ? 'grid gap-6 sm:grid-cols-2 xl:grid-cols-3'
+                : 'grid gap-8 sm:grid-cols-2 lg:grid-cols-3'
+            }
+          >
             {chefs.map((chef) => (
-              <ChefTile key={chef.id} chef={chef} />
+              <ChefTile key={chef.id} chef={chef} visualMode={visualMode} />
             ))}
           </div>
         )}

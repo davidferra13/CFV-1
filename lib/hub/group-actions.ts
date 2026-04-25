@@ -2,7 +2,9 @@
 
 import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
+import type { Json } from '@/types/database'
 import type { HubGroup, HubGroupMember, HubGroupEvent } from './types'
+import { formatInviteSenderLabel, resolveHubInviteAttribution } from './invite-links'
 
 // ---------------------------------------------------------------------------
 // Hub Groups - Public (link-based access)
@@ -20,6 +22,7 @@ const CreateGroupSchema = z.object({
   group_type: z.enum(['circle', 'dinner_club', 'planning', 'bridge', 'community']).optional(),
   visibility: z.enum(['public', 'private', 'secret']).optional(),
   display_vibe: z.array(z.string()).optional().nullable(),
+  planning_brief: z.record(z.string(), z.unknown()).optional().nullable(),
 })
 
 /**
@@ -155,13 +158,14 @@ export async function getGroupById(groupId: string): Promise<HubGroup | null> {
 export async function joinHubGroup(input: {
   groupToken: string
   profileId: string
+  inviteToken?: string | null
 }): Promise<HubGroupMember> {
   const db = createServerClient({ admin: true })
 
   // Look up group
   const { data: group } = await db
     .from('hub_groups')
-    .select('id, is_active, name, group_token')
+    .select('id, is_active, name, group_token, group_type')
     .eq('group_token', input.groupToken)
     .single()
 
@@ -178,6 +182,13 @@ export async function joinHubGroup(input: {
     .single()
 
   if (existing) return existing as HubGroupMember
+
+  const inviteAttribution = await resolveHubInviteAttribution({
+    groupToken: input.groupToken,
+    inviteToken: input.inviteToken ?? null,
+  }).catch(() => null)
+  const attributedInviter =
+    inviteAttribution?.inviterProfileId === input.profileId ? null : inviteAttribution
 
   // Add as member
   const { data: member, error } = await db
@@ -204,19 +215,58 @@ export async function joinHubGroup(input: {
 
   // Post system message (non-blocking)
   try {
-    await db.from('hub_messages').insert({
-      group_id: group.id,
-      author_profile_id: input.profileId,
-      message_type: 'system',
-      system_event_type: 'member_joined',
-      body:
-        group.group_type === 'community'
-          ? `${profile?.display_name ?? 'Someone'} joined! Welcome to the circle. Chat with the community and share your perspective.`
-          : `${profile?.display_name ?? 'Someone'} joined! Welcome to the dinner circle. Chat with the group, share photos, update dietary needs, and stay in the loop on all event details here.`,
-      system_metadata: { display_name: profile?.display_name ?? 'Someone' },
-    })
+    const messageBody = attributedInviter
+      ? `${profile?.display_name ?? 'Someone'} joined via ${formatInviteSenderLabel(
+          attributedInviter.copyRole,
+          attributedInviter.inviterDisplayName
+        )}'s invite.`
+      : group.group_type === 'community'
+        ? `${profile?.display_name ?? 'Someone'} joined the circle. Welcome them in.`
+        : `${profile?.display_name ?? 'Someone'} joined the Dinner Circle.`
+
+    const { data: systemMessage } = await db
+      .from('hub_messages')
+      .insert({
+        group_id: group.id,
+        author_profile_id: input.profileId,
+        message_type: 'system',
+        system_event_type: 'member_joined',
+        body: messageBody,
+        system_metadata: {
+          display_name: profile?.display_name ?? 'Someone',
+          invited_by_profile_id: attributedInviter?.inviterProfileId ?? null,
+          invited_by_display_name: attributedInviter?.inviterDisplayName ?? null,
+          invited_by_copy_role: attributedInviter?.copyRole ?? null,
+        } as Json,
+      })
+      .select('*, hub_guest_profiles!author_profile_id(*)')
+      .single()
+
+    if (systemMessage) {
+      const { broadcast } = await import('@/lib/realtime/sse-server')
+      broadcast(`hub_messages:${group.id}`, 'INSERT', {
+        new: {
+          ...systemMessage,
+          author: systemMessage.hub_guest_profiles ?? undefined,
+          hub_guest_profiles: undefined,
+        },
+      })
+    }
   } catch {
     // Non-blocking
+  }
+
+  // Notify existing members about new member (non-blocking)
+  try {
+    const { notifyCircleMembers } = await import('./circle-notification-actions')
+    const displayName = profile?.display_name ?? 'Someone'
+    await notifyCircleMembers({
+      groupId: group.id,
+      authorProfileId: input.profileId,
+      messageBody: `${displayName} just joined. Say hello!`,
+    })
+  } catch (err) {
+    console.error('[joinHubGroup] Member join notification failed (non-blocking):', err)
   }
 
   // Send confirmation email to guest with their circle link (non-blocking)
@@ -268,7 +318,8 @@ export async function joinHubGroup(input: {
         .from('hub_guest_profiles')
         .update({
           first_group_id: group.id,
-          referred_by_profile_id: creator?.profile_id ?? null,
+          referred_by_profile_id:
+            attributedInviter?.inviterProfileId ?? creator?.profile_id ?? null,
         })
         .eq('id', input.profileId)
         .is('first_group_id', null)

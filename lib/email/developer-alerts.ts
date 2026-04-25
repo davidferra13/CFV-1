@@ -26,6 +26,15 @@ import {
 
 const DEV_EMAIL_RECIPIENTS = getDeveloperNotificationRecipients()
 
+/**
+ * Kill switch for ALL developer alert/digest emails.
+ * Set DEVELOPER_ALERTS_ENABLED=false in .env.local to silence during development.
+ * Defaults to true (alerts enabled) when unset.
+ */
+export function isDeveloperAlertsEnabled(): boolean {
+  return process.env.DEVELOPER_ALERTS_ENABLED !== 'false'
+}
+
 // Rate limiting (in-memory, per serverless instance)
 const lastAlertTime = new Map<string, number>()
 const RATE_LIMIT_MS = 15 * 60 * 1000 // 15 minutes per service
@@ -78,6 +87,11 @@ function resolveDigestCronStatus(
  */
 export async function sendDeveloperAlert(params: AlertParams): Promise<void> {
   try {
+    if (!isDeveloperAlertsEnabled()) {
+      console.log(`[dev-alert] Alerts disabled, skipping: ${params.title}`)
+      return
+    }
+
     if (isRateLimited(params.system)) {
       console.log(`[dev-alert] Rate-limited: ${params.system} (skipping "${params.title}")`)
       return
@@ -121,6 +135,19 @@ export async function sendDeveloperDigest(): Promise<{
   ollamaOnline: boolean
 }> {
   try {
+    if (!isDeveloperAlertsEnabled()) {
+      console.log('[dev-digest] Alerts disabled, skipping daily digest')
+      return {
+        sent: false,
+        summary: 'Alerts disabled',
+        cronHealthy: 0,
+        cronUnhealthy: 0,
+        openCircuits: 0,
+        recentErrorCount: 0,
+        ollamaOnline: false,
+      }
+    }
+
     const { createAdminClient } = await import('@/lib/db/admin')
     const db = createAdminClient()
     const now = new Date()

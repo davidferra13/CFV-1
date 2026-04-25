@@ -24,6 +24,7 @@ import {
   type ReadinessResult,
 } from '@/lib/events/readiness'
 import type { ServiceSimulationPanelState } from '@/lib/service-simulation/types'
+import { getServiceSimulationTransitionGate } from '@/lib/service-simulation/gates'
 import { trackAction } from '@/lib/ai/remy-activity-tracker'
 
 type EventStatus =
@@ -224,6 +225,41 @@ function ReadinessCard({
   )
 }
 
+function SimulationGateCard({
+  gate,
+}: {
+  gate: ReturnType<typeof getServiceSimulationTransitionGate>
+}) {
+  if (gate.status === 'clear') return null
+
+  return (
+    <div
+      className={`rounded-lg border p-4 ${
+        gate.status === 'hard'
+          ? 'border-rose-800/60 bg-rose-950/20'
+          : 'border-amber-800/60 bg-amber-950/20'
+      }`}
+      data-testid="service-simulation-transition-gate"
+    >
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="text-sm font-semibold text-stone-100">{gate.title}</p>
+        <Badge variant={gate.status === 'hard' ? 'error' : 'warning'}>
+          {gate.status === 'hard' ? 'Hard block' : 'Soft gate'}
+        </Badge>
+      </div>
+      <p className="mt-2 text-sm text-stone-300">{gate.summary}</p>
+      <div className="mt-3 space-y-2">
+        {gate.reasons.map((reason) => (
+          <div key={reason.code} className="rounded-lg border border-stone-800 bg-stone-950/50 p-3">
+            <p className="text-sm font-medium text-stone-100">{reason.label}</p>
+            <p className="mt-1 text-sm text-stone-400">{reason.detail}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export function EventTransitions({
   event,
   readiness,
@@ -242,13 +278,17 @@ export function EventTransitions({
 
   const targetStatus = getTargetStatus(event.status)
   const readinessReturnTo = `/events/${event.id}?tab=ops#service-simulation`
-  const shouldPromptForReadiness =
+  const simulationGate =
+    targetStatus && simulation ? getServiceSimulationTransitionGate(simulation, targetStatus) : null
+  const simulationHardBlock = simulationGate?.status === 'hard'
+  const shouldPromptForProof =
     isSoftGatedTarget(targetStatus) &&
-    Boolean(readiness) &&
-    (readiness!.counts.blockers > 0 ||
-      readiness!.counts.risks > 0 ||
-      readiness!.counts.stale > 0 ||
-      simulation?.status !== 'current')
+    !simulationHardBlock &&
+    ((Boolean(readiness) &&
+      (readiness!.counts.blockers > 0 ||
+        readiness!.counts.risks > 0 ||
+        readiness!.counts.stale > 0)) ||
+      simulationGate?.status === 'soft')
 
   async function handleTransition(
     action: () => Promise<any>,
@@ -286,6 +326,11 @@ export function EventTransitions({
 
   async function continuePendingTransition() {
     if (!pendingTransition) return
+    if (simulationGate?.status === 'hard') {
+      setPendingTransition(null)
+      setError('Resolve the must-fix simulation blockers before starting live service.')
+      return
+    }
 
     const next = pendingTransition
     setPendingTransition(null)
@@ -322,7 +367,7 @@ export function EventTransitions({
     run: () => Promise<any>,
     options?: { redirectTo?: string; actionLabel?: string }
   ) {
-    if (targetStatus && shouldPromptForReadiness) {
+    if (targetStatus && shouldPromptForProof) {
       setPendingTransition({
         target: targetStatus,
         run,
@@ -363,6 +408,7 @@ export function EventTransitions({
             readiness={readiness ?? null}
             simulation={simulation ?? null}
           />
+          {simulationGate ? <SimulationGateCard gate={simulationGate} /> : null}
 
           {showCancelDialog ? (
             <div className="rounded-lg border border-red-200 bg-red-950 p-4">
@@ -467,7 +513,7 @@ export function EventTransitions({
                   })
                 }
                 loading={loading}
-                disabled={loading}
+                disabled={loading || simulationHardBlock}
               >
                 Mark In Progress
               </Button>
@@ -530,16 +576,20 @@ export function EventTransitions({
       </Card>
 
       <ConfirmModal
-        open={Boolean(pendingTransition && readiness)}
+        open={Boolean(pendingTransition)}
         title={
-          readiness?.counts.blockers
-            ? 'Readiness blockers need an explicit override'
-            : 'Proceed with current readiness signal?'
+          simulationGate?.status === 'soft'
+            ? simulationGate.title
+            : readiness?.counts.blockers
+              ? 'Readiness blockers need an explicit override'
+              : 'Proceed with current readiness signal?'
         }
         description={
-          readiness
-            ? `Confidence ${readiness.confidence}%. ${readiness.counts.blockers} blockers, ${readiness.counts.risks} risks, ${readiness.counts.stale} stale.`
-            : undefined
+          simulationGate?.status === 'soft'
+            ? simulationGate.summary
+            : readiness
+              ? `Confidence ${readiness.confidence}%. ${readiness.counts.blockers} blockers, ${readiness.counts.risks} risks, ${readiness.counts.stale} stale.`
+              : undefined
         }
         confirmLabel={readiness?.counts.blockers ? 'Override and Continue' : 'Continue'}
         cancelLabel="Go Back"
@@ -550,22 +600,34 @@ export function EventTransitions({
         }}
         maxWidth="max-w-2xl"
       >
-        {readiness ? (
+        {readiness || simulationGate?.status === 'soft' ? (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <ReadinessCountPill label="Confidence" value={readiness.confidence} tone="info" />
-              <ReadinessCountPill label="Blockers" value={readiness.counts.blockers} tone="error" />
-              <ReadinessCountPill label="Risks" value={readiness.counts.risks} tone="warning" />
-              <ReadinessCountPill label="Stale" value={readiness.counts.stale} tone="warning" />
-            </div>
+            {simulationGate?.status === 'soft' ? (
+              <SimulationGateCard gate={simulationGate} />
+            ) : null}
 
-            <div className="space-y-2">
-              {readiness.gates
-                .filter((gate) => gate.status !== 'verified')
-                .map((gate) => (
-                  <ProofRow key={gate.gate} gate={gate} returnTo={readinessReturnTo} />
-                ))}
-            </div>
+            {readiness ? (
+              <>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <ReadinessCountPill label="Confidence" value={readiness.confidence} tone="info" />
+                  <ReadinessCountPill
+                    label="Blockers"
+                    value={readiness.counts.blockers}
+                    tone="error"
+                  />
+                  <ReadinessCountPill label="Risks" value={readiness.counts.risks} tone="warning" />
+                  <ReadinessCountPill label="Stale" value={readiness.counts.stale} tone="warning" />
+                </div>
+
+                <div className="space-y-2">
+                  {readiness.gates
+                    .filter((gate) => gate.status !== 'verified')
+                    .map((gate) => (
+                      <ProofRow key={gate.gate} gate={gate} returnTo={readinessReturnTo} />
+                    ))}
+                </div>
+              </>
+            ) : null}
 
             <div className="flex flex-wrap gap-2">
               <Button
@@ -575,7 +637,7 @@ export function EventTransitions({
               >
                 Review Readiness
               </Button>
-              {readiness.mostLikelyFailurePoint ? (
+              {readiness?.mostLikelyFailurePoint ? (
                 <Button
                   href={appendReturnTo(
                     readiness.mostLikelyFailurePoint.verifyRoute,

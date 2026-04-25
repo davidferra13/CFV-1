@@ -240,6 +240,21 @@ const FREE_FEATURES: FeatureDefinition[] = [
 // Users pay when the system replaces labor, increases accuracy, or scales output.
 
 const PAID_FEATURES: FeatureDefinition[] = [
+  // --- Multi-Location Operations ---
+  {
+    slug: 'multi-location',
+    label: 'Multi-Location Operations',
+    description:
+      'Command center, cross-location metrics, centralized purchasing, recipe compliance, demand forecasting, and real-time alerts across all your sites',
+    tier: 'paid',
+    category: 'ops',
+    upgrade_trigger: {
+      moment: 'Chef adds a second business location',
+      message:
+        'You have multiple locations. Unlock the command center to manage them all from one screen.',
+      cta: 'Unlock Multi-Location',
+    },
+  },
   // --- A. Intelligence + Data Depth ---
   {
     slug: 'price-intel-advanced',
@@ -825,7 +840,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
 
 export const FEATURE_CLASSIFICATIONS: FeatureDefinition[] = [...FREE_FEATURES, ...PAID_FEATURES]
 
-/** Set of all paid feature slugs - used for quick tier checks. */
+/** Legacy set retained for historical feature metadata. */
 export const PAID_FEATURE_SLUGS = new Set(PAID_FEATURES.map((f) => f.slug))
 
 /** Look up a feature by slug. */
@@ -833,9 +848,10 @@ export function getFeature(slug: string): FeatureDefinition | undefined {
   return FEATURE_CLASSIFICATIONS.find((f) => f.slug === slug)
 }
 
-/** Check if a feature slug is in the paid tier. */
+/** Access is universal, so legacy feature checks always pass. */
 export function isPaidFeature(slug: string): boolean {
-  return PAID_FEATURE_SLUGS.has(slug)
+  void slug
+  return false
 }
 
 /** Get all features in a specific category. */
@@ -843,22 +859,20 @@ export function getFeaturesByCategory(category: FeatureCategory): FeatureDefinit
   return FEATURE_CLASSIFICATIONS.filter((f) => f.category === category)
 }
 
-/** Get all paid features - used for billing page "what you unlock" list. */
+/** Legacy helper retained for old imports. Support UX must not use this list. */
 export function getPaidFeatures(): FeatureDefinition[] {
-  return PAID_FEATURES
+  return []
 }
 
-/** Get all free features - used for "free tier" summary. */
+/** Get the visible feature catalog. */
 export function getFreeFeatures(): FeatureDefinition[] {
-  return FREE_FEATURES
+  return FEATURE_CLASSIFICATIONS
 }
 
 /**
- * Get the upgrade trigger for a paid feature.
- * Returns null for free features or paid features without a trigger defined.
+ * Legacy helper retained for old imports. Support UX does not render prompts.
  */
 export function getUpgradeTrigger(slug: string): UpgradeTrigger | null {
-  const feature = getFeature(slug)
-  if (!feature || feature.tier === 'free') return null
-  return feature.upgrade_trigger ?? null
+  void slug
+  return null
 }

@@ -8,7 +8,7 @@ export const CHEF_PORTAL_SETTINGS_PAGE_INFO: Record<string, PageInfoEntry> = {
       'Business defaults and profile',
       'AI privacy and Remy controls',
       'Integrations and automations',
-      'Billing and subscription',
+      'Support contributions',
       'Appearance and navigation',
       'Notifications and templates',
       'Account security',
@@ -80,9 +80,9 @@ export const CHEF_PORTAL_SETTINGS_PAGE_INFO: Record<string, PageInfoEntry> = {
   },
 
   '/settings/billing': {
-    title: 'Subscription & Billing',
-    description: 'Manage your ChefFlow subscription - plan details, billing, and upgrades.',
-    features: ['Subscription status', 'Plan features', 'Upgrade options', 'Billing history'],
+    title: 'Support ChefFlow',
+    description: 'Manage voluntary support for ChefFlow development.',
+    features: ['Support status', 'Monthly contribution options', 'One-time contribution options'],
   },
 
   '/settings/change-password': {
@@ -170,7 +170,7 @@ export const CHEF_PORTAL_SETTINGS_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/settings/modules': {
     title: 'Feature Modules',
     description: 'Toggle feature modules on/off - control what appears in your sidebar.',
-    features: ['Module toggles', 'Pro feature indicators', 'Tier status'],
+    features: ['Module toggles', 'Workspace visibility', 'Focus controls'],
   },
 
   '/settings/repertoire': {

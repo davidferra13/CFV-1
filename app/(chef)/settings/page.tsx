@@ -449,8 +449,8 @@ export default async function SettingsPage() {
 
           {/* ── 6. Payments & Billing ────────────────────────────── */}
           <SettingsCategory
-            title="Payments & Billing"
-            description="Stripe payouts, support contributions, and feature module toggles."
+            title="Payments & Support"
+            description="Stripe payouts, voluntary support, and workspace module toggles."
             icon="CreditCard"
             primary
             tone="emerald"

@@ -143,6 +143,7 @@ export async function getPublicChefProfile(slug: string) {
       'booking_deposit_fixed_cents',
       'booking_min_notice_days',
       'archetype',
+      'restaurant_group_name',
     ].join(', ')
   )
 
@@ -268,9 +269,13 @@ export async function getPublicChefProfile(slug: string) {
   const inquirySlug = getPublicInquirySlug(chef)
 
   const dietaryTrust = derivePublicTrustSummary(serviceConfig, discovery.dietary_specialties)
-  const locationExperiences = buildPublicLocationExperiences(
+  const allLocationExperiences = buildPublicLocationExperiences(
     showcasePartners,
     locationLinksResult.data || []
+  )
+  const ownedRestaurants = allLocationExperiences.filter((loc) => loc.relationship_type === 'owner')
+  const locationExperiences = allLocationExperiences.filter(
+    (loc) => loc.relationship_type !== 'owner'
   )
 
   return {
@@ -304,12 +309,14 @@ export async function getPublicChefProfile(slug: string) {
       booking_deposit_fixed_cents: chef.booking_deposit_fixed_cents ?? null,
       booking_min_notice_days: chef.booking_min_notice_days ?? null,
       archetype: chef.archetype ?? null,
+      restaurant_group_name: chef.restaurant_group_name ?? null,
       discovery,
       dietaryTrust,
       service_config: serviceConfig,
     },
     partners: showcasePartners,
     locationExperiences,
+    ownedRestaurants,
   }
 }
 

@@ -182,3 +182,115 @@ export async function getWasteSummary(startDate: string, endDate: string) {
     })),
   }
 }
+
+/**
+ * Analyze waste patterns over a time window.
+ * Returns: repeat offender components, day-of-week distribution, per-station breakdown.
+ * Pure math aggregation, no AI.
+ */
+export async function getWastePatterns(days: number = 30) {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const startDate = new Date()
+  startDate.setDate(startDate.getDate() - days)
+  const startStr = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`
+
+  const { data, error } = await db
+    .from('waste_log')
+    .select(
+      `
+      id,
+      quantity,
+      unit,
+      reason,
+      estimated_value_cents,
+      created_at,
+      station_id,
+      component_id,
+      stations (id, name),
+      station_components (id, name)
+    `
+    )
+    .eq('chef_id', user.tenantId!)
+    .gte('created_at', `${startStr}T00:00:00`)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('[getWastePatterns] Error:', error)
+    throw new Error('Failed to load waste patterns')
+  }
+
+  const entries = data ?? []
+
+  // === Repeat offenders: group by component, sort by count descending ===
+  const byComponent: Record<
+    string,
+    {
+      componentName: string
+      stationName: string
+      count: number
+      totalValueCents: number
+      reasons: Record<string, number>
+    }
+  > = {}
+
+  for (const e of entries) {
+    const cid = (e as any).component_id
+    const cname = (e as any).station_components?.name ?? 'Unknown'
+    const sname = (e as any).stations?.name ?? 'Unknown'
+    const reason = (e as any).reason ?? 'other'
+    if (!byComponent[cid]) {
+      byComponent[cid] = {
+        componentName: cname,
+        stationName: sname,
+        count: 0,
+        totalValueCents: 0,
+        reasons: {},
+      }
+    }
+    byComponent[cid].count += 1
+    byComponent[cid].totalValueCents += (e as any).estimated_value_cents ?? 0
+    byComponent[cid].reasons[reason] = (byComponent[cid].reasons[reason] ?? 0) + 1
+  }
+
+  const repeatOffenders = Object.entries(byComponent)
+    .map(([componentId, data]) => ({
+      componentId,
+      ...data,
+      topReason: Object.entries(data.reasons).sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'other',
+    }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 15)
+
+  // === Day-of-week distribution ===
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  const byDay: number[] = [0, 0, 0, 0, 0, 0, 0]
+  for (const e of entries) {
+    const day = new Date((e as any).created_at).getDay()
+    byDay[day] += 1
+  }
+  const dayDistribution = dayNames.map((name, idx) => ({ day: name, count: byDay[idx] }))
+
+  // === Per-station totals ===
+  const byStation: Record<string, { stationName: string; count: number; totalValueCents: number }> =
+    {}
+  for (const e of entries) {
+    const sid = (e as any).station_id
+    const sname = (e as any).stations?.name ?? 'Unknown'
+    if (!byStation[sid]) byStation[sid] = { stationName: sname, count: 0, totalValueCents: 0 }
+    byStation[sid].count += 1
+    byStation[sid].totalValueCents += (e as any).estimated_value_cents ?? 0
+  }
+  const stationBreakdown = Object.entries(byStation)
+    .map(([stationId, data]) => ({ stationId, ...data }))
+    .sort((a, b) => b.count - a.count)
+
+  return {
+    totalEntries: entries.length,
+    days,
+    repeatOffenders,
+    dayDistribution,
+    stationBreakdown,
+  }
+}

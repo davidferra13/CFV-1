@@ -324,6 +324,16 @@ export async function assignStaffToEvent(input: AssignStaffInput) {
   }
 
   revalidatePath(`/events/${validated.event_id}`)
+
+  // Non-blocking: sync crew circle
+  try {
+    const { ensureCrewCircle, addStaffToCrewCircle } = await import('@/lib/hub/crew-circle-actions')
+    await ensureCrewCircle(validated.event_id, user.tenantId!)
+    await addStaffToCrewCircle(validated.event_id, validated.staff_member_id, user.tenantId!)
+  } catch (err) {
+    console.error('[assignStaffToEvent] crew circle sync failed (non-blocking)', err)
+  }
+
   return data
 }
 
@@ -343,6 +353,14 @@ export async function removeStaffFromEvent(assignmentId: string, eventId: string
     throw new Error('Cannot remove staff from an event that is currently in progress')
   }
 
+  // Capture staff_member_id before delete (needed for crew circle removal)
+  const { data: assignment } = await db
+    .from('event_staff_assignments')
+    .select('staff_member_id')
+    .eq('id', assignmentId)
+    .eq('chef_id', user.tenantId!)
+    .single()
+
   const { error } = await db
     .from('event_staff_assignments')
     .delete()
@@ -351,6 +369,16 @@ export async function removeStaffFromEvent(assignmentId: string, eventId: string
 
   if (error) throw new Error('Failed to remove staff from event')
   revalidatePath(`/events/${eventId}`)
+
+  // Non-blocking: remove from crew circle
+  if (assignment?.staff_member_id) {
+    try {
+      const { removeStaffFromCrewCircle } = await import('@/lib/hub/crew-circle-actions')
+      await removeStaffFromCrewCircle(eventId, assignment.staff_member_id, user.tenantId!)
+    } catch (err) {
+      console.error('[removeStaffFromEvent] crew circle sync failed (non-blocking)', err)
+    }
+  }
 }
 
 export async function getEventStaffRoster(eventId: string) {

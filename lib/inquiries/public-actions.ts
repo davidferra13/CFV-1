@@ -1,6 +1,6 @@
 // Public Inquiry Submission Server Action
 // No auth required - uses admin client for public form submissions
-// Auto-creates: client record, inquiry record, draft event
+// Auto-creates: client record and inquiry record. Event creation happens later.
 
 'use server'
 
@@ -24,6 +24,7 @@ import {
 import { recordPlatformEvent } from '@/lib/platform-observability/events'
 import { extractRequestMetadata } from '@/lib/platform-observability/context'
 import { PUBLIC_INTAKE_LANE_KEYS, withSubmissionSource } from '@/lib/public/intake-lane-config'
+import { executeInteraction } from '@/lib/interactions'
 
 const DEFAULT_BOOKING_CHEF_EMAIL = FOUNDER_EMAIL
 
@@ -433,6 +434,28 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     })
   }
 
+  await executeInteraction({
+    action_type: 'send_inquiry',
+    actor_id: client.id,
+    actor: { role: 'client', actorId: client.id, entityId: client.id, tenantId },
+    target_type: 'system',
+    target_id: inquiry.id,
+    context_type: 'client',
+    context_id: client.id,
+    visibility: 'private',
+    metadata: {
+      tenant_id: tenantId,
+      client_id: client.id,
+      inquiry_id: inquiry.id,
+      source: 'public_inquiry',
+      occasion: validated.occasion.trim(),
+      suppress_interaction_notifications: true,
+      suppress_interaction_activity: true,
+      suppress_interaction_automation: true,
+    },
+    idempotency_key: `send_inquiry:${inquiry.id}`,
+  })
+
   // Auto-create Dinner Circle OR link to existing one (non-blocking)
   let circleGroupToken: string | null = null
   let rebookCircleId: string | null = null
@@ -561,77 +584,11 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     console.error('[submitPublicInquiry] SSE broadcast failed (non-blocking):', sseErr)
   }
 
-  // 4. Create draft event with available info (TBD for missing required fields)
-  const { data: event, error: eventError } = await db
-    .from('events')
-    .insert({
-      tenant_id: tenantId,
-      client_id: client.id,
-      inquiry_id: inquiry.id,
-      event_date: validated.event_date,
-      serve_time: validated.serve_time.trim(),
-      service_mode: serviceMode,
-      guest_count: validated.guest_count,
-      location_address: validated.address.trim(),
-      location_city: 'TBD',
-      location_zip: /\b(\d{5}(?:-\d{4})?)\b/.exec(validated.address.trim())?.[1] || 'TBD',
-      occasion: validated.occasion.trim(),
-      referral_partner_id: resolvedAttribution.referralPartnerId,
-      partner_location_id: resolvedAttribution.partnerLocationId,
-      quoted_price_cents: null, // Client budget is not a quote; real price set when chef quote is accepted
-      special_requests: sourceMessage || null,
-    })
-    .select('id')
-    .single()
-
-  if (eventError) {
-    console.error('[submitPublicInquiry] Event creation error:', eventError)
-    // Inquiry was created - don't fail entirely, just log
-    // Chef can still see the inquiry + client
-    return { success: true, inquiryCreated: true, eventCreated: false }
-  }
+  // 4. Event creation is deferred until commercial commitment.
 
   // 5. Log initial event state transition (null → draft)
-  await db.from('event_state_transitions').insert({
-    tenant_id: tenantId,
-    event_id: event.id,
-    from_status: null,
-    to_status: 'draft',
-    metadata: { action: 'auto_created_from_public_inquiry', inquiry_id: inquiry.id },
-  })
 
-  // 6. Link inquiry to the created event
-  await db.from('inquiries').update({ converted_to_event_id: event.id }).eq('id', inquiry.id)
-
-  // 6b. Link event to existing circle (rebook flow)
-  if (rebookCircleId) {
-    try {
-      const { addEventToGroup } = await import('@/lib/hub/group-actions')
-      await addEventToGroup({ groupId: rebookCircleId, eventId: event.id })
-    } catch (linkErr) {
-      console.error('[submitPublicInquiry] Circle-event link failed (non-blocking):', linkErr)
-    }
-  }
-
-  await recordPlatformEvent({
-    eventKey: 'conversion.public_inquiry_converted_to_draft_event',
-    source: 'public_booking',
-    actorType: 'system',
-    tenantId,
-    subjectType: 'event',
-    subjectId: event.id,
-    summary: `Public inquiry ${inquiry.id} auto-created draft event ${event.id}`,
-    metadata: {
-      ...extractRequestMetadata(hdrs),
-      inquiry_id: inquiry.id,
-      client_id: client.id,
-      referral_partner_id: resolvedAttribution.referralPartnerId,
-      partner_location_id: resolvedAttribution.partnerLocationId,
-    },
-    alertDedupeKey: `inquiry-draft-event:${inquiry.id}`,
-  })
-
-  // 7. Enqueue Remy reactive AI task - auto-score lead (non-blocking)
+  // 5. Enqueue Remy reactive AI task - auto-score lead (non-blocking)
   try {
     const { evaluateAutomations } = await import('@/lib/automations/engine')
     await evaluateAutomations(tenantId, 'inquiry_created', {
@@ -705,7 +662,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     console.error('[submitPublicInquiry] Auto-response failed (non-blocking):', err)
   }
 
-  return { success: true, inquiryCreated: true, eventCreated: true }
+  return { success: true, inquiryCreated: true, eventCreated: false }
 }
 
 /**

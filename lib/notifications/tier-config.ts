@@ -174,6 +174,9 @@ export const DEFAULT_TIER_MAP: Record<NotificationAction, NotificationTier> = {
   // System
   system_alert: 'critical',
   account_access_alert: 'critical',
+
+  // Personal reminders
+  reminder_fired: 'alert',
 }
 
 // Default Channels per Tier

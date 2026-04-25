@@ -82,6 +82,7 @@ export function createHubTypingIndicator(groupId: string) {
         body: JSON.stringify({
           channel: `hub:${groupId}`,
           userId: profileId,
+          displayName,
           isTyping: true,
         }),
       }).catch(() => {

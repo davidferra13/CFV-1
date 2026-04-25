@@ -4,6 +4,7 @@ import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { runMonitoredCronJob } from '@/lib/cron/monitor'
 import { transitionEvent } from '@/lib/events/transitions'
 import { dateToDateString } from '@/lib/utils/format'
+import { executeInteraction } from '@/lib/interactions'
 
 // Event Time-Progression Cron
 // Advances events through the FSM based on wall-clock time:
@@ -38,14 +39,11 @@ export async function GET(request: Request) {
   try {
     const result = await runMonitoredCronJob('event-progression', async () => {
       const db = createAdminClient()
-      const now = new Date().toISOString()
-      const today = now.slice(0, 10)
-
+      // Fetch all confirmed events; filter per-event using local timezone
       const { data: toStart, error: startErr } = await db
         .from('events')
-        .select('id, tenant_id, event_date, serve_time, arrival_time')
+        .select('id, tenant_id, event_date, event_timezone, serve_time, arrival_time')
         .eq('status', 'confirmed')
-        .lte('event_date', today)
 
       if (startErr) {
         console.error('[event-progression] Query confirmed failed:', startErr)
@@ -55,7 +53,36 @@ export async function GET(request: Request) {
       let started = 0
       let failed = 0
       for (const event of toStart ?? []) {
+        // Compute "today" in the event's local timezone
+        const tz = event.event_timezone || 'America/New_York'
+        const eventLocalDate = new Date().toLocaleDateString('en-CA', { timeZone: tz })
+        const eventDateStr =
+          typeof event.event_date === 'string'
+            ? event.event_date.slice(0, 10)
+            : new Date(event.event_date).toISOString().slice(0, 10)
+        if (eventDateStr > eventLocalDate) continue // not yet event day in local tz
+
         try {
+          await executeInteraction({
+            action_type: 'auto_reminder',
+            actor_id: 'system',
+            actor: { role: 'system', actorId: 'system', tenantId: event.tenant_id },
+            target_type: 'event',
+            target_id: event.id,
+            context_type: 'event',
+            context_id: event.id,
+            visibility: 'system',
+            metadata: {
+              tenant_id: event.tenant_id,
+              event_id: event.id,
+              reminder_type: 'event_date',
+              event_date: eventDateStr,
+              source: 'event_progression_cron',
+              suppress_interaction_notifications: true,
+              suppress_interaction_activity: true,
+            },
+            idempotency_key: `auto_reminder:event_date:${event.id}:${eventDateStr}`,
+          })
           await transitionEvent({
             eventId: event.id,
             toStatus: 'in_progress',
@@ -75,7 +102,7 @@ export async function GET(request: Request) {
 
       const { data: toComplete, error: completeErr } = await db
         .from('events')
-        .select('id, tenant_id, event_date, departure_time')
+        .select('id, tenant_id, event_date, event_timezone, departure_time')
         .eq('status', 'in_progress')
         .limit(500)
 
@@ -84,15 +111,19 @@ export async function GET(request: Request) {
         throw new Error('Query failed')
       }
 
+      const nowIso = new Date().toISOString()
       let completed = 0
       for (const event of toComplete ?? []) {
+        const tz2 = event.event_timezone || 'America/New_York'
+        const localToday = new Date().toLocaleDateString('en-CA', { timeZone: tz2 })
         const departureStr =
           event.departure_time instanceof Date
             ? event.departure_time.toISOString()
             : (event.departure_time as string | null)
         const isOver =
-          (departureStr && departureStr <= now) ||
-          (!event.departure_time && dateToDateString(event.event_date as Date | string) < today)
+          (departureStr && departureStr <= nowIso) ||
+          (!event.departure_time &&
+            dateToDateString(event.event_date as Date | string) < localToday)
 
         if (!isOver) continue
 

@@ -61,6 +61,7 @@ export function useConversationManagement(setDrawerView: Dispatch<SetStateAction
           bookmarked: m.bookmarked,
           tasks: m.tasks as RemyTaskResult[] | undefined,
           navSuggestions: m.navSuggestions as NavigationSuggestion[] | undefined,
+          quickReplies: m.quickReplies as string[] | undefined,
         }))
         setMessages(remyMsgs)
         setIsFirstExchange(remyMsgs.length === 0)
@@ -99,6 +100,7 @@ export function useConversationManagement(setDrawerView: Dispatch<SetStateAction
           bookmarked: m.bookmarked,
           tasks: m.tasks as RemyTaskResult[] | undefined,
           navSuggestions: m.navSuggestions as NavigationSuggestion[] | undefined,
+          quickReplies: m.quickReplies as string[] | undefined,
         }))
         setMessages(remyMsgs)
         setCurrentConversationId(convId)

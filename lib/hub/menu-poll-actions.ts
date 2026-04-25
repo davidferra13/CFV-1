@@ -16,6 +16,7 @@ import {
   type MenuPollVoteInput,
 } from './menu-polling-core'
 import { materializeCanonicalDishIntoMenu } from '@/lib/menus/canonical-dish-menu-core'
+import { reopenMenuDraftWithContext, transitionMenuWithContext } from '@/lib/menus/menu-lifecycle'
 
 const MenuCourseSchema = z.object({
   course_number: z.number().int().positive(),
@@ -130,25 +131,17 @@ async function ensureEventMenuDraft(input: {
   }
 
   if (menu.status === 'locked' || menu.status === 'archived') {
-    await db
-      .from('menus')
-      .update({
-        status: 'draft',
-        locked_at: null,
-        archived_at: null,
-        updated_at: now,
-        updated_by: actorUserId,
-      })
-      .eq('id', menu.id)
-      .eq('tenant_id', event.tenant_id)
-
-    await db.from('menu_state_transitions').insert({
-      tenant_id: event.tenant_id,
-      menu_id: menu.id,
-      from_status: menu.status,
-      to_status: 'draft',
-      transitioned_by: actorUserId,
+    await reopenMenuDraftWithContext({
+      db,
+      menuId: menu.id,
+      tenantId: event.tenant_id,
+      actorUserId,
       reason: 'Reopened for Dinner Circle menu polling iteration',
+      source: 'dinner_circle_menu_polling',
+      sideEffects: {
+        circleNotifications: false,
+        dishIndexBridge: false,
+      },
     })
 
     menu = { ...menu, status: 'draft' }
@@ -166,100 +159,6 @@ async function ensureEventMenuDraft(input: {
   }
 
   return menu
-}
-
-async function setMenuLockedState(input: {
-  db: any
-  menuId: string
-  tenantId: string
-  actorUserId: string | null
-  reason: string
-}): Promise<void> {
-  const { db, menuId, tenantId, actorUserId, reason } = input
-  const now = new Date().toISOString()
-
-  const { data: menu } = await db
-    .from('menus')
-    .select('id, status')
-    .eq('id', menuId)
-    .eq('tenant_id', tenantId)
-    .single()
-
-  if (!menu) {
-    throw new Error('Menu not found while locking Dinner Circle selections')
-  }
-
-  let currentStatus = menu.status as string
-
-  if (currentStatus === 'archived') {
-    await db
-      .from('menus')
-      .update({
-        status: 'draft',
-        archived_at: null,
-        updated_at: now,
-        updated_by: actorUserId,
-      })
-      .eq('id', menuId)
-      .eq('tenant_id', tenantId)
-
-    await db.from('menu_state_transitions').insert({
-      tenant_id: tenantId,
-      menu_id: menuId,
-      from_status: 'archived',
-      to_status: 'draft',
-      transitioned_by: actorUserId,
-      reason,
-    })
-
-    currentStatus = 'draft'
-  }
-
-  if (currentStatus === 'draft') {
-    await db
-      .from('menus')
-      .update({
-        status: 'shared',
-        shared_at: now,
-        updated_at: now,
-        updated_by: actorUserId,
-      })
-      .eq('id', menuId)
-      .eq('tenant_id', tenantId)
-
-    await db.from('menu_state_transitions').insert({
-      tenant_id: tenantId,
-      menu_id: menuId,
-      from_status: 'draft',
-      to_status: 'shared',
-      transitioned_by: actorUserId,
-      reason,
-    })
-
-    currentStatus = 'shared'
-  }
-
-  if (currentStatus !== 'locked') {
-    await db
-      .from('menus')
-      .update({
-        status: 'locked',
-        locked_at: now,
-        updated_at: now,
-        updated_by: actorUserId,
-      })
-      .eq('id', menuId)
-      .eq('tenant_id', tenantId)
-
-    await db.from('menu_state_transitions').insert({
-      tenant_id: tenantId,
-      menu_id: menuId,
-      from_status: currentStatus,
-      to_status: 'locked',
-      transitioned_by: actorUserId,
-      reason,
-    })
-  }
 }
 
 async function resolveTenantActorUserId(input: {
@@ -1142,12 +1041,29 @@ export async function lockDinnerCircleMenuSelections(
     .eq('id', event.id)
     .eq('tenant_id', event.tenant_id)
 
-  await setMenuLockedState({
+  if (menu.status === 'draft') {
+    await transitionMenuWithContext({
+      db,
+      menuId: menu.id,
+      tenantId: event.tenant_id,
+      actorUserId,
+      toStatus: 'shared',
+      reason: 'Dinner Circle final menu selections ready to lock',
+      source: 'dinner_circle_menu_polling',
+      sideEffects: {
+        circleNotifications: false,
+      },
+    })
+  }
+
+  await transitionMenuWithContext({
     db,
     menuId: menu.id,
     tenantId: event.tenant_id,
     actorUserId,
+    toStatus: 'locked',
     reason: 'Dinner Circle final menu selections locked',
+    source: 'dinner_circle_menu_polling',
   })
 
   await db.from('hub_messages').insert({

@@ -1,9 +1,7 @@
-// Billing constants shared across server and client modules.
-// All features are free. These values are retained for the voluntary
-// supporter contribution flow (Stripe checkout still uses this price).
+import { SUPPORT_DEFAULT_MONTHLY_AMOUNT_CENTS } from '@/lib/monetization/offers'
 
-/** Voluntary monthly supporter contribution amount (USD). */
-export const PRO_PRICE_MONTHLY = 29
+export const SUPPORT_PRICE_MONTHLY_CENTS = SUPPORT_DEFAULT_MONTHLY_AMOUNT_CENTS
 
-/** Legacy trial window - no longer enforced (all features are free). */
-export const PRO_TRIAL_DAYS = 14
+// Legacy exports retained for old imports. Do not use these names in new UI.
+export const PRO_PRICE_MONTHLY = SUPPORT_PRICE_MONTHLY_CENTS / 100
+export const PRO_TRIAL_DAYS = 0

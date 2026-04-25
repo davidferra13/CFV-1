@@ -408,15 +408,16 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
         </Link>
       </div>
 
-      {/* Orphaned inquiry warning - no event was auto-created (Q32 fix) */}
+      {/* Confirmed inquiry warning - no event linked after commitment */}
       {!convertedEventId &&
-        !['declined', 'closed', 'spam'].includes(inquiry.status) &&
+        inquiry.status === 'confirmed' &&
         Date.now() - new Date(inquiry.created_at).getTime() > 5 * 60 * 1000 && (
           <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
             <p className="text-sm font-medium text-amber-300">No event linked to this inquiry</p>
             <p className="text-xs text-amber-400/70 mt-1">
-              An event was not automatically created when this inquiry came in. You can create one
-              manually from a quote, or check if the inquiry submission had an error.
+              Inquiry-first lanes should stay eventless until commitment. If this inquiry is truly
+              booked, convert it now or check whether the accepted quote failed to materialize the
+              event.
             </p>
           </div>
         )}

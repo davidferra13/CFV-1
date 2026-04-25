@@ -7,9 +7,13 @@ import { getGroupNotes } from '@/lib/hub/message-actions'
 import { getGroupMedia } from '@/lib/hub/media-actions'
 import { getGroupAvailability } from '@/lib/hub/availability-actions'
 import { getMealBoard } from '@/lib/hub/meal-board-actions'
+import { getCircleHouseholdSummary } from '@/lib/hub/household-actions'
 import { getCriticalPathForGuest } from '@/lib/lifecycle/critical-path'
 import { getLifecycleProgressForClient } from '@/lib/lifecycle/actions'
 import { getCircleChefProofData } from '@/lib/hub/circle-chef-proof'
+import { getDinnerCircleConfig } from '@/lib/dinner-circles/event-circle'
+import { getPendingQuoteForCircle } from '@/lib/hub/circle-approval-actions'
+import { createServerClient } from '@/lib/db/server'
 import { HubGroupView } from './hub-group-view'
 import { HubBridgeView } from '@/components/hub/hub-bridge-view'
 import { CircleArchiveView } from '@/components/hub/circle-archive-view'
@@ -76,7 +80,8 @@ export default async function HubGroupPage({ params }: Props) {
     media,
     availability,
     groupEvents,
-    mealBoardEntries,
+    mealBoardResult,
+    householdSummaryResult,
     guestStatus,
     lifecycleClient,
     chefProof,
@@ -86,7 +91,18 @@ export default async function HubGroupPage({ params }: Props) {
     getGroupMedia({ groupId: group.id }).catch(() => []),
     getGroupAvailability(group.id).catch(() => []),
     getGroupEvents(group.id).catch(() => []),
-    getMealBoard({ groupId: group.id }).catch(() => []),
+    getMealBoard({ groupId: group.id, groupToken })
+      .then((entries) => ({ entries, error: null as string | null }))
+      .catch((error) => {
+        console.error('[hub] Failed to load meal board', error)
+        return { entries: [], error: 'Could not load meal board' }
+      }),
+    getCircleHouseholdSummary(group.id, groupToken)
+      .then((summary) => ({ summary, error: null as string | null }))
+      .catch((error) => {
+        console.error('[hub] Failed to load household dietary summary', error)
+        return { summary: null, error: 'Could not load household dietary data' }
+      }),
     // Skip event lifecycle queries for community circles (no event, no tenant)
     group.group_type === 'community'
       ? Promise.resolve(null)
@@ -101,6 +117,13 @@ export default async function HubGroupPage({ params }: Props) {
           tenantId: group.tenant_id,
         }).catch(() => null),
   ])
+
+  const pendingQuote = await getPendingQuoteForCircle(groupToken)
+  const linkedEventId = group.event_id ?? groupEvents[0]?.event_id ?? null
+  const circleConfig =
+    group.group_type === 'community' || !linkedEventId
+      ? null
+      : await getDinnerCircleConfig(linkedEventId).catch(() => null)
 
   // Branch: bridge groups get the slim intro view, not the full Dinner Circle
   if (group.group_type === 'bridge') {
@@ -131,36 +154,54 @@ export default async function HubGroupPage({ params }: Props) {
       media={media}
       availability={availability}
       groupEvents={groupEvents}
-      mealBoardEntries={mealBoardEntries}
+      mealBoardEntries={mealBoardResult.entries}
+      mealBoardError={mealBoardResult.error}
+      householdSummary={householdSummaryResult.summary}
+      householdSummaryError={householdSummaryResult.error}
       guestStatus={guestStatus}
       lifecycleStages={lifecycleClient?.stages || []}
-      linkedEventId={groupEvents[0]?.event_id ?? null}
+      linkedEventId={linkedEventId}
+      circleConfig={circleConfig}
       chefProof={chefProof}
+      pendingQuote={pendingQuote}
     />
   )
 }
 
-// Dynamic metadata: public community circles get OG previews, private ones stay noindex
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { groupToken } = await params
-  const group = await getGroupByToken(groupToken)
+  const db: any = createServerClient({ admin: true })
+  const { data: group } = await db
+    .from('hub_groups')
+    .select('name, emoji, display_area, member_count, is_open_table, open_seats')
+    .eq('group_token', groupToken)
+    .eq('is_active', true)
+    .single()
 
-  if (group?.group_type === 'community' && group.visibility === 'public') {
-    return {
-      title: group.name || 'Community Circle',
-      description: group.description || 'Join this community circle on ChefFlow.',
-      robots: { index: false, follow: false }, // Still noindex (circle content is private) but OG works
-      openGraph: {
-        title: group.name || 'Community Circle',
-        description: group.description || 'Join this community circle on ChefFlow.',
-        type: 'website',
-      },
-    }
-  }
+  if (!group) return { title: 'Dinner Circle' }
 
-  // Default: private dinner circle data must never be indexed
+  const title = `${group.emoji ?? ''} ${group.name}`.trim()
+  const memberText = group.member_count ? `${group.member_count} people joined` : ''
+  const areaText = group.display_area ? `in ${group.display_area}` : ''
+  const seatsText = group.is_open_table && group.open_seats ? `${group.open_seats} seats open` : ''
+  const description =
+    [memberText, areaText, seatsText].filter(Boolean).join(' - ') ||
+    'Join this dinner circle on ChefFlow'
+
   return {
-    robots: { index: false, follow: false, nocache: true },
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      siteName: 'ChefFlow',
+    },
+    twitter: {
+      card: 'summary',
+      title,
+      description,
+    },
   }
 }
 

@@ -49,6 +49,7 @@ export interface LocalMessage {
   bookmarked: boolean
   tasks?: unknown // task result cards
   navSuggestions?: unknown // navigation suggestions
+  quickReplies?: unknown // suggested reply chips
   createdAt: string // ISO timestamp
 }
 
@@ -504,7 +505,7 @@ export async function addMessage(
   conversationId: string,
   role: 'user' | 'remy',
   content: string,
-  extras?: { tasks?: unknown; navSuggestions?: unknown }
+  extras?: { tasks?: unknown; navSuggestions?: unknown; quickReplies?: unknown }
 ): Promise<LocalMessage> {
   const db = await openDB()
   const now = new Date().toISOString()
@@ -516,6 +517,7 @@ export async function addMessage(
     bookmarked: false,
     tasks: extras?.tasks,
     navSuggestions: extras?.navSuggestions,
+    quickReplies: extras?.quickReplies,
     createdAt: now,
   }
 

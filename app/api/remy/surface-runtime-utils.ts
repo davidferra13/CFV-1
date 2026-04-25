@@ -29,7 +29,9 @@ export function getSurfaceRuntimeOptions(message: string): {
   tokenBudget: number
 } {
   const contextScope = determineContextScope(message, 'question')
-  const tokenBudget = getOperatorResponseTokenBudget(contextScope, 'question')
+  const operatorBudget = getOperatorResponseTokenBudget(contextScope, 'question')
+  const tokenBudget =
+    contextScope === 'minimal' ? 120 : contextScope === 'full' ? 420 : Math.min(operatorBudget, 260)
   return { contextScope, tokenBudget }
 }
 

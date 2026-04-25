@@ -95,6 +95,54 @@ export async function updateRecipePeakWindow(input: {
   }
 }
 
+// --- Prep completion persistence (cross-device sync) ---
+
+export async function togglePrepCompletion(
+  eventId: string,
+  itemKey: string,
+  completed: boolean
+): Promise<{ success: boolean }> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  try {
+    if (completed) {
+      await db.from('prep_completions').upsert(
+        {
+          event_id: eventId,
+          chef_id: user.tenantId!,
+          item_key: itemKey,
+          completed_at: new Date().toISOString(),
+        },
+        { onConflict: 'event_id,item_key' }
+      )
+    } else {
+      await db.from('prep_completions').delete().eq('event_id', eventId).eq('item_key', itemKey)
+    }
+    return { success: true }
+  } catch (err: any) {
+    console.error('[togglePrepCompletion]', err)
+    return { success: false }
+  }
+}
+
+export async function getPrepCompletions(eventId: string): Promise<string[]> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  try {
+    const { data } = await db
+      .from('prep_completions')
+      .select('item_key')
+      .eq('event_id', eventId)
+      .eq('chef_id', user.tenantId!)
+
+    return (data ?? []).map((row: any) => row.item_key)
+  } catch {
+    return []
+  }
+}
+
 // --- Get prep timeline for an event ---
 
 export async function getEventPrepTimeline(eventId: string): Promise<{

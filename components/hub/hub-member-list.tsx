@@ -10,6 +10,7 @@ import {
   leaveGroup,
 } from '@/lib/hub/group-actions'
 import { getCircleHouseholdSummary, type HouseholdMember } from '@/lib/hub/household-actions'
+import { CircleInviteCard } from '@/components/hub/circle-invite-card'
 
 const ROLE_BADGES: Record<string, { label: string; color: string }> = {
   owner: { label: 'Host', color: 'bg-amber-500/20 text-amber-400' },
@@ -33,37 +34,65 @@ const ASSIGNABLE_ROLES: { value: AssignableRole; label: string }[] = [
 interface HubMemberListProps {
   members: HubGroupMember[]
   groupId: string
+  groupToken: string
   currentProfileId?: string | null
   profileToken?: string | null
   isOwnerOrAdmin?: boolean
-  shareLink?: string
+  canInvite?: boolean
 }
 
 export function HubMemberList({
   members,
   groupId,
+  groupToken,
   currentProfileId,
   profileToken,
   isOwnerOrAdmin,
-  shareLink,
+  canInvite,
 }: HubMemberListProps) {
   const [localMembers, setLocalMembers] = useState(members)
   const [menuOpen, setMenuOpen] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
-  const [copied, setCopied] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [householdSummary, setHouseholdSummary] = useState<{
     members: HouseholdMember[]
     allAllergies: string[]
     allDietary: string[]
   } | null>(null)
+  const currentViewer = localMembers.find((member) => member.profile_id === currentProfileId)
+  const inviteRole =
+    currentViewer?.role === 'chef'
+      ? 'chef'
+      : currentViewer?.profile?.client_id
+        ? 'client'
+        : currentViewer?.profile?.auth_user_id
+          ? 'chef'
+          : 'member'
+  const inviteCardCopy =
+    inviteRole === 'chef'
+      ? {
+          title: 'Invite the table',
+          description:
+            'Copy the chef link or drop it into a text. Guests land in the Dinner Circle fast, with the plan and dietary notes in one place.',
+        }
+      : inviteRole === 'client'
+        ? {
+            title: 'Bring your table in',
+            description:
+              'Share one clean link with guests so the host side, chef, and table stay aligned in the same Dinner Circle.',
+          }
+        : {
+            title: 'Bring someone into the circle',
+            description:
+              'Copy the join link or drop it into a text. New guests can get into the Dinner Circle in seconds.',
+          }
 
   // Load household dietary summary
   useEffect(() => {
-    getCircleHouseholdSummary(groupId)
+    getCircleHouseholdSummary(groupId, groupToken)
       .then(setHouseholdSummary)
       .catch(() => {})
-  }, [groupId])
+  }, [groupId, groupToken])
 
   const handleRoleChange = (memberId: string, newRole: 'admin' | 'member' | 'viewer') => {
     if (!profileToken) return
@@ -134,41 +163,36 @@ export function HubMemberList({
     startTransition(async () => {
       try {
         await leaveGroup({ groupId, profileToken })
-        window.location.href = '/my-hub'
+        const isChefRole = currentViewer?.role === 'chef' || currentViewer?.role === 'owner'
+        window.location.href = isChefRole ? '/circles' : '/my-hub'
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to leave group')
       }
     })
   }
 
-  const handleCopyLink = async () => {
-    if (!shareLink) return
-    try {
-      await navigator.clipboard.writeText(shareLink)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch {
-      // Fallback: select text
-    }
-  }
-
   return (
     <div className="p-4">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-stone-300">Members ({localMembers.length})</h3>
-        {shareLink && (
-          <button
-            onClick={handleCopyLink}
-            className="flex items-center gap-1.5 rounded-full bg-stone-800 px-3 py-1.5 text-xs text-stone-400 hover:bg-stone-700 hover:text-stone-200"
-          >
-            {copied ? 'Copied!' : 'Copy invite link'}
-          </button>
-        )}
       </div>
 
       {error && (
         <div className="mb-3 rounded-lg border border-red-900/30 bg-red-900/20 px-3 py-2 text-xs text-red-300">
           {error}
+        </div>
+      )}
+
+      {canInvite && (
+        <div className="mb-4">
+          <CircleInviteCard
+            groupToken={groupToken}
+            profileToken={profileToken}
+            inviteRole={inviteRole}
+            title={inviteCardCopy.title}
+            description={inviteCardCopy.description}
+            showOpenButton={false}
+          />
         </div>
       )}
 

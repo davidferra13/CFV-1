@@ -18,6 +18,7 @@ import {
   FlagBanner,
   Handshake,
   LayoutDashboard,
+  Leaf,
   List,
   Mail,
   MessagesSquare,
@@ -86,7 +87,7 @@ export const adminNavGroups: AdminNavGroup[] = [
       { href: '/admin/financials', label: 'Financials', icon: DollarSign },
       { href: '/admin/reconciliation', label: 'Reconciliation', icon: Scales },
       { href: '/admin/system/payments', label: 'System Payments', icon: CreditCard },
-      // Cannabis Tier: hidden while feature is disabled (matches admin-sidebar.tsx line 49)
+      { href: '/admin/cannabis', label: 'Cannabis', icon: Leaf },
     ],
   },
   {

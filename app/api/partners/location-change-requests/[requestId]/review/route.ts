@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server'
+import { requireChef } from '@/lib/auth/get-user'
 import { reviewPartnerLocationChangeRequest } from '@/lib/partners/actions'
 
 export async function POST(request: Request, { params }: { params: { requestId: string } }) {
+  await requireChef()
+
   const body: { decision?: 'approved' | 'rejected'; reviewNote?: string } = {}
 
   try {

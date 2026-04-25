@@ -1947,7 +1947,7 @@ export const chefLocationLinks = pgTable("chef_location_links", {
 	index("idx_chef_location_links_chef_public").using("btree", table.chefId.asc().nullsLast().op("uuid_ops"), table.isPublic.asc().nullsLast().op("bool_ops"), table.sortOrder.asc().nullsLast().op("int4_ops")),
 	index("idx_chef_location_links_location").using("btree", table.locationId.asc().nullsLast().op("uuid_ops")),
 	unique("chef_location_links_unique_chef_location").on(table.chefId, table.locationId),
-	check("chef_location_links_relationship_type_check", sql`relationship_type = ANY (ARRAY['preferred'::text, 'exclusive'::text, 'featured'::text, 'available_on_request'::text])`),
+	check("chef_location_links_relationship_type_check", sql`relationship_type = ANY (ARRAY['preferred'::text, 'exclusive'::text, 'featured'::text, 'available_on_request'::text, 'owner'::text])`),
 	foreignKey({
 			columns: [table.chefId],
 			foreignColumns: [chefs.id],
@@ -14960,6 +14960,7 @@ export const hubGroups = pgTable("hub_groups", {
 	closesAt: timestamp("closes_at", { withTimezone: true, mode: 'string' }),
 	chefApprovalRequired: boolean("chef_approval_required").default(true).notNull(),
 	consentStatus: text("consent_status").default('pending'),
+	planningBrief: jsonb("planning_brief"),
 }, (table): any[] => [
 	index("idx_hub_groups_creator").using("btree", table.createdByProfileId.asc().nullsLast().op("uuid_ops")),
 	index("idx_hub_groups_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")).where(sql`(event_id IS NOT NULL)`),
@@ -15007,6 +15008,62 @@ export const hubGroups = pgTable("hub_groups", {
 	pgPolicy("hub_groups_select_anon", { as: "permissive", for: "select", to: ["public"] }),
 	check("hub_groups_consent_status_check", sql`(consent_status IS NULL) OR (consent_status = ANY (ARRAY['pending'::text, 'ready'::text, 'blocked'::text]))`),
 	check("hub_groups_visibility_check", sql`visibility = ANY (ARRAY['public'::text, 'private'::text, 'secret'::text])`),
+]);
+
+export const hubGroupCandidates = pgTable("hub_group_candidates", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	groupId: uuid("group_id").notNull(),
+	addedByProfileId: uuid("added_by_profile_id").notNull(),
+	candidateType: text("candidate_type").notNull(),
+	chefId: uuid("chef_id"),
+	directoryListingId: uuid("directory_listing_id"),
+	menuId: uuid("menu_id"),
+	experiencePackageId: uuid("experience_package_id"),
+	mealPrepItemId: uuid("meal_prep_item_id"),
+	snapshot: jsonb().notNull(),
+	notes: text(),
+	sortOrder: integer("sort_order").default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_hub_group_candidates_group").using("btree", table.groupId.asc().nullsLast().op("uuid_ops"), table.sortOrder.asc().nullsLast().op("int4_ops")),
+	index("idx_hub_group_candidates_type").using("btree", table.candidateType.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.addedByProfileId],
+			foreignColumns: [hubGuestProfiles.id],
+			name: "hub_group_candidates_added_by_profile_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.chefId],
+			foreignColumns: [chefs.id],
+			name: "hub_group_candidates_chef_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.directoryListingId],
+			foreignColumns: [directoryListings.id],
+			name: "hub_group_candidates_directory_listing_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.experiencePackageId],
+			foreignColumns: [experiencePackages.id],
+			name: "hub_group_candidates_experience_package_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.groupId],
+			foreignColumns: [hubGroups.id],
+			name: "hub_group_candidates_group_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.mealPrepItemId],
+			foreignColumns: [mealPrepItems.id],
+			name: "hub_group_candidates_meal_prep_item_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.menuId],
+			foreignColumns: [menus.id],
+			name: "hub_group_candidates_menu_id_fkey"
+		}).onDelete("cascade"),
+	check("hub_group_candidates_candidate_type_check", sql`candidate_type = ANY (ARRAY['chef'::text, 'listing'::text, 'menu'::text, 'package'::text, 'meal_prep_item'::text])`),
 ]);
 
 export const hubGuestProfiles = pgTable("hub_guest_profiles", {
@@ -19966,6 +20023,7 @@ export const chefs = pgTable("chefs", {
 	icalFeedExpiresAt: timestamp("ical_feed_expires_at", { withTimezone: true, mode: 'string' }).default(sql`(now() + '90 days'::interval)`),
 	icalFeedLastAccessedAt: timestamp("ical_feed_last_accessed_at", { withTimezone: true, mode: 'string' }),
 	kdsPin: text("kds_pin"),
+	restaurantGroupName: text("restaurant_group_name"),
 }, (table): any[] => [
 	index("idx_chefs_account_status").using("btree", table.accountStatus.asc().nullsLast().op("text_ops")),
 	index("idx_chefs_auth_user").using("btree", table.authUserId.asc().nullsLast().op("uuid_ops")),
@@ -25345,3 +25403,156 @@ export const ingredientBestVendorPrice = pgView("ingredient_best_vendor_price", 
 	minOrderUnit: text("min_order_unit"),
 	isPreferred: boolean("is_preferred"),
 }).as(sql`SELECT DISTINCT ON (chef_id, ingredient_name) chef_id, ingredient_name, ingredient_id, vendor_id, unit_price_cents, price_unit, lead_time_days, min_order_qty, min_order_unit, is_preferred FROM vendor_preferred_ingredients WHERE unit_price_cents IS NOT NULL ORDER BY chef_id, ingredient_name, unit_price_cents`);
+
+// ---------------------------------------------------------------------------
+// Hub Meal Board, Meal Feedback, Household Members
+// (Tables exist via migrations 20260401000123-125; adding Drizzle definitions)
+// ---------------------------------------------------------------------------
+
+export const hubMealBoard = pgTable(
+  'hub_meal_board',
+  {
+    id: uuid().defaultRandom().primaryKey().notNull(),
+    groupId: uuid('group_id').notNull(),
+    authorProfileId: uuid('author_profile_id').notNull(),
+    mealDate: date('meal_date').notNull(),
+    mealType: text('meal_type').notNull(),
+    title: text().notNull(),
+    description: text(),
+    dietaryTags: text('dietary_tags').array().default([]),
+    allergenFlags: text('allergen_flags').array().default([]),
+    menuId: uuid('menu_id'),
+    dishId: uuid('dish_id'),
+    status: text().default('planned').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('idx_hub_meal_board_group_date').using(
+      'btree',
+      table.groupId.asc().nullsLast().op('uuid_ops'),
+      table.mealDate.asc().nullsLast()
+    ),
+    unique('hub_meal_board_group_id_meal_date_meal_type_key').on(
+      table.groupId,
+      table.mealDate,
+      table.mealType
+    ),
+    foreignKey({
+      columns: [table.groupId],
+      foreignColumns: [hubGroups.id],
+      name: 'hub_meal_board_group_id_fkey',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.authorProfileId],
+      foreignColumns: [hubGuestProfiles.id],
+      name: 'hub_meal_board_author_profile_id_fkey',
+    }),
+    foreignKey({
+      columns: [table.menuId],
+      foreignColumns: [menus.id],
+      name: 'hub_meal_board_menu_id_fkey',
+    }).onDelete('set null'),
+    foreignKey({
+      columns: [table.dishId],
+      foreignColumns: [dishes.id],
+      name: 'hub_meal_board_dish_id_fkey',
+    }).onDelete('set null'),
+    check(
+      'hub_meal_board_meal_type_check',
+      sql`meal_type = ANY (ARRAY['breakfast'::text, 'lunch'::text, 'dinner'::text, 'snack'::text])`
+    ),
+    check(
+      'hub_meal_board_status_check',
+      sql`status = ANY (ARRAY['planned'::text, 'confirmed'::text, 'served'::text, 'cancelled'::text])`
+    ),
+  ]
+)
+
+export const hubMealFeedback = pgTable(
+  'hub_meal_feedback',
+  {
+    id: uuid().defaultRandom().primaryKey().notNull(),
+    mealEntryId: uuid('meal_entry_id').notNull(),
+    profileId: uuid('profile_id').notNull(),
+    reaction: text().notNull(),
+    note: text(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('idx_hub_meal_feedback_entry').using(
+      'btree',
+      table.mealEntryId.asc().nullsLast().op('uuid_ops')
+    ),
+    index('idx_hub_meal_feedback_profile').using(
+      'btree',
+      table.profileId.asc().nullsLast().op('uuid_ops')
+    ),
+    unique('hub_meal_feedback_meal_entry_id_profile_id_key').on(table.mealEntryId, table.profileId),
+    foreignKey({
+      columns: [table.mealEntryId],
+      foreignColumns: [hubMealBoard.id],
+      name: 'hub_meal_feedback_meal_entry_id_fkey',
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.profileId],
+      foreignColumns: [hubGuestProfiles.id],
+      name: 'hub_meal_feedback_profile_id_fkey',
+    }),
+    check(
+      'hub_meal_feedback_reaction_check',
+      sql`reaction = ANY (ARRAY['loved'::text, 'liked'::text, 'neutral'::text, 'disliked'::text])`
+    ),
+  ]
+)
+
+export const hubHouseholdMembers = pgTable(
+  'hub_household_members',
+  {
+    id: uuid().defaultRandom().primaryKey().notNull(),
+    profileId: uuid('profile_id').notNull(),
+    displayName: text('display_name').notNull(),
+    relationship: text().notNull(),
+    ageGroup: text('age_group'),
+    dietaryRestrictions: text('dietary_restrictions').array().default([]),
+    allergies: text('allergies').array().default([]),
+    dislikes: text('dislikes').array().default([]),
+    favorites: text('favorites').array().default([]),
+    notes: text(),
+    sortOrder: integer('sort_order').default(0).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('idx_hub_household_profile').using(
+      'btree',
+      table.profileId.asc().nullsLast().op('uuid_ops')
+    ),
+    foreignKey({
+      columns: [table.profileId],
+      foreignColumns: [hubGuestProfiles.id],
+      name: 'hub_household_members_profile_id_fkey',
+    }).onDelete('cascade'),
+    check(
+      'hub_household_members_relationship_check',
+      sql`relationship = ANY (ARRAY['partner'::text, 'spouse'::text, 'child'::text, 'parent'::text, 'sibling'::text, 'assistant'::text, 'house_manager'::text, 'nanny'::text, 'other'::text])`
+    ),
+    check(
+      'hub_household_members_age_group_check',
+      sql`age_group IS NULL OR age_group = ANY (ARRAY['infant'::text, 'toddler'::text, 'child'::text, 'teen'::text, 'adult'::text])`
+    ),
+  ]
+)

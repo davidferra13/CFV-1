@@ -13,10 +13,10 @@ import { getChefLayoutData } from '@/lib/chef/layout-cache'
 import { KeyboardShortcutsWrapper } from '@/components/navigation/keyboard-shortcuts-wrapper'
 import { getAnnouncement } from '@/lib/admin/platform-actions'
 import { PlatformAnnouncementBanner } from '@/components/admin/platform-announcement-banner'
-import { TrialBanner } from '@/components/billing/trial-banner'
 import { OfflineProvider } from '@/components/offline/offline-provider'
 import { EnvironmentBadge } from '@/components/ui/environment-badge'
 import { DeletionPendingBanner } from '@/components/settings/deletion-pending-banner'
+import { createServerClient } from '@/lib/db/server'
 import { DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
 import { differenceInDays } from 'date-fns'
 import { AnalyticsIdentify } from '@/components/analytics/analytics-identify'
@@ -36,7 +36,10 @@ import { PermissionProvider } from '@/lib/context/permission-context'
 import { resolveCurrentUserPermissions } from '@/lib/auth/permissions'
 import { isAiEnabledForTenant } from '@/lib/ai/privacy-internal'
 import { PATHNAME_HEADER } from '@/lib/auth/request-auth-context'
-import { resolveChefShellBudget } from '@/lib/interface/surface-governance'
+import {
+  resolveChefShellBudgetWithDensity,
+  type WorkspaceDensity,
+} from '@/lib/interface/surface-governance'
 
 const FeedbackNudgeCard = dynamic(
   () => import('@/components/feedback/feedback-nudge-card').then((m) => m.FeedbackNudgeCard),
@@ -78,10 +81,11 @@ const ChefLiveAlerts = dynamic(
 )
 // RouteProgress: regular import (not dynamic) so the bar is available from first render
 import { RouteProgress } from '@/components/ui/route-progress'
+import { getTenantDataPresence } from '@/lib/progressive-disclosure/tenant-data-presence'
+import type { TenantDataPresence } from '@/lib/progressive-disclosure/types'
 
 export default async function ChefLayout({ children }: { children: React.ReactNode }) {
   const pathname = headers().get(PATHNAME_HEADER) ?? '/dashboard'
-  const shellBudget = resolveChefShellBudget(pathname)
 
   // Server-side role check - happens BEFORE any client code ships
   let user
@@ -90,6 +94,35 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
   } catch {
     redirect('/auth/signin?portal=chef')
   }
+
+  const db: any = createServerClient()
+  const { data: prefData } = await db
+    .from('chef_preferences')
+    .select('workspace_density, archetype, created_at, updated_at')
+    .eq('chef_id', user.entityId)
+    .single()
+
+  const densityWasExplicitlyChosen = Boolean(
+    prefData?.workspace_density &&
+    (prefData.workspace_density !== 'standard' ||
+      (prefData.created_at && prefData.updated_at && prefData.created_at !== prefData.updated_at))
+  )
+
+  // Workspace density intent question. This is a one-time redirect, not a forced onboarding gate.
+  if (pathname !== '/welcome' && pathname !== '/api/e2e/auth') {
+    const isFirstTimeEver =
+      !prefData ||
+      (!prefData.archetype &&
+        prefData.workspace_density === 'standard' &&
+        !densityWasExplicitlyChosen)
+
+    if (isFirstTimeEver) {
+      redirect('/welcome')
+    }
+  }
+
+  const density = (prefData?.workspace_density as WorkspaceDensity) ?? 'standard'
+  const shellBudget = resolveChefShellBudgetWithDensity(pathname, density)
 
   // Parallelized - all calls are independent. All 5 use unstable_cache (60s TTL)
   // so navigating between pages costs ~0ms for these after the first load.
@@ -103,6 +136,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     permissionSet,
     remyEnabled,
     chefArchetype,
+    tenantPresence,
   ] = await Promise.all([
     // Cached for 60s - slug and nav prefs change rarely, keyed per chef
     getChefLayoutData(user.entityId),
@@ -128,6 +162,8 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     isAiEnabledForTenant(user.entityId).catch(() => false),
     // Archetype for nav label adaptation (cached 60s)
     getCachedChefArchetype(user.entityId).catch(() => null),
+    // Tenant data presence for progressive disclosure (short cached)
+    getTenantDataPresence(user.tenantId!).catch(() => null as TenantDataPresence | null),
   ])
   const effectiveAdmin = userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true'
   const effectivePrivileged = userIsPrivileged || process.env.DEMO_MODE_ENABLED === 'true'
@@ -175,8 +211,6 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                     {(userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true') && (
                       <EnvironmentBadge />
                     )}
-                    {/* Trial / subscription banner - shown when trial is expiring (≤3 days) or expired */}
-                    <TrialBanner chefId={user.entityId} />
                     {/* Account deletion pending banner - shown during 30-day grace period */}
                     {deletionStatus.isPending &&
                       deletionStatus.scheduledFor &&
@@ -199,6 +233,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                         userId={user.id}
                         tenantId={user.tenantId ?? user.entityId}
                         archetype={chefArchetype}
+                        tenantPresence={tenantPresence}
                       />
                     ) : null}
                     {/* Mobile nav (top bar + bottom tabs) */}

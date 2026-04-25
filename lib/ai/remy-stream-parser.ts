@@ -8,6 +8,7 @@ export interface StreamCallbacks {
   onToken: (token: string) => void
   onTasks?: (tasks: RemyTaskResult[]) => void
   onNav?: (navs: NavigationSuggestion[]) => void
+  onQuickReplies?: (replies: string[]) => void
   onMemories?: (memories: RemyMemoryItem[]) => void
   onIntent?: (intent: string) => void
   onError?: (error: string) => void
@@ -19,6 +20,7 @@ export interface StreamResult {
   isError: boolean
   tasks?: RemyTaskResult[]
   navSuggestions?: NavigationSuggestion[]
+  quickReplies?: string[]
   memoryItems?: RemyMemoryItem[]
 }
 
@@ -35,6 +37,7 @@ export async function parseRemyStream(
   let isError = false
   let tasks: RemyTaskResult[] | undefined
   let navSuggestions: NavigationSuggestion[] | undefined
+  let quickReplies: string[] | undefined
   let memoryItems: RemyMemoryItem[] | undefined
   let buffer = ''
 
@@ -64,6 +67,10 @@ export async function parseRemyStream(
             navSuggestions = event.data as NavigationSuggestion[]
             callbacks.onNav?.(navSuggestions)
             break
+          case 'quick_replies':
+            quickReplies = Array.isArray(event.data) ? (event.data as string[]) : []
+            callbacks.onQuickReplies?.(quickReplies)
+            break
           case 'memories':
             memoryItems = event.data as RemyMemoryItem[]
             callbacks.onMemories?.(memoryItems)
@@ -86,5 +93,5 @@ export async function parseRemyStream(
     }
   }
 
-  return { fullContent, isError, tasks, navSuggestions, memoryItems }
+  return { fullContent, isError, tasks, navSuggestions, quickReplies, memoryItems }
 }

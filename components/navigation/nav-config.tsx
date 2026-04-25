@@ -145,20 +145,6 @@ export const standaloneTop: NavItem[] = [
   },
   { href: '/inbox', label: 'Inbox', icon: Inbox, coreFeature: true, tier: 'primary' },
   {
-    href: '/inquiries',
-    label: 'Pipeline',
-    icon: Funnel,
-    coreFeature: true,
-    tier: 'primary',
-    subMenu: [
-      { href: '/inquiries/new', label: 'New Inquiry' },
-      { href: '/leads', label: 'Leads' },
-      { href: '/quotes', label: 'Quotes' },
-      { href: '/proposals', label: 'Proposals' },
-      { href: '/wix-submissions', label: 'Wix Submissions' },
-    ],
-  },
-  {
     href: '/events',
     label: 'Events',
     icon: CalendarDays,
@@ -198,8 +184,19 @@ export const standaloneTop: NavItem[] = [
     ],
   },
   {
+    href: '/circles',
+    label: 'Circles',
+    icon: MessagesSquare,
+    coreFeature: true,
+    tier: 'primary',
+    subMenu: [
+      { href: '/circles', label: 'All Circles' },
+      { href: '/hub/circles', label: 'Browse Community' },
+    ],
+  },
+  {
     href: '/finance',
-    label: 'Money',
+    label: 'Finance',
     icon: DollarSign,
     coreFeature: true,
     tier: 'primary',
@@ -325,6 +322,11 @@ export const navGroups: NavGroup[] = [
         href: '/clients/presence',
         label: 'Client Presence',
         icon: WifiHigh,
+      },
+      {
+        href: '/pulse',
+        label: "Who's Waiting",
+        icon: Activity,
       },
       {
         href: '/clients/communication',
@@ -952,11 +954,46 @@ export const navGroups: NavGroup[] = [
     ],
   },
   {
+    id: 'locations',
+    label: 'Locations',
+    icon: MapPin,
+    module: 'multi-location',
+    items: [
+      {
+        href: '/locations',
+        label: 'Command Center',
+        icon: Activity,
+      },
+      {
+        href: '/locations/compliance',
+        label: 'Recipe Compliance',
+        icon: ClipboardCheck,
+      },
+      {
+        href: '/locations/purchasing',
+        label: 'Centralized Purchasing',
+        icon: ShoppingCart,
+      },
+    ],
+  },
+  {
     id: 'operations',
     label: 'Operations',
     icon: Activity,
     module: 'station-ops',
     items: [
+      {
+        href: '/ops',
+        label: 'Ops Hub',
+        icon: Activity,
+        children: [
+          { href: '/ops/service', label: 'Service Day' },
+          { href: '/ops/prep', label: 'Prep Board' },
+          { href: '/ops/stations', label: 'Station Coordination' },
+          { href: '/ops/inventory', label: 'Inventory Status' },
+          { href: '/ops/performance', label: 'Menu Performance' },
+        ],
+      },
       {
         href: '/stations/daily-ops',
         label: 'Daily Ops',
@@ -1383,6 +1420,11 @@ export const navGroups: NavGroup[] = [
         icon: Zap,
       },
       {
+        href: '/capture',
+        label: 'Quick Capture',
+        icon: Camera,
+      },
+      {
         href: '/remy',
         label: 'Remy History',
         icon: Bot,
@@ -1417,9 +1459,9 @@ export const standaloneBottom: NavItem[] = [
 export const mobileTabItems: NavItem[] = [
   { href: '/dashboard', label: 'Today', icon: LayoutDashboard },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
-  { href: '/inquiries', label: 'Pipeline', icon: ChatTeardropText },
   { href: '/events', label: 'Events', icon: CalendarDays },
-  { href: '/daily', label: 'Daily Ops', icon: ListChecks },
+  { href: '/clients', label: 'Clients', icon: Users },
+  { href: '/finance', label: 'Finance', icon: DollarSign },
 ]
 
 // All available options for mobile tab customization.
@@ -1435,7 +1477,7 @@ export const MOBILE_TAB_OPTIONS: NavItem[] = [
   { href: '/inquiries', label: 'Pipeline', icon: ChatTeardropText },
   { href: '/menus', label: 'Menus', icon: UtensilsCrossed },
   { href: '/recipes', label: 'Recipes', icon: BookOpen },
-  { href: '/finance', label: 'Money', icon: DollarSign },
+  { href: '/finance', label: 'Finance', icon: DollarSign },
   { href: '/chat', label: 'Messaging', icon: MessageCircle },
   { href: '/documents', label: 'Documents', icon: FileText },
   { href: '/culinary/costing', label: 'Costing', icon: Calculator },
@@ -1474,6 +1516,7 @@ const settingsShortcutOptions: PrimaryShortcutOption[] = [
     icon: Settings,
     context: 'Settings',
   },
+  { href: '/settings/restaurants', label: 'My Restaurants', icon: Store, context: 'Settings' },
   {
     href: '/settings/client-preview',
     label: 'Client Preview',
@@ -1824,16 +1867,16 @@ export function getPrimaryShortcutOptions() {
   return PRIMARY_SHORTCUT_OPTIONS.map(({ href, label, context }) => ({ href, label, context }))
 }
 
-// ─── Action Bar: 6 primary domains (decision contract 2026-04-09) ───
-// Today, Inbox, Pipeline, Events, Culinary, Money
+// Action Bar: 6 primary domains from the approved navigation contract.
+// Today, Inbox, Events, Clients, Culinary, Finance.
 // All other surfaces reachable via the All Features collapse, command palette, or direct routes.
 export const actionBarItems: NavItem[] = [
   { href: '/dashboard', label: 'Today', icon: LayoutDashboard },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
-  { href: '/inquiries', label: 'Pipeline', icon: Funnel },
   { href: '/events', label: 'Events', icon: CalendarDays },
+  { href: '/clients', label: 'Clients', icon: Users },
   { href: '/culinary', label: 'Culinary', icon: UtensilsCrossed },
-  { href: '/finance', label: 'Money', icon: DollarSign },
+  { href: '/finance', label: 'Finance', icon: DollarSign },
 ]
 
 // ─── + Create dropdown: 15 direct navigation links ───

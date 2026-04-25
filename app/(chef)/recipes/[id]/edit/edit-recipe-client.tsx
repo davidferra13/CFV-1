@@ -70,6 +70,12 @@ type NewIngredient = {
   yield_pct: number | null
 }
 
+type YieldHint = {
+  yieldPct: number
+  prepMethod: string | null
+  wasteType: string | null
+}
+
 type RecipeDetail = NonNullable<
   Awaited<ReturnType<typeof import('@/lib/recipes/actions').getRecipeById>>
 >
@@ -77,6 +83,12 @@ type RecipeDetail = NonNullable<
 type Props = {
   recipe: RecipeDetail
   chefId: string
+}
+
+function formatYieldHint(ingredientName: string, hint: YieldHint) {
+  const prepLabel = hint.prepMethod ? ` ${hint.prepMethod}` : ''
+  const wasteLabel = hint.wasteType ? ` (${hint.wasteType} removed)` : ''
+  return `${ingredientName}${prepLabel}: ~${hint.yieldPct}% yield${wasteLabel}`
 }
 
 export function EditRecipeClient({ recipe, chefId }: Props) {
@@ -152,6 +164,32 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
   // Existing ingredient modifications
   const [modifiedIngredients, setModifiedIngredients] = useState<Set<string>>(new Set())
 
+  // Yield suggestion hints keyed by lowercase ingredient name
+  const [yieldHints, setYieldHints] = useState<Record<string, YieldHint>>({})
+
+  const fetchYieldHint = useCallback(async (name: string) => {
+    const key = name.toLowerCase().trim()
+    if (!key) return null
+    try {
+      const suggestions = await suggestYieldByName(name.trim())
+      if (suggestions.length > 0) {
+        const best = suggestions[0]
+        setYieldHints((prev) => ({
+          ...prev,
+          [key]: {
+            yieldPct: best.yieldPct,
+            prepMethod: best.prepMethod,
+            wasteType: best.wasteType,
+          },
+        }))
+        return best
+      }
+    } catch {
+      /* non-blocking */
+    }
+    return null
+  }, [])
+
   // ---- Form protection (draft persistence + unsaved changes guard) ----
   const defaultData = useMemo(
     () => ({
@@ -174,6 +212,7 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
           preparation_notes: ri.preparation_notes,
           is_optional: ri.is_optional,
           sort_order: ri.sort_order,
+          yield_pct: ri.yield_pct ?? null,
           ingredient: ri.ingredient,
         }))
       ),
@@ -988,163 +1027,196 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
               )}
 
               {/* Existing ingredients */}
-              {existingIngredients.map((ei) => (
-                <div key={ei.id} className="flex gap-2 items-center">
-                  <div className="flex-1 min-w-[140px]">
-                    <Input
-                      type="text"
-                      value={ei.ingredient.name}
-                      disabled
-                      className="bg-stone-800"
-                    />
+              {existingIngredients.map((ei) => {
+                const hintKey = ei.ingredient.name.toLowerCase().trim()
+                const hint = yieldHints[hintKey]
+                return (
+                  <div key={ei.id}>
+                    <div className="flex gap-2 items-center">
+                      <div className="flex-1 min-w-[140px]">
+                        <Input
+                          type="text"
+                          value={ei.ingredient.name}
+                          disabled
+                          className="bg-stone-800"
+                        />
+                      </div>
+                      <div className="w-20">
+                        <Input
+                          type="number"
+                          value={ei.quantity}
+                          onChange={(e) =>
+                            updateExisting(ei.id, 'quantity', parseFloat(e.target.value) || 0)
+                          }
+                          step="0.25"
+                        />
+                      </div>
+                      <div className="w-24">
+                        <Input
+                          type="text"
+                          value={ei.unit}
+                          onChange={(e) => updateExisting(ei.id, 'unit', e.target.value)}
+                        />
+                      </div>
+                      <div className="w-28">
+                        <Input
+                          type="text"
+                          value={ei.preparation_notes || ''}
+                          onChange={(e) =>
+                            updateExisting(ei.id, 'preparation_notes', e.target.value || null)
+                          }
+                          placeholder="diced"
+                        />
+                      </div>
+                      <div className="w-20">
+                        <Input
+                          type="number"
+                          value={ei.yield_pct ?? ''}
+                          onChange={(e) => {
+                            const v =
+                              e.target.value === ''
+                                ? null
+                                : Math.min(100, Math.max(5, parseInt(e.target.value) || 5))
+                            updateExisting(ei.id, 'yield_pct', v)
+                          }}
+                          min={5}
+                          max={100}
+                          placeholder="100"
+                          title={
+                            ei.yield_pct
+                              ? `${ei.yield_pct}% usable after prep`
+                              : 'Default 100% (no waste)'
+                          }
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeExisting(ei.id)}
+                        className="p-2 text-stone-400 hover:text-red-500"
+                        title="Remove"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                    {/* Yield hint or suggest action */}
+                    {hint && ei.yield_pct === hint.yieldPct && (
+                      <p className="mt-1 text-[11px] leading-4 text-stone-500">
+                        {formatYieldHint(ei.ingredient.name, hint)}
+                      </p>
+                    )}
+                    {ei.yield_pct === null && !hint && (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const best = await fetchYieldHint(ei.ingredient.name)
+                          if (best) {
+                            updateExisting(ei.id, 'yield_pct', best.yieldPct)
+                          }
+                        }}
+                        className="mt-1 text-[11px] leading-4 text-brand-500 hover:text-brand-400 text-left"
+                      >
+                        Suggest yield
+                      </button>
+                    )}
                   </div>
-                  <div className="w-20">
-                    <Input
-                      type="number"
-                      value={ei.quantity}
-                      onChange={(e) =>
-                        updateExisting(ei.id, 'quantity', parseFloat(e.target.value) || 0)
-                      }
-                      step="0.25"
-                    />
-                  </div>
-                  <div className="w-24">
-                    <Input
-                      type="text"
-                      value={ei.unit}
-                      onChange={(e) => updateExisting(ei.id, 'unit', e.target.value)}
-                    />
-                  </div>
-                  <div className="w-28">
-                    <Input
-                      type="text"
-                      value={ei.preparation_notes || ''}
-                      onChange={(e) =>
-                        updateExisting(ei.id, 'preparation_notes', e.target.value || null)
-                      }
-                      placeholder="diced"
-                    />
-                  </div>
-                  <div className="w-20">
-                    <Input
-                      type="number"
-                      value={ei.yield_pct ?? ''}
-                      onChange={(e) => {
-                        const v =
-                          e.target.value === ''
-                            ? null
-                            : Math.min(100, Math.max(5, parseInt(e.target.value) || 5))
-                        updateExisting(ei.id, 'yield_pct', v)
-                      }}
-                      min={5}
-                      max={100}
-                      placeholder="100"
-                      title={
-                        ei.yield_pct
-                          ? `${ei.yield_pct}% usable after prep`
-                          : 'Default 100% (no waste)'
-                      }
-                    />
-                  </div>
-                  <button
-                    onClick={() => removeExisting(ei.id)}
-                    className="p-2 text-stone-400 hover:text-red-500"
-                    title="Remove"
-                  >
-                    &times;
-                  </button>
-                </div>
-              ))}
+                )
+              })}
 
               {/* New ingredients */}
-              {newIngredients.map((ing, index) => (
-                <div
-                  key={`new-${index}`}
-                  className="flex gap-2 items-center border-l-2 border-brand-700 pl-2"
-                >
-                  <div className="flex-1 min-w-[140px]">
-                    <Input
-                      type="text"
-                      value={ing.name}
-                      onChange={(e) => updateNew(index, 'name', e.target.value)}
-                      onBlur={async (e) => {
-                        const ingredientName = e.target.value.trim()
-                        if (!ingredientName || ing.yield_pct !== null) return
-                        try {
-                          const suggestions = await suggestYieldByName(ingredientName)
-                          if (suggestions.length > 0) {
-                            const updated = [...newIngredients]
-                            updated[index] = {
-                              ...updated[index],
-                              yield_pct: suggestions[0].yieldPct,
+              {newIngredients.map((ing, index) => {
+                const hintKey = ing.name.toLowerCase().trim()
+                const hint = hintKey ? yieldHints[hintKey] : undefined
+                return (
+                  <div key={`new-${index}`}>
+                    <div className="flex gap-2 items-center border-l-2 border-brand-700 pl-2">
+                      <div className="flex-1 min-w-[140px]">
+                        <Input
+                          type="text"
+                          value={ing.name}
+                          onChange={(e) => updateNew(index, 'name', e.target.value)}
+                          onBlur={async (e) => {
+                            const ingredientName = e.target.value.trim()
+                            if (!ingredientName || ing.yield_pct !== null) return
+                            const best = await fetchYieldHint(ingredientName)
+                            if (best) {
+                              const updated = [...newIngredients]
+                              updated[index] = {
+                                ...updated[index],
+                                yield_pct: best.yieldPct,
+                              }
+                              setNewIngredients(updated)
                             }
-                            setNewIngredients(updated)
+                          }}
+                          placeholder="New ingredient"
+                        />
+                      </div>
+                      <div className="w-20">
+                        <Input
+                          type="number"
+                          value={ing.quantity}
+                          onChange={(e) =>
+                            updateNew(index, 'quantity', parseFloat(e.target.value) || 0)
                           }
-                        } catch {
-                          /* non-blocking */
-                        }
-                      }}
-                      placeholder="New ingredient"
-                    />
+                          step="0.25"
+                        />
+                      </div>
+                      <div className="w-24">
+                        <Input
+                          type="text"
+                          value={ing.unit}
+                          onChange={(e) => updateNew(index, 'unit', e.target.value)}
+                          placeholder="cup, tbsp"
+                        />
+                      </div>
+                      <div className="w-28">
+                        <Input
+                          type="text"
+                          value={ing.preparation_notes}
+                          onChange={(e) => updateNew(index, 'preparation_notes', e.target.value)}
+                          placeholder="diced"
+                        />
+                      </div>
+                      <div className="w-20">
+                        <Input
+                          type="number"
+                          value={ing.yield_pct ?? ''}
+                          onChange={(e) => {
+                            const v =
+                              e.target.value === ''
+                                ? null
+                                : Math.min(100, Math.max(5, parseInt(e.target.value) || 5))
+                            const updated = [...newIngredients]
+                            updated[index] = { ...updated[index], yield_pct: v }
+                            setNewIngredients(updated)
+                          }}
+                          min={5}
+                          max={100}
+                          placeholder="100"
+                          title={
+                            ing.yield_pct
+                              ? `${ing.yield_pct}% usable after prep`
+                              : 'Default 100% (no waste)'
+                          }
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeNew(index)}
+                        className="p-2 text-stone-400 hover:text-red-500"
+                        title="Remove"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                    {/* Yield hint */}
+                    {hint && ing.yield_pct === hint.yieldPct && (
+                      <p className="mt-1 border-l-2 border-brand-700 pl-2 text-[11px] leading-4 text-stone-500">
+                        {formatYieldHint(ing.name, hint)}
+                      </p>
+                    )}
                   </div>
-                  <div className="w-20">
-                    <Input
-                      type="number"
-                      value={ing.quantity}
-                      onChange={(e) =>
-                        updateNew(index, 'quantity', parseFloat(e.target.value) || 0)
-                      }
-                      step="0.25"
-                    />
-                  </div>
-                  <div className="w-24">
-                    <Input
-                      type="text"
-                      value={ing.unit}
-                      onChange={(e) => updateNew(index, 'unit', e.target.value)}
-                      placeholder="cup, tbsp"
-                    />
-                  </div>
-                  <div className="w-28">
-                    <Input
-                      type="text"
-                      value={ing.preparation_notes}
-                      onChange={(e) => updateNew(index, 'preparation_notes', e.target.value)}
-                      placeholder="diced"
-                    />
-                  </div>
-                  <div className="w-20">
-                    <Input
-                      type="number"
-                      value={ing.yield_pct ?? ''}
-                      onChange={(e) => {
-                        const v =
-                          e.target.value === ''
-                            ? null
-                            : Math.min(100, Math.max(5, parseInt(e.target.value) || 5))
-                        const updated = [...newIngredients]
-                        updated[index] = { ...updated[index], yield_pct: v }
-                        setNewIngredients(updated)
-                      }}
-                      min={5}
-                      max={100}
-                      placeholder="100"
-                      title={
-                        ing.yield_pct
-                          ? `${ing.yield_pct}% usable after prep`
-                          : 'Default 100% (no waste)'
-                      }
-                    />
-                  </div>
-                  <button
-                    onClick={() => removeNew(index)}
-                    className="p-2 text-stone-400 hover:text-red-500"
-                    title="Remove"
-                  >
-                    &times;
-                  </button>
-                </div>
-              ))}
+                )
+              })}
 
               {existingIngredients.length === 0 && newIngredients.length === 0 && (
                 <p className="text-stone-500 text-center py-4">

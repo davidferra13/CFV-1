@@ -1,4 +1,4 @@
-// Kiosk Inquiry Submission API - creates client + inquiry + draft event
+// Kiosk Inquiry Submission API - creates client + inquiry
 // Follows the same pattern as submitPublicInquiry but with device/staff attribution
 // Requires device token in Authorization header
 
@@ -151,44 +151,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Failed to create inquiry' }, { status: 500 })
     }
 
-    // 3. Create draft event
-    const { data: event, error: eventError } = await db
-      .from('events')
-      .insert({
-        tenant_id: tenantId,
-        client_id: client.id,
-        inquiry_id: inquiry.id,
-        event_date: parsed.event_date,
-        serve_time: 'TBD',
-        guest_count: parsed.party_size,
-        location_address: 'TBD',
-        location_city: 'TBD',
-        location_zip: 'TBD',
-        occasion: 'Kiosk inquiry',
-        special_requests: parsed.notes?.trim() || null,
-      })
-      .select('id')
-      .single()
-
-    if (!eventError && event) {
-      // Log state transition
-      await db.from('event_state_transitions').insert({
-        tenant_id: tenantId,
-        event_id: event.id,
-        from_status: null,
-        to_status: 'draft',
-        metadata: {
-          action: 'auto_created_from_kiosk',
-          inquiry_id: inquiry.id,
-          device_id: device.deviceId,
-        },
-      })
-
-      // Link inquiry to event
-      await db.from('inquiries').update({ converted_to_event_id: event.id }).eq('id', inquiry.id)
-    }
-
-    // 4. Log device event
+    // 3. Log device event
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
     try {
       await db.from('device_events').insert({
@@ -198,7 +161,7 @@ export async function POST(request: Request) {
         type: 'submitted_inquiry',
         payload: {
           inquiry_id: inquiry.id,
-          event_id: event?.id || null,
+          event_id: null,
           client_name: parsed.full_name,
           ip,
         },
@@ -207,7 +170,7 @@ export async function POST(request: Request) {
       console.error('[kiosk/inquiry] Event log failed (non-blocking):', e)
     }
 
-    // 5. Notification (non-blocking)
+    // 4. Notification (non-blocking)
     try {
       const { getChefAuthUserId, createNotification } = await import('@/lib/notifications/actions')
       const chefUserId = await getChefAuthUserId(tenantId)

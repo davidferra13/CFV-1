@@ -16,7 +16,13 @@ import { DraftRestorePrompt } from '@/components/ui/draft-restore-prompt'
 import { UnsavedChangesDialog } from '@/components/ui/unsaved-changes-dialog'
 import { AddressAutocomplete, type AddressData } from '@/components/ui/address-autocomplete'
 import { PartnerSelect } from '@/components/partners/partner-select'
-import { createEvent, getEventById, updateEvent, type CreateEventInput } from '@/lib/events/actions'
+import {
+  createEvent,
+  findDuplicateEventCandidates,
+  getEventById,
+  updateEvent,
+  type CreateEventInput,
+} from '@/lib/events/actions'
 import { checkDateConflicts, convertWaitlistEntry } from '@/lib/availability/actions'
 import { formatCurrency, parseCurrencyToCents } from '@/lib/utils/currency'
 import { useDurableDraft } from '@/lib/drafts/use-durable-draft'
@@ -532,6 +538,29 @@ export function EventForm({
       }
     }
 
+    if (mode === 'create') {
+      const duplicates = await findDuplicateEventCandidates({
+        client_id: clientId,
+        event_date: eventDate.slice(0, 10),
+        serve_time: serveTime,
+        occasion,
+        location_city: locationCity,
+      })
+
+      if (duplicates.length > 0) {
+        setConflictWarnings(
+          duplicates.map(
+            (duplicate) =>
+              `Possible duplicate: ${duplicate.occasion || 'Untitled event'} on ${duplicate.event_date}${
+                duplicate.serve_time ? ` at ${duplicate.serve_time}` : ''
+              } (${duplicate.reason}).`
+          )
+        )
+        setConflictOverride(false)
+        return
+      }
+    }
+
     setConflictWarnings(null)
     setStep(2)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -776,7 +805,7 @@ export function EventForm({
             />
 
             <Input
-              label="Number of Guests"
+              label="Guest Count"
               type="number"
               inputMode="numeric"
               min="1"

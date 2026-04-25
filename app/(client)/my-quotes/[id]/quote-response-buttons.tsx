@@ -33,9 +33,9 @@ export default function QuoteResponseButtons({
     setError(null)
 
     try {
-      await acceptQuote(quoteId)
-      // Redirect to event payment page if linked, otherwise quotes list
-      router.push(eventId ? `/my-events/${eventId}` : '/my-quotes')
+      const result = await acceptQuote(quoteId)
+      const resolvedEventId = result.eventId || eventId
+      router.push(resolvedEventId ? `/my-events/${resolvedEventId}` : '/my-quotes')
       router.refresh()
     } catch (err: any) {
       setError(err.message || 'Failed to accept quote')

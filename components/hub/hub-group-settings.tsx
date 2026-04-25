@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import type { HubGroup, EventTheme } from '@/lib/hub/types'
+import { useHubInviteLink } from '@/components/hub/use-hub-invite-link'
 import { updateHubGroup } from '@/lib/hub/group-actions'
 import { ThemePicker } from './theme-picker'
 
@@ -35,6 +36,17 @@ export function HubGroupSettings({
   const [isPending, startTransition] = useTransition()
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [origin, setOrigin] = useState('')
+  const { invitePath } = useHubInviteLink({
+    groupToken: group.group_token,
+    profileToken,
+  })
+
+  useEffect(() => {
+    setOrigin(window.location.origin)
+  }, [])
+
+  const inviteUrl = origin ? `${origin}${invitePath}` : invitePath
 
   const handleSave = () => {
     setError(null)
@@ -287,19 +299,22 @@ export function HubGroupSettings({
             type="text"
             readOnly
             title="Invite link"
-            value={`${typeof window !== 'undefined' ? window.location.origin : ''}/hub/g/${group.group_token}`}
+            value={inviteUrl}
             className="flex-1 rounded-lg bg-stone-900 px-3 py-2 text-xs text-stone-400 ring-1 ring-stone-700"
           />
           <button
             type="button"
             onClick={() => {
-              navigator.clipboard.writeText(`${window.location.origin}/hub/g/${group.group_token}`)
+              navigator.clipboard.writeText(inviteUrl)
             }}
             className="rounded-lg bg-stone-700 px-3 py-2 text-xs text-stone-300 hover:bg-stone-600"
           >
             Copy
           </button>
         </div>
+        <p className="mt-2 text-xs text-stone-500">
+          Links copied here keep invite attribution, so new joins show who brought them in.
+        </p>
       </div>
 
       {/* Error / success feedback */}

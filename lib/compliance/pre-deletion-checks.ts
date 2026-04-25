@@ -77,7 +77,7 @@ export async function runPreDeletionChecks(chefId: string): Promise<DeletionBloc
     // Table may not exist - skip
   }
 
-  // 4. Check for active SaaS subscription
+  // 4. Check for active monthly support
   const { data: chef } = await db
     .from('chefs')
     .select('stripe_subscription_id')
@@ -87,7 +87,7 @@ export async function runPreDeletionChecks(chefId: string): Promise<DeletionBloc
   if (chef?.stripe_subscription_id) {
     blockers.push({
       type: 'active_subscription',
-      message: 'Your ChefFlow subscription must be cancelled before deleting your account.',
+      message: 'End monthly ChefFlow support before deleting your account.',
     })
   }
 

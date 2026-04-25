@@ -420,6 +420,55 @@ function initSchema(db) {
       ON price_inference_cache(expires_at);
     CREATE INDEX IF NOT EXISTS idx_price_inference_invalidated
       ON price_inference_cache(invalidated_at);
+
+    CREATE TABLE IF NOT EXISTS ingredient_yields (
+      canonical_ingredient_id TEXT NOT NULL,
+      purchase_unit TEXT NOT NULL,
+      edible_yield_pct REAL NOT NULL
+        CHECK (edible_yield_pct > 0 AND edible_yield_pct <= 1),
+      trim_loss_pct REAL NOT NULL DEFAULT 0
+        CHECK (trim_loss_pct >= 0 AND trim_loss_pct < 1),
+      cook_loss_pct REAL NOT NULL DEFAULT 0
+        CHECK (cook_loss_pct >= 0 AND cook_loss_pct < 1),
+      usable_unit TEXT NOT NULL,
+      notes TEXT,
+      source TEXT NOT NULL DEFAULT 'chef_standard'
+        CHECK (source IN ('chef_standard', 'usda', 'derived')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      PRIMARY KEY (canonical_ingredient_id, purchase_unit),
+      FOREIGN KEY (canonical_ingredient_id) REFERENCES canonical_ingredients(ingredient_id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS true_costs (
+      current_price_id TEXT PRIMARY KEY,
+      source_id TEXT NOT NULL,
+      canonical_ingredient_id TEXT NOT NULL,
+      raw_price_cents INTEGER NOT NULL CHECK (raw_price_cents >= 0),
+      edible_yield_pct REAL NOT NULL
+        CHECK (edible_yield_pct > 0 AND edible_yield_pct <= 1),
+      cost_per_usable_unit_cents INTEGER NOT NULL
+        CHECK (cost_per_usable_unit_cents >= 0),
+      calculated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (current_price_id) REFERENCES current_prices(id) ON DELETE CASCADE,
+      FOREIGN KEY (source_id) REFERENCES source_registry(source_id) ON DELETE CASCADE,
+      FOREIGN KEY (canonical_ingredient_id) REFERENCES canonical_ingredients(ingredient_id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_true_costs_ingredient_source
+      ON true_costs(canonical_ingredient_id, source_id);
+    CREATE INDEX IF NOT EXISTS idx_true_costs_calculated_at
+      ON true_costs(calculated_at DESC);
+
+    CREATE TABLE IF NOT EXISTS yield_normalizer_checkpoints (
+      checkpoint_key TEXT PRIMARY KEY,
+      last_current_price_rowid INTEGER NOT NULL DEFAULT 0,
+      processed_count INTEGER NOT NULL DEFAULT 0,
+      matched_count INTEGER NOT NULL DEFAULT 0,
+      skipped_count INTEGER NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'idle',
+      last_error TEXT,
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
   `);
 }
 
@@ -469,6 +518,107 @@ function migrateSchema(db) {
   }
   if (!srcColNames.has('rate_limit_backoff_until')) {
     db.exec("ALTER TABLE source_registry ADD COLUMN rate_limit_backoff_until TEXT");
+  }
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS ingredient_yields (
+      canonical_ingredient_id TEXT NOT NULL,
+      purchase_unit TEXT NOT NULL,
+      edible_yield_pct REAL NOT NULL
+        CHECK (edible_yield_pct > 0 AND edible_yield_pct <= 1),
+      trim_loss_pct REAL NOT NULL DEFAULT 0
+        CHECK (trim_loss_pct >= 0 AND trim_loss_pct < 1),
+      cook_loss_pct REAL NOT NULL DEFAULT 0
+        CHECK (cook_loss_pct >= 0 AND cook_loss_pct < 1),
+      usable_unit TEXT NOT NULL,
+      notes TEXT,
+      source TEXT NOT NULL DEFAULT 'chef_standard'
+        CHECK (source IN ('chef_standard', 'usda', 'derived')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      PRIMARY KEY (canonical_ingredient_id, purchase_unit),
+      FOREIGN KEY (canonical_ingredient_id) REFERENCES canonical_ingredients(ingredient_id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS true_costs (
+      current_price_id TEXT PRIMARY KEY,
+      source_id TEXT NOT NULL,
+      canonical_ingredient_id TEXT NOT NULL,
+      raw_price_cents INTEGER NOT NULL CHECK (raw_price_cents >= 0),
+      edible_yield_pct REAL NOT NULL
+        CHECK (edible_yield_pct > 0 AND edible_yield_pct <= 1),
+      cost_per_usable_unit_cents INTEGER NOT NULL
+        CHECK (cost_per_usable_unit_cents >= 0),
+      calculated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (current_price_id) REFERENCES current_prices(id) ON DELETE CASCADE,
+      FOREIGN KEY (source_id) REFERENCES source_registry(source_id) ON DELETE CASCADE,
+      FOREIGN KEY (canonical_ingredient_id) REFERENCES canonical_ingredients(ingredient_id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS yield_normalizer_checkpoints (
+      checkpoint_key TEXT PRIMARY KEY,
+      last_current_price_rowid INTEGER NOT NULL DEFAULT 0,
+      processed_count INTEGER NOT NULL DEFAULT 0,
+      matched_count INTEGER NOT NULL DEFAULT 0,
+      skipped_count INTEGER NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'idle',
+      last_error TEXT,
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+  `);
+
+  const yieldCols = db.prepare("PRAGMA table_info(ingredient_yields)").all();
+  const yieldColNames = new Set(yieldCols.map(c => c.name));
+
+  if (!yieldColNames.has('usable_unit')) {
+    db.exec("ALTER TABLE ingredient_yields ADD COLUMN usable_unit TEXT");
+  }
+  if (!yieldColNames.has('notes')) {
+    db.exec("ALTER TABLE ingredient_yields ADD COLUMN notes TEXT");
+  }
+  if (!yieldColNames.has('source')) {
+    db.exec("ALTER TABLE ingredient_yields ADD COLUMN source TEXT NOT NULL DEFAULT 'chef_standard'");
+  }
+  if (!yieldColNames.has('updated_at')) {
+    db.exec("ALTER TABLE ingredient_yields ADD COLUMN updated_at TEXT");
+  }
+  db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_ingredient_yields_lookup ON ingredient_yields(canonical_ingredient_id, purchase_unit)");
+
+  const trueCostCols = db.prepare("PRAGMA table_info(true_costs)").all();
+  const trueCostColNames = new Set(trueCostCols.map(c => c.name));
+
+  if (!trueCostColNames.has('current_price_id')) {
+    db.exec("ALTER TABLE true_costs ADD COLUMN current_price_id TEXT");
+  }
+  if (!trueCostColNames.has('source_id')) {
+    db.exec("ALTER TABLE true_costs ADD COLUMN source_id TEXT");
+  }
+  if (!trueCostColNames.has('canonical_ingredient_id')) {
+    db.exec("ALTER TABLE true_costs ADD COLUMN canonical_ingredient_id TEXT");
+  }
+  if (!trueCostColNames.has('raw_price_cents')) {
+    db.exec("ALTER TABLE true_costs ADD COLUMN raw_price_cents INTEGER");
+  }
+  if (!trueCostColNames.has('edible_yield_pct')) {
+    db.exec("ALTER TABLE true_costs ADD COLUMN edible_yield_pct REAL");
+  }
+  if (!trueCostColNames.has('cost_per_usable_unit_cents')) {
+    db.exec("ALTER TABLE true_costs ADD COLUMN cost_per_usable_unit_cents INTEGER");
+  }
+  if (!trueCostColNames.has('calculated_at')) {
+    db.exec("ALTER TABLE true_costs ADD COLUMN calculated_at TEXT");
+  }
+  db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_true_costs_current_price ON true_costs(current_price_id)");
+  db.exec("CREATE INDEX IF NOT EXISTS idx_true_costs_ingredient_source ON true_costs(canonical_ingredient_id, source_id)");
+  db.exec("CREATE INDEX IF NOT EXISTS idx_true_costs_calculated_at ON true_costs(calculated_at DESC)");
+
+  const checkpointCols = db.prepare("PRAGMA table_info(yield_normalizer_checkpoints)").all();
+  const checkpointColNames = new Set(checkpointCols.map(c => c.name));
+
+  if (!checkpointColNames.has('last_error')) {
+    db.exec("ALTER TABLE yield_normalizer_checkpoints ADD COLUMN last_error TEXT");
+  }
+  if (!checkpointColNames.has('updated_at')) {
+    db.exec("ALTER TABLE yield_normalizer_checkpoints ADD COLUMN updated_at TEXT");
   }
 }
 

@@ -1,7 +1,7 @@
 // Public API endpoint for embeddable inquiry widget submissions
 // CORS-enabled - accepts POST from any external website
 // Rate-limited by IP to prevent spam
-// Creates: client + inquiry + draft event in one shot
+// Creates: client + inquiry. Event creation happens after commercial commitment.
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
@@ -326,47 +326,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 5. Create draft event (non-blocking - if it fails, inquiry is still saved)
-    try {
-      const { data: event } = await db
-        .from('events')
-        .insert({
-          tenant_id: tenantId,
-          client_id: clientId,
-          inquiry_id: inquiry.id,
-          event_date: data.event_date,
-          serve_time: stripHtml(data.serve_time),
-          guest_count: data.guest_count,
-          location_address: data.address ? stripHtml(data.address) : 'TBD',
-          location_city: 'TBD',
-          location_zip: 'TBD',
-          occasion: stripHtml(data.occasion),
-          quoted_price_cents: budgetCents,
-          special_requests: sourceMessage || null,
-          dietary_restrictions: allergiesList ?? [],
-          allergies: allergiesList ?? [],
-        })
-        .select('id')
-        .single()
+    // 5. Event creation is deferred until commercial commitment.
 
-      if (event) {
-        // Log state transition (null → draft)
-        await db.from('event_state_transitions').insert({
-          tenant_id: tenantId,
-          event_id: event.id,
-          from_status: null,
-          to_status: 'draft',
-          metadata: { action: 'auto_created_from_embed_widget', inquiry_id: inquiry.id },
-        })
+    // Log state transition (null → draft)
 
-        // Link inquiry to event
-        await db.from('inquiries').update({ converted_to_event_id: event.id }).eq('id', inquiry.id)
-      }
-    } catch (eventErr) {
-      console.error('[embed-inquiry] Event creation failed (non-blocking):', eventErr)
-    }
-
-    // 5b. Auto-create Dinner Circle (non-blocking)
+    // 6. Auto-create Dinner Circle (non-blocking)
     let circleGroupToken: string | null = null
     try {
       const { createInquiryCircle } = await import('@/lib/hub/inquiry-circle-actions')

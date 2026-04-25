@@ -1,6 +1,7 @@
 'use server'
 
 import { createServerClient } from '@/lib/db/server'
+import { createClientPortalLinkForClient } from '@/lib/client-portal/actions'
 import { sendQuoteSentEmail } from '@/lib/email/notifications'
 
 type QuoteDeliveryRecord = {
@@ -91,6 +92,12 @@ export async function redeliverQuoteSentDelivery(input: {
   })
 
   const chefName = chef?.business_name || 'Your Chef'
+  const portalLink = await createClientPortalLinkForClient({
+    db,
+    clientId: quoteRecord.client_id,
+    tenantId: input.tenantId,
+    path: `/quotes/${quoteRecord.id}`,
+  })
   const emailSent = await sendQuoteSentEmail({
     clientEmail: client.email,
     clientName: client.full_name,
@@ -101,6 +108,7 @@ export async function redeliverQuoteSentDelivery(input: {
     depositCents: quoteRecord.deposit_amount_cents ?? null,
     occasion,
     validUntil: quoteRecord.valid_until,
+    quoteUrl: portalLink.url,
   })
 
   let clientNotificationSent = false

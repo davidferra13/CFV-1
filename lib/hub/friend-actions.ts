@@ -305,6 +305,71 @@ export async function searchPeople(query: string): Promise<{
   existing_friend_ids: string[]
   pending_request_ids: string[]
 }> {
-  void query
-  return { profiles: [], existing_friend_ids: [], pending_request_ids: [] }
+  const user = await requireClient()
+  const db: any = createServerClient({ admin: true })
+
+  if (!query || query.trim().length < 2) {
+    return { profiles: [], existing_friend_ids: [], pending_request_ids: [] }
+  }
+
+  const searchTerm = query.trim()
+
+  // Get current user's hub profile
+  const { data: myProfile } = await db
+    .from('hub_guest_profiles')
+    .select('id')
+    .eq('auth_user_id', user.userId)
+    .maybeSingle()
+
+  if (!myProfile) {
+    return { profiles: [], existing_friend_ids: [], pending_request_ids: [] }
+  }
+
+  // Search profiles by display_name (case-insensitive)
+  const { data: profiles } = await db
+    .from('hub_guest_profiles')
+    .select(
+      'id, display_name, avatar_url, bio, email, profile_token, known_allergies, known_dietary'
+    )
+    .ilike('display_name', `%${searchTerm}%`)
+    .neq('id', myProfile.id)
+    .limit(20)
+
+  if (!profiles?.length) {
+    return { profiles: [], existing_friend_ids: [], pending_request_ids: [] }
+  }
+
+  const profileIds = profiles.map((p: any) => p.id)
+
+  // Get existing friends among results
+  const { data: friends } = await db
+    .from('hub_guest_friends')
+    .select('requester_id, addressee_id')
+    .eq('status', 'accepted')
+    .or(`requester_id.eq.${myProfile.id},addressee_id.eq.${myProfile.id}`)
+
+  const friendIds = new Set<string>()
+  for (const f of friends ?? []) {
+    if (f.requester_id === myProfile.id) friendIds.add(f.addressee_id)
+    else friendIds.add(f.requester_id)
+  }
+
+  // Get pending requests among results
+  const { data: pending } = await db
+    .from('hub_guest_friends')
+    .select('requester_id, addressee_id')
+    .eq('status', 'pending')
+    .or(`requester_id.eq.${myProfile.id},addressee_id.eq.${myProfile.id}`)
+
+  const pendingIds = new Set<string>()
+  for (const p of pending ?? []) {
+    if (p.requester_id === myProfile.id) pendingIds.add(p.addressee_id)
+    else pendingIds.add(p.requester_id)
+  }
+
+  return {
+    profiles: profiles as HubGuestProfile[],
+    existing_friend_ids: profileIds.filter((id: string) => friendIds.has(id)),
+    pending_request_ids: profileIds.filter((id: string) => pendingIds.has(id)),
+  }
 }

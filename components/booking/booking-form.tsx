@@ -788,7 +788,7 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Input
-          label="Number of Guests"
+          label="Guest Count"
           type="number"
           min="1"
           required

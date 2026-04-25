@@ -14,21 +14,21 @@ export default function TermsExtendedSections() {
         <ul className="list-disc space-y-2 pl-5 leading-relaxed">
           <li>
             <strong>Voluntary contributions</strong> - chefs may optionally make a recurring monthly
-            contribution to support ongoing development. Contributions do not unlock additional
-            features and can be cancelled at any time.
+            contribution to support ongoing development. Contributions do not change feature access
+            and can be ended at any time.
           </li>
           <li>
-            <strong>Billing</strong> - voluntary contributions are billed monthly in advance.
-            Payment is processed securely by Stripe.
+            <strong>Support management</strong> - voluntary monthly contributions are handled
+            securely by Stripe.
           </li>
           <li>
-            <strong>Cancellation</strong> - you may cancel your contribution at any time from your
+            <strong>Ending support</strong> - you may end your contribution at any time from your
             account settings. No partial refunds are issued for unused time.
           </li>
           <li>
-            <strong>Price changes</strong> - we will give at least 30 days&apos; notice before
-            increasing subscription prices. Continued use after the effective date constitutes
-            acceptance of the new price.
+            <strong>Contribution changes</strong> - we will give at least 30 days&apos; notice
+            before changing suggested monthly contribution amounts. Continued use after the
+            effective date constitutes acceptance of the updated terms.
           </li>
         </ul>
         <p className="mt-4 leading-relaxed">

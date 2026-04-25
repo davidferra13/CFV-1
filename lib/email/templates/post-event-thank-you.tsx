@@ -15,6 +15,8 @@ type PostEventThankYouProps = {
   loyaltyTier?: 'bronze' | 'silver' | 'gold' | 'platinum' | null
   loyaltyPointsEarned?: number | null
   loyaltyPointsBalance?: number | null
+  circleJoinUrl?: string | null
+  circleGroupName?: string | null
 }
 
 export function PostEventThankYouEmail({
@@ -26,6 +28,8 @@ export function PostEventThankYouEmail({
   loyaltyTier,
   loyaltyPointsEarned,
   loyaltyPointsBalance,
+  circleJoinUrl,
+  circleGroupName,
 }: PostEventThankYouProps) {
   return (
     <BaseLayout preview={`${chefName} wanted to say thank you`}>
@@ -57,6 +61,33 @@ export function PostEventThankYouEmail({
             : ''}
           {loyaltyTier ? ` (${loyaltyTier} tier).` : '.'}
         </Text>
+      ) : null}
+
+      {circleJoinUrl ? (
+        <>
+          <Hr style={divider} />
+          <Text style={heading}>Stay connected</Text>
+          <Text style={paragraph}>
+            {chefName} hosts dinners regularly through a Dinner Circle
+            {circleGroupName ? ` called "${circleGroupName}"` : ''}. Join to get first access to
+            upcoming events, menus, and availability.
+          </Text>
+          <Button
+            style={{
+              display: 'inline-block',
+              backgroundColor: '#78350f',
+              color: '#ffffff',
+              padding: '12px 28px',
+              borderRadius: '8px',
+              fontWeight: '600',
+              fontSize: '15px',
+              textDecoration: 'none',
+            }}
+            href={circleJoinUrl}
+          >
+            Join the Dinner Circle
+          </Button>
+        </>
       ) : null}
 
       <Hr style={divider} />

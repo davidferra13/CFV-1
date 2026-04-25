@@ -11,5 +11,6 @@ export const SNAPSHOT_DOCUMENT_LABELS: Record<SnapshotDocumentType, string> = {
   reset: 'Post-Service Reset Checklist',
   travel: 'Travel Route',
   shots: 'Content Asset Capture Sheet',
+  beo: 'Banquet Event Order',
   all: 'Full 8-Sheet Packet',
 }

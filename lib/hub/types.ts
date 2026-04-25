@@ -16,6 +16,10 @@ export interface HubGuestProfile {
   client_id: string | null
   known_allergies: string[] | null
   known_dietary: string[] | null
+  dislikes: string[] | null
+  favorites: string[] | null
+  spice_tolerance: 'mild' | 'medium' | 'hot' | 'extra_hot' | null
+  cuisine_preferences: string[] | null
   notifications_enabled: boolean
   referred_by_profile_id?: string | null
   first_group_id?: string | null
@@ -72,10 +76,13 @@ export interface HubGroup {
   message_count: number
   created_at: string
   updated_at: string
+  // Planning group fields
+  planning_brief?: PlanningBrief | null
   // Joined data
   theme?: EventTheme | null
   member_count?: number
   members?: HubGroupMember[]
+  candidates?: HubGroupCandidate[]
 }
 
 export type HubMemberRole = 'owner' | 'admin' | 'chef' | 'member' | 'viewer'
@@ -98,6 +105,7 @@ export interface HubGroupMember {
   quiet_hours_start?: string | null
   quiet_hours_end?: string | null
   digest_mode?: HubDigestMode
+  on_behalf_of_profile_id?: string | null
   joined_at: string
   // Joined data
   profile?: HubGuestProfile
@@ -138,6 +146,7 @@ export type HubNotificationType =
   | 'running_late'
   | 'repeat_booking_request'
   | 'event_reminder'
+  | 'open_slot'
 
 export type HubMessageSource = 'circle' | 'email' | 'remy' | 'system'
 
@@ -349,6 +358,9 @@ export interface MealBoardEntry {
   head_count: number | null
   prep_notes: string | null
   serving_time: string | null
+  assigned_profile_id: string | null
+  assigned_display_name: string | null
+  assignment_notes: string | null
   status: MealStatus
   created_at: string
   updated_at: string
@@ -453,6 +465,93 @@ export interface DefaultMealTimes {
   lunch: string | null
   dinner: string | null
   snack: string | null
+}
+
+// ---- Planning Groups ----
+
+export interface PlanningBrief {
+  occasion?: string
+  useCase?: 'personal' | 'friends' | 'family' | 'team' | 'work' | 'corporate'
+  dateWindow?: string
+  partySize?: number
+  eventStyle?: string
+  budget?: string
+  dietarySummary?: string
+  accessibilityNotes?: string
+  locationSummary?: string
+}
+
+export type PlanningCandidateType = 'chef' | 'listing' | 'menu' | 'package' | 'meal_prep_item'
+
+export interface CandidateSnapshot {
+  title: string
+  subtitle?: string
+  imageUrl?: string
+  eyebrow?: string
+  locationLabel?: string
+  priceLabel?: string
+  dietaryTags?: string[]
+  serviceModes?: string[]
+  ctaLabel?: string
+  href?: string
+  sourceUpdatedAt?: string
+}
+
+export interface HubGroupCandidate {
+  id: string
+  group_id: string
+  added_by_profile_id: string
+  candidate_type: PlanningCandidateType
+  chef_id?: string | null
+  directory_listing_id?: string | null
+  menu_id?: string | null
+  experience_package_id?: string | null
+  meal_prep_item_id?: string | null
+  snapshot: CandidateSnapshot
+  notes?: string | null
+  sort_order: number
+  created_at: string
+  updated_at: string
+  // Joined
+  added_by?: HubGuestProfile
+}
+
+// ---- Client Passport ----
+
+export type ServiceStyle =
+  | 'formal_plated'
+  | 'family_style'
+  | 'buffet'
+  | 'cocktail'
+  | 'tasting_menu'
+  | 'no_preference'
+export type CommunicationMode = 'direct' | 'delegate_only' | 'delegate_preferred'
+export type ContactMethod = 'email' | 'sms' | 'phone' | 'circle'
+export type ChefAutonomyLevel = 'full' | 'high' | 'moderate' | 'low'
+
+export interface PassportLocation {
+  label: string
+  address?: string
+  city: string
+  state: string
+}
+
+export interface ClientPassport {
+  id: string
+  client_id: string
+  default_guest_count: number | null
+  budget_range_min_cents: number | null
+  budget_range_max_cents: number | null
+  service_style: ServiceStyle | null
+  communication_mode: CommunicationMode
+  preferred_contact_method: ContactMethod | null
+  max_interaction_rounds: number
+  chef_autonomy_level: ChefAutonomyLevel
+  auto_approve_under_cents: number | null
+  standing_instructions: string | null
+  default_locations: PassportLocation[]
+  created_at: string
+  updated_at: string
 }
 
 // ---- Private Messages ----

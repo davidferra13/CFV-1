@@ -9,6 +9,7 @@ import { PublicPageView } from '@/components/analytics/public-page-view'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import { LocationExperienceShowcase } from '@/components/public/location-experience-showcase'
 import { ReviewShowcase } from '@/components/public/review-showcase'
+import { CloudinaryFetchImage } from '@/components/ui/cloudinary-fetch-image'
 import {
   getDiscoveryCuisineLabel,
   getDiscoveryPriceRangeLabel,
@@ -462,7 +463,7 @@ export default async function ChefProfilePage({ params }: Props) {
   const data = await getPublicChefProfile(params.slug)
   if (!data) notFound()
 
-  const { chef, locationExperiences } = data
+  const { chef, locationExperiences, ownedRestaurants } = data
 
   const hasMinimumContent = hasMinimumPublicProfileContent({
     displayName: chef.display_name,
@@ -1907,70 +1908,92 @@ export default async function ChefProfilePage({ params }: Props) {
               {showcaseMenus.map((menu) => (
                 <div
                   key={menu.id}
-                  className="rounded-2xl border border-stone-700 bg-stone-950/80 p-5"
+                  className="overflow-hidden rounded-2xl border border-stone-700 bg-stone-950/80"
                 >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <h3 className="text-lg font-semibold text-stone-100">{menu.name}</h3>
-                      {menu.description && (
-                        <p className="mt-2 text-sm leading-relaxed text-stone-300">
-                          {menu.description}
-                        </p>
-                      )}
+                  {menu.photoUrl && (
+                    <div className="relative aspect-[4/3] bg-stone-900">
+                      <CloudinaryFetchImage
+                        src={menu.photoUrl}
+                        alt={`${menu.name} sample menu`}
+                        fill
+                        sizes="(max-width: 1024px) 100vw, 33vw"
+                        aspectRatio={4 / 3}
+                        fit="fill"
+                        gravity="auto"
+                        defaultQuality={90}
+                        maxWidth={1200}
+                        quality={90}
+                        className="h-full w-full object-cover"
+                      />
                     </div>
-                    {menu.timesUsed > 0 && (
-                      <span className="rounded-full border border-stone-700 bg-stone-900/80 px-3 py-1 text-xs font-medium text-stone-300">
-                        Used {menu.timesUsed} times
-                      </span>
-                    )}
-                  </div>
+                  )}
 
-                  <div className="mt-4 space-y-2 text-sm text-stone-300">
-                    {menu.cuisineType && <p>Cuisine: {menu.cuisineType}</p>}
-                    {menu.serviceStyle && <p>Style: {menu.serviceStyle}</p>}
-                    {menu.guestCount && <p>Sample guest count: {menu.guestCount}</p>}
-                  </div>
-
-                  <div className="mt-4 space-y-3">
-                    {menu.dishes.slice(0, 5).map((dish) => (
-                      <div
-                        key={dish.id}
-                        className="rounded-xl border border-stone-800 bg-stone-900/60 p-3"
-                      >
-                        <p className="text-xs uppercase tracking-wide text-stone-500">
-                          Course {dish.courseNumber}
-                        </p>
-                        <p className="mt-1 text-sm font-medium text-stone-100">{dish.courseName}</p>
-                        {dish.name !== dish.courseName && (
-                          <p className="mt-1 text-xs text-stone-400">{dish.name}</p>
-                        )}
-                        {dish.description && (
-                          <p className="mt-2 text-xs leading-relaxed text-stone-400">
-                            {dish.description}
+                  <div className="p-5">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-lg font-semibold text-stone-100">{menu.name}</h3>
+                        {menu.description && (
+                          <p className="mt-2 text-sm leading-relaxed text-stone-300">
+                            {menu.description}
                           </p>
                         )}
-                        {(dish.dietaryTags.length > 0 || dish.allergenFlags.length > 0) && (
-                          <div className="mt-3 flex flex-wrap gap-2">
-                            {dish.dietaryTags.map((tag) => (
-                              <span
-                                key={`${dish.id}-${tag}`}
-                                className="rounded-full border border-emerald-800/50 bg-emerald-950/30 px-2.5 py-1 text-[11px] font-medium text-emerald-300"
-                              >
-                                {tag}
-                              </span>
-                            ))}
-                            {dish.allergenFlags.map((flag) => (
-                              <span
-                                key={`${dish.id}-${flag}`}
-                                className="rounded-full border border-amber-800/50 bg-amber-950/30 px-2.5 py-1 text-[11px] font-medium text-amber-200"
-                              >
-                                Allergen: {flag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
                       </div>
-                    ))}
+                      {menu.timesUsed > 0 && (
+                        <span className="rounded-full border border-stone-700 bg-stone-900/80 px-3 py-1 text-xs font-medium text-stone-300">
+                          Used {menu.timesUsed} times
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="mt-4 space-y-2 text-sm text-stone-300">
+                      {menu.cuisineType && <p>Cuisine: {menu.cuisineType}</p>}
+                      {menu.serviceStyle && <p>Style: {menu.serviceStyle}</p>}
+                      {menu.guestCount && <p>Sample guest count: {menu.guestCount}</p>}
+                    </div>
+
+                    <div className="mt-4 space-y-3">
+                      {menu.dishes.slice(0, 5).map((dish) => (
+                        <div
+                          key={dish.id}
+                          className="rounded-xl border border-stone-800 bg-stone-900/60 p-3"
+                        >
+                          <p className="text-xs uppercase tracking-wide text-stone-500">
+                            Course {dish.courseNumber}
+                          </p>
+                          <p className="mt-1 text-sm font-medium text-stone-100">
+                            {dish.courseName}
+                          </p>
+                          {dish.name !== dish.courseName && (
+                            <p className="mt-1 text-xs text-stone-400">{dish.name}</p>
+                          )}
+                          {dish.description && (
+                            <p className="mt-2 text-xs leading-relaxed text-stone-400">
+                              {dish.description}
+                            </p>
+                          )}
+                          {(dish.dietaryTags.length > 0 || dish.allergenFlags.length > 0) && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {dish.dietaryTags.map((tag) => (
+                                <span
+                                  key={`${dish.id}-${tag}`}
+                                  className="rounded-full border border-emerald-800/50 bg-emerald-950/30 px-2.5 py-1 text-[11px] font-medium text-emerald-300"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                              {dish.allergenFlags.map((flag) => (
+                                <span
+                                  key={`${dish.id}-${flag}`}
+                                  className="rounded-full border border-amber-800/50 bg-amber-950/30 px-2.5 py-1 text-[11px] font-medium text-amber-200"
+                                >
+                                  Allergen: {flag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -2006,6 +2029,30 @@ export default async function ChefProfilePage({ params }: Props) {
         showResumeNote={chefCredFields.showResumeAvailableNote}
         chefName={chef.display_name}
       />
+
+      {ownedRestaurants.length > 0 && (
+        <section className="py-16 px-6 bg-gradient-to-b from-stone-900/90 to-stone-900/70">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-stone-100">
+                {chef.restaurant_group_name ||
+                  (ownedRestaurants.length === 1 ? 'Our Restaurant' : 'Our Restaurants')}
+              </h2>
+              <p className="text-stone-300 mt-3 max-w-xl mx-auto">
+                {ownedRestaurants.length === 1
+                  ? `Owned and operated by ${chef.display_name}.`
+                  : `${ownedRestaurants.length} restaurants by ${chef.display_name}.`}
+              </p>
+            </div>
+
+            <LocationExperienceShowcase
+              locations={ownedRestaurants}
+              chefName={chef.display_name}
+              profileSlug={publicSlug}
+            />
+          </div>
+        </section>
+      )}
 
       {locationExperiences.length > 0 && (
         <section className="py-16 px-6 bg-stone-900/70">

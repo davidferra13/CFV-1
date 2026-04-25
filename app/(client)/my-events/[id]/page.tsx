@@ -16,7 +16,7 @@ import {
 } from '@/lib/sharing/actions'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
-import { notFound, redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -39,9 +39,12 @@ import { EventJourneyStepper } from '@/components/events/event-journey-stepper'
 import { CalendarAddButtons } from '@/components/events/calendar-add-buttons'
 
 import { buildJourneySteps, getCurrentJourneyAction } from '@/lib/events/journey-steps'
-import { getCircleTokenForEvent } from '@/lib/hub/client-hub-actions'
+import { getCircleTokenForEvent, getClientProfileToken } from '@/lib/hub/client-hub-actions'
 import { PaymentSuccessRefresher } from '@/components/events/payment-success-refresher'
 import { EventStatusWatcher } from '@/components/events/event-status-watcher'
+import { CircleInviteCard } from '@/components/hub/circle-invite-card'
+import { EventOperatingSpineCard } from '@/components/events/event-operating-spine-card'
+import { buildClientEventProgress } from '@/lib/events/operating-spine'
 import type { Database } from '@/types/database'
 import { GuestCountChangeCard } from './guest-count-change-card'
 
@@ -149,6 +152,7 @@ export default async function EventDetailPage({
     inviteAnalytics,
     observability,
     communicationLogs,
+    clientProfileToken,
   ] = await Promise.all([
     getEventShares(params.id).catch(() => []),
     getEventGuests(params.id).catch(() => []),
@@ -163,8 +167,19 @@ export default async function EventDetailPage({
     getEventInviteAnalytics(params.id).catch(() => null),
     getEventRSVPObservabilitySignals(params.id).catch(() => null),
     getGuestCommunicationLogs(params.id).catch(() => []),
+    getClientProfileToken().catch(() => null),
   ])
   const activeShare = shares.find((s: any) => s.is_active) || null
+  const clientProgress = buildClientEventProgress({
+    event: event as any,
+    currentAction: currentJourneyAction,
+    totalPaidCents,
+    outstandingBalanceCents,
+    financialAvailable,
+    guestCountChangePending: Boolean((event as any).guestCountChangeCenter?.pendingRequest),
+    guestsCount: guests.length,
+    hasActiveShare: Boolean(activeShare),
+  })
 
   // Dinner Circle is the canonical guest coordination surface once the event is live.
   const circleToken =
@@ -249,25 +264,27 @@ export default async function EventDetailPage({
 
       {/* Dinner Circle nudge */}
       {circleToken && event.status !== 'cancelled' && (
-        <div className="rounded-xl border border-stone-700 bg-stone-800/60 p-4 mb-6">
-          <div className="flex items-center gap-3">
-            <span className="text-xl">💬</span>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-stone-200">Your dinner circle is live</p>
-              <p className="text-xs text-stone-400">
-                Chat with your chef and guests, share dietary needs, and keep event coordination in
-                one place.
-              </p>
-            </div>
-            <a
-              href={`/my-hub/g/${circleToken}`}
-              className="shrink-0 rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-600"
-            >
-              Open Circle
-            </a>
-          </div>
+        <div className="mb-6">
+          <CircleInviteCard
+            groupToken={circleToken}
+            profileToken={clientProfileToken}
+            inviteRole="client"
+            occasion={event.occasion ?? null}
+            openHref={`/my-hub/g/${circleToken}`}
+            title="Your dinner circle is live"
+            description="Send one polished link to your guests and keep the host side, chef, and table aligned in the same thread."
+          />
         </div>
       )}
+
+      <div className="mb-6">
+        <EventOperatingSpineCard
+          spine={clientProgress}
+          audience="client"
+          title="Booking progress"
+          description="Your booking, menu, payment, guest details, and messages stay in one checklist."
+        />
+      </div>
 
       {/* Proposed event alert */}
       {event.status === 'proposed' && (

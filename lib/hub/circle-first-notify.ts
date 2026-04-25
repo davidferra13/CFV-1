@@ -32,6 +32,7 @@ const NOTIFICATION_LABELS: Record<HubNotificationType, string> = {
   running_late: 'Timing Update',
   repeat_booking_request: 'Booking Request',
   event_reminder: 'Event Reminder',
+  open_slot: 'Open Slot',
 }
 
 interface CircleFirstInput {

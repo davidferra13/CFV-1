@@ -54,7 +54,7 @@ import { toast } from 'sonner'
 import type { RemyMessage, RemyMemoryItem } from '@/lib/ai/remy-types'
 import { trackPageVisit, initSessionTimer } from '@/lib/ai/remy-activity-tracker'
 import { NEW_USER_STARTERS } from '@/lib/ai/remy-welcome'
-import { getRemyCuratedGreeting, advanceRemyTour } from '@/lib/ai/remy-personality-engine'
+import { getRemyCuratedGreeting } from '@/lib/ai/remy-personality-engine'
 
 // ─── Extracted modules ───────────────────────────────────────────────────────
 import { getStartersForPage, getThinkingMessage } from '@/lib/ai/remy-starters'
@@ -439,45 +439,9 @@ export function RemyDrawer() {
     async (label: string) => {
       setCuratedQuickReplies([])
       setLastCuratedMsgId(null)
-
-      // Tour navigation actions
-      const isTourStart = label === 'Give me the tour'
-      const isTourNext = label === 'Next'
-      const isTourSkip = label === "I'll figure it out" || label === 'Skip the rest'
-
-      if (isTourSkip) {
-        advanceRemyTour('skip').catch(() => {})
-        return
-      }
-
-      if (isTourStart || isTourNext) {
-        const action = isTourStart ? 'start' : 'next'
-        try {
-          const beat = await advanceRemyTour(action)
-          if (beat) {
-            const msgId = `remy-curated-${Date.now()}`
-            const beatMsg: RemyMessage = {
-              id: msgId,
-              role: 'remy',
-              content: beat.text,
-              timestamp: new Date().toISOString(),
-            }
-            setMessages((prev) => [...prev, beatMsg])
-            setLastCuratedMsgId(msgId)
-            if (beat.quickReplies.length > 0) {
-              setCuratedQuickReplies(beat.quickReplies)
-            }
-          }
-        } catch {
-          // Non-blocking
-        }
-        return
-      }
-
-      // Regular quick reply  - send as user message to Ollama
       handleSend(label)
     },
-    [handleSend, setMessages]
+    [handleSend]
   )
 
   const handleExport = useCallback(async () => {
@@ -1290,6 +1254,24 @@ export function RemyDrawer() {
                                 </Link>
                               )
                             )}
+                          </div>
+                        )}
+
+                      {msg.role === 'remy' &&
+                        msg.quickReplies &&
+                        msg.quickReplies.length > 0 &&
+                        messages[messages.length - 1]?.id === msg.id &&
+                        !loading && (
+                          <div className="flex flex-wrap gap-2">
+                            {msg.quickReplies.map((label) => (
+                              <button
+                                key={label}
+                                onClick={() => handleQuickReply(label)}
+                                className="text-sm bg-stone-800 border border-stone-600 rounded-full px-3 py-1.5 hover:bg-stone-700 hover:border-stone-500 transition-colors text-stone-200"
+                              >
+                                {label}
+                              </button>
+                            ))}
                           </div>
                         )}
 

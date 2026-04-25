@@ -106,6 +106,47 @@ type EventStatus =
   | 'completed'
   | 'cancelled'
 
+// --- Event list urgency helpers (deterministic, no DB calls) ---
+
+type NextStepInfo = {
+  text: string
+  owner: 'chef' | 'client' | 'done'
+}
+
+function getEventNextStep(status: string): NextStepInfo {
+  switch (status) {
+    case 'draft':
+      return { text: 'Finalize and send proposal', owner: 'chef' }
+    case 'proposed':
+      return { text: 'Waiting for client response', owner: 'client' }
+    case 'accepted':
+      return { text: 'Collect deposit', owner: 'chef' }
+    case 'paid':
+      return { text: 'Confirm event details', owner: 'chef' }
+    case 'confirmed':
+      return { text: 'Prepare for event', owner: 'chef' }
+    case 'in_progress':
+      return { text: 'Complete event', owner: 'chef' }
+    case 'completed':
+      return { text: 'Done', owner: 'done' }
+    case 'cancelled':
+      return { text: 'Cancelled', owner: 'done' }
+    default:
+      return { text: '', owner: 'done' }
+  }
+}
+
+function getEventStaleness(updatedAt: string | null, status: string): 'ok' | 'warm' | 'hot' {
+  if (!updatedAt) return 'ok'
+  if (status === 'completed' || status === 'cancelled') return 'ok'
+  const hoursStale = (Date.now() - new Date(updatedAt).getTime()) / (1000 * 60 * 60)
+  if (hoursStale >= 72) return 'hot'
+  if (hoursStale >= 24) return 'warm'
+  return 'ok'
+}
+
+// --- End urgency helpers ---
+
 async function EventsList({ status }: { status: EventStatus }) {
   const user = await requireChef()
 
@@ -185,6 +226,7 @@ async function EventsList({ status }: { status: EventStatus }) {
             <TableHead>Date</TableHead>
             <TableHead>Client</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Next Step</TableHead>
             <TableHead>Quoted Price</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
@@ -234,6 +276,32 @@ async function EventsList({ status }: { status: EventStatus }) {
                 <TableCell>{event.client?.full_name || 'Unknown'}</TableCell>
                 <TableCell>
                   <EventStatusBadge status={event.status} />
+                </TableCell>
+                <TableCell>
+                  {(() => {
+                    const next = getEventNextStep(event.status)
+                    const staleness = getEventStaleness(event.updated_at, event.status)
+                    if (next.owner === 'done') return null
+                    const dotColor =
+                      staleness === 'hot'
+                        ? 'bg-red-500 animate-pulse'
+                        : staleness === 'warm'
+                          ? 'bg-amber-500'
+                          : 'bg-emerald-500'
+                    return (
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`inline-block h-2 w-2 rounded-full flex-shrink-0 ${dotColor}`}
+                        />
+                        <span className="text-xs text-stone-400">
+                          {next.text}
+                          {next.owner === 'client' && (
+                            <span className="text-stone-600 ml-1">(client)</span>
+                          )}
+                        </span>
+                      </div>
+                    )
+                  })()}
                 </TableCell>
                 <TableCell>{formatCurrency(event.quoted_price_cents ?? 0)}</TableCell>
                 <TableCell>

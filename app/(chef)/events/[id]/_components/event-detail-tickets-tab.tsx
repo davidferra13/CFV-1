@@ -14,6 +14,7 @@ import {
   createWalkInTicket,
   refundTicket,
   toggleEventTicketing,
+  updateTicketAttendance,
 } from '@/lib/tickets/actions'
 import type { EventTicketType, EventTicket, EventTicketSummary } from '@/lib/tickets/types'
 
@@ -60,6 +61,13 @@ export function EventDetailTicketsTab({
   const totalSold = summary?.tickets_sold ?? 0
   const totalRevenue = summary?.revenue_cents ?? 0
   const totalCapacity = ticketTypes.reduce((s, t) => s + (t.capacity ?? 0), 0)
+  const expectedArrivals = tickets
+    .filter((ticket) => ticket.payment_status === 'paid')
+    .reduce((sum, ticket) => sum + ticket.quantity, 0)
+  const checkedIn = tickets
+    .filter((ticket) => ticket.payment_status === 'paid' && ticket.attended === true)
+    .reduce((sum, ticket) => sum + ticket.quantity, 0)
+  const missingArrivals = Math.max(0, expectedArrivals - checkedIn)
 
   function resetTypeForm() {
     setTypeName('')
@@ -172,6 +180,20 @@ export function EventDetailTicketsTab({
     })
   }
 
+  function handleAttendance(ticketId: string, attended: boolean) {
+    setError(null)
+    startTransition(async () => {
+      try {
+        const result = await updateTicketAttendance({ eventId, ticketId, attended })
+        if (!result.success) {
+          setError(result.error || 'Failed to update check-in')
+        }
+      } catch (err: any) {
+        setError(err.message || 'Failed to update check-in')
+      }
+    })
+  }
+
   function handleToggleTicketing(enabled: boolean) {
     setError(null)
     startTransition(async () => {
@@ -259,6 +281,31 @@ export function EventDetailTicketsTab({
             {error}
           </div>
         )}
+
+        <Card className="p-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h3 className="font-semibold text-white">Arrival Check-In</h3>
+              <p className="mt-1 text-sm text-stone-400">
+                Name-list check-in updates attendance for wrap-up and no-show analysis.
+              </p>
+            </div>
+            <div className="grid grid-cols-3 gap-3 text-right">
+              <div>
+                <p className="text-xs text-stone-500">Arrived</p>
+                <p className="text-xl font-semibold text-emerald-400">{checkedIn}</p>
+              </div>
+              <div>
+                <p className="text-xs text-stone-500">Expected</p>
+                <p className="text-xl font-semibold text-white">{expectedArrivals}</p>
+              </div>
+              <div>
+                <p className="text-xs text-stone-500">Missing</p>
+                <p className="text-xl font-semibold text-amber-300">{missingArrivals}</p>
+              </div>
+            </div>
+          </div>
+        </Card>
 
         {/* Ticket Types */}
         <Card className="p-5">
@@ -543,6 +590,7 @@ export function EventDetailTicketsTab({
                       >
                         {t.payment_status}
                       </span>
+                      {t.attended === true && <span className="text-emerald-300">checked in</span>}
                       {t.dietary_restrictions?.length > 0 && (
                         <span className="text-orange-300">
                           Diet: {t.dietary_restrictions.join(', ')}
@@ -554,14 +602,24 @@ export function EventDetailTicketsTab({
                     </div>
                   </div>
                   {t.payment_status === 'paid' && (
-                    <Button
-                      variant="ghost"
-                      onClick={() => handleRefund(t.id)}
-                      disabled={isPending}
-                      className="text-xs text-red-400 hover:text-red-300"
-                    >
-                      Refund
-                    </Button>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <Button
+                        variant={t.attended ? 'secondary' : 'primary'}
+                        onClick={() => handleAttendance(t.id, !t.attended)}
+                        disabled={isPending}
+                        className="text-xs"
+                      >
+                        {t.attended ? 'Undo check-in' : 'Check in'}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={() => handleRefund(t.id)}
+                        disabled={isPending}
+                        className="text-xs text-red-400 hover:text-red-300"
+                      >
+                        Refund
+                      </Button>
+                    </div>
                   )}
                 </div>
               ))}

@@ -75,6 +75,12 @@ export async function CompletionSummaryWidgetServer() {
       <div className="rounded-lg border border-stone-700/50 bg-stone-800/50 p-4">
         <h3 className="text-sm font-medium text-stone-300 mb-2">Event Readiness</h3>
         <p className="text-xs text-stone-500">No upcoming events in the next 30 days</p>
+        <Link
+          href="/events/new"
+          className="text-xs text-brand-500 hover:text-brand-400 font-medium mt-1.5 inline-block"
+        >
+          Create an event &rarr;
+        </Link>
       </div>
     )
   }

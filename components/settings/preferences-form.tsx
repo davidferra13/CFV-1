@@ -67,6 +67,19 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
   const [customGoals, setCustomGoals] = useState<RevenueGoalCustom[]>(
     preferences.revenue_goal_custom ?? []
   )
+  const [readinessEnabled, setReadinessEnabled] = useState(
+    preferences.event_readiness_assistant_enabled
+  )
+  const [readinessDefaultMode, setReadinessDefaultMode] = useState<'off' | 'quiet' | 'normal'>(
+    preferences.event_readiness_assistant_default_mode
+  )
+  const [readinessShowFinancial, setReadinessShowFinancial] = useState(
+    preferences.event_readiness_show_financial
+  )
+  const [readinessShowPricingConfidence, setReadinessShowPricingConfidence] = useState(
+    preferences.event_readiness_show_pricing_confidence
+  )
+  const [readinessShowOps, setReadinessShowOps] = useState(preferences.event_readiness_show_ops)
 
   const handleDetectLocation = async () => {
     setDetectingLocation(true)
@@ -125,6 +138,11 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
               target_cents: Math.max(0, Math.round(goal.target_cents)),
             }))
             .filter((goal) => goal.label && goal.period_start && goal.period_end),
+          event_readiness_assistant_enabled: readinessEnabled,
+          event_readiness_assistant_default_mode: readinessDefaultMode,
+          event_readiness_show_financial: readinessShowFinancial,
+          event_readiness_show_pricing_confidence: readinessShowPricingConfidence,
+          event_readiness_show_ops: readinessShowOps,
           shop_day_before: shopDayBefore,
         })
         trackAction(
@@ -536,6 +554,75 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
                 </div>
               </div>
             ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Event Readiness Assistant</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              id="readinessEnabled"
+              checked={readinessEnabled}
+              onChange={(e) => setReadinessEnabled(e.target.checked)}
+              className="mt-1 h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
+            />
+            <label htmlFor="readinessEnabled" className="text-sm text-stone-300">
+              Enable assistant by default for events
+            </label>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Default mode</label>
+            <select
+              disabled={!readinessEnabled}
+              value={readinessDefaultMode}
+              onChange={(e) =>
+                setReadinessDefaultMode(e.target.value as 'off' | 'quiet' | 'normal')
+              }
+              className="w-full max-w-xs px-3 py-2 border border-stone-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 disabled:bg-stone-800"
+            >
+              <option value="quiet">Quiet</option>
+              <option value="normal">Normal</option>
+              <option value="off">Off</option>
+            </select>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <label className="flex items-center gap-2 text-sm text-stone-300">
+              <input
+                type="checkbox"
+                disabled={!readinessEnabled}
+                checked={readinessShowFinancial}
+                onChange={(e) => setReadinessShowFinancial(e.target.checked)}
+                className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
+              />
+              Financial suggestions
+            </label>
+            <label className="flex items-center gap-2 text-sm text-stone-300">
+              <input
+                type="checkbox"
+                disabled={!readinessEnabled}
+                checked={readinessShowPricingConfidence}
+                onChange={(e) => setReadinessShowPricingConfidence(e.target.checked)}
+                className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
+              />
+              Pricing confidence
+            </label>
+            <label className="flex items-center gap-2 text-sm text-stone-300">
+              <input
+                type="checkbox"
+                disabled={!readinessEnabled}
+                checked={readinessShowOps}
+                onChange={(e) => setReadinessShowOps(e.target.checked)}
+                className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
+              />
+              Ops readiness
+            </label>
           </div>
         </CardContent>
       </Card>

@@ -1,20 +1,17 @@
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getEnabledModules } from '@/lib/billing/module-actions'
-import { getTierForChef } from '@/lib/billing/tier'
 import { isFocusModeEnabled } from '@/lib/billing/focus-mode-actions'
-import { isEffectiveAdmin, isEffectivePrivileged } from '@/lib/auth/admin-preview'
+import { isEffectivePrivileged } from '@/lib/auth/admin-preview'
 import { ModulesClient } from './modules-client'
 
 export const metadata: Metadata = { title: 'Modules' }
 
 export default async function ModulesPage() {
-  const user = await requireChef()
-  const [enabledModules, tierStatus, focusMode, userIsAdmin, userIsPrivileged] = await Promise.all([
+  await requireChef()
+  const [enabledModules, focusMode, userIsPrivileged] = await Promise.all([
     getEnabledModules(),
-    getTierForChef(user.entityId),
     isFocusModeEnabled(),
-    isEffectiveAdmin().catch(() => false),
     isEffectivePrivileged().catch(() => false),
   ])
 
@@ -29,10 +26,7 @@ export default async function ModulesPage() {
       </div>
       <ModulesClient
         enabledModules={enabledModules}
-        tier={tierStatus.tier}
-        isGrandfathered={tierStatus.isGrandfathered}
         focusMode={focusMode}
-        isAdmin={userIsAdmin}
         isPrivileged={userIsPrivileged}
       />
     </div>

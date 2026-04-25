@@ -1,5 +1,5 @@
 import { drizzle } from 'drizzle-orm/postgres-js'
-import postgres from 'postgres'
+import postgres, { type Sql } from 'postgres'
 
 const connectionString =
   process.env.DATABASE_URL || 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
@@ -31,7 +31,9 @@ const client = postgres(connectionString, {
   },
 })
 
-export const db = drizzle<Record<string, never>, typeof client>(client)
+const drizzleClient = client as unknown as Sql<{}>
+
+export const db = drizzle(drizzleClient)
 
 // Export the raw client for cases where we need raw SQL
 export { client as pgClient }

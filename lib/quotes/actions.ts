@@ -18,6 +18,7 @@ import { createConflictError } from '@/lib/mutations/conflict'
 import { AuthError, UnknownAppError, ValidationError } from '@/lib/errors/app-error'
 import { isMissingSoftDeleteColumn } from '@/lib/mutations/soft-delete-compat'
 import { QUOTE_SENT_REPAIR_KIND } from '@/lib/monitoring/failure-repair'
+import { executeInteraction } from '@/lib/interactions'
 
 type QuoteStatus = Database['public']['Enums']['quote_status']
 type PricingModel = Database['public']['Enums']['pricing_model']
@@ -672,6 +673,7 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
       if (chef) {
         const { createElement } = await import('react')
         const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
+        const { createClientPortalLinkForClient } = await import('@/lib/client-portal/actions')
         const chefName = chef.business_name || 'Your Chef'
         const total = (updated.total_quoted_cents / 100).toFixed(2)
         const perPerson = quote.price_per_person_cents
@@ -679,6 +681,14 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
           : null
         const deposit = updated.deposit_amount_cents
           ? (updated.deposit_amount_cents / 100).toFixed(2)
+          : null
+        const portalLink = client?.email
+          ? await createClientPortalLinkForClient({
+              db,
+              clientId: updated.client_id,
+              tenantId: user.tenantId!,
+              path: `/quotes/${id}`,
+            })
           : null
 
         let body = `I've sent over a quote for $${total}.`
@@ -719,7 +729,9 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
                           day: 'numeric',
                         })
                       : null,
-                    quoteUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'}/my-quotes`,
+                    quoteUrl:
+                      portalLink?.url ||
+                      `${process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'}/my-quotes`,
                   }
                 ),
               }
@@ -773,6 +785,32 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
   // Client-side cache invalidation
   revalidatePath('/my-quotes')
   revalidatePath(`/my-quotes/${id}`)
+
+  if (newStatus === 'sent') {
+    await executeInteraction({
+      action_type: 'send_quote',
+      actor_id: user.id,
+      actor: { role: 'chef', actorId: user.id, entityId: user.entityId, tenantId: user.tenantId },
+      target_type: updated.event_id ? 'event' : 'system',
+      target_id: updated.event_id ?? id,
+      context_type: updated.inquiry_id ? 'client' : null,
+      context_id: updated.client_id ?? null,
+      visibility: 'private',
+      metadata: {
+        tenant_id: user.tenantId!,
+        client_id: updated.client_id,
+        quote_id: id,
+        inquiry_id: updated.inquiry_id ?? null,
+        event_id: updated.event_id ?? null,
+        total_quoted_cents: updated.total_quoted_cents,
+        source: 'quote_transition',
+        suppress_interaction_notifications: true,
+        suppress_interaction_activity: true,
+        suppress_interaction_automation: true,
+      },
+      idempotency_key: `send_quote:${id}`,
+    })
+  }
 
   // Log chef activity (non-blocking)
   try {

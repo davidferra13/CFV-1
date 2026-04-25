@@ -5,6 +5,160 @@
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import type Stripe from 'stripe'
+import { log } from '@/lib/logger'
+
+async function releaseTicketCapacity(db: any, ticket: any) {
+  if (!ticket?.ticket_type_id || ticket.capacity_released_at) return
+
+  const { data: ticketType } = await db
+    .from('event_ticket_types')
+    .select('sold_count')
+    .eq('id', ticket.ticket_type_id)
+    .single()
+
+  if (!ticketType) return
+
+  await db
+    .from('event_ticket_types')
+    .update({
+      sold_count: Math.max(0, Number(ticketType.sold_count || 0) - Number(ticket.quantity || 0)),
+    })
+    .eq('id', ticket.ticket_type_id)
+    .eq('sold_count', ticketType.sold_count)
+}
+
+export async function handleTicketPaymentFailed(paymentIntent: Stripe.PaymentIntent) {
+  const { ticket_id, event_id, tenant_id } = paymentIntent.metadata ?? {}
+  if (!ticket_id || !event_id || !tenant_id) {
+    log.webhooks.info('Ticket payment failure skipped without metadata', {
+      context: { paymentIntentId: paymentIntent.id },
+    })
+    return
+  }
+
+  const db: any = createServerClient({ admin: true })
+  const { data: ticket } = await db
+    .from('event_tickets')
+    .select(
+      'id, event_id, tenant_id, ticket_type_id, quantity, payment_status, payment_failure_count, capacity_released_at'
+    )
+    .eq('id', ticket_id)
+    .single()
+
+  if (!ticket || ticket.payment_status === 'paid') return
+
+  await releaseTicketCapacity(db, ticket)
+
+  const nowIso = new Date().toISOString()
+  await db
+    .from('event_tickets')
+    .update({
+      payment_status: 'failed',
+      stripe_payment_intent_id: paymentIntent.id,
+      payment_failure_count: (ticket.payment_failure_count ?? 0) + 1,
+      last_payment_error:
+        paymentIntent.last_payment_error?.message ||
+        paymentIntent.last_payment_error?.code ||
+        'Payment failed',
+      payment_failed_at: nowIso,
+      retry_available_at: nowIso,
+      capacity_released_at: ticket.capacity_released_at ?? nowIso,
+    })
+    .eq('id', ticket_id)
+    .neq('payment_status', 'paid')
+
+  log.webhooks.warn('Ticket payment failed', {
+    tenantId: tenant_id,
+    context: {
+      eventId: event_id,
+      ticketId: ticket_id,
+      paymentIntentId: paymentIntent.id,
+    },
+  })
+
+  try {
+    const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
+    const chefUserId = await getChefAuthUserId(tenant_id)
+    if (chefUserId) {
+      await createNotification({
+        tenantId: tenant_id,
+        recipientId: chefUserId,
+        category: 'payment',
+        action: 'payment_failed',
+        title: 'Ticket payment failed',
+        body: 'A guest ticket payment failed and the seats were released.',
+        actionUrl: `/events/${event_id}`,
+        eventId: event_id,
+        metadata: { ticket_id, payment_intent_id: paymentIntent.id },
+      })
+    }
+  } catch (err) {
+    console.error('[handleTicketPaymentFailed] Notification failed (non-blocking):', err)
+  }
+
+  revalidatePath(`/events/${event_id}`)
+}
+
+export async function handleTicketPaymentCanceled(paymentIntent: Stripe.PaymentIntent) {
+  const { ticket_id, event_id } = paymentIntent.metadata ?? {}
+  if (!ticket_id || !event_id) return
+
+  const db: any = createServerClient({ admin: true })
+  const { data: ticket } = await db
+    .from('event_tickets')
+    .select('id, ticket_type_id, quantity, payment_status, capacity_released_at')
+    .eq('id', ticket_id)
+    .single()
+
+  if (!ticket || ticket.payment_status === 'paid') return
+
+  await releaseTicketCapacity(db, ticket)
+  const nowIso = new Date().toISOString()
+  await db
+    .from('event_tickets')
+    .update({
+      payment_status: 'cancelled',
+      stripe_payment_intent_id: paymentIntent.id,
+      last_payment_error: paymentIntent.cancellation_reason || 'Payment canceled',
+      retry_available_at: nowIso,
+      capacity_released_at: ticket.capacity_released_at ?? nowIso,
+      cancelled_at: nowIso,
+    })
+    .eq('id', ticket_id)
+    .neq('payment_status', 'paid')
+
+  revalidatePath(`/events/${event_id}`)
+}
+
+export async function handleTicketCheckoutExpired(session: Stripe.Checkout.Session) {
+  const { ticket_id, event_id } = session.metadata ?? {}
+  if (!ticket_id || !event_id) return
+
+  const db: any = createServerClient({ admin: true })
+  const { data: ticket } = await db
+    .from('event_tickets')
+    .select('id, ticket_type_id, quantity, payment_status, capacity_released_at')
+    .eq('id', ticket_id)
+    .single()
+
+  if (!ticket || ticket.payment_status !== 'pending') return
+
+  await releaseTicketCapacity(db, ticket)
+  const nowIso = new Date().toISOString()
+  await db
+    .from('event_tickets')
+    .update({
+      payment_status: 'cancelled',
+      last_payment_error: 'Checkout expired',
+      retry_available_at: nowIso,
+      capacity_released_at: ticket.capacity_released_at ?? nowIso,
+      cancelled_at: nowIso,
+    })
+    .eq('id', ticket_id)
+    .eq('payment_status', 'pending')
+
+  revalidatePath(`/events/${event_id}`)
+}
 
 /**
  * Handle completed ticket purchase checkout session.
@@ -56,6 +210,9 @@ export async function handleTicketPurchaseCompleted(session: Stripe.Checkout.Ses
     .update({
       payment_status: 'paid',
       stripe_payment_intent_id: paymentIntentId,
+      last_payment_error: null,
+      retry_available_at: null,
+      payment_failed_at: null,
     })
     .eq('id', ticket_id)
     .eq('payment_status', 'pending') // CAS guard
@@ -298,6 +455,17 @@ export async function handleTicketPurchaseCompleted(session: Stripe.Checkout.Ses
       notifErr
     )
   }
+
+  log.events.info('Ticket purchase confirmed', {
+    tenantId: tenant_id,
+    context: {
+      eventId: event_id,
+      ticketId: ticket_id,
+      ticketTypeId: ticket_type_id ?? null,
+      quantity: ticket.quantity,
+      paymentIntentId,
+    },
+  })
 
   // 7. Cache invalidation
   try {

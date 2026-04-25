@@ -270,6 +270,90 @@ export async function respondToEventInvitation(input: {
     throw new Error('Failed to update invitation')
   }
 
+  // Auto-join accepted collaborator to event's Dinner Circle (non-blocking)
+  if (input.accepted) {
+    try {
+      const { getCircleForEvent } = await import('@/lib/hub/circle-lookup')
+
+      const circleInfo = await getCircleForEvent(row.event_id)
+      if (circleInfo) {
+        const db2: any = createServerClient({ admin: true })
+
+        // Find or create hub profile for the collaborator chef
+        const { data: chef } = await db2
+          .from('chefs')
+          .select('auth_user_id, display_name, email, profile_image_url')
+          .eq('id', user.entityId)
+          .single()
+
+        if (chef?.auth_user_id) {
+          let hubProfileId: string | null = null
+
+          const { data: existingProfile } = await db2
+            .from('hub_guest_profiles')
+            .select('id')
+            .eq('auth_user_id', chef.auth_user_id)
+            .maybeSingle()
+
+          if (existingProfile) {
+            hubProfileId = existingProfile.id
+          } else {
+            const crypto = require('crypto')
+            const { data: newProfile } = await db2
+              .from('hub_guest_profiles')
+              .insert({
+                display_name: chef.display_name || 'Collaborating Chef',
+                email: chef.email,
+                email_normalized: chef.email?.toLowerCase().trim() || null,
+                auth_user_id: chef.auth_user_id,
+                avatar_url: chef.profile_image_url || null,
+                profile_token: crypto.randomUUID(),
+              })
+              .select('id')
+              .single()
+            if (newProfile) hubProfileId = newProfile.id
+          }
+
+          if (hubProfileId) {
+            // Check not already a member
+            const { data: existingMember } = await db2
+              .from('hub_group_members')
+              .select('id')
+              .eq('group_id', circleInfo.groupId)
+              .eq('profile_id', hubProfileId)
+              .maybeSingle()
+
+            if (!existingMember) {
+              await db2.from('hub_group_members').insert({
+                group_id: circleInfo.groupId,
+                profile_id: hubProfileId,
+                role: 'chef',
+                can_post: true,
+                can_invite: false,
+                can_pin: true,
+              })
+
+              const chefName = chef.display_name || 'A collaborating chef'
+              await db2.from('hub_messages').insert({
+                group_id: circleInfo.groupId,
+                author_profile_id: hubProfileId,
+                message_type: 'system',
+                system_event_type: 'member_joined',
+                body: `${chefName} joined as a collaborating chef`,
+                system_metadata: {
+                  display_name: chefName,
+                  source: 'collaboration_accepted',
+                },
+              })
+            }
+          }
+        }
+      }
+    } catch (circleErr) {
+      console.error('[respondToEventInvitation] Circle join failed (non-blocking):', circleErr)
+    }
+  }
+
   revalidatePath(`/events/${row.event_id}`)
   revalidatePath('/dashboard')
   return { success: true }

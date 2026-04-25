@@ -29,6 +29,9 @@ import { SendWorksheetButton } from '@/components/events/send-worksheet-button'
 import { RepeatMenuAlert } from '@/components/menus/repeat-menu-alert'
 import { AllergenConflictAlert } from '@/components/events/allergen-conflict-alert'
 import { DietaryKnowledgePanel } from '@/components/events/dietary-knowledge-panel'
+import { EventCollaboratorsPanel } from '@/components/collaboration/event-collaborators-panel'
+import type { EventCollaborator } from '@/lib/collaboration/types'
+import { ChefDecisionBriefPanel } from '@/components/hub/chef-decision-brief'
 
 type EventDetailOverviewTabProps = {
   activeTab: EventDetailTab
@@ -43,6 +46,7 @@ type EventDetailOverviewTabProps = {
   fullShareUrl: string | null
   eventMenus: string[] | null
   hubGroupToken: string | null
+  hubProfileToken: string | null
   guestList: any[]
   rsvpSummary: any
   chefDisplayName: string
@@ -51,6 +55,7 @@ type EventDetailOverviewTabProps = {
   messages: any[]
   templates: any[]
   chatConversationId?: string | null
+  collaborators: EventCollaborator[]
 }
 
 export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
@@ -67,6 +72,7 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
     fullShareUrl,
     eventMenus,
     hubGroupToken,
+    hubProfileToken,
     guestList,
     rsvpSummary,
     chefDisplayName,
@@ -75,6 +81,7 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
     messages,
     templates,
     chatConversationId,
+    collaborators,
   } = props
 
   return (
@@ -200,7 +207,7 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
               </dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-stone-500">Number of Guests</dt>
+              <dt className="text-sm font-medium text-stone-500">Guest Count</dt>
               <dd className="text-sm text-stone-100 mt-1">
                 {event.guest_count <= 1 && event.status === 'draft' ? (
                   <span className="text-amber-400 font-medium">
@@ -308,6 +315,8 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
             )}
           </dl>
         </Card>
+
+        <EventCollaboratorsPanel eventId={event.id} collaborators={collaborators} />
       </div>
 
       {/* Client Portal QR Code */}
@@ -374,7 +383,14 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
 
       {/* Social Hub Link */}
       {event.status !== 'draft' && event.status !== 'cancelled' && (
-        <EventHubLinkPanel groupToken={hubGroupToken as string | null} eventId={event.id} />
+        <EventHubLinkPanel
+          groupToken={hubGroupToken as string | null}
+          eventId={event.id}
+          profileToken={hubProfileToken}
+        />
+      )}
+      {event.id && event.tenant_id && (
+        <ChefDecisionBriefPanel eventId={event.id} tenantId={event.tenant_id} />
       )}
 
       {/* Guests & RSVPs */}

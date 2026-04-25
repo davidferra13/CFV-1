@@ -62,6 +62,7 @@ export type PublicShowcaseMenu = {
   id: string
   name: string
   description: string | null
+  photoUrl: string | null
   cuisineType: string | null
   serviceStyle: string | null
   guestCount: number | null
@@ -546,6 +547,7 @@ export async function getPublicShowcaseMenus(
         course_name,
         course_number,
         description,
+        photo_url,
         dietary_tags,
         allergen_flags,
         sort_order
@@ -563,21 +565,26 @@ export async function getPublicShowcaseMenus(
     return []
   }
 
-  return data.map((menu: any) => ({
-    id: menu.id,
-    name: menu.name,
-    description: menu.description,
-    cuisineType: menu.cuisine_type,
-    serviceStyle: menu.service_style,
-    guestCount: menu.target_guest_count,
-    timesUsed: menu.times_used ?? 0,
-    dishes: (menu.dishes || [])
-      .sort(
-        (a: any, b: any) =>
-          (a.course_number ?? 0) - (b.course_number ?? 0) ||
-          (a.sort_order ?? 0) - (b.sort_order ?? 0)
-      )
-      .map((dish: any) => ({
+  return data.map((menu: any) => {
+    const sortedDishes = [...(menu.dishes || [])].sort(
+      (a: any, b: any) =>
+        (a.course_number ?? 0) - (b.course_number ?? 0) || (a.sort_order ?? 0) - (b.sort_order ?? 0)
+    )
+    const photoUrl =
+      sortedDishes
+        .map((dish: any) => (typeof dish.photo_url === 'string' ? dish.photo_url.trim() : ''))
+        .find((url: string) => url.length > 0) ?? null
+
+    return {
+      id: menu.id,
+      name: menu.name,
+      description: menu.description,
+      photoUrl,
+      cuisineType: menu.cuisine_type,
+      serviceStyle: menu.service_style,
+      guestCount: menu.target_guest_count,
+      timesUsed: menu.times_used ?? 0,
+      dishes: sortedDishes.map((dish: any) => ({
         id: dish.id,
         name: dish.name ?? dish.course_name ?? 'Dish',
         courseName: dish.course_name,
@@ -586,5 +593,6 @@ export async function getPublicShowcaseMenus(
         dietaryTags: dish.dietary_tags ?? [],
         allergenFlags: dish.allergen_flags ?? [],
       })),
-  }))
+    }
+  })
 }

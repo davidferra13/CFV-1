@@ -56,6 +56,12 @@ export default async function StationDetailPage({ params }: { params: { id: stri
           )}
         </div>
         <div className="flex gap-2">
+          <Link
+            href={`/stations/${params.id}/shift-history`}
+            className="inline-flex items-center gap-2 rounded-lg bg-stone-800 border border-stone-600 px-3 py-2 text-sm text-stone-300 hover:bg-stone-700 transition-colors"
+          >
+            Shift History
+          </Link>
           <Link href={`/stations/${params.id}/clipboard`}>
             <Button variant="primary">Open Clipboard</Button>
           </Link>

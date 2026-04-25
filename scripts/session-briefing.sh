@@ -81,6 +81,65 @@ else
   PRIORITIES=""
 fi
 
+# Backup Status
+
+BACKUP_STATUS=""
+if [ -d "$PROJECT_ROOT/backups" ]; then
+  LATEST_BACKUP=$(ls -1t "$PROJECT_ROOT/backups"/chefflow-*.dump* "$PROJECT_ROOT/backups"/backup-*.sql* 2>/dev/null | head -1 || true)
+  BACKUP_COUNT=$(ls -1 "$PROJECT_ROOT/backups"/chefflow-*.dump* "$PROJECT_ROOT/backups"/backup-*.sql* 2>/dev/null | wc -l | tr -d ' ')
+  BACKUP_TOTAL_SIZE=$(du -sh "$PROJECT_ROOT/backups" 2>/dev/null | cut -f1 || echo "?")
+  BACKUP_LOG="$PROJECT_ROOT/backups/backup-log.json"
+  LAST_BACKUP_SUCCESS=""
+
+  if [ -f "$BACKUP_LOG" ] && command -v node >/dev/null 2>&1; then
+    LAST_BACKUP_SUCCESS=$(BACKUP_LOG_PATH="$BACKUP_LOG" node <<'NODE'
+const fs = require('fs')
+const raw = fs.readFileSync(process.env.BACKUP_LOG_PATH, 'utf8').trim()
+let entries = []
+
+if (raw) {
+  try {
+    const parsed = JSON.parse(raw)
+    entries = Array.isArray(parsed) ? parsed : [parsed]
+  } catch {
+    entries = raw
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
+        try {
+          return JSON.parse(line)
+        } catch {
+          return null
+        }
+      })
+      .filter(Boolean)
+  }
+}
+
+const success = [...entries].reverse().find((entry) => entry && entry.status === 'success')
+process.stdout.write(success && success.timestamp ? success.timestamp : '')
+NODE
+)
+  fi
+
+  if [ -n "$LATEST_BACKUP" ]; then
+    LATEST_BACKUP_NAME=$(basename "$LATEST_BACKUP")
+    LATEST_BACKUP_DATE=$(stat -c '%Y' "$LATEST_BACKUP" 2>/dev/null || stat -f '%m' "$LATEST_BACKUP" 2>/dev/null || echo "0")
+    NOW_EPOCH=$(date +%s)
+    if [ "$LATEST_BACKUP_DATE" != "0" ]; then
+      HOURS_AGO=$(( (NOW_EPOCH - LATEST_BACKUP_DATE) / 3600 ))
+      BACKUP_STATUS="Last success: ${LAST_BACKUP_SUCCESS:-unknown} | Latest file: $LATEST_BACKUP_NAME (${HOURS_AGO}h ago) | Count: $BACKUP_COUNT | Total size: $BACKUP_TOTAL_SIZE"
+    else
+      BACKUP_STATUS="Last success: ${LAST_BACKUP_SUCCESS:-unknown} | Latest file: $LATEST_BACKUP_NAME | Count: $BACKUP_COUNT | Total size: $BACKUP_TOTAL_SIZE"
+    fi
+  else
+    BACKUP_STATUS="WARNING: No backups found!"
+  fi
+else
+  BACKUP_STATUS="WARNING: backups/ directory does not exist!"
+fi
+
 # ── Active Specs Count ───────────────────────────────────────────
 
 SPEC_COUNT=$(ls "$PROJECT_ROOT/docs/specs/"*interrogation*.md 2>/dev/null | wc -l | tr -d ' ')
@@ -113,6 +172,9 @@ $PROGRESS
 
 ## Active Priorities
 $PRIORITIES
+
+## Database Backups
+$BACKUP_STATUS
 
 ## Interrogation Specs
 - $SPEC_COUNT specs, ~$TOTAL_QUESTIONS questions total

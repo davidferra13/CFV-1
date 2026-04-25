@@ -10,6 +10,7 @@ import { checkRateLimit } from '@/lib/rateLimit'
 import { processMessageInsights } from '@/lib/insights/actions'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { executeInteraction } from '@/lib/interactions'
 import type {
   Conversation,
   ConversationWithDetails,
@@ -505,6 +506,29 @@ export async function sendChatMessage(input: z.infer<typeof SendMessageSchema>) 
     console.error('[sendChatMessage] Error:', error)
     throw new Error('Failed to send message')
   }
+
+  await executeInteraction({
+    action_type: 'send_message',
+    actor_id: user.id,
+    actor: { role: user.role, actorId: user.id, entityId: user.entityId, tenantId: user.tenantId },
+    target_type: 'content',
+    target_id: message.id,
+    context_type: 'message',
+    context_id: validated.conversation_id,
+    visibility: 'private',
+    metadata: {
+      tenant_id: user.tenantId,
+      client_id: user.role === 'client' ? user.entityId : null,
+      conversation_id: validated.conversation_id,
+      message_id: message.id,
+      message_type: validated.message_type,
+      source: 'chat_message',
+      suppress_interaction_notifications: true,
+      suppress_interaction_activity: true,
+      suppress_interaction_automation: true,
+    },
+    idempotency_key: `send_message:${message.id}`,
+  })
 
   // Auto-mark as read for sender
   await db

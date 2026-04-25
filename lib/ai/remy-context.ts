@@ -49,8 +49,10 @@ async function loadPriceContext(
       .eq('archived', false)
       .limit(200)
     ingredientNames = (data || []).map((i: any) => i.name)
-  } catch {
-    return null
+  } catch (error) {
+    throw new Error(
+      `Failed to load ingredient names for price context: ${error instanceof Error ? error.message : String(error)}`
+    )
   }
 
   const [dropsRes, costRes, stockRes, freshnessRes] = await Promise.all([
@@ -81,6 +83,10 @@ async function loadPriceContext(
   const spikes: Array<{ name: string; priceCents: number; spikePct: number; store: string }> = []
   let stockAlerts = 0
   let freshnessPct = 0
+
+  if (!dropsRes && !costRes && !stockRes && !freshnessRes) {
+    throw new Error('Price context endpoints unavailable')
+  }
 
   if (dropsRes?.ok) {
     const data = await dropsRes.json()
@@ -210,9 +216,13 @@ async function recordContextFailure(
   tenantId: string,
   operation: string,
   error: unknown,
-  context?: Record<string, unknown>
+  context?: Record<string, unknown>,
+  failedOperations?: string[]
 ): Promise<void> {
   const errorMessage = error instanceof Error ? error.message : String(error)
+  if (failedOperations && !failedOperations.includes(operation)) {
+    failedOperations.push(operation)
+  }
 
   await recordSideEffectFailure({
     source: 'remy-context',
@@ -229,24 +239,32 @@ async function withContextFallback<T>(
   operation: string,
   fallback: T,
   fn: () => Promise<T>,
-  context?: Record<string, unknown>
+  context?: Record<string, unknown>,
+  failedOperations?: string[]
 ): Promise<T> {
   try {
     return await fn()
   } catch (error) {
-    await recordContextFailure(tenantId, operation, error, context)
+    await recordContextFailure(tenantId, operation, error, context, failedOperations)
     return fallback
   }
 }
 
 async function reportContextQueryErrors(
   tenantId: string,
-  results: Record<string, { error?: { message: string } | null }>
+  results: Record<string, { error?: { message: string } | null }>,
+  failedOperations?: string[]
 ): Promise<void> {
   const failures = Object.entries(results).filter(([, result]) => result.error)
   await Promise.all(
     failures.map(([operation, result]) =>
-      recordContextFailure(tenantId, operation, result.error, { queryScope: 'remy_context' })
+      recordContextFailure(
+        tenantId,
+        operation,
+        result.error,
+        { queryScope: 'remy_context' },
+        failedOperations
+      )
     )
   )
 }
@@ -261,26 +279,46 @@ export async function loadRemyContext(
   const tenantId = user.tenantId!
   const db: any = createServerClient()
   const isMinimal = scopeHint === 'minimal'
+  const failedOperations: string[] = []
 
   // Tier 1: Always fresh (cheap count queries + chef profile + daily plan + service config)
   // These run even for minimal scope - they're fast and provide core business summary.
   const [chefProfile, counts, dailyPlan, healthSummary, serviceConfig, archetype] =
     await Promise.all([
-      loadChefProfile(db, tenantId),
-      loadQuickCounts(db, tenantId),
+      loadChefProfile(db, tenantId, failedOperations),
+      loadQuickCounts(db, tenantId, failedOperations),
       isMinimal
         ? Promise.resolve(null)
-        : withContextFallback(tenantId, 'load_daily_plan', null, () => getDailyPlanStats()),
+        : withContextFallback(
+            tenantId,
+            'load_daily_plan',
+            null,
+            () => getDailyPlanStats(),
+            undefined,
+            failedOperations
+          ),
       isMinimal
         ? Promise.resolve(null)
-        : withContextFallback(tenantId, 'load_business_health_summary', null, async () => {
-            const summary = await getBusinessHealthSummary()
-            return summary.remyContext
-          }),
+        : withContextFallback(
+            tenantId,
+            'load_business_health_summary',
+            null,
+            async () => {
+              const summary = await getBusinessHealthSummary()
+              return summary.remyContext
+            },
+            undefined,
+            failedOperations
+          ),
       isMinimal
         ? Promise.resolve(null)
-        : withContextFallback(tenantId, 'load_service_config', null, () =>
-            getServiceConfigForTenant(tenantId)
+        : withContextFallback(
+            tenantId,
+            'load_service_config',
+            null,
+            () => getServiceConfigForTenant(tenantId),
+            undefined,
+            failedOperations
           ),
       isMinimal ? Promise.resolve(null) : getCachedChefArchetype(tenantId),
     ])
@@ -297,7 +335,7 @@ export async function loadRemyContext(
     if (cached && cached.expiresAt > Date.now()) {
       detailed = cached.data
     } else {
-      detailed = await loadDetailedContext(db, tenantId)
+      detailed = await loadDetailedContext(db, tenantId, failedOperations)
       contextCache.set(tenantId, {
         data: detailed,
         expiresAt: Date.now() + CACHE_TTL_MS,
@@ -323,7 +361,8 @@ export async function loadRemyContext(
         'load_email_digest',
         undefined,
         () => loadEmailDigest(tenantId),
-        { currentPage: currentPage ?? null }
+        { currentPage: currentPage ?? null },
+        failedOperations
       )) ?? undefined
 
     recentSurveyFeedback = await withContextFallback(
@@ -347,7 +386,9 @@ export async function loadRemyContext(
           wouldBookAgain: s.would_book_again ?? false,
           completedAt: s.completed_at,
         }))
-      }
+      },
+      undefined,
+      failedOperations
     )
 
     pendingMilestones = await withContextFallback(
@@ -370,12 +411,19 @@ export async function loadRemyContext(
           amountCents: m.amount_cents ?? 0,
           dueDate: m.due_date,
         }))
-      }
+      },
+      undefined,
+      failedOperations
     )
 
     priceContext =
-      (await withContextFallback(tenantId, 'load_price_context', undefined, () =>
-        loadPriceContext(db, tenantId)
+      (await withContextFallback(
+        tenantId,
+        'load_price_context',
+        undefined,
+        () => loadPriceContext(db, tenantId),
+        undefined,
+        failedOperations
       )) ?? undefined
   }
 
@@ -385,8 +433,24 @@ export async function loadRemyContext(
     'load_page_entity_context',
     undefined,
     () => loadPageEntityContext(db, tenantId, currentPage),
-    { currentPage: currentPage ?? null }
+    { currentPage: currentPage ?? null },
+    failedOperations
   )
+
+  const cilInsights = isMinimal
+    ? undefined
+    : await withContextFallback(
+        tenantId,
+        'load_cil_insights',
+        undefined,
+        async () => {
+          const { getCILInsights, formatInsightsForRemy } = await import('@/lib/cil/api')
+          const scan = await getCILInsights(tenantId)
+          return scan ? formatInsightsForRemy(scan) : undefined
+        },
+        undefined,
+        failedOperations
+      )
 
   return {
     chefName: chefProfile.businessName,
@@ -447,20 +511,18 @@ export async function loadRemyContext(
     })(),
     // Price intelligence from Pi
     priceContext: priceContext ?? undefined,
+    contextHealth:
+      failedOperations.length > 0
+        ? { degraded: true, failedOperations: Array.from(new Set(failedOperations)) }
+        : undefined,
     // CIL: Continuous Intelligence Layer insights (graph-based pattern detection)
-    cilInsights: isMinimal
-      ? undefined
-      : await withContextFallback(tenantId, 'load_cil_insights', undefined, async () => {
-          const { getCILInsights, formatInsightsForRemy } = await import('@/lib/cil/api')
-          const scan = await getCILInsights(tenantId)
-          return scan ? formatInsightsForRemy(scan) : undefined
-        }),
+    cilInsights,
   }
 }
 
 // ─── Tier 1: Chef Profile ───────────────────────────────────────────────────
 
-async function loadChefProfile(db: any, tenantId: string) {
+async function loadChefProfile(db: any, tenantId: string, failedOperations?: string[]) {
   const { data, error } = await db
     .from('chefs')
     .select('business_name, tagline, city, state, archetype')
@@ -468,7 +530,7 @@ async function loadChefProfile(db: any, tenantId: string) {
     .single()
 
   if (error) {
-    await recordContextFailure(tenantId, 'load_chef_profile', error)
+    await recordContextFailure(tenantId, 'load_chef_profile', error, undefined, failedOperations)
   }
 
   return {
@@ -482,7 +544,7 @@ async function loadChefProfile(db: any, tenantId: string) {
 
 // ─── Tier 1: Quick Counts ───────────────────────────────────────────────────
 
-async function loadQuickCounts(db: any, tenantId: string) {
+async function loadQuickCounts(db: any, tenantId: string, failedOperations?: string[]) {
   const [clientsResult, eventsResult, inquiriesResult] = await Promise.all([
     db.from('clients').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId),
     db
@@ -498,11 +560,15 @@ async function loadQuickCounts(db: any, tenantId: string) {
       .in('status', ['new', 'awaiting_chef', 'awaiting_client']),
   ])
 
-  await reportContextQueryErrors(tenantId, {
-    count_clients: clientsResult,
-    count_upcoming_events: eventsResult,
-    count_open_inquiries: inquiriesResult,
-  })
+  await reportContextQueryErrors(
+    tenantId,
+    {
+      count_clients: clientsResult,
+      count_upcoming_events: eventsResult,
+      count_open_inquiries: inquiriesResult,
+    },
+    failedOperations
+  )
 
   return {
     clients: clientsResult.count ?? 0,
@@ -513,7 +579,7 @@ async function loadQuickCounts(db: any, tenantId: string) {
 
 // ─── Tier 2: Detailed Context (cached 5 min) ────────────────────────────────
 
-async function loadDetailedContext(db: any, tenantId: string) {
+async function loadDetailedContext(db: any, tenantId: string, failedOperations?: string[]) {
   const now = new Date()
   const today = localDateISO(now)
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
@@ -896,45 +962,49 @@ async function loadDetailedContext(db: any, tenantId: string) {
       .limit(500),
   ])
 
-  await reportContextQueryErrors(tenantId, {
-    load_detailed_upcoming_events: eventsResult,
-    load_detailed_recent_clients: clientsResult,
-    load_detailed_month_revenue: revenueResult,
-    load_detailed_pending_quotes: quotesResult,
-    load_detailed_availability: availabilityResult,
-    load_detailed_calendar: calendarResult,
-    load_detailed_waitlist: waitlistResult,
-    load_detailed_staff_roster: staffResult,
-    load_detailed_equipment: equipmentResult,
-    load_detailed_goals: goalsResult,
-    load_detailed_todos: todosResult,
-    load_detailed_calls: callsResult,
-    load_detailed_documents: documentsResult,
-    load_detailed_folders: foldersResult,
-    load_detailed_artifacts: artifactsResult,
-    load_detailed_year_revenue: yearRevenueResult,
-    load_detailed_year_expenses: yearExpensesResult,
-    load_detailed_year_events: yearEventsResult,
-    load_detailed_recipe_stats: recipeStatsResult,
-    load_detailed_client_vibe_notes: clientVibeNotesResult,
-    load_detailed_recent_aars: recentAARsResult,
-    load_detailed_pending_menu_approvals: pendingMenuApprovalsResult,
-    load_detailed_unread_inquiry_messages: unreadInquiryMsgsResult,
-    load_detailed_stale_inquiries: staleInquiriesResult,
-    load_detailed_overdue_payments: overduePaymentsResult,
-    load_detailed_client_booking_history: clientBookingHistoryResult,
-    load_detailed_monthly_revenue_pattern: monthlyRevenueResult,
-    load_detailed_upcoming_payment_deadlines: upcomingPaymentDeadlinesResult,
-    load_detailed_expiring_quotes: expiringQuotesResult,
-    load_detailed_event_profitability: eventProfitabilityResult,
-    load_detailed_inquiry_velocity: inquiryVelocityResult,
-    load_detailed_staff_assignments: staffAssignmentsResult,
-    load_detailed_conversion_rate: conversionRateResult,
-    load_detailed_expense_breakdown: expenseBreakdownResult,
-    load_detailed_all_events_pattern: allEventsPatternResult,
-    load_detailed_menu_approval_turnaround: menuApprovalResult,
-    load_detailed_client_referrals: clientReferralResult,
-  })
+  await reportContextQueryErrors(
+    tenantId,
+    {
+      load_detailed_upcoming_events: eventsResult,
+      load_detailed_recent_clients: clientsResult,
+      load_detailed_month_revenue: revenueResult,
+      load_detailed_pending_quotes: quotesResult,
+      load_detailed_availability: availabilityResult,
+      load_detailed_calendar: calendarResult,
+      load_detailed_waitlist: waitlistResult,
+      load_detailed_staff_roster: staffResult,
+      load_detailed_equipment: equipmentResult,
+      load_detailed_goals: goalsResult,
+      load_detailed_todos: todosResult,
+      load_detailed_calls: callsResult,
+      load_detailed_documents: documentsResult,
+      load_detailed_folders: foldersResult,
+      load_detailed_artifacts: artifactsResult,
+      load_detailed_year_revenue: yearRevenueResult,
+      load_detailed_year_expenses: yearExpensesResult,
+      load_detailed_year_events: yearEventsResult,
+      load_detailed_recipe_stats: recipeStatsResult,
+      load_detailed_client_vibe_notes: clientVibeNotesResult,
+      load_detailed_recent_aars: recentAARsResult,
+      load_detailed_pending_menu_approvals: pendingMenuApprovalsResult,
+      load_detailed_unread_inquiry_messages: unreadInquiryMsgsResult,
+      load_detailed_stale_inquiries: staleInquiriesResult,
+      load_detailed_overdue_payments: overduePaymentsResult,
+      load_detailed_client_booking_history: clientBookingHistoryResult,
+      load_detailed_monthly_revenue_pattern: monthlyRevenueResult,
+      load_detailed_upcoming_payment_deadlines: upcomingPaymentDeadlinesResult,
+      load_detailed_expiring_quotes: expiringQuotesResult,
+      load_detailed_event_profitability: eventProfitabilityResult,
+      load_detailed_inquiry_velocity: inquiryVelocityResult,
+      load_detailed_staff_assignments: staffAssignmentsResult,
+      load_detailed_conversion_rate: conversionRateResult,
+      load_detailed_expense_breakdown: expenseBreakdownResult,
+      load_detailed_all_events_pattern: allEventsPatternResult,
+      load_detailed_menu_approval_turnaround: menuApprovalResult,
+      load_detailed_client_referrals: clientReferralResult,
+    },
+    failedOperations
+  )
 
   const monthRevenueCents = (revenueResult.data ?? []).reduce(
     (sum: any, entry: any) => sum + ((entry as { amount_cents: number }).amount_cents ?? 0),

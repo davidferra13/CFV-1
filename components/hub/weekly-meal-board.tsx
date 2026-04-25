@@ -35,9 +35,15 @@ import { DietaryDashboard } from './dietary-dashboard'
 import { WeeklyPrepSummary } from './weekly-prep-summary'
 import { MealCommentTrigger } from './meal-comments'
 import { MealRequests } from './meal-requests'
+import { MealBoardShoppingList } from './meal-board-shopping-list'
 import { MealTimeSettings } from './meal-time-settings'
+import { PrepAssignmentBadge } from './prep-assignment-badge'
 import type { DefaultMealTimes } from '@/lib/hub/types'
 import { getDefaultMealTimes } from '@/lib/hub/meal-board-actions'
+import {
+  getCircleHouseholdSummary,
+  type HouseholdDietarySummary,
+} from '@/lib/hub/household-actions'
 
 // ---------------------------------------------------------------------------
 // Date helpers (ISO weeks: Monday = start)
@@ -118,10 +124,14 @@ const MEAL_EMOJI: Record<MealType, string> = {
 
 interface WeeklyMealBoardProps {
   groupId: string
-  groupToken?: string
+  groupToken: string
   initialEntries: MealBoardEntry[]
+  initialLoadError?: string | null
+  initialHouseholdSummary?: HouseholdDietarySummary | null
+  initialHouseholdError?: string | null
   profileToken: string | null
   isChefOrAdmin: boolean
+  currentProfileId?: string | null
 }
 
 // ---------------------------------------------------------------------------
@@ -132,8 +142,12 @@ export function WeeklyMealBoard({
   groupId,
   groupToken,
   initialEntries,
+  initialLoadError,
+  initialHouseholdSummary,
+  initialHouseholdError,
   profileToken,
   isChefOrAdmin,
+  currentProfileId: currentProfileIdProp,
 }: WeeklyMealBoardProps) {
   const [entries, setEntries] = useState<MealBoardEntry[]>(initialEntries)
   const [weekOffset, setWeekOffset] = useState(0)
@@ -162,6 +176,52 @@ export function WeeklyMealBoard({
   const [defaultMealTimes, setDefaultMealTimes] = useState<DefaultMealTimes | null>(null)
   const [showMealTimeSettings, setShowMealTimeSettings] = useState(false)
   const [commentCounts, setCommentCounts] = useState<Record<string, number>>({})
+  const [householdSummary, setHouseholdSummary] = useState<HouseholdDietarySummary | null>(
+    initialHouseholdSummary ?? null
+  )
+  const [householdError, setHouseholdError] = useState<string | null>(initialHouseholdError ?? null)
+  const [mealBoardLoadError] = useState<string | null>(initialLoadError ?? null)
+
+  // Retry household dietary data on the client if the server render could not provide it.
+  useEffect(() => {
+    if (initialHouseholdSummary) return
+    let isActive = true
+    setHouseholdError(null)
+    getCircleHouseholdSummary(groupId, groupToken)
+      .then((summary) => {
+        if (!isActive) return
+        setHouseholdSummary(summary)
+        setHouseholdError(null)
+      })
+      .catch(() => {
+        if (isActive) setHouseholdError('Could not load household dietary data')
+      })
+
+    return () => {
+      isActive = false
+    }
+  }, [groupId, groupToken, initialHouseholdSummary])
+
+  // Check if a meal conflicts with household allergies
+  const getMealConflicts = useCallback(
+    (entry: MealBoardEntry): string[] => {
+      if (!householdSummary || householdSummary.allAllergies.length === 0) return []
+      const normalizedAllergies = householdSummary.allAllergies.map((a) => a.toLowerCase())
+      return entry.allergen_flags.filter((flag) => normalizedAllergies.includes(flag.toLowerCase()))
+    },
+    [householdSummary]
+  )
+
+  // Find which household members are affected by an allergen
+  const getAffectedMembers = useCallback(
+    (allergen: string): string[] => {
+      if (!householdSummary) return []
+      return householdSummary.members
+        .filter((m) => m.allergies.some((a) => a.toLowerCase() === allergen.toLowerCase()))
+        .map((m) => m.display_name)
+    },
+    [householdSummary]
+  )
 
   // Load default head count and meal times
   useEffect(() => {
@@ -258,6 +318,9 @@ export function WeeklyMealBoard({
       head_count: parsedHeadCount,
       prep_notes: editPrepNotes.trim() || null,
       serving_time: editServingTime || null,
+      assigned_profile_id: existing?.assigned_profile_id ?? null,
+      assigned_display_name: existing?.assigned_display_name ?? null,
+      assignment_notes: existing?.assignment_notes ?? null,
       status: 'planned',
       created_at: existing?.created_at ?? new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -449,6 +512,88 @@ export function WeeklyMealBoard({
           isChefOrAdmin={isChefOrAdmin}
           onStatusChange={profileToken ? handleStatusChange : undefined}
         />
+      )}
+
+      {/* Persistent household dietary banner */}
+      {householdError && (
+        <div className="rounded-lg border border-red-800/60 bg-red-950/30 px-3 py-2">
+          <div className="flex items-start gap-2">
+            <span className="mt-0.5 shrink-0 text-sm text-red-300">&#x26A0;</span>
+            <div>
+              <p className="text-xs font-semibold text-red-300">
+                Household Dietary Data Unavailable
+              </p>
+              <p className="mt-0.5 text-[10px] text-red-300/80">
+                Refresh before planning or cooking. Allergy data cannot be assumed safe.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {householdSummary &&
+        (householdSummary.allAllergies.length > 0 ||
+          householdSummary.allDietary.length > 0 ||
+          householdSummary.profilesNotAnswered > 0) && (
+          <div className="rounded-lg border border-amber-800/50 bg-amber-950/30 px-3 py-2">
+            <div className="flex items-start gap-2">
+              <span className="text-amber-400 text-sm shrink-0 mt-0.5">&#x26A0;</span>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-amber-300">Household Dietary Needs</p>
+                {householdSummary.profilesNotAnswered > 0 && (
+                  <p className="mt-1 text-[10px] font-medium text-amber-200">
+                    {householdSummary.profilesNotAnswered} guest
+                    {householdSummary.profilesNotAnswered !== 1 ? 's' : ''} never answered the
+                    allergy question.
+                  </p>
+                )}
+                {householdSummary.allAllergies.length > 0 && (
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {householdSummary.allAllergies.map((a) => {
+                      const who = getAffectedMembers(a)
+                      return (
+                        <span
+                          key={a}
+                          className="rounded-full bg-amber-900/50 px-2 py-0.5 text-[10px] font-medium text-amber-300"
+                          title={who.length > 0 ? who.join(', ') : undefined}
+                        >
+                          {a}
+                          {who.length > 0 ? ` (${who.join(', ')})` : ''}
+                        </span>
+                      )
+                    })}
+                  </div>
+                )}
+                {householdSummary.allDietary.length > 0 && (
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {householdSummary.allDietary.map((dietary) => (
+                      <span
+                        key={dietary}
+                        className="rounded-full bg-emerald-900/40 px-2 py-0.5 text-[10px] text-emerald-300"
+                      >
+                        {dietary}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+      {mealBoardLoadError && (
+        <div className="rounded-lg border border-red-800/60 bg-red-950/30 px-3 py-2">
+          <div className="flex items-start gap-2">
+            <span className="mt-0.5 shrink-0 text-sm text-red-300">&#x26A0;</span>
+            <div>
+              <p className="text-xs font-semibold text-red-300">Meal Board Unavailable</p>
+              <p className="mt-0.5 text-[10px] text-red-300/80">
+                Refresh before using this weekly plan. Empty slots may not represent the actual
+                menu.
+              </p>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Week navigation */}
@@ -643,8 +788,20 @@ export function WeeklyMealBoard({
         feedbackData={feedbackData}
       />
 
+      {/* Shopping list generation (chef only) */}
+      {isChefOrAdmin && (
+        <MealBoardShoppingList
+          groupId={groupId}
+          groupToken={groupToken}
+          weekStart={weekStart}
+          weekEnd={weekEnd}
+          weekLabel={formatWeekRange(currentMonday)}
+          mealCount={weekEntries.length}
+        />
+      )}
+
       {/* Dietary dashboard (chef only, collapsible) */}
-      <DietaryDashboard groupId={groupId} isChefOrAdmin={isChefOrAdmin} />
+      <DietaryDashboard groupId={groupId} groupToken={groupToken} isChefOrAdmin={isChefOrAdmin} />
 
       {/* Weekly prep summary (chef only, collapsible) */}
       {isChefOrAdmin && (
@@ -909,6 +1066,49 @@ export function WeeklyMealBoard({
                             </div>
                           )}
 
+                          {/* Allergen conflict warning */}
+                          {(() => {
+                            const conflicts = getMealConflicts(entry)
+                            if (conflicts.length === 0) return null
+                            return (
+                              <div className="mt-1 rounded bg-red-900/30 border border-red-800/40 px-1.5 py-1">
+                                <p className="text-[10px] font-medium text-red-300">
+                                  Conflicts with household allergies:{' '}
+                                  {conflicts
+                                    .map((c) => {
+                                      const who = getAffectedMembers(c)
+                                      return who.length > 0 ? `${c} (${who.join(', ')})` : c
+                                    })
+                                    .join(', ')}
+                                </p>
+                              </div>
+                            )
+                          })()}
+
+                          {/* Prep assignment */}
+                          {!editMode && !entry.id.startsWith('temp-') && (
+                            <PrepAssignmentBadge
+                              groupId={groupId}
+                              mealEntryId={entry.id}
+                              assignedProfileId={entry.assigned_profile_id ?? null}
+                              assignedDisplayName={entry.assigned_display_name ?? null}
+                              assignmentNotes={entry.assignment_notes ?? null}
+                              currentProfileId={currentProfileIdProp ?? null}
+                              profileToken={profileToken}
+                              isChefOrAdmin={isChefOrAdmin}
+                              onAssigned={() => {
+                                getMealBoard({
+                                  groupId,
+                                  groupToken,
+                                  startDate: weekStart,
+                                  endDate: weekEnd,
+                                })
+                                  .then(setEntries)
+                                  .catch(() => {})
+                              }}
+                            />
+                          )}
+
                           {/* Attendance + comments (who's eating, discuss) */}
                           {!editMode && !entry.id.startsWith('temp-') && (
                             <div className="mt-1.5 flex items-center gap-2">
@@ -967,7 +1167,7 @@ export function WeeklyMealBoard({
       <FeedbackInsightsPanel groupId={groupId} isChefOrAdmin={isChefOrAdmin} />
 
       {/* Empty state */}
-      {weekEntries.length === 0 && !editMode && (
+      {weekEntries.length === 0 && !editMode && !mealBoardLoadError && (
         <div className="py-8 text-center">
           <p className="text-2xl">🍽️</p>
           <p className="mt-2 text-sm text-stone-500">No meals planned for this week yet.</p>

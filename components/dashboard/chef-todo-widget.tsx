@@ -1,14 +1,53 @@
 'use client'
 
 import { useState, useTransition, useRef, memo } from 'react'
+import Link from 'next/link'
 import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, Trash2, CheckCircle2, Circle } from '@/components/ui/icons'
+import {
+  Plus,
+  Trash2,
+  CheckCircle2,
+  Circle,
+  Calendar,
+  AlertTriangle,
+  ArrowRight,
+} from '@/components/ui/icons'
 import { createTodo, toggleTodo, deleteTodo, type ChefTodo } from '@/lib/todos/actions'
 
-// ============================================
-// TODO ITEM ROW
-// ============================================
+// ─── HELPERS ────────────────────────────────────────────
+
+function isOverdue(todo: ChefTodo): boolean {
+  if (!todo.due_date || todo.completed) return false
+  const today = new Date().toISOString().split('T')[0]
+  return todo.due_date < today
+}
+
+function isDueToday(todo: ChefTodo): boolean {
+  if (!todo.due_date || todo.completed) return false
+  const today = new Date().toISOString().split('T')[0]
+  return todo.due_date === today
+}
+
+function formatShortDate(dateStr: string): string {
+  const today = new Date().toISOString().split('T')[0]
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
+  if (dateStr === today) return 'Today'
+  if (dateStr === tomorrow) return 'Tmrw'
+  const d = new Date(dateStr + 'T00:00:00')
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+// ─── PRIORITY DOT ───────────────────────────────────────
+
+const PRIORITY_DOTS: Record<string, string> = {
+  urgent: 'bg-red-500',
+  high: 'bg-orange-500',
+  medium: 'bg-yellow-500',
+  low: 'bg-stone-500',
+}
+
+// ─── TODO ITEM ROW ──────────────────────────────────────
 
 const TodoRow = memo(function TodoRow({
   todo,
@@ -21,10 +60,13 @@ const TodoRow = memo(function TodoRow({
   onDelete: (id: string) => void
   disabled: boolean
 }) {
+  const overdue = isOverdue(todo)
+  const dueToday = isDueToday(todo)
+
   return (
     <div
       className={`group flex items-start gap-3 rounded-lg px-2 py-2 transition-colors ${
-        todo.completed ? 'opacity-50' : 'hover:bg-stone-800'
+        todo.completed ? 'opacity-50' : overdue ? 'bg-red-950/20' : 'hover:bg-stone-800'
       }`}
     >
       <button
@@ -41,13 +83,36 @@ const TodoRow = memo(function TodoRow({
         )}
       </button>
 
-      <span
-        className={`flex-1 text-sm leading-relaxed break-words ${
-          todo.completed ? 'line-through text-stone-400' : 'text-stone-200'
-        }`}
-      >
-        {todo.text}
-      </span>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1.5">
+          {todo.priority && todo.priority !== 'medium' && (
+            <span
+              className={`inline-block h-1.5 w-1.5 rounded-full flex-shrink-0 ${PRIORITY_DOTS[todo.priority] || ''}`}
+            />
+          )}
+          <span
+            className={`text-sm leading-relaxed break-words ${
+              todo.completed ? 'line-through text-stone-400' : 'text-stone-200'
+            }`}
+          >
+            {todo.text}
+          </span>
+        </div>
+        {todo.due_date && !todo.completed && (
+          <span
+            className={`flex items-center gap-1 text-[11px] mt-0.5 ${
+              overdue ? 'text-red-400' : dueToday ? 'text-yellow-400' : 'text-stone-500'
+            }`}
+          >
+            {overdue ? (
+              <AlertTriangle className="h-2.5 w-2.5" />
+            ) : (
+              <Calendar className="h-2.5 w-2.5" />
+            )}
+            {formatShortDate(todo.due_date)}
+          </span>
+        )}
+      </div>
 
       <button
         type="button"
@@ -62,9 +127,7 @@ const TodoRow = memo(function TodoRow({
   )
 })
 
-// ============================================
-// ADD TODO FORM
-// ============================================
+// ─── ADD TODO FORM ──────────────────────────────────────
 
 function AddTodoForm({
   onAdd,
@@ -104,7 +167,7 @@ function AddTodoForm({
         type="text"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Add a task…"
+        placeholder="Add a task..."
         maxLength={500}
         disabled={disabled || pending}
         className="flex-1 text-sm bg-transparent border-none outline-none placeholder:text-stone-400 text-stone-200 disabled:cursor-not-allowed"
@@ -121,20 +184,17 @@ function AddTodoForm({
   )
 }
 
-// ============================================
-// MAIN WIDGET
-// ============================================
+// ─── MAIN WIDGET ────────────────────────────────────────
 
 export function ChefTodoWidget({ initialTodos }: { initialTodos: ChefTodo[] }) {
   const [todos, setTodos] = useState<ChefTodo[]>(initialTodos)
   const [isPending, startTransition] = useTransition()
 
-  // Sort: incomplete first (by sort_order), completed last
   const incomplete = todos.filter((t) => !t.completed)
   const completed = todos.filter((t) => t.completed)
   const sortedTodos = [...incomplete, ...completed]
+  const overdueCount = todos.filter(isOverdue).length
 
-  // Add: show immediately with a temp ID, then swap in real ID on confirm
   async function handleAdd(text: string) {
     const tempId = `temp-${Date.now()}`
     const optimisticTodo: ChefTodo = {
@@ -144,6 +204,15 @@ export function ChefTodoWidget({ initialTodos }: { initialTodos: ChefTodo[] }) {
       completed_at: null,
       sort_order: incomplete.length,
       created_at: new Date().toISOString(),
+      due_date: null,
+      due_time: null,
+      priority: 'medium',
+      category: 'general',
+      reminder_at: null,
+      reminder_sent: false,
+      notes: null,
+      event_id: null,
+      client_id: null,
     }
 
     setTodos((prev) => [...prev, optimisticTodo])
@@ -151,15 +220,12 @@ export function ChefTodoWidget({ initialTodos }: { initialTodos: ChefTodo[] }) {
     const result = await createTodo(text)
 
     if (result.success && result.id) {
-      // Swap temp ID for the real database ID so subsequent toggle/delete work
       setTodos((prev) => prev.map((t) => (t.id === tempId ? { ...t, id: result.id! } : t)))
     } else {
-      // Revert on failure
       setTodos((prev) => prev.filter((t) => t.id !== tempId))
     }
   }
 
-  // Toggle: show immediately, revert to original state on failure
   function handleToggle(id: string) {
     const original = todos.find((t) => t.id === id)
     if (!original) return
@@ -189,7 +255,6 @@ export function ChefTodoWidget({ initialTodos }: { initialTodos: ChefTodo[] }) {
     })
   }
 
-  // Delete: remove immediately, restore on failure
   function handleDelete(id: string) {
     const original = todos.find((t) => t.id === id)
     setTodos((prev) => prev.filter((t) => t.id !== id))
@@ -229,11 +294,19 @@ export function ChefTodoWidget({ initialTodos }: { initialTodos: ChefTodo[] }) {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle>To Do</CardTitle>
-          {totalCount > 0 && (
-            <span className="text-xs text-stone-400 tabular-nums">
-              {completedCount}/{totalCount} done
-            </span>
-          )}
+          <div className="flex items-center gap-3">
+            {overdueCount > 0 && (
+              <span className="flex items-center gap-1 text-xs text-red-400 font-medium">
+                <AlertTriangle className="h-3 w-3" />
+                {overdueCount} overdue
+              </span>
+            )}
+            {totalCount > 0 && (
+              <span className="text-xs text-stone-400 tabular-nums">
+                {completedCount}/{totalCount} done
+              </span>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -255,6 +328,17 @@ export function ChefTodoWidget({ initialTodos }: { initialTodos: ChefTodo[] }) {
           </div>
         )}
         <AddTodoForm onAdd={handleAdd} disabled={isPending} />
+
+        {/* Link to full reminders page */}
+        <div className="mt-3 pt-2 border-t border-stone-800">
+          <Link
+            href="/reminders"
+            className="flex items-center justify-center gap-1.5 text-xs text-stone-400 hover:text-brand-400 transition-colors py-1"
+          >
+            Manage reminders
+            <ArrowRight className="h-3 w-3" />
+          </Link>
+        </div>
       </CardContent>
     </Card>
   )

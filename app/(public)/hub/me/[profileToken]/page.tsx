@@ -4,6 +4,7 @@ import {
   getProfileByToken,
   getProfileEventHistory,
   getProfileGroups,
+  getUpcomingEventsForProfile,
 } from '@/lib/hub/profile-actions'
 import { getGroupById } from '@/lib/hub/group-actions'
 import { getHubUnreadCounts } from '@/lib/hub/notification-actions'
@@ -34,10 +35,11 @@ export default async function HubProfilePage({ params }: Props) {
     return <TokenExpiredPage reason="not_found" noun="profile" />
   }
 
-  const [eventHistory, groupMemberships, unreadCounts] = await Promise.all([
+  const [eventHistory, groupMemberships, unreadCounts, upcomingEvents] = await Promise.all([
     getProfileEventHistory(profileToken),
     getProfileGroups(profileToken),
     getHubUnreadCounts(profileToken).catch(() => []),
+    getUpcomingEventsForProfile(profileToken).catch(() => []),
   ])
 
   // Build unread map by group_id
@@ -60,6 +62,7 @@ export default async function HubProfilePage({ params }: Props) {
     <ProfileView
       profile={profile}
       eventHistory={eventHistory}
+      upcomingEvents={upcomingEvents}
       groups={
         groups as (NonNullable<(typeof groups)[number]> & {
           memberRole: string

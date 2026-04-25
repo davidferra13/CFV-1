@@ -13,7 +13,11 @@ import { AuthError, UnknownAppError, ValidationError } from '@/lib/errors/app-er
 import { isMissingSoftDeleteColumn } from '@/lib/mutations/soft-delete-compat'
 import { invalidateRemyContextCache } from '@/lib/ai/remy-context'
 import { normalizeLocationTruthValue } from '@/lib/events/location-truth'
-import { normalizeEventTimeTruthValue } from '@/lib/events/time-truth'
+import {
+  normalizeEventTimeTruthValue,
+  normalizeEventTimezoneTruthValue,
+} from '@/lib/events/time-truth'
+import { executeInteraction } from '@/lib/interactions'
 import {
   EVENT_TIME_ACTIVITY_TYPES,
   EVENT_TIME_ACTIVITY_CONFIG,
@@ -117,6 +121,81 @@ const LogCharityHoursSchema = z.object({
 
 export type LogCharityHoursInput = z.infer<typeof LogCharityHoursSchema>
 
+export type DuplicateEventCandidate = {
+  id: string
+  occasion: string | null
+  event_date: string
+  serve_time: string | null
+  guest_count: number | null
+  client_id: string | null
+  reason: string
+}
+
+async function findDuplicateEventCandidatesForTenant(
+  db: any,
+  tenantId: string,
+  input: {
+    client_id?: string | null
+    event_date?: string | null
+    serve_time?: string | null
+    occasion?: string | null
+    location_city?: string | null
+    exclude_event_id?: string | null
+  }
+): Promise<DuplicateEventCandidate[]> {
+  const date = input.event_date?.slice(0, 10)
+  if (!date) return []
+
+  let query = db
+    .from('events')
+    .select('id, occasion, event_date, serve_time, guest_count, client_id, location_city')
+    .eq('tenant_id', tenantId)
+    .eq('event_date', date)
+    .is('deleted_at' as any, null)
+    .not('status', 'in', '("cancelled")')
+    .limit(10)
+
+  if (input.exclude_event_id) {
+    query = query.neq('id', input.exclude_event_id)
+  }
+
+  const { data, error } = await query
+  if (error || !data) return []
+
+  const normalizedOccasion = input.occasion?.trim().toLowerCase() || ''
+  const normalizedCity = input.location_city?.trim().toLowerCase() || ''
+  const normalizedServeTime = input.serve_time?.trim() || ''
+
+  return (data as any[])
+    .map((event) => {
+      const sameClient = input.client_id && event.client_id === input.client_id
+      const sameTime = normalizedServeTime && event.serve_time === normalizedServeTime
+      const sameOccasion =
+        normalizedOccasion && (event.occasion || '').trim().toLowerCase() === normalizedOccasion
+      const sameCity =
+        normalizedCity && (event.location_city || '').trim().toLowerCase() === normalizedCity
+
+      if (sameClient && sameTime) return { ...event, reason: 'same client and start time' }
+      if (sameClient && sameOccasion) return { ...event, reason: 'same client and occasion' }
+      if (sameOccasion && sameCity) return { ...event, reason: 'same occasion and city' }
+      return null
+    })
+    .filter(Boolean) as DuplicateEventCandidate[]
+}
+
+export async function findDuplicateEventCandidates(input: {
+  client_id?: string | null
+  event_date?: string | null
+  serve_time?: string | null
+  occasion?: string | null
+  location_city?: string | null
+  exclude_event_id?: string | null
+}): Promise<DuplicateEventCandidate[]> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+  return findDuplicateEventCandidatesForTenant(db, user.tenantId!, input)
+}
+
 /**
  * Create event (chef-only)
  * Status starts as 'draft'
@@ -145,6 +224,7 @@ export async function createEvent(input: CreateEventInput) {
   const normalizedServeTime = normalizeEventTimeTruthValue(validated.serve_time)
   const normalizedArrivalTime = normalizeEventTimeTruthValue(validated.arrival_time)
   const normalizedDepartureTime = normalizeEventTimeTruthValue(validated.departure_time)
+  const normalizedEventTimezone = normalizeEventTimezoneTruthValue(validated.event_timezone)
   const hasMeaningfulLocation =
     normalizedLocationAddress !== null ||
     normalizedLocationCity !== null ||
@@ -160,6 +240,19 @@ export async function createEvent(input: CreateEventInput) {
 
   if (!client || client.tenant_id !== user.tenantId) {
     throw new AuthError('Client not found or does not belong to your tenant')
+  }
+
+  const duplicateCandidates = await findDuplicateEventCandidatesForTenant(db, user.tenantId!, {
+    client_id: validated.client_id,
+    event_date: validated.event_date,
+    serve_time: normalizedServeTime,
+    occasion: validated.occasion,
+    location_city: normalizedLocationCity,
+  })
+  if (duplicateCandidates.length > 0) {
+    console.warn('[createEvent] Possible duplicate event created after warning path', {
+      duplicate_ids: duplicateCandidates.map((candidate) => candidate.id),
+    })
   }
 
   // Seed ambiance from client taste profile (non-blocking, best-effort)
@@ -218,7 +311,7 @@ export async function createEvent(input: CreateEventInput) {
         location_lng: hasMeaningfulLocation ? (validated.location_lng ?? null) : null,
         referral_partner_id: validated.referral_partner_id ?? null,
         partner_location_id: validated.partner_location_id ?? null,
-        event_timezone: validated.event_timezone ?? null,
+        event_timezone: normalizedEventTimezone,
         ambiance_notes: clientAmbianceDefault,
         created_by: user.id,
         updated_by: user.id,
@@ -252,6 +345,27 @@ export async function createEvent(input: CreateEventInput) {
       invalidateRemyContextCache(user.tenantId!)
       return { success: true, event }
     },
+  })
+
+  await executeInteraction({
+    action_type: 'create_event',
+    actor_id: user.id,
+    actor: { role: 'chef', actorId: user.id, entityId: user.entityId, tenantId: user.tenantId },
+    target_type: 'event',
+    target_id: result.event.id,
+    context_type: 'client',
+    context_id: validated.client_id,
+    visibility: 'private',
+    metadata: {
+      tenant_id: user.tenantId!,
+      client_id: validated.client_id,
+      event_id: result.event.id,
+      source: 'event_create',
+      suppress_interaction_notifications: true,
+      suppress_interaction_activity: true,
+      suppress_interaction_automation: true,
+    },
+    idempotency_key: `create_event:${result.event.id}`,
   })
 
   // Log chef activity (non-blocking)
@@ -454,6 +568,11 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
       updateFields.departure_time
     )
   }
+  if (Object.prototype.hasOwnProperty.call(updateFields, 'event_timezone')) {
+    normalizedUpdateFields.event_timezone = normalizeEventTimezoneTruthValue(
+      updateFields.event_timezone
+    )
+  }
 
   const db: any = createServerClient()
 
@@ -632,6 +751,40 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
       revalidatePath('/scheduling')
       revalidatePath('/calendar')
       invalidateRemyContextCache(user.tenantId!)
+
+      const updatedDate = (event as any).event_date ?? null
+      const updatedTime = (event as any).serve_time ?? null
+      if (
+        currentEvent &&
+        ((currentEvent as any).event_date !== updatedDate ||
+          (currentEvent as any).serve_time !== updatedTime)
+      ) {
+        try {
+          const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
+          const dateStr = updatedDate
+            ? new Date(updatedDate + 'T00:00:00').toLocaleDateString('en-US', {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+              })
+            : 'TBD'
+          await circleFirstNotify({
+            eventId: eventId,
+            inquiryId: null,
+            notificationType: 'guest_count_updated',
+            body: `The event date has been updated to ${dateStr}${updatedTime ? ` at ${updatedTime}` : ''}.`,
+            metadata: {
+              type: 'date_changed',
+              old_date: (currentEvent as any).event_date,
+              new_date: updatedDate,
+              old_time: (currentEvent as any).serve_time,
+              new_time: updatedTime,
+            },
+          })
+        } catch (err) {
+          console.error('[updateEvent] Circle date-change notification failed (non-blocking):', err)
+        }
+      }
 
       // EC-G9 fix: if event_date changed, notify collaborators (non-blocking)
       if (updateFields.event_date && updateFields.event_date !== currentEvent.event_date) {

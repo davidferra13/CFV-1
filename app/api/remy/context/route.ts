@@ -44,6 +44,11 @@ import {
   getEarlyScopeHint,
 } from '../stream/route-prompt-utils'
 import { tryInstantAnswer } from '../stream/route-instant-answers'
+import {
+  buildStreamDynamicPersonalityBlock,
+  getCuratedStreamGreeting,
+  getCuratedStreamReplyForMessage,
+} from '../stream/route-personality-utils'
 
 export async function POST(req: NextRequest) {
   try {
@@ -167,6 +172,17 @@ export async function POST(req: NextRequest) {
       })
     }
 
+    const curatedReply = await getCuratedStreamReplyForMessage(user.tenantId!, message)
+    if (curatedReply) {
+      return NextResponse.json({
+        blocked: false,
+        intent: 'question',
+        systemPrompt: null,
+        instantResponse: curatedReply.text,
+        quickReplies: curatedReply.quickReplies,
+      })
+    }
+
     // Memory intent handled server-side (needs DB)
     const memoryIntent = detectMemoryIntent(message)
     if (memoryIntent) {
@@ -183,6 +199,17 @@ export async function POST(req: NextRequest) {
     const GREETING_REGEX =
       /^(?:good\s+morning|good\s+afternoon|good\s+evening|morning|afternoon|evening|hey|hi|hello|yo|sup|what'?s?\s+up)\s*[!.?]*$/i
     if (GREETING_REGEX.test(message.trim())) {
+      const curatedGreeting = await getCuratedStreamGreeting(user.tenantId!)
+      if (curatedGreeting) {
+        return NextResponse.json({
+          blocked: false,
+          intent: 'question',
+          systemPrompt: null,
+          instantResponse: curatedGreeting.text,
+          quickReplies: curatedGreeting.quickReplies,
+        })
+      }
+
       return NextResponse.json({
         blocked: false,
         intent: 'question',
@@ -330,6 +357,10 @@ export async function POST(req: NextRequest) {
       const contextScope = determineContextScope(message, 'mixed')
       const surveyPromptSection =
         activeForm === 'remy-survey' ? buildSurveyPromptSection(surveyState) : null
+      const dynamicPersonalityBlock = await buildStreamDynamicPersonalityBlock(
+        user.tenantId!,
+        context
+      )
 
       const systemPrompt = buildRemySystemPrompt(
         context,
@@ -348,7 +379,8 @@ export async function POST(req: NextRequest) {
         message,
         contextScope,
         recentConversationSummaries,
-        true
+        true,
+        dynamicPersonalityBlock
       )
 
       const historyStr = formatConversationHistory(history)
@@ -375,6 +407,10 @@ export async function POST(req: NextRequest) {
     const contextScope = determineContextScope(message, 'question')
     const surveyPromptSection =
       activeForm === 'remy-survey' ? buildSurveyPromptSection(surveyState) : null
+    const dynamicPersonalityBlock = await buildStreamDynamicPersonalityBlock(
+      user.tenantId!,
+      context
+    )
 
     const systemPrompt = buildRemySystemPrompt(
       context,
@@ -393,7 +429,8 @@ export async function POST(req: NextRequest) {
       message,
       contextScope,
       recentConversationSummaries,
-      true
+      true,
+      dynamicPersonalityBlock
     )
 
     const historyStr = formatConversationHistory(history)

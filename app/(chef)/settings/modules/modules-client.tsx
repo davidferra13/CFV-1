@@ -7,20 +7,15 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import Link from 'next/link'
 import { Focus, Eye } from '@/components/ui/icons'
 import { MODULES } from '@/lib/billing/modules'
-import type { Tier } from '@/lib/billing/tier'
 import { updateEnabledModules, enableAllModules } from '@/lib/billing/module-actions'
 import { CORE_MODULES, EXTENDED_MODULES } from '@/lib/billing/focus-mode'
 import { toggleFocusMode } from '@/lib/billing/focus-mode-actions'
 
 type Props = {
   enabledModules: string[]
-  tier: Tier
-  isGrandfathered: boolean
   focusMode: boolean
-  isAdmin: boolean
   isPrivileged?: boolean
 }
 

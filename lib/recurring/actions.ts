@@ -22,6 +22,10 @@ import {
   formatServiceDays,
   getUpcomingServiceDates,
 } from '@/lib/recurring/planning'
+import {
+  ensureRecurringClientCircle,
+  postRecurringLifecycleMessage,
+} from '@/lib/recurring/circle-bridge'
 
 // ============================================
 // RECURRING SERVICES
@@ -75,6 +79,24 @@ export async function createRecurringService(input: RecurringServiceInput) {
 
   if (error) throw new Error(error.message)
   revalidateRecurringPaths(inserted?.client_id)
+
+  // Bridge: ensure client has a dinner circle for recurring communication
+  try {
+    if (inserted?.client_id) {
+      await ensureRecurringClientCircle(
+        chef.id,
+        inserted.client_id,
+        data.service_type || 'Recurring Service'
+      )
+      await postRecurringLifecycleMessage(
+        chef.id,
+        inserted.client_id,
+        `Recurring service started: ${data.service_type?.replace(/_/g, ' ') || 'meal prep'}`
+      )
+    }
+  } catch (err) {
+    console.error('[non-blocking] Recurring circle bridge failed', err)
+  }
 }
 
 export async function updateRecurringService(id: string, input: Partial<RecurringServiceInput>) {

@@ -243,6 +243,14 @@ function getContextModeInstruction(scope: ContextScope): string {
   }
 }
 
+function formatContextHealthForPrompt(context: RemyContext): string | null {
+  const health = context.contextHealth
+  if (!health?.degraded || health.failedOperations.length === 0) return null
+
+  return `\nCONTEXT HEALTH: Some business context failed to load: ${health.failedOperations.join(', ')}.
+Be honest about missing data. Do not claim a complete view of the business when answering questions related to those areas.`
+}
+
 export function buildRemySystemPrompt(
   context: Awaited<ReturnType<typeof loadRemyContext>>,
   memories: RemyMemory[] = [],
@@ -260,7 +268,8 @@ export function buildRemySystemPrompt(
   userMessage?: string,
   _contextScope?: ContextScope,
   recentConversationSummaries?: Array<{ summary: string; generatedAt: string }> | null,
-  isLocalAi?: boolean
+  isLocalAi?: boolean,
+  dynamicPersonalityBlock?: string
 ): string {
   const parts: string[] = []
   const contextScope: ContextScope = _contextScope ?? 'focused'
@@ -295,6 +304,13 @@ export function buildRemySystemPrompt(
   parts.push(REMY_TOPIC_GUARDRAILS)
   parts.push(REMY_ANTI_INJECTION)
   parts.push(getContextModeInstruction(contextScope))
+  if (dynamicPersonalityBlock) {
+    parts.push(dynamicPersonalityBlock)
+  }
+  const contextHealth = formatContextHealthForPrompt(context)
+  if (contextHealth) {
+    parts.push(contextHealth)
+  }
 
   // Inject culinary profile if available
   if (culinaryProfile) {

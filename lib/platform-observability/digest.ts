@@ -413,6 +413,19 @@ export async function sendPlatformObservabilityDigest(): Promise<{
   notableChanges: number
 }> {
   try {
+    const { isDeveloperAlertsEnabled } = await import('@/lib/email/developer-alerts')
+    if (!isDeveloperAlertsEnabled()) {
+      console.log('[platform-observability] Alerts disabled, skipping ops digest')
+      return {
+        sent: false,
+        summary: 'Alerts disabled',
+        totalEvents: 0,
+        criticalEvents: 0,
+        realtimeAlertsSent: 0,
+        notableChanges: 0,
+      }
+    }
+
     const digest = await buildPlatformObservabilityDigest()
     const react = createElement(PlatformObservabilityDigestEmail, digest)
     const issueCount = digest.totals.criticalEvents + digest.notableChanges.length

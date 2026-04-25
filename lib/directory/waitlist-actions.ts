@@ -201,8 +201,14 @@ async function saveDirectoryWaitlistEntry(input: {
  */
 export async function joinDirectoryWaitlist(
   email: string,
-  location: string
+  location: string,
+  honeypot?: string
 ): Promise<{ success: boolean; error?: string }> {
+  // Honeypot check: if a bot fills in the hidden field, silently succeed
+  if (honeypot) {
+    return { success: true }
+  }
+
   const trimmedEmail = email.trim().toLowerCase()
   const trimmedLocation = location.trim()
 
@@ -214,6 +220,17 @@ export async function joinDirectoryWaitlist(
   }
   if (trimmedEmail.length > 320 || trimmedLocation.length > 300) {
     return { success: false, error: 'Input too long.' }
+  }
+
+  // Rate limit: 5 per 10 minutes per IP, 3 per hour per email
+  const hdrs = await headers()
+  const ip =
+    hdrs.get('x-forwarded-for')?.split(',')[0]?.trim() || hdrs.get('x-real-ip') || 'unknown'
+  try {
+    await checkRateLimit(`waitlist-ip:${ip}`, 5, 10 * 60_000)
+    await checkRateLimit(`waitlist-email:${trimmedEmail}`, 3, 60 * 60_000)
+  } catch {
+    return { success: false, error: 'Too many attempts. Please try again later.' }
   }
 
   return saveDirectoryWaitlistEntry({

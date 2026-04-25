@@ -780,6 +780,11 @@ export interface ChefPreferences {
   revenue_goal_program_enabled: boolean
   revenue_goal_nudge_level: 'gentle' | 'standard' | 'aggressive'
   revenue_goal_custom: RevenueGoalCustom[]
+  event_readiness_assistant_enabled: boolean
+  event_readiness_assistant_default_mode: 'off' | 'quiet' | 'normal'
+  event_readiness_show_financial: boolean
+  event_readiness_show_pricing_confidence: boolean
+  event_readiness_show_ops: boolean
 
   // DOP preferences
   shop_day_before: boolean
@@ -815,6 +820,11 @@ export const DEFAULT_PREFERENCES: Omit<ChefPreferences, 'id' | 'chef_id'> = {
   revenue_goal_program_enabled: false,
   revenue_goal_nudge_level: 'gentle',
   revenue_goal_custom: [],
+  event_readiness_assistant_enabled: false,
+  event_readiness_assistant_default_mode: 'quiet',
+  event_readiness_show_financial: true,
+  event_readiness_show_pricing_confidence: true,
+  event_readiness_show_ops: true,
   shop_day_before: true,
   dashboard_widgets: DEFAULT_DASHBOARD_WIDGETS.map((widget) => ({ ...widget })),
   primary_nav_hrefs: [],

@@ -5,12 +5,14 @@ import { EventDetailSection } from '@/components/events/event-detail-mobile-nav'
 import { MenuLibraryPicker } from '@/components/events/menu-library-picker'
 import { MenuApprovalStatus } from '@/components/events/menu-approval-status'
 import { EventExportButton } from '@/components/exports/event-export-button'
-import { PricingIntelligencePanel } from '@/components/ai/pricing-intelligence-panel'
 import { RecordPaymentPanel, ProcessRefundPanel } from '@/components/events/payment-actions-panel'
 import { VoidPaymentPanel } from '@/components/events/void-payment-panel'
 import { PaymentPlanPanel } from '@/components/finance/payment-plan-panel'
 import { MileageLogPanel } from '@/components/finance/mileage-log-panel'
 import { TipLogPanel } from '@/components/finance/tip-log-panel'
+import { EventPricingIntelligencePanel } from '@/components/finance/event-pricing-intelligence-panel'
+import { EventReadinessAssistantPanel } from '@/components/events/event-readiness-assistant-panel'
+import { SettlementPreviewPanel } from '@/components/collaboration/settlement-preview-panel'
 import { BudgetTracker } from '@/components/events/budget-tracker'
 import { QuickReceiptCapture } from '@/components/events/quick-receipt-capture'
 import { TakeAChefPayoutPanel } from '@/components/events/take-a-chef-payout-panel'
@@ -18,14 +20,17 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 import type { CostForecast } from '@/lib/openclaw/cost-forecast-actions'
+import type { EventSettlement } from '@/lib/collaboration/settlement-actions'
 import { PriceComparisonSummary } from '@/components/pricing/price-comparison-summary'
 import { rowToPriceComparison } from '@/lib/pricing/pricing-decision'
 import {
   EventFoodCostInsight,
   type MenuCostData,
 } from '@/components/costing/event-food-cost-insight'
+import type { EventPricingIntelligencePayload } from '@/lib/finance/event-pricing-intelligence-actions'
 import { EventDetailGuestCountRequests } from './event-detail-guest-count-requests'
 import type { GuestCountChange } from '@/lib/guests/count-changes'
+import type { EventReadinessAssistantResult } from '@/lib/events/event-readiness-assistant'
 
 type EventDetailMoneyTabProps = {
   activeTab: EventDetailTab
@@ -48,6 +53,9 @@ type EventDetailMoneyTabProps = {
   costForecast?: CostForecast | null
   menuCostSummary?: MenuCostData | null
   chefArchetype?: string | null
+  pricingIntelligence?: EventPricingIntelligencePayload | null
+  readinessAssistant?: EventReadinessAssistantResult | null
+  settlement: EventSettlement | null
   ledgerEntries?: Array<{
     id: string
     entry_type: string
@@ -83,6 +91,9 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
     costForecast,
     menuCostSummary,
     chefArchetype,
+    pricingIntelligence,
+    readinessAssistant,
+    settlement,
     ledgerEntries,
     guestCountChanges,
   } = props
@@ -164,6 +175,10 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
         />
       )}
 
+      <EventPricingIntelligencePanel data={pricingIntelligence ?? null} />
+
+      <EventReadinessAssistantPanel eventId={event.id} readiness={readinessAssistant ?? null} />
+
       {/* Financial Summary */}
       <Card className="p-6">
         <div className="flex justify-between items-center mb-4">
@@ -238,11 +253,6 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
       <EventDetailGuestCountRequests changes={guestCountChanges} />
 
       {takeAChefFinance?.isTakeAChef && <TakeAChefPayoutPanel finance={takeAChefFinance} />}
-
-      {/* AI Pricing Intelligence */}
-      {['proposed', 'accepted'].includes(event.status) && (
-        <PricingIntelligencePanel eventId={event.id} />
-      )}
 
       {/* Record Payment â€" for accepted events with outstanding balance */}
       {['accepted', 'paid'].includes(event.status) && outstandingBalance > 0 && (
@@ -526,6 +536,8 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
             )}
           </Card>
         )}
+
+      <SettlementPreviewPanel settlement={settlement} />
 
       {/* Loyalty Points Awarded */}
       {event.status === 'completed' && eventLoyaltyPoints > 0 && (

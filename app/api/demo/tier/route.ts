@@ -1,11 +1,20 @@
-// Demo Tier Toggle Endpoint
-// Switches the demo chef's subscription_status between Pro and Free.
+// Demo support-state endpoint.
 // Only active when DEMO_MODE_ENABLED=true.
 
 import { NextRequest, NextResponse } from 'next/server'
 import { readFileSync } from 'fs'
 import { revalidateTag } from 'next/cache'
 import { createServerClient } from '@/lib/db/server'
+import { SUPPORT_DEFAULT_MONTHLY_AMOUNT_CENTS } from '@/lib/monetization/offers'
+
+function isMissingSupportColumnError(error: any): boolean {
+  const message = String(error?.message ?? '').toLowerCase()
+  return (
+    error?.code === '42703' ||
+    message.includes('supporter_since') ||
+    message.includes('monthly_support_amount_cents')
+  )
+}
 
 export async function POST(req: NextRequest) {
   if (process.env.NODE_ENV === 'production') {
@@ -17,13 +26,15 @@ export async function POST(req: NextRequest) {
     return new NextResponse('Forbidden - DEMO_MODE_ENABLED is not set', { status: 403 })
   }
 
-  let tier: 'pro' | 'free'
+  let supporting: boolean
   try {
     const body = await req.json()
-    tier = body.tier
-    if (tier !== 'pro' && tier !== 'free') throw new Error('Invalid tier')
+    supporting =
+      typeof body.supporting === 'boolean'
+        ? body.supporting
+        : body.supportState === 'supporting' || body.tier === 'pro'
   } catch {
-    return new NextResponse('Bad Request - expected { tier: "pro" | "free" }', { status: 400 })
+    return new NextResponse('Bad Request - expected { supporting: boolean }', { status: 400 })
   }
 
   let demoChef: { chefId: string }
@@ -34,24 +45,48 @@ export async function POST(req: NextRequest) {
   }
 
   const db = createServerClient({ admin: true })
-  const status = tier === 'pro' ? 'active' : 'canceled'
+  const now = new Date().toISOString()
+  const legacyPatch = {
+    subscription_status: supporting ? 'active' : 'canceled',
+  }
+  const supportPatch = supporting
+    ? {
+        supporter_since: now,
+        monthly_support_amount_cents: SUPPORT_DEFAULT_MONTHLY_AMOUNT_CENTS,
+        last_support_amount_cents: SUPPORT_DEFAULT_MONTHLY_AMOUNT_CENTS,
+        last_supported_at: now,
+      }
+    : {
+        supporter_since: null,
+        monthly_support_amount_cents: null,
+      }
 
-  const { error } = await db
+  let { error } = await db
     .from('chefs')
-    .update({ subscription_status: status })
+    .update({ ...legacyPatch, ...supportPatch } as any)
     .eq('id', demoChef.chefId)
 
+  if (error && isMissingSupportColumnError(error)) {
+    const retry = await db
+      .from('chefs')
+      .update(legacyPatch as any)
+      .eq('id', demoChef.chefId)
+    error = retry.error
+  }
+
   if (error) {
-    console.error('[demo/tier] Database error:', error)
-    return NextResponse.json({ error: 'Failed to update demo tier.' }, { status: 500 })
+    console.error('[demo/support] Database error:', error)
+    return NextResponse.json({ error: 'Failed to update demo support state.' }, { status: 500 })
   }
 
   revalidateTag(`chef-layout-${demoChef.chefId}`)
 
   return NextResponse.json({
     ok: true,
-    tier,
-    subscription_status: status,
-    message: `Demo chef switched to ${tier.toUpperCase()} tier (subscription_status: ${status})`,
+    supporting,
+    subscription_status: legacyPatch.subscription_status,
+    message: supporting
+      ? 'Demo chef is now shown as supporting ChefFlow.'
+      : 'Demo chef is now shown without monthly support.',
   })
 }

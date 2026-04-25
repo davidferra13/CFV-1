@@ -173,3 +173,46 @@ export async function deleteShiftNote(noteId: string) {
   revalidatePath('/briefing')
   revalidatePath('/stations/daily-ops')
 }
+
+/**
+ * Search shift handoff notes by text content.
+ * Returns matching notes ordered by date descending, limited to 100 results.
+ * If query is empty, returns the most recent 50 notes.
+ */
+export async function searchShiftNotes(query: string): Promise<ShiftNote[]> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  if (!query.trim()) {
+    const { data, error } = await db
+      .from('shift_handoff_notes')
+      .select('*')
+      .eq('chef_id', user.tenantId!)
+      .order('date', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(50)
+
+    if (error) {
+      console.error('[searchShiftNotes] Error:', error)
+      throw new Error('Failed to load shift notes')
+    }
+    return (data ?? []) as ShiftNote[]
+  }
+
+  // Text search using ilike (case-insensitive partial match)
+  const { data, error } = await db
+    .from('shift_handoff_notes')
+    .select('*')
+    .eq('chef_id', user.tenantId!)
+    .ilike('content', `%${query.trim()}%`)
+    .order('date', { ascending: false })
+    .order('created_at', { ascending: false })
+    .limit(100)
+
+  if (error) {
+    console.error('[searchShiftNotes] Error:', error)
+    throw new Error('Failed to search shift notes')
+  }
+
+  return (data ?? []) as ShiftNote[]
+}

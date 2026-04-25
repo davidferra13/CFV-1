@@ -159,4 +159,12 @@ export const SCHEDULED_JOBS: ScheduledJob[] = [
     seedOnStartup: true,
     enabled: true,
   },
+  {
+    taskType: 'scheduled.reminder_fire',
+    name: 'Personal Reminder Check',
+    intervalMs: 5 * 60 * 1000, // every 5 minutes
+    priority: AI_PRIORITY.SCHEDULED,
+    seedOnStartup: true,
+    enabled: true,
+  },
 ]

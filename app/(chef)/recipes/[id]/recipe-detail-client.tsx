@@ -27,6 +27,7 @@ import { SubRecipeSearchModal } from '@/components/recipes/sub-recipe-search-mod
 import { DishPhotoUpload } from '@/components/dishes/dish-photo-upload'
 import { RecipeUsagePanel } from '@/components/recipes/recipe-usage-panel'
 import { RecipeTrackRecordPanel } from '@/components/recipes/recipe-track-record'
+import { PurchaseFeedbackPanel } from '@/components/recipes/purchase-feedback-panel'
 import { trackAction } from '@/lib/ai/remy-activity-tracker'
 import { useDeferredAction } from '@/hooks/use-deferred-action'
 import { toast } from 'sonner'
@@ -640,6 +641,8 @@ export function RecipeDetailClient({ recipe, initialCompletion, provenance }: Pr
 
       {/* Allergen Detection (on-demand - uses Edamam API when chef clicks) */}
       <AllergenBadgePanel recipeId={recipe.id} ingredientCount={recipe.ingredients.length} />
+
+      <PurchaseFeedbackPanel recipeId={recipe.id} />
 
       {/* Method */}
       {recipe.method && (

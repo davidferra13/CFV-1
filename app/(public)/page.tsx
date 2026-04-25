@@ -7,7 +7,10 @@ import {
   SoftwareApplicationJsonLd,
   WebSiteJsonLd,
 } from '@/components/seo/json-ld'
-import { PUBLIC_PRIMARY_CONSUMER_CTA } from '@/lib/public/public-surface-config'
+import {
+  PUBLIC_CONSUMER_DISCOVERY_ENTRY,
+  PUBLIC_PRIMARY_CONSUMER_CTA,
+} from '@/lib/public/public-surface-config'
 import { buildMarketingSourceHref } from '@/lib/marketing/source-links'
 import { buildOperatorWalkthroughHref } from '@/lib/marketing/walkthrough-links'
 import { buildMarketingMetadata } from '@/lib/site/public-site'
@@ -90,6 +93,17 @@ export default function Home() {
           </div>
 
           <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            <TrackedLink
+              href={PUBLIC_CONSUMER_DISCOVERY_ENTRY.href}
+              analyticsName="home_consumer_hero_discovery"
+              analyticsProps={{
+                section: 'consumer_hero',
+                destination: PUBLIC_CONSUMER_DISCOVERY_ENTRY.href,
+              }}
+              className="inline-flex min-h-12 items-center justify-center rounded-2xl gradient-accent px-6 text-sm font-semibold text-white shadow-lg transition-colors hover:opacity-95"
+            >
+              Find food now
+            </TrackedLink>
             <TrackedLink
               href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
               analyticsName="home_consumer_hero_book"

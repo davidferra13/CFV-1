@@ -11,6 +11,7 @@ import { DirectoryFavoriteButton, type DirectoryFavoriteMode } from './directory
 type Props = {
   listing: DirectoryListingSummary
   favoriteMode?: DirectoryFavoriteMode
+  visualMode?: boolean
 }
 
 type NearbyCardTone = 'verified' | 'claimed' | 'public' | 'warning' | 'muted'
@@ -80,7 +81,7 @@ function buildTrustPresentation(status: string) {
   }
 }
 
-export function ListingCard({ listing, favoriteMode = 'hidden' }: Props) {
+export function ListingCard({ listing, favoriteMode = 'hidden', visualMode = false }: Props) {
   const photoUrls = Array.isArray(listing.photo_urls)
     ? listing.photo_urls.filter((url) => typeof url === 'string' && url.trim().length > 0)
     : []
@@ -141,12 +142,13 @@ export function ListingCard({ listing, favoriteMode = 'hidden' }: Props) {
     (location
       ? `${trustPresentation.fallbackPrefix} in ${location}.`
       : `${trustPresentation.fallbackPrefix}.`)
+  const imageAspectClass = visualMode ? 'aspect-[3/4]' : 'aspect-[16/10]'
 
   return (
     <React.Fragment>
       <article className="group relative flex flex-col overflow-hidden rounded-2xl bg-stone-900 ring-1 ring-stone-800 transition-all duration-300 hover:-translate-y-1 hover:ring-stone-600 hover:shadow-[0_8px_40px_rgb(0,0,0,0.25)]">
         {/* Image area */}
-        <div className="relative aspect-[16/10] overflow-hidden">
+        <div className={`relative ${imageAspectClass} overflow-hidden`}>
           {hasPhoto ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img

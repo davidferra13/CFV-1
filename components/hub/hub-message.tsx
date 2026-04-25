@@ -194,7 +194,11 @@ export const HubMessageBubble = memo(function HubMessageBubble({
         {isOwn && <span className="mt-0.5 text-xs text-stone-600">{timeStr}</span>}
 
         {/* Seen by indicator (own messages only) */}
-        {isOwn && <SeenByIndicator messageId={message.id} />}
+        {isOwn && (
+          <div className="relative">
+            <SeenByIndicator messageId={message.id} />
+          </div>
+        )}
 
         {/* Reactions display */}
         {message.reaction_counts && Object.keys(message.reaction_counts).length > 0 && (
@@ -304,7 +308,7 @@ function SeenByIndicator({ messageId }: { messageId: string }) {
   if (readers !== null && readers.length === 0) return null
 
   return (
-    <div className="mt-0.5 flex items-center gap-1">
+    <div className="relative mt-0.5 flex items-center gap-1">
       <button
         type="button"
         onClick={() => {

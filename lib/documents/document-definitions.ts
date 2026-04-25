@@ -11,6 +11,7 @@ export const OPERATIONAL_DOCUMENT_TYPES = [
   'reset',
   'travel',
   'shots',
+  'beo',
 ] as const
 
 export type OperationalDocumentType = (typeof OPERATIONAL_DOCUMENT_TYPES)[number]
@@ -159,6 +160,17 @@ export const DOCUMENT_DEFINITIONS: Record<OperationalDocumentType, DocumentDefin
     isCorePacket: false,
     requiredSignals: ['capture checklist', 'content goals'],
   },
+  beo: {
+    type: 'beo',
+    label: 'Banquet Event Order',
+    docTypeLabel: 'BEO',
+    fallbackTitle: 'BANQUET EVENT ORDER',
+    filenameBase: 'beo',
+    templateSlug: 'banquet-event-order',
+    category: 'core',
+    isCorePacket: false,
+    requiredSignals: ['event basics', 'client context', 'menu context', 'timeline'],
+  },
 }
 
 export function getDocumentDefinition(type: OperationalDocumentType): DocumentDefinition {
@@ -237,7 +249,7 @@ export function parseDocumentRequestQuery(
     return {
       success: false,
       error:
-        'Invalid document type. Use: summary, grocery, foh, prep, execution, checklist, packing, reset, travel, shots, all, or pack.',
+        'Invalid document type. Use: summary, grocery, foh, prep, execution, checklist, packing, reset, travel, shots, beo, all, or pack.',
       details: [`received type="${requestedTypeRaw || '(empty)'}"`],
     }
   }

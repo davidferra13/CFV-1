@@ -153,7 +153,7 @@ export function HubPhotoGallery({ groupId, media, profileToken, canPost }: HubPh
             </div>
           )}
 
-          {profileToken && (
+          {profileToken && items[lightboxIdx]?.uploaded_by?.profile_token === profileToken && (
             <button
               onClick={(e) => {
                 e.stopPropagation()

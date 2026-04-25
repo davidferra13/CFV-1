@@ -1,36 +1,73 @@
 'use server'
 
-// Thin server-action wrappers for the billing settings page.
-// These acquire the authenticated chef ID, delegate to lib/stripe/subscription.ts,
-// then redirect to the Stripe-hosted URL.  Client components import these
-// directly and invoke them from <form action={...}>.
-
-import { requireChef } from '@/lib/auth/get-user'
-import { createCheckoutSession, createBillingPortalSession } from '@/lib/stripe/subscription'
 import { redirect } from 'next/navigation'
+import { requireChef } from '@/lib/auth/get-user'
+import {
+  createSupportBillingPortalSession,
+  createSupportCheckoutSession,
+} from '@/lib/stripe/subscription'
+import {
+  getSupportOffer,
+  parseSupportAmountCents,
+  type SupportOfferId,
+} from '@/lib/monetization/offers'
 
-export async function redirectToCheckout(): Promise<{ error: string } | void> {
+type BillingActionResult = { error: string }
+
+function isRedirectError(err: any): boolean {
+  return err?.message === 'NEXT_REDIRECT' || err?.digest?.startsWith?.('NEXT_REDIRECT')
+}
+
+function getCheckoutErrorMessage(err: any): string {
+  const message = String(err?.message ?? 'Support checkout is unavailable')
+  if (message.includes('not configured')) {
+    return 'Support checkout is not available yet. Check back soon.'
+  }
+  return message
+}
+
+export async function redirectToSupportCheckout(
+  formData: FormData
+): Promise<BillingActionResult | void> {
   const user = await requireChef()
+
   try {
-    const url = await createCheckoutSession(user.entityId)
+    const offerId = String(formData.get('offerId') ?? '')
+    const offer = getSupportOffer(offerId)
+    if (!offer) return { error: 'Choose a support option.' }
+
+    const customAmountCents =
+      offer.amountCents == null ? parseSupportAmountCents(formData.get('customAmount')) : null
+
+    if (offer.amountCents == null && !customAmountCents) {
+      return { error: 'Enter a contribution between $1 and $500.' }
+    }
+
+    const url = await createSupportCheckoutSession({
+      chefId: user.entityId,
+      offerId: offer.id as SupportOfferId,
+      customAmountCents,
+    })
     redirect(url)
   } catch (err: any) {
-    if (err?.message === 'NEXT_REDIRECT') throw err
-    const msg = err?.message ?? 'Checkout unavailable'
-    if (msg.includes('not configured')) {
-      return { error: 'Supporter checkout is not available yet. Check back soon.' }
-    }
-    return { error: msg }
+    if (isRedirectError(err)) throw err
+    return { error: getCheckoutErrorMessage(err) }
   }
 }
 
-export async function redirectToBillingPortal(): Promise<{ error: string } | void> {
+export async function redirectToBillingPortal(): Promise<BillingActionResult | void> {
   const user = await requireChef()
   try {
-    const url = await createBillingPortalSession(user.entityId)
+    const url = await createSupportBillingPortalSession(user.entityId)
     redirect(url)
   } catch (err: any) {
-    if (err?.message === 'NEXT_REDIRECT') throw err
-    return { error: err?.message ?? 'Billing portal unavailable' }
+    if (isRedirectError(err)) throw err
+    return { error: err?.message ?? 'Support management is unavailable.' }
   }
+}
+
+export async function redirectToCheckout(): Promise<BillingActionResult | void> {
+  const formData = new FormData()
+  formData.set('offerId', 'support_12_monthly')
+  return redirectToSupportCheckout(formData)
 }

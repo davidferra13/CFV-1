@@ -257,3 +257,79 @@ export async function notifyFriendRequest(input: {
     console.error('[non-blocking] Failed to send friend request notification', err)
   }
 }
+
+/**
+ * Broadcast a new ticketed event to all circle members via email.
+ * Called when a chef enables ticketing on an event.
+ * Respects: muting, notifications_enabled, email preferences.
+ * Does NOT respect throttle/quiet hours (this is a one-time announcement, not chat).
+ */
+export async function broadcastEventToCircleMembers(input: {
+  groupId: string
+  chefName: string
+  eventName: string
+  eventDate: string
+  eventLocation: string
+  priceRange: string
+  spotsAvailable: string
+  ticketUrl: string
+}): Promise<void> {
+  try {
+    const db: any = createServerClient({ admin: true })
+
+    const [groupResult, membersResult] = await Promise.all([
+      db.from('hub_groups').select('name, group_token').eq('id', input.groupId).single(),
+      db
+        .from('hub_group_members')
+        .select(
+          'profile_id, notifications_muted, notify_email, hub_guest_profiles(id, email, display_name, notifications_enabled)'
+        )
+        .eq('group_id', input.groupId),
+    ])
+
+    const group = groupResult.data
+    const members = membersResult.data ?? []
+
+    if (!group) return
+
+    const circleUrl = `${APP_URL}/hub/g/${group.group_token}`
+
+    for (const member of members) {
+      const profile = member.hub_guest_profiles as unknown as {
+        id: string
+        email: string | null
+        display_name: string
+        notifications_enabled: boolean
+      } | null
+
+      if (!profile) continue
+      if (!profile.notifications_enabled) continue
+      if (member.notifications_muted) continue
+      if (!profile.email) continue
+
+      const emailEnabled = (member as any).notify_email !== false
+      if (!emailEnabled) continue
+
+      try {
+        const { sendCircleEventBroadcastEmail } = await import('@/lib/email/notifications')
+        await sendCircleEventBroadcastEmail({
+          recipientEmail: profile.email,
+          recipientName: profile.display_name,
+          chefName: input.chefName,
+          groupName: group.name,
+          eventName: input.eventName,
+          eventDate: input.eventDate,
+          eventLocation: input.eventLocation,
+          priceRange: input.priceRange,
+          spotsAvailable: input.spotsAvailable,
+          ticketUrl: input.ticketUrl,
+          circleUrl,
+        })
+      } catch (err) {
+        console.error('[non-blocking] Circle event broadcast email failed', err)
+      }
+    }
+  } catch (err) {
+    console.error('[non-blocking] broadcastEventToCircleMembers failed', err)
+  }
+}

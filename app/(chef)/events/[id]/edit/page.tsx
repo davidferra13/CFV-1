@@ -27,8 +27,9 @@ export default async function EditEventPage({
     notFound()
   }
 
-  // Only allow editing if event is in draft or proposed status
-  if (!['draft', 'proposed'].includes(event.status)) {
+  // Block editing only for terminal states
+  const TERMINAL_STATUSES = ['completed', 'cancelled']
+  if (TERMINAL_STATUSES.includes(event.status)) {
     redirect(`/events/${params.id}`)
   }
 
@@ -65,6 +66,15 @@ export default async function EditEventPage({
         <h1 className="text-3xl font-bold text-stone-100">Edit Event</h1>
         <p className="text-stone-400 mt-1">Update event details</p>
       </div>
+
+      {!['draft', 'proposed'].includes(event.status) && (
+        <div className="rounded-lg border border-amber-700 bg-amber-950/50 px-4 py-3">
+          <p className="text-sm text-amber-300">
+            This event is <span className="font-semibold">{event.status.replace(/_/g, ' ')}</span>.
+            Changes may affect quotes, grocery lists, and prep schedules.
+          </p>
+        </div>
+      )}
 
       {event.status === 'proposed' && (
         <Alert variant="warning" title="Event Already Proposed">

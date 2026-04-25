@@ -59,12 +59,13 @@ export async function getMealBoard(
 
   // SECURITY (Q6): Verify group access when called with a token
   if (groupToken) {
-    const { data: group } = await db
+    const { data: group, error: groupError } = await db
       .from('hub_groups')
       .select('id')
       .eq('id', groupId)
       .eq('group_token', groupToken)
-      .single()
+      .maybeSingle()
+    if (groupError) throw new Error(`Failed to verify circle access: ${groupError.message}`)
     if (!group) throw new Error('Access denied')
   }
 
@@ -328,15 +329,22 @@ export async function bulkUpsertMealEntries(
         system_metadata: { startDate, endDate, count: upsertedCount },
       })
 
-      // Update group's last_message
-      await db
+      const { data: currentGroup } = await db
         .from('hub_groups')
-        .update({
-          last_message_at: new Date().toISOString(),
-          last_message_preview: `Menu posted for ${dateRange}`,
-          message_count: db.raw('message_count + 1'),
-        })
+        .select('message_count')
         .eq('id', validated.groupId)
+        .single()
+
+      if (currentGroup) {
+        await db
+          .from('hub_groups')
+          .update({
+            last_message_at: new Date().toISOString(),
+            last_message_preview: `Menu posted for ${dateRange}`,
+            message_count: (currentGroup.message_count ?? 0) + 1,
+          })
+          .eq('id', validated.groupId)
+      }
     } catch {
       // Non-blocking: system message failure doesn't affect meal board
       console.error('[non-blocking] Failed to post system message for meal board update')

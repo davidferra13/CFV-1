@@ -28,6 +28,7 @@ export interface GroceryItem {
   recipes: string[] // which recipes need this ingredient
   checked: boolean
   isCustom: false
+  isStaple: boolean // pantry staple (assumed on hand)
 }
 
 export interface CustomGroceryItem {
@@ -165,7 +166,7 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
           unit,
           yield_pct,
           ingredient_id,
-          ingredients(id, name, category, default_yield_pct)
+          ingredients(id, name, category, default_yield_pct, is_staple)
         )
       )
     `
@@ -187,6 +188,7 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
       quantities: { qty: number; unit: string }[]
       yieldPct: number
       recipes: Set<string>
+      isStaple: boolean
     }
   >()
 
@@ -215,11 +217,24 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
         quantities: [],
         yieldPct: 100,
         recipes: new Set(),
+        isStaple: !!ingredient.is_staple,
       })
     }
 
     const entry = ingredientMap.get(key)!
-    const scaledQty = (Number(ri.quantity) || 0) * scaleFactor
+    const cat = (ingredient.category ?? '').toLowerCase()
+    // Sublinear scaling for spices/herbs: converge toward 75% of linear above 2x
+    const isSpiceOrHerb =
+      cat === 'spice' ||
+      cat === 'spices' ||
+      cat === 'herb' ||
+      cat === 'herbs' ||
+      cat === 'dried herbs' ||
+      cat === 'dried spices' ||
+      cat === 'seasoning'
+    const effectiveScale =
+      isSpiceOrHerb && scaleFactor > 2 ? 2 + (scaleFactor - 2) * 0.75 : scaleFactor
+    const scaledQty = (Number(ri.quantity) || 0) * effectiveScale
     const yieldPct = Math.max(
       Number(ri.yield_pct) || Number(ingredient.default_yield_pct) || 100,
       1
@@ -380,6 +395,7 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
       recipes: Array.from(entry.recipes),
       checked: false,
       isCustom: false,
+      isStaple: entry.isStaple,
     })
   }
 

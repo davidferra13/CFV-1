@@ -10,6 +10,7 @@ import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { withApiAuth, apiSuccess, apiNotFound, apiValidationError, apiError } from '@/lib/api/v2'
 import { appendLedgerEntryInternal } from '@/lib/ledger/append-internal'
+import { executeInteraction } from '@/lib/interactions'
 
 const UpdateInvoiceBody = z
   .object({
@@ -79,7 +80,7 @@ export const PATCH = withApiAuth(
     // Verify event belongs to tenant and has an invoice
     const { data: existing } = await ctx.db
       .from('events')
-      .select('id, invoice_number')
+      .select('id, invoice_number, client_id')
       .eq('id', id)
       .eq('tenant_id', ctx.tenantId)
       .is('deleted_at', null)
@@ -131,6 +132,29 @@ export const PATCH = withApiAuth(
         revalidatePath('/dashboard')
         revalidatePath('/finance')
         revalidatePath(`/events/${id}`)
+        await executeInteraction({
+          action_type: 'mark_paid',
+          actor_id: `api_key:${ctx.keyId}`,
+          actor: { role: 'system', actorId: `api_key:${ctx.keyId}`, tenantId: ctx.tenantId },
+          target_type: 'event',
+          target_id: id,
+          context_type: 'client',
+          context_id: (eventDetail as any).client_id,
+          visibility: 'private',
+          metadata: {
+            tenant_id: ctx.tenantId,
+            client_id: (eventDetail as any).client_id,
+            event_id: id,
+            amount_cents: parsed.data.paid_amount_cents,
+            payment_method: parsed.data.payment_method,
+            source: 'api_v2_invoice',
+            api_key_id: ctx.keyId,
+            suppress_interaction_notifications: true,
+            suppress_interaction_activity: true,
+            suppress_interaction_automation: true,
+          },
+          idempotency_key: `mark_paid:invoice:${id}:${parsed.data.paid_amount_cents}`,
+        })
       } catch (ledgerErr: any) {
         // Only throw if it's not a duplicate (idempotent re-call is fine)
         if (!ledgerErr?.message?.includes('duplicate')) {
@@ -164,6 +188,31 @@ export const PATCH = withApiAuth(
     if (error) {
       console.error('[api/v2/invoices] Update error:', error)
       return apiError('update_failed', 'Failed to update invoice', 500)
+    }
+
+    if (parsed.data.invoice_number !== undefined) {
+      await executeInteraction({
+        action_type: 'send_invoice',
+        actor_id: `api_key:${ctx.keyId}`,
+        actor: { role: 'system', actorId: `api_key:${ctx.keyId}`, tenantId: ctx.tenantId },
+        target_type: 'event',
+        target_id: id,
+        context_type: 'client',
+        context_id: (existing as any).client_id,
+        visibility: 'private',
+        metadata: {
+          tenant_id: ctx.tenantId,
+          client_id: (existing as any).client_id,
+          event_id: id,
+          invoice_number: parsed.data.invoice_number,
+          source: 'api_v2_invoice',
+          api_key_id: ctx.keyId,
+          suppress_interaction_notifications: true,
+          suppress_interaction_activity: true,
+          suppress_interaction_automation: true,
+        },
+        idempotency_key: `send_invoice:${id}:${parsed.data.invoice_number}`,
+      })
     }
 
     return apiSuccess(data)

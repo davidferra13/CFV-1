@@ -19,6 +19,7 @@ const DOC_LABELS: Record<OperationalDocumentType, string> = {
   reset: 'Post-Service Reset Checklist',
   travel: 'Travel Route',
   shots: 'Content Asset Capture Sheet',
+  beo: 'Banquet Event Order',
 }
 
 type BulkRunResultRow = {

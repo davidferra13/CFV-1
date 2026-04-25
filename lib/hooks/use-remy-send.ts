@@ -280,6 +280,7 @@ export function useRemySend(config: UseRemySendConfig) {
       content?: string
       tasks?: RemyTaskResult[]
       navSuggestions?: NavigationSuggestion[]
+      quickReplies?: string[]
     }> => {
       if (!localAi?.enabled) return { handled: false }
 
@@ -314,7 +315,12 @@ export function useRemySend(config: UseRemySendConfig) {
         // Instant responses (greeting, guardrail blocks, instant answers)
         if (ctx.instantResponse) {
           setLocalAiMode('cloud') // instant answers come from server
-          return { handled: true, content: ctx.instantResponse, navSuggestions: ctx.navSuggestions }
+          return {
+            handled: true,
+            content: ctx.instantResponse,
+            navSuggestions: ctx.navSuggestions,
+            quickReplies: ctx.quickReplies,
+          }
         }
 
         // Server-only paths (memory, commands)
@@ -647,6 +653,7 @@ export function useRemySend(config: UseRemySendConfig) {
               timestamp: new Date().toISOString(),
               tasks: localResult.tasks,
               navSuggestions: localResult.navSuggestions,
+              quickReplies: localResult.quickReplies,
             }
             setMessages((prev) => [...prev, remyMsg])
             setStreamingContent('')
@@ -664,6 +671,7 @@ export function useRemySend(config: UseRemySendConfig) {
             saveLocalMessage(convId, 'remy', cleanContent, {
               tasks: localResult.tasks,
               navSuggestions: localResult.navSuggestions,
+              quickReplies: localResult.quickReplies,
             })
               .then(() => trimConversationMessages(convId).catch(() => {}))
               .catch((err) => console.error('[non-blocking] Save remy msg failed', err))
@@ -796,7 +804,14 @@ export function useRemySend(config: UseRemySendConfig) {
           onError: () => setStreamingContent(''),
         })
 
-        const { fullContent, isError: isErrorResponse, tasks, navSuggestions, memoryItems } = result
+        const {
+          fullContent,
+          isError: isErrorResponse,
+          tasks,
+          navSuggestions,
+          quickReplies,
+          memoryItems,
+        } = result
         const cleanContent = fullContent.replace(/\nNAV_SUGGESTIONS:\s*\[[\s\S]*\]/, '').trim()
 
         const remyMsg: RemyMessage = {
@@ -806,6 +821,7 @@ export function useRemySend(config: UseRemySendConfig) {
           timestamp: new Date().toISOString(),
           tasks,
           navSuggestions,
+          quickReplies,
           memoryItems,
           ...(isErrorResponse && { isRetryable: true, retryMessage: message }),
         }
@@ -849,7 +865,7 @@ export function useRemySend(config: UseRemySendConfig) {
 
         playNotificationSound()
 
-        saveLocalMessage(convId, 'remy', cleanContent, { tasks, navSuggestions })
+        saveLocalMessage(convId, 'remy', cleanContent, { tasks, navSuggestions, quickReplies })
           .then(() =>
             trimConversationMessages(convId).catch((err) => {
               console.error('[non-blocking] trimConversationMessages failed:', err)

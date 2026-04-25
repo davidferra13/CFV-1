@@ -19,6 +19,7 @@ import { getRecipeDebt } from '@/lib/recipes/actions'
 import { getUpcomingCalls } from '@/lib/calls/actions'
 import { getUnifiedInbox } from '@/lib/inbox/actions'
 import { getOnboardingProgress, type OnboardingProgress } from '@/lib/onboarding/progress-actions'
+import { getEmptyFirstWeekActivationProgress } from '@/lib/onboarding/first-week-activation'
 import { getRecurringCollaborationCommandCenter } from '@/lib/recurring/actions'
 import { getStuckEvents } from '@/lib/pipeline/stuck-events'
 import { getNextBestActions } from '@/lib/clients/next-best-action'
@@ -84,15 +85,7 @@ const emptyResponseTimeSummary: ResponseTimeSummary = {
 }
 const emptyPendingFollowUps: PendingFollowUp[] = []
 const emptyRecipeDebt = { last7Days: 0, last30Days: 0, older: 0, total: 0, totalRecipes: 0 }
-const emptyOnboardingProgress: OnboardingProgress = {
-  profile: false,
-  clients: { done: false, count: 0 },
-  loyalty: { done: false },
-  recipes: { done: false, count: 0 },
-  staff: { done: false, count: 0 },
-  completedPhases: 0,
-  totalPhases: 5,
-}
+const emptyOnboardingProgress: OnboardingProgress = getEmptyFirstWeekActivationProgress()
 const emptyRecurringCommandCenter = {
   openMealRequestCount: 0,
   pendingRecommendationResponseCount: 0,
@@ -388,7 +381,7 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
             className={widgetGridClass('onboarding_checklist')}
             style={{ order: getWidgetOrder('onboarding_checklist') }}
           >
-            <CollapsibleWidget widgetId="onboarding_checklist" title="Setup Progress">
+            <CollapsibleWidget widgetId="onboarding_checklist" title="First Booking Loop">
               <OnboardingChecklistWidget progress={onboardingProgress} />
             </CollapsibleWidget>
           </section>

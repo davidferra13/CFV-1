@@ -1,7 +1,7 @@
 ﻿import type { RemyTaskResult } from '@/lib/ai/remy-types'
 
 interface StreamEvent {
-  type: 'token' | 'tasks' | 'nav' | 'memories' | 'done' | 'error' | 'intent'
+  type: 'token' | 'tasks' | 'nav' | 'memories' | 'quick_replies' | 'done' | 'error' | 'intent'
   data: unknown
 }
 

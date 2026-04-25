@@ -53,6 +53,8 @@ export interface RemyMessage {
   tasks?: RemyTaskResult[]
   /** Clickable navigation links */
   navSuggestions?: NavigationSuggestion[]
+  /** Suggested text replies rendered as chips and sent through the normal chat path. */
+  quickReplies?: string[]
   /** Memory items for management UI (only on memory-related messages) */
   memoryItems?: RemyMemoryItem[]
   /** If true, shows a retry button - set on timeout/error messages */
@@ -391,6 +393,11 @@ export interface RemyContext {
     spikes: Array<{ name: string; priceCents: number; spikePct: number; store: string }>
     stockAlerts: number
     freshnessPct: number
+  }
+  /** Internal prompt-only signal when non-critical context loaders degraded this request. */
+  contextHealth?: {
+    degraded: boolean
+    failedOperations: string[]
   }
   cilInsights?: string
 }

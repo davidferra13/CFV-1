@@ -30,6 +30,7 @@ export async function createPaymentCheckoutUrl(
   options?: {
     successUrl?: string
     cancelUrl?: string
+    idempotencyKey?: string
   }
 ): Promise<string | null> {
   const db = createServerClient({ admin: true })
@@ -163,7 +164,11 @@ export async function createPaymentCheckoutUrl(
   }
 
   const session = await breakers.stripe.execute(() =>
-    stripe.checkout.sessions.create(checkoutParams as any)
+    options?.idempotencyKey
+      ? stripe.checkout.sessions.create(checkoutParams as any, {
+          idempotencyKey: options.idempotencyKey,
+        })
+      : stripe.checkout.sessions.create(checkoutParams as any)
   )
 
   return session.url

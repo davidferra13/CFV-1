@@ -1,7 +1,6 @@
 import { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { getPublicEventByShareToken } from '@/lib/tickets/purchase-actions'
-import { TokenExpiredPage } from '@/components/ui/token-expired-page'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { createServerClient } from '@/lib/db/server'
 import { PublicEventView } from './public-event-view'
@@ -69,7 +68,23 @@ export default async function PublicEventPage({ params, searchParams }: Props) {
   const search = await searchParams
   const event = await getPublicEventByShareToken(shareToken)
 
-  if (!event) return <TokenExpiredPage reason="not_found" noun="event" />
+  if (!event) {
+    return (
+      <main className="min-h-screen bg-stone-950 px-4 py-10 text-stone-100">
+        <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-2xl items-center">
+          <section className="w-full rounded-lg border border-stone-700 bg-stone-900 p-6 text-center sm:p-8">
+            <p className="mb-3 text-sm font-medium text-red-300">Event unavailable</p>
+            <h1 className="text-3xl font-semibold tracking-tight text-stone-100">
+              Event not found.
+            </h1>
+            <p className="mt-3 text-sm leading-6 text-stone-400">
+              This event link is no longer available.
+            </p>
+          </section>
+        </div>
+      </main>
+    )
+  }
 
   // JSON-LD structured data for Google Events
   const jsonLd = {
@@ -111,24 +126,23 @@ export default async function PublicEventPage({ params, searchParams }: Props) {
       : {}),
   }
 
-  // Fetch circle URL for post-purchase confirmation screen
+  // Fetch circle URL for purchase preview and post-purchase confirmation screen
   let circleUrl: string | null = null
-  if (search.purchased === 'true') {
-    try {
-      const db: any = createServerClient({ admin: true })
-      const { data: circleGroup } = await db
-        .from('hub_groups')
-        .select('group_token')
-        .eq('event_id', event.eventId)
-        .eq('is_active', true)
-        .maybeSingle()
-      if (circleGroup?.group_token) {
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
-        circleUrl = `${appUrl}/hub/g/${circleGroup.group_token}`
-      }
-    } catch {
-      // Non-blocking
+  try {
+    const db: any = createServerClient({ admin: true })
+    const { data: circleGroup } = await db
+      .from('hub_groups')
+      .select('group_token, message_count')
+      .eq('event_id', event.eventId)
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle()
+    if (circleGroup?.group_token) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
+      circleUrl = `${appUrl}/hub/g/${circleGroup.group_token}`
     }
+  } catch {
+    // Non-blocking
   }
 
   return (

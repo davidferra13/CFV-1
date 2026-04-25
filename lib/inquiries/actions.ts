@@ -19,6 +19,7 @@ import { validateEmailLocal, suggestEmailCorrection } from '@/lib/email/email-va
 import { ScheduleRequestSchema } from '@/lib/booking/schedule-schema'
 import { checkSeriesSessionConflicts } from '@/lib/availability/actions'
 import { mapCannabisPreferenceToBoolean } from '@/lib/inquiries/cannabis-preference'
+import { executeInteraction } from '@/lib/interactions'
 import {
   buildSeriesSchedulePlan,
   getDefaultServeTimeForMealSlot,
@@ -185,7 +186,7 @@ function mergeSpecialRequestNotes(...notes: Array<string | null | undefined>): s
 async function materializeSeriesSessions(params: {
   db: any
   tenantId: string
-  actorId: string
+  actorId: string | null
   series: EventSeriesRow
   inquiry: Record<string, any>
   plannedSessions: Array<{
@@ -276,7 +277,7 @@ async function materializeSeriesSessions(params: {
 async function materializeSeriesEvents(params: {
   db: any
   tenantId: string
-  actorId: string
+  actorId: string | null
   inquiry: Record<string, any>
   series: EventSeriesRow
   sessions: EventSessionRow[]
@@ -533,6 +534,28 @@ export async function createInquiry(input: CreateInquiryInput) {
   })
 
   const inquiry = result.inquiry
+
+  await executeInteraction({
+    action_type: 'send_inquiry',
+    actor_id: user.id,
+    actor: { role: 'chef', actorId: user.id, entityId: user.entityId, tenantId: user.tenantId },
+    target_type: 'system',
+    target_id: inquiry.id,
+    context_type: clientId ? 'client' : null,
+    context_id: clientId,
+    visibility: 'private',
+    metadata: {
+      tenant_id: user.tenantId!,
+      client_id: clientId,
+      inquiry_id: inquiry.id,
+      source: 'chef_inquiry_create',
+      channel: validated.channel,
+      suppress_interaction_notifications: true,
+      suppress_interaction_activity: true,
+      suppress_interaction_automation: true,
+    },
+    idempotency_key: `send_inquiry:${inquiry.id}`,
+  })
 
   // Log chef activity (non-blocking)
   try {
@@ -1556,6 +1579,727 @@ export async function createSeriesFromBookingRequest(inquiryId: string) {
   }
 }
 
+type InquiryConversionContext = {
+  db: any
+  tenantId: string
+  actorId: string | null
+}
+
+async function createSeriesFromBookingRequestWithContext(
+  context: InquiryConversionContext,
+  inquiryId: string
+) {
+  const { db, tenantId, actorId } = context
+
+  const { data: chefProfile } = await db
+    .from('chefs')
+    .select('home_city, home_state')
+    .eq('id', tenantId)
+    .single()
+  const chefHomeState = (chefProfile as any)?.home_state || ''
+  const chefHomeCity = (chefProfile as any)?.home_city || 'TBD'
+
+  const { data: inquiry } = await db
+    .from('inquiries')
+    .select('*')
+    .eq('id', inquiryId)
+    .eq('tenant_id', tenantId)
+    .is('deleted_at' as any, null)
+    .single()
+
+  if (!inquiry) {
+    throw new ValidationError('Inquiry not found')
+  }
+
+  if (inquiry.status !== 'confirmed') {
+    throw new ValidationError('Only confirmed inquiries can be converted to a series')
+  }
+
+  if (!inquiry.client_id) {
+    throw new ValidationError('Inquiry must be linked to a client before converting to a series')
+  }
+
+  if (!inquiry.confirmed_date) {
+    throw new ValidationError('Confirmed date is required before converting to a series')
+  }
+
+  if (inquiry.service_mode !== 'multi_day') {
+    throw new ValidationError('Only multi-day inquiries can be converted to a series')
+  }
+
+  const { data: existingSeries } = await db
+    .from('event_series')
+    .select('*')
+    .eq('tenant_id', tenantId)
+    .eq('inquiry_id', inquiry.id)
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+
+  const { data: inquiryMessages } = await db
+    .from('messages')
+    .select('body, sent_at')
+    .eq('tenant_id', tenantId)
+    .eq('inquiry_id', inquiry.id)
+    .order('sent_at', { ascending: true })
+    .limit(100)
+
+  const conversationText = [
+    inquiry.source_message,
+    ...(inquiryMessages || []).map((m: { body?: string | null }) => m.body ?? ''),
+  ]
+    .filter((chunk: string | null | undefined) => Boolean(chunk && chunk.trim().length > 0))
+    .join('\n\n')
+
+  const resolvedEventDate = resolveInquiryDateForEvent(
+    inquiry.confirmed_date,
+    inquiry.first_contact_at
+  )
+  if (!resolvedEventDate) {
+    throw new ValidationError('Confirmed date could not be resolved to a calendar day')
+  }
+
+  const { serveTime, arrivalTime } = inferEventTimesFromConversation(conversationText)
+  const parsedLocation = parseCityStateFromConversation(
+    inquiry.confirmed_location,
+    conversationText
+  )
+
+  const { data: acceptedQuote } = await db
+    .from('quotes')
+    .select('id, event_id, total_quoted_cents, deposit_amount_cents, pricing_model')
+    .eq('inquiry_id', inquiryId)
+    .eq('tenant_id', tenantId)
+    .eq('status', 'accepted')
+    .order('accepted_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  const quotedPriceCents =
+    acceptedQuote?.total_quoted_cents ?? inquiry.confirmed_budget_cents ?? null
+  const depositAmountCents = acceptedQuote?.deposit_amount_cents ?? null
+  const pricingModel = acceptedQuote?.pricing_model ?? null
+
+  const parsedScheduleRequest = ScheduleRequestSchema.safeParse(
+    inquiry.schedule_request_jsonb ?? undefined
+  )
+
+  const schedulePlan = buildSeriesSchedulePlan({
+    scheduleRequest: parsedScheduleRequest.success ? parsedScheduleRequest.data : null,
+    fallbackDate: resolvedEventDate,
+    fallbackGuestCount: inquiry.confirmed_guest_count ?? null,
+  })
+
+  if (existingSeries) {
+    const [sessionsResponse, eventsResponse] = await Promise.all([
+      db
+        .from('event_service_sessions')
+        .select('*')
+        .eq('tenant_id', tenantId)
+        .eq('series_id', existingSeries.id)
+        .order('session_date', { ascending: true })
+        .order('sort_order', { ascending: true }),
+      db
+        .from('events')
+        .select('*')
+        .eq('tenant_id', tenantId)
+        .eq('event_series_id', existingSeries.id)
+        .order('event_date', { ascending: true })
+        .order('created_at', { ascending: true }),
+    ])
+
+    const existingSessions = (sessionsResponse.data || []) as EventSessionRow[]
+    const sessions =
+      existingSessions.length > 0
+        ? existingSessions
+        : await materializeSeriesSessions({
+            db,
+            tenantId,
+            actorId,
+            series: existingSeries as EventSeriesRow,
+            inquiry,
+            plannedSessions: schedulePlan.sessions,
+            parsedLocation,
+            chefHomeState,
+            chefHomeCity,
+          })
+
+    const existingEvents = (eventsResponse.data || []) as EventRow[]
+    if (existingEvents.length === 0) {
+      const conflictCheck = await checkSeriesSessionConflicts(
+        sessions.map((session) => ({
+          session_date: session.session_date,
+          meal_slot: session.meal_slot,
+          start_time: session.start_time,
+          end_time: session.end_time,
+        }))
+      )
+      if (conflictCheck.hasConflicts) {
+        const preview = conflictCheck.conflicts
+          .slice(0, 6)
+          .map((conflict) => `${conflict.session_date} (${conflict.meal_slot}): ${conflict.reason}`)
+          .join('; ')
+        const suffix =
+          conflictCheck.conflicts.length > 6
+            ? `; +${conflictCheck.conflicts.length - 6} more conflict(s)`
+            : ''
+        throw new ValidationError(`Schedule conflicts detected: ${preview}${suffix}`)
+      }
+    }
+
+    const events =
+      existingEvents.length > 0
+        ? existingEvents
+        : await materializeSeriesEvents({
+            db,
+            tenantId,
+            actorId,
+            inquiry,
+            series: existingSeries as EventSeriesRow,
+            sessions,
+            parsedLocation,
+            serveTimeFallback: serveTime,
+            arrivalTimeFallback: arrivalTime,
+            quotedPriceCents,
+            depositAmountCents,
+            pricingModel,
+            chefHomeState,
+          })
+
+    const primaryEvent = events[0] || null
+    if (!primaryEvent) {
+      throw new UnknownAppError(
+        'Series already exists for this inquiry, but no event could be created'
+      )
+    }
+
+    if (!inquiry.converted_to_event_id) {
+      await db
+        .from('inquiries')
+        .update({ converted_to_event_id: primaryEvent.id })
+        .eq('id', inquiry.id)
+        .eq('tenant_id', tenantId)
+        .is('deleted_at' as any, null)
+    }
+
+    if (acceptedQuote?.id && acceptedQuote.event_id !== primaryEvent.id) {
+      await db
+        .from('quotes')
+        .update({ event_id: primaryEvent.id })
+        .eq('id', acceptedQuote.id)
+        .eq('tenant_id', tenantId)
+    }
+
+    return {
+      success: true,
+      series: existingSeries as EventSeriesRow,
+      sessions,
+      events,
+      event: primaryEvent as EventRow,
+    }
+  }
+
+  const conflictCheck = await checkSeriesSessionConflicts(
+    schedulePlan.sessions.map((session) => ({
+      session_date: session.session_date,
+      meal_slot: session.meal_slot,
+      start_time: session.start_time,
+      end_time: session.end_time,
+    }))
+  )
+
+  if (conflictCheck.hasConflicts) {
+    const preview = conflictCheck.conflicts
+      .slice(0, 6)
+      .map((conflict) => `${conflict.session_date} (${conflict.meal_slot}): ${conflict.reason}`)
+      .join('; ')
+    const suffix =
+      conflictCheck.conflicts.length > 6
+        ? `; +${conflictCheck.conflicts.length - 6} more conflict(s)`
+        : ''
+    throw new ValidationError(`Schedule conflicts detected: ${preview}${suffix}`)
+  }
+
+  const { data: series, error: seriesError } = await db
+    .from('event_series')
+    .insert({
+      tenant_id: tenantId,
+      client_id: inquiry.client_id,
+      inquiry_id: inquiry.id,
+      service_mode: inquiry.service_mode || 'multi_day',
+      status: 'draft',
+      title: inquiry.confirmed_occasion || 'Multi-day service',
+      start_date: schedulePlan.start_date,
+      end_date: schedulePlan.end_date,
+      base_guest_count: inquiry.confirmed_guest_count ?? null,
+      location_address: inquiry.confirmed_location || null,
+      location_city: parsedLocation.city || chefHomeCity || 'TBD',
+      location_state: parsedLocation.state || chefHomeState || '',
+      location_zip: parseZipFromAddress(inquiry.confirmed_location) || 'TBD',
+      pricing_model: pricingModel,
+      quoted_total_cents: quotedPriceCents,
+      deposit_total_cents: depositAmountCents,
+      notes: mergeSpecialRequestNotes(
+        inquiry.confirmed_service_expectations,
+        parsedScheduleRequest.success ? parsedScheduleRequest.data.outline : null
+      ),
+      created_by: actorId,
+      updated_by: actorId,
+    })
+    .select('*')
+    .single()
+
+  if (seriesError || !series) {
+    console.error('[createSeriesFromBookingRequest] Series creation error:', seriesError)
+    throw new UnknownAppError(`Failed to create event series: ${seriesError?.message}`)
+  }
+
+  const sessions = await materializeSeriesSessions({
+    db,
+    tenantId,
+    actorId,
+    series,
+    inquiry,
+    plannedSessions: schedulePlan.sessions,
+    parsedLocation,
+    chefHomeState,
+    chefHomeCity,
+  })
+
+  const events = await materializeSeriesEvents({
+    db,
+    tenantId,
+    actorId,
+    inquiry,
+    series,
+    sessions,
+    parsedLocation,
+    serveTimeFallback: serveTime,
+    arrivalTimeFallback: arrivalTime,
+    quotedPriceCents,
+    depositAmountCents,
+    pricingModel,
+    chefHomeState,
+  })
+
+  const primaryEvent = events[0] || null
+  if (!primaryEvent) {
+    throw new UnknownAppError('Failed to create a primary event for the series')
+  }
+
+  await db
+    .from('inquiries')
+    .update({ converted_to_event_id: primaryEvent.id })
+    .eq('id', inquiry.id)
+    .eq('tenant_id', tenantId)
+    .is('deleted_at' as any, null)
+
+  if (acceptedQuote?.id) {
+    await db
+      .from('quotes')
+      .update({ event_id: primaryEvent.id })
+      .eq('id', acceptedQuote.id)
+      .eq('tenant_id', tenantId)
+  }
+
+  revalidatePath('/inquiries')
+  revalidatePath(`/inquiries/${inquiryId}`)
+  revalidatePath('/events')
+  revalidatePath('/dashboard')
+  revalidatePath('/my-inquiries')
+  revalidatePath(`/my-inquiries/${inquiryId}`)
+  revalidatePath('/my-events')
+  invalidateRemyContextCache(tenantId)
+
+  try {
+    if (inquiry.client_id) {
+      const { createClientNotification } = await import('@/lib/notifications/client-actions')
+      await createClientNotification({
+        tenantId,
+        clientId: inquiry.client_id,
+        category: 'event',
+        action: 'inquiry_converted_to_client',
+        title: 'Your service schedule is being set up',
+        body: `Your multi-day request for "${inquiry.confirmed_occasion || 'your service'}" is now scheduled`,
+        actionUrl: `/my-events/${primaryEvent.id}`,
+        eventId: primaryEvent.id,
+        inquiryId,
+      })
+    }
+  } catch (err) {
+    console.error(
+      '[createSeriesFromBookingRequest] Client notification failed (non-blocking):',
+      err
+    )
+  }
+
+  return {
+    success: true,
+    series: series as EventSeriesRow,
+    sessions,
+    events,
+    event: primaryEvent as EventRow,
+  }
+}
+
+export async function convertInquiryToEventWithContext(
+  context: InquiryConversionContext & { inquiryId: string }
+) {
+  const { db, tenantId, actorId, inquiryId } = context
+
+  const { data: chefProfile } = await db
+    .from('chefs')
+    .select('home_city, home_state')
+    .eq('id', tenantId)
+    .single()
+  const chefHomeState = (chefProfile as any)?.home_state || ''
+
+  const { data: inquiry } = await db
+    .from('inquiries')
+    .select('*')
+    .eq('id', inquiryId)
+    .eq('tenant_id', tenantId)
+    .is('deleted_at' as any, null)
+    .single()
+
+  if (!inquiry) {
+    throw new ValidationError('Inquiry not found')
+  }
+
+  if (inquiry.status !== 'confirmed') {
+    throw new ValidationError('Only confirmed inquiries can be converted to events')
+  }
+
+  if (!inquiry.client_id) {
+    throw new ValidationError('Inquiry must be linked to a client before converting to an event')
+  }
+
+  if (!inquiry.confirmed_date) {
+    throw new ValidationError('Confirmed date is required before converting to an event')
+  }
+
+  if (inquiry.service_mode === 'multi_day') {
+    return createSeriesFromBookingRequestWithContext({ db, tenantId, actorId }, inquiryId)
+  }
+
+  const { data: inquiryMessages } = await db
+    .from('messages')
+    .select('body, sent_at')
+    .eq('tenant_id', tenantId)
+    .eq('inquiry_id', inquiry.id)
+    .order('sent_at', { ascending: true })
+    .limit(100)
+
+  const conversationText = [
+    inquiry.source_message,
+    ...(inquiryMessages || []).map((m: { body?: string | null }) => m.body ?? ''),
+  ]
+    .filter((chunk: string | null | undefined) => Boolean(chunk && chunk.trim().length > 0))
+    .join('\n\n')
+
+  const resolvedEventDate = resolveInquiryDateForEvent(
+    inquiry.confirmed_date,
+    inquiry.first_contact_at
+  )
+  if (!resolvedEventDate) {
+    throw new ValidationError('Confirmed date could not be resolved to a calendar day')
+  }
+
+  const formServeTime = (inquiry.unknown_fields as any)?.serve_time || null
+  const inferred = inferEventTimesFromConversation(conversationText)
+  const serveTime = formServeTime || inferred.serveTime
+  const arrivalTime = inferred.arrivalTime
+
+  const parsedLocation = parseCityStateFromConversation(
+    inquiry.confirmed_location,
+    conversationText
+  )
+
+  const { data: acceptedQuote } = await db
+    .from('quotes')
+    .select('id, total_quoted_cents, deposit_amount_cents, pricing_model')
+    .eq('inquiry_id', inquiryId)
+    .eq('tenant_id', tenantId)
+    .eq('status', 'accepted')
+    .order('accepted_at', { ascending: false })
+    .limit(1)
+    .single()
+
+  const quotedPriceCents =
+    acceptedQuote?.total_quoted_cents ?? inquiry.confirmed_budget_cents ?? null
+  const depositAmountCents = acceptedQuote?.deposit_amount_cents ?? null
+  const pricingModel = acceptedQuote?.pricing_model ?? null
+
+  const cannabisBoolean = mapCannabisPreferenceToBoolean(inquiry.confirmed_cannabis_preference)
+
+  const SERVICE_STYLE_MAP: Record<string, string> = {
+    plated: 'plated',
+    'family style': 'family_style',
+    family_style: 'family_style',
+    buffet: 'buffet',
+    cocktail: 'cocktail',
+    'tasting menu': 'tasting_menu',
+    tasting_menu: 'tasting_menu',
+  }
+  const rawStylePref = (inquiry.service_style_pref || '').toLowerCase().trim()
+  const mappedServiceStyle = SERVICE_STYLE_MAP[rawStylePref] || null
+
+  const { data: event, error: eventError } = await db
+    .from('events')
+    .insert({
+      tenant_id: tenantId,
+      client_id: inquiry.client_id,
+      inquiry_id: inquiry.id,
+      referral_partner_id: inquiry.referral_partner_id || null,
+      partner_location_id: inquiry.partner_location_id || null,
+      event_date: resolvedEventDate,
+      serve_time: serveTime,
+      arrival_time: arrivalTime,
+      guest_count: inquiry.confirmed_guest_count || 1,
+      location_address: inquiry.confirmed_location || 'TBD',
+      location_city: parsedLocation.city || 'TBD',
+      location_state: parsedLocation.state || chefHomeState || '',
+      location_zip: parseZipFromAddress(inquiry.confirmed_location) || 'TBD',
+      occasion: inquiry.confirmed_occasion,
+      quoted_price_cents: quotedPriceCents,
+      deposit_amount_cents: depositAmountCents,
+      pricing_model: pricingModel,
+      dietary_restrictions: inquiry.confirmed_dietary_restrictions || [],
+      special_requests: inquiry.confirmed_service_expectations,
+      ...(mappedServiceStyle && { service_style: mappedServiceStyle }),
+      cannabis_preference: cannabisBoolean,
+      created_by: actorId,
+      updated_by: actorId,
+    })
+    .select()
+    .single()
+
+  if (eventError) {
+    console.error('[convertInquiryToEvent] Event creation error:', eventError)
+    throw new UnknownAppError(`Failed to create event: ${eventError.message}`)
+  }
+
+  await db.from('event_state_transitions').insert({
+    tenant_id: tenantId,
+    event_id: event.id,
+    from_status: null,
+    to_status: 'draft',
+    transitioned_by: actorId,
+    metadata: { action: 'converted_from_inquiry', inquiry_id: inquiry.id },
+  })
+
+  await db
+    .from('inquiries')
+    .update({ converted_to_event_id: event.id })
+    .eq('id', inquiryId)
+    .eq('tenant_id', tenantId)
+    .is('deleted_at' as any, null)
+
+  if (acceptedQuote) {
+    await db
+      .from('quotes')
+      .update({ event_id: event.id })
+      .eq('id', acceptedQuote.id)
+      .eq('tenant_id', tenantId)
+  }
+
+  const { data: existingMenu } = await db
+    .from('menus')
+    .select('id')
+    .eq('tenant_id', tenantId)
+    .eq('event_id', event.id)
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+
+  if (!existingMenu?.id) {
+    const dishNames = buildAutoMenuCourseNamesFromConversation(conversationText)
+
+    const { data: menu, error: menuError } = await db
+      .from('menus')
+      .insert({
+        tenant_id: tenantId,
+        event_id: event.id,
+        name: `${inquiry.confirmed_occasion || 'Event'} Auto Menu`,
+        description: 'Auto-scaffolded from inquiry conversation. Refine before final service.',
+        target_guest_count: inquiry.confirmed_guest_count || 1,
+        notes: 'Generated from inquiry conversion',
+        created_by: actorId,
+        updated_by: actorId,
+      })
+      .select('id')
+      .single()
+
+    if (menuError || !menu) {
+      console.error('[convertInquiryToEvent] Menu scaffold creation error:', menuError)
+      throw new UnknownAppError(`Failed to scaffold menu: ${menuError?.message || 'Unknown error'}`)
+    }
+
+    await db.from('menu_state_transitions').insert({
+      tenant_id: tenantId,
+      menu_id: menu.id,
+      from_status: null,
+      to_status: 'draft',
+      transitioned_by: actorId,
+      reason: 'auto_scaffold_from_inquiry_conversion',
+      metadata: { inquiry_id: inquiry.id, event_id: event.id },
+    })
+
+    const dishPayload = dishNames.map((dishName, index) => ({
+      tenant_id: tenantId,
+      menu_id: menu.id,
+      course_number: index + 1,
+      course_name: `Course ${index + 1}`,
+      name: dishName,
+      description: dishName,
+      dietary_tags: inquiry.confirmed_dietary_restrictions || [],
+      allergen_flags: [],
+      sort_order: index + 1,
+      created_by: actorId,
+      updated_by: actorId,
+    }))
+
+    const { data: insertedDishes, error: dishError } = await db
+      .from('dishes')
+      .insert(dishPayload)
+      .select('id, name, course_number')
+
+    if (dishError || !insertedDishes || insertedDishes.length === 0) {
+      console.error('[convertInquiryToEvent] Dish scaffold creation error:', dishError)
+      throw new UnknownAppError(
+        `Failed to scaffold dishes: ${dishError?.message || 'Unknown error'}`
+      )
+    }
+
+    const componentPayload = insertedDishes.map(
+      (dish: { id: string; name: string | null; course_number: number }) => {
+        const label = dish.name || `Course ${dish.course_number} Component`
+        return {
+          tenant_id: tenantId,
+          dish_id: dish.id,
+          name: label,
+          category: inferComponentCategoryFromDishName(label),
+          is_make_ahead: true,
+          execution_notes:
+            'Auto-generated from inquiry conversation. Confirm final execution details.',
+          storage_notes: 'Review storage and transport before service.',
+          sort_order: 1,
+          created_by: actorId,
+          updated_by: actorId,
+        }
+      }
+    )
+
+    const { error: componentError } = await db.from('components').insert(componentPayload)
+    if (componentError) {
+      console.error('[convertInquiryToEvent] Component scaffold creation error:', componentError)
+      throw new UnknownAppError(
+        `Failed to scaffold components: ${componentError.message || 'Unknown error'}`
+      )
+    }
+
+    await db
+      .from('events')
+      .update({
+        menu_id: menu.id,
+        course_count: insertedDishes.length,
+        updated_by: actorId,
+      })
+      .eq('id', event.id)
+      .eq('tenant_id', tenantId)
+  }
+
+  revalidatePath('/inquiries')
+  revalidatePath(`/inquiries/${inquiryId}`)
+  revalidatePath('/events')
+  revalidatePath('/dashboard')
+  revalidatePath('/my-inquiries')
+  revalidatePath(`/my-inquiries/${inquiryId}`)
+  revalidatePath('/my-events')
+
+  await executeInteraction({
+    action_type: 'convert_booking',
+    actor_id: actorId ?? 'system',
+    actor: { role: 'system', actorId: actorId ?? 'system', tenantId },
+    target_type: 'event',
+    target_id: event.id,
+    context_type: 'client',
+    context_id: inquiry.client_id,
+    visibility: 'private',
+    metadata: {
+      tenant_id: tenantId,
+      client_id: inquiry.client_id,
+      inquiry_id: inquiry.id,
+      event_id: event.id,
+      source: 'convert_inquiry_with_context',
+      suppress_interaction_notifications: true,
+      suppress_interaction_activity: true,
+      suppress_interaction_automation: true,
+    },
+    idempotency_key: `convert_booking:${inquiry.id}:${event.id}`,
+  })
+
+  try {
+    if (inquiry.client_id) {
+      const { createClientNotification } = await import('@/lib/notifications/client-actions')
+      await createClientNotification({
+        tenantId,
+        clientId: inquiry.client_id,
+        category: 'event',
+        action: 'inquiry_converted_to_client',
+        title: 'Your event is being set up',
+        body: `Your inquiry for "${inquiry.confirmed_occasion || 'your event'}" is now an event`,
+        actionUrl: `/my-events/${event.id}`,
+        eventId: event.id,
+        inquiryId,
+      })
+    }
+  } catch (err) {
+    console.error('[convertInquiryToEvent] Client notification failed (non-blocking):', err)
+  }
+
+  try {
+    const { linkInquiryCircleToEvent } = await import('@/lib/hub/inquiry-circle-actions')
+    await linkInquiryCircleToEvent({
+      inquiryId: inquiry.id,
+      eventId: event.id,
+    })
+  } catch (err) {
+    console.error('[convertInquiryToEvent] Circle-event link failed (non-blocking):', err)
+  }
+
+  if (inquiry.referral_partner_id) {
+    ;(async () => {
+      try {
+        const { data: partner } = await db
+          .from('referral_partners')
+          .select('id, name, auth_user_id')
+          .eq('id', inquiry.referral_partner_id)
+          .single()
+
+        if (partner?.auth_user_id) {
+          const { createNotification } = await import('@/lib/notifications/actions')
+          await createNotification({
+            tenantId,
+            recipientId: partner.auth_user_id,
+            category: 'event',
+            action: 'referral_booking_converted',
+            title: 'Your referral booked an event!',
+            body: `The referral for "${inquiry.confirmed_occasion || 'an event'}" has been converted to a confirmed booking.`,
+            actionUrl: `/partner-report/${partner.id}`,
+            eventId: event.id,
+            inquiryId: inquiry.id,
+          })
+        }
+      } catch (err) {
+        console.error('[convertInquiryToEvent] Partner notification failed (non-blocking):', err)
+      }
+    })()
+  }
+
+  return { success: true, event }
+}
+
 // ============================================
 // 7. CONVERT INQUIRY TO EVENT
 // ============================================
@@ -1850,6 +2594,28 @@ export async function convertInquiryToEvent(inquiryId: string) {
   revalidatePath('/my-inquiries')
   revalidatePath(`/my-inquiries/${inquiryId}`)
   revalidatePath('/my-events')
+
+  await executeInteraction({
+    action_type: 'convert_booking',
+    actor_id: user.id,
+    actor: { role: 'chef', actorId: user.id, entityId: user.entityId, tenantId: user.tenantId },
+    target_type: 'event',
+    target_id: event.id,
+    context_type: 'client',
+    context_id: inquiry.client_id,
+    visibility: 'private',
+    metadata: {
+      tenant_id: user.tenantId!,
+      client_id: inquiry.client_id,
+      inquiry_id: inquiry.id,
+      event_id: event.id,
+      source: 'convert_inquiry',
+      suppress_interaction_notifications: true,
+      suppress_interaction_activity: true,
+      suppress_interaction_automation: true,
+    },
+    idempotency_key: `convert_booking:${inquiry.id}:${event.id}`,
+  })
 
   // Non-blocking: notify client their inquiry became an event
   try {

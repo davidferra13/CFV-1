@@ -181,6 +181,12 @@ async function sendRealtimeAlert(
   input: RecordPlatformEventInput,
   occurredAt: string
 ): Promise<boolean> {
+  const { isDeveloperAlertsEnabled } = await import('@/lib/email/developer-alerts')
+  if (!isDeveloperAlertsEnabled()) {
+    console.log(`[platform-obs] Alerts disabled, skipping: ${definition.label}`)
+    return false
+  }
+
   const react = createElement(PlatformObservabilityAlertEmail, {
     severity: definition.severity,
     label: definition.label,

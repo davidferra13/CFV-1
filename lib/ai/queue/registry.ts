@@ -466,6 +466,17 @@ const SCHEDULED_HANDLER_MAP: Record<
     recurrence: '1 hour',
     handler: handleCILScan,
   },
+  'scheduled.reminder_fire': {
+    name: 'Personal Reminder Check',
+    model: 'fast',
+    endpoint: 'auto',
+    recurrence: '5 minutes',
+    handler: async () => {
+      const { fireReminders } = await import('@/lib/todos/actions')
+      const result = await fireReminders()
+      return { status: 'ok', ...result }
+    },
+  },
 }
 
 for (const [taskType, def] of Object.entries(SCHEDULED_HANDLER_MAP)) {

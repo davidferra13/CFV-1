@@ -390,16 +390,16 @@ export function InquiryTransitions({
             )}
             {inquiry.status === 'quoted' && (
               <p>
-                Quote sent. Waiting for client to accept or decline. When a client accepts, this
-                inquiry auto-confirms and is ready to convert to an event.
+                Quote sent. Waiting for client to accept or decline. Accepted quotes should
+                auto-confirm the inquiry and create the draft event.
               </p>
             )}
             {inquiry.status === 'confirmed' && (
               <p>
                 Client confirmed!{' '}
                 {inquiry.service_mode === 'multi_day'
-                  ? 'Convert to a series to generate the multi-day schedule.'
-                  : 'Convert to an event to start the booking lifecycle.'}
+                  ? 'Convert to a series to generate the multi-day schedule if the commercial handoff did not create it.'
+                  : 'Convert to an event only for legacy or manual confirmations that did not create one automatically.'}
                 {!inquiry.client_id && ' Note: Link a client first before converting.'}
                 {!inquiry.confirmed_date &&
                   ' Note: Confirm the event date first before converting.'}

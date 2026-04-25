@@ -1,8 +1,29 @@
 import { NextResponse } from 'next/server'
-import { getOpenClawRuntimeHealth } from '@/lib/openclaw/health-contract'
+import {
+  OPENCLAW_REQUIRED_HEALTH_STAGES,
+  buildOpenClawHealthContract,
+  getOpenClawHealthContract,
+  getOpenClawRuntimeHealth,
+} from '@/lib/openclaw/health-contract'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+
+function buildCanonicalFailureContract(err: unknown) {
+  const message = err instanceof Error ? err.message : 'Unknown canonical health failure'
+
+  return buildOpenClawHealthContract({
+    generatedAt: new Date().toISOString(),
+    stages: [],
+    sourceReadErrors: [
+      {
+        source: 'getOpenClawHealthContract',
+        message,
+        stageIds: OPENCLAW_REQUIRED_HEALTH_STAGES.map((stage) => stage.id),
+      },
+    ],
+  })
+}
 
 /**
  * GET /api/openclaw/status
@@ -13,9 +34,23 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET() {
   try {
-    const health = await getOpenClawRuntimeHealth()
+    const [healthResult, canonicalResult] = await Promise.allSettled([
+      getOpenClawRuntimeHealth(),
+      getOpenClawHealthContract(),
+    ])
+
+    if (healthResult.status === 'rejected') {
+      throw healthResult.reason
+    }
+
+    const health = healthResult.value
+    const canonical =
+      canonicalResult.status === 'fulfilled'
+        ? canonicalResult.value
+        : buildCanonicalFailureContract(canonicalResult.reason)
 
     return NextResponse.json({
+      canonical: canonical,
       status:
         health.overall.status === 'ok'
           ? 'operational'
@@ -42,6 +77,8 @@ export async function GET() {
         bridge_status: health.bridge.status,
         pi_status: health.pi.status,
         wrapper_status: health.wrapper.status,
+        canonical_overall: canonical.overall,
+        canonical_contradictions: canonical.contradictions.length,
         reason: health.overall.reason,
       },
       sync: {

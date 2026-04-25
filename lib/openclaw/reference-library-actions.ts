@@ -251,7 +251,9 @@ export async function getWasteFactor(
  */
 export async function suggestYieldByName(
   ingredientName: string
-): Promise<Array<{ prepMethod: string | null; yieldPct: number; source: string }>> {
+): Promise<
+  Array<{ prepMethod: string | null; yieldPct: number; wasteType: string | null; source: string }>
+> {
   await requireChef()
   const sql = pgClient
 
@@ -269,12 +271,17 @@ export async function suggestYieldByName(
       SELECT w.prep_method, w.as_purchased_to_edible_pct, w.waste_type
       FROM ingredient_waste_factors w
       WHERE lower(w.ingredient_name) LIKE '%' || lower(${ingredientName}) || '%'
-      ORDER BY length(w.ingredient_name) ASC, w.prep_method ASC NULLS FIRST
+         OR lower(${ingredientName}) LIKE '%' || lower(w.ingredient_name) || '%'
+      ORDER BY
+        CASE WHEN lower(${ingredientName}) LIKE '%' || lower(w.ingredient_name) || '%' THEN 0 ELSE 1 END,
+        length(w.ingredient_name) ASC,
+        w.prep_method ASC NULLS FIRST
       LIMIT 5
     `
     return fuzzyRows.map((r: any) => ({
       prepMethod: r.prep_method,
       yieldPct: Math.round(Number(r.as_purchased_to_edible_pct)),
+      wasteType: r.waste_type ?? null,
       source: 'USDA (partial match)',
     }))
   }
@@ -282,6 +289,7 @@ export async function suggestYieldByName(
   return rows.map((r: any) => ({
     prepMethod: r.prep_method,
     yieldPct: Math.round(Number(r.as_purchased_to_edible_pct)),
+    wasteType: r.waste_type ?? null,
     source: 'USDA',
   }))
 }

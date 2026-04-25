@@ -259,6 +259,50 @@ export async function updateChefFullProfile(input: UpdateChefFullProfileInput) {
   return { success: true as const }
 }
 
+// ============================================
+// RESTAURANT GROUP NAME
+// ============================================
+
+export async function updateRestaurantGroupName(name: string | null) {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { error } = await db
+    .from('chefs')
+    .update({ restaurant_group_name: name?.trim() || null })
+    .eq('id', user.entityId)
+
+  if (error) {
+    if (error.code === '42703') return { success: true as const }
+    console.error('[updateRestaurantGroupName] Error:', error)
+    throw new Error('Failed to update restaurant group name')
+  }
+
+  revalidatePath('/settings/restaurants')
+  revalidatePath('/chef', 'layout')
+  revalidateTag(`chef-layout-${user.entityId}`)
+  return { success: true as const }
+}
+
+export async function getRestaurantGroupName(): Promise<string | null> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data, error } = await db
+    .from('chefs')
+    .select('restaurant_group_name')
+    .eq('id', user.entityId)
+    .single()
+
+  if (error?.code === '42703') return null
+  if (error) {
+    console.error('[getRestaurantGroupName] Error:', error)
+    return null
+  }
+
+  return data?.restaurant_group_name ?? null
+}
+
 /**
  * Upload a chef business logo and save the resulting public URL on the profile.
  * Separate from the profile photo - this is the brand/business logo mark.

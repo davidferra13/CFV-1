@@ -73,6 +73,9 @@ export function DishPhotoUpload({
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
+  const compactDishPhotoLabel = photoUrl
+    ? 'Replace dish photo. On showcased menus, the first dish photo can be used on the public Sample Menu card.'
+    : 'Add dish photo. On showcased menus, the first dish photo can be used on the public Sample Menu card.'
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -149,7 +152,12 @@ export function DishPhotoUpload({
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={isPending}
-          title={photoUrl ? 'Replace dish photo' : 'Add dish photo'}
+          title={
+            entityType === 'dish' ? compactDishPhotoLabel : photoUrl ? 'Replace photo' : 'Add photo'
+          }
+          aria-label={
+            entityType === 'dish' ? compactDishPhotoLabel : photoUrl ? 'Replace photo' : 'Add photo'
+          }
           className={[
             'relative overflow-hidden rounded-lg transition-colors w-16 h-16 flex items-center justify-center',
             photoUrl

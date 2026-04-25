@@ -5,6 +5,7 @@
 'use server'
 
 import { requireChef, requireClient, requireAuth } from '@/lib/auth/get-user'
+import { createClientPortalLinkForClient, getClientPortalAccess } from '@/lib/client-portal/actions'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -361,7 +362,7 @@ export async function sendContractToClient(contractId: string) {
     .from('event_contracts')
     .select(
       `
-      id, event_id, status,
+      id, event_id, client_id, status,
       clients (full_name, email),
       events (occasion, event_date)
     `
@@ -390,7 +391,12 @@ export async function sendContractToClient(contractId: string) {
 
   try {
     if (client?.email) {
-      const signingUrl = `${process.env.NEXT_PUBLIC_APP_URL}/my-events/${contract.event_id}/contract`
+      const { url: signingUrl } = await createClientPortalLinkForClient({
+        db,
+        clientId: (contract as any).client_id,
+        tenantId: user.tenantId!,
+        path: `/events/${contract.event_id}/contract`,
+      })
       await sendEmail({
         to: client.email,
         subject: `Your service contract is ready to sign`,
@@ -416,15 +422,31 @@ export async function sendContractToClient(contractId: string) {
  * Record that a client viewed the contract.
  * Called on the client signing page mount.
  */
-export async function recordClientView(contractId: string) {
-  const user = await requireClient()
-  const db: any = createServerClient()
+type ContractClientContext = {
+  db: any
+  clientId: string
+  clientEmail: string | null
+}
 
+async function getLatestClientEventContract(db: any, eventId: string, clientId: string) {
+  const { data } = await db
+    .from('event_contracts')
+    .select('*')
+    .eq('event_id', eventId)
+    .eq('client_id', clientId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  return data
+}
+
+async function recordClientViewForContext(db: any, contractId: string, clientId: string) {
   const { data: contract } = await db
     .from('event_contracts')
     .select('id, status, client_id, event_id, events(status)')
     .eq('id', contractId)
-    .eq('client_id', user.entityId)
+    .eq('client_id', clientId)
     .single()
 
   if (!contract) throw new Error('Contract not found')
@@ -443,19 +465,32 @@ export async function recordClientView(contractId: string) {
   revalidatePath(`/my-events/${contract.event_id}`)
 }
 
+export async function recordClientView(contractId: string) {
+  const user = await requireClient()
+  const db: any = createServerClient()
+  return recordClientViewForContext(db, contractId, user.entityId)
+}
+
+export async function recordClientPortalView(token: string, contractId: string) {
+  const access = await getClientPortalAccess(token)
+  if (!access) throw new Error('This secure link is no longer valid.')
+
+  const db: any = createServerClient({ admin: true })
+  return recordClientViewForContext(db, contractId, access.clientId)
+}
+
 /**
  * Sign the contract (client-only).
  */
-export async function signContract(input: SignContractInput) {
-  const user = await requireClient()
+async function signContractForContext(context: ContractClientContext, input: SignContractInput) {
   const validated = SignContractSchema.parse(input)
-  const db: any = createServerClient()
+  const { db, clientId, clientEmail } = context
 
   const { data: contract } = await db
     .from('event_contracts')
     .select('id, status, event_id, events(status)')
     .eq('id', validated.contract_id)
-    .eq('client_id', user.entityId)
+    .eq('client_id', clientId)
     .single()
 
   if (!contract) throw new Error('Contract not found')
@@ -480,7 +515,7 @@ export async function signContract(input: SignContractInput) {
       signer_user_agent: validated.signer_user_agent ?? null,
     })
     .eq('id', validated.contract_id)
-    .eq('client_id', user.entityId)
+    .eq('client_id', clientId)
     .in('status', ['sent', 'viewed'])
     .select('id')
 
@@ -498,11 +533,9 @@ export async function signContract(input: SignContractInput) {
 
   // Non-blocking: notify chef + email
   try {
-    // Fetch contract details for notification
-    const dbForLookup = createServerClient()
-    const { data: fullContract } = await dbForLookup
+    const { data: fullContract } = await db
       .from('event_contracts')
-      .select('chef_id, events(occasion, event_date, clients(full_name))')
+      .select('chef_id, events(occasion, event_date, clients(full_name, email))')
       .eq('id', validated.contract_id)
       .single()
 
@@ -535,7 +568,6 @@ export async function signContract(input: SignContractInput) {
       }
 
       // Q10 fix: Send client a confirmation email of their signature
-      const clientEmail = user.email
       if (clientEmail && eventData) {
         try {
           await sendContractSignedClientEmail({
@@ -566,7 +598,48 @@ export async function signContract(input: SignContractInput) {
     console.error('[signContract] Non-blocking chef notification failed:', err)
   }
 
+  // Notify circle about contract signing (non-blocking)
+  try {
+    const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
+    await circleFirstNotify({
+      eventId: contract.event_id,
+      inquiryId: null,
+      notificationType: 'contract_ready',
+      body: 'The contract has been signed.',
+      metadata: { signed: true },
+    })
+  } catch (err) {
+    console.error('[signContract] Circle notification failed (non-blocking):', err)
+  }
+
   return { success: true }
+}
+
+export async function signContract(input: SignContractInput) {
+  const user = await requireClient()
+  const db: any = createServerClient()
+  return signContractForContext(
+    { db, clientId: user.entityId, clientEmail: user.email ?? null },
+    input
+  )
+}
+
+export async function signContractByPortalToken(token: string, input: SignContractInput) {
+  const access = await getClientPortalAccess(token)
+  if (!access) throw new Error('This secure link is no longer valid.')
+
+  const db: any = createServerClient({ admin: true })
+  const { data: client } = await db
+    .from('clients')
+    .select('email')
+    .eq('id', access.clientId)
+    .eq('tenant_id', access.tenantId)
+    .single()
+
+  return signContractForContext(
+    { db, clientId: access.clientId, clientEmail: client?.email ?? null },
+    input
+  )
 }
 
 /**
@@ -818,17 +891,15 @@ export async function getEventContract(eventId: string) {
 export async function getClientEventContract(eventId: string) {
   const user = await requireClient()
   const db: any = createServerClient()
+  return getLatestClientEventContract(db, eventId, user.entityId)
+}
 
-  const { data } = await db
-    .from('event_contracts')
-    .select('*')
-    .eq('event_id', eventId)
-    .eq('client_id', user.entityId)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
+export async function getClientPortalEventContract(token: string, eventId: string) {
+  const access = await getClientPortalAccess(token)
+  if (!access) return null
 
-  return data
+  const db: any = createServerClient({ admin: true })
+  return getLatestClientEventContract(db, eventId, access.clientId)
 }
 
 // ============================================

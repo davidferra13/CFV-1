@@ -85,7 +85,6 @@ export async function getClientEventById(eventId: string) {
     )
     .eq('id', eventId)
     .eq('client_id', user.entityId)
-    .not('status', 'eq', 'draft')
     .single()
   // Note: pre_event_checklist_confirmed_at, client_journey_note, and menu_approval_status
   // are included via the '*' select above (added by migration 20260322000001)

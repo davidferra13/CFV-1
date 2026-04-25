@@ -76,6 +76,7 @@ export function GroceryListView({ data, eventId }: GroceryListViewProps) {
   const [newItemSection, setNewItemSection] = useState('Other')
   const [isPrintMode, setIsPrintMode] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>('by-category')
+  const [hideStaples, setHideStaples] = useState(false)
   const [storeSplits, setStoreSplits] = useState<{
     splits: StoreSplit[]
     unassigned: { name: string; quantity: number | string; unit: string }[]
@@ -223,6 +224,17 @@ export function GroceryListView({ data, eventId }: GroceryListViewProps) {
               By Store
             </button>
           </div>
+          <button
+            type="button"
+            onClick={() => setHideStaples((v) => !v)}
+            className={`px-3 py-1.5 rounded border text-xs font-medium transition-colors ${
+              hideStaples
+                ? 'bg-amber-100 border-amber-300 text-amber-800'
+                : 'border-gray-200 text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            {hideStaples ? 'Showing non-staples' : 'Hide staples'}
+          </button>
           <button
             type="button"
             onClick={() => {
@@ -393,11 +405,15 @@ export function GroceryListView({ data, eventId }: GroceryListViewProps) {
       {viewMode === 'by-category' &&
         data.categories.map((category) => {
           const sectionCustom = customBySection.get(category.name) ?? []
+          const filteredItems = hideStaples
+            ? category.items.filter((item) => !item.isStaple)
+            : category.items
+          if (filteredItems.length === 0 && sectionCustom.length === 0) return null
           return (
             <CategorySection
               key={category.name}
               name={category.name}
-              items={category.items}
+              items={filteredItems}
               customItems={sectionCustom}
               checkedItems={checkedItems}
               onToggle={toggleItem}

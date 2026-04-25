@@ -10,6 +10,8 @@ import { NotificationsUnreadBadge } from '@/components/notifications/notificatio
 import { InquiriesUnreadBadge } from '@/components/inquiries/inquiries-unread-badge'
 import { useNavigationPending } from '@/components/navigation/navigation-pending-provider'
 import { getArchetypeCopy } from '@/lib/archetypes/ui-copy'
+import type { TenantDataPresence } from '@/lib/progressive-disclosure/types'
+import { isActionBarItemVisible } from '@/lib/progressive-disclosure/nav-visibility'
 
 type ActionBarProps = {
   /** Filter string from nav search input */
@@ -18,17 +20,39 @@ type ActionBarProps = {
   collapsed?: boolean
   /** Chef archetype for contextual labels */
   archetype?: string | null
+  /** Tenant data presence for first-time progressive disclosure */
+  tenantPresence?: TenantDataPresence | null
+  /** Whether the user explicitly expanded advanced features */
+  showAllFeatures?: boolean
+  /** Admin and privileged roles keep the full operational shell */
+  bypassProgressiveDisclosure?: boolean
 }
 
-export function ActionBar({ navFilter = '', collapsed = false, archetype }: ActionBarProps) {
+export function ActionBar({
+  navFilter = '',
+  collapsed = false,
+  archetype,
+  tenantPresence,
+  showAllFeatures = false,
+  bypassProgressiveDisclosure = false,
+}: ActionBarProps) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const { pendingHref, setPendingHref } = useNavigationPending()
 
   const copy = getArchetypeCopy(archetype)
-  const items = actionBarItems.map((item) =>
-    item.href === '/events' ? { ...item, label: copy.eventsLabel } : item
-  )
+  const items = actionBarItems
+    .filter(
+      (item) =>
+        isItemActive(pathname, item.href, searchParams) ||
+        isActionBarItemVisible(
+          item.href,
+          tenantPresence,
+          showAllFeatures,
+          bypassProgressiveDisclosure
+        )
+    )
+    .map((item) => (item.href === '/events' ? { ...item, label: copy.eventsLabel } : item))
   const query = navFilter.toLowerCase().trim()
   const filtered = query ? items.filter((item) => item.label.toLowerCase().includes(query)) : items
 

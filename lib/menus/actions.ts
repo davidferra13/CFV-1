@@ -19,6 +19,7 @@ import { UnknownAppError } from '@/lib/errors/app-error'
 import { isMissingSoftDeleteColumn } from '@/lib/mutations/soft-delete-compat'
 import { getDuplicateCourseError } from '@/lib/menus/course-utils'
 import { normalizeUnit } from '@/lib/units/conversion-engine'
+import { transitionMenuWithContext } from './menu-lifecycle'
 
 type MenuStatus = Database['public']['Enums']['menu_status']
 // 'draft' | 'shared' | 'locked' | 'archived'
@@ -795,13 +796,6 @@ export async function getMenuEvent(menuId: string) {
 // MENU STATUS TRANSITIONS
 // ============================================
 
-const VALID_MENU_TRANSITIONS: Record<MenuStatus, MenuStatus[]> = {
-  draft: ['shared', 'archived'],
-  shared: ['locked', 'draft', 'archived'],
-  locked: ['archived'],
-  archived: ['draft'],
-}
-
 /**
  * Transition menu status (chef-only)
  */
@@ -809,189 +803,15 @@ export async function transitionMenu(menuId: string, toStatus: MenuStatus, reaso
   const user = await requireChef()
   const db: any = createServerClient()
 
-  // Fetch current menu
-  const { data: menu } = await (db
-    .from('menus')
-    .select('status, deleted_at')
-    .eq('id', menuId)
-    .eq('tenant_id', user.tenantId!)
-    .is('deleted_at' as any, null)
-    .single() as any)
-
-  if (!menu || menu.deleted_at) {
-    throw new UnknownAppError('Menu not found')
-  }
-
-  const currentStatus = menu.status as MenuStatus
-  const allowedTransitions = VALID_MENU_TRANSITIONS[currentStatus] || []
-
-  if (!allowedTransitions.includes(toStatus)) {
-    throw new UnknownAppError(`Cannot transition menu from '${currentStatus}' to '${toStatus}'`)
-  }
-
-  // Prevent sharing or locking a menu with no dishes
-  if (toStatus === 'shared' || toStatus === 'locked') {
-    const { data: dishes } = await db
-      .from('menu_dishes')
-      .select('id')
-      .eq('menu_id', menuId)
-      .limit(1)
-
-    if (!dishes || dishes.length === 0) {
-      throw new UnknownAppError(
-        'Cannot share or lock a menu with no dishes. Add at least one dish first.'
-      )
-    }
-  }
-
-  // Build update payload with status-specific timestamps
-  const updatePayload: Record<string, unknown> = {
-    status: toStatus,
-    updated_by: user.id,
-  }
-
-  if (toStatus === 'shared') {
-    updatePayload.shared_at = new Date().toISOString()
-  } else if (toStatus === 'locked') {
-    updatePayload.locked_at = new Date().toISOString()
-  } else if (toStatus === 'archived') {
-    updatePayload.archived_at = new Date().toISOString()
-  }
-
-  const { error: updateError } = await db
-    .from('menus')
-    .update(updatePayload)
-    .eq('id', menuId)
-    .eq('tenant_id', user.tenantId!)
-    .is('deleted_at' as any, null)
-
-  if (updateError) {
-    console.error('[transitionMenu] Error:', updateError)
-    throw new UnknownAppError('Failed to transition menu')
-  }
-
-  // Log transition
-  await db.from('menu_state_transitions').insert({
-    tenant_id: user.tenantId!,
-    menu_id: menuId,
-    from_status: currentStatus,
-    to_status: toStatus,
-    transitioned_by: user.id,
+  return transitionMenuWithContext({
+    db,
+    menuId,
+    tenantId: user.tenantId!,
+    actorUserId: user.id,
+    toStatus,
     reason,
+    source: 'chef_action',
   })
-
-  revalidatePath('/menus')
-  revalidatePath(`/menus/${menuId}`)
-
-  // Log chef activity (non-blocking)
-  try {
-    const { logChefActivity } = await import('@/lib/activity/log-chef')
-    await logChefActivity({
-      tenantId: user.tenantId!,
-      actorId: user.id,
-      action: 'menu_transitioned',
-      domain: 'menu',
-      entityType: 'menu',
-      entityId: menuId,
-      summary: `Menu moved from ${currentStatus} → ${toStatus}`,
-      context: { from_status: currentStatus, to_status: toStatus, reason },
-    })
-  } catch (err) {
-    console.error('[transitionMenu] Activity log failed (non-blocking):', err)
-  }
-
-  // Circle-first: post menu shared notification (non-blocking)
-  if (toStatus === 'shared') {
-    try {
-      const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
-      const adminSupa = createServerClient({ admin: true })
-      const { data: menuData } = await adminSupa
-        .from('menus')
-        .select('name, event_id')
-        .eq('id', menuId)
-        .single()
-
-      let inquiryId: string | null = null
-      if (menuData?.event_id) {
-        const { data: inq } = await adminSupa
-          .from('inquiries')
-          .select('id')
-          .eq('converted_to_event_id', menuData.event_id)
-          .limit(1)
-          .maybeSingle()
-        inquiryId = inq?.id ?? null
-      }
-
-      const menuName = menuData?.name || 'Menu'
-      await circleFirstNotify({
-        eventId: menuData?.event_id ?? null,
-        inquiryId,
-        notificationType: 'menu_shared',
-        body: `Menu shared: ${menuName}. Take a look and let me know what you think!`,
-        metadata: {
-          menu_id: menuId,
-          menu_name: menuName,
-        },
-        actionUrl: menuData?.event_id ? `/my-events/${menuData.event_id}` : undefined,
-        actionLabel: 'View Menu',
-      })
-    } catch (err) {
-      console.error('[transitionMenu] Circle-first notify failed (non-blocking):', err)
-    }
-  }
-
-  // Circle-first: post menu finalized notification (non-blocking)
-  if (toStatus === 'locked') {
-    try {
-      const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
-      const adminSupa = createServerClient({ admin: true })
-      const { data: menuData } = await adminSupa
-        .from('menus')
-        .select('name, event_id')
-        .eq('id', menuId)
-        .single()
-
-      let inquiryId: string | null = null
-      if (menuData?.event_id) {
-        const { data: inq } = await adminSupa
-          .from('inquiries')
-          .select('id')
-          .eq('converted_to_event_id', menuData.event_id)
-          .limit(1)
-          .maybeSingle()
-        inquiryId = inq?.id ?? null
-      }
-
-      const menuName = menuData?.name || 'Menu'
-      await circleFirstNotify({
-        eventId: menuData?.event_id ?? null,
-        inquiryId,
-        notificationType: 'menu_shared',
-        body: `Menu finalized: ${menuName}. The meal plan is set!`,
-        metadata: {
-          menu_id: menuId,
-          menu_name: menuName,
-          finalized: true,
-        },
-        actionUrl: menuData?.event_id ? `/my-events/${menuData.event_id}` : undefined,
-        actionLabel: 'View Menu',
-      })
-    } catch (err) {
-      console.error('[transitionMenu] Circle-first notify (locked) failed (non-blocking):', err)
-    }
-  }
-
-  // Auto-index dishes when a menu is locked (non-blocking side effect)
-  if (toStatus === 'locked') {
-    try {
-      const { indexDishesFromMenu } = await import('@/lib/menus/dish-index-bridge')
-      await indexDishesFromMenu(menuId, user.tenantId!, user.id)
-    } catch (err) {
-      console.error('[transitionMenu] Dish index bridge failed (non-blocking):', err)
-    }
-  }
-
-  return { success: true }
 }
 
 /**

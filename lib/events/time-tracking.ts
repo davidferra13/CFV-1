@@ -47,9 +47,9 @@ export const EVENT_TIME_ACTIVITY_CONFIG: Record<EventTimeActivityType, EventTime
     completedAtColumn: 'prep_completed_at',
     minutesColumn: 'time_prep_minutes',
   },
-  // Packing maps to existing reset columns for backward compatibility.
+  // Breakdown maps to existing reset columns for backward compatibility.
   packing: {
-    label: 'Packing',
+    label: 'Breakdown',
     startedAtColumn: 'reset_started_at',
     completedAtColumn: 'reset_completed_at',
     minutesColumn: 'time_reset_minutes',

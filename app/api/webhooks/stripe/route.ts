@@ -84,6 +84,7 @@ export async function POST(req: Request) {
   // Events that do not write ledger entries bypass the ledger idempotency check
   const isNonLedgerEvent =
     event.type === 'checkout.session.completed' ||
+    event.type === 'checkout.session.expired' ||
     event.type === 'account.updated' ||
     event.type === 'transfer.created' ||
     event.type === 'transfer.updated' ||
@@ -126,8 +127,20 @@ export async function POST(req: Request) {
         if (checkoutType === 'event_ticket') {
           const { handleTicketPurchaseCompleted } = await import('@/lib/tickets/webhook-handler')
           await handleTicketPurchaseCompleted(checkoutSession)
+        } else if (checkoutType === 'chefflow_support') {
+          const { handleSupportCheckoutCompleted } = await import('@/lib/stripe/subscription')
+          await handleSupportCheckoutCompleted(checkoutSession)
         } else {
           await handleGiftCardPurchaseCompleted(event, db)
+        }
+        break
+      }
+
+      case 'checkout.session.expired': {
+        const checkoutSession = event.data.object as Stripe.Checkout.Session
+        if (checkoutSession.metadata?.type === 'event_ticket') {
+          const { handleTicketCheckoutExpired } = await import('@/lib/tickets/webhook-handler')
+          await handleTicketCheckoutExpired(checkoutSession)
         }
         break
       }
@@ -136,7 +149,11 @@ export async function POST(req: Request) {
         // Route: Commerce payments (sale_id in metadata) go through commerce_payments table.
         // Event payments (event_id in metadata) use the existing ledger-first path.
         const pi = event.data.object as Stripe.PaymentIntent
-        if (pi.metadata?.sale_id) {
+        if (pi.metadata?.type === 'event_ticket') {
+          console.info(
+            '[Stripe Webhook] Ticket PaymentIntent succeeded; checkout session owns finalization'
+          )
+        } else if (pi.metadata?.sale_id) {
           await handleCommercePaymentSucceeded(event)
         } else {
           await handlePaymentSucceeded(event)
@@ -144,13 +161,27 @@ export async function POST(req: Request) {
         break
       }
 
-      case 'payment_intent.payment_failed':
-        await handlePaymentFailed(event)
+      case 'payment_intent.payment_failed': {
+        const pi = event.data.object as Stripe.PaymentIntent
+        if (pi.metadata?.type === 'event_ticket') {
+          const { handleTicketPaymentFailed } = await import('@/lib/tickets/webhook-handler')
+          await handleTicketPaymentFailed(pi)
+        } else {
+          await handlePaymentFailed(event)
+        }
         break
+      }
 
-      case 'payment_intent.canceled':
-        await handlePaymentCanceled(event)
+      case 'payment_intent.canceled': {
+        const pi = event.data.object as Stripe.PaymentIntent
+        if (pi.metadata?.type === 'event_ticket') {
+          const { handleTicketPaymentCanceled } = await import('@/lib/tickets/webhook-handler')
+          await handleTicketPaymentCanceled(pi)
+        } else {
+          await handlePaymentCanceled(event)
+        }
         break
+      }
 
       case 'charge.refunded':
         await handleRefund(event)
@@ -202,6 +233,8 @@ export async function POST(req: Request) {
         const customerId =
           typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id
         if (customerId && (invoice as any).subscription) {
+          const { handleSupportPaymentFailed } = await import('@/lib/stripe/subscription')
+          await handleSupportPaymentFailed(invoice)
           console.warn('[Stripe Webhook] Invoice payment failed for customer:', customerId)
           // Notify chef about failed payment (non-blocking)
           try {

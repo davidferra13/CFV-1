@@ -10,6 +10,85 @@ export const OPENCLAW_HEALTH_FRESHNESS_WINDOWS = {
   piHours: 48,
 } as const
 
+export type OpenClawStageStatus = 'success' | 'partial' | 'stale' | 'failed' | 'unknown'
+
+export type OpenClawHealthStageId =
+  | 'daemon_or_wrapper'
+  | 'scheduled_task_or_host'
+  | 'capture_or_pull'
+  | 'normalization'
+  | 'price_history_write'
+  | 'chefflow_mirror_read'
+  | 'chef_costing_consumption'
+
+export type OpenClawHealthStage = {
+  id: string
+  label: string
+  status: OpenClawStageStatus
+  checkedAt: string | null
+  source: string
+  freshnessSeconds?: number | null
+  successCount?: number | null
+  failureCount?: number | null
+  message: string
+}
+
+export type OpenClawHealthContradiction = {
+  id: string
+  severity: 'info' | 'warning' | 'critical'
+  message: string
+  sources: string[]
+}
+
+export type OpenClawHealthCadencePolicy = {
+  fullSyncExpectedSeconds: number | null
+  deltaSyncExpectedSeconds: number | null
+  priceFreshnessMaxAgeSeconds: number | null
+  source: 'code' | 'env' | 'unknown'
+}
+
+export type OpenClawHealthContract = {
+  overall: OpenClawStageStatus
+  generatedAt: string
+  stages: OpenClawHealthStage[]
+  cadencePolicy: OpenClawHealthCadencePolicy
+  contradictions: OpenClawHealthContradiction[]
+}
+
+export type OpenClawHealthSourceReadError = {
+  source: string
+  message: string
+  stageIds?: OpenClawHealthStageId[]
+}
+
+export type BuildOpenClawHealthContractInput = {
+  generatedAt?: string
+  stages: OpenClawHealthStage[]
+  cadencePolicy?: OpenClawHealthCadencePolicy
+  contradictions?: OpenClawHealthContradiction[]
+  sourceReadErrors?: OpenClawHealthSourceReadError[]
+}
+
+export const OPENCLAW_REQUIRED_HEALTH_STAGES: Array<{
+  id: OpenClawHealthStageId
+  label: string
+}> = [
+  { id: 'daemon_or_wrapper', label: 'Daemon or wrapper' },
+  { id: 'scheduled_task_or_host', label: 'Scheduled task or host' },
+  { id: 'capture_or_pull', label: 'Capture or pull' },
+  { id: 'normalization', label: 'Normalization' },
+  { id: 'price_history_write', label: 'Price history write' },
+  { id: 'chefflow_mirror_read', label: 'ChefFlow mirror read' },
+  { id: 'chef_costing_consumption', label: 'Chef costing consumption' },
+]
+
+export const OPENCLAW_DEFAULT_CADENCE_POLICY: OpenClawHealthCadencePolicy = {
+  fullSyncExpectedSeconds: 24 * 60 * 60,
+  deltaSyncExpectedSeconds: 2 * 60 * 60,
+  priceFreshnessMaxAgeSeconds: OPENCLAW_HEALTH_FRESHNESS_WINDOWS.bridgeHours * 60 * 60,
+  source: 'code',
+}
+
 export type OpenClawOverallStatus = 'ok' | 'partial' | 'degraded' | 'failed' | 'unknown'
 export type OpenClawLayerStatus = 'ok' | 'degraded' | 'failed' | 'unknown'
 export type OpenClawWrapperStatus = 'success' | 'partial' | 'failed' | 'unknown'
@@ -210,6 +289,185 @@ function hoursSince(iso: string | null): number | null {
 function isFreshWithinHours(iso: string | null, maxHours: number): boolean {
   const elapsedHours = hoursSince(iso)
   return elapsedHours !== null && elapsedHours <= maxHours
+}
+
+const OPENCLAW_STAGE_STATUS_PRIORITY: Record<OpenClawStageStatus, number> = {
+  success: 0,
+  unknown: 1,
+  stale: 2,
+  partial: 3,
+  failed: 4,
+}
+
+function unknownHealthStage(
+  id: OpenClawHealthStageId,
+  label: string,
+  generatedAt: string
+): OpenClawHealthStage {
+  return {
+    id,
+    label,
+    status: 'unknown',
+    checkedAt: generatedAt,
+    source: 'health-contract',
+    message: 'No source has reported this stage yet.',
+  }
+}
+
+function normalizeContractStages(
+  stages: OpenClawHealthStage[],
+  generatedAt: string
+): OpenClawHealthStage[] {
+  const byId = new Map(stages.map((stage) => [stage.id, stage]))
+
+  return OPENCLAW_REQUIRED_HEALTH_STAGES.map((required) => {
+    return byId.get(required.id) ?? unknownHealthStage(required.id, required.label, generatedAt)
+  })
+}
+
+function sourceReadFailureStages(
+  sourceReadErrors: OpenClawHealthSourceReadError[] | undefined,
+  generatedAt: string
+): OpenClawHealthStage[] {
+  if (!sourceReadErrors?.length) return []
+
+  return sourceReadErrors.flatMap((error) => {
+    const stageIds = error.stageIds?.length ? error.stageIds : ['daemon_or_wrapper']
+    return stageIds.map((id) => {
+      const required = OPENCLAW_REQUIRED_HEALTH_STAGES.find((stage) => stage.id === id)
+      return {
+        id,
+        label: required?.label ?? id,
+        status: 'failed' as const,
+        checkedAt: generatedAt,
+        source: error.source,
+        failureCount: 1,
+        message: `Source read failed closed: ${error.message}`,
+      }
+    })
+  })
+}
+
+function sourceReadFailureContradictions(
+  sourceReadErrors: OpenClawHealthSourceReadError[] | undefined
+): OpenClawHealthContradiction[] {
+  if (!sourceReadErrors?.length) return []
+
+  return sourceReadErrors.map((error) => ({
+    id: `source-read-failed-${error.source.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`,
+    severity: 'critical',
+    message: `OpenClaw health source could not be read and was treated as failed: ${error.message}`,
+    sources: [error.source],
+  }))
+}
+
+function deriveOpenClawHealthContradictions(
+  stages: OpenClawHealthStage[]
+): OpenClawHealthContradiction[] {
+  const byId = new Map(stages.map((stage) => [stage.id, stage]))
+  const contradictions: OpenClawHealthContradiction[] = []
+  const daemon = byId.get('daemon_or_wrapper')
+  const capture = byId.get('capture_or_pull')
+  const normalization = byId.get('normalization')
+  const priceHistory = byId.get('price_history_write')
+  const mirror = byId.get('chefflow_mirror_read')
+
+  if (
+    priceHistory?.status === 'success' &&
+    (daemon?.status === 'failed' || daemon?.status === 'unknown')
+  ) {
+    contradictions.push({
+      id: 'fresh-price-history-with-unhealthy-wrapper',
+      severity: daemon.status === 'failed' ? 'critical' : 'warning',
+      message:
+        'Price history has fresh OpenClaw writes, but the daemon or wrapper is not confirmed healthy.',
+      sources: [priceHistory.source, daemon.source],
+    })
+  }
+
+  if (
+    priceHistory?.status === 'success' &&
+    (capture?.status === 'failed' || normalization?.status === 'failed')
+  ) {
+    contradictions.push({
+      id: 'fresh-price-history-with-failed-upstream-stage',
+      severity: 'critical',
+      message:
+        'Fresh price history exists while an upstream capture or normalization stage is failed.',
+      sources: [
+        priceHistory.source,
+        ...(capture?.status === 'failed' ? [capture.source] : []),
+        ...(normalization?.status === 'failed' ? [normalization.source] : []),
+      ],
+    })
+  }
+
+  if (mirror?.status === 'success' && priceHistory?.status === 'stale') {
+    contradictions.push({
+      id: 'fresh-mirror-with-stale-price-history',
+      severity: 'warning',
+      message: 'OpenClaw mirror data is fresh but ChefFlow price history writes are stale.',
+      sources: [mirror.source, priceHistory.source],
+    })
+  }
+
+  return contradictions
+}
+
+export function reduceOpenClawOverallStatus(
+  stages: Array<Pick<OpenClawHealthStage, 'status'>>
+): OpenClawStageStatus {
+  return stages.reduce<OpenClawStageStatus>((overall, stage) => {
+    return OPENCLAW_STAGE_STATUS_PRIORITY[stage.status] > OPENCLAW_STAGE_STATUS_PRIORITY[overall]
+      ? stage.status
+      : overall
+  }, 'success')
+}
+
+export function buildOpenClawHealthContract(
+  input: BuildOpenClawHealthContractInput
+): OpenClawHealthContract {
+  const generatedAt = input.generatedAt ?? new Date().toISOString()
+  const stages = normalizeContractStages(
+    [...input.stages, ...sourceReadFailureStages(input.sourceReadErrors, generatedAt)],
+    generatedAt
+  )
+  const contradictions = [
+    ...(input.contradictions ?? []),
+    ...sourceReadFailureContradictions(input.sourceReadErrors),
+    ...deriveOpenClawHealthContradictions(stages),
+  ]
+
+  return {
+    overall: reduceOpenClawOverallStatus(stages),
+    generatedAt,
+    stages,
+    cadencePolicy: input.cadencePolicy ?? OPENCLAW_DEFAULT_CADENCE_POLICY,
+    contradictions,
+  }
+}
+
+export async function getOpenClawHealthContract(): Promise<OpenClawHealthContract> {
+  const generatedAt = new Date().toISOString()
+
+  try {
+    const { readOpenClawHealthSources } = await import('@/lib/openclaw/health-sources')
+    const sourceSnapshot = await readOpenClawHealthSources(generatedAt)
+    return buildOpenClawHealthContract(sourceSnapshot)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown health source failure'
+    return buildOpenClawHealthContract({
+      generatedAt,
+      stages: [],
+      sourceReadErrors: [
+        {
+          source: 'lib/openclaw/health-sources',
+          message,
+          stageIds: OPENCLAW_REQUIRED_HEALTH_STAGES.map((stage) => stage.id),
+        },
+      ],
+    })
+  }
 }
 
 async function readPersistedSyncStatus(): Promise<PersistedSyncStatus | null> {

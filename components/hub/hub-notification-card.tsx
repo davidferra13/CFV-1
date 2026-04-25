@@ -114,6 +114,13 @@ const NOTIFICATION_CONFIG: Record<
     bgColor: 'bg-brand-900/30 border-brand-700/50',
     actionCategory: 'info',
   },
+  open_slot: {
+    icon: '📢',
+    label: 'Open Slot',
+    color: 'text-green-300',
+    bgColor: 'bg-green-900/30 border-green-700/50',
+    actionCategory: 'action',
+  },
 }
 
 // Memoized: rendered in .map() inside hub message feed. Props are stable data objects.

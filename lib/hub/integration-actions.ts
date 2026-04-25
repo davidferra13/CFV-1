@@ -69,6 +69,7 @@ export async function syncRSVPToHubProfile(input: {
         .insert({
           display_name: input.displayName,
           email: input.email,
+          email_normalized: input.email ? input.email.toLowerCase().trim() : null,
           known_allergies: input.allergies ?? [],
           known_dietary: input.dietaryRestrictions ?? [],
         })
@@ -248,12 +249,34 @@ export async function ensureEventDinnerCircle(input: {
   // Check if a group already exists for this event
   const { data: existing } = await db
     .from('hub_groups')
-    .select('group_token')
+    .select('id, group_token, is_active')
     .eq('event_id', input.eventId)
-    .eq('is_active', true)
+    .order('created_at', { ascending: true })
+    .limit(1)
     .single()
 
-  if (existing) return { groupToken: existing.group_token }
+  if (existing) {
+    if (existing.is_active === false) {
+      await db
+        .from('hub_groups')
+        .update({ is_active: true, updated_at: new Date().toISOString() })
+        .eq('id', existing.id)
+    }
+
+    try {
+      await db.from('hub_group_events').upsert(
+        {
+          group_id: existing.id,
+          event_id: input.eventId,
+        },
+        { onConflict: 'group_id,event_id' }
+      )
+    } catch {
+      // Older local databases may not have hub_group_events yet.
+    }
+
+    return { groupToken: existing.group_token }
+  }
 
   // Find or create a system profile for the chef
   const { data: chef } = await db
@@ -317,6 +340,18 @@ export async function ensureEventDinnerCircle(input: {
     can_pin: true,
   })
 
+  try {
+    await db.from('hub_group_events').upsert(
+      {
+        group_id: group.id,
+        event_id: input.eventId,
+      },
+      { onConflict: 'group_id,event_id' }
+    )
+  } catch {
+    // Older local databases may not have hub_group_events yet.
+  }
+
   return { groupToken: group.group_token }
 }
 
@@ -361,7 +396,8 @@ export async function getEventHubGroupToken(eventId: string): Promise<string | n
     .from('hub_groups')
     .select('group_token')
     .eq('event_id', eventId)
-    .eq('is_active', true)
+    .order('created_at', { ascending: true })
+    .limit(1)
     .single()
 
   return data?.group_token ?? null

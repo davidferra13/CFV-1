@@ -100,6 +100,11 @@ const UpdatePreferencesSchema = z.object({
   revenue_goal_program_enabled: z.boolean().optional(),
   revenue_goal_nudge_level: z.enum(['gentle', 'standard', 'aggressive']).optional(),
   revenue_goal_custom: z.array(RevenueGoalCustomSchema).optional(),
+  event_readiness_assistant_enabled: z.boolean().optional(),
+  event_readiness_assistant_default_mode: z.enum(['off', 'quiet', 'normal']).optional(),
+  event_readiness_show_financial: z.boolean().optional(),
+  event_readiness_show_pricing_confidence: z.boolean().optional(),
+  event_readiness_show_ops: z.boolean().optional(),
 
   shop_day_before: z.boolean().optional(),
   dashboard_widgets: z.array(DashboardWidgetPreferenceSchema).optional(),
@@ -320,6 +325,16 @@ export async function getChefPreferences(): Promise<ChefPreferences> {
       ? row.revenue_goal_nudge_level
       : 'gentle') as ChefPreferences['revenue_goal_nudge_level'],
     revenue_goal_custom: getRevenueGoalCustomFromUnknown(row.revenue_goal_custom),
+    event_readiness_assistant_enabled: (row.event_readiness_assistant_enabled as boolean) ?? false,
+    event_readiness_assistant_default_mode: (row.event_readiness_assistant_default_mode === 'off' ||
+    row.event_readiness_assistant_default_mode === 'normal' ||
+    row.event_readiness_assistant_default_mode === 'quiet'
+      ? row.event_readiness_assistant_default_mode
+      : 'quiet') as ChefPreferences['event_readiness_assistant_default_mode'],
+    event_readiness_show_financial: (row.event_readiness_show_financial as boolean) ?? true,
+    event_readiness_show_pricing_confidence:
+      (row.event_readiness_show_pricing_confidence as boolean) ?? true,
+    event_readiness_show_ops: (row.event_readiness_show_ops as boolean) ?? true,
     shop_day_before: (row.shop_day_before as boolean) ?? true,
     dashboard_widgets: getDashboardWidgetsFromUnknown(row.dashboard_widgets),
     primary_nav_hrefs: getPrimaryNavHrefsFromUnknown(row.primary_nav_hrefs),

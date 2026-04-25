@@ -125,6 +125,50 @@ export const postEventThankYou = inngest.createFunction(
       )
       if (!ctx) return { skipped: true, reason: 'context unavailable or opted out' }
 
+      // Look up circle for this event to include join CTA
+      let circleJoinUrl: string | null = null
+      let circleGroupName: string | null = null
+      try {
+        const { getCircleForEvent } = await import('@/lib/hub/circle-lookup')
+        const circle = await getCircleForEvent(event.data.eventId)
+        if (circle) {
+          const { createServerClient } = await import('@/lib/db/server')
+          const db: any = createServerClient({ admin: true })
+
+          // Check if client is already a member via email
+          const { data: clientProfile } = await db
+            .from('hub_guest_profiles')
+            .select('id')
+            .eq('email', ctx.client.email)
+            .limit(1)
+            .maybeSingle()
+
+          let alreadyMember = false
+          if (clientProfile) {
+            const { data: membership } = await db
+              .from('hub_group_members')
+              .select('id')
+              .eq('group_id', circle.groupId)
+              .eq('profile_id', clientProfile.id)
+              .maybeSingle()
+            alreadyMember = !!membership
+          }
+
+          if (!alreadyMember) {
+            circleJoinUrl = `${APP_URL}/hub/join/${circle.groupToken}`
+
+            const { data: groupData } = await db
+              .from('hub_groups')
+              .select('name')
+              .eq('id', circle.groupId)
+              .single()
+            circleGroupName = groupData?.name ?? null
+          }
+        }
+      } catch (err) {
+        console.error('[non-blocking] Circle lookup for thank-you email failed', err)
+      }
+
       const { sendPostEventThankYouEmail } = await import('@/lib/email/notifications')
 
       await sendPostEventThankYouEmail({
@@ -137,6 +181,8 @@ export const postEventThankYou = inngest.createFunction(
         loyaltyTier: ctx.loyalty.tier,
         loyaltyPointsEarned: ctx.loyalty.pointsEarned,
         loyaltyPointsBalance: ctx.loyalty.pointsBalance,
+        circleJoinUrl,
+        circleGroupName,
       })
 
       log.info('Post-event thank-you email sent', {

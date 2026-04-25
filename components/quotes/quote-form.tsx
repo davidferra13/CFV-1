@@ -964,8 +964,8 @@ export function QuoteForm({
             <div className="space-y-1.5">
               {!guestCount || parseInt(guestCount) <= 0 ? (
                 <p className="text-xs text-amber-700 bg-amber-950 border border-amber-200 rounded px-2 py-1">
-                  Fill in &ldquo;Number of Guests&rdquo; in the main form first - the calculator
-                  uses that count.
+                  Fill in &ldquo;Guest Count&rdquo; in the main form first - the calculator uses
+                  that count.
                 </p>
               ) : (
                 <p className="text-xs text-stone-300">

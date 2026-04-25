@@ -74,3 +74,31 @@ export async function deactivateHubPushSubscription(endpoint: string): Promise<v
   const db: any = createServerClient({ admin: true })
   await db.from('hub_push_subscriptions').update({ is_active: false }).eq('endpoint', endpoint)
 }
+
+/**
+ * Increment failed_count on a push subscription.
+ * Auto-deactivates after 5 failures.
+ */
+export async function incrementPushFailedCount(endpoint: string): Promise<void> {
+  const db: any = createServerClient({ admin: true })
+
+  // Get current count
+  const { data } = await db
+    .from('hub_push_subscriptions')
+    .select('id, failed_count')
+    .eq('endpoint', endpoint)
+    .maybeSingle()
+
+  if (!data) return
+
+  const newCount = (data.failed_count ?? 0) + 1
+
+  if (newCount >= 5) {
+    await db
+      .from('hub_push_subscriptions')
+      .update({ is_active: false, failed_count: newCount })
+      .eq('id', data.id)
+  } else {
+    await db.from('hub_push_subscriptions').update({ failed_count: newCount }).eq('id', data.id)
+  }
+}

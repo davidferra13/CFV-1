@@ -4,6 +4,10 @@ import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
+import {
+  ensureRecurringClientCircle,
+  postRecurringLifecycleMessage,
+} from '@/lib/recurring/circle-bridge'
 
 // ============================================
 // Types
@@ -154,6 +158,19 @@ export async function createMealPrepProgram(input: z.infer<typeof createProgramS
   await db.from('meal_prep_weeks').insert(weekInserts)
 
   revalidatePath('/meal-prep')
+
+  // Bridge: ensure client has a dinner circle for meal prep communication
+  try {
+    await ensureRecurringClientCircle(user.tenantId!, parsed.client_id, 'Meal Prep')
+    await postRecurringLifecycleMessage(
+      user.tenantId!,
+      parsed.client_id,
+      `Meal prep program created with ${parsed.rotation_weeks}-week rotation cycle`
+    )
+  } catch (err) {
+    console.error('[non-blocking] Meal prep circle bridge failed', err)
+  }
+
   return { id: data.id }
 }
 
@@ -397,6 +414,25 @@ export async function markWeekPrepped(programId: string, rotationWeek: number) {
     return { error: error.message }
   }
 
+  // Post prep notification to circle
+  try {
+    const { data: prog } = await db
+      .from('meal_prep_programs')
+      .select('client_id')
+      .eq('id', programId)
+      .eq('tenant_id', user.tenantId!)
+      .single()
+    if (prog?.client_id) {
+      await postRecurringLifecycleMessage(
+        user.tenantId!,
+        prog.client_id,
+        `Week ${rotationWeek} meals prepped and ready`
+      )
+    }
+  } catch (err) {
+    console.error('[non-blocking] Prep circle notification failed', err)
+  }
+
   revalidatePath(`/meal-prep/${programId}`)
   return { success: true }
 }
@@ -422,6 +458,25 @@ export async function markWeekDelivered(
 
   if (weekErr) {
     return { error: weekErr.message }
+  }
+
+  // Post delivery notification to circle
+  try {
+    const { data: prog } = await db
+      .from('meal_prep_programs')
+      .select('client_id')
+      .eq('id', programId)
+      .eq('tenant_id', user.tenantId!)
+      .single()
+    if (prog?.client_id) {
+      await postRecurringLifecycleMessage(
+        user.tenantId!,
+        prog.client_id,
+        `Week ${rotationWeek} meals delivered`
+      )
+    }
+  } catch (err) {
+    console.error('[non-blocking] Delivery circle notification failed', err)
   }
 
   // Update the program container count

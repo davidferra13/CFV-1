@@ -55,7 +55,6 @@ import { ClientStatusBadge } from '@/components/clients/client-status-badge'
 import { getClientDormancyInfo } from '@/lib/clients/actions'
 import { getChefReviews } from '@/lib/reviews/actions'
 import { getClientProfitabilityHistory } from '@/lib/clients/profitability'
-import { getClientProfileCompleteness } from '@/lib/clients/completeness'
 import { getSingleClientHealthScore } from '@/lib/clients/health-score'
 import { ClientHealthBadge } from '@/components/clients/health-score-badge'
 import { getClientLTVTrajectory } from '@/lib/clients/ltv-trajectory'
@@ -93,6 +92,13 @@ import { EntityPhotoUpload } from '@/components/entities/entity-photo-upload'
 import { ScheduleMessageDialog } from '@/components/communication/schedule-message-dialog'
 import { CompletionCard, CompletionCardSkeleton } from '@/components/completion/completion-card'
 import { getCompletionForEntity } from '@/lib/completion/actions'
+import { buildClientWorkGraph } from '@/lib/client-work-graph/build'
+import {
+  buildClientActionRequiredSummary,
+  getSharedClientWorkGraphSnapshot,
+} from '@/lib/client-work-graph/shared-snapshot'
+import { getHouseholdForClient } from '@/lib/hub/household-actions'
+import { ClientHouseholdPanel } from '@/components/clients/client-household-panel'
 
 async function ClientCompletionSection({ clientId }: { clientId: string }) {
   const result = await getCompletionForEntity('client', clientId)
@@ -112,6 +118,18 @@ const TIER_LABELS: Record<string, string> = {
   silver: 'Silver',
   gold: 'Gold',
   platinum: 'Platinum',
+}
+
+const EMPTY_HUB_SUMMARY = {
+  groupCount: 0,
+  friendCount: 0,
+  pendingFriendRequestCount: 0,
+  totalUnreadCount: 0,
+} as const
+
+const EMPTY_NOTIFICATION_SUMMARY = {
+  unreadCount: 0,
+  unread: [],
 }
 
 interface ClientDetailPageProps {
@@ -151,6 +169,8 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     clientPhotos,
     tasteProfile,
     culinaryGuidance,
+    clientOpsSnapshotState,
+    householdData,
   ] = await Promise.all([
     getClientWithStats(params.id).catch(() => null),
     getMessageThread('client', params.id).catch(() => []),
@@ -185,6 +205,21 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     getClientPhotos(params.id).catch(() => []),
     getTasteProfile(params.id).catch(() => null),
     getClientCulinaryProfileGuidance(params.id).catch(() => null),
+    getSharedClientWorkGraphSnapshot({
+      tenantId: chefUser.tenantId!,
+      clientId: params.id,
+      pastLimit: 5,
+    })
+      .then((snapshot) => ({
+        snapshot,
+        error: null as string | null,
+      }))
+      .catch((error) => ({
+        snapshot: null,
+        error:
+          error instanceof Error ? error.message : 'Could not load the shared client ops snapshot.',
+      })),
+    getHouseholdForClient(params.id).catch(() => null),
   ])
 
   const engagementScore = computeEngagementScore(clientPortalActivity as any[])
@@ -202,6 +237,36 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
   if (!client) {
     notFound()
   }
+
+  const clientOpsSnapshot = clientOpsSnapshotState.snapshot
+  const clientOpsWorkGraph = clientOpsSnapshot
+    ? buildClientWorkGraph({
+        events: clientOpsSnapshot.eventsResult.all,
+        quotes: clientOpsSnapshot.quotes,
+        inquiries: clientOpsSnapshot.inquiries,
+        profileSummary: clientOpsSnapshot.profileSummary,
+        hubSummary: EMPTY_HUB_SUMMARY,
+        rsvpSummary: clientOpsSnapshot.rsvpSummary,
+        notificationSummary: EMPTY_NOTIFICATION_SUMMARY,
+        eventStubs: [],
+      })
+    : null
+  const clientOpsActionRequired = clientOpsWorkGraph
+    ? buildClientActionRequiredSummary(clientOpsWorkGraph.summary)
+    : null
+  const paymentAttentionCount = clientOpsWorkGraph
+    ? clientOpsWorkGraph.summary.paymentDueCount +
+      clientOpsWorkGraph.summary.outstandingBalanceCount
+    : null
+  const replyAttentionCount = clientOpsWorkGraph
+    ? clientOpsWorkGraph.summary.inquiryAwaitingCount + clientOpsWorkGraph.summary.rsvpPendingCount
+    : null
+  const activeRsvpEvent =
+    clientOpsSnapshot?.rsvpSummary?.eventId != null
+      ? (clientOpsSnapshot.eventsResult.upcoming.find(
+          (event) => String(event.id) === clientOpsSnapshot.rsvpSummary?.eventId
+        ) ?? null)
+      : null
 
   return (
     <div className="space-y-8">
@@ -309,6 +374,225 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
       {/* Next Best Action */}
       {clientNBA ? <NextBestActionCard action={clientNBA} /> : null}
+
+      {/* Client Ops Snapshot */}
+      {clientOpsSnapshot ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Client Ops Snapshot</CardTitle>
+            <p className="text-sm text-stone-400">
+              Shared from the authenticated client workspace, focused on booking, payment, profile,
+              and RSVP readiness.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <div className="rounded-lg border border-stone-700 bg-stone-800/60 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
+                      Action Required
+                    </p>
+                    <p className="mt-2 text-2xl font-bold text-stone-100">
+                      {clientOpsActionRequired?.totalItems ?? 0}
+                    </p>
+                  </div>
+                  <Badge
+                    variant={(clientOpsActionRequired?.totalItems ?? 0) > 0 ? 'warning' : 'success'}
+                    className="shrink-0"
+                  >
+                    {(clientOpsActionRequired?.totalItems ?? 0) > 0 ? 'Client waiting' : 'Clear'}
+                  </Badge>
+                </div>
+                <p className="mt-2 text-sm text-stone-400">
+                  {clientOpsWorkGraph?.primary
+                    ? clientOpsWorkGraph.primary.title
+                    : 'No active client-side blockers in the shared queue.'}
+                </p>
+                <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <dt className="text-stone-500">Proposals</dt>
+                    <dd className="mt-1 font-semibold text-stone-100">
+                      {clientOpsActionRequired?.proposalCount ?? 0}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-stone-500">Payments</dt>
+                    <dd className="mt-1 font-semibold text-stone-100">
+                      {paymentAttentionCount ?? 0}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-stone-500">Quotes</dt>
+                    <dd className="mt-1 font-semibold text-stone-100">
+                      {clientOpsActionRequired?.quotePendingCount ?? 0}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-stone-500">Replies + RSVPs</dt>
+                    <dd className="mt-1 font-semibold text-stone-100">
+                      {replyAttentionCount ?? 0}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+
+              <div className="rounded-lg border border-stone-700 bg-stone-800/60 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
+                  Balance + Payment
+                </p>
+                <p
+                  className={`mt-2 text-2xl font-bold ${
+                    client.outstandingBalanceCents > 0 ? 'text-red-400' : 'text-stone-100'
+                  }`}
+                >
+                  {formatCurrency(client.outstandingBalanceCents)}
+                </p>
+                <p className="mt-2 text-sm text-stone-400">
+                  {paymentAttentionCount && paymentAttentionCount > 0
+                    ? `${paymentAttentionCount} payment step(s) are still open for this client.`
+                    : 'No published balance or payment step is open right now.'}
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Badge variant={client.outstandingBalanceCents > 0 ? 'error' : 'success'}>
+                    {client.outstandingBalanceCents > 0 ? 'Balance due' : 'Paid up'}
+                  </Badge>
+                  <Badge
+                    variant={
+                      (clientOpsActionRequired?.paymentDueCount ?? 0) > 0 ? 'warning' : 'default'
+                    }
+                  >
+                    {clientOpsActionRequired?.paymentDueCount ?? 0} payment request(s)
+                  </Badge>
+                  <Badge
+                    variant={
+                      (clientOpsActionRequired?.outstandingBalanceCount ?? 0) > 0
+                        ? 'warning'
+                        : 'default'
+                    }
+                  >
+                    {clientOpsActionRequired?.outstandingBalanceCount ?? 0} overdue balance item(s)
+                  </Badge>
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-stone-700 bg-stone-800/60 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
+                  Profile Readiness
+                </p>
+                <p className="mt-2 text-2xl font-bold text-stone-100">
+                  {clientOpsSnapshot.profileSummary.completionPercent}%
+                </p>
+                <p className="mt-2 text-sm text-stone-400">
+                  {clientOpsSnapshot.profileSummary.completedFields}/
+                  {clientOpsSnapshot.profileSummary.totalFields} core fields complete.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Badge
+                    variant={
+                      clientOpsSnapshot.profileSummary.completionPercent >= 100
+                        ? 'success'
+                        : 'warning'
+                    }
+                  >
+                    {clientOpsSnapshot.profileSummary.completionPercent >= 100
+                      ? 'Profile complete'
+                      : 'Profile incomplete'}
+                  </Badge>
+                  <Badge
+                    variant={
+                      clientOpsSnapshot.profileSummary.pendingMealRequests > 0
+                        ? 'warning'
+                        : 'success'
+                    }
+                  >
+                    {clientOpsSnapshot.profileSummary.pendingMealRequests} pending meal request(s)
+                  </Badge>
+                  <Badge
+                    variant={
+                      clientOpsSnapshot.profileSummary.signalNotificationsEnabled
+                        ? 'success'
+                        : 'warning'
+                    }
+                  >
+                    Signal alerts{' '}
+                    {clientOpsSnapshot.profileSummary.signalNotificationsEnabled ? 'on' : 'off'}
+                  </Badge>
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-stone-700 bg-stone-800/60 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
+                  Next Active RSVP
+                </p>
+                {clientOpsSnapshot.rsvpSummary ? (
+                  <>
+                    <p className="mt-2 text-lg font-semibold text-stone-100">
+                      {clientOpsSnapshot.rsvpSummary.occasion || 'Upcoming event'}
+                    </p>
+                    <p className="mt-1 text-sm text-stone-400">
+                      {activeRsvpEvent?.event_date
+                        ? format(new Date(activeRsvpEvent.event_date), 'MMM d, yyyy')
+                        : 'Date pending'}
+                    </p>
+                    <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <dt className="text-stone-500">Guests</dt>
+                        <dd className="mt-1 font-semibold text-stone-100">
+                          {clientOpsSnapshot.rsvpSummary.totalGuests}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-stone-500">Attending</dt>
+                        <dd className="mt-1 font-semibold text-stone-100">
+                          {clientOpsSnapshot.rsvpSummary.attendingCount}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-stone-500">Pending</dt>
+                        <dd className="mt-1 font-semibold text-stone-100">
+                          {clientOpsSnapshot.rsvpSummary.pendingCount}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-stone-500">Share</dt>
+                        <dd className="mt-1 font-semibold text-stone-100">
+                          {clientOpsSnapshot.rsvpSummary.hasActiveShare ? 'Active' : 'Inactive'}
+                        </dd>
+                      </div>
+                    </dl>
+                  </>
+                ) : (
+                  <div className="mt-2 space-y-2">
+                    <p className="text-lg font-semibold text-stone-100">No active RSVP lane</p>
+                    <p className="text-sm text-stone-400">
+                      This client does not currently have an accepted, paid, confirmed, or in
+                      progress event in the RSVP/share flow.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="border-red-800/40 bg-red-950/20">
+          <CardHeader>
+            <CardTitle className="text-base text-red-200">
+              Client Ops Snapshot Unavailable
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-red-300">
+              The shared authenticated client snapshot did not load, so this page is not showing
+              synthetic zero states for action items, profile readiness, or RSVP status.
+            </p>
+            {clientOpsSnapshotState.error ? (
+              <p className="mt-2 text-xs text-red-400">{clientOpsSnapshotState.error}</p>
+            ) : null}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Potential Duplicates */}
       <WidgetErrorBoundary name="Duplicates" compact>
@@ -848,6 +1132,9 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
       {/* Allergy & Dietary Records */}
       <AllergyRecordsPanel clientId={client.id} initialRecords={allergyRecords as any} />
+
+      {/* Household Members */}
+      {householdData && <ClientHouseholdPanel clientId={client.id} household={householdData} />}
 
       {/* Taste Profile */}
       <WidgetErrorBoundary name="Taste Profile" compact>

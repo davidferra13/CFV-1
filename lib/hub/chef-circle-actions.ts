@@ -1202,3 +1202,92 @@ export async function ensureCircleForEvent(
     return null
   }
 }
+
+/**
+ * Compute momentum stats for the circles page.
+ * All data comes from existing tables. No new tables needed.
+ */
+export async function getCirclesMomentum(): Promise<{
+  completedEventCount: number
+  totalEarnedCents: number
+  avgPerEventCents: number
+  firstEventDate: string | null
+  monthsActive: number
+  eventsThisMonth: number
+  eventsLastMonth: number
+}> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  // Count completed events and their financials
+  const { data: events } = await db
+    .from('events')
+    .select('id, event_date, created_at')
+    .eq('tenant_id', user.tenantId!)
+    .eq('status', 'completed')
+    .order('event_date', { ascending: true })
+
+  const completedEvents = events ?? []
+  const completedEventCount = completedEvents.length
+
+  // Get total revenue from completed events via the financial summary view
+  let totalEarnedCents = 0
+  if (completedEventCount > 0) {
+    const eventIds = completedEvents.map((e: any) => e.id)
+    const { data: summaries } = await db
+      .from('event_financial_summary')
+      .select('net_revenue_cents')
+      .eq('tenant_id', user.tenantId!)
+      .in('event_id', eventIds)
+
+    totalEarnedCents = (summaries ?? []).reduce(
+      (sum: number, s: any) => sum + (s.net_revenue_cents ?? 0),
+      0
+    )
+  }
+
+  const avgPerEventCents =
+    completedEventCount > 0 ? Math.round(totalEarnedCents / completedEventCount) : 0
+
+  // First event date for "months active" calculation
+  const firstEventDate =
+    completedEvents.length > 0
+      ? (completedEvents[0].event_date ?? completedEvents[0].created_at)
+      : null
+
+  // Months active
+  let monthsActive = 0
+  if (firstEventDate) {
+    const first = new Date(firstEventDate)
+    const now = new Date()
+    monthsActive = Math.max(
+      1,
+      (now.getFullYear() - first.getFullYear()) * 12 + (now.getMonth() - first.getMonth())
+    )
+  }
+
+  // This month vs last month event counts
+  const now = new Date()
+  const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+
+  const eventsThisMonth = completedEvents.filter((e: any) => {
+    const d = new Date(e.event_date ?? e.created_at)
+    return d >= thisMonthStart
+  }).length
+
+  const eventsLastMonth = completedEvents.filter((e: any) => {
+    const d = new Date(e.event_date ?? e.created_at)
+    return d >= lastMonthStart && d < thisMonthStart
+  }).length
+
+  return {
+    completedEventCount,
+    totalEarnedCents,
+    avgPerEventCents,
+    firstEventDate,
+    monthsActive,
+    eventsThisMonth,
+    eventsLastMonth,
+  }
+}

@@ -29,6 +29,7 @@ export const CHEF_LOCATION_RELATIONSHIP_OPTIONS = [
   'exclusive',
   'featured',
   'available_on_request',
+  'owner',
 ] as const
 
 export type LocationExperienceTag = (typeof LOCATION_EXPERIENCE_TAG_OPTIONS)[number]
@@ -67,6 +68,7 @@ export const CHEF_LOCATION_RELATIONSHIP_LABELS: Record<ChefLocationRelationshipT
   exclusive: 'Exclusive setting',
   featured: 'Featured setting',
   available_on_request: 'Available on request',
+  owner: 'Our restaurant',
 }
 
 export type ChefLocationLinkRecord = {

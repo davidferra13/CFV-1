@@ -11,7 +11,11 @@ import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert } from '@/components/ui/alert'
 import { TagInput } from '@/components/ui/tag-input'
-import { createEvent, type CreateEventInput } from '@/lib/events/actions'
+import {
+  createEvent,
+  findDuplicateEventCandidates,
+  type CreateEventInput,
+} from '@/lib/events/actions'
 import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 import { formatCurrency, parseCurrencyToCents } from '@/lib/utils/currency'
 import { toast } from 'sonner'
@@ -202,6 +206,26 @@ export function EventCreationWizard({ clients }: EventCreationWizardProps) {
 
     startTransition(async () => {
       try {
+        const duplicates = await findDuplicateEventCandidates({
+          client_id: clientId,
+          event_date: eventDateStr,
+          serve_time: serveTime,
+          occasion,
+          location_city: locationCity,
+        })
+
+        if (duplicates.length > 0) {
+          const proceed = window.confirm(
+            `Possible duplicate event found for this date: ${
+              duplicates[0]?.occasion || 'Untitled event'
+            }. Create this event anyway?`
+          )
+          if (!proceed) {
+            setError('Creation stopped because a possible duplicate already exists.')
+            return
+          }
+        }
+
         const result = await createEvent(input)
         if (result.success && result.event) {
           trackEvent(ANALYTICS_EVENTS.EVENT_CREATED, {
@@ -388,7 +412,7 @@ export function EventCreationWizard({ clients }: EventCreationWizardProps) {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
-                label="Number of Guests"
+                label="Guest Count"
                 type="number"
                 required
                 min="1"

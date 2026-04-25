@@ -7,6 +7,7 @@ import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getClientsWithStats, getPendingInvitations } from '@/lib/clients/actions'
+import { getClientHealthScores } from '@/lib/clients/health-score'
 
 export const metadata: Metadata = { title: 'Clients' }
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
@@ -71,6 +72,9 @@ export default async function ClientsPage() {
           <p className="text-stone-400 mt-1">Directory, insights, loyalty, and communication</p>
         </div>
         <div className="flex gap-2">
+          <Button href="/pulse" variant="ghost" size="sm">
+            Who&apos;s waiting on me?
+          </Button>
           <a
             href="/clients/csv-export"
             className="inline-flex items-center justify-center px-3 py-2 border border-stone-600 text-stone-300 rounded-lg hover:bg-stone-800 transition-colors font-medium text-sm"
@@ -160,7 +164,11 @@ async function PendingInvitationsContent() {
 }
 
 async function ClientsListContent() {
-  const clientsResult = await safeFetch(() => getClientsWithStats())
+  const [clientsResult, healthResult] = await Promise.all([
+    safeFetch(() => getClientsWithStats()),
+    safeFetch(() => getClientHealthScores()),
+  ])
+
   if (clientsResult.error) {
     return <ErrorState title="Could not load clients" description={clientsResult.error} />
   }
@@ -178,5 +186,19 @@ async function ClientsListContent() {
     )
   }
 
-  return <ClientsTable clients={clients} />
+  // Merge health scores into client data
+  const healthMap = new Map<string, { tier: string; score: number }>()
+  if (healthResult.data) {
+    for (const hs of healthResult.data.scores) {
+      healthMap.set(hs.clientId, { tier: hs.tier, score: hs.score })
+    }
+  }
+
+  const clientsWithHealth = clients.map((client: any) => ({
+    ...client,
+    healthTier: healthMap.get(client.id)?.tier ?? 'new',
+    healthScore: healthMap.get(client.id)?.score ?? 0,
+  }))
+
+  return <ClientsTable clients={clientsWithHealth} />
 }

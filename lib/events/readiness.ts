@@ -191,9 +191,44 @@ async function evaluateReadinessInternal(params: {
     simulationState.simulation.proofs.map((proof) => proof.id)
   )
 
-  const gates = simulationState.simulation.proofs.map((proof) =>
+  const gates: GateResult[] = simulationState.simulation.proofs.map((proof) =>
     buildGateResult(proof, targetStatus, overrideRows.get(proof.id), simulationState.hash)
   )
+
+  // Soft contract gate: warn if no signed contract when confirming
+  if (targetStatus === 'confirmed' || targetStatus === 'in_progress') {
+    try {
+      const { data: contract } = await (db as any)
+        .from('contracts')
+        .select('id, status')
+        .eq('event_id', eventId)
+        .eq('tenant_id', tenantId)
+        .in('status', ['signed'])
+        .limit(1)
+        .maybeSingle()
+
+      if (!contract) {
+        gates.push({
+          gate: 'service_plan_flow' as ReadinessGate, // piggyback on existing gate type
+          status: 'unverified',
+          label: 'Signed Contract',
+          description: 'No signed contract on file for this event.',
+          details: 'Consider sending a service agreement before confirming.',
+          isHardBlock: false,
+          blocking: false,
+          severity: 'warning',
+          sourceOfTruth: 'contracts table',
+          lastVerifiedAt: null,
+          verifyRoute: `/events/${eventId}`,
+          verifyTarget: 'contracts',
+          ctaLabel: 'Review Contracts',
+        })
+      }
+    } catch {
+      // Non-blocking; contracts table may not exist
+    }
+  }
+
   const blockers = gates.filter((gate) => gate.isHardBlock)
   const risks = gates.filter(
     (gate) => gate.status === 'overridden' || (gate.status === 'unverified' && !gate.isHardBlock)

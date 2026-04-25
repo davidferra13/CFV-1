@@ -19,7 +19,7 @@ function getSimulationStatusLabel(status: ServiceSimulationPanelState['status'])
     case 'current':
       return 'Current saved rehearsal'
     case 'stale':
-      return 'Saved rehearsal is stale'
+      return 'Saved simulation is stale'
     default:
       return 'Not yet simulated'
   }

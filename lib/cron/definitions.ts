@@ -64,6 +64,13 @@ export const CRON_MONITOR_DEFINITIONS: CronMonitorDefinition[] = [
     description: 'Process opted-in Gmail historical scan batches',
   },
   {
+    cronName: 'passive-store-sync',
+    routePath: '/api/scheduled/passive-store-sync',
+    maxExpectedMinutes: 30,
+    cadence: '15m',
+    description: 'Passive storefront product freshness sync',
+  },
+  {
     cronName: 'call-reminders',
     routePath: '/api/scheduled/call-reminders',
     maxExpectedMinutes: 60,
@@ -384,6 +391,13 @@ export const CRON_MONITOR_DEFINITIONS: CronMonitorDefinition[] = [
     maxExpectedMinutes: 2880,
     cadence: 'daily',
     description: 'Match directory waitlist entries to discoverable chefs',
+  },
+  {
+    cronName: 'booking-escalation',
+    routePath: '/api/cron/booking-escalation',
+    maxExpectedMinutes: 360,
+    cadence: '6h',
+    description: 'Send follow-up emails for open bookings with no chef response (48h and 7d)',
   },
 ]
 

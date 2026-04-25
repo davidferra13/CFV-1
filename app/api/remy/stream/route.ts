@@ -59,6 +59,14 @@ import {
   determineContextScope,
   getEarlyScopeHint,
 } from './route-prompt-utils'
+import {
+  buildStreamDynamicPersonalityBlock,
+  completeStreamOnboardingTurn,
+  encodeCuratedStreamMessage,
+  getCuratedStreamGreeting,
+  getCuratedStreamReplyForMessage,
+  getStreamOnboardingStage,
+} from './route-personality-utils'
 import { tryInstantAnswer } from './route-instant-answers'
 import { parseTaskChain, looksLikeChain } from '@/lib/ai/remy-chain-parser'
 import {
@@ -204,6 +212,11 @@ export async function POST(req: NextRequest) {
         encodeSSE({ type: 'token', data: dangerousActionBlock }) +
         encodeSSE({ type: 'done', data: null })
       return new Response(body, { headers: sseHeaders() })
+    }
+
+    const curatedReply = await getCuratedStreamReplyForMessage(user.tenantId!, message)
+    if (curatedReply) {
+      return new Response(encodeCuratedStreamMessage(curatedReply), { headers: sseHeaders() })
     }
 
     //  VISION PATH (4A: receipt scanning, 4B: dish photos)
@@ -517,6 +530,11 @@ export async function POST(req: NextRequest) {
     const GREETING_REGEX =
       /^(?:good\s+morning|good\s+afternoon|good\s+evening|morning|afternoon|evening|hey|hi|hello|yo|sup|what'?s?\s+up)\s*[!.?]*$/i
     if (GREETING_REGEX.test(message.trim())) {
+      const curatedGreeting = await getCuratedStreamGreeting(user.tenantId!)
+      if (curatedGreeting) {
+        return new Response(encodeCuratedStreamMessage(curatedGreeting), { headers: sseHeaders() })
+      }
+
       // Keep greetings truly instant. Full context loading can stall on slow
       // database or enrichment calls, which should never block a simple "hi".
       const greetingText = buildGreetingFastPath()
@@ -551,47 +569,58 @@ export async function POST(req: NextRequest) {
     let archetypeId: string | null = null
     let surveyState: SurveyState | null = null
     let recentConversationSummaries = fallbackRecentConversationSummaries
+    let onboardingStage: Awaited<ReturnType<typeof getStreamOnboardingStage>> = null
 
     try {
-      const [ctx, cls, mems, profile, favChefs, mentioned, archetype, survey, palaceSummaries] =
-        (await Promise.race([
-          Promise.all([
-            loadRemyContext(currentPage, earlyScopeHint),
-            classifyIntent(message),
-            // Skip heavy lookups for minimal scope - they won't be included in the prompt anyway
-            earlyScopeHint === 'minimal'
-              ? Promise.resolve([])
-              : loadRelevantMemories(message, undefined, undefined),
-            earlyScopeHint === 'minimal'
-              ? Promise.resolve('')
-              : getCulinaryProfileForPrompt(user.tenantId!).catch(() => ''),
-            earlyScopeHint === 'minimal' ? Promise.resolve([]) : getFavoriteChefs().catch(() => []),
-            resolveMessageEntities(message).catch((err) => {
-              console.error('[non-blocking] Entity resolution failed:', err)
-              return []
-            }),
-            earlyScopeHint === 'minimal'
-              ? Promise.resolve(null)
-              : getRemyArchetype().catch(() => null),
-            activeForm === 'remy-survey'
-              ? getSurveyState().catch(() => null)
-              : Promise.resolve(null),
-            history.length === 0 && earlyScopeHint !== 'minimal'
-              ? searchRemyConversationSummaries(message, { limit: 3 }).catch(() => [])
-              : Promise.resolve([]),
-          ]),
-          setupTimeout,
-        ])) as [
-          Awaited<ReturnType<typeof loadRemyContext>>,
-          Awaited<ReturnType<typeof classifyIntent>>,
-          Awaited<ReturnType<typeof loadRelevantMemories>>,
-          string,
-          Awaited<ReturnType<typeof getFavoriteChefs>>,
-          Awaited<ReturnType<typeof resolveMessageEntities>>,
-          string | null,
-          SurveyState | null,
-          Awaited<ReturnType<typeof searchRemyConversationSummaries>>,
-        ]
+      const [
+        ctx,
+        cls,
+        mems,
+        profile,
+        favChefs,
+        mentioned,
+        archetype,
+        survey,
+        palaceSummaries,
+        onboarding,
+      ] = (await Promise.race([
+        Promise.all([
+          loadRemyContext(currentPage, earlyScopeHint),
+          classifyIntent(message),
+          // Skip heavy lookups for minimal scope - they won't be included in the prompt anyway
+          earlyScopeHint === 'minimal'
+            ? Promise.resolve([])
+            : loadRelevantMemories(message, undefined, undefined),
+          earlyScopeHint === 'minimal'
+            ? Promise.resolve('')
+            : getCulinaryProfileForPrompt(user.tenantId!).catch(() => ''),
+          earlyScopeHint === 'minimal' ? Promise.resolve([]) : getFavoriteChefs().catch(() => []),
+          resolveMessageEntities(message).catch((err) => {
+            console.error('[non-blocking] Entity resolution failed:', err)
+            return []
+          }),
+          earlyScopeHint === 'minimal'
+            ? Promise.resolve(null)
+            : getRemyArchetype().catch(() => null),
+          activeForm === 'remy-survey' ? getSurveyState().catch(() => null) : Promise.resolve(null),
+          history.length === 0 && earlyScopeHint !== 'minimal'
+            ? searchRemyConversationSummaries(message, { limit: 3 }).catch(() => [])
+            : Promise.resolve([]),
+          getStreamOnboardingStage(user.tenantId!).catch(() => null),
+        ]),
+        setupTimeout,
+      ])) as [
+        Awaited<ReturnType<typeof loadRemyContext>>,
+        Awaited<ReturnType<typeof classifyIntent>>,
+        Awaited<ReturnType<typeof loadRelevantMemories>>,
+        string,
+        Awaited<ReturnType<typeof getFavoriteChefs>>,
+        Awaited<ReturnType<typeof resolveMessageEntities>>,
+        string | null,
+        SurveyState | null,
+        Awaited<ReturnType<typeof searchRemyConversationSummaries>>,
+        Awaited<ReturnType<typeof getStreamOnboardingStage>>,
+      ]
       context = ctx
       if (mentioned.length > 0) context.mentionedEntities = mentioned
       classification = cls
@@ -599,6 +628,7 @@ export async function POST(req: NextRequest) {
       culinaryProfile = profile || undefined
       archetypeId = archetype
       surveyState = survey
+      onboardingStage = onboarding
       if (palaceSummaries.length > 0) {
         recentConversationSummaries = palaceSummaries.map((summary) => ({
           summary: summary.summary,
@@ -838,6 +868,10 @@ export async function POST(req: NextRequest) {
       intentType as 'question' | 'mixed'
     )
     const useThinking = shouldUseThinking(contextScope, message)
+    const dynamicPersonalityBlock = await buildStreamDynamicPersonalityBlock(
+      user.tenantId!,
+      context
+    )
 
     const systemPrompt = buildRemySystemPrompt(
       context,
@@ -855,7 +889,9 @@ export async function POST(req: NextRequest) {
       previousSessionTopics,
       message,
       contextScope,
-      recentConversationSummaries
+      recentConversationSummaries,
+      false,
+      dynamicPersonalityBlock
     )
 
     if (systemPrompt.length > 24_000) {
@@ -947,6 +983,15 @@ export async function POST(req: NextRequest) {
                 )
               )
             }
+          }
+
+          const onboardingCloser = await completeStreamOnboardingTurn(
+            user.tenantId!,
+            onboardingStage
+          )
+          if (onboardingCloser) {
+            fullResponse += onboardingCloser
+            controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: onboardingCloser })))
           }
 
           controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))

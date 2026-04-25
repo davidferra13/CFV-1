@@ -471,7 +471,7 @@ export function MenuDetailClient({
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
             {menu.is_template && <Badge variant="info">Template</Badge>}
-            {menu.is_showcase && <Badge variant="success">Showcase</Badge>}
+            {isShowcase && <Badge variant="success">Showcase</Badge>}
             {menu.cuisine_type && <Badge variant="default">{menu.cuisine_type}</Badge>}
             {menu.target_guest_count && (
               <Badge variant="default">{menu.target_guest_count} guests</Badge>
@@ -763,13 +763,15 @@ export function MenuDetailClient({
               </div>
 
               <div>
-                <label className="text-sm font-medium text-stone-500">Client Showcase</label>
+                <label className="text-sm font-medium text-stone-500">
+                  Public Profile Sample Menus
+                </label>
                 <div className="mt-1 flex items-center gap-3">
                   <button
                     type="button"
                     role="switch"
                     aria-checked={isShowcase ? 'true' : 'false'}
-                    aria-label="Toggle client showcase visibility"
+                    aria-label="Toggle public profile Sample Menus visibility"
                     onClick={handleToggleShowcase}
                     disabled={loading}
                     className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-stone-900 disabled:opacity-50 ${isShowcase ? 'bg-brand-600' : 'bg-stone-600'}`}
@@ -779,9 +781,16 @@ export function MenuDetailClient({
                     />
                   </button>
                   <span className="text-sm text-stone-400">
-                    {isShowcase ? 'Visible to your clients' : 'Hidden from clients'}
+                    {isShowcase
+                      ? 'Shown on your public profile'
+                      : 'Hidden from your public profile'}
                   </span>
                 </div>
+                <p className="mt-2 max-w-2xl text-xs leading-relaxed text-stone-500">
+                  Non-archived showcase menus can appear in the public Sample Menus section. If this
+                  menu has dish photos, the first sorted dish photo becomes the public card image;
+                  without a dish photo, the public card stays text-only.
+                </p>
               </div>
             </CardContent>
           </Card>

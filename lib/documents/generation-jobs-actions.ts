@@ -23,6 +23,7 @@ export const DOCUMENT_REQUEST_LABELS: Record<DocumentRequestType, string> = {
   reset: getDocumentDefinition('reset').label,
   travel: getDocumentDefinition('travel').label,
   shots: getDocumentDefinition('shots').label,
+  beo: getDocumentDefinition('beo').label,
   all: 'Full 8-Sheet Packet',
   pack: 'Custom Document Pack',
 }

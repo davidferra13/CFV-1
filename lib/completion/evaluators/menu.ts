@@ -38,6 +38,18 @@ export async function evaluateMenu(
   const withRecipes = components.filter((c) => c.recipe_id !== null)
   const allHaveRecipes = totalComponents > 0 && withRecipes.length === totalComponents
 
+  // Check for dishes with zero components
+  const [emptyDishCheck] = await pgClient<{ empty_count: string }[]>`
+    SELECT COUNT(*)::text AS empty_count
+    FROM dishes d
+    WHERE d.menu_id = ${menuId}
+      AND NOT EXISTS (
+        SELECT 1 FROM components c WHERE c.dish_id = d.id
+      )
+  `
+  const allDishesHaveComponents =
+    health.dishCount > 0 && Number(emptyDishCheck?.empty_count || 0) === 0
+
   // Batch recipe evaluation (only if not shallow)
   let recipeResults: CompletionResult[] = []
   let allRecipesComplete = true
@@ -66,10 +78,20 @@ export async function evaluateMenu(
       label: 'Has at least 1 dish',
       met: health.dishCount > 0,
       blocking: true,
-      weight: 15,
+      weight: 10,
       category: 'culinary',
       actionUrl: menuUrl,
       actionLabel: 'Add dishes',
+    },
+    {
+      key: 'all_dishes_have_components',
+      label: 'All dishes have components',
+      met: allDishesHaveComponents,
+      blocking: false,
+      weight: 10,
+      category: 'culinary',
+      actionUrl: menuUrl,
+      actionLabel: 'Add components to dishes',
     },
     {
       key: 'all_components_reciped',
@@ -130,7 +152,7 @@ export async function evaluateMenu(
       label: 'Client approved',
       met: health.approvalStatus === 'approved',
       blocking: false,
-      weight: 20,
+      weight: 15,
       category: 'communication',
     },
   ]

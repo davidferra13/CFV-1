@@ -389,74 +389,20 @@ function buildQueueResolveTask(
 }
 
 function resolveOnboardingTask(progress: OnboardingProgress): DashboardResolveNextTask | null {
-  const incompletePhases = [
-    !progress.profile
-      ? {
-          id: 'onboarding-profile',
-          title: 'Finish your chef identity',
-          description:
-            'Complete the core profile details ChefFlow needs before the rest of the workflow can feel grounded.',
-          href: '/onboarding',
-          context: ['Business identity still incomplete'],
-        }
-      : null,
-    !progress.clients.done
-      ? {
-          id: 'onboarding-clients',
-          title: 'Add your first client',
-          description:
-            'Client records unlock outreach, event history, and the rest of the operating flow.',
-          href: '/onboarding/clients',
-          context: ['No clients added yet'],
-        }
-      : null,
-    !progress.recipes.done
-      ? {
-          id: 'onboarding-recipes',
-          title: 'Load your first recipe',
-          description: 'Recipes power menu work, prep planning, and downstream culinary surfaces.',
-          href: '/onboarding/recipes',
-          context: ['Recipe library is still empty'],
-        }
-      : null,
-    !progress.loyalty.done
-      ? {
-          id: 'onboarding-loyalty',
-          title: 'Turn on loyalty basics',
-          description:
-            'Finish loyalty setup so repeat business and post-event follow-up can start working.',
-          href: '/onboarding/loyalty',
-          context: ['Loyalty configuration is still missing'],
-        }
-      : null,
-    !progress.staff.done
-      ? {
-          id: 'onboarding-staff',
-          title: 'Add your first staff record',
-          description:
-            'Staff setup unlocks scheduling, labor context, and team-facing coordination surfaces.',
-          href: '/onboarding/staff',
-          context: ['No staff records added yet'],
-        }
-      : null,
-  ].filter((task): task is NonNullable<typeof task> => Boolean(task))
-
-  if (incompletePhases.length === 0) return null
-
-  const nextPhase = incompletePhases[0]
+  if (!progress.nextStep) return null
 
   return {
-    id: nextPhase.id,
+    id: `onboarding-${progress.nextStep.key}`,
     source: 'onboarding',
-    badge: 'Setup gap',
-    title: nextPhase.title,
-    description: nextPhase.description,
-    href: nextPhase.href,
-    ctaLabel: 'Continue Setup',
+    badge: 'Activation gap',
+    title: progress.nextStep.label,
+    description: progress.nextStep.description,
+    href: progress.nextStep.href,
+    ctaLabel: 'Resolve Next',
     tone: 'sky',
-    context: nextPhase.context,
-    remainingCount: Math.max(progress.totalPhases - progress.completedPhases - 1, 0),
-    remainingLabel: 'more setup phases after this',
+    context: [progress.nextStep.evidenceLabel ?? 'First-week activation is still incomplete'],
+    remainingCount: Math.max(progress.totalSteps - progress.completedSteps - 1, 0),
+    remainingLabel: 'more activation steps after this',
   }
 }
 

@@ -511,3 +511,27 @@ export async function getAll86dItems() {
 
   return data ?? []
 }
+
+/**
+ * Get shift history for a station, ordered by most recent first.
+ * Returns all shift_logs entries with check-in/out times, notes, and snapshot data.
+ */
+export async function getStationShiftHistory(stationId: string, limit: number = 50) {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data, error } = await db
+    .from('shift_logs')
+    .select('*')
+    .eq('station_id', stationId)
+    .eq('chef_id', user.tenantId!)
+    .order('check_in_at', { ascending: false })
+    .limit(limit)
+
+  if (error) {
+    console.error('[getStationShiftHistory] Error:', error)
+    throw new Error('Failed to load shift history')
+  }
+
+  return data ?? []
+}

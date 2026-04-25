@@ -3,10 +3,13 @@
 // Client Portal Actions
 // Token-based magic-link access for clients with no account required.
 
+import { createHash } from 'node:crypto'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
+import { headers } from 'next/headers'
 import { dateToDateString } from '@/lib/utils/format'
+import { guardPublicIntent } from '@/lib/security/public-intent-guard'
 import { createPaymentCheckoutUrl } from '@/lib/stripe/checkout'
 import {
   generateClientPortalTokenValue,
@@ -66,6 +69,7 @@ export type ClientPortalPaymentLinkResult =
   | { status: 'ok'; checkoutUrl: string }
   | { status: 'not_found' }
   | { status: 'unavailable' }
+  | { status: 'rate_limited' }
 
 export type ClientPortalTokenState = {
   token: string | null
@@ -87,11 +91,71 @@ type ClientPortalLookupRow = {
   portal_token_revoked_at: string | null
 }
 
-type ResolvedClientPortalAccess = {
+export type ClientPortalAccess = {
   normalizedToken: string
   clientId: string
   clientName: string
   tenantId: string
+}
+
+const CLIENT_PORTAL_PAYMENT_INTENT_WINDOW_MS = 10 * 60_000
+const clientPortalPaymentCheckoutCache = new Map<
+  string,
+  { checkoutUrl: string; expiresAt: number }
+>()
+const clientPortalPaymentCheckoutInFlight = new Map<
+  string,
+  Promise<ClientPortalPaymentLinkResult>
+>()
+
+setInterval(() => {
+  const now = Date.now()
+  for (const [key, entry] of clientPortalPaymentCheckoutCache) {
+    if (entry.expiresAt <= now) clientPortalPaymentCheckoutCache.delete(key)
+  }
+}, CLIENT_PORTAL_PAYMENT_INTENT_WINDOW_MS).unref()
+
+function hashPublicIntentValue(value: string): string {
+  return createHash('sha256').update(value).digest('hex')
+}
+
+function buildClientPortalPaymentIntentKey(input: {
+  normalizedToken: string
+  eventId: string
+}): string {
+  return `client-portal-pay:${hashPublicIntentValue(
+    JSON.stringify({
+      token: input.normalizedToken,
+      eventId: input.eventId,
+    })
+  ).slice(0, 40)}`
+}
+
+function buildClientPortalPaymentTokenThrottleSubject(normalizedToken: string): string {
+  const tokenHash = hashPublicIntentValue(normalizedToken).slice(0, 32)
+  return `token-${tokenHash}@client-portal.local`
+}
+
+function buildClientPortalPaymentStripeIdempotencyKey(intentKey: string): string {
+  const bucket = Math.floor(Date.now() / CLIENT_PORTAL_PAYMENT_INTENT_WINDOW_MS)
+  return `cf-client-portal-pay-${hashPublicIntentValue(`${intentKey}:${bucket}`).slice(0, 48)}`
+}
+
+function getCachedClientPortalPaymentCheckout(intentKey: string): string | null {
+  const cached = clientPortalPaymentCheckoutCache.get(intentKey)
+  if (!cached) return null
+  if (cached.expiresAt <= Date.now()) {
+    clientPortalPaymentCheckoutCache.delete(intentKey)
+    return null
+  }
+  return cached.checkoutUrl
+}
+
+function cacheClientPortalPaymentCheckout(intentKey: string, checkoutUrl: string) {
+  clientPortalPaymentCheckoutCache.set(intentKey, {
+    checkoutUrl,
+    expiresAt: Date.now() + CLIENT_PORTAL_PAYMENT_INTENT_WINDOW_MS,
+  })
 }
 
 function resolvePortalTokenExpiry(
@@ -113,7 +177,7 @@ function hasActivePortalLink(row: Partial<ClientPortalLookupRow> | null | undefi
 async function resolveClientPortalAccess(
   db: any,
   token: string
-): Promise<ResolvedClientPortalAccess | null> {
+): Promise<ClientPortalAccess | null> {
   const normalizedToken = token.trim()
   if (!normalizedToken) return null
 
@@ -187,36 +251,87 @@ async function resolveClientPortalAccess(
   }
 }
 
+async function issueClientPortalToken(input: {
+  db: any
+  clientId: string
+  tenantId?: string | null
+}): Promise<{ token: string; expiresAt: string }> {
+  const { db, clientId, tenantId } = input
+
+  let clientLookup = db.from('clients').select('id').eq('id', clientId)
+  if (tenantId) {
+    clientLookup = clientLookup.eq('tenant_id', tenantId)
+  }
+
+  const { data: client } = await clientLookup.single()
+  if (!client) {
+    throw new Error('Client not found')
+  }
+
+  const token = generateClientPortalTokenValue()
+  const expiresAt = getClientPortalTokenExpiry().toISOString()
+
+  let update = db.from('clients').update({
+    portal_access_token: null,
+    portal_access_token_hash: hashClientPortalToken(token),
+    portal_token_created_at: new Date().toISOString(),
+    portal_token_expires_at: expiresAt,
+    portal_token_last_used_at: null,
+    portal_token_revoked_at: null,
+  })
+
+  update = update.eq('id', clientId)
+  if (tenantId) {
+    update = update.eq('tenant_id', tenantId)
+  }
+
+  await update
+
+  return { token, expiresAt }
+}
+
+export async function getClientPortalAccess(token: string): Promise<ClientPortalAccess | null> {
+  const db: any = createServerClient({ admin: true })
+  return resolveClientPortalAccess(db, token)
+}
+
+export async function createClientPortalLinkForClient(input: {
+  clientId: string
+  tenantId?: string | null
+  path?: string
+  db?: any
+}): Promise<{ token: string; expiresAt: string; url: string }> {
+  const db: any = input.db ?? createServerClient({ admin: true })
+  const { token, expiresAt } = await issueClientPortalToken({
+    db,
+    clientId: input.clientId,
+    tenantId: input.tenantId,
+  })
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
+  const normalizedPath = input.path
+    ? input.path.startsWith('/')
+      ? input.path
+      : `/${input.path}`
+    : ''
+
+  return {
+    token,
+    expiresAt,
+    url: `${appUrl}/client/${token}${normalizedPath}`,
+  }
+}
+
 export async function generateClientPortalToken(
   clientId: string
 ): Promise<{ token: string; expiresAt: string }> {
   const user = await requireChef()
   const db: any = createServerClient()
-
-  const { data: client } = await db
-    .from('clients')
-    .select('id')
-    .eq('id', clientId)
-    .eq('tenant_id', user.tenantId!)
-    .single()
-
-  if (!client) throw new Error('Client not found')
-
-  const token = generateClientPortalTokenValue()
-  const expiresAt = getClientPortalTokenExpiry().toISOString()
-
-  await db
-    .from('clients')
-    .update({
-      portal_access_token: null,
-      portal_access_token_hash: hashClientPortalToken(token),
-      portal_token_created_at: new Date().toISOString(),
-      portal_token_expires_at: expiresAt,
-      portal_token_last_used_at: null,
-      portal_token_revoked_at: null,
-    })
-    .eq('id', clientId)
-    .eq('tenant_id', user.tenantId!)
+  const { token, expiresAt } = await issueClientPortalToken({
+    db,
+    clientId,
+    tenantId: user.tenantId!,
+  })
 
   revalidatePath(`/clients/${clientId}`)
   return { token, expiresAt }
@@ -396,6 +511,23 @@ export async function getClientPortalPaymentCheckoutUrl(
   token: string,
   eventId: string
 ): Promise<ClientPortalPaymentLinkResult> {
+  const hdrs = await headers()
+  const ipGuard = await guardPublicIntent({
+    action: 'client-portal-payment-checkout',
+    headers: hdrs,
+    rateLimit: {
+      ip: {
+        keyPrefix: 'client-portal-pay:ip',
+        max: 20,
+        windowMs: 10 * 60_000,
+        message: 'Too many payment attempts. Please wait a moment and try again.',
+      },
+    },
+  })
+  if (!ipGuard.ok) {
+    return { status: 'rate_limited' }
+  }
+
   const db: any = createServerClient({ admin: true })
   const access = await resolveClientPortalAccess(db, token)
   if (!access) {
@@ -403,6 +535,23 @@ export async function getClientPortalPaymentCheckoutUrl(
   }
 
   const { clientId, tenantId, normalizedToken } = access
+  const tokenGuard = await guardPublicIntent({
+    action: 'client-portal-payment-checkout-token',
+    headers: hdrs,
+    rateLimit: {
+      email: {
+        keyPrefix: 'client-portal-pay:token',
+        max: 12,
+        windowMs: CLIENT_PORTAL_PAYMENT_INTENT_WINDOW_MS,
+        message: 'Too many payment attempts. Please wait a moment and try again.',
+        value: buildClientPortalPaymentTokenThrottleSubject(normalizedToken),
+      },
+    },
+  })
+  if (!tokenGuard.ok) {
+    return { status: 'rate_limited' }
+  }
+
   const { data: event } = await db
     .from('events')
     .select('id')
@@ -415,20 +564,42 @@ export async function getClientPortalPaymentCheckoutUrl(
     return { status: 'not_found' }
   }
 
+  const intentKey = buildClientPortalPaymentIntentKey({ normalizedToken, eventId })
+  const cachedCheckoutUrl = getCachedClientPortalPaymentCheckout(intentKey)
+  if (cachedCheckoutUrl) {
+    return { status: 'ok', checkoutUrl: cachedCheckoutUrl }
+  }
+
+  const inFlightCheckout = clientPortalPaymentCheckoutInFlight.get(intentKey)
+  if (inFlightCheckout) {
+    return inFlightCheckout
+  }
+
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
   const successUrl = `${appUrl}/client/${normalizedToken}?payment=success&event=${encodeURIComponent(eventId)}`
   const cancelUrl = `${appUrl}/client/${normalizedToken}?payment=cancelled&event=${encodeURIComponent(eventId)}`
 
-  const checkoutUrl = await createPaymentCheckoutUrl(eventId, tenantId, {
-    successUrl,
-    cancelUrl,
-  })
+  const checkoutPromise = (async (): Promise<ClientPortalPaymentLinkResult> => {
+    const checkoutUrl = await createPaymentCheckoutUrl(eventId, tenantId, {
+      successUrl,
+      cancelUrl,
+      idempotencyKey: buildClientPortalPaymentStripeIdempotencyKey(intentKey),
+    })
 
-  if (!checkoutUrl) {
-    return { status: 'unavailable' }
+    if (!checkoutUrl) {
+      return { status: 'unavailable' }
+    }
+
+    cacheClientPortalPaymentCheckout(intentKey, checkoutUrl)
+    return { status: 'ok', checkoutUrl }
+  })()
+
+  clientPortalPaymentCheckoutInFlight.set(intentKey, checkoutPromise)
+  try {
+    return await checkoutPromise
+  } finally {
+    clientPortalPaymentCheckoutInFlight.delete(intentKey)
   }
-
-  return { status: 'ok', checkoutUrl }
 }
 
 export async function getClientPortalToken(clientId: string): Promise<ClientPortalTokenState> {

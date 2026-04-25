@@ -16,6 +16,8 @@ import {
   buildPublicSeasonalMarketPulseSourceMessageLine,
 } from '@/lib/public/public-seasonal-market-pulse'
 import { PUBLIC_INTAKE_LANE_KEYS, withSubmissionSource } from '@/lib/public/intake-lane-config'
+import { parseBudgetToCents } from '@/lib/booking/budget-parser'
+import { resolveGuestCountRange } from '@/lib/booking/guest-count-map'
 
 function stripHtml(value: string) {
   return value.replace(/<[^>]*>/g, '').trim()
@@ -59,6 +61,12 @@ const BookingSchema = z.object({
   dietary_restrictions: z.string().max(2000).optional().or(z.literal('')),
   additional_notes: z.string().max(5000).optional().or(z.literal('')),
   seasonal_intent: PublicSeasonalMarketPulseIntentSchema.nullable().optional(),
+  // Attribution (passed from URL search params)
+  referral_source: z.string().max(200).optional().or(z.literal('')),
+  referral_partner_id: z.string().uuid().optional().nullable().or(z.literal('')),
+  utm_source: z.string().max(200).optional().or(z.literal('')),
+  utm_medium: z.string().max(200).optional().or(z.literal('')),
+  utm_campaign: z.string().max(200).optional().or(z.literal('')),
   // Anti-spam
   website_url: z.string().max(0, 'Bot detected').optional().or(z.literal('')),
 })
@@ -171,13 +179,73 @@ export async function POST(request: NextRequest) {
       console.error('[open-booking] Founder first-dibs check failed (non-blocking):', founderErr)
     }
 
+    const db: any = createAdminClient()
+    const clientEmail = data.email.toLowerCase().trim()
+    const clientName = stripHtml(data.full_name)
+    const dietaryRestrictions = parseDietaryRestrictions(data.dietary_restrictions)
+    const budgetCentsPerPerson = parseBudgetToCents(data.budget_range)
+    const guestRange = resolveGuestCountRange(data.guest_count)
+    const referralSource = data.referral_source?.trim() || data.utm_source?.trim() || 'open_booking'
+    const referralPartnerId =
+      data.referral_partner_id && data.referral_partner_id.trim()
+        ? data.referral_partner_id.trim()
+        : null
+
+    let bookingToken: string | null = null
+    let bookingId: string | null = null
+    const initialBookingStatus = chefsToNotify.length === 0 ? 'no_match' : 'sent'
+
+    const { data: booking, error: bookingErr } = await db
+      .from('open_bookings')
+      .insert({
+        consumer_name: clientName,
+        consumer_email: clientEmail,
+        consumer_phone: data.phone?.trim() ? stripHtml(data.phone) : null,
+        event_date: data.event_date || null,
+        serve_time: data.serve_time?.trim() ? stripHtml(data.serve_time) : null,
+        guest_count: data.guest_count,
+        guest_count_range_label: guestRange?.label ?? null,
+        guest_count_range_min: guestRange?.min ?? null,
+        guest_count_range_max: guestRange?.max ?? null,
+        occasion: stripHtml(data.occasion),
+        service_type: data.service_type?.trim() ? stripHtml(data.service_type) : null,
+        budget_range: data.budget_range?.trim() ? stripHtml(data.budget_range) : null,
+        budget_cents_per_person: budgetCentsPerPerson,
+        location: stripHtml(data.location),
+        resolved_location: resolvedLocation.displayLabel,
+        dietary_restrictions: dietaryRestrictions,
+        additional_notes: data.additional_notes?.trim() ? stripHtml(data.additional_notes) : null,
+        referral_source: referralSource,
+        referral_partner_id: referralPartnerId,
+        utm_source: data.utm_source?.trim() || null,
+        utm_medium: data.utm_medium?.trim() || null,
+        utm_campaign: data.utm_campaign?.trim() || null,
+        status: initialBookingStatus,
+        matched_chef_count: chefsToNotify.length,
+        ip_address: ip,
+      })
+      .select('id, booking_token')
+      .single()
+
+    if (bookingErr || !booking?.id || !booking?.booking_token) {
+      console.error('[open-booking] open_bookings insert failed:', bookingErr)
+      return NextResponse.json(
+        { error: 'We could not create a booking status link. Please try again.' },
+        { status: 500 }
+      )
+    }
+
+    bookingId = booking.id
+    bookingToken = booking.booking_token
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
+
     if (chefsToNotify.length === 0) {
       // Save to waitlist so we can notify them when coverage expands
       try {
-        const waitlistDb: any = createAdminClient()
-        await waitlistDb.from('directory_waitlist').upsert(
+        await db.from('directory_waitlist').upsert(
           {
-            email: data.email.toLowerCase().trim(),
+            email: clientEmail,
             location: resolvedLocation.displayLabel || data.location.trim(),
           },
           { onConflict: 'lower(email), lower(location)' }
@@ -187,21 +255,32 @@ export async function POST(request: NextRequest) {
         console.error('[open-booking] Waitlist save failed (non-blocking):', waitlistErr)
       }
 
+      try {
+        const { sendBookingConfirmationEmail } = await import('@/lib/email/notifications')
+        await sendBookingConfirmationEmail({
+          consumerEmail: clientEmail,
+          consumerName: clientName,
+          occasion: stripHtml(data.occasion),
+          eventDate: data.event_date || null,
+          guestCount: data.guest_count,
+          guestCountRangeLabel: guestRange?.label ?? null,
+          location: resolvedLocation.displayLabel || stripHtml(data.location),
+          matchedChefCount: 0,
+          statusUrl: `${appUrl}/book/status/${bookingToken}`,
+        })
+      } catch (emailErr) {
+        console.error('[open-booking] Client email failed (non-blocking):', emailErr)
+      }
+
       return NextResponse.json({
         success: true,
         matched_count: 0,
+        booking_token: bookingToken,
         message:
           'No chefs are currently available in your area for this request. We have saved your details and will notify you when a chef becomes available.',
         location: resolvedLocation.displayLabel,
       })
     }
-
-    const db: any = createAdminClient()
-    const clientEmail = data.email.toLowerCase().trim()
-    const clientName = stripHtml(data.full_name)
-    const dietaryRestrictions = parseDietaryRestrictions(data.dietary_restrictions)
-    const inquiryIds: string[] = []
-    let firstCircleToken: string | null = null
 
     // Build the source message
     const sourceParts = [
@@ -270,7 +349,7 @@ export async function POST(request: NextRequest) {
               full_name: clientName,
               email: clientEmail,
               phone: data.phone?.trim() ? stripHtml(data.phone) : null,
-              referral_source: 'website',
+              referral_source: referralSource,
               dietary_restrictions: dietaryRestrictions ?? [],
               allergies: dietaryRestrictions ?? [],
             })
@@ -306,12 +385,23 @@ export async function POST(request: NextRequest) {
             confirmed_guest_count: data.guest_count,
             confirmed_location: stripHtml(data.location),
             confirmed_occasion: stripHtml(data.occasion),
+            confirmed_budget_cents: budgetCentsPerPerson,
+            budget_range: data.budget_range?.trim() ? stripHtml(data.budget_range) : null,
             confirmed_dietary_restrictions: dietaryRestrictions,
+            referral_source: referralSource,
+            referral_partner_id: referralPartnerId,
             source_message: sourceMessage,
             unknown_fields: withSubmissionSource(PUBLIC_INTAKE_LANE_KEYS.open_booking, {
               open_booking: true,
+              open_booking_id: bookingId,
+              referral_source: referralSource,
+              referral_partner_id: referralPartnerId,
               service_type: data.service_type?.trim() ? stripHtml(data.service_type) : null,
               budget_range: data.budget_range?.trim() ? stripHtml(data.budget_range) : null,
+              budget_cents_per_person: budgetCentsPerPerson,
+              guest_count_range_label: guestRange?.label ?? null,
+              guest_count_range_min: guestRange?.min ?? null,
+              guest_count_range_max: guestRange?.max ?? null,
               serve_time: data.serve_time?.trim() ? stripHtml(data.serve_time) : null,
               additional_notes: data.additional_notes?.trim()
                 ? stripHtml(data.additional_notes)
@@ -322,8 +412,9 @@ export async function POST(request: NextRequest) {
               referrer_ip: ip,
             }),
             status: 'new',
-            utm_source: 'chefflow_booking',
-            utm_medium: 'open_booking',
+            utm_source: data.utm_source?.trim() || 'chefflow_booking',
+            utm_medium: data.utm_medium?.trim() || 'open_booking',
+            utm_campaign: data.utm_campaign?.trim() || null,
           })
           .select('id')
           .single()
@@ -332,46 +423,21 @@ export async function POST(request: NextRequest) {
           console.error('[open-booking] Inquiry creation failed for chef', tenantId, inquiryErr)
           continue
         }
-        inquiryIds.push(inquiry.id)
-
-        // Create draft event (non-blocking)
-        try {
-          const { data: event } = await db
-            .from('events')
-            .insert({
-              tenant_id: tenantId,
-              client_id: clientId,
+        // Link inquiry to parent booking record
+        if (bookingId) {
+          try {
+            await db.from('open_booking_inquiries').insert({
+              booking_id: bookingId,
               inquiry_id: inquiry.id,
-              event_date: data.event_date,
-              serve_time: data.serve_time?.trim() ? stripHtml(data.serve_time) : null,
-              guest_count: data.guest_count,
-              location_address: stripHtml(data.location),
-              location_city: resolvedLocation.city || 'TBD',
-              location_zip: resolvedLocation.zip || 'TBD',
-              occasion: stripHtml(data.occasion),
-              special_requests: sourceMessage || null,
-              dietary_restrictions: dietaryRestrictions ?? [],
-              allergies: dietaryRestrictions ?? [],
+              chef_id: tenantId,
+              chef_name: chef.display_name || null,
             })
-            .select('id')
-            .single()
-
-          if (event) {
-            await db.from('event_state_transitions').insert({
-              tenant_id: tenantId,
-              event_id: event.id,
-              from_status: null,
-              to_status: 'draft',
-              metadata: { action: 'auto_created_from_open_booking', inquiry_id: inquiry.id },
-            })
-            await db
-              .from('inquiries')
-              .update({ converted_to_event_id: event.id })
-              .eq('id', inquiry.id)
+          } catch (linkErr) {
+            console.error('[open-booking] Booking-inquiry link failed (non-blocking):', linkErr)
           }
-        } catch (eventErr) {
-          console.error('[open-booking] Event creation failed (non-blocking):', eventErr)
         }
+
+        // Inquiry-first lane: event creation happens after commercial commitment.
 
         // Send chef notification email (non-blocking)
         try {
@@ -455,22 +521,6 @@ export async function POST(request: NextRequest) {
         } catch (arErr) {
           console.error('[open-booking] Auto-response failed (non-blocking):', arErr)
         }
-
-        // Create Dinner Circle for communication (parity with submitPublicInquiry)
-        try {
-          const { createInquiryCircle } = await import('@/lib/hub/inquiry-circle-actions')
-          const circle = await createInquiryCircle({
-            inquiryId: inquiry.id,
-            clientName,
-            clientEmail,
-            occasion: stripHtml(data.occasion),
-          })
-          if (!firstCircleToken && circle?.groupToken) {
-            firstCircleToken = circle.groupToken
-          }
-        } catch (circleErr) {
-          console.error('[open-booking] Dinner Circle creation failed (non-blocking):', circleErr)
-        }
       } catch (chefErr) {
         console.error('[open-booking] Error processing chef', chef.id, chefErr)
       }
@@ -478,19 +528,17 @@ export async function POST(request: NextRequest) {
 
     // Send client confirmation email (non-blocking)
     try {
-      const { sendInquiryReceivedEmail } = await import('@/lib/email/notifications')
-      const circleUrl = firstCircleToken
-        ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'}/hub/g/${firstCircleToken}`
-        : undefined
-      await sendInquiryReceivedEmail({
-        clientEmail,
-        clientName,
-        chefName: 'ChefFlow',
+      const { sendBookingConfirmationEmail } = await import('@/lib/email/notifications')
+      await sendBookingConfirmationEmail({
+        consumerEmail: clientEmail,
+        consumerName: clientName,
         occasion: stripHtml(data.occasion),
         eventDate: data.event_date || null,
-        guestCount: data.guest_count ?? null,
-        location: data.location?.trim() ? stripHtml(data.location) : null,
-        circleUrl,
+        guestCount: data.guest_count,
+        guestCountRangeLabel: guestRange?.label ?? null,
+        location: resolvedLocation.displayLabel || stripHtml(data.location),
+        matchedChefCount: chefsToNotify.length,
+        statusUrl: `${appUrl}/book/status/${bookingToken}`,
       })
     } catch (emailErr) {
       console.error('[open-booking] Client email failed (non-blocking):', emailErr)
@@ -500,6 +548,7 @@ export async function POST(request: NextRequest) {
       success: true,
       matched_count: chefsToNotify.length,
       location: resolvedLocation.displayLabel,
+      booking_token: bookingToken,
       message: `Your request has been sent to ${chefsToNotify.length} chef${chefsToNotify.length !== 1 ? 's' : ''} near ${resolvedLocation.displayLabel}. They will reach out to you directly.`,
     })
   } catch (err) {

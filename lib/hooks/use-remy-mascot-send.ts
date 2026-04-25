@@ -185,6 +185,7 @@ export function useRemyMascotSend(config: UseRemyMascotSendConfig) {
                   content: ctx.instantResponse,
                   timestamp: new Date().toISOString(),
                   navSuggestions: ctx.navSuggestions,
+                  quickReplies: ctx.quickReplies,
                 }
                 setMessages((prev) => [...prev, instantMsg])
                 setStreamingContent('')
@@ -333,6 +334,7 @@ export function useRemyMascotSend(config: UseRemyMascotSendConfig) {
           timestamp: new Date().toISOString(),
           tasks: result.tasks,
           navSuggestions: result.navSuggestions,
+          quickReplies: result.quickReplies,
           ...(result.isError && { isRetryable: true, retryMessage: message }),
         }
         setMessages((prev) => [...prev, remyMsg])

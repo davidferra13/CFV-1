@@ -20,6 +20,11 @@ export const PUBLIC_PRIMARY_CONSUMER_CTA: PublicCta = {
   label: 'Book Now',
 }
 
+export const PUBLIC_CONSUMER_DISCOVERY_ENTRY: PublicCta = {
+  href: '/eat',
+  label: 'Find Food',
+}
+
 export const PUBLIC_SECONDARY_CONSUMER_CTA: PublicCta = {
   href: '/chefs',
   label: 'Browse Chefs',
@@ -41,6 +46,7 @@ export const PUBLIC_OPERATOR_ENTRY: PublicCta = {
 }
 
 export const PUBLIC_ROUTE_ROLE: Record<string, PublicRouteRole> = {
+  '/eat': 'consumer_browse',
   '/book': 'consumer_booking',
   '/chefs': 'consumer_browse',
   '/nearby': 'consumer_directory',

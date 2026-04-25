@@ -3,6 +3,13 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getMenus, getAllComponents } from '@/lib/menus/actions'
 import { getRecipes } from '@/lib/recipes/actions'
+import { getChefArchetype } from '@/lib/archetypes/actions'
+import { getTargetsForArchetype } from '@/lib/costing/knowledge'
+import {
+  calculateMarginPercent,
+  calculateProfitCents,
+  calculateSuggestedPriceFromFoodCost,
+} from '@/lib/finance/event-pricing-intelligence'
 import { safeFetchAll } from '@/lib/utils/safe-fetch'
 import { ErrorState } from '@/components/ui/error-state'
 import { Card } from '@/components/ui/card'
@@ -26,6 +33,7 @@ export default async function MenuCostPage() {
     menus: () => getMenus(),
     components: () => getAllComponents(),
     recipes: () => getRecipes(),
+    archetype: () => getChefArchetype(),
   })
 
   if (result.error) {
@@ -33,7 +41,7 @@ export default async function MenuCostPage() {
       <div className="space-y-6">
         <div>
           <Link href="/culinary/costing" className="text-sm text-stone-500 hover:text-stone-300">
-            ← Costing
+            Back to Costing
           </Link>
           <h1 className="text-3xl font-bold text-stone-100 mt-1">Menu Cost</h1>
         </div>
@@ -42,7 +50,9 @@ export default async function MenuCostPage() {
     )
   }
 
-  const { menus, components, recipes } = result.data!
+  const { menus, components, recipes, archetype } = result.data!
+  const targets = getTargetsForArchetype(archetype)
+  const targetFoodCostPercent = targets.foodCostPctHigh
 
   // Build recipe cost lookup
   const recipeCostMap = new Map<string, number>()
@@ -79,8 +89,33 @@ export default async function MenuCostPage() {
       menu.target_guest_count && estimatedCostCents > 0
         ? Math.round(estimatedCostCents / menu.target_guest_count)
         : null
+    const suggestedPriceCents =
+      estimatedCostCents > 0
+        ? calculateSuggestedPriceFromFoodCost(estimatedCostCents, targetFoodCostPercent)
+        : null
+    const suggestedPricePerGuestCents =
+      costPerGuest != null
+        ? calculateSuggestedPriceFromFoodCost(costPerGuest, targetFoodCostPercent)
+        : null
+    const projectedGrossProfitCents =
+      suggestedPriceCents != null
+        ? calculateProfitCents(suggestedPriceCents, estimatedCostCents)
+        : null
+    const projectedMarginPercent =
+      suggestedPriceCents != null
+        ? calculateMarginPercent(suggestedPriceCents, estimatedCostCents)
+        : null
 
-    return { menu, componentCount, estimatedCostCents, pricedCount, costPerGuest }
+    return {
+      menu,
+      componentCount,
+      estimatedCostCents,
+      pricedCount,
+      costPerGuest,
+      suggestedPricePerGuestCents,
+      projectedGrossProfitCents,
+      projectedMarginPercent,
+    }
   })
 
   const withCost = menuData.filter((m: any) => m.estimatedCostCents > 0)
@@ -90,7 +125,7 @@ export default async function MenuCostPage() {
     <div className="space-y-6">
       <div>
         <Link href="/culinary/costing" className="text-sm text-stone-500 hover:text-stone-300">
-          ← Costing
+          Back to Costing
         </Link>
         <div className="flex items-center gap-3 mt-1">
           <h1 className="text-3xl font-bold text-stone-100">Menu Cost</h1>
@@ -107,7 +142,7 @@ export default async function MenuCostPage() {
         <p className="text-sm text-stone-400">
           Menu cost is estimated by summing the ingredient costs of each recipe linked to a menu
           component. Recipes without full ingredient pricing will show partial estimates. Set a
-          target guest count on a menu to see cost-per-guest.
+          target guest count on a menu to see cost-per-guest and suggested price-per-guest.
         </p>
       </Card>
 
@@ -118,7 +153,7 @@ export default async function MenuCostPage() {
             href="/culinary/menus"
             className="text-brand-600 hover:underline text-sm mt-3 inline-block"
           >
-            Create a menu →
+            Create a menu
           </Link>
         </Card>
       ) : (
@@ -142,6 +177,9 @@ export default async function MenuCostPage() {
                     <CostingHelpPopover topic="per_person" />
                   </span>
                 </TableHead>
+                <TableHead>Target Food Cost</TableHead>
+                <TableHead>Suggested / Guest</TableHead>
+                <TableHead>Projected Margin</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -154,6 +192,9 @@ export default async function MenuCostPage() {
                     estimatedCostCents,
                     pricedCount,
                     costPerGuest,
+                    suggestedPricePerGuestCents,
+                    projectedGrossProfitCents,
+                    projectedMarginPercent,
                   }: any) => (
                     <TableRow key={menu.id}>
                       <TableCell className="font-medium">
@@ -189,7 +230,29 @@ export default async function MenuCostPage() {
                       </TableCell>
                       <TableCell className="text-stone-300 text-sm font-medium">
                         {costPerGuest != null ? (
-                          `$${(costPerGuest / 100).toFixed(2)}`
+                          formatCurrency(costPerGuest)
+                        ) : (
+                          <span className="text-stone-300">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-stone-400 text-sm">
+                        {targetFoodCostPercent.toFixed(1)}%
+                      </TableCell>
+                      <TableCell className="text-stone-100 text-sm font-medium">
+                        {suggestedPricePerGuestCents != null ? (
+                          formatCurrency(suggestedPricePerGuestCents)
+                        ) : (
+                          <span className="text-stone-300">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-stone-400 text-sm">
+                        {projectedGrossProfitCents != null && projectedMarginPercent != null ? (
+                          <span>
+                            {formatCurrency(projectedGrossProfitCents)}
+                            <span className="ml-1 text-stone-500">
+                              ({projectedMarginPercent.toFixed(1)}%)
+                            </span>
+                          </span>
                         ) : (
                           <span className="text-stone-300">-</span>
                         )}

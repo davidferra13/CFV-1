@@ -13,6 +13,7 @@ export type DocumentTemplateSlug =
   | 'post-service-reset'
   | 'travel-route'
   | 'content-asset-capture'
+  | 'banquet-event-order'
 
 export type DocumentTemplateEntry = {
   slug: DocumentTemplateSlug
@@ -93,6 +94,13 @@ export const DOCUMENT_TEMPLATE_CATALOG: DocumentTemplateEntry[] = [
     sourcePath: 'docs/PDFref/templates/10-content-asset-capture-sheet-template.md',
     downloadName: 'content-asset-capture-template.md',
   },
+  {
+    slug: 'banquet-event-order',
+    label: 'Banquet Event Order Template',
+    description: 'Consolidated operational document for venue coordinators and staff.',
+    sourcePath: 'docs/PDFref/templates/12-banquet-event-order-template.md',
+    downloadName: 'banquet-event-order-template.md',
+  },
 ]
 
 export const TEMPLATE_SLUG_BY_DOC_TYPE: Record<OperationalDocumentType, DocumentTemplateSlug> = {
@@ -106,6 +114,7 @@ export const TEMPLATE_SLUG_BY_DOC_TYPE: Record<OperationalDocumentType, Document
   reset: 'post-service-reset',
   travel: 'travel-route',
   shots: 'content-asset-capture',
+  beo: 'banquet-event-order',
 }
 
 export function getDocumentTemplateBySlug(slug: string): DocumentTemplateEntry | null {

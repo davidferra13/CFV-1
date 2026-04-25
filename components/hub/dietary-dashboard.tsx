@@ -9,6 +9,7 @@ import {
 
 interface DietaryDashboardProps {
   groupId: string
+  groupToken: string
   isChefOrAdmin: boolean
 }
 
@@ -52,18 +53,18 @@ const RELATIONSHIP_LABEL: Record<string, string> = {
   other: 'Other',
 }
 
-export function DietaryDashboard({ groupId, isChefOrAdmin }: DietaryDashboardProps) {
+export function DietaryDashboard({ groupId, groupToken, isChefOrAdmin }: DietaryDashboardProps) {
   const [summary, setSummary] = useState<HouseholdDietarySummary | null>(null)
   const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState(false)
 
   useEffect(() => {
     if (!isChefOrAdmin) return
-    getCircleHouseholdSummary(groupId)
+    getCircleHouseholdSummary(groupId, groupToken)
       .then(setSummary)
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [groupId, isChefOrAdmin])
+  }, [groupId, groupToken, isChefOrAdmin])
 
   if (!isChefOrAdmin) return null
   if (loading) {

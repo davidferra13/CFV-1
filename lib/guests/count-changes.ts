@@ -256,6 +256,22 @@ function revalidateGuestCountPaths(eventId: string, tenantId: string) {
   revalidatePath('/events')
   revalidatePath(`/events/${eventId}`)
   invalidateRemyContextCache(tenantId)
+
+  // Bust DB-cached grocery price quotes so they regenerate with new guest count
+  try {
+    const db: any = createServerClient()
+    db.from('grocery_price_quotes')
+      .delete()
+      .eq('event_id', eventId)
+      .eq('tenant_id', tenantId)
+      .eq('status', 'complete')
+      .then(() => {})
+      .catch((err: any) =>
+        console.error('[guest-count] grocery cache bust failed (non-blocking):', err)
+      )
+  } catch {
+    // non-blocking
+  }
 }
 
 async function getEventForClientMutation(

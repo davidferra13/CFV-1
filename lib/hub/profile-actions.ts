@@ -129,6 +129,10 @@ const UpdateProfileSchema = z.object({
   avatar_url: z.string().url().optional().nullable(),
   known_allergies: z.array(z.string()).optional(),
   known_dietary: z.array(z.string()).optional(),
+  dislikes: z.array(z.string()).optional().nullable(),
+  favorites: z.array(z.string()).optional().nullable(),
+  spice_tolerance: z.string().optional().nullable(),
+  cuisine_preferences: z.array(z.string()).optional().nullable(),
 })
 
 /**
@@ -150,9 +154,25 @@ export async function updateProfile(
 
   if (!profile) throw new Error('Invalid profile token')
 
+  const updateData: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  }
+
+  if (updates.display_name !== undefined) updateData.display_name = updates.display_name
+  if (updates.bio !== undefined) updateData.bio = updates.bio
+  if (updates.avatar_url !== undefined) updateData.avatar_url = updates.avatar_url
+  if (updates.known_allergies !== undefined) updateData.known_allergies = updates.known_allergies
+  if (updates.known_dietary !== undefined) updateData.known_dietary = updates.known_dietary
+  if (updates.dislikes !== undefined) updateData.dislikes = updates.dislikes
+  if (updates.favorites !== undefined) updateData.favorites = updates.favorites
+  if (updates.spice_tolerance !== undefined) updateData.spice_tolerance = updates.spice_tolerance
+  if (updates.cuisine_preferences !== undefined) {
+    updateData.cuisine_preferences = updates.cuisine_preferences
+  }
+
   const { data, error } = await db
     .from('hub_guest_profiles')
-    .update({ ...updates, updated_at: new Date().toISOString() })
+    .update(updateData)
     .eq('id', profile.id)
     .select('*')
     .single()
@@ -319,6 +339,160 @@ export async function getProfileGroups(
  *
  * Public - no auth required. Rate limiting should be applied at the route layer.
  */
+/**
+ * Get upcoming ticketed events from all circles a guest profile belongs to.
+ * Returns events with tickets enabled, event_date >= today, status not cancelled/completed.
+ * Public - uses profile token for access (no auth required).
+ */
+export async function getUpcomingEventsForProfile(profileToken: string): Promise<
+  {
+    id: string
+    occasion: string | null
+    event_date: string | null
+    location_city: string | null
+    share_token: string
+    chef_name: string | null
+    circle_name: string | null
+    circle_token: string | null
+    ticket_types: {
+      name: string
+      price_cents: number
+      capacity: number | null
+      sold_count: number
+    }[]
+  }[]
+> {
+  const db: any = createServerClient({ admin: true })
+
+  // Get profile by token
+  const { data: profile } = await db
+    .from('hub_guest_profiles')
+    .select('id')
+    .eq('profile_token', profileToken)
+    .single()
+
+  if (!profile) return []
+
+  // Get all circles this profile is a member of
+  const { data: memberships } = await db
+    .from('hub_group_members')
+    .select('group_id')
+    .eq('profile_id', profile.id)
+
+  if (!memberships || memberships.length === 0) return []
+
+  const groupIds = memberships.map((m: any) => m.group_id)
+
+  // Get groups with their linked events and tenant info
+  const { data: groups } = await db
+    .from('hub_groups')
+    .select('id, name, group_token, tenant_id')
+    .in('id', groupIds)
+    .eq('is_active', true)
+
+  if (!groups || groups.length === 0) return []
+
+  // Collect all tenant IDs to find their upcoming events
+  const tenantIds = [...new Set(groups.map((g: any) => g.tenant_id).filter(Boolean))]
+  if (tenantIds.length === 0) return []
+
+  const today = new Date().toISOString().split('T')[0]
+  const results: {
+    id: string
+    occasion: string | null
+    event_date: string | null
+    location_city: string | null
+    share_token: string
+    chef_name: string | null
+    circle_name: string | null
+    circle_token: string | null
+    ticket_types: {
+      name: string
+      price_cents: number
+      capacity: number | null
+      sold_count: number
+    }[]
+  }[] = []
+
+  // For each tenant, find upcoming ticketed events
+  for (const tenantId of tenantIds) {
+    // Get share settings with tickets enabled
+    const { data: shares } = await db
+      .from('event_share_settings')
+      .select('event_id, share_token')
+      .eq('tenant_id', tenantId)
+      .eq('tickets_enabled', true)
+
+    if (!shares || shares.length === 0) continue
+
+    const eventIds = shares.map((s: any) => s.event_id)
+    const tokenMap = new Map(shares.map((s: any) => [s.event_id, s.share_token]))
+
+    // Get upcoming events (not cancelled, not completed, date >= today)
+    const { data: events } = await db
+      .from('events')
+      .select('id, occasion, event_date, location_city, status')
+      .eq('tenant_id', tenantId)
+      .in('id', eventIds)
+      .gte('event_date', today)
+      .not('status', 'in', '("cancelled","completed")')
+      .order('event_date', { ascending: true })
+
+    if (!events || events.length === 0) continue
+
+    // Get chef name
+    const { data: chef } = await db
+      .from('chefs')
+      .select('business_name, full_name')
+      .eq('id', tenantId)
+      .single()
+
+    const chefName = chef?.business_name || chef?.full_name || null
+
+    // Find the circle for this tenant
+    const tenantGroup = groups.find((g: any) => g.tenant_id === tenantId)
+
+    for (const event of events) {
+      // Get ticket types for this event
+      const { data: ticketTypes } = await db
+        .from('event_ticket_types')
+        .select('name, price_cents, capacity, sold_count')
+        .eq('event_id', event.id)
+        .eq('is_active', true)
+
+      results.push({
+        id: event.id,
+        occasion: event.occasion,
+        event_date: event.event_date,
+        location_city: event.location_city,
+        share_token: tokenMap.get(event.id) as string,
+        chef_name: chefName,
+        circle_name: tenantGroup?.name ?? null,
+        circle_token: tenantGroup?.group_token ?? null,
+        ticket_types: (ticketTypes ?? []).map((t: any) => ({
+          name: t.name,
+          price_cents: t.price_cents,
+          capacity: t.capacity,
+          sold_count: t.sold_count,
+        })),
+      })
+    }
+  }
+
+  // Sort by event_date ascending
+  results.sort((a, b) => {
+    if (!a.event_date) return 1
+    if (!b.event_date) return -1
+    return a.event_date.localeCompare(b.event_date)
+  })
+
+  return results
+}
+
+// ---------------------------------------------------------------------------
+// Profile token recovery - for guests who cleared cookies
+// ---------------------------------------------------------------------------
+
 export async function sendCircleRecoveryEmail(
   email: string,
   groupToken: string

@@ -377,6 +377,59 @@ export function DocumentSection({
         </div>
       </Card>
 
+      {/* BEO (Banquet Event Order) - master operational document for venues/co-hosts/staff */}
+      <Card className="p-6">
+        <h2 className="text-xl font-semibold mb-1">Banquet Event Order (BEO)</h2>
+        <p className="text-stone-500 text-sm mb-4">
+          Master operational document: event, client, venue, menu, timeline, staff, and dietary info
+          consolidated on one page. Share with venue coordinators, co-hosts, or staff.
+        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <ReadinessIndicator
+              ready={readiness.eventSummary.ready}
+              missing={readiness.eventSummary.missing}
+            />
+          </div>
+          <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+            {readiness.eventSummary.ready && (
+              <Button
+                variant="ghost"
+                size="sm"
+                href={`${baseUrl}?type=beo&archive=1`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Archive
+              </Button>
+            )}
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={!readiness.eventSummary.ready}
+              onClick={() =>
+                readiness.eventSummary.ready &&
+                setViewingDoc({ type: 'beo', label: 'Banquet Event Order' })
+              }
+            >
+              View PDF
+            </Button>
+            {readiness.eventSummary.ready && (
+              <a
+                href={`${baseUrl}?type=beo`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-stone-400 hover:text-stone-300 text-sm"
+                title="Open in new tab"
+                aria-label="Open BEO in a new tab"
+              >
+                Open
+              </a>
+            )}
+          </div>
+        </div>
+      </Card>
+
       {/* Serving Labels - printable food labels for containers/packaging */}
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-1">Serving Labels</h2>

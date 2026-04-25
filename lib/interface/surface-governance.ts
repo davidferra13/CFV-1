@@ -281,8 +281,9 @@ export function resolveChefShellBudget(pathname: string): ChefShellBudget {
   const mode = resolveChefSurfaceMode(pathname)
   const allowAmbientResearchPrompts = mode === 'triage'
   const isImmersiveEditor = /^\/menus\/[^/]+\/editor(?:\/|$)/.test(pathname)
+  const isWelcome = pathname === '/welcome'
 
-  if (isImmersiveEditor) {
+  if (isImmersiveEditor || isWelcome) {
     return {
       mode,
       showMarketResearchBanner: false,
@@ -311,4 +312,42 @@ export function resolveChefShellBudget(pathname: string): ChefShellBudget {
     showLiveAlerts: true,
     contentWidth: 'constrained',
   }
+}
+
+export type WorkspaceDensity = 'minimal' | 'standard' | 'power'
+
+export function resolveChefShellBudgetWithDensity(
+  pathname: string,
+  density: WorkspaceDensity
+): ChefShellBudget {
+  const base = resolveChefShellBudget(pathname)
+
+  if (density === 'minimal') {
+    return {
+      ...base,
+      showMarketResearchBanner: false,
+      showFeedbackNudge: false,
+      showRemy: false,
+      showLiveAlerts: false,
+    }
+  }
+
+  // For /welcome page, hide all chrome
+  if (pathname === '/welcome') {
+    return {
+      ...base,
+      showDesktopSidebar: false,
+      showMobileNav: false,
+      showBreadcrumbBar: false,
+      showQuickExpenseTrigger: false,
+      showRemy: false,
+      showQuickCapture: false,
+      showLiveAlerts: false,
+      showMarketResearchBanner: false,
+      showFeedbackNudge: false,
+      contentWidth: 'full',
+    }
+  }
+
+  return base
 }

@@ -32,6 +32,7 @@ import {
   fetchContentShotListData,
   renderContentShotList,
 } from '@/lib/documents/generate-content-shot-list'
+import { fetchBEOData, renderBEO } from '@/lib/documents/generate-beo'
 import { PDFLayout } from '@/lib/documents/pdf-layout'
 import {
   CORE_PACKET_DOCUMENT_TYPES,
@@ -94,6 +95,7 @@ function getDocRenderConfigs(eventId: string): Record<OperationalDocumentType, D
   const reset = getDocumentDefinition('reset')
   const travel = getDocumentDefinition('travel')
   const shots = getDocumentDefinition('shots')
+  const beo = getDocumentDefinition('beo')
 
   return {
     summary: {
@@ -165,6 +167,13 @@ function getDocRenderConfigs(eventId: string): Record<OperationalDocumentType, D
       docTypeLabel: shots.docTypeLabel,
       fallbackTitle: shots.fallbackTitle,
       filenameBase: shots.filenameBase,
+    },
+    beo: {
+      fetch: () => fetchBEOData(eventId),
+      render: renderBEO,
+      docTypeLabel: beo.docTypeLabel,
+      fallbackTitle: beo.fallbackTitle,
+      filenameBase: beo.filenameBase,
     },
   }
 }

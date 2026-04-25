@@ -4,6 +4,11 @@ import { createServerClient } from '@/lib/db/server'
 import { getCurrentUser, requireChef, requireClient } from '@/lib/auth/get-user'
 import { findChefByPublicSlug, getPublicChefPathSlug } from '@/lib/profile/public-chef'
 import { buildPassiveProducts } from './core'
+import {
+  getPassiveStoreSyncState,
+  markPassiveStoreSyncFailure,
+  markPassiveStoreSyncSuccess,
+} from './sync-state'
 import type {
   PassiveChefSourceContext,
   PassiveProduct,
@@ -306,53 +311,90 @@ async function hideStalePassiveProducts(db: any, chefId: string, activeKeys: str
   )
 }
 
-export async function syncPassiveProductsForChef(chefId: string): Promise<PassiveProduct[]> {
-  const db: any = createServerClient({ admin: true })
-  const chef = await getChefStoreContextById(db, chefId)
-  const bundle = await fetchPassiveStoreSourceBundle(db, chef)
-  const drafts = buildPassiveProducts(bundle)
-
-  if (drafts.length === 0) {
-    await hideStalePassiveProducts(db, chef.id, [])
-    return []
-  }
-
-  const rows = drafts.map((draft: PassiveProductDraft) => ({
-    chef_id: draft.chef_id,
-    source_type: draft.source_type,
-    source_id: draft.source_id,
-    product_type: draft.product_type,
-    title: draft.title,
-    description: draft.description,
-    price: draft.price,
-    fulfillment_type: draft.fulfillment_type,
-    status: draft.status ?? 'active',
-    product_key: draft.product_key,
-    preview_image_url: draft.preview_image_url,
-    metadata: draft.metadata,
-    generated_payload: draft.generated_payload,
-  }))
-
+async function listActivePassiveProducts(db: any, chefId: string): Promise<PassiveProduct[]> {
   const { data, error } = await db
     .from('passive_products')
-    .upsert(rows, { onConflict: 'chef_id,product_key' })
     .select('*')
+    .eq('chef_id', chefId)
+    .eq('status', 'active')
+    .order('price', { ascending: true })
 
   if (error) {
-    console.error('[syncPassiveProductsForChef] upsert error:', error)
-    if (isMissingPassiveStoreTable(error)) {
-      return drafts.map(toTransientPassiveProduct)
-    }
-    throw new Error('Failed to sync passive products')
+    console.error('[listActivePassiveProducts] select error:', error)
+    throw error
   }
 
-  await hideStalePassiveProducts(
-    db,
-    chef.id,
-    drafts.map((draft) => draft.product_key)
-  )
-
   return (data ?? []).map(toPassiveProduct)
+}
+
+async function loadActiveProductsWithFallback(db: any, chefId: string): Promise<PassiveProduct[]> {
+  const products = await listActivePassiveProducts(db, chefId)
+  const syncState = await getPassiveStoreSyncState(chefId)
+
+  if (products.length > 0 && syncState?.dirty === false) {
+    return products
+  }
+
+  await syncPassiveProductsForChef(chefId)
+  return listActivePassiveProducts(db, chefId)
+}
+
+export async function syncPassiveProductsForChef(chefId: string): Promise<PassiveProduct[]> {
+  try {
+    const db: any = createServerClient({ admin: true })
+    const chef = await getChefStoreContextById(db, chefId)
+    const bundle = await fetchPassiveStoreSourceBundle(db, chef)
+    const drafts = buildPassiveProducts(bundle)
+
+    if (drafts.length === 0) {
+      await hideStalePassiveProducts(db, chef.id, [])
+      await markPassiveStoreSyncSuccess(chef.id)
+      return []
+    }
+
+    const rows = drafts.map((draft: PassiveProductDraft) => ({
+      chef_id: draft.chef_id,
+      source_type: draft.source_type,
+      source_id: draft.source_id,
+      product_type: draft.product_type,
+      title: draft.title,
+      description: draft.description,
+      price: draft.price,
+      fulfillment_type: draft.fulfillment_type,
+      status: draft.status ?? 'active',
+      product_key: draft.product_key,
+      preview_image_url: draft.preview_image_url,
+      metadata: draft.metadata,
+      generated_payload: draft.generated_payload,
+    }))
+
+    const { data, error } = await db
+      .from('passive_products')
+      .upsert(rows, { onConflict: 'chef_id,product_key' })
+      .select('*')
+
+    if (error) {
+      console.error('[syncPassiveProductsForChef] upsert error:', error)
+      if (isMissingPassiveStoreTable(error)) {
+        return drafts.map(toTransientPassiveProduct)
+      }
+      throw new Error('Failed to sync passive products')
+    }
+
+    await hideStalePassiveProducts(
+      db,
+      chef.id,
+      drafts.map((draft) => draft.product_key)
+    )
+
+    await markPassiveStoreSyncSuccess(chef.id)
+    return (data ?? []).map(toPassiveProduct)
+  } catch (error) {
+    await markPassiveStoreSyncFailure(chefId, error).catch((failureError) => {
+      console.error('[syncPassiveProductsForChef] failed to persist sync failure:', failureError)
+    })
+    throw error
+  }
 }
 
 export async function syncPassiveProductsForAllChefs(limit?: number | null) {
@@ -389,19 +431,15 @@ export async function getPassiveStorefrontBySlug(
   const chef = await resolveChefStoreContextBySlug(db, slug)
   if (!chef) return null
 
-  const syncedProducts = await syncPassiveProductsForChef(chef.id)
-
   const canonicalSlug = getPublicChefPathSlug(chef) || slug
-  const { data, error } = await db
-    .from('passive_products')
-    .select('*')
-    .eq('chef_id', chef.id)
-    .eq('status', 'active')
-    .order('price', { ascending: true })
+  let products: PassiveProduct[]
 
-  if (error) {
-    console.error('[getPassiveStorefrontBySlug] select error:', error)
+  try {
+    products = await loadActiveProductsWithFallback(db, chef.id)
+  } catch (error) {
+    console.error('[getPassiveStorefrontBySlug] load error:', error)
     if (isMissingPassiveStoreTable(error)) {
+      const syncedProducts = await syncPassiveProductsForChef(chef.id)
       return {
         chefId: chef.id,
         chefSlug: canonicalSlug,
@@ -416,7 +454,7 @@ export async function getPassiveStorefrontBySlug(
     chefId: chef.id,
     chefSlug: canonicalSlug,
     chefName: chef.display_name?.trim() || chef.business_name?.trim() || 'Chef',
-    products: (data ?? []).map(toPassiveProduct),
+    products,
   }
 }
 
@@ -425,19 +463,14 @@ export async function getPassiveProductForPublicCheckout(slug: string, productId
   const chef = await resolveChefStoreContextBySlug(db, slug)
   if (!chef) return null
 
-  const syncedProducts = await syncPassiveProductsForChef(chef.id)
+  let products: PassiveProduct[]
 
-  const { data, error } = await db
-    .from('passive_products')
-    .select('*')
-    .eq('chef_id', chef.id)
-    .eq('product_id', productId)
-    .eq('status', 'active')
-    .maybeSingle()
-
-  if (error) {
-    console.error('[getPassiveProductForPublicCheckout] select error:', error)
+  try {
+    products = await loadActiveProductsWithFallback(db, chef.id)
+  } catch (error) {
+    console.error('[getPassiveProductForPublicCheckout] load error:', error)
     if (isMissingPassiveStoreTable(error)) {
+      const syncedProducts = await syncPassiveProductsForChef(chef.id)
       const product = syncedProducts.find(
         (candidate) => candidate.product_id === productId && candidate.status === 'active'
       )
@@ -452,13 +485,14 @@ export async function getPassiveProductForPublicCheckout(slug: string, productId
     return null
   }
 
-  if (!data) return null
+  const product = products.find((candidate) => candidate.product_id === productId)
+  if (!product) return null
 
   return {
     chefId: chef.id,
     chefSlug: getPublicChefPathSlug(chef) || slug,
     chefName: chef.display_name?.trim() || chef.business_name?.trim() || 'Chef',
-    product: toPassiveProduct(data),
+    product,
   }
 }
 
@@ -648,7 +682,7 @@ export async function getPassiveStorefrontOverviewForChef() {
   const user = await requireChef()
   const db: any = createServerClient({ admin: true })
   const chef = await getChefStoreContextById(db, user.tenantId!)
-  const products = await syncPassiveProductsForChef(user.tenantId!)
+  const products = await loadActiveProductsWithFallback(db, user.tenantId!)
 
   const { data: purchases, error } = await db
     .from('passive_product_purchases')

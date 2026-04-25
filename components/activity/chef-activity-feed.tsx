@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { ActivityTimestamp } from '@/components/ui/activity-timestamp'
 import type { ChefActivityEntry } from '@/lib/activity/chef-types'
 import { DOMAIN_CONFIG } from '@/lib/activity/chef-types'
 
@@ -43,7 +44,6 @@ export function ChefActivityFeed({ entries, compact = false }: ChefActivityFeedP
 
 function ActivityRow({ entry, compact }: { entry: ChefActivityEntry; compact: boolean }) {
   const config = DOMAIN_CONFIG[entry.domain] || DOMAIN_CONFIG.operational
-  const timeAgo = formatTimeAgo(entry.created_at)
   const href = getEntityHref(entry)
 
   const content = (
@@ -61,7 +61,7 @@ function ActivityRow({ entry, compact }: { entry: ChefActivityEntry; compact: bo
           <ContextLine context={entry.context} />
         )}
       </div>
-      <span className="text-xs text-stone-400 shrink-0 mt-0.5">{timeAgo}</span>
+      <ActivityTimestamp at={entry.created_at} />
     </div>
   )
 
@@ -139,19 +139,4 @@ function groupByDay(
   }
 
   return Array.from(groups.entries()).map(([label, entries]) => ({ label, entries }))
-}
-
-function formatTimeAgo(dateStr: string): string {
-  const date = new Date(dateStr)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMs / 3600000)
-  const diffDays = Math.floor(diffMs / 86400000)
-
-  if (diffMins < 1) return 'now'
-  if (diffMins < 60) return `${diffMins}m`
-  if (diffHours < 24) return `${diffHours}h`
-  if (diffDays < 7) return `${diffDays}d`
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }

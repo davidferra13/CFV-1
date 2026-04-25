@@ -11,6 +11,7 @@ import { getStuckEvents } from '@/lib/pipeline/stuck-events'
 import { getCoolingClients } from '@/lib/clients/cooling-actions'
 import { getUpcomingPaymentsDue, getExpiringQuotes } from '@/lib/dashboard/widget-actions'
 import { getOnboardingProgress, type OnboardingProgress } from '@/lib/onboarding/progress-actions'
+import { getEmptyFirstWeekActivationProgress } from '@/lib/onboarding/first-week-activation'
 import { getPriceIntelligenceSummary } from '@/lib/openclaw/price-intelligence-actions'
 import { getWaitlistStats } from '@/lib/scheduling/waitlist-actions'
 import { StatCard } from '@/components/dashboard/widget-cards/stat-card'
@@ -33,15 +34,7 @@ const emptyResponseTimeSummary: ResponseTimeSummary = {
   responded: 0,
   avgResponseTimeHours: null,
 }
-const emptyOnboardingProgress: OnboardingProgress = {
-  profile: false,
-  clients: { done: false, count: 0 },
-  loyalty: { done: false },
-  recipes: { done: false, count: 0 },
-  staff: { done: false, count: 0 },
-  completedPhases: 0,
-  totalPhases: 5,
-}
+const emptyOnboardingProgress: OnboardingProgress = getEmptyFirstWeekActivationProgress()
 
 export async function AlertCards() {
   const user = await requireChef()
@@ -221,9 +214,9 @@ export async function AlertCards() {
       {!onboardingDone && (
         <StatCard
           widgetId="onboarding_checklist"
-          title="Setup Progress"
+          title="First Booking Loop"
           value={`${onboardingProgress.completedPhases}/${onboardingProgress.totalPhases}`}
-          subtitle="onboarding phases complete"
+          subtitle="activation steps complete"
           trendDirection={onboardingProgress.completedPhases > 0 ? 'up' : 'flat'}
           trend={`${Math.round((onboardingProgress.completedPhases / onboardingProgress.totalPhases) * 100)}% done`}
           href="/settings"

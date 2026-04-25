@@ -487,7 +487,8 @@ function getArchetypeWelcome(chefName: string, archetype?: string | null): strin
  */
 export async function getCuratedGreeting(
   chefId: string,
-  chefName: string
+  chefName: string,
+  opts?: { includeSeasonal?: boolean }
 ): Promise<CuratedGreeting | null> {
   // Fetch chefCreatedAt for anniversary detection
   let chefCreatedAt = new Date().toISOString()
@@ -569,6 +570,10 @@ export async function getCuratedGreeting(
       if (checkin) {
         return { isCurated: true, text: checkin, quickReplies: [] }
       }
+    }
+
+    if (opts?.includeSeasonal === false) {
+      return null
     }
 
     // 4. Seasonal opener (once per day per new conversation)
@@ -720,7 +725,7 @@ export async function buildDynamicPersonalityBlock(opts: PersonalityBlockOptions
  */
 export async function trackFirstInteraction(chefId: string, stage: OnboardingStage): Promise<void> {
   if (stage !== 'toured') return
-  advanceOnboarding(chefId, 'first_interaction').catch(() => {})
+  await advanceOnboarding(chefId, 'first_interaction')
 }
 
 // ─── Drawer-Facing Server Action ─────────────────────────────────────────────

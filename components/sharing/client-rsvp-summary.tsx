@@ -44,6 +44,35 @@ export function ClientRSVPSummary({ guests, summary, originalGuestCount }: Clien
 
   const effectiveAttending = summary.attending_count + summary.plus_one_count
 
+  // Aggregate dietary needs from all attending/maybe guests
+  const dietaryMap = new Map<string, string[]>()
+  const allergyMap = new Map<string, string[]>()
+
+  for (const guest of guests) {
+    const isRelevant = guest.rsvp_status === 'attending' || guest.rsvp_status === 'maybe'
+    if (!isRelevant) continue
+
+    if (guest.dietary_restrictions) {
+      for (const restriction of guest.dietary_restrictions) {
+        if (!restriction || restriction.trim() === '') continue
+        const key = restriction.trim().toLowerCase()
+        if (!dietaryMap.has(key)) dietaryMap.set(key, [])
+        dietaryMap.get(key)!.push(guest.full_name)
+      }
+    }
+
+    if (guest.allergies) {
+      for (const allergy of guest.allergies) {
+        if (!allergy || allergy.trim() === '') continue
+        const key = allergy.trim().toLowerCase()
+        if (!allergyMap.has(key)) allergyMap.set(key, [])
+        allergyMap.get(key)!.push(guest.full_name)
+      }
+    }
+  }
+
+  const hasDietaryData = dietaryMap.size > 0 || allergyMap.size > 0
+
   return (
     <div className="space-y-4">
       {/* Progress Summary */}
@@ -78,6 +107,57 @@ export function ClientRSVPSummary({ guests, summary, originalGuestCount }: Clien
             <span className="text-stone-500"> (incl. {summary.plus_one_count} plus-ones)</span>
           )}{' '}
           of <span className="font-medium">{originalGuestCount}</span> expected
+        </div>
+      )}
+
+      {/* Table Dietary Needs */}
+      {hasDietaryData && (
+        <div className="space-y-3">
+          <h4 className="text-sm font-medium text-stone-300">Table Dietary Needs</h4>
+
+          {allergyMap.size > 0 && (
+            <div className="rounded-lg border border-red-900/50 bg-red-950/30 p-3 space-y-2">
+              <p className="text-xs font-semibold text-red-400 uppercase tracking-wide">
+                Allergies
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {Array.from(allergyMap.entries()).map(([allergy, names]) => (
+                  <div
+                    key={allergy}
+                    className="rounded-md bg-red-950/50 border border-red-900/30 px-2.5 py-1.5"
+                  >
+                    <span className="text-sm font-medium text-red-300 capitalize">{allergy}</span>
+                    <span className="text-xs text-red-400/70 ml-1.5">
+                      ({names.length === 1 ? names[0] : `${names.length} guests`})
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {dietaryMap.size > 0 && (
+            <div className="rounded-lg border border-amber-900/50 bg-amber-950/30 p-3 space-y-2">
+              <p className="text-xs font-semibold text-amber-400 uppercase tracking-wide">
+                Dietary Restrictions
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {Array.from(dietaryMap.entries()).map(([restriction, names]) => (
+                  <div
+                    key={restriction}
+                    className="rounded-md bg-amber-950/50 border border-amber-900/30 px-2.5 py-1.5"
+                  >
+                    <span className="text-sm font-medium text-amber-300 capitalize">
+                      {restriction}
+                    </span>
+                    <span className="text-xs text-amber-400/70 ml-1.5">
+                      ({names.length === 1 ? names[0] : `${names.length} guests`})
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

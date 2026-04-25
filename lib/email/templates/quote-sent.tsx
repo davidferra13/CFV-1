@@ -58,9 +58,7 @@ export function QuoteSentEmail({
       <Button style={button} href={quoteUrl}>
         View Quote
       </Button>
-      <Text style={muted}>
-        Log in to your ChefFlow account to review the full details and accept or discuss the quote.
-      </Text>
+      <Text style={muted}>This secure link lets you review and respond without signing in.</Text>
     </BaseLayout>
   )
 }

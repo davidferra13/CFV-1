@@ -63,6 +63,24 @@ export default async function StationsPage() {
         >
           Menu Board
         </Link>
+        <Link
+          href="/stations/knowledge"
+          className="inline-flex items-center gap-2 rounded-lg bg-stone-800 border border-stone-700 px-3 py-1.5 text-sm text-stone-300 hover:bg-stone-700 hover:text-stone-100 transition-colors"
+        >
+          Knowledge Base
+        </Link>
+        <Link
+          href="/stations/service-log"
+          className="inline-flex items-center gap-2 rounded-lg bg-stone-800 border border-stone-700 px-3 py-1.5 text-sm text-stone-300 hover:bg-stone-700 hover:text-stone-100 transition-colors"
+        >
+          Service Log
+        </Link>
+        <Link
+          href="/stations/menu-performance"
+          className="inline-flex items-center gap-2 rounded-lg bg-stone-800 border border-stone-700 px-3 py-1.5 text-sm text-stone-300 hover:bg-stone-700 hover:text-stone-100 transition-colors"
+        >
+          Menu Performance
+        </Link>
       </div>
 
       {/* 86'd banner - shows all currently 86'd items across all stations */}

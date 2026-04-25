@@ -1,6 +1,6 @@
 'use server'
 
-import { requireClient, type AuthUser } from '@/lib/auth/get-user'
+import { requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import type { HubGuestProfile, HubGroup } from './types'
 
@@ -158,6 +158,7 @@ export async function getClientProfileToken(): Promise<string> {
  * Get the circle group token for a client's event, if one exists.
  */
 export async function getCircleTokenForEvent(eventId: string): Promise<string | null> {
+  const user = await requireClient()
   const db = createServerClient({ admin: true })
 
   // Check direct event link
@@ -204,5 +205,26 @@ export async function getCircleTokenForEvent(eventId: string): Promise<string | 
     if (g?.is_active) return g.group_token
   }
 
-  return null
+  const { data: event } = await db
+    .from('events')
+    .select('id, tenant_id, occasion, status')
+    .eq('id', eventId)
+    .eq('client_id', user.entityId)
+    .maybeSingle()
+
+  if (!event || event.status === 'cancelled') {
+    return null
+  }
+
+  try {
+    const { ensureEventDinnerCircle } = await import('./integration-actions')
+    const ensured = await ensureEventDinnerCircle({
+      eventId: event.id,
+      tenantId: event.tenant_id,
+      eventTitle: event.occasion || 'Dinner Circle',
+    })
+    return ensured.groupToken
+  } catch {
+    return null
+  }
 }

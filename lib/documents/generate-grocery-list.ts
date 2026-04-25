@@ -611,7 +611,7 @@ export function renderGroceryList(pdf: PDFLayout, data: GroceryListData) {
   )
   pdf.headerBar([
     ['Client', clientName],
-    ['Guests', String(event.guest_count)],
+    ['Covers', String(event.guest_count)],
     ['Date', dateStr],
   ])
 

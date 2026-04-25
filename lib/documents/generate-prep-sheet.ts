@@ -290,7 +290,7 @@ export function renderPrepSheet(pdf: PDFLayout, data: PrepSheetData) {
   pdf.headerBar([
     ['Event', event.occasion || 'Dinner'],
     ['Date', dateStr],
-    ['Guests', String(event.guest_count)],
+    ['Covers', String(event.guest_count)],
   ])
 
   // Departure time is TIMESTAMPTZ (full ISO string) - extract just the time for display

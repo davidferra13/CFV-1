@@ -160,7 +160,7 @@ export async function removeFromWaitlist(entryId: string): Promise<void> {
 
   const { error } = await db
     .from('waitlist_entries')
-    .delete()
+    .update({ status: 'expired', updated_at: new Date().toISOString() })
     .eq('id', entryId)
     .eq('chef_id', chefId)
 

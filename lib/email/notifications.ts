@@ -56,9 +56,13 @@ import { MenuApprovedChefEmail } from './templates/menu-approved-chef'
 import { MenuRevisionChefEmail } from './templates/menu-revision-chef'
 import { AvailabilitySignalEmail } from './templates/availability-signal'
 import { CircleMessageEmail } from './templates/circle-message'
+import { CircleEventBroadcastEmail } from './templates/circle-event-broadcast'
 import { FriendRequestEmail } from './templates/friend-request'
 import { ContactMessageReceivedEmail } from './templates/contact-message-received'
 import { InquiryDeclinedEmail } from './templates/inquiry-declined'
+import { BookingConfirmationEmail } from './templates/booking-confirmation'
+import { BookingFollowUpEmail } from './templates/booking-follow-up'
+import { BookingNoMatchEmail } from './templates/booking-no-match'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -84,6 +88,81 @@ function buildLocation(event: {
 }): string | null {
   const parts = [event.location_address, event.location_city, event.location_state].filter(Boolean)
   return parts.length > 0 ? parts.join(', ') : null
+}
+
+// ─── Open Booking Confirmation ──────────────────────────────────────────
+
+export async function sendBookingConfirmationEmail(params: {
+  consumerEmail: string
+  consumerName: string
+  occasion: string
+  eventDate: string | null
+  guestCount: number
+  guestCountRangeLabel: string | null
+  location: string
+  matchedChefCount: number
+  statusUrl: string
+  circleUrl?: string
+}) {
+  const subject =
+    params.matchedChefCount > 0
+      ? `Your request was sent to ${params.matchedChefCount} chef${params.matchedChefCount !== 1 ? 's' : ''}`
+      : 'We received your chef request'
+
+  await sendEmail({
+    to: params.consumerEmail,
+    subject,
+    react: createElement(BookingConfirmationEmail, {
+      consumerName: params.consumerName,
+      occasion: params.occasion,
+      eventDate: params.eventDate,
+      guestCount: params.guestCount,
+      guestCountRangeLabel: params.guestCountRangeLabel,
+      location: params.location,
+      matchedChefCount: params.matchedChefCount,
+      statusUrl: params.statusUrl,
+      circleUrl: params.circleUrl,
+    }),
+  })
+}
+
+// ─── Open Booking Follow-Up (48h) ──────────────────────────────────────
+
+export async function sendBookingFollowUpEmail(params: {
+  consumerEmail: string
+  consumerName: string
+  occasion: string
+  statusUrl: string
+}) {
+  await sendEmail({
+    to: params.consumerEmail,
+    subject: `Update on your "${params.occasion}" request`,
+    react: createElement(BookingFollowUpEmail, {
+      consumerName: params.consumerName,
+      occasion: params.occasion,
+      statusUrl: params.statusUrl,
+      browseUrl: `${APP_URL}/chefs`,
+    }),
+  })
+}
+
+// ─── Open Booking No Match (7d) ────────────────────────────────────────
+
+export async function sendBookingNoMatchEmail(params: {
+  consumerEmail: string
+  consumerName: string
+  occasion: string
+}) {
+  await sendEmail({
+    to: params.consumerEmail,
+    subject: `We could not find a chef for "${params.occasion}"`,
+    react: createElement(BookingNoMatchEmail, {
+      consumerName: params.consumerName,
+      occasion: params.occasion,
+      browseUrl: `${APP_URL}/chefs`,
+      bookUrl: `${APP_URL}/book`,
+    }),
+  })
 }
 
 // ─── Inquiry Received ───────────────────────────────────────────────────
@@ -189,6 +268,7 @@ export async function sendQuoteSentEmail(params: {
   depositCents: number | null
   occasion: string | null
   validUntil: string | null
+  quoteUrl?: string | null
 }) {
   return sendEmail({
     to: params.clientEmail,
@@ -201,7 +281,7 @@ export async function sendQuoteSentEmail(params: {
       depositRequired: params.depositRequired,
       occasion: params.occasion,
       validUntil: params.validUntil ? formatDate(params.validUntil) : null,
-      quoteUrl: `${APP_URL}/my-quotes`,
+      quoteUrl: params.quoteUrl || `${APP_URL}/my-quotes`,
     }),
   })
 }
@@ -1266,6 +1346,8 @@ export async function sendPostEventThankYouEmail(params: {
   loyaltyTier?: 'bronze' | 'silver' | 'gold' | 'platinum' | null
   loyaltyPointsEarned?: number | null
   loyaltyPointsBalance?: number | null
+  circleJoinUrl?: string | null
+  circleGroupName?: string | null
 }) {
   await sendEmail({
     to: params.clientEmail,
@@ -1279,6 +1361,8 @@ export async function sendPostEventThankYouEmail(params: {
       loyaltyTier: params.loyaltyTier ?? null,
       loyaltyPointsEarned: params.loyaltyPointsEarned ?? null,
       loyaltyPointsBalance: params.loyaltyPointsBalance ?? null,
+      circleJoinUrl: params.circleJoinUrl ?? null,
+      circleGroupName: params.circleGroupName ?? null,
     }),
   })
 }
@@ -1527,6 +1611,39 @@ export async function sendFriendRequestEmail(params: {
       recipientName: params.recipientName,
       senderName: params.senderName,
       hubUrl: params.hubUrl,
+    }),
+  })
+}
+
+// ─── Circle Event Broadcast ─────────────────────────────────────────
+
+export async function sendCircleEventBroadcastEmail(params: {
+  recipientEmail: string
+  recipientName: string
+  chefName: string
+  groupName: string
+  eventName: string
+  eventDate: string
+  eventLocation: string
+  priceRange: string
+  spotsAvailable: string
+  ticketUrl: string
+  circleUrl: string
+}) {
+  await sendEmail({
+    to: params.recipientEmail,
+    subject: `${params.chefName} posted a new dinner in ${params.groupName}`,
+    react: createElement(CircleEventBroadcastEmail, {
+      recipientName: params.recipientName,
+      chefName: params.chefName,
+      groupName: params.groupName,
+      eventName: params.eventName,
+      eventDate: params.eventDate,
+      eventLocation: params.eventLocation,
+      priceRange: params.priceRange,
+      spotsAvailable: params.spotsAvailable,
+      ticketUrl: params.ticketUrl,
+      circleUrl: params.circleUrl,
     }),
   })
 }

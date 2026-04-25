@@ -30,6 +30,11 @@ type BookPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }
 
+function firstSearchParam(value: string | string[] | undefined): string {
+  if (Array.isArray(value)) return value[0] ?? ''
+  return value ?? ''
+}
+
 export default async function BookPage({ searchParams }: BookPageProps) {
   const resolvedSearchParams = await searchParams
   const urlPrefill = readPublicOpenBookingPrefillFromSearchParams(resolvedSearchParams)
@@ -99,12 +104,70 @@ export default async function BookPage({ searchParams }: BookPageProps) {
         </div>
       </section>
 
+      {/* How it works */}
+      <section className="mx-auto max-w-2xl px-4 pb-4 sm:px-6 lg:px-8">
+        <div className="rounded-2xl border border-stone-700 bg-stone-900/60 p-6 sm:p-8">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-400">
+            How it works
+          </h2>
+          <ol className="mt-5 space-y-4">
+            {[
+              {
+                step: '1',
+                title: 'Submit your request',
+                detail: 'Tell us the date, location, group size, and vibe. Takes 2 minutes.',
+              },
+              {
+                step: '2',
+                title: 'Matched chefs review',
+                detail: 'ChefFlow shares your request with chefs who fit. Usually within 24 hours.',
+              },
+              {
+                step: '3',
+                title: 'Review menu and pricing',
+                detail:
+                  'Your chef sends a proposed menu and quote. Ask questions, request changes.',
+              },
+              {
+                step: '4',
+                title: 'Confirm with a deposit',
+                detail: 'Pay a deposit to lock in your date. The rest is due before the event.',
+              },
+              {
+                step: '5',
+                title: 'Enjoy your dinner',
+                detail: 'Your chef arrives, cooks, serves, and cleans up. You relax.',
+              },
+            ].map((item) => (
+              <li key={item.step} className="flex gap-4">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-stone-600 bg-stone-800 text-xs font-bold text-stone-300">
+                  {item.step}
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-stone-100">{item.title}</p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-stone-400">{item.detail}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
       {/* Form */}
       <section className="mx-auto max-w-2xl px-4 pb-20 sm:px-6 lg:px-8">
         <BookDinnerForm
           initialPrefill={initialPrefill}
           seasonalContext={seasonalContext}
           analyticsEntryContext={seasonalContext?.entryContext ?? null}
+          trackingParams={{
+            referral_source:
+              firstSearchParam(resolvedSearchParams.referral_source) ||
+              firstSearchParam(resolvedSearchParams.source),
+            referral_partner_id: firstSearchParam(resolvedSearchParams.referral_partner_id),
+            utm_source: firstSearchParam(resolvedSearchParams.utm_source),
+            utm_medium: firstSearchParam(resolvedSearchParams.utm_medium),
+            utm_campaign: firstSearchParam(resolvedSearchParams.utm_campaign),
+          }}
         />
         <p className="mt-8 text-center text-sm text-stone-500">
           {PUBLIC_DIRECTORY_HELPER}{' '}

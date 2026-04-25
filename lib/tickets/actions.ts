@@ -31,6 +31,179 @@ const UpdateTicketTypeSchema = z.object({
   isActive: z.boolean().optional(),
 })
 
+const UpdateTicketAttendanceSchema = z.object({
+  eventId: z.string().uuid(),
+  ticketId: z.string().uuid(),
+  attended: z.boolean(),
+})
+
+type TicketCapacityCheck = {
+  ok: boolean
+  remaining: number | null
+  error?: string
+}
+
+function calculateTicketTypeCapacity(input: {
+  capacity: number | null
+  soldCount: number
+  quantity: number
+  label?: string
+}): TicketCapacityCheck {
+  if (input.quantity <= 0 || !Number.isFinite(input.quantity)) {
+    return { ok: false, remaining: input.capacity, error: 'Quantity must be greater than zero' }
+  }
+
+  if (input.capacity === null) {
+    return { ok: true, remaining: null }
+  }
+
+  const remaining = Math.max(0, input.capacity - input.soldCount)
+  if (input.quantity > remaining) {
+    const label = input.label || 'ticket type'
+    return {
+      ok: false,
+      remaining,
+      error:
+        remaining > 0 ? `Only ${remaining} unit(s) remaining for ${label}` : `${label} is sold out`,
+    }
+  }
+
+  return { ok: true, remaining }
+}
+
+function isCapacityReleased(ticket: any) {
+  return (
+    ['cancelled', 'failed', 'refunded'].includes(ticket.payment_status) ||
+    Boolean(ticket.capacity_released_at) ||
+    Boolean(ticket.deleted_at)
+  )
+}
+
+async function assertEventCapacityAvailable(db: any, eventId: string, quantity: number) {
+  const { data: event } = await db.from('events').select('guest_count').eq('id', eventId).single()
+  const eventCapacity = Number(event?.guest_count) || 0
+  if (eventCapacity <= 0) return
+
+  const { data: tickets } = await db
+    .from('event_tickets')
+    .select('quantity, payment_status, capacity_released_at, deleted_at')
+    .eq('event_id', eventId)
+
+  const reserved = (tickets ?? [])
+    .filter((ticket: any) => !isCapacityReleased(ticket))
+    .reduce((sum: number, ticket: any) => sum + (Number(ticket.quantity) || 0), 0)
+  const remaining = Math.max(0, eventCapacity - reserved)
+
+  if (quantity > remaining) {
+    throw new Error(
+      remaining > 0
+        ? `Only ${remaining} spot(s) remaining for this event`
+        : 'This event is sold out'
+    )
+  }
+}
+
+async function reserveTicketTypeCapacity(input: {
+  db: any
+  ticketTypeId: string
+  eventId: string
+  tenantId: string
+  quantity: number
+  soldOutMessage?: string
+}) {
+  const { db, ticketTypeId, eventId, tenantId, quantity } = input
+
+  const { data: ticketType } = await db
+    .from('event_ticket_types')
+    .select('id, name, capacity, sold_count, is_active')
+    .eq('id', ticketTypeId)
+    .eq('event_id', eventId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!ticketType || ticketType.is_active === false) {
+    throw new Error('Ticket type not found or inactive')
+  }
+
+  const check = calculateTicketTypeCapacity({
+    capacity: ticketType.capacity,
+    soldCount: ticketType.sold_count,
+    quantity,
+    label: ticketType.name,
+  })
+  if (!check.ok) {
+    throw new Error(
+      input.soldOutMessage ?? check.error ?? 'Not enough capacity for this ticket type'
+    )
+  }
+
+  if (ticketType.capacity === null) return
+
+  const { data: reserved, error: reserveError } = await db
+    .from('event_ticket_types')
+    .update({ sold_count: ticketType.sold_count + quantity })
+    .eq('id', ticketTypeId)
+    .eq('tenant_id', tenantId)
+    .eq('sold_count', ticketType.sold_count)
+    .select('id')
+    .maybeSingle()
+
+  if (reserveError || !reserved) {
+    throw new Error('Capacity changed while adding this ticket. Please try again.')
+  }
+}
+
+async function releaseTicketTypeCapacity(input: {
+  db: any
+  ticketTypeId: string
+  tenantId: string
+  quantity: number
+}) {
+  const { data: ticketType } = await input.db
+    .from('event_ticket_types')
+    .select('sold_count')
+    .eq('id', input.ticketTypeId)
+    .eq('tenant_id', input.tenantId)
+    .maybeSingle()
+
+  if (!ticketType) return
+
+  await input.db
+    .from('event_ticket_types')
+    .update({ sold_count: Math.max(0, Number(ticketType.sold_count ?? 0) - input.quantity) })
+    .eq('id', input.ticketTypeId)
+    .eq('tenant_id', input.tenantId)
+    .eq('sold_count', ticketType.sold_count)
+}
+
+export async function checkTicketTypeCapacity(input: {
+  eventId: string
+  ticketTypeId: string
+  quantity: number
+}): Promise<TicketCapacityCheck> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data: ticketType } = await db
+    .from('event_ticket_types')
+    .select('name, capacity, sold_count, is_active')
+    .eq('id', input.ticketTypeId)
+    .eq('event_id', input.eventId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!ticketType || ticketType.is_active === false) {
+    return { ok: false, remaining: 0, error: 'Ticket type not found or inactive' }
+  }
+
+  return calculateTicketTypeCapacity({
+    capacity: ticketType.capacity,
+    soldCount: ticketType.sold_count,
+    quantity: input.quantity,
+    label: ticketType.name,
+  })
+}
+
 // ─── Ticket Type CRUD ────────────────────────────────────────────────
 
 export async function createTicketType(
@@ -136,11 +309,11 @@ export async function deleteTicketType(input: { id: string; eventId: string }): 
 
   const { error } = await db
     .from('event_ticket_types')
-    .delete()
+    .update({ is_active: false, updated_at: new Date().toISOString() })
     .eq('id', input.id)
     .eq('tenant_id', user.tenantId!)
 
-  if (error) throw new Error(`Failed to delete ticket type: ${error.message}`)
+  if (error) throw new Error(`Failed to deactivate ticket type: ${error.message}`)
 
   revalidatePath(`/events/${input.eventId}`)
 }
@@ -202,6 +375,55 @@ export async function getEventTicketSummary(eventId: string): Promise<EventTicke
   return data as EventTicketSummary | null
 }
 
+export async function updateTicketAttendance(input: z.infer<typeof UpdateTicketAttendanceSchema>) {
+  const user = await requireChef()
+  const validated = UpdateTicketAttendanceSchema.parse(input)
+  const db: any = createServerClient()
+
+  const { data: ticket } = await db
+    .from('event_tickets')
+    .select('id, event_id, tenant_id, event_guest_id, payment_status')
+    .eq('id', validated.ticketId)
+    .eq('event_id', validated.eventId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!ticket) {
+    return { success: false, error: 'Ticket not found' }
+  }
+
+  if (ticket.payment_status !== 'paid') {
+    return { success: false, error: 'Only paid tickets can be checked in' }
+  }
+
+  const { error } = await db
+    .from('event_tickets')
+    .update({ attended: validated.attended })
+    .eq('id', validated.ticketId)
+    .eq('event_id', validated.eventId)
+    .eq('tenant_id', user.tenantId!)
+
+  if (error) {
+    return { success: false, error: `Failed to update attendance: ${error.message}` }
+  }
+
+  if (ticket.event_guest_id) {
+    await db
+      .from('event_guests')
+      .update({
+        actual_attended: validated.attended ? 'attended' : null,
+        reconciled_at: new Date().toISOString(),
+        reconciled_by: user.id,
+      })
+      .eq('id', ticket.event_guest_id)
+      .eq('event_id', validated.eventId)
+      .eq('tenant_id', user.tenantId!)
+  }
+
+  revalidatePath(`/events/${validated.eventId}`)
+  return { success: true }
+}
+
 // ─── Comp Tickets (free/manual add) ─────────────────────────────────
 
 export async function createCompTicket(input: {
@@ -226,32 +448,19 @@ export async function createCompTicket(input: {
   if (!event) throw new Error('Event not found')
 
   const qty = input.quantity ?? 1
+  await assertEventCapacityAvailable(db, input.eventId, qty)
+  let reservedTicketTypeCapacity = false
 
-  // If ticket type specified, update sold_count with CAS guard
   if (input.ticketTypeId) {
-    const { data: updated, error: casError } = await db.rpc('increment_sold_count', {
-      p_ticket_type_id: input.ticketTypeId,
-      p_quantity: qty,
+    await reserveTicketTypeCapacity({
+      db,
+      ticketTypeId: input.ticketTypeId,
+      eventId: input.eventId,
+      tenantId: user.tenantId!,
+      quantity: qty,
+      soldOutMessage: 'Not enough capacity for this ticket type',
     })
-
-    // Fallback: manual CAS if rpc not available
-    if (casError) {
-      const { data: tt } = await db
-        .from('event_ticket_types')
-        .select('capacity, sold_count')
-        .eq('id', input.ticketTypeId)
-        .single()
-
-      if (tt?.capacity !== null && tt.sold_count + qty > tt.capacity) {
-        throw new Error('Not enough capacity for this ticket type')
-      }
-
-      await db
-        .from('event_ticket_types')
-        .update({ sold_count: tt.sold_count + qty })
-        .eq('id', input.ticketTypeId)
-        .eq('sold_count', tt.sold_count) // CAS guard
-    }
+    reservedTicketTypeCapacity = true
   }
 
   const { data, error } = await db
@@ -272,7 +481,93 @@ export async function createCompTicket(input: {
     .select('*')
     .single()
 
-  if (error) throw new Error(`Failed to create comp ticket: ${error.message}`)
+  if (error) {
+    if (reservedTicketTypeCapacity && input.ticketTypeId) {
+      await releaseTicketTypeCapacity({
+        db,
+        ticketTypeId: input.ticketTypeId,
+        tenantId: user.tenantId!,
+        quantity: qty,
+      })
+    }
+    throw new Error(`Failed to create comp ticket: ${error.message}`)
+  }
+
+  // Auto-join comp ticket buyer to dinner circle (non-blocking)
+  try {
+    const normalizedEmail = input.buyerEmail.toLowerCase().trim()
+    const db2: any = createServerClient({ admin: true })
+
+    // Find or create hub profile
+    let hubProfileId: string | null = null
+    const { data: existingProfile } = await db2
+      .from('hub_guest_profiles')
+      .select('id')
+      .eq('email_normalized', normalizedEmail)
+      .maybeSingle()
+
+    if (existingProfile) {
+      hubProfileId = existingProfile.id
+    } else {
+      const crypto = await import('crypto')
+      const { data: newProfile } = await db2
+        .from('hub_guest_profiles')
+        .insert({
+          email: input.buyerEmail,
+          email_normalized: normalizedEmail,
+          display_name: input.buyerName,
+          profile_token: crypto.randomUUID(),
+        })
+        .select('id')
+        .single()
+      if (newProfile) hubProfileId = newProfile.id
+    }
+
+    if (hubProfileId) {
+      // Find circle for event
+      const { data: group } = await db2
+        .from('hub_groups')
+        .select('id, group_token')
+        .eq('event_id', input.eventId)
+        .eq('is_active', true)
+        .maybeSingle()
+
+      if (group) {
+        // Check if already a member
+        const { data: existingMember } = await db2
+          .from('hub_group_members')
+          .select('id')
+          .eq('group_id', group.id)
+          .eq('profile_id', hubProfileId)
+          .maybeSingle()
+
+        if (!existingMember) {
+          await db2.from('hub_group_members').insert({
+            group_id: group.id,
+            profile_id: hubProfileId,
+            role: 'member',
+            can_post: true,
+            can_invite: false,
+            can_pin: false,
+          })
+
+          await db2.from('hub_messages').insert({
+            group_id: group.id,
+            author_profile_id: hubProfileId,
+            message_type: 'system',
+            system_event_type: 'member_joined',
+            body: `${input.buyerName} was added as a guest`,
+            system_metadata: { display_name: input.buyerName, source: 'comp_ticket' },
+          })
+        }
+      }
+
+      // Link profile to ticket
+      await db2.from('event_tickets').update({ hub_profile_id: hubProfileId }).eq('id', data.id)
+    }
+  } catch (circleErr) {
+    console.error('[createCompTicket] Circle join failed (non-blocking):', circleErr)
+  }
 
   revalidatePath(`/events/${input.eventId}`)
   return data as EventTicket
@@ -302,24 +597,19 @@ export async function createWalkInTicket(input: {
   if (!event) throw new Error('Event not found')
 
   const qty = input.quantity ?? 1
+  await assertEventCapacityAvailable(db, input.eventId, qty)
+  let reservedTicketTypeCapacity = false
 
-  // CAS guard on ticket type if specified
   if (input.ticketTypeId) {
-    const { data: tt } = await db
-      .from('event_ticket_types')
-      .select('capacity, sold_count, price_cents')
-      .eq('id', input.ticketTypeId)
-      .single()
-
-    if (tt?.capacity !== null && tt.sold_count + qty > tt.capacity) {
-      throw new Error('Sold out for this ticket type')
-    }
-
-    await db
-      .from('event_ticket_types')
-      .update({ sold_count: tt.sold_count + qty })
-      .eq('id', input.ticketTypeId)
-      .eq('sold_count', tt.sold_count) // CAS guard
+    await reserveTicketTypeCapacity({
+      db,
+      ticketTypeId: input.ticketTypeId,
+      eventId: input.eventId,
+      tenantId: user.tenantId!,
+      quantity: qty,
+      soldOutMessage: 'Sold out for this ticket type',
+    })
+    reservedTicketTypeCapacity = true
   }
 
   const { data, error } = await db
@@ -340,7 +630,92 @@ export async function createWalkInTicket(input: {
     .select('*')
     .single()
 
-  if (error) throw new Error(`Failed to create walk-in ticket: ${error.message}`)
+  if (error) {
+    if (reservedTicketTypeCapacity && input.ticketTypeId) {
+      await releaseTicketTypeCapacity({
+        db,
+        ticketTypeId: input.ticketTypeId,
+        tenantId: user.tenantId!,
+        quantity: qty,
+      })
+    }
+    throw new Error(`Failed to create walk-in ticket: ${error.message}`)
+  }
+
+  // Auto-join walk-in ticket buyer to dinner circle (non-blocking)
+  // Only if buyer has an email (walk-ins may not provide one)
+  if (input.buyerEmail && input.buyerEmail !== 'walkin@cheflowhq.com') {
+    try {
+      const normalizedEmail = input.buyerEmail.toLowerCase().trim()
+      const db2: any = createServerClient({ admin: true })
+
+      let hubProfileId: string | null = null
+      const { data: existingProfile } = await db2
+        .from('hub_guest_profiles')
+        .select('id')
+        .eq('email_normalized', normalizedEmail)
+        .maybeSingle()
+
+      if (existingProfile) {
+        hubProfileId = existingProfile.id
+      } else {
+        const crypto = await import('crypto')
+        const { data: newProfile } = await db2
+          .from('hub_guest_profiles')
+          .insert({
+            email: input.buyerEmail,
+            email_normalized: normalizedEmail,
+            display_name: input.buyerName,
+            profile_token: crypto.randomUUID(),
+          })
+          .select('id')
+          .single()
+        if (newProfile) hubProfileId = newProfile.id
+      }
+
+      if (hubProfileId) {
+        const { data: group } = await db2
+          .from('hub_groups')
+          .select('id')
+          .eq('event_id', input.eventId)
+          .eq('is_active', true)
+          .maybeSingle()
+
+        if (group) {
+          const { data: existingMember } = await db2
+            .from('hub_group_members')
+            .select('id')
+            .eq('group_id', group.id)
+            .eq('profile_id', hubProfileId)
+            .maybeSingle()
+
+          if (!existingMember) {
+            await db2.from('hub_group_members').insert({
+              group_id: group.id,
+              profile_id: hubProfileId,
+              role: 'member',
+              can_post: true,
+              can_invite: false,
+              can_pin: false,
+            })
+
+            await db2.from('hub_messages').insert({
+              group_id: group.id,
+              author_profile_id: hubProfileId,
+              message_type: 'system',
+              system_event_type: 'member_joined',
+              body: `${input.buyerName} joined at the door`,
+              system_metadata: { display_name: input.buyerName, source: 'walkin_ticket' },
+            })
+          }
+        }
+
+        await db2.from('event_tickets').update({ hub_profile_id: hubProfileId }).eq('id', data.id)
+      }
+    } catch (circleErr) {
+      console.error('[createWalkInTicket] Circle join failed (non-blocking):', circleErr)
+    }
+  }
 
   revalidatePath(`/events/${input.eventId}`)
   return data as EventTicket
@@ -410,6 +785,57 @@ export async function refundTicket(input: {
     }
   }
 
+  // Remove refunded buyer from circle (non-blocking)
+  try {
+    const db2: any = createServerClient({ admin: true })
+
+    // Get the hub_profile_id from the ticket
+    const { data: ticketProfile } = await db2
+      .from('event_tickets')
+      .select('hub_profile_id, buyer_name, event_guest_id')
+      .eq('id', input.ticketId)
+      .single()
+
+    if (ticketProfile?.hub_profile_id) {
+      // Find circle for event
+      const { data: group } = await db2
+        .from('hub_groups')
+        .select('id')
+        .eq('event_id', input.eventId)
+        .eq('is_active', true)
+        .maybeSingle()
+
+      if (group) {
+        // Change role to viewer (can see history but not post)
+        await db2
+          .from('hub_group_members')
+          .update({ role: 'viewer', can_post: false, can_invite: false, can_pin: false })
+          .eq('group_id', group.id)
+          .eq('profile_id', ticketProfile.hub_profile_id)
+
+        // Post system message
+        await db2.from('hub_messages').insert({
+          group_id: group.id,
+          author_profile_id: ticketProfile.hub_profile_id,
+          message_type: 'system',
+          system_event_type: 'member_left',
+          body: `${ticketProfile.buyer_name || 'A guest'}'s ticket was refunded`,
+          system_metadata: { source: 'ticket_refund' },
+        })
+      }
+
+      // Update RSVP status if event_guest record exists
+      if (ticketProfile.event_guest_id) {
+        await db2
+          .from('event_guests')
+          .update({ rsvp_status: 'cancelled' })
+          .eq('id', ticketProfile.event_guest_id)
+      }
+    }
+  } catch (circleErr) {
+    console.error('[refundTicket] Circle cleanup failed (non-blocking):', circleErr)
+  }
+
   revalidatePath(`/events/${input.eventId}`)
   return { success: true }
 }
@@ -451,6 +877,116 @@ export async function toggleEventTicketing(input: {
       tenant_id: user.tenantId!,
       tickets_enabled: input.enabled,
     })
+  }
+
+  // Auto-create dinner circle when ticketing is enabled
+  if (input.enabled) {
+    let circleGroupId: string | null = null
+    try {
+      const { ensureCircleForEvent } = await import('@/lib/hub/chef-circle-actions')
+      const circle = await ensureCircleForEvent(input.eventId, user.tenantId!)
+      if (circle) {
+        // ensureCircleForEvent returns groupToken; look up the group ID
+        const { data: circleGroup } = await db
+          .from('hub_groups')
+          .select('id')
+          .eq('event_id', input.eventId)
+          .maybeSingle()
+        circleGroupId = circleGroup?.id ?? null
+      }
+    } catch (err) {
+      // Non-blocking: circle creation failure should not prevent ticketing toggle
+      console.error('[toggleEventTicketing] Circle auto-creation failed (non-blocking):', err)
+    }
+
+    // Broadcast to circle members that a new ticketed event is available
+    if (circleGroupId) {
+      try {
+        // Load event details for the broadcast
+        const { data: eventData } = await db
+          .from('events')
+          .select('occasion, event_date, serve_time, location_city, status')
+          .eq('id', input.eventId)
+          .single()
+
+        const { data: shareData } = await db
+          .from('event_share_settings')
+          .select('share_token')
+          .eq('event_id', input.eventId)
+          .single()
+
+        const { data: ticketTypes } = await db
+          .from('event_ticket_types')
+          .select('price_cents, capacity, sold_count')
+          .eq('event_id', input.eventId)
+          .eq('is_active', true)
+
+        if (eventData && shareData) {
+          const { data: chef } = await db
+            .from('chefs')
+            .select('business_name, full_name')
+            .eq('id', user.tenantId!)
+            .single()
+
+          const chefName = chef?.business_name || chef?.full_name || 'Your chef'
+
+          // Build price range from ticket types
+          let priceRange = 'See event page'
+          if (ticketTypes && ticketTypes.length > 0) {
+            const prices = ticketTypes.map((t: any) => t.price_cents)
+            const minPrice = Math.min(...prices)
+            const maxPrice = Math.max(...prices)
+            if (minPrice === maxPrice) {
+              priceRange = `$${(minPrice / 100).toFixed(0)}/person`
+            } else {
+              priceRange = `$${(minPrice / 100).toFixed(0)} - $${(maxPrice / 100).toFixed(0)}`
+            }
+          }
+
+          // Build spots available
+          let spotsAvailable = 'Limited spots'
+          if (ticketTypes && ticketTypes.length > 0) {
+            const totalCapacity = ticketTypes.reduce(
+              (sum: number, t: any) => sum + (t.capacity ?? 0),
+              0
+            )
+            const totalSold = ticketTypes.reduce(
+              (sum: number, t: any) => sum + (t.sold_count ?? 0),
+              0
+            )
+            const remaining = totalCapacity - totalSold
+            if (totalCapacity > 0 && remaining > 0) {
+              spotsAvailable = `${remaining} spots available`
+            }
+          }
+
+          const ticketUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'}/e/${shareData.share_token}`
+          const eventDate = eventData.event_date
+            ? new Date(eventData.event_date).toLocaleDateString('en-US', {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+              })
+            : 'Date TBD'
+
+          const { broadcastEventToCircleMembers } =
+            await import('@/lib/hub/circle-notification-actions')
+          await broadcastEventToCircleMembers({
+            groupId: circleGroupId,
+            chefName,
+            eventName: eventData.occasion || 'Upcoming Dinner',
+            eventDate,
+            eventLocation: eventData.location_city || 'Location TBD',
+            priceRange,
+            spotsAvailable,
+            ticketUrl,
+          })
+        }
+      } catch (err) {
+        console.error('[toggleEventTicketing] Circle broadcast failed (non-blocking):', err)
+      }
+    }
   }
 
   revalidatePath(`/events/${input.eventId}`)

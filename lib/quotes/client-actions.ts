@@ -4,10 +4,66 @@
 'use server'
 
 import { requireClient } from '@/lib/auth/get-user'
+import { getClientPortalAccess } from '@/lib/client-portal/actions'
 import { createServerClient } from '@/lib/db/server'
 import { createAdminClient } from '@/lib/db/admin'
+import { convertInquiryToEventWithContext } from '@/lib/inquiries/actions'
 import { revalidatePath } from 'next/cache'
 import { pushToDLQ } from '@/lib/resilience/retry'
+import { executeInteraction } from '@/lib/interactions'
+
+const CLIENT_QUOTE_DETAIL_SELECT = `
+  id, tenant_id, inquiry_id, event_id, client_id,
+  created_at, updated_at, quote_name, pricing_model,
+  price_per_person_cents, guest_count_estimated,
+  total_quoted_cents, deposit_required, deposit_amount_cents,
+  deposit_percentage, pricing_notes, status,
+  sent_at, accepted_at, rejected_at, rejected_reason,
+  expired_at, valid_until, snapshot_frozen,
+  negotiation_occurred, original_quoted_cents,
+  version, is_superseded, show_cost_breakdown,
+  exclusions_note, addon_total_cents, effective_total_cents,
+  cover_photo_url, chef_message,
+  inquiry:inquiries(id, confirmed_occasion, confirmed_date, confirmed_guest_count)
+`
+
+type QuoteResponseContext = {
+  clientId: string
+  actorId: string | null
+}
+
+async function loadQuoteMenus(db: any, eventId: string | null) {
+  if (!eventId) return []
+
+  const { data: menuData } = await db
+    .from('menus')
+    .select(
+      `id, name, description, service_style,
+      dishes (id, course_name, course_number, description, dietary_tags, allergen_flags, sort_order)`
+    )
+    .eq('event_id', eventId)
+
+  return menuData || []
+}
+
+async function getQuoteDetailForClient(db: any, quoteId: string, clientId: string) {
+  const { data: quote, error } = await db
+    .from('quotes')
+    .select(CLIENT_QUOTE_DETAIL_SELECT)
+    .eq('id', quoteId)
+    .eq('client_id', clientId)
+    .single()
+
+  if (error || !quote) {
+    if (error) {
+      console.error('[getQuoteDetailForClient] Error:', error)
+    }
+    return null
+  }
+
+  const menus = await loadQuoteMenus(db, quote.event_id ?? null)
+  return { ...quote, menus }
+}
 
 // ============================================
 // 1. GET CLIENT QUOTES
@@ -45,64 +101,15 @@ export async function getClientQuotes() {
 export async function getClientQuoteById(quoteId: string) {
   const user = await requireClient()
   const db: any = createServerClient()
+  return getQuoteDetailForClient(db, quoteId, user.entityId)
+}
 
-  const { data: quote, error } = await db
-    .from('quotes')
-    .select(
-      `
-      id, tenant_id, inquiry_id, event_id, client_id,
-      created_at, updated_at, quote_name, pricing_model,
-      price_per_person_cents, guest_count_estimated,
-      total_quoted_cents, deposit_required, deposit_amount_cents,
-      deposit_percentage, pricing_notes, status,
-      sent_at, accepted_at, rejected_at, rejected_reason,
-      expired_at, valid_until, snapshot_frozen,
-      negotiation_occurred, original_quoted_cents,
-      version, is_superseded, show_cost_breakdown,
-      exclusions_note, addon_total_cents, effective_total_cents,
-      cover_photo_url, chef_message,
-      inquiry:inquiries(id, confirmed_occasion, confirmed_date, confirmed_guest_count)
-    `
-    )
-    .eq('id', quoteId)
-    .eq('client_id', user.entityId)
-    .single()
+export async function getClientPortalQuoteById(token: string, quoteId: string) {
+  const access = await getClientPortalAccess(token)
+  if (!access) return null
 
-  if (error) {
-    console.error('[getClientQuoteById] Error:', error)
-    return null
-  }
-
-  // Fetch menu snapshot if quote is linked to an event
-  let menus: Array<{
-    id: string
-    name: string
-    description: string | null
-    service_style: string | null
-    dishes: Array<{
-      id: string
-      course_name: string | null
-      course_number: number | null
-      description: string | null
-      dietary_tags: string[] | null
-      allergen_flags: string[] | null
-      sort_order: number | null
-    }>
-  }> = []
-
-  if (quote.event_id) {
-    const { data: menuData } = await db
-      .from('menus')
-      .select(
-        `id, name, description, service_style,
-        dishes (id, course_name, course_number, description, dietary_tags, allergen_flags, sort_order)`
-      )
-      .eq('event_id', quote.event_id)
-
-    menus = menuData || []
-  }
-
-  return { ...quote, menus }
+  const db: any = createServerClient({ admin: true })
+  return getQuoteDetailForClient(db, quoteId, access.clientId)
 }
 
 // ============================================
@@ -116,69 +123,81 @@ export async function getClientQuoteById(quoteId: string) {
  * - inquiries.status quoted -> confirmed (if linked)
  * - events pricing fields (if linked)
  */
-export async function acceptQuote(quoteId: string) {
-  const user = await requireClient()
-  const db: any = createServerClient()
+async function acceptQuoteForContext(quoteId: string, context: QuoteResponseContext) {
+  const db: any = createServerClient({ admin: true })
 
-  // Pre-flight: fetch quote + associated event before calling the atomic RPC.
-  // The RPC checks client ownership but not expiry or event cancellation.
   const { data: preCheck } = await db
     .from('quotes')
     .select(
-      'id, status, valid_until, event_id, tenant_id, inquiry_id, name, total_cents, deposit_required, deposit_amount_cents, events(status)'
+      'id, status, valid_until, event_id, tenant_id, inquiry_id, quote_name, total_quoted_cents, deposit_required, deposit_amount_cents, events(status)'
     )
     .eq('id', quoteId)
-    .eq('client_id', user.entityId)
+    .eq('client_id', context.clientId)
     .single()
 
-  if (preCheck) {
-    // Only quotes in 'sent' status can be accepted. Guard here to fail fast
-    // before the atomic RPC - the RPC enforces this too, but an early check
-    // returns a clearer error message to the client.
-    if (preCheck.status !== 'sent') {
-      throw new Error('This quote is no longer available for acceptance.')
-    }
-    if (preCheck.valid_until && new Date(preCheck.valid_until) < new Date()) {
-      throw new Error('This quote has expired and can no longer be accepted.')
-    }
-    const eventStatus = (preCheck.events as any)?.status
-    if (eventStatus === 'cancelled') {
-      throw new Error('This event has been cancelled. The quote is no longer available.')
-    }
+  if (!preCheck) {
+    throw new Error('Quote not found')
   }
 
-  const { data: response, error: responseError } = await db.rpc('respond_to_quote_atomic', {
+  if (preCheck.status !== 'sent') {
+    throw new Error('This quote is no longer available for acceptance.')
+  }
+  if (preCheck.valid_until && new Date(preCheck.valid_until) < new Date()) {
+    throw new Error('This quote has expired and can no longer be accepted.')
+  }
+  const eventStatus = (preCheck.events as any)?.status
+  if (eventStatus === 'cancelled') {
+    throw new Error('This event has been cancelled. The quote is no longer available.')
+  }
+
+  const hadLinkedEvent = Boolean(preCheck.event_id)
+  const { error: responseError } = await db.rpc('respond_to_quote_atomic', {
     p_quote_id: quoteId,
-    p_client_id: user.entityId,
+    p_client_id: context.clientId,
     p_new_status: 'accepted',
-    p_actor_id: user.id,
+    p_actor_id: context.actorId,
     p_rejected_reason: null,
   })
 
-  if (responseError || !response) {
+  if (responseError) {
     throw new Error(
-      responseError?.message
+      responseError.message
         ? `Failed to accept quote: ${responseError.message}`
         : 'Failed to accept quote'
     )
   }
 
-  // RPC returns {ok, status} only. Use preCheck data for all side effects.
+  let eventId = (preCheck.event_id as string | null) ?? null
+  if (!eventId && preCheck.inquiry_id && preCheck.tenant_id) {
+    try {
+      const conversion = await convertInquiryToEventWithContext({
+        db,
+        tenantId: preCheck.tenant_id as string,
+        actorId: context.actorId,
+        inquiryId: preCheck.inquiry_id as string,
+      })
+      eventId = (conversion as any)?.event?.id ?? null
+    } catch (conversionErr) {
+      console.error(
+        '[acceptQuote] Inquiry conversion failed after quote acceptance (manual recovery may be required):',
+        conversionErr
+      )
+    }
+  }
+
   const quote = {
-    tenant_id: preCheck?.tenant_id as string,
-    event_id: preCheck?.event_id as string | null,
-    inquiry_id: preCheck?.inquiry_id as string | null,
-    quote_name: preCheck?.name as string | null,
-    total_quoted_cents: preCheck?.total_cents as number | null,
-    deposit_required: preCheck?.deposit_required as boolean | null,
-    deposit_amount_cents: preCheck?.deposit_amount_cents as number | null,
+    tenant_id: preCheck.tenant_id as string,
+    event_id: eventId,
+    inquiry_id: preCheck.inquiry_id as string | null,
+    quote_name: preCheck.quote_name as string | null,
+    total_quoted_cents: preCheck.total_quoted_cents as number | null,
+    deposit_required: preCheck.deposit_required as boolean | null,
+    deposit_amount_cents: preCheck.deposit_amount_cents as number | null,
   }
 
   revalidatePath('/my-quotes')
   revalidatePath(`/my-quotes/${quoteId}`)
   revalidatePath('/my-events')
-
-  // Chef-side cache invalidation
   revalidatePath('/quotes')
   revalidatePath(`/quotes/${quoteId}`)
   if (quote.inquiry_id) {
@@ -190,10 +209,38 @@ export async function acceptQuote(quoteId: string) {
     revalidatePath('/events')
   }
 
-  // PL5: Auto-transition linked event from proposed -> accepted
-  // Routes through transitionEvent() so all side effects fire
-  // (chef notification, activity log, automations, webhooks).
-  if (quote.event_id) {
+  await executeInteraction({
+    action_type: 'approve_quote',
+    actor_id: context.actorId ?? context.clientId,
+    actor: {
+      role: 'client',
+      actorId: context.actorId ?? context.clientId,
+      entityId: context.clientId,
+      tenantId: quote.tenant_id,
+    },
+    target_type: quote.event_id ? 'event' : 'system',
+    target_id: quote.event_id ?? quoteId,
+    context_type: 'client',
+    context_id: context.clientId,
+    visibility: 'private',
+    metadata: {
+      tenant_id: quote.tenant_id,
+      client_id: context.clientId,
+      quote_id: quoteId,
+      inquiry_id: quote.inquiry_id,
+      event_id: quote.event_id,
+      total_quoted_cents: quote.total_quoted_cents,
+      deposit_required: quote.deposit_required,
+      deposit_amount_cents: quote.deposit_amount_cents,
+      source: 'client_quote_accept',
+      suppress_interaction_notifications: true,
+      suppress_interaction_activity: true,
+      suppress_interaction_automation: true,
+    },
+    idempotency_key: `approve_quote:${quoteId}:${context.clientId}`,
+  })
+
+  if (hadLinkedEvent && quote.event_id) {
     try {
       const { transitionEvent } = await import('@/lib/events/transitions')
       await transitionEvent({
@@ -202,12 +249,10 @@ export async function acceptQuote(quoteId: string) {
         metadata: { triggered_by: 'quote_acceptance', quote_id: quoteId },
       })
     } catch (transitionErr) {
-      // Non-blocking: event may already be in accepted or later status
       console.error('[acceptQuote] Event auto-transition failed (non-blocking):', transitionErr)
     }
   }
 
-  // Circle-first: post quote accepted notification (non-blocking)
   if (quote.tenant_id) {
     try {
       const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
@@ -225,13 +270,12 @@ export async function acceptQuote(quoteId: string) {
     }
   }
 
-  // Outbound webhook dispatch (non-blocking)
   if (quote.tenant_id) {
     try {
       const { emitWebhook } = await import('@/lib/webhooks/emitter')
       await emitWebhook(quote.tenant_id, 'quote.accepted', {
         quote_id: quoteId,
-        client_id: user.entityId,
+        client_id: context.clientId,
         total_quoted_cents: quote.total_quoted_cents,
       })
     } catch (err) {
@@ -239,11 +283,10 @@ export async function acceptQuote(quoteId: string) {
     }
   }
 
-  // Loyalty trigger: quote accepted (non-blocking)
   if (quote.tenant_id) {
     try {
       const { fireTrigger } = await import('@/lib/loyalty/triggers')
-      await fireTrigger('quote_accepted', quote.tenant_id, user.entityId, {
+      await fireTrigger('quote_accepted', quote.tenant_id, context.clientId, {
         eventId: quote.event_id || undefined,
         description: 'Quote accepted',
       })
@@ -252,37 +295,61 @@ export async function acceptQuote(quoteId: string) {
     }
   }
 
-  // Notify chef that quote was accepted (non-blocking)
   if (quote.tenant_id) {
-    notifyChefOfQuoteAccepted(quote.tenant_id, quoteId, quote, user.entityId).catch(async (err) => {
-      console.error('[acceptQuote] Chef notification failed:', err)
-      await pushToDLQ(createAdminClient() as any, {
-        tenantId: quote.tenant_id,
-        jobType: 'quote.accepted.notify_chef',
-        jobId: quoteId,
-        payload: { quote_id: quoteId, client_id: user.entityId },
-        errorMessage: err instanceof Error ? err.message : 'Unknown notification failure',
-        attempts: 1,
-      })
-    })
+    notifyChefOfQuoteAccepted(quote.tenant_id, quoteId, quote, context.clientId).catch(
+      async (err) => {
+        console.error('[acceptQuote] Chef notification failed:', err)
+        await pushToDLQ(createAdminClient() as any, {
+          tenantId: quote.tenant_id,
+          jobType: 'quote.accepted.notify_chef',
+          jobId: quoteId,
+          payload: { quote_id: quoteId, client_id: context.clientId },
+          errorMessage: err instanceof Error ? err.message : 'Unknown notification failure',
+          attempts: 1,
+        })
+      }
+    )
   }
 
-  return { success: true }
+  return { success: true, eventId: quote.event_id }
+}
+
+export async function acceptQuote(quoteId: string) {
+  const user = await requireClient()
+  return acceptQuoteForContext(quoteId, {
+    clientId: user.entityId,
+    actorId: user.id,
+  })
+}
+
+export async function acceptQuoteByPortalToken(token: string, quoteId: string) {
+  const access = await getClientPortalAccess(token)
+  if (!access) {
+    throw new Error('This secure link is no longer valid.')
+  }
+
+  return acceptQuoteForContext(quoteId, {
+    clientId: access.clientId,
+    actorId: null,
+  })
 }
 
 // ============================================
 // 4. REJECT QUOTE
 // ============================================
 
-export async function rejectQuote(quoteId: string, reason?: string) {
-  const user = await requireClient()
-  const db: any = createServerClient()
+async function rejectQuoteForContext(
+  quoteId: string,
+  reason: string | undefined,
+  context: QuoteResponseContext
+) {
+  const db: any = createServerClient({ admin: true })
 
   const { data: response, error: responseError } = await db.rpc('respond_to_quote_atomic', {
     p_quote_id: quoteId,
-    p_client_id: user.entityId,
+    p_client_id: context.clientId,
     p_new_status: 'rejected',
-    p_actor_id: user.id,
+    p_actor_id: context.actorId,
     p_rejected_reason: reason ?? null,
   })
 
@@ -305,7 +372,6 @@ export async function rejectQuote(quoteId: string, reason?: string) {
   revalidatePath(`/my-quotes/${quoteId}`)
   revalidatePath('/my-events')
 
-  // Revert inquiry from 'quoted' to 'awaiting_chef' so chef knows to re-quote (non-blocking)
   if (quote.inquiry_id) {
     try {
       const { data: inq } = await db
@@ -331,7 +397,6 @@ export async function rejectQuote(quoteId: string, reason?: string) {
     }
   }
 
-  // Chef-side cache invalidation
   revalidatePath('/quotes')
   revalidatePath(`/quotes/${quoteId}`)
   revalidatePath('/dashboard')
@@ -344,13 +409,12 @@ export async function rejectQuote(quoteId: string, reason?: string) {
     revalidatePath('/events')
   }
 
-  // Outbound webhook dispatch (non-blocking)
   if (quote.tenant_id) {
     try {
       const { emitWebhook } = await import('@/lib/webhooks/emitter')
       await emitWebhook(quote.tenant_id, 'quote.rejected', {
         quote_id: quoteId,
-        client_id: user.entityId,
+        client_id: context.clientId,
         reason: reason || null,
       })
     } catch (err) {
@@ -358,13 +422,12 @@ export async function rejectQuote(quoteId: string, reason?: string) {
     }
   }
 
-  // Notify chef that quote was rejected (non-blocking)
   if (quote.tenant_id) {
     notifyChefOfQuoteRejected(
       quote.tenant_id,
       quoteId,
       { quote_name: quote.quote_name, inquiry_id: quote.inquiry_id },
-      user.entityId,
+      context.clientId,
       reason || null
     ).catch(async (err) => {
       console.error('[rejectQuote] Chef notification failed:', err)
@@ -372,7 +435,7 @@ export async function rejectQuote(quoteId: string, reason?: string) {
         tenantId: quote.tenant_id,
         jobType: 'quote.rejected.notify_chef',
         jobId: quoteId,
-        payload: { quote_id: quoteId, client_id: user.entityId },
+        payload: { quote_id: quoteId, client_id: context.clientId },
         errorMessage: err instanceof Error ? err.message : 'Unknown notification failure',
         attempts: 1,
       })
@@ -380,6 +443,26 @@ export async function rejectQuote(quoteId: string, reason?: string) {
   }
 
   return { success: true }
+}
+
+export async function rejectQuote(quoteId: string, reason?: string) {
+  const user = await requireClient()
+  return rejectQuoteForContext(quoteId, reason, {
+    clientId: user.entityId,
+    actorId: user.id,
+  })
+}
+
+export async function rejectQuoteByPortalToken(token: string, quoteId: string, reason?: string) {
+  const access = await getClientPortalAccess(token)
+  if (!access) {
+    throw new Error('This secure link is no longer valid.')
+  }
+
+  return rejectQuoteForContext(quoteId, reason, {
+    clientId: access.clientId,
+    actorId: null,
+  })
 }
 
 // --- Internal: notify chef when a quote is accepted ---

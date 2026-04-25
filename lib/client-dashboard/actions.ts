@@ -10,6 +10,7 @@ import { getConversationInbox } from '@/lib/chat/actions'
 import { getClientSpendingSummary } from '@/lib/clients/spending-actions'
 import { getClientWorkGraphSnapshot } from '@/lib/client-work-graph/actions'
 import type { ClientWorkGraph } from '@/lib/client-work-graph/types'
+import { buildClientActionRequiredSummary } from '@/lib/client-work-graph/shared-snapshot'
 import type { Database } from '@/types/database'
 import type { ClientDashboardWidgetPreference } from '@/lib/client-dashboard/types'
 import { CLIENT_DASHBOARD_WIDGET_IDS } from '@/lib/client-dashboard/types'
@@ -225,13 +226,6 @@ export async function getClientDashboardData(): Promise<{
     chefDisplayName,
     pastWithBalance,
     workGraph,
-    actionRequired: {
-      proposalCount: workGraph.summary.proposalCount,
-      paymentDueCount: workGraph.summary.paymentDueCount,
-      outstandingBalanceCount: workGraph.summary.outstandingBalanceCount,
-      quotePendingCount: workGraph.summary.quotePendingCount,
-      inquiryAwaitingCount: workGraph.summary.inquiryAwaitingCount,
-      totalItems: workGraph.summary.totalItems,
-    },
+    actionRequired: buildClientActionRequiredSummary(workGraph.summary),
   }
 }

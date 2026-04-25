@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 import type {
   PublicOpenBookingPrefill,
@@ -97,12 +98,16 @@ const GUEST_OPTIONS = [
 ]
 
 const BUDGET_OPTIONS = [
-  { value: '', label: 'What experience level?' },
-  { value: 'not-sure', label: 'Not sure yet (help me figure it out)' },
-  { value: 'casual', label: 'Casual home cooking' },
-  { value: 'elevated', label: 'Elevated dining experience' },
-  { value: 'fine-dining', label: 'Fine dining / restaurant quality' },
-  { value: 'luxury', label: 'Luxury / fully custom' },
+  { value: '', label: 'What experience level?', hint: '' },
+  { value: 'not-sure', label: 'Not sure yet (help me figure it out)', hint: '' },
+  { value: 'casual', label: 'Casual home cooking', hint: 'Typically $25-50 / person' },
+  { value: 'elevated', label: 'Elevated dining experience', hint: 'Typically $50-100 / person' },
+  {
+    value: 'fine-dining',
+    label: 'Fine dining / restaurant quality',
+    hint: 'Typically $100-200 / person',
+  },
+  { value: 'luxury', label: 'Luxury / fully custom', hint: 'Typically $200+ / person' },
 ]
 
 type FormState = {
@@ -127,6 +132,7 @@ type SubmitResult = {
   location?: string
   message?: string
   error?: string
+  booking_token?: string
 }
 
 const _bdfN = new Date()
@@ -158,13 +164,22 @@ type BookDinnerFormProps = {
   initialPrefill?: PublicOpenBookingPrefill
   seasonalContext?: PublicSeasonalMarketPulseBookingContext | null
   analyticsEntryContext?: string | null
+  trackingParams?: {
+    referral_source?: string
+    referral_partner_id?: string
+    utm_source?: string
+    utm_medium?: string
+    utm_campaign?: string
+  }
 }
 
 export function BookDinnerForm({
   initialPrefill,
   seasonalContext,
   analyticsEntryContext,
+  trackingParams,
 }: BookDinnerFormProps) {
+  const router = useRouter()
   const [form, setForm] = useState<FormState>(() => applyPrefill(DEFAULT_FORM, initialPrefill))
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState<SubmitResult | null>(null)
@@ -297,6 +312,11 @@ export function BookDinnerForm({
         body: JSON.stringify({
           ...form,
           seasonal_intent: seasonalIntent,
+          referral_source: trackingParams?.referral_source || '',
+          referral_partner_id: trackingParams?.referral_partner_id || '',
+          utm_source: trackingParams?.utm_source || '',
+          utm_medium: trackingParams?.utm_medium || '',
+          utm_campaign: trackingParams?.utm_campaign || '',
         }),
       })
 
@@ -318,6 +338,14 @@ export function BookDinnerForm({
         has_matches: (data.matched_count ?? 0) > 0,
         ...(seasonalAnalytics ?? {}),
       })
+
+      // Redirect to status page if we got a booking token
+      if (data.booking_token) {
+        router.push(`/book/status/${data.booking_token}`)
+        return
+      }
+
+      // Fallback: show inline success (no booking record created)
       setResult(data)
     } catch {
       setError('Network error. Please check your connection and try again.')
@@ -329,6 +357,13 @@ export function BookDinnerForm({
   // Success state
   if (result?.success) {
     const hasMatches = (result.matched_count ?? 0) > 0
+    const browseParams = new URLSearchParams()
+    if (form.location.trim()) browseParams.set('location', form.location.trim())
+    if (form.guest_count > 0) browseParams.set('partySize', String(form.guest_count))
+    if (form.service_type === 'meal_prep') browseParams.set('intent', 'meal_prep')
+    if (form.service_type === 'catering') browseParams.set('intent', 'team_dinner')
+    if (form.service_type === 'dinner_party') browseParams.set('intent', 'dinner_party')
+    const browseHref = `/eat${browseParams.toString() ? `?${browseParams.toString()}` : ''}`
     const steps = [
       { label: 'Request received', note: 'Your details are with the chef.', done: true },
       {
@@ -384,7 +419,7 @@ export function BookDinnerForm({
                       : 'bg-stone-800 text-stone-500 border border-stone-700'
                   }`}
                 >
-                  {step.done ? '✓' : i + 1}
+                  {step.done ? 'OK' : i + 1}
                 </span>
                 <div>
                   <p
@@ -400,22 +435,48 @@ export function BookDinnerForm({
         </div>
 
         {!hasMatches && (
-          <p className="text-sm text-stone-400">
-            No chefs matched your area yet. You can{' '}
-            <a href="/chefs" className="text-brand-400 hover:text-brand-300 underline">
-              browse our chef directory
-            </a>{' '}
-            to find chefs in other areas.
-          </p>
+          <div className="rounded-xl border border-stone-700 bg-stone-950/70 p-4">
+            <p className="text-sm text-stone-400">
+              No chefs matched your area yet. Browse broader chef and food options while ChefFlow
+              keeps the request available for follow-up.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <a
+                href={browseHref}
+                className="inline-flex rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-500"
+              >
+                Browse food options
+              </a>
+              <a
+                href="/chefs"
+                className="inline-flex rounded-lg border border-stone-700 px-4 py-2 text-sm font-medium text-stone-200 transition-colors hover:border-stone-600"
+              >
+                Browse chef directory
+              </a>
+            </div>
+          </div>
         )}
         {hasMatches && (
-          <p className="text-sm text-stone-400">
-            A confirmation email is on its way. You can{' '}
-            <a href="/chefs" className="text-brand-400 hover:text-brand-300 underline">
-              browse chef profiles
-            </a>{' '}
-            while you wait.
-          </p>
+          <div className="rounded-xl border border-stone-700 bg-stone-950/70 p-4">
+            <p className="text-sm text-stone-400">
+              A confirmation email is on its way. You can keep browsing chef profiles and food ideas
+              while matched chefs review the request.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <a
+                href={browseHref}
+                className="inline-flex rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-500"
+              >
+                Browse while you wait
+              </a>
+              <a
+                href="/chefs"
+                className="inline-flex rounded-lg border border-stone-700 px-4 py-2 text-sm font-medium text-stone-200 transition-colors hover:border-stone-600"
+              >
+                Chef profiles
+              </a>
+            </div>
+          </div>
         )}
       </div>
     )
@@ -623,6 +684,11 @@ export function BookDinnerForm({
               </option>
             ))}
           </select>
+          {form.budget_range && BUDGET_OPTIONS.find((o) => o.value === form.budget_range)?.hint && (
+            <p className="mt-1.5 text-xs font-medium text-emerald-400/80">
+              {BUDGET_OPTIONS.find((o) => o.value === form.budget_range)?.hint}
+            </p>
+          )}
           <p className="mt-1.5 text-xs text-stone-500">
             Per-person estimate to help chefs tailor their proposal. Final pricing is set by your
             chef.

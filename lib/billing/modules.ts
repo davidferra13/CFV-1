@@ -1,28 +1,8 @@
-// Module Definitions - single source of truth for the progressive disclosure system.
-// Each module maps to a nav group or feature area that can be toggled on/off by the chef.
-// NOT a server action file - no 'use server'.
-//
-// Two independent concepts:
-//   1. Tier (Free vs Paid) - controls what you CAN access (monetization)
-//   2. Module toggle - controls what you SEE (UX personalization)
-//
-// A module can be toggled off even if the chef has paid access (they just don't want to see it).
-// A free user can toggle on a paid module, but they'll see upgrade prompts on those pages.
-//
-// Tier assignments follow lib/billing/feature-classification.ts:
-//   'free'  - module contains primarily free-tier features (core utility)
-//   'paid'  - module contains primarily paid features (leverage/automation/scale)
-//
-// Mixed modules (some free, some paid features inside) are marked 'free' at the module level
-// because the free entry points must always be reachable. Paid sub-features surface contextual
-// upgrade prompts inline rather than blocking the module entirely.
+// Module definitions for workspace visibility.
+// Module toggles control what appears in navigation. They do not control access.
 
-// ModuleTier is independent of the Stripe subscription Tier ('free' | 'pro').
-// Modules use 'free' | 'paid' to align with feature-classification.ts terminology.
-// 'paid' modules are not locked - they surface contextual upgrade prompts inline.
 export type ModuleTier = 'free' | 'paid'
 
-// Re-export Tier for functions that need to check subscription status alongside module tier.
 export type { Tier } from '@/lib/billing/tier'
 import type { Tier } from '@/lib/billing/tier'
 
@@ -30,14 +10,13 @@ export type ModuleDefinition = {
   slug: string
   label: string
   description: string
-  tier: ModuleTier // 'free' = always available, 'paid' = upgrade prompts surface inline
-  defaultEnabled: boolean // ON by default for new signups?
-  alwaysVisible: boolean // Cannot be toggled off (e.g., Dashboard)
-  navGroupId?: string // Maps to navGroups[].id in nav-config.tsx
+  tier: ModuleTier
+  defaultEnabled: boolean
+  alwaysVisible: boolean
+  navGroupId?: string
 }
 
 export const MODULES: ModuleDefinition[] = [
-  // ─── Always-on (cannot be toggled off) ────────────────────────────────────
   {
     slug: 'dashboard',
     label: 'Dashboard',
@@ -46,8 +25,6 @@ export const MODULES: ModuleDefinition[] = [
     defaultEnabled: true,
     alwaysVisible: true,
   },
-
-  // ─── Free modules (default ON) ────────────────────────────────────────────
   {
     slug: 'pipeline',
     label: 'Pipeline',
@@ -93,8 +70,6 @@ export const MODULES: ModuleDefinition[] = [
     alwaysVisible: false,
     navGroupId: 'finance',
   },
-
-  // ─── Extended modules (all free, all enabled by default) ──────────────────
   {
     slug: 'protection',
     label: 'Protection',
@@ -108,7 +83,7 @@ export const MODULES: ModuleDefinition[] = [
     slug: 'more',
     label: 'More Tools',
     description: 'Analytics, marketing, community, professional development, and more',
-    tier: 'free', // mixed: basic analytics free, advanced analytics paid (prompts inline)
+    tier: 'free',
     defaultEnabled: true,
     alwaysVisible: false,
     navGroupId: 'more',
@@ -117,7 +92,7 @@ export const MODULES: ModuleDefinition[] = [
     slug: 'commerce',
     label: 'Commerce',
     description: 'POS register, counter sales, product catalog, and payment processing',
-    tier: 'paid', // full Commerce Engine is paid
+    tier: 'free',
     defaultEnabled: false,
     alwaysVisible: false,
     navGroupId: 'commerce',
@@ -126,15 +101,25 @@ export const MODULES: ModuleDefinition[] = [
     slug: 'social-hub',
     label: 'Social Event Hub',
     description: 'Group chat, themes, guest profiles, collaborative event planning, and polls',
-    tier: 'paid', // Social Event Hub is paid
+    tier: 'free',
     defaultEnabled: false,
     alwaysVisible: false,
+  },
+  {
+    slug: 'multi-location',
+    label: 'Multi-Location',
+    description:
+      'Multi-site command center, cross-location metrics, centralized purchasing, recipe compliance',
+    tier: 'paid',
+    defaultEnabled: false,
+    alwaysVisible: false,
+    navGroupId: 'locations',
   },
   {
     slug: 'station-ops',
     label: 'Operations',
     description: 'Kitchen day-to-day, staff, equipment, meal prep, and station clipboards',
-    tier: 'free', // mixed: basic ops free, staff management/payroll paid (prompts inline)
+    tier: 'free',
     defaultEnabled: true,
     alwaysVisible: false,
     navGroupId: 'operations',
@@ -143,49 +128,30 @@ export const MODULES: ModuleDefinition[] = [
     slug: 'operations',
     label: 'Supply Chain',
     description: 'Vendors, inventory, procurement, demand forecasting, and cost control',
-    tier: 'free', // mixed: vendor directory free, inventory/purchasing paid (prompts inline)
+    tier: 'free',
     defaultEnabled: true,
     alwaysVisible: false,
     navGroupId: 'supply-chain',
   },
 ]
 
-/** Default enabled modules for new signups. */
 export const DEFAULT_ENABLED_MODULES = MODULES.filter((m) => m.defaultEnabled).map((m) => m.slug)
 
-/** All module slugs (for "Select All" in settings). */
 export const ALL_MODULE_SLUGS = MODULES.map((m) => m.slug)
 
-/** Look up a module by slug. */
 export function getModule(slug: string): ModuleDefinition | undefined {
   return MODULES.find((m) => m.slug === slug)
 }
 
-/**
- * Given a chef's enabled modules and their tier, determine which nav group IDs to show.
- * - Always-visible modules are always included.
- * - Enabled modules are included if the chef has toggled them on.
- * - Pro modules for Free users: included (so they see upgrade prompts), but could be hidden via mode.
- */
-export function getVisibleNavGroupIds(enabledModules: string[], tier: Tier): string[] {
+export function getVisibleNavGroupIds(enabledModules: string[], _tier: Tier): string[] {
   const enabled = new Set(enabledModules)
   const visible: string[] = []
 
   for (const mod of MODULES) {
-    if (!mod.navGroupId) continue // dashboard has no nav group
-
-    // Always-visible modules always show
-    if (mod.alwaysVisible) {
+    if (!mod.navGroupId) continue
+    if (mod.alwaysVisible || enabled.has(mod.slug)) {
       visible.push(mod.navGroupId)
-      continue
     }
-
-    // Module must be toggled on by the user
-    if (!enabled.has(mod.slug)) continue
-
-    // Free modules always show when enabled
-    // Pro modules show when enabled (Free users see upgrade prompts on the pages)
-    visible.push(mod.navGroupId)
   }
 
   return visible

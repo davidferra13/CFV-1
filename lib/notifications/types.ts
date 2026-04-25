@@ -159,6 +159,8 @@ export type NotificationAction =
   | 'directory_listing_claimed'
   | 'directory_listing_verified'
   | 'directory_listing_removed'
+  // Personal reminders
+  | 'reminder_fired'
 
 export type Notification = {
   id: string
@@ -381,6 +383,9 @@ export const NOTIFICATION_CONFIG: Record<
   directory_listing_claimed: { category: 'system', icon: 'MapPin', toastByDefault: true },
   directory_listing_verified: { category: 'system', icon: 'CheckCircle', toastByDefault: false },
   directory_listing_removed: { category: 'system', icon: 'Trash2', toastByDefault: false },
+
+  // Personal reminders
+  reminder_fired: { category: 'system', icon: 'Bell', toastByDefault: true },
 }
 
 // Category display names for preferences UI

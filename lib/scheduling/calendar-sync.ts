@@ -8,6 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getGoogleAccessToken } from '@/lib/google/auth'
 import type { GoogleCalendarServiceStatus } from '@/lib/google/types'
 import { dateToDateString } from '@/lib/utils/format'
+import { normalizeEventTimezoneTruthValue } from '@/lib/events/time-truth'
 
 const GCAL_API = 'https://www.googleapis.com/calendar/v3/calendars/primary/events'
 const GCAL_API_ROOT = 'https://www.googleapis.com/calendar/v3'
@@ -560,7 +561,7 @@ export async function syncEventToGoogleCalendar(
     const { data: event } = await db
       .from('events')
       .select(
-        'id, occasion, event_date, serve_time, guest_count, location_address, location_city, location_state, special_requests, ambiance_notes, google_calendar_event_id'
+        'id, occasion, event_date, serve_time, event_timezone, guest_count, location_address, location_city, location_state, special_requests, ambiance_notes, google_calendar_event_id'
       )
       .eq('id', eventId)
       .eq('tenant_id', chef.tenantId!)
@@ -574,8 +575,12 @@ export async function syncEventToGoogleCalendar(
     // Build event date+time strings
     const dateStr = dateToDateString(event.event_date as Date | string)
     const serveTime = (event.serve_time as string | null) ?? '18:00'
+    const eventTimezone = normalizeEventTimezoneTruthValue((event as any).event_timezone)
     const startDateTime = `${dateStr}T${serveTime}:00`
-    const endDateTime = `${dateStr}T22:00:00` // default 4-hour window
+    const [hours = '18', minutes = '00'] = serveTime.split(':')
+    const startHour = Number.parseInt(hours, 10)
+    const endHour = Math.min(23, (Number.isFinite(startHour) ? startHour : 18) + 4)
+    const endDateTime = `${dateStr}T${String(endHour).padStart(2, '0')}:${minutes}:00`
 
     const location = [event.location_address, event.location_city, event.location_state]
       .filter(Boolean)
@@ -592,8 +597,8 @@ export async function syncEventToGoogleCalendar(
 
     const calendarBody = {
       summary: (event.occasion as string | null) || 'Private Chef Event',
-      start: { dateTime: startDateTime, timeZone: 'America/New_York' },
-      end: { dateTime: endDateTime, timeZone: 'America/New_York' },
+      start: { dateTime: startDateTime, timeZone: eventTimezone },
+      end: { dateTime: endDateTime, timeZone: eventTimezone },
       ...(location && { location }),
       description,
     }

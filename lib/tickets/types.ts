@@ -1,6 +1,6 @@
 // Event Ticketing System - Type Definitions
 
-export type TicketPaymentStatus = 'pending' | 'paid' | 'refunded' | 'cancelled'
+export type TicketPaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded' | 'cancelled'
 export type TicketSource = 'chefflow' | 'eventbrite' | 'facebook' | 'groupon' | 'walkin' | 'comp'
 export type DistributionPlatform = 'eventbrite' | 'facebook' | 'google' | 'groupon' | 'instagram'
 export type DistributionSyncStatus = 'draft' | 'published' | 'synced' | 'failed' | 'archived'
@@ -36,6 +36,11 @@ export interface EventTicket {
   stripe_checkout_session_id: string | null
   stripe_payment_intent_id: string | null
   payment_status: TicketPaymentStatus
+  payment_failure_count: number
+  last_payment_error: string | null
+  payment_failed_at: string | null
+  retry_available_at: string | null
+  capacity_released_at: string | null
   guest_token: string
   hub_profile_id: string | null
   event_guest_id: string | null

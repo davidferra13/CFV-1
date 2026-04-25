@@ -33,6 +33,8 @@ import { InquiriesOverflowSelect } from '@/components/inquiries/inquiries-overfl
 import { GmailSyncStrip } from '@/components/inquiries/gmail-sync-strip'
 import { getGmailSyncStatus } from '@/lib/gmail/actions'
 import { QuickLogButton } from '@/components/inquiries/quick-log-button'
+import { scoreEventUrgency } from '@/lib/inquiries/event-urgency'
+import { EventUrgencyBadge } from '@/components/inquiries/event-urgency-badge'
 
 const CHEF_ACTION_STATUSES = new Set(['new', 'awaiting_chef'])
 
@@ -126,6 +128,7 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
           : undefined
         const needsChefAction = CHEF_ACTION_STATUSES.has(inquiry.status)
         const urgency = needsChefAction ? getWaitingUrgency(inquiry.updated_at) : null
+        const eventUrgency = scoreEventUrgency(inquiry.confirmed_date)
 
         return (
           <Link
@@ -156,6 +159,7 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
                   )}
                   {score && <BookingScoreBadge score={score} />}
                   {readiness && <ReadinessScoreBadge score={readiness} />}
+                  <EventUrgencyBadge urgency={eventUrgency} />
                 </div>
                 {inquiry.confirmed_occasion && (
                   <p className="text-sm text-stone-600 mt-1">{inquiry.confirmed_occasion}</p>
@@ -308,6 +312,7 @@ async function ResponseQueueList() {
     <div className="space-y-2">
       {queue.map((item, index) => {
         const isFirst = index === 0
+        const eventUrgency = scoreEventUrgency(item.confirmedDate)
         const urgencyColor =
           item.waitingHours >= 48
             ? 'bg-red-500 animate-pulse'
@@ -345,6 +350,7 @@ async function ResponseQueueList() {
                       Up Next
                     </Badge>
                   )}
+                  <EventUrgencyBadge urgency={eventUrgency} />
                   <span className={`text-xs font-medium ${readinessColor}`}>
                     {item.readiness.percent}% ready
                   </span>

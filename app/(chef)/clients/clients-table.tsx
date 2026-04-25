@@ -17,10 +17,15 @@ import Link from 'next/link'
 import type { Tables } from '@/types/database'
 import { isDemoClient } from '@/lib/onboarding/demo-data-utils'
 import { CalendarPlus, MessageCircle, ExternalLink } from '@/components/ui/icons'
+import { TIER_LABELS, TIER_COLORS } from '@/lib/clients/health-score-utils'
+import type { ClientHealthTier } from '@/lib/clients/health-score'
 
 type ClientWithStats = Tables<'clients'> & {
   totalEvents: number
   totalSpentCents: number
+  lastEventDate?: string | null
+  healthTier?: string
+  healthScore?: number
 }
 
 interface ClientsTableProps {
@@ -29,7 +34,7 @@ interface ClientsTableProps {
 
 export function ClientsTable({ clients }: ClientsTableProps) {
   const [search, setSearch] = useState('')
-  const [sortBy, setSortBy] = useState<'name' | 'created' | 'spent'>('created')
+  const [sortBy, setSortBy] = useState<'name' | 'created' | 'spent' | 'health'>('created')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
 
   // Filter and sort clients
@@ -60,6 +65,10 @@ export function ClientsTable({ clients }: ClientsTableProps) {
           aValue = a.totalSpentCents
           bValue = b.totalSpentCents
           break
+        case 'health':
+          aValue = a.healthScore ?? 0
+          bValue = b.healthScore ?? 0
+          break
       }
 
       if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1
@@ -70,7 +79,7 @@ export function ClientsTable({ clients }: ClientsTableProps) {
     return filtered
   }, [clients, search, sortBy, sortOrder])
 
-  function toggleSort(field: 'name' | 'created' | 'spent') {
+  function toggleSort(field: 'name' | 'created' | 'spent' | 'health') {
     if (sortBy === field) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
     } else {
@@ -79,7 +88,7 @@ export function ClientsTable({ clients }: ClientsTableProps) {
     }
   }
 
-  function SortIcon({ field }: { field: 'name' | 'created' | 'spent' }) {
+  function SortIcon({ field }: { field: 'name' | 'created' | 'spent' | 'health' }) {
     if (sortBy !== field) {
       return <span className="text-stone-400 ml-1">↕</span>
     }
@@ -110,7 +119,15 @@ export function ClientsTable({ clients }: ClientsTableProps) {
               </button>
             </TableHead>
             <TableHead>Email</TableHead>
-            <TableHead>Phone</TableHead>
+            <TableHead>
+              <button
+                onClick={() => toggleSort('health')}
+                className="flex items-center hover:text-stone-900"
+              >
+                Health
+                <SortIcon field="health" />
+              </button>
+            </TableHead>
             <TableHead className="text-right">Total Events</TableHead>
             <TableHead className="text-right">
               <button
@@ -121,6 +138,7 @@ export function ClientsTable({ clients }: ClientsTableProps) {
                 <SortIcon field="spent" />
               </button>
             </TableHead>
+            <TableHead>Last Event</TableHead>
             <TableHead>
               <button
                 onClick={() => toggleSort('created')}
@@ -136,7 +154,7 @@ export function ClientsTable({ clients }: ClientsTableProps) {
         <TableBody>
           {filteredAndSortedClients.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="text-center text-stone-500 py-8">
+              <TableCell colSpan={8} className="text-center text-stone-500 py-8">
                 No clients found matching your search
               </TableCell>
             </TableRow>
@@ -156,6 +174,23 @@ export function ClientsTable({ clients }: ClientsTableProps) {
 }
 
 const ClientTableRow = memo(function ClientTableRow({ client }: { client: ClientWithStats }) {
+  const healthTier = (client.healthTier ?? 'new') as ClientHealthTier
+  const tierLabel = TIER_LABELS[healthTier] ?? 'New'
+  const tierColor = TIER_COLORS[healthTier] ?? 'bg-brand-100 text-brand-800'
+
+  // Compute "last event" display
+  let lastEventDisplay = 'Never'
+  if (client.lastEventDate) {
+    const days = Math.floor(
+      (Date.now() - new Date(client.lastEventDate).getTime()) / (1000 * 60 * 60 * 24)
+    )
+    if (days === 0) lastEventDisplay = 'Today'
+    else if (days === 1) lastEventDisplay = '1d ago'
+    else if (days < 30) lastEventDisplay = `${days}d ago`
+    else if (days < 365) lastEventDisplay = `${Math.floor(days / 30)}mo ago`
+    else lastEventDisplay = `${Math.floor(days / 365)}y ago`
+  }
+
   return (
     <TableRow
       className="cursor-pointer group"
@@ -186,11 +221,18 @@ const ClientTableRow = memo(function ClientTableRow({ client }: { client: Client
         </div>
       </TableCell>
       <TableCell className="text-stone-600">{client.email}</TableCell>
-      <TableCell className="text-stone-600">{client.phone || '-'}</TableCell>
+      <TableCell>
+        <span
+          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${tierColor}`}
+        >
+          {tierLabel}
+        </span>
+      </TableCell>
       <TableCell className="text-right">{client.totalEvents}</TableCell>
       <TableCell className="text-right font-medium">
         {formatCurrency(client.totalSpentCents)}
       </TableCell>
+      <TableCell className="text-stone-600 text-sm">{lastEventDisplay}</TableCell>
       <TableCell className="text-stone-600">{format(new Date(client.created_at), 'PP')}</TableCell>
       <TableCell className="text-right">
         <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

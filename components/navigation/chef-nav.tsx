@@ -19,7 +19,7 @@ import { navGroups, standaloneBottom } from './nav-config'
 import { DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
 
 const DEFAULT_MODULE_SLUGS = new Set(DEFAULT_ENABLED_MODULES)
-import type { NavGroup } from './nav-config'
+import type { NavCollapsibleItem, NavGroup, NavSubItem } from './nav-config'
 import { ActionBar } from './action-bar'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { GlobalSearch } from '@/components/search/global-search'
@@ -70,6 +70,12 @@ import {
   partitionChildren,
   filterNavGroup,
 } from './chef-nav-helpers'
+import type { TenantDataPresence } from '@/lib/progressive-disclosure/types'
+import {
+  STARTER_NAV_GROUP_ORDER,
+  STARTER_NAV_GROUPS,
+  isNavGroupVisible,
+} from '@/lib/progressive-disclosure/nav-visibility'
 
 // Re-export mobile nav so existing imports from chef-nav keep working
 export { ChefMobileNav } from './chef-mobile-nav'
@@ -555,7 +561,126 @@ const NavGroupSection = memo(function NavGroupSection({
   )
 })
 
+const FIRST_TIME_CHILD_HREFS: Record<string, Set<string>> = {
+  '/inquiries': new Set(['/inquiries/new']),
+  '/events/upcoming': new Set(['/events/new', '/events/new/from-text', '/events/new/wizard']),
+  '/clients': new Set(['/clients/new']),
+  '/recipes': new Set(['/recipes/new', '/culinary/recipes']),
+}
+
+function isStarterItemVisible(
+  groupId: string,
+  item: NavCollapsibleItem,
+  presence: TenantDataPresence
+) {
+  switch (groupId) {
+    case 'pipeline':
+      if (item.href === '/inquiries') return true
+      if (item.href === '/quotes') return presence.hasInquiries || presence.hasQuotes
+      if (item.href === '/leads') return presence.hasLeads
+      if (item.href === '/contracts') return presence.hasContracts
+      return presence.hasInquiries || presence.hasQuotes || presence.hasEvents
+    case 'events':
+      if (item.href === '/events/upcoming') return true
+      return presence.hasEvents
+    case 'clients':
+      if (item.href === '/clients') return true
+      return presence.hasClients
+    case 'culinary':
+      if (item.href === '/culinary' || item.href === '/recipes') return true
+      if (item.href === '/menus') return presence.hasMenus || presence.hasRecipes
+      return presence.hasRecipes || presence.hasMenus
+    default:
+      return true
+  }
+}
+
+function isStarterItemDataUnlocked(
+  groupId: string,
+  item: NavCollapsibleItem,
+  presence: TenantDataPresence
+) {
+  switch (groupId) {
+    case 'pipeline':
+      if (item.href === '/inquiries') return presence.hasInquiries
+      if (item.href === '/quotes') return presence.hasQuotes
+      if (item.href === '/leads') return presence.hasLeads
+      if (item.href === '/contracts') return presence.hasContracts
+      return presence.hasInquiries || presence.hasQuotes || presence.hasEvents
+    case 'events':
+      return presence.hasEvents
+    case 'clients':
+      return presence.hasClients
+    case 'culinary':
+      if (item.href === '/recipes') return presence.hasRecipes
+      if (item.href === '/menus') return presence.hasMenus
+      return presence.hasRecipes || presence.hasMenus
+    default:
+      return true
+  }
+}
+
+function filterStarterChildren(
+  item: NavCollapsibleItem,
+  itemUnlocked: boolean
+): NavSubItem[] | undefined {
+  if (!item.children) return undefined
+  if (itemUnlocked) return item.children
+
+  const firstTimeHrefs = FIRST_TIME_CHILD_HREFS[item.href]
+  if (!firstTimeHrefs) return undefined
+  const children = item.children.filter((child) => firstTimeHrefs.has(child.href))
+  return children.length > 0 ? children : undefined
+}
+
+function filterGroupForProgressiveDisclosure(
+  group: NavGroup,
+  presence: TenantDataPresence | null | undefined,
+  showAll: boolean,
+  pathname: string,
+  searchParams?: SearchParamsLike | null
+): NavGroup {
+  if (!presence || showAll || !STARTER_NAV_GROUPS.has(group.id)) return group
+
+  const items: NavCollapsibleItem[] = []
+  for (const item of group.items) {
+    const itemActive = isCollapsibleItemActive(pathname, item, searchParams)
+    const itemVisible = itemActive || isStarterItemVisible(group.id, item, presence)
+    if (!itemVisible) continue
+
+    const itemUnlocked = itemActive || isStarterItemDataUnlocked(group.id, item, presence)
+    const children = filterStarterChildren(item, itemUnlocked)
+    const nextItem: NavCollapsibleItem = children
+      ? { ...item, children }
+      : { ...item, children: undefined }
+    items.push(nextItem)
+  }
+
+  return { ...group, items }
+}
+
+function countGroupItems(group: NavGroup) {
+  return group.items.reduce((count, item) => count + 1 + (item.children?.length ?? 0), 0)
+}
+
+const STARTER_NAV_GROUP_RANK = new Map<string, number>(
+  STARTER_NAV_GROUP_ORDER.map((groupId, index): [string, number] => [groupId, index])
+)
+
+function sortStarterGroupsFirst(groups: NavGroup[]): NavGroup[] {
+  return [...groups].sort((a, b) => {
+    const aRank = STARTER_NAV_GROUP_RANK.get(a.id)
+    const bRank = STARTER_NAV_GROUP_RANK.get(b.id)
+    if (aRank != null && bRank != null) return aRank - bRank
+    if (aRank != null) return -1
+    if (bRank != null) return 1
+    return 0
+  })
+}
+
 // ---- Desktop Sidebar ----
+const SHOW_ALL_NAV_STORAGE_KEY = 'cf:show-all-nav-groups'
+
 export function ChefSidebar({
   primaryNavHrefs,
   enabledModules,
@@ -565,6 +690,7 @@ export function ChefSidebar({
   userId,
   tenantId,
   archetype,
+  tenantPresence,
 }: {
   primaryNavHrefs?: string[]
   enabledModules?: string[]
@@ -574,6 +700,7 @@ export function ChefSidebar({
   userId: string
   tenantId: string
   archetype?: string | null
+  tenantPresence?: TenantDataPresence | null
 }) {
   const pathname = usePathname() ?? ''
   const searchParams = useSearchParams()
@@ -590,7 +717,18 @@ export function ChefSidebar({
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set())
   const [openItems, setOpenItems] = useState<Set<string>>(new Set())
   const [navFilter, setNavFilter] = useState('')
+  const [showAllNav, setShowAllNav] = useState(false)
   const { has: hasPermission } = usePermissions()
+
+  // Load "show all nav" preference from localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(SHOW_ALL_NAV_STORAGE_KEY)
+      if (stored === 'true') setShowAllNav(true)
+    } catch {
+      /* ignore */
+    }
+  }, [])
 
   // Filter nav groups by role + focus mode.
   // Focus Mode should simplify nav for everyone, including admins.
@@ -633,9 +771,48 @@ export function ChefSidebar({
       (a, b) => getStrictFocusGroupRank(a.id) - getStrictFocusGroupRank(b.id)
     )
   }, [isAdmin, isPrivileged, focusMode, enabledSet, hasPermission])
+
+  // Progressive disclosure filters sidebar chrome only. Direct routes remain accessible.
+  const progressiveGroups = useMemo(() => {
+    if (!tenantPresence || isPrivileged || isAdmin) return accessibleGroups
+    const groups = accessibleGroups
+      .filter(
+        (group) =>
+          isGroupActive(pathname, group, searchParams) ||
+          isNavGroupVisible(group.id, tenantPresence, showAllNav)
+      )
+      .map((group) =>
+        filterGroupForProgressiveDisclosure(
+          group,
+          tenantPresence,
+          showAllNav,
+          pathname,
+          searchParams
+        )
+      )
+    return showAllNav ? groups : sortStarterGroupsFirst(groups)
+  }, [accessibleGroups, tenantPresence, showAllNav, isPrivileged, isAdmin, pathname, searchParams])
+
+  const hasHiddenGroups = useMemo(() => {
+    if (!tenantPresence || isPrivileged || isAdmin) return false
+
+    const simplifiedGroups = accessibleGroups
+      .filter((group) => isNavGroupVisible(group.id, tenantPresence, false))
+      .map((group) =>
+        filterGroupForProgressiveDisclosure(group, tenantPresence, false, pathname, searchParams)
+      )
+
+    if (simplifiedGroups.length < accessibleGroups.length) return true
+
+    return simplifiedGroups.some((group) => {
+      const sourceGroup = accessibleGroups.find((candidate) => candidate.id === group.id)
+      return sourceGroup ? countGroupItems(group) < countGroupItems(sourceGroup) : false
+    })
+  }, [accessibleGroups, tenantPresence, isPrivileged, isAdmin, pathname, searchParams])
+
   const groupEntries = useMemo(
-    () => accessibleGroups.map((group) => ({ group, isLocked: false })),
-    [accessibleGroups]
+    () => progressiveGroups.map((group) => ({ group, isLocked: false })),
+    [progressiveGroups]
   )
   const filteredGroupEntries = useMemo(
     () =>
@@ -651,6 +828,15 @@ export function ChefSidebar({
     () => (isAdmin ? standaloneBottom : standaloneBottom.filter((item) => !item.adminOnly)),
     [isAdmin]
   )
+  const networkRailActive = pathname.startsWith('/network')
+  const showCommunityRailLink =
+    isAdmin ||
+    isPrivileged ||
+    showAllNav ||
+    networkRailActive ||
+    !tenantPresence ||
+    tenantPresence.hasNetwork ||
+    tenantPresence.hasCircles
   // Auto-expand group containing active route
   useEffect(() => {
     for (const { group } of groupEntries) {
@@ -796,7 +982,14 @@ export function ChefSidebar({
             <ActivityDot collapsed />
 
             {/* Action Bar - rail mode */}
-            <ActionBar navFilter={navFilter} collapsed archetype={archetype} />
+            <ActionBar
+              navFilter={navFilter}
+              collapsed
+              archetype={archetype}
+              tenantPresence={tenantPresence}
+              showAllFeatures={showAllNav}
+              bypassProgressiveDisclosure={isAdmin || isPrivileged}
+            />
 
             <div className="w-6 border-t border-stone-800 my-1.5" />
 
@@ -813,23 +1006,21 @@ export function ChefSidebar({
             <div className="w-6 border-t border-stone-800 my-1.5" />
 
             {/* Community - rail icon */}
-            <Link
-              href="/network"
-              title="Community"
-              aria-label="Community"
-              className={`flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
-                pathname.startsWith('/network')
-                  ? 'text-brand-400'
-                  : 'text-stone-400 hover:bg-stone-800 hover:text-stone-400'
-              }`}
-              style={
-                pathname.startsWith('/network')
-                  ? { background: 'rgba(79, 70, 229, 0.08)' }
-                  : undefined
-              }
-            >
-              <Rss className="w-[18px] h-[18px]" />
-            </Link>
+            {showCommunityRailLink && (
+              <Link
+                href="/network"
+                title="Community"
+                aria-label="Community"
+                className={`flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
+                  networkRailActive
+                    ? 'text-brand-400'
+                    : 'text-stone-400 hover:bg-stone-800 hover:text-stone-400'
+                }`}
+                style={networkRailActive ? { background: 'rgba(79, 70, 229, 0.08)' } : undefined}
+              >
+                <Rss className="w-[18px] h-[18px]" />
+              </Link>
+            )}
 
             <div className="w-6 border-t border-stone-800 my-1.5" />
 
@@ -875,7 +1066,13 @@ export function ChefSidebar({
             <NavFilterInput value={navFilter} onChange={setNavFilter} />
 
             {/* ─── Action Bar (daily-driver shortcuts + Create) ─── */}
-            <ActionBar navFilter={navFilter} archetype={archetype} />
+            <ActionBar
+              navFilter={navFilter}
+              archetype={archetype}
+              tenantPresence={tenantPresence}
+              showAllFeatures={showAllNav}
+              bypassProgressiveDisclosure={isAdmin || isPrivileged}
+            />
 
             {/* ─── Nav Groups (always visible, collapse individually) ─── */}
             {filteredGroupEntries.length > 0 && (
@@ -897,6 +1094,29 @@ export function ChefSidebar({
                   ))}
                 </div>
               </>
+            )}
+
+            {/* Show/hide advanced nav groups toggle */}
+            {hasHiddenGroups && (
+              <button
+                type="button"
+                aria-pressed={showAllNav}
+                onClick={() => {
+                  setShowAllNav((prev) => {
+                    const next = !prev
+                    try {
+                      localStorage.setItem(SHOW_ALL_NAV_STORAGE_KEY, String(next))
+                    } catch {
+                      /* ignore */
+                    }
+                    return next
+                  })
+                }}
+                className="flex items-center gap-2 w-full px-3 py-1.5 text-xs font-medium text-stone-500 hover:text-stone-300 transition-colors"
+              >
+                <Sparkles className="w-3.5 h-3.5 flex-shrink-0" />
+                {showAllNav ? 'Simplify menu' : 'Show all features'}
+              </button>
             )}
 
             <RecentPagesSection />

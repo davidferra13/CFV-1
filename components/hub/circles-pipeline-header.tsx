@@ -1,6 +1,7 @@
 'use client'
 
 import type { ChefCircleSummary, PipelineStage } from '@/lib/hub/chef-circle-actions'
+import type { PipelineFinancials } from '@/lib/hub/circle-pipeline-stats'
 
 // ---------------------------------------------------------------------------
 // Pipeline stats bar + attention summary for the circles page.
@@ -37,24 +38,33 @@ const STAGE_GROUPS = [
 
 interface PipelineHeaderProps {
   circles: ChefCircleSummary[]
+  financials?: PipelineFinancials
 }
 
-export function CirclesPipelineHeader({ circles }: PipelineHeaderProps) {
+export function CirclesPipelineHeader({ circles, financials = {} }: PipelineHeaderProps) {
   const attentionItems = circles.filter((c) => c.needs_attention)
   const totalActive = circles.filter(
     (c) => !['completed', 'cancelled', 'declined', 'expired', 'active'].includes(c.pipeline_stage)
   ).length
-  const totalValueCents = circles
-    .filter(
-      (c) => !['completed', 'cancelled', 'declined', 'expired', 'active'].includes(c.pipeline_stage)
-    )
-    .reduce((sum, c) => sum + (c.estimated_value_cents ?? 0), 0)
 
-  // Stage group counts
-  const groupCounts = STAGE_GROUPS.map((g) => ({
-    ...g,
-    count: circles.filter((c) => g.stages.includes(c.pipeline_stage)).length,
-  }))
+  // Stage group counts + revenue
+  const groupCounts = STAGE_GROUPS.map((g) => {
+    const groupCircles = circles.filter((c) => g.stages.includes(c.pipeline_stage))
+    let revenueCents = 0
+    for (const c of groupCircles) {
+      if (c.event_id && financials[c.event_id]) {
+        revenueCents += financials[c.event_id].quotedPriceCents
+      }
+    }
+    return {
+      ...g,
+      count: groupCircles.length,
+      revenueCents,
+    }
+  })
+
+  // Total pipeline revenue
+  const totalRevenueCents = groupCounts.reduce((sum, g) => sum + g.revenueCents, 0)
 
   // Don't render if no business circles
   if (totalActive === 0 && attentionItems.length === 0) return null
@@ -70,6 +80,11 @@ export function CirclesPipelineHeader({ circles }: PipelineHeaderProps) {
               <span className="text-[11px] font-medium text-stone-400">{g.label}</span>
             </div>
             <span className="text-lg font-bold text-stone-200">{g.count}</span>
+            {g.revenueCents > 0 && (
+              <span className="text-[11px] text-stone-500">
+                ${Math.round(g.revenueCents / 100).toLocaleString()}
+              </span>
+            )}
           </div>
         ))}
 
@@ -77,9 +92,9 @@ export function CirclesPipelineHeader({ circles }: PipelineHeaderProps) {
         <div className="ml-auto flex flex-col items-end">
           <span className="text-[11px] text-stone-500">Active pipeline</span>
           <span className="text-lg font-bold text-stone-100">{totalActive}</span>
-          {totalValueCents > 0 && (
-            <span className="text-[11px] text-emerald-400/70">
-              ${Math.round(totalValueCents / 100).toLocaleString()} pipeline
+          {totalRevenueCents > 0 && (
+            <span className="text-[11px] text-stone-500">
+              ${Math.round(totalRevenueCents / 100).toLocaleString()}
             </span>
           )}
         </div>
@@ -91,7 +106,8 @@ export function CirclesPipelineHeader({ circles }: PipelineHeaderProps) {
           <div className="flex items-center gap-2">
             <span className="inline-block h-2 w-2 rounded-full bg-amber-400" />
             <span className="text-sm font-semibold text-amber-300">
-              {attentionItems.length} circle{attentionItems.length !== 1 ? 's' : ''} need{attentionItems.length === 1 ? 's' : ''} your attention
+              {attentionItems.length} circle{attentionItems.length !== 1 ? 's' : ''} need
+              {attentionItems.length === 1 ? 's' : ''} your attention
             </span>
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -101,7 +117,7 @@ export function CirclesPipelineHeader({ circles }: PipelineHeaderProps) {
                 href={`/circles/${c.id}`}
                 className="flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs text-amber-200 transition-colors hover:bg-amber-500/20"
               >
-                <span>{c.emoji || '💬'}</span>
+                <span>{c.emoji || '\uD83D\uDCAC'}</span>
                 <span className="font-medium">{c.client_name || c.name}</span>
                 {c.attention_reason && (
                   <span className="text-amber-400/70">{c.attention_reason}</span>

@@ -41,6 +41,18 @@ export default async function ClientPortalPaymentRedirectPage({ params }: Props)
     return <TokenExpiredPage reason="not_found" noun="payment" />
   }
 
+  if (result.status === 'rate_limited') {
+    return (
+      <div className="min-h-screen bg-stone-900 px-4 py-16">
+        <div className="mx-auto max-w-lg">
+          <Alert variant="warning" title="Too many requests">
+            Please wait a moment and try the payment link again.
+          </Alert>
+        </div>
+      </div>
+    )
+  }
+
   if (result.status === 'unavailable') {
     return (
       <div className="min-h-screen bg-stone-900 px-4 py-16">
