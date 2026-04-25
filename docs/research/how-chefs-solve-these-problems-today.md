@@ -6,7 +6,7 @@
 
 ## Origin Context
 
-The developer's beta tester Elena revealed 6 universal food operator patterns. Before building solutions, we need to understand how chefs currently solve these problems, what tools exist, what's broken about them, and where ChefFlow can differentiate. This research directly strengthens the Chef Opportunity Network spec and the upcoming public ordering spec.
+A beta tester revealed 6 universal food operator patterns. Before building solutions, we need to understand how chefs currently solve these problems, what tools exist, what's broken about them, and where ChefFlow can differentiate. This research directly strengthens the Chef Opportunity Network spec and the upcoming public ordering spec.
 
 ## Summary
 
@@ -22,7 +22,7 @@ Chefs currently solve these problems with a patchwork of disconnected tools: Ins
 
 | Method                        | How It Works                                                                 | Problems                                                                                |
 | ----------------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| **Word of mouth**             | "I'm telling all my chef friends" (exactly what Elena does)                  | Unscalable, no reach beyond immediate network, no way to broadcast                      |
+| **Word of mouth**             | "I'm telling all my chef friends" (exactly what beta testers report)         | Unscalable, no reach beyond immediate network, no way to broadcast                      |
 | **Culinary Agents**           | Hospitality-specific job board. 2.3M professionals. AI matching. Mobile app. | $299-599/month for employers. Job board format, not community. No relationship context. |
 | **Indeed/ZipRecruiter**       | Generic job boards with culinary categories                                  | High noise, not industry-specific, expensive sponsored posts                            |
 | **Recruiting agencies**       | Goodwin Recruiting, Private Chefs Inc.                                       | 15-25% placement fees. Only for high-end/private chef roles.                            |
@@ -54,7 +54,7 @@ Chefs currently solve these problems with a patchwork of disconnected tools: Ins
 | **Graze Craze** (franchise)       | Proprietary ordering system                              | Franchise model ($30K+ fee), not available to independents               |
 | **GloriaFood**                    | Free basic online ordering                               | Limited features, add-on fees for advanced features                      |
 
-**What's broken:** Independent food operators (Elena's archetype) fall through the cracks. They're too small for enterprise ordering systems, too specialized for generic e-commerce (Shopify), and too artisan for restaurant-focused platforms (Toast, ChowNow). They end up taking orders via DM/text, losing orders, and having no tracking.
+**What's broken:** Independent food operators (the artisan producer archetype) fall through the cracks. They're too small for enterprise ordering systems, too specialized for generic e-commerce (Shopify), and too artisan for restaurant-focused platforms (Toast, ChowNow). They end up taking orders via DM/text, losing orders, and having no tracking.
 
 **ChefFlow advantage:** ChefFlow already has the backend (product_projections, commerce_orders, order queue, Stripe). Adding a public ordering page means: chef manages products in ChefFlow -> gets a shareable order link -> posts on Instagram -> customer orders directly -> order flows into existing queue. Zero commission. Built into the ops platform they already use.
 
@@ -85,14 +85,14 @@ Chefs currently solve these problems with a patchwork of disconnected tools: Ins
 
 **How chefs currently do it:**
 
-| Method                        | Problems                                                                                                       |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| **Instagram captions**        | "This cheese comes from a small Austrian producer..." (exactly Elena) - ephemeral, not linked to menu/products |
-| **Menu descriptions**         | "Locally sourced heirloom tomatoes from Sunny Fields Farm" - static text, not structured data                  |
-| **Website "Our Story" pages** | Generic, rarely updated, not connected to actual products                                                      |
-| **QR codes on products**      | Enterprise-level traceability (Provenance, Seedtrace) - too expensive for independents                         |
+| Method                        | Problems                                                                                                        |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Instagram captions**        | "This cheese comes from a small Austrian producer..." (common pattern) - ephemeral, not linked to menu/products |
+| **Menu descriptions**         | "Locally sourced heirloom tomatoes from Sunny Fields Farm" - static text, not structured data                   |
+| **Website "Our Story" pages** | Generic, rarely updated, not connected to actual products                                                       |
+| **QR codes on products**      | Enterprise-level traceability (Provenance, Seedtrace) - too expensive for independents                          |
 
-**What's broken:** The sourcing story IS the premium for artisan food, but there's no structured way to attach it to products. Elena describes her cheese beautifully on Instagram, but that story isn't connected to anything customers can act on (order, see on a menu, etc.).
+**What's broken:** The sourcing story IS the premium for artisan food, but there's no structured way to attach it to products. Artisan producers describe ingredients beautifully on Instagram, but that story isn't connected to anything customers can act on (order, see on a menu, etc.).
 
 **ChefFlow advantage:** Adding `sourcing_story`, `producer_name`, `origin` to ingredients and making them visible on public product pages means the story follows the product everywhere. Chef writes it once; it appears on the menu, the public ordering page, and the product detail.
 
@@ -128,7 +128,7 @@ Chefs currently solve these problems with a patchwork of disconnected tools: Ins
 
 ### For the Public Ordering Spec (not yet written)
 
-3. **High priority.** 67% of consumers prefer direct ordering. Third-party apps take 20-30%. Independent artisan food operators (Elena's archetype) have NO good solution today. ChefFlow's backend is ready. This is the highest-ROI feature to build. Tag: "needs a spec, P0 candidate"
+3. **High priority.** 67% of consumers prefer direct ordering. Third-party apps take 20-30%. Independent artisan food operators (the grazing/artisan archetype) have NO good solution today. ChefFlow's backend is ready. This is the highest-ROI feature to build. Tag: "needs a spec, P0 candidate"
 
 4. **Instagram integration.** The "Order Food" button on Instagram already exists as a standard feature. If ChefFlow provides the ordering endpoint, chefs can link it directly from their Instagram profile. Zero friction. Tag: "needs a spec, include in public ordering"
 

@@ -87,10 +87,10 @@ ChefFlow has deep, verified knowledge about private chef workflows and has built
 
 | Claim                                                  | Tier           | Source                                                                | Notes                           |
 | ------------------------------------------------------ | -------------- | --------------------------------------------------------------------- | ------------------------------- |
-| Artisan producer, board assembly, event-based delivery | T1: VERIFIED   | Beta tester Elena (grazebyelena), direct observation                  | Primary user data from 1 tester |
-| Elena is in Kittery, ME area                           | T1: VERIFIED   | `memory/project_beta_tester_elena.md`                                 | Direct relationship             |
+| Artisan producer, board assembly, event-based delivery | T1: VERIFIED   | Beta tester (grazing operator), direct observation                    | Primary user data from 1 tester |
+| Tester is in coastal ME area                           | T1: VERIFIED   | Direct relationship                                                   | Direct relationship             |
 | Needs sourcing story attached to products              | T2: PARTIAL    | Community impact research mentions it; no product-story feature built | Marketing need, not ops need    |
-| ChefFlow's event system works for this persona         | T3: ASSUMPTION | Elena drove specs but no usage validation                             | Assumed fit, not measured       |
+| ChefFlow's event system works for this persona         | T3: ASSUMPTION | Beta tester drove specs but no usage validation                       | Assumed fit, not measured       |
 
 ### Farm-to-Table Chef
 
@@ -212,15 +212,15 @@ ChefFlow has deep, verified knowledge about private chef workflows and has built
 
 ## G. Public-Facing Surfaces
 
-| Surface               | Tier                  | Source                                                           | What We Know                                                                        | What's Missing                                                               |
-| --------------------- | --------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| **Marketing site**    | T1: VERIFIED (exists) | `app/(public)/` (80+ pages)                                      | Massive public surface with directory, profiles, how-it-works, services, about      | T4: BLIND SPOT on conversion. Zero analytics data on visitor-to-signup rate. |
-| **SEO**               | T4: BLIND SPOT        | No data                                                          | Nothing. No keyword research, no search console data, no organic traffic data.      | What do private chefs search when looking for tools?                         |
-| **Content strategy**  | T4: BLIND SPOT        | No data                                                          | No content marketing plan. No blog. No educational content.                         | What content attracts the target persona organically?                        |
-| **Social proof**      | T4: BLIND SPOT        | No data                                                          | 1 beta tester (Elena). No testimonials, no case studies, no usage metrics to share. | Cannot demonstrate product value to prospects.                               |
-| **Onboarding funnel** | T3: ASSUMPTION        | Onboarding is opt-in, non-blocking (CLAUDE.md rule)              | Onboarding exists but time-to-value never measured.                                 | How long until a new chef gets value? What's the drop-off?                   |
-| **Embeddable widget** | T1: VERIFIED (built)  | `public/embed/chefflow-widget.js`, `app/embed/inquiry/[chefId]/` | Self-contained vanilla JS widget, production-ready                                  | T4: BLIND SPOT on effectiveness. No data on inquiry conversion via widget.   |
-| **E-Phone Book**      | T3: ASSUMPTION        | `memory/project_ephonebook_vision.md`                            | Vision documented. External food operator directory.                                | Nothing built. No market validation.                                         |
+| Surface               | Tier                  | Source                                                           | What We Know                                                                   | What's Missing                                                               |
+| --------------------- | --------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| **Marketing site**    | T1: VERIFIED (exists) | `app/(public)/` (80+ pages)                                      | Massive public surface with directory, profiles, how-it-works, services, about | T4: BLIND SPOT on conversion. Zero analytics data on visitor-to-signup rate. |
+| **SEO**               | T4: BLIND SPOT        | No data                                                          | Nothing. No keyword research, no search console data, no organic traffic data. | What do private chefs search when looking for tools?                         |
+| **Content strategy**  | T4: BLIND SPOT        | No data                                                          | No content marketing plan. No blog. No educational content.                    | What content attracts the target persona organically?                        |
+| **Social proof**      | T4: BLIND SPOT        | No data                                                          | 1 beta tester. No testimonials, no case studies, no usage metrics to share.    | Cannot demonstrate product value to prospects.                               |
+| **Onboarding funnel** | T3: ASSUMPTION        | Onboarding is opt-in, non-blocking (CLAUDE.md rule)              | Onboarding exists but time-to-value never measured.                            | How long until a new chef gets value? What's the drop-off?                   |
+| **Embeddable widget** | T1: VERIFIED (built)  | `public/embed/chefflow-widget.js`, `app/embed/inquiry/[chefId]/` | Self-contained vanilla JS widget, production-ready                             | T4: BLIND SPOT on effectiveness. No data on inquiry conversion via widget.   |
+| **E-Phone Book**      | T3: ASSUMPTION        | `memory/project_ephonebook_vision.md`                            | Vision documented. External food operator directory.                           | Nothing built. No market validation.                                         |
 
 ---
 
@@ -488,7 +488,7 @@ ChefFlow has deep, verified knowledge about private chef workflows and has built
 
 **Question:** Can we collect 3 credible testimonials from real food operators within 30 days?
 
-**Research method:** Direct outreach to Elena + any other contacts. Survey follow-up asking for testimonial permission.
+**Research method:** Direct outreach to beta testers + any other contacts. Survey follow-up asking for testimonial permission.
 
 **Multi-lens analysis:**
 

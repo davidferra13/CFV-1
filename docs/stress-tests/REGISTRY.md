@@ -29,12 +29,12 @@ Failed:      0 files
 
 ## Persona Registry
 
-| #   | Label                | Type                         | Date            | Score                                     | Method                                      | Report                                                      | Key Finding                                                                                                           |
-| --- | -------------------- | ---------------------------- | --------------- | ----------------------------------------- | ------------------------------------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| 1   | Chef Bob             | Chef (solo private)          | Defined 2026-04 | --                                        | 14-day agent walkthrough (NOT YET EXECUTED) | `docs/prompts/chef-bob-agent.md`                            | ~1,100 actions cataloged. Zero days completed.                                                                        |
-| 2   | Client Joy           | Client (home dinner host)    | 2026-04         | ~65/100 (estimated from dimension scores) | 6-phase agent walkthrough (COMPLETED)       | `reports/client-joy-validation/summary.md`                  | 26 bugs. Trust 7.7, Clarity 6.0, Speed 6.5, Delight 6.3. Quote acceptance = biggest trust gap. Hub terminology chaos. |
-| 3   | Sophie Kaplan        | Partner (hyper-engaged host) | 2026-04         | -- (design persona, not scored)           | Spec-driven evaluation                      | `docs/specs/sophie-kaplan-dinner-circle-control-surface.md` | All data exists in DB; gap is display/aggregation. 3 new components specced.                                          |
-| 4   | Elena (grazebyelena) | Chef (grazing/artisan)       | 2026-04         | -- (not formally tested)                  | Real beta tester observation                | `memory/project_beta_tester_elena.md`                       | Artisan food producer archetype. Needs e-commerce/public ordering. Social-to-order pipeline.                          |
+| #   | Label         | Type                         | Date            | Score                                     | Method                                      | Report                                                      | Key Finding                                                                                                           |
+| --- | ------------- | ---------------------------- | --------------- | ----------------------------------------- | ------------------------------------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| 1   | Chef Bob      | Chef (solo private)          | Defined 2026-04 | --                                        | 14-day agent walkthrough (NOT YET EXECUTED) | `docs/prompts/chef-bob-agent.md`                            | ~1,100 actions cataloged. Zero days completed.                                                                        |
+| 2   | Client Joy    | Client (home dinner host)    | 2026-04         | ~65/100 (estimated from dimension scores) | 6-phase agent walkthrough (COMPLETED)       | `reports/client-joy-validation/summary.md`                  | 26 bugs. Trust 7.7, Clarity 6.0, Speed 6.5, Delight 6.3. Quote acceptance = biggest trust gap. Hub terminology chaos. |
+| 3   | Sophie Kaplan | Partner (hyper-engaged host) | 2026-04         | -- (design persona, not scored)           | Spec-driven evaluation                      | `docs/specs/sophie-kaplan-dinner-circle-control-surface.md` | All data exists in DB; gap is display/aggregation. 3 new components specced.                                          |
+| 4   | (removed)     | Chef (grazing/artisan)       | 2026-04         | -- (not formally tested)                  | Real beta tester observation                | (removed)                                                   | Artisan food producer archetype. Needs e-commerce/public ordering. Social-to-order pipeline.                          |
 
 ### Research-Only Personas (Not Formally Tested)
 
@@ -70,7 +70,7 @@ Unique gaps discovered across all persona work (formal + informal):
 | 4   | Re-booking ignores returning client data (no pre-fill)      | Client Joy | EXPAND       | Open       |
 | 5   | No vendor portal or purchase order surface                  | Research   | EXPAND       | Open       |
 | 6   | No delivery tracking for meal prep                          | Research   | EXPAND       | Open       |
-| 7   | No e-commerce/public ordering for artisan producers         | Elena      | OUT-OF-SCOPE | Documented |
+| 7   | No e-commerce/public ordering for artisan producers         | Tester #4  | OUT-OF-SCOPE | Documented |
 | 8   | Dinner Circle host control surface insufficient             | Sophie     | EXPAND       | Specced    |
 | 9   | No BEO generation for catering                              | Research   | OUT-OF-SCOPE | Documented |
 | 10  | No supplier CRM for farm-to-table sourcing                  | Research   | EXPAND       | Open       |
@@ -81,7 +81,7 @@ Unique gaps discovered across all persona work (formal + informal):
 
 ```
 Total personas formally tested:  1 (Joy)
-Total personas defined:          4 (Bob, Joy, Sophie, Elena)
+Total personas defined:          4 (Bob, Joy, Sophie, Tester #4)
 Research personas cataloged:     13
 Unique gaps found:               10
 New gaps per persona (avg):      -- (insufficient data)

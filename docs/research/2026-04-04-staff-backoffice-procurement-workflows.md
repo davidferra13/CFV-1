@@ -222,7 +222,7 @@ These are the places where the manual, relationship-based system breaks down:
 
 ## Gaps and Unknowns
 
-- No primary-source data from ChefFlow actual users on their specific procurement workflows. Elena (grazebyElena) grazing board model likely differs meaningfully from private dinner chef patterns.
+- No primary-source data from ChefFlow actual users on their specific procurement workflows. A beta tester's grazing board model likely differs meaningfully from private dinner chef patterns.
 - Sysco/US Foods adoption among the target user base is unknown. If users are doing volume (20+ events/month), broadline distributor workflows become relevant.
 - Whether ChefFlow users want a digital BEO distribution tool or prefer the current informal model is unvalidated.
 - Staff backup pool demand is unvalidated. Most private chefs at the solo or 2-3 person scale absorb cancellations rather than systematize against them.

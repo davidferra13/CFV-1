@@ -156,7 +156,7 @@
 
 ### 4.2 Who Sees What
 
-**Q30:** Should beta testers (like Elena) ever see OpenClaw-sourced data? If so, how should it be presented?
+**Q30:** Should beta testers ever see OpenClaw-sourced data? If so, how should it be presented?
 
 > _Your answer:_
 

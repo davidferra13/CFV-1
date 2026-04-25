@@ -6,7 +6,7 @@
 
 ## Origin Context
 
-ChefFlow is preparing for its first beta tester demo (Grace/grazebyelena, a private chef/caterer). Grace's pain points include admin overload, food cost/ordering/prep lists/prep times automation, handing kitchen management to a sous chef, and organizational tools designed by a chef. She has been trying to build her own management app for 2 years, tried Monday.com and other platforms, and concluded "none were designed by a chef." She currently tracks every step with a client in a spreadsheet.
+ChefFlow is preparing for its first beta tester demo with a private chef/caterer. Their pain points include admin overload, food cost/ordering/prep lists/prep times automation, handing kitchen management to a sous chef, and organizational tools designed by a chef. They have been trying to build their own management app for 2 years, tried Monday.com and other platforms, and concluded "none were designed by a chef." They currently track every step with a client in a spreadsheet.
 
 This research validates and informs our component-aware prep scheduling spec (`docs/specs/component-aware-prep-scheduling.md`), which connects menu component data (make-ahead windows, prep day offsets, stations) to the event scheduling engine.
 

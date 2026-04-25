@@ -289,7 +289,7 @@ These are the questions that must be answered to align the platform's direction.
 
 7. **Client acquisition channel:** Clients can find chefs through the directory (`/chefs`), individual chef profiles (`/chef/[slug]`), the embeddable widget, the food operator directory (`/nearby`), or direct links. Which channel should receive the most investment?
 
-8. **Beta tester pipeline:** Elena (grazing board operator, Kittery area) is the first external tester. What does the next-10-users cohort look like? Same archetype or diversified?
+8. **Beta tester pipeline:** A grazing board operator is the first external tester. What does the next-10-users cohort look like? Same archetype or diversified?
 
 ### Feature Strategy
 
@@ -356,7 +356,7 @@ These are the questions that must be answered to align the platform's direction.
 | Audit documentation    | 8,600+ lines across 6 docs                |
 | Build state            | Green (2026-04-03)                        |
 | Monetization           | All features free, voluntary support only |
-| External beta testers  | 1 (Elena)                                 |
+| External beta testers  | 1                                         |
 
 ---
 

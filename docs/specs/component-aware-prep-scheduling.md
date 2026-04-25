@@ -26,7 +26,7 @@
 
 ### Raw Signal
 
-Grace (grazebyelena) is a private chef/caterer who's been trying to build her own management app for 2 years. She said the exact thing she needs: "I'm working on a flow with food cost, ordering, prep list & prep times so I can hand over kitchen management to a sous chef." She currently tracks every single step with a client in a spreadsheet. She tried Monday.com and other platforms but "it's clear none were designed by a chef."
+A beta tester (private chef/caterer) has been trying to build their own management app for 2 years. They said the exact thing they need: "I'm working on a flow with food cost, ordering, prep list & prep times so I can hand over kitchen management to a sous chef." They currently track every single step with a client in a spreadsheet. They tried Monday.com and other platforms but "it's clear none were designed by a chef."
 
 She wants "a gatekeeping system that understands where you are in every single inquiry" and "the second somebody confirms a menu, all documents can be made." She's self-described as "not organized" and needs the system to impose structure for her.
 

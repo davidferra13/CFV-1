@@ -160,7 +160,7 @@ Archived entries from 2026-03-31 through 2026-04-03. Moved from `docs/session-lo
 ## 2026-03-31 ~22:00 EST
 
 - Agent: Planner (Claude Opus 4.6)
-- Task: Spec for component-aware prep auto-scheduling. Origin: Grace (grazebyelena) beta tester conversation. Closes prep 8/10 → 10/10 gap.
+- Task: Spec for component-aware prep auto-scheduling. Origin: beta tester conversation. Closes prep 8/10 → 10/10 gap.
 - Status: completed
 - Build state on arrival: green (5511b1e9)
 - Files touched: docs/specs/component-aware-prep-scheduling.md (new), docs/session-log.md
