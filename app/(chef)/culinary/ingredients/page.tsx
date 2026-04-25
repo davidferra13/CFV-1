@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import { requireChef } from '@/lib/auth/get-user'
 import { getIngredients } from '@/lib/recipes/actions'
+import { getFlaggedPrices } from '@/lib/pricing/get-flagged-prices'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import {
@@ -15,6 +16,7 @@ import {
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 import { PriceAttribution } from '@/components/pricing/price-attribution'
+import { PriceFlagBanner } from '@/components/pricing/price-flag-banner'
 import { AddIngredientForm } from '@/components/culinary/add-ingredient-form'
 import { PriceWatchList } from '@/components/pricing/price-watch-list'
 import { ImageWithFallback } from '@/components/pricing/image-with-fallback'
@@ -46,6 +48,7 @@ const CATEGORY_STYLES: Record<string, string> = {
 export default async function IngredientsPage() {
   await requireChef()
   const ingredients = await getIngredients()
+  const flaggedPrices = await getFlaggedPrices()
 
   const stapleCount = ingredients.filter((i: any) => i.is_staple).length
   const pricedCount = ingredients.filter((i: any) => i.average_price_cents != null).length
@@ -75,6 +78,8 @@ export default async function IngredientsPage() {
         </div>
         <p className="text-stone-500 mt-1">Your pantry and ingredient price library</p>
       </div>
+
+      <PriceFlagBanner flagged={flaggedPrices} />
 
       {ingredients.length > 0 && (
         <div className="grid grid-cols-3 gap-4">
