@@ -66,3 +66,30 @@ This persona is not asking for generic cannabis support; he needs an integrated 
 ## 6) Two-Sentence Verdict
 
 ChefFlow is unusually well-positioned compared with generic chef tools because it already includes a cannabis vertical and broad operational infrastructure, but it does not yet satisfy the persona’s defining need: deterministic, molecule-level controlled dosing operations. For Dr. Julien Armand’s Michelin-grade use case today, ChefFlow is a strong **foundation** rather than a complete fit, and should be treated as **production-adjacent pending dose/traceability hardening**.
+
+---
+
+## Build Follow-Up (2026-04-25)
+
+Implemented one focused vertical slice from Quick Win #3: a **compliance checklist widget on `/cannabis/events`** rendered on each cannabis event card.
+
+### What was built
+
+- Added derived checklist states for each cannabis event:
+  - source batch linked
+  - consent signed
+  - dose plan complete
+  - post-service log complete
+- Wired checklist derivation into the cannabis events server action using existing tenant-scoped data:
+  - `cannabis_event_details` (consent)
+  - `event_cannabis_course_config` (dose plan)
+  - latest `cannabis_control_packet_snapshots` + `cannabis_control_packet_reconciliations` (source batch + post-service logging)
+- Added visual checklist pills to the cannabis event card UI so operators can quickly see operational readiness before opening control packets.
+- Added focused unit coverage for checklist derivation logic.
+
+### What remains
+
+- This slice is an event-list readiness indicator only; it does not yet implement:
+  - deterministic per-guest/per-course dose-curve authoring engine
+  - in-service physiological/subjective response telemetry capture
+  - one-click regulator-grade export packet for ingredient→dose→guest traceability
