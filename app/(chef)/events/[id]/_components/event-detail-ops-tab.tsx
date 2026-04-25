@@ -10,6 +10,7 @@ import { EventCollaboratorsPanel } from '@/components/events/event-collaborators
 import { TravelIngredientsPanel } from '@/components/events/travel-ingredients-panel'
 import { TempLogPanel } from '@/components/events/temp-log-panel'
 import { TempSafetyPanel } from '@/components/ai/temp-safety-panel'
+import { AdaptiveSourcingPanel } from '@/components/events/adaptive-sourcing-panel'
 import { ShoppingSubstitutions } from '@/components/events/shopping-substitutions'
 import { MenuModifications } from '@/components/events/menu-modifications'
 import { AvailableLeftovers } from '@/components/events/available-leftovers'
@@ -23,15 +24,18 @@ import { AllergyCardButton } from '@/components/events/allergy-card-button'
 import { ReadinessGatePanel } from '@/components/events/readiness-gate-panel'
 import { PrepPlanPanel } from '@/components/events/prep-plan-panel'
 import { ServiceSimulationPanel } from '@/components/events/service-simulation-panel'
+import { LiveServiceTracker } from '@/components/events/live-service-tracker'
 import { EventTransitions } from '@/components/events/event-transitions'
 import { EventClosureActions } from '@/components/events/event-closure-actions'
 import { EventPhotoGallery } from '@/components/events/event-photo-gallery'
+import { CrewCircleCard } from '@/components/events/crew-circle-card'
 import { RecipeCapturePrompt } from '@/components/recipes/recipe-capture-prompt'
 import { EventAmbiancePanel } from '@/components/events/event-ambiance-panel'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import type { ReadinessResult } from '@/lib/events/readiness'
 import type { ServiceSimulationPanelState } from '@/lib/service-simulation/types'
+import type { CourseProgress } from '@/lib/service-execution/actions'
 
 type EventDetailOpsTabProps = {
   activeTab: EventDetailTab
@@ -65,6 +69,7 @@ type EventDetailOpsTabProps = {
   hasAllergyData: boolean
   eventTotalCents: number
   serviceSimulationState: ServiceSimulationPanelState | null
+  courseProgress: CourseProgress[]
 }
 
 export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
@@ -100,10 +105,15 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
     hasAllergyData,
     eventTotalCents,
     serviceSimulationState,
+    courseProgress,
   } = props
 
   return (
     <EventDetailSection tab="ops" activeTab={activeTab}>
+      {event.status === 'in_progress' && (
+        <LiveServiceTracker eventId={event.id} initialCourses={courseProgress} />
+      )}
+
       {/* Time Tracking */}
       {canTrackTime && (
         <TimeTracking
@@ -157,6 +167,11 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
         </Card>
       )}
 
+      {/* Crew Circle */}
+      {!['draft', 'cancelled'].includes(event.status) && (
+        <CrewCircleCard eventId={event.id} tenantId={event.tenant_id} />
+      )}
+
       {/* AI Staff Briefing */}
       {!['draft', 'cancelled'].includes(event.status) && (
         <StaffBriefingAIPanel eventId={event.id} />
@@ -193,6 +208,9 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
       {['in_progress', 'completed'].includes(event.status) && (
         <TempSafetyPanel eventId={event.id} />
       )}
+
+      {/* Adaptive Sourcing - ingredient availability tracking */}
+      {event.status !== 'cancelled' && eventMenus && <AdaptiveSourcingPanel eventId={event.id} />}
 
       {/* Shopping Substitutions â€” available for any non-draft event */}
       {!['draft', 'cancelled'].includes(event.status) && (
