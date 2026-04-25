@@ -34,6 +34,13 @@ interface Props {
   partnerLocationId?: string | null
   selectedLocation?: PublicChefLocationExperience | null
   circleId?: string | null
+  defaultValues?: {
+    full_name?: string
+    email?: string
+    phone?: string
+    address?: string
+    dietary_notes?: string
+  }
 }
 
 interface FormData {
@@ -146,6 +153,30 @@ function clearDraft(slug: string) {
   }
 }
 
+function hasPrefillValues(defaultValues: Props['defaultValues']): boolean {
+  return Boolean(
+    defaultValues &&
+    [
+      defaultValues.full_name,
+      defaultValues.email,
+      defaultValues.phone,
+      defaultValues.address,
+      defaultValues.dietary_notes,
+    ].some((value) => typeof value === 'string' && value.trim().length > 0)
+  )
+}
+
+function createInitialDietaryIntake(defaultValues: Props['defaultValues']): DietaryIntakeValue {
+  const dietaryNotes = defaultValues?.dietary_notes?.trim()
+  if (!dietaryNotes) return emptyDietaryIntake()
+
+  return {
+    ...emptyDietaryIntake(),
+    accommodationFlag: 'yes',
+    additionalNotes: dietaryNotes,
+  }
+}
+
 export function PublicInquiryForm({
   chefSlug,
   chefName,
@@ -155,16 +186,18 @@ export function PublicInquiryForm({
   partnerLocationId,
   selectedLocation,
   circleId,
+  defaultValues,
 }: Props) {
+  const hasDefaultValues = hasPrefillValues(defaultValues)
   const [formData, setFormData] = useState<FormData>({
-    full_name: '',
-    address: '',
+    full_name: defaultValues?.full_name ?? '',
+    address: defaultValues?.address ?? '',
     month: '',
     day: '',
     year: '',
     serve_time: '',
-    email: '',
-    phone: '',
+    email: defaultValues?.email ?? '',
+    phone: defaultValues?.phone ?? '',
     guest_count: '',
     occasion: '',
     budget: '',
@@ -174,7 +207,9 @@ export function PublicInquiryForm({
     website_url: '',
   })
 
-  const [dietaryIntake, setDietaryIntake] = useState<DietaryIntakeValue>(emptyDietaryIntake())
+  const [dietaryIntake, setDietaryIntake] = useState<DietaryIntakeValue>(() =>
+    createInitialDietaryIntake(defaultValues)
+  )
   const [errors, setErrors] = useState<FormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
@@ -204,9 +239,11 @@ export function PublicInquiryForm({
 
   // Restore draft from sessionStorage on mount
   useEffect(() => {
+    if (hasDefaultValues) return
+
     const draft = loadDraft(chefSlug)
     if (draft) setFormData(draft)
-  }, [chefSlug])
+  }, [chefSlug, hasDefaultValues])
 
   // Save draft on every form change
   const updateFormData = useCallback(
