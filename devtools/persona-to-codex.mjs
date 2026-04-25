@@ -1,12 +1,17 @@
 #!/usr/bin/env node
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, unlinkSync, writeFileSync } from "node:fs";
+import { execFile } from "node:child_process";
 import { join, basename, extname } from "node:path";
+import { promisify } from "node:util";
+
+const execFileAsync = promisify(execFile);
 
 const ROOT = process.cwd();
 const QUEUE_DIR = join(ROOT, "system", "codex-queue");
 const PERSONA_ROOT = join(ROOT, "Chef Flow Personas");
 const UNCOMPLETED = join(PERSONA_ROOT, "Uncompleted");
 const COMPLETED = join(PERSONA_ROOT, "Completed");
+const ENV_FILE = join(ROOT, "system", "codex-env.txt");
 
 const TYPES = ["Chef", "Client", "Guest", "Vendor", "Staff", "Partner", "Public"];
 const TAG = "[persona-to-codex]";
@@ -28,12 +33,23 @@ function titleCase(str) {
 }
 
 function parseArgs(argv) {
-  const options = { limit: Infinity, dryRun: false };
+  const options = { limit: Infinity, dryRun: false, submit: false, env: null };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--limit") options.limit = Math.max(1, Number(argv[i + 1] ?? "3"));
     if (argv[i] === "--dry-run") options.dryRun = true;
+    if (argv[i] === "--submit") options.submit = true;
+    if (argv[i] === "--env") options.env = argv[i + 1] || null;
   }
   return options;
+}
+
+function resolveEnvId(cliEnv) {
+  if (cliEnv) return cliEnv;
+  if (existsSync(ENV_FILE)) {
+    const stored = readFileSync(ENV_FILE, "utf8").trim();
+    if (stored) return stored;
+  }
+  return null;
 }
 
 function collectPersonaFiles() {
@@ -59,6 +75,22 @@ function collectPersonaFiles() {
 function extractName(filename) {
   const stem = basename(filename, extname(filename));
   return titleCase(stem.replace(/[-_]/g, " ").trim());
+}
+
+async function submitToCodex(specContent, slug, envId) {
+  try {
+    const { stdout, stderr } = await execFileAsync("npx", [
+      "@openai/codex", "cloud", "exec",
+      "--env", envId,
+      "--branch", `codex/persona-${slug}`,
+      specContent,
+    ], { cwd: ROOT, timeout: 60000, maxBuffer: 1024 * 1024 });
+    const output = (stdout + stderr).trim();
+    return { success: true, output };
+  } catch (err) {
+    const detail = err.stderr || err.stdout || err.message;
+    return { success: false, output: detail.trim() };
+  }
 }
 
 function generateSpec(personaName, type, slug, content, date) {
@@ -202,7 +234,7 @@ ChefFlow is an operating system for food service professionals (primarily solo p
 `;
 }
 
-function main() {
+async function main() {
   const options = parseArgs(process.argv.slice(2));
   const files = collectPersonaFiles();
 
@@ -214,12 +246,26 @@ function main() {
   const toProcess = files.slice(0, options.limit);
   console.log(`${TAG} ${toProcess.length} file(s) found`);
 
+  // Resolve Codex env ID for --submit mode
+  let envId = null;
+  if (options.submit) {
+    envId = resolveEnvId(options.env);
+    if (!envId) {
+      console.error(`${TAG} --submit requires a Codex environment ID.`);
+      console.error(`${TAG} Either pass --env ENV_ID or save it to system/codex-env.txt`);
+      console.error(`${TAG} Find your env ID at chatgpt.com/codex > Settings > Environments`);
+      process.exit(1);
+    }
+    console.log(`${TAG} Submit mode ON (env: ${envId})`);
+  }
+
   if (!options.dryRun) {
     mkdirSync(QUEUE_DIR, { recursive: true });
   }
 
   const date = new Date().toISOString().slice(0, 10);
   let generated = 0;
+  let submitted = 0;
 
   for (const { type, filename, path: filePath } of toProcess) {
     const stem = basename(filename, extname(filename));
@@ -253,7 +299,7 @@ function main() {
     }
 
     if (options.dryRun) {
-      console.log(`${TAG} Would generate: system/codex-queue/persona-${slug}.md (${type})`);
+      console.log(`${TAG} Would generate: system/codex-queue/persona-${slug}.md (${type})${options.submit ? " + submit to Codex" : ""}`);
       continue;
     }
 
@@ -270,12 +316,27 @@ function main() {
 
     console.log(`${TAG} Generated: system/codex-queue/persona-${slug}.md (${type})`);
     generated++;
+
+    // Submit to Codex if --submit
+    if (options.submit && envId) {
+      console.log(`${TAG} Submitting to Codex: persona-${slug}...`);
+      const result = await submitToCodex(spec, slug, envId);
+      if (result.success) {
+        console.log(`${TAG} Submitted: persona-${slug} -> Codex cloud`);
+        submitted++;
+      } else {
+        console.log(`${TAG} Submit failed: persona-${slug}: ${result.output}`);
+      }
+    }
   }
 
   if (options.dryRun) {
     console.log(`${TAG} Dry run complete. ${toProcess.length} item(s) would be processed.`);
   } else {
     console.log(`${TAG} Done. ${generated} spec(s) queued in system/codex-queue/`);
+    if (options.submit) {
+      console.log(`${TAG} ${submitted}/${generated} submitted to Codex cloud.`);
+    }
   }
 }
 
