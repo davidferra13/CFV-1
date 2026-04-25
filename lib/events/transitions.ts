@@ -16,6 +16,7 @@ import {
   TRANSITION_PERMISSIONS,
   type TransitionActor,
 } from './fsm'
+import { executeInteraction } from '@/lib/interactions'
 
 // Re-export EventStatus so existing consumers that import from transitions.ts still work
 export type { EventStatus }
@@ -157,6 +158,34 @@ export async function transitionEvent({
 
   const transitionedBy = actor?.id || null
 
+  // Pre-publish default guard. Draft events can be worked on loosely, but the
+  // public/proposed state should not carry missing arrival, location, or pricing basics.
+  if (fromStatus === 'draft' && toStatus === 'proposed' && !isSystemTransition) {
+    try {
+      const { getEventDefaultFlowSnapshotForTenant } =
+        await import('@/lib/events/default-event-flow-data')
+      const snapshot = await getEventDefaultFlowSnapshotForTenant(eventId, event.tenant_id, {
+        db,
+        pricing: null,
+      })
+      const blockers =
+        snapshot?.publishReadiness.issues.filter((issue) => issue.severity === 'blocker') ?? []
+
+      if (blockers.length > 0) {
+        throw new Error(`Cannot publish yet: ${blockers.map((issue) => issue.label).join('; ')}`)
+      }
+    } catch (publishReadinessErr: any) {
+      if (publishReadinessErr.message?.startsWith('Cannot publish yet:')) {
+        throw publishReadinessErr
+      }
+      log.events.error('Pre-publish readiness check failed', {
+        error: publishReadinessErr,
+        context: { eventId, fromStatus, toStatus },
+      })
+      throw new Error('Cannot publish yet: pre-event readiness could not be verified')
+    }
+  }
+
   // ── Readiness Gate Check (pre-transition) ────────────────────────────────
   // Evaluate gates for this transition. Hard blocks (e.g., unconfirmed anaphylaxis)
   // throw and abort for chef-initiated transitions. Soft warnings are logged in
@@ -242,15 +271,39 @@ export async function transitionEvent({
       const db: any = createServerClient()
       const { data: conflicts } = await db
         .from('events')
-        .select('id, occasion, event_date')
+        .select('id, occasion, event_date, serve_time, departure_time, arrival_time')
         .eq('tenant_id', event.tenant_id)
         .eq('event_date', event.event_date)
         .in('status', ['confirmed', 'in_progress'])
         .neq('id', eventId)
 
       if (conflicts && conflicts.length > 0) {
-        const conflictNames = conflicts.map((c: any) => c.occasion || 'Untitled event').join(', ')
-        readinessWarnings.push(`Same-day conflict: ${conflictNames} is also confirmed on this date`)
+        for (const c of conflicts) {
+          const conflictName = c.occasion || 'Untitled event'
+          // Calculate gap if both events have time data
+          const thisStart = event.arrival_time || event.serve_time
+          const otherEnd = c.departure_time
+          const otherStart = c.arrival_time || c.serve_time
+          const thisEnd = (event as any).departure_time
+
+          let gapWarning = ''
+          if (thisStart && otherEnd) {
+            const gapMs = new Date(thisStart).getTime() - new Date(otherEnd).getTime()
+            const gapMin = Math.round(gapMs / 60000)
+            if (gapMin >= 0 && gapMin < 120) {
+              gapWarning = ` Only ${gapMin} min between events; account for breakdown, travel, and setup.`
+            }
+          } else if (otherStart && thisEnd) {
+            const gapMs = new Date(otherStart).getTime() - new Date(thisEnd).getTime()
+            const gapMin = Math.round(gapMs / 60000)
+            if (gapMin >= 0 && gapMin < 120) {
+              gapWarning = ` Only ${gapMin} min between events; account for breakdown, travel, and setup.`
+            }
+          }
+          readinessWarnings.push(
+            `Same-day conflict: ${conflictName} is also confirmed on this date.${gapWarning}`
+          )
+        }
       }
     } catch (err) {
       log.events.warn('Conflict check failed (non-blocking)', { error: err })
@@ -343,6 +396,67 @@ export async function transitionEvent({
   revalidatePath('/dashboard')
   revalidatePath('/finance')
   revalidatePath('/calendar')
+
+  const interactionAction =
+    toStatus === 'accepted'
+      ? 'accept_event'
+      : toStatus === 'cancelled'
+        ? 'decline_event'
+        : toStatus === 'paid'
+          ? 'mark_paid'
+          : 'update_event'
+
+  await executeInteraction({
+    action_type: interactionAction,
+    actor_id: transitionedBy ?? 'system',
+    actor: {
+      role: (actor?.role as any) ?? (isSystemTransition ? 'system' : 'system'),
+      actorId: transitionedBy ?? 'system',
+      entityId: actor?.entityId ?? null,
+      tenantId: event.tenant_id,
+    },
+    target_type: 'event',
+    target_id: eventId,
+    context_type: 'client',
+    context_id: event.client_id,
+    visibility: 'private',
+    metadata: {
+      tenant_id: event.tenant_id,
+      client_id: event.client_id,
+      event_id: eventId,
+      from_status: fromStatus,
+      to_status: toStatus,
+      source: 'event_transition',
+      suppress_interaction_notifications: true,
+      suppress_interaction_activity: true,
+      suppress_interaction_automation: true,
+    },
+    idempotency_key: `${interactionAction}:${eventId}:${fromStatus}:${toStatus}`,
+  })
+
+  if (toStatus === 'completed') {
+    await executeInteraction({
+      action_type: 'auto_followup',
+      actor_id: 'system',
+      actor: { role: 'system', actorId: 'system', tenantId: event.tenant_id },
+      target_type: 'event',
+      target_id: eventId,
+      context_type: 'client',
+      context_id: event.client_id,
+      visibility: 'system',
+      metadata: {
+        tenant_id: event.tenant_id,
+        client_id: event.client_id,
+        event_id: eventId,
+        followup_type: 'completed_event',
+        source: 'event_transition',
+        suppress_interaction_notifications: true,
+        suppress_interaction_activity: true,
+        suppress_interaction_automation: true,
+      },
+      idempotency_key: `auto_followup:completed_event:${eventId}`,
+    })
+  }
 
   // Bust Remy context cache so AI reflects the status change immediately
   try {
@@ -1090,6 +1204,22 @@ export async function transitionEvent({
 
   // Circle posts: accepted + paid + in_progress (confirmed + completed handled by circleFirstNotify above)
 
+  if (toStatus === 'cancelled') {
+    // Notify circle about cancellation
+    try {
+      const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
+      await circleFirstNotify({
+        eventId: eventId,
+        inquiryId: null,
+        notificationType: 'event_confirmed',
+        body: 'This event has been cancelled. Your chef will reach out with more details.',
+        metadata: { cancelled: true, reason: metadata.reason ?? null },
+      })
+    } catch (err) {
+      console.error('[cancelEvent] Circle notification failed (non-blocking):', err)
+    }
+  }
+
   if (toStatus === 'accepted' && fromStatus === 'proposed') {
     try {
       const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
@@ -1175,6 +1305,15 @@ export async function transitionEvent({
       await executeEventDeduction(eventId)
     } catch (deductErr) {
       log.events.warn('Inventory auto-deduction failed (non-blocking)', { error: deductErr })
+    }
+
+    // Auto-log menu history for continuity tracking (non-blocking)
+    // Records what was served to this client so repeat detection and menu progression work.
+    try {
+      const { autoLogMenuFromEvent } = await import('@/lib/menus/menu-history-actions')
+      await autoLogMenuFromEvent(eventId)
+    } catch (menuLogErr) {
+      log.events.warn('Menu history auto-log failed (non-blocking)', { error: menuLogErr })
     }
 
     await runCompletedEventPostProcessing(eventId, event.tenant_id)
@@ -1435,27 +1574,44 @@ export async function transitionEvent({
     }
   }
 
-  // Archive Dinner Circle when event completes (non-blocking)
-  // Guests can still read the history, but no new messages can be posted.
+  // Keep the Dinner Circle active when event completes (non-blocking).
+  // The circle is the permanent container for past proof, attendee retention,
+  // notifications, and future events, so completion should add recap value
+  // without closing the group.
   if (toStatus === 'completed' && fromStatus === 'in_progress') {
     try {
       const adminSupa = createServerClient({ admin: true })
-      // Find circle linked to this event
       const { data: linkedGroup } = await adminSupa
         .from('hub_groups')
         .select('id')
         .eq('event_id', eventId)
-        .eq('is_active', true)
         .maybeSingle()
 
       if (linkedGroup?.id) {
-        await adminSupa
-          .from('hub_groups')
-          .update({ is_active: false, updated_at: new Date().toISOString() })
-          .eq('id', linkedGroup.id)
+        const { data: anyMember } = await adminSupa
+          .from('hub_group_members')
+          .select('profile_id')
+          .eq('group_id', linkedGroup.id)
+          .limit(1)
+          .maybeSingle()
+
+        if (anyMember?.profile_id) {
+          await adminSupa.from('hub_messages').insert({
+            group_id: linkedGroup.id,
+            author_profile_id: anyMember.profile_id,
+            message_type: 'system',
+            system_event_type: 'event_completed',
+            body: 'Event completed. This Dinner Circle stays open for photos, feedback, recaps, and future event updates.',
+            system_metadata: {
+              event_id: eventId,
+              source: 'event_transition',
+              retention: 'active_after_completion',
+            },
+          })
+        }
       }
     } catch (err) {
-      log.events.warn('Circle archive on completion failed (non-blocking)', { error: err })
+      log.events.warn('Circle retention note on completion failed (non-blocking)', { error: err })
     }
   }
 
