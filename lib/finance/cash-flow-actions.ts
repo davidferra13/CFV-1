@@ -98,6 +98,21 @@ export async function getCashFlowForecast(days: 30 | 60 | 90 = 30): Promise<Cash
       .lte('due_date', endDate),
   ])
 
+  // Calculate average daily expense rate from last 90 days for projection
+  const ninetyDaysAgo = addDays(today, -90)
+  const { data: recentExpenses } = await db
+    .from('expenses')
+    .select('amount_cents')
+    .eq('tenant_id', user.tenantId!)
+    .gte('expense_date', ninetyDaysAgo)
+    .lte('expense_date', today)
+
+  const totalRecentExpenseCents = (recentExpenses || []).reduce(
+    (sum: number, e: any) => sum + ((e as any).amount_cents || 0),
+    0
+  )
+  const avgDailyExpenseCents = totalRecentExpenseCents / 90
+
   // Build periods (divide into weeks for 30 days, bi-weekly for 60/90)
   const periodDays = days <= 30 ? 7 : 14
   const periods: CashFlowPeriod[] = []
@@ -138,7 +153,14 @@ export async function getCashFlowForecast(days: 30 | 60 | 90 = 30): Promise<Cash
     const confirmedIn = periodConfirmedIncome + periodRecurring
     const projectedIn = periodProjectedIncome + periodInstallments
     const confirmedOut = periodExpenses
-    const projectedOut = 0
+    // Project expenses based on average daily rate from last 90 days
+    const daysInPeriod = Math.max(
+      1,
+      Math.round(
+        (new Date(periodEnd).getTime() - new Date(cursor).getTime()) / (1000 * 60 * 60 * 24)
+      ) + 1
+    )
+    const projectedOut = Math.round(avgDailyExpenseCents * daysInPeriod)
 
     periods.push({
       label: periodLabel(cursor, periodEnd),
