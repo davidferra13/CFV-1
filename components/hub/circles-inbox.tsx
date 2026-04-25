@@ -4,32 +4,39 @@ import { useState, useTransition, memo, useMemo } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import type { ChefCircleSummary, PipelineStage } from '@/lib/hub/chef-circle-actions'
-import { archiveCircle, createDinnerClub } from '@/lib/hub/chef-circle-actions'
+import { archiveCircle, createDinnerClub, markCircleRead } from '@/lib/hub/chef-circle-actions'
 
 // ---------------------------------------------------------------------------
 // Pipeline stage config
 // ---------------------------------------------------------------------------
 
 const STAGE_CONFIG: Record<PipelineStage, { label: string; color: string; bg: string }> = {
-  new_inquiry:     { label: 'New',         color: 'text-blue-300',   bg: 'bg-blue-500/20' },
-  awaiting_client: { label: 'Waiting',     color: 'text-amber-300',  bg: 'bg-amber-500/20' },
-  awaiting_chef:   { label: 'Action',      color: 'text-red-300',    bg: 'bg-red-500/20' },
-  quoted:          { label: 'Quoted',       color: 'text-violet-300', bg: 'bg-violet-500/20' },
-  accepted:        { label: 'Accepted',     color: 'text-emerald-300', bg: 'bg-emerald-500/20' },
-  paid:            { label: 'Paid',         color: 'text-green-300',  bg: 'bg-green-500/20' },
-  confirmed:       { label: 'Confirmed',    color: 'text-green-300',  bg: 'bg-green-500/20' },
-  in_progress:     { label: 'Live',         color: 'text-orange-300', bg: 'bg-orange-500/20' },
-  completed:       { label: 'Done',         color: 'text-stone-400',  bg: 'bg-stone-500/20' },
-  cancelled:       { label: 'Cancelled',    color: 'text-stone-500',  bg: 'bg-stone-600/20' },
-  declined:        { label: 'Declined',     color: 'text-stone-500',  bg: 'bg-stone-600/20' },
-  expired:         { label: 'Expired',      color: 'text-stone-500',  bg: 'bg-stone-600/20' },
-  active:          { label: 'Active',       color: 'text-purple-300', bg: 'bg-purple-500/20' },
+  new_inquiry: { label: 'New', color: 'text-blue-300', bg: 'bg-blue-500/20' },
+  awaiting_client: { label: 'Waiting', color: 'text-amber-300', bg: 'bg-amber-500/20' },
+  awaiting_chef: { label: 'Action', color: 'text-red-300', bg: 'bg-red-500/20' },
+  quoted: { label: 'Quoted', color: 'text-violet-300', bg: 'bg-violet-500/20' },
+  accepted: { label: 'Accepted', color: 'text-emerald-300', bg: 'bg-emerald-500/20' },
+  paid: { label: 'Paid', color: 'text-green-300', bg: 'bg-green-500/20' },
+  confirmed: { label: 'Confirmed', color: 'text-green-300', bg: 'bg-green-500/20' },
+  in_progress: { label: 'Live', color: 'text-orange-300', bg: 'bg-orange-500/20' },
+  completed: { label: 'Done', color: 'text-stone-400', bg: 'bg-stone-500/20' },
+  cancelled: { label: 'Cancelled', color: 'text-stone-500', bg: 'bg-stone-600/20' },
+  declined: { label: 'Declined', color: 'text-stone-500', bg: 'bg-stone-600/20' },
+  expired: { label: 'Expired', color: 'text-stone-500', bg: 'bg-stone-600/20' },
+  active: { label: 'Active', color: 'text-purple-300', bg: 'bg-purple-500/20' },
 }
 
 type FilterKey = 'all' | 'attention' | 'pipeline' | 'completed'
 
 const PIPELINE_ACTIVE_STAGES: PipelineStage[] = [
-  'new_inquiry', 'awaiting_client', 'awaiting_chef', 'quoted', 'accepted', 'paid', 'confirmed', 'in_progress',
+  'new_inquiry',
+  'awaiting_client',
+  'awaiting_chef',
+  'quoted',
+  'accepted',
+  'paid',
+  'confirmed',
+  'in_progress',
 ]
 
 const PIPELINE_DONE_STAGES: PipelineStage[] = ['completed', 'cancelled', 'declined', 'expired']
@@ -42,6 +49,8 @@ export function CirclesInbox({ circles }: CirclesInboxProps) {
   const [items, setItems] = useState(circles)
   const [filter, setFilter] = useState<FilterKey>('all')
   const [showCreate, setShowCreate] = useState(false)
+  // Snoozed circle IDs with expiry timestamps (client-side only, resets on page reload)
+  const [snoozedIds, setSnoozedIds] = useState<Set<string>>(new Set())
 
   const counts = useMemo(() => {
     const attention = items.filter((c) => c.needs_attention).length
@@ -51,17 +60,18 @@ export function CirclesInbox({ circles }: CirclesInboxProps) {
   }, [items])
 
   const filtered = useMemo(() => {
+    const base = items.filter((c) => !snoozedIds.has(c.id))
     switch (filter) {
       case 'attention':
-        return items.filter((c) => c.needs_attention)
+        return base.filter((c) => c.needs_attention)
       case 'pipeline':
-        return items.filter((c) => PIPELINE_ACTIVE_STAGES.includes(c.pipeline_stage))
+        return base.filter((c) => PIPELINE_ACTIVE_STAGES.includes(c.pipeline_stage))
       case 'completed':
-        return items.filter((c) => PIPELINE_DONE_STAGES.includes(c.pipeline_stage))
+        return base.filter((c) => PIPELINE_DONE_STAGES.includes(c.pipeline_stage))
       default:
-        return items
+        return base
     }
-  }, [items, filter])
+  }, [items, filter, snoozedIds])
 
   const handleArchive = async (groupId: string) => {
     const prev = items
@@ -72,6 +82,42 @@ export function CirclesInbox({ circles }: CirclesInboxProps) {
       setItems(prev)
       toast.error('Failed to archive circle')
     }
+  }
+
+  const handleMarkRead = async (groupId: string) => {
+    const prev = items
+    // Optimistic: set unread_count to 0
+    setItems((items) => items.map((c) => (c.id === groupId ? { ...c, unread_count: 0 } : c)))
+    try {
+      const result = await markCircleRead(groupId)
+      if (!result.success) {
+        setItems(prev)
+        toast.error(result.error ?? 'Failed to mark as read')
+      }
+    } catch {
+      setItems(prev)
+      toast.error('Failed to mark as read')
+    }
+  }
+
+  const handleSnooze = (groupId: string) => {
+    setSnoozedIds((prev) => {
+      const next = new Set(prev)
+      next.add(groupId)
+      return next
+    })
+    toast('Snoozed for this session', {
+      action: {
+        label: 'Undo',
+        onClick: () => {
+          setSnoozedIds((prev) => {
+            const next = new Set(prev)
+            next.delete(groupId)
+            return next
+          })
+        },
+      },
+    })
   }
 
   const emptyState = items.length === 0 && !showCreate
@@ -108,6 +154,15 @@ export function CirclesInbox({ circles }: CirclesInboxProps) {
           />
         </div>
         <div className="flex flex-shrink-0 gap-2">
+          {snoozedIds.size > 0 && (
+            <button
+              type="button"
+              onClick={() => setSnoozedIds(new Set())}
+              className="text-xs text-stone-500 hover:text-stone-300"
+            >
+              {snoozedIds.size} snoozed (show)
+            </button>
+          )}
           <Link
             href="/hub/circles"
             className="rounded-lg bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-300 hover:bg-stone-600"
@@ -148,12 +203,20 @@ export function CirclesInbox({ circles }: CirclesInboxProps) {
       {/* Circle list */}
       <div className="space-y-2">
         {filtered.map((circle) => (
-          <CircleRow key={circle.id} circle={circle} onArchive={handleArchive} />
+          <CircleRow
+            key={circle.id}
+            circle={circle}
+            onArchive={handleArchive}
+            onMarkRead={handleMarkRead}
+            onSnooze={handleSnooze}
+          />
         ))}
 
         {filtered.length === 0 && items.length > 0 && (
           <div className="py-8 text-center text-sm text-stone-500">
-            {filter === 'attention' ? 'Nothing needs your attention right now.' : 'No circles match this filter.'}
+            {filter === 'attention'
+              ? 'Nothing needs your attention right now.'
+              : 'No circles match this filter.'}
           </div>
         )}
       </div>
@@ -183,9 +246,7 @@ function FilterPill({
       type="button"
       onClick={onClick}
       className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap transition-colors ${
-        active
-          ? 'bg-stone-700 text-stone-100'
-          : 'text-stone-400 hover:text-stone-200'
+        active ? 'bg-stone-700 text-stone-100' : 'text-stone-400 hover:text-stone-200'
       }`}
     >
       {label}
@@ -211,15 +272,17 @@ function FilterPill({
 const CircleRow = memo(function CircleRow({
   circle,
   onArchive,
+  onMarkRead,
+  onSnooze,
 }: {
   circle: ChefCircleSummary
   onArchive: (id: string) => void
+  onMarkRead: (id: string) => void
+  onSnooze: (id: string) => void
 }) {
   const timeAgo = circle.last_message_at ? formatTimeAgo(circle.last_message_at) : 'No messages'
   const stage = STAGE_CONFIG[circle.pipeline_stage]
-  const eventDateStr = circle.event_date
-    ? formatEventDate(circle.event_date)
-    : null
+  const eventDateStr = circle.event_date ? formatEventDate(circle.event_date) : null
 
   return (
     <div
@@ -238,13 +301,13 @@ const CircleRow = memo(function CircleRow({
       <Link href={`/circles/${circle.id}`} className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="truncate text-sm font-semibold text-stone-200">
-            {circle.client_name
-              ? `${circle.client_name}`
-              : circle.name}
+            {circle.client_name ? `${circle.client_name}` : circle.name}
           </span>
 
           {/* Pipeline stage badge */}
-          <span className={`flex-shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${stage.bg} ${stage.color}`}>
+          <span
+            className={`flex-shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${stage.bg} ${stage.color}`}
+          >
             {stage.label}
           </span>
 
@@ -273,9 +336,7 @@ const CircleRow = memo(function CircleRow({
             <span className="truncate">{circle.name}</span>
           )}
           {!circle.client_name && (
-            <span className="truncate">
-              {circle.last_message_preview || 'No messages yet'}
-            </span>
+            <span className="truncate">{circle.last_message_preview || 'No messages yet'}</span>
           )}
         </div>
 
@@ -311,13 +372,9 @@ const CircleRow = memo(function CircleRow({
           </span>
         )}
         <span className="text-xs text-stone-500">{timeAgo}</span>
-        {eventDateStr && (
-          <span className="text-[10px] text-stone-500">{eventDateStr}</span>
-        )}
+        {eventDateStr && <span className="text-[10px] text-stone-500">{eventDateStr}</span>}
         <div className="flex items-center gap-1.5 text-[10px] text-stone-600">
-          {circle.guest_count != null && (
-            <span>{circle.guest_count} guests</span>
-          )}
+          {circle.guest_count != null && <span>{circle.guest_count} guests</span>}
           {circle.estimated_value_cents != null && circle.estimated_value_cents > 0 && (
             <span className="text-emerald-400/70">
               ${Math.round(circle.estimated_value_cents / 100).toLocaleString()}
@@ -330,20 +387,108 @@ const CircleRow = memo(function CircleRow({
         </div>
       </div>
 
-      {/* Archive button (hover) */}
-      <button
-        type="button"
-        onClick={(e) => {
-          e.preventDefault()
-          onArchive(circle.id)
-        }}
-        className="flex-shrink-0 rounded p-1 text-stone-600 opacity-0 transition-opacity hover:text-stone-300 group-hover:opacity-100"
-        title="Archive circle"
-      >
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-        </svg>
-      </button>
+      {/* Quick actions (visible on hover) */}
+      <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+        {/* Open chat */}
+        <a
+          href={`/hub/g/${circle.group_token}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="rounded p-1.5 text-stone-500 hover:bg-stone-700 hover:text-stone-200"
+          title="Open chat"
+        >
+          <svg
+            className="h-3.5 w-3.5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+            />
+          </svg>
+        </a>
+
+        {/* Mark read (only show if unread) */}
+        {circle.unread_count > 0 && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onMarkRead(circle.id)
+            }}
+            className="rounded p-1.5 text-stone-500 hover:bg-stone-700 hover:text-stone-200"
+            title="Mark as read"
+          >
+            <svg
+              className="h-3.5 w-3.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </button>
+        )}
+
+        {/* Snooze */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            onSnooze(circle.id)
+          }}
+          className="rounded p-1.5 text-stone-500 hover:bg-stone-700 hover:text-stone-200"
+          title="Snooze"
+        >
+          <svg
+            className="h-3.5 w-3.5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </button>
+
+        {/* Archive */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            onArchive(circle.id)
+          }}
+          className="rounded p-1.5 text-stone-500 hover:bg-stone-700 hover:text-red-400"
+          title="Archive"
+        >
+          <svg
+            className="h-3.5 w-3.5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+            />
+          </svg>
+        </button>
+      </div>
     </div>
   )
 })

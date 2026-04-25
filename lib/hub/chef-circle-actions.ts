@@ -137,8 +137,26 @@ export async function getChefCircles(options?: { limit?: number }): Promise<Chef
   const eventIds = groups.map((g: any) => g.event_id).filter(Boolean)
   const inquiryIds = groups.map((g: any) => g.inquiry_id).filter(Boolean)
 
-  const eventMap: Record<string, { status: string; event_date: string | null; client_id: string | null; guest_count: number | null; occasion: string | null; total_price: number | null }> = {}
-  const inquiryMap: Record<string, { status: string; client_id: string | null; event_date: string | null; guest_count: number | null }> = {}
+  const eventMap: Record<
+    string,
+    {
+      status: string
+      event_date: string | null
+      client_id: string | null
+      guest_count: number | null
+      occasion: string | null
+      total_price: number | null
+    }
+  > = {}
+  const inquiryMap: Record<
+    string,
+    {
+      status: string
+      client_id: string | null
+      event_date: string | null
+      guest_count: number | null
+    }
+  > = {}
   const clientMap: Record<string, string> = {}
 
   if (eventIds.length > 0) {
@@ -147,7 +165,14 @@ export async function getChefCircles(options?: { limit?: number }): Promise<Chef
       .select('id, status, event_date, client_id, guest_count, occasion, total_price')
       .in('id', eventIds)
     for (const e of events ?? []) {
-      eventMap[e.id] = { status: e.status, event_date: e.event_date, client_id: e.client_id, guest_count: e.guest_count, occasion: e.occasion, total_price: e.total_price }
+      eventMap[e.id] = {
+        status: e.status,
+        event_date: e.event_date,
+        client_id: e.client_id,
+        guest_count: e.guest_count,
+        occasion: e.occasion,
+        total_price: e.total_price,
+      }
     }
   }
 
@@ -157,14 +182,23 @@ export async function getChefCircles(options?: { limit?: number }): Promise<Chef
       .select('id, status, client_id, event_date, guest_count')
       .in('id', inquiryIds)
     for (const inq of inquiries ?? []) {
-      inquiryMap[inq.id] = { status: inq.status, client_id: inq.client_id, event_date: inq.event_date, guest_count: inq.guest_count }
+      inquiryMap[inq.id] = {
+        status: inq.status,
+        client_id: inq.client_id,
+        event_date: inq.event_date,
+        guest_count: inq.guest_count,
+      }
     }
   }
 
   // Collect all client IDs and batch-fetch names
   const allClientIds = new Set<string>()
-  for (const e of Object.values(eventMap)) { if (e.client_id) allClientIds.add(e.client_id) }
-  for (const inq of Object.values(inquiryMap)) { if (inq.client_id) allClientIds.add(inq.client_id) }
+  for (const e of Object.values(eventMap)) {
+    if (e.client_id) allClientIds.add(e.client_id)
+  }
+  for (const inq of Object.values(inquiryMap)) {
+    if (inq.client_id) allClientIds.add(inq.client_id)
+  }
 
   if (allClientIds.size > 0) {
     const { data: clients } = await db
@@ -323,29 +357,46 @@ function derivePipelineStage(
   // Event status takes priority (further along in lifecycle)
   if (eventStatus) {
     switch (eventStatus) {
-      case 'draft': return inquiryStatus === 'quoted' ? 'quoted' : 'new_inquiry'
-      case 'proposed': return 'quoted'
-      case 'accepted': return 'accepted'
-      case 'paid': return 'paid'
-      case 'confirmed': return 'confirmed'
-      case 'in_progress': return 'in_progress'
-      case 'completed': return 'completed'
-      case 'cancelled': return 'cancelled'
-      default: return 'new_inquiry'
+      case 'draft':
+        return inquiryStatus === 'quoted' ? 'quoted' : 'new_inquiry'
+      case 'proposed':
+        return 'quoted'
+      case 'accepted':
+        return 'accepted'
+      case 'paid':
+        return 'paid'
+      case 'confirmed':
+        return 'confirmed'
+      case 'in_progress':
+        return 'in_progress'
+      case 'completed':
+        return 'completed'
+      case 'cancelled':
+        return 'cancelled'
+      default:
+        return 'new_inquiry'
     }
   }
 
   // Fall back to inquiry status
   if (inquiryStatus) {
     switch (inquiryStatus) {
-      case 'new': return 'new_inquiry'
-      case 'awaiting_client': return 'awaiting_client'
-      case 'awaiting_chef': return 'awaiting_chef'
-      case 'quoted': return 'quoted'
-      case 'confirmed': return 'confirmed'
-      case 'declined': return 'declined'
-      case 'expired': return 'expired'
-      default: return 'new_inquiry'
+      case 'new':
+        return 'new_inquiry'
+      case 'awaiting_client':
+        return 'awaiting_client'
+      case 'awaiting_chef':
+        return 'awaiting_chef'
+      case 'quoted':
+        return 'quoted'
+      case 'confirmed':
+        return 'confirmed'
+      case 'declined':
+        return 'declined'
+      case 'expired':
+        return 'expired'
+      default:
+        return 'new_inquiry'
     }
   }
 
@@ -370,7 +421,10 @@ function deriveAttention(
   }
 
   // Unread messages always need attention
-  if (unreadCount > 0 && ['new_inquiry', 'awaiting_chef', 'awaiting_client', 'quoted', 'accepted'].includes(stage)) {
+  if (
+    unreadCount > 0 &&
+    ['new_inquiry', 'awaiting_chef', 'awaiting_client', 'quoted', 'accepted'].includes(stage)
+  ) {
     return { needs: true, reason: 'Unread messages' }
   }
 
@@ -789,6 +843,40 @@ export async function restoreCircle(groupId: string): Promise<void> {
     .update({ is_active: true, updated_at: new Date().toISOString() })
     .eq('id', groupId)
     .eq('tenant_id', tenantId)
+}
+
+/**
+ * Mark all messages in a circle as read for the current chef.
+ * Updates the chef's hub_group_members.last_read_at to now.
+ */
+export async function markCircleRead(
+  groupId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const user = await requireChef()
+    const db: any = createServerClient({ admin: true })
+
+    // Get chef's hub profile
+    const { data: chefProfile } = await db
+      .from('hub_guest_profiles')
+      .select('id')
+      .eq('auth_user_id', user.userId)
+      .maybeSingle()
+
+    if (!chefProfile) return { success: false, error: 'No hub profile found' }
+
+    // Update last_read_at
+    const { error } = await db
+      .from('hub_group_members')
+      .update({ last_read_at: new Date().toISOString() })
+      .eq('group_id', groupId)
+      .eq('profile_id', chefProfile.id)
+
+    if (error) return { success: false, error: error.message }
+    return { success: true }
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
+  }
 }
 
 // ---------------------------------------------------------------------------
