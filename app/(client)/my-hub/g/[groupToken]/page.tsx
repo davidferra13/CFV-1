@@ -2,6 +2,7 @@
 
 import { notFound } from 'next/navigation'
 import { requireClient } from '@/lib/auth/get-user'
+import { createServerClient } from '@/lib/db/server'
 import { getOrCreateClientHubProfile } from '@/lib/hub/client-hub-actions'
 import {
   getGroupByToken,
@@ -34,8 +35,18 @@ export default async function ClientHubGroupPage({ params }: Props) {
   const group = await getGroupByToken(groupToken)
   if (!group || !group.is_active) notFound()
 
-  // Auto-join if not already a member
-  await joinHubGroup({ groupToken, profileId: profile.id })
+  // Only auto-join if already a member (idempotent refresh).
+  // New visitors see the guest join prompt in HubGroupView instead.
+  const db = createServerClient({ admin: true })
+  const { data: existingMembership } = await db
+    .from('hub_group_members')
+    .select('id')
+    .eq('group_id', group.id)
+    .eq('profile_id', profile.id)
+    .maybeSingle()
+  if (existingMembership) {
+    await joinHubGroup({ groupToken, profileId: profile.id })
+  }
 
   const [members, notes, media, availability, groupEvents, mealBoardEntries] = await Promise.all([
     getGroupMembers(group.id),
