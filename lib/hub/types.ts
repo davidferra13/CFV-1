@@ -454,3 +454,32 @@ export interface DefaultMealTimes {
   dinner: string | null
   snack: string | null
 }
+
+// ---- Private Messages ----
+
+export interface PrivateThread {
+  id: string
+  group_id: string
+  chef_profile_id: string
+  member_profile_id: string
+  last_message_at: string | null
+  last_message_preview: string | null
+  chef_unread_count: number
+  member_unread_count: number
+  created_at: string
+  updated_at: string
+  // Joined
+  chef_profile?: HubGuestProfile
+  member_profile?: HubGuestProfile
+}
+
+export interface PrivateMessage {
+  id: string
+  thread_id: string
+  sender_profile_id: string
+  body: string
+  created_at: string
+  deleted_at: string | null
+  // Joined
+  sender?: HubGuestProfile
+}

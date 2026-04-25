@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { OpenSlotForm } from '@/components/hub/open-slot-form'
+import { PrivateMessagesTab } from '@/components/hub/private-messages-tab'
 import type { CircleDetail } from '@/lib/hub/circle-detail-actions'
 import { CircleSourcingBoard } from '@/components/circles/circle-sourcing-board'
 import {
@@ -15,7 +16,7 @@ import {
   getClientsNotInCircle,
 } from '@/lib/hub/circle-detail-actions'
 
-type Tab = 'overview' | 'members' | 'events' | 'sourcing' | 'messages'
+type Tab = 'overview' | 'members' | 'events' | 'sourcing' | 'messages' | 'private'
 
 export function CircleDetailClient({ circle }: { circle: CircleDetail }) {
   const [tab, setTab] = useState<Tab>('overview')
@@ -28,6 +29,7 @@ export function CircleDetailClient({ circle }: { circle: CircleDetail }) {
     { key: 'events', label: 'Events', count: circle.events.length },
     { key: 'sourcing', label: 'Sourcing' },
     { key: 'messages', label: 'Messages', count: circle.message_count },
+    { key: 'private', label: 'Private' },
   ]
 
   return (
@@ -95,11 +97,62 @@ export function CircleDetailClient({ circle }: { circle: CircleDetail }) {
       {tab === 'events' && <EventsTab circle={circle} />}
       {tab === 'sourcing' && <CircleSourcingBoard circleId={circle.id} />}
       {tab === 'messages' && <MessagesTab circle={circle} />}
+      {tab === 'private' && <PrivateMessagesTabWrapper circle={circle} />}
     </div>
   )
 }
 
 // ─── OVERVIEW TAB ──────────────────────────────────────────
+
+function PrivateMessagesTabWrapper({ circle }: { circle: CircleDetail }) {
+  const [chefProfile, setChefProfile] = useState<{
+    profileToken: string
+    profileId: string
+  } | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadProfile() {
+      try {
+        const { getChefHubProfileForCircle } = await import('@/lib/hub/private-message-actions')
+        const profile = await getChefHubProfileForCircle(circle.id)
+        if (!cancelled) setChefProfile(profile)
+      } catch {
+        if (!cancelled) setChefProfile(null)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    loadProfile()
+
+    return () => {
+      cancelled = true
+    }
+  }, [circle.id])
+
+  if (loading) {
+    return <div className="py-8 text-center text-sm text-stone-500">Loading...</div>
+  }
+
+  if (!chefProfile) {
+    return (
+      <div className="rounded-lg border border-stone-700 bg-stone-900 p-8 text-center text-sm text-stone-400">
+        Private messaging needs a chef hub profile for this circle.
+      </div>
+    )
+  }
+
+  return (
+    <PrivateMessagesTab
+      groupId={circle.id}
+      chefProfileToken={chefProfile.profileToken}
+      chefProfileId={chefProfile.profileId}
+    />
+  )
+}
 
 function OverviewTab({ circle }: { circle: CircleDetail }) {
   return (

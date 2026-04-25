@@ -19,6 +19,7 @@ import { HubPhotoGallery } from '@/components/hub/hub-photo-gallery'
 import { HubAvailabilityGrid } from '@/components/hub/hub-availability-grid'
 import { HubMessageSearch } from '@/components/hub/hub-message-search'
 import { HubGroupSettings } from '@/components/hub/hub-group-settings'
+import { GuestPrivateChat } from '@/components/hub/guest-private-chat'
 import { WeeklyMealBoard } from '@/components/hub/weekly-meal-board'
 import { toggleMuteCircle, updateMemberNotificationPreferences } from '@/lib/hub/group-actions'
 import { sendCircleRecoveryEmail } from '@/lib/hub/profile-actions'
@@ -56,6 +57,7 @@ type Tab =
   | 'members'
   | 'search'
   | 'settings'
+  | 'private'
 
 interface HubGroupViewProps {
   group: HubGroup
@@ -161,6 +163,7 @@ export function HubGroupView({
 
   const baseTabs: { id: Tab; label: string; emoji: string; count?: number }[] = [
     { id: 'chat', label: 'Chat', emoji: '💬' },
+    ...(profileToken ? [{ id: 'private' as Tab, label: 'Private', emoji: '\u{1F512}' }] : []),
     { id: 'meals', label: 'Meals', emoji: '🍽️' },
     { id: 'members', label: 'Members', emoji: '👥', count: members.length },
     { id: 'photos', label: 'Photos', emoji: '📸', count: media.length },
@@ -502,6 +505,26 @@ export function HubGroupView({
               isOwnerOrAdmin={isOwnerOrAdmin}
             />
           </>
+        )}
+
+        {activeTab === 'private' && profileToken && currentProfileId && (
+          <GuestPrivateChat
+            groupId={group.id}
+            profileToken={profileToken}
+            currentProfileId={currentProfileId}
+            chefProfileId={(() => {
+              const chefMember = members.find(
+                (member) => member.role === 'owner' || member.role === 'chef'
+              )
+              return chefMember?.profile_id ?? ''
+            })()}
+            chefName={(() => {
+              const chefMember = members.find(
+                (member) => member.role === 'owner' || member.role === 'chef'
+              )
+              return chefMember?.profile?.display_name ?? 'Chef'
+            })()}
+          />
         )}
 
         {activeTab === 'meals' && (
