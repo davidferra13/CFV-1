@@ -33,12 +33,14 @@ function titleCase(str) {
 }
 
 function parseArgs(argv) {
-  const options = { limit: Infinity, dryRun: false, submit: false, env: null };
+  const options = { limit: Infinity, dryRun: false, submit: false, env: null, watch: false, interval: 300 };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--limit") options.limit = Math.max(1, Number(argv[i + 1] ?? "3"));
     if (argv[i] === "--dry-run") options.dryRun = true;
     if (argv[i] === "--submit") options.submit = true;
     if (argv[i] === "--env") options.env = argv[i + 1] || null;
+    if (argv[i] === "--watch") options.watch = true;
+    if (argv[i] === "--interval") options.interval = Math.max(10, Number(argv[i + 1] ?? "300"));
   }
   return options;
 }
@@ -234,13 +236,11 @@ ChefFlow is an operating system for food service professionals (primarily solo p
 `;
 }
 
-async function main() {
-  const options = parseArgs(process.argv.slice(2));
+async function cycle(options) {
   const files = collectPersonaFiles();
 
   if (files.length === 0) {
-    console.log(`${TAG} 0 files found. Nothing to do.`);
-    return;
+    return { generated: 0, submitted: 0 };
   }
 
   const toProcess = files.slice(0, options.limit);
@@ -256,7 +256,6 @@ async function main() {
       console.error(`${TAG} Find your env ID at chatgpt.com/codex > Settings > Environments`);
       process.exit(1);
     }
-    console.log(`${TAG} Submit mode ON (env: ${envId})`);
   }
 
   if (!options.dryRun) {
@@ -332,10 +331,35 @@ async function main() {
 
   if (options.dryRun) {
     console.log(`${TAG} Dry run complete. ${toProcess.length} item(s) would be processed.`);
-  } else {
-    console.log(`${TAG} Done. ${generated} spec(s) queued in system/codex-queue/`);
+  } else if (generated > 0) {
+    console.log(`${TAG} Done. ${generated} spec(s) queued.${options.submit ? ` ${submitted}/${generated} submitted.` : ""}`);
+  }
+
+  return { generated, submitted };
+}
+
+async function main() {
+  const options = parseArgs(process.argv.slice(2));
+
+  if (options.watch) {
+    console.log(`${TAG} Watch mode ON. Polling every ${options.interval}s. Ctrl+C to stop.`);
     if (options.submit) {
-      console.log(`${TAG} ${submitted}/${generated} submitted to Codex cloud.`);
+      const envId = resolveEnvId(options.env);
+      if (!envId) {
+        console.error(`${TAG} --submit requires a Codex environment ID.`);
+        console.error(`${TAG} Either pass --env ENV_ID or save it to system/codex-env.txt`);
+        process.exit(1);
+      }
+      console.log(`${TAG} Submit mode ON (env: ${envId})`);
+    }
+    while (true) {
+      await cycle(options);
+      await new Promise((resolve) => setTimeout(resolve, options.interval * 1000));
+    }
+  } else {
+    const { generated } = await cycle(options);
+    if (generated === 0 && !options.dryRun) {
+      console.log(`${TAG} 0 files found. Nothing to do.`);
     }
   }
 }
