@@ -19,7 +19,7 @@ Add 4 preference columns to `hub_guest_profiles`, update the TypeScript type, up
 
 ## Task 1: Migration
 
-**File to create:** `database/migrations/20260425000010_guest_preference_columns.sql`
+**File to create:** `database/migrations/20260426000002_guest_preference_columns.sql`
 
 **Exact SQL:**
 
@@ -171,7 +171,7 @@ Find the `dietary` tab content (the section that renders when `activeTab === 'di
 After making changes:
 
 1. Run `npx tsc --noEmit --skipLibCheck` and fix any type errors
-2. Confirm the migration file has a timestamp higher than `20260425000009`
+2. Confirm the migration file has a timestamp higher than `20260426000001`
 3. Confirm `HubGuestProfile` type has exactly 4 new fields
 4. Confirm `updateProfile` accepts the 4 new fields
 5. Confirm profile-view.tsx compiles without errors
