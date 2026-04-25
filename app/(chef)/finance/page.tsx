@@ -168,7 +168,7 @@ export default async function FinancePage() {
   await requireChef()
   const [summary, carryForwardSavings, surfaceAvailability] = await Promise.all([
     getTenantFinancialSummary().catch(() => null),
-    getYtdCarryForwardSavings().catch(() => 0),
+    getYtdCarryForwardSavings().catch(() => null),
     getFinanceSurfaceAvailability().catch(() => null),
   ])
 
@@ -215,6 +215,14 @@ export default async function FinancePage() {
         </div>
       )}
 
+      {summary.truncated === true && (
+        <div className="rounded-xl border border-amber-700 bg-amber-950 px-4 py-3">
+          <p className="text-sm text-amber-300">
+            Financial data may be incomplete. Contact support if you have over 50,000 transactions.
+          </p>
+        </div>
+      )}
+
       {/* Financial Intelligence */}
       <WidgetErrorBoundary name="Finance Health" compact>
         <Suspense fallback={null}>
@@ -248,14 +256,12 @@ export default async function FinancePage() {
           </p>
           <p className="text-sm text-stone-500 mt-1">Total refunds issued</p>
         </Card>
-        {carryForwardSavings > 0 && (
-          <Card className="p-4 border-emerald-200 bg-emerald-950">
-            <p className="text-2xl font-bold text-emerald-700">
-              {formatCurrency(carryForwardSavings)}
-            </p>
-            <p className="text-sm text-emerald-600 mt-1">Leftover credit applied YTD</p>
-          </Card>
-        )}
+        <Card className="p-4 border-emerald-200 bg-emerald-950">
+          <p className="text-2xl font-bold text-emerald-700">
+            {carryForwardSavings === null ? '--' : formatCurrency(carryForwardSavings)}
+          </p>
+          <p className="text-sm text-emerald-600 mt-1">Leftover credit applied YTD</p>
+        </Card>
       </div>
 
       {/* Monthly P&L Snapshot */}

@@ -134,8 +134,17 @@ export async function getCashFlowProjection(): Promise<CashFlowProjection | null
   // Runway: if net is negative, how many months until cash runs out? (simplified)
   let runwayMonths: number | null = null
   if (avgNet < 0) {
-    // Losing money - estimate months remaining (simplified, assumes no savings data)
-    runwayMonths = 0 // can't calculate without cash balance, but flag the warning
+    // Estimate runway: how many months of income remain at current burn rate?
+    // Use average monthly income as proxy for available cash (conservative)
+    const avgIncome =
+      historical.slice(-6).reduce((s, m) => s + m.incomeCents, 0) /
+      Math.max(historical.slice(-6).length, 1)
+    const monthlyLoss = Math.abs(avgNet)
+    if (monthlyLoss > 0 && avgIncome > 0) {
+      runwayMonths = Math.round((avgIncome / monthlyLoss) * 10) / 10
+    } else {
+      runwayMonths = 0
+    }
   }
 
   // Best and worst months

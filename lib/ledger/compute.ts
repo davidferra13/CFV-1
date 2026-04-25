@@ -60,7 +60,14 @@ export async function getEventFinancialSummaryInternal(eventId: string, tenantId
 /**
  * Get tenant-wide financial totals (computed from ledger)
  */
-export async function getTenantFinancialSummary() {
+export async function getTenantFinancialSummary(): Promise<{
+  totalRevenueCents: number
+  totalRefundsCents: number
+  totalTipsCents: number
+  netRevenueCents: number
+  totalWithTipsCents: number
+  truncated?: boolean
+}> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -83,6 +90,7 @@ export async function getTenantFinancialSummary() {
       throw new Error('Failed to compute tenant financials')
     }
 
+    const truncated = (entries?.length ?? 0) >= 50_000
     let totalRevenue = 0
     let totalRefunds = 0
     let totalTips = 0
@@ -103,6 +111,7 @@ export async function getTenantFinancialSummary() {
       totalTipsCents: totalTips,
       netRevenueCents: totalRevenue - totalRefunds,
       totalWithTipsCents: totalRevenue + totalTips - totalRefunds,
+      truncated,
     }
   }
 
@@ -122,6 +131,7 @@ export async function getTenantFinancialSummary() {
     totalTipsCents: totalTips,
     netRevenueCents: totalRevenue - totalRefunds,
     totalWithTipsCents: totalRevenue + totalTips - totalRefunds,
+    truncated: false,
   }
 }
 
