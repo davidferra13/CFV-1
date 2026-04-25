@@ -1,7 +1,7 @@
 # ChefFlow User Manual
 
 > **For:** Chefs, clients, and anyone using ChefFlow
-> **Last updated:** 2026-04-22
+> **Last updated:** 2026-04-24
 > **App:** app.cheflowhq.com
 
 ---
@@ -25,12 +25,18 @@ ChefFlow is an all-in-one platform for food service professionals. It replaces s
 
 ### First Steps After Sign-Up
 
-- **Set up your business profile:** Settings > Your Business > Profile & Branding. Add your business name, bio, cuisine tags, and service types.
-- **Add your first client:** Sidebar > Clients > New Client. Enter name, email, and phone.
-- **Enter a recipe:** Sidebar > Recipes > New Recipe. Add ingredients, instructions, and photos.
-- **Create your booking page:** Settings > Your Business > Booking Page. Customize it, then share the link with potential clients.
+ChefFlow's first-week setup is centered on proving one paid booking loop:
 
-ChefFlow also opens a guided **Setup** flow at `/onboarding` for first-run configuration. Dismissing the setup banner on the dashboard only hides that dashboard reminder. It does not mark setup complete, and you can return to `/onboarding` any time until the wizard is actually finished.
+1. Finish your profile and service/pricing setup.
+2. Capture the first inquiry or lead.
+3. Send the first quote.
+4. Create the first event.
+5. Start prep planning with a menu or prep block.
+6. Issue the first invoice or billing artifact.
+
+The guided **Setup** flow at `/onboarding` handles first-run configuration. After the wizard, the onboarding hub and dashboard checklist both point to the same next activation step. Client import, recipes, loyalty, and staff setup remain available as secondary setup work, but they do not block the first booking loop.
+
+Dismissing the setup banner on the dashboard only hides that dashboard reminder. It does not mark first-week activation complete.
 
 ---
 
@@ -38,9 +44,9 @@ ChefFlow also opens a guided **Setup** flow at `/onboarding` for first-run confi
 
 The sidebar on the left is your primary navigation. It has three layers:
 
-**Action Bar (top):** Six daily-driver shortcuts - Today, Inbox, Events, Clients, Culinary, Finance - plus a Create button. These cover 90% of daily work and are always one click away.
+**Action Bar (top):** Daily-driver shortcuts plus a Create button. The primary domains are Today, Inbox, Events, Clients, Culinary, and Finance. Pipeline work stays available from the Pipeline group, search, All Features, and direct inquiry links.
 
-**Core Groups (middle):** Five expandable sections for deeper navigation within each workflow area: Events, Clients, Culinary, Finance, Operations. Click any group header to expand it and see all the pages within that area. The Admin group is also here if you have admin access.
+**Core Groups (middle):** Expandable sections for deeper navigation within each workflow area. Pipeline, Events, Clients, Culinary, and Finance expand into their operational pages. Advanced groups appear as your data grows. Use **Show all features** at the bottom of the sidebar to reveal the full menu; the preference is remembered in your browser.
 
 **All Features (bottom):** Everything else - Analytics, Marketing, Social Media, Integrations, Activity Log, Briefing, and more - is organized at **All Features** (`/features`). Click it to browse everything by workflow category. Nothing is hidden; it just lives here instead of taking up space in the sidebar you see every day.
 
@@ -55,14 +61,15 @@ Your dashboard is the first screen you see after logging in. It shows a snapshot
 ### What You'll See
 
 - **Greeting** with the current time of day
+- **First Booking Loop:** For new accounts, a focused checklist for profile/service setup, first lead, quote, event, prep, and invoice
 - **Priority Action Banner:** The single most important thing to handle next (color-coded: red = critical, amber = high priority)
 - **Today's Schedule:** Your events for today with a timeline and "now" indicator
 - **Week Strip:** A 7-day overview with event dots
 - **Response Time SLA:** How many inquiries are waiting for a response (and how long)
 - **Daily Ops:** Task counts across four categories (Admin, Prep, Creative, Relationship)
-- **Command Center Grid:** 24 cards representing every area of the app. Hover for live counts and quick links.
-- **Food Cost Card:** Shows your average food cost percentage with a spark line. The target range adjusts to your operator type (e.g., 25-35% for private chefs, 28-35% for food trucks). If your average is above or below the range, the card tells you.
-- **Business Stat Cards:** Revenue, revenue goal progress, lead funnel, invoice collection rate, and upcoming event count.
+- **Command Center Grid:** Feature cards representing the areas you have started using. Advanced areas stay out of the way until you have data for them.
+- **Food Cost Card:** Appears once you have enough culinary or purchasing data for it to be meaningful.
+- **Business Stat Cards:** Revenue, revenue goal progress, lead funnel, invoice collection rate, and upcoming event count. These live in the collapsed secondary insights area once your account has operating data.
 
 ### Customizing Your Dashboard
 
@@ -150,11 +157,13 @@ Every event moves through 8 states:
 
 ### Event Detail Tabs
 
+At the top of event detail, the **Event Operating Spine** shows the next action, owner, missing information, and status across intake, booking, menu and dietary, prep and stock, Finance, and communication. It fails closed if payment status is unavailable instead of showing a fake zero balance.
+
 Each event has four tabs:
 
 **Overview:** Client info, guest RSVP tracker, allergen cross-check (compares menu against guest dietary restrictions), and attached contracts.
 
-**Money:** Menu selection, per-event financials (revenue, cost, profit), payment tracking (deposits, installments, balance), expense tracking, and 30-day cost forecast.
+**Finance:** Menu selection, per-event financials (revenue, cost, profit), payment tracking (deposits, installments, balance), expense tracking, and 30-day cost forecast.
 
 **Ops:** Prep planning, service simulation, staff assignments, time tracking, station assignments, temperature logging (food safety), ingredient substitutions, prep documents, readiness gates (5-point safety check before service starts), and kitchen clipboard.
 
@@ -199,6 +208,10 @@ The relationship timeline on the client profile is the canonical interaction fee
 
 The Next Best Action card on the client profile is projected from that same canonical interaction ledger, plus the existing relationship health and milestone inputs where those are already authoritative. The card now shows the winning action with short reason chips instead of a separate one-off summary.
 
+The main chef-side client detail also includes a **Client Ops Snapshot** card sourced from the authenticated client workspace. It highlights action-required counts, balance due, core profile completeness, pending meal requests, signal-alert state, and the next active RSVP or share lane when one exists. If that shared snapshot cannot load, ChefFlow shows an unavailable state instead of pretending the client has zero blockers.
+
+Client detail includes a **Household** panel for residency clients. Add, edit, or remove household members, then record relationship, age group, allergies, dietary restrictions, dislikes, favorites, and notes for each person. The panel rolls those records into a summary such as adult and child counts plus attributed allergy warnings.
+
 The dedicated relationship page uses the same shared action vocabulary. It shows the winning action title, primary signal, structured reasons, and authoritative source labels so you can see why that action outranked the other relationship moves.
 
 ### Search, Filter, and Bulk Actions
@@ -223,12 +236,12 @@ All recipes are entered manually. ChefFlow never generates or suggests recipes.
 
 1. Sidebar > Culinary > Recipes > **New Recipe**
 2. Enter: name, yield (servings), prep time, cook time
-3. Add ingredients from the master list (quantity, unit, name)
+3. Add ingredients from the master list (quantity, unit, name, and usable yield percentage)
 4. Add step-by-step instructions
 5. Add technique tags and photos
 6. Save
 
-ChefFlow automatically calculates ingredient cost from the price catalog (15,000+ items from 39 local stores).
+ChefFlow automatically calculates ingredient cost from the price catalog (15,000+ items from 39 local stores). Ingredient yield percentages adjust shopping quantities and projected costs when trim, bones, peel, skin, or other prep waste matters.
 
 ### Importing Recipes in Bulk
 
@@ -499,6 +512,7 @@ Your clients access their portal at **app.cheflowhq.com/my-hub** after logging i
 ### What Clients Can Do
 
 - **View events:** See upcoming and past events with countdown timers
+- **Track booking progress:** Each event detail page shows one progress card for booking details, proposal or agreement status, menu, payment, guest coordination, and messages.
 - **RSVP:** Mark attending, maybe, or decline. Add plus-ones with dietary info.
 - **Submit dietary restrictions:** Checkboxes for common allergens (Big 9) plus a free text field
 - **View documents:** Recipe cards, wine pairings, parking instructions, dress code
@@ -520,11 +534,13 @@ For on-site use, ChefFlow provides full-screen tablet forms for RSVP, dietary co
 
 ### Your Public Profile
 
-Share your profile at **app.cheflowhq.com/chef/your-name**. It shows your avatar, bio, cuisine tags, service types, approved testimonials, and social links. Visitors can click through to your booking page.
+Share your profile at **app.cheflowhq.com/chef/your-name**. It shows your avatar, bio, cuisine tags, service types, approved testimonials, social links, and public Sample Menus. From a menu detail page, use **Public Profile Sample Menus** to publish a non-archived menu to that section. If the showcased menu has dish photos, the first sorted dish photo appears as the public card image. Without a dish photo, the public card stays text-only. Visitors can click through to your booking page.
 
 ### Your Booking Page
 
-Share **app.cheflowhq.com/book/your-name** with potential clients when they want ChefFlow to match them with available chefs. The form captures occasion, date, guest count, dietary needs, budget, contact info, and referral source, then creates an inquiry in your pipeline. The page now tells visitors they are submitting a matched-chef request, not receiving instant confirmation.
+Share **app.cheflowhq.com/book** with potential clients when they want ChefFlow to match them with available chefs. The form captures occasion, date, guest count, dietary needs, budget, contact info, referral source, partner attribution, and UTM fields, then creates a tracked open booking and matched inquiries in chef pipelines.
+
+After submission, clients are sent to **/book/status/[bookingToken]** and receive the same status link by email. The status page shows submitted event details, booking readiness, matched-chef progress, no-response guidance after 48 hours, and a planning space or proposal link once a chef responds. If no chef is available in the area, the request is saved and the status page points the client toward broader search and specific chef profiles.
 
 ### Direct Chef Inquiry Page
 
@@ -553,7 +569,11 @@ Go to Settings > Embed to get a code snippet. Paste it into your website (WordPr
 
 ## Dinner Circles
 
-Sidebar > Circles lets you create private group channels to collaborate with other chefs. Share menu ideas, discuss recipes, coordinate on events. Messages update in real-time. Your four most recent circles appear as a dashboard widget.
+Sidebar > Circles lets you create private group channels to collaborate with other chefs, clients, and invited members. Share menu ideas, discuss recipes, coordinate on events, and keep guest details in one live thread. Messages update in real-time, and your four most recent circles appear as a dashboard widget.
+
+Dinner Circle invite links are built to be fast to forward. Chef, client, and member invite surfaces all use the same join link mechanics, but the suggested text changes to match who is sending it. When someone joins from that link, the circle records who invited them and posts a lightweight join activity line in the thread so the group can see who brought them in.
+
+The Dinner Circle **Meals** tab is a weekly residency meal board. Chefs can plan breakfast, lunch, and dinner by week, mark meal status, copy or template weeks, set meal times, track who is eating, and generate a weekly shopping list. Household allergies and dietary restrictions stay visible above the board, and any planned meal with a matching allergen flag is marked as a household conflict.
 
 ---
 

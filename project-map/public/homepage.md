@@ -8,7 +8,8 @@
 ## What's Here
 
 - Homepage: operator-first hero with a canonical proof CTA to `/for-operators`, secondary consumer marketplace branch, real operator proof reinforcement, and a direct walkthrough link for high-intent operators
-- Book a Private Chef: shareable slug-based link, headline, bio, pricing model, deposit info, booking form (occasion, date, guests, dietary, budget), converts to inquiry
+- Book a Private Chef: public open booking form (occasion, date, guests, dietary, budget, contact), creates a tracked booking token, redirects clients to `/book/status/[bookingToken]`, and fans out linked inquiries to matched chefs
+- Open booking follow-through: status page with booking readiness, confirmation email, 48-hour no-response email, 7-day final no-match email, guest-count range preservation, budget-to-cents parsing, referral partner and UTM attribution, and Dinner Circle creation when a chef responds
 - Public booking boundary guard: `/api/book` now caps JSON body size and returns explicit `400` for malformed bodies plus `413` for oversized payloads instead of a generic `500`
 - For Operators: operator proof page with real-product framing, walkthrough-first CTA hierarchy, and secondary routes for marketplace-led chefs or stack-switch evaluation
 - Remy AI widget: embedded on homepage and booking page, natural language inquiry handling, lead capture

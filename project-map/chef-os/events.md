@@ -9,10 +9,11 @@
 ## What's Here
 
 - Event list with dual view (list/kanban), 9 status filters
+- Event operating spine on detail: deterministic next action, owner, missing info, and readiness lanes for intake, booking, menu/dietary, prep/stock, Finance, communication, and follow-up
 - 8-state FSM: draft > proposed > accepted > paid > confirmed > in_progress > completed | cancelled
 - 4-tab detail view:
   - Overview: client info, guest RSVPs, dietary, allergens, contracts, lifecycle
-  - Money: menu picker, financials, payments, expenses, cost forecast, profit
+  - Finance: menu picker, financials, payments, expenses, cost forecast, profit
   - Ops: time tracking, prep plan, service simulation, staff, temp logging, substitutions, prep docs, readiness gates
   - Wrap-Up: post-event checklist, AAR summary, lifecycle progress
 - Event header quick proposal entry: shown when an event has a linked client and is not cancelled; opens a generation-only preview that can surface CP-Engine client profile guidance without persisting quote data

@@ -54,6 +54,7 @@ Get clients, close deals, manage the pipeline.
 - [x] Schema-aware quote draft prefill runtime (built Apr 22: `/quotes/new` now reads one canonical prefill contract shared by inquiry detail, event/menu detail, scope-drift change orders, and the consulting calculator; explicit URL values win before inquiry/event enrichment fills missing context)
 - [x] Canonical intake lane truth pack (built Apr 22: public booking, direct chef inquiry, embed, kiosk, Wix, and instant-book ingress now stamp one shared intake-lane contract, admin provenance reads the same classifier instead of inferring from `channel === 'website'`, and public intake surfaces now show truthful lane-specific expectations)
 - [x] Public intent hardening pass (built Apr 23: open booking, direct chef inquiry, embed inquiry, and instant booking now share one backend guard for IP and email throttles, bounded JSON bodies, honeypot handling, and short-window anonymous checkout dedupe without changing the public product gating model)
+- [x] Open booking consumer follow-through (built Apr 24: open booking now creates a tracked parent booking token, redirects clients to a public status page, emails status and no-response follow-ups, preserves budget/guest/referral data quality, and creates a Dinner Circle when a chef responds)
 - [x] Public booking page (shareable slug-based link)
 - [x] Lead management (website leads, guest leads, conversion tracking)
 - [x] Calls and meetings (agenda, outcome tracking, no-show handling)
@@ -82,7 +83,9 @@ Organize the work, see the schedule, know what's next.
 - [x] Travel Planning (weekly travel legs, stop counts)
 - [x] Pre-Service Checklist (auto-generated, safety/prep/venue/staff/service)
 - [x] Service Simulation (built Apr 22: the event Ops tab now generates a deterministic service walkthrough from current event truth, records chef rehearsal runs, detects stale runs when guest/menu/location/readiness conditions change, and links every blocker to the exact fixing surface)
+- [x] Event operating spine (built Apr 24: chef event detail now shows one deterministic next-action card across intake, booking, client details, menu and dietary, prep and stock, Finance, communication, and follow-up; client event detail uses the same contract for booking progress)
 - [x] Weekly Meal Board (family/household meal planning)
+- [x] Household Profiles (per-person residency allergies, restrictions, and chef-side client detail management)
 - [x] Weekly Template Cloning
 
 ### 3. COOK (Recipes, Ingredients, Prep) - 100% Complete
@@ -139,7 +142,7 @@ Track every dollar in and out. Immutable, auditable, real.
 
 Build relationships, understand the business, get visible.
 
-- [x] Client CRM (30-panel relationship hub, canonical interaction ledger with revision-aware relationship timeline, ledger-backed interaction signals, shared action vocabulary, explainable next-best-action projection)
+- [x] Client CRM (30-panel relationship hub, canonical interaction ledger with revision-aware relationship timeline, ledger-backed interaction signals, shared action vocabulary, explainable next-best-action projection, and a chef-side client ops snapshot reused from the authenticated client workspace for action-required, balance, profile completeness, and RSVP or share readiness)
 - [x] Analytics hub (inquiry funnel, revenue trends, utilization, cost tracking; 5 metrics deferred with honest "N/A" states)
 - [x] Public chef profile (avatar, bio, reviews, JSON-LD SEO)
 - [x] Reviews management (internal + external, approval workflow)
@@ -149,8 +152,8 @@ Build relationships, understand the business, get visible.
 - [x] Food operator directory (public discovery, claim flow)
 - [x] Ingredient knowledge encyclopedia (4K+ enriched pages, 15 category landing pages, JSON-LD, booking CTA funnel)
 - [x] AI-assisted social media orchestration
-- [x] Client portal (events, RSVP, dietary, feedback, rewards)
-- [x] Universal community circles (any user, topic-based, public/private, discovery page, rate limited)
+- [x] Client portal (events, RSVP, dietary, feedback, rewards, Dinner Circle host invites)
+- [x] Universal community circles (any user, topic-based, public/private, discovery page, rate limited, role-aware invite links with join attribution)
 - [x] Gift cards and vouchers
 - [ ] **User acquisition strategy** - STARTED (homepage and operator pages now route traffic into proof, marketplace, compare, and walkthrough paths with source attribution; live channels and nurture are still not validated)
 - [ ] **Survey validation** - designed and ready, not launched

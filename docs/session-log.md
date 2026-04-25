@@ -1,55 +1,5 @@
 # Session Log
 
-## 2026-04-24 14:41 EST
-
-- Agent: Builder (Opus 4.6)
-- Task: Palace Audit Agent 3 - Runtime blocker fixes, Codex triage, build spec engineering
-- Status: completed
-- Files touched: 7 files (2 code fixes, 4 memory updates, 5 build specs)
-- Commits: 66b5d2149, 60363400d
-- Build state on departure: tsc clean, both servers down, runtime verify pending
-- Notes: Original prompt had stale intelligence. Import chain parse-ollama->chat-insights->insights/actions does NOT connect to relationship page. CP-Engine event surface bug doesn't exist. All 4 "uncommitted" Codex items already committed on main. Applied defensive try/catch fixes. Wrote 4 Codex-ready build specs for remaining palace audit work.
-
-## 2026-04-22 15:43 EST
-
-- Agent: Builder (Opus 4.6)
-- Task: Close the privileged mutation policy layer by extending the shared server-action mutation inventory
-- Status: completed
-- Files touched: 10 files
-- Commits: 4427048f0
-- Build state on departure: focused slice green, repo-wide CI typecheck still blocked by unrelated dirty-checkout errors in `lib/openclaw/ingredient-knowledge-queries.ts` and `lib/openclaw/public-ingredient-queries.ts`
-- Notes: `lib/auth/server-action-inventory.ts` now classifies page-facing mutations as `standard`, `sensitive`, or `critical` and surfaces missing auth or observability signals as policy violations. Verified with focused `tsc`, `node --test --import tsx tests/unit/server-action-auth-inventory.test.ts`, and `npx playwright test -c playwright.system-integrity.config.ts tests/system-integrity/q80-revalidation-after-mutation.spec.ts`. `bash scripts/session-close.sh` was unavailable on this Windows host because `/bin/bash` is missing, so closeout artifacts were completed manually. Session digest: `docs/session-digests/2026-04-22-draft.md`
-
-## 2026-04-22 13:55 EST
-
-- Agent: Codex
-- Task: Land the canonical client interaction ledger and revision-aware relationship timeline projection
-- Status: completed
-- Files touched: 14 files in this slice (repo already dirty outside the slice)
-- Commits: pending at log-write time
-- Build state on departure: focused slice verified; repo-wide `npm run typecheck:app` blocked by unrelated existing errors in `app/(chef)/settings/client-preview/public-profile-preview.tsx`, `app/(public)/_components/homepage-live-signal.tsx`, `components/public/location-experience-showcase.tsx`, and `lib/db/boot-contract.ts`
-- Notes: Added `lib/clients/interaction-ledger.ts` and `lib/clients/interaction-ledger-core.ts` as the canonical relationship-history contract, then reduced `getUnifiedClientTimeline()` to a compatibility projection. The ledger now normalizes authoritative events, inquiries, messages, notes, quotes, payments, reviews, high-intent portal activity, menu revisions, and document versions, with one shared revision envelope for quote lineage, menu revisions, and document version history. Verified with focused ESLint, `node --test --import tsx tests/unit/client-interaction-ledger.test.ts`, `graphify update .`, and direct Playwright browser verification on `http://localhost:3100/clients/8c40bca7-8b6b-4235-8c52-77489f313ffb` using the agent account in `.auth/agent.json`. Session digest: `docs/session-digests/2026-04-22-draft.md`
-
-## 2026-04-22 13:31 EST
-
-- Agent: Codex
-- Task: Ship the schema-aware quote draft prefill runtime by unifying `/quotes/new` handoff semantics across inquiry, event, change-order, and consulting surfaces
-- Status: completed
-- Files touched: 19 files in this slice (repo already dirty outside the slice)
-- Commits: pending at log-write time
-- Build state on departure: focused slice verified; repo-wide `npm run lint` and `npm run typecheck` still blocked by unrelated existing errors in daily, costing, recipe-photo, and OpenClaw files
-- Notes: Added `lib/quotes/quote-prefill.ts` as the single quote-prefill contract because the old parser lived inside the server page and could not be reused by client surfaces or tests. Verified with focused ESLint, `node --test --import tsx tests/unit/quote-prefill.test.ts`, and direct Playwright browser checks on isolated `http://localhost:3211`, including screenshots for the scope-drift quote banner and the inquiry detail quote href. Session digest: `docs/session-digests/2026-04-22-draft.md`
-
-## 2026-04-23 13:07 EST
-
-- Agent: Codex
-- Task: Implement chef portal priority nav restructure from the verified audit artifacts
-- Status: completed
-- Files touched: 6 files in this slice (repo already dirty outside the slice)
-- Commits: not created because the worktree already contained extensive unrelated dirty changes
-- Build state on departure: focused nav slice verified; repo-wide typecheck not run
-- Notes: Updated primary chef nav defaults to Today, Inbox, Pipeline, Events, Culinary, Clients, Money. Updated the action bar to Today, Inbox, Pipeline, Events, Culinary, Money. Updated mobile defaults to Today, Inbox, Pipeline, Events, Daily Ops. Added `tests/unit/chef-nav-priority.test.ts` to guard primary defaults, demoted clusters, action bar defaults, mobile defaults, and the broken `/social/compose` route. Verified with `node --test --import tsx tests/unit/chef-nav-priority.test.ts` and adjacent surface/focus tests. Session digest: `docs/session-digests/2026-04-23-draft.md`
-
 ## 2026-04-23 13:13 EST
 
 - Agent: Codex
@@ -109,3 +59,44 @@
 - Commits: none (audit session)
 - Build state on departure: unchanged
 - Notes: Full audit of `lib/tickets/*.ts`, `app/(public)/e/[shareToken]/page.tsx`, `app/(chef)/events/[id]/_components/event-detail-tickets-tab.tsx`, and `database/migrations/20260416000004_event_ticketing.sql`. Found 5 critical bugs: (1) `event_share_settings` table never created (migration ALTERs non-existent table), (2) `public-event-view.tsx` client component missing, (3) wrong shareToken passed in event detail page, (4) `event_guests.event_share_id` NOT NULL blocks ticket guests, (5) no ledger entries for ticket revenue. Drafted migration SQL (CREATE TABLE event_share_settings, DROP NOT NULL on event_share_id, add is_co_host). Produced refined handoff prompt for next agent. Session digest: `docs/session-digests/2026-04-24-ticketed-events-audit.md`
+
+## 2026-04-24 17:11 EDT
+
+- Agent: Codex
+- Task: Build the P0 Work Continuity Control Plane
+- Status: completed
+- Files touched: `lib/work-continuity/types.ts`, `lib/work-continuity/sources.ts`, `lib/work-continuity/parse-session-log.ts`, `lib/work-continuity/parse-spec-status.ts`, `lib/work-continuity/build-index.ts`, `scripts/generate-work-continuity-index.mjs`, `reports/work-continuity-index.json`, `docs/research/work-continuity-index.md`, `tests/unit/work-continuity-index.test.ts`, `docs/session-log.md`
+- Commits: not created because the checkout already contained extensive unrelated dirty changes
+- Build state on departure: `node scripts/generate-work-continuity-index.mjs`, `node --test --import tsx tests/unit/work-continuity-index.test.ts`, and `npm run typecheck` exit `0`
+- Notes: Generated 20 indexed work items. Status counts: `ready_spec=1`, `built_unverified=11`, `verified=2`, `blocked=3`, `stale=0`, `research_backed_unspecced=2`, `needs_triage=1`. Current Start Here recommendation: Ticketed events critical blockers -> run the ticketed-events repair handoff before treating ticketing as shipped. All 14 configured source files were present; missing source files: 0; parse-skipped evidence: 0.
+
+## 2026-04-24 17:22 EDT
+
+- Agent: Codex
+- Task: Recommend the next highest-leverage additive action inside the Work Continuity Control Plane scope and create a builder-ready handoff spec
+- Status: completed
+- Files touched: `docs/specs/p1-work-continuity-drift-guard.md`, `docs/session-log.md`
+- Commits: not created because the checkout already contained extensive unrelated dirty changes
+- Build state on departure: docs-only planning/spec pass; no build, typecheck, or test run
+- Notes: Recommended the next additive slice as a Work Continuity Drift Guard because the source-backed index and report now exist, but the generated artifact contract still needs an explicit freshness/seed/source-line/Start-Here verifier. Created `docs/specs/p1-work-continuity-drift-guard.md` with cited evidence, deliverables, required behavior, tests, and acceptance criteria. Current Start Here recommendation remains Ticketed events critical blockers -> run the ticketed-events repair handoff before treating ticketing as shipped.
+
+## 2026-04-24 17:40 EDT
+
+- Agent: Codex
+- Task: Recommend the single highest-leverage remaining additive action inside the canonical `/tasks` create-path scope and write a builder-ready handoff spec
+- Status: completed
+- Files touched: `docs/specs/canonical-tasks-create-regression-harness.md`, `docs/session-digests/2026-04-24-tasks-create-regression-handoff.md`, `docs/session-log.md`
+- Commits: not created because the checkout already contained extensive unrelated dirty changes and committing everything would have mixed lanes
+- Build state on departure: unchanged; docs-only planning/spec pass with cited repo evidence, no new build or test run
+- Notes: Confirmed the canonical `/tasks` page and `TaskCreatePanel` already route through the real `createTask(formData)` path with honest failure redirects, and that the broad `tests/launch/09-staff-and-tasks.spec.ts` suite already attempts happy and failure create coverage but remains noisy on this dirty checkout. Recommended the next additive step as a dedicated isolated Playwright regression spec for the real `/tasks?date=...&new=1` create flow. `bash scripts/session-close.sh` was attempted and failed because `/bin/bash` is missing on this Windows host, so closeout was completed manually. Session digest: `docs/session-digests/2026-04-24-tasks-create-regression-handoff.md`
+
+## 2026-04-24 17:44 EDT
+
+- Agent: Codex
+- Task: Build the P1 Work Continuity Drift Guard
+- Status: completed
+- Files touched: `lib/work-continuity/build-index.ts`, `scripts/verify-work-continuity-index.mjs`, `tests/unit/work-continuity-artifact-contract.test.ts`, `package.json`, `reports/work-continuity-index.json`, `docs/research/work-continuity-index.md`, `docs/session-log.md`
+- Commits: not created because the checkout already contained extensive unrelated dirty changes
+- Build state on departure: drift guard passed; indexed item count: 20; warning count: 0; current Start Here recommendation: Ticketed events critical blockers -> run the ticketed-events repair handoff before treating ticketing as shipped.
+- Verification commands run: `node scripts/generate-work-continuity-index.mjs`; `node scripts/verify-work-continuity-index.mjs`; `node --test --import tsx tests/unit/work-continuity-index.test.ts tests/unit/work-continuity-artifact-contract.test.ts`; `npm run typecheck`
+- Notes: Added the artifact contract validator and CLI drift guard. Source files missing: 0. Parse-skipped evidence: 0.

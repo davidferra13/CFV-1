@@ -61,6 +61,9 @@
 - Rate limited: 5 circles/hour per user, 60 discovery requests/15min per IP
 - Full hub messaging, members, photos, polls work out of the box
 - Conditional language across join flows, emails, welcome cards
+- Invite cards and in-circle copy now adapt to chef, client, or member context while preserving one shared join-link path
+- Join activity keeps inviter attribution in the thread so circles can see who brought new members in
+- Dinner Circle Meals tab now acts as the residency weekly board, with persistent household dietary context, per-meal allergen conflict flags, attendance/comments, and weekly shopping-list generation for chefs
 - Nav badge includes community circle unreads
 - Question set: 47 BUILT, 2 GAP (moderation, future work), 5 N/A
 

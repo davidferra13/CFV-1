@@ -1,0 +1,227 @@
+{
+  "timestamp": "2026-04-24T19:57:38.585Z",
+  "environment": {
+    "server": "localhost:3000",
+    "status": "running",
+    "playwright": "1.58.2"
+  },
+  "accounts": {
+    "chefBob": {
+      "ok": true,
+      "userId": "246cd048-e945-4e43-b986-0d2546102228"
+    }
+  },
+  "profile": {
+    "pages": {
+      "myProfile": {
+        "fields": [
+          {
+            "name": null,
+            "placeholder": "Search or ⌘K to jump...",
+            "type": null,
+            "tag": "INPUT"
+          },
+          {
+            "name": null,
+            "placeholder": "https://instagram.com/yourname",
+            "type": "url",
+            "tag": "INPUT"
+          },
+          {
+            "name": null,
+            "placeholder": "https://tiktok.com/@yourname",
+            "type": "url",
+            "tag": "INPUT"
+          },
+          {
+            "name": null,
+            "placeholder": "https://facebook.com/yourpage",
+            "type": "url",
+            "tag": "INPUT"
+          },
+          {
+            "name": null,
+            "placeholder": "https://youtube.com/@yourchannel",
+            "type": "url",
+            "tag": "INPUT"
+          },
+          {
+            "name": null,
+            "placeholder": "https://linktr.ee/yourname",
+            "type": "url",
+            "tag": "INPUT"
+          },
+          {
+            "name": null,
+            "placeholder": "https://g.page/r/...",
+            "type": "url",
+            "tag": "INPUT"
+          },
+          {
+            "name": null,
+            "placeholder": "https://your-site.com",
+            "type": "url",
+            "tag": "INPUT"
+          }
+        ]
+      },
+      "myServices": {
+        "loaded": true
+      },
+      "publicProfile": {
+        "loaded": true
+      },
+      "templates": {
+        "loaded": true,
+        "hasCreate": true
+      },
+      "modules": {
+        "loaded": true
+      },
+      "billing": {
+        "loaded": true
+      },
+      "appearance": {
+        "loaded": true
+      },
+      "navigation": {
+        "loaded": true
+      },
+      "culinaryProfile": {
+        "loaded": true
+      }
+    },
+    "fieldsSet": [],
+    "issues": []
+  },
+  "recipes": {
+    "created": [],
+    "failed": [
+      "[STUB] Burrata with Roasted Tomatoes",
+      "[STUB] Tuna Crudo",
+      "[STUB] Wild Mushroom Crostini",
+      "[STUB] Pan-Seared Halibut",
+      "[STUB] Braised Short Ribs",
+      "[STUB] Herb-Crusted Rack of Lamb",
+      "[STUB] Lobster Risotto",
+      "[STUB] Panna Cotta with Berry Compote",
+      "[STUB] Chocolate Lava Cake",
+      "[STUB] Arugula Salad with Shaved Parmesan"
+    ],
+    "total": 10
+  },
+  "smokeTest": {
+    "chefBob": {
+      "dashboard": {
+        "ok": true,
+        "url": "http://localhost:3000/dashboard"
+      },
+      "recipes": {
+        "ok": true,
+        "url": "http://localhost:3000/recipes"
+      },
+      "events": {
+        "ok": true,
+        "url": "http://localhost:3000/events"
+      },
+      "clients": {
+        "ok": true,
+        "url": "http://localhost:3000/clients"
+      },
+      "financials": {
+        "ok": true,
+        "url": "http://localhost:3000/financials"
+      },
+      "inquiries": {
+        "ok": true,
+        "url": "http://localhost:3000/inquiries"
+      },
+      "calendar": {
+        "ok": true,
+        "url": "http://localhost:3000/calendar"
+      },
+      "sidebarLinkCount": 188,
+      "joyInClientList": false,
+      "eventNew": {
+        "ok": true,
+        "url": "http://localhost:3000/events/new"
+      }
+    },
+    "joy": {
+      "myEvents": {
+        "ok": true,
+        "url": "http://localhost:3000/my-events"
+      },
+      "myQuotes": {
+        "ok": true,
+        "url": "http://localhost:3000/my-quotes"
+      }
+    },
+    "demoClient": {
+      "ok": true,
+      "url": "http://localhost:3000/my-events"
+    }
+  },
+  "findings": [
+    {
+      "type": "BUG",
+      "id": "BUG-R0",
+      "desc": "No name input found on recipe form for [STUB] Burrata with Roasted Tomatoes",
+      "details": ""
+    },
+    {
+      "type": "BUG",
+      "id": "BUG-R1",
+      "desc": "No name input found on recipe form for [STUB] Tuna Crudo",
+      "details": ""
+    },
+    {
+      "type": "BUG",
+      "id": "BUG-R2",
+      "desc": "No name input found on recipe form for [STUB] Wild Mushroom Crostini",
+      "details": ""
+    },
+    {
+      "type": "BUG",
+      "id": "BUG-R3",
+      "desc": "No name input found on recipe form for [STUB] Pan-Seared Halibut",
+      "details": ""
+    },
+    {
+      "type": "BUG",
+      "id": "BUG-R4",
+      "desc": "No name input found on recipe form for [STUB] Braised Short Ribs",
+      "details": ""
+    },
+    {
+      "type": "BUG",
+      "id": "BUG-R5",
+      "desc": "No name input found on recipe form for [STUB] Herb-Crusted Rack of Lamb",
+      "details": ""
+    },
+    {
+      "type": "BUG",
+      "id": "BUG-R6",
+      "desc": "No name input found on recipe form for [STUB] Lobster Risotto",
+      "details": ""
+    },
+    {
+      "type": "BUG",
+      "id": "BUG-R7",
+      "desc": "No name input found on recipe form for [STUB] Panna Cotta with Berry Compote",
+      "details": ""
+    },
+    {
+      "type": "BUG",
+      "id": "BUG-R8",
+      "desc": "No name input found on recipe form for [STUB] Chocolate Lava Cake",
+      "details": ""
+    },
+    {
+      "type": "BUG",
+      "id": "BUG-R9",
+      "desc": "No name input found on recipe form for [STUB] Arugula Salad with Shaved Parmesan",
+      "details": ""
+    }
+  ]
+}

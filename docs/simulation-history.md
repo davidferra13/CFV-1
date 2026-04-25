@@ -555,3 +555,73 @@ Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), corresponden
 
 Passing: none
 Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)
+
+## 2026-04-24 19:28 UTC - 0% pass rate - Run 374aa828
+
+Passing: none
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)
+
+## 2026-04-24 19:28 UTC - 0% pass rate - Run 6e91f255
+
+Passing: none
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)
+
+## 2026-04-24 22:22 UTC - 0% pass rate - Run ed92baba
+
+Passing: none
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)
+
+## 2026-04-24 22:22 UTC - 0% pass rate - Run c7051887
+
+Passing: none
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)
+
+## 2026-04-25 05:33 UTC - 0% pass rate - Run 502a3731
+
+Passing: none
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)
+
+## 2026-04-25 05:33 UTC - 0% pass rate - Run 797dc7b5
+
+Passing: none
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)
+
+## 2026-04-25 07:36 UTC - 0% pass rate - Run 8f5dbbf8
+
+Passing: none
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)
+
+## 2026-04-25 07:36 UTC - 0% pass rate - Run e09cad7b
+
+Passing: none
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)
+
+## 2026-04-25 09:31 UTC - 0% pass rate - Run 8f3fd0da
+
+Passing: none
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)
+
+## 2026-04-25 09:32 UTC - 0% pass rate - Run 2d1daf94
+
+Passing: none
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)
+
+## 2026-04-25 10:43 UTC - 0% pass rate - Run 606e1dc4
+
+Passing: none
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)
+
+## 2026-04-25 10:43 UTC - 0% pass rate - Run b1b38633
+
+Passing: none
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)
+
+## 2026-04-25 16:44 UTC - 0% pass rate - Run e7345402
+
+Passing: none
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)
+
+## 2026-04-25 16:45 UTC - 0% pass rate - Run cc2d4977
+
+Passing: none
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)

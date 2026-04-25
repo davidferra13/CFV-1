@@ -284,3 +284,33 @@ scripts/archive-digester/parsed-emails.json
 scripts/archive-digester/*.mbox
 graphify
 graphify-out
+
+# Codex sandbox artifacts (build dirs, log files, temp output)
+.codex-*/
+.codex-*.err
+.codex-*.out
+.argv.err
+.argv.out
+.npx-*.err
+.npx-*.out
+.gateway_bundle.js
+.gateway_index.html
+.chatgpt-ingestion/
+.live-ingestion/
+.next-build-*/
+.next-codex-*/
+.next-cp-*/
+.next-intake-*/
+.next-progressive-*/
+.next-rel-route-*/
+.next-residency-*/
+.next-service-simulation/
+.next-share-token/
+.next-status-check/
+__finance-qa*.mjs
+anythingllm/
+anythingllm-hosted/
+anythingllm_dataset/
+analysis_report.md
+build-surfaces/
+"Chef Flow Personas/"

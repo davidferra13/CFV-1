@@ -7,7 +7,7 @@
 
 ## What's Here
 
-- Public chef profile: avatar, display name, tagline, highlight text, social icons (Instagram, TikTok, Facebook, YouTube, Linktree), bio, cuisine tags, service types, reviews & testimonials, featured testimonials (gold border), JSON-LD AggregateRating for SEO
+- Public chef profile: avatar, display name, tagline, highlight text, social icons (Instagram, TikTok, Facebook, YouTube, Linktree), bio, cuisine tags, service types, public Sample Menus with optional first-dish photo heroes, reviews & testimonials, featured testimonials (gold border), JSON-LD AggregateRating for SEO
 - Direct chef inquiry page: route-specific inquiry form for one named chef, with truthful expectation copy about direct follow-up instead of matched-chef routing
 - Food operator directory: public discovery page at `/nearby` with search, filters (type, cuisine, state, city, price), pagination
 - Directory import from OpenClaw crawler data (OSM-sourced, ODbL attribution)

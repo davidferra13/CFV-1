@@ -38,6 +38,13 @@
 - Developer monitors via surveillance dashboard (Pi:8090) on a dedicated TV monitor.
 - PC-side Operator (localhost:4000) has 5 tabs: Dashboard, Services, Data, Jobs, Chat.
 
+## Hermes Posture (2026-04-23)
+
+- Hermes is not part of ChefFlow V1.
+- OpenClaw already covers the agent-runtime primitives ChefFlow would actually use for V1, and ChefFlow already has OpenClaw sync, health, and quarantine supervision in-repo.
+- If Hermes is revisited later, keep it read-only, isolated from the daily PC, and unable to mutate ChefFlow or OpenClaw canonical state without explicit human action.
+- Decision memo: `docs/research/2026-04-23-hermes-vs-openclaw-decision-memo.md`
+
 ## Open Items
 
 - Pi:8090/game pixel-art HQ dashboard (spec ready, not built)
