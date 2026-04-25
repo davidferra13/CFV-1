@@ -194,6 +194,7 @@ These workflows are now available as `/slash-commands`. Type the command name to
 - **`/review`** - Code review on uncommitted changes. Quality gate before `/ship`.
 - **`/document`** - Auto-update USER_MANUAL.md and app-complete-audit.md after code changes.
 - **`/heal-skill`** - Self-repair a skill that failed or produced bad results.
+- **`/persona-stress-test`** - Deterministic persona-based system stress test. Accepts a persona, runs full workflow simulation, capability audit, failure mapping, and scoring. Supports batch mode for cross-persona synthesis.
 
 **End every session:** run `/close-session` or `/ship`. Work must be on GitHub before signing off.
 
