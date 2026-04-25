@@ -38,6 +38,7 @@ COMMENT ON COLUMN hub_meal_board.assignment_notes IS 'Chef instructions for the 
 ```
 
 **Rules:**
+
 - This is the ONLY migration file to create. Do not create any other migration files.
 - Do NOT modify any existing migration files.
 - Do NOT run `drizzle-kit push` or apply the migration. Just create the file.
@@ -51,12 +52,13 @@ COMMENT ON COLUMN hub_meal_board.assignment_notes IS 'Chef instructions for the 
 Find the `MealBoardEntry` interface (around line 346). Add these three fields BEFORE the closing brace, after the existing `serving_time` field:
 
 ```ts
-  assigned_profile_id: string | null
-  assigned_display_name: string | null
-  assignment_notes: string | null
+assigned_profile_id: string | null
+assigned_display_name: string | null
+assignment_notes: string | null
 ```
 
 **Rules:**
+
 - Add ONLY these 3 lines. Do not modify any other types.
 - Do not remove or reorder existing fields.
 - The fields must be nullable (string | null) because most meals won't have assignments.
@@ -242,9 +244,7 @@ const MyAssignmentsSchema = z.object({
   profileToken: z.string().uuid(),
 })
 
-export async function getMyMealAssignments(
-  input: z.infer<typeof MyAssignmentsSchema>
-): Promise<{
+export async function getMyMealAssignments(input: z.infer<typeof MyAssignmentsSchema>): Promise<{
   assignments: Array<{
     id: string
     meal_date: string
@@ -296,6 +296,7 @@ export async function getMyMealAssignments(
 ```
 
 **Rules:**
+
 - This is a NEW file. Do not modify `lib/hub/meal-board-actions.ts`.
 - The `getAssignableMembers` function uses a join syntax. If the compat layer does not support `!inner` joins, fall back to two separate queries: first get member profile_ids, then batch-fetch display_names. Test this.
 - All mutations require chef/admin role. Members can only READ their own assignments.
@@ -309,6 +310,7 @@ export async function getMyMealAssignments(
 **Create file:** `components/hub/prep-assignment-badge.tsx`
 
 This component renders inline on each meal entry in the weekly meal board. It shows:
+
 - **No assignment + chef viewing:** A small "Assign" button
 - **Assigned + chef viewing:** Assignee name badge + "x" to remove + click to reassign
 - **Assigned + you're the assignee:** "Your task" highlight + assignment notes expandable
@@ -573,15 +575,10 @@ export function MyPrepTasks({ groupId, groupToken, profileToken }: MyPrepTasksPr
       </h3>
       <div className="mt-2 space-y-2">
         {assignments.map((task) => (
-          <div
-            key={task.id}
-            className="rounded-lg border border-stone-800 bg-stone-900/60 p-2"
-          >
+          <div key={task.id} className="rounded-lg border border-stone-800 bg-stone-900/60 p-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-stone-500">
-                  {formatMealDate(task.meal_date)}
-                </span>
+                <span className="text-[10px] text-stone-500">{formatMealDate(task.meal_date)}</span>
                 <span className="text-[10px] text-stone-600 capitalize">{task.meal_type}</span>
               </div>
               {task.status === 'served' && (
@@ -644,7 +641,7 @@ interface WeeklyMealBoardProps {
   initialHouseholdError?: string | null
   profileToken: string | null
   isChefOrAdmin: boolean
-  currentProfileId?: string | null  // <-- ADD THIS LINE
+  currentProfileId?: string | null // <-- ADD THIS LINE
 }
 ```
 
@@ -666,27 +663,32 @@ Add it to the destructured props in the function signature (around line 148):
 Insert the PrepAssignmentBadge BEFORE that block (between the allergen conflict warning and the attendance section):
 
 ```tsx
-                          {/* Prep assignment */}
-                          {!editMode && !entry.id.startsWith('temp-') && (
-                            <PrepAssignmentBadge
-                              groupId={groupId}
-                              mealEntryId={entry.id}
-                              assignedProfileId={entry.assigned_profile_id ?? null}
-                              assignedDisplayName={entry.assigned_display_name ?? null}
-                              assignmentNotes={entry.assignment_notes ?? null}
-                              currentProfileId={currentProfileIdProp ?? null}
-                              profileToken={profileToken}
-                              isChefOrAdmin={isChefOrAdmin}
-                              onAssigned={() => {
-                                getMealBoard({ groupId, groupToken, startDate: weekStart, endDate: weekEnd })
-                                  .then(setEntries)
-                                  .catch(() => {})
-                              }}
-                            />
-                          )}
+{
+  /* Prep assignment */
+}
+{
+  !editMode && !entry.id.startsWith('temp-') && (
+    <PrepAssignmentBadge
+      groupId={groupId}
+      mealEntryId={entry.id}
+      assignedProfileId={entry.assigned_profile_id ?? null}
+      assignedDisplayName={entry.assigned_display_name ?? null}
+      assignmentNotes={entry.assignment_notes ?? null}
+      currentProfileId={currentProfileIdProp ?? null}
+      profileToken={profileToken}
+      isChefOrAdmin={isChefOrAdmin}
+      onAssigned={() => {
+        getMealBoard({ groupId, groupToken, startDate: weekStart, endDate: weekEnd })
+          .then(setEntries)
+          .catch(() => {})
+      }}
+    />
+  )
+}
 ```
 
 **Rules for this file:**
+
 - Do NOT rewrite or reformat the file. Only add the import, the prop, and the insertion block.
 - Do NOT modify any existing logic, styling, or component behavior.
 - The `onAssigned` callback refreshes entries using the existing `getMealBoard` import (already imported at line 14).
@@ -705,48 +707,53 @@ import { MyPrepTasks } from '@/components/hub/my-prep-tasks'
 **Step 2:** Find the meals tab rendering (around line 572-582). It currently looks like:
 
 ```tsx
-        {activeTab === 'meals' && (
-          <WeeklyMealBoard
-            groupId={group.id}
-            groupToken={group.group_token}
-            initialEntries={mealBoardEntries}
-            initialLoadError={mealBoardError}
-            initialHouseholdSummary={householdSummary}
-            initialHouseholdError={householdSummaryError}
-            profileToken={profileToken}
-            isChefOrAdmin={isOwnerOrAdmin}
-          />
-        )}
+{
+  activeTab === 'meals' && (
+    <WeeklyMealBoard
+      groupId={group.id}
+      groupToken={group.group_token}
+      initialEntries={mealBoardEntries}
+      initialLoadError={mealBoardError}
+      initialHouseholdSummary={householdSummary}
+      initialHouseholdError={householdSummaryError}
+      profileToken={profileToken}
+      isChefOrAdmin={isOwnerOrAdmin}
+    />
+  )
+}
 ```
 
 Replace with:
 
 ```tsx
-        {activeTab === 'meals' && (
-          <>
-            {profileToken && (
-              <MyPrepTasks
-                groupId={group.id}
-                groupToken={group.group_token}
-                profileToken={profileToken}
-              />
-            )}
-            <WeeklyMealBoard
-              groupId={group.id}
-              groupToken={group.group_token}
-              initialEntries={mealBoardEntries}
-              initialLoadError={mealBoardError}
-              initialHouseholdSummary={householdSummary}
-              initialHouseholdError={householdSummaryError}
-              profileToken={profileToken}
-              isChefOrAdmin={isOwnerOrAdmin}
-              currentProfileId={currentProfileId}
-            />
-          </>
-        )}
+{
+  activeTab === 'meals' && (
+    <>
+      {profileToken && (
+        <MyPrepTasks
+          groupId={group.id}
+          groupToken={group.group_token}
+          profileToken={profileToken}
+        />
+      )}
+      <WeeklyMealBoard
+        groupId={group.id}
+        groupToken={group.group_token}
+        initialEntries={mealBoardEntries}
+        initialLoadError={mealBoardError}
+        initialHouseholdSummary={householdSummary}
+        initialHouseholdError={householdSummaryError}
+        profileToken={profileToken}
+        isChefOrAdmin={isOwnerOrAdmin}
+        currentProfileId={currentProfileId}
+      />
+    </>
+  )
+}
 ```
 
 **Rules for this file:**
+
 - Do NOT rewrite or reformat the file. Only add the import and modify the meals tab section.
 - The `currentProfileId` and `profileToken` variables already exist in this component.
 
@@ -769,15 +776,15 @@ Replace with:
 
 ## Files Touched Summary
 
-| File | Action | Risk |
-|------|--------|------|
-| `database/migrations/20260425000021_meal_board_prep_assignments.sql` | CREATE | None |
-| `lib/hub/types.ts` | EDIT (3 lines) | Low |
-| `lib/hub/prep-assignment-actions.ts` | CREATE | None |
-| `components/hub/prep-assignment-badge.tsx` | CREATE | None |
-| `components/hub/my-prep-tasks.tsx` | CREATE | None |
-| `components/hub/weekly-meal-board.tsx` | EDIT (import + prop + 1 block) | Medium |
-| `app/(public)/hub/g/[groupToken]/hub-group-view.tsx` | EDIT (import + wrap meals tab) | Low |
+| File                                                                 | Action                         | Risk   |
+| -------------------------------------------------------------------- | ------------------------------ | ------ |
+| `database/migrations/20260425000021_meal_board_prep_assignments.sql` | CREATE                         | None   |
+| `lib/hub/types.ts`                                                   | EDIT (3 lines)                 | Low    |
+| `lib/hub/prep-assignment-actions.ts`                                 | CREATE                         | None   |
+| `components/hub/prep-assignment-badge.tsx`                           | CREATE                         | None   |
+| `components/hub/my-prep-tasks.tsx`                                   | CREATE                         | None   |
+| `components/hub/weekly-meal-board.tsx`                               | EDIT (import + prop + 1 block) | Medium |
+| `app/(public)/hub/g/[groupToken]/hub-group-view.tsx`                 | EDIT (import + wrap meals tab) | Low    |
 
 ---
 
