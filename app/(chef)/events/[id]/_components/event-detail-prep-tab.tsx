@@ -348,6 +348,15 @@ export function EventDetailPrepTab({
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-stone-200">Prep Timeline</h2>
           <div className="flex items-center gap-2">
+            {timeline && (
+              <a
+                href={`/api/prep-timeline/ical?eventId=${encodeURIComponent(eventId)}`}
+                download
+                className="inline-flex items-center gap-2 rounded-lg border border-stone-600 bg-stone-800 px-3 py-1.5 text-sm text-stone-300 hover:bg-stone-700"
+              >
+                Export to Calendar
+              </a>
+            )}
             {checkedItems.size > 0 && (
               <button
                 type="button"
