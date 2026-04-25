@@ -242,10 +242,15 @@ export function ingredientMatchesAllergen(ingredientName: string, allergen: stri
 
   if (!terms) {
     // Direct string match for custom allergens
-    return normalized.includes(allergen.toLowerCase())
+    const escapedAllergen = allergen.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    return new RegExp(`\\b${escapedAllergen}\\b`, 'i').test(normalized)
   }
 
-  return terms.some((term) => normalized.includes(term))
+  return terms.some((term) => {
+    // Word boundary match: "butter" matches "butter sauce" but not "butternut".
+    const regex = new RegExp(`\\b${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i')
+    return regex.test(normalized)
+  })
 }
 
 export function checkDishAgainstAllergens(
