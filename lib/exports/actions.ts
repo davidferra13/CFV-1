@@ -18,6 +18,21 @@ function formatDollars(cents: number): string {
   return dollars < 0 ? `-$${Math.abs(dollars).toFixed(2)}` : `$${dollars.toFixed(2)}`
 }
 
+function formatQuantity(value: number): string {
+  return Number.isInteger(value)
+    ? String(value)
+    : value.toFixed(3).replace(/0+$/, '').replace(/\.$/, '')
+}
+
+function filenameSlug(name: string): string {
+  return (
+    name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '') || 'export'
+  )
+}
+
 // --- Export 1: Per-Event Financial Statement ---
 
 export async function exportEventCSV(eventId: string) {
@@ -423,5 +438,254 @@ export async function exportAllEventsCSV(year: number) {
   return {
     csv: lines.join('\n'),
     filename: `chefflow-financials-${year}.csv`,
+  }
+}
+
+/**
+ * Export a recipe's ingredient cost breakdown as CSV.
+ * Uses the real schema: recipe_ingredients joined to ingredients for names and unit prices.
+ */
+export async function exportRecipeCostCSV(recipeId: string) {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data: recipe } = await db
+    .from('recipes')
+    .select('id, name, servings, yield_description, yield_quantity, yield_unit')
+    .eq('id', recipeId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!recipe) throw new Error('Recipe not found')
+
+  const { data: ingredients } = await db
+    .from('recipe_ingredients')
+    .select(
+      `
+      quantity,
+      unit,
+      computed_cost_cents,
+      sort_order,
+      ingredient:ingredients(name, cost_per_unit_cents, last_price_cents, last_price_source, last_price_store, preferred_vendor, price_unit, default_unit)
+    `
+    )
+    .eq('recipe_id', recipeId)
+    .order('sort_order', { ascending: true })
+
+  const rows: string[] = []
+  const servings = recipe.servings || recipe.yield_quantity || 1
+  const yieldText =
+    recipe.yield_description ||
+    [
+      recipe.yield_quantity ? formatQuantity(Number(recipe.yield_quantity)) : '',
+      recipe.yield_unit || '',
+    ]
+      .filter(Boolean)
+      .join(' ')
+
+  rows.push(csvRow(['Recipe', recipe.name, '', '', '', '']))
+  rows.push(csvRow(['Servings', String(servings), '', '', '', '']))
+  if (yieldText) {
+    rows.push(csvRow(['Yield', yieldText, '', '', '', '']))
+  }
+  rows.push(csvRow([]))
+  rows.push(csvRow(['Ingredient', 'Quantity', 'Unit', 'Unit Cost', 'Source', 'Extended Cost']))
+
+  let totalCents = 0
+  for (const row of ingredients ?? []) {
+    const ingredient = Array.isArray(row.ingredient) ? row.ingredient[0] : row.ingredient
+    const unitCostCents = ingredient?.cost_per_unit_cents ?? ingredient?.last_price_cents ?? null
+    const extCents =
+      row.computed_cost_cents ??
+      (unitCostCents !== null ? Math.round(Number(row.quantity || 0) * unitCostCents) : 0)
+    const source =
+      ingredient?.last_price_source ||
+      ingredient?.last_price_store ||
+      ingredient?.preferred_vendor ||
+      'unknown'
+    const priceUnit = ingredient?.price_unit || ingredient?.default_unit || ''
+
+    totalCents += extCents
+    rows.push(
+      csvRow([
+        ingredient?.name || '',
+        row.quantity ? formatQuantity(Number(row.quantity)) : '',
+        row.unit || '',
+        unitCostCents !== null
+          ? `${formatDollars(unitCostCents)}${priceUnit ? `/${priceUnit}` : ''}`
+          : 'N/A',
+        source,
+        formatDollars(extCents),
+      ])
+    )
+  }
+
+  rows.push(csvRow([]))
+  rows.push(csvRow(['Total Ingredient Cost', '', '', '', '', formatDollars(totalCents)]))
+  if (servings > 0) {
+    rows.push(
+      csvRow(['Cost Per Serving', '', '', '', '', formatDollars(Math.round(totalCents / servings))])
+    )
+  }
+
+  return {
+    csv: rows.join('\n'),
+    filename: `recipe-cost-${filenameSlug(recipe.name)}-${format(new Date(), 'yyyy-MM-dd')}.csv`,
+  }
+}
+
+/**
+ * Export a menu's full cost breakdown as CSV.
+ * Uses the real hierarchy: menu dishes contain components, and components link to recipes.
+ */
+export async function exportMenuCostCSV(menuId: string) {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data: menu } = await db
+    .from('menus')
+    .select('id, name, target_guest_count, event:events(guest_count)')
+    .eq('id', menuId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!menu) throw new Error('Menu not found')
+
+  const { data: dishes } = await db
+    .from('dishes')
+    .select('id, name, course_name, course_number, sort_order')
+    .eq('menu_id', menuId)
+    .eq('tenant_id', user.tenantId!)
+    .order('course_number', { ascending: true })
+    .order('sort_order', { ascending: true })
+
+  const rows: string[] = []
+  const event = Array.isArray(menu.event) ? menu.event[0] : menu.event
+  const guestCount = event?.guest_count ?? menu.target_guest_count ?? null
+
+  rows.push(csvRow(['Menu', menu.name, '', '', '', '', '', '']))
+  rows.push(csvRow(['Guests', guestCount ? String(guestCount) : '', '', '', '', '', '', '']))
+  rows.push(csvRow([]))
+  rows.push(
+    csvRow([
+      'Course',
+      'Dish',
+      'Component',
+      'Ingredient',
+      'Quantity',
+      'Unit',
+      'Unit Cost',
+      'Extended Cost',
+    ])
+  )
+
+  let grandTotalCents = 0
+
+  for (const dish of dishes ?? []) {
+    const { data: components } = await db
+      .from('components')
+      .select('id, name, recipe_id, scale_factor, sort_order')
+      .eq('dish_id', dish.id)
+      .eq('tenant_id', user.tenantId!)
+      .order('sort_order', { ascending: true })
+
+    for (const component of components ?? []) {
+      if (!component.recipe_id) {
+        rows.push(
+          csvRow([
+            dish.course_name || '',
+            dish.name || dish.course_name || '',
+            component.name || '',
+            '(no recipe linked)',
+            '',
+            '',
+            '',
+            '',
+          ])
+        )
+        continue
+      }
+
+      const { data: recipeIngredients } = await db
+        .from('recipe_ingredients')
+        .select(
+          `
+          quantity,
+          unit,
+          computed_cost_cents,
+          sort_order,
+          ingredient:ingredients(name, cost_per_unit_cents, last_price_cents, price_unit, default_unit)
+        `
+        )
+        .eq('recipe_id', component.recipe_id)
+        .order('sort_order', { ascending: true })
+
+      const scale = Number(component.scale_factor || 1)
+      let componentTotalCents = 0
+
+      for (const row of recipeIngredients ?? []) {
+        const ingredient = Array.isArray(row.ingredient) ? row.ingredient[0] : row.ingredient
+        const unitCostCents =
+          ingredient?.cost_per_unit_cents ?? ingredient?.last_price_cents ?? null
+        const baseCostCents =
+          row.computed_cost_cents ??
+          (unitCostCents !== null ? Math.round(Number(row.quantity || 0) * unitCostCents) : 0)
+        const scaledCostCents = Math.round(baseCostCents * scale)
+        const scaledQuantity = row.quantity ? formatQuantity(Number(row.quantity) * scale) : ''
+        const priceUnit = ingredient?.price_unit || ingredient?.default_unit || ''
+
+        componentTotalCents += scaledCostCents
+        rows.push(
+          csvRow([
+            dish.course_name || '',
+            dish.name || dish.course_name || '',
+            component.name || '',
+            ingredient?.name || '',
+            scaledQuantity,
+            row.unit || '',
+            unitCostCents !== null
+              ? `${formatDollars(unitCostCents)}${priceUnit ? `/${priceUnit}` : ''}`
+              : 'N/A',
+            formatDollars(scaledCostCents),
+          ])
+        )
+      }
+
+      rows.push(
+        csvRow([
+          '',
+          dish.name || dish.course_name || '',
+          `${component.name || 'Component'} subtotal`,
+          '',
+          '',
+          '',
+          '',
+          formatDollars(componentTotalCents),
+        ])
+      )
+      grandTotalCents += componentTotalCents
+    }
+  }
+
+  rows.push(csvRow([]))
+  rows.push(csvRow(['TOTAL MENU COST', '', '', '', '', '', '', formatDollars(grandTotalCents)]))
+  if (guestCount && guestCount > 0) {
+    rows.push(
+      csvRow([
+        'COST PER GUEST',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        formatDollars(Math.round(grandTotalCents / guestCount)),
+      ])
+    )
+  }
+
+  return {
+    csv: rows.join('\n'),
+    filename: `menu-cost-${filenameSlug(menu.name)}-${format(new Date(), 'yyyy-MM-dd')}.csv`,
   }
 }

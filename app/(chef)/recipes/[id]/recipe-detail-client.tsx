@@ -43,6 +43,8 @@ import { CostingWarningList } from '@/components/costing/costing-warning-detail'
 import { generateRecipeWarnings } from '@/lib/costing/generate-warnings'
 import { formatHoursAsReadable } from '@/lib/prep-timeline/compute-timeline'
 import { updateRecipePeakWindow } from '@/lib/prep-timeline/actions'
+import { CSVDownloadButton } from '@/components/exports/csv-download-button'
+import { exportRecipeCostCSV } from '@/lib/exports/actions'
 import { Snowflake } from '@/components/ui/icons'
 import { CompletionCard } from '@/components/completion/completion-card'
 import type { CompletionResult } from '@/lib/completion/types'
@@ -371,6 +373,11 @@ export function RecipeDetailClient({ recipe, initialCompletion, provenance }: Pr
           <Button variant="secondary" onClick={handleDuplicate} disabled={loading}>
             Duplicate
           </Button>
+          <CSVDownloadButton
+            action={() => exportRecipeCostCSV(recipe.id)}
+            label="Export Cost CSV"
+            variant="ghost"
+          />
           <Button
             variant="secondary"
             onClick={() => {

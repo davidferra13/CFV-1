@@ -49,6 +49,8 @@ import type { SimulatorDish } from '@/lib/menus/menu-simulator'
 import { CompletionCard } from '@/components/completion/completion-card'
 import type { CompletionResult } from '@/lib/completion/types'
 import { buildQuoteDraftHref } from '@/lib/quotes/quote-prefill'
+import { CSVDownloadButton } from '@/components/exports/csv-download-button'
+import { exportMenuCostCSV } from '@/lib/exports/actions'
 
 type RecipeInfo = {
   id: string
@@ -518,6 +520,11 @@ export function MenuDetailClient({
           <Button variant="secondary" onClick={handleExportCSV}>
             Export CSV
           </Button>
+          <CSVDownloadButton
+            action={() => exportMenuCostCSV(menu.id)}
+            label="Export Cost CSV"
+            variant="ghost"
+          />
           <Button variant="secondary" onClick={handleExportExcel}>
             Export Excel
           </Button>
