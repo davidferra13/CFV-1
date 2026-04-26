@@ -34,6 +34,8 @@ export interface PricingConfig {
 
   // Mileage
   mileage_rate_cents: number
+  overhead_percent: number
+  hourly_rate_cents: number
 
   // Weekend premium
   weekend_premium_pct: number // whole number, e.g. 10 = 10%

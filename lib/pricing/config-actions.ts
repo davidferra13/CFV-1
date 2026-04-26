@@ -25,6 +25,8 @@ const pricingConfigSchema = z.object({
   minimum_booking_cents: z.number().int().min(0).optional(),
   balance_due_hours: z.number().int().min(0).optional(),
   mileage_rate_cents: z.number().int().min(0).optional(),
+  overhead_percent: z.number().int().min(0).max(100).optional(),
+  hourly_rate_cents: z.number().int().min(0).optional(),
   weekend_premium_pct: z.number().int().min(0).max(100).optional(),
   weekend_premium_on: z.boolean().optional(),
   holiday_tier1_pct: z.number().int().min(0).max(100).optional(),

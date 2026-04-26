@@ -29,6 +29,8 @@ const DEFAULTS = {
   minimum_booking_cents: 0,
   balance_due_hours: 24,
   mileage_rate_cents: 70,
+  overhead_percent: 15,
+  hourly_rate_cents: 5000,
   weekend_premium_pct: 10,
   holiday_tier1_pct: 45,
   holiday_tier2_pct: 30,
@@ -366,6 +368,32 @@ export function PricingConfigForm({
                 config.mileage_rate_cents === DEFAULTS.mileage_rate_cents
                   ? `$${(DEFAULTS.mileage_rate_cents / 100).toFixed(2)}/mile (IRS standard)`
                   : `System default: ${DEFAULTS.mileage_rate_cents} cents ($${(DEFAULTS.mileage_rate_cents / 100).toFixed(2)}/mile)`
+              }
+            />
+          </div>
+          <div>
+            <Input
+              label="Overhead (%)"
+              type="number"
+              value={config.overhead_percent}
+              onChange={(e) => update('overhead_percent', parseInt(e.target.value, 10) || 0)}
+              helperText={
+                config.overhead_percent === DEFAULTS.overhead_percent
+                  ? '15% of ingredient cost (industry default)'
+                  : `System default: ${DEFAULTS.overhead_percent}%`
+              }
+            />
+          </div>
+          <div>
+            <Input
+              label="Hourly Labor Rate (cents)"
+              type="number"
+              value={config.hourly_rate_cents}
+              onChange={(e) => update('hourly_rate_cents', parseInt(e.target.value, 10) || 0)}
+              helperText={
+                config.hourly_rate_cents === DEFAULTS.hourly_rate_cents
+                  ? `$${(DEFAULTS.hourly_rate_cents / 100).toFixed(2)}/hr (default)`
+                  : `System default: $${(DEFAULTS.hourly_rate_cents / 100).toFixed(2)}/hr`
               }
             />
           </div>

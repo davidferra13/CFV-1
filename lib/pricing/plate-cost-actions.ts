@@ -137,15 +137,22 @@ export async function getTruePlateCost(input: {
     // 4. Fetch chef pricing config for mileage rate
     let mileageRateCents = IRS_MILEAGE_RATE_CENTS_2026
     let hourlyRateCents = DEFAULT_HOURLY_RATE_CENTS
+    let overheadPercent = DEFAULT_OVERHEAD_PERCENT
 
     const { data: pricingConfig } = await db
       .from('chef_pricing_config')
-      .select('mileage_rate_cents')
+      .select('mileage_rate_cents, overhead_percent, hourly_rate_cents')
       .eq('chef_id', tenantId)
       .single()
 
     if (pricingConfig?.mileage_rate_cents) {
       mileageRateCents = pricingConfig.mileage_rate_cents
+    }
+    if (pricingConfig?.overhead_percent != null) {
+      overheadPercent = pricingConfig.overhead_percent
+    }
+    if (pricingConfig?.hourly_rate_cents) {
+      hourlyRateCents = pricingConfig.hourly_rate_cents
     }
 
     // If no guest count from event, default to 1 to avoid division by zero
@@ -161,7 +168,7 @@ export async function getTruePlateCost(input: {
       hourlyRateCents,
       travelMiles,
       mileageRateCents,
-      overheadPercent: DEFAULT_OVERHEAD_PERCENT,
+      overheadPercent,
       quotedPriceCents: quotedPriceCents || undefined,
     })
 
