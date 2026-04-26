@@ -5,7 +5,7 @@ import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const DEFAULT_MODEL = process.env.PERSONA_MODEL || "gemma3:4b";
+const DEFAULT_MODEL = process.env.PERSONA_PLANNER_MODEL || process.env.PERSONA_MODEL || "hermes3:8b";
 const DEFAULT_OLLAMA_URL =
   process.env.OLLAMA_BASE_URL || "http://localhost:11434";
 

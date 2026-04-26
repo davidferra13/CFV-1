@@ -41,7 +41,9 @@ function parseArgs(argv) {
     once: false,
     watch: false,
     interval: 300,
-    model: process.env.PERSONA_MODEL || 'gemma3:4b',
+    model: process.env.PERSONA_MODEL || 'qwen3:4b',
+    analyzerModel: null, // resolved after parsing
+    plannerModel: null,  // resolved after parsing
     ollamaUrl: process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
     max: null, // resolved after parsing
     dryRun: false,
@@ -61,6 +63,12 @@ function parseArgs(argv) {
       case '--model':
         opts.model = args[++i];
         break;
+      case '--analyzer-model':
+        opts.analyzerModel = args[++i];
+        break;
+      case '--planner-model':
+        opts.plannerModel = args[++i];
+        break;
       case '--ollama-url':
         opts.ollamaUrl = args[++i];
         break;
@@ -75,6 +83,14 @@ function parseArgs(argv) {
     }
   }
 
+  // Resolve per-stage models: CLI flag > env var > fallback
+  if (!opts.analyzerModel) {
+    opts.analyzerModel = process.env.PERSONA_ANALYZER_MODEL || opts.model;
+  }
+  if (!opts.plannerModel) {
+    opts.plannerModel = process.env.PERSONA_PLANNER_MODEL || 'hermes3:8b';
+  }
+
   if (!opts.once && !opts.watch) {
     console.log('Usage: node devtools/persona-orchestrator.mjs --once|--watch [options]');
     console.log('');
@@ -82,7 +98,9 @@ function parseArgs(argv) {
     console.log('  --once               Single pass, then exit');
     console.log('  --watch              Continuous loop');
     console.log('  --interval <seconds> Seconds between cycles (default: 300)');
-    console.log('  --model <name>       Ollama model (default: PERSONA_MODEL env or gemma3:4b)');
+    console.log('  --model <name>       Default model for both stages (default: PERSONA_MODEL env or qwen3:4b)');
+    console.log('  --analyzer-model <name>  Model for Stage 1 analysis (default: PERSONA_ANALYZER_MODEL env or --model value)');
+    console.log('  --planner-model <name>   Model for Stage 2 planning (default: PERSONA_PLANNER_MODEL env or hermes3:8b)');
     console.log('  --ollama-url <url>   Ollama base URL (default: OLLAMA_BASE_URL env or http://localhost:11434)');
     console.log('  --max <N>            Max personas per cycle (default: 1 for watch, 999 for once)');
     console.log('  --dry-run            Print pending files and exit');
@@ -262,7 +280,7 @@ function runCycle(opts) {
     console.log(`[orchestrator] Analyzing: ${persona.filename}`);
     let analyzerStdout;
     try {
-      analyzerStdout = runAnalyzer(persona.filepath, opts.model, opts.ollamaUrl);
+      analyzerStdout = runAnalyzer(persona.filepath, opts.analyzerModel, opts.ollamaUrl);
     } catch (err) {
       const stderr = err.stderr || err.message || 'Unknown error';
       console.log(`[orchestrator] FAILED: ${persona.filename} - ${stderr.trim()}`);
@@ -295,7 +313,7 @@ function runCycle(opts) {
     let buildTasks = [];
 
     try {
-      runPlanner(reportPath, opts.model, opts.ollamaUrl);
+      runPlanner(reportPath, opts.plannerModel, opts.ollamaUrl);
       plannedAt = new Date().toISOString();
       buildTasks = countTaskFiles(persona.slug);
     } catch (err) {

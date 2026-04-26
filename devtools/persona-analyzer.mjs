@@ -6,7 +6,7 @@
  * Evaluates a persona file against ChefFlow capabilities using a local LLM.
  * Writes a structured gap report to docs/stress-tests/.
  *
- * Usage: node devtools/persona-analyzer.mjs <persona-file> [--model gemma3:4b] [--ollama-url http://localhost:11434]
+ * Usage: node devtools/persona-analyzer.mjs <persona-file> [--model qwen3:4b] [--ollama-url http://localhost:11434]
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync, renameSync, appendFileSync } from 'fs';
@@ -22,7 +22,7 @@ const ROOT = resolve(__dirname, '..');
 function parseArgs(argv) {
   const args = argv.slice(2);
   let personaFile = null;
-  let model = process.env.PERSONA_MODEL || 'gemma3:4b';
+  let model = process.env.PERSONA_ANALYZER_MODEL || process.env.PERSONA_MODEL || 'qwen3:4b';
   let ollamaUrl = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
 
   for (let i = 0; i < args.length; i++) {
@@ -104,13 +104,13 @@ async function main() {
   const { personaFile, model, ollamaUrl } = parseArgs(process.argv);
 
   if (!personaFile) {
-    console.log('Usage: node devtools/persona-analyzer.mjs <persona-file> [--model gemma3:4b] [--ollama-url http://localhost:11434]');
+    console.log('Usage: node devtools/persona-analyzer.mjs <persona-file> [--model qwen3:4b] [--ollama-url http://localhost:11434]');
     console.log('');
     console.log('Evaluates a persona file against ChefFlow capabilities using a local LLM.');
     console.log('Writes a structured gap report to docs/stress-tests/.');
     console.log('');
     console.log('Options:');
-    console.log('  --model <name>       Ollama model (default: PERSONA_MODEL env or gemma3:4b)');
+    console.log('  --model <name>       Ollama model (default: PERSONA_ANALYZER_MODEL or PERSONA_MODEL env or qwen3:4b)');
     console.log('  --ollama-url <url>   Ollama base URL (default: OLLAMA_BASE_URL env or http://localhost:11434)');
     process.exit(1);
   }
