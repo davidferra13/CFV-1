@@ -20,7 +20,10 @@ import {
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 import { NoRecipesIllustration } from '@/components/ui/branded-illustrations'
-import { calculateRecipeConfidence } from '@/lib/recipes/confidence-score'
+import {
+  calculateRecipeConfidence,
+  type RecipeConfidenceInput,
+} from '@/lib/recipes/confidence-score'
 
 export const metadata: Metadata = { title: 'Recipe Book' }
 
@@ -152,19 +155,12 @@ export default async function ChefRecipesPage() {
             </TableHeader>
             <TableBody>
               {recipes.map((recipe) => {
-                const ingredientCount = recipe.ingredient_count ?? 0
-                const confidence = calculateRecipeConfidence({
+                const confidenceInput: RecipeConfidenceInput = {
                   hasMethod: !!(recipe.method && recipe.method.trim()),
-                  hasIngredients: ingredientCount > 0,
-                  ingredientCount,
-                  hasPrices:
-                    recipe.has_all_prices === true ||
-                    (recipe.total_cost_cents != null && recipe.total_cost_cents > 0),
-                  pricedIngredientPct: recipe.has_all_prices
-                    ? 100
-                    : recipe.total_cost_cents != null && ingredientCount > 0
-                      ? 50
-                      : 0,
+                  hasIngredients: (recipe.ingredient_count ?? 0) > 0,
+                  ingredientCount: recipe.ingredient_count ?? 0,
+                  hasPrices: recipe.total_cost_cents != null,
+                  pricedIngredientPct: recipe.has_all_prices ? 100 : 0,
                   hasPeakWindows: false,
                   hasDietaryTags:
                     Array.isArray(recipe.dietary_tags) && recipe.dietary_tags.length > 0,
@@ -172,7 +168,8 @@ export default async function ChefRecipesPage() {
                   hasCategory: !!(recipe.category && recipe.category !== 'other'),
                   timesCookedInEvents: recipe.times_cooked ?? 0,
                   hasPhoto: !!recipe.photo_url,
-                })
+                }
+                const confidence = calculateRecipeConfidence(confidenceInput)
                 return (
                   <TableRow key={recipe.id}>
                     <TableCell className="font-medium">
