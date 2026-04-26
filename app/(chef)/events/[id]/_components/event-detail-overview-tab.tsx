@@ -32,6 +32,27 @@ import { DietaryKnowledgePanel } from '@/components/events/dietary-knowledge-pan
 import { EventCollaboratorsPanel } from '@/components/collaboration/event-collaborators-panel'
 import type { EventCollaborator } from '@/lib/collaboration/types'
 import { ChefDecisionBriefPanel } from '@/components/hub/chef-decision-brief'
+import { GarmentFlipToggle } from '@/components/events/garment-flip-toggle'
+import { ConstraintRadarPanel } from '@/components/events/constraint-radar-panel'
+import type { ConstraintRadarData } from '@/lib/events/constraint-radar-actions'
+import { MenuSharePanel } from '@/components/menus/menu-share-panel'
+import { ShareSplitButton } from '@/components/payments/share-split-button'
+
+type ServiceViewMenu = {
+  id: string
+  name: string
+  description: string | null
+  serviceStyle: string | null
+  dishes: Array<{
+    id: string
+    name?: string | null
+    courseName: string
+    courseNumber: number
+    description: string | null
+    dietaryTags: string[]
+    allergenFlags: string[]
+  }>
+}
 
 type EventDetailOverviewTabProps = {
   activeTab: EventDetailTab
@@ -56,6 +77,8 @@ type EventDetailOverviewTabProps = {
   templates: any[]
   chatConversationId?: string | null
   collaborators: EventCollaborator[]
+  eventMenuData?: ServiceViewMenu[]
+  constraintRadarData?: ConstraintRadarData | null
 }
 
 export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
@@ -82,445 +105,483 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
     templates,
     chatConversationId,
     collaborators,
+    eventMenuData,
+    constraintRadarData,
   } = props
 
   return (
     <EventDetailSection tab="overview" activeTab={activeTab}>
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Event Details */}
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Event Details</h2>
-          <dl className="space-y-3">
-            <div>
-              <dt className="text-sm font-medium text-stone-500">Location</dt>
-              <dd className="text-sm text-stone-100 mt-1">
-                {(() => {
-                  const parts = [
-                    event.location_address,
-                    event.location_city,
-                    event.location_state,
-                    event.location_zip,
-                  ].filter((v) => v && v !== 'TBD')
-                  if (parts.length === 0) {
-                    return (
-                      <span className="text-amber-400 font-medium">
-                        TBD
-                        {event.status === 'draft' && (
-                          <Link
-                            href={`/events/${event.id}/edit`}
-                            className="ml-2 text-xs text-brand-500 hover:underline font-normal"
-                          >
-                            Set location
-                          </Link>
+      <GarmentFlipToggle
+        menus={eventMenuData ?? []}
+        occasion={event.occasion}
+        guestCount={event.guest_count}
+        eventDate={event.event_date}
+      >
+        {constraintRadarData && (
+          <ConstraintRadarPanel data={constraintRadarData} eventId={event.id} />
+        )}
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Event Details */}
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-4">Event Details</h2>
+            <dl className="space-y-3">
+              <div>
+                <dt className="text-sm font-medium text-stone-500">Location</dt>
+                <dd className="text-sm text-stone-100 mt-1">
+                  {(() => {
+                    const parts = [
+                      event.location_address,
+                      event.location_city,
+                      event.location_state,
+                      event.location_zip,
+                    ].filter((v) => v && v !== 'TBD')
+                    if (parts.length === 0) {
+                      return (
+                        <span className="text-amber-400 font-medium">
+                          TBD
+                          {event.status === 'draft' && (
+                            <Link
+                              href={`/events/${event.id}/edit`}
+                              className="ml-2 text-xs text-brand-500 hover:underline font-normal"
+                            >
+                              Set location
+                            </Link>
+                          )}
+                        </span>
+                      )
+                    }
+                    return parts.join(', ')
+                  })()}
+                </dd>
+                {(event as any).location_lat && (event as any).location_lng ? (
+                  <div className="mt-2 space-y-2">
+                    {/* Mapbox static map â€” clickable to open Google Maps directions */}
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${(event as any).location_lat},${(event as any).location_lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={getEventMapUrl(
+                          (event as any).location_lng,
+                          (event as any).location_lat
+                        )}
+                        alt="Event location map"
+                        className="w-full h-[200px] object-cover rounded-lg border border-stone-700"
+                      />
+                    </a>
+                    {/* Travel distance/time from chef's home */}
+                    {travelInfo && (
+                      <p className="text-xs text-stone-300">
+                        {travelInfo.distanceMiles} miles &middot; ~{travelInfo.durationMinutes} min
+                        drive from home
+                      </p>
+                    )}
+                    {/* Open-Meteo weather forecast for the event date */}
+                    <WeatherPanel
+                      lat={(event as any).location_lat}
+                      lng={(event as any).location_lng}
+                      eventDate={event.event_date}
+                    />
+                  </div>
+                ) : event.location_address ? (
+                  <GeocodeAddressButton eventId={event.id} />
+                ) : null}
+              </div>
+              {(event as any).referral_partner && (
+                <div>
+                  <dt className="text-sm font-medium text-stone-500">Partner Venue</dt>
+                  <dd className="text-sm text-stone-100 mt-1">
+                    <Link
+                      href={`/partners/${(event as any).referral_partner_id}`}
+                      className="text-brand-600 hover:underline font-medium"
+                    >
+                      {(event as any).referral_partner.name}
+                    </Link>
+                    {(event as any).partner_location && (
+                      <span className="text-stone-500">
+                        {' '}
+                        â†’ {(event as any).partner_location.name}
+                        {(event as any).partner_location.city && (
+                          <span className="text-stone-300">
+                            {' '}
+                            (
+                            {[
+                              (event as any).partner_location.city,
+                              (event as any).partner_location.state,
+                            ]
+                              .filter(Boolean)
+                              .join(', ')}
+                            )
+                          </span>
                         )}
                       </span>
-                    )
-                  }
-                  return parts.join(', ')
-                })()}
-              </dd>
-              {(event as any).location_lat && (event as any).location_lng ? (
-                <div className="mt-2 space-y-2">
-                  {/* Mapbox static map â€” clickable to open Google Maps directions */}
-                  <a
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${(event as any).location_lat},${(event as any).location_lng}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={getEventMapUrl((event as any).location_lng, (event as any).location_lat)}
-                      alt="Event location map"
-                      className="w-full h-[200px] object-cover rounded-lg border border-stone-700"
-                    />
-                  </a>
-                  {/* Travel distance/time from chef's home */}
-                  {travelInfo && (
-                    <p className="text-xs text-stone-300">
-                      {travelInfo.distanceMiles} miles &middot; ~{travelInfo.durationMinutes} min
-                      drive from home
-                    </p>
-                  )}
-                  {/* Open-Meteo weather forecast for the event date */}
-                  <WeatherPanel
-                    lat={(event as any).location_lat}
-                    lng={(event as any).location_lng}
-                    eventDate={event.event_date}
-                  />
+                    )}
+                  </dd>
                 </div>
-              ) : event.location_address ? (
-                <GeocodeAddressButton eventId={event.id} />
-              ) : null}
-            </div>
-            {(event as any).referral_partner && (
+              )}
               <div>
-                <dt className="text-sm font-medium text-stone-500">Partner Venue</dt>
+                <dt className="text-sm font-medium text-stone-500">Serve Time</dt>
                 <dd className="text-sm text-stone-100 mt-1">
-                  <Link
-                    href={`/partners/${(event as any).referral_partner_id}`}
-                    className="text-brand-600 hover:underline font-medium"
-                  >
-                    {(event as any).referral_partner.name}
-                  </Link>
-                  {(event as any).partner_location && (
-                    <span className="text-stone-500">
-                      {' '}
-                      â†’ {(event as any).partner_location.name}
-                      {(event as any).partner_location.city && (
-                        <span className="text-stone-300">
-                          {' '}
-                          (
-                          {[
-                            (event as any).partner_location.city,
-                            (event as any).partner_location.state,
-                          ]
-                            .filter(Boolean)
-                            .join(', ')}
-                          )
-                        </span>
+                  {event.serve_time ? (
+                    event.serve_time
+                  ) : (
+                    <span className="text-amber-400 font-medium">
+                      TBD
+                      {event.status === 'draft' && (
+                        <Link
+                          href={`/events/${event.id}/edit`}
+                          className="ml-2 text-xs text-brand-500 hover:underline font-normal"
+                        >
+                          Set time
+                        </Link>
                       )}
                     </span>
                   )}
                 </dd>
               </div>
-            )}
-            <div>
-              <dt className="text-sm font-medium text-stone-500">Serve Time</dt>
-              <dd className="text-sm text-stone-100 mt-1">
-                {event.serve_time ? (
-                  event.serve_time
-                ) : (
-                  <span className="text-amber-400 font-medium">
-                    TBD
-                    {event.status === 'draft' && (
+              <div>
+                <dt className="text-sm font-medium text-stone-500">Guest Count</dt>
+                <dd className="text-sm text-stone-100 mt-1">
+                  {event.guest_count <= 1 && event.status === 'draft' ? (
+                    <span className="text-amber-400 font-medium">
+                      TBD
                       <Link
                         href={`/events/${event.id}/edit`}
                         className="ml-2 text-xs text-brand-500 hover:underline font-normal"
                       >
-                        Set time
+                        Set count
                       </Link>
-                    )}
-                  </span>
-                )}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-stone-500">Guest Count</dt>
-              <dd className="text-sm text-stone-100 mt-1">
-                {event.guest_count <= 1 && event.status === 'draft' ? (
-                  <span className="text-amber-400 font-medium">
-                    TBD
-                    <Link
-                      href={`/events/${event.id}/edit`}
-                      className="ml-2 text-xs text-brand-500 hover:underline font-normal"
-                    >
-                      Set count
-                    </Link>
-                  </span>
-                ) : (
-                  event.guest_count
-                )}
-              </dd>
-            </div>
-            {event.special_requests && (
-              <div>
-                <dt className="text-sm font-medium text-stone-500">Special Requests</dt>
-                <dd className="text-sm text-stone-100 mt-1 whitespace-pre-wrap">
-                  {event.special_requests}
+                    </span>
+                  ) : (
+                    event.guest_count
+                  )}
                 </dd>
               </div>
-            )}
-            <div>
-              <dt className="text-sm font-medium text-stone-500">Created</dt>
-              <dd className="text-sm text-stone-100 mt-1">
-                {format(new Date(event.created_at), 'MMM d, yyyy')}
-              </dd>
-            </div>
-          </dl>
-        </Card>
-
-        {/* Client Information */}
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Client Information</h2>
-          <dl className="space-y-3">
-            <div>
-              <dt className="text-sm font-medium text-stone-500">Name</dt>
-              <dd className="text-sm text-stone-100 mt-1">{event.client?.full_name}</dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-stone-500">Email</dt>
-              <dd className="text-sm text-stone-100 mt-1">
-                <a
-                  href={`mailto:${event.client?.email}`}
-                  className="text-brand-600 hover:underline"
-                >
-                  {event.client?.email}
-                </a>
-              </dd>
-            </div>
-            {event.client?.phone && (
+              {event.special_requests && (
+                <div>
+                  <dt className="text-sm font-medium text-stone-500">Special Requests</dt>
+                  <dd className="text-sm text-stone-100 mt-1 whitespace-pre-wrap">
+                    {event.special_requests}
+                  </dd>
+                </div>
+              )}
               <div>
-                <dt className="text-sm font-medium text-stone-500">Phone</dt>
+                <dt className="text-sm font-medium text-stone-500">Created</dt>
                 <dd className="text-sm text-stone-100 mt-1">
-                  <a href={`tel:${event.client.phone}`} className="text-brand-600 hover:underline">
-                    {event.client.phone}
+                  {format(new Date(event.created_at), 'MMM d, yyyy')}
+                </dd>
+              </div>
+            </dl>
+          </Card>
+
+          {/* Client Information */}
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-4">Client Information</h2>
+            <dl className="space-y-3">
+              <div>
+                <dt className="text-sm font-medium text-stone-500">Name</dt>
+                <dd className="text-sm text-stone-100 mt-1">{event.client?.full_name}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-stone-500">Email</dt>
+                <dd className="text-sm text-stone-100 mt-1">
+                  <a
+                    href={`mailto:${event.client?.email}`}
+                    className="text-brand-600 hover:underline"
+                  >
+                    {event.client?.email}
                   </a>
                 </dd>
               </div>
-            )}
-            {eventLoyaltyImpact && (
-              <div className="pt-2 border-t border-stone-800">
-                <dt className="text-sm font-medium text-stone-500">Loyalty</dt>
-                <dd className="text-sm text-stone-100 mt-1 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center rounded-full bg-brand-950 px-2 py-0.5 text-xs font-semibold text-brand-300 capitalize">
-                      {eventLoyaltyImpact.currentTier}
-                    </span>
-                    <span className="text-stone-300">
-                      {eventLoyaltyImpact.pointsBalance.toLocaleString()} points
-                    </span>
-                  </div>
-                  {event.status === 'completed' ? (
-                    eventLoyaltyPoints > 0 ? (
-                      <p className="text-xs text-emerald-700">
-                        This event awarded {eventLoyaltyPoints} points.
+              {event.client?.phone && (
+                <div>
+                  <dt className="text-sm font-medium text-stone-500">Phone</dt>
+                  <dd className="text-sm text-stone-100 mt-1">
+                    <a
+                      href={`tel:${event.client.phone}`}
+                      className="text-brand-600 hover:underline"
+                    >
+                      {event.client.phone}
+                    </a>
+                  </dd>
+                </div>
+              )}
+              {eventLoyaltyImpact && (
+                <div className="pt-2 border-t border-stone-800">
+                  <dt className="text-sm font-medium text-stone-500">Loyalty</dt>
+                  <dd className="text-sm text-stone-100 mt-1 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center rounded-full bg-brand-950 px-2 py-0.5 text-xs font-semibold text-brand-300 capitalize">
+                        {eventLoyaltyImpact.currentTier}
+                      </span>
+                      <span className="text-stone-300">
+                        {eventLoyaltyImpact.pointsBalance.toLocaleString()} points
+                      </span>
+                    </div>
+                    {event.status === 'completed' ? (
+                      eventLoyaltyPoints > 0 ? (
+                        <p className="text-xs text-emerald-700">
+                          This event awarded {eventLoyaltyPoints} points.
+                        </p>
+                      ) : (
+                        <p className="text-xs text-stone-500">
+                          No points were awarded for this event.
+                        </p>
+                      )
+                    ) : eventLoyaltyImpact.programMode === 'full' ? (
+                      <p className="text-xs text-stone-300">
+                        Estimated earn: {eventLoyaltyImpact.estimatedPoints} pts (
+                        {eventLoyaltyImpact.estimatedBreakdown}).
+                      </p>
+                    ) : eventLoyaltyImpact.programMode === 'lite' ? (
+                      <p className="text-xs text-stone-300">
+                        Lite mode active: this event contributes to visit-based tier progress.
                       </p>
                     ) : (
+                      <p className="text-xs text-stone-500">Loyalty program is currently off.</p>
+                    )}
+                    {eventLoyaltyImpact.nextTierName && eventLoyaltyImpact.pointsToNextTier > 0 && (
                       <p className="text-xs text-stone-500">
-                        No points were awarded for this event.
+                        {eventLoyaltyImpact.pointsToNextTier.toLocaleString()} points to{' '}
+                        {eventLoyaltyImpact.nextTierName}.
                       </p>
-                    )
-                  ) : eventLoyaltyImpact.programMode === 'full' ? (
-                    <p className="text-xs text-stone-300">
-                      Estimated earn: {eventLoyaltyImpact.estimatedPoints} pts (
-                      {eventLoyaltyImpact.estimatedBreakdown}).
-                    </p>
-                  ) : eventLoyaltyImpact.programMode === 'lite' ? (
-                    <p className="text-xs text-stone-300">
-                      Lite mode active: this event contributes to visit-based tier progress.
-                    </p>
-                  ) : (
-                    <p className="text-xs text-stone-500">Loyalty program is currently off.</p>
-                  )}
-                  {eventLoyaltyImpact.nextTierName && eventLoyaltyImpact.pointsToNextTier > 0 && (
-                    <p className="text-xs text-stone-500">
-                      {eventLoyaltyImpact.pointsToNextTier.toLocaleString()} points to{' '}
-                      {eventLoyaltyImpact.nextTierName}.
-                    </p>
-                  )}
-                </dd>
-              </div>
-            )}
-          </dl>
-        </Card>
+                    )}
+                  </dd>
+                </div>
+              )}
+            </dl>
+          </Card>
 
-        <EventCollaboratorsPanel eventId={event.id} collaborators={collaborators} />
-      </div>
+          <EventCollaboratorsPanel eventId={event.id} collaborators={collaborators} />
+        </div>
 
-      {/* Client Portal QR Code */}
-      {event.status !== 'cancelled' && event.status !== 'draft' && (
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Client Portal Access</h2>
-          <p className="text-sm text-stone-500 mb-4">
-            Share this QR code or link so your client can view their event portal.
-          </p>
-          <ClientPortalQR eventId={event.id} />
-          <div className="mt-4 pt-4 border-t border-stone-800">
-            <p className="text-sm text-stone-500 mb-3">
-              Send a pre-service worksheet for your client to fill out their preferences, allergies,
-              and details.
+        {/* Client Portal QR Code */}
+        {event.status !== 'cancelled' && event.status !== 'draft' && (
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-4">Client Portal Access</h2>
+            <p className="text-sm text-stone-500 mb-4">
+              Share this QR code or link so your client can view their event portal.
             </p>
-            <SendWorksheetButton
-              eventId={event.id}
-              clientId={event.client_id}
-              eventDate={event.event_date}
-              occasion={event.occasion}
-            />
-          </div>
-        </Card>
-      )}
-
-      {/* Share QR Code â€” only when an active event share link exists */}
-      {activeShare && shortShareUrl && (
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-2">Share QR</h2>
-          <p className="text-sm text-stone-500 mb-4">
-            Guests scan this code to view event details, RSVP, and more.
-          </p>
-          <div className="flex items-center gap-5">
-            <div className="flex-shrink-0">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={getQrCodeUrl(shortShareUrl, 150)}
-                alt="Event share QR code"
-                width={150}
-                height={150}
-                className="rounded-lg border border-stone-700 shadow-sm"
-              />
-            </div>
-            <div className="flex-1 space-y-2">
-              <p className="text-xs text-stone-300 break-all">{shortShareUrl}</p>
-              <a
-                href={fullShareUrl!}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block text-xs text-brand-600 hover:underline"
-              >
-                Open share page â†-
-              </a>
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {/* Service Contract */}
-      <ContractSection eventId={event.id} eventStatus={event.status} />
-
-      {/* AI Contract Generator */}
-      {!['cancelled'].includes(event.status) && <ContractGeneratorPanel eventId={event.id} />}
-
-      {/* Social Hub Link */}
-      {event.status !== 'draft' && event.status !== 'cancelled' && (
-        <EventHubLinkPanel
-          groupToken={hubGroupToken as string | null}
-          eventId={event.id}
-          profileToken={hubProfileToken}
-        />
-      )}
-      {event.id && event.tenant_id && (
-        <ChefDecisionBriefPanel eventId={event.id} tenantId={event.tenant_id} />
-      )}
-
-      {/* Guests & RSVPs */}
-      {event.status !== 'draft' && event.status !== 'cancelled' && (
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Guests & RSVPs</h2>
-          <ChefGuestPanel
-            eventShareId={activeShare?.id || null}
-            guests={guestList as any[]}
-            summary={rsvpSummary as any}
-            originalGuestCount={event.guest_count}
-            visibility={(activeShare?.visibility_settings as any) || null}
-          />
-          {activeShare && shortShareUrl && (
-            <HostMessageTemplate
-              shareUrl={shortShareUrl}
-              occasion={event.occasion}
-              eventDate={event.event_date}
-              chefName={chefDisplayName}
-            />
-          )}
-
-          {/* RSVP Tracker + Photo Consent â€” below the guest panel */}
-          {(guestList as any[]).length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <RSVPTrackerPanel
-                guests={guestList as any[]}
-                totalExpected={event.guest_count}
-                shareUrl={shortShareUrl}
+            <ClientPortalQR eventId={event.id} />
+            <div className="mt-4 pt-4 border-t border-stone-800">
+              <p className="text-sm text-stone-500 mb-3">
+                Send a pre-service worksheet for your client to fill out their preferences,
+                allergies, and details.
+              </p>
+              <SendWorksheetButton
+                eventId={event.id}
+                clientId={event.client_id}
+                eventDate={event.event_date}
                 occasion={event.occasion}
               />
-              <PhotoConsentSummary guests={guestList as any[]} />
             </div>
-          )}
-        </Card>
-      )}
+          </Card>
+        )}
 
-      {/* Share Recap â€” for completed events with an active share link */}
-      {event.status === 'completed' && activeShare && (
-        <Card className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-semibold text-stone-100">Event Recap</h3>
-              <p className="text-sm text-stone-500 mt-0.5">
-                Share a keepsake page with guests â€” photos, messages, and a booking link.
+        {/* Menu Selection Sharing */}
+        {event.status !== 'cancelled' && event.status !== 'draft' && (
+          <MenuSharePanel eventId={event.id} hasMenu={!!event.menu_id} />
+        )}
+
+        {/* Group Split Sharing */}
+        {event.status !== 'cancelled' &&
+          event.status !== 'draft' &&
+          event.quoted_price_cents > 0 &&
+          event.guest_count > 1 && (
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold mb-2">Group Split</h2>
+              <p className="text-sm text-stone-500 mb-4">
+                Generate a shareable link showing the per-person cost breakdown for this event.
               </p>
+              <ShareSplitButton eventId={event.id} />
+            </Card>
+          )}
+
+        {/* Share QR Code -- only when an active event share link exists */}
+        {activeShare && shortShareUrl && (
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-2">Share QR</h2>
+            <p className="text-sm text-stone-500 mb-4">
+              Guests scan this code to view event details, RSVP, and more.
+            </p>
+            <div className="flex items-center gap-5">
+              <div className="flex-shrink-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={getQrCodeUrl(shortShareUrl, 150)}
+                  alt="Event share QR code"
+                  width={150}
+                  height={150}
+                  className="rounded-lg border border-stone-700 shadow-sm"
+                />
+              </div>
+              <div className="flex-1 space-y-2">
+                <p className="text-xs text-stone-300 break-all">{shortShareUrl}</p>
+                <a
+                  href={fullShareUrl!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block text-xs text-brand-600 hover:underline"
+                >
+                  Open share page â†-
+                </a>
+              </div>
             </div>
-            <Button
-              variant="secondary"
-              href={`${process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'}/share/${activeShare.token}/recap`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              View Recap Page
-            </Button>
+          </Card>
+        )}
+
+        {/* Service Contract */}
+        <ContractSection eventId={event.id} eventStatus={event.status} />
+
+        {/* AI Contract Generator */}
+        {!['cancelled'].includes(event.status) && <ContractGeneratorPanel eventId={event.id} />}
+
+        {/* Social Hub Link */}
+        {event.status !== 'draft' && event.status !== 'cancelled' && (
+          <EventHubLinkPanel
+            groupToken={hubGroupToken as string | null}
+            eventId={event.id}
+            profileToken={hubProfileToken}
+          />
+        )}
+        {event.id && event.tenant_id && (
+          <ChefDecisionBriefPanel eventId={event.id} tenantId={event.tenant_id} />
+        )}
+
+        {/* Guests & RSVPs */}
+        {event.status !== 'draft' && event.status !== 'cancelled' && (
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-4">Guests & RSVPs</h2>
+            <ChefGuestPanel
+              eventShareId={activeShare?.id || null}
+              guests={guestList as any[]}
+              summary={rsvpSummary as any}
+              originalGuestCount={event.guest_count}
+              visibility={(activeShare?.visibility_settings as any) || null}
+            />
+            {activeShare && shortShareUrl && (
+              <HostMessageTemplate
+                shareUrl={shortShareUrl}
+                occasion={event.occasion}
+                eventDate={event.event_date}
+                chefName={chefDisplayName}
+              />
+            )}
+
+            {/* RSVP Tracker + Photo Consent â€” below the guest panel */}
+            {(guestList as any[]).length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <RSVPTrackerPanel
+                  guests={guestList as any[]}
+                  totalExpected={event.guest_count}
+                  shareUrl={shortShareUrl}
+                  occasion={event.occasion}
+                />
+                <PhotoConsentSummary guests={guestList as any[]} />
+              </div>
+            )}
+          </Card>
+        )}
+
+        {/* Share Recap â€” for completed events with an active share link */}
+        {event.status === 'completed' && activeShare && (
+          <Card className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-stone-100">Event Recap</h3>
+                <p className="text-sm text-stone-500 mt-0.5">
+                  Share a keepsake page with guests â€” photos, messages, and a booking link.
+                </p>
+              </div>
+              <Button
+                variant="secondary"
+                href={`${process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'}/share/${activeShare.token}/recap`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View Recap Page
+              </Button>
+            </div>
+          </Card>
+        )}
+
+        {/* Guest Pipeline QR Code */}
+        {event.status !== 'cancelled' && (event as any).guest_code && (
+          <GuestCodePanel
+            eventId={event.id}
+            guestCode={(event as any).guest_code}
+            guestLeadCount={guestLeadCount as number}
+          />
+        )}
+
+        {/* Guest Excitement Wall â€” Chef Moderation */}
+        {event.status !== 'cancelled' && (guestWallMessages as any[]).length > 0 && (
+          <GuestMessagesPanel messages={guestWallMessages as any[]} eventId={event.id} />
+        )}
+
+        {/* Guest Experience Panel (reminders, messages, dietary, docs, feedback, attendance) */}
+        {event.status !== 'draft' && event.status !== 'cancelled' && (
+          <GuestExperiencePanel eventId={event.id} eventStatus={event.status} />
+        )}
+
+        {/* Post-Event Guest Outreach (completed events only) */}
+        {event.status === 'completed' && <PostEventOutreachPanel eventId={event.id} />}
+
+        {/* Deterministic Allergen Conflict Check (instant, no AI) */}
+        {event.menu_id && event.status !== 'draft' && event.status !== 'cancelled' && (
+          <AllergenConflictAlert eventId={event.id} />
+        )}
+
+        {/* Knowledge-enhanced dietary flag coverage (shows verified flags per ingredient) */}
+        {event.menu_id && event.status !== 'draft' && event.status !== 'cancelled' && (
+          <DietaryKnowledgePanel eventId={event.id} />
+        )}
+
+        {/* AI Allergen Risk Matrix (on-demand, deeper analysis) */}
+        {event.status !== 'draft' && event.status !== 'cancelled' && (
+          <AllergenRiskPanel eventId={event.id} />
+        )}
+
+        {/* Repeat Menu Detection */}
+        {eventMenus && event.menu_id && !['draft', 'cancelled'].includes(event.status) && (
+          <RepeatMenuAlert eventId={event.id} clientName={event.client?.full_name} />
+        )}
+
+        {/* AI Menu Nutritional Summary */}
+        {eventMenus && event.status !== 'cancelled' && <MenuNutritionalPanel eventId={event.id} />}
+
+        {/* Communication Log */}
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Communication</h2>
+            {chatConversationId && (
+              <Link href={`/communication/chat/${chatConversationId}`}>
+                <Button variant="ghost" size="sm">
+                  Open Chat →
+                </Button>
+              </Link>
+            )}
+          </div>
+          {event.inquiry_id && messages.some((m: any) => m.inquiry_id) && (
+            <p className="text-xs text-stone-300 mb-3">
+              Includes messages from the original inquiry.
+            </p>
+          )}
+          <MessageThread messages={messages} />
+          <div className="mt-4 pt-4 border-t border-stone-700">
+            <MessageLogForm
+              eventId={event.id}
+              clientId={event.client_id ?? undefined}
+              templates={templates}
+            />
           </div>
         </Card>
-      )}
-
-      {/* Guest Pipeline QR Code */}
-      {event.status !== 'cancelled' && (event as any).guest_code && (
-        <GuestCodePanel
-          eventId={event.id}
-          guestCode={(event as any).guest_code}
-          guestLeadCount={guestLeadCount as number}
-        />
-      )}
-
-      {/* Guest Excitement Wall â€” Chef Moderation */}
-      {event.status !== 'cancelled' && (guestWallMessages as any[]).length > 0 && (
-        <GuestMessagesPanel messages={guestWallMessages as any[]} eventId={event.id} />
-      )}
-
-      {/* Guest Experience Panel (reminders, messages, dietary, docs, feedback, attendance) */}
-      {event.status !== 'draft' && event.status !== 'cancelled' && (
-        <GuestExperiencePanel eventId={event.id} eventStatus={event.status} />
-      )}
-
-      {/* Post-Event Guest Outreach (completed events only) */}
-      {event.status === 'completed' && <PostEventOutreachPanel eventId={event.id} />}
-
-      {/* Deterministic Allergen Conflict Check (instant, no AI) */}
-      {event.menu_id && event.status !== 'draft' && event.status !== 'cancelled' && (
-        <AllergenConflictAlert eventId={event.id} />
-      )}
-
-      {/* Knowledge-enhanced dietary flag coverage (shows verified flags per ingredient) */}
-      {event.menu_id && event.status !== 'draft' && event.status !== 'cancelled' && (
-        <DietaryKnowledgePanel eventId={event.id} />
-      )}
-
-      {/* AI Allergen Risk Matrix (on-demand, deeper analysis) */}
-      {event.status !== 'draft' && event.status !== 'cancelled' && (
-        <AllergenRiskPanel eventId={event.id} />
-      )}
-
-      {/* Repeat Menu Detection */}
-      {eventMenus && event.menu_id && !['draft', 'cancelled'].includes(event.status) && (
-        <RepeatMenuAlert eventId={event.id} clientName={event.client?.full_name} />
-      )}
-
-      {/* AI Menu Nutritional Summary */}
-      {eventMenus && event.status !== 'cancelled' && <MenuNutritionalPanel eventId={event.id} />}
-
-      {/* Communication Log */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Communication</h2>
-          {chatConversationId && (
-            <Link href={`/communication/chat/${chatConversationId}`}>
-              <Button variant="ghost" size="sm">
-                Open Chat →
-              </Button>
-            </Link>
-          )}
-        </div>
-        {event.inquiry_id && messages.some((m: any) => m.inquiry_id) && (
-          <p className="text-xs text-stone-300 mb-3">
-            Includes messages from the original inquiry.
-          </p>
-        )}
-        <MessageThread messages={messages} />
-        <div className="mt-4 pt-4 border-t border-stone-700">
-          <MessageLogForm
-            eventId={event.id}
-            clientId={event.client_id ?? undefined}
-            templates={templates}
-          />
-        </div>
-      </Card>
+      </GarmentFlipToggle>
     </EventDetailSection>
   )
 }

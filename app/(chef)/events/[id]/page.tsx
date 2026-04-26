@@ -22,6 +22,8 @@ import { getEventDOPProgress } from '@/lib/scheduling/actions'
 import { getEventLoyaltyImpactByTenant, getLoyaltyTransactions } from '@/lib/loyalty/actions'
 import { getMessageThread, getResponseTemplates } from '@/lib/messages/actions'
 import { EventStatusBadge } from '@/components/events/event-status-badge'
+import { ChefEventCountdown } from '@/components/events/chef-event-countdown'
+import { OpsPulseCard } from '@/components/events/ops-pulse-card'
 import { DietaryComplexityBadge } from '@/components/events/dietary-complexity-badge'
 import { EventRiskBadge } from '@/components/events/event-risk-badge'
 import { ServiceSimulationRollupCard } from '@/components/events/service-simulation-rollup-card'
@@ -41,6 +43,7 @@ import { ShoppingSubstitutions } from '@/components/events/shopping-substitution
 import { TimeTracking } from '@/components/events/time-tracking'
 import { MessageThread } from '@/components/messages/message-thread'
 import { MessageLogForm } from '@/components/messages/message-log-form'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { EventExportButton } from '@/components/exports/event-export-button'
@@ -172,6 +175,7 @@ import { getApprovalGates } from '@/lib/dinner-circles/corporate-actions'
 import { EventDefaultFlowPanel } from '@/components/events/event-default-flow-panel'
 import { getEventDefaultFlowSnapshotForTenant } from '@/lib/events/default-event-flow-data'
 import { EventCloneButton } from '@/components/events/event-clone-button'
+import { getEventConstraintRadar } from '@/lib/events/constraint-radar-actions'
 
 async function EventCompletionSection({ eventId }: { eventId: string }) {
   const result = await getCompletionForEntity('event', eventId)
@@ -685,6 +689,8 @@ export default async function EventDetailPage({
     courseProgress,
     pricingIntelligence,
     regionalSettings,
+    constraintRadarData,
+    inquiryReferralSource,
   ] = await Promise.all([
     getEventFinancialSummary(params.id).catch(() => ({
       totalPaid: 0,
@@ -703,7 +709,7 @@ export default async function EventDetailPage({
       fohMenu: false,
     })),
     getBusinessDocInfo(params.id).catch(() => null),
-    getEventMenusForCheck(params.id).catch(() => []),
+    getEventMenusForCheck(params.id).catch(() => [] as string[]),
     getEventExpenses(params.id).catch(() => ({ expenses: [], totalCents: 0 })),
     getEventProfitSummary(params.id).catch(() => null),
     getBudgetGuardrail(params.id).catch(() => null),
@@ -752,6 +758,28 @@ export default async function EventDetailPage({
       locale: 'en-US' as const,
       measurementSystem: 'imperial' as const,
     })),
+    getEventConstraintRadar(params.id).catch((error) => {
+      console.warn('[EventDetailPage] constraint radar failed', error)
+      return null
+    }),
+    // Fetch inquiry referral_source for referral context badge
+    event.inquiry_id
+      ? (async () => {
+          try {
+            const sb = createServerClient()
+            const { data } = await sb
+              .from('inquiries')
+              .select('referral_source')
+              .eq('id', event.inquiry_id!)
+              .eq('tenant_id', event.tenant_id)
+              .maybeSingle()
+            const referralSource = (data?.referral_source as string | null | undefined)?.trim()
+            return referralSource || null
+          } catch {
+            return null
+          }
+        })()
+      : Promise.resolve(null),
   ])
   const readinessAssistant = await getEventReadinessAssistant(params.id, pricingIntelligence).catch(
     () => null
@@ -762,6 +790,7 @@ export default async function EventDetailPage({
     0
   )
   const isEventOwner = (event as any).tenant_id === user.entityId
+  const referralSourceLabel = inquiryReferralSource?.replace(/_/g, ' ') ?? null
 
   const COLLAB_ROLE_LABELS: Record<string, string> = {
     primary: 'Primary Chef',
@@ -905,6 +934,9 @@ export default async function EventDetailPage({
       ? getParAlerts().catch(() => [])
       : Promise.resolve([]),
   ])
+  const eventMenuData = (menuLibraryData?.menus ?? []).filter((m: any) =>
+    eventMenus?.includes(m.id)
+  )
 
   // Ticket sales data
   const [ticketTypes, ticketList, ticketSummary] = await Promise.all([
@@ -939,6 +971,10 @@ export default async function EventDetailPage({
   const { timeline: prepTimeline } = await getEventPrepTimeline(params.id).catch(() => ({
     timeline: null,
   }))
+
+  // Completion score for Ops Pulse
+  const completionResult = await getCompletionForEntity('event', params.id).catch(() => null)
+  const completionScore = completionResult?.score ?? null
 
   // Cost forecast for future events with menus
   let costForecast: CostForecast | null = null
@@ -1077,6 +1113,7 @@ export default async function EventDetailPage({
               {event.occasion || 'Untitled Event'}
             </h1>
             <EventStatusBadge status={event.status} />
+            {referralSourceLabel && <Badge variant="info">Referral: {referralSourceLabel}</Badge>}
             <DietaryComplexityBadge result={dietaryComplexity} />
             <EventRiskBadge result={eventRisk} />
           </div>
@@ -1093,6 +1130,11 @@ export default async function EventDetailPage({
               </span>
             )}
           </p>
+          <ChefEventCountdown
+            eventDate={dateToDateString(event.event_date)}
+            serveTime={(event as any).serve_time}
+            status={event.status}
+          />
           {/* EC-G26 fix: show co-host names in event header */}
           {(() => {
             const acceptedCollabs = (eventCollaborators as any[]).filter(
@@ -1280,6 +1322,35 @@ export default async function EventDetailPage({
         </Suspense>
       </WidgetErrorBoundary>
 
+      {/* Ops Pulse: inside-out operational summary */}
+      {!['cancelled', 'completed'].includes(event.status) && (
+        <WidgetErrorBoundary name="Ops Pulse" compact>
+          <OpsPulseCard
+            eventDate={dateToDateString(event.event_date)}
+            serveTime={(event as any).serve_time}
+            status={event.status}
+            completionScore={completionScore}
+            prepDays={
+              prepTimeline
+                ? (prepTimeline as any).days?.map((d: any) => ({
+                    label: d.label,
+                    itemCount: d.items?.length ?? 0,
+                    totalMinutes: d.totalPrepMinutes ?? 0,
+                    isPast: d.isPast,
+                    isToday: d.isToday,
+                  }))
+                : undefined
+            }
+            groceryDeadline={
+              (prepTimeline as any)?.groceryDeadline
+                ? dateToDateString((prepTimeline as any).groceryDeadline)
+                : null
+            }
+            untimedCount={(prepTimeline as any)?.untimedItems?.length}
+          />
+        </WidgetErrorBoundary>
+      )}
+
       {/* Schedule Summary & DOP Progress */}
       {dopProgress && !['cancelled'].includes(event.status) && (
         <Card className="p-4">
@@ -1411,6 +1482,8 @@ export default async function EventDetailPage({
         templates={templates}
         chatConversationId={eventChatConversationId as string | null}
         collaborators={eventCollaborators as any[]}
+        eventMenuData={eventMenuData}
+        constraintRadarData={constraintRadarData}
       />
 
       {/* TAB: MONEY â€” Financials, payments, expenses  */}
