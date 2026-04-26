@@ -4,7 +4,7 @@
 // Chef works through all unrecorded components one at a time.
 // Designed for maximum speed: paste description → AI parses → confirm → next.
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
@@ -17,7 +17,14 @@ import { parseRecipeFromText } from '@/lib/ai/parse-recipe'
 import type { ParsedIngredient } from '@/lib/ai/parse-recipe'
 import type { UnrecordedComponentForSprint } from '@/lib/recipes/actions'
 import { format } from 'date-fns'
-import { BookOpen, ChevronRight, SkipForward, CheckCircle } from '@/components/ui/icons'
+import {
+  BookOpen,
+  ChevronRight,
+  SkipForward,
+  CheckCircle,
+  Mic,
+  MicOff,
+} from '@/components/ui/icons'
 
 type Props = {
   initialItems: UnrecordedComponentForSprint[]
@@ -34,6 +41,71 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [lastSaved, setLastSaved] = useState<string | null>(null)
+  const [isListening, setIsListening] = useState(false)
+  const [speechSupported, setSpeechSupported] = useState(false)
+  const recognitionRef = useRef<any>(null)
+
+  useEffect(() => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      setSpeechSupported(false)
+      return
+    }
+    setSpeechSupported(true)
+
+    const recognition = new SpeechRecognition()
+    recognition.continuous = true
+    recognition.interimResults = true
+    recognition.lang = 'en-US'
+
+    recognition.onresult = (event: any) => {
+      let finalTranscript = ''
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript + ' '
+        }
+      }
+      if (finalTranscript) {
+        setRawText((prev) => prev + finalTranscript)
+      }
+    }
+
+    recognition.onerror = (event: any) => {
+      console.error('[speech]', event.error)
+      setIsListening(false)
+    }
+
+    recognition.onend = () => {
+      setIsListening(false)
+    }
+
+    recognitionRef.current = recognition
+
+    return () => {
+      try {
+        recognition.stop()
+      } catch {
+        // ignore
+      }
+    }
+  }, [])
+
+  const toggleListening = () => {
+    if (!recognitionRef.current) return
+    if (isListening) {
+      recognitionRef.current.stop()
+      setIsListening(false)
+    } else {
+      try {
+        recognitionRef.current.start()
+        setIsListening(true)
+      } catch {
+        // Already started, ignore
+      }
+    }
+  }
 
   const total = initialItems.length
   const remaining = queue.length
@@ -41,6 +113,10 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
   const progressPercent = total === 0 ? 100 : Math.round((doneCount / total) * 100)
 
   const handleSave = async () => {
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop()
+      setIsListening(false)
+    }
     if (!current || !rawText.trim()) return
     setLoading(true)
     setError('')
@@ -94,6 +170,10 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
   }
 
   const handleSkip = () => {
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop()
+      setIsListening(false)
+    }
     if (!current) return
     // Move current to end of queue
     setQueue((prev) => [...prev.slice(1), prev[0]])
@@ -193,11 +273,37 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
 
           <CardContent className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-stone-300 mb-1">
-                {aiConfigured
-                  ? 'Describe how you make it - ingredients, method, anything you remember'
-                  : 'Describe the method (will save as-is)'}
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-stone-300">
+                  {aiConfigured
+                    ? 'Describe how you make it - ingredients, method, anything you remember'
+                    : 'Describe the method (will save as-is)'}
+                </label>
+                {speechSupported && (
+                  <button
+                    type="button"
+                    onClick={toggleListening}
+                    disabled={loading}
+                    className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition-colors ${
+                      isListening
+                        ? 'bg-red-900/60 text-red-300 hover:bg-red-900/80 animate-pulse'
+                        : 'bg-stone-700 text-stone-300 hover:bg-stone-600'
+                    }`}
+                  >
+                    {isListening ? (
+                      <>
+                        <MicOff className="h-3.5 w-3.5" />
+                        Stop
+                      </>
+                    ) : (
+                      <>
+                        <Mic className="h-3.5 w-3.5" />
+                        Dictate
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
               <Textarea
                 value={rawText}
                 onChange={(e) => setRawText(e.target.value)}
@@ -206,6 +312,11 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
                 disabled={loading}
                 autoFocus
               />
+              {isListening && (
+                <p className="text-xs text-red-400 animate-pulse mt-1">
+                  Listening... speak naturally, then tap Stop when done
+                </p>
+              )}
               {aiConfigured && (
                 <p className="text-xs text-stone-300 mt-1">
                   Your description will be parsed into a structured recipe - review it on the recipe
