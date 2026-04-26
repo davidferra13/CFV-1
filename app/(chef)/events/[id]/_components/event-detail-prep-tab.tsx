@@ -177,15 +177,20 @@ function DayCard({
   eventId,
   checkedItems,
   toggleItem,
+  maxDayMinutes,
 }: {
   day: PrepDay
   eventId: string
   checkedItems: Set<string>
   toggleItem: (key: string) => void
+  maxDayMinutes: number
 }) {
   const completedCount = day.items.filter((item) =>
     checkedItems.has(checkKey(eventId, item.recipeId, item.componentName, item.dishName))
   ).length
+  const isHeavyDay = day.activeMinutes >= 240
+  const activeWidth = `${(day.activeMinutes / maxDayMinutes) * 100}%`
+  const passiveWidth = `${(day.passiveMinutes / maxDayMinutes) * 100}%`
 
   // Card style based on state
   let borderClass = 'border-stone-700'
@@ -199,6 +204,8 @@ function DayCard({
   } else if (day.isPast) {
     borderClass = 'border-stone-800'
     bgClass = 'opacity-60'
+  } else if (isHeavyDay) {
+    borderClass = 'border-amber-700/60'
   }
 
   const isDeadline = day.deadlineType != null
@@ -213,8 +220,15 @@ function DayCard({
             {day.deadlineType === 'prep' && <ListChecks className="h-4 w-4 text-orange-400" />}
             {day.isServiceDay && <Calendar className="h-4 w-4 text-brand-400" />}
             <div>
-              <div className="text-sm font-medium text-stone-200">
-                {format(day.date, 'EEEE, MMM d')}
+              <div className="flex items-center gap-2">
+                <div className="text-sm font-medium text-stone-200">
+                  {format(day.date, 'EEEE, MMM d')}
+                </div>
+                {isHeavyDay && (
+                  <Badge variant="warning" className="text-[10px] px-1.5 py-0">
+                    Heavy day
+                  </Badge>
+                )}
               </div>
               <div className="text-xs text-stone-500">
                 {day.isServiceDay ? 'Service day' : day.label}
@@ -244,6 +258,22 @@ function DayCard({
           )}
         </div>
       </div>
+
+      {day.items.length > 0 && (
+        <div className="mx-4 my-1 h-1.5 rounded-full bg-stone-800 overflow-hidden">
+          <div className="flex h-full">
+            {day.activeMinutes > 0 && (
+              <div
+                className={isHeavyDay ? 'bg-amber-500' : 'bg-brand-500'}
+                style={{ width: activeWidth }}
+              />
+            )}
+            {day.passiveMinutes > 0 && (
+              <div className="bg-stone-600" style={{ width: passiveWidth }} />
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Items */}
       {day.items.length > 0 ? (
@@ -342,6 +372,10 @@ export function EventDetailPrepTab({
     })
   }
 
+  const maxDayMinutes = timeline
+    ? Math.max(...timeline.days.map((day) => day.totalPrepMinutes), 1)
+    : 1
+
   return (
     <EventDetailSection tab="prep" activeTab={activeTab}>
       <div className="space-y-4 mt-6">
@@ -439,6 +473,7 @@ export function EventDetailPrepTab({
                 eventId={eventId}
                 checkedItems={checkedItems}
                 toggleItem={toggleItem}
+                maxDayMinutes={maxDayMinutes}
               />
             ))}
 
