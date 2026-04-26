@@ -58,15 +58,15 @@ const GAP_CATEGORIES = [
   { id: 'location-venue', keywords: ['location', 'venue', 'setup', 'mobile', 'site', 'space'] },
   {
     id: 'payment-financial',
-    keywords: ['payment', 'financial', 'billing', 'pricing', 'cost', 'revenue', 'commitment', 'deposit', 'invoice'],
+    keywords: ['payment', 'financial', 'billing', 'pricing', 'cost', 'revenue', 'commitment', 'deposit', 'invoice', 'price', 'freshness', 'contract', 'real-time'],
   },
   {
     id: 'compliance-legal',
-    keywords: ['compliance', 'legal', 'regulation', 'documentation', 'audit', 'license', 'liability'],
+    keywords: ['compliance', 'legal', 'regulation', 'documentation', 'audit', 'license', 'liability', 'traceability', 'evidence', 'cockpit', 'governance'],
   },
   {
     id: 'dosing-cannabis',
-    keywords: ['dose', 'dosing', 'cannabis', 'thc', 'cbd', 'infusion', 'potency', 'terpene'],
+    keywords: ['dose', 'dosing', 'cannabis', 'thc', 'cbd', 'infusion', 'potency', 'terpene', 'tolerance', 'dose-curve', 'molecule', 'batch lineage'],
   },
   {
     id: 'dietary-medical',
@@ -74,11 +74,11 @@ const GAP_CATEGORIES = [
   },
   {
     id: 'recipe-menu',
-    keywords: ['recipe', 'menu', 'dish', 'course', 'ingredient', 'prep', 'archive'],
+    keywords: ['recipe', 'menu', 'dish', 'course', 'ingredient', 'prep', 'archive', 'planner', 'builder', 'pairing', 'provisioning'],
   },
   {
     id: 'scheduling-calendar',
-    keywords: ['schedule', 'calendar', 'booking', 'availability', 'time', 'conflict', 'timeline'],
+    keywords: ['schedule', 'calendar', 'booking', 'availability', 'time', 'conflict', 'timeline', 'offline', 'sync', 'conflict-safe', 'real-time'],
   },
   {
     id: 'communication',
@@ -86,11 +86,11 @@ const GAP_CATEGORIES = [
   },
   {
     id: 'staffing-team',
-    keywords: ['staff', 'team', 'hire', 'brigade', 'delegation', 'assistant', 'subcontractor', 'multi-chef'],
+    keywords: ['staff', 'team', 'hire', 'brigade', 'delegation', 'assistant', 'subcontractor', 'multi-chef', 'director', 'governance', 'cross-event'],
   },
   {
     id: 'sourcing-supply',
-    keywords: ['sourcing', 'supplier', 'vendor', 'procurement', 'supply chain', 'farm', 'seasonal'],
+    keywords: ['sourcing', 'supplier', 'vendor', 'procurement', 'supply chain', 'farm', 'seasonal', 'store', 'market', 'route', 'cart', 'optimizer', 'availability'],
   },
   {
     id: 'costing-margin',
@@ -98,15 +98,15 @@ const GAP_CATEGORIES = [
   },
   {
     id: 'reporting-analytics',
-    keywords: ['report', 'analytics', 'dashboard', 'data', 'metrics', 'performance', 'insight', 'history'],
+    keywords: ['report', 'analytics', 'dashboard', 'data', 'metrics', 'performance', 'insight', 'history', 'outcome', 'intelligence', 'longitudinal', 'telemetry'],
   },
   {
     id: 'onboarding-ux',
-    keywords: ['onboarding', 'first time', 'setup', 'learning curve', 'user experience', 'confusing', 'overwhelming'],
+    keywords: ['onboarding', 'first time', 'setup', 'learning curve', 'user experience', 'confusing', 'overwhelming', 'safety command', 'safe-only', 'reaction log'],
   },
   {
     id: 'scaling-multi',
-    keywords: ['scale', 'multi-location', 'multi-unit', 'growth', 'franchise', 'brand', 'expansion'],
+    keywords: ['scale', 'multi-location', 'multi-unit', 'growth', 'franchise', 'brand', 'expansion', 'multi-event', 'charter', 'voyage', 'roster', 'churn'],
   },
   {
     id: 'delivery-logistics',
@@ -369,19 +369,7 @@ function categorizeGaps(personas) {
         for (const kw of cat.keywords) {
           if (searchText.includes(kw.toLowerCase())) hits++
         }
-        if (hits >= 2) scores.push({ id: cat.id, hits })
-      }
-
-      if (scores.length === 0) {
-        // Try single-keyword match for more specific terms (multi-word keywords)
-        for (const cat of GAP_CATEGORIES) {
-          for (const kw of cat.keywords) {
-            if (kw.includes(' ') && searchText.includes(kw.toLowerCase())) {
-              scores.push({ id: cat.id, hits: 1 })
-              break
-            }
-          }
-        }
+        if (hits >= 1) scores.push({ id: cat.id, hits })
       }
 
       if (scores.length === 0) {

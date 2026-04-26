@@ -1,90 +1,55 @@
 # Persona Stress Test: Kai Donovan
 
-## Generated: 2026-04-25
+**Type:** Chef
+**Date:** 2026-04-25
+**Method:** local-ollama-v2
 
-## Type: Chef
+## Summary
 
-## Persona Summary
+ChefFlow's permanent-restaurant architecture clashes with Kai's ephemeral event model. It lacks native support for invite-only access, drop management, and one-night event lifecycles – forcing manual workarounds that contradict Kai's control requirements.
 
-Kai Donovan runs invite-only supper club drops with rotating venues, one-night menus, and high demand that spikes at release time. Kai needs controlled access, staged invites, waitlist orchestration, and strong guest curation to protect the cultural vibe of each event. ChefFlow already covers broad event, CRM, finance, and community operations, but it is still oriented toward recurring private-chef workflows rather than ephemeral drop-native operations.
+## Score: 35/100
 
-## Capability Fit (rate each as SUPPORTED / PARTIAL / MISSING)
-
-- Event planning and execution workflow (event detail, prep, checklist, service simulation): **SUPPORTED**
-- Client CRM and repeat-guest history tracking: **SUPPORTED**
-- Community and circles for recurring audience relationships: **SUPPORTED**
-- Inquiry-to-quote pipeline for demand intake: **SUPPORTED**
-- Payment collection and invoice tracking for commitment control: **SUPPORTED**
-- Venue and travel ops support for location volatility: **PARTIAL**
-- Waitlist and invite-wave access control for private drops: **PARTIAL**
-- Sell-out surge handling and fair allocation for drops: **MISSING**
-- Audience composition curation tools (mix balancing, cohort targeting): **MISSING**
-- End-to-end ephemeral event lifecycle (concept to archive insights): **PARTIAL**
-- One-night menu archival and replay intelligence for future drops: **PARTIAL**
+- Workflow Coverage (0-40): 15 -- No ephemeral event lifecycle or drop engine for high-demand releases
+- Data Model Fit (0-25): 10 -- Designed for permanent venues, not temporary locations
+- UX Alignment (0-15): 5 -- Complex for high-stress drop management
+- Financial Accuracy (0-10): 2 -- Payment security features don't enforce commitment for ephemeral events
+- Onboarding Viability (0-5): 1 -- Requires 3+ custom workflows to simulate basic access control
+- Retention Likelihood (0-5): 1 -- High abandonment risk due to structural mismatch
 
 ## Top 5 Gaps
 
-1. **No explicit drop-release engine for high-demand event launches**
-   - Missing: timed release windows, queue/fair-allocation logic, and controlled sell-out flow purpose-built for minute-level demand spikes.
-   - File(s) to change first: `app/(chef)/events`, `app/(public)/book`, and related release/status UX surfaces.
-   - Effort: **Large** (new workflow + data model + public flow integration).
+### Gap 1: Ephemeral Event Lifecycle Management
 
-2. **Access control is not modeled as invite waves and tiered admission**
-   - Missing: tiered cohorts (VIP, prior guests, waitlist priority), wave scheduling, and visibility rules per cohort.
-   - File(s) to change first: inquiry/event intake and client segmentation surfaces in `app/(chef)/inquiries`, `app/(chef)/events`, and `app/(chef)/clients`.
-   - Effort: **Large** (permissions + targeting + messaging cadence).
+**Severity:** HIGH
+ChefFlow lacks a dedicated workflow for one-night events from concept to archive. Kai's model requires rapid setup (24h max) and immediate post-event analysis, but ChefFlow's event system is designed for recurring, long-term operations. Without this, Kai would rebuild everything manually for each drop.
 
-3. **Audience curation lacks composition intelligence**
-   - Missing: guest-mix goals, composition constraints, and conflict or balance indicators before finalizing attendance.
-   - File(s) to change first: event guest management and CRM relationship modules in `app/(chef)/events` and `app/(chef)/clients`.
-   - Effort: **Medium-Large** (new scoring/heuristics and event UX).
+### Gap 2: Tiered Access and Waitlist Control
 
-4. **Ephemeral event lifecycle is present in pieces, not as one drop-native spine**
-   - Missing: explicit lifecycle stages (concept, teaser, invite waves, sell-out, service, recap, archive) with stage gates and completion criteria.
-   - File(s) to change first: event detail workflow surfaces under `app/(chef)/events/[id]` and queue/intelligence summaries.
-   - Effort: **Medium** (workflow unification on top of existing features).
+**Severity:** HIGH
+The system has no native tiered access permissions or waitlist management. Kai's 200-person waitlists require controlled release waves and priority allocation, but ChefFlow only handles public events or simple booking without access tiers.
 
-5. **Menu and venue reuse intelligence is underpowered for one-night concepts**
-   - Missing: structured post-mortem tagging for one-night dishes, repeatability scoring by venue constraints, and drop-to-drop performance memory.
-   - File(s) to change first: menu, recipe, event recap, and analytics views in `app/(chef)/menus`, `app/(chef)/recipes`, and reporting sections.
-   - Effort: **Medium** (metadata + reporting + retrieval UX).
+### Gap 3: Drop Engine for High-Demand Releases
 
-## Quick Wins Found
+**Severity:** HIGH
+ChefFlow has no mechanism for handling sell-out flow during high-demand events. When Kai releases an event, the system would require manual intervention to manage 200+ people, causing first-come chaos and message overload.
 
-1. **Add “Drop Type” guidance copy in event creation empty state**
-   - Exact file: `app/(chef)/events/new/*` (event creation UI text component).
-   - Change (under 20 lines): add helper text and placeholder values for “Invite-only drop”, “Wave release”, and “Capacity cap”.
-   - Why: improves mental-model fit for Kai without logic changes.
+### Gap 4: Audience Curation and Composition
 
-2. **Add “Invite wave” label option in existing status/filter UI copy**
-   - Exact file: `app/(chef)/inquiries/*` or `app/(chef)/events/*` filter label component.
-   - Change (under 20 lines): add one label and tooltip text to map existing pipeline stages to wave-style language.
-   - Why: reduces translation friction from traditional booking vocabulary.
+**Severity:** MEDIUM
+While ChefFlow has audience segmentation, it lacks tools to curate energy and cultural fit for Kai's specific audience needs. The system can't filter guests by cultural resonance or event energy levels.
 
-3. **Add waitlist-first empty state CTA text on public booking status page**
-   - Exact file: `app/(public)/*booking*` status/empty-state copy component.
-   - Change (under 20 lines): insert copy encouraging waitlist signup when event is sold out.
-   - Why: protects conversion during sell-out moments without backend changes.
+### Gap 5: Location Adaptation and Venue Constraints
 
-4. **Add recap prompt text for one-night menu archival in event closeout UI**
-   - Exact file: `app/(chef)/events/[id]/*` closeout/summary panel text.
-   - Change (under 20 lines): add prompt line for “what to repeat”, “what to retire”, and “best guest response”.
-   - Why: improves retention of ephemeral menu learnings.
+**Severity:** MEDIUM
+ChefFlow doesn't track venue capabilities or adjust setup requirements for each event. Kai's secret locations require rapid reconfiguration, but the system expects fixed venues with permanent capabilities.
 
-5. **Add “community continuity” hint in circles/events cross-link UI**
-   - Exact file: `components/*circle*` or event follow-up helper text component.
-   - Change (under 20 lines): add sentence guiding host to route attendees into a post-event circle.
-   - Why: strengthens repeat guest network outcomes with zero logic risk.
+## Quick Wins
 
-## Score: 73/100
-
-- Workflow Coverage: **30/40**
-- Data Model Fit: **16/25**
-- UX Alignment: **17/25**
-- Financial Accuracy: **10/10**
-
-Weighted justification: ChefFlow is strong on core operations, CRM, and payments, but lacks first-class drop mechanics, invite-wave control, and audience-composition tooling that are central to Kai's operating model.
+1. Add auto-archiving for events after 24h with post-event analytics
+2. Build tiered access with waitlist management for invite-only events
+3. Implement sell-out flow controls for high-demand releases
 
 ## Verdict
 
-Kai can run events on ChefFlow today, but would still rely on manual workarounds for drop releases, tiered access, and cultural audience shaping. ChefFlow is close enough to be usable, yet not specialized enough to be Kai's true backbone until drop-native access and allocation workflows are built.
+Kai Donovan should not use ChefFlow today because the system is fundamentally designed for permanent restaurants and lacks critical features for managing ephemeral events — the single biggest blocker is the absence of a drop engine for controlled ticketing during sell-out events.

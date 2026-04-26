@@ -1,16 +1,67 @@
-# Persona Stress Test — Dr. Julien Armand (Michelin-Level Cannabis Tasting Chef)
+# Persona Stress Test: Dr. Julien Armand
 
-**Date:** 2026-04-25  
-**Persona Source:** `system/codex-queue/persona-dr-julien-armand-michelin.md`  
+**Type:** Chef
+**Date:** 2026-04-25
+**Method:** local-ollama-v2
+
+## Summary
+
+Dr. Julien Armand is a high-precision cannabis tasting chef running small-format, multi-course controlled dosing experiences (typically 6–10 courses for 4–10 guests). His operating model requires molecule-level ingredient provenance, per-guest dose curves mapped by course, real-time service logging, and post-event legal traceability that can stand up to compliance scrutiny. This persona is not asking for generic cannabis support; he needs an integrated system where THC/CBD/terpenes, extraction details, batch lineage, guest screening, safety constraints, and dose outcomes are treated as first-class operational data across planning, execution, and reporting.
+
+## Score: 68/100
+
+- Workflow Coverage (0-40): 27 -- Adequate coverage with notable gaps
+- Data Model Fit (0-25): 17 -- Adequate coverage with notable gaps
+- UX Alignment (0-15): 10 -- Adequate coverage with notable gaps
+- Financial Accuracy (0-10): 7 -- Adequate coverage with notable gaps
+- Onboarding Viability (0-5): 3 -- Adequate coverage with notable gaps
+- Retention Likelihood (0-5): 4 -- Strong coverage in this area
+
+## Top 5 Gaps
+
+### Gap 1: No deterministic dose-curve engine
+
+**Severity:** HIGH
+For assigning and validating per-guest dose progression by course (the persona’s core workflow).
+
+### Gap 2: No molecule-level culinary data model
+
+**Severity:** HIGH
+Tying batch/extraction/potency/terpenes to ingredients, dishes, and courses.
+
+### Gap 3: No real-time dosing administration log
+
+**Severity:** HIGH
+That records exact delivered mg and immediate guest response in-service.
+
+### Gap 4: No regulator-grade traceability export
+
+**Severity:** HIGH
+That proves source material, preparation mapping, delivery, and consumption chain of custody.
+
+### Gap 5: No cannabis outcome intelligence loop
+
+**Severity:** HIGH
+(cross-event analysis of dose patterns, tolerance, adverse signals, and optimal progression templates).
+
+## Quick Wins
+
+1. Add structured fields to cannabis event notes payload
+2. Add a “Dose Curve” JSON block to cannabis event config
+3. Add a compliance checklist widget on `/cannabis/events`
+
+## Verdict
+
+ChefFlow is unusually well-positioned compared with generic chef tools because it already includes a cannabis vertical and broad operational infrastructure, but it does not yet satisfy the persona’s defining need: deterministic, molecule-level controlled dosing operations.
+
+---
+
+## Appendix (preserved from original report)
+
+**Persona Source:** `system/codex-queue/persona-dr-julien-armand-michelin.md`
 **Product References:** `docs/product-blueprint.md`, `docs/app-complete-audit.md`
 
-## 1) Persona Summary
-
-Dr. Julien Armand is a high-precision cannabis tasting chef running small-format, multi-course controlled dosing experiences (typically 6–10 courses for 4–10 guests). His operating model requires molecule-level ingredient provenance, per-guest dose curves mapped by course, real-time service logging, and post-event legal traceability that can stand up to compliance scrutiny.
-
-This persona is not asking for generic cannabis support; he needs an integrated system where THC/CBD/terpenes, extraction details, batch lineage, guest screening, safety constraints, and dose outcomes are treated as first-class operational data across planning, execution, and reporting.
-
-## 2) Capability Fit Ratings (SUPPORTED / PARTIAL / MISSING)
+### 2) Capability Fit Ratings (SUPPORTED / PARTIAL / MISSING)
 
 | Capability Needed by Persona                                                                          | Current ChefFlow Fit | Evidence & Notes                                                                                                                                                                       |
 | ----------------------------------------------------------------------------------------------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -25,51 +76,7 @@ This persona is not asking for generic cannabis support; he needs an integrated 
 | Longitudinal outcome analytics for dose optimization                                                  | **PARTIAL**          | Analytics hub exists, but no cannabis-specific closed-loop analytics for dose curves/tolerance progression/outcome efficacy is documented.                                             |
 | Workflow breadth outside cannabis (CRM, events, finance, operations)                                  | **SUPPORTED**        | Six-pillar platform is broadly comprehensive and mature for general chef operations.                                                                                                   |
 
-## 3) Top 5 Gaps
-
-1. **No deterministic dose-curve engine** for assigning and validating per-guest dose progression by course (the persona’s core workflow).
-2. **No molecule-level culinary data model** tying batch/extraction/potency/terpenes to ingredients, dishes, and courses.
-3. **No real-time dosing administration log** that records exact delivered mg and immediate guest response in-service.
-4. **No regulator-grade traceability export** that proves source material, preparation mapping, delivery, and consumption chain of custody.
-5. **No cannabis outcome intelligence loop** (cross-event analysis of dose patterns, tolerance, adverse signals, and optimal progression templates).
-
-## 4) Quick Wins (Under 20 Lines Each)
-
-> Target: low-risk, high-signal additions that can be implemented quickly without deep architecture changes.
-
-1. **Add structured fields to cannabis event notes payload**: `guest_id`, `course`, `planned_mg_thc`, `planned_mg_cbd`, `actual_mg_thc`, `actual_mg_cbd`, `response_tag`.  
-   _Why_: creates immediate machine-readable dose logging.
-
-2. **Add a “Dose Curve” JSON block to cannabis event config** with 8–10 step arrays (`course`, `target_mg_thc`, `target_mg_cbd`, `window_min`).  
-   _Why_: enables deterministic progression scaffolding now.
-
-3. **Add a compliance checklist widget on `/cannabis/events`**: “source batch linked”, “consent signed”, “dose plan complete”, “post-service log complete”.  
-   _Why_: fast operational guardrails without major refactor.
-
-4. **Add one-click CSV export from cannabis event detail** for guest-by-course planned vs actual dose rows.  
-   _Why_: immediate audit/reporting utility.
-
-5. **Add response severity tags in RSVP/service follow-up** (`none`, `mild`, `moderate`, `adverse`) + free-text note.  
-   _Why_: starts longitudinal safety/outcome dataset with minimal UI footprint.
-
-## 5) Score
-
-**68 / 100**
-
-### Scoring Rationale (Condensed)
-
-- **+ Strong base platform maturity** across operations, finance, CRM, and planning.
-- **+ Dedicated cannabis vertical exists** with compliance and intake-oriented surfaces.
-- **− Core persona differentiators remain unimplemented** (dose-curve orchestration, molecule-level schema, in-service dosing telemetry, full legal traceability packet).
-- **− Advanced pairing/optimization intelligence is absent** for pharmacology-aware Michelin workflows.
-
-## 6) Two-Sentence Verdict
-
-ChefFlow is unusually well-positioned compared with generic chef tools because it already includes a cannabis vertical and broad operational infrastructure, but it does not yet satisfy the persona’s defining need: deterministic, molecule-level controlled dosing operations. For Dr. Julien Armand’s Michelin-grade use case today, ChefFlow is a strong **foundation** rather than a complete fit, and should be treated as **production-adjacent pending dose/traceability hardening**.
-
----
-
-## Build Follow-Up (2026-04-25)
+### Build Follow-Up (2026-04-25)
 
 Implemented one focused vertical slice from Quick Win #3: a **compliance checklist widget on `/cannabis/events`** rendered on each cannabis event card.
 

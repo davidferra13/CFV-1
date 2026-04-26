@@ -64,6 +64,7 @@ A single consolidated build addressing all uncategorized gaps should cover:
 ## Existing Build Tasks
 
 - `system/persona-build-plans/maya-rios-cannabis-pastry-chef-micro/task-1.md`
+- `system/persona-build-plans/maya-rios-cannabis-pastry-chef-micro/task-2.md`
 
 ## Acceptance Criteria (merged from all personas)
 
