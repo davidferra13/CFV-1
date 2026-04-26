@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 import { NoRecipesIllustration } from '@/components/ui/branded-illustrations'
+import { calculateRecipeConfidence } from '@/lib/recipes/confidence-score'
 
 export const metadata: Metadata = { title: 'Recipe Book' }
 
@@ -143,79 +144,144 @@ export default async function ChefRecipesPage() {
                 <TableHead>Cook Time</TableHead>
                 <TableHead>Yield</TableHead>
                 <TableHead>Ingredients</TableHead>
+                <TableHead className="w-20">Confidence</TableHead>
                 <TableHead>Cost</TableHead>
                 <TableHead>Times Cooked</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {recipes.map((recipe) => (
-                <TableRow key={recipe.id}>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-3">
-                      {(recipe as any).photo_url ? (
-                        <div className="relative w-10 h-10 rounded-md overflow-hidden flex-shrink-0">
-                          <Image
-                            src={(recipe as any).photo_url}
-                            alt={recipe.name}
-                            fill
-                            sizes="40px"
-                            className="object-cover"
-                            unoptimized
+              {recipes.map((recipe) => {
+                const ingredientCount = recipe.ingredient_count ?? 0
+                const confidence = calculateRecipeConfidence({
+                  hasMethod: !!(recipe.method && recipe.method.trim()),
+                  hasIngredients: ingredientCount > 0,
+                  ingredientCount,
+                  hasPrices:
+                    recipe.has_all_prices === true ||
+                    (recipe.total_cost_cents != null && recipe.total_cost_cents > 0),
+                  pricedIngredientPct: recipe.has_all_prices
+                    ? 100
+                    : recipe.total_cost_cents != null && ingredientCount > 0
+                      ? 50
+                      : 0,
+                  hasPeakWindows: false,
+                  hasDietaryTags:
+                    Array.isArray(recipe.dietary_tags) && recipe.dietary_tags.length > 0,
+                  hasPrepTimes: recipe.prep_time_minutes != null,
+                  hasCategory: !!(recipe.category && recipe.category !== 'other'),
+                  timesCookedInEvents: recipe.times_cooked ?? 0,
+                  hasPhoto: !!recipe.photo_url,
+                })
+                return (
+                  <TableRow key={recipe.id}>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-3">
+                        {(recipe as any).photo_url ? (
+                          <div className="relative w-10 h-10 rounded-md overflow-hidden flex-shrink-0">
+                            <Image
+                              src={(recipe as any).photo_url}
+                              alt={recipe.name}
+                              fill
+                              sizes="40px"
+                              className="object-cover"
+                              unoptimized
+                            />
+                          </div>
+                        ) : (
+                          <FoodPlaceholderImage
+                            image={placeholders[recipe.id] ?? null}
+                            size="thumb"
                           />
-                        </div>
-                      ) : (
-                        <FoodPlaceholderImage
-                          image={placeholders[recipe.id] ?? null}
-                          size="thumb"
-                        />
-                      )}
-                      <Link
-                        href={`/culinary/recipes/${recipe.id}`}
-                        className="text-brand-600 hover:text-brand-300 hover:underline"
+                        )}
+                        <Link
+                          href={`/culinary/recipes/${recipe.id}`}
+                          className="text-brand-600 hover:text-brand-300 hover:underline"
+                        >
+                          {recipe.name}
+                        </Link>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${CATEGORY_STYLES[recipe.category] ?? 'bg-stone-800 text-stone-400'}`}
                       >
-                        {recipe.name}
-                      </Link>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span
-                      className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${CATEGORY_STYLES[recipe.category] ?? 'bg-stone-800 text-stone-400'}`}
-                    >
-                      {recipe.category}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-stone-400 text-sm">
-                    {recipe.cook_time_minutes ? `${recipe.cook_time_minutes}m` : '-'}
-                  </TableCell>
-                  <TableCell className="text-stone-400 text-sm">
-                    {recipe.yield_quantity && recipe.yield_unit
-                      ? `${recipe.yield_quantity} ${recipe.yield_unit}`
-                      : '-'}
-                  </TableCell>
-                  <TableCell className="text-stone-400 text-sm">
-                    {recipe.ingredient_count ?? '-'}
-                  </TableCell>
-                  <TableCell className="text-stone-400 text-sm">
-                    {recipe.total_cost_cents != null ? (
-                      <span className={recipe.has_all_prices ? '' : 'text-stone-400'}>
-                        {formatCurrency(recipe.total_cost_cents)}
-                        {!recipe.has_all_prices && <span className="text-xs ml-1">est.</span>}
+                        {recipe.category}
                       </span>
-                    ) : (
-                      '-'
-                    )}
-                  </TableCell>
-                  <TableCell className="text-stone-400 text-sm">{recipe.times_cooked}</TableCell>
-                  <TableCell>
-                    <Link href={`/culinary/recipes/${recipe.id}`}>
-                      <Button size="sm" variant="secondary">
-                        View
-                      </Button>
-                    </Link>
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                    <TableCell className="text-stone-400 text-sm">
+                      {recipe.cook_time_minutes ? `${recipe.cook_time_minutes}m` : '-'}
+                    </TableCell>
+                    <TableCell className="text-stone-400 text-sm">
+                      {recipe.yield_quantity && recipe.yield_unit
+                        ? `${recipe.yield_quantity} ${recipe.yield_unit}`
+                        : '-'}
+                    </TableCell>
+                    <TableCell className="text-stone-400 text-sm">
+                      {recipe.ingredient_count ?? '-'}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="relative h-7 w-7 rounded-full"
+                          title={`${confidence.score}% - ${confidence.label}`}
+                        >
+                          <svg className="h-7 w-7 -rotate-90" viewBox="0 0 28 28">
+                            <circle
+                              cx="14"
+                              cy="14"
+                              r="12"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2.5"
+                              className="text-stone-700"
+                            />
+                            <circle
+                              cx="14"
+                              cy="14"
+                              r="12"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2.5"
+                              strokeDasharray={`${(confidence.score / 100) * 75.4} 75.4`}
+                              className={
+                                confidence.level === 'dialed-in'
+                                  ? 'text-emerald-500'
+                                  : confidence.level === 'solid'
+                                    ? 'text-brand-500'
+                                    : confidence.level === 'draft'
+                                      ? 'text-amber-500'
+                                      : 'text-stone-500'
+                              }
+                            />
+                          </svg>
+                          <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-stone-300">
+                            {confidence.score}
+                          </span>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-stone-400 text-sm">
+                      {recipe.total_cost_cents != null ? (
+                        <span className={recipe.has_all_prices ? '' : 'text-stone-400'}>
+                          {formatCurrency(recipe.total_cost_cents)}
+                          {!recipe.has_all_prices && <span className="text-xs ml-1">est.</span>}
+                        </span>
+                      ) : (
+                        '-'
+                      )}
+                    </TableCell>
+                    <TableCell className="text-stone-400 text-sm">{recipe.times_cooked}</TableCell>
+                    <TableCell>
+                      <Link href={`/culinary/recipes/${recipe.id}`}>
+                        <Button size="sm" variant="secondary">
+                          View
+                        </Button>
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
             </TableBody>
           </Table>
         </Card>
