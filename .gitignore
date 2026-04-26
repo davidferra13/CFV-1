@@ -50,6 +50,8 @@ next-env.d.ts
 # temp/debug files
 .tmp-*
 tmp_*
+tmp-warmup/
+tmp-chef-bob-*
 .tsc-dirty
 .hallucination-scan-results.md
 docs/.session-briefing.md
@@ -139,6 +141,7 @@ types/gen-stderr.txt
 
 # Multi-agent build lock (local toggle — never commit)
 .multi-agent-lock
+system/persona-to-codex.lock
 
 # Database backups (never commit — can contain real data)
 backup-*.sql
