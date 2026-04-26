@@ -12,10 +12,11 @@
  *   node devtools/persona-orchestrator.mjs --once --dry-run
  */
 
-import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync } from 'fs';
+import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync, renameSync, appendFileSync } from 'fs';
 import { resolve, basename, dirname, join, extname } from 'path';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
+import { validatePersona } from './persona-validator.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -276,6 +277,32 @@ function runCycle(opts) {
   let tasksQueued = 0;
 
   for (const persona of batch) {
+    // Stage 0: Validate
+    const validation = validatePersona(persona.filepath);
+    if (!validation.valid) {
+      console.log(`[orchestrator] INVALID: ${persona.filename} (score: ${validation.score}) - ${validation.rejection_reasons.join('; ')}`);
+      // Move to Failed/
+      const failedDir = join(ROOT, 'Chef Flow Personas', 'Failed', persona.type);
+      mkdirSync(failedDir, { recursive: true });
+      const failedDest = join(failedDir, persona.filename);
+      const comment = `\n\n---\n<!-- PIPELINE VALIDATION FAILED (score: ${validation.score})\n${validation.rejection_reasons.join('\n')}\nFlags: ${validation.flags.join('; ') || 'none'}\nRejected: ${new Date().toISOString()}\n-->\n`;
+      try {
+        appendFileSync(persona.filepath, comment, 'utf-8');
+        renameSync(persona.filepath, failedDest);
+      } catch (err) {
+        console.log(`[orchestrator] Warning: could not move to Failed/: ${err.message}`);
+      }
+      state.failed.push({
+        source_file: persona.relpath,
+        error: `Validation failed (score: ${validation.score}): ${validation.rejection_reasons.join('; ')}`,
+        failed_at: new Date().toISOString(),
+      });
+      failedCount++;
+      saveState(state);
+      continue;
+    }
+    console.log(`[orchestrator] Validated: ${persona.filename} (score: ${validation.score})`);
+
     // Stage 1: Analyze
     console.log(`[orchestrator] Analyzing: ${persona.filename}`);
     let analyzerStdout;
