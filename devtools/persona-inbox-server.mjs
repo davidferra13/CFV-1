@@ -27,6 +27,7 @@ let queuedPipelineLimit = 0;
 let queuedPipelineIds = [];
 let lastPipelineStatus = "Idle";
 let lastPipelineLines = [];
+let pipelineStartedAt = null;
 
 function normalize(value) {
   return String(value || "")
@@ -50,7 +51,7 @@ function titleCase(value) {
 
 function stripQuotes(value) {
   return String(value || "")
-    .replace(/^[\s"'`""'']+|[\s"'`""'']+$/g, "")
+    .replace(/^[\s"'`\u201c\u201d\u2018\u2019]+|[\s"'`\u201c\u201d\u2018\u2019]+$/g, "")
     .trim();
 }
 
@@ -63,7 +64,7 @@ function inferName(text, fallback) {
   if (fallback) return stripQuotes(fallback);
 
   const patterns = [
-    /\*\*(?:chef|client|guest|vendor|staff|partner|public)?\s*profile:\s*[""]?([^""\n-]+)[""]?/i,
+    /\*\*(?:chef|client|guest|vendor|staff|partner|public)?\s*profile:\s*["\u201c]?([^"\u201d\n-]+)["\u201d]?/i,
     /^(?:name|persona|profile):\s*(.+)$/im,
     /^#\s+(.+)$/m,
   ];
@@ -279,6 +280,78 @@ function countDiskQueues() {
   return { uncompleted, buildTasks };
 }
 
+function readSynthesisData() {
+  return readJsonFile(join(ROOT, "system", "persona-batch-synthesis", "saturation.json"), null);
+}
+
+function readPersonaReports() {
+  const dir = join(ROOT, "docs", "stress-tests");
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
+    .filter((f) => f.startsWith("persona-") && f.endsWith(".md"))
+    .map((file) => {
+      try {
+        const content = readFileSync(join(dir, file), "utf8").replace(/\r\n/g, "\n");
+        // Handle both formats: "Test: Name" and "Test — Name"
+        const nameMatch = content.match(/^# Persona Stress Test[\s:—–-]+(.+)$/m);
+        const name = nameMatch ? nameMatch[1].trim() : file;
+        const pType = (content.match(/^\*\*Type:\*\*\s*(.+)$/m) || [])[1] || "Unknown";
+        const date = (content.match(/^\*\*Date:\*\*\s*(.+)$/m) || [])[1] || "";
+        // Format A: "## Score: 68/100"  Format B: "**68 / 100**"
+        const scoreA = content.match(/## Score:\s*(\d+)\s*\/\s*100/);
+        const scoreB = content.match(/\*\*(\d+)\s*\/\s*100\*\*/);
+        const score = scoreA ? Number(scoreA[1]) : scoreB ? Number(scoreB[1]) : null;
+        const summaryMatch = content.match(/## Summary\n([\s\S]*?)(?=\n## )/) || content.match(/## 1\) Persona Summary\n\n([\s\S]*?)(?=\n## )/);
+        const summary = summaryMatch ? summaryMatch[1].trim().slice(0, 200) : "";
+        const gaps = [];
+        // Format A: "### Gap 1: Title\n**Severity:** HIGH"
+        const gapReA = /### Gap (\d+):\s*(.+)\n\*\*Severity:\*\*\s*(\w+)\*{0,2}\n([\s\S]*?)(?=### Gap|\n## |$)/g;
+        let m;
+        while ((m = gapReA.exec(content)) !== null) {
+          gaps.push({ number: Number(m[1]), title: m[2].trim(), severity: m[3].trim(), description: m[4].trim().slice(0, 200) });
+        }
+        // Format B: numbered list "1. **Title** ..." under "## Top 5 Gaps"
+        if (gaps.length === 0) {
+          const gapSection = content.match(/## (?:3\) )?Top 5 Gaps\n\n([\s\S]*?)(?=\n## )/);
+          if (gapSection) {
+            const gapReB = /(\d+)\.\s+\*\*(.+?)\*\*[^]*?(?=\n\d+\.\s+\*\*|$)/g;
+            while ((m = gapReB.exec(gapSection[1])) !== null) {
+              const desc = m[0].replace(/^\d+\.\s+\*\*.+?\*\*\s*/, "").trim();
+              gaps.push({ number: Number(m[1]), title: m[2].trim(), severity: "HIGH", description: desc.slice(0, 200) });
+            }
+          }
+        }
+        const slug = file.replace(/^persona-/, "").replace(/-\d{4}-\d{2}-\d{2}\.md$/, "");
+        return { slug, file, name, type: pType, date, score, summary, gaps };
+      } catch {
+        return null;
+      }
+    })
+    .filter(Boolean)
+    .sort((a, b) => (a.score ?? 0) - (b.score ?? 0));
+}
+
+function readBuildTaskFiles() {
+  const dir = join(ROOT, "system", "persona-build-plans");
+  if (!existsSync(dir)) return [];
+  const tasks = [];
+  try {
+    for (const slug of readdirSync(dir)) {
+      const slugDir = join(dir, slug);
+      try {
+        for (const file of readdirSync(slugDir).filter((f) => f.startsWith("task-") && f.endsWith(".md"))) {
+          const content = readFileSync(join(slugDir, file), "utf8");
+          const title = (content.match(/^# Build Task:\s*(.+)$/m) || [])[1] || file;
+          const persona = (content.match(/^\*\*Source Persona:\*\*\s*(.+)$/m) || [])[1] || slug;
+          const severity = (content.match(/^\*\*Severity:\*\*\s*(\w+)$/m) || [])[1] || "MEDIUM";
+          tasks.push({ slug, file, title, persona, severity, path: `system/persona-build-plans/${slug}/${file}` });
+        }
+      } catch {}
+    }
+  } catch {}
+  return tasks;
+}
+
 function appendPipelineLine(chunk) {
   const text = chunk.toString();
   const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
@@ -300,6 +373,7 @@ function runPipeline(limit, ids = []) {
   }
 
   pipelineRunning = true;
+  pipelineStartedAt = Date.now();
   pipelineQueued = false;
   queuedPipelineLimit = 0;
   queuedPipelineIds = [];
@@ -331,6 +405,7 @@ function runPipeline(limit, ids = []) {
 
   child.on("exit", (code) => {
     pipelineRunning = false;
+    pipelineStartedAt = null;
     lastPipelineStatus = code === 0 ? "Pipeline cycle completed" : `Pipeline exited ${code}`;
     lastPipelineLines = [...lastPipelineLines, lastPipelineStatus].slice(-20);
     reconcileInboxState();
@@ -351,6 +426,7 @@ function runPipeline(limit, ids = []) {
 
   child.on("error", (err) => {
     pipelineRunning = false;
+    pipelineStartedAt = null;
     lastPipelineStatus = `Pipeline failed: ${err.message}`;
     lastPipelineLines = [...lastPipelineLines, lastPipelineStatus].slice(-20);
     updateEntries(ids, { status: "failed", last_error: lastPipelineStatus });
@@ -450,7 +526,7 @@ function page() {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Persona Inbox</title>
+  <title>Persona Pipeline</title>
   <style>
     :root { color-scheme: light dark; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     body { margin: 0; background: #f6f4ee; color: #1f2933; }
@@ -460,9 +536,8 @@ function page() {
     button, select, input { height: 38px; border: 1px solid #b8b2a7; border-radius: 6px; background: #fffaf0; color: #1f2933; padding: 0 10px; font: inherit; }
     button { cursor: pointer; background: #1f2933; color: white; border-color: #1f2933; }
     button.secondary { background: #fffaf0; color: #1f2933; }
-    button.danger { background: #7f1d1d; border-color: #7f1d1d; }
     button:disabled { opacity: 0.55; cursor: not-allowed; }
-    textarea { width: 100%; min-height: 46vh; box-sizing: border-box; resize: vertical; border: 1px solid #b8b2a7; border-radius: 8px; background: #fffdf8; color: #111827; padding: 14px; font: 14px/1.45 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    textarea { width: 100%; min-height: 220px; box-sizing: border-box; resize: vertical; border: 1px solid #b8b2a7; border-radius: 8px; background: #fffdf8; color: #111827; padding: 14px; font: 14px/1.45 ui-monospace, SFMono-Regular, Consolas, monospace; }
     .top { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; margin-bottom: 16px; }
     .sub { margin: 6px 0 0; color: #4b5563; font-size: 14px; line-height: 1.45; }
     .bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 0 0 14px; }
@@ -472,7 +547,7 @@ function page() {
     .pill { display: inline-flex; align-items: center; gap: 6px; height: 24px; border: 1px solid #c7c0b4; border-radius: 999px; padding: 0 9px; font-size: 12px; background: #fffdf8; }
     .dot { width: 8px; height: 8px; border-radius: 999px; background: #10b981; }
     .dot.offline { background: #b45309; }
-    .preview-list, .history-list, .log-list { display: grid; gap: 8px; }
+    .preview-list, .history-list { display: grid; gap: 8px; }
     .preview-item, .history-item { border: 1px solid #d4cec2; border-radius: 8px; background: #fffdf8; padding: 10px; }
     .preview-head, .history-head { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
     .preview-controls { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 8px; margin-top: 8px; }
@@ -487,14 +562,68 @@ function page() {
     code { background: rgba(31, 41, 51, 0.08); padding: 1px 4px; border-radius: 4px; }
     pre { margin: 0; white-space: pre-wrap; font: 12px/1.45 ui-monospace, SFMono-Regular, Consolas, monospace; color: #374151; }
     .empty { color: #6b7280; font-size: 13px; padding: 10px 0; }
-    @media (max-width: 920px) { .layout { grid-template-columns: 1fr; } }
+    .section { margin-top: 18px; }
+    @keyframes pulse-glow { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .pipeline-monitor { transition: border-color 0.3s; }
+    .pipeline-monitor.active { border-color: #3b82f6; }
+    .pipeline-head { display: flex; justify-content: space-between; align-items: center; }
+    .pipeline-log { max-height: 280px; overflow-y: auto; margin-top: 10px; transition: max-height 0.3s ease, margin 0.3s ease, opacity 0.3s ease; }
+    .pipeline-log.collapsed { max-height: 0; overflow: hidden; margin-top: 0; opacity: 0; }
+    .indicator { display: inline-block; width: 10px; height: 10px; border-radius: 999px; background: #6b7280; margin-right: 6px; vertical-align: middle; }
+    .indicator.pulse { animation: pulse-glow 1.5s ease-in-out infinite; background: #3b82f6; }
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 14px; }
+    .stat-card { text-align: center; padding: 14px 10px; }
+    .stat-value { font-size: 32px; font-weight: 700; line-height: 1; }
+    .stat-label { font-size: 12px; color: #6b7280; margin-top: 4px; }
+    .score { font-weight: 700; }
+    .score-red { color: #dc2626; }
+    .score-yellow { color: #d97706; }
+    .score-green { color: #059669; }
+    .sev-high { background: #fee2e2; color: #991b1b; }
+    .sev-medium { background: #fef3c7; color: #92400e; }
+    .sev-low { background: #d1fae5; color: #065f46; }
+    .bar-chart { display: flex; gap: 4px; align-items: flex-end; height: 48px; }
+    .bar-col { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 1; }
+    .bar-fill { width: 100%; border-radius: 3px 3px 0 0; background: #374151; min-height: 2px; }
+    .bar-label { font-size: 10px; color: #6b7280; white-space: nowrap; }
+    .meter { height: 10px; background: #e5e7eb; border-radius: 5px; overflow: hidden; }
+    .meter-fill { height: 100%; background: #059669; border-radius: 5px; }
+    .cat-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .cat-table th { text-align: left; padding: 6px 8px; border-bottom: 2px solid #d4cec2; font-weight: 600; font-size: 12px; color: #6b7280; }
+    .cat-table td { padding: 6px 8px; border-bottom: 1px solid #e5e7eb; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+    .persona-card { border: 1px solid #d4cec2; border-radius: 8px; background: #fffdf8; padding: 12px; cursor: pointer; }
+    .persona-card:hover { border-color: #9ca3af; }
+    .card-head { display: flex; justify-content: space-between; align-items: center; }
+    .card-detail { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e5e7eb; }
+    .persona-card.open .card-detail { display: block; }
+    .task-row { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
+    .task-row:last-child { border-bottom: none; }
+    @media (max-width: 920px) { .layout { grid-template-columns: 1fr; } .two-col { grid-template-columns: 1fr; } .stats-row { grid-template-columns: 1fr; } }
     @media (prefers-color-scheme: dark) {
       body { background: #121416; color: #f4f1e8; }
       button.secondary, select, input, textarea, .panel, .preview-item, .history-item, .pill { background: #1f2429; color: #f4f1e8; border-color: #59616b; }
       button { background: #f4f1e8; color: #121416; border-color: #f4f1e8; }
-      .sub, .status, .muted, pre, .empty { color: #c6c0b7; }
+      .sub, .status, .muted, pre, .empty, .stat-label, .bar-label { color: #c6c0b7; }
       code { background: rgba(244, 241, 232, 0.12); }
       .status-badge { background: #374151; color: #f9fafb; }
+      .score-red { color: #ef4444; }
+      .score-yellow { color: #f59e0b; }
+      .score-green { color: #10b981; }
+      .sev-high { background: #7f1d1d; color: #fecaca; }
+      .sev-medium { background: #78350f; color: #fde68a; }
+      .sev-low { background: #064e3b; color: #a7f3d0; }
+      .meter { background: #374151; }
+      .bar-fill { background: #9ca3af; }
+      .cat-table th { border-bottom-color: #59616b; color: #9ca3af; }
+      .cat-table td { border-bottom-color: #374151; }
+      .persona-card { background: #1f2429; border-color: #59616b; }
+      .persona-card:hover { border-color: #9ca3af; }
+      .card-detail { border-top-color: #374151; }
+      .task-row { border-bottom-color: #374151; }
+      .pipeline-monitor.active { border-color: #60a5fa; }
+      .indicator.pulse { background: #60a5fa; }
     }
   </style>
 </head>
@@ -502,13 +631,21 @@ function page() {
   <main>
     <div class="top">
       <div>
-        <h1>Persona Inbox</h1>
-        <p class="sub">Paste one entry or a batch. Paste personas to analyze locally via Ollama. Save writes files; Send runs the analysis pipeline.</p>
+        <h1>Persona Pipeline</h1>
+        <p class="sub">Analyze personas against the codebase. Track findings, scores, and build priorities.</p>
       </div>
-      <span class="pill"><span id="netDot" class="dot"></span><span id="netText">Checking network</span></span>
+      <span class="pill"><span id="netDot" class="dot"></span><span id="netText">Checking</span></span>
     </div>
 
-    <div class="layout">
+    <section id="pipelineSection" class="panel pipeline-monitor">
+      <div class="pipeline-head">
+        <h2><span id="pipelineDot" class="indicator"></span>Pipeline<span id="pipelineTimer" class="muted" style="margin-left:8px"></span></h2>
+        <button id="toggleLog" class="secondary" style="height:28px;font-size:12px">Expand</button>
+      </div>
+      <div id="pipelineLog" class="pipeline-log collapsed"><pre id="log">Idle</pre></div>
+    </section>
+
+    <div class="layout section">
       <section>
         <div class="bar">
           <label>Default type <select id="type">${typeOptions}</select></label>
@@ -526,80 +663,76 @@ function page() {
         <textarea id="text" spellcheck="false" placeholder="Paste personas here..."></textarea>
         <p class="sub">Bulk markers: <code>--- persona: Chef: Name ---</code>. Simple headings also work: <code>Client: Name</code>.</p>
       </section>
-
       <aside class="panel">
         <h2>Preview</h2>
         <div id="preview" class="preview-list"><div class="empty">Preview a paste before importing.</div></div>
       </aside>
     </div>
 
-    <section class="panel" style="margin-top:18px">
+    <section class="panel section">
+      <h2>Findings</h2>
+      <div id="findings"><div class="empty">No synthesis data yet. Run the pipeline to generate findings.</div></div>
+    </section>
+
+    <section class="panel section">
+      <h2>Personas</h2>
+      <div id="personas"><div class="empty">No persona reports found.</div></div>
+    </section>
+
+    <section class="panel section">
+      <h2>Build Queue</h2>
+      <div id="buildQueue"><div class="empty">No build tasks found.</div></div>
+    </section>
+
+    <section class="panel section">
       <div class="preview-head">
-        <h2>Queue</h2>
+        <h2>Import Queue</h2>
         <div class="bar" style="margin:0">
           <button id="sendQueued">Send queued</button>
           <button id="retryFailed" class="secondary">Retry failed</button>
           <button id="refresh" class="secondary">Refresh</button>
-          <button id="clearCompleted" class="secondary">Clear completed</button>
         </div>
       </div>
       <div id="status" class="status"></div>
       <div id="history" class="history-list"></div>
     </section>
-
-    <section class="panel" style="margin-top:18px">
-      <h2>Pipeline Log</h2>
-      <pre id="log">Idle</pre>
-    </section>
   </main>
 
   <script>
     const TYPES = ${typesJson};
-    const text = document.getElementById('text');
-    const statusEl = document.getElementById('status');
-    const type = document.getElementById('type');
-    const mode = document.getElementById('mode');
-    const previewEl = document.getElementById('preview');
-    const historyEl = document.getElementById('history');
-    const logEl = document.getElementById('log');
-    const netDot = document.getElementById('netDot');
-    const netText = document.getElementById('netText');
-    let currentPreview = [];
-    let previewText = '';
+    const $ = id => document.getElementById(id);
+    const text = $('text'), statusEl = $('status'), type = $('type'), mode = $('mode');
+    const previewEl = $('preview'), historyEl = $('history'), logEl = $('log');
+    const netDot = $('netDot'), netText = $('netText');
+    const findingsEl = $('findings'), personasEl = $('personas'), buildQueueEl = $('buildQueue');
+    const pipelineSection = $('pipelineSection'), pipelineLog = $('pipelineLog');
+    const pipelineDot = $('pipelineDot'), pipelineTimer = $('pipelineTimer');
+    const toggleLogBtn = $('toggleLog');
+    let currentPreview = [], previewText = '', wasRunning = false, logUserToggled = false;
 
     function setNetwork() {
       const online = navigator.onLine;
       netDot.classList.toggle('offline', !online);
-      netText.textContent = online ? 'Browser online' : 'Browser offline';
+      netText.textContent = online ? 'Online' : 'Offline';
     }
 
-    function escapeHtml(value) {
-      return String(value ?? '').replace(/[&<>"']/g, (ch) => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-      })[ch]);
+    function esc(v) {
+      return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
     }
 
-    function statusLabel(value) {
-      return ({
-        saved: 'Saved',
-        queued: 'Queued',
-        submitting: 'Submitting',
-        spec_queued: 'Analyzed',
-        submitted: 'Completed',
-        completed: 'Completed',
-        failed: 'Failed',
-      })[value] || value || 'Unknown';
+    function statusLabel(v) {
+      return ({ saved:'Saved', queued:'Queued', submitting:'Submitting', spec_queued:'Analyzed', submitted:'Completed', completed:'Completed', failed:'Failed' })[v] || v || '?';
     }
 
-    async function postJson(url, payload = {}) {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || 'Request failed');
-      return result;
+    function scoreClass(s) { return s < 40 ? 'score-red' : s < 70 ? 'score-yellow' : 'score-green'; }
+    function sevClass(s) { return s === 'HIGH' ? 'sev-high' : s === 'MEDIUM' ? 'sev-medium' : 'sev-low'; }
+    function catLabel(s) { return s.replace(/-/g, ' ').replace(/\\b\\w/g, c => c.toUpperCase()); }
+
+    async function postJson(url, body = {}) {
+      const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || 'Request failed');
+      return d;
     }
 
     async function buildPreview() {
@@ -611,148 +744,158 @@ function page() {
     }
 
     function renderPreview() {
-      if (!currentPreview.length) {
-        previewEl.innerHTML = '<div class="empty">No entries found.</div>';
-        return;
-      }
-
-      previewEl.innerHTML = currentPreview.map((entry, index) => {
-        const typeOptions = TYPES.map((t) => '<option value="' + t + '"' + (t === entry.type ? ' selected' : '') + '>' + t + '</option>').join('');
-        const warnings = entry.warnings?.length ? '<div class="warn">' + entry.warnings.map(escapeHtml).join('<br>') + '</div>' : '';
-        return '<div class="preview-item" data-index="' + index + '">' +
-          '<div class="preview-head"><strong>#' + (index + 1) + ' ' + escapeHtml(entry.name) + '</strong><span class="muted">' + entry.chars + ' chars</span></div>' +
-          '<div class="preview-controls"><select data-field="type">' + typeOptions + '</select><input data-field="name" value="' + escapeHtml(entry.name) + '"></div>' +
-          '<div class="muted" style="margin-top:8px">' + escapeHtml(entry.excerpt) + '</div>' +
-          warnings +
-        '</div>';
+      if (!currentPreview.length) { previewEl.innerHTML = '<div class="empty">No entries found.</div>'; return; }
+      previewEl.innerHTML = currentPreview.map((entry, i) => {
+        const opts = TYPES.map(t => '<option value="' + t + '"' + (t === entry.type ? ' selected' : '') + '>' + t + '</option>').join('');
+        const warns = entry.warnings?.length ? '<div class="warn">' + entry.warnings.map(esc).join('<br>') + '</div>' : '';
+        return '<div class="preview-item" data-index="' + i + '"><div class="preview-head"><strong>#' + (i+1) + ' ' + esc(entry.name) + '</strong><span class="muted">' + entry.chars + ' chars</span></div><div class="preview-controls"><select data-field="type">' + opts + '</select><input data-field="name" value="' + esc(entry.name) + '"></div><div class="muted" style="margin-top:8px">' + esc(entry.excerpt) + '</div>' + warns + '</div>';
       }).join('');
     }
 
-    previewEl.addEventListener('input', (event) => {
-      const item = event.target.closest('.preview-item');
+    previewEl.addEventListener('input', e => {
+      const item = e.target.closest('.preview-item');
       if (!item) return;
-      const index = Number(item.dataset.index);
-      const field = event.target.dataset.field;
-      if (currentPreview[index] && field) currentPreview[index][field] = event.target.value;
+      const i = Number(item.dataset.index), f = e.target.dataset.field;
+      if (currentPreview[i] && f) currentPreview[i][f] = e.target.value;
+    });
+    previewEl.addEventListener('change', e => {
+      const item = e.target.closest('.preview-item');
+      if (!item) return;
+      const i = Number(item.dataset.index), f = e.target.dataset.field;
+      if (currentPreview[i] && f) currentPreview[i][f] = e.target.value;
     });
 
-    previewEl.addEventListener('change', (event) => {
-      const item = event.target.closest('.preview-item');
-      if (!item) return;
-      const index = Number(item.dataset.index);
-      const field = event.target.dataset.field;
-      if (currentPreview[index] && field) currentPreview[index][field] = event.target.value;
-    });
-
-    async function refreshState(options = {}) {
-      const response = await fetch('/state');
-      const result = await response.json();
-      const counts = result.counts || {};
-      const summary = (result.pipeline?.pipeline || 'Idle') +
-        ' | local files: ' + (counts.uncompleted || 0) +
-        ' | build tasks: ' + (counts.buildTasks || 0);
-      if (!options.preserveStatus) statusEl.textContent = summary;
-      logEl.textContent = result.pipeline?.lines?.length ? result.pipeline.lines.join('\\n') : 'Idle';
-      renderHistory(result.entries || []);
-      return { result, summary };
+    /* --- Pipeline Monitor --- */
+    function updatePipeline(pl) {
+      const running = pl?.running || false;
+      const lines = pl?.lines || [];
+      pipelineSection.classList.toggle('active', running);
+      pipelineDot.classList.toggle('pulse', running);
+      logEl.textContent = lines.length ? lines.join('\\n') : 'Idle';
+      if (running && !wasRunning && !logUserToggled) { pipelineLog.classList.remove('collapsed'); toggleLogBtn.textContent = 'Collapse'; }
+      else if (!running && wasRunning && !logUserToggled) { pipelineLog.classList.add('collapsed'); toggleLogBtn.textContent = 'Expand'; }
+      wasRunning = running;
+      if (running && pl?.startedAt) {
+        const s = Math.floor((Date.now() - pl.startedAt) / 1000);
+        pipelineTimer.textContent = s >= 60 ? Math.floor(s/60) + 'm ' + (s%60) + 's' : s + 's';
+      } else { pipelineTimer.textContent = ''; }
+      if (running) pipelineLog.scrollTop = pipelineLog.scrollHeight;
     }
+    toggleLogBtn.onclick = () => { logUserToggled = true; const c = pipelineLog.classList.toggle('collapsed'); toggleLogBtn.textContent = c ? 'Expand' : 'Collapse'; };
 
-    function renderHistory(entries) {
-      if (!entries.length) {
-        historyEl.innerHTML = '<div class="empty">No imported entries yet.</div>';
-        return;
-      }
-
-      historyEl.innerHTML = entries.slice(0, 80).map((entry) => {
-        const lastError = entry.last_error ? '<div class="warn">' + escapeHtml(entry.last_error) + '</div>' : '';
-        return '<div class="history-item">' +
-          '<div class="history-head">' +
-            '<strong>' + escapeHtml(entry.name) + '</strong>' +
-            '<span class="status-badge status-' + escapeHtml(entry.status) + '">' + statusLabel(entry.status) + '</span>' +
+    /* --- Findings Dashboard --- */
+    function renderFindings(data) {
+      if (!data || data.error) { findingsEl.innerHTML = '<div class="empty">No synthesis data yet. Run the pipeline to generate findings.</div>'; return; }
+      const avg = data.average_score || 0, total = data.total_personas || 0;
+      const sat = data.saturation || {}, disc = sat.categories_discovered || 0, catTotal = sat.categories_total || 20;
+      const zeroNew = sat.consecutive_zero_new || 0, isSat = sat.saturated || false;
+      const dist = data.score_distribution || {};
+      const ranking = (data.priority_ranking || []).filter(p => p.count > 0);
+      const distKeys = ['0-20','21-40','41-60','61-80','81-100'];
+      const maxD = Math.max(1, ...distKeys.map(k => dist[k] || 0));
+      const bars = distKeys.map(k => {
+        const v = dist[k]||0;
+        return '<div class="bar-col"><div class="bar-fill" style="height:'+((v/maxD)*100)+'%"></div><div class="bar-label">'+v+'</div><div class="bar-label">'+k+'</div></div>';
+      }).join('');
+      const satPct = Math.round((disc/catTotal)*100);
+      const never = (sat.categories_never_seen||[]).map(c => c.replace(/-/g,' ')).join(', ');
+      const rows = ranking.map((cat,i) =>
+        '<tr><td>'+(i+1)+'</td><td>'+esc(catLabel(cat.category))+'</td><td>'+cat.count+'</td>' +
+        '<td><span class="status-badge '+sevClass(cat.avg_severity)+'">'+cat.avg_severity+'</span></td>' +
+        '<td>'+cat.priority_score+'</td></tr>'
+      ).join('');
+      findingsEl.innerHTML =
+        '<div class="stats-row">' +
+          '<div class="stat-card panel"><div class="stat-value '+scoreClass(avg)+'">'+avg+'</div><div class="stat-label">Avg Score / 100</div></div>' +
+          '<div class="stat-card panel"><div class="stat-value">'+total+'</div><div class="stat-label">Personas Analyzed</div></div>' +
+          '<div class="stat-card panel"><div class="stat-value">'+disc+'<span style="font-size:16px;font-weight:400;opacity:0.5">/'+catTotal+'</span></div><div class="stat-label">Categories Discovered</div></div>' +
+        '</div>' +
+        '<div class="two-col">' +
+          '<div><div class="muted" style="margin-bottom:6px">Score Distribution</div><div class="bar-chart">'+bars+'</div></div>' +
+          '<div><div class="muted" style="margin-bottom:6px">Saturation '+disc+'/'+catTotal+' ('+satPct+'%)</div>' +
+            '<div class="meter"><div class="meter-fill" style="width:'+satPct+'%"></div></div>' +
+            (never ? '<div class="muted" style="margin-top:6px;font-size:11px">Undiscovered: '+esc(never)+'</div>' : '') +
+            '<div class="muted" style="margin-top:4px;font-size:11px">Consecutive zero-new: '+zeroNew+(isSat?' (saturated)':'')+'</div>' +
           '</div>' +
-          '<div class="muted">' + escapeHtml(entry.type) + ' | ' + escapeHtml(entry.relativePath || entry.codexSlug || '') + '</div>' +
-          '<div class="muted">' + escapeHtml(entry.preview || '') + '</div>' +
-          lastError +
-        '</div>';
+        '</div>' +
+        (rows ? '<div class="muted" style="margin-bottom:4px">Priority Categories</div><table class="cat-table"><thead><tr><th>#</th><th>Category</th><th>Personas</th><th>Severity</th><th>Score</th></tr></thead><tbody>'+rows+'</tbody></table>' : '');
+    }
+
+    /* --- Persona Gallery --- */
+    function renderPersonas(list) {
+      if (!list || !list.length) { personasEl.innerHTML = '<div class="empty">No persona reports found.</div>'; return; }
+      personasEl.innerHTML = '<div class="gallery">' + list.map(p => {
+        const sc = scoreClass(p.score ?? 0);
+        const gaps = (p.gaps||[]).slice(0,5).map(g =>
+          '<div style="padding:4px 0;font-size:12px"><span class="status-badge '+sevClass(g.severity)+'" style="font-size:10px">'+g.severity+'</span> '+esc(g.title)+'</div>'
+        ).join('');
+        return '<div class="persona-card" onclick="this.classList.toggle(\\\'open\\\')">' +
+          '<div class="card-head"><div><strong>'+esc(p.name)+'</strong><div class="muted">'+esc(p.type)+(p.date?' &middot; '+esc(p.date):'')+'</div></div>' +
+          '<span class="score '+sc+'" style="font-size:20px">'+(p.score??'?')+'</span></div>' +
+          '<div class="card-detail">'+(p.summary?'<div style="font-size:12px;margin-bottom:8px;color:#4b5563">'+esc(p.summary)+'</div>':'')+(gaps||'<div class="muted">No gaps.</div>')+'</div></div>';
+      }).join('') + '</div>';
+    }
+
+    /* --- Build Queue --- */
+    function renderBuildTasks(tasks) {
+      if (!tasks || !tasks.length) { buildQueueEl.innerHTML = '<div class="empty">No build tasks found.</div>'; return; }
+      buildQueueEl.innerHTML = tasks.map(t =>
+        '<div class="task-row"><div style="flex:1"><strong style="font-size:13px">'+esc(t.title)+'</strong><div class="muted">'+esc(t.persona)+'</div></div>' +
+        '<span class="status-badge '+sevClass(t.severity)+'">'+t.severity+'</span></div>'
+      ).join('');
+    }
+
+    /* --- Import Queue --- */
+    function renderHistory(entries) {
+      if (!entries.length) { historyEl.innerHTML = '<div class="empty">No imported entries yet.</div>'; return; }
+      historyEl.innerHTML = entries.slice(0, 80).map(entry => {
+        const err = entry.last_error ? '<div class="warn">'+esc(entry.last_error)+'</div>' : '';
+        return '<div class="history-item"><div class="history-head"><strong>'+esc(entry.name)+'</strong>' +
+          '<span class="status-badge status-'+esc(entry.status)+'">'+statusLabel(entry.status)+'</span></div>' +
+          '<div class="muted">'+esc(entry.type)+' | '+esc(entry.relativePath||entry.codexSlug||'')+'</div>' +
+          '<div class="muted">'+esc(entry.preview||'')+'</div>'+err+'</div>';
       }).join('');
     }
 
-    document.getElementById('paste').onclick = async () => {
-      try {
-        text.value = await navigator.clipboard.readText();
-        statusEl.textContent = 'Clipboard pasted.';
-        await buildPreview();
-      } catch (err) {
-        statusEl.textContent = 'Browser blocked clipboard access. Paste with Ctrl+V.';
-      }
-    };
+    /* --- State Refresh --- */
+    async function refreshState(options = {}) {
+      const [stateRes, synthData, personaList, taskList] = await Promise.all([
+        fetch('/state').then(r => r.json()),
+        fetch('/api/synthesis').then(r => r.json()).catch(() => null),
+        fetch('/api/personas').then(r => r.json()).catch(() => []),
+        fetch('/api/build-tasks').then(r => r.json()).catch(() => []),
+      ]);
+      const counts = stateRes.counts || {};
+      const summary = (stateRes.pipeline?.pipeline||'Idle') + ' | files: '+(counts.uncompleted||0)+' | tasks: '+(counts.buildTasks||0);
+      if (!options.preserveStatus) statusEl.textContent = summary;
+      updatePipeline(stateRes.pipeline);
+      renderHistory(stateRes.entries || []);
+      renderFindings(synthData);
+      renderPersonas(personaList);
+      renderBuildTasks(taskList);
+      return { result: stateRes, summary };
+    }
 
-    document.getElementById('previewBtn').onclick = async () => {
-      try {
-        await buildPreview();
-      } catch (err) {
-        statusEl.textContent = err.message;
-      }
+    /* --- Event Handlers --- */
+    $('paste').onclick = async () => {
+      try { text.value = await navigator.clipboard.readText(); statusEl.textContent = 'Clipboard pasted.'; await buildPreview(); }
+      catch { statusEl.textContent = 'Browser blocked clipboard. Use Ctrl+V.'; }
     };
-
-    document.getElementById('importBtn').onclick = async () => {
+    $('previewBtn').onclick = async () => { try { await buildPreview(); } catch(e) { statusEl.textContent = e.message; } };
+    $('importBtn').onclick = async () => {
       try {
         let entries = currentPreview;
         if (!entries.length || previewText !== text.value) entries = await buildPreview();
-        const result = await postJson('/import', {
-          text: text.value,
-          defaultType: type.value,
-          mode: mode.value,
-          entries,
-        });
-        text.value = '';
-        currentPreview = [];
-        renderPreview();
+        const result = await postJson('/import', { text: text.value, defaultType: type.value, mode: mode.value, entries });
+        text.value = ''; currentPreview = []; renderPreview();
         const refreshed = await refreshState({ preserveStatus: true });
         statusEl.textContent = 'Imported ' + result.created.length + ' file(s). ' + result.pipeline + '. ' + refreshed.summary;
-      } catch (err) {
-        statusEl.textContent = err.message;
-      }
+      } catch(e) { statusEl.textContent = e.message; }
     };
-
-    document.getElementById('clear').onclick = () => {
-      text.value = '';
-      currentPreview = [];
-      previewText = '';
-      renderPreview();
-      text.focus();
-    };
-
-    document.getElementById('sendQueued').onclick = async () => {
-      try {
-        const result = await postJson('/send-queued', {});
-        statusEl.textContent = result.pipeline;
-        await refreshState();
-      } catch (err) {
-        statusEl.textContent = err.message;
-      }
-    };
-
-    document.getElementById('retryFailed').onclick = async () => {
-      try {
-        const result = await postJson('/retry-failed', {});
-        statusEl.textContent = result.pipeline;
-        await refreshState();
-      } catch (err) {
-        statusEl.textContent = err.message;
-      }
-    };
-
-    document.getElementById('clearCompleted').onclick = async () => {
-      try {
-        await postJson('/clear-completed', {});
-        await refreshState();
-      } catch (err) {
-        statusEl.textContent = err.message;
-      }
-    };
-
-    document.getElementById('refresh').onclick = refreshState;
+    $('clear').onclick = () => { text.value = ''; currentPreview = []; previewText = ''; renderPreview(); text.focus(); };
+    $('sendQueued').onclick = async () => { try { const r = await postJson('/send-queued', {}); statusEl.textContent = r.pipeline; await refreshState(); } catch(e) { statusEl.textContent = e.message; } };
+    $('retryFailed').onclick = async () => { try { const r = await postJson('/retry-failed', {}); statusEl.textContent = r.pipeline; await refreshState(); } catch(e) { statusEl.textContent = e.message; } };
+    $('refresh').onclick = refreshState;
     window.addEventListener('online', setNetwork);
     window.addEventListener('offline', setNetwork);
     setNetwork();
@@ -800,6 +943,7 @@ const server = createServer(async (req, res) => {
           queued: pipelineQueued,
           pipeline: lastPipelineStatus,
           lines: lastPipelineLines,
+          startedAt: pipelineStartedAt,
         },
       });
       return;
@@ -882,14 +1026,6 @@ const server = createServer(async (req, res) => {
       return;
     }
 
-    if (req.method === "POST" && path === "/clear-completed") {
-      const state = reconcileInboxState();
-      state.entries = state.entries.filter((entry) => entry.status !== "completed");
-      saveInboxState(state);
-      sendJson(res, 200, { ok: true });
-      return;
-    }
-
     if (req.method === "GET" && path === "/status") {
       sendJson(res, 200, {
         running: pipelineRunning,
@@ -897,6 +1033,21 @@ const server = createServer(async (req, res) => {
         pipeline: lastPipelineStatus,
         lines: lastPipelineLines,
       });
+      return;
+    }
+
+    if (req.method === "GET" && path === "/api/synthesis") {
+      sendJson(res, 200, readSynthesisData() || { error: "No synthesis data" });
+      return;
+    }
+
+    if (req.method === "GET" && path === "/api/personas") {
+      sendJson(res, 200, readPersonaReports());
+      return;
+    }
+
+    if (req.method === "GET" && path === "/api/build-tasks") {
+      sendJson(res, 200, readBuildTaskFiles());
       return;
     }
 
