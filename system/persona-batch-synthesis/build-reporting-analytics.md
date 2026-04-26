@@ -1,6 +1,6 @@
 # Consolidated Build: Reporting Analytics
 
-**Priority rank:** 8 of 18
+**Priority rank:** 9 of 21
 **Personas affected:** 2 (Maya Rios, Rina Solis)
 **Average severity:** HIGH
 
@@ -11,11 +11,14 @@
 ## Individual Gaps (deduplicated)
 
 1. **Sales Channel Tracking** - from Maya Rios - HIGH
-   \*\* ChefFlow only tracks event sales (dinners), not product sales through pop-ups, drops, or direct channels. Maya's multi-channel sales require movement tracking across channels, but ChefFlow has no p...
+   \*\* ChefFlow only tracks event sales (dinners), not product sales through pop-ups, drops, or direct channels. Maya's multi-channel sales require movement tracking across channels, but ChefFlow has no...
+   > Search hints: sales.channel, channel.tracking, sales, channel, tracking
 2. **No explicit outcome-based reaction log as first-class feedback** - from Rina Solis - HIGH
    Feedback surfaces are broad, but this persona requires structured outcomes such as tolerated, mild reaction, severe reaction, and clinician follow-up.
+   > Search hints: outcome-based.reaction, reaction.log, log.feedback, outcome-based, reaction, feedback
 3. **No dedicated safety command center view** - from Rina Solis - HIGH
    Dashboard has strong operational cards, but no focused safety board summarizing blocked items, unresolved risks, and per-client verification state.
+   > Search hints: safety.command, command.center, center.view, safety, command, center
 
 ## Recommended Build Scope
 

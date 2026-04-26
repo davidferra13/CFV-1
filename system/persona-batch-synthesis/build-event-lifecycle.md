@@ -1,6 +1,6 @@
 # Consolidated Build: Event Lifecycle
 
-**Priority rank:** 11 of 18
+**Priority rank:** 12 of 21
 **Personas affected:** 2 (Kai Donovan, Maya Rios)
 **Average severity:** HIGH
 
@@ -12,8 +12,10 @@
 
 1. **Ephemeral Event Lifecycle Management** - from Kai Donovan - HIGH
    ChefFlow lacks a dedicated workflow for one-night events from concept to archive. Kai's model requires rapid setup (24h max) and immediate post-event analysis, but ChefFlow's event system is designed ...
+   > Search hints: ephemeral.event, event.lifecycle, lifecycle.management, ephemeral, event, lifecycle, management
 2. **Sales Channel Tracking** - from Maya Rios - HIGH
-   \*\* ChefFlow only tracks event sales (dinners), not product sales through pop-ups, drops, or direct channels. Maya's multi-channel sales require movement tracking across channels, but ChefFlow has no p...
+   \*\* ChefFlow only tracks event sales (dinners), not product sales through pop-ups, drops, or direct channels. Maya's multi-channel sales require movement tracking across channels, but ChefFlow has no...
+   > Search hints: sales.channel, channel.tracking, sales, channel, tracking
 
 ## Recommended Build Scope
 

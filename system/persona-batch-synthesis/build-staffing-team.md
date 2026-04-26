@@ -1,6 +1,6 @@
 # Consolidated Build: Staffing Team
 
-**Priority rank:** 7 of 18
+**Priority rank:** 8 of 21
 **Personas affected:** 2 (Jordan Hale, Leo Varga)
 **Average severity:** HIGH
 
@@ -12,10 +12,13 @@
 
 1. **V1 strategy conflicts with multi-chef governance need** - from Jordan Hale - HIGH
    Jordan is a director role; safety and consistency depend on cross-chef standardization and oversight. The blueprint states V1 is single-chef and explicitly out-of-scope for multi-chef platform behavio...
+   > Search hints: strategy.conflicts, conflicts.multi-chef, multi-chef.governance, strategy, conflicts, multi-chef, governance
 2. **Director-level cross-event risk cockpit is incomplete for this persona** - from Jordan Hale - HIGH
    Jordan needs one glance to see which event/chef/course combinations are dose-risky now. Strong dashboards exist, but no explicit cannabis-risk heatmap or multi-chef exception queue is documented.
+   > Search hints: director-level.cross-event, cross-event.risk, risk.cockpit, cockpit.incomplete, incomplete.persona, director-level, cross-event, cockpit
 3. **No deterministic inventory-to-menu execution assistant** - from Leo Varga - HIGH
    A first-class answer to "what can I serve now with what remains? " across current stock and guest constraints.
+   > Search hints: deterministic.inventory-to-menu, inventory-to-menu.execution, deterministic, inventory-to-menu, execution
 
 ## Recommended Build Scope
 

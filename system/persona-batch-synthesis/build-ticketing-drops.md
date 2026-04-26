@@ -1,6 +1,6 @@
 # Consolidated Build: Ticketing Drops
 
-**Priority rank:** 12 of 18
+**Priority rank:** 13 of 21
 **Personas affected:** 2 (Kai Donovan, Maya Rios)
 **Average severity:** HIGH
 
@@ -12,8 +12,10 @@
 
 1. **Drop Engine for High-Demand Releases** - from Kai Donovan - HIGH
    ChefFlow has no mechanism for handling sell-out flow during high-demand events. When Kai releases an event, the system would require manual intervention to manage 200+ people, causing first-come chaos...
+   > Search hints: drop.high-demand, high-demand.releases, high-demand, releases
 2. **Sales Channel Tracking** - from Maya Rios - HIGH
-   \*\* ChefFlow only tracks event sales (dinners), not product sales through pop-ups, drops, or direct channels. Maya's multi-channel sales require movement tracking across channels, but ChefFlow has no p...
+   \*\* ChefFlow only tracks event sales (dinners), not product sales through pop-ups, drops, or direct channels. Maya's multi-channel sales require movement tracking across channels, but ChefFlow has no...
+   > Search hints: sales.channel, channel.tracking, sales, channel, tracking
 
 ## Recommended Build Scope
 

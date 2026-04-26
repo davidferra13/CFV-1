@@ -1,13 +1,19 @@
 {
-  "generated_at": "2026-04-26T02:59:52.379Z",
-  "total_personas": 8,
-  "average_score": 54,
+  "generated_at": "2026-04-26T16:04:29.478Z",
+  "total_personas": 19,
+  "average_score": 52,
   "score_distribution": {
-    "0-20": 1,
+    "0-20": 2,
     "21-40": 1,
-    "41-60": 1,
-    "61-80": 5,
+    "41-60": 9,
+    "61-80": 7,
     "81-100": 0
+  },
+  "validation_summary": {
+    "total_gaps": 68,
+    "likely_false_positives": 3,
+    "false_positive_rate": 4,
+    "note": "Pre-validation via known-built feature registry. Run /api/validate-gaps for live codebase grep."
   },
   "categories": {
     "event-lifecycle": {
@@ -18,7 +24,37 @@
         "MEDIUM": 0,
         "LOW": 0
       },
-      "gap_count": 2
+      "gap_count": 2,
+      "gaps": [
+        {
+          "title": "Ephemeral Event Lifecycle Management",
+          "from": "Kai Donovan",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "ephemeral.event",
+              "event.lifecycle",
+              "lifecycle.management",
+              "ephemeral",
+              "event",
+              "lifecycle",
+              "management"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Sales Channel Tracking",
+          "from": "Maya Rios",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": ["sales.channel", "channel.tracking", "sales", "channel", "tracking"],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        }
+      ]
     },
     "access-control": {
       "count": 1,
@@ -28,7 +64,32 @@
         "MEDIUM": 0,
         "LOW": 0
       },
-      "gap_count": 1
+      "gap_count": 1,
+      "gaps": [
+        {
+          "title": "Tiered Access and Waitlist Control",
+          "from": "Kai Donovan",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "tiered.access",
+              "access.waitlist",
+              "waitlist.control",
+              "tiered",
+              "access",
+              "waitlist",
+              "control"
+            ],
+            "known_built_matches": [
+              {
+                "file": "app/(public)/e/",
+                "label": "Public event pages"
+              }
+            ],
+            "likely_false_positive": true
+          }
+        }
+      ]
     },
     "ticketing-drops": {
       "count": 2,
@@ -38,7 +99,29 @@
         "MEDIUM": 0,
         "LOW": 0
       },
-      "gap_count": 2
+      "gap_count": 2,
+      "gaps": [
+        {
+          "title": "Drop Engine for High-Demand Releases",
+          "from": "Kai Donovan",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": ["drop.high-demand", "high-demand.releases", "high-demand", "releases"],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Sales Channel Tracking",
+          "from": "Maya Rios",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": ["sales.channel", "channel.tracking", "sales", "channel", "tracking"],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        }
+      ]
     },
     "audience-community": {
       "count": 1,
@@ -48,7 +131,25 @@
         "MEDIUM": 1,
         "LOW": 0
       },
-      "gap_count": 1
+      "gap_count": 1,
+      "gaps": [
+        {
+          "title": "Audience Curation and Composition",
+          "from": "Kai Donovan",
+          "severity": "MEDIUM",
+          "search_hints": {
+            "grep_terms": [
+              "audience.curation",
+              "curation.composition",
+              "audience",
+              "curation",
+              "composition"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        }
+      ]
     },
     "location-venue": {
       "count": 1,
@@ -58,31 +159,129 @@
         "MEDIUM": 1,
         "LOW": 0
       },
-      "gap_count": 1
+      "gap_count": 1,
+      "gaps": [
+        {
+          "title": "Location Adaptation and Venue Constraints",
+          "from": "Kai Donovan",
+          "severity": "MEDIUM",
+          "search_hints": {
+            "grep_terms": [
+              "location.adaptation",
+              "adaptation.venue",
+              "venue.constraints",
+              "location",
+              "adaptation",
+              "venue",
+              "constraints"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        }
+      ]
     },
     "payment-financial": {
-      "count": 1,
-      "personas": ["noah-kessler"],
+      "count": 3,
+      "personas": ["noah-kessler", "alexander-davenport", "samantha-miller"],
       "severity_breakdown": {
-        "HIGH": 1,
-        "MEDIUM": 0,
+        "HIGH": 2,
+        "MEDIUM": 1,
         "LOW": 0
       },
-      "gap_count": 1
+      "gap_count": 3,
+      "gaps": [
+        {
+          "title": "No real-time store-level price truth contract",
+          "from": "Noah Kessler",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "store-level.price",
+              "price.truth",
+              "truth.contract",
+              "store-level",
+              "price",
+              "truth",
+              "contract"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Privacy/Security:",
+          "from": "Alexander Davenport",
+          "severity": "MEDIUM",
+          "search_hints": {
+            "grep_terms": ["privacysecurity"],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Waste/Cost:",
+          "from": "Samantha Miller",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": ["wastecost"],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        }
+      ]
     },
     "compliance-legal": {
-      "count": 3,
-      "personas": [
-        "dr-julien-armand-michelin",
-        "jordan-hale-cannabis-culinary-director-multi",
-        "maya-rios-cannabis-pastry-chef-micro"
-      ],
+      "count": 2,
+      "personas": ["dr-julien-armand-michelin", "jordan-hale-cannabis-culinary-director-multi"],
       "severity_breakdown": {
-        "HIGH": 3,
+        "HIGH": 2,
         "MEDIUM": 0,
         "LOW": 0
       },
-      "gap_count": 3
+      "gap_count": 2,
+      "gaps": [
+        {
+          "title": "No regulator-grade traceability export",
+          "from": "Dr. Julien Armand",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "regulator-grade.traceability",
+              "traceability.export",
+              "regulator-grade",
+              "traceability",
+              "export"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Compliance evidence is fragmented across multiple screens",
+          "from": "Jordan Hale",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "compliance.evidence",
+              "evidence.fragmented",
+              "fragmented.across",
+              "across.multiple",
+              "multiple.screens",
+              "compliance",
+              "evidence",
+              "fragmented"
+            ],
+            "known_built_matches": [
+              {
+                "file": "lib/chef/cannabis-actions.ts",
+                "label": "Cannabis compliance"
+              }
+            ],
+            "likely_false_positive": true
+          }
+        }
+      ]
     },
     "dosing-cannabis": {
       "count": 3,
@@ -92,37 +291,365 @@
         "maya-rios-cannabis-pastry-chef-micro"
       ],
       "severity_breakdown": {
-        "HIGH": 8,
+        "HIGH": 7,
         "MEDIUM": 0,
         "LOW": 0
       },
-      "gap_count": 8
+      "gap_count": 7,
+      "gaps": [
+        {
+          "title": "No deterministic dose-curve engine",
+          "from": "Dr. Julien Armand",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": ["deterministic.dose-curve", "deterministic", "dose-curve"],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "No molecule-level culinary data model",
+          "from": "Dr. Julien Armand",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "molecule-level.culinary",
+              "culinary.data",
+              "molecule-level",
+              "culinary"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "No cannabis outcome intelligence loop",
+          "from": "Dr. Julien Armand",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "cannabis.outcome",
+              "outcome.intelligence",
+              "intelligence.loop",
+              "cannabis",
+              "outcome",
+              "intelligence"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "No canonical central dosing engine",
+          "from": "Jordan Hale",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": ["canonical.central", "central.dosing", "canonical", "central", "dosing"],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Guest cannabis tolerance history is not modeled as a first-class longitudinal safety signal",
+          "from": "Jordan Hale",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "guest.cannabis",
+              "cannabis.tolerance",
+              "tolerance.history",
+              "history.modeled",
+              "modeled.longitudinal",
+              "longitudinal.safety",
+              "safety.signal",
+              "guest"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Product System (SKUs, Batches, Units)",
+          "from": "Maya Rios",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "product.skus",
+              "skus.batches",
+              "batches.units",
+              "product",
+              "batches",
+              "units"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Batch Dosing Engine",
+          "from": "Maya Rios",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": ["batch.dosing", "batch", "dosing"],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        }
+      ]
     },
     "dietary-medical": {
-      "count": 2,
-      "personas": ["leo-varga", "rina-solis"],
+      "count": 3,
+      "personas": ["leo-varga", "rina-solis", "samantha-green"],
       "severity_breakdown": {
-        "HIGH": 3,
-        "MEDIUM": 0,
+        "HIGH": 4,
+        "MEDIUM": 1,
         "LOW": 0
       },
-      "gap_count": 3
+      "gap_count": 5,
+      "gaps": [
+        {
+          "title": "No deterministic inventory-to-menu execution assistant",
+          "from": "Leo Varga",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "deterministic.inventory-to-menu",
+              "inventory-to-menu.execution",
+              "deterministic",
+              "inventory-to-menu",
+              "execution"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "No hard medical constraint enforcement engine (blocking layer)",
+          "from": "Rina Solis",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "hard.medical",
+              "medical.constraint",
+              "constraint.enforcement",
+              "enforcement.blocking",
+              "medical",
+              "constraint",
+              "enforcement",
+              "blocking"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Insufficient hidden-risk and cross-contact signaling at ingredient level",
+          "from": "Rina Solis",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "insufficient.hidden-risk",
+              "hidden-risk.cross-contact",
+              "cross-contact.signaling",
+              "signaling.ingredient",
+              "insufficient",
+              "hidden-risk",
+              "cross-contact",
+              "signaling"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Implement Mandatory Allergy Workflow:",
+          "from": "Samantha Green",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "implement.mandatory",
+              "mandatory.allergy",
+              "allergy.workflow",
+              "implement",
+              "mandatory",
+              "allergy",
+              "workflow"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Create \"Dietary Confirmation\" POS Overlay:",
+          "from": "Samantha Green",
+          "severity": "MEDIUM",
+          "search_hints": {
+            "grep_terms": [
+              "create.dietary",
+              "dietary.confirmation",
+              "confirmation.pos",
+              "pos.overlay",
+              "create",
+              "dietary",
+              "confirmation",
+              "overlay"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        }
+      ]
     },
     "recipe-menu": {
-      "count": 5,
+      "count": 6,
       "personas": [
         "dr-julien-armand-michelin",
         "leo-varga",
         "maya-rios-cannabis-pastry-chef-micro",
         "noah-kessler",
-        "rina-solis"
+        "rina-solis",
+        "ethan-calder"
       ],
       "severity_breakdown": {
-        "HIGH": 8,
+        "HIGH": 9,
         "MEDIUM": 0,
         "LOW": 0
       },
-      "gap_count": 8
+      "gap_count": 9,
+      "gaps": [
+        {
+          "title": "No molecule-level culinary data model",
+          "from": "Dr. Julien Armand",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "molecule-level.culinary",
+              "culinary.data",
+              "molecule-level",
+              "culinary"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "No regulator-grade traceability export",
+          "from": "Dr. Julien Armand",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "regulator-grade.traceability",
+              "traceability.export",
+              "regulator-grade",
+              "traceability",
+              "export"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "No deterministic inventory-to-menu execution assistant",
+          "from": "Leo Varga",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "deterministic.inventory-to-menu",
+              "inventory-to-menu.execution",
+              "deterministic",
+              "inventory-to-menu",
+              "execution"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Product System (SKUs, Batches, Units)",
+          "from": "Maya Rios",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "product.skus",
+              "skus.batches",
+              "batches.units",
+              "product",
+              "batches",
+              "units"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Batch Dosing Engine",
+          "from": "Maya Rios",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": ["batch.dosing", "batch", "dosing"],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "No market-first menu builder mode",
+          "from": "Noah Kessler",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": ["market-first.menu", "menu.builder", "market-first", "builder"],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "No safe-only menu generation mode for high-risk clients",
+          "from": "Rina Solis",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "safe-only.menu",
+              "menu.generation",
+              "generation.high-risk",
+              "high-risk.clients",
+              "safe-only",
+              "generation",
+              "high-risk",
+              "clients"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Insufficient hidden-risk and cross-contact signaling at ingredient level",
+          "from": "Rina Solis",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "insufficient.hidden-risk",
+              "hidden-risk.cross-contact",
+              "cross-contact.signaling",
+              "signaling.ingredient",
+              "insufficient",
+              "hidden-risk",
+              "cross-contact",
+              "signaling"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Dynamic Menu Engineering:",
+          "from": "Ethan Calder",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": ["dynamic.menu", "menu.engineering", "dynamic", "engineering"],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        }
+      ]
     },
     "scheduling-calendar": {
       "count": 2,
@@ -132,17 +659,79 @@
         "MEDIUM": 0,
         "LOW": 0
       },
-      "gap_count": 3
+      "gap_count": 3,
+      "gaps": [
+        {
+          "title": "No real-time dosing administration log",
+          "from": "Dr. Julien Armand",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "dosing.administration",
+              "administration.log",
+              "dosing",
+              "administration"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "No explicit offline-first guarantee for mission-critical workflows",
+          "from": "Leo Varga",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "offline-first.guarantee",
+              "guarantee.mission-critical",
+              "mission-critical.workflows",
+              "offline-first",
+              "guarantee",
+              "mission-critical",
+              "workflows"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "No documented conflict-safe sync model",
+          "from": "Leo Varga",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "documented.conflict-safe",
+              "conflict-safe.sync",
+              "documented",
+              "conflict-safe"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        }
+      ]
     },
     "communication": {
-      "count": 0,
-      "personas": [],
+      "count": 1,
+      "personas": ["alexander-davenport"],
       "severity_breakdown": {
         "HIGH": 0,
-        "MEDIUM": 0,
+        "MEDIUM": 1,
         "LOW": 0
       },
-      "gap_count": 0
+      "gap_count": 1,
+      "gaps": [
+        {
+          "title": "Privacy/Security:",
+          "from": "Alexander Davenport",
+          "severity": "MEDIUM",
+          "search_hints": {
+            "grep_terms": ["privacysecurity"],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        }
+      ]
     },
     "staffing-team": {
       "count": 2,
@@ -152,27 +741,170 @@
         "MEDIUM": 0,
         "LOW": 0
       },
-      "gap_count": 3
+      "gap_count": 3,
+      "gaps": [
+        {
+          "title": "V1 strategy conflicts with multi-chef governance need",
+          "from": "Jordan Hale",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "strategy.conflicts",
+              "conflicts.multi-chef",
+              "multi-chef.governance",
+              "strategy",
+              "conflicts",
+              "multi-chef",
+              "governance"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Director-level cross-event risk cockpit is incomplete for this persona",
+          "from": "Jordan Hale",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "director-level.cross-event",
+              "cross-event.risk",
+              "risk.cockpit",
+              "cockpit.incomplete",
+              "incomplete.persona",
+              "director-level",
+              "cross-event",
+              "cockpit"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "No deterministic inventory-to-menu execution assistant",
+          "from": "Leo Varga",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "deterministic.inventory-to-menu",
+              "inventory-to-menu.execution",
+              "deterministic",
+              "inventory-to-menu",
+              "execution"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        }
+      ]
     },
     "sourcing-supply": {
-      "count": 1,
-      "personas": ["noah-kessler"],
+      "count": 3,
+      "personas": ["noah-kessler", "ethan-calder", "victor-hale"],
       "severity_breakdown": {
-        "HIGH": 3,
+        "HIGH": 4,
         "MEDIUM": 0,
-        "LOW": 0
+        "LOW": 1
       },
-      "gap_count": 3
+      "gap_count": 5,
+      "gaps": [
+        {
+          "title": "No external store availability signal",
+          "from": "Noah Kessler",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "external.store",
+              "store.availability",
+              "availability.signal",
+              "external",
+              "store",
+              "availability",
+              "signal"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "No destination-first store intelligence for travel",
+          "from": "Noah Kessler",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "destination-first.store",
+              "store.intelligence",
+              "intelligence.travel",
+              "destination-first",
+              "store",
+              "intelligence",
+              "travel"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "No multi-store route and split-cart optimizer",
+          "from": "Noah Kessler",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "multi-store.route",
+              "route.split-cart",
+              "split-cart.optimizer",
+              "multi-store",
+              "route",
+              "split-cart",
+              "optimizer"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Hyper-Local Sourcing:",
+          "from": "Ethan Calder",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": ["hyper-local.sourcing", "hyper-local", "sourcing"],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Vendor Lock-in:",
+          "from": "Victor Hale",
+          "severity": "LOW",
+          "search_hints": {
+            "grep_terms": ["vendor.lock-in", "vendor", "lock-in"],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        }
+      ]
     },
     "costing-margin": {
-      "count": 0,
-      "personas": [],
+      "count": 1,
+      "personas": ["samantha-miller"],
       "severity_breakdown": {
-        "HIGH": 0,
+        "HIGH": 1,
         "MEDIUM": 0,
         "LOW": 0
       },
-      "gap_count": 0
+      "gap_count": 1,
+      "gaps": [
+        {
+          "title": "Waste/Cost:",
+          "from": "Samantha Miller",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": ["wastecost"],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        }
+      ]
     },
     "reporting-analytics": {
       "count": 2,
@@ -182,7 +914,53 @@
         "MEDIUM": 0,
         "LOW": 0
       },
-      "gap_count": 3
+      "gap_count": 3,
+      "gaps": [
+        {
+          "title": "Sales Channel Tracking",
+          "from": "Maya Rios",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": ["sales.channel", "channel.tracking", "sales", "channel", "tracking"],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "No explicit outcome-based reaction log as first-class feedback",
+          "from": "Rina Solis",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "outcome-based.reaction",
+              "reaction.log",
+              "log.feedback",
+              "outcome-based",
+              "reaction",
+              "feedback"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "No dedicated safety command center view",
+          "from": "Rina Solis",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "safety.command",
+              "command.center",
+              "center.view",
+              "safety",
+              "command",
+              "center"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        }
+      ]
     },
     "onboarding-ux": {
       "count": 1,
@@ -192,7 +970,62 @@
         "MEDIUM": 0,
         "LOW": 0
       },
-      "gap_count": 3
+      "gap_count": 3,
+      "gaps": [
+        {
+          "title": "No explicit outcome-based reaction log as first-class feedback",
+          "from": "Rina Solis",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "outcome-based.reaction",
+              "reaction.log",
+              "log.feedback",
+              "outcome-based",
+              "reaction",
+              "feedback"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "No safe-only menu generation mode for high-risk clients",
+          "from": "Rina Solis",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "safe-only.menu",
+              "menu.generation",
+              "generation.high-risk",
+              "high-risk.clients",
+              "safe-only",
+              "generation",
+              "high-risk",
+              "clients"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "No dedicated safety command center view",
+          "from": "Rina Solis",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "safety.command",
+              "command.center",
+              "center.view",
+              "safety",
+              "command",
+              "center"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        }
+      ]
     },
     "scaling-multi": {
       "count": 1,
@@ -202,7 +1035,44 @@
         "MEDIUM": 0,
         "LOW": 0
       },
-      "gap_count": 2
+      "gap_count": 2,
+      "gaps": [
+        {
+          "title": "No charter or voyage provisioning mode",
+          "from": "Leo Varga",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "charter.voyage",
+              "voyage.provisioning",
+              "charter",
+              "voyage",
+              "provisioning"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "No rapid guest roster churn flow",
+          "from": "Leo Varga",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "rapid.guest",
+              "guest.roster",
+              "roster.churn",
+              "churn.flow",
+              "rapid",
+              "guest",
+              "roster",
+              "churn"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        }
+      ]
     },
     "delivery-logistics": {
       "count": 1,
@@ -212,7 +1082,25 @@
         "MEDIUM": 0,
         "LOW": 0
       },
-      "gap_count": 1
+      "gap_count": 1,
+      "gaps": [
+        {
+          "title": "No regulator-grade traceability export",
+          "from": "Dr. Julien Armand",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "regulator-grade.traceability",
+              "traceability.export",
+              "regulator-grade",
+              "traceability",
+              "export"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        }
+      ]
     },
     "documentation-records": {
       "count": 3,
@@ -226,17 +1114,194 @@
         "MEDIUM": 0,
         "LOW": 0
       },
-      "gap_count": 3
+      "gap_count": 3,
+      "gaps": [
+        {
+          "title": "No real-time dosing administration log",
+          "from": "Dr. Julien Armand",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "dosing.administration",
+              "administration.log",
+              "dosing",
+              "administration"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Sales Channel Tracking",
+          "from": "Maya Rios",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": ["sales.channel", "channel.tracking", "sales", "channel", "tracking"],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "No explicit outcome-based reaction log as first-class feedback",
+          "from": "Rina Solis",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "outcome-based.reaction",
+              "reaction.log",
+              "log.feedback",
+              "outcome-based",
+              "reaction",
+              "feedback"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        }
+      ]
     },
     "uncategorized": {
-      "count": 0,
-      "personas": [],
+      "count": 7,
+      "personas": [
+        "elena-ruiz",
+        "malik-johnson",
+        "marcus-hale",
+        "samantha-green",
+        "tommy-thompson",
+        "victor-hale",
+        "victor-hale-2"
+      ],
       "severity_breakdown": {
-        "HIGH": 0,
-        "MEDIUM": 0,
-        "LOW": 0
+        "HIGH": 5,
+        "MEDIUM": 4,
+        "LOW": 1
       },
-      "gap_count": 0
+      "gap_count": 10,
+      "gaps": [
+        {
+          "title": "Maintain Quality & Consistency:",
+          "from": "Elena Ruiz",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "maintain.quality",
+              "quality.consistency",
+              "maintain",
+              "quality",
+              "consistency"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Implement Live Status:",
+          "from": "Malik Johnson",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": ["implement.live", "live.status", "implement", "status"],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Basic Geo-Filtering:",
+          "from": "Malik Johnson",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": ["basic.geo-filtering", "basic", "geo-filtering"],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Dynamic Quoting V1:",
+          "from": "Malik Johnson",
+          "severity": "MEDIUM",
+          "search_hints": {
+            "grep_terms": ["dynamic.quoting", "dynamic", "quoting"],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Low Friction Input:",
+          "from": "Marcus Hale",
+          "severity": "MEDIUM",
+          "search_hints": {
+            "grep_terms": ["low.friction", "friction.input", "friction", "input"],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Develop Cross-Contamination Matrix:",
+          "from": "Samantha Green",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "develop.cross-contamination",
+              "cross-contamination.matrix",
+              "develop",
+              "cross-contamination",
+              "matrix"
+            ],
+            "known_built_matches": [
+              {
+                "file": "lib/dietary/cross-contamination-check.ts",
+                "label": "Allergen cross-contamination check"
+              }
+            ],
+            "likely_false_positive": true
+          }
+        },
+        {
+          "title": "Client Self-Service:",
+          "from": "Tommy Thompson",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": ["client.self-service", "client", "self-service"],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Order Modification Workflow:",
+          "from": "Tommy Thompson",
+          "severity": "MEDIUM",
+          "search_hints": {
+            "grep_terms": [
+              "order.modification",
+              "modification.workflow",
+              "order",
+              "modification",
+              "workflow"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Depth over Breadth:",
+          "from": "Victor Hale",
+          "severity": "MEDIUM",
+          "search_hints": {
+            "grep_terms": ["depth.over", "over.breadth", "depth", "breadth"],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Introduce \"The Vault\":",
+          "from": "Victor Hale 2",
+          "severity": "LOW",
+          "search_hints": {
+            "grep_terms": ["introduce.vault", "introduce", "vault"],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        }
+      ]
     }
   },
   "saturation": {
@@ -285,30 +1350,86 @@
       {
         "slug": "rina-solis",
         "new_categories": ["onboarding-ux"]
+      },
+      {
+        "slug": "000-wp1-reliability-test-chef",
+        "new_categories": []
+      },
+      {
+        "slug": "alexander-davenport",
+        "new_categories": ["communication"]
+      },
+      {
+        "slug": "elena-ruiz",
+        "new_categories": []
+      },
+      {
+        "slug": "ethan-calder",
+        "new_categories": []
+      },
+      {
+        "slug": "malik-johnson",
+        "new_categories": []
+      },
+      {
+        "slug": "marcus-hale",
+        "new_categories": []
+      },
+      {
+        "slug": "samantha-green",
+        "new_categories": []
+      },
+      {
+        "slug": "samantha-miller",
+        "new_categories": ["costing-margin"]
+      },
+      {
+        "slug": "tommy-thompson",
+        "new_categories": []
+      },
+      {
+        "slug": "victor-hale",
+        "new_categories": []
+      },
+      {
+        "slug": "victor-hale-2",
+        "new_categories": []
       }
     ],
-    "consecutive_zero_new": 0,
+    "consecutive_zero_new": 3,
     "saturated": false,
-    "categories_discovered": 18,
+    "categories_discovered": 20,
     "categories_total": 20,
-    "categories_never_seen": ["communication", "costing-margin"]
+    "categories_never_seen": []
   },
   "priority_ranking": [
     {
       "category": "recipe-menu",
+      "priority_score": 27,
+      "count": 6,
+      "avg_severity": "HIGH"
+    },
+    {
+      "category": "uncategorized",
       "priority_score": 24,
-      "count": 5,
+      "count": 7,
       "avg_severity": "HIGH"
     },
     {
       "category": "dosing-cannabis",
-      "priority_score": 24,
+      "priority_score": 21,
       "count": 3,
       "avg_severity": "HIGH"
     },
     {
-      "category": "compliance-legal",
-      "priority_score": 9,
+      "category": "dietary-medical",
+      "priority_score": 14,
+      "count": 3,
+      "avg_severity": "HIGH"
+    },
+    {
+      "category": "sourcing-supply",
+      "priority_score": 13,
       "count": 3,
       "avg_severity": "HIGH"
     },
@@ -316,12 +1437,6 @@
       "category": "documentation-records",
       "priority_score": 9,
       "count": 3,
-      "avg_severity": "HIGH"
-    },
-    {
-      "category": "dietary-medical",
-      "priority_score": 9,
-      "count": 2,
       "avg_severity": "HIGH"
     },
     {
@@ -343,15 +1458,15 @@
       "avg_severity": "HIGH"
     },
     {
-      "category": "sourcing-supply",
+      "category": "onboarding-ux",
       "priority_score": 9,
       "count": 1,
       "avg_severity": "HIGH"
     },
     {
-      "category": "onboarding-ux",
-      "priority_score": 9,
-      "count": 1,
+      "category": "payment-financial",
+      "priority_score": 8,
+      "count": 3,
       "avg_severity": "HIGH"
     },
     {
@@ -362,6 +1477,12 @@
     },
     {
       "category": "ticketing-drops",
+      "priority_score": 6,
+      "count": 2,
+      "avg_severity": "HIGH"
+    },
+    {
+      "category": "compliance-legal",
       "priority_score": 6,
       "count": 2,
       "avg_severity": "HIGH"
@@ -379,7 +1500,7 @@
       "avg_severity": "HIGH"
     },
     {
-      "category": "payment-financial",
+      "category": "costing-margin",
       "priority_score": 3,
       "count": 1,
       "avg_severity": "HIGH"
@@ -398,6 +1519,12 @@
     },
     {
       "category": "location-venue",
+      "priority_score": 2,
+      "count": 1,
+      "avg_severity": "MEDIUM"
+    },
+    {
+      "category": "communication",
       "priority_score": 2,
       "count": 1,
       "avg_severity": "MEDIUM"

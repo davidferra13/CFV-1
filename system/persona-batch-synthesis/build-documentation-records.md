@@ -1,6 +1,6 @@
 # Consolidated Build: Documentation Records
 
-**Priority rank:** 4 of 18
+**Priority rank:** 6 of 21
 **Personas affected:** 3 (Dr. Julien Armand, Maya Rios, Rina Solis)
 **Average severity:** HIGH
 
@@ -12,10 +12,13 @@
 
 1. **No real-time dosing administration log** - from Dr. Julien Armand - HIGH
    That records exact delivered mg and immediate guest response in-service.
+   > Search hints: dosing.administration, administration.log, dosing, administration
 2. **Sales Channel Tracking** - from Maya Rios - HIGH
-   \*\* ChefFlow only tracks event sales (dinners), not product sales through pop-ups, drops, or direct channels. Maya's multi-channel sales require movement tracking across channels, but ChefFlow has no p...
+   \*\* ChefFlow only tracks event sales (dinners), not product sales through pop-ups, drops, or direct channels. Maya's multi-channel sales require movement tracking across channels, but ChefFlow has no...
+   > Search hints: sales.channel, channel.tracking, sales, channel, tracking
 3. **No explicit outcome-based reaction log as first-class feedback** - from Rina Solis - HIGH
    Feedback surfaces are broad, but this persona requires structured outcomes such as tolerated, mild reaction, severe reaction, and clinician follow-up.
+   > Search hints: outcome-based.reaction, reaction.log, log.feedback, outcome-based, reaction, feedback
 
 ## Recommended Build Scope
 
