@@ -198,7 +198,9 @@ function formatIncentiveValueLabel(incentive: IncentiveRecord): string {
   }
 
   if (incentive.amount_cents != null) {
-    const amount = formatCurrency(incentive.amount_cents, incentive.currency_code || 'USD')
+    const amount = formatCurrency(incentive.amount_cents, {
+      currency: incentive.currency_code || 'USD',
+    })
     if (incentive.type === 'gift_card') {
       return `${amount} gift card value`
     }

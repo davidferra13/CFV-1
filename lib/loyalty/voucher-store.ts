@@ -80,7 +80,9 @@ function parseExpiryToIso(expiresAt?: string): string | null {
 function formatIncentiveValueLabel(incentive: IncentiveRecord): string {
   if (incentive.discount_percent != null) return `${incentive.discount_percent}% off`
   if (incentive.amount_cents != null) {
-    const amount = formatCurrency(incentive.amount_cents, incentive.currency_code || 'USD')
+    const amount = formatCurrency(incentive.amount_cents, {
+      currency: incentive.currency_code || 'USD',
+    })
     return incentive.type === 'gift_card' ? `${amount} gift card value` : `${amount} off`
   }
   return 'Value available at redemption'
