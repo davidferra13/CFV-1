@@ -293,9 +293,14 @@ function readPersonaReports() {
       try {
         const content = readFileSync(join(dir, file), "utf8").replace(/\r\n/g, "\n");
         // Handle both formats: "Test: Name" and "Test — Name"
-        const nameMatch = content.match(/^# Persona Stress Test[\s:—–-]+(.+)$/m);
-        const name = nameMatch ? nameMatch[1].trim() : file;
-        const pType = (content.match(/^\*\*Type:\*\*\s*(.+)$/m) || [])[1] || "Unknown";
+        const nameMatch = content.match(/^# Persona Stress Test[\s:\u2014\u2013-]+(.+)$/m);
+        let name = nameMatch ? nameMatch[1].trim() : file;
+        // If name looks like a slug (all lowercase with hyphens), humanize it
+        if (name === name.toLowerCase() && name.includes("-")) {
+          name = name.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+        }
+        // Match "**Type:** Chef" or "## Type: Chef"
+        const pType = (content.match(/^\*\*Type:\*\*\s*(.+)$/m) || content.match(/^## Type:\s*(.+)$/m) || [])[1] || "Chef";
         const date = (content.match(/^\*\*Date:\*\*\s*(.+)$/m) || [])[1] || "";
         // Format A: "## Score: 68/100"  Format B: "**68 / 100**"
         const scoreA = content.match(/## Score:\s*(\d+)\s*\/\s*100/);
