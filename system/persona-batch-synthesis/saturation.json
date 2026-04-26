@@ -1,0 +1,377 @@
+{
+  "generated_at": "2026-04-26T01:33:03.631Z",
+  "total_personas": 7,
+  "average_score": 53,
+  "score_distribution": {
+    "0-20": 1,
+    "21-40": 1,
+    "41-60": 1,
+    "61-80": 4,
+    "81-100": 0
+  },
+  "categories": {
+    "event-lifecycle": {
+      "count": 1,
+      "personas": ["kai-donovan"],
+      "severity_breakdown": {
+        "HIGH": 1,
+        "MEDIUM": 0,
+        "LOW": 0
+      },
+      "gap_count": 1
+    },
+    "access-control": {
+      "count": 1,
+      "personas": ["kai-donovan"],
+      "severity_breakdown": {
+        "HIGH": 1,
+        "MEDIUM": 0,
+        "LOW": 0
+      },
+      "gap_count": 1
+    },
+    "ticketing-drops": {
+      "count": 1,
+      "personas": ["kai-donovan"],
+      "severity_breakdown": {
+        "HIGH": 1,
+        "MEDIUM": 0,
+        "LOW": 0
+      },
+      "gap_count": 1
+    },
+    "audience-community": {
+      "count": 1,
+      "personas": ["kai-donovan"],
+      "severity_breakdown": {
+        "HIGH": 0,
+        "MEDIUM": 1,
+        "LOW": 0
+      },
+      "gap_count": 1
+    },
+    "location-venue": {
+      "count": 1,
+      "personas": ["kai-donovan"],
+      "severity_breakdown": {
+        "HIGH": 0,
+        "MEDIUM": 1,
+        "LOW": 0
+      },
+      "gap_count": 1
+    },
+    "payment-financial": {
+      "count": 1,
+      "personas": ["noah-kessler"],
+      "severity_breakdown": {
+        "HIGH": 0,
+        "MEDIUM": 1,
+        "LOW": 0
+      },
+      "gap_count": 1
+    },
+    "compliance-legal": {
+      "count": 1,
+      "personas": ["jordan-hale-cannabis-culinary-director-multi"],
+      "severity_breakdown": {
+        "HIGH": 0,
+        "MEDIUM": 1,
+        "LOW": 0
+      },
+      "gap_count": 1
+    },
+    "dosing-cannabis": {
+      "count": 3,
+      "personas": [
+        "dr-julien-armand-michelin",
+        "jordan-hale-cannabis-culinary-director-multi",
+        "maya-rios-cannabis-pastry-chef-micro"
+      ],
+      "severity_breakdown": {
+        "HIGH": 5,
+        "MEDIUM": 2,
+        "LOW": 0
+      },
+      "gap_count": 7
+    },
+    "dietary-medical": {
+      "count": 1,
+      "personas": ["rina-solis"],
+      "severity_breakdown": {
+        "HIGH": 1,
+        "MEDIUM": 0,
+        "LOW": 0
+      },
+      "gap_count": 1
+    },
+    "recipe-menu": {
+      "count": 4,
+      "personas": [
+        "dr-julien-armand-michelin",
+        "leo-varga",
+        "maya-rios-cannabis-pastry-chef-micro",
+        "noah-kessler"
+      ],
+      "severity_breakdown": {
+        "HIGH": 3,
+        "MEDIUM": 1,
+        "LOW": 0
+      },
+      "gap_count": 4
+    },
+    "scheduling-calendar": {
+      "count": 3,
+      "personas": ["jordan-hale-cannabis-culinary-director-multi", "leo-varga", "noah-kessler"],
+      "severity_breakdown": {
+        "HIGH": 2,
+        "MEDIUM": 1,
+        "LOW": 0
+      },
+      "gap_count": 3
+    },
+    "communication": {
+      "count": 0,
+      "personas": [],
+      "severity_breakdown": {
+        "HIGH": 0,
+        "MEDIUM": 0,
+        "LOW": 0
+      },
+      "gap_count": 0
+    },
+    "staffing-team": {
+      "count": 0,
+      "personas": [],
+      "severity_breakdown": {
+        "HIGH": 0,
+        "MEDIUM": 0,
+        "LOW": 0
+      },
+      "gap_count": 0
+    },
+    "sourcing-supply": {
+      "count": 1,
+      "personas": ["noah-kessler"],
+      "severity_breakdown": {
+        "HIGH": 1,
+        "MEDIUM": 0,
+        "LOW": 0
+      },
+      "gap_count": 1
+    },
+    "costing-margin": {
+      "count": 0,
+      "personas": [],
+      "severity_breakdown": {
+        "HIGH": 0,
+        "MEDIUM": 0,
+        "LOW": 0
+      },
+      "gap_count": 0
+    },
+    "reporting-analytics": {
+      "count": 0,
+      "personas": [],
+      "severity_breakdown": {
+        "HIGH": 0,
+        "MEDIUM": 0,
+        "LOW": 0
+      },
+      "gap_count": 0
+    },
+    "onboarding-ux": {
+      "count": 0,
+      "personas": [],
+      "severity_breakdown": {
+        "HIGH": 0,
+        "MEDIUM": 0,
+        "LOW": 0
+      },
+      "gap_count": 0
+    },
+    "scaling-multi": {
+      "count": 0,
+      "personas": [],
+      "severity_breakdown": {
+        "HIGH": 0,
+        "MEDIUM": 0,
+        "LOW": 0
+      },
+      "gap_count": 0
+    },
+    "delivery-logistics": {
+      "count": 0,
+      "personas": [],
+      "severity_breakdown": {
+        "HIGH": 0,
+        "MEDIUM": 0,
+        "LOW": 0
+      },
+      "gap_count": 0
+    },
+    "documentation-records": {
+      "count": 1,
+      "personas": ["dr-julien-armand-michelin"],
+      "severity_breakdown": {
+        "HIGH": 0,
+        "MEDIUM": 1,
+        "LOW": 0
+      },
+      "gap_count": 1
+    },
+    "uncategorized": {
+      "count": 6,
+      "personas": [
+        "dr-julien-armand-michelin",
+        "jordan-hale-cannabis-culinary-director-multi",
+        "leo-varga",
+        "maya-rios-cannabis-pastry-chef-micro",
+        "noah-kessler",
+        "rina-solis"
+      ],
+      "severity_breakdown": {
+        "HIGH": 12,
+        "MEDIUM": 3,
+        "LOW": 0
+      },
+      "gap_count": 15
+    }
+  },
+  "saturation": {
+    "new_categories_by_persona": [
+      {
+        "slug": "dr-julien-armand-michelin",
+        "new_categories": ["recipe-menu", "documentation-records", "dosing-cannabis"]
+      },
+      {
+        "slug": "jordan-hale-cannabis-culinary-director-multi",
+        "new_categories": ["compliance-legal", "scheduling-calendar"]
+      },
+      {
+        "slug": "kai-donovan",
+        "new_categories": [
+          "event-lifecycle",
+          "access-control",
+          "ticketing-drops",
+          "audience-community",
+          "location-venue"
+        ]
+      },
+      {
+        "slug": "leo-varga",
+        "new_categories": []
+      },
+      {
+        "slug": "maya-rios-cannabis-pastry-chef-micro",
+        "new_categories": []
+      },
+      {
+        "slug": "noah-kessler",
+        "new_categories": ["payment-financial", "sourcing-supply"]
+      },
+      {
+        "slug": "rina-solis",
+        "new_categories": ["dietary-medical"]
+      }
+    ],
+    "consecutive_zero_new": 0,
+    "saturated": false,
+    "categories_discovered": 13,
+    "categories_total": 20,
+    "categories_never_seen": [
+      "communication",
+      "staffing-team",
+      "costing-margin",
+      "reporting-analytics",
+      "onboarding-ux",
+      "scaling-multi",
+      "delivery-logistics"
+    ]
+  },
+  "priority_ranking": [
+    {
+      "category": "uncategorized",
+      "priority_score": 42,
+      "count": 6,
+      "avg_severity": "HIGH"
+    },
+    {
+      "category": "dosing-cannabis",
+      "priority_score": 19,
+      "count": 3,
+      "avg_severity": "HIGH"
+    },
+    {
+      "category": "recipe-menu",
+      "priority_score": 11,
+      "count": 4,
+      "avg_severity": "HIGH"
+    },
+    {
+      "category": "scheduling-calendar",
+      "priority_score": 8,
+      "count": 3,
+      "avg_severity": "HIGH"
+    },
+    {
+      "category": "event-lifecycle",
+      "priority_score": 3,
+      "count": 1,
+      "avg_severity": "HIGH"
+    },
+    {
+      "category": "access-control",
+      "priority_score": 3,
+      "count": 1,
+      "avg_severity": "HIGH"
+    },
+    {
+      "category": "ticketing-drops",
+      "priority_score": 3,
+      "count": 1,
+      "avg_severity": "HIGH"
+    },
+    {
+      "category": "dietary-medical",
+      "priority_score": 3,
+      "count": 1,
+      "avg_severity": "HIGH"
+    },
+    {
+      "category": "sourcing-supply",
+      "priority_score": 3,
+      "count": 1,
+      "avg_severity": "HIGH"
+    },
+    {
+      "category": "audience-community",
+      "priority_score": 2,
+      "count": 1,
+      "avg_severity": "MEDIUM"
+    },
+    {
+      "category": "location-venue",
+      "priority_score": 2,
+      "count": 1,
+      "avg_severity": "MEDIUM"
+    },
+    {
+      "category": "payment-financial",
+      "priority_score": 2,
+      "count": 1,
+      "avg_severity": "MEDIUM"
+    },
+    {
+      "category": "compliance-legal",
+      "priority_score": 2,
+      "count": 1,
+      "avg_severity": "MEDIUM"
+    },
+    {
+      "category": "documentation-records",
+      "priority_score": 2,
+      "count": 1,
+      "avg_severity": "MEDIUM"
+    }
+  ]
+}
