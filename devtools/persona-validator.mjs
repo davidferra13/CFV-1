@@ -117,6 +117,147 @@ function countBusinessNumbers(content) {
   return new Set([...money, ...terms].map(m => m.trim().toLowerCase())).size;
 }
 
+// --- Product drift detection ---
+// Catches personas that demand features belonging to a different product category.
+// ChefFlow is chef ops (events, clients, recipes, pricing, logistics). Not an LMS,
+// marketplace, warehouse system, social network, or generic CRM.
+
+const CHEFFLOW_DOMAIN_TERMS = [
+  'event', 'dinner', 'client', 'guest', 'recipe', 'menu', 'ingredient',
+  'pricing', 'costing', 'quote', 'invoice', 'payment', 'booking', 'schedule',
+  'staff', 'vendor', 'sourcing', 'catering', 'prep', 'cooking', 'kitchen',
+  'food safety', 'dietary', 'allergy', 'contract', 'ledger', 'meal',
+  'tasting', 'plating', 'portion', 'grocery', 'farmer', 'farm',
+  'ticket', 'rsvp', 'waitlist', 'cannabis', 'dosing', 'compliance',
+  'receipt', 'expense', 'profit', 'revenue', 'retainer',
+];
+
+const DRIFT_CATEGORIES = [
+  {
+    name: 'LMS/Education Platform',
+    terms: [
+      'student tracking', 'skill progression', 'learning path', 'curriculum',
+      'enrollment', 'grade', 'coursework', 'lesson plan', 'class flow',
+      'teaching dashboard', 'student feedback', 'student progress',
+      'skill level', 'advancement', 'certification', 'quiz', 'assessment',
+      'learning objective', 'pedagogy', 'educational outcome',
+    ],
+  },
+  {
+    name: 'Marketplace',
+    terms: [
+      'seller dashboard', 'buyer review', 'storefront', 'shopping cart',
+      'product listing', 'listing management', 'fulfillment center',
+      'marketplace fee', 'seller rating', 'buyer protection',
+    ],
+  },
+  {
+    name: 'Warehouse/Logistics Software',
+    terms: [
+      'fleet tracking', 'warehouse management', 'pallet', 'forklift',
+      'dock scheduling', 'supply chain management', 'route optimization',
+      'shipment tracking', 'freight', 'distribution center',
+    ],
+  },
+  {
+    name: 'Social Network',
+    terms: [
+      'follower count', 'news feed', 'friend request', 'social graph',
+      'feed algorithm', 'like button', 'share button', 'viral',
+      'influencer metric', 'engagement rate',
+    ],
+  },
+  {
+    name: 'Generic CRM',
+    terms: [
+      'lead scoring', 'sales pipeline', 'cold outreach', 'prospect nurturing',
+      'funnel stage', 'deal stage', 'sales forecast', 'pipeline velocity',
+    ],
+  },
+  {
+    name: 'Project Management',
+    terms: [
+      'sprint', 'kanban', 'burndown chart', 'story point', 'backlog grooming',
+      'agile ceremony', 'standup meeting', 'velocity tracking',
+    ],
+  },
+];
+
+function detectProductDrift(content) {
+  const lower = content.toLowerCase();
+  const flags = [];
+  let driftHits = 0;
+  let domainHits = 0;
+  const driftCategories = new Set();
+
+  // Extract pass/fail and "real test" section for focused analysis
+  const testSection = lower.match(/(?:pass\s*[\/&]\s*fail|the\s+real\s+test)[\s\S]*$/im);
+  const testText = testSection ? testSection[0] : '';
+
+  // Count drift term hits in the full content
+  for (const cat of DRIFT_CATEGORIES) {
+    let catHits = 0;
+    for (const term of cat.terms) {
+      const regex = new RegExp(`\\b${term.replace(/\s+/g, '\\s+')}s?\\b`, 'gi');
+      const matches = lower.match(regex) || [];
+      if (matches.length > 0) {
+        catHits += matches.length;
+        driftCategories.add(cat.name);
+      }
+    }
+    driftHits += catHits;
+  }
+
+  // Count ChefFlow domain term hits
+  for (const term of CHEFFLOW_DOMAIN_TERMS) {
+    const regex = new RegExp(`\\b${term.replace(/\s+/g, '\\s+')}s?\\b`, 'gi');
+    const matches = lower.match(regex) || [];
+    domainHits += matches.length;
+  }
+
+  // Calculate drift ratio: what % of domain-relevant terms are off-product
+  const totalRelevant = driftHits + domainHits;
+  const driftRatio = totalRelevant > 0 ? driftHits / totalRelevant : 0;
+
+  // Also check pass/fail conditions specifically for drift
+  let testDriftHits = 0;
+  let testDomainHits = 0;
+  if (testText) {
+    for (const cat of DRIFT_CATEGORIES) {
+      for (const term of cat.terms) {
+        const regex = new RegExp(`\\b${term.replace(/\s+/g, '\\s+')}s?\\b`, 'gi');
+        testDriftHits += (testText.match(regex) || []).length;
+      }
+    }
+    for (const term of CHEFFLOW_DOMAIN_TERMS) {
+      const regex = new RegExp(`\\b${term.replace(/\s+/g, '\\s+')}s?\\b`, 'gi');
+      testDomainHits += (testText.match(regex) || []).length;
+    }
+  }
+  const testTotal = testDriftHits + testDomainHits;
+  const testDriftRatio = testTotal > 0 ? testDriftHits / testTotal : 0;
+
+  // Use the WORSE of overall drift and test-section drift
+  const effectiveDrift = Math.max(driftRatio, testDriftRatio);
+
+  if (effectiveDrift > 0.7) {
+    // >70% off-product: hard reject
+    flags.push(`PRODUCT DRIFT: ${Math.round(effectiveDrift * 100)}% of demands are outside ChefFlow's domain (${[...driftCategories].join(', ')}). This persona is asking for a different product.`);
+  } else if (effectiveDrift > 0.4) {
+    // 40-70%: heavy warning, score penalty but not hard reject
+    flags.push(`Product drift warning: ${Math.round(effectiveDrift * 100)}% off-domain terms detected (${[...driftCategories].join(', ')}). Persona needs rewrite to focus on chef ops.`);
+  }
+
+  return {
+    flags,
+    driftRatio: effectiveDrift,
+    driftCategories: [...driftCategories],
+    driftHits,
+    domainHits,
+    isHardDrift: effectiveDrift > 0.7,
+  };
+}
+
 // --- Contradiction scan (heuristic, best-effort) ---
 
 function scanContradictions(content) {
@@ -266,6 +407,10 @@ export function validatePersonaContent(text, opts = {}) {
   flags.push(...scanContradictions(text));
   flags.push(...checkDuplicates(name));
 
+  // Product drift detection
+  const drift = detectProductDrift(text);
+  flags.push(...drift.flags);
+
   // Rejection reasons
   const rejectionReasons = [];
   if (sectionsMissing.length > 0) {
@@ -273,6 +418,9 @@ export function validatePersonaContent(text, opts = {}) {
   }
   if (wordCount < 500) {
     rejectionReasons.push(`Word count too low: ${wordCount} (minimum 500)`);
+  }
+  if (drift.isHardDrift) {
+    rejectionReasons.push(`Product drift: ${Math.round(drift.driftRatio * 100)}% off-domain (${drift.driftCategories.join(', ')}). Not a chef ops persona.`);
   }
 
   // Score: 100 base, deductions
@@ -289,17 +437,21 @@ export function validatePersonaContent(text, opts = {}) {
   }
   // Word count penalty (not in score formula but causes rejection)
   if (wordCount < 500) score -= 15;
-  // Flag penalties
-  score -= flags.length * 5;
+  // Product drift penalty: -30 for hard drift (>70%), -15 for warning (40-70%)
+  if (drift.isHardDrift) {
+    score -= 30;
+  } else if (drift.driftRatio > 0.4) {
+    score -= 15;
+  }
+  // Flag penalties (excluding drift flags which are already penalized above)
+  const nonDriftFlags = flags.filter(f => !f.startsWith('PRODUCT DRIFT') && !f.startsWith('Product drift'));
+  score -= nonDriftFlags.length * 5;
   score = Math.max(0, Math.min(100, score));
 
-  // Valid: score >= 40 AND no missing required sections that cause hard reject
-  // Spec: valid = false if score < 40 OR any required section missing
-  // "required section missing" means identity, business_reality, primary_failure are hard rejects
-  // structural_issues, psychological_model, pass_fail missing reduce score by 20 each
+  // Valid: score >= 40 AND no missing required sections AND no hard product drift
   const hardRequired = ['identity', 'business_reality', 'primary_failure'];
   const hardMissing = hardRequired.filter(s => sectionsMissing.includes(s));
-  const valid = score >= 40 && hardMissing.length === 0;
+  const valid = score >= 40 && hardMissing.length === 0 && !drift.isHardDrift;
 
   return {
     file: opts.file || null,
@@ -313,6 +465,9 @@ export function validatePersonaContent(text, opts = {}) {
     numbers_found: numbersFound,
     structural_issues_count: structuralCount,
     pass_fail_conditions_count: passFailCount,
+    drift_ratio: drift.driftRatio,
+    drift_categories: drift.driftCategories,
+    is_hard_drift: drift.isHardDrift,
     flags,
     rejection_reasons: rejectionReasons,
   };
@@ -372,6 +527,11 @@ function printHuman(result) {
   const status = result.valid ? '\x1b[32mPASS\x1b[0m' : '\x1b[31mFAIL\x1b[0m';
   console.log(`${status}  ${result.name} (${result.type}) - Score: ${result.score}/100`);
   console.log(`  Words: ${result.word_count} | Numbers: ${result.numbers_found} | Structural Issues: ${result.structural_issues_count} | Pass/Fail Conditions: ${result.pass_fail_conditions_count}`);
+  if (result.drift_ratio > 0.1) {
+    const driftColor = result.is_hard_drift ? '\x1b[31m' : '\x1b[33m';
+    const driftLabel = result.is_hard_drift ? 'HARD DRIFT' : 'DRIFT WARNING';
+    console.log(`  ${driftColor}${driftLabel}\x1b[0m: ${Math.round(result.drift_ratio * 100)}% off-domain [${result.drift_categories.join(', ')}]`);
+  }
   if (result.sections_found.length > 0) {
     console.log(`  Sections: ${result.sections_found.join(', ')}`);
   }

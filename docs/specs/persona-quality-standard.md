@@ -135,6 +135,8 @@ Concrete, testable statements about what the system must do for this persona.
 
 8. **Missing required sections**: Any of the 6 template sections absent or empty.
 
+9. **Product drift (>70% off-domain)**: The persona's demands belong to a different product category entirely. ChefFlow is chef ops (events, clients, recipes, pricing, logistics, sourcing, compliance). If >70% of the "real test" demands map to LMS features (student tracking, skill progression, curriculum), marketplace features (seller dashboard, listing management), warehouse systems (fleet tracking, supply chain), social networks (followers, feeds), or generic CRM (lead scoring, sales pipeline), the persona is testing the wrong product and must be rejected. Personas with 40-70% drift get a heavy score penalty and need rewrite before acceptance.
+
 ---
 
 ## Celebrity Seed Strategy
