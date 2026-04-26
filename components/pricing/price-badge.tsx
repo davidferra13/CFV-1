@@ -62,6 +62,24 @@ function confidenceDots(confidence: number): string {
   return '\u25CB\u25CB\u25CB\u25CB' // ○○○○
 }
 
+function confidenceTooltipText(confidence: number, confirmedAt?: string | null): string {
+  const pct = Math.round(confidence * 100)
+  const schedule = 'Decay: 0-3d=100%, 3-14d=90%, 14-30d=75%, 30-60d=50%, 60-90d=30%, 90d+=15%'
+
+  if (confirmedAt) {
+    const confirmedTime = new Date(confirmedAt).getTime()
+    if (!Number.isNaN(confirmedTime)) {
+      const freshnessDays = Math.max(
+        0,
+        Math.floor((Date.now() - confirmedTime) / (1000 * 60 * 60 * 24))
+      )
+      return `${pct}% confidence (price is ${freshnessDays}d old). ${schedule}`
+    }
+  }
+
+  return `${pct}% confidence. ${schedule}`
+}
+
 function sourceLabel(source: PriceSource): string {
   switch (source) {
     case 'receipt':
@@ -227,7 +245,7 @@ export function PriceBadge({
         <span className={`ml-1.5 text-xs ${freshColor}`}>{fresh}</span>
         <span
           className="ml-1 text-xs text-stone-500"
-          title={`Confidence: ${Math.round(price.confidence * 100)}%`}
+          title={confidenceTooltipText(price.confidence, price.confirmedAt)}
         >
           {dots}
         </span>
@@ -255,7 +273,10 @@ export function PriceBadge({
       <span className={`text-xs ${freshColor}`}>{fresh}</span>
       <span
         className="text-xs text-stone-500 tracking-tight"
-        title={`${sourceLabel(price.source)} - ${Math.round(price.confidence * 100)}% confidence`}
+        title={`${sourceLabel(price.source)} - ${confidenceTooltipText(
+          price.confidence,
+          price.confirmedAt
+        )}`}
       >
         {dots}
       </span>

@@ -67,7 +67,15 @@ function CollapsibleSection({
   )
 }
 
-function IngredientRow({ ingredient }: { ingredient: IngredientBreakdown }) {
+function IngredientRow({
+  ingredient,
+  scaleFactor,
+  showFormulas,
+}: {
+  ingredient: IngredientBreakdown
+  scaleFactor: number
+  showFormulas: boolean
+}) {
   return (
     <div className="flex items-center gap-2 py-1 px-2 text-xs hover:bg-stone-800/20 rounded">
       <span className="w-2 h-2 rounded-full bg-stone-600 flex-shrink-0" />
@@ -78,7 +86,14 @@ function IngredientRow({ ingredient }: { ingredient: IngredientBreakdown }) {
       {ingredient.hasMissingPrice ? (
         <span className="text-amber-400 text-xxs font-medium w-16 text-right">no price</span>
       ) : (
-        <span className="text-stone-400 font-mono tabular-nums w-16 text-right">
+        <span className="text-stone-400 font-mono tabular-nums text-right whitespace-nowrap">
+          {showFormulas && ingredient.priceCents !== null && (
+            <span className="text-xs text-stone-500 mr-2">
+              {formatQuantity(ingredient.quantity, ingredient.unit)} x{' '}
+              {formatCents(ingredient.priceCents)}/{ingredient.unit}
+              {scaleFactor !== 1 ? ` x ${scaleFactor}x` : ''} =
+            </span>
+          )}
           {formatCents(ingredient.scaledCostCents)}
         </span>
       )}
@@ -86,7 +101,13 @@ function IngredientRow({ ingredient }: { ingredient: IngredientBreakdown }) {
   )
 }
 
-function ComponentSection({ component }: { component: ComponentBreakdown }) {
+function ComponentSection({
+  component,
+  showFormulas,
+}: {
+  component: ComponentBreakdown
+  showFormulas: boolean
+}) {
   const hasIngredients = component.ingredients.length > 0
 
   if (!hasIngredients) {
@@ -117,13 +138,24 @@ function ComponentSection({ component }: { component: ComponentBreakdown }) {
       }
     >
       {component.ingredients.map((ing) => (
-        <IngredientRow key={ing.ingredientId} ingredient={ing} />
+        <IngredientRow
+          key={ing.ingredientId}
+          ingredient={ing}
+          scaleFactor={component.scaleFactor}
+          showFormulas={showFormulas}
+        />
       ))}
     </CollapsibleSection>
   )
 }
 
-function CourseSection({ course }: { course: CourseBreakdown }) {
+function CourseSection({
+  course,
+  showFormulas,
+}: {
+  course: CourseBreakdown
+  showFormulas: boolean
+}) {
   return (
     <CollapsibleSection
       title={`Course ${course.courseNumber}: ${course.courseName}`}
@@ -135,7 +167,7 @@ function CourseSection({ course }: { course: CourseBreakdown }) {
         <p className="text-xs text-stone-500 py-1 px-2">No components yet</p>
       ) : (
         course.components.map((comp) => (
-          <ComponentSection key={comp.componentId} component={comp} />
+          <ComponentSection key={comp.componentId} component={comp} showFormulas={showFormulas} />
         ))
       )}
     </CollapsibleSection>
@@ -146,6 +178,7 @@ export function MenuBreakdownView({ menuId, className = '' }: MenuBreakdownViewP
   const [isPending, startTransition] = useTransition()
   const [breakdown, setBreakdown] = useState<MenuCostBreakdown | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const [showFormulas, setShowFormulas] = useState(false)
 
   const loadBreakdown = useCallback(() => {
     startTransition(async () => {
@@ -250,12 +283,23 @@ export function MenuBreakdownView({ menuId, className = '' }: MenuBreakdownViewP
 
       {/* Course tree */}
       <div className="p-4 space-y-2">
+        <label className="flex items-center gap-2 text-sm text-stone-400 mb-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={showFormulas}
+            onChange={(e) => setShowFormulas(e.target.checked)}
+            className="rounded border-stone-600"
+          />
+          Show calculation formulas
+        </label>
         {!hasCourses ? (
           <p className="text-sm text-stone-500 text-center py-4">
             No courses added yet. Add courses to see the cost breakdown.
           </p>
         ) : (
-          breakdown.courses.map((course) => <CourseSection key={course.dishId} course={course} />)
+          breakdown.courses.map((course) => (
+            <CourseSection key={course.dishId} course={course} showFormulas={showFormulas} />
+          ))
         )}
       </div>
     </div>
