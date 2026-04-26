@@ -21,6 +21,7 @@ import {
   checkMenuBudgetCompliance,
   detectMenuDietaryConflicts,
 } from '@/lib/menus/menu-intelligence-actions'
+import { getSeasonalProduceGrouped } from '@/lib/calendar/seasonal-produce'
 import type {
   MenuIngredientStock,
   MenuAllergenWarning,
@@ -281,6 +282,34 @@ export function MenuContextSidebar({
     <div
       className={`rounded-lg border border-stone-700 bg-stone-800/50 divide-y divide-stone-700 ${className}`}
     >
+      {/* Dietary restriction awareness nudge - shows when client has restrictions
+          but no allergen conflicts detected yet (menu empty or no violations) */}
+      {hasDietary && allergenWarnings.length === 0 && (
+        <div className="px-4 py-3 bg-blue-500/10 border-b border-blue-500/20">
+          <div className="flex items-start gap-2">
+            <span className="text-blue-400 text-sm shrink-0 mt-0.5">&#9432;</span>
+            <div>
+              <p className="text-xs font-medium text-blue-300">Review client restrictions</p>
+              <div className="flex flex-wrap gap-1 mt-1.5">
+                {context.clientAllergies.map((a) => (
+                  <Badge key={a} variant="error" className="text-xxs">
+                    {a}
+                  </Badge>
+                ))}
+                {context.clientDietary.map((d) => (
+                  <Badge key={d} variant="warning" className="text-xxs">
+                    {d}
+                  </Badge>
+                ))}
+              </div>
+              <p className="text-xxs text-stone-500 mt-1.5">
+                Keep these in mind while building the menu. Conflicts will be flagged automatically.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Scale mismatch alert */}
       {features.scale_mismatch && scaleMismatch && (
         <div className="px-4 py-3 bg-amber-500/10">
@@ -497,6 +526,41 @@ export function MenuContextSidebar({
           </div>
         </div>
       )}
+
+      {/* Peak Season Nudge */}
+      {features.seasonal_warnings &&
+        (() => {
+          const seasonalData = getSeasonalProduceGrouped(new Date().getMonth() + 1)
+          const peakGroups = seasonalData.groups.filter((group) =>
+            group.items.some((item) => item.peak)
+          )
+          if (peakGroups.length === 0) return null
+          return (
+            <div className="px-4 py-3 space-y-2">
+              <h4 className="text-xs font-semibold text-stone-400 uppercase tracking-wide">
+                Peak in {seasonalData.seasonLabel}
+              </h4>
+              {peakGroups.map((group) => (
+                <div key={group.category}>
+                  <p className="text-[11px] text-stone-500 mb-1">{group.label}</p>
+                  <div className="flex flex-wrap gap-1">
+                    {group.items
+                      .filter((item) => item.peak)
+                      .map((item) => (
+                        <span
+                          key={item.name}
+                          className="inline-flex items-center rounded-full bg-emerald-950/40 border border-emerald-800/30 px-2 py-0.5 text-xs text-emerald-300"
+                          title={item.note || `Peak ${seasonalData.seasonLabel}`}
+                        >
+                          {item.name}
+                        </span>
+                      ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        })()}
 
       {/* Prep time estimate */}
       {features.prep_estimate && prepEstimate && (
