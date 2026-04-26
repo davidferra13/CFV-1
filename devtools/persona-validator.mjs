@@ -29,11 +29,18 @@ function detectIdentityHeader(content) {
 
 function detectBusinessReality(content) {
   // Section with concrete numbers near business terms
-  const businessTerms = /\b\d+[\s,]*(?:clients?|events?|locations?|employees?|guests?|seats?|retainers?|dinners?|drops?|restaurants?|outlets?|staff|people|assistants?|cooks?)\b/gi;
+  const businessTerms = /\b\d+[\s,]*(?:clients?|events?|locations?|employees?|guests?|seats?|retainers?|dinners?|drops?|restaurants?|outlets?|staff|people|assistants?|cooks?|kitchens?|markets?|venues?|courses?|trucks?|classes?|meals?|orders?|deliveries?|menus?|recipes?|families?|accounts?|services?|batches?|products?|stores?|pop-ups?)\b/gi;
   const moneyPattern = /\$[\d,]+/g;
+  const writtenNumbers = /\b(?:one|two|three|four|five|six|seven|eight|nine|ten|dozen|several|multiple|few|many|hundreds?|thousands?)\s+(?:clients?|events?|guests?|dinners?|kitchens?|venues?|courses?|meals?|orders?|services?|batches?|products?|stores?)\b/gi;
+  // Narrative business context: personas that describe operations without numbers
+  const narrativeTerms = /\b(?:clients?|bookings?|retainers?|inquir(?:y|ies)|leads?|jobs?|gigs?|catering|invoices?|payments?|contracts?|vendors?|suppliers?)\b/gi;
   const businessMatches = content.match(businessTerms) || [];
   const moneyMatches = content.match(moneyPattern) || [];
-  return businessMatches.length + moneyMatches.length;
+  const writtenMatches = content.match(writtenNumbers) || [];
+  const narrativeMatches = content.match(narrativeTerms) || [];
+  // Narrative context counts at half weight: 3+ unique terms = 1 point
+  const narrativeBonus = new Set(narrativeMatches.map(m => m.toLowerCase())).size >= 3 ? 1 : 0;
+  return businessMatches.length + moneyMatches.length + writtenMatches.length + narrativeBonus;
 }
 
 function detectPrimaryFailure(content) {

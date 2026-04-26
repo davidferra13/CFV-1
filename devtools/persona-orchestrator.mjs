@@ -344,8 +344,8 @@ function runCycle(opts) {
       plannedAt = new Date().toISOString();
       buildTasks = countTaskFiles(persona.slug);
     } catch (err) {
-      const stderr = err.stderr || err.message || 'Unknown error';
-      console.log(`[orchestrator] Warning: planner failed for ${persona.filename} - ${stderr.trim()}`);
+      const stderr = err.stderr ? err.stderr.toString().trim() : err.message || 'Unknown error';
+      console.log(`[orchestrator] PLANNER FAILED for ${persona.filename}: ${stderr}`);
       // Analysis succeeded, so add to processed with planned_at: null
     }
 
@@ -368,6 +368,21 @@ function runCycle(opts) {
     processedCount++;
 
     saveState(state);
+  }
+
+  // Stage 3: Synthesize (aggregate findings across all reports)
+  if (state.processed.length > 0) {
+    console.log(`[orchestrator] Running batch synthesis...`);
+    try {
+      execSync('node devtools/persona-batch-synthesizer.mjs', {
+        stdio: 'inherit',
+        timeout: 60000,
+        cwd: ROOT,
+      });
+      console.log(`[orchestrator] Synthesis complete.`);
+    } catch (err) {
+      console.log(`[orchestrator] Warning: synthesis failed - ${err.message}`);
+    }
   }
 
   state.last_cycle = new Date().toISOString();

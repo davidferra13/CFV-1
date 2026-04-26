@@ -75,6 +75,7 @@
     "personas:orchestrate": "node devtools/persona-orchestrator.mjs --watch",
     "personas:orchestrate:once": "node devtools/persona-orchestrator.mjs --once",
     "personas:synthesize": "node devtools/persona-batch-synthesizer.mjs",
+    "personas:rescore": "node devtools/persona-rescore.mjs",
     "personas:saturation": "node devtools/persona-batch-synthesizer.mjs --saturation-only",
     "sync": "node scripts/openclaw-pull/sync-all.mjs",
     "sync:audit:local-models": "node scripts/audit-openclaw-local-models.mjs",
