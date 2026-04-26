@@ -544,7 +544,7 @@ export async function exportMenuCostCSV(menuId: string) {
 
   const { data: menu } = await db
     .from('menus')
-    .select('id, name, target_guest_count, event:events(guest_count)')
+    .select('id, name, target_guest_count, event:events(guest_count, quoted_price_cents)')
     .eq('id', menuId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -562,9 +562,10 @@ export async function exportMenuCostCSV(menuId: string) {
   const rows: string[] = []
   const event = Array.isArray(menu.event) ? menu.event[0] : menu.event
   const guestCount = event?.guest_count ?? menu.target_guest_count ?? null
+  const quotedPriceCents = event?.quoted_price_cents ?? null
 
-  rows.push(csvRow(['Menu', menu.name, '', '', '', '', '', '']))
-  rows.push(csvRow(['Guests', guestCount ? String(guestCount) : '', '', '', '', '', '', '']))
+  rows.push(csvRow(['Menu', menu.name, '', '', '', '', '', '', '']))
+  rows.push(csvRow(['Guests', guestCount ? String(guestCount) : '', '', '', '', '', '', '', '']))
   rows.push(csvRow([]))
   rows.push(
     csvRow([
@@ -575,6 +576,7 @@ export async function exportMenuCostCSV(menuId: string) {
       'Quantity',
       'Unit',
       'Unit Cost',
+      'Source',
       'Extended Cost',
     ])
   )
@@ -589,6 +591,23 @@ export async function exportMenuCostCSV(menuId: string) {
       .eq('tenant_id', user.tenantId!)
       .order('sort_order', { ascending: true })
 
+    if (!components || components.length === 0) {
+      rows.push(
+        csvRow([
+          dish.course_name || '',
+          dish.name || dish.course_name || '',
+          '(no components)',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+        ])
+      )
+      continue
+    }
+
     for (const component of components ?? []) {
       if (!component.recipe_id) {
         rows.push(
@@ -597,6 +616,7 @@ export async function exportMenuCostCSV(menuId: string) {
             dish.name || dish.course_name || '',
             component.name || '',
             '(no recipe linked)',
+            '',
             '',
             '',
             '',
@@ -614,7 +634,7 @@ export async function exportMenuCostCSV(menuId: string) {
           unit,
           computed_cost_cents,
           sort_order,
-          ingredient:ingredients(name, cost_per_unit_cents, last_price_cents, price_unit, default_unit)
+          ingredient:ingredients(name, cost_per_unit_cents, last_price_cents, last_price_source, last_price_store, preferred_vendor, price_unit, default_unit)
         `
         )
         .eq('recipe_id', component.recipe_id)
@@ -632,6 +652,11 @@ export async function exportMenuCostCSV(menuId: string) {
           (unitCostCents !== null ? Math.round(Number(row.quantity || 0) * unitCostCents) : 0)
         const scaledCostCents = Math.round(baseCostCents * scale)
         const scaledQuantity = row.quantity ? formatQuantity(Number(row.quantity) * scale) : ''
+        const source =
+          ingredient?.last_price_source ||
+          ingredient?.last_price_store ||
+          ingredient?.preferred_vendor ||
+          'unknown'
         const priceUnit = ingredient?.price_unit || ingredient?.default_unit || ''
 
         componentTotalCents += scaledCostCents
@@ -646,6 +671,7 @@ export async function exportMenuCostCSV(menuId: string) {
             unitCostCents !== null
               ? `${formatDollars(unitCostCents)}${priceUnit ? `/${priceUnit}` : ''}`
               : 'N/A',
+            source,
             formatDollars(scaledCostCents),
           ])
         )
@@ -660,6 +686,7 @@ export async function exportMenuCostCSV(menuId: string) {
           '',
           '',
           '',
+          '',
           formatDollars(componentTotalCents),
         ])
       )
@@ -668,7 +695,7 @@ export async function exportMenuCostCSV(menuId: string) {
   }
 
   rows.push(csvRow([]))
-  rows.push(csvRow(['TOTAL MENU COST', '', '', '', '', '', '', formatDollars(grandTotalCents)]))
+  rows.push(csvRow(['TOTAL MENU COST', '', '', '', '', '', '', '', formatDollars(grandTotalCents)]))
   if (guestCount && guestCount > 0) {
     rows.push(
       csvRow([
@@ -679,7 +706,23 @@ export async function exportMenuCostCSV(menuId: string) {
         '',
         '',
         '',
+        '',
         formatDollars(Math.round(grandTotalCents / guestCount)),
+      ])
+    )
+  }
+  if (quotedPriceCents && quotedPriceCents > 0) {
+    rows.push(
+      csvRow([
+        'FOOD COST %',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        `${((grandTotalCents / quotedPriceCents) * 100).toFixed(1)}%`,
       ])
     )
   }
