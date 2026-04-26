@@ -252,7 +252,7 @@ Use EXACTLY this format:
 /*  Ollama (same pattern as analyzer)                                 */
 /* ------------------------------------------------------------------ */
 
-async function callOllama(url, model, prompt) {
+async function callOllama(url, model, prompt, label = '') {
   const endpoint = `${url.replace(/\/+$/, "")}/api/generate`;
   let response;
   try {
@@ -262,7 +262,7 @@ async function callOllama(url, model, prompt) {
       body: JSON.stringify({
         model,
         prompt,
-        stream: false,
+        stream: true,
         options: { temperature: 0.3, num_predict: 4000 },
       }),
     });
@@ -272,13 +272,40 @@ async function callOllama(url, model, prompt) {
   if (!response.ok) {
     fail(`ERROR: Ollama returned ${response.status} at ${endpoint}. Is it running?`);
   }
-  let data;
-  try {
-    data = await response.json();
-  } catch {
-    fail("ERROR: Failed to parse Ollama response as JSON.");
+
+  // Stream tokens with live progress
+  let full = '';
+  let tokenCount = 0;
+  const decoder = new TextDecoder();
+  const reader = response.body.getReader();
+  let buffer = '';
+  const tag = label ? `[planner] ${label}` : '[planner]';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      try {
+        const chunk = JSON.parse(line);
+        if (chunk.response) {
+          full += chunk.response;
+          tokenCount++;
+          if (tokenCount % 50 === 0) {
+            process.stderr.write(`\r${tag} ${tokenCount} tokens...`);
+          }
+        }
+        if (chunk.done) {
+          process.stderr.write(`\r${tag} ${tokenCount} tokens, done.     \n`);
+        }
+      } catch { /* skip malformed lines */ }
+    }
   }
-  const output = String(data.response || "").trim();
+
+  const output = full.trim();
   if (!output) return null;
   return output;
 }
@@ -319,7 +346,8 @@ async function main() {
     const files = findRelevantFiles(gap.title);
     const sourceContext = buildSourceContext(files);
     const prompt = buildPrompt({ gap, personaName, sourceContext });
-    const output = await callOllama(ollamaUrl, model, prompt);
+    console.log(`  Gap ${gap.number}/${gaps.length}: ${gap.title}`);
+    const output = await callOllama(ollamaUrl, model, prompt, `gap ${gap.number}`);
 
     if (!output) {
       const debugDir = join(ROOT, "system", "persona-debug");

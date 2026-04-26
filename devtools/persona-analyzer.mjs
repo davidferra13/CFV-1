@@ -130,8 +130,15 @@ async function main() {
   const features = readTruncated('lib/billing/feature-classification.ts', 200);
   const lifecycle = readTruncated('docs/service-lifecycle-blueprint.md', 200);
 
-  // Step 3: Build prompt (exact template from spec)
-  const fullPrompt = `You are evaluating a software product called ChefFlow against a user persona.
+  // Step 3: Build prompt (exact template from spec, with format enforcement)
+  const date = todayISO();
+  // Prefer name from filename (persona files are named after the persona); fall back to content parsing
+  const filenameBase = basename(absPersonaFile).replace(/\.[^.]+$/, '');
+  const nameFromFile = filenameBase.length > 1 ? filenameBase : extractNameFromContent(personaContent);
+
+  const fullPrompt = `CRITICAL: You MUST respond using EXACTLY the markdown template below. Do not invent your own format. Fill in the {placeholders} with your evaluation. Start your response with the exact line: # Persona Stress Test:
+
+You are evaluating a software product called ChefFlow against a user persona.
 
 ChefFlow is an operations platform for food service professionals: private chefs, caterers, food vendors, event cooks, and related roles. It handles events, clients, recipes, menus, pricing, invoicing, contracts, scheduling, and AI-assisted communication.
 
@@ -151,11 +158,11 @@ ${audit}
 ${personaContent}
 
 === INSTRUCTIONS ===
-Evaluate how well ChefFlow serves this persona TODAY. Be honest about gaps. Produce your report in EXACTLY this markdown format, no deviations:
+Evaluate how well ChefFlow serves this persona TODAY. Be honest about gaps. Your ENTIRE response must be EXACTLY this markdown template with placeholders filled in. No preamble, no explanation outside the template:
 
-# Persona Stress Test: {persona name}
+# Persona Stress Test: ${nameFromFile}
 **Type:** {Chef|Client|Guest|Vendor|Staff|Partner|Public}
-**Date:** {today YYYY-MM-DD}
+**Date:** ${date}
 **Method:** local-ollama-v2
 
 ## Summary
@@ -198,51 +205,99 @@ Evaluate how well ChefFlow serves this persona TODAY. Be honest about gaps. Prod
 ## Verdict
 {one sentence: should this persona use ChefFlow today, and what is the single biggest blocker?}`;
 
-  // Step 4: Call Ollama
-  console.log(`[analyzer] Calling Ollama (${model}) at ${ollamaUrl}...`);
-
-  let response;
-  try {
-    response = await fetch(`${ollamaUrl}/api/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model,
-        prompt: fullPrompt,
-        stream: false,
-        options: { temperature: 0.3, num_predict: 4000 }
-      })
-    });
-  } catch (err) {
-    console.error(`ERROR: Ollama not reachable at ${ollamaUrl}. Is it running?`);
-    process.exit(1);
-  }
-
-  if (!response.ok) {
-    console.error(`ERROR: Ollama not reachable at ${ollamaUrl}. Is it running? (HTTP ${response.status})`);
-    process.exit(1);
-  }
-
-  let data;
-  try {
-    data = await response.json();
-  } catch (err) {
-    console.error('ERROR: Failed to parse Ollama response as JSON.');
-    process.exit(1);
-  }
-
-  // Step 5: Extract report content
-  const reportContent = data.response;
+  // Step 4: Call Ollama (with format validation + one retry)
   const slug = makeSlug(basename(absPersonaFile));
-  const date = todayISO();
+
+  async function callOllama(prompt, temperature = 0.3) {
+    let response;
+    try {
+      response = await fetch(`${ollamaUrl}/api/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model,
+          prompt,
+          stream: true,
+          options: { temperature, num_predict: 4000 }
+        })
+      });
+    } catch (err) {
+      console.error(`ERROR: Ollama not reachable at ${ollamaUrl}. Is it running?`);
+      process.exit(1);
+    }
+
+    if (!response.ok) {
+      console.error(`ERROR: Ollama not reachable at ${ollamaUrl}. Is it running? (HTTP ${response.status})`);
+      process.exit(1);
+    }
+
+    // Stream tokens and show live progress
+    let full = '';
+    let tokenCount = 0;
+    const decoder = new TextDecoder();
+    const reader = response.body.getReader();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        try {
+          const chunk = JSON.parse(line);
+          if (chunk.response) {
+            full += chunk.response;
+            tokenCount++;
+            if (tokenCount % 50 === 0) {
+              process.stderr.write(`\r[analyzer] ${tokenCount} tokens...`);
+            }
+          }
+          if (chunk.done) {
+            process.stderr.write(`\r[analyzer] ${tokenCount} tokens, done.     \n`);
+          }
+        } catch { /* skip malformed lines */ }
+      }
+    }
+
+    return full;
+  }
+
+  function validateReportFormat(content) {
+    const hasScore = /## Score:\s*\d+\/100/.test(content);
+    const hasGaps = /### Gap \d+:/.test(content);
+    return hasScore && hasGaps;
+  }
+
+  console.log(`[analyzer] Calling Ollama (${model}) at ${ollamaUrl}...`);
+  let reportContent = await callOllama(fullPrompt);
 
   if (!reportContent || reportContent.trim().length === 0) {
     const debugDir = resolve(ROOT, 'system', 'persona-debug');
     mkdirSync(debugDir, { recursive: true });
     const debugPath = join(debugDir, `${slug}-raw.txt`);
-    writeFileSync(debugPath, JSON.stringify(data, null, 2), 'utf-8');
+    writeFileSync(debugPath, 'empty response', 'utf-8');
     console.error(`ERROR: Ollama returned empty response. Raw output saved to ${debugPath}`);
     process.exit(1);
+  }
+
+  // Validate format; retry once with lower temperature if template not followed
+  if (!validateReportFormat(reportContent)) {
+    console.log('[analyzer] Report format invalid (missing Score or Gap headers). Retrying with temperature 0.1...');
+    const retryContent = await callOllama(fullPrompt, 0.1);
+    if (retryContent && validateReportFormat(retryContent)) {
+      reportContent = retryContent;
+      console.log('[analyzer] Retry succeeded, format valid.');
+    } else {
+      console.log('[analyzer] Warning: report format still non-standard after retry. Writing anyway.');
+      // Save debug copy of both attempts
+      const debugDir = resolve(ROOT, 'system', 'persona-debug');
+      mkdirSync(debugDir, { recursive: true });
+      writeFileSync(join(debugDir, `${slug}-attempt1.txt`), reportContent, 'utf-8');
+      if (retryContent) writeFileSync(join(debugDir, `${slug}-attempt2.txt`), retryContent, 'utf-8');
+    }
   }
 
   // Step 6 + 7: Write report
@@ -256,7 +311,6 @@ Evaluate how well ChefFlow serves this persona TODAY. Be honest about gaps. Prod
   const score = parseScore(reportContent);
   const nameFromReport = parsePersonaName(reportContent);
   const typeFromReport = parsePersonaTypeFromReport(reportContent);
-  const nameFromFile = extractNameFromContent(personaContent);
   const displayName = nameFromReport || nameFromFile;
   const personaType = typeFromReport || detectPersonaType(absPersonaFile);
 
