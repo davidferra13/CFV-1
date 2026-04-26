@@ -2,7 +2,8 @@
 
 import { StatCard } from '@/components/dashboard/widget-cards/stat-card'
 import { StalledDraftsCard } from '@/components/dashboard/widget-cards/stalled-drafts-card'
-import { formatCurrency } from '@/lib/utils/currency'
+import { formatCurrency } from '@/lib/utils/format'
+import { getRegionalSettings } from '@/lib/chef/actions'
 import { getTargetsForArchetype } from '@/lib/costing/knowledge'
 import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
 import { requireChef } from '@/lib/auth/get-user'
@@ -11,7 +12,10 @@ import { loadBusinessCardsData } from './business-cards-loader'
 
 export async function BusinessCards() {
   const chef = await requireChef()
-  const archetype = await getCachedChefArchetype(chef.entityId)
+  const [archetype, regional] = await Promise.all([
+    getCachedChefArchetype(chef.entityId),
+    getRegionalSettings(),
+  ])
   const now = new Date()
   const currentMonthName = MONTH_NAMES[now.getMonth()]
   const {
@@ -29,6 +33,9 @@ export async function BusinessCards() {
     stalledDrafts,
     failedSections,
   } = await loadBusinessCardsData()
+
+  const currOpts = { locale: regional.locale, currency: regional.currencyCode }
+  const fmt = (cents: number) => formatCurrency(cents, currOpts)
 
   const revenueSparkData: number[] = []
   const revChange = monthRevenue.changePercent
@@ -63,8 +70,8 @@ export async function BusinessCards() {
       <StatCard
         widgetId="business_snapshot"
         title={`${currentMonthName} Revenue`}
-        value={formatCurrency(monthRevenue.currentMonthRevenueCents)}
-        subtitle={`Expenses: ${formatCurrency(monthExpenses.businessCents)}`}
+        value={fmt(monthRevenue.currentMonthRevenueCents)}
+        subtitle={`Expenses: ${fmt(monthExpenses.businessCents)}`}
         trend={
           revChange !== 0
             ? `${revChange > 0 ? '+' : ''}${revChange.toFixed(1)}% vs last month`
@@ -80,7 +87,7 @@ export async function BusinessCards() {
           widgetId="revenue_goal"
           title="Revenue Goal"
           value={`${goalPercent.toFixed(1)}%`}
-          subtitle={`${formatCurrency(revenueGoal.monthly.realizedCents ?? 0)} / ${formatCurrency(revenueGoal.monthly.targetCents ?? 0)}`}
+          subtitle={`${fmt(revenueGoal.monthly.realizedCents ?? 0)} / ${fmt(revenueGoal.monthly.targetCents ?? 0)}`}
           trend={
             goalPercent >= 100
               ? 'Goal reached!'
@@ -136,7 +143,7 @@ export async function BusinessCards() {
           title="Invoices"
           value={`${collectionRate.toFixed(1)}%`}
           subtitle="collection rate this month"
-          trend={`${formatCurrency(invoicePulse.monthlyStats.totalPaidCents)} collected`}
+          trend={`${fmt(invoicePulse.monthlyStats.totalPaidCents)} collected`}
           trendDirection={collectionRate >= 80 ? 'up' : collectionRate >= 50 ? 'flat' : 'down'}
           href="/invoices"
         />

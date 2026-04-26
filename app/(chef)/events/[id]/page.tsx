@@ -4,6 +4,7 @@
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
+import { getRegionalSettings } from '@/lib/chef/actions'
 import {
   getEventById,
   getEventClosureStatus,
@@ -247,15 +248,20 @@ async function getEventTransitions(eventId: string) {
   return transitions || []
 }
 
-async function getEventPublicTicketShare(eventId: string): Promise<string | null> {
+async function getEventPublicTicketShare(
+  eventId: string
+): Promise<{ token: string | null; enabled: boolean }> {
   const db: any = createServerClient()
   const { data } = await db
     .from('event_share_settings')
-    .select('share_token')
+    .select('share_token, tickets_enabled')
     .eq('event_id', eventId)
     .maybeSingle()
 
-  return data?.share_token ?? null
+  return {
+    token: data?.share_token ?? null,
+    enabled: data?.tickets_enabled === true,
+  }
 }
 
 async function getEventMenusForCheck(eventId: string): Promise<string[] | null> {
@@ -678,6 +684,7 @@ export default async function EventDetailPage({
     serviceSimulationState,
     courseProgress,
     pricingIntelligence,
+    regionalSettings,
   ] = await Promise.all([
     getEventFinancialSummary(params.id).catch(() => ({
       totalPaid: 0,
@@ -740,6 +747,11 @@ export default async function EventDetailPage({
       ? getCourseProgress(params.id).catch(() => [])
       : Promise.resolve([]),
     getEventPricingIntelligence(params.id).catch(() => null),
+    getRegionalSettings().catch(() => ({
+      currencyCode: 'USD' as const,
+      locale: 'en-US' as const,
+      measurementSystem: 'imperial' as const,
+    })),
   ])
   const readinessAssistant = await getEventReadinessAssistant(params.id, pricingIntelligence).catch(
     () => null
@@ -904,15 +916,17 @@ export default async function EventDetailPage({
     dinnerCircleConfig,
     approvalGates,
     rawCircleConfig,
-    publicTicketShareToken,
+    ticketShareResult,
     popUpProductLibrary,
   ] = await Promise.all([
     getDinnerCircleConfig(params.id).catch(() => null),
     getApprovalGates(params.id).catch(() => []),
     getRawCircleConfigForEvent(params.id).catch(() => ({})),
-    getEventPublicTicketShare(params.id).catch(() => null),
+    getEventPublicTicketShare(params.id).catch(() => ({ token: null, enabled: false })),
     getPopUpProductLibrary(user.tenantId!).catch(() => []),
   ])
+  const publicTicketShareToken = ticketShareResult?.token ?? null
+  const ticketsEnabled = ticketShareResult?.enabled ?? false
   const defaultFlowSnapshot = await getEventDefaultFlowSnapshotForTenant(
     params.id,
     user.tenantId!,
@@ -1427,6 +1441,7 @@ export default async function EventDetailPage({
         settlement={settlement}
         ledgerEntries={ledgerEntries as any[]}
         guestCountChanges={guestCountChanges}
+        regionalSettings={regionalSettings}
       />
 
       {/* TAB: PREP - Peak window prep timeline         */}
@@ -1448,6 +1463,7 @@ export default async function EventDetailPage({
         tickets={ticketList as any[]}
         summary={ticketSummary}
         shareToken={publicTicketShareToken}
+        ticketsEnabled={ticketsEnabled}
       />
 
       {/* ============================================ */}

@@ -33,6 +33,8 @@ import { CartSummaryBar } from '@/components/pricing/cart-summary-bar'
 import { CatalogStorePicker } from '@/components/pricing/catalog-store-picker'
 import { getCarts, getCartWithItems, createCart, addToCart } from '@/lib/openclaw/cart-actions'
 import { formatCurrency } from '@/lib/utils/currency'
+import { hasPricingCoverage } from '@/lib/pricing/coverage-check'
+import { useFormatContext } from '@/lib/hooks/use-format-context'
 import {
   ChevronDown,
   ChevronUp,
@@ -427,6 +429,8 @@ function relativeTime(dateStr: string | null): string {
 // ---------------------------------------------------------------------------
 
 export function CatalogBrowser({ initialSearch = '' }: { initialSearch?: string }) {
+  const fmtCtx = useFormatContext()
+
   // View state
   const [catalogView, setCatalogView] = useState<CatalogView>('store-picker')
   const [activeStoreName, setActiveStoreName] = useState<string | null>(null)
@@ -875,6 +879,20 @@ export function CatalogBrowser({ initialSearch = '' }: { initialSearch?: string 
   if (onSaleOnly) activeFilters.push({ label: 'On Sale', onClear: () => setOnSaleOnly(false) })
   if (sort !== 'name')
     activeFilters.push({ label: `Sort: ${sort}`, onClear: () => setSort('name') })
+
+  // ---------------------------------------------------------------------------
+  // Non-USD region: graceful fallback (pricing engine is US-only)
+  // ---------------------------------------------------------------------------
+  if (!hasPricingCoverage(fmtCtx.currency)) {
+    return (
+      <div className="rounded-lg border border-stone-700 bg-stone-900 p-6 text-center">
+        <p className="text-sm text-stone-400">
+          Automated pricing is available for USD regions. Enter your ingredient costs manually on
+          each recipe.
+        </p>
+      </div>
+    )
+  }
 
   // ---------------------------------------------------------------------------
   // Render: Store Picker View

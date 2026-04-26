@@ -5,7 +5,8 @@ import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { requireChef } from '@/lib/auth/get-user'
 import { getTenantFinancialSummary, getYtdCarryForwardSavings } from '@/lib/ledger/compute'
 import { Card } from '@/components/ui/card'
-import { formatCurrency } from '@/lib/utils/currency'
+import { formatCurrency } from '@/lib/utils/format'
+import { getRegionalSettings } from '@/lib/chef/actions'
 import { FinanceHealthBar } from '@/components/intelligence/finance-health-bar'
 import { PricingIntelligenceBar } from '@/components/intelligence/pricing-intelligence-bar'
 import { getProfitAndLossReport } from '@/lib/finance/profit-loss-report-actions'
@@ -19,10 +20,15 @@ async function MonthlyPLSnapshot() {
   const endDate = format(endOfMonth(now), 'yyyy-MM-dd')
   const monthLabel = format(now, 'MMMM yyyy')
 
-  const report = await getProfitAndLossReport(startDate, endDate)
+  const [report, regional] = await Promise.all([
+    getProfitAndLossReport(startDate, endDate),
+    getRegionalSettings(),
+  ])
   const { revenue, operatingExpenses, cogs, totals } = report
   const totalExpenses = operatingExpenses.totalOperatingExpensesCents + cogs.purchaseOrdersCents
   const isProfit = totals.netProfitLossCents >= 0
+  const currOpts = { locale: regional.locale, currency: regional.currencyCode }
+  const fmt = (cents: number) => formatCurrency(cents, currOpts)
 
   return (
     <Card className="p-4">
@@ -34,19 +40,17 @@ async function MonthlyPLSnapshot() {
       </div>
       <div className="grid grid-cols-4 gap-3">
         <div>
-          <p className="text-lg font-bold text-stone-100">
-            {formatCurrency(revenue.totalRevenueCents)}
-          </p>
+          <p className="text-lg font-bold text-stone-100">{fmt(revenue.totalRevenueCents)}</p>
           <p className="text-xs text-stone-500">Revenue</p>
         </div>
         <div>
-          <p className="text-lg font-bold text-red-400">{formatCurrency(totalExpenses)}</p>
+          <p className="text-lg font-bold text-red-400">{fmt(totalExpenses)}</p>
           <p className="text-xs text-stone-500">Expenses</p>
         </div>
         <div>
           <p className={`text-lg font-bold ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>
             {isProfit ? '' : '-'}
-            {formatCurrency(Math.abs(totals.netProfitLossCents))}
+            {fmt(Math.abs(totals.netProfitLossCents))}
           </p>
           <p className="text-xs text-stone-500">Net {isProfit ? 'Profit' : 'Loss'}</p>
         </div>
@@ -166,10 +170,11 @@ const SECTIONS = [
 
 export default async function FinancePage() {
   await requireChef()
-  const [summary, carryForwardSavings, surfaceAvailability] = await Promise.all([
+  const [summary, carryForwardSavings, surfaceAvailability, regional] = await Promise.all([
     getTenantFinancialSummary().catch(() => null),
     getYtdCarryForwardSavings().catch(() => null),
     getFinanceSurfaceAvailability().catch(() => null),
+    getRegionalSettings(),
   ])
 
   // Filter tiles that are degraded and should not be primary-promoted
@@ -178,6 +183,9 @@ export default async function FinancePage() {
     if (s.href === '/finance/cash-flow') return surfaceAvailability?.cashFlow.showAsPrimary ?? false
     return true
   })
+
+  const currOpts = { locale: regional.locale, currency: regional.currencyCode }
+  const fmt = (cents: number) => formatCurrency(cents, currOpts)
 
   if (!summary) {
     return (
@@ -239,26 +247,20 @@ export default async function FinancePage() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 stagger-grid">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-stone-100">
-            {formatCurrency(summary.totalRevenueCents)}
-          </p>
+          <p className="text-2xl font-bold text-stone-100">{fmt(summary.totalRevenueCents)}</p>
           <p className="text-sm text-stone-500 mt-1">Total revenue collected</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-700">
-            {formatCurrency(summary.netRevenueCents)}
-          </p>
+          <p className="text-2xl font-bold text-green-700">{fmt(summary.netRevenueCents)}</p>
           <p className="text-sm text-stone-500 mt-1">Net revenue (after refunds)</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-red-600">
-            {formatCurrency(summary.totalRefundsCents)}
-          </p>
+          <p className="text-2xl font-bold text-red-600">{fmt(summary.totalRefundsCents)}</p>
           <p className="text-sm text-stone-500 mt-1">Total refunds issued</p>
         </Card>
         <Card className="p-4 border-emerald-200 bg-emerald-950">
           <p className="text-2xl font-bold text-emerald-700">
-            {carryForwardSavings === null ? '--' : formatCurrency(carryForwardSavings)}
+            {carryForwardSavings === null ? '--' : fmt(carryForwardSavings)}
           </p>
           <p className="text-sm text-emerald-600 mt-1">Leftover credit applied YTD</p>
         </Card>

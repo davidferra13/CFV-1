@@ -27,7 +27,9 @@ import {
   getQuotePriceFreshnessSummary,
   type QuotePriceFreshnessSummary,
 } from '@/lib/quotes/price-confidence-actions'
-import { parseCurrencyToCents, formatCurrency } from '@/lib/utils/currency'
+import { parseCurrencyToCents } from '@/lib/utils/currency'
+import { formatCurrencyCtx } from '@/lib/utils/format'
+import { useFormatContext } from '@/lib/hooks/use-format-context'
 import { CurrencyConversionHint } from '@/components/currency/currency-conversion-hint'
 import {
   computePricing,
@@ -156,6 +158,8 @@ export function QuoteForm({
   existingQuote,
 }: QuoteFormProps) {
   const router = useRouter()
+  const fmtCtx = useFormatContext()
+  const fmt = (cents: number) => formatCurrencyCtx(cents, fmtCtx)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [conflictError, setConflictError] = useState<ConflictErrorPayload | null>(null)
@@ -785,12 +789,11 @@ export function QuoteForm({
               <div key={entry.id} className="flex justify-between items-center text-sm">
                 <div>
                   <span className="text-brand-300 font-medium">
-                    {formatCurrency(entry.total_quoted_cents)}
+                    {fmt(entry.total_quoted_cents)}
                   </span>
                   {entry.price_per_person_cents && entry.guest_count_estimated && (
                     <span className="text-brand-600 ml-2">
-                      ({formatCurrency(entry.price_per_person_cents)}/person x{' '}
-                      {entry.guest_count_estimated})
+                      ({fmt(entry.price_per_person_cents)}/person x {entry.guest_count_estimated})
                     </span>
                   )}
                 </div>
@@ -1129,8 +1132,8 @@ export function QuoteForm({
             <div className="rounded-lg bg-stone-900 border border-stone-700 px-4 py-3 text-sm text-stone-300">
               <span className="font-medium text-stone-100">Repeat-client default: </span>
               {recurringPricingCheck.recurringModel === 'per_person'
-                ? `${formatCurrency(recurringPricingCheck.recurringRateCents)} per person`
-                : `${formatCurrency(recurringPricingCheck.recurringRateCents)} flat rate`}
+                ? `${fmt(recurringPricingCheck.recurringRateCents)} per person`
+                : `${fmt(recurringPricingCheck.recurringRateCents)} flat rate`}
               {selectedClient?.recurring_pricing_notes && (
                 <span className="text-stone-500"> · {selectedClient.recurring_pricing_notes}</span>
               )}
@@ -1147,8 +1150,8 @@ export function QuoteForm({
               This quote is {Math.round(recurringDeviationPercent ?? 0)}%{' '}
               {recurringComparison.deltaPercent >= 0 ? 'above' : 'below'} the recurring{' '}
               {recurringComparison.basis === 'per_person' ? 'per-person rate' : 'total benchmark'} (
-              {formatCurrency(recurringComparison.baselineCents)} baseline vs{' '}
-              {formatCurrency(recurringComparison.currentCents)} currently entered).
+              {fmt(recurringComparison.baselineCents)} baseline vs{' '}
+              {fmt(recurringComparison.currentCents)} currently entered).
             </Alert>
           )}
 
@@ -1239,12 +1242,12 @@ export function QuoteForm({
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div>
                       <span className="text-muted-foreground">Total food cost</span>
-                      <p className="font-medium">{formatCurrency(menuCost.totalFoodCostCents)}</p>
+                      <p className="font-medium">{fmt(menuCost.totalFoodCostCents)}</p>
                     </div>
                     {menuCost.costPerGuestCents != null && (
                       <div>
                         <span className="text-muted-foreground">Per guest</span>
-                        <p className="font-medium">{formatCurrency(menuCost.costPerGuestCents)}</p>
+                        <p className="font-medium">{fmt(menuCost.costPerGuestCents)}</p>
                       </div>
                     )}
                     {menuCost.foodCostPercentage != null && menuCost.guestCount != null && (
@@ -1322,7 +1325,7 @@ export function QuoteForm({
                       : 'text-red-600'
                   return (
                     <p className={`text-xs mt-1 font-medium ${colorClass}`}>
-                      {label} · range: {formatCurrency(minCents)}–{formatCurrency(maxCents)}
+                      {label} · range: {fmt(minCents)}–{fmt(maxCents)}
                     </p>
                   )
                 })()}

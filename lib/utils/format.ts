@@ -161,6 +161,35 @@ export function formatCentsToDisplay(cents: number): string {
 
 // ─── Convenience: current time in a timezone ────────────────────────
 
+// ─── Context-Aware Convenience Wrappers ────────────────────────────
+// These accept FormatContext shape (from useFormatContext hook) directly.
+
+/** Format cents using a FormatContext (from useFormatContext hook) */
+export function formatCurrencyCtx(
+  cents: number,
+  ctx: { locale?: string; currency?: string }
+): string {
+  return formatCurrency(cents, { locale: ctx.locale, currency: ctx.currency })
+}
+
+/** Format a date using a FormatContext */
+export function formatDateCtx(
+  date: string | Date,
+  ctx: { locale?: string; timezone?: string }
+): string {
+  return formatDate(date, { locale: ctx.locale, timezone: ctx.timezone })
+}
+
+/** Format a datetime using a FormatContext */
+export function formatDateTimeCtx(
+  date: string | Date,
+  ctx: { locale?: string; timezone?: string }
+): string {
+  return formatDateTime(date, { locale: ctx.locale, timezone: ctx.timezone })
+}
+
+// ─── Convenience: current time in a timezone ────────────────────────
+
 /** Get the current date/time formatted for a specific timezone */
 export function nowFormatted(opts: FormatOpts = {}): string {
   return formatDateTime(new Date(), opts)

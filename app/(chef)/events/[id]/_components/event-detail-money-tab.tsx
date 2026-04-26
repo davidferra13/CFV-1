@@ -18,7 +18,7 @@ import { QuickReceiptCapture } from '@/components/events/quick-receipt-capture'
 import { TakeAChefPayoutPanel } from '@/components/events/take-a-chef-payout-panel'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { formatCurrency } from '@/lib/utils/currency'
+import { formatCurrency } from '@/lib/utils/format'
 import type { CostForecast } from '@/lib/openclaw/cost-forecast-actions'
 import type { EventSettlement } from '@/lib/collaboration/settlement-actions'
 import { PriceComparisonSummary } from '@/components/pricing/price-comparison-summary'
@@ -67,6 +67,7 @@ type EventDetailMoneyTabProps = {
     created_at: string
   }>
   guestCountChanges: GuestCountChange[]
+  regionalSettings?: { currencyCode: string; locale: string }
 }
 
 export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
@@ -96,7 +97,13 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
     settlement,
     ledgerEntries,
     guestCountChanges,
+    regionalSettings,
   } = props
+
+  const currOpts = regionalSettings
+    ? { locale: regionalSettings.locale, currency: regionalSettings.currencyCode }
+    : {}
+  const fmt = (cents: number) => formatCurrency(cents, currOpts)
 
   return (
     <EventDetailSection tab="money" activeTab={activeTab}>
@@ -137,9 +144,7 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
         <div className="rounded-lg border border-stone-700 bg-stone-800/50 px-4 py-3 flex items-center gap-3">
           <div className="flex-1">
             <span className="text-sm text-stone-400">Menu Cost: </span>
-            <span className="text-sm font-medium">
-              {formatCurrency(costForecast.currentCostCents)} today
-            </span>
+            <span className="text-sm font-medium">{fmt(costForecast.currentCostCents)} today</span>
             <span className="text-sm text-stone-400">
               {' '}
               · Forecast for {format(new Date(event.event_date), 'MMM d')}:{' '}
@@ -147,8 +152,7 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
             <span
               className={`text-sm font-medium ${costForecast.changePct > 0 ? 'text-red-400' : costForecast.changePct < 0 ? 'text-green-400' : ''}`}
             >
-              ~{formatCurrency(costForecast.forecastCostCents)} (
-              {costForecast.changePct > 0 ? '+' : ''}
+              ~{fmt(costForecast.forecastCostCents)} ({costForecast.changePct > 0 ? '+' : ''}
               {costForecast.changePct}%)
             </span>
           </div>
@@ -217,7 +221,7 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
             <dt className="text-sm font-medium text-stone-500">Quoted Price</dt>
             <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
               {event.quoted_price_cents != null ? (
-                formatCurrency(event.quoted_price_cents)
+                fmt(event.quoted_price_cents)
               ) : (
                 <span className="text-stone-500">Not set</span>
               )}
@@ -227,7 +231,7 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
             <dt className="text-sm font-medium text-stone-500">Deposit Amount</dt>
             <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
               {event.deposit_amount_cents != null ? (
-                formatCurrency(event.deposit_amount_cents)
+                fmt(event.deposit_amount_cents)
               ) : (
                 <span className="text-stone-500">Not set</span>
               )}
@@ -236,7 +240,7 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
           <div>
             <dt className="text-sm font-medium text-stone-500">Amount Paid</dt>
             <dd className="text-xl sm:text-2xl font-bold text-emerald-600 mt-1">
-              {formatCurrency(totalPaid)}
+              {fmt(totalPaid)}
             </dd>
           </div>
           <div>
@@ -244,7 +248,7 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
             <dd
               className={`text-xl sm:text-2xl font-bold mt-1 ${outstandingBalance > 0 ? 'text-red-600' : 'text-emerald-600'}`}
             >
-              {formatCurrency(outstandingBalance)}
+              {fmt(outstandingBalance)}
             </dd>
           </div>
         </div>
@@ -356,7 +360,7 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium">{formatCurrency(exp.amount_cents)}</span>
+                  <span className="text-sm font-medium">{fmt(exp.amount_cents)}</span>
                   <Link href={`/expenses/${exp.id}`}>
                     <Button variant="ghost" size="sm">
                       View
@@ -374,18 +378,18 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
                 {Object.entries(eventExpenseData.subtotals).map(([cat, total]) => (
                   <div key={cat}>
                     <span className="text-stone-500 capitalize">{cat.replace('_', ' ')}</span>
-                    <p className="font-medium">{formatCurrency(Number(total))}</p>
+                    <p className="font-medium">{fmt(Number(total))}</p>
                   </div>
                 ))}
               </div>
               <div className="flex justify-between mt-3 pt-3 border-t border-stone-800 font-medium text-sm">
                 <span>Total Business Expenses</span>
-                <span>{formatCurrency(eventExpenseData.totalBusinessCents)}</span>
+                <span>{fmt(eventExpenseData.totalBusinessCents)}</span>
               </div>
               {eventExpenseData.totalPersonalCents > 0 && (
                 <div className="flex justify-between mt-1 text-sm text-amber-600">
                   <span>Personal (excluded)</span>
-                  <span>{formatCurrency(eventExpenseData.totalPersonalCents)}</span>
+                  <span>{fmt(eventExpenseData.totalPersonalCents)}</span>
                 </div>
               )}
             </div>
@@ -412,15 +416,13 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
               <div>
                 <dt className="text-sm font-medium text-stone-500">Revenue</dt>
                 <dd className="text-xl sm:text-2xl font-bold text-emerald-600 mt-1">
-                  {formatCurrency(
-                    profitSummary.revenue.totalPaidCents + profitSummary.revenue.tipCents
-                  )}
+                  {fmt(profitSummary.revenue.totalPaidCents + profitSummary.revenue.tipCents)}
                 </dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-stone-500">Expenses</dt>
                 <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
-                  {formatCurrency(profitSummary.expenses.totalBusinessCents)}
+                  {fmt(profitSummary.expenses.totalBusinessCents)}
                 </dd>
               </div>
               <div>
@@ -430,7 +432,7 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
                     profitSummary.profit.grossProfitCents >= 0 ? 'text-emerald-600' : 'text-red-600'
                   }`}
                 >
-                  {formatCurrency(profitSummary.profit.grossProfitCents)}
+                  {fmt(profitSummary.profit.grossProfitCents)}
                 </dd>
               </div>
               <div>
@@ -482,8 +484,8 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
                         : 'text-amber-600'
                     }`}
                   >
-                    Estimated: {formatCurrency(profitSummary.estimatedFoodCost.estimatedCents)}
-                    {' â†’ '}Actual: {formatCurrency(profitSummary.estimatedFoodCost.actualCents)} (
+                    Estimated: {fmt(profitSummary.estimatedFoodCost.estimatedCents)}
+                    {' â†’ '}Actual: {fmt(profitSummary.estimatedFoodCost.actualCents)} (
                     {Number(profitSummary.estimatedFoodCost.deltaPct) > 0 ? '+' : ''}
                     {profitSummary.estimatedFoodCost.deltaPct}%)
                   </span>
@@ -491,26 +493,25 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
               {profitSummary.estimatedFoodCost.estimatedCents !== null &&
                 profitSummary.estimatedFoodCost.actualCents === null && (
                   <span className="text-stone-500">
-                    Estimated food cost:{' '}
-                    {formatCurrency(profitSummary.estimatedFoodCost.estimatedCents)} (from grocery
-                    quote)
+                    Estimated food cost: {fmt(profitSummary.estimatedFoodCost.estimatedCents)} (from
+                    grocery quote)
                   </span>
                 )}
               {profitSummary.profit.effectiveHourlyRateCents && (
                 <span className="font-medium text-stone-300">
-                  Effective rate: {formatCurrency(profitSummary.profit.effectiveHourlyRateCents)}
+                  Effective rate: {fmt(profitSummary.profit.effectiveHourlyRateCents)}
                   /hr
                 </span>
               )}
               {(event as any).leftover_value_received_cents > 0 && (
                 <span className="text-emerald-600">
                   Leftover credit applied: âˆ’
-                  {formatCurrency((event as any).leftover_value_received_cents)}
+                  {fmt((event as any).leftover_value_received_cents)}
                 </span>
               )}
               {profitSummary.cashback && (
                 <span className="text-emerald-600">
-                  Est. cash back: {formatCurrency(profitSummary.cashback.estimatedCents)}
+                  Est. cash back: {fmt(profitSummary.cashback.estimatedCents)}
                 </span>
               )}
             </div>
@@ -519,9 +520,9 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
                 <span className="font-medium text-stone-300">
                   Per guest ({profitSummary.perGuest.guestCount} guests):
                 </span>
-                <span>{formatCurrency(profitSummary.perGuest.revenuePerGuestCents)} revenue</span>
+                <span>{fmt(profitSummary.perGuest.revenuePerGuestCents)} revenue</span>
                 <span className="text-red-600">
-                  {formatCurrency(profitSummary.perGuest.costPerGuestCents)} cost
+                  {fmt(profitSummary.perGuest.costPerGuestCents)} cost
                 </span>
                 <span
                   className={
@@ -530,7 +531,7 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
                       : 'text-red-600 font-medium'
                   }
                 >
-                  {formatCurrency(profitSummary.perGuest.profitPerGuestCents)} profit
+                  {fmt(profitSummary.perGuest.profitPerGuestCents)} profit
                 </span>
               </div>
             )}

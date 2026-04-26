@@ -7,6 +7,8 @@ import {
   type ShoppingOptResult,
 } from '@/lib/openclaw/catalog-actions'
 import { formatCurrency } from '@/lib/utils/currency'
+import { hasPricingCoverage } from '@/lib/pricing/coverage-check'
+import { useFormatContext } from '@/lib/hooks/use-format-context'
 import { ListChecks, X, Check } from '@/components/ui/icons'
 
 interface BulkPriceCheckerProps {
@@ -14,10 +16,22 @@ interface BulkPriceCheckerProps {
 }
 
 export function BulkPriceChecker({ onFilterByIngredient }: BulkPriceCheckerProps) {
+  const fmtCtx = useFormatContext()
   const [text, setText] = useState('')
   const [result, setResult] = useState<ShoppingOptResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+
+  if (!hasPricingCoverage(fmtCtx.currency)) {
+    return (
+      <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center">
+        <p className="text-sm text-gray-600">
+          Automated pricing is available for USD regions. Enter your ingredient costs manually on
+          each recipe.
+        </p>
+      </div>
+    )
+  }
 
   function handleCheck() {
     const lines = text

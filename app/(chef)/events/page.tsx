@@ -19,7 +19,8 @@ import {
   TableCell,
 } from '@/components/ui/table'
 import { Card, CardContent } from '@/components/ui/card'
-import { formatCurrency } from '@/lib/utils/currency'
+import { formatCurrency } from '@/lib/utils/format'
+import { getRegionalSettings } from '@/lib/chef/actions'
 import { format } from 'date-fns'
 import { isDemoEvent } from '@/lib/onboarding/demo-data-utils'
 import { createServerClient } from '@/lib/db/server'
@@ -150,7 +151,8 @@ function getEventStaleness(updatedAt: string | null, status: string): 'ok' | 'wa
 async function EventsList({ status }: { status: EventStatus }) {
   const user = await requireChef()
 
-  let events = await getEvents()
+  const [events_raw, regional] = await Promise.all([getEvents(), getRegionalSettings()])
+  let events = events_raw
 
   if (status !== 'all') {
     events = events.filter((event: any) => event.status === status)
@@ -303,7 +305,12 @@ async function EventsList({ status }: { status: EventStatus }) {
                     )
                   })()}
                 </TableCell>
-                <TableCell>{formatCurrency(event.quoted_price_cents ?? 0)}</TableCell>
+                <TableCell>
+                  {formatCurrency(event.quoted_price_cents ?? 0, {
+                    locale: regional.locale,
+                    currency: regional.currencyCode,
+                  })}
+                </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
                     <Link href={`/events/${event.id}`}>

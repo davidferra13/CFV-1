@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useDebounce } from '@/lib/hooks/use-debounce'
 import { formatCurrency } from '@/lib/utils/currency'
+import { hasPricingCoverage } from '@/lib/pricing/coverage-check'
+import { useFormatContext } from '@/lib/hooks/use-format-context'
 import {
   previewManualGroceryPricing,
   type ManualGroceryDraftItemInput,
@@ -79,6 +81,7 @@ type Props = {
 }
 
 export function GroceryLivePricingSidebar({ eventId }: Props) {
+  const fmtCtx = useFormatContext()
   const [rows, setRows] = useState<DraftRow[]>([createDraftRow()])
   const [result, setResult] = useState<ManualGroceryDraftPriceResult | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -135,6 +138,21 @@ export function GroceryLivePricingSidebar({ eventId }: Props) {
   const hasRowsWithNames = currentItems.length > 0
   const pricedCount = result?.pricedItemCount ?? 0
   const requestedCount = result?.requestedItemCount ?? 0
+
+  if (!hasPricingCoverage(fmtCtx.currency)) {
+    return (
+      <aside className="space-y-4 xl:sticky xl:top-24 self-start">
+        <Card className="p-4">
+          <div className="rounded-lg border border-stone-700 bg-stone-900 p-6 text-center">
+            <p className="text-sm text-stone-400">
+              Automated pricing is available for USD regions. Enter your ingredient costs manually
+              on each recipe.
+            </p>
+          </div>
+        </Card>
+      </aside>
+    )
+  }
 
   return (
     <aside className="space-y-4 xl:sticky xl:top-24 self-start">
