@@ -4,11 +4,19 @@ export type CollisionAlert = {
   severity: 'warning' | 'critical'
   message: string
   dimensions: string[]
+  resolveTab: string
 }
 
 type Problem = {
   dimension: string
   label: string
+}
+
+function pickResolveTab(dimensions: string[]): string {
+  if (dimensions.includes('dietary')) return 'overview'
+  if (dimensions.includes('financial')) return 'money'
+  if (dimensions.includes('logistics')) return 'prep'
+  return 'overview'
 }
 
 export function detectConstraintCollisions(data: ConstraintRadarData): CollisionAlert[] {
@@ -77,6 +85,7 @@ export function detectConstraintCollisions(data: ConstraintRadarData): Collision
       severity,
       message,
       dimensions: uniqueDimensions,
+      resolveTab: pickResolveTab(uniqueDimensions),
     },
   ]
 }

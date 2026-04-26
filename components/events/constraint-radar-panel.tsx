@@ -187,14 +187,26 @@ export function ConstraintRadarPanel({ data, eventId }: ConstraintRadarPanelProp
           {collisions.map((alert, i) => (
             <div
               key={i}
-              className={`rounded-lg px-3 py-2 text-sm font-medium ${
+              className={`rounded-lg px-3 py-2 text-sm font-medium flex items-center justify-between gap-3 ${
                 alert.severity === 'critical'
                   ? 'bg-red-950/60 border border-red-800/60 text-red-300'
                   : 'bg-amber-950/60 border border-amber-800/60 text-amber-300'
               }`}
             >
-              {alert.severity === 'critical' ? 'Urgent: ' : 'Warning: '}
-              {alert.message}
+              <span>
+                {alert.severity === 'critical' ? 'Urgent: ' : 'Warning: '}
+                {alert.message}
+              </span>
+              <Link
+                href={`/events/${eventId}?tab=${alert.resolveTab}`}
+                className={`text-xs font-semibold whitespace-nowrap transition-colors ${
+                  alert.severity === 'critical'
+                    ? 'text-red-400 hover:text-red-200'
+                    : 'text-amber-400 hover:text-amber-200'
+                }`}
+              >
+                Resolve &rarr;
+              </Link>
             </div>
           ))}
         </div>
