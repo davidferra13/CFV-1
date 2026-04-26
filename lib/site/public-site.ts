@@ -3,14 +3,20 @@ import type { Metadata } from 'next'
 import { createServerClient } from '@/lib/db/server'
 import { FOUNDER_EMAIL } from '@/lib/platform/owner-account'
 import { PUBLIC_MARKET_SCOPE } from '@/lib/public/public-market-scope'
+import {
+  BRAND_NAME,
+  BRAND_SUPPORT_EMAIL,
+  BRAND_FOUNDER,
+  BRAND_FOUNDER_ROLE,
+} from '@/lib/brand/constants'
 export { PUBLIC_MARKET_SCOPE } from '@/lib/public/public-market-scope'
 
 const DEFAULT_PUBLIC_SITE_URL = 'https://app.cheflowhq.com'
 
-export const COMPANY_NAME = 'ChefFlow'
-export const SUPPORT_EMAIL = 'support@cheflowhq.com'
-export const FOUNDER_FULL_NAME = 'David Ferragamo'
-export const FOUNDER_ROLE = 'Founder & Chef Operator'
+export { BRAND_NAME as COMPANY_NAME } from '@/lib/brand/constants'
+export { BRAND_SUPPORT_EMAIL as SUPPORT_EMAIL } from '@/lib/brand/constants'
+export { BRAND_FOUNDER as FOUNDER_FULL_NAME } from '@/lib/brand/constants'
+export { BRAND_FOUNDER_ROLE as FOUNDER_ROLE } from '@/lib/brand/constants'
 export const PUBLIC_SITE_URL = (
   process.env.NEXT_PUBLIC_APP_URL ||
   process.env.NEXT_PUBLIC_SITE_URL ||
@@ -61,7 +67,7 @@ export function buildMarketingMetadata(params: {
     description,
     path,
     imagePath,
-    imageAlt = `${COMPANY_NAME} preview`,
+    imageAlt = `${BRAND_NAME} preview`,
     openGraphTitle = title,
     twitterTitle = openGraphTitle,
     twitterCard = 'summary_large_image',
@@ -78,7 +84,7 @@ export function buildMarketingMetadata(params: {
       title: openGraphTitle,
       description,
       url: pageUrl,
-      siteName: COMPANY_NAME,
+      siteName: BRAND_NAME,
       type,
       images: [{ url: socialImageUrl, alt: imageAlt }],
     },
@@ -96,14 +102,14 @@ export function buildMarketingMetadata(params: {
 
 export const getFounderProfile = stableCache(async (): Promise<FounderProfile> => {
   const fallback: FounderProfile = {
-    fullName: FOUNDER_FULL_NAME,
-    role: FOUNDER_ROLE,
-    supportEmail: SUPPORT_EMAIL,
+    fullName: BRAND_FOUNDER,
+    role: BRAND_FOUNDER_ROLE,
+    supportEmail: BRAND_SUPPORT_EMAIL,
     location: PUBLIC_MARKET_SCOPE,
     city: '',
     state: '',
     headshotUrl: null,
-    bio: `${FOUNDER_FULL_NAME} is a private chef and operator who built ChefFlow after more than a decade of running real dinners, proposals, shopping, costing, and follow-up without software that actually matched the work.`,
+    bio: `${BRAND_FOUNDER} is a private chef and operator who built ChefFlow after more than a decade of running real dinners, proposals, shopping, costing, and follow-up without software that actually matched the work.`,
   }
 
   try {

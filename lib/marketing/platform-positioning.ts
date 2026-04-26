@@ -1,9 +1,8 @@
-export const PLATFORM_NAME = 'ChefFlow'
+export { BRAND_NAME as PLATFORM_NAME } from '@/lib/brand/constants'
+export { BRAND_TAGLINE as PLATFORM_TAGLINE } from '@/lib/brand/constants'
 
 export const PLATFORM_AUDIENCE_LABEL =
   'private chefs, caterers, meal prep operators, and chef-led hospitality teams'
-
-export const PLATFORM_TAGLINE = 'Ops for Artists.'
 
 export const PLATFORM_META_DESCRIPTION =
   'Discover private chefs for dinners, catering, meal prep, and chef-led experiences. Browse profiles, check availability, and send an inquiry in minutes. For operators: the workspace for client records, events, menus, and margins.'
