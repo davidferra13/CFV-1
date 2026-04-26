@@ -6,10 +6,12 @@ import {
   mkdirSync,
   readFileSync,
   readdirSync,
+  renameSync,
   writeFileSync,
 } from "node:fs";
-import { basename, extname, join, relative } from "node:path";
+import { basename, dirname, extname, join, relative } from "node:path";
 import { randomUUID } from "node:crypto";
+import { validatePersonaContent } from './persona-validator.mjs'
 
 const ROOT = process.cwd();
 const SYSTEM_DIR = join(ROOT, "system");
@@ -53,6 +55,15 @@ function stripQuotes(value) {
   return String(value || "")
     .replace(/^[\s"'`\u201c\u201d\u2018\u2019]+|[\s"'`\u201c\u201d\u2018\u2019]+$/g, "")
     .trim();
+}
+
+function cleanDisplayName(raw) {
+  return String(raw || "Persona")
+    .replace(/\*+/g, "")
+    .replace(/^[\s"'`\u201c\u201d\u2018\u2019]+|[\s"'`\u201c\u201d\u2018\u2019]+$/g, "")
+    .replace(/\s*[\u2014\u2013]\s*.*$/, "")
+    .replace(/\s*\(.*$/, "")
+    .trim() || "Persona";
 }
 
 function inferType(value, fallback = "Chef") {
@@ -126,18 +137,47 @@ function splitBulk(text, defaultType) {
 function previewEntries(text, defaultType) {
   return splitBulk(text, defaultType).map((entry, index) => {
     const type = inferType(entry.type, defaultType);
-    const name = inferName(entry.content, entry.name);
+    const name = cleanDisplayName(inferName(entry.content, entry.name));
+    const trimmed = entry.content.trim();
     const warnings = [];
-    if (entry.content.trim().length < 50) warnings.push("Under 50 characters; pipeline will skip very thin entries.");
+    if (trimmed.length < 50)
+      warnings.push("Under 50 characters; pipeline will skip very thin entries.");
     if (name === "Persona") warnings.push("Name was not detected.");
+
+    // Run validation for drift detection
+    let driftRatio = 0;
+    let driftCategories = [];
+    let validationScore = 0;
+    let isHardDrift = false;
+    if (trimmed.length >= 50) {
+      const validation = validatePersonaContent(trimmed, { name, type });
+      driftRatio = validation.drift_ratio || 0;
+      driftCategories = validation.drift_categories || [];
+      isHardDrift = validation.is_hard_drift || false;
+      validationScore = validation.score || 0;
+      if (isHardDrift) {
+        warnings.push(
+          `PRODUCT DRIFT: ${Math.round(driftRatio * 100)}% off-domain (${driftCategories.join(", ")}). Will be rejected by pipeline.`
+        );
+      } else if (driftRatio > 0.4) {
+        warnings.push(
+          `Drift warning: ${Math.round(driftRatio * 100)}% off-domain (${driftCategories.join(", ")}). Needs rewrite.`
+        );
+      }
+    }
+
     return {
       index,
       type,
       name,
-      content: entry.content.trim(),
-      chars: entry.content.trim().length,
+      content: trimmed,
+      chars: trimmed.length,
       warnings,
-      excerpt: entry.content.trim().replace(/\s+/g, " ").slice(0, 180),
+      excerpt: trimmed.replace(/\s+/g, " ").slice(0, 180),
+      driftRatio,
+      driftCategories,
+      isHardDrift,
+      validationScore,
     };
   });
 }
@@ -185,7 +225,7 @@ function uniquePath(type, name) {
 
 function writePersona(entry, defaultType) {
   const type = inferType(entry.type, defaultType);
-  const name = inferName(entry.content, entry.name);
+  const name = cleanDisplayName(inferName(entry.content, entry.name));
   const { dir, path } = uniquePath(type, name);
   mkdirSync(dir, { recursive: true });
   writeFileSync(path, `${entry.content.trim()}\n`, "utf8");
@@ -338,12 +378,17 @@ function readPersonaReports() {
 
 function readBuildTaskFiles() {
   const dir = join(ROOT, "system", "persona-build-plans");
-  if (!existsSync(dir)) return [];
+  if (!existsSync(dir)) return { tasks: [], completedCount: 0 };
   const tasks = [];
+  let completedCount = 0;
   try {
     for (const slug of readdirSync(dir)) {
       const slugDir = join(dir, slug);
       try {
+        const completedDir = join(slugDir, "completed");
+        if (existsSync(completedDir)) {
+          completedCount += readdirSync(completedDir).filter(f => f.startsWith("task-") && f.endsWith(".md")).length;
+        }
         for (const file of readdirSync(slugDir).filter((f) => f.startsWith("task-") && f.endsWith(".md"))) {
           const content = readFileSync(join(slugDir, file), "utf8");
           const title = (content.match(/^# Build Task:\s*(.+)$/m) || [])[1] || file;
@@ -354,7 +399,34 @@ function readBuildTaskFiles() {
       } catch {}
     }
   } catch {}
-  return tasks;
+  return { tasks, completedCount };
+}
+
+function readScoreHistory() {
+  return readJsonFile(join(ROOT, "system", "persona-batch-synthesis", "score-history.json"), []);
+}
+
+function findPersonaSourceFile(slug) {
+  const bases = [
+    join(ROOT, "Chef Flow Personas", "Completed"),
+    join(ROOT, "Chef Flow Personas", "Uncompleted"),
+  ];
+  for (const base of bases) {
+    if (!existsSync(base)) continue;
+    try {
+      for (const type of readdirSync(base)) {
+        const typeDir = join(base, type);
+        try {
+          for (const file of readdirSync(typeDir)) {
+            if (file.includes(slug) && /\.(txt|md)$/i.test(file)) {
+              return join(typeDir, file);
+            }
+          }
+        } catch {}
+      }
+    } catch {}
+  }
+  return null;
 }
 
 function appendPipelineLine(chunk) {
@@ -605,7 +677,23 @@ function page() {
     .persona-card.open .card-detail { display: block; }
     .task-row { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
     .task-row:last-child { border-bottom: none; }
+    .btn-sm { font-size: 11px; padding: 2px 8px; border: 1px solid #d1c9b8; border-radius: 4px; background: transparent; cursor: pointer; height: auto; color: #1f2933; }
+    .btn-sm.active { background: #1f2933; color: #fff; border-color: #1f2933; }
+    .btn-sm:hover { background: #e8e0d0; }
+    .delta-up { color: #22863a; font-size: 12px; margin-left: 4px; }
+    .delta-down { color: #cb2431; font-size: 12px; margin-left: 4px; }
+    .reanalyze-btn { font-size: 10px; padding: 2px 6px; border: 1px solid #d1c9b8; border-radius: 3px; background: transparent; cursor: pointer; margin-left: 8px; height: auto; color: #1f2933; }
+    .reanalyze-btn:hover { background: #e8e0d0; }
+    .task-done-btn { font-size: 12px; cursor: pointer; padding: 2px 6px; border: 1px solid #d1c9b8; border-radius: 3px; background: transparent; margin-right: 8px; height: auto; color: #1f2933; }
+    .task-done-btn:hover { background: #d4edda; }
     @media (max-width: 920px) { .layout { grid-template-columns: 1fr; } .two-col { grid-template-columns: 1fr; } .stats-row { grid-template-columns: 1fr; } }
+    html { scroll-behavior: smooth; scroll-padding-top: 52px; }
+    .section-nav { display: flex; gap: 4px; position: sticky; top: 0; z-index: 50; background: #f6f4ee; padding: 10px 0; border-bottom: 1px solid #d4cec2; margin: 0 0 4px; }
+    .section-nav a { padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; color: #6b7280; text-decoration: none; white-space: nowrap; }
+    .section-nav a:hover { background: rgba(31, 41, 51, 0.08); color: #1f2933; }
+    .del-btn { background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 14px; padding: 0 4px; height: auto; line-height: 1; border-radius: 4px; }
+    .del-btn:hover { color: #ef4444; background: rgba(239, 68, 68, 0.08); }
+    .time-ago { font-size: 11px; color: #9ca3af; }
     @media (prefers-color-scheme: dark) {
       body { background: #121416; color: #f4f1e8; }
       button.secondary, select, input, textarea, .panel, .preview-item, .history-item, .pill { background: #1f2429; color: #f4f1e8; border-color: #59616b; }
@@ -629,6 +717,18 @@ function page() {
       .task-row { border-bottom-color: #374151; }
       .pipeline-monitor.active { border-color: #60a5fa; }
       .indicator.pulse { background: #60a5fa; }
+      .section-nav { background: #121416; border-bottom-color: #59616b; }
+      .section-nav a { color: #9ca3af; }
+      .section-nav a:hover { background: rgba(244, 241, 232, 0.08); color: #f4f1e8; }
+      .btn-sm { border-color: #59616b; color: #f4f1e8; }
+      .btn-sm.active { background: #f4f1e8; color: #121416; border-color: #f4f1e8; }
+      .btn-sm:hover { background: rgba(244, 241, 232, 0.12); }
+      .reanalyze-btn { border-color: #59616b; color: #f4f1e8; }
+      .reanalyze-btn:hover { background: rgba(244, 241, 232, 0.12); }
+      .task-done-btn { border-color: #59616b; color: #f4f1e8; }
+      .task-done-btn:hover { background: rgba(16, 185, 129, 0.2); }
+      .delta-up { color: #10b981; }
+      .delta-down { color: #ef4444; }
     }
   </style>
 </head>
@@ -642,15 +742,27 @@ function page() {
       <span class="pill"><span id="netDot" class="dot"></span><span id="netText">Checking</span></span>
     </div>
 
+    <nav class="section-nav">
+      <a href="#pipelineSection">Pipeline</a>
+      <a href="#importSection">Import</a>
+      <a href="#findingsSection">Findings</a>
+      <a href="#personasSection">Personas</a>
+      <a href="#buildSection">Build</a>
+      <a href="#historySection">Queue</a>
+    </nav>
+
     <section id="pipelineSection" class="panel pipeline-monitor">
       <div class="pipeline-head">
         <h2><span id="pipelineDot" class="indicator"></span>Pipeline<span id="pipelineTimer" class="muted" style="margin-left:8px"></span></h2>
-        <button id="toggleLog" class="secondary" style="height:28px;font-size:12px">Expand</button>
+        <div style="display:flex;gap:6px">
+          <button id="runPipeline" style="height:28px;font-size:12px">Run Pipeline</button>
+          <button id="toggleLog" class="secondary" style="height:28px;font-size:12px">Expand</button>
+        </div>
       </div>
       <div id="pipelineLog" class="pipeline-log collapsed"><pre id="log">Idle</pre></div>
     </section>
 
-    <div class="layout section">
+    <div id="importSection" class="layout section">
       <section>
         <div class="bar">
           <label>Default type <select id="type">${typeOptions}</select></label>
@@ -674,27 +786,46 @@ function page() {
       </aside>
     </div>
 
-    <section class="panel section">
+    <section id="findingsSection" class="panel section">
       <h2>Findings</h2>
       <div id="findings"><div class="empty">No synthesis data yet. Run the pipeline to generate findings.</div></div>
     </section>
 
-    <section class="panel section">
-      <h2>Personas</h2>
+    <section id="personasSection" class="panel section">
+      <div class="preview-head">
+        <h2>Personas</h2>
+        <div class="bar" style="margin:0">
+          <select id="personaSort" style="height:28px;font-size:12px">
+            <option value="score-asc">Score (low first)</option>
+            <option value="score-desc">Score (high first)</option>
+            <option value="name">Name A-Z</option>
+          </select>
+        </div>
+      </div>
       <div id="personas"><div class="empty">No persona reports found.</div></div>
     </section>
 
-    <section class="panel section">
-      <h2>Build Queue</h2>
+    <section id="buildSection" class="panel section">
+      <div class="preview-head">
+        <h2>Build Queue <span id="buildCount" class="muted" style="font-weight:400"></span></h2>
+        <div style="display:flex;gap:4px;align-items:center">
+          <span class="muted" style="font-size:11px;margin-right:4px">Filter:</span>
+          <button class="btn-sm active" data-filter="ALL">All</button>
+          <button class="btn-sm" data-filter="HIGH">HIGH</button>
+          <button class="btn-sm" data-filter="MEDIUM">MEDIUM</button>
+          <button class="btn-sm" data-filter="LOW">LOW</button>
+        </div>
+      </div>
       <div id="buildQueue"><div class="empty">No build tasks found.</div></div>
     </section>
 
-    <section class="panel section">
+    <section id="historySection" class="panel section">
       <div class="preview-head">
         <h2>Import Queue</h2>
         <div class="bar" style="margin:0">
           <button id="sendQueued">Send queued</button>
           <button id="retryFailed" class="secondary">Retry failed</button>
+          <button id="clearCompleted" class="secondary">Clear done</button>
           <button id="refresh" class="secondary">Refresh</button>
         </div>
       </div>
@@ -714,6 +845,8 @@ function page() {
     const pipelineDot = $('pipelineDot'), pipelineTimer = $('pipelineTimer');
     const toggleLogBtn = $('toggleLog');
     let currentPreview = [], previewText = '', wasRunning = false, logUserToggled = false;
+    let scoreHistoryData = [], allTaskData = [], taskCompletedCount = 0, currentTaskFilter = 'ALL';
+    const buildCountEl = $('buildCount');
 
     function setNetwork() {
       const online = navigator.onLine;
@@ -723,6 +856,19 @@ function page() {
 
     function esc(v) {
       return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+    }
+
+    function cleanName(raw) {
+      return String(raw || 'Persona').replace(/[*]+/g, '').replace(/^[\\s"'\`\\u201c\\u201d\\u2018\\u2019]+|[\\s"'\`\\u201c\\u201d\\u2018\\u2019]+$/g, '').replace(/\\s*[\\u2014\\u2013]\\s*.*$/, '').replace(/\\s*\\(.*$/, '').trim() || 'Persona';
+    }
+
+    function timeAgo(iso) {
+      if (!iso) return '';
+      const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+      if (s < 60) return s + 's ago';
+      if (s < 3600) return Math.floor(s/60) + 'm ago';
+      if (s < 86400) return Math.floor(s/3600) + 'h ago';
+      return Math.floor(s/86400) + 'd ago';
     }
 
     function statusLabel(v) {
@@ -752,8 +898,25 @@ function page() {
       if (!currentPreview.length) { previewEl.innerHTML = '<div class="empty">No entries found.</div>'; return; }
       previewEl.innerHTML = currentPreview.map((entry, i) => {
         const opts = TYPES.map(t => '<option value="' + t + '"' + (t === entry.type ? ' selected' : '') + '>' + t + '</option>').join('');
+        const driftBadge = entry.isHardDrift
+          ? '<span style="background:#c33;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:bold">DRIFT ' +
+            Math.round((entry.driftRatio || 0) * 100) +
+            '%</span>'
+          : entry.driftRatio > 0.4
+            ? '<span style="background:#c90;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:bold">DRIFT ' +
+              Math.round((entry.driftRatio || 0) * 100) +
+              '%</span>'
+            : '';
+        const scoreBadge =
+          entry.validationScore > 0
+            ? '<span style="background:' +
+              (entry.validationScore >= 60 ? '#3a3' : entry.validationScore >= 40 ? '#c90' : '#c33') +
+              ';color:#fff;padding:2px 6px;border-radius:4px;font-size:11px">' +
+              entry.validationScore +
+              '/100</span>'
+            : '';
         const warns = entry.warnings?.length ? '<div class="warn">' + entry.warnings.map(esc).join('<br>') + '</div>' : '';
-        return '<div class="preview-item" data-index="' + i + '"><div class="preview-head"><strong>#' + (i+1) + ' ' + esc(entry.name) + '</strong><span class="muted">' + entry.chars + ' chars</span></div><div class="preview-controls"><select data-field="type">' + opts + '</select><input data-field="name" value="' + esc(entry.name) + '"></div><div class="muted" style="margin-top:8px">' + esc(entry.excerpt) + '</div>' + warns + '</div>';
+        return '<div class="preview-item" data-index="' + i + '"><div class="preview-head"><strong>#' + (i+1) + ' ' + esc(entry.name) + '</strong><span class="muted">' + esc(entry.chars + ' chars') + ' ' + driftBadge + ' ' + scoreBadge + '</span></div><div class="preview-controls"><select data-field="type">' + opts + '</select><input data-field="name" value="' + esc(entry.name) + '"></div><div class="muted" style="margin-top:8px">' + esc(entry.excerpt) + '</div>' + warns + '</div>';
       }).join('');
     }
 
@@ -789,7 +952,8 @@ function page() {
     toggleLogBtn.onclick = () => { logUserToggled = true; const c = pipelineLog.classList.toggle('collapsed'); toggleLogBtn.textContent = c ? 'Expand' : 'Collapse'; };
 
     /* --- Findings Dashboard --- */
-    function renderFindings(data) {
+    function renderFindings(data, loadError) {
+      if (loadError) { findingsEl.innerHTML = '<div class="empty warn">Failed to load synthesis data. Check server logs.</div>'; return; }
       if (!data || data.error) { findingsEl.innerHTML = '<div class="empty">No synthesis data yet. Run the pipeline to generate findings.</div>'; return; }
       const avg = data.average_score || 0, total = data.total_personas || 0;
       const sat = data.saturation || {}, disc = sat.categories_discovered || 0, catTotal = sat.categories_total || 20;
@@ -823,29 +987,69 @@ function page() {
             '<div class="muted" style="margin-top:4px;font-size:11px">Consecutive zero-new: '+zeroNew+(isSat?' (saturated)':'')+'</div>' +
           '</div>' +
         '</div>' +
-        (rows ? '<div class="muted" style="margin-bottom:4px">Priority Categories</div><table class="cat-table"><thead><tr><th>#</th><th>Category</th><th>Personas</th><th>Severity</th><th>Score</th></tr></thead><tbody>'+rows+'</tbody></table>' : '');
+        (rows ? '<div class="muted" style="margin-bottom:4px">Priority Categories</div><div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table class="cat-table"><thead><tr><th>#</th><th>Category</th><th>Personas</th><th>Severity</th><th>Score</th></tr></thead><tbody>'+rows+'</tbody></table></div>' : '');
     }
 
     /* --- Persona Gallery --- */
-    function renderPersonas(list) {
-      if (!list || !list.length) { personasEl.innerHTML = '<div class="empty">No persona reports found.</div>'; return; }
-      personasEl.innerHTML = '<div class="gallery">' + list.map(p => {
+    let lastPersonaList = [];
+    function sortPersonas(list, sortKey) {
+      const sorted = [...list];
+      if (sortKey === 'score-desc') sorted.sort((a,b) => (b.score??0) - (a.score??0));
+      else if (sortKey === 'name') sorted.sort((a,b) => cleanName(a.name).localeCompare(cleanName(b.name)));
+      else sorted.sort((a,b) => (a.score??0) - (b.score??0));
+      return sorted;
+    }
+    function renderPersonas(list, loadError) {
+      if (loadError) { personasEl.innerHTML = '<div class="empty warn">Failed to load persona data. Check server logs.</div>'; return; }
+      if (list) lastPersonaList = list;
+      const sortKey = ($('personaSort')||{}).value || 'score-asc';
+      const sorted = sortPersonas(lastPersonaList, sortKey);
+      if (!sorted.length) { personasEl.innerHTML = '<div class="empty">No persona reports found.</div>'; return; }
+      const historyBySlug = {};
+      if (scoreHistoryData.length) {
+        for (const entry of scoreHistoryData) {
+          if (!historyBySlug[entry.slug]) historyBySlug[entry.slug] = [];
+          historyBySlug[entry.slug].push(entry);
+        }
+      }
+      personasEl.innerHTML = '<div class="gallery">' + sorted.map(p => {
         const sc = scoreClass(p.score ?? 0);
         const gaps = (p.gaps||[]).slice(0,5).map(g =>
           '<div style="padding:4px 0;font-size:12px"><span class="status-badge '+sevClass(g.severity)+'" style="font-size:10px">'+g.severity+'</span> '+esc(g.title)+'</div>'
         ).join('');
+        const filePath = p.file ? '<div class="muted" style="margin-top:6px;font-size:11px">docs/stress-tests/'+esc(p.file)+'</div>' : '';
+        let deltaHtml = '';
+        const hist = historyBySlug[p.slug];
+        if (hist && hist.length >= 2) {
+          const scores = hist.map(h => h.score).filter(s => typeof s === 'number');
+          if (scores.length >= 2) {
+            const delta = scores[scores.length-1] - scores[scores.length-2];
+            if (delta > 0) deltaHtml = '<span class="delta-up">+' + delta + '</span>';
+            else if (delta < 0) deltaHtml = '<span class="delta-down">' + delta + '</span>';
+          }
+        }
+        const reanalyzeBtn = p.slug ? '<button class="reanalyze-btn" onclick="event.stopPropagation();reanalyzePersona(\\\''+esc(p.slug)+'\\\',\\\''+esc(p.name)+'\\\')">Re-analyze</button>' : '';
         return '<div class="persona-card" onclick="this.classList.toggle(\\\'open\\\')">' +
-          '<div class="card-head"><div><strong>'+esc(p.name)+'</strong><div class="muted">'+esc(p.type)+(p.date?' &middot; '+esc(p.date):'')+'</div></div>' +
-          '<span class="score '+sc+'" style="font-size:20px">'+(p.score??'?')+'</span></div>' +
-          '<div class="card-detail">'+(p.summary?'<div style="font-size:12px;margin-bottom:8px;color:#4b5563">'+esc(p.summary)+'</div>':'')+(gaps||'<div class="muted">No gaps.</div>')+'</div></div>';
+          '<div class="card-head"><div><strong>'+esc(cleanName(p.name))+'</strong>'+reanalyzeBtn+'<div class="muted">'+esc(p.type)+(p.date?' &middot; '+esc(p.date):'')+'</div></div>' +
+          '<div style="text-align:right"><span class="score '+sc+'" style="font-size:20px">'+(p.score??'?')+'</span>'+deltaHtml+'</div></div>' +
+          '<div class="card-detail">'+(p.summary?'<div style="font-size:12px;margin-bottom:8px;color:#4b5563">'+esc(p.summary)+'</div>':'')+(gaps||'<div class="muted">No gaps.</div>')+filePath+'</div></div>';
       }).join('') + '</div>';
     }
 
     /* --- Build Queue --- */
-    function renderBuildTasks(tasks) {
-      if (!tasks || !tasks.length) { buildQueueEl.innerHTML = '<div class="empty">No build tasks found.</div>'; return; }
-      buildQueueEl.innerHTML = tasks.map(t =>
-        '<div class="task-row"><div style="flex:1"><strong style="font-size:13px">'+esc(t.title)+'</strong><div class="muted">'+esc(t.persona)+'</div></div>' +
+    function renderBuildTasks(data, loadError) {
+      if (loadError) { buildQueueEl.innerHTML = '<div class="empty warn">Failed to load build tasks. Check server logs.</div>'; buildCountEl.textContent = ''; return; }
+      const tasks = Array.isArray(data) ? data : (data?.tasks || []);
+      const completed = Array.isArray(data) ? 0 : (data?.completedCount || 0);
+      if (tasks.length) allTaskData = tasks;
+      taskCompletedCount = completed;
+      const filtered = currentTaskFilter === 'ALL' ? allTaskData : allTaskData.filter(t => t.severity === currentTaskFilter);
+      buildCountEl.textContent = '(' + allTaskData.length + ' pending' + (taskCompletedCount ? ', ' + taskCompletedCount + ' done' : '') + ')';
+      if (!filtered.length) { buildQueueEl.innerHTML = '<div class="empty">' + (allTaskData.length ? 'No ' + currentTaskFilter + ' tasks.' : 'No build tasks found.') + '</div>'; return; }
+      buildQueueEl.innerHTML = filtered.map(t =>
+        '<div class="task-row">' +
+        '<button class="task-done-btn" onclick="completeTask(\\\''+esc(t.path)+'\\\')" title="Mark done">&#10003;</button>' +
+        '<div style="flex:1"><strong style="font-size:13px">'+esc(t.title)+'</strong><div class="muted">'+esc(t.persona)+'</div></div>' +
         '<span class="status-badge '+sevClass(t.severity)+'">'+t.severity+'</span></div>'
       ).join('');
     }
@@ -855,8 +1059,12 @@ function page() {
       if (!entries.length) { historyEl.innerHTML = '<div class="empty">No imported entries yet.</div>'; return; }
       historyEl.innerHTML = entries.slice(0, 80).map(entry => {
         const err = entry.last_error ? '<div class="warn">'+esc(entry.last_error)+'</div>' : '';
-        return '<div class="history-item"><div class="history-head"><strong>'+esc(entry.name)+'</strong>' +
-          '<span class="status-badge status-'+esc(entry.status)+'">'+statusLabel(entry.status)+'</span></div>' +
+        const ago = entry.created_at ? '<span class="time-ago">'+timeAgo(entry.created_at)+'</span>' : '';
+        return '<div class="history-item"><div class="history-head"><strong>'+esc(cleanName(entry.name))+'</strong>' +
+          '<div style="display:flex;gap:6px;align-items:center">'+ago+
+          '<span class="status-badge status-'+esc(entry.status)+'">'+statusLabel(entry.status)+'</span>' +
+          '<button class="del-btn" onclick="deleteEntry(\\\''+entry.id+'\\\')" title="Delete">&times;</button>' +
+          '</div></div>' +
           '<div class="muted">'+esc(entry.type)+' | '+esc(entry.relativePath||entry.codexSlug||'')+'</div>' +
           '<div class="muted">'+esc(entry.preview||'')+'</div>'+err+'</div>';
       }).join('');
@@ -864,20 +1072,31 @@ function page() {
 
     /* --- State Refresh --- */
     async function refreshState(options = {}) {
-      const [stateRes, synthData, personaList, taskList] = await Promise.all([
-        fetch('/state').then(r => r.json()),
-        fetch('/api/synthesis').then(r => r.json()).catch(() => null),
-        fetch('/api/personas').then(r => r.json()).catch(() => []),
-        fetch('/api/build-tasks').then(r => r.json()).catch(() => []),
-      ]);
+      let stateRes, synthData, personaList, taskData, historyData;
+      let synthErr = false, personaErr = false, taskErr = false;
+      try {
+        [stateRes, synthData, personaList, taskData, historyData] = await Promise.all([
+          fetch('/state').then(r => r.json()),
+          fetch('/api/synthesis').then(r => r.json()).catch(() => { synthErr = true; return null; }),
+          fetch('/api/personas').then(r => r.json()).catch(() => { personaErr = true; return []; }),
+          fetch('/api/build-tasks').then(r => r.json()).catch(() => { taskErr = true; return { tasks: [], completedCount: 0 }; }),
+          fetch('/api/score-history').then(r => r.json()).catch(() => []),
+        ]);
+      } catch (err) {
+        statusEl.textContent = 'Connection error: ' + err.message;
+        netDot.classList.add('offline');
+        netText.textContent = 'Error';
+        return;
+      }
+      scoreHistoryData = historyData || [];
       const counts = stateRes.counts || {};
       const summary = (stateRes.pipeline?.pipeline||'Idle') + ' | files: '+(counts.uncompleted||0)+' | tasks: '+(counts.buildTasks||0);
       if (!options.preserveStatus) statusEl.textContent = summary;
       updatePipeline(stateRes.pipeline);
       renderHistory(stateRes.entries || []);
-      renderFindings(synthData);
-      renderPersonas(personaList);
-      renderBuildTasks(taskList);
+      renderFindings(synthData, synthErr);
+      renderPersonas(personaList, personaErr);
+      renderBuildTasks(taskData, taskErr);
       return { result: stateRes, summary };
     }
 
@@ -901,11 +1120,106 @@ function page() {
     $('sendQueued').onclick = async () => { try { const r = await postJson('/send-queued', {}); statusEl.textContent = r.pipeline; await refreshState(); } catch(e) { statusEl.textContent = e.message; } };
     $('retryFailed').onclick = async () => { try { const r = await postJson('/retry-failed', {}); statusEl.textContent = r.pipeline; await refreshState(); } catch(e) { statusEl.textContent = e.message; } };
     $('refresh').onclick = refreshState;
+    $('clearCompleted').onclick = async () => { try { const r = await postJson('/clear-completed', {}); statusEl.textContent = 'Cleared '+r.removed+' completed entries'; await refreshState(); } catch(e) { statusEl.textContent = e.message; } };
+    if ($('personaSort')) $('personaSort').onchange = () => renderPersonas();
+
+    /* --- Run Pipeline --- */
+    $('runPipeline').onclick = async () => {
+      try {
+        const r = await postJson('/run-pipeline', {});
+        statusEl.textContent = r.pipeline || 'Pipeline started';
+        await refreshState();
+      } catch(e) { statusEl.textContent = e.message; }
+    };
+
+    /* --- Severity Filter --- */
+    document.querySelectorAll('[data-filter]').forEach(btn => {
+      btn.onclick = () => {
+        currentTaskFilter = btn.dataset.filter;
+        document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('active', b === btn));
+        renderBuildTasks(null);
+      };
+    });
+
+    /* --- Re-analyze Persona --- */
+    window.reanalyzePersona = async (slug, name) => {
+      try {
+        await postJson('/api/reanalyze', { slug });
+        statusEl.textContent = 'Re-analysis queued for ' + name;
+      } catch(e) { statusEl.textContent = e.message; }
+    };
+
+    /* --- Complete Build Task --- */
+    window.completeTask = async (path) => {
+      try {
+        await postJson('/api/complete-task', { path });
+        await refreshState();
+      } catch(e) { statusEl.textContent = e.message; }
+    };
+
+    /* --- Delete Entry --- */
+    window.deleteEntry = async (id) => {
+      try { await postJson('/delete-entry', { id }); await refreshState(); }
+      catch(e) { statusEl.textContent = e.message; }
+    };
+
+    /* --- Adaptive Polling --- */
+    let pollInterval = null;
+    function startPolling() {
+      if (pollInterval) clearInterval(pollInterval);
+      const rate = wasRunning ? 3000 : 12000;
+      pollInterval = setInterval(refreshState, rate);
+    }
+
+    /* --- Title Flash on Pipeline Complete --- */
+    let titleFlashInterval = null;
+    const originalTitle = document.title;
+    function flashTitle(msg) {
+      if (titleFlashInterval) clearInterval(titleFlashInterval);
+      let on = true;
+      titleFlashInterval = setInterval(() => {
+        document.title = on ? msg : originalTitle;
+        on = !on;
+      }, 800);
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && titleFlashInterval) {
+          clearInterval(titleFlashInterval);
+          titleFlashInterval = null;
+          document.title = originalTitle;
+        }
+      }, { once: true });
+      setTimeout(() => { if (titleFlashInterval) { clearInterval(titleFlashInterval); titleFlashInterval = null; document.title = originalTitle; } }, 30000);
+    }
+
+    const origUpdatePipeline = updatePipeline;
+    updatePipeline = function(pl) {
+      const running = pl?.running || false;
+      origUpdatePipeline(pl);
+      if (!running && wasRunning === false && pollInterval) startPolling();
+      if (wasRunning && !running) {
+        startPolling();
+      }
+    };
+
+    /* Patch: detect pipeline finish for title flash */
+    const _origRefresh = refreshState;
+    let prevRunning = false;
+    refreshState = async function(options) {
+      const result = await _origRefresh(options);
+      const nowRunning = result?.result?.pipeline?.running || false;
+      if (prevRunning && !nowRunning && document.hidden) {
+        flashTitle('Pipeline done!');
+      }
+      if (prevRunning !== nowRunning) startPolling();
+      prevRunning = nowRunning;
+      return result;
+    };
+
     window.addEventListener('online', setNetwork);
     window.addEventListener('offline', setNetwork);
     setNetwork();
     refreshState();
-    setInterval(refreshState, 3500);
+    startPolling();
   </script>
 </body>
 </html>`;
@@ -1052,7 +1366,77 @@ const server = createServer(async (req, res) => {
     }
 
     if (req.method === "GET" && path === "/api/build-tasks") {
-      sendJson(res, 200, readBuildTaskFiles());
+      const bt = readBuildTaskFiles();
+      sendJson(res, 200, { tasks: bt.tasks, completedCount: bt.completedCount });
+      return;
+    }
+
+    if (req.method === "POST" && path === "/delete-entry") {
+      const body = await readBody(req);
+      const payload = JSON.parse(body || "{}");
+      const id = String(payload.id || "");
+      if (!id) { sendJson(res, 400, { error: "Missing id" }); return; }
+      const state = readInboxState();
+      const before = state.entries.length;
+      state.entries = state.entries.filter((e) => e.id !== id);
+      if (state.entries.length === before) { sendJson(res, 404, { error: "Entry not found" }); return; }
+      saveInboxState(state);
+      sendJson(res, 200, { deleted: id });
+      return;
+    }
+
+    if (req.method === "POST" && path === "/clear-completed") {
+      const state = readInboxState();
+      const before = state.entries.length;
+      state.entries = state.entries.filter((e) => !["completed", "submitted"].includes(e.status));
+      saveInboxState(state);
+      sendJson(res, 200, { removed: before - state.entries.length });
+      return;
+    }
+
+    if (req.method === "POST" && path === "/api/reanalyze") {
+      const body = await readBody(req);
+      const payload = JSON.parse(body || "{}");
+      const slug = String(payload.slug || "").trim();
+      if (!slug) { sendJson(res, 400, { error: "Missing slug" }); return; }
+      const sourceFile = findPersonaSourceFile(slug);
+      if (!sourceFile) { sendJson(res, 404, { error: "Persona source file not found for " + slug }); return; }
+      spawn(process.execPath, ["devtools/persona-analyzer.mjs", sourceFile], {
+        cwd: ROOT, detached: false, stdio: "ignore", windowsHide: true,
+      });
+      sendJson(res, 200, { status: "queued", slug });
+      return;
+    }
+
+    if (req.method === "POST" && path === "/api/complete-task") {
+      const body = await readBody(req);
+      const payload = JSON.parse(body || "{}");
+      const taskPath = String(payload.path || "");
+      if (!taskPath.startsWith("system/persona-build-plans/") || !taskPath.endsWith(".md")) {
+        sendJson(res, 400, { error: "Invalid task path" }); return;
+      }
+      const fullPath = join(ROOT, taskPath);
+      if (!existsSync(fullPath)) { sendJson(res, 404, { error: "Task file not found" }); return; }
+      const completedDir = join(dirname(fullPath), "completed");
+      mkdirSync(completedDir, { recursive: true });
+      renameSync(fullPath, join(completedDir, basename(fullPath)));
+      sendJson(res, 200, { status: "completed", path: taskPath });
+      return;
+    }
+
+    if (req.method === "POST" && path === "/run-pipeline") {
+      if (pipelineRunning) {
+        sendJson(res, 200, { pipeline: "Pipeline already running" });
+        return;
+      }
+      const ids = pendingEntryIds(["saved", "queued", "failed", "spec_queued"]);
+      const pipeline = runPipeline(Math.max(ids.length, 1), ids);
+      sendJson(res, 200, { pipeline });
+      return;
+    }
+
+    if (req.method === "GET" && path === "/api/score-history") {
+      sendJson(res, 200, readScoreHistory());
       return;
     }
 
