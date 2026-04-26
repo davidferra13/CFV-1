@@ -43,20 +43,29 @@ export async function PrepPressureCard() {
 
           return (
             <div key={day.date} className="min-w-[3rem] sm:min-w-0 text-center">
-              <div
-                className={`text-xs mb-2 ${
+              <Link
+                href={`/calendar?date=${day.date}`}
+                className={`block text-xs mb-2 hover:text-brand-400 transition-colors ${
                   isToday ? 'text-brand-400 font-semibold' : 'text-stone-500'
                 }`}
               >
                 {day.dayOfWeek.slice(0, 3)}
-              </div>
+              </Link>
 
               <div className="h-16 flex items-end">
                 {day.activeMinutes > 0 ? (
-                  <div
-                    className={`w-full rounded-t ${day.isHeavy ? 'bg-amber-500' : 'bg-brand-600'}`}
-                    style={{ height: `${barHeight}px` }}
-                  />
+                  day.events.length === 1 ? (
+                    <Link
+                      href={`/events/${day.events[0].id}?tab=prep`}
+                      className={`w-full rounded-t transition-opacity hover:opacity-80 ${day.isHeavy ? 'bg-amber-500' : 'bg-brand-600'}`}
+                      style={{ height: `${barHeight}px` }}
+                    />
+                  ) : (
+                    <div
+                      className={`w-full rounded-t ${day.isHeavy ? 'bg-amber-500' : 'bg-brand-600'}`}
+                      style={{ height: `${barHeight}px` }}
+                    />
+                  )
                 ) : (
                   <div className="w-full h-0.5 bg-stone-800" />
                 )}
@@ -73,17 +82,35 @@ export async function PrepPressureCard() {
               {day.isHeavy ? <div className="text-[10px] text-amber-400">Heavy</div> : null}
 
               {day.events.length > 0 ? (
-                <div className="mt-1 flex items-center justify-center gap-1">
-                  {visibleEvents.map((event) => (
-                    <span
-                      key={event.id}
-                      title={`${event.occasion}: ${formatMinutes(event.activeMinutes)}`}
-                      className="w-1.5 h-1.5 rounded-full bg-stone-500"
-                    />
-                  ))}
-                  {hiddenEventCount > 0 ? (
-                    <span className="text-[10px] text-stone-500">+{hiddenEventCount}</span>
-                  ) : null}
+                <div className="mt-1 flex flex-col items-center gap-0.5">
+                  {day.events.length <= 3 ? (
+                    day.events.map((event) => (
+                      <Link
+                        key={event.id}
+                        href={`/events/${event.id}?tab=prep`}
+                        className="text-[10px] text-stone-500 hover:text-brand-400 transition-colors truncate max-w-[4rem]"
+                        title={`${event.occasion}: ${formatMinutes(event.activeMinutes)}`}
+                      >
+                        {event.occasion.length > 8
+                          ? event.occasion.slice(0, 7) + '\u2026'
+                          : event.occasion}
+                      </Link>
+                    ))
+                  ) : (
+                    <div className="flex items-center gap-1">
+                      {visibleEvents.map((event) => (
+                        <Link
+                          key={event.id}
+                          href={`/events/${event.id}?tab=prep`}
+                          title={`${event.occasion}: ${formatMinutes(event.activeMinutes)}`}
+                          className="w-1.5 h-1.5 rounded-full bg-stone-500 hover:bg-brand-400 transition-colors"
+                        />
+                      ))}
+                      {hiddenEventCount > 0 ? (
+                        <span className="text-[10px] text-stone-500">+{hiddenEventCount}</span>
+                      ) : null}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="mt-1 h-2" />
