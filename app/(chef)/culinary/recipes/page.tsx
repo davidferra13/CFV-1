@@ -1,12 +1,15 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { requireChef } from '@/lib/auth/get-user'
 import { getRecipes } from '@/lib/recipes/actions'
+import { getTopIngredientPairings } from '@/lib/recipes/pairing-actions'
 import { getPlaceholderImages, type PlaceholderImage } from '@/lib/images/placeholder-actions'
 import { FoodPlaceholderImage } from '@/components/ui/food-placeholder-image'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import {
   Table,
   TableHeader,
@@ -35,6 +38,32 @@ const CATEGORY_STYLES: Record<string, string> = {
   condiment: 'bg-stone-800 text-stone-300',
   beverage: 'bg-brand-900 text-brand-700',
   other: 'bg-stone-800 text-stone-400',
+}
+
+async function PairingInsights() {
+  const pairings = await getTopIngredientPairings(8)
+  if (pairings.length === 0) return null
+
+  return (
+    <Card className="p-4">
+      <h3 className="text-sm font-semibold text-stone-200 mb-3">Your Signature Pairings</h3>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        {pairings.map((pair) => (
+          <div
+            key={`${pair.ingredientA}-${pair.ingredientB}`}
+            className="flex items-center gap-2 rounded-lg bg-stone-800/50 px-3 py-2"
+          >
+            <span className="text-sm text-stone-300">
+              {pair.ingredientA} + {pair.ingredientB}
+            </span>
+            <span className="text-xs text-stone-500 ml-auto whitespace-nowrap">
+              {pair.recipeCount}x
+            </span>
+          </div>
+        ))}
+      </div>
+    </Card>
+  )
 }
 
 export default async function ChefRecipesPage() {
@@ -77,6 +106,12 @@ export default async function ChefRecipesPage() {
         </div>
         <p className="text-stone-500 mt-1">Your complete collection of documented recipes</p>
       </div>
+
+      <Suspense fallback={null}>
+        <WidgetErrorBoundary name="Pairing Insights">
+          <PairingInsights />
+        </WidgetErrorBoundary>
+      </Suspense>
 
       {fetchError ? (
         <Card className="p-8 text-center">
