@@ -121,6 +121,89 @@ const GAP_CATEGORIES = [
 const SEVERITY_WEIGHT = { HIGH: 3, MEDIUM: 2, LOW: 1 }
 
 // ---------------------------------------------------------------------------
+// Known-built features (Ollama false-positive filter)
+// Maps common gap keywords to codebase locations. If grep finds these files
+// with matching exports/functions, the gap is pre-validated as BUILT.
+// ---------------------------------------------------------------------------
+
+const KNOWN_BUILT_FEATURES = [
+  { patterns: ['cross.contamination', 'allergen.matrix', 'allergen.conflict'], file: 'lib/dietary/cross-contamination-check.ts', label: 'Allergen cross-contamination check' },
+  { patterns: ['knowledge.dietary', 'dietary.flag', 'wikidata.*dietary'], file: 'lib/dietary/knowledge-dietary-check.ts', label: 'Knowledge dietary check' },
+  { patterns: ['CompletionResult', 'evaluateCompletion', 'completion.engine'], file: 'lib/completion/engine.ts', label: 'Completion contract engine' },
+  { patterns: ['ticket_type', 'purchaseTicket', 'event_ticketing'], file: 'lib/tickets/actions.ts', label: 'Ticketed events' },
+  { patterns: ['event.transition', 'EventState', 'event_fsm'], file: 'lib/events/event-transitions.ts', label: 'Event FSM lifecycle' },
+  { patterns: ['ledger.entry', 'createLedger', 'financial_summary'], file: 'lib/finance/ledger-actions.ts', label: 'Financial ledger' },
+  { patterns: ['plate.cost', 'recipe.cost', 'food_cost'], file: 'lib/culinary/plate-cost-actions.ts', label: 'Recipe costing' },
+  { patterns: ['trust.loop', 'post_event_survey', 'wellness_outcome'], file: 'lib/post-event/trust-loop-actions.ts', label: 'Post-event surveys + wellness' },
+  { patterns: ['cannabis.action', 'cannabis.event', 'compliance'], file: 'lib/chef/cannabis-actions.ts', label: 'Cannabis compliance' },
+  { patterns: ['staff.member', 'staff.action'], file: 'lib/staff/', label: 'Staff management' },
+  { patterns: ['equipment.inventory', 'equipment.action'], file: 'lib/equipment/', label: 'Equipment inventory' },
+  { patterns: ['contract.generat', 'contract.template'], file: 'lib/ai/contract-generator.ts', label: 'Contract generation' },
+  { patterns: ['dinner.circle', 'circle.member'], file: 'lib/circles/', label: 'Dinner circles' },
+  { patterns: ['booking.page', 'chefSlug', 'book.page'], file: 'app/book/', label: 'Booking page' },
+  { patterns: ['shareToken', 'public.event'], file: 'app/(public)/e/', label: 'Public event pages' },
+  { patterns: ['recipe.search', 'recipe.action'], file: 'lib/recipes/', label: 'Recipe management' },
+  { patterns: ['menu.health', 'menu.action', 'addDishToMenu'], file: 'lib/menus/actions.ts', label: 'Menu management' },
+]
+
+// ---------------------------------------------------------------------------
+// Search hint generation
+// Extracts grep-able terms from gap titles and descriptions so downstream
+// tools (Codex, dashboard validator) can check the codebase without AI.
+// ---------------------------------------------------------------------------
+
+const HINT_STOP_WORDS = new Set([
+  'the', 'and', 'for', 'with', 'no', 'lack', 'of', 'in', 'a', 'an', 'as',
+  'to', 'is', 'are', 'be', 'by', 'on', 'at', 'or', 'not', 'from', 'it',
+  'its', 'has', 'was', 'but', 'one', 'that', 'this', 'does', 'any', 'can',
+  'will', 'should', 'would', 'could', 'may', 'must', 'need', 'needs',
+  'chefflow', 'system', 'feature', 'mode', 'model', 'engine', 'assistant',
+  'first-class', 'explicit', 'dedicated', 'native', 'support', 'current',
+  'currently', 'existing', 'new', 'level', 'layer', 'based', 'real-time',
+])
+
+function generateSearchHints(title, description) {
+  const hints = new Set()
+
+  // Extract multi-word technical terms from title
+  const titleWords = title.toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .split(/\s+/)
+    .filter(w => w.length > 2 && !HINT_STOP_WORDS.has(w))
+
+  // Build bigrams from title (more specific than single words)
+  for (let i = 0; i < titleWords.length - 1; i++) {
+    const bigram = `${titleWords[i]}.${titleWords[i + 1]}`
+    if (!HINT_STOP_WORDS.has(titleWords[i]) && !HINT_STOP_WORDS.has(titleWords[i + 1])) {
+      hints.add(bigram)
+    }
+  }
+
+  // Add important single words from title
+  for (const word of titleWords) {
+    if (word.length > 4) hints.add(word)
+  }
+
+  // Check against known-built patterns
+  const combined = `${title} ${description}`.toLowerCase()
+  const matchedBuilt = []
+  for (const known of KNOWN_BUILT_FEATURES) {
+    for (const pat of known.patterns) {
+      if (new RegExp(pat, 'i').test(combined)) {
+        matchedBuilt.push(known)
+        break
+      }
+    }
+  }
+
+  return {
+    grep_terms: [...hints].slice(0, 8),
+    known_built_matches: matchedBuilt.map(k => ({ file: k.file, label: k.label })),
+    likely_false_positive: matchedBuilt.length > 0,
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Phase 1: Extract
 // ---------------------------------------------------------------------------
 
@@ -207,7 +290,8 @@ function extractGaps(text) {
     }
     description = description.trim().split('\n').map(l => l.trim()).filter(Boolean).join(' ')
 
-    gaps.push({ number, title, severity, description, categories: [] })
+    const search_hints = generateSearchHints(title, description)
+    gaps.push({ number, title, severity, description, categories: [], search_hints })
   }
 
   if (gaps.length > 0) return gaps
@@ -248,12 +332,14 @@ function extractGaps(text) {
       .join(' ')
       .trim()
 
+    const search_hints = generateSearchHints(item.title, description)
     gaps.push({
       number: item.number,
       title: item.title,
       severity,
       description,
       categories: [],
+      search_hints,
     })
   }
 
@@ -342,13 +428,21 @@ function parseReport(file) {
   const quick_wins = extractQuickWins(text)
   const verdict = extractVerdict(text)
 
+  const filteredGaps = gaps.filter(gap => {
+    if (isLowQualityGap(gap)) {
+      console.log(`${TAG}     [quality-gate] Rejected: "${gap.title}" (from ${file.slug})`)
+      return false
+    }
+    return true
+  })
+
   return {
     slug: file.slug,
     name,
     date: file.date,
     score,
     score_breakdown,
-    gaps,
+    gaps: filteredGaps,
     quick_wins,
     verdict,
   }
@@ -357,6 +451,61 @@ function parseReport(file) {
 // ---------------------------------------------------------------------------
 // Phase 2: Categorize
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Gap Quality Gate
+// Rejects low-quality gap titles that would pollute synthesis.
+// ---------------------------------------------------------------------------
+
+function isLowQualityGap(gap) {
+  const title = (gap.title || '').trim()
+
+  // Reject empty or very short titles
+  if (title.length < 5) return true
+
+  // Reject titles that are just a single word with optional colon
+  // Examples: "Efficiency:", "Automation:", "Traceability:"
+  if (/^[A-Za-z]+:?\s*$/.test(title)) return true
+
+  // Reject titles that are just two words with colon
+  // Examples: "Manual Tracking:", "Vendor Management:", "Audit Trail:"
+  if (/^[A-Za-z]+\s+[A-Za-z]+:?\s*$/.test(title)) return true
+
+  // Reject generic filler titles
+  const FILLER_TITLES = [
+    'workflow coverage gap',
+    'data model gap',
+    'manual review required',
+    'retry candidate',
+    'analyzer incomplete',
+    'planner input degraded',
+    'report confidence unavailable',
+  ]
+  if (FILLER_TITLES.includes(title.toLowerCase().replace(/:$/, ''))) return true
+
+  return false
+}
+
+function normalizeGapTitle(title) {
+  return (title || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function areSimilarGaps(gapA, gapB) {
+  const a = normalizeGapTitle(gapA.title)
+  const b = normalizeGapTitle(gapB.title)
+
+  if (a === b) return true
+
+  if (a.length > 5 && b.length > 5) {
+    if (a.includes(b) || b.includes(a)) return true
+  }
+
+  return false
+}
 
 function categorizeGaps(personas) {
   for (const persona of personas) {
@@ -425,13 +574,29 @@ function aggregate(personas) {
         if (!categories[catId]) continue
         const cat = categories[catId]
         cat.severity_breakdown[gap.severity] = (cat.severity_breakdown[gap.severity] || 0) + 1
-        cat.representative_gaps.push({
+        const representativeGap = {
           title: gap.title,
           from: persona.slug,
           from_name: persona.name,
           severity: gap.severity,
           description: gap.description,
-        })
+          search_hints: gap.search_hints || null,
+        }
+        representativeGap.likely_built = gapMatchesKnownBuiltFeature(representativeGap)
+
+        // Deduplication: check if a similar gap already exists in this category
+        const existingMatch = cat.representative_gaps.find(existing => areSimilarGaps(existing, representativeGap))
+        if (existingMatch) {
+          // Merge: keep the higher severity, track additional persona
+          if (SEVERITY_WEIGHT[representativeGap.severity] > SEVERITY_WEIGHT[existingMatch.severity]) {
+            existingMatch.severity = representativeGap.severity
+          }
+          if (!existingMatch.also_from) existingMatch.also_from = []
+          existingMatch.also_from.push({ slug: persona.slug, name: persona.name })
+        } else {
+          cat.representative_gaps.push(representativeGap)
+        }
+
         if (!seenCategories.has(catId)) {
           seenCategories.add(catId)
           cat.count++
@@ -514,6 +679,32 @@ function aggregate(personas) {
     // Extras for report generation
     personas,
   }
+}
+
+function gapMatchesKnownBuiltFeature(gap) {
+  if (gap.search_hints?.likely_false_positive) return true
+
+  const hintText = [
+    ...(gap.search_hints?.grep_terms || []),
+    ...(gap.search_hints?.known_built_matches || []).flatMap(match => [match.file, match.label]),
+  ]
+    .filter(Boolean)
+    .join(' ')
+
+  if (!hintText) return false
+
+  return KNOWN_BUILT_FEATURES.some(known =>
+    known.patterns.some(pattern => new RegExp(pattern, 'i').test(hintText))
+  )
+}
+
+function scoreGap(gap, categoryData) {
+  const severityWeight = SEVERITY_WEIGHT[gap.severity] || 1
+  const personaCount = gap.personas ? gap.personas.length : 1
+  const categoryFreq = Math.min((categoryData?.count || 0) / 5, 1)
+  const builtPenalty = gap.likely_built ? 0.2 : 1.0
+
+  return Math.round(severityWeight * personaCount * (1 + categoryFreq) * builtPenalty * 100) / 100
 }
 
 // ---------------------------------------------------------------------------
@@ -663,10 +854,19 @@ function writeBuildPlan(catId, catData, rank, totalRanked, personas, existingTas
     const key = gap.title.toLowerCase()
     if (seen.has(key)) continue
     seen.add(key)
-    lines.push(`${gapNum}. **${gap.title}** - from ${gap.from_name} - ${gap.severity}`)
+    const fpTag = gap.search_hints?.likely_false_positive ? ' [LIKELY BUILT]' : ''
+    lines.push(`${gapNum}. **${gap.title}** - from ${gap.from_name} - ${gap.severity}${fpTag}`)
     if (gap.description) {
       const desc = gap.description.length > 200 ? gap.description.slice(0, 200) + '...' : gap.description
       lines.push(`   ${desc}`)
+    }
+    if (gap.search_hints?.known_built_matches?.length > 0) {
+      for (const match of gap.search_hints.known_built_matches) {
+        lines.push(`   > Known built: \`${match.file}\` (${match.label})`)
+      }
+    }
+    if (gap.search_hints?.grep_terms?.length > 0) {
+      lines.push(`   > Search hints: ${gap.search_hints.grep_terms.join(', ')}`)
     }
     gapNum++
   }
@@ -867,7 +1067,36 @@ async function main() {
   writeFileSync(synthesisPath, synthesisContent, 'utf8')
   console.log(`${TAG}   Wrote: system/persona-batch-synthesis/synthesis-${date}.md`)
 
-  // 4b: Build plans (only for categories with 2+ personas)
+  // 4b: Priority queue
+  const allGaps = Object.entries(data.categories).flatMap(([category, categoryData]) => {
+    const personasByTitle = new Map()
+    for (const gap of categoryData.representative_gaps) {
+      const key = gap.title.toLowerCase()
+      if (!personasByTitle.has(key)) personasByTitle.set(key, new Set())
+      personasByTitle.get(key).add(gap.from)
+    }
+
+    return categoryData.representative_gaps.map(gap => ({
+      ...gap,
+      category,
+      personas: [...(personasByTitle.get(gap.title.toLowerCase()) || new Set([gap.from]))],
+    }))
+  })
+  const priorityQueue = allGaps
+    .map(gap => ({
+      ...gap,
+      priority_score: scoreGap(gap, data.categories[gap.category]),
+    }))
+    .sort((a, b) => b.priority_score - a.priority_score)
+
+  const queuePath = join(OUTPUT_DIR, 'priority-queue.json')
+  writeFileSync(queuePath, JSON.stringify({
+    generated_at: new Date().toISOString(),
+    queue: priorityQueue,
+  }, null, 2) + '\n', 'utf8')
+  console.log(`${TAG}   Priority queue: ${priorityQueue.length} gaps ranked -> system/persona-batch-synthesis/priority-queue.json`)
+
+  // 4c: Build plans (only for categories with 2+ personas)
   const existingTasks = collectExistingBuildTasks()
   let buildPlansWritten = 0
   for (let i = 0; i < data.priority_ranking.length; i++) {
@@ -882,18 +1111,42 @@ async function main() {
     buildPlansWritten++
   }
 
-  // 4c: Saturation JSON
+  // 4d: Saturation JSON
+  // Count likely false positives
+  let totalGapsWithHints = 0
+  let likelyFalsePositives = 0
+  for (const [, catData] of Object.entries(data.categories)) {
+    for (const gap of catData.representative_gaps) {
+      if (gap.search_hints) {
+        totalGapsWithHints++
+        if (gap.search_hints.likely_false_positive) likelyFalsePositives++
+      }
+    }
+  }
+
   const saturationData = {
     generated_at: new Date().toISOString(),
     total_personas: data.total_personas,
     average_score: data.average_score,
     score_distribution: data.score_distribution,
+    validation_summary: {
+      total_gaps: totalGapsWithHints,
+      likely_false_positives: likelyFalsePositives,
+      false_positive_rate: totalGapsWithHints > 0 ? Math.round((likelyFalsePositives / totalGapsWithHints) * 100) : 0,
+      note: 'Pre-validation via known-built feature registry. Run /api/validate-gaps for live codebase grep.',
+    },
     categories: Object.fromEntries(
       Object.entries(data.categories).map(([k, v]) => [k, {
         count: v.count,
         personas: v.personas,
         severity_breakdown: v.severity_breakdown,
         gap_count: v.representative_gaps.length,
+        gaps: v.representative_gaps.map(g => ({
+          title: g.title,
+          from: g.from_name,
+          severity: g.severity,
+          search_hints: g.search_hints || null,
+        })),
       }])
     ),
     saturation: data.saturation,

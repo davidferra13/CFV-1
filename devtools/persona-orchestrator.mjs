@@ -10,17 +10,48 @@
  *   node devtools/persona-orchestrator.mjs --once
  *   node devtools/persona-orchestrator.mjs --watch --interval 300
  *   node devtools/persona-orchestrator.mjs --once --dry-run
+ *   node devtools/persona-orchestrator.mjs --overnight --generate-count 10
  */
 
 import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync, renameSync, appendFileSync } from 'fs';
-import { resolve, basename, dirname, join, extname } from 'path';
-import { execSync } from 'child_process';
+import { resolve, basename, dirname, join, extname, relative } from 'path';
+import { execSync, spawnSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { validatePersona } from './persona-validator.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const ROOT = resolve(__dirname, '..');
+
+// Quick recursive grep for codebase validation (cross-platform, no shell dependency)
+function quickGrep(pattern, dirs, maxResults = 3) {
+  const results = [];
+  function walk(dir) {
+    if (results.length >= maxResults) return;
+    let entries;
+    try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return; }
+    for (const entry of entries) {
+      if (results.length >= maxResults) return;
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name === 'node_modules' || entry.name === '.next' || entry.name === '.git') continue;
+        walk(full);
+      } else if (/\.(ts|tsx)$/.test(entry.name)) {
+        try {
+          const content = readFileSync(full, 'utf8');
+          if (pattern.test(content)) {
+            results.push(relative(ROOT, full).replace(/\\/g, '/'));
+          }
+        } catch {}
+      }
+    }
+  }
+  for (const d of dirs) {
+    const absDir = join(ROOT, d);
+    if (existsSync(absDir)) walk(absDir);
+  }
+  return results;
+}
 
 const STATE_FILE = join(ROOT, 'system', 'persona-pipeline-state.json');
 
@@ -41,13 +72,17 @@ function parseArgs(argv) {
   const opts = {
     once: false,
     watch: false,
+    overnight: false,
     interval: 300,
-    model: process.env.PERSONA_MODEL || 'qwen3:4b',
+    model: process.env.PERSONA_MODEL || 'gemma4:e4b',
     analyzerModel: null, // resolved after parsing
     plannerModel: null,  // resolved after parsing
     ollamaUrl: process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
+    generateCount: 10,
     max: null, // resolved after parsing
     dryRun: false,
+    retryFailed: false,
+    file: null,
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -57,6 +92,9 @@ function parseArgs(argv) {
         break;
       case '--watch':
         opts.watch = true;
+        break;
+      case '--overnight':
+        opts.overnight = true;
         break;
       case '--interval':
         opts.interval = parseInt(args[++i], 10) || 300;
@@ -73,11 +111,22 @@ function parseArgs(argv) {
       case '--ollama-url':
         opts.ollamaUrl = args[++i];
         break;
+      case '--generate-count': {
+        const value = parseInt(args[++i], 10);
+        opts.generateCount = Number.isFinite(value) && value >= 0 ? value : 10;
+        break;
+      }
+      case '--file':
+        opts.file = args[++i] || null;
+        break;
       case '--max':
         opts.max = parseInt(args[++i], 10);
         break;
       case '--dry-run':
         opts.dryRun = true;
+        break;
+      case '--retry-failed':
+        opts.retryFailed = true;
         break;
       default:
         break;
@@ -92,17 +141,20 @@ function parseArgs(argv) {
     opts.plannerModel = process.env.PERSONA_PLANNER_MODEL || 'hermes3:8b';
   }
 
-  if (!opts.once && !opts.watch) {
-    console.log('Usage: node devtools/persona-orchestrator.mjs --once|--watch [options]');
+  if (!opts.once && !opts.watch && !opts.overnight) {
+    console.log('Usage: node devtools/persona-orchestrator.mjs --once|--watch|--overnight [options]');
     console.log('');
     console.log('Options:');
     console.log('  --once               Single pass, then exit');
     console.log('  --watch              Continuous loop');
+    console.log('  --overnight          Generate personas, analyze/plan, force synthesis, and write summary log');
     console.log('  --interval <seconds> Seconds between cycles (default: 300)');
-    console.log('  --model <name>       Default model for both stages (default: PERSONA_MODEL env or qwen3:4b)');
+    console.log('  --model <name>       Default model for analyzer stage (default: PERSONA_MODEL env or gemma4:e4b)');
     console.log('  --analyzer-model <name>  Model for Stage 1 analysis (default: PERSONA_ANALYZER_MODEL env or --model value)');
     console.log('  --planner-model <name>   Model for Stage 2 planning (default: PERSONA_PLANNER_MODEL env or hermes3:8b)');
     console.log('  --ollama-url <url>   Ollama base URL (default: OLLAMA_BASE_URL env or http://localhost:11434)');
+    console.log('  --generate-count <N> Generate N personas in overnight mode (default: 10)');
+    console.log('  --file <path>        Process one specific persona file');
     console.log('  --max <N>            Max personas per cycle (default: 1 for watch, 999 for once)');
     console.log('  --dry-run            Print pending files and exit');
     process.exit(1);
@@ -164,7 +216,35 @@ function typeFromDir(dirPath) {
   return parts[parts.length - 1];
 }
 
-function scanPendingFiles(state) {
+function toPosixPath(pathValue) {
+  return String(pathValue).replace(/\\/g, '/');
+}
+
+function pendingFromSpecificFile(filePath) {
+  const absFile = resolve(ROOT, filePath);
+  if (!existsSync(absFile)) {
+    console.log(`[orchestrator] File not found: ${filePath}`);
+    return [];
+  }
+
+  const ext = extname(absFile).toLowerCase();
+  if (ext !== '.txt' && ext !== '.md') {
+    console.log(`[orchestrator] Unsupported file type: ${filePath}`);
+    return [];
+  }
+
+  return [{
+    filepath: absFile,
+    relpath: toPosixPath(relative(ROOT, absFile)),
+    filename: basename(absFile),
+    slug: slugFromFilename(absFile),
+    type: basename(dirname(absFile)),
+  }];
+}
+
+function scanPendingFiles(state, filePath = null) {
+  if (filePath) return pendingFromSpecificFile(filePath);
+
   const knownSlugs = new Set();
   for (const entry of state.processed) knownSlugs.add(entry.slug);
   for (const entry of state.failed) {
@@ -212,7 +292,7 @@ function runAnalyzer(filepath, model, ollamaUrl) {
   const result = execSync(cmd, {
     encoding: 'utf-8',
     stdio: ['pipe', 'pipe', 'pipe'],
-    timeout: 120000,
+    timeout: 420000,
     cwd: ROOT,
   });
   return result;
@@ -223,7 +303,7 @@ function runPlanner(reportPath, model, ollamaUrl) {
   const result = execSync(cmd, {
     encoding: 'utf-8',
     stdio: ['pipe', 'pipe', 'pipe'],
-    timeout: 180000,
+    timeout: 420000,
     cwd: ROOT,
   });
   return result;
@@ -250,11 +330,89 @@ function countTaskFiles(slug) {
   return files;
 }
 
+function countNewReportsSinceLastSynthesis(state) {
+  const lastSynthesisAt = state.last_synthesis_at ? Date.parse(state.last_synthesis_at) : 0;
+  return state.processed.filter((entry) => {
+    // Count all analyzed entries, not just planned ones.
+    // Synthesis reads from docs/stress-tests/ (analyzer output) and does not need build plans.
+    const analyzedAt = Date.parse(entry.analyzed_at || '');
+    return Number.isFinite(analyzedAt) && analyzedAt > lastSynthesisAt;
+  }).length;
+}
+
+function runBatchSynthesis(state) {
+  console.log(`[orchestrator] Running batch synthesis...`);
+  const result = spawnSync(process.execPath, ['devtools/persona-batch-synthesizer.mjs'], {
+    stdio: 'inherit',
+    timeout: 60000,
+    cwd: ROOT,
+  });
+
+  if (result.error) throw result.error;
+  if (result.status !== 0) throw new Error(`synthesis exited ${result.status}`);
+
+  state.last_synthesis_at = new Date().toISOString();
+  console.log(`[orchestrator] Synthesis complete.`);
+}
+
+function runGenerator(count, model, ollamaUrl) {
+  const args = ['devtools/persona-generator.mjs', '--count', String(count), '--spread'];
+  if (model) args.push('--model', model);
+  if (ollamaUrl) args.push('--ollama-url', ollamaUrl);
+
+  const result = spawnSync(process.execPath, args, {
+    cwd: ROOT,
+    stdio: ['ignore', 'pipe', 'pipe'],
+    timeout: count * 120000,
+    encoding: 'utf8',
+  });
+
+  if (result.error) {
+    console.error(`[overnight] Generator failed: ${result.error.message}`);
+    return false;
+  }
+
+  if (result.status !== 0) {
+    const detail = (result.stderr || result.stdout || '').slice(0, 500);
+    console.error(`[overnight] Generator failed: ${detail}`);
+  }
+
+  return result.status === 0;
+}
+
 // --- Cycle ---
 
 function runCycle(opts) {
   const state = loadState();
-  const pending = scanPendingFiles(state);
+
+  if (opts.retryFailed && state.failed.length > 0) {
+    console.log(`[orchestrator] Retrying ${state.failed.length} previously failed personas...`)
+    // Move failed persona files back to Uncompleted/ if they exist in Failed/
+    for (const entry of state.failed) {
+      const failedPath = join(
+        ROOT,
+        'Chef Flow Personas',
+        'Failed',
+        basename(dirname(entry.source_file)),
+        basename(entry.source_file)
+      )
+      const uncompletedPath = join(ROOT, entry.source_file)
+      if (existsSync(failedPath)) {
+        const destDir = dirname(uncompletedPath)
+        mkdirSync(destDir, { recursive: true })
+        try {
+          renameSync(failedPath, uncompletedPath)
+          console.log(`[orchestrator] Moved back: ${basename(entry.source_file)}`)
+        } catch (err) {
+          console.log(`[orchestrator] Could not move ${basename(entry.source_file)}: ${err.message}`)
+        }
+      }
+    }
+    state.failed = []
+    saveState(state)
+  }
+
+  const pending = scanPendingFiles(state, opts.file);
 
   if (pending.length === 0) {
     console.log('[orchestrator] No pending personas found.');
@@ -275,6 +433,7 @@ function runCycle(opts) {
   let processedCount = 0;
   let failedCount = 0;
   let tasksQueued = 0;
+  let plannedSuccessCount = 0;
 
   for (const persona of batch) {
     // Stage 0: Validate
@@ -343,6 +502,7 @@ function runCycle(opts) {
       runPlanner(reportPath, opts.plannerModel, opts.ollamaUrl);
       plannedAt = new Date().toISOString();
       buildTasks = countTaskFiles(persona.slug);
+      plannedSuccessCount++;
     } catch (err) {
       const stderr = err.stderr ? err.stderr.toString().trim() : err.message || 'Unknown error';
       console.log(`[orchestrator] PLANNER FAILED for ${persona.filename}: ${stderr}`);
@@ -350,7 +510,7 @@ function runCycle(opts) {
     }
 
     // Analyzer moves file from Uncompleted/ to Completed/; record the final path
-    const completedRelpath = persona.relpath.replace('/Uncompleted/', '/Completed/');
+    const completedRelpath = toPosixPath(persona.relpath).replace('/Uncompleted/', '/Completed/');
     const entry = {
       slug: persona.slug,
       type: persona.type,
@@ -370,19 +530,78 @@ function runCycle(opts) {
     saveState(state);
   }
 
-  // Stage 3: Synthesize (aggregate findings across all reports)
-  if (state.processed.length > 0) {
-    console.log(`[orchestrator] Running batch synthesis...`);
+  // Stage 3: Synthesize after enough newly planned reports exist
+  const newReportsSinceLastSynthesis = countNewReportsSinceLastSynthesis(state);
+  if (processedCount > 0 && newReportsSinceLastSynthesis >= 2) {
     try {
-      execSync('node devtools/persona-batch-synthesizer.mjs', {
-        stdio: 'inherit',
-        timeout: 60000,
-        cwd: ROOT,
-      });
-      console.log(`[orchestrator] Synthesis complete.`);
+      runBatchSynthesis(state);
+
+      // Stage 4: Auto-validate gaps against codebase (free, no AI cost)
+      console.log(`[orchestrator] Running codebase gap validation...`);
+      try {
+        const satPath = join(ROOT, 'system', 'persona-batch-synthesis', 'saturation.json');
+        if (existsSync(satPath)) {
+          const satData = JSON.parse(readFileSync(satPath, 'utf-8'));
+
+          // Inline validation if validator doesn't export it (self-contained)
+          const results = [];
+          const seenTitles = new Set();
+          for (const [catId, catInfo] of Object.entries(satData.categories || {})) {
+            for (const gap of catInfo.gaps || []) {
+              const key = gap.title.toLowerCase();
+              if (seenTitles.has(key)) continue;
+              seenTitles.add(key);
+              const result = { category: catId, title: gap.title, severity: gap.severity, from: gap.from, status: 'MISSING', evidence: [] };
+
+              // Check known-built file existence
+              if (gap.search_hints?.known_built_matches?.length > 0) {
+                for (const match of gap.search_hints.known_built_matches) {
+                  if (existsSync(join(ROOT, match.file))) {
+                    result.status = 'BUILT';
+                    result.evidence.push({ type: 'file_exists', path: match.file, label: match.label });
+                  }
+                }
+              }
+
+              // Grep search_hints terms
+              if (result.status === 'MISSING' && gap.search_hints?.grep_terms?.length > 0) {
+                for (const term of gap.search_hints.grep_terms.slice(0, 3)) {
+                  try {
+                    const pattern = new RegExp(term.replace(/\./g, '[._\\-]?'), 'i');
+                    const matches = quickGrep(pattern, ['lib', 'components', 'app'], 3);
+                    if (matches.length > 0) {
+                      result.status = 'PARTIAL';
+                      result.evidence.push({ type: 'grep_match', term, files: matches });
+                    }
+                  } catch {}
+                }
+                if (result.evidence.length >= 2) result.status = 'BUILT';
+              }
+              results.push(result);
+            }
+          }
+
+          const built = results.filter(r => r.status === 'BUILT').length;
+          const partial = results.filter(r => r.status === 'PARTIAL').length;
+          const missing = results.filter(r => r.status === 'MISSING').length;
+          const validation = {
+            validated_at: new Date().toISOString(),
+            summary: { total: results.length, built, partial, missing, false_positive_rate: results.length > 0 ? Math.round((built / results.length) * 100) : 0 },
+            gaps: results,
+          };
+
+          const validationPath = join(ROOT, 'system', 'persona-batch-synthesis', 'validation.json');
+          writeFileSync(validationPath, JSON.stringify(validation, null, 2) + '\n', 'utf-8');
+          console.log(`[orchestrator] Validation: ${built} BUILT, ${partial} PARTIAL, ${missing} MISSING (${validation.summary.false_positive_rate}% false positive rate)`);
+        }
+      } catch (err) {
+        console.log(`[orchestrator] Warning: validation failed - ${err.message}`);
+      }
     } catch (err) {
       console.log(`[orchestrator] Warning: synthesis failed - ${err.message}`);
     }
+  } else if (plannedSuccessCount > 0) {
+    console.log(`[orchestrator] Synthesis skipped: ${newReportsSinceLastSynthesis}/2 new planned reports since last synthesis.`);
   }
 
   state.last_cycle = new Date().toISOString();
@@ -396,6 +615,51 @@ function runCycle(opts) {
 
 function main() {
   const opts = parseArgs(process.argv);
+
+  if (opts.overnight) {
+    const logDir = join(ROOT, 'logs');
+    mkdirSync(logDir, { recursive: true });
+    const logPath = join(logDir, `overnight-${new Date().toISOString().slice(0, 10)}.log`);
+    const logLines = [];
+    const log = (msg) => {
+      const line = `[${new Date().toISOString()}] ${msg}`;
+      console.log(line);
+      logLines.push(line);
+    };
+
+    log(`Overnight mode: generating ${opts.generateCount} personas, then full pipeline`);
+
+    log('Phase 1/4: Generating personas...');
+    const genOk = runGenerator(opts.generateCount, opts.analyzerModel || opts.model, opts.ollamaUrl);
+    log(genOk ? 'Generation complete' : 'Generation had errors (continuing)');
+
+    log('Phase 2/4: Analyzing and planning...');
+    opts.once = true;
+    opts.watch = false;
+    opts.max = 50;
+    const cycleResult = runCycle(opts);
+    log(`Analysis + planning complete: ${cycleResult.processed} analyzed, ${cycleResult.failed} failed, ${cycleResult.tasksQueued} build tasks queued`);
+
+    log('Phase 3/4: Synthesizing...');
+    const synthesisState = loadState();
+    try {
+      runBatchSynthesis(synthesisState);
+      saveState(synthesisState);
+      log('Synthesis complete');
+    } catch (err) {
+      log(`Synthesis failed: ${err.message}`);
+    }
+
+    const state = loadState();
+    log('Phase 4/4: Summary');
+    log(`  Total processed: ${state.total_personas_processed || 0}`);
+    log(`  Total build tasks: ${state.total_build_tasks_queued || 0}`);
+    log(`  Failed: ${(state.failed || []).length}`);
+    log(`Writing log to ${relative(ROOT, logPath)}`);
+
+    writeFileSync(logPath, logLines.join('\n') + '\n', 'utf8');
+    return;
+  }
 
   // Check base directory exists
   const baseDir = join(ROOT, 'Chef Flow Personas', 'Uncompleted');
