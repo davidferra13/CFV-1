@@ -151,3 +151,77 @@ ABOUT YOURSELF (use when users ask about privacy, speed, or how you work):
 // ─── Auto-Response Settings Label ─────────────────────────────────────────────
 
 export const AUTO_RESPONSE_AI_LABEL = 'Let Remy personalize auto-responses (private AI)'
+
+// ─── BYOAI (Bring Your Own AI) Privacy Variants ─────────────────────────────
+// Used when inference runs on the user's own device instead of ChefFlow servers.
+
+/** Browser AI: Chrome Built-in AI or WebLLM (runs entirely in the browser tab) */
+export const BYOAI_BROWSER_ONELINER =
+  'AI is running entirely in your browser. Your data never leaves this device.'
+
+/** Browser AI: expanded explanation */
+export const BYOAI_BROWSER_EXPLAINED =
+  "This conversation is powered by AI running directly in your browser using your device's hardware. No data is sent to any server, not even ChefFlow's. Everything stays on this device."
+
+/** Local Ollama: user's own machine */
+export const BYOAI_LOCAL_ONELINER =
+  'AI is running on your local machine. Your data never leaves your network.'
+
+/** Local Ollama: expanded explanation */
+export const BYOAI_LOCAL_EXPLAINED =
+  'This conversation is powered by your own AI running on your local machine via Ollama. No data is sent to any external server. Everything stays on your hardware, under your control.'
+
+/** Server fallback: same as existing narrative but explicitly labeled */
+export const BYOAI_SERVER_ONELINER = PRIVACY_ONELINER
+
+/** Speed + privacy for BYOAI surfaces */
+export const BYOAI_BROWSER_SPEED = 'Running locally. Zero latency. Complete privacy.'
+export const BYOAI_LOCAL_SPEED = 'Running on your machine. Fast and private.'
+
+/** Self-knowledge injection for Remy system prompt when running on user's device */
+export const REMY_BYOAI_SELF_KNOWLEDGE = `
+ABOUT YOUR CURRENT SESSION (use when users ask about privacy or how you work):
+- You are currently running on the user's own device, not on ChefFlow's servers.
+- No conversation data is being sent to any external server.
+- The user has full control over this AI instance.
+- If asked about privacy: "Right now I'm running entirely on your device. Nothing leaves your machine."
+`
+
+/**
+ * Returns the appropriate privacy one-liner based on the active AI provider.
+ * Use this in UI components to show the right message dynamically.
+ *
+ * @param provider - The active provider: 'chrome_ai', 'webllm', 'ollama', 'server', or 'none'
+ */
+export function getPrivacyOneliner(
+  provider: 'chrome_ai' | 'webllm' | 'ollama' | 'server' | 'none'
+): string {
+  switch (provider) {
+    case 'chrome_ai':
+    case 'webllm':
+      return BYOAI_BROWSER_ONELINER
+    case 'ollama':
+      return BYOAI_LOCAL_ONELINER
+    default:
+      return PRIVACY_ONELINER
+  }
+}
+
+/**
+ * Returns the appropriate expanded privacy explanation based on the active AI provider.
+ *
+ * @param provider - The active provider: 'chrome_ai', 'webllm', 'ollama', 'server', or 'none'
+ */
+export function getPrivacyExplained(
+  provider: 'chrome_ai' | 'webllm' | 'ollama' | 'server' | 'none'
+): string {
+  switch (provider) {
+    case 'chrome_ai':
+    case 'webllm':
+      return BYOAI_BROWSER_EXPLAINED
+    case 'ollama':
+      return BYOAI_LOCAL_EXPLAINED
+    default:
+      return PRIVATE_AI_EXPLAINED
+  }
+}
