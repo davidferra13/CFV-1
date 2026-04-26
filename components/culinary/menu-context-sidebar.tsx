@@ -225,6 +225,10 @@ export function MenuContextSidebar({
   const hasTemplates = context.matchingTemplates.length > 0
   const stockIssues = stock.filter((s) => s.status !== 'ok')
   const allergenWarnings = allergenData?.warnings || []
+  const seasonalData = getSeasonalProduceGrouped(new Date().getMonth() + 1)
+  const peakSeasonGroups = seasonalData.groups.filter((group) =>
+    group.items.some((item) => item.peak)
+  )
   const hasAnyContent =
     hasDietary ||
     hasPreviousMenus ||
@@ -240,7 +244,8 @@ export function MenuContextSidebar({
     vendorHintCount > 0 ||
     budgetCompliance ||
     (dietaryConflicts && dietaryConflicts.conflicts.length > 0) ||
-    (menuMix && menuMix.recipes.length > 0)
+    (menuMix && menuMix.recipes.length > 0) ||
+    (features.seasonal_warnings && peakSeasonGroups.length > 0)
 
   if (!hasAnyContent) {
     const disabledCount = MENU_ENGINE_FEATURE_KEYS.filter((k) => !features[k]).length
@@ -528,39 +533,31 @@ export function MenuContextSidebar({
       )}
 
       {/* Peak Season Nudge */}
-      {features.seasonal_warnings &&
-        (() => {
-          const seasonalData = getSeasonalProduceGrouped(new Date().getMonth() + 1)
-          const peakGroups = seasonalData.groups.filter((group) =>
-            group.items.some((item) => item.peak)
-          )
-          if (peakGroups.length === 0) return null
-          return (
-            <div className="px-4 py-3 space-y-2">
-              <h4 className="text-xs font-semibold text-stone-400 uppercase tracking-wide">
-                Peak in {seasonalData.seasonLabel}
-              </h4>
-              {peakGroups.map((group) => (
-                <div key={group.category}>
-                  <p className="text-[11px] text-stone-500 mb-1">{group.label}</p>
-                  <div className="flex flex-wrap gap-1">
-                    {group.items
-                      .filter((item) => item.peak)
-                      .map((item) => (
-                        <span
-                          key={item.name}
-                          className="inline-flex items-center rounded-full bg-emerald-950/40 border border-emerald-800/30 px-2 py-0.5 text-xs text-emerald-300"
-                          title={item.note || `Peak ${seasonalData.seasonLabel}`}
-                        >
-                          {item.name}
-                        </span>
-                      ))}
-                  </div>
-                </div>
-              ))}
+      {features.seasonal_warnings && peakSeasonGroups.length > 0 && (
+        <div className="px-4 py-3 space-y-2">
+          <h4 className="text-xs font-semibold text-stone-400 uppercase tracking-wide">
+            Peak in {seasonalData.seasonLabel}
+          </h4>
+          {peakSeasonGroups.map((group) => (
+            <div key={group.category}>
+              <p className="text-[11px] text-stone-500 mb-1">{group.label}</p>
+              <div className="flex flex-wrap gap-1">
+                {group.items
+                  .filter((item) => item.peak)
+                  .map((item) => (
+                    <span
+                      key={item.name}
+                      className="inline-flex items-center rounded-full bg-emerald-950/40 border border-emerald-800/30 px-2 py-0.5 text-xs text-emerald-300"
+                      title={item.note || `Peak ${seasonalData.seasonLabel}`}
+                    >
+                      {item.name}
+                    </span>
+                  ))}
+              </div>
             </div>
-          )
-        })()}
+          ))}
+        </div>
+      )}
 
       {/* Prep time estimate */}
       {features.prep_estimate && prepEstimate && (
