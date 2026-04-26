@@ -7,21 +7,21 @@
 
 ## Coverage Heat Map
 
-| Persona Type | Tested                          | Untested Examples                                                                                                                                                                                                    |
-| ------------ | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Chef**     | 1 (Bob - defined, not executed) | Meal prep specialist, catering lead, food truck, grazing artist, estate chef, cannabis chef, farm-to-table, personal/family chef, pop-up chef, supper club host, culinary instructor, food stylist, recipe developer |
-| **Client**   | 1 (Joy - full 6-phase)          | Wedding client, corporate planner, repeat customer, first-timer, family chef employer, vacation rental host, event coordinator, holiday party organizer                                                              |
-| **Guest**    | 0                               | Dinner guest, dietary-restricted guest, plus-one, child guest, VIP guest, guest with accessibility needs                                                                                                             |
-| **Vendor**   | 0                               | Ingredient supplier, specialty purveyor, farm/CSA, fishmonger, butcher, bakery, beverage distributor, equipment rental, linen service, cleaning service                                                              |
-| **Staff**    | 0                               | Sous chef, prep cook, line cook, pastry cook, server, bartender, kitchen manager, event captain, delivery driver, freelance cook                                                                                     |
-| **Partner**  | 1 (Sophie - design persona)     | Farm co-host, venue owner, referral partner, external event planner, photographer, sommelier, food blogger/influencer, culinary school, wedding planner                                                              |
-| **Public**   | 0                               | Google searcher, social media follower, word-of-mouth referral, food blog reader, local foodie, journalist/press                                                                                                     |
+| Persona Type | Tested                                           | Untested Examples                                                                                                                                                                     |
+| ------------ | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Chef**     | 5 (Bob defined; Kai, Leo, Rina, Arthur executed) | Meal prep specialist, catering lead, food truck, grazing artist, estate chef, cannabis chef, farm-to-table, personal/family chef, culinary instructor, food stylist, recipe developer |
+| **Client**   | 1 (Joy - full 6-phase)                           | Wedding client, corporate planner, repeat customer, first-timer, family chef employer, vacation rental host, event coordinator, holiday party organizer                               |
+| **Guest**    | 0                                                | Dinner guest, dietary-restricted guest, plus-one, child guest, VIP guest, guest with accessibility needs                                                                              |
+| **Vendor**   | 0                                                | Ingredient supplier, specialty purveyor, farm/CSA, fishmonger, butcher, bakery, beverage distributor, equipment rental, linen service, cleaning service                               |
+| **Staff**    | 0                                                | Sous chef, prep cook, line cook, pastry cook, server, bartender, kitchen manager, event captain, delivery driver, freelance cook                                                      |
+| **Partner**  | 1 (Sophie - design persona)                      | Farm co-host, venue owner, referral partner, external event planner, photographer, sommelier, food blogger/influencer, culinary school, wedding planner                               |
+| **Public**   | 0                                                | Google searcher, social media follower, word-of-mouth referral, food blog reader, local foodie, journalist/press                                                                      |
 
 ## Queue Status
 
 ```
 Uncompleted: 0 files
-Completed:   0 files
+Completed:   3 files
 Failed:      0 files
 ```
 
@@ -29,12 +29,16 @@ Failed:      0 files
 
 ## Persona Registry
 
-| #   | Label         | Type                         | Date            | Score                                     | Method                                      | Report                                                      | Key Finding                                                                                                           |
-| --- | ------------- | ---------------------------- | --------------- | ----------------------------------------- | ------------------------------------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| 1   | Chef Bob      | Chef (solo private)          | Defined 2026-04 | --                                        | 14-day agent walkthrough (NOT YET EXECUTED) | `docs/prompts/chef-bob-agent.md`                            | ~1,100 actions cataloged. Zero days completed.                                                                        |
-| 2   | Client Joy    | Client (home dinner host)    | 2026-04         | ~65/100 (estimated from dimension scores) | 6-phase agent walkthrough (COMPLETED)       | `reports/client-joy-validation/summary.md`                  | 26 bugs. Trust 7.7, Clarity 6.0, Speed 6.5, Delight 6.3. Quote acceptance = biggest trust gap. Hub terminology chaos. |
-| 3   | Sophie Kaplan | Partner (hyper-engaged host) | 2026-04         | -- (design persona, not scored)           | Spec-driven evaluation                      | `docs/specs/sophie-kaplan-dinner-circle-control-surface.md` | All data exists in DB; gap is display/aggregation. 3 new components specced.                                          |
-| 4   | (removed)     | Chef (grazing/artisan)       | 2026-04         | -- (not formally tested)                  | Real beta tester observation                | (removed)                                                   | Artisan food producer archetype. Needs e-commerce/public ordering. Social-to-order pipeline.                          |
+| #   | Label         | Type                          | Date            | Score                                     | Method                                      | Report                                                                      | Key Finding                                                                                                                               |
+| --- | ------------- | ----------------------------- | --------------- | ----------------------------------------- | ------------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Chef Bob      | Chef (solo private)           | Defined 2026-04 | --                                        | 14-day agent walkthrough (NOT YET EXECUTED) | `docs/prompts/chef-bob-agent.md`                                            | ~1,100 actions cataloged. Zero days completed.                                                                                            |
+| 2   | Client Joy    | Client (home dinner host)     | 2026-04         | ~65/100 (estimated from dimension scores) | 6-phase agent walkthrough (COMPLETED)       | `reports/client-joy-validation/summary.md`                                  | 26 bugs. Trust 7.7, Clarity 6.0, Speed 6.5, Delight 6.3. Quote acceptance = biggest trust gap. Hub terminology chaos.                     |
+| 3   | Sophie Kaplan | Partner (hyper-engaged host)  | 2026-04         | -- (design persona, not scored)           | Spec-driven evaluation                      | `docs/specs/sophie-kaplan-dinner-circle-control-surface.md`                 | All data exists in DB; gap is display/aggregation. 3 new components specced.                                                              |
+| 4   | (removed)     | Chef (grazing/artisan)        | 2026-04         | -- (not formally tested)                  | Real beta tester observation                | (removed)                                                                   | Artisan food producer archetype. Needs e-commerce/public ordering. Social-to-order pipeline.                                              |
+| 5   | Kai Donovan   | Chef (supper club drops)      | 2026-04-25      | 73/100                                    | Codex autonomous                            | `docs/stress-tests/persona-kai-donovan-2026-04-25.md`                       | Strong core event fit, but drop releases, invite waves, and audience curation are not first-class.                                        |
+| 6   | Leo Varga     | Chef (yacht/travel)           | 2026-04-25      | 68/100                                    | Codex autonomous                            | `docs/stress-tests/persona-leo-varga-2026-04-25.md`                         | Connected operations are strong, but offline-first reliability and voyage provisioning are missing.                                       |
+| 7   | Rina Solis    | Chef (medical constraints)    | 2026-04-25      | 62/100                                    | Codex autonomous                            | `docs/stress-tests/persona-rina-solis-2026-04-25.md`                        | Planning is useful, but safety needs hard constraint enforcement and outcome tracking.                                                    |
+| 8   | Arthur Klein  | Chef (Excel-driven precision) | 2026-04-25      | 63/100                                    | Opus 4.6 full pipeline                      | `docs/stress-tests/persona-arthur-klein-excel-precision-chef-2026-04-25.md` | Hardcoded overhead %/labor rate in plate cost is a BLOCKER. Financial ledger + price provenance are strengths. No recipe cost CSV export. |
 
 ### Research-Only Personas (Not Formally Tested)
 
@@ -74,18 +78,27 @@ Unique gaps discovered across all persona work (formal + informal):
 | 8   | Dinner Circle host control surface insufficient             | Sophie     | EXPAND       | Specced    |
 | 9   | No BEO generation for catering                              | Research   | OUT-OF-SCOPE | Documented |
 | 10  | No supplier CRM for farm-to-table sourcing                  | Research   | EXPAND       | Open       |
+| 11  | No drop-release engine for high-demand event launches       | Kai        | EXPAND       | Open       |
+| 12  | No offline-first guarantee for mission-critical workflows   | Leo        | EXPAND       | Open       |
+| 13  | No hard medical constraint enforcement engine               | Rina       | EXPAND       | Open       |
+| 14  | Hardcoded overhead % and labor rate in plate cost           | Arthur     | REFINE       | Open       |
+| 15  | No recipe/ingredient cost CSV export                        | Arthur     | EXPAND       | Open       |
+| 16  | No standalone ingredient price CSV import                   | Arthur     | EXPAND       | Open       |
+| 17  | No inline formula audit trail on costing views              | Arthur     | REFINE       | Open       |
+| 18  | Confidence decay formula hidden from user                   | Arthur     | REFINE       | Open       |
+| 19  | No native .xlsx import (CSV only)                           | Arthur     | EXPAND       | Open       |
 
 ---
 
 ## Saturation Status
 
 ```
-Total personas formally tested:  1 (Joy)
-Total personas defined:          4 (Bob, Joy, Sophie, Tester #4)
+Total personas formally tested:  5 (Joy, Kai, Leo, Rina, Arthur)
+Total personas defined:          8 (Bob, Joy, Sophie, Tester #4, Kai, Leo, Rina, Arthur)
 Research personas cataloged:     13
-Unique gaps found:               10
-New gaps per persona (avg):      -- (insufficient data)
-Saturation estimate:             LOW (need 10+ formal tests)
+Unique gaps found:               19
+New gaps per persona (avg):      3.0 (Arthur: 6 new gaps)
+Saturation estimate:             MEDIUM (need 10+ formal tests)
 ```
 
 ---
@@ -103,5 +116,5 @@ Based on coverage gaps and expected ROI:
 
 ---
 
-_Last updated: 2026-04-25_
+_Last updated: 2026-04-25 (Arthur Klein run)_
 _Next update: after next `/persona-stress-test` run_
