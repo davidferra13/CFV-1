@@ -92,7 +92,7 @@ function SignInForm() {
     <div className="min-h-screen bg-stone-950 flex items-center justify-center px-4 hero-glow">
       <div className="max-w-md w-full relative z-10">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gradient">ChefFlow</h1>
+          <h1 className="text-3xl font-bold text-stone-100">ChefFlow</h1>
           <p className="text-stone-400 mt-2">Sign in to your account</p>
         </div>
 

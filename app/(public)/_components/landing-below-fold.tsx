@@ -48,21 +48,22 @@ export default function LandingBelowFold() {
     <div>
       {/* Value propositions */}
       <section className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
-        <div className="grid gap-6 md:grid-cols-3">
-          {VALUE_PROPS.map((prop, i) => {
+        <div className="space-y-4">
+          {VALUE_PROPS.map((prop) => {
             const Icon = prop.icon
             return (
-              <article
+              <div
                 key={prop.title}
-                className="rounded-xl border border-stone-800 bg-stone-900/40 p-6 card-lift"
-                style={{ transitionDelay: `${i * 80}ms` }}
+                className="flex items-start gap-4 border-b border-stone-800/50 pb-4 last:border-0 last:pb-0"
               >
-                <div className="mb-4 inline-flex rounded-lg bg-brand-950/60 p-2.5 text-brand-400">
-                  <Icon className="h-5 w-5" />
+                <div className="mt-0.5 shrink-0 rounded-md bg-stone-800/60 p-2 text-stone-400">
+                  <Icon className="h-4 w-4" />
                 </div>
-                <h2 className="text-xl font-semibold text-stone-100">{prop.title}</h2>
-                <p className="mt-2 text-sm leading-relaxed text-stone-400">{prop.description}</p>
-              </article>
+                <div>
+                  <h2 className="text-base font-medium text-stone-200">{prop.title}</h2>
+                  <p className="mt-0.5 text-sm text-stone-500">{prop.description}</p>
+                </div>
+              </div>
             )
           })}
         </div>
@@ -137,7 +138,7 @@ export default function LandingBelowFold() {
       {/* Final CTA */}
       <section className="border-t border-stone-800/50">
         <div className="mx-auto w-full max-w-6xl px-4 py-14 text-center sm:px-6 md:py-20 lg:px-8">
-          <h2 className="text-3xl font-bold tracking-tight md:text-4xl text-gradient">
+          <h2 className="text-3xl font-bold tracking-tight md:text-4xl text-stone-100">
             Discover what to eat next.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-400">
@@ -145,7 +146,7 @@ export default function LandingBelowFold() {
           </p>
           <Link
             href="/chefs"
-            className="mt-8 inline-flex items-center justify-center rounded-lg gradient-accent px-7 py-3 text-sm font-semibold text-white glow-hover"
+            className="mt-8 inline-flex items-center justify-center rounded-lg border border-brand-600 bg-brand-600 px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700 hover:border-brand-700"
           >
             Start exploring
           </Link>
