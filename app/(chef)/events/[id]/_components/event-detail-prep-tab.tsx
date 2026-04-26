@@ -39,6 +39,50 @@ function checkKey(eventId: string, itemId: string, componentName: string, dishNa
   return `cf-prep-${eventId}-${itemId}-${componentName}-${dishName}`
 }
 
+function getPlacementReason(item: PrepItem, isServiceDay: boolean): string | null {
+  // Service day items
+  if (isServiceDay) {
+    if (item.symbols.includes('serve_immediately')) return 'Must be served immediately'
+    if (item.symbols.includes('day_of')) return 'Day-of preparation only'
+    if (item.holdClass === 'hold_warm') return 'Prepared and held warm for service'
+    return 'Scheduled for service day'
+  }
+
+  // Freezable items placed early
+  if (item.freezable && item.frozenExtendsHours) {
+    return `Freezable, can prep early (extends ${formatHoursAsReadable(item.frozenExtendsHours)})`
+  }
+
+  // Items using category defaults (no explicit peak window set)
+  if (item.usingDefaults) {
+    return 'Placed by category estimate (set peak windows for precision)'
+  }
+
+  // Items with explicit peak windows
+  if (item.peakHoursMin > 0 && item.peakHoursMax > 0) {
+    const minH = formatHoursAsReadable(item.peakHoursMin)
+    const maxH = formatHoursAsReadable(item.peakHoursMax)
+    return `Peaks ${minH} to ${maxH} before service`
+  }
+
+  // Safety ceiling driving placement
+  if (item.safetyHoursMax > 0 && item.effectiveCeiling === item.safetyHoursMax) {
+    return `Safety ceiling: ${formatHoursAsReadable(item.safetyHoursMax)} max hold`
+  }
+
+  // Base tier (sub-recipes that others depend on)
+  if (item.prepTier === 'base') {
+    return 'Base component, other recipes depend on this'
+  }
+
+  // Short window items
+  if (item.symbols.includes('fresh')) {
+    return 'Short quality window, prep close to service'
+  }
+
+  return null
+}
+
 function SymbolIcon({ symbol }: { symbol: PrepSymbol }) {
   switch (symbol) {
     case 'freezable':
@@ -87,11 +131,13 @@ function PrepItemRow({
   eventId,
   checked,
   onToggle,
+  isServiceDay,
 }: {
   item: PrepItem
   eventId: string
   checked: boolean
   onToggle: () => void
+  isServiceDay?: boolean
 }) {
   return (
     <div
@@ -129,6 +175,10 @@ function PrepItemRow({
         {item.componentName !== item.recipeName && (
           <div className="text-xs text-stone-500">{item.dishName}</div>
         )}
+        {(() => {
+          const reason = getPlacementReason(item, isServiceDay ?? false)
+          return reason ? <div className="text-[11px] text-stone-600 italic">{reason}</div> : null
+        })()}
       </div>
 
       <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -287,6 +337,7 @@ function DayCard({
                 eventId={eventId}
                 checked={checkedItems.has(key)}
                 onToggle={() => toggleItem(key)}
+                isServiceDay={day.isServiceDay}
               />
             )
           })}
