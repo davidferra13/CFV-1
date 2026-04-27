@@ -221,7 +221,8 @@ An agent that writes code and does not commit is worse than an agent that writes
 
 ### Branch Rules
 
-- Feature branches for all work: `feature/description` or `fix/description`
+- **NEVER work directly on main.** Create a feature branch before writing any code: `feature/description` or `fix/description`
+- If you find yourself on main with dirty files: `git checkout -b feature/auto-[task-name]` FIRST, then commit and push
 - Commit and push your feature branch when done
 - NEVER merge to main without explicit developer approval
 - NEVER force push
