@@ -1,6 +1,6 @@
 # Consolidated Build: Event Lifecycle
 
-**Priority rank:** 13 of 20
+**Priority rank:** 14 of 20
 **Personas affected:** 2 (Kai Donovan, Maya Rios)
 **Average severity:** HIGH
 

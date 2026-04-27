@@ -30,11 +30,9 @@ A single consolidated build addressing all scaling multi gaps should cover:
 
 ## Existing Build Tasks
 
-- `system/persona-build-plans/oprah-winfrey/task-1.md`
 - `system/persona-build-plans/oprah-winfrey/task-2.md`
 - `system/persona-build-plans/oprah-winfrey/task-3.md`
 - `system/persona-build-plans/oprah-winfrey/task-4.md`
-- `system/persona-build-plans/oprah-winfrey/task-5.md`
 
 ## Acceptance Criteria (merged from all personas)
 

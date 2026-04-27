@@ -1,6 +1,6 @@
 # Consolidated Build: Ticketing Drops
 
-**Priority rank:** 14 of 20
+**Priority rank:** 15 of 20
 **Personas affected:** 2 (Kai Donovan, Maya Rios)
 **Average severity:** HIGH
 

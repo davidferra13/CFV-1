@@ -1,12 +1,12 @@
 # Consolidated Build: Payment Financial
 
-**Priority rank:** 15 of 20
-**Personas affected:** 2 (Noah Kessler, Emma Chamberlain)
-**Average severity:** HIGH
+**Priority rank:** 13 of 20
+**Personas affected:** 3 (Noah Kessler, Emma Chamberlain, Gail Simmons)
+**Average severity:** MEDIUM
 
 ## The Pattern
 
-2 persona(s) surfaced 2 related gaps in payment financial. The common thread: ChefFlow lacks native support for this category of operations, forcing manual workarounds.
+3 persona(s) surfaced 3 related gaps in payment financial. The common thread: ChefFlow lacks native support for this category of operations, forcing manual workarounds.
 
 ## Individual Gaps (deduplicated)
 
@@ -16,6 +16,9 @@
 2. **Implement a "Single Source of Truth" Dashboard:** - from Emma Chamberlain - MEDIUM
    This gap may reduce confidence in pricing, planning, communication, or execution for the persona.
    > Search hints: implement.single, single.source, source.truth, truth.dashboard, implement, single, source, truth
+3. **Financial accuracy gap** - from Gail Simmons - MEDIUM
+   This gap may reduce confidence in pricing, planning, communication, or execution for the persona.
+   > Search hints: financial.accuracy, accuracy.gap, financial, accuracy
 
 ## Recommended Build Scope
 
@@ -23,15 +26,21 @@ A single consolidated build addressing all payment financial gaps should cover:
 
 - No real-time store-level price truth contract
 - Implement a "Single Source of Truth" Dashboard:
+- Financial accuracy gap
 
 ## Existing Build Tasks
 
-- `system/persona-build-plans/emma-chamberlain/task-1.md`
 - `system/persona-build-plans/emma-chamberlain/task-2.md`
 - `system/persona-build-plans/emma-chamberlain/task-3.md`
 - `system/persona-build-plans/emma-chamberlain/task-4.md`
+- `system/persona-build-plans/gail-simmons/task-1.md`
+- `system/persona-build-plans/gail-simmons/task-2.md`
+- `system/persona-build-plans/gail-simmons/task-3.md`
+- `system/persona-build-plans/gail-simmons/task-4.md`
+- `system/persona-build-plans/gail-simmons/task-5.md`
 
 ## Acceptance Criteria (merged from all personas)
 
 1. Noah Kessler: No real-time store-level price truth contract is addressed
 2. Emma Chamberlain: Implement a "Single Source of Truth" Dashboard: is addressed
+3. Gail Simmons: Financial accuracy gap is addressed

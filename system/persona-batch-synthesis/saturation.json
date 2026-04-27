@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-04-27T06:53:59.541Z",
-  "total_personas": 15,
-  "average_score": 49,
+  "generated_at": "2026-04-27T21:49:16.506Z",
+  "total_personas": 16,
+  "average_score": 50,
   "score_distribution": {
     "0-20": 2,
     "21-40": 1,
     "41-60": 7,
-    "61-80": 5,
+    "61-80": 6,
     "81-100": 0
   },
   "validation_summary": {
-    "total_gaps": 61,
+    "total_gaps": 63,
     "likely_false_positives": 2,
     "false_positive_rate": 3,
     "note": "Pre-validation via known-built feature registry. Run /api/validate-gaps for live codebase grep."
@@ -18,7 +18,10 @@
   "categories": {
     "event-lifecycle": {
       "count": 2,
-      "personas": ["kai-donovan", "maya-rios-cannabis-pastry-chef-micro"],
+      "personas": [
+        "kai-donovan",
+        "maya-rios-cannabis-pastry-chef-micro"
+      ],
       "severity_breakdown": {
         "HIGH": 2,
         "MEDIUM": 0,
@@ -49,7 +52,13 @@
           "from": "Maya Rios",
           "severity": "HIGH",
           "search_hints": {
-            "grep_terms": ["sales.channel", "channel.tracking", "sales", "channel", "tracking"],
+            "grep_terms": [
+              "sales.channel",
+              "channel.tracking",
+              "sales",
+              "channel",
+              "tracking"
+            ],
             "known_built_matches": [],
             "likely_false_positive": false
           }
@@ -58,7 +67,9 @@
     },
     "access-control": {
       "count": 1,
-      "personas": ["kai-donovan"],
+      "personas": [
+        "kai-donovan"
+      ],
       "severity_breakdown": {
         "HIGH": 1,
         "MEDIUM": 0,
@@ -93,7 +104,10 @@
     },
     "ticketing-drops": {
       "count": 2,
-      "personas": ["kai-donovan", "maya-rios-cannabis-pastry-chef-micro"],
+      "personas": [
+        "kai-donovan",
+        "maya-rios-cannabis-pastry-chef-micro"
+      ],
       "severity_breakdown": {
         "HIGH": 2,
         "MEDIUM": 0,
@@ -106,7 +120,12 @@
           "from": "Kai Donovan",
           "severity": "HIGH",
           "search_hints": {
-            "grep_terms": ["drop.high-demand", "high-demand.releases", "high-demand", "releases"],
+            "grep_terms": [
+              "drop.high-demand",
+              "high-demand.releases",
+              "high-demand",
+              "releases"
+            ],
             "known_built_matches": [],
             "likely_false_positive": false
           }
@@ -116,7 +135,13 @@
           "from": "Maya Rios",
           "severity": "HIGH",
           "search_hints": {
-            "grep_terms": ["sales.channel", "channel.tracking", "sales", "channel", "tracking"],
+            "grep_terms": [
+              "sales.channel",
+              "channel.tracking",
+              "sales",
+              "channel",
+              "tracking"
+            ],
             "known_built_matches": [],
             "likely_false_positive": false
           }
@@ -125,7 +150,9 @@
     },
     "audience-community": {
       "count": 1,
-      "personas": ["kai-donovan"],
+      "personas": [
+        "kai-donovan"
+      ],
       "severity_breakdown": {
         "HIGH": 0,
         "MEDIUM": 1,
@@ -153,7 +180,9 @@
     },
     "location-venue": {
       "count": 1,
-      "personas": ["kai-donovan"],
+      "personas": [
+        "kai-donovan"
+      ],
       "severity_breakdown": {
         "HIGH": 0,
         "MEDIUM": 1,
@@ -182,14 +211,18 @@
       ]
     },
     "payment-financial": {
-      "count": 2,
-      "personas": ["noah-kessler", "emma-chamberlain"],
+      "count": 3,
+      "personas": [
+        "noah-kessler",
+        "emma-chamberlain",
+        "gail-simmons"
+      ],
       "severity_breakdown": {
         "HIGH": 1,
-        "MEDIUM": 1,
+        "MEDIUM": 2,
         "LOW": 0
       },
-      "gap_count": 2,
+      "gap_count": 3,
       "gaps": [
         {
           "title": "No real-time store-level price truth contract",
@@ -223,6 +256,21 @@
               "single",
               "source",
               "truth"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Financial accuracy gap",
+          "from": "Gail Simmons",
+          "severity": "MEDIUM",
+          "search_hints": {
+            "grep_terms": [
+              "financial.accuracy",
+              "accuracy.gap",
+              "financial",
+              "accuracy"
             ],
             "known_built_matches": [],
             "likely_false_positive": false
@@ -289,7 +337,11 @@
           "from": "Ari Weinzweig",
           "severity": "HIGH",
           "search_hints": {
-            "grep_terms": ["transparency.traceability", "transparency", "traceability"],
+            "grep_terms": [
+              "transparency.traceability",
+              "transparency",
+              "traceability"
+            ],
             "known_built_matches": [],
             "likely_false_positive": false
           }
@@ -315,7 +367,11 @@
           "from": "Dr. Julien Armand",
           "severity": "HIGH",
           "search_hints": {
-            "grep_terms": ["deterministic.dose-curve", "deterministic", "dose-curve"],
+            "grep_terms": [
+              "deterministic.dose-curve",
+              "deterministic",
+              "dose-curve"
+            ],
             "known_built_matches": [],
             "likely_false_positive": false
           }
@@ -357,7 +413,13 @@
           "from": "Jordan Hale",
           "severity": "HIGH",
           "search_hints": {
-            "grep_terms": ["canonical.central", "central.dosing", "canonical", "central", "dosing"],
+            "grep_terms": [
+              "canonical.central",
+              "central.dosing",
+              "canonical",
+              "central",
+              "dosing"
+            ],
             "known_built_matches": [],
             "likely_false_positive": false
           }
@@ -403,7 +465,11 @@
           "from": "Maya Rios",
           "severity": "HIGH",
           "search_hints": {
-            "grep_terms": ["batch.dosing", "batch", "dosing"],
+            "grep_terms": [
+              "batch.dosing",
+              "batch",
+              "dosing"
+            ],
             "known_built_matches": [],
             "likely_false_positive": false
           }
@@ -412,7 +478,10 @@
     },
     "dietary-medical": {
       "count": 2,
-      "personas": ["leo-varga", "rina-solis"],
+      "personas": [
+        "leo-varga",
+        "rina-solis"
+      ],
       "severity_breakdown": {
         "HIGH": 3,
         "MEDIUM": 0,
@@ -561,7 +630,11 @@
           "from": "Maya Rios",
           "severity": "HIGH",
           "search_hints": {
-            "grep_terms": ["batch.dosing", "batch", "dosing"],
+            "grep_terms": [
+              "batch.dosing",
+              "batch",
+              "dosing"
+            ],
             "known_built_matches": [],
             "likely_false_positive": false
           }
@@ -571,7 +644,12 @@
           "from": "Noah Kessler",
           "severity": "HIGH",
           "search_hints": {
-            "grep_terms": ["market-first.menu", "menu.builder", "market-first", "builder"],
+            "grep_terms": [
+              "market-first.menu",
+              "menu.builder",
+              "market-first",
+              "builder"
+            ],
             "known_built_matches": [],
             "likely_false_positive": false
           }
@@ -618,7 +696,10 @@
     },
     "scheduling-calendar": {
       "count": 2,
-      "personas": ["dr-julien-armand-michelin", "leo-varga"],
+      "personas": [
+        "dr-julien-armand-michelin",
+        "leo-varga"
+      ],
       "severity_breakdown": {
         "HIGH": 3,
         "MEDIUM": 0,
@@ -678,7 +759,9 @@
     },
     "communication": {
       "count": 1,
-      "personas": ["emma-chamberlain"],
+      "personas": [
+        "emma-chamberlain"
+      ],
       "severity_breakdown": {
         "HIGH": 0,
         "MEDIUM": 1,
@@ -726,7 +809,10 @@
     },
     "staffing-team": {
       "count": 2,
-      "personas": ["jordan-hale-cannabis-culinary-director-multi", "leo-varga"],
+      "personas": [
+        "jordan-hale-cannabis-culinary-director-multi",
+        "leo-varga"
+      ],
       "severity_breakdown": {
         "HIGH": 3,
         "MEDIUM": 0,
@@ -791,7 +877,9 @@
     },
     "sourcing-supply": {
       "count": 1,
-      "personas": ["noah-kessler"],
+      "personas": [
+        "noah-kessler"
+      ],
       "severity_breakdown": {
         "HIGH": 3,
         "MEDIUM": 0,
@@ -868,7 +956,11 @@
     },
     "reporting-analytics": {
       "count": 3,
-      "personas": ["maya-rios-cannabis-pastry-chef-micro", "rina-solis", "emma-chamberlain"],
+      "personas": [
+        "maya-rios-cannabis-pastry-chef-micro",
+        "rina-solis",
+        "emma-chamberlain"
+      ],
       "severity_breakdown": {
         "HIGH": 3,
         "MEDIUM": 1,
@@ -881,7 +973,13 @@
           "from": "Maya Rios",
           "severity": "HIGH",
           "search_hints": {
-            "grep_terms": ["sales.channel", "channel.tracking", "sales", "channel", "tracking"],
+            "grep_terms": [
+              "sales.channel",
+              "channel.tracking",
+              "sales",
+              "channel",
+              "tracking"
+            ],
             "known_built_matches": [],
             "likely_false_positive": false
           }
@@ -943,7 +1041,9 @@
     },
     "onboarding-ux": {
       "count": 1,
-      "personas": ["rina-solis"],
+      "personas": [
+        "rina-solis"
+      ],
       "severity_breakdown": {
         "HIGH": 3,
         "MEDIUM": 0,
@@ -1008,7 +1108,10 @@
     },
     "scaling-multi": {
       "count": 2,
-      "personas": ["leo-varga", "oprah-winfrey"],
+      "personas": [
+        "leo-varga",
+        "oprah-winfrey"
+      ],
       "severity_breakdown": {
         "HIGH": 2,
         "MEDIUM": 1,
@@ -1056,7 +1159,11 @@
           "from": "Oprah Winfrey",
           "severity": "MEDIUM",
           "search_hints": {
-            "grep_terms": ["scale.complexity", "scale", "complexity"],
+            "grep_terms": [
+              "scale.complexity",
+              "scale",
+              "complexity"
+            ],
             "known_built_matches": [],
             "likely_false_positive": false
           }
@@ -1065,7 +1172,9 @@
     },
     "delivery-logistics": {
       "count": 1,
-      "personas": ["dr-julien-armand-michelin"],
+      "personas": [
+        "dr-julien-armand-michelin"
+      ],
       "severity_breakdown": {
         "HIGH": 1,
         "MEDIUM": 0,
@@ -1125,7 +1234,13 @@
           "from": "Maya Rios",
           "severity": "HIGH",
           "search_hints": {
-            "grep_terms": ["sales.channel", "channel.tracking", "sales", "channel", "tracking"],
+            "grep_terms": [
+              "sales.channel",
+              "channel.tracking",
+              "sales",
+              "channel",
+              "tracking"
+            ],
             "known_built_matches": [],
             "likely_false_positive": false
           }
@@ -1150,14 +1265,20 @@
       ]
     },
     "uncategorized": {
-      "count": 4,
-      "personas": ["ari-weinzweig", "emma-chamberlain", "mindy-weiss", "oprah-winfrey"],
+      "count": 5,
+      "personas": [
+        "ari-weinzweig",
+        "emma-chamberlain",
+        "gail-simmons",
+        "mindy-weiss",
+        "oprah-winfrey"
+      ],
       "severity_breakdown": {
         "HIGH": 5,
-        "MEDIUM": 1,
-        "LOW": 1
+        "MEDIUM": 2,
+        "LOW": 2
       },
-      "gap_count": 6,
+      "gap_count": 7,
       "gaps": [
         {
           "title": "Flexibility over Standardization:",
@@ -1193,7 +1314,9 @@
           "from": "Emma Chamberlain",
           "severity": "HIGH",
           "search_hints": {
-            "grep_terms": ["ownership"],
+            "grep_terms": [
+              "ownership"
+            ],
             "known_built_matches": [],
             "likely_false_positive": false
           }
@@ -1203,7 +1326,41 @@
           "from": "Emma Chamberlain",
           "severity": "MEDIUM",
           "search_hints": {
-            "grep_terms": ["friction.special", "friction", "special"],
+            "grep_terms": [
+              "friction.special",
+              "friction",
+              "special"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "UX alignment gap",
+          "from": "Gail Simmons",
+          "severity": "MEDIUM",
+          "search_hints": {
+            "grep_terms": [
+              "alignment.gap",
+              "alignment"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Operational follow through gap",
+          "from": "Gail Simmons",
+          "severity": "LOW",
+          "search_hints": {
+            "grep_terms": [
+              "operational.follow",
+              "follow.through",
+              "through.gap",
+              "operational",
+              "follow",
+              "through"
+            ],
             "known_built_matches": [],
             "likely_false_positive": false
           }
@@ -1220,16 +1377,6 @@
               "override",
               "workflow"
             ],
-            "known_built_matches": [],
-            "likely_false_positive": false
-          }
-        },
-        {
-          "title": "UX alignment gap",
-          "from": "Mindy Weiss",
-          "severity": "LOW",
-          "search_hints": {
-            "grep_terms": ["alignment.gap", "alignment"],
             "known_built_matches": [],
             "likely_false_positive": false
           }
@@ -1256,7 +1403,9 @@
       },
       {
         "slug": "jordan-hale-cannabis-culinary-director-multi",
-        "new_categories": ["staffing-team"]
+        "new_categories": [
+          "staffing-team"
+        ]
       },
       {
         "slug": "kai-donovan",
@@ -1270,19 +1419,29 @@
       },
       {
         "slug": "leo-varga",
-        "new_categories": ["scaling-multi", "dietary-medical"]
+        "new_categories": [
+          "scaling-multi",
+          "dietary-medical"
+        ]
       },
       {
         "slug": "maya-rios-cannabis-pastry-chef-micro",
-        "new_categories": ["reporting-analytics"]
+        "new_categories": [
+          "reporting-analytics"
+        ]
       },
       {
         "slug": "noah-kessler",
-        "new_categories": ["payment-financial", "sourcing-supply"]
+        "new_categories": [
+          "payment-financial",
+          "sourcing-supply"
+        ]
       },
       {
         "slug": "rina-solis",
-        "new_categories": ["onboarding-ux"]
+        "new_categories": [
+          "onboarding-ux"
+        ]
       },
       {
         "slug": "megan-referral-bachelorette",
@@ -1302,7 +1461,13 @@
       },
       {
         "slug": "emma-chamberlain",
-        "new_categories": ["communication"]
+        "new_categories": [
+          "communication"
+        ]
+      },
+      {
+        "slug": "gail-simmons",
+        "new_categories": []
       },
       {
         "slug": "mindy-weiss",
@@ -1313,11 +1478,13 @@
         "new_categories": []
       }
     ],
-    "consecutive_zero_new": 2,
+    "consecutive_zero_new": 3,
     "saturated": false,
     "categories_discovered": 19,
     "categories_total": 20,
-    "categories_never_seen": ["costing-margin"]
+    "categories_never_seen": [
+      "costing-margin"
+    ]
   },
   "priority_ranking": [
     {
@@ -1327,15 +1494,15 @@
       "avg_severity": "HIGH"
     },
     {
-      "category": "dosing-cannabis",
+      "category": "uncategorized",
       "priority_score": 21,
-      "count": 3,
+      "count": 5,
       "avg_severity": "HIGH"
     },
     {
-      "category": "uncategorized",
-      "priority_score": 18,
-      "count": 4,
+      "category": "dosing-cannabis",
+      "priority_score": 21,
+      "count": 3,
       "avg_severity": "HIGH"
     },
     {
@@ -1393,6 +1560,12 @@
       "avg_severity": "HIGH"
     },
     {
+      "category": "payment-financial",
+      "priority_score": 7,
+      "count": 3,
+      "avg_severity": "MEDIUM"
+    },
+    {
       "category": "event-lifecycle",
       "priority_score": 6,
       "count": 2,
@@ -1401,12 +1574,6 @@
     {
       "category": "ticketing-drops",
       "priority_score": 6,
-      "count": 2,
-      "avg_severity": "HIGH"
-    },
-    {
-      "category": "payment-financial",
-      "priority_score": 5,
       "count": 2,
       "avg_severity": "HIGH"
     },

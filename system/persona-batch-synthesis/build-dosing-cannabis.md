@@ -1,6 +1,6 @@
 # Consolidated Build: Dosing Cannabis
 
-**Priority rank:** 2 of 20
+**Priority rank:** 3 of 20
 **Personas affected:** 3 (Dr. Julien Armand, Jordan Hale, Maya Rios)
 **Average severity:** HIGH
 

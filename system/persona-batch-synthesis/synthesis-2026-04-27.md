@@ -1,8 +1,8 @@
 # Persona Batch Synthesis
 
 **Date:** 2026-04-27
-**Personas analyzed:** 15
-**Average score:** 49/100
+**Personas analyzed:** 16
+**Average score:** 50/100
 
 ## Priority Categories (by cross-persona frequency x severity)
 
@@ -22,7 +22,22 @@
 - No safe-only menu generation mode for high-risk clients (Rina Solis, HIGH)
 - Insufficient hidden-risk and cross-contact signaling at ingredient level (Rina Solis, HIGH)
 
-### 2. Dosing Cannabis (3 personas, avg severity HIGH)
+### 2. Uncategorized (5 personas, avg severity HIGH)
+
+**Personas:** Ari Weinzweig, Emma Chamberlain, Gail Simmons, Mindy Weiss, Oprah Winfrey
+**Priority score:** 21
+
+**Gaps in this category:**
+
+- Flexibility over Standardization: (Ari Weinzweig, HIGH)
+- Information Overload/Fragmentation: (Emma Chamberlain, HIGH)
+- Lack of Ownership: (Emma Chamberlain, HIGH)
+- Friction in Special Needs: (Emma Chamberlain, MEDIUM)
+- UX alignment gap (Gail Simmons, MEDIUM)
+- Operational follow through gap (Gail Simmons, LOW)
+- "Executive Override" Workflow: (Mindy Weiss, HIGH)
+
+### 3. Dosing Cannabis (3 personas, avg severity HIGH)
 
 **Personas:** Dr. Julien Armand, Jordan Hale, Maya Rios
 **Priority score:** 21
@@ -36,20 +51,6 @@
 - Guest cannabis tolerance history is not modeled as a first-class longitudinal safety signal (Jordan Hale, HIGH)
 - Product System (SKUs, Batches, Units) (Maya Rios, HIGH)
 - Batch Dosing Engine (Maya Rios, HIGH)
-
-### 3. Uncategorized (4 personas, avg severity HIGH)
-
-**Personas:** Ari Weinzweig, Emma Chamberlain, Mindy Weiss, Oprah Winfrey
-**Priority score:** 18
-
-**Gaps in this category:**
-
-- Flexibility over Standardization: (Ari Weinzweig, HIGH)
-- Information Overload/Fragmentation: (Emma Chamberlain, HIGH)
-- Lack of Ownership: (Emma Chamberlain, HIGH)
-- Friction in Special Needs: (Emma Chamberlain, MEDIUM)
-- "Executive Override" Workflow: (Mindy Weiss, HIGH)
-- UX alignment gap (Mindy Weiss, LOW)
 
 ### 4. Reporting Analytics (3 personas, avg severity HIGH)
 
@@ -151,7 +152,18 @@
 - No rapid guest roster churn flow (Leo Varga, HIGH)
 - Scale & Complexity: (Oprah Winfrey, MEDIUM)
 
-### 13. Event Lifecycle (2 personas, avg severity HIGH)
+### 13. Payment Financial (3 personas, avg severity MEDIUM)
+
+**Personas:** Noah Kessler, Emma Chamberlain, Gail Simmons
+**Priority score:** 7
+
+**Gaps in this category:**
+
+- No real-time store-level price truth contract (Noah Kessler, HIGH)
+- Implement a "Single Source of Truth" Dashboard: (Emma Chamberlain, MEDIUM)
+- Financial accuracy gap (Gail Simmons, MEDIUM)
+
+### 14. Event Lifecycle (2 personas, avg severity HIGH)
 
 **Personas:** Kai Donovan, Maya Rios
 **Priority score:** 6
@@ -161,7 +173,7 @@
 - Ephemeral Event Lifecycle Management (Kai Donovan, HIGH)
 - Sales Channel Tracking (Maya Rios, HIGH)
 
-### 14. Ticketing Drops (2 personas, avg severity HIGH)
+### 15. Ticketing Drops (2 personas, avg severity HIGH)
 
 **Personas:** Kai Donovan, Maya Rios
 **Priority score:** 6
@@ -170,16 +182,6 @@
 
 - Drop Engine for High-Demand Releases (Kai Donovan, HIGH)
 - Sales Channel Tracking (Maya Rios, HIGH)
-
-### 15. Payment Financial (2 personas, avg severity HIGH)
-
-**Personas:** Noah Kessler, Emma Chamberlain
-**Priority score:** 5
-
-**Gaps in this category:**
-
-- No real-time store-level price truth contract (Noah Kessler, HIGH)
-- Implement a "Single Source of Truth" Dashboard: (Emma Chamberlain, MEDIUM)
 
 ### 16. Access Control (1 persona, avg severity HIGH)
 
@@ -230,7 +232,7 @@
 ## Saturation Status
 
 - Categories discovered: 19/20
-- Last 3 personas found 1 new category
+- Last 3 personas found 0 new categories
 - NOT saturated. Keep generating.
 - Categories never triggered: costing-margin
 
@@ -249,11 +251,12 @@
 - **Chef Marco (Dinner Series Impresario):** 0 new categories
 - **David Chang:** 0 new categories
 - **Emma Chamberlain:** +1 (communication)
+- **Gail Simmons:** 0 new categories
 - **Mindy Weiss:** 0 new categories
 - **Oprah Winfrey:** 0 new categories
 
 ## Score Trends
 
 - Lowest: David Chang (0)
-- Highest: Leo Varga (68)
-- Distribution: 0-20: 2, 21-40: 1, 41-60: 7, 61-80: 5, 81-100: 0
+- Highest: Gail Simmons (68)
+- Distribution: 0-20: 2, 21-40: 1, 41-60: 7, 61-80: 6, 81-100: 0

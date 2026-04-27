@@ -34,7 +34,6 @@ A single consolidated build addressing all reporting analytics gaps should cover
 
 ## Existing Build Tasks
 
-- `system/persona-build-plans/emma-chamberlain/task-1.md`
 - `system/persona-build-plans/emma-chamberlain/task-2.md`
 - `system/persona-build-plans/emma-chamberlain/task-3.md`
 - `system/persona-build-plans/emma-chamberlain/task-4.md`

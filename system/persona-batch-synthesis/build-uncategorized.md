@@ -1,12 +1,12 @@
 # Consolidated Build: Uncategorized
 
-**Priority rank:** 3 of 20
-**Personas affected:** 4 (Ari Weinzweig, Emma Chamberlain, Mindy Weiss, Oprah Winfrey)
+**Priority rank:** 2 of 20
+**Personas affected:** 5 (Ari Weinzweig, Emma Chamberlain, Gail Simmons, Mindy Weiss, Oprah Winfrey)
 **Average severity:** HIGH
 
 ## The Pattern
 
-4 persona(s) surfaced 6 related gaps in uncategorized. The common thread: ChefFlow lacks native support for this category of operations, forcing manual workarounds.
+5 persona(s) surfaced 7 related gaps in uncategorized. The common thread: ChefFlow lacks native support for this category of operations, forcing manual workarounds.
 
 ## Individual Gaps (deduplicated)
 
@@ -22,12 +22,15 @@
 4. **Friction in Special Needs:** - from Emma Chamberlain - MEDIUM
    This gap should be considered during build planning because it creates repeated operational friction.
    > Search hints: friction.special, friction, special
-5. **"Executive Override" Workflow:** - from Mindy Weiss - HIGH
+5. **UX alignment gap** - from Gail Simmons - MEDIUM
+   This gap should be considered during build planning because it creates repeated operational friction.
+   > Search hints: alignment.gap, alignment
+6. **Operational follow through gap** - from Gail Simmons - LOW
+   This gap is lower priority but still useful for product fit assessment.
+   > Search hints: operational.follow, follow.through, through.gap, operational, follow, through
+7. **"Executive Override" Workflow:** - from Mindy Weiss - HIGH
    The analyzer identified this as a major product fit concern. Review the raw analyzer output below for the original wording and supporting context.
    > Search hints: executive.override, override.workflow, executive, override, workflow
-6. **UX alignment gap** - from Mindy Weiss - LOW
-   This gap is lower priority but still useful for product fit assessment.
-   > Search hints: alignment.gap, alignment
 
 ## Recommended Build Scope
 
@@ -37,8 +40,9 @@ A single consolidated build addressing all uncategorized gaps should cover:
 - Information Overload/Fragmentation:
 - Lack of Ownership:
 - Friction in Special Needs:
-- "Executive Override" Workflow:
 - UX alignment gap
+- Operational follow through gap
+- "Executive Override" Workflow:
 
 ## Existing Build Tasks
 
@@ -47,20 +51,20 @@ A single consolidated build addressing all uncategorized gaps should cover:
 - `system/persona-build-plans/ari-weinzweig/task-3.md`
 - `system/persona-build-plans/ari-weinzweig/task-4.md`
 - `system/persona-build-plans/ari-weinzweig/task-5.md`
-- `system/persona-build-plans/emma-chamberlain/task-1.md`
 - `system/persona-build-plans/emma-chamberlain/task-2.md`
 - `system/persona-build-plans/emma-chamberlain/task-3.md`
 - `system/persona-build-plans/emma-chamberlain/task-4.md`
-- `system/persona-build-plans/mindy-weiss/task-1.md`
+- `system/persona-build-plans/gail-simmons/task-1.md`
+- `system/persona-build-plans/gail-simmons/task-2.md`
+- `system/persona-build-plans/gail-simmons/task-3.md`
+- `system/persona-build-plans/gail-simmons/task-4.md`
+- `system/persona-build-plans/gail-simmons/task-5.md`
 - `system/persona-build-plans/mindy-weiss/task-2.md`
 - `system/persona-build-plans/mindy-weiss/task-3.md`
-- `system/persona-build-plans/mindy-weiss/task-4.md`
 - `system/persona-build-plans/mindy-weiss/task-5.md`
-- `system/persona-build-plans/oprah-winfrey/task-1.md`
 - `system/persona-build-plans/oprah-winfrey/task-2.md`
 - `system/persona-build-plans/oprah-winfrey/task-3.md`
 - `system/persona-build-plans/oprah-winfrey/task-4.md`
-- `system/persona-build-plans/oprah-winfrey/task-5.md`
 
 ## Acceptance Criteria (merged from all personas)
 
@@ -68,5 +72,6 @@ A single consolidated build addressing all uncategorized gaps should cover:
 2. Emma Chamberlain: Information Overload/Fragmentation: is addressed
 3. Emma Chamberlain: Lack of Ownership: is addressed
 4. Emma Chamberlain: Friction in Special Needs: is addressed
-5. Mindy Weiss: "Executive Override" Workflow: is addressed
-6. Mindy Weiss: UX alignment gap is addressed
+5. Gail Simmons: UX alignment gap is addressed
+6. Gail Simmons: Operational follow through gap is addressed
+7. Mindy Weiss: "Executive Override" Workflow: is addressed
