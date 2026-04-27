@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-26T16:04:29.470Z",
+  "generated_at": "2026-04-27T06:53:59.536Z",
   "queue": [
     {
       "title": "No molecule-level culinary data model",
@@ -167,129 +167,122 @@
       "priority_score": 6
     },
     {
-      "title": "Dynamic Menu Engineering:",
-      "from": "ethan-calder",
-      "from_name": "Ethan Calder",
-      "severity": "HIGH",
-      "description": "This gap affects whether ChefFlow can support the persona's full operating workflow without manual reconciliation.",
-      "search_hints": {
-        "grep_terms": ["dynamic.menu", "menu.engineering", "dynamic", "engineering"],
-        "known_built_matches": [],
-        "likely_false_positive": false
-      },
-      "likely_built": false,
-      "category": "recipe-menu",
-      "personas": ["ethan-calder"],
-      "priority_score": 6
-    },
-    {
-      "title": "Maintain Quality & Consistency:",
-      "from": "elena-ruiz",
-      "from_name": "Elena Ruiz",
+      "title": "Flexibility over Standardization:",
+      "from": "ari-weinzweig",
+      "from_name": "Ari Weinzweig",
       "severity": "HIGH",
       "description": "The analyzer identified this as a major product fit concern. Review the raw analyzer output below for the original wording and supporting context.",
       "search_hints": {
         "grep_terms": [
-          "maintain.quality",
-          "quality.consistency",
-          "maintain",
-          "quality",
-          "consistency"
+          "flexibility.over",
+          "over.standardization",
+          "flexibility",
+          "standardization"
         ],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
       "category": "uncategorized",
-      "personas": ["elena-ruiz"],
-      "priority_score": 6
+      "personas": ["ari-weinzweig"],
+      "priority_score": 5.4
     },
     {
-      "title": "Implement Live Status:",
-      "from": "malik-johnson",
-      "from_name": "Malik Johnson",
+      "title": "Information Overload/Fragmentation:",
+      "from": "emma-chamberlain",
+      "from_name": "Emma Chamberlain",
       "severity": "HIGH",
       "description": "The analyzer identified this as a major product fit concern. Review the raw analyzer output below for the original wording and supporting context.",
       "search_hints": {
-        "grep_terms": ["implement.live", "live.status", "implement", "status"],
+        "grep_terms": ["information.overloadfragmentation", "information", "overloadfragmentation"],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
+      "also_from": [
+        {
+          "slug": "oprah-winfrey",
+          "name": "Oprah Winfrey"
+        }
+      ],
       "category": "uncategorized",
-      "personas": ["malik-johnson"],
-      "priority_score": 6
+      "personas": ["emma-chamberlain"],
+      "priority_score": 5.4
     },
     {
-      "title": "Basic Geo-Filtering:",
-      "from": "malik-johnson",
-      "from_name": "Malik Johnson",
+      "title": "Lack of Ownership:",
+      "from": "emma-chamberlain",
+      "from_name": "Emma Chamberlain",
       "severity": "HIGH",
       "description": "This gap affects whether ChefFlow can support the persona's full operating workflow without manual reconciliation.",
       "search_hints": {
-        "grep_terms": ["basic.geo-filtering", "basic", "geo-filtering"],
+        "grep_terms": ["ownership"],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
       "category": "uncategorized",
-      "personas": ["malik-johnson"],
-      "priority_score": 6
+      "personas": ["emma-chamberlain"],
+      "priority_score": 5.4
     },
     {
-      "title": "Client Self-Service:",
-      "from": "tommy-thompson",
-      "from_name": "Tommy Thompson",
+      "title": "\"Executive Override\" Workflow:",
+      "from": "mindy-weiss",
+      "from_name": "Mindy Weiss",
       "severity": "HIGH",
-      "description": "This gap affects whether ChefFlow can support the persona's full operating workflow without manual reconciliation.",
-      "search_hints": {
-        "grep_terms": ["client.self-service", "client", "self-service"],
-        "known_built_matches": [],
-        "likely_false_positive": false
-      },
-      "likely_built": false,
-      "category": "uncategorized",
-      "personas": ["tommy-thompson"],
-      "priority_score": 6
-    },
-    {
-      "title": "No real-time store-level price truth contract",
-      "from": "noah-kessler",
-      "from_name": "Noah Kessler",
-      "severity": "HIGH",
-      "description": "Explicit \"last verified\" + freshness confidence per ingredient at specific store and location.",
+      "description": "The analyzer identified this as a major product fit concern. Review the raw analyzer output below for the original wording and supporting context.",
       "search_hints": {
         "grep_terms": [
-          "store-level.price",
-          "price.truth",
-          "truth.contract",
-          "store-level",
-          "price",
-          "truth",
-          "contract"
+          "executive.override",
+          "override.workflow",
+          "executive",
+          "override",
+          "workflow"
         ],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
-      "category": "payment-financial",
-      "personas": ["noah-kessler"],
+      "category": "uncategorized",
+      "personas": ["mindy-weiss"],
+      "priority_score": 5.4
+    },
+    {
+      "title": "No regulator-grade traceability export",
+      "from": "dr-julien-armand-michelin",
+      "from_name": "Dr. Julien Armand",
+      "severity": "HIGH",
+      "description": "That proves source material, preparation mapping, delivery, and consumption chain of custody.",
+      "search_hints": {
+        "grep_terms": [
+          "regulator-grade.traceability",
+          "traceability.export",
+          "regulator-grade",
+          "traceability",
+          "export"
+        ],
+        "known_built_matches": [],
+        "likely_false_positive": false
+      },
+      "likely_built": false,
+      "category": "compliance-legal",
+      "personas": ["dr-julien-armand-michelin"],
       "priority_score": 4.8
     },
     {
-      "title": "Waste/Cost:",
-      "from": "samantha-miller",
-      "from_name": "Samantha Miller",
+      "title": "Transparency & Traceability:",
+      "from": "ari-weinzweig",
+      "from_name": "Ari Weinzweig",
       "severity": "HIGH",
       "description": "This gap affects whether ChefFlow can support the persona's full operating workflow without manual reconciliation.",
       "search_hints": {
-        "grep_terms": ["wastecost"],
+        "grep_terms": ["transparency.traceability", "transparency", "traceability"],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
-      "category": "payment-financial",
-      "personas": ["samantha-miller"],
+      "category": "compliance-legal",
+      "personas": ["ari-weinzweig"],
       "priority_score": 4.8
     },
     {
@@ -428,187 +421,65 @@
       "priority_score": 4.8
     },
     {
-      "title": "No deterministic inventory-to-menu execution assistant",
-      "from": "leo-varga",
-      "from_name": "Leo Varga",
+      "title": "Sales Channel Tracking",
+      "from": "maya-rios-cannabis-pastry-chef-micro",
+      "from_name": "Maya Rios",
       "severity": "HIGH",
-      "description": "A first-class answer to \"what can I serve now with what remains? \" across current stock and guest constraints.",
+      "description": "\\*\\* ChefFlow only tracks event sales (dinners), not product sales through pop-ups, drops, or direct channels. Maya's multi-channel sales require movement tracking across channels, but ChefFlow has no product-level sales history.",
       "search_hints": {
-        "grep_terms": [
-          "deterministic.inventory-to-menu",
-          "inventory-to-menu.execution",
-          "deterministic",
-          "inventory-to-menu",
-          "execution"
-        ],
+        "grep_terms": ["sales.channel", "channel.tracking", "sales", "channel", "tracking"],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
-      "category": "dietary-medical",
-      "personas": ["leo-varga"],
+      "category": "reporting-analytics",
+      "personas": ["maya-rios-cannabis-pastry-chef-micro"],
       "priority_score": 4.8
     },
     {
-      "title": "No hard medical constraint enforcement engine (blocking layer)",
+      "title": "No explicit outcome-based reaction log as first-class feedback",
       "from": "rina-solis",
       "from_name": "Rina Solis",
       "severity": "HIGH",
-      "description": "Current systems capture restrictions and detect conflicts, but the persona needs hard prevention rules that stop unsafe menu items before selection or assignment.",
+      "description": "Feedback surfaces are broad, but this persona requires structured outcomes such as tolerated, mild reaction, severe reaction, and clinician follow-up.",
       "search_hints": {
         "grep_terms": [
-          "hard.medical",
-          "medical.constraint",
-          "constraint.enforcement",
-          "enforcement.blocking",
-          "medical",
-          "constraint",
-          "enforcement",
-          "blocking"
+          "outcome-based.reaction",
+          "reaction.log",
+          "log.feedback",
+          "outcome-based",
+          "reaction",
+          "feedback"
         ],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
-      "category": "dietary-medical",
+      "category": "reporting-analytics",
       "personas": ["rina-solis"],
       "priority_score": 4.8
     },
     {
-      "title": "Insufficient hidden-risk and cross-contact signaling at ingredient level",
+      "title": "No dedicated safety command center view",
       "from": "rina-solis",
       "from_name": "Rina Solis",
       "severity": "HIGH",
-      "description": "Allergen checks exist, but hidden processing and cross-contact risk annotations are not surfaced as explicit hazard tiers in selection flows.",
+      "description": "Dashboard has strong operational cards, but no focused safety board summarizing blocked items, unresolved risks, and per-client verification state.",
       "search_hints": {
         "grep_terms": [
-          "insufficient.hidden-risk",
-          "hidden-risk.cross-contact",
-          "cross-contact.signaling",
-          "signaling.ingredient",
-          "insufficient",
-          "hidden-risk",
-          "cross-contact",
-          "signaling"
+          "safety.command",
+          "command.center",
+          "center.view",
+          "safety",
+          "command",
+          "center"
         ],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
-      "category": "dietary-medical",
+      "category": "reporting-analytics",
       "personas": ["rina-solis"],
-      "priority_score": 4.8
-    },
-    {
-      "title": "Implement Mandatory Allergy Workflow:",
-      "from": "samantha-green",
-      "from_name": "Samantha Green",
-      "severity": "HIGH",
-      "description": "The analyzer identified this as a major product fit concern. Review the raw analyzer output below for the original wording and supporting context.",
-      "search_hints": {
-        "grep_terms": [
-          "implement.mandatory",
-          "mandatory.allergy",
-          "allergy.workflow",
-          "implement",
-          "mandatory",
-          "allergy",
-          "workflow"
-        ],
-        "known_built_matches": [],
-        "likely_false_positive": false
-      },
-      "likely_built": false,
-      "category": "dietary-medical",
-      "personas": ["samantha-green"],
-      "priority_score": 4.8
-    },
-    {
-      "title": "No external store availability signal",
-      "from": "noah-kessler",
-      "from_name": "Noah Kessler",
-      "severity": "HIGH",
-      "description": "In-stock/low-stock indicators for stores Noah will shop.",
-      "search_hints": {
-        "grep_terms": [
-          "external.store",
-          "store.availability",
-          "availability.signal",
-          "external",
-          "store",
-          "availability",
-          "signal"
-        ],
-        "known_built_matches": [],
-        "likely_false_positive": false
-      },
-      "likely_built": false,
-      "category": "sourcing-supply",
-      "personas": ["noah-kessler"],
-      "priority_score": 4.8
-    },
-    {
-      "title": "No destination-first store intelligence for travel",
-      "from": "noah-kessler",
-      "from_name": "Noah Kessler",
-      "severity": "HIGH",
-      "description": "Before-arrival view of nearby stores, comparative prices, and likely procurement plan by destination.",
-      "search_hints": {
-        "grep_terms": [
-          "destination-first.store",
-          "store.intelligence",
-          "intelligence.travel",
-          "destination-first",
-          "store",
-          "intelligence",
-          "travel"
-        ],
-        "known_built_matches": [],
-        "likely_false_positive": false
-      },
-      "likely_built": false,
-      "category": "sourcing-supply",
-      "personas": ["noah-kessler"],
-      "priority_score": 4.8
-    },
-    {
-      "title": "No multi-store route and split-cart optimizer",
-      "from": "noah-kessler",
-      "from_name": "Noah Kessler",
-      "severity": "HIGH",
-      "description": "Recommendation for best combination of stores to minimize spend while meeting availability constraints and travel time.",
-      "search_hints": {
-        "grep_terms": [
-          "multi-store.route",
-          "route.split-cart",
-          "split-cart.optimizer",
-          "multi-store",
-          "route",
-          "split-cart",
-          "optimizer"
-        ],
-        "known_built_matches": [],
-        "likely_false_positive": false
-      },
-      "likely_built": false,
-      "category": "sourcing-supply",
-      "personas": ["noah-kessler"],
-      "priority_score": 4.8
-    },
-    {
-      "title": "Hyper-Local Sourcing:",
-      "from": "ethan-calder",
-      "from_name": "Ethan Calder",
-      "severity": "HIGH",
-      "description": "The analyzer identified this as a major product fit concern. Review the raw analyzer output below for the original wording and supporting context.",
-      "search_hints": {
-        "grep_terms": ["hyper-local.sourcing", "hyper-local", "sourcing"],
-        "known_built_matches": [],
-        "likely_false_positive": false
-      },
-      "likely_built": false,
-      "category": "sourcing-supply",
-      "personas": ["ethan-calder"],
       "priority_score": 4.8
     },
     {
@@ -739,25 +610,99 @@
       "priority_score": 4.2
     },
     {
-      "title": "No regulator-grade traceability export",
-      "from": "dr-julien-armand-michelin",
-      "from_name": "Dr. Julien Armand",
+      "title": "No real-time store-level price truth contract",
+      "from": "noah-kessler",
+      "from_name": "Noah Kessler",
       "severity": "HIGH",
-      "description": "That proves source material, preparation mapping, delivery, and consumption chain of custody.",
+      "description": "Explicit \"last verified\" + freshness confidence per ingredient at specific store and location.",
       "search_hints": {
         "grep_terms": [
-          "regulator-grade.traceability",
-          "traceability.export",
-          "regulator-grade",
-          "traceability",
-          "export"
+          "store-level.price",
+          "price.truth",
+          "truth.contract",
+          "store-level",
+          "price",
+          "truth",
+          "contract"
         ],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
-      "category": "compliance-legal",
-      "personas": ["dr-julien-armand-michelin"],
+      "category": "payment-financial",
+      "personas": ["noah-kessler"],
+      "priority_score": 4.2
+    },
+    {
+      "title": "No deterministic inventory-to-menu execution assistant",
+      "from": "leo-varga",
+      "from_name": "Leo Varga",
+      "severity": "HIGH",
+      "description": "A first-class answer to \"what can I serve now with what remains? \" across current stock and guest constraints.",
+      "search_hints": {
+        "grep_terms": [
+          "deterministic.inventory-to-menu",
+          "inventory-to-menu.execution",
+          "deterministic",
+          "inventory-to-menu",
+          "execution"
+        ],
+        "known_built_matches": [],
+        "likely_false_positive": false
+      },
+      "likely_built": false,
+      "category": "dietary-medical",
+      "personas": ["leo-varga"],
+      "priority_score": 4.2
+    },
+    {
+      "title": "No hard medical constraint enforcement engine (blocking layer)",
+      "from": "rina-solis",
+      "from_name": "Rina Solis",
+      "severity": "HIGH",
+      "description": "Current systems capture restrictions and detect conflicts, but the persona needs hard prevention rules that stop unsafe menu items before selection or assignment.",
+      "search_hints": {
+        "grep_terms": [
+          "hard.medical",
+          "medical.constraint",
+          "constraint.enforcement",
+          "enforcement.blocking",
+          "medical",
+          "constraint",
+          "enforcement",
+          "blocking"
+        ],
+        "known_built_matches": [],
+        "likely_false_positive": false
+      },
+      "likely_built": false,
+      "category": "dietary-medical",
+      "personas": ["rina-solis"],
+      "priority_score": 4.2
+    },
+    {
+      "title": "Insufficient hidden-risk and cross-contact signaling at ingredient level",
+      "from": "rina-solis",
+      "from_name": "Rina Solis",
+      "severity": "HIGH",
+      "description": "Allergen checks exist, but hidden processing and cross-contact risk annotations are not surfaced as explicit hazard tiers in selection flows.",
+      "search_hints": {
+        "grep_terms": [
+          "insufficient.hidden-risk",
+          "hidden-risk.cross-contact",
+          "cross-contact.signaling",
+          "signaling.ingredient",
+          "insufficient",
+          "hidden-risk",
+          "cross-contact",
+          "signaling"
+        ],
+        "known_built_matches": [],
+        "likely_false_positive": false
+      },
+      "likely_built": false,
+      "category": "dietary-medical",
+      "personas": ["rina-solis"],
       "priority_score": 4.2
     },
     {
@@ -893,151 +838,122 @@
       "priority_score": 4.2
     },
     {
-      "title": "Sales Channel Tracking",
-      "from": "maya-rios-cannabis-pastry-chef-micro",
-      "from_name": "Maya Rios",
+      "title": "No charter or voyage provisioning mode",
+      "from": "leo-varga",
+      "from_name": "Leo Varga",
       "severity": "HIGH",
-      "description": "\\*\\* ChefFlow only tracks event sales (dinners), not product sales through pop-ups, drops, or direct channels. Maya's multi-channel sales require movement tracking across channels, but ChefFlow has no product-level sales history.",
-      "search_hints": {
-        "grep_terms": ["sales.channel", "channel.tracking", "sales", "channel", "tracking"],
-        "known_built_matches": [],
-        "likely_false_positive": false
-      },
-      "likely_built": false,
-      "category": "reporting-analytics",
-      "personas": ["maya-rios-cannabis-pastry-chef-micro"],
-      "priority_score": 4.2
-    },
-    {
-      "title": "No explicit outcome-based reaction log as first-class feedback",
-      "from": "rina-solis",
-      "from_name": "Rina Solis",
-      "severity": "HIGH",
-      "description": "Feedback surfaces are broad, but this persona requires structured outcomes such as tolerated, mild reaction, severe reaction, and clinician follow-up.",
+      "description": "Depletion simulation for fixed no-restock windows, storage limits, shelf life, and contingency substitutions.",
       "search_hints": {
         "grep_terms": [
-          "outcome-based.reaction",
-          "reaction.log",
-          "log.feedback",
-          "outcome-based",
-          "reaction",
-          "feedback"
+          "charter.voyage",
+          "voyage.provisioning",
+          "charter",
+          "voyage",
+          "provisioning"
         ],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
-      "category": "reporting-analytics",
-      "personas": ["rina-solis"],
+      "category": "scaling-multi",
+      "personas": ["leo-varga"],
       "priority_score": 4.2
     },
     {
-      "title": "No dedicated safety command center view",
-      "from": "rina-solis",
-      "from_name": "Rina Solis",
+      "title": "No rapid guest roster churn flow",
+      "from": "leo-varga",
+      "from_name": "Leo Varga",
       "severity": "HIGH",
-      "description": "Dashboard has strong operational cards, but no focused safety board summarizing blocked items, unresolved risks, and per-client verification state.",
+      "description": "Arrive-today and depart-today actions that update preference relevance in active plans.",
       "search_hints": {
         "grep_terms": [
-          "safety.command",
-          "command.center",
-          "center.view",
-          "safety",
-          "command",
-          "center"
+          "rapid.guest",
+          "guest.roster",
+          "roster.churn",
+          "churn.flow",
+          "rapid",
+          "guest",
+          "roster",
+          "churn"
         ],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
-      "category": "reporting-analytics",
-      "personas": ["rina-solis"],
+      "category": "scaling-multi",
+      "personas": ["leo-varga"],
       "priority_score": 4.2
     },
     {
-      "title": "Dynamic Quoting V1:",
-      "from": "malik-johnson",
-      "from_name": "Malik Johnson",
-      "severity": "MEDIUM",
-      "description": "This gap should be considered during build planning because it creates repeated operational friction.",
-      "search_hints": {
-        "grep_terms": ["dynamic.quoting", "dynamic", "quoting"],
-        "known_built_matches": [],
-        "likely_false_positive": false
-      },
-      "likely_built": false,
-      "category": "uncategorized",
-      "personas": ["malik-johnson"],
-      "priority_score": 4
-    },
-    {
-      "title": "Low Friction Input:",
-      "from": "marcus-hale",
-      "from_name": "Marcus Hale",
-      "severity": "MEDIUM",
-      "description": "This gap should be considered during build planning because it creates repeated operational friction.",
-      "search_hints": {
-        "grep_terms": ["low.friction", "friction.input", "friction", "input"],
-        "known_built_matches": [],
-        "likely_false_positive": false
-      },
-      "likely_built": false,
-      "category": "uncategorized",
-      "personas": ["marcus-hale"],
-      "priority_score": 4
-    },
-    {
-      "title": "Order Modification Workflow:",
-      "from": "tommy-thompson",
-      "from_name": "Tommy Thompson",
-      "severity": "MEDIUM",
-      "description": "This gap should be considered during build planning because it creates repeated operational friction.",
+      "title": "No external store availability signal",
+      "from": "noah-kessler",
+      "from_name": "Noah Kessler",
+      "severity": "HIGH",
+      "description": "In-stock/low-stock indicators for stores Noah will shop.",
       "search_hints": {
         "grep_terms": [
-          "order.modification",
-          "modification.workflow",
-          "order",
-          "modification",
-          "workflow"
+          "external.store",
+          "store.availability",
+          "availability.signal",
+          "external",
+          "store",
+          "availability",
+          "signal"
         ],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
-      "category": "uncategorized",
-      "personas": ["tommy-thompson"],
-      "priority_score": 4
+      "category": "sourcing-supply",
+      "personas": ["noah-kessler"],
+      "priority_score": 3.6
     },
     {
-      "title": "Depth over Breadth:",
-      "from": "victor-hale",
-      "from_name": "Victor Hale",
-      "severity": "MEDIUM",
-      "description": "This gap should be considered during build planning because it creates repeated operational friction.",
-      "search_hints": {
-        "grep_terms": ["depth.over", "over.breadth", "depth", "breadth"],
-        "known_built_matches": [],
-        "likely_false_positive": false
-      },
-      "likely_built": false,
-      "category": "uncategorized",
-      "personas": ["victor-hale"],
-      "priority_score": 4
-    },
-    {
-      "title": "Waste/Cost:",
-      "from": "samantha-miller",
-      "from_name": "Samantha Miller",
+      "title": "No destination-first store intelligence for travel",
+      "from": "noah-kessler",
+      "from_name": "Noah Kessler",
       "severity": "HIGH",
-      "description": "This gap affects whether ChefFlow can support the persona's full operating workflow without manual reconciliation.",
+      "description": "Before-arrival view of nearby stores, comparative prices, and likely procurement plan by destination.",
       "search_hints": {
-        "grep_terms": ["wastecost"],
+        "grep_terms": [
+          "destination-first.store",
+          "store.intelligence",
+          "intelligence.travel",
+          "destination-first",
+          "store",
+          "intelligence",
+          "travel"
+        ],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
-      "category": "costing-margin",
-      "personas": ["samantha-miller"],
+      "category": "sourcing-supply",
+      "personas": ["noah-kessler"],
+      "priority_score": 3.6
+    },
+    {
+      "title": "No multi-store route and split-cart optimizer",
+      "from": "noah-kessler",
+      "from_name": "Noah Kessler",
+      "severity": "HIGH",
+      "description": "Recommendation for best combination of stores to minimize spend while meeting availability constraints and travel time.",
+      "search_hints": {
+        "grep_terms": [
+          "multi-store.route",
+          "route.split-cart",
+          "split-cart.optimizer",
+          "multi-store",
+          "route",
+          "split-cart",
+          "optimizer"
+        ],
+        "known_built_matches": [],
+        "likely_false_positive": false
+      },
+      "likely_built": false,
+      "category": "sourcing-supply",
+      "personas": ["noah-kessler"],
       "priority_score": 3.6
     },
     {
@@ -1112,53 +1028,6 @@
       "priority_score": 3.6
     },
     {
-      "title": "No charter or voyage provisioning mode",
-      "from": "leo-varga",
-      "from_name": "Leo Varga",
-      "severity": "HIGH",
-      "description": "Depletion simulation for fixed no-restock windows, storage limits, shelf life, and contingency substitutions.",
-      "search_hints": {
-        "grep_terms": [
-          "charter.voyage",
-          "voyage.provisioning",
-          "charter",
-          "voyage",
-          "provisioning"
-        ],
-        "known_built_matches": [],
-        "likely_false_positive": false
-      },
-      "likely_built": false,
-      "category": "scaling-multi",
-      "personas": ["leo-varga"],
-      "priority_score": 3.6
-    },
-    {
-      "title": "No rapid guest roster churn flow",
-      "from": "leo-varga",
-      "from_name": "Leo Varga",
-      "severity": "HIGH",
-      "description": "Arrive-today and depart-today actions that update preference relevance in active plans.",
-      "search_hints": {
-        "grep_terms": [
-          "rapid.guest",
-          "guest.roster",
-          "roster.churn",
-          "churn.flow",
-          "rapid",
-          "guest",
-          "roster",
-          "churn"
-        ],
-        "known_built_matches": [],
-        "likely_false_positive": false
-      },
-      "likely_built": false,
-      "category": "scaling-multi",
-      "personas": ["leo-varga"],
-      "priority_score": 3.6
-    },
-    {
       "title": "No regulator-grade traceability export",
       "from": "dr-julien-armand-michelin",
       "from_name": "Dr. Julien Armand",
@@ -1181,45 +1050,86 @@
       "priority_score": 3.6
     },
     {
-      "title": "Privacy/Security:",
-      "from": "alexander-davenport",
-      "from_name": "Alexander Davenport",
+      "title": "Friction in Special Needs:",
+      "from": "emma-chamberlain",
+      "from_name": "Emma Chamberlain",
       "severity": "MEDIUM",
-      "description": "This gap may reduce confidence in pricing, planning, communication, or execution for the persona.",
+      "description": "This gap should be considered during build planning because it creates repeated operational friction.",
       "search_hints": {
-        "grep_terms": ["privacysecurity"],
+        "grep_terms": ["friction.special", "friction", "special"],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
-      "category": "payment-financial",
-      "personas": ["alexander-davenport"],
-      "priority_score": 3.2
+      "category": "uncategorized",
+      "personas": ["emma-chamberlain"],
+      "priority_score": 3.6
     },
     {
-      "title": "Create \"Dietary Confirmation\" POS Overlay:",
-      "from": "samantha-green",
-      "from_name": "Samantha Green",
+      "title": "Implement a \"Single Source of Truth\" Dashboard:",
+      "from": "emma-chamberlain",
+      "from_name": "Emma Chamberlain",
       "severity": "MEDIUM",
-      "description": "This gap should be considered during build planning because it creates repeated operational friction.",
+      "description": "This gap may reduce confidence in pricing, planning, communication, or execution for the persona.",
       "search_hints": {
         "grep_terms": [
-          "create.dietary",
-          "dietary.confirmation",
-          "confirmation.pos",
-          "pos.overlay",
-          "create",
-          "dietary",
-          "confirmation",
-          "overlay"
+          "implement.single",
+          "single.source",
+          "source.truth",
+          "truth.dashboard",
+          "implement",
+          "single",
+          "source",
+          "truth"
         ],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
-      "category": "dietary-medical",
-      "personas": ["samantha-green"],
+      "category": "reporting-analytics",
+      "personas": ["emma-chamberlain"],
       "priority_score": 3.2
+    },
+    {
+      "title": "Implement a \"Single Source of Truth\" Dashboard:",
+      "from": "emma-chamberlain",
+      "from_name": "Emma Chamberlain",
+      "severity": "MEDIUM",
+      "description": "This gap may reduce confidence in pricing, planning, communication, or execution for the persona.",
+      "search_hints": {
+        "grep_terms": [
+          "implement.single",
+          "single.source",
+          "source.truth",
+          "truth.dashboard",
+          "implement",
+          "single",
+          "source",
+          "truth"
+        ],
+        "known_built_matches": [],
+        "likely_false_positive": false
+      },
+      "likely_built": false,
+      "category": "payment-financial",
+      "personas": ["emma-chamberlain"],
+      "priority_score": 2.8
+    },
+    {
+      "title": "Scale & Complexity:",
+      "from": "oprah-winfrey",
+      "from_name": "Oprah Winfrey",
+      "severity": "MEDIUM",
+      "description": "This gap should be considered during build planning because it creates repeated operational friction.",
+      "search_hints": {
+        "grep_terms": ["scale.complexity", "scale", "complexity"],
+        "known_built_matches": [],
+        "likely_false_positive": false
+      },
+      "likely_built": false,
+      "category": "scaling-multi",
+      "personas": ["oprah-winfrey"],
+      "priority_score": 2.8
     },
     {
       "title": "Audience Curation and Composition",
@@ -1268,78 +1178,67 @@
       "priority_score": 2.4
     },
     {
-      "title": "Privacy/Security:",
-      "from": "alexander-davenport",
-      "from_name": "Alexander Davenport",
+      "title": "Implement a \"Single Source of Truth\" Dashboard:",
+      "from": "emma-chamberlain",
+      "from_name": "Emma Chamberlain",
       "severity": "MEDIUM",
       "description": "This gap may reduce confidence in pricing, planning, communication, or execution for the persona.",
       "search_hints": {
-        "grep_terms": ["privacysecurity"],
+        "grep_terms": [
+          "implement.single",
+          "single.source",
+          "source.truth",
+          "truth.dashboard",
+          "implement",
+          "single",
+          "source",
+          "truth"
+        ],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
       "category": "communication",
-      "personas": ["alexander-davenport"],
+      "personas": ["emma-chamberlain"],
       "priority_score": 2.4
     },
     {
-      "title": "Introduce \"The Vault\":",
-      "from": "victor-hale-2",
-      "from_name": "Victor Hale 2",
+      "title": "UX alignment gap",
+      "from": "mindy-weiss",
+      "from_name": "Mindy Weiss",
       "severity": "LOW",
       "description": "This gap is lower priority but still useful for product fit assessment.",
       "search_hints": {
-        "grep_terms": ["introduce.vault", "introduce", "vault"],
+        "grep_terms": ["alignment.gap", "alignment"],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
       "category": "uncategorized",
-      "personas": ["victor-hale-2"],
-      "priority_score": 2
+      "personas": ["mindy-weiss"],
+      "priority_score": 1.8
     },
     {
-      "title": "Vendor Lock-in:",
-      "from": "victor-hale",
-      "from_name": "Victor Hale",
+      "title": "Introduce \"Concierge View\" Communication:",
+      "from": "emma-chamberlain",
+      "from_name": "Emma Chamberlain",
       "severity": "LOW",
       "description": "This gap is lower priority but still useful for product fit assessment.",
-      "search_hints": {
-        "grep_terms": ["vendor.lock-in", "vendor", "lock-in"],
-        "known_built_matches": [],
-        "likely_false_positive": false
-      },
-      "likely_built": false,
-      "category": "sourcing-supply",
-      "personas": ["victor-hale"],
-      "priority_score": 1.6
-    },
-    {
-      "title": "Develop Cross-Contamination Matrix:",
-      "from": "samantha-green",
-      "from_name": "Samantha Green",
-      "severity": "HIGH",
-      "description": "This gap affects whether ChefFlow can support the persona's full operating workflow without manual reconciliation.",
       "search_hints": {
         "grep_terms": [
-          "develop.cross-contamination",
-          "cross-contamination.matrix",
-          "develop",
-          "cross-contamination",
-          "matrix"
+          "introduce.concierge",
+          "concierge.view",
+          "view.communication",
+          "introduce",
+          "concierge",
+          "communication"
         ],
-        "known_built_matches": [
-          {
-            "file": "lib/dietary/cross-contamination-check.ts",
-            "label": "Allergen cross-contamination check"
-          }
-        ],
-        "likely_false_positive": true
+        "known_built_matches": [],
+        "likely_false_positive": false
       },
-      "likely_built": true,
-      "category": "uncategorized",
-      "personas": ["samantha-green"],
+      "likely_built": false,
+      "category": "communication",
+      "personas": ["emma-chamberlain"],
       "priority_score": 1.2
     },
     {
@@ -1370,7 +1269,7 @@
       "likely_built": true,
       "category": "compliance-legal",
       "personas": ["jordan-hale-cannabis-culinary-director-multi"],
-      "priority_score": 0.84
+      "priority_score": 0.96
     },
     {
       "title": "Tiered Access and Waitlist Control",

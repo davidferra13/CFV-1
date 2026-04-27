@@ -1,6 +1,6 @@
 # Consolidated Build: Ticketing Drops
 
-**Priority rank:** 13 of 21
+**Priority rank:** 14 of 20
 **Personas affected:** 2 (Kai Donovan, Maya Rios)
 **Average severity:** HIGH
 
@@ -26,13 +26,7 @@ A single consolidated build addressing all ticketing drops gaps should cover:
 
 ## Existing Build Tasks
 
-- `system/persona-build-plans/kai-donovan/task-1.md`
-- `system/persona-build-plans/kai-donovan/task-2.md`
-- `system/persona-build-plans/kai-donovan/task-3.md`
-- `system/persona-build-plans/kai-donovan/task-4.md`
-- `system/persona-build-plans/kai-donovan/task-5.md`
-- `system/persona-build-plans/maya-rios-cannabis-pastry-chef-micro/task-1.md`
-- `system/persona-build-plans/maya-rios-cannabis-pastry-chef-micro/task-2.md`
+No existing build tasks found for this category.
 
 ## Acceptance Criteria (merged from all personas)
 

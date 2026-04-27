@@ -49,9 +49,25 @@
         ]
       }
     ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/auto-commit.sh\" --throttled",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
     "SessionEnd": [
       {
         "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/auto-commit.sh\" --final",
+            "timeout": 30
+          },
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-cleanup.sh\""

@@ -1,6 +1,6 @@
 # Consolidated Build: Documentation Records
 
-**Priority rank:** 6 of 21
+**Priority rank:** 6 of 20
 **Personas affected:** 3 (Dr. Julien Armand, Maya Rios, Rina Solis)
 **Average severity:** HIGH
 
@@ -30,8 +30,7 @@ A single consolidated build addressing all documentation records gaps should cov
 
 ## Existing Build Tasks
 
-- `system/persona-build-plans/maya-rios-cannabis-pastry-chef-micro/task-1.md`
-- `system/persona-build-plans/maya-rios-cannabis-pastry-chef-micro/task-2.md`
+No existing build tasks found for this category.
 
 ## Acceptance Criteria (merged from all personas)
 

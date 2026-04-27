@@ -1,0 +1,45 @@
+# Persona Evaluation: Ari Weinzbach (High-End Culinary Supplier)
+
+**Persona Summary:** Ari is a highly skilled, artisanal supplier who operates at the intersection of culinary art and complex logistics. He values quality, provenance, and the ability to communicate nuanced details about ingredients. His workflow is highly variable, requiring flexibility, deep customization, and impeccable record-keeping for high-value, low-volume goods. He is resistant to rigid, standardized processes that feel impersonal or overly bureaucratic.
+
+**Key Needs:**
+1. **Flexibility & Customization:** The system must adapt to unique, non-standard orders (e.g., "This week's catch, pre-cleaned, sourced from this specific cove").
+2. **Transparency & Provenance:** Needs to track the journey of the product (source, handling, quality checks).
+3. **Complex Billing:** Must handle variable pricing, deposits, and complex adjustments/credits easily.
+4. **Low Friction UX:** The interface must feel intuitive and sophisticated, not like standard enterprise software.
+
+**Pain Points:**
+1. **Standardization:** Hates being forced into rigid templates that don't account for artisanal variation.
+2. **Administrative Overhead:** Hates spending time on manual data entry for simple, high-value transactions.
+3. **Communication Gaps:** Needs a single source of truth for order modifications that doesn't get lost in emails.
+
+***
+
+## Evaluation Against Hypothetical System Features
+
+*(Self-Correction: Since no system features were provided, this evaluation assumes a modern, flexible, B2B platform capable of handling complex inventory and invoicing.)*
+
+**Strengths (What the system *should* have):**
+* **Customizable Order Forms:** Ability to add free-text fields for sourcing notes, quality grades, etc.
+* **Advanced Inventory Tracking:** Tracking by batch, source, and date, not just SKU.
+* **Flexible Invoicing:** Ability to apply percentage adjustments, credits, and deposits easily.
+
+**Weaknesses (What the system *must* avoid):**
+* **Over-Automation:** Any process that feels like it assumes a standardized, mass-market product.
+* **Poor Mobile Experience:** Must be usable on a tablet in a warehouse or on a phone in the field.
+
+***
+
+## Final Verdict & Recommendations
+
+**Overall Fit Score:** 8/10 (High potential, but requires significant customization upfront)
+
+**Recommendation:** The system must be positioned as a **Digital Ledger/Concierge Tool**, not just an e-commerce platform. It needs to feel like a high-end, bespoke service portal.
+
+**Action Items for Development:**
+1. **Prioritize the "Notes/Provenance" Field:** Make this field prominent and searchable, treating it as core data, not an afterthought.
+2. **Build a "Draft/Quote" Workflow:** Allow Ari to build complex, multi-stage quotes that can be saved, modified, and converted to an invoice without losing the narrative context.
+3. **Implement a "Credit/Adjustment" Module:** Make the process of applying credits or percentage adjustments as simple as adding a line item, but with clear audit trails.
+
+***
+*(End of Persona Evaluation)*

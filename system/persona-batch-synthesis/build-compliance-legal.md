@@ -1,12 +1,12 @@
 # Consolidated Build: Compliance Legal
 
-**Priority rank:** 14 of 21
-**Personas affected:** 2 (Dr. Julien Armand, Jordan Hale)
+**Priority rank:** 5 of 20
+**Personas affected:** 3 (Dr. Julien Armand, Jordan Hale, Ari Weinzweig)
 **Average severity:** HIGH
 
 ## The Pattern
 
-2 persona(s) surfaced 2 related gaps in compliance legal. The common thread: ChefFlow lacks native support for this category of operations, forcing manual workarounds.
+3 persona(s) surfaced 3 related gaps in compliance legal. The common thread: ChefFlow lacks native support for this category of operations, forcing manual workarounds.
 
 ## Individual Gaps (deduplicated)
 
@@ -17,6 +17,9 @@
    Legal defensibility depends on one coherent chain from intake → dosing decisions → execution → outcome logs. Compliance tracker + cannabis ledger + events + RSVPs exist, but evidence appears feature-s...
    > Known built: `lib/chef/cannabis-actions.ts` (Cannabis compliance)
    > Search hints: compliance.evidence, evidence.fragmented, fragmented.across, across.multiple, multiple.screens, compliance, evidence, fragmented
+3. **Transparency & Traceability:** - from Ari Weinzweig - HIGH
+   This gap affects whether ChefFlow can support the persona's full operating workflow without manual reconciliation.
+   > Search hints: transparency.traceability, transparency, traceability
 
 ## Recommended Build Scope
 
@@ -24,12 +27,18 @@ A single consolidated build addressing all compliance legal gaps should cover:
 
 - No regulator-grade traceability export
 - Compliance evidence is fragmented across multiple screens
+- Transparency & Traceability:
 
 ## Existing Build Tasks
 
-No existing build tasks found for this category.
+- `system/persona-build-plans/ari-weinzweig/task-1.md`
+- `system/persona-build-plans/ari-weinzweig/task-2.md`
+- `system/persona-build-plans/ari-weinzweig/task-3.md`
+- `system/persona-build-plans/ari-weinzweig/task-4.md`
+- `system/persona-build-plans/ari-weinzweig/task-5.md`
 
 ## Acceptance Criteria (merged from all personas)
 
 1. Dr. Julien Armand: No regulator-grade traceability export is addressed
 2. Jordan Hale: Compliance evidence is fragmented across multiple screens is addressed
+3. Ari Weinzweig: Transparency & Traceability: is addressed

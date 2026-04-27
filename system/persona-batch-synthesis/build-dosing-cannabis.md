@@ -1,6 +1,6 @@
 # Consolidated Build: Dosing Cannabis
 
-**Priority rank:** 3 of 21
+**Priority rank:** 2 of 20
 **Personas affected:** 3 (Dr. Julien Armand, Jordan Hale, Maya Rios)
 **Average severity:** HIGH
 
@@ -46,8 +46,7 @@ A single consolidated build addressing all dosing cannabis gaps should cover:
 
 ## Existing Build Tasks
 
-- `system/persona-build-plans/maya-rios-cannabis-pastry-chef-micro/task-1.md`
-- `system/persona-build-plans/maya-rios-cannabis-pastry-chef-micro/task-2.md`
+No existing build tasks found for this category.
 
 ## Acceptance Criteria (merged from all personas)
 

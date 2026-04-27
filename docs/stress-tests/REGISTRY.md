@@ -165,3 +165,6 @@ _Next update: after next `/persona-stress-test` run_
 | david-chang | Chef | 2026-04-27 | 0/100 | local-ollama-v2 | [Report](persona-david-chang-2026-04-27.md) |
 | mindy-weiss | Client | 2026-04-27 | 50/100 | local-ollama-v2 | [Report](persona-mindy-weiss-2026-04-27.md) |
 | oprah-winfrey | Client | 2026-04-27 | 50/100 | local-ollama-v2 | [Report](persona-oprah-winfrey-2026-04-27.md) |
+| emma-chamberlain | Guest | 2026-04-27 | 55/100 | local-ollama-v2 | [Report](persona-emma-chamberlain-2026-04-27.md) |
+| ari-weinzweig | Vendor | 2026-04-27 | 50/100 | local-ollama-v2 | [Report](persona-ari-weinzweig-2026-04-27.md) |
+| gail-simmons | Staff | 2026-04-27 | 68/100 | local-ollama-v2 | [Report](persona-gail-simmons-2026-04-27.md) |

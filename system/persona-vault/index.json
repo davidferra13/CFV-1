@@ -40,5 +40,103 @@
     "source_file": "Chef Flow Personas/Uncompleted/Client/mindy-weiss.txt",
     "stored_at": "2026-04-27T06:15:20.225Z",
     "chars": 8009
+  },
+  {
+    "id": "9345412b-4098-4217-bc72-d15d3c1f56ea",
+    "content_hash": "da9649561a086cad",
+    "persona_type": "Guest",
+    "persona_name": "Woody",
+    "author": {
+      "type": "ai",
+      "name": "gemma4:e4b",
+      "tool": "persona-generator"
+    },
+    "source_file": "Chef Flow Personas/Uncompleted/Guest/woody.txt",
+    "stored_at": "2026-04-27T06:32:24.574Z",
+    "chars": 7292
+  },
+  {
+    "id": "91b49e49-790e-4365-83c7-eefb5ccc7ae4",
+    "content_hash": "ffc7483c0a1b77bb",
+    "persona_type": "Guest",
+    "persona_name": "Emma Chamberlain",
+    "author": {
+      "type": "ai",
+      "name": "gemma4:e4b",
+      "tool": "persona-generator"
+    },
+    "source_file": "Chef Flow Personas/Uncompleted/Guest/emma-chamberlain.txt",
+    "stored_at": "2026-04-27T06:33:49.481Z",
+    "chars": 7232
+  },
+  {
+    "id": "5695d887-e5c7-4b6e-9b35-c709dfb877aa",
+    "content_hash": "6ebea0718a7279ce",
+    "persona_type": "Vendor",
+    "persona_name": "Will Allen",
+    "author": {
+      "type": "ai",
+      "name": "gemma4:e4b",
+      "tool": "persona-generator"
+    },
+    "source_file": "Chef Flow Personas/Uncompleted/Vendor/will-allen.txt",
+    "stored_at": "2026-04-27T06:45:32.204Z",
+    "chars": 8096
+  },
+  {
+    "id": "2705500c-70ba-431a-a94d-dca2a235b6be",
+    "content_hash": "fc8b8fe549ccca1a",
+    "persona_type": "Vendor",
+    "persona_name": "Ari Weinzweig",
+    "author": {
+      "type": "ai",
+      "name": "gemma4:e4b",
+      "tool": "persona-generator"
+    },
+    "source_file": "Chef Flow Personas/Uncompleted/Vendor/ari-weinzweig.txt",
+    "stored_at": "2026-04-27T06:48:24.262Z",
+    "chars": 7424
+  },
+  {
+    "id": "06359e19-a819-4340-834c-d442d336a9b0",
+    "content_hash": "5f86c2d089a5802a",
+    "persona_type": "Staff",
+    "persona_name": "Gail Simmons",
+    "author": {
+      "type": "ai",
+      "name": "gemma4:e4b",
+      "tool": "persona-generator"
+    },
+    "source_file": "Chef Flow Personas/Uncompleted/Staff/gail-simmons.txt",
+    "stored_at": "2026-04-27T06:56:15.594Z",
+    "chars": 7494
+  },
+  {
+    "id": "8bc38d38-ba72-4668-a225-df669ddf9b14",
+    "content_hash": "81f7214ee455ff71",
+    "persona_type": "Staff",
+    "persona_name": "Rene",
+    "author": {
+      "type": "ai",
+      "name": "gemma4:e4b",
+      "tool": "persona-generator"
+    },
+    "source_file": "Chef Flow Personas/Uncompleted/Staff/rene.txt",
+    "stored_at": "2026-04-27T06:57:43.870Z",
+    "chars": 6571
+  },
+  {
+    "id": "a245b93f-7b4f-4a7f-90a8-acb6d9c4fad4",
+    "content_hash": "b398c29cebb70689",
+    "persona_type": "Partner",
+    "persona_name": "Danny Meyer",
+    "author": {
+      "type": "ai",
+      "name": "gemma4:e4b",
+      "tool": "persona-generator"
+    },
+    "source_file": "Chef Flow Personas/Uncompleted/Partner/danny-meyer.txt",
+    "stored_at": "2026-04-27T07:08:19.397Z",
+    "chars": 7908
   }
 ]

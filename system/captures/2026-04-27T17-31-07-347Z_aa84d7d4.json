@@ -1,0 +1,10 @@
+{
+  "id": "aa84d7d4-3bb3-4f7c-9e10-6be8309f1eb6",
+  "timestamp": "2026-04-27T17:31:07.347Z",
+  "title": null,
+  "source": null,
+  "contentType": "application/json",
+  "tags": [],
+  "content": "{\n  \"random\": \"data\",\n  \"nested\": {\n    \"works\": true\n  }\n}",
+  "meta": {}
+}

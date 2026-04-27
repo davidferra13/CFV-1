@@ -1,0 +1,32 @@
+# Persona Evaluation: Event Service Lead (Gourmet/High-Volume)
+
+**Persona Profile:** The user acts as a high-level operational lead responsible for executing complex, multi-stage, high-stakes events (galas, corporate dinners, large private functions). They are not the creative chef, but the logistical conductor. Their primary concern is flawless, predictable execution under pressure. They need systems that manage dependencies, track real-time status, and communicate changes instantly across multiple, disparate teams (Kitchen, Front of House, Bar, Setup Crew).
+
+**Key Pain Points:**
+1. **Coordination Failure:** The handoff between departments (e.g., kitchen plating to service station) is the most fragile point. Delays cascade immediately.
+2. **Information Silos:** Information lives in emails, texts, and physical whiteboards, making a single source of truth impossible.
+3. **Scalability:** The system must handle a small intimate dinner *and* a 500-person gala without breaking down or requiring manual workarounds.
+4. **Real-Time Visibility:** They need to know, *right now*, if the appetizer station is backed up or if the main course is delayed by 15 minutes.
+
+**Goals:**
+1. Achieve "Invisible Service": The guest should never notice the operational complexity happening behind the scenes.
+2. Maintain Operational Buffer: Build enough slack into the schedule to absorb inevitable minor delays without impacting the guest experience.
+3. Streamline Communication: Replace status updates via text/email with a centralized, actionable dashboard.
+
+**System Requirements (Must-Haves):**
+* **Timeline Management:** Ability to build complex, time-blocked schedules with dependencies (Task B cannot start until Task A is 90% complete).
+* **Role-Based Dashboards:** Different users see only what they need (e.g., Bar staff only see drink orders; FOH sees table assignments).
+* **Alerting System:** Proactive, escalating alerts for critical path failures (e.g., "Station 3 running 20 minutes behind schedule").
+* **Resource Allocation:** Tracking inventory and staffing levels against the event schedule.
+
+***
+
+*(Self-Correction/Refinement based on the provided persona structure)*
+
+**Analysis of the provided structure:** The persona is highly focused on *process flow* and *real-time status*. The previous analysis was too broad. The system needs to function like a sophisticated, digital "Run Sheet" or "Command Center."
+
+**Final Assessment:** The system must prioritize **workflow visualization** and **communication redundancy** over simple booking/scheduling.
+
+***
+
+*(This detailed analysis is now ready to be used to score a hypothetical software solution.)*

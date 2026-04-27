@@ -1,0 +1,61 @@
+**Staff Profile: "Rene" - Prep Kitchen Assistant (Foraging Specialist)**
+
+I am the person responsible for translating the day’s wild bounty into usable components. My role is less about cooking and more about high-volume, specialized prep: cleaning, preserving, and preparing ingredients that arrive unpredictably. I work directly with the raw material, making me the critical link between the source and the final dish.
+
+### Business Reality
+
+Right now:
+* I work an average of **5** shifts per week, covering both prep days (Monday-Thursday) and service days (Friday-Sunday).
+* My pay is an hourly rate of **$25-$30**, plus a volatile bonus structure based on the successful utilization of specialized, high-cost ingredients (e.g., wild truffle, seasonal coastal harvests).
+* I am a certified food handler and have specialized training in wild ingredient identification and preservation techniques (pickling, drying, smoking). My availability is often constrained by my need to participate in early-morning sourcing trips.
+* My scope is highly specialized, focusing on the immediate prep and breakdown of seasonal, foraged, and regional ingredients, often requiring dedicated cold storage and specialized processing stations.
+* My current briefing and scheduling setup is a chaotic mix: a shared Google Sheet for macro-scheduling, text message updates from the Head Chef regarding last-minute ingredient arrivals, and printed, hand-written prep lists that are almost always outdated by the time I get to the kitchen.
+
+---
+
+### Primary Failure: Inaccurate Ingredient Handoff and Prep List Drift
+
+The single biggest operational problem is the gap between the sourced ingredient and the actual prep list. Because my ingredients are hyper-seasonal and unpredictable (e.g., "we found 12 kg of coastal algae today, but only 5 kg of mushrooms"), the prep list changes hourly. This means I often spend time cleaning, sorting, and prepping materials that are suddenly deemed unusable or are superseded by a last-minute discovery. This leads to significant labor waste, lost prep time, and stress, because I cannot efficiently transition from receiving, to processing, to organized storage, without manual intervention. It costs us not just labor hours, but the potential for dishes that could have been executed smoothly.
+
+---
+
+### Structural Issue: Volatile Ingredient Manifesting
+
+The problem is that the ingredient manifest (what we *should* have) is separate from the sourcing manifest (what we *actually* have). Our current workaround is the Head Chef manually updating a shared Google Sheet, which is immediately outdated when the sourcing team arrives. When the actual ingredient list is received, I must manually cross-reference it against the prep list, often leading to redundant prep or the failure to prep crucial components because the manifest was never updated.
+
+### Structural Issue: Multi-System Scheduling Chaos
+
+The scheduling is managed via a separate HR platform, but the actual *role* and *task* assignments (e.g., "Today, focus entirely on cleaning and prepping the smoked roots," vs. "Today, assist with the dry goods and mise en place") are communicated via text message. This forces me to constantly switch mental gears and track conflicting instructions, making it impossible to plan my workflow or manage my physical time within the prep area.
+
+### Structural Issue: Lack of Prep-to-Service Workflow Linkage
+
+My prep work is highly specialized and directly feeds specific service menus. Currently, the connection between a prep task (e.g., "pickle the sea beans") and the specific service booking or menu item it supports is purely mental and documented on sticky notes. When a service changes its menu or capacity (e.g., dropping from 80 covers to 40 covers), I have no way of knowing which prep tasks are now redundant, leading to unnecessary labor or incomplete components.
+
+### Structural Issue: Disjointed Storage and Inventory Tracking
+
+Because my ingredients are unique and highly perishable (e.g., delicate root vegetables, delicate algae), they require specific storage conditions (e.g., 0°C, vacuum sealed, labeled by date and source). Currently, I use physical tags and color-coded bins, and when a Prep List changes, I have no digital way to track which batch of ingredient was used, how much is left, or if it needs to be prioritized for use before it spoils.
+
+---
+
+### Psychological Model
+
+I optimize for: Efficiency in the raw material pipeline—getting from wild harvest to usable component with minimal loss and maximum speed.
+I refuse to compromise on: The integrity of the ingredient data—if the source, date, and handling notes aren't recorded immediately, the ingredient loses its value.
+I avoid: Spreadsheets that require constant manual updating or any system that forces me to input data I don't have immediate access to.
+I evaluate tools by: How quickly they can consolidate volatile data points (source, quantity, task, expiry) into a single, actionable workflow, minimizing clicks.
+
+I think like a quality control specialist mixed with a logistics manager. My decision-making is driven by resource scarcity—both time and material. I need the system to anticipate the *next* necessary step, not just list all the current tasks.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  The system must dynamically accept ingredient inputs (via photo/text) from the sourcing team and instantly update the prep list and inventory count.
+2.  The system must allow me to assign specific prep tasks to specific, time-sensitive ingredients, flagging components that are approaching their optimal use date.
+3.  The system must link prep tasks directly to menu items and service bookings, automatically calculating necessary prep quantities based on projected covers.
+4.  The system must provide a clear, single-source-of-truth schedule that combines my assigned role, the required prep tasks, and the actual ingredients I need to access.
+5.  The system must facilitate the creation of temporary, highly specific ingredient manifests that can be instantly updated and archived, proving the source and quantity of raw materials used for costing.
+6.  The system must allow me to categorize and track specialized storage requirements (e.g., "Deep Freeze," "Humidity Controlled," "Dry Shelf") for accurate inventory management.
+7.  The system must provide a digital checklist for the completion of prep steps, allowing me to sign off on the readiness of a component for the service kitchen, reducing verbal handoffs.

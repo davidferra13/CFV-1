@@ -1,0 +1,67 @@
+**Vendor Profile: "Ari Weinzweig" - Specialty Ingredient Distributor (Curated Sourcing)**
+
+I am a highly specialized distributor that sources, curates, and supplies unique, often hyper-local, and highly perishable ingredients that major commodity vendors simply don't touch. My clientele consists of the most demanding, quality-obsessed chefs and high-end restaurants in the region, who view ingredients as an extension of their brand identity. I don't sell bulk; I sell *quality* and *story*. My commitment is to the integrity of the ingredient, which means my processes must be artisanal, not industrialized.
+
+### Business Reality
+
+Right now:
+* I fulfill approximately 45 unique chef accounts, 2-3 times per week, plus 12 large-scale catering/event accounts, per week.
+* We operate on a minimum recurring order of $1,500 per account, with a required 50% deposit due 7 days before delivery for any order exceeding $5,000. Our standard Net 30 invoicing cycle is often complicated by fluctuating, variable costs tied to seasonal sourcing.
+* My catalog contains over 800 SKUs, many of which are seasonal, single-origin, or require highly specific handling (e.g., pre-ordered fish cuts, specific fermentation levels, specific grades of heirloom grain). Freshness and availability are my greatest constraints.
+* I operate out of a specialized warehouse facility in the industrial heart of the city, but my sourcing requires constant trips to 5-7 distinct farms, fisheries, and artisan producers located within a 100-mile radius.
+* My current ordering and communication setup is a chaotic mix: initial large orders are placed via dedicated Google Sheets that I maintain, follow-ups and substitutions are handled via text messages (WhatsApp/iMessage), and final invoices are generated in QuickBooks, which are then attached to emails.
+
+---
+
+### Primary Failure: Managing Variable Cost and Supply Chain Volatility
+
+The biggest operational problem is that my pricing structure is inherently unstable and non-standardized. When a key ingredient—say, a specific grade of heirloom tomato or a particular cut of local fish—experiences a sudden supply shock (weather, harvest failure, etc.), I cannot provide a fixed price or guaranteed availability, which immediately breaks the client's ability to cost out a menu. This forces my clients to wait for manual confirmation calls and disrupts their entire menu planning cycle, costing me valuable time in manually re-calculating potential costs and chasing down approvals for price changes.
+
+---
+
+### Structural Issue: The Substitution Protocol Failure
+
+When a seasonal item is unavailable, I must communicate a suitable substitution that maintains the integrity of the dish. Currently, I rely on sending multi-photo, text-message-based proposals, followed by the client calling me back to approve the change. This process is slow, prone to miscommunication (the client might approve the substitution, but the wrong grade), and requires me to manually cross-reference the substitute's cost and handling requirements against the original order, creating significant data entry risk and delays.
+
+---
+
+### Structural Issue: Handling Complex, Multi-Tiered Pricing
+
+My pricing is never simple. It involves tiered structures based on volume (e.g., 10 units vs. 50 units), grades (Grade A vs. Grade B), and sourcing location (local vs. imported). I currently manage this using a combination of Excel VLOOKUPs and manual notes in my system. When a client adds a new, complex item, I spend 15-20 minutes manually verifying the correct pricing tier, which is incredibly labor-intensive, and any manual error results in an immediate, costly billing dispute.
+
+---
+
+### Structural Issue: The Deposit and Invoice Reconciliation Nightmare
+
+Because I source from multiple small producers, the cost of goods sold (COGS) is highly variable, and I often have to pay deposits or prepay invoices to the source *before* the client’s order is finalized. This means the final invoice amount frequently deviates significantly from the initial deposit or estimated total. I currently reconcile these discrepancies by sending a separate, manually calculated "Adjustment Sheet" attached to the final invoice, which is a notorious pain point for my client's accounting team and causes immediate friction and delays in payment processing.
+
+---
+
+### Structural Issue: Managing Perishable Inventory Commitments
+
+Because much of my stock is hyper-perishable (e.g., fish that must be ordered 48 hours in advance, or grains that must be stored in specific humidity levels), I have to commit my sourcing capacity to my most reliable clients first. My current process involves me manually tracking these committed slots on a physical whiteboard and cross-referencing it with my digital inventory sheet. If a client changes their order late, I have to physically update the board and notify multiple stakeholders via text, creating a high risk of over-committing my limited, premium sourcing capacity.
+
+---
+
+### Psychological Model
+
+I optimize for: Absolute ingredient quality and the integrity of the final dish.
+I refuse to compromise on: The traceability and story behind the product.
+I avoid: Generic, clunky, or overly standardized digital processes that feel like they were designed for mass market commodity goods.
+I evaluate tools by: How seamlessly they allow me to add a layer of sophisticated, human-curated detail without breaking the workflow.
+
+I think like a chef—I am focused on the outcome and the experience, not the process steps. If a tool forces me to linearize the creative, iterative process of sourcing, I will discard it immediately. My workflow must feel like an extension of my personal knowledge, not a forced adherence to a database structure.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must dynamically adjust and recalculate the full order cost and deposit requirements instantly when I input a known substitute SKU, allowing me to surface the associated cost difference and any new minimum order requirements.
+2. The system must allow me to create and track multiple, variable pricing models (e.g., Tier 1/Volume pricing, Grade A/B pricing, and fluctuating cost-plus pricing) within a single client order view, visible to the client.
+3. The system must generate a consolidated, single invoice that clearly shows the initial deposit, the final variable COGS adjustment, and the remaining balance due, eliminating the need for separate adjustment sheets.
+4. The system must provide a dedicated, visual dashboard for tracking committed sourcing capacity (e.g., "3/10 slots remaining for local Grade A halibut next Thursday"), preventing me from accidentally over-committing my limited supply.
+5. The system must allow me to manage and communicate complex, non-linear order changes (substitutions) by creating a traceable, versioned record of the change request, the approval, and the resulting cost impact, all in one place.
+6. The system must handle asynchronous communication around an order, allowing me to attach and track the approval status of photo-based or document-based substitutions, linking that approval directly to the line item cost.
+7. The system must be able to handle complex, recurring, but irregular schedules, allowing me to define specific "sourcing cycles" (e.g., "Every Tuesday, check for new microgreens, limited to 5 orders").

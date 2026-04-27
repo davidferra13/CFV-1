@@ -1,0 +1,67 @@
+**Staff Profile: "Gail Simmons" - Event Service Captain (High-End Coordinator)**
+
+I am the point person for the entire guest experience, from the moment the first vendor arrives until the last piece of china is cleared. I don't just manage the food; I manage the flow, the timing, the atmosphere, and the staff execution. My role is to ensure that every single guest, regardless of the size of the event—be it a 150-person gala or a 300-person corporate launch—experiences a flawless, seamless service that matches the client's budget and reputation. I am responsible for the entire staff deployment and quality control.
+
+### Business Reality
+
+Right now:
+* I work 4 to 5 shifts per week, covering large-scale, high-stakes events that range from 150 to 300 guests.
+* My pay is hourly, but my assignment details often require me to work 10-12 hour shifts with minimal guaranteed breaks, and I am responsible for managing 15-25 service staff members (servers, runners, captains).
+* I am the lead captain for the event, requiring specialized training in high-volume service flow and client-facing crisis management. My uniform is a specific, branded service jacket that must be pristine.
+* My scope is massive, covering multiple distinct zones within a single venue (e.g., the main ballroom, the cocktail hour patio, and the designated buffet line area).
+* My current briefing and scheduling setup is a chaotic mix: I receive the master schedule in a shared Google Sheet, receive last-minute staffing swaps via text message from the Banquet Manager, and get detailed setup notes printed on 3-page, single-use physical planners that are often lost or illegible.
+
+---
+
+### Primary Failure: Communication Silos During Handoffs
+
+The single biggest operational pain point is the lack of a single, real-time source of truth for status updates and handoffs. Because the schedule, the inventory count, the specific menu modifications for VIPs, and the staff deployment list are all scattered across Google Sheets, text chains, and physical binders, critical information is inevitably lost or delayed. For example, if the Executive Chef modifies the appetizer plating 30 minutes before service due to a supply issue, I won't know until a server tells me, potentially causing a service delay of 15 minutes and forcing a costly, visible scramble. This fragmentation leads to service inconsistency and directly impacts the client's perception of our professionalism, potentially costing us repeat business and requiring expensive, last-minute manual fixes.
+
+---
+
+### Structural Issue: Dynamic Staff Deployment Tracking
+
+We currently use a combination of whiteboard markers and paper sign-in sheets to track who is assigned to which station (e.g., Station 1: Salad Service, Station 2: Wine Service). If one staff member calls out 2 hours before the shift, the Banquet Manager texts me, and I have to manually call the reserve list, cross-reference their skills, and then assign them. This is inefficient and error-prone. I need to know instantly, on a single platform, which staff members are qualified for specific tasks (e.g., "Wine Service Certified") and who is currently clocked in and available for reassignment.
+
+---
+
+### Structural Issue: Real-Time Menu/Ingredient Modification Tracking
+
+If the Head Chef needs to swap out a key ingredient—for instance, changing the salmon preparation from lemon-dill to maple-mustard—I cannot track that change effectively. The change is communicated verbally or via a rapid-fire email, and the staff roster/menu guide is not updated until hours later. This forces me to constantly interrupt the service flow to correct servers, leading to confusion, incorrect garnishing, and wasted prep time because the team is working off outdated standards.
+
+---
+
+### Structural Issue: Event-Specific Service Checklist Generation
+
+Every client has unique requirements—Client A requires 80% biodegradable plateware; Client B requires a specific wine pairing list printed in Italian; Client C requires the dessert service to be paced exactly 15 minutes after the main course clears. I currently have to take a master template and manually delete/add/rewrite items on a separate document for every single event, making it incredibly difficult to audit or ensure I haven't missed a critical compliance step (like mandatory allergy warning placement) specific to that event's setup.
+
+---
+
+### Structural Issue: Equipment and Venue Handoff Management
+
+The transition between prep, service, and cleanup is a logistical nightmare. The cleaning crew needs to know exactly which kitchen stations (e.g., the main prep sink, the hot line station) are operational, which are temporarily out of commission, and what specific items need to be cleared *after* service. Currently, we rely on a physical walkthrough checklist that is easily lost or requires 15 minutes of managerial time to review, creating delays in the crucial cleanup handoff and impacting the ability to prepare the space for the next client.
+
+---
+
+### Psychological Model
+
+I optimize for: Flawless timing and seamless transitions between service phases (e.g., cocktail to seated dinner).
+I refuse to compromise on: Guest experience consistency; if the client sees a glitch, I will feel the pressure.
+I avoid: Any process that requires me to switch between more than three different digital interfaces or that requires reading a physical, handwritten note.
+I evaluate tools by: How quickly they allow me to communicate a critical, time-sensitive change to 20+ people simultaneously, and how reliable they are under extreme, high-stress volume.
+
+I think in terms of workflows, dependencies, and failure points. My decisions are always weighted by potential visibility and the cost of error. If a process adds friction or requires me to manage manual data transfer, it is a point of failure.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must generate a real-time, interactive staff roster that shows immediate availability, current assignment (e.g., "Station 3: Hot Line"), and certified skills (e.g., "Wine Service").
+2. The system must allow the Banquet Manager to push mandatory, time-sensitive updates (e.g., "Menu change: Salmon is now maple-mustard") directly to all assigned staff devices with an acknowledgment confirmation.
+3. The system must house a client-specific event checklist that dynamically builds from a master template and allows managers to check off compliance items (e.g., "Biodegradable plateware confirmed") and assign ownership.
+4. The system must provide a clear, digital handoff status report for the entire venue, detailing which specific kitchen zones (e.g., Prep Sink 1, Expo Line) are cleared, sanitized, and ready for the next client booking.
+5. The system must allow me to schedule and adjust staff shifts (e.g., 12 staff members) for multiple different roles across a 10-hour window, and automatically flag any scheduling overlap or skill mismatch before the shift begins.
+6. The system must house the official, approved version of all recipes and service standards, ensuring that when an ingredient or preparation method changes, the entire staff resource automatically updates the relevant menu details.
+7. The system must allow me to create and distribute a comprehensive, multi-day event run-of-show document that can be edited collaboratively by the Chef, the Sales Manager, and the Operations Lead, with version control visible to all parties.

@@ -1,0 +1,91 @@
+**ChefFlow Directive — Real-Time System, Zero Refresh Architecture**
+
+Eliminate all reliance on manual refresh (`F5`) across the entire platform. Any state that currently requires a page reload is a system failure and must be converted into a real-time, event-driven update.
+
+ChefFlow must operate as a **live system**, not a request-response website.
+
+---
+
+### Core Requirement
+
+Every user-visible change must propagate instantly and automatically, without user intervention.
+
+This includes, but is not limited to:
+
+* Incoming messages (SMS, chat, external ingestion)
+* Typing indicators and presence states
+* Notifications and alerts
+* Status changes (events, bookings, quotes, payments)
+* Background computations (costing, availability, parsing)
+* Multi-user interactions (client ↔ chef ↔ staff)
+* Data mutations from any source (UI, API, ingestion pipelines)
+
+If the system knows about a change, the user sees it immediately.
+
+---
+
+### System Behavior
+
+* No polling-based laggy updates unless used as a silent fallback.
+* No stale UI states.
+* No “refresh to see latest” anywhere in the product.
+* No hidden processing—every active operation is visible, traceable, and progressively updated.
+
+---
+
+### Architecture Standard
+
+All dynamic surfaces must be powered by **persistent, real-time data streams**:
+
+* Server-Sent Events (SSE) or WebSockets as primary transport
+* Event-driven backend emitting granular state changes
+* Client subscribed to scoped channels (per user, per event, per resource)
+* Fine-grained invalidation and patching (no full page reloads)
+
+Every mutation triggers:
+
+1. Backend event emission
+2. Immediate client-side reconciliation
+3. UI update at the exact point of change
+
+---
+
+### Transparency Layer (Mandatory)
+
+Real-time is not enough. The system must also expose **what is happening and why**.
+
+* Show when something is processing (not just “loading”)
+* Show partial progress where applicable
+* Show who is doing what (e.g., “client is typing”, “chef updated menu”)
+* Show system actions (e.g., “parsing menu”, “recalculating cost”)
+
+No silent state changes. No black boxes.
+
+---
+
+### UX Principle
+
+ChefFlow should feel like a **shared live workspace**, not a static dashboard.
+
+* Users never wonder if something updated
+* Users never question if something went through
+* Users never need to manually check for changes
+
+The system is always current, always in sync, and always visible.
+
+---
+
+### Enforcement Rule
+
+If any workflow, page, or component requires a refresh to function correctly:
+
+**It is incomplete and must be rebuilt to comply with this standard.**
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 389 (minimum 500)
+Flags: none
+Rejected: 2026-04-27T06:57:43.961Z
+-->

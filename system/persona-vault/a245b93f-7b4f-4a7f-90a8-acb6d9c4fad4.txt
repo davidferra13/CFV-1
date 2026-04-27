@@ -1,0 +1,67 @@
+**Partner Profile: "Danny Meyer" - Multi-Concept Group Founder (Experience Curator)**
+
+I own and operate several distinct, high-profile restaurant concepts that are deeply tied to their local community and the quality of their ingredients. My focus isn't just on serving meals; it's on curating an authentic, memorable experience that tells a story. I believe the most successful collaborations are those that feel organic and enhance the guest’s journey, whether that's pairing a dish with a local microbrewery or hosting a ticketed dinner at a local farm.
+
+### Business Reality
+
+Right now:
+* I co-host, promote, or support **7-10** events, referrals, or partnerships per **month** across my group's various locations.
+* We manage complex revenue shares, often involving a **15%** commission on ticket sales from external partners, plus a fixed minimum spend of **$1,500** per co-hosted event, which must be reconciled monthly.
+* We regularly partner with local breweries (e.g., *Jackson Pollock Brewery*), high-end local farms (e.g., *Stone Mountain Farm*), and regional artisan brands for exclusive tasting menus and pop-up dinners.
+* Our availability constraints are highly variable; venue space is often reserved for other group concepts, and external partners' availability (like a specific chef or a farm harvest window) is unpredictable and must be coordinated across multiple calendars.
+* Our current coordination setup is a messy mix of dedicated email threads (for each partnership), shared Google Sheets (for tracking RSVPs and revenue), and physical contracts stored in filing cabinets, meaning there is no single, real-time source of truth for booking status, financial reconciliation, or guest communication.
+
+---
+
+### Primary Failure: Lack of Unified Partnership Costing and Payout Tracking
+
+My biggest operational failure is that I cannot reconcile the true cost of a partnership in real-time. Because revenue is generated through multiple channels—a ticketed event, a subsequent dinner reservation, and a retail purchase of a partner's product—I have to manually track every dollar and every associated cost (staff time, ingredient prep, venue overhead). This reconciliation process, which involves cross-referencing booking sheets, POS reports from multiple concepts, and physical contracts, takes my finance team an average of 3-5 full days every single month. This delay significantly slows down our ability to pay partners promptly, damaging the goodwill that is critical to our brand partnerships.
+
+---
+
+### Structural Issue: Fragmented Booking and Resource Allocation
+
+When I coordinate a joint event, I have to check availability across three different systems: the venue's internal calendar (for kitchen space), the specific concept's booking software (for reservation capacity), and the partner's calendar (for their staff/product delivery). This manual cross-referencing means that if a primary resource—like a specific kitchen station or a key staff member—is double-booked or unexpectedly unavailable, the entire event needs to be manually rescheduled, often resulting in last-minute, costly changes that erode the premium guest experience.
+
+---
+
+### Structural Issue: Inefficient Guest Journey Handoffs
+
+Our revenue model relies heavily on the guest moving from a promotional touchpoint (e.g., a brewery tasting event) to a paid booking at a full-service restaurant. Currently, that handoff is tracked via a simple follow-up email or a QR code that directs them to a general booking page. We have no mechanism within our current system to track *which* specific promotion or partner touchpoint led to the reservation. We lose the attribution data, making it impossible to accurately calculate the ROI of a specific partner collaboration or to prove the value of a joint promotion to the partner.
+
+---
+
+### Structural Issue: Manual Contract and Compliance Management
+
+Every partnership requires a detailed Statement of Work (SOW) and a contract defining revenue splits, liability, and promotion rules. I currently store these in a mix of Dropbox folders and physical binders. When a new partner comes on board, I spend hours verifying that the current SOW covers all necessary elements—like insurance requirements, specific menu cost percentages, or required promotional language—and ensuring the contract terms are correctly communicated to the reservations team and the accounting team. This process is prone to human error and creates significant administrative overhead for my operations manager.
+
+---
+
+### Structural Issue: Ingredient and Menu Costing for Joint Offerings
+
+When I create a limited-time menu using specialized ingredients from a partner (e.g., a specific local mushroom variety), the costing process is manual and fragile. I have to collect invoices from the farm, compare them to the recipe cards, and manually adjust the expected food cost percentage (FCP) for that specific dish, which must be communicated to both the kitchen staff and the accounting team. If the farm delivers a different yield, or if the pricing changes mid-week, the entire menu card and the expected profitability calculation must be manually updated, risking mispricing and inconsistent profitability reports.
+
+---
+
+### Psychological Model
+
+I optimize for: **The quality and narrative of the guest experience.** The food must tell a story, and the process must support that story seamlessly.
+I refuse to compromise on: **The integrity of the local partnership.** If I feel a partner relationship is being undervalued or made unnecessarily complicated by the technology, I will abandon it.
+I avoid: **Overly complex, corporate-feeling software.** I hate anything that feels like a generic CRM or requires too much training time; it must feel intuitive and focused on the *people* and the *product*.
+I evaluate tools by: **How quickly they integrate operational data (bookings, sales, inventory) into a single, reliable source of truth.**
+
+I think in terms of the guest journey—from discovery to dining to follow-up—and how every operational touchpoint affects the overall feeling. I don't care about features; I care about reliability and how it preserves the narrative of the meal. If the system slows down the coordination of a great experience, it's useless.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must **automatically track and attribute** the revenue generated by a specific partner promotion or referral code to the originating partner's financial ledger.
+2. The system must **provide a single dashboard view** that aggregates booking capacity, resource availability (kitchen stations, staff), and external partner scheduling across all my group concepts simultaneously.
+3. The system must **generate a full, auditable financial reconciliation report** that can reconcile a co-hosted event's revenue share across multiple POS systems, invoices, and contracted percentages in minutes.
+4. The system must **manage and enforce partnership contracts** by linking the SOW directly to the operational setup, ensuring required compliance details (e.g., required insurance upload, specific menu cost percentages) are validated before a booking can be confirmed.
+5. The system must **allow for dynamic, multi-location recipe costing** that pulls real-time ingredient pricing from multiple vendors and adjusts the expected food cost percentage when ingredients change due to local sourcing availability.
+6. The system must **provide a centralized communication hub** for all partners, housing the SOW, the booking calendar, and all necessary operational documents, eliminating the need for scattered email chains and shared Google Docs.
+7. The system must **integrate guest booking data with the partner's promotional marketing data** to accurately measure the ROI of the partnership and suggest optimal follow-up actions for the guest.

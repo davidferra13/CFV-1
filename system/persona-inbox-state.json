@@ -1,0 +1,19 @@
+{
+  "entries": [
+    {
+      "id": "9138b219-78a1-4b11-8e9f-1b51a1fd77f3",
+      "type": "Chef",
+      "name": "Persona",
+      "path": "C:\\Users\\david\\Documents\\CFv1\\Chef Flow Personas\\Uncompleted\\Chef\\persona.txt",
+      "relativePath": "Chef Flow Personas/Uncompleted/Chef/persona.txt",
+      "codexSlug": "persona",
+      "chars": 2596,
+      "preview": "**ChefFlow Directive — Real-Time System, Zero Refresh Architecture** Eliminate all reliance on manual refresh (`F5`) across the entire platform. Any state that currently requires a",
+      "status": "queued",
+      "created_at": "2026-04-27T06:55:03.558Z",
+      "updated_at": "2026-04-27T18:56:57.707Z",
+      "last_error": null
+    }
+  ],
+  "updated_at": "2026-04-27T18:56:57.707Z"
+}

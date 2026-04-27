@@ -1,6 +1,6 @@
 # Consolidated Build: Staffing Team
 
-**Priority rank:** 8 of 21
+**Priority rank:** 9 of 20
 **Personas affected:** 2 (Jordan Hale, Leo Varga)
 **Average severity:** HIGH
 

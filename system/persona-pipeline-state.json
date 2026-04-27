@@ -30,10 +30,86 @@
       ],
       "analyzed_at": "2026-04-27T06:21:43.133Z",
       "planned_at": "2026-04-27T06:21:43.132Z"
+    },
+    {
+      "slug": "oprah-winfrey",
+      "type": "Client",
+      "source_file": "Chef Flow Personas/Completed/Client/oprah-winfrey.txt",
+      "report": "docs/stress-tests/persona-oprah-winfrey-2026-04-27.md",
+      "build_tasks": [
+        "system/persona-build-plans/oprah-winfrey/task-1.md",
+        "system/persona-build-plans/oprah-winfrey/task-2.md",
+        "system/persona-build-plans/oprah-winfrey/task-3.md",
+        "system/persona-build-plans/oprah-winfrey/task-4.md",
+        "system/persona-build-plans/oprah-winfrey/task-5.md"
+      ],
+      "analyzed_at": "2026-04-27T06:29:28.380Z",
+      "planned_at": "2026-04-27T06:29:28.380Z"
+    },
+    {
+      "slug": "emma-chamberlain",
+      "type": "Guest",
+      "source_file": "Chef Flow Personas/Completed/Guest/emma-chamberlain.txt",
+      "report": "docs/stress-tests/persona-emma-chamberlain-2026-04-27.md",
+      "build_tasks": [],
+      "analyzed_at": "2026-04-27T06:42:33.130Z",
+      "planned_at": null
+    },
+    {
+      "slug": "ari-weinzweig",
+      "type": "Vendor",
+      "source_file": "Chef Flow Personas/Completed/Vendor/ari-weinzweig.txt",
+      "report": "docs/stress-tests/persona-ari-weinzweig-2026-04-27.md",
+      "build_tasks": [
+        "system/persona-build-plans/ari-weinzweig/task-1.md",
+        "system/persona-build-plans/ari-weinzweig/task-2.md",
+        "system/persona-build-plans/ari-weinzweig/task-3.md",
+        "system/persona-build-plans/ari-weinzweig/task-4.md",
+        "system/persona-build-plans/ari-weinzweig/task-5.md"
+      ],
+      "analyzed_at": "2026-04-27T06:53:14.382Z",
+      "planned_at": "2026-04-27T06:53:14.382Z"
+    },
+    {
+      "slug": "gail-simmons",
+      "type": "Staff",
+      "source_file": "Chef Flow Personas/Completed/Staff/gail-simmons.txt",
+      "report": "docs/stress-tests/persona-gail-simmons-2026-04-27.md",
+      "build_tasks": [
+        "system/persona-build-plans/gail-simmons/task-1.md",
+        "system/persona-build-plans/gail-simmons/task-2.md",
+        "system/persona-build-plans/gail-simmons/task-3.md",
+        "system/persona-build-plans/gail-simmons/task-4.md",
+        "system/persona-build-plans/gail-simmons/task-5.md"
+      ],
+      "analyzed_at": "2026-04-27T07:05:47.464Z",
+      "planned_at": "2026-04-27T07:05:47.464Z"
     }
   ],
-  "failed": [],
-  "last_cycle": "2026-04-27T06:09:22.965Z",
-  "total_personas_processed": 2,
-  "total_build_tasks_queued": 10
+  "failed": [
+    {
+      "source_file": "Chef Flow Personas\\Uncompleted\\Guest\\woody.txt",
+      "error": "Validation failed (score: 0): File not found",
+      "failed_at": "2026-04-27T06:42:33.134Z"
+    },
+    {
+      "source_file": "Chef Flow Personas\\Uncompleted\\Chef\\persona.txt",
+      "error": "Validation failed (score: 0): Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail; Word count too low: 389 (minimum 500)",
+      "failed_at": "2026-04-27T06:57:43.963Z"
+    },
+    {
+      "source_file": "Chef Flow Personas\\Uncompleted\\Staff\\rene.txt",
+      "error": "Validation failed (score: 0): File not found",
+      "failed_at": "2026-04-27T07:05:47.466Z"
+    },
+    {
+      "source_file": "Chef Flow Personas\\Uncompleted\\Partner\\danny-meyer.txt",
+      "error": "[analyzer] 50 tokens...\r[analyzer] 100 tokens...\r[analyzer] 150 tokens...\r[analyzer] 200 tokens...\r[analyzer] 250 tokens...\r[analyzer] 300 tokens...\r[analyzer] 350 tokens...\r[analyzer] 400 tokens...\r[analyzer] 450 tokens...\r[analyzer] 500 tokens...\r[analyzer] 550 tokens...\r[analyzer] 600 tokens...\r[analyzer] 650 tokens...",
+      "failed_at": "2026-04-27T07:10:14.119Z"
+    }
+  ],
+  "last_cycle": "2026-04-27T16:06:49.815Z",
+  "total_personas_processed": 6,
+  "total_build_tasks_queued": 25,
+  "last_synthesis_at": "2026-04-27T06:53:59.580Z"
 }

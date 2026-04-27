@@ -1,6 +1,6 @@
 # Consolidated Build: Scheduling Calendar
 
-**Priority rank:** 7 of 21
+**Priority rank:** 8 of 20
 **Personas affected:** 2 (Dr. Julien Armand, Leo Varga)
 **Average severity:** HIGH
 
