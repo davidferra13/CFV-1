@@ -10,6 +10,7 @@ import { StaffNav } from '@/components/staff/staff-nav'
 import { PresenceBeacon } from '@/components/admin/presence-beacon'
 import { TestAccountBanner } from '@/components/dev/test-account-banner'
 import { StaffTourWrapper } from '@/components/onboarding/staff-tour-wrapper'
+import { OfflineDetector } from '@/components/staff/offline-detector'
 import { PATHNAME_HEADER } from '@/lib/auth/request-auth-context'
 import { resolveStaffSurfaceMode } from '@/lib/interface/surface-governance'
 
@@ -40,8 +41,9 @@ export default async function StaffLayout({ children }: { children: React.ReactN
       data-cf-portal="staff"
       data-cf-surface={surfaceMode}
     >
+      <OfflineDetector />
       <TestAccountBanner email={user.email} />
-      <a
+      <
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-brand-500 focus:px-4 focus:py-2 focus:text-white"
       >

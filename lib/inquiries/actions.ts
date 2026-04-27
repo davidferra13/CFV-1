@@ -2334,6 +2334,37 @@ export async function convertInquiryToEventWithContext(
     })()
   }
 
+  // Auto-create event contact if inquiry has contact info different from the client
+  if (inquiry.contact_name && inquiry.contact_email) {
+    try {
+      const { data: client } = await db
+        .from('clients')
+        .select('full_name, email')
+        .eq('id', inquiry.client_id)
+        .eq('tenant_id', tenantId)
+        .single()
+
+      const isDifferentPerson =
+        client &&
+        (inquiry.contact_email !== client.email || inquiry.contact_name !== client.full_name)
+
+      if (isDifferentPerson) {
+        await db.from('event_contacts').insert({
+          event_id: event.id,
+          tenant_id: tenantId,
+          contact_name: inquiry.contact_name,
+          contact_email: inquiry.contact_email,
+          contact_phone: inquiry.contact_phone || null,
+          role: 'planner',
+          visibility: 'full',
+          receives_notifications: true,
+        })
+      }
+    } catch (err) {
+      console.error('[convertInquiryToEvent] Event contact creation failed (non-blocking):', err)
+    }
+  }
+
   return { success: true, event }
 }
 
@@ -2713,6 +2744,37 @@ export async function convertInquiryToEvent(inquiryId: string) {
         console.error('[convertInquiryToEvent] Partner notification failed (non-blocking):', err)
       }
     })()
+  }
+
+  // Auto-create event contact if inquiry has contact info different from the client
+  if (inquiry.contact_name && inquiry.contact_email) {
+    try {
+      const { data: client } = await db
+        .from('clients')
+        .select('full_name, email')
+        .eq('id', inquiry.client_id)
+        .eq('tenant_id', user.tenantId!)
+        .single()
+
+      const isDifferentPerson =
+        client &&
+        (inquiry.contact_email !== client.email || inquiry.contact_name !== client.full_name)
+
+      if (isDifferentPerson) {
+        await db.from('event_contacts').insert({
+          event_id: event.id,
+          tenant_id: user.tenantId!,
+          contact_name: inquiry.contact_name,
+          contact_email: inquiry.contact_email,
+          contact_phone: inquiry.contact_phone || null,
+          role: 'planner',
+          visibility: 'full',
+          receives_notifications: true,
+        })
+      }
+    } catch (err) {
+      console.error('[convertInquiryToEvent] Event contact creation failed (non-blocking):', err)
+    }
   }
 
   return { success: true, event }
