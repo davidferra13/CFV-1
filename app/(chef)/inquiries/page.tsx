@@ -33,6 +33,7 @@ import { isDemoInquiry } from '@/lib/onboarding/demo-data-utils'
 import { EmptyState } from '@/components/ui/empty-state'
 import { InquiriesOverflowSelect } from '@/components/inquiries/inquiries-overflow-select'
 import { GmailSyncStrip } from '@/components/inquiries/gmail-sync-strip'
+import { ResponseTimeStrip } from '@/components/inquiries/response-time-strip'
 import { getGmailSyncStatus } from '@/lib/gmail/actions'
 import { QuickLogButton } from '@/components/inquiries/quick-log-button'
 import { scoreEventUrgency } from '@/lib/inquiries/event-urgency'
@@ -244,11 +245,14 @@ export default async function InquiriesPage({
         <div>
           <h1 className="text-3xl font-bold text-stone-100">Inquiry Pipeline</h1>
           <p className="text-stone-400 mt-1">Track every lead from first contact to booked event</p>
-          <div className="mt-2">
+          <div className="mt-2 space-y-1">
             <GmailSyncStrip
               connected={gmailStatus.connected}
               lastSyncedAt={gmailStatus.lastSyncedAt}
             />
+            <Suspense fallback={null}>
+              <ResponseTimeStrip />
+            </Suspense>
           </div>
         </div>
         <div className="flex items-center gap-2">
