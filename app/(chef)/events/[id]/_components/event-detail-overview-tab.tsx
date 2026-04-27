@@ -34,6 +34,8 @@ import type { EventCollaborator } from '@/lib/collaboration/types'
 import { ClientSnapshot } from '@/components/clients/client-snapshot'
 import type { ClientMemoryRow } from '@/lib/clients/client-memory-types'
 import { ChefBriefingPanel } from '@/components/briefing/chef-briefing-panel'
+import { EventContactsPanel } from '@/components/events/event-contacts-panel'
+import type { EventContact } from '@/lib/events/contacts'
 import { ChefDecisionBriefPanel } from '@/components/hub/chef-decision-brief'
 import { GarmentFlipToggle } from '@/components/events/garment-flip-toggle'
 import { ConstraintRadarPanel } from '@/components/events/constraint-radar-panel'
@@ -81,6 +83,7 @@ type EventDetailOverviewTabProps = {
   templates: any[]
   chatConversationId?: string | null
   collaborators: EventCollaborator[]
+  eventContacts: EventContact[]
   eventMenuData?: ServiceViewMenu[]
   constraintRadarData?: ConstraintRadarData | null
   clientMemories?: ClientMemoryRow[]
@@ -110,6 +113,7 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
     templates,
     chatConversationId,
     collaborators,
+    eventContacts,
     eventMenuData,
     constraintRadarData,
     clientMemories,
@@ -381,6 +385,8 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
               memories={clientMemories ?? []}
             />
           )}
+
+          <EventContactsPanel eventId={event.id} contacts={eventContacts} />
         </div>
 
         {/* Client Portal QR Code */}
