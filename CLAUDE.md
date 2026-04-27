@@ -10,6 +10,8 @@ This file is read by Claude Code at the start of every conversation. These rules
 > 2. **Keep moving.** If you know the next step, do it. No unnecessary back-and-forth.
 > 3. **Be terse.** No caveats, no restating, no multiple options when one is right.
 > 4. **Start dead things, don't kill live things.** Dead server? Start it. Running server? Don't kill it - say "restart when ready."
+> 5. **Fix it, don't report it.** If something is broken, dirty, or unhealthy, FIX IT silently. Never tell the developer something is broken without fixing it in the same action. The only exception: destructive DB ops or production deploys (ask first per existing rules).
+> 6. **Swarm-safe: never destroy other agents' work.** This project runs 10+ parallel AI agents constantly. Uncommitted changes, unrouted pages, stub functions, and unfamiliar code are OTHER AGENTS' work-in-progress. Never delete, revert, or "clean up" code you didn't write in this session. Treat other agents' code with the same protection as production data.
 
 ---
 
@@ -265,6 +267,47 @@ Explain what you're about to do for DB, auth, or financial changes. When in doub
 
 - Spec-tied commits: `feat(spec-name): description`. Standard: `feat`, `fix`, `docs`, `chore`, `refactor`.
 - Push to GitHub at end of every session. Commit to `main` unless asked for a feature branch.
+
+### Regression Detection (3-layer system)
+
+**Layer 1: Registry check** (manual, curated critical features)
+
+- `bash scripts/regression-check.sh --quick` - routes + files (162 checks, ~2s)
+- `bash scripts/regression-check.sh` - full: adds exports, schema, semantic checks
+- Registry: `scripts/regression-registry.json` - add entries when features ship
+- Auto-runs in session briefing and pre-commit hook
+
+**Layer 2: Semantic analysis** (catches content-level regressions)
+
+- `bash scripts/regression-semantic.sh` - auth gates, no-ops, empty handlers, hardcoded financials
+- Runs automatically during full regression check
+- Report: `.regression-semantic-report.md`
+
+**Layer 3: Snapshot diffing** (catches everything, no manual maintenance)
+
+- `bash scripts/regression-snapshot.sh --capture` - snapshot current state (run after milestones)
+- `bash scripts/regression-snapshot.sh --diff` - compare against snapshot, flag disappearances
+- Snapshot tracked in git so all agents share the baseline
+
+**Layer 4: Prevention and recovery tools**
+
+- `bash scripts/regression-blast-radius.sh <file>` - show every file that would break if deleted (with risk level)
+- `bash scripts/regression-recover.sh --scan` - find recoverable files from git history
+- `bash scripts/regression-recover.sh --recover` - auto-restore missing files from git
+- `bash scripts/regression-fragile.sh` - rank files by churn/risk, find yo-yo files
+- `bash scripts/regression-fragile.sh --watch <file> "reason"` - add to watchlist
+- `bash scripts/regression-dead-imports.sh` - find imports pointing to deleted files
+
+**Layer 5: Monitoring and forensics**
+
+- `bash scripts/regression-watcher.sh` - live file monitor, alerts on deletion (background)
+- `bash scripts/regression-health-probe.sh` - curl critical routes, catch 500s (needs server)
+- `bash scripts/regression-trend.sh --show` - trend history over time
+- `bash scripts/regression-session-log.sh --record` - log session changes for blame tracing
+- `bash scripts/regression-session-log.sh --blame` - cross-reference regressions with sessions
+- `bash scripts/regression-dashboard.sh --open` - HTML dashboard with all status
+
+**Enforcement:** pre-commit (quick check), pre-push (tsc + full check + snapshot diff). Bypass: `--no-verify`.
 
 ### Health Checks (before merging to main)
 

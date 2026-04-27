@@ -32,8 +32,8 @@ LAST_PUSH=$(git log origin/$BRANCH..HEAD --oneline 2>/dev/null | wc -l | tr -d '
 
 BUILD_STATE_FILE="$PROJECT_ROOT/docs/build-state.md"
 if [ -f "$BUILD_STATE_FILE" ]; then
-  # Extract the status line (usually first non-header line with green/broken)
-  BUILD_STATUS=$(grep -i 'status\|state\|green\|broken\|clean\|error' "$BUILD_STATE_FILE" | head -3)
+  # Extract current state table rows (tsc + build status)
+  BUILD_STATUS=$(grep -A2 '^\| Check' "$BUILD_STATE_FILE" | grep -E '^\|.*(green|broken|pending)' | head -2)
 else
   BUILD_STATUS="No build-state.md found"
 fi
@@ -145,6 +145,31 @@ fi
 SPEC_COUNT=$(ls "$PROJECT_ROOT/docs/specs/"*interrogation*.md 2>/dev/null | wc -l | tr -d ' ')
 TOTAL_QUESTIONS=$(grep -c '^### [A-Z]' "$PROJECT_ROOT/docs/specs/"*interrogation*.md 2>/dev/null | awk -F: '{s+=$NF} END{print s}' || echo "?")
 
+# ── Regression Check ────────────────────────────────────────────
+
+REGRESSION_STATUS=""
+if [ -f "$PROJECT_ROOT/scripts/regression-check.sh" ]; then
+  REGRESSION_OUTPUT=$(bash "$PROJECT_ROOT/scripts/regression-check.sh" --quick 2>&1) || true
+  if echo "$REGRESSION_OUTPUT" | grep -q "REGRESSION DETECTED"; then
+    REGRESSION_COUNT=$(echo "$REGRESSION_OUTPUT" | grep -oE '[0-9]+ failures' | head -1)
+    REGRESSION_ITEMS=$(echo "$REGRESSION_OUTPUT" | grep "MISSING" | sed 's/.*MISSING /  - /' | head -10)
+    REGRESSION_STATUS="**REGRESSION DETECTED** ($REGRESSION_COUNT)
+$REGRESSION_ITEMS
+Run \`bash scripts/regression-check.sh\` for full report."
+  else
+    CHECK_COUNT=$(echo "$REGRESSION_OUTPUT" | grep -oE '[0-9]+ checks' | head -1)
+    REGRESSION_STATUS="Clean ($CHECK_COUNT passed)"
+  fi
+else
+  REGRESSION_STATUS="regression-check.sh not found"
+fi
+
+# ── Regression Trend Log ────────────────────────────────────────
+# Append a data point every session start for long-term pattern tracking
+if [ -f "$PROJECT_ROOT/scripts/regression-trend.sh" ]; then
+  bash "$PROJECT_ROOT/scripts/regression-trend.sh" --log 2>/dev/null || true
+fi
+
 # ── Generate Briefing ────────────────────────────────────────────
 
 cat > "$OUTPUT" << BRIEFING
@@ -173,11 +198,17 @@ $PROGRESS
 ## Active Priorities
 $PRIORITIES
 
+## Regression Check
+$REGRESSION_STATUS
+
 ## Database Backups
 $BACKUP_STATUS
 
 ## Interrogation Specs
 - $SPEC_COUNT specs, ~$TOTAL_QUESTIONS questions total
+
+## Persona Pipeline (port 3977)
+$(bash scripts/pipeline-briefing.sh 2>/dev/null && cat docs/.pipeline-briefing.md 2>/dev/null | grep -v "^# Pipeline" | head -20 || echo "Pipeline server not responding")
 
 ---
 *Read the full files only if this briefing raises a specific concern.*

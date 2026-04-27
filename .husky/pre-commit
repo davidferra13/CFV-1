@@ -1,2 +1,58 @@
 #!/bin/sh
+
+# ── Fragile file warning (non-blocking) ─────────────────────────
+WATCHLIST="scripts/.fragile-watchlist.json"
+if [ -f "$WATCHLIST" ]; then
+  STAGED=$(git diff --cached --name-only)
+  if [ -n "$STAGED" ]; then
+    HITS=$(node -e "
+const fs = require('fs');
+try {
+  const wl = JSON.parse(fs.readFileSync('$WATCHLIST', 'utf8'));
+  const staged = process.argv.slice(1);
+  const map = new Map(wl.map(e => [e.file, e]));
+  const hits = staged.filter(f => map.has(f)).map(f => {
+    const e = map.get(f);
+    return '    ' + e.file + ' - ' + e.reason;
+  });
+  if (hits.length) process.stdout.write(hits.join('\n'));
+} catch(e) {}
+" $STAGED 2>/dev/null)
+    if [ -n "$HITS" ]; then
+      echo ""
+      echo "  FRAGILE FILE WARNING:"
+      echo "$HITS"
+      echo ""
+      echo "  These files break frequently. Extra care recommended."
+      echo ""
+    fi
+  fi
+fi
+
+# ── Regression check (quick mode, ~2s) ──────────────────────────
+if bash scripts/regression-check.sh --quick; then
+  : # clean
+else
+  echo ""
+  echo "=========================================="
+  echo "  COMMIT BLOCKED: Regression detected"
+  echo "=========================================="
+  echo ""
+  echo "  Run for details:"
+  echo "    bash scripts/regression-check.sh"
+  echo ""
+  echo "  Bypass with: git commit --no-verify"
+  echo ""
+  exit 1
+fi
+
+# ── Secret scanner ───────────────────────────────────────────────
+if [ -f .git/hooks/pre-commit ]; then
+  bash .git/hooks/pre-commit
+  if [ $? -ne 0 ]; then
+    exit 1
+  fi
+fi
+
+# ── Lint-staged ──────────────────────────────────────────────────
 node node_modules/lint-staged/bin/lint-staged.js

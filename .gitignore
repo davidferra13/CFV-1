@@ -54,6 +54,8 @@ tmp-warmup/
 tmp-chef-bob-*
 .tsc-dirty
 .hallucination-scan-results.md
+.regression-report.md
+.regression-dashboard.html
 docs/.session-briefing.md
 
 # Local file storage
@@ -287,6 +289,9 @@ scripts/archive-digester/parsed-emails.json
 scripts/archive-digester/*.mbox
 graphify
 graphify-out
+
+# Session change tracker (local forensics, not shared state)
+scripts/.session-changes.jsonl
 
 # Codex sandbox artifacts (build dirs, log files, temp output)
 .codex-*/

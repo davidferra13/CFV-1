@@ -1,0 +1,218 @@
+{
+  "_meta": {
+    "description": "Critical feature registry for regression detection. If any of these are missing, something broke.",
+    "updated": "2026-04-27",
+    "instructions": "Add new entries when features ship. Remove only when features are intentionally deleted."
+  },
+
+  "routes": {
+    "_doc": "page.tsx files that MUST exist. Grouped by pillar.",
+    "core": [
+      "app/(chef)/dashboard/page.tsx",
+      "app/(chef)/events/page.tsx",
+      "app/(chef)/events/new/page.tsx",
+      "app/(chef)/events/[id]/page.tsx",
+      "app/(chef)/events/[id]/edit/page.tsx",
+      "app/(chef)/clients/page.tsx",
+      "app/(chef)/clients/[id]/page.tsx",
+      "app/(chef)/inquiries/page.tsx",
+      "app/(chef)/inquiries/[id]/page.tsx",
+      "app/(chef)/inquiries/new/page.tsx"
+    ],
+    "sell": [
+      "app/(chef)/quotes/page.tsx",
+      "app/(chef)/quotes/new/page.tsx",
+      "app/(chef)/quotes/[id]/page.tsx",
+      "app/(chef)/finance/invoices/page.tsx",
+      "app/(chef)/finance/invoices/draft/page.tsx"
+    ],
+    "plan": [
+      "app/(chef)/culinary/menus/page.tsx",
+      "app/(chef)/culinary/menus/[id]/page.tsx",
+      "app/(chef)/culinary/menus/[id]/page.tsx",
+      "app/(chef)/calendar/page.tsx",
+      "app/(chef)/daily/page.tsx"
+    ],
+    "cook": [
+      "app/(chef)/culinary/recipes/page.tsx",
+      "app/(chef)/culinary/recipes/[id]/page.tsx",
+      "app/(chef)/culinary/recipes/[id]/page.tsx",
+      "app/(chef)/culinary/ingredients/page.tsx",
+      "app/(chef)/culinary/components/page.tsx"
+    ],
+    "stock": [
+      "app/(chef)/culinary/price-catalog/page.tsx",
+      "app/(chef)/vendors/page.tsx",
+      "app/(chef)/inventory/page.tsx"
+    ],
+    "money": [
+      "app/(chef)/finance/page.tsx",
+      "app/(chef)/finance/expenses/page.tsx",
+      "app/(chef)/finance/payments/page.tsx",
+      "app/(chef)/finance/ledger/page.tsx",
+      "app/(chef)/settings/billing/page.tsx"
+    ],
+    "grow": [
+      "app/(chef)/analytics/page.tsx",
+      "app/(chef)/settings/profile/page.tsx",
+      "app/(chef)/inbox/page.tsx"
+    ],
+    "public": [
+      "app/(public)/page.tsx",
+      "app/(public)/chef/[slug]/page.tsx",
+      "app/(public)/chef/[slug]/inquire/page.tsx",
+      "app/(public)/book/page.tsx",
+      "app/(public)/pricing/page.tsx",
+      "app/(public)/hub/page.tsx"
+    ],
+    "auth": [
+      "app/auth/signin/page.tsx",
+      "app/auth/signup/page.tsx",
+      "app/auth/forgot-password/page.tsx",
+      "app/auth/reset-password/page.tsx"
+    ],
+    "client_portal": ["app/(client)/layout.tsx"]
+  },
+
+  "api_routes": {
+    "_doc": "API route.ts files that MUST exist.",
+    "critical": [
+      "app/api/health/ping/route.ts",
+      "app/api/health/route.ts",
+      "app/api/auth/[...nextauth]/route.ts",
+      "app/api/remy/stream/route.ts",
+      "app/api/e2e/auth/route.ts"
+    ],
+    "v2_core": [
+      "app/api/v2/events/route.ts",
+      "app/api/v2/clients/route.ts",
+      "app/api/v2/invoices/route.ts",
+      "app/api/v2/menus/route.ts",
+      "app/api/v2/recipes/route.ts",
+      "app/api/v2/quotes/route.ts"
+    ],
+    "webhooks": ["app/api/webhooks/stripe/route.ts"]
+  },
+
+  "server_actions": {
+    "_doc": "Critical exported functions that MUST exist in their files. Format: file -> [function names]",
+    "lib/events/actions.ts": [
+      "createEvent",
+      "getEvents",
+      "getEventById",
+      "updateEvent",
+      "deleteEvent"
+    ],
+    "lib/clients/actions.ts": [
+      "createClient",
+      "getClients",
+      "getClientById",
+      "updateClient",
+      "deleteClient"
+    ],
+    "lib/recipes/actions.ts": [
+      "createRecipe",
+      "getRecipes",
+      "getRecipeById",
+      "updateRecipe",
+      "deleteRecipe",
+      "addIngredientToRecipe"
+    ],
+    "lib/quotes/actions.ts": [
+      "createQuote",
+      "getQuotes",
+      "getQuoteById",
+      "updateQuote",
+      "transitionQuote"
+    ],
+    "lib/menus/actions.ts": [
+      "createMenu",
+      "getMenus",
+      "getMenuById",
+      "updateMenu",
+      "deleteMenu",
+      "attachMenuToEvent"
+    ],
+    "lib/inquiries/actions.ts": [
+      "createInquiry",
+      "getInquiries",
+      "getInquiryById",
+      "updateInquiry",
+      "transitionInquiry",
+      "convertInquiryToEvent"
+    ],
+    "lib/auth/actions.ts": ["signUpChef", "signIn", "signOut", "changePassword"],
+    "lib/auth/get-user.ts": ["getCurrentUser", "requireChef", "requireClient", "requireAuth"],
+    "lib/auth/admin.ts": ["requireAdmin", "isAdmin"],
+    "lib/contracts/actions.ts": [
+      "generateEventContract",
+      "sendContractToClient",
+      "signContract",
+      "getContracts"
+    ],
+    "lib/todos/actions.ts": ["getTodos", "createTodo", "updateTodo", "deleteTodo"],
+    "lib/notes/actions.ts": ["addClientNote", "getClientNotes"]
+  },
+
+  "critical_files": {
+    "_doc": "Files that MUST exist for the system to function.",
+    "infrastructure": [
+      "lib/db/index.ts",
+      "lib/db/schema/schema.ts",
+      "lib/db/compat.ts",
+      "lib/auth/auth-config.ts",
+      "lib/auth/get-user.ts",
+      "lib/ai/parse-ollama.ts",
+      "lib/ai/remy-actions.ts",
+      "lib/ai/ollama-errors.ts",
+      "lib/billing/feature-classification.ts",
+      "lib/billing/require-pro.ts",
+      "lib/billing/tier.ts",
+      "middleware.ts"
+    ],
+    "layouts": [
+      "app/(chef)/layout.tsx",
+      "app/(public)/layout.tsx",
+      "app/auth/layout.tsx",
+      "app/(client)/layout.tsx",
+      "app/layout.tsx"
+    ],
+    "config": ["drizzle.config.ts", "next.config.js", "package.json", "tsconfig.json", ".env.local"]
+  },
+
+  "critical_exports": {
+    "_doc": "Specific exports from infrastructure files that MUST exist.",
+    "lib/db/index.ts": ["db"],
+    "lib/db/compat.ts": ["createCompatClient"],
+    "lib/ai/parse-ollama.ts": ["parseWithOllama"],
+    "lib/ai/ollama-errors.ts": ["OllamaOfflineError"],
+    "lib/billing/require-pro.ts": ["requirePro"],
+    "lib/billing/tier.ts": ["getTierForChef"]
+  },
+
+  "schema_tables": {
+    "_doc": "Core DB tables that MUST be defined in schema. Spot-check, not exhaustive.",
+    "tables": [
+      "events",
+      "clients",
+      "recipes",
+      "recipe_ingredients",
+      "ingredients",
+      "menus",
+      "dishes",
+      "components",
+      "quotes",
+      "quote_line_items",
+      "ledger_entries",
+      "event_contracts",
+      "conversations",
+      "chat_messages",
+      "user_roles",
+      "chef_profiles",
+      "notifications",
+      "staff_members",
+      "hub_groups",
+      "hub_messages"
+    ]
+  }
+}

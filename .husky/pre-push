@@ -1,0 +1,55 @@
+#!/bin/sh
+
+# Type check before pushing (catches broken imports, type errors)
+echo "Running type check before push..."
+npx tsc --noEmit --skipLibCheck 2>&1
+
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "=========================================="
+  echo "  PUSH BLOCKED: TypeScript errors detected"
+  echo "=========================================="
+  echo ""
+  echo "  Fix type errors before pushing."
+  echo "  Bypass with: git push --no-verify"
+  echo ""
+  exit 1
+fi
+
+echo "Type check passed."
+
+# Also run full regression check (not just quick)
+echo "Running full regression check..."
+bash scripts/regression-check.sh 2>&1
+
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "=========================================="
+  echo "  PUSH BLOCKED: Regression detected"
+  echo "=========================================="
+  echo ""
+  echo "  Fix regressions before pushing."
+  echo "  Bypass with: git push --no-verify"
+  echo ""
+  exit 1
+fi
+
+# Run snapshot diff if snapshot exists
+if [ -f scripts/.regression-snapshot.json ]; then
+  echo "Running snapshot diff..."
+  bash scripts/regression-snapshot.sh --diff 2>&1
+  if [ $? -ne 0 ]; then
+    echo ""
+    echo "=========================================="
+    echo "  PUSH BLOCKED: Features disappeared"
+    echo "=========================================="
+    echo ""
+    echo "  Routes or exports from the snapshot are missing."
+    echo "  If intentional, run: bash scripts/regression-snapshot.sh --capture"
+    echo "  Bypass with: git push --no-verify"
+    echo ""
+    exit 1
+  fi
+fi
+
+echo "All checks passed. Pushing..."

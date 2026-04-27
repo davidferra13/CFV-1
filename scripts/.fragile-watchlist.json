@@ -1,0 +1,56 @@
+[
+  {
+    "file": "docs/session-log.md",
+    "reason": "Auto-added: CRIT risk, 153 commits in 30 days",
+    "added": "2026-04-27",
+    "updated": "2026-04-27"
+  },
+  {
+    "file": "docs/build-state.md",
+    "reason": "Auto-added: CRIT risk, 64 commits in 30 days",
+    "added": "2026-04-27",
+    "updated": "2026-04-27"
+  },
+  {
+    "file": "components/navigation/nav-config.tsx",
+    "reason": "Auto-added: CRIT risk, 36 commits in 30 days",
+    "added": "2026-04-27",
+    "updated": "2026-04-27"
+  },
+  {
+    "file": "app/(chef)/dashboard/page.tsx",
+    "reason": "Auto-added: CRIT risk, 23 commits in 30 days, in registry",
+    "added": "2026-04-27",
+    "updated": "2026-04-27"
+  },
+  {
+    "file": "app/(chef)/events/[id]/page.tsx",
+    "reason": "Auto-added: CRIT risk, 21 commits in 30 days, in registry",
+    "added": "2026-04-27",
+    "updated": "2026-04-27"
+  },
+  {
+    "file": "package.json",
+    "reason": "Auto-added: CRIT risk, 18 commits in 30 days, in registry",
+    "added": "2026-04-27",
+    "updated": "2026-04-27"
+  },
+  {
+    "file": "app/(chef)/layout.tsx",
+    "reason": "Auto-added: CRIT risk, 18 commits in 30 days, in registry",
+    "added": "2026-04-27",
+    "updated": "2026-04-27"
+  },
+  {
+    "file": "app/(public)/chef/[slug]/page.tsx",
+    "reason": "Auto-added: CRIT risk, 16 commits in 30 days, in registry",
+    "added": "2026-04-27",
+    "updated": "2026-04-27"
+  },
+  {
+    "file": "app/api/webhooks/stripe/route.ts",
+    "reason": "Auto-added: CRIT risk, 17 commits in 30 days, in registry",
+    "added": "2026-04-27",
+    "updated": "2026-04-27"
+  }
+]
