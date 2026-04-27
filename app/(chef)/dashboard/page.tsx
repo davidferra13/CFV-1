@@ -90,6 +90,7 @@ import {
   MultiLocationSummarySkeleton,
 } from './_sections/multi-location-summary'
 import { CompletionSummaryWidgetServer } from '@/components/completion/completion-summary-server'
+import { EventDeadlineAlerts } from './_sections/event-deadline-alerts'
 import { NetworkActivitySection } from './_sections/network-activity'
 import { OnboardingChecklistWidget } from '@/components/dashboard/onboarding-checklist-widget'
 import { getOnboardingProgress } from '@/lib/onboarding/progress-actions'
@@ -1742,6 +1743,15 @@ export default async function ChefDashboard() {
           <div className="section-label mb-3">Alerts</div>
           <RemyAlertsWidget alerts={remyAlerts} />
         </div>
+      )}
+
+      {/* Event Deadline Alerts - approaching events with missing items */}
+      {!isMinimalDensity && (
+        <WidgetErrorBoundary name="Event Deadlines" compact>
+          <Suspense fallback={null}>
+            <EventDeadlineAlerts />
+          </Suspense>
+        </WidgetErrorBoundary>
       )}
 
       {/* ============================================ */}
