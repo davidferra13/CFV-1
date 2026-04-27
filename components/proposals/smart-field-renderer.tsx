@@ -139,7 +139,7 @@ export function SmartFieldRenderer({ fields, previewTemplate, context }: Props) 
                 label="Default Value"
                 value={newValue}
                 onChange={(e) => setNewValue(e.target.value)}
-                placeholder="e.g., Chef David"
+                placeholder="e.g., Chef Maria"
               />
               <div className="flex gap-2">
                 <Button

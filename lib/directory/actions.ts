@@ -5,8 +5,7 @@
 // Uses admin client (no RLS) since this is a public, unauthenticated query.
 //
 // APPROVAL GATE: Only chefs with directory_approved=true appear.
-// The founder (davidferra13@gmail.com) is always included regardless.
-// Other chefs must be approved by the admin to appear in the public listing.
+// All chefs must be approved by an admin to appear in the public listing.
 
 import { unstable_cache } from 'next/cache'
 import {
@@ -23,7 +22,6 @@ import {
   type LocationExperienceImage,
   type PublicChefLocationExperience,
 } from '@/lib/partners/location-experiences'
-import { isFounderEmail } from '@/lib/platform/owner-account'
 import { createServerClient } from '@/lib/db/server'
 import type { ChefSocialLinks } from '@/lib/chef/profile-actions'
 
@@ -66,8 +64,6 @@ export type DirectoryChef = {
   preferred_inquiry_destination: string | null
   social_links: ChefSocialLinks
   discovery: DiscoveryProfile & { completeness_score: number }
-  /** True if this is the founder / platform owner */
-  is_founder: boolean
   /** Showcase-visible partners with their locations */
   partners: DirectoryPartner[]
   /** Shared public location read model used across profile, discovery, and previews. */
@@ -307,7 +303,6 @@ async function getDiscoverableChefsUncached(): Promise<DirectoryChef[]> {
         ...discovery,
         completeness_score: computeDiscoveryCompleteness(discovery),
       },
-      is_founder: isFounderEmail(chef.email),
       booking_enabled: chef.booking_enabled ?? false,
       booking_slug: chef.booking_slug ?? null,
       booking_model: chef.booking_model ?? 'inquiry_first',

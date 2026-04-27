@@ -251,7 +251,7 @@ const TEMPLATE_VARIABLES = [
   { key: 'occasion', description: 'Event occasion', example: 'Birthday Dinner' },
   { key: 'event_date', description: 'Event date', example: 'March 20, 2026' },
   { key: 'guest_count', description: 'Number of guests', example: '12' },
-  { key: 'chef_name', description: 'Chef/business name', example: 'Chef David' },
+  { key: 'chef_name', description: 'Chef/business name', example: 'Chef Maria' },
   { key: 'business_name', description: 'Business name', example: 'ChefFlow' },
   { key: 'response_time', description: 'Expected response time', example: 'within 24 hours' },
   { key: 'quoted_price', description: 'Quoted price', example: '$1,800' },

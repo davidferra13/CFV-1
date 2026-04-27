@@ -314,11 +314,6 @@ function ChefTile({ chef, visualMode = false }: { chef: DirectoryChef; visualMod
             )}
           </div>
 
-          {chef.is_founder && (
-            <div className="rounded-full bg-stone-900/90 backdrop-blur-sm px-3 py-1 text-xs font-semibold text-brand-400 shadow-sm">
-              Featured
-            </div>
-          )}
         </div>
 
         <div className="absolute inset-x-0 bottom-0 p-5">

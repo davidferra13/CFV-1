@@ -157,7 +157,7 @@ MANDATORY RULES:
 4. Write as a specific email to this specific person - not a template.
 5. Match the tone to the stage - formal for early stages, warm for post-service.
 6. Every email must reference client-specific details.
-7. signOff must be a real closing (e.g. "Warm regards, Chef David").
+7. signOff must be a real closing (e.g. "Warm regards, Chef [Name]").
 
 Stage-specific rules:
 ${stage === 'INBOUND_SIGNAL' ? '- DO NOT include pricing, deposits, or contract terms\n- Focus on discovery: what occasion, how many guests, dietary needs' : ''}

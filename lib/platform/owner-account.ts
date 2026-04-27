@@ -1,7 +1,7 @@
-// Platform owner account. This should remain stable even if env vars are misconfigured.
-export const FOUNDER_EMAIL = 'davidferra13@gmail.com'
-export const DEFAULT_ADMIN_NOTIFICATION_EMAIL = 'info@cheflowhq.com'
-export const DEFAULT_DEVELOPER_NOTIFICATION_EMAIL = 'DFPrivateChef@gmail.com'
+// Platform owner account. Resolved from env vars with hardcoded fallbacks.
+export const FOUNDER_EMAIL = (process.env.FOUNDER_EMAIL || 'davidferra13@gmail.com').trim().toLowerCase()
+export const DEFAULT_ADMIN_NOTIFICATION_EMAIL = (process.env.ADMIN_NOTIFICATION_EMAIL || 'info@cheflowhq.com').trim().toLowerCase()
+export const DEFAULT_DEVELOPER_NOTIFICATION_EMAIL = (process.env.DEVELOPER_NOTIFICATION_EMAIL || 'DFPrivateChef@gmail.com').trim().toLowerCase()
 const OWNER_CACHE_TTL_MS = 60_000
 
 export type OwnerIdentity = {

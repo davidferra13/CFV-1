@@ -998,3 +998,6 @@
 {"id":"4cdeed07-c01f-49a6-bb35-8ca196c27d8a","timestamp":"2026-04-27T21:52:18.061Z","type":"state:update","source":"3977.watchdog","scope":{"workflow":"watchdog"},"payload":{"action":"orphaned_lock_self_healed","stale_pid":74496}}
 {"id":"ef1bfb3a-f7cd-42b9-896a-c4d61fd54f76","timestamp":"2026-04-27T21:53:18.061Z","type":"state:update","source":"3977.watchdog","scope":{"workflow":"watchdog"},"payload":{"action":"orphaned_lock_self_healed","stale_pid":34408}}
 {"id":"0d921697-6bbb-45d0-a144-7d07fc400b95","timestamp":"2026-04-27T21:54:18.061Z","type":"state:update","source":"3977.watchdog","scope":{"workflow":"watchdog"},"payload":{"action":"orphaned_lock_self_healed","stale_pid":44012}}
+{"id":"15ab4bc7-7310-4def-9b61-c5d4fb3da3d1","timestamp":"2026-04-27T21:55:18.061Z","type":"state:update","source":"3977.watchdog","scope":{"workflow":"watchdog"},"payload":{"action":"orphaned_lock_self_healed","stale_pid":11532}}
+{"id":"e93ff2d3-4348-4f18-952f-bc8b6c447424","timestamp":"2026-04-27T21:55:53.653Z","type":"tool:call","source":"3977.http","scope":{"workflow":"3977-http"},"payload":{"method":"GET","path":"/healthz","query":{}}}
+{"id":"10c52439-0d71-4d33-8b90-888c32774ad8","timestamp":"2026-04-27T21:56:18.061Z","type":"state:update","source":"3977.watchdog","scope":{"workflow":"watchdog"},"payload":{"action":"orphaned_lock_self_healed","stale_pid":22716}}

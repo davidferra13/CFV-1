@@ -42,7 +42,6 @@ function makeChef(overrides: Partial<DirectoryChef>): DirectoryChef {
       completeness_score: 0.9,
       ...(overrides.discovery || {}),
     },
-    is_founder: overrides.is_founder ?? false,
     distance_miles: overrides.distance_miles ?? null,
     directory_listing_location: overrides.directory_listing_location ?? null,
     location_experiences: overrides.location_experiences,
@@ -142,11 +141,10 @@ test('filterDirectoryChefs applies cuisine, service, state, price, partner, and 
   assert.equal(filtered[0].slug, 'chef-1')
 })
 
-test('sortDirectoryChefs featured prioritizes founder, then accepting inquiries, then completeness', () => {
-  const founder = makeChef({
-    id: 'founder',
-    slug: 'founder',
-    is_founder: true,
+test('sortDirectoryChefs featured prioritizes accepting inquiries, then completeness', () => {
+  const inactive = makeChef({
+    id: 'inactive',
+    slug: 'inactive',
     discovery: { completeness_score: 0.4, accepting_inquiries: false },
   })
   const complete = makeChef({
@@ -162,11 +160,11 @@ test('sortDirectoryChefs featured prioritizes founder, then accepting inquiries,
     discovery: { completeness_score: 0.5, accepting_inquiries: true },
   })
 
-  const sorted = sortDirectoryChefs([partial, founder, complete], 'featured')
+  const sorted = sortDirectoryChefs([partial, inactive, complete], 'featured')
 
   assert.deepEqual(
     sorted.map((chef) => chef.slug),
-    ['founder', 'complete', 'partial']
+    ['complete', 'partial', 'inactive']
   )
 })
 

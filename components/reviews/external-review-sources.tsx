@@ -351,7 +351,7 @@ export function ExternalReviewSources({ sources }: { sources: ExternalReviewSour
                 onChange={(event) => setWebsiteUrls(event.target.value)}
                 rows={4}
                 required
-                placeholder="https://dfprivatechef.com/reviews&#10;https://dfprivatechef.com/testimonials"
+                placeholder="https://yourwebsite.com/reviews&#10;https://yourwebsite.com/testimonials"
               />
             </div>
           )}

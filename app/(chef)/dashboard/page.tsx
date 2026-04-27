@@ -1620,6 +1620,13 @@ export default async function ChefDashboard() {
         </div>
       </header>
 
+      {/* Communication Urgency Banner - shows when people are waiting for a response */}
+      <WidgetErrorBoundary name="Communication Urgency" compact>
+        <Suspense fallback={null}>
+          <CommunicationUrgencyBanner />
+        </Suspense>
+      </WidgetErrorBoundary>
+
       {!isMinimalDensity && (
         <WidgetErrorBoundary name="Client Pulse" compact>
           <Suspense fallback={null}>

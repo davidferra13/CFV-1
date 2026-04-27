@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireAdmin } from '@/lib/auth/admin'
-import { redirect } from 'next/navigation'
 import {
   listRemyApprovalPolicies,
   listRemyApprovalPolicyTargets,
@@ -13,15 +12,11 @@ import {
 import { getAiPreferences } from '@/lib/ai/privacy-actions'
 import { RemyControlClient } from './remy-control-client'
 import { RemyAbuseSummary } from '@/components/admin/remy-abuse-summary'
-import { isFounderEmail } from '@/lib/platform/owner-account'
 
 export const metadata: Metadata = { title: 'Remy Control Center' }
 
 export default async function RemySettingsPage() {
-  const admin = await requireAdmin()
-  if (!isFounderEmail(admin.email)) {
-    redirect('/unauthorized')
-  }
+  await requireAdmin()
 
   const [targets, policies, auditRows, summary, aiPrefs] = await Promise.all([
     listRemyApprovalPolicyTargets().catch(() => []),
