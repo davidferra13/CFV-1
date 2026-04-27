@@ -86,6 +86,29 @@ export async function getEventConstraintRadar(eventId: string): Promise<Constrai
         .select('dietary_restrictions, allergies, plus_one_dietary, plus_one_allergies')
         .eq('event_id', eventId)
 
+      // Fetch household member dietary data for the client
+      // Household members (spouse, children, etc.) may have allergies that
+      // MUST be considered when planning menus for the event.
+      let householdMembers: Array<{ allergies: string[]; dietary_restrictions: string[] }> = []
+      try {
+        const { data: profiles } = await db
+          .from('hub_guest_profiles')
+          .select('id')
+          .eq('client_id', event.client_id)
+
+        const profileIds = (profiles || []).map((p: any) => p.id)
+        if (profileIds.length > 0) {
+          const { data: members } = await db
+            .from('hub_household_members')
+            .select('allergies, dietary_restrictions')
+            .in('profile_id', profileIds)
+
+          householdMembers = members || []
+        }
+      } catch (err) {
+        console.warn('[constraint-radar] household member lookup failed (non-blocking):', err)
+      }
+
       // Check for unconfirmed allergy records
       const { data: allergyRecords } = await db
         .from('client_allergy_records')
@@ -109,6 +132,12 @@ export async function getEventConstraintRadar(eventId: string): Promise<Constrai
         for (const r of g.dietary_restrictions || []) allRestrictions.add(r)
         for (const a of g.plus_one_allergies || []) allAllergens.add(a)
         for (const r of g.plus_one_dietary || []) allRestrictions.add(r)
+      }
+
+      // Include household member allergies and dietary restrictions
+      for (const m of householdMembers) {
+        for (const a of m.allergies || []) allAllergens.add(a)
+        for (const r of m.dietary_restrictions || []) allRestrictions.add(r)
       }
 
       const totalConstraints = allAllergens.size + allRestrictions.size
