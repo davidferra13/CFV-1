@@ -3252,6 +3252,7 @@ export async function getResponseQueue(limit = 10): Promise<ResponseQueueItem[]>
       confirmedDate: row.confirmed_date,
       guestCount: row.confirmed_guest_count,
       waitingHours,
+      updatedAt: row.updated_at,
       readiness,
       status: row.status,
     })

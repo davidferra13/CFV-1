@@ -38,6 +38,7 @@ import { getGmailSyncStatus } from '@/lib/gmail/actions'
 import { QuickLogButton } from '@/components/inquiries/quick-log-button'
 import { scoreEventUrgency } from '@/lib/inquiries/event-urgency'
 import { EventUrgencyBadge } from '@/components/inquiries/event-urgency-badge'
+import { IdleTimeIndicator } from '@/components/inquiries/idle-time-indicator'
 
 const CHEF_ACTION_STATUSES = new Set(['new', 'awaiting_chef'])
 
@@ -185,6 +186,9 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
                 <p className="text-xs text-stone-400 mt-1">
                   {formatDistanceToNow(new Date(inquiry.updated_at), { addSuffix: true })}
                 </p>
+                {needsChefAction && (
+                  <IdleTimeIndicator updatedAt={inquiry.updated_at} status={inquiry.status} />
+                )}
                 {/* Quick actions - visible on hover for inquiries needing chef action */}
                 {needsChefAction && (
                   <div className="mt-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
@@ -217,7 +221,7 @@ export default async function InquiriesPage({
       connected: false,
       lastSyncedAt: null,
     })),
-    getInquiryStatusCounts().catch(() => ({} as Record<string, number>)),
+    getInquiryStatusCounts().catch(() => ({}) as Record<string, number>),
   ])
 
   // Primary tabs (max 6 visible per interface philosophy Section 6)
@@ -278,13 +282,15 @@ export default async function InquiriesPage({
               >
                 {tab.label}
                 {tab.count != null && tab.count > 0 && (
-                  <span className={`ml-1.5 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full text-xs font-medium ${
-                    filter === tab.value
-                      ? 'bg-white/20 text-white'
-                      : tab.value === 'respond_next' && tab.count > 0
-                        ? 'bg-amber-500/20 text-amber-400'
-                        : 'bg-stone-600/50 text-stone-300'
-                  }`}>
+                  <span
+                    className={`ml-1.5 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full text-xs font-medium ${
+                      filter === tab.value
+                        ? 'bg-white/20 text-white'
+                        : tab.value === 'respond_next' && tab.count > 0
+                          ? 'bg-amber-500/20 text-amber-400'
+                          : 'bg-stone-600/50 text-stone-300'
+                    }`}
+                  >
                     {tab.count}
                   </span>
                 )}
@@ -391,7 +397,7 @@ async function ResponseQueueList({ statusCounts }: { statusCounts: Record<string
                 {item.guestCount && (
                   <p className="text-xs text-stone-500">{item.guestCount} guests</p>
                 )}
-                <p className="text-xs text-amber-600 mt-1">waiting {item.waitingHours}h</p>
+                <IdleTimeIndicator updatedAt={item.updatedAt} status={item.status} />
               </div>
             </div>
           </Link>

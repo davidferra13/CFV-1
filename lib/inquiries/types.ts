@@ -27,6 +27,7 @@ export type ResponseQueueItem = {
   confirmedDate: string | null
   guestCount: number | null
   waitingHours: number
+  updatedAt: string
   readiness: ReadinessScore
   status: string
 }
