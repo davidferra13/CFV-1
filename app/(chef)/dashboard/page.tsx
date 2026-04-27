@@ -113,6 +113,7 @@ import { checkAssignmentConflict, getEventStaffRoster, listStaffMembers } from '
 import { eventsOverlapInTime } from '@/lib/staff/time-overlap'
 import { getSupportStatus } from '@/lib/monetization/status'
 import { getDecisionQueue, type DecisionQueueResult } from '@/lib/decision-queue/actions'
+import { OverwhelmTriageBanner } from './_sections/overwhelm-triage-banner'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -1641,6 +1642,13 @@ export default async function ChefDashboard() {
           </Link>
         </div>
       </header>
+
+      {/* Overwhelm Detection - shows when too many items are stalling */}
+      <WidgetErrorBoundary name="Overwhelm Detection" compact>
+        <Suspense fallback={null}>
+          <OverwhelmTriageBanner />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       {/* Communication Urgency Banner - shows when people are waiting for a response */}
       <WidgetErrorBoundary name="Communication Urgency" compact>
