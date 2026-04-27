@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
+import { Megaphone } from '@/components/ui/icons'
 
 export const metadata: Metadata = { title: 'Marketing Expenses' }
 
@@ -65,9 +66,13 @@ export default async function MarketingExpensesPage() {
       </div>
 
       {expenses.length === 0 ? (
-        <Card className="p-12 text-center">
-          <p className="text-stone-400 font-medium">No marketing expenses recorded</p>
-        </Card>
+        <div className="text-center py-16 text-stone-400">
+          <Megaphone className="mx-auto h-12 w-12 mb-4 text-stone-500" />
+          <p className="text-lg font-medium text-stone-300">No marketing expenses yet</p>
+          <p className="text-sm mt-1 max-w-md mx-auto">
+            Track advertising spend, social media promotions, and other marketing costs here.
+          </p>
+        </div>
       ) : (
         <Card>
           <Table>

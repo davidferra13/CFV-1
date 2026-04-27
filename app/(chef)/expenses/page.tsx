@@ -24,6 +24,7 @@ import {
   getCategoryLabel,
   getCategoryColor,
 } from '@/lib/constants/expense-categories'
+import { Receipt } from '@/components/ui/icons'
 import { ExpensesExportButton } from '@/components/exports/expenses-export-button'
 import { format } from 'date-fns'
 import { getSignedUrl } from '@/lib/storage'
@@ -199,15 +200,19 @@ export default async function ExpensesPage({
 
       {/* Expense Table */}
       {expenses.length === 0 ? (
-        <Card className="p-8 text-center">
-          <p className="text-stone-500">No expenses recorded yet.</p>
+        <div className="text-center py-16 text-stone-400">
+          <Receipt className="mx-auto h-12 w-12 mb-4 text-stone-500" />
+          <p className="text-lg font-medium text-stone-300">No expenses yet</p>
+          <p className="text-sm mt-1 max-w-md mx-auto">
+            Track business expenses, scan receipts, and categorize spending. All data flows into your financial reports.
+          </p>
           <Link
             href="/expenses/new"
-            className="text-brand-600 hover:underline text-sm mt-2 inline-block"
+            className="text-brand-600 hover:underline text-sm mt-3 inline-block"
           >
             Add your first expense
           </Link>
-        </Card>
+        </div>
       ) : (
         <Card>
           <Table>

@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
+import { Monitor } from '@/components/ui/icons'
 
 export const metadata: Metadata = { title: 'Software Expenses' }
 
@@ -82,9 +83,13 @@ export default async function SoftwareExpensesPage() {
       )}
 
       {expenses.length === 0 ? (
-        <Card className="p-12 text-center">
-          <p className="text-stone-400 font-medium">No software expenses recorded</p>
-        </Card>
+        <div className="text-center py-16 text-stone-400">
+          <Monitor className="mx-auto h-12 w-12 mb-4 text-stone-500" />
+          <p className="text-lg font-medium text-stone-300">No software expenses yet</p>
+          <p className="text-sm mt-1 max-w-md mx-auto">
+            Track SaaS subscriptions and software tool costs here. Good for tax-time deductions.
+          </p>
+        </div>
       ) : (
         <Card>
           <Table>

@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
+import { Car } from '@/components/ui/icons'
 
 export const metadata: Metadata = { title: 'Travel Expenses' }
 
@@ -73,9 +74,13 @@ export default async function TravelExpensesPage() {
       </div>
 
       {expenses.length === 0 ? (
-        <Card className="p-12 text-center">
-          <p className="text-stone-400 font-medium">No travel expenses recorded</p>
-        </Card>
+        <div className="text-center py-16 text-stone-400">
+          <Car className="mx-auto h-12 w-12 mb-4 text-stone-500" />
+          <p className="text-lg font-medium text-stone-300">No travel expenses yet</p>
+          <p className="text-sm mt-1 max-w-md mx-auto">
+            Track mileage, gas, and vehicle costs for event travel. These are tax-deductible business expenses.
+          </p>
+        </div>
       ) : (
         <Card>
           <Table>
