@@ -34,6 +34,7 @@ import {
   validateMemoryContent,
   checkRemyRateLimit,
 } from '@/lib/ai/remy-guardrails'
+import { sanitizeForPrompt, fenceForPrompt } from '@/lib/ai/remy-input-validation'
 import { isFocusModeEnabled } from '@/lib/billing/focus-mode-actions'
 import { REMY_ARCHETYPES, type RemyArchetypeId } from '@/lib/ai/remy-archetypes'
 import { getRemyArchetype } from '@/lib/ai/privacy-actions'
@@ -381,7 +382,7 @@ function buildDailyBriefing(context: Awaited<ReturnType<typeof loadRemyContext>>
     const todayEvents = context.upcomingEvents.filter((e) => e.date === today)
     if (todayEvents.length > 0) {
       items.push(
-        `📅 ${todayEvents.length} event${todayEvents.length > 1 ? 's' : ''} TODAY: ${todayEvents.map((e) => `${e.occasion ?? 'Event'} for ${e.clientName} (${e.guestCount ?? '?'} guests)`).join(', ')}`
+        `📅 ${todayEvents.length} event${todayEvents.length > 1 ? 's' : ''} TODAY: ${todayEvents.map((e) => `${fenceForPrompt('occasion', sanitizeForPrompt(e.occasion ?? 'Event'))} for ${fenceForPrompt('client_name', sanitizeForPrompt(e.clientName))} (${e.guestCount ?? '?'} guests)`).join(', ')}`
       )
     }
 
@@ -392,7 +393,7 @@ function buildDailyBriefing(context: Awaited<ReturnType<typeof loadRemyContext>>
     const tomorrowEvents = context.upcomingEvents.filter((e) => e.date === tmrwStr)
     if (tomorrowEvents.length > 0) {
       items.push(
-        `📅 ${tomorrowEvents.length} event${tomorrowEvents.length > 1 ? 's' : ''} TOMORROW: ${tomorrowEvents.map((e) => `${e.occasion ?? 'Event'} for ${e.clientName}`).join(', ')}`
+        `📅 ${tomorrowEvents.length} event${tomorrowEvents.length > 1 ? 's' : ''} TOMORROW: ${tomorrowEvents.map((e) => `${fenceForPrompt('occasion', sanitizeForPrompt(e.occasion ?? 'Event'))} for ${fenceForPrompt('client_name', sanitizeForPrompt(e.clientName))}`).join(', ')}`
       )
     }
   }
@@ -414,7 +415,7 @@ function buildDailyBriefing(context: Awaited<ReturnType<typeof loadRemyContext>>
     const todayCalls = context.upcomingCalls.filter((c) => c.scheduledAt.startsWith(today))
     if (todayCalls.length > 0) {
       items.push(
-        `📞 ${todayCalls.length} call${todayCalls.length > 1 ? 's' : ''} today: ${todayCalls.map((c) => `${c.clientName} (${c.purpose ?? 'call'})`).join(', ')}`
+        `📞 ${todayCalls.length} call${todayCalls.length > 1 ? 's' : ''} today: ${todayCalls.map((c) => `${fenceForPrompt('client_name', sanitizeForPrompt(c.clientName))} (${c.purpose ?? 'call'})`).join(', ')}`
       )
     }
   }
@@ -579,7 +580,7 @@ Use seasonal awareness naturally - mention what's in season, upcoming holidays t
     ? context.chefArchetype.replace(/_/g, ' ').replace(/-/g, ' ')
     : null
   parts.push(`\nBUSINESS CONTEXT:
-- Business: ${context.businessName ?? 'Your business'}${context.tagline ? ` - "${context.tagline}"` : ''}${archetypeLabel ? `\n- Business type: ${archetypeLabel}` : ''}${locationStr ? `\n- Location: ${locationStr}` : ''}
+- Business: ${fenceForPrompt('business_name', sanitizeForPrompt(context.businessName ?? 'Your business'))}${context.tagline ? ` - "${fenceForPrompt('tagline', sanitizeForPrompt(context.tagline))}"` : ''}${archetypeLabel ? `\n- Business type: ${archetypeLabel}` : ''}${locationStr ? `\n- Location: ${locationStr}` : ''}
 - Clients: ${context.clientCount} total
 - Upcoming events: ${context.upcomingEventCount}
 - Open inquiries: ${context.openInquiryCount}${context.pendingQuoteCount ? `\n- Pending quotes: ${context.pendingQuoteCount}` : ''}${context.monthRevenueCents !== undefined ? `\n- Month revenue: $${(context.monthRevenueCents / 100).toFixed(2)}` : ''}`)
@@ -592,12 +593,14 @@ Use seasonal awareness naturally - mention what's in season, upcoming holidays t
   // Upcoming events detail
   if (context.upcomingEvents && context.upcomingEvents.length > 0) {
     parts.push(`\nUPCOMING EVENTS:
-${context.upcomingEvents.map((e) => `- ${e.occasion ?? 'Event'} on ${e.date ?? '(no date)'} for ${e.clientName} (${e.guestCount ?? '?'} guests, ${e.status})`).join('\n')}`)
+${context.upcomingEvents.map((e) => `- ${fenceForPrompt('occasion', sanitizeForPrompt(e.occasion ?? 'Event'))} on ${e.date ?? '(no date)'} for ${fenceForPrompt('client_name', sanitizeForPrompt(e.clientName))} (${e.guestCount ?? '?'} guests, ${e.status})`).join('\n')}`)
   }
 
   // Recent clients
   if (context.recentClients && context.recentClients.length > 0) {
-    parts.push(`\nRECENT CLIENTS: ${context.recentClients.map((c) => c.name).join(', ')}`)
+    parts.push(
+      `\nRECENT CLIENTS: ${context.recentClients.map((c) => fenceForPrompt('client_name', sanitizeForPrompt(c.name))).join(', ')}`
+    )
   }
 
   // Email digest - proactive communication awareness
@@ -616,7 +619,9 @@ ${context.upcomingEvents.map((e) => `- ${e.occasion ?? 'Event'} on ${e.date ?? '
             : e.classification === 'existing_thread'
               ? ' [CLIENT REPLY]'
               : ''
-        emailLines.push(`- From: ${e.from} - "${e.subject}"${cls}`)
+        emailLines.push(
+          `- From: ${fenceForPrompt('email_from', sanitizeForPrompt(e.from))} - "${fenceForPrompt('email_subject', sanitizeForPrompt(e.subject))}"${cls}`
+        )
       }
     }
     emailLines.push(
@@ -637,7 +642,7 @@ ${context.upcomingEvents.map((e) => `- ${e.occasion ?? 'Event'} on ${e.date ?? '
   // Client vibe notes
   if (context.clientVibeNotes && context.clientVibeNotes.length > 0) {
     parts.push(`\nCLIENT VIBE NOTES (personality & communication style):
-${context.clientVibeNotes.map((c) => `- ${c.name}: ${c.vibeNotes}`).join('\n')}`)
+${context.clientVibeNotes.map((c) => `- ${fenceForPrompt('client_name', sanitizeForPrompt(c.name))}: ${fenceForPrompt('vibe_notes', sanitizeForPrompt(c.vibeNotes))}`).join('\n')}`)
   }
 
   // Recent AAR insights
@@ -650,9 +655,10 @@ ${context.clientVibeNotes.map((c) => `- ${c.name}: ${c.vibeNotes}`).join('\n')}`
 ${aars
   .map((a) => {
     const p: string[] = []
-    if (a.wentWell) p.push(`✅ ${a.wentWell}`)
-    if (a.toImprove) p.push(`⚠️ ${a.toImprove}`)
-    if (a.lessonsLearned) p.push(`💡 ${a.lessonsLearned}`)
+    if (a.wentWell) p.push(`✅ ${fenceForPrompt('went_well', sanitizeForPrompt(a.wentWell))}`)
+    if (a.toImprove) p.push(`⚠️ ${fenceForPrompt('to_improve', sanitizeForPrompt(a.toImprove))}`)
+    if (a.lessonsLearned)
+      p.push(`💡 ${fenceForPrompt('lessons_learned', sanitizeForPrompt(a.lessonsLearned))}`)
     return p.join(' | ')
   })
   .join('\n')}`)
@@ -662,7 +668,7 @@ ${aars
   // Pending menu approvals
   if (context.pendingMenuApprovals && context.pendingMenuApprovals.length > 0) {
     parts.push(
-      `\n📋 PENDING MENU APPROVALS (${context.pendingMenuApprovals.length}): ${context.pendingMenuApprovals.map((m) => m.clientName).join(', ')}`
+      `\n📋 PENDING MENU APPROVALS (${context.pendingMenuApprovals.length}): ${context.pendingMenuApprovals.map((m) => fenceForPrompt('client_name', sanitizeForPrompt(m.clientName))).join(', ')}`
     )
   }
 
@@ -670,21 +676,21 @@ ${aars
   if (context.unreadInquiryMessages && context.unreadInquiryMessages.length > 0) {
     const unique = [...new Set(context.unreadInquiryMessages.map((m) => m.leadName))]
     parts.push(
-      `\n📬 UNREAD INQUIRY MESSAGES (${context.unreadInquiryMessages.length}): from ${unique.join(', ')}`
+      `\n📬 UNREAD INQUIRY MESSAGES (${context.unreadInquiryMessages.length}): from ${unique.map((n) => fenceForPrompt('lead_name', sanitizeForPrompt(n))).join(', ')}`
     )
   }
 
   // Business intelligence summary (cross-engine synthesis)
   if (context.businessIntelligence) {
     parts.push(`\nBUSINESS INTELLIGENCE (from 25 analytics engines - use when discussing business health, pricing, growth, or client retention):
-${context.businessIntelligence}
+${fenceForPrompt('business_intelligence', sanitizeForPrompt(context.businessIntelligence))}
 Reference these insights when the chef asks about their business, pricing strategy, client health, capacity, or growth.`)
   }
 
   // CIL: Continuous Intelligence Layer insights (accumulated knowledge graph)
   if (context.cilInsights) {
     parts.push(`\nCONTINUOUS INTELLIGENCE (accumulated patterns from chef's history - use proactively):
-${context.cilInsights}
+${fenceForPrompt('cil_insights', sanitizeForPrompt(context.cilInsights))}
 These insights come from the chef's persistent knowledge graph. Mention relevant ones when they naturally fit the conversation. Proactively flag high-severity items.`)
   }
 
@@ -721,18 +727,18 @@ These insights come from the chef's persistent knowledge graph. Mention relevant
     const regularOnes = context.staleInquiries.filter((i) => i.leadScore < 60)
     if (urgentOnes.length > 0) {
       nudgeItems.push(
-        `🔴 HIGH-VALUE LEADS GOING COLD: ${urgentOnes.map((i) => `${i.leadName} (score: ${i.leadScore}, ${i.daysSinceContact} days stale - respond ASAP)`).join('; ')}`
+        `🔴 HIGH-VALUE LEADS GOING COLD: ${urgentOnes.map((i) => `${fenceForPrompt('lead_name', sanitizeForPrompt(i.leadName))} (score: ${i.leadScore}, ${i.daysSinceContact} days stale - respond ASAP)`).join('; ')}`
       )
     }
     if (regularOnes.length > 0) {
       nudgeItems.push(
-        `${regularOnes.length} stale inquir${regularOnes.length === 1 ? 'y' : 'ies'} (>3 days without response): ${regularOnes.map((i) => `${i.leadName} (${i.daysSinceContact}d)`).join(', ')}`
+        `${regularOnes.length} stale inquir${regularOnes.length === 1 ? 'y' : 'ies'} (>3 days without response): ${regularOnes.map((i) => `${fenceForPrompt('lead_name', sanitizeForPrompt(i.leadName))} (${i.daysSinceContact}d)`).join(', ')}`
       )
     }
   }
   if (context.overduePayments && context.overduePayments.length > 0) {
     nudgeItems.push(
-      `${context.overduePayments.length} overdue payment${context.overduePayments.length === 1 ? '' : 's'}: ${context.overduePayments.map((p) => `${p.clientName} ($${(p.amountCents / 100).toFixed(0)})`).join(', ')}`
+      `${context.overduePayments.length} overdue payment${context.overduePayments.length === 1 ? '' : 's'}: ${context.overduePayments.map((p) => `${fenceForPrompt('client_name', sanitizeForPrompt(p.clientName))} ($${(p.amountCents / 100).toFixed(0)})`).join(', ')}`
     )
   }
   if (context.upcomingEvents && context.upcomingEvents.length > 0) {
@@ -744,13 +750,13 @@ These insights come from the chef's persistent knowledge graph. Mention relevant
     })
     if (imminent.length > 0) {
       nudgeItems.push(
-        `${imminent.length} event${imminent.length === 1 ? '' : 's'} in the next 48 hours: ${imminent.map((e) => `${e.occasion ?? 'Event'} for ${e.clientName}`).join(', ')}`
+        `${imminent.length} event${imminent.length === 1 ? '' : 's'} in the next 48 hours: ${imminent.map((e) => `${fenceForPrompt('occasion', sanitizeForPrompt(e.occasion ?? 'Event'))} for ${fenceForPrompt('client_name', sanitizeForPrompt(e.clientName))}`).join(', ')}`
       )
     }
   }
   if (context.clientReengagement && context.clientReengagement.length > 0) {
     nudgeItems.push(
-      `${context.clientReengagement.length} client${context.clientReengagement.length === 1 ? '' : 's'} overdue for a booking: ${context.clientReengagement.map((c) => `${c.clientName} (usually every ~${c.avgIntervalDays} days, last booked ${c.daysSinceLastBooking} days ago)`).join('; ')}`
+      `${context.clientReengagement.length} client${context.clientReengagement.length === 1 ? '' : 's'} overdue for a booking: ${context.clientReengagement.map((c) => `${fenceForPrompt('client_name', sanitizeForPrompt(c.clientName))} (usually every ~${c.avgIntervalDays} days, last booked ${c.daysSinceLastBooking} days ago)`).join('; ')}`
     )
   }
   if (nudgeItems.length > 0) {
@@ -1154,7 +1160,7 @@ export async function sendRemyMessage(
     }
 
     // Rate limit (12 msgs/min)
-    const rateCheck = checkRemyRateLimit(user.tenantId!)
+    const rateCheck = await checkRemyRateLimit(user.tenantId!)
     if (!rateCheck.allowed) {
       return { text: rateCheck.refusal!, intent: 'question' }
     }

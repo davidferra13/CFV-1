@@ -228,58 +228,19 @@ function validateRecentErrors(raw: unknown): RecentErrorEntry[] | undefined {
 
 // ─── Recipe Generation Block (HARD RULE - AI NEVER GENERATES RECIPES) ────────
 
-/**
- * Patterns that indicate the user is asking AI to generate, create, or suggest a recipe.
- * AI can ONLY search the chef's existing recipe book - never fabricate, generate, or pull
- * recipes from anywhere. This check runs before any LLM call.
- */
-const RECIPE_GENERATION_PATTERNS = [
-  // Direct creation requests: "create/generate/make [adjective/ingredient] recipe"
-  /\b(create|make|write|draft|generate|come up with|give me|suggest)\s+.*(recipe|dishes?|meals?)\b/i,
-  // "recipe for X" (asking AI to produce a recipe)
-  /\brecipe\s+for\s+(?!search|lookup|find)/i,
-  // "how to cook/make X" (recipe generation by another name)
-  /\bhow\s+(to|do\s+(you|i))\s+(cook|make|prepare|bake|roast|grill|saut[eé]|braise|fry|smoke|poach)\b/i,
-  // "what should I cook/make"
-  /\bwhat\s+should\s+I\s+(cook|make|prepare|bake)\b/i,
-  // "add a recipe" (not "add ingredient" which is also blocked separately)
-  /\badd\s+(a\s+|new\s+)?recipe\b/i,
-  // "generate meal" / "suggest meal" / "meal plan" / "meal idea"
-  /\b(generate|suggest|create|give me)\s+(a\s+)?(meal|dish|dinner|lunch|breakfast|menu item)\b/i,
-  // "suggest what I should cook for [event]" - word "suggest" before "what" breaks the simpler regex
-  /\bsuggest\s+what\s+(I|we)\s+should\s+(cook|make|prepare|serve)\s+for\b/i,
-  // "what should I cook for" (event-specific recipe generation)
-  /\bwhat\s+(should|can|could)\s+(I|we)\s+(cook|make|prepare|serve)\s+for\b/i,
-]
+// Patterns imported from the unified registry
+import {
+  RECIPE_GENERATION_PATTERNS as _RECIPE_GEN,
+  RECIPE_SEARCH_PATTERNS as _RECIPE_SEARCH,
+  HARMFUL_CONTENT_PATTERNS as _HARMFUL,
+  SELF_HARM_PATTERNS as _SELF_HARM,
+  OUT_OF_SCOPE_PATTERNS as _OUT_OF_SCOPE,
+  DANGEROUS_ACTION_PATTERNS as _DANGEROUS,
+  REFUSAL_MESSAGES,
+} from './remy-pattern-registry'
 
 /** The refusal message when recipe generation is detected */
-export const RECIPE_GENERATION_REFUSAL =
-  "I can't create, suggest, or generate recipes - that's your creative domain as the chef! " +
-  "I can search through your existing recipe book if you'd like. " +
-  'To add a new recipe, head to Recipes → New Recipe.'
-
-/**
- * Patterns that indicate the user wants to SEARCH or LOOK UP existing recipes.
- * These are legitimate read-only operations and must NOT be blocked by the
- * recipe generation guardrail. Checked before generation patterns.
- */
-const RECIPE_SEARCH_PATTERNS = [
-  // Explicit search/lookup intent
-  /\b(search|find|look\s*up|lookup|show|check|list|browse|pull\s*up)\b.*\b(recipe|recipes|menu|dishes?)\b/i,
-  // "what recipes do we have" style inventory queries
-  /\bwhat\s+recipes?\s+do\s+(i|we|you)\s+have\b/i,
-  /\bwhat\s+recipes?\s+are\s+(in|on)\s+(my|our|the)\s+(recipe\s+book|library|list|collection)\b/i,
-  // "recipe search/book/list"
-  /\brecipe\s+(search|lookup|book|list|collection|library|catalog)\b/i,
-  // Possessive - "my/our/the recipes"
-  /\b(my|our|the|your|chef'?s?)\s+recipes?\b/i,
-  // "do you/we have a recipe for X"
-  /\bdo\s+(you|we)\s+have\s+.*\b(recipe|dish)/i,
-  // "any recipes for X" / "recipes with X"
-  /\b(any|which)\s+recipes?\s+(for|with|using|that)/i,
-  // recipe.search action reference
-  /\brecipe\.search\b/i,
-]
+export const RECIPE_GENERATION_REFUSAL = REFUSAL_MESSAGES.recipe_generation
 
 /**
  * Check if a message is asking AI to generate a recipe.
@@ -287,13 +248,13 @@ const RECIPE_SEARCH_PATTERNS = [
  */
 export function checkRecipeGenerationBlock(message: string): string | null {
   // Allow recipe SEARCH queries - these are read-only lookups, not generation
-  for (const pattern of RECIPE_SEARCH_PATTERNS) {
+  for (const { pattern } of _RECIPE_SEARCH) {
     if (pattern.test(message)) {
       return null
     }
   }
 
-  for (const pattern of RECIPE_GENERATION_PATTERNS) {
+  for (const { pattern } of _RECIPE_GEN) {
     if (pattern.test(message)) {
       return RECIPE_GENERATION_REFUSAL
     }
@@ -302,89 +263,25 @@ export function checkRecipeGenerationBlock(message: string): string | null {
 }
 
 // ─── Harmful Content Block (Safety) ──────────────────────────────────────────
-
-/**
- * Patterns that indicate the user is requesting harmful, violent, illegal, or
- * dangerous real-world content. Remy must refuse these before they reach the LLM,
- * regardless of how the model's own safety training would handle them.
- *
- * This is NOT about recipe generation or out-of-scope topics (those have their
- * own guards). This catches requests that could cause real-world harm.
- */
-const HARMFUL_CONTENT_PATTERNS = [
-  // Weapons, explosives, firearms
-  /\b(how\s+to|ways?\s+to|instructions?\s+for|steps?\s+to|guide\s+to)\s+(make|build|create|assemble|construct|manufacture)\s+(a\s+|an\s+)?(bomb|explosive|grenade|detonator|ied|landmine|pipe\s*bomb|molotov|incendiary|firearm|gun|rifle|weapon|silencer|suppressor)\b/i,
-  /\b(bomb|explosive|grenade|detonator|ied|landmine|pipe\s*bomb|molotov|incendiary)\s+(making|building|construction|assembly|recipe|instructions?|guide|tutorial|howto|how-to)\b/i,
-  /\b(homemade|diy|improvised)\s+(bombs?|explosives?|weapons?|firearms?|guns?|grenades?|detonators?)\b/i,
-  // Poisons, toxic substances (not food safety - specifically intent to harm)
-  /\b(how\s+to|ways?\s+to)\s+(poison|drug|sedate|knock\s+out|incapacitate)\s+(a\s+|an\s+|some\s*)?(person|someone|people|somebody|human|man|woman|child|victim)\b/i,
-  /\b(undetectable|untraceable)\s+(poison|toxin|substance)\b/i,
-  /\b(lethal|fatal|deadly)\s+(dose|amount|quantity)\s+of\b/i,
-  // Violence, harm to people
-  /\b(how\s+to|ways?\s+to|guide\s+to)\s+(kill|murder|assassinate|strangle|suffocate|stab|shoot|attack|assault|kidnap|abduct|torture)\s+(a\s+|an\s+|some\s*)?(person|someone|people|somebody|human|man|woman|child)\b/i,
-  /\b(how\s+to)\s+(get\s+away\s+with|hide|dispose\s+of)\s+(a\s+)?(murder|body|corpse|killing|crime)\b/i,
-  // Drugs (synthesis, not food/culinary herbs)
-  /\b(how\s+to|ways?\s+to|instructions?\s+for)\s+(make|cook|synthesize|manufacture|produce|brew)\s+(meth|methamphetamine|cocaine|crack|heroin|fentanyl|lsd|mdma|ecstasy|dmt|pcp|ghb)\b/i,
-  /\b(meth|cocaine|heroin|fentanyl)\s+(recipe|synthesis|cook|lab|production)\b/i,
-  // Arson, property destruction with intent
-  /\b(how\s+to)\s+(start\s+a\s+fire|commit\s+arson|burn\s+down)\b/i,
-  // Self-harm (redirect compassionately)
-  /\b(how\s+to|ways?\s+to|methods?\s+(of|for))\s+(kill|hurt|harm|cut)\s+(myself|yourself|oneself)\b/i,
-  /\b(suicide|self-?harm)\s+(methods?|ways?|how|instructions?|guide)\b/i,
-  // Human trafficking, CSAM
-  /\b(how\s+to)\s+(traffic|smuggle|exploit)\s+(a\s+)?(person|people|human|child|children|minor|minors)\b/i,
-  // Hacking/cyberattack with malicious intent
-  /\b(how\s+to)\s+(hack|ddos|dos|phish|ransomware|exploit)\s+(a\s+|an\s+)?(server|computer|website|bank|account|network|system)\b/i,
-  // Terrorism, mass violence (Layer 1 has these but Layer 2 needs them for public/admin bypass)
-  /\b(how\s+to)\s+(join|recruit\s+for|support|fund|plan)\s+(a\s+)?(terrorist|extremist|militia|insurgent)\b/i,
-  /\b(mass\s+shooting|mass\s+casualty|school\s+shooting|bomb\s+threat)\s*(plan|how|guide|instructions?)?\b/i,
-  /\b(how\s+to)\s+(radicalize|recruit|plan\s+an?\s+attack|carry\s+out\s+an?\s+attack)\b/i,
-  // Slurs and hate speech (Layer 1 has these but public/client routes skip Layer 1)
-  /\b(n[i1]gg[ae3]r|f[a4]gg?[o0]t|k[i1]ke|sp[i1]c|ch[i1]nk|w[e3]tb[a4]ck|tr[a4]nny|d[y1]ke)\b/i,
-  // Direct personal threats
-  /\b(i'?ll|i\s+will|gonna|going\s+to)\s+(kill|shoot|stab|rape|murder|attack|assault|hurt)\s+(you|remy|this\s+place|everyone)\b/i,
-  // Sexual harassment
-  /\b(send\s+nudes|show\s+me\s+your\s+(body|breasts?|ass|penis|vagina|genitals?))\b/i,
-  /\b(i\s+want\s+to|let\s+me)\s+(rape|molest|grope|touch)\b/i,
-  // Self-harm encouragement toward others
-  /\b(kill\s+yourself|kys|go\s+die|you\s+should\s+(die|kill\s+yourself))\b/i,
-]
-
-/** Check if message contains self-harm indicators (needs compassionate response) */
-const SELF_HARM_PATTERNS = [
-  /\b(how\s+to|ways?\s+to|methods?\s+(of|for))\s+(kill|hurt|harm|cut)\s+(myself|yourself|oneself)\b/i,
-  /\b(suicide|self-?harm)\s+(methods?|ways?|how|instructions?|guide)\b/i,
-  /\b(want\s+to|going\s+to|thinking\s+(about|of))\s+(kill|hurt|harm)\s+(myself|yourself)\b/i,
-  /\b(don'?t\s+want\s+to|can'?t)\s+(live|go\s+on|keep\s+going|be\s+here)\b/i,
-]
+// All patterns sourced from remy-pattern-registry.ts
 
 /**
  * Internal raw check: does content match harmful patterns?
  * Used by validateHistory to redact poisoned history entries.
- * Returns true if harmful, false if safe. No normalization (history is already sanitized).
  */
 function checkHarmfulContentBlockRaw(content: string): boolean {
   const lower = content.toLowerCase()
-  for (const pattern of HARMFUL_CONTENT_PATTERNS) {
+  for (const { pattern } of _HARMFUL) {
     if (pattern.test(lower)) return true
   }
   return false
 }
 
 /** Compassionate refusal for self-harm (resources, not dismissal) */
-export const SELF_HARM_REFUSAL =
-  'I hear you, and I want you to know that help is available right now. ' +
-  'Please reach out to the 988 Suicide & Crisis Lifeline: call or text 988 (US), ' +
-  'or contact the Crisis Text Line by texting HOME to 741741. ' +
-  "You don't have to go through this alone. " +
-  "I'm here for your business whenever you're ready."
+export const SELF_HARM_REFUSAL = REFUSAL_MESSAGES.self_harm
 
 /** Standard refusal for harmful content */
-export const HARMFUL_CONTENT_REFUSAL =
-  "Whoa, chef. I'm not going there. " +
-  "I'm built to help you run your food business, not answer that kind of question. " +
-  "Let's get back to what matters: your clients, your events, your kitchen. " +
-  'What do you actually need help with?'
+export const HARMFUL_CONTENT_REFUSAL = REFUSAL_MESSAGES.harmful_content
 
 /**
  * Check if a message requests harmful, violent, or illegal content.
@@ -395,13 +292,13 @@ export function checkHarmfulContentBlock(message: string): string | null {
   const normalized = normalizeForGuardCheck(message)
 
   // Self-harm check first (compassionate response, not a rebuke)
-  for (const pattern of SELF_HARM_PATTERNS) {
+  for (const { pattern } of _SELF_HARM) {
     if (pattern.test(normalized)) {
       return SELF_HARM_REFUSAL
     }
   }
 
-  for (const pattern of HARMFUL_CONTENT_PATTERNS) {
+  for (const { pattern } of _HARMFUL) {
     if (pattern.test(normalized)) {
       return HARMFUL_CONTENT_REFUSAL
     }
@@ -480,43 +377,10 @@ export function normalizeForGuardCheck(message: string): string {
 }
 
 // ─── Out-of-Scope Guardrails (Non-Business Requests) ────────────────────────
-
-/**
- * Patterns that indicate the user is asking for something outside Remy's scope:
- * creative writing (poems, stories), philosophical questions, entertainment, etc.
- * Remy's expertise is in chef business management - not general AI tasks.
- */
-const OUT_OF_SCOPE_PATTERNS = [
-  // Poetry, creative writing, storytelling (expanded to catch all variations)
-  /\b(write|compose|create|generate|make)\s+(me\s+|up\s+)?(a\s+)?(funny\s+)?(poem|poetry|story|song|joke|limerick|haiku|narrative|tale|story|essay|novel|screenplay|script)\b/i,
-  /\b(generate|compose|write)\s+(a\s+)?(short\s+)?(story|tale|narrative|essay|novel)\b/i,
-  // General philosophical/existential questions
-  /\b(what\s+is\s+the\s+meaning|meaning\s+of)\b/i,
-  /\b(why\s+do\s+we\s+exist|existential|philosophy|philosophical)\b/i,
-  // Entertainment
-  /\b(tell\s+me\s+a\s+joke|tell\s+me\s+a\s+story)\b/i,
-  // General knowledge (unless business-related)
-  /\b(what\s+is|who\s+is|when\s+did)\s+(the\s+)?(president|history|science|math|physics|biology|chemistry|geography)\b/i,
-  // Requests for advice outside chef domain
-  /\b(give\s+me\s+relationship|dating|love|life\s+advice)\b/i,
-  // Homework, coding, academic
-  /\b(solve\s+this|help\s+me\s+with\s+(my\s+)?homework|write\s+(?:an?\s+)?(?:essay|paper|thesis|code|program|script))\b/i,
-  /\b(debug|compile|code|program|algorithm|data\s+structure)\b.*\b(help|write|fix|create)\b/i,
-  // Medical/legal beyond food domain
-  /\b(diagnose|prescription|symptoms|should\s+i\s+see\s+a\s+doctor|medical\s+advice)\b/i,
-  /\b(legal\s+advice|sue|lawsuit|legal\s+rights|am\s+i\s+liable)\b/i,
-  // Political/religious
-  /\b(who\s+should\s+i\s+vote|political\s+opinion|my\s+faith|pray|religious)\b/i,
-  // Investment/financial outside chef business
-  /\b(invest|stock|crypto|bitcoin|forex|retirement\s+fund|401k|ira)\b/i,
-]
+// All patterns sourced from remy-pattern-registry.ts
 
 /** The refusal message for out-of-scope requests */
-export const OUT_OF_SCOPE_REFUSAL =
-  "Ha - nice try, chef. I've got 40 years of kitchen wisdom and business chops, " +
-  "but that's outside my station. Let's stay in our lane. " +
-  "What's the real question? Are we talking about your business, your clients, or your events? " +
-  "I'm all ears for those. 😄"
+export const OUT_OF_SCOPE_REFUSAL = REFUSAL_MESSAGES.out_of_scope
 
 /**
  * Check if a message is requesting something outside Remy's scope.
@@ -524,7 +388,7 @@ export const OUT_OF_SCOPE_REFUSAL =
  */
 export function checkOutOfScopeBlock(message: string): string | null {
   const normalized = normalizeForGuardCheck(message)
-  for (const pattern of OUT_OF_SCOPE_PATTERNS) {
+  for (const { pattern } of _OUT_OF_SCOPE) {
     if (pattern.test(normalized)) {
       return OUT_OF_SCOPE_REFUSAL
     }
@@ -533,42 +397,10 @@ export function checkOutOfScopeBlock(message: string): string | null {
 }
 
 // ─── Dangerous/Protected Action Blocking ──────────────────────────────────────
-
-/** Patterns for dangerous system requests that must be blocked clearly */
-const DANGEROUS_ACTION_PATTERNS = [
-  // Delete/destroy data
-  /\b(delete|remove|destroy|wipe|clear|drop)\b.*\b(all\s+)?(data|database|records|clients|events|everything)\b/i,
-  // Show system prompt/instructions/internals/guidelines (with more flexible matching)
-  /\b(show|reveal|tell|display|list|print|give|provide|explain|describe)\b.*\b(system|internal)?\s*(prompt|instructions|internals?|rules?|guidelines?|how\s+you\s+work|how\s+do\s+you|how\s+are\s+you)\b/i,
-  /\b(what|tell)\s+.*\b(your\s+)?(instructions|rules|guidelines|prompts?|internals?|system)\b/i,
-  /\b(what'?s?|what\s+is)\s+(your\s+)?(prompt|instructions|rules|guidelines|internals?|system)\b/i,
-  /\bhow\s+do\s+you\s+work\b/i,
-  /\bhow\s+does\s+remy\s+work\b/i,
-  // Ignore previous instructions (jailbreak attempts)
-  /\b(ignore|override|bypass|skip|forget|disregard)\b.*(all\s+)?(previous|prior|above)?\b\s*(instructions?|prompts?|rules?|guidelines?)\b/i,
-  // Developer/admin/root mode activation
-  /\b(developer|dev|admin|root|debug)\s+mode\b/i,
-  /\b(switch|enter|activate|enable|turn)\s+(on\s+)?(developer|dev|admin|root|debug)\b/i,
-  // Data exfiltration - extracting all client data or financials
-  /\b(export|dump|extract|give me)\s+(all|every)\s+(client|customer|financial|revenue|payment|ledger)\s+(data|info|records?|entries|details)\b/i,
-  // SQL/code injection attempts
-  /\b(select|insert|update|drop|alter|truncate)\s+(from|into|table|database|schema)\b/i,
-  /\b(exec|execute|eval|run)\s+(sql|query|command|code|script)\b/i,
-  // Token/API key extraction
-  /\b(api|secret|token|key|password|credential|env)\s*(key|variable|value|string)?\b.*\b(show|reveal|give|tell|print|display)\b/i,
-  /\b(show|reveal|give|tell|print|display)\b.*\b(api|secret|token|key|password|credential|env)\b/i,
-  // Pretend/roleplay as another entity
-  /\b(pretend|act|behave|roleplay|role-?play)\s+(you'?re|as|like)\s+(a|an|the)\b/i,
-  /\byou\s+are\s+now\s+(a|an|the|my)\b/i,
-  // "Forget everything" / memory manipulation
-  /\b(forget|erase|clear|reset)\s+(everything|all|your)\s*(memory|memories|knowledge|context|data)?\b/i,
-]
+// All patterns sourced from remy-pattern-registry.ts
 
 /** Refusal for dangerous/protected actions */
-export const DANGEROUS_ACTION_REFUSAL =
-  "I can't do that - that would require explicit confirmation and oversight. " +
-  "I'm here to help with your business: managing clients, events, finances, and recipes. " +
-  'What can I actually help you with today? 😄'
+export const DANGEROUS_ACTION_REFUSAL = REFUSAL_MESSAGES.dangerous_actions
 
 /**
  * Check if a message is requesting a dangerous or protected action.
@@ -576,7 +408,7 @@ export const DANGEROUS_ACTION_REFUSAL =
  */
 export function checkDangerousActionBlock(message: string): string | null {
   const normalized = normalizeForGuardCheck(message)
-  for (const pattern of DANGEROUS_ACTION_PATTERNS) {
+  for (const { pattern } of _DANGEROUS) {
     if (pattern.test(normalized)) {
       return DANGEROUS_ACTION_REFUSAL
     }

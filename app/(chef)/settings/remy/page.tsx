@@ -12,6 +12,7 @@ import {
 } from '@/lib/ai/remy-action-audit-actions'
 import { getAiPreferences } from '@/lib/ai/privacy-actions'
 import { RemyControlClient } from './remy-control-client'
+import { RemyAbuseSummary } from '@/components/admin/remy-abuse-summary'
 import { isFounderEmail } from '@/lib/platform/owner-account'
 
 export const metadata: Metadata = { title: 'Remy Control Center' }
@@ -62,6 +63,8 @@ export default async function RemySettingsPage() {
           </p>
         </div>
       </div>
+
+      <RemyAbuseSummary />
 
       <RemyControlClient
         targets={targets}

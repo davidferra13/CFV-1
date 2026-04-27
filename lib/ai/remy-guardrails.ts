@@ -91,143 +91,39 @@ export function validateRemyInput(message: string): GuardrailResult {
 }
 
 // ─── Dangerous Content Detection ────────────────────────────────────────────
+// All patterns imported from the unified registry
 
-const DANGEROUS_PATTERNS: Array<{ pattern: RegExp; label: string }> = [
-  // Weapons & explosives
-  {
-    pattern:
-      /\b(how\s+to\s+)?(make|build|create|construct|assemble|synthesize)\b.{0,40}\b(bomb|explosive|grenade|detonator|ied|dynamite|c-?4|nitroglycerin|tnt)\b/i,
-    label: 'weapons_explosives',
-  },
-  {
-    pattern:
-      /\b(how\s+to\s+)?(make|build|create|buy|get|obtain)\b.{0,40}\b(gun|firearm|weapon|silencer|suppressor)\b/i,
-    label: 'weapons_firearms',
-  },
-  {
-    pattern:
-      /\b(pipe\s+bomb|pressure\s+cooker\s+bomb|molotov|nail\s+bomb|car\s+bomb|dirty\s+bomb)\b/i,
-    label: 'weapons_specific',
-  },
+import {
+  HARMFUL_CONTENT_PATTERNS as _ALL_HARMFUL,
+  ABUSE_HARASSMENT_PATTERNS as _ABUSE_PATTERNS,
+  PROMPT_INJECTION_PATTERNS,
+} from './remy-pattern-registry'
 
-  // Violence - how to harm/kill
-  {
-    pattern: /\b(how\s+to\s+)(kill|murder|assassinate|strangle|suffocate|drown|dismember)\b/i,
-    label: 'violence_howto',
-  },
-  {
-    pattern:
-      /\b(how\s+to\s+)(poison|drug|sedate|incapacitate)\s+(someone|a\s+person|people|my|them|him|her)\b/i,
-    label: 'violence_poison',
-  },
-  {
-    pattern: /\b(how\s+to\s+)(kidnap|abduct|torture|traffick)\b/i,
-    label: 'violence_kidnap',
-  },
-  {
-    pattern: /\b(best\s+way\s+to\s+)(kill|murder|hurt|attack|poison|dispose\s+of\s+a\s+body)\b/i,
-    label: 'violence_planning',
-  },
-  {
-    pattern: /\b(get\s+away\s+with\s+)(murder|killing|crime)\b/i,
-    label: 'violence_evasion',
-  },
-
-  // Drugs - synthesis / manufacturing
-  {
-    pattern:
-      /\b(how\s+to\s+)?(make|cook|synthesize|manufacture|produce)\b.{0,30}\b(meth|methamphetamine|cocaine|heroin|fentanyl|lsd|mdma|ecstasy|crack)\b/i,
-    label: 'drugs_synthesis',
-  },
-  {
-    pattern:
-      /\b(recipe\s+for|formula\s+for|instructions\s+for)\b.{0,30}\b(meth|cocaine|heroin|fentanyl|lsd|mdma|drugs)\b/i,
-    label: 'drugs_recipe',
-  },
-
-  // Self-harm
-  {
-    pattern:
-      /\b(how\s+to\s+)(commit\s+suicide|kill\s+(myself|yourself)|end\s+(my|your)\s+life|slit\s+(my|your)\s+wrist)\b/i,
-    label: 'self_harm',
-  },
-  {
-    pattern: /\b(painless\s+(way|method)\s+to\s+die|suicide\s+method|lethal\s+dose)\b/i,
-    label: 'self_harm_methods',
-  },
-
-  // Hacking & fraud
-  {
-    pattern:
-      /\b(how\s+to\s+)(hack|phish|steal\s+identity|commit\s+fraud|forge|counterfeit|launder\s+money)\b/i,
-    label: 'hacking_fraud',
-  },
-  {
-    pattern:
-      /\b(how\s+to\s+)(break\s+into|crack\s+password|bypass\s+security|exploit\s+vulnerability)\b/i,
-    label: 'hacking_intrusion',
-  },
-
-  // CSAM / child exploitation
-  {
-    pattern: /\b(child|minor|underage|kid)\b.{0,30}\b(porn|nude|naked|sexual|exploit)\b/i,
-    label: 'csam',
-  },
-
-  // Terrorism
-  {
-    pattern:
-      /\b(how\s+to\s+)(join|recruit\s+for|plan)\b.{0,30}\b(terrorist|terrorism|jihad|extremist)\b/i,
-    label: 'terrorism',
-  },
-  {
-    pattern: /\b(mass\s+(shooting|casualt|attack)|school\s+shoot|shoot\s+up\s+(a|the)\s+)\b/i,
-    label: 'mass_violence',
-  },
-]
+// Guardrails dangerous content = harmful patterns MINUS slurs, personal threats,
+// sexual harassment, and self-harm encouragement (those are handled by abuse detection).
+// This preserves the original guardrails layering where self-harm queries pass through
+// to receive a compassionate response downstream.
+const GUARDRAIL_DANGER_LABELS = new Set([
+  'slurs',
+  'personal_threat',
+  'sexual_harassment',
+  'sexual_assault_intent',
+  'self_harm_encouragement',
+])
+const _DANGEROUS_PATTERNS = _ALL_HARMFUL.filter((p) => !GUARDRAIL_DANGER_LABELS.has(p.label))
 
 function detectDangerousContent(message: string): string | null {
-  for (const { pattern, label } of DANGEROUS_PATTERNS) {
+  for (const { pattern, label } of _DANGEROUS_PATTERNS) {
     if (pattern.test(message)) return label
   }
   return null
 }
 
 // ─── Abuse / Harassment Detection ───────────────────────────────────────────
-
 // Only clearly abusive terms - not mild profanity a chef might use while frustrated.
-// Chefs swear in kitchens; that's fine. Slurs and threats are not.
-const ABUSE_PATTERNS: Array<{ pattern: RegExp; label: string }> = [
-  // Racial/ethnic slurs
-  {
-    pattern: /\b(n[i1]gg[ae3]r|k[i1]ke|sp[i1]c|ch[i1]nk|w[e3]tback|g[o0]{2}k)\b/i,
-    label: 'racial_slur',
-  },
-  // Homophobic/transphobic slurs
-  {
-    pattern: /\b(f[a@]gg?[o0]t|tr[a@]nn[yi1e3]|d[yi1]ke)\b/i,
-    label: 'homophobic_slur',
-  },
-  // Direct threats of violence
-  {
-    pattern: /\b(i('ll|.will)\s+(kill|murder|hurt|shoot|stab|rape)\b)/i,
-    label: 'threat_violence',
-  },
-  // Self-harm encouragement
-  {
-    pattern: /\b(kill\s+your\s*self|kys)\b/i,
-    label: 'self_harm_encouragement',
-  },
-  // Sexual harassment
-  {
-    pattern:
-      /\b(send\s+(me\s+)?nudes|show\s+(me\s+)?(your|those)\s+(tits|boobs|ass|body|dick|cock|pussy))\b/i,
-    label: 'sexual_harassment',
-  },
-]
 
 function detectAbusiveContent(message: string): string | null {
-  for (const { pattern, label } of ABUSE_PATTERNS) {
+  for (const { pattern, label } of _ABUSE_PATTERNS) {
     if (pattern.test(message)) return label
   }
   return null
@@ -235,60 +131,8 @@ function detectAbusiveContent(message: string): string | null {
 
 // ─── Prompt Injection Detection ─────────────────────────────────────────────
 
-const INJECTION_PATTERNS: Array<{ pattern: RegExp; label: string }> = [
-  // Direct instruction override
-  {
-    pattern:
-      /\b(ignore|disregard|forget|override)\b.{0,30}\b(all|previous|prior|above|system|instructions?|rules?|prompt)\b/i,
-    label: 'instruction_override',
-  },
-  // System prompt extraction
-  {
-    pattern:
-      /\b(repeat|show|reveal|print|output|display|tell\s+me|what\s+(are|is))\b.{0,30}\b(system\s*prompt|instructions?|rules?|your\s*prompt|your\s+configuration)\b/i,
-    label: 'prompt_extraction',
-  },
-  // Role-play escape
-  {
-    pattern:
-      /\b(you\s+are\s+now|act\s+as|pretend\s+(to\s+be|you'?re?)|role\s*play\s+as|switch\s+to|become\s+a)\b/i,
-    label: 'roleplay_escape',
-  },
-  // DAN / jailbreak patterns
-  {
-    pattern: /\b(DAN|do\s+anything\s+now|developer\s+mode|unlock|jailbreak|god\s+mode)\b/i,
-    label: 'jailbreak',
-  },
-  // "New instructions" framing
-  {
-    pattern: /\b(new\s+instructions?|updated?\s+rules?|from\s+now\s+on\s+you)\b/i,
-    label: 'new_instructions',
-  },
-  // Base64 / encoded payload attempts
-  {
-    pattern: /\b(base64|atob|eval|exec)\b.{0,20}[A-Za-z0-9+/=]{20,}/i,
-    label: 'encoded_payload',
-  },
-  // Markdown/XML injection to trick the model
-  {
-    pattern: /<\/?system>|<\/?instruction>|<\/?prompt>/i,
-    label: 'tag_injection',
-  },
-  // Bracket-style tag injection (bypasses angle-bracket detection)
-  {
-    pattern:
-      /\[SYSTEM\]|\[INSTRUCTION\]|\[PROMPT\]|\[\[system\]\]|\[\[instruction\]\]|\[\[prompt\]\]/i,
-    label: 'bracket_tag_injection',
-  },
-  // Delimiter injection (triple backtick + role name)
-  {
-    pattern: /```\s*(system|instruction|prompt|admin|root|developer)/i,
-    label: 'delimiter_injection',
-  },
-]
-
 function detectPromptInjection(message: string): string | null {
-  for (const { pattern, label } of INJECTION_PATTERNS) {
+  for (const { pattern, label } of PROMPT_INJECTION_PATTERNS) {
     if (pattern.test(message)) return label
   }
   return null
@@ -366,26 +210,53 @@ function looksBusinessRelevant(content: string): boolean {
   return BUSINESS_KEYWORDS.some((p) => p.test(content))
 }
 
-// ─── Rate Limiter (in-memory, per-tenant) ──────────────────────────────────
+// ─── Rate Limiter (in-memory fast path + DB persistence) ───────────────────
+
+import { pgClient as sql } from '@/lib/db'
 
 interface RateBucket {
   timestamps: number[]
 }
 
 const rateBuckets = new Map<string, RateBucket>()
+let dbCheckCounter = 0
 
 /**
  * Check if a tenant has exceeded the message rate limit.
- * Call with tenantId from authenticated session - never from user input.
+ * Uses in-memory cache as fast path; DB as durable store that survives restarts.
+ * Call with tenantId from authenticated session, never from user input.
  */
-export function checkRemyRateLimit(tenantId: string): GuardrailResult {
+export async function checkRemyRateLimit(tenantId: string): Promise<GuardrailResult> {
   const now = Date.now()
   const windowStart = now - REMY_RATE_LIMIT_WINDOW_MS
 
   let bucket = rateBuckets.get(tenantId)
+
+  // If no in-memory bucket, try loading from DB (cold start / after restart)
   if (!bucket) {
     bucket = { timestamps: [] }
     rateBuckets.set(tenantId, bucket)
+
+    try {
+      const windowStartDate = new Date(windowStart).toISOString()
+      const rows = await sql`
+        SELECT message_count FROM remy_rate_limits
+        WHERE tenant_id = ${tenantId}
+          AND window_start > ${windowStartDate}::timestamptz
+        ORDER BY window_start DESC
+        LIMIT 1
+      `
+      if (rows.length > 0 && rows[0].message_count > 0) {
+        // Seed in-memory bucket with approximate timestamps
+        const count = rows[0].message_count as number
+        for (let i = 0; i < count; i++) {
+          bucket.timestamps.push(now - (count - i) * 100)
+        }
+      }
+    } catch (err) {
+      // DB unavailable: fall back to in-memory only
+      console.error('[remy-rate-limit] DB read failed, using memory-only:', err)
+    }
   }
 
   // Prune old entries
@@ -401,10 +272,28 @@ export function checkRemyRateLimit(tenantId: string): GuardrailResult {
   }
 
   bucket.timestamps.push(now)
+
+  // Non-blocking DB write (fire and forget)
+  const windowKey = new Date(now - (now % REMY_RATE_LIMIT_WINDOW_MS)).toISOString()
+  sql`
+    INSERT INTO remy_rate_limits (tenant_id, window_start, message_count)
+    VALUES (${tenantId}, ${windowKey}::timestamptz, 1)
+    ON CONFLICT (tenant_id, window_start)
+    DO UPDATE SET message_count = remy_rate_limits.message_count + 1
+  `.catch((err: unknown) => {
+    console.error('[remy-rate-limit] DB write failed:', err)
+  })
+
+  // Periodic DB cleanup (every 100 checks)
+  dbCheckCounter++
+  if (dbCheckCounter % 100 === 0) {
+    sql`DELETE FROM remy_rate_limits WHERE window_start < NOW() - INTERVAL '1 hour'`.catch(() => {})
+  }
+
   return { allowed: true }
 }
 
-// ─── Periodic Cleanup (prevents unbounded memory on long-running server) ───
+// ─── Periodic Cleanup (prevents unbounded memory on long-running server) ──���
 
 const CLEANUP_INTERVAL_MS = 5 * 60 * 1000
 
