@@ -202,7 +202,7 @@ const ClientTableRow = memo(function ClientTableRow({ client }: { client: Client
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={(client as any).avatar_url}
-              alt=""
+              alt={`${client.full_name} avatar`}
               className="h-8 w-8 rounded-full object-cover flex-shrink-0"
             />
           ) : (

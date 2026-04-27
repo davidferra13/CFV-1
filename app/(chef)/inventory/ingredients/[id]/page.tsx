@@ -114,7 +114,7 @@ export default async function IngredientPriceDetailPage({
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={recipe.photo_url}
-                    alt=""
+                    alt={recipe.name || 'Recipe photo'}
                     className="h-8 w-8 rounded object-cover flex-shrink-0"
                   />
                 ) : (

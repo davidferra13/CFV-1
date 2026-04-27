@@ -146,7 +146,7 @@ function MenuCard({
           {dishPhotoUrl && (
             <div className="relative -mx-6 -mt-0 mb-2 aspect-[16/9] w-[calc(100%+3rem)] overflow-hidden rounded-t-lg">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={dishPhotoUrl} alt="" className="h-full w-full object-cover" />
+              <img src={dishPhotoUrl} alt="Dish photo" className="h-full w-full object-cover" />
             </div>
           )}
           {!dishPhotoUrl && <div className="pt-5" />}

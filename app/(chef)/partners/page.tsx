@@ -115,7 +115,7 @@ export default async function PartnersPage({
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={partner.cover_image_url}
-                      alt=""
+                      alt={partner.name || 'Partner'}
                       className="h-10 w-10 rounded object-cover flex-shrink-0 mt-0.5"
                     />
                   ) : (

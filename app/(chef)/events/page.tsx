@@ -250,7 +250,7 @@ async function EventsList({ status }: { status: EventStatus }) {
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={eventPhotoMap[event.id]}
-                        alt=""
+                        alt={event.title || 'Event photo'}
                         className="h-12 w-12 rounded object-cover"
                       />
                     </Link>

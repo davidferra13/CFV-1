@@ -101,7 +101,7 @@ export default async function StaffRosterPage({
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={member.photo_url}
-                          alt=""
+                          alt={`${member.name} photo`}
                           className="h-8 w-8 rounded-full object-cover flex-shrink-0"
                         />
                       ) : (

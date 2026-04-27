@@ -168,7 +168,7 @@ export function SpaceViewClient({ detail, currentChefId, spaceId }: Props) {
                 {m.profile_image_url ? (
                   <img
                     src={m.profile_image_url}
-                    alt=""
+                    alt={m.chef_name || 'Member'}
                     className="h-4 w-4 rounded-full object-cover"
                   />
                 ) : (

@@ -1080,3 +1080,4 @@
 {"id":"14879a85-ce0d-4598-9240-a006d14fdf44","timestamp":"2026-04-27T20:39:31.726Z","type":"tool:call","source":"3977.http","scope":{"workflow":"3977-http"},"payload":{"method":"GET","path":"/api/metrics","query":{}}}
 {"id":"32947613-0b46-4ad7-a172-7c11e324f166","timestamp":"2026-04-27T20:39:37.683Z","type":"tool:call","source":"3977.http","scope":{"workflow":"3977-http"},"payload":{"method":"GET","path":"/api/dead-letter","query":{}}}
 {"id":"d2418a67-0fe0-4047-afc0-ae4d3e8a18f5","timestamp":"2026-04-27T20:39:43.292Z","type":"tool:call","source":"3977.http","scope":{"workflow":"3977-http"},"payload":{"method":"POST","path":"/api/dead-letter/retry","query":{}}}
+{"id":"0140c5c6-7876-426f-bbe4-03bf7108bad6","timestamp":"2026-04-27T20:40:17.993Z","type":"state:update","source":"3977.watchdog","scope":{"workflow":"watchdog"},"payload":{"action":"orphaned_lock_self_healed","stale_pid":47740}}

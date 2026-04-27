@@ -104,7 +104,7 @@ export default async function VendorsPage({
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={vendor.logo_url}
-                          alt=""
+                          alt={`${vendor.name} logo`}
                           className="h-8 w-8 rounded object-cover flex-shrink-0 mt-0.5"
                         />
                       ) : (
