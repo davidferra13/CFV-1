@@ -56,6 +56,8 @@ export function HomepageSearch() {
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
+            role="presentation"
           >
             <path
               strokeLinecap="round"
@@ -92,6 +94,8 @@ export function HomepageSearch() {
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
+            role="presentation"
           >
             <path
               strokeLinecap="round"
@@ -125,6 +129,8 @@ export function HomepageSearch() {
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
+            role="presentation"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
@@ -143,6 +149,8 @@ export function HomepageSearch() {
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
+            role="presentation"
           >
             <path
               strokeLinecap="round"
