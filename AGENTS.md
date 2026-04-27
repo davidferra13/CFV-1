@@ -202,6 +202,25 @@ Prospecting features must NEVER appear for non-admin users. All prospecting nav 
 
 ## GIT WORKFLOW
 
+### MANDATORY: Commit Before You Finish (HARD STOP)
+
+**Every agent MUST commit and push all work before completing a task. No exceptions.**
+
+An agent that writes code and does not commit is worse than an agent that writes nothing. Uncommitted work accumulates into 100+ dirty files that block every subsequent session. This is the #1 operational failure in this project.
+
+**The rule:**
+
+1. Before you report "done", "complete", "finished", or stop for any reason: `git add` + `git commit` + `git push`
+2. If your task fails partway: commit the partial work with a clear message explaining what's done and what isn't
+3. If you hit the 3-strike anti-loop rule: commit what you have before stopping
+4. If you cannot commit (merge conflict, detached HEAD): report exactly why, do not silently leave dirty files
+
+**Commit message format for auto-commits:** `chore(agent): [what was done] [branch-name]`
+
+**There is no valid reason to leave uncommitted work.** "I was just reading files" = fine, nothing to commit. "I wrote/modified files" = you MUST commit before finishing.
+
+### Branch Rules
+
 - Feature branches for all work: `feature/description` or `fix/description`
 - Commit and push your feature branch when done
 - NEVER merge to main without explicit developer approval

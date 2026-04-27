@@ -12,6 +12,7 @@ This file is read by Claude Code at the start of every conversation. These rules
 > 4. **Start dead things, don't kill live things.** Dead server? Start it. Running server? Don't kill it - say "restart when ready."
 > 5. **Fix it, don't report it.** If something is broken, dirty, or unhealthy, FIX IT silently. Never tell the developer something is broken without fixing it in the same action. The only exception: destructive DB ops or production deploys (ask first per existing rules).
 > 6. **Swarm-safe: never destroy other agents' work.** This project runs 10+ parallel AI agents constantly. Uncommitted changes, unrouted pages, stub functions, and unfamiliar code are OTHER AGENTS' work-in-progress. Never delete, revert, or "clean up" code you didn't write in this session. Treat other agents' code with the same protection as production data.
+> 7. **Commit your work. Always.** If you wrote or modified files, you MUST commit before finishing. The `Stop` hook auto-commits every 2 minutes as a safety net, but do not rely on it. Explicitly commit with a clear message. An agent that leaves dirty files is a broken agent. Partial work gets a partial commit with a note, not zero commits.
 
 ---
 

@@ -33,6 +33,11 @@ log() { echo "[$(timestamp)] $1" >> "$LOG_FILE"; }
 
 cd "$PROJECT_DIR" || { log "FAIL: can't cd to project dir"; exit 0; }
 
+# ── Guard: git index locked (parallel agent running git) ─────────
+if [ -f ".git/index.lock" ]; then
+  exit 0
+fi
+
 # ── Guard: merge/rebase in progress ─────────────────────────────
 if [ -d ".git/rebase-merge" ] || [ -d ".git/rebase-apply" ] || [ -f ".git/MERGE_HEAD" ]; then
   exit 0
@@ -68,13 +73,13 @@ fi
 # ── Stage everything except secrets ──────────────────────────────
 git add -A 2>/dev/null
 
-# Unstage sensitive files
+# Unstage sensitive files (quoted for Windows git bash compatibility)
 git reset HEAD -- \
-  .env .env.local .env.production .env.development \
-  .auth/*.json \
-  **/credentials*.json \
-  **/secrets*.json \
-  **/*.pem **/*.key \
+  '.env' '.env.local' '.env.production' '.env.development' \
+  '.auth/*.json' \
+  '**credentials*.json' \
+  '**secrets*.json' \
+  '**.pem' '**.key' \
   2>/dev/null || true
 
 # ── Count staged ─────────────────────────────────────────────────
@@ -96,6 +101,7 @@ echo "$STAGED_FILES" | grep -q "^scripts/" && AREAS="$AREAS scripts"
 echo "$STAGED_FILES" | grep -q "^devtools/" && AREAS="$AREAS devtools"
 echo "$STAGED_FILES" | grep -q "^\.claude/" && AREAS="$AREAS claude"
 echo "$STAGED_FILES" | grep -q "^test" && AREAS="$AREAS tests"
+echo "$STAGED_FILES" | grep -q "^system/" && AREAS="$AREAS system"
 AREAS=$(echo "$AREAS" | xargs)
 [ -z "$AREAS" ] && AREAS="misc"
 
