@@ -395,6 +395,7 @@ const NavGroupSection = memo(function NavGroupSection({
   onToggleItem,
   badgeCount,
   isLocked = false,
+  tenantId,
 }: {
   group: NavGroup
   pathname: string
@@ -405,6 +406,7 @@ const NavGroupSection = memo(function NavGroupSection({
   onToggleItem: (href: string) => void
   badgeCount?: number
   isLocked?: boolean
+  tenantId?: string
 }) {
   const GroupIcon = group.icon
   const active = isGroupActive(pathname, group, searchParams)
@@ -550,7 +552,9 @@ const NavGroupSection = memo(function NavGroupSection({
                 {item.label}
                 {item.href === '/inbox' && <InboxUnreadBadge sseChannel={`tenant:${tenantId}`} />}
                 {item.href === '/circles' && <CirclesUnreadBadge />}
-                {item.href === '/events' && <InquiriesUnreadBadge sseChannel={`chef-${tenantId}`} />}
+                {item.href === '/events' && (
+                  <InquiriesUnreadBadge sseChannel={`chef-${tenantId}`} />
+                )}
                 {item.href === '/chat' && <ChatNavUnreadBadge sseChannel={`tenant:${tenantId}`} />}
               </PendingNavLink>
             )
@@ -1074,6 +1078,8 @@ export function ChefSidebar({
               tenantPresence={tenantPresence}
               showAllFeatures={showAllNav}
               bypassProgressiveDisclosure={isAdmin || isPrivileged}
+              tenantId={tenantId}
+              userId={userId}
             />
 
             {/* ─── Nav Groups (always visible, collapse individually) ─── */}
@@ -1092,6 +1098,7 @@ export function ChefSidebar({
                       openItems={openItems}
                       onToggleItem={toggleItem}
                       isLocked={isLocked}
+                      tenantId={tenantId}
                     />
                   ))}
                 </div>

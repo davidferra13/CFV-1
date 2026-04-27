@@ -26,6 +26,8 @@ import { ClientChatUnreadBadge } from '@/components/chat/client-chat-unread-badg
 
 interface ClientNavProps {
   userEmail: string
+  /** User ID for SSE subscriptions on badge components */
+  userId?: string
 }
 
 const BOOK_NOW_HREF = '/book-now'
@@ -87,7 +89,7 @@ export function ClientSidebarProvider({ children }: { children: React.ReactNode 
   )
 }
 
-export function ClientSidebar({ userEmail }: ClientNavProps) {
+export function ClientSidebar({ userEmail, userId }: ClientNavProps) {
   const pathname = usePathname() ?? ''
   const { collapsed, setCollapsed } = useClientSidebar()
 
@@ -156,7 +158,9 @@ export function ClientSidebar({ userEmail }: ClientNavProps) {
                   >
                     <Icon className="w-[18px] h-[18px]" />
                     {item.badge === 'hub' && <ClientHubUnreadBadge />}
-                    {item.badge === 'chat' && <ClientChatUnreadBadge />}
+                    {item.badge === 'chat' && (
+                      <ClientChatUnreadBadge sseChannel={userId ? `user:${userId}` : undefined} />
+                    )}
                   </Link>
                 </div>
               )
@@ -194,7 +198,9 @@ export function ClientSidebar({ userEmail }: ClientNavProps) {
                     />
                     {item.label}
                     {item.badge === 'hub' && <ClientHubUnreadBadge />}
-                    {item.badge === 'chat' && <ClientChatUnreadBadge />}
+                    {item.badge === 'chat' && (
+                      <ClientChatUnreadBadge sseChannel={userId ? `user:${userId}` : undefined} />
+                    )}
                   </Link>
                 </div>
               )
@@ -240,7 +246,7 @@ export function ClientSidebar({ userEmail }: ClientNavProps) {
   )
 }
 
-export function ClientMobileNav({ userEmail }: ClientNavProps) {
+export function ClientMobileNav({ userEmail, userId }: ClientNavProps) {
   const pathname = usePathname() ?? ''
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -320,7 +326,9 @@ export function ClientMobileNav({ userEmail }: ClientNavProps) {
                       />
                       {item.label}
                       {item.badge === 'hub' && <ClientHubUnreadBadge />}
-                      {item.badge === 'chat' && <ClientChatUnreadBadge />}
+                      {item.badge === 'chat' && (
+                        <ClientChatUnreadBadge sseChannel={userId ? `user:${userId}` : undefined} />
+                      )}
                     </Link>
                   </div>
                 )
@@ -374,7 +382,7 @@ export function ClientMobileNav({ userEmail }: ClientNavProps) {
                   )}
                   {item.badge === 'chat' && (
                     <span className="absolute top-0.5 right-1/4">
-                      <ClientChatUnreadBadge />
+                      <ClientChatUnreadBadge sseChannel={userId ? `user:${userId}` : undefined} />
                     </span>
                   )}
                 </Link>

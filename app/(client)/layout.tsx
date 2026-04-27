@@ -55,8 +55,8 @@ export default async function ClientLayout({ children }: { children: React.React
           >
             Skip to main content
           </a>
-          <ClientSidebar userEmail={user.email} />
-          <ClientMobileNav userEmail={user.email} />
+          <ClientSidebar userEmail={user.email} userId={user.id} />
+          <ClientMobileNav userEmail={user.email} userId={user.id} />
           <ActivityTracker eventType="portal_login" />
           <ClientMainContent>
             <MarketResearchBannerWrapper
