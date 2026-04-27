@@ -446,7 +446,7 @@ export async function getOpportunityDetail(
 export async function getOpportunityFeed(filters?: {
   state?: string
   status?: 'open' | 'filled' | 'closed'
-}): Promise<Array<{ postId: string; opportunity: OpportunityDetail }>> {
+}): Promise<Array<{ postId: string; chefName: string; opportunity: OpportunityDetail }>> {
   const user = await requireChef()
   const db = createServerClient({ admin: true })
 
@@ -469,24 +469,56 @@ export async function getOpportunityFeed(filters?: {
   const { data: opps } = await query
   if (!opps?.length) return []
 
-  return (opps as any[]).map((opp) => ({
-    postId: opp.post_id,
-    opportunity: {
-      id: opp.id,
-      post_id: opp.post_id,
-      chef_id: opp.chef_id,
-      role_title: opp.role_title,
-      location_city: opp.location_city ?? null,
-      location_state: opp.location_state ?? null,
-      compensation_type: opp.compensation_type,
-      compensation_low_cents: opp.compensation_low_cents ?? null,
-      compensation_high_cents: opp.compensation_high_cents ?? null,
-      duration_type: opp.duration_type,
-      status: opp.status,
-      interest_count: 0,
-      my_interest_id: null,
-      my_interest_status: null,
-      created_at: opp.created_at,
-    } satisfies OpportunityDetail,
-  }))
+  // Enrich with chef names and viewer interest status
+  const chefIds = Array.from(new Set((opps as any[]).map((o) => o.chef_id)))
+  const oppIds = (opps as any[]).map((o) => o.id)
+
+  const [chefResult, interestResult] = await Promise.all([
+    chefIds.length > 0
+      ? db.from('chefs').select('id, display_name, business_name').in('id', chefIds)
+      : Promise.resolve({ data: [] }),
+    oppIds.length > 0
+      ? db
+          .from('chef_opportunity_interests')
+          .select('id, opportunity_id, status')
+          .eq('chef_id', user.entityId)
+          .in('opportunity_id', oppIds)
+      : Promise.resolve({ data: [] }),
+  ])
+
+  const chefMap = new Map<string, { display_name: string | null; business_name: string }>()
+  for (const c of ((chefResult as any).data || []) as any[]) {
+    chefMap.set(c.id, { display_name: c.display_name, business_name: c.business_name })
+  }
+
+  const interestMap = new Map<string, { id: string; status: string }>()
+  for (const i of ((interestResult as any).data || []) as any[]) {
+    interestMap.set(i.opportunity_id, { id: i.id, status: i.status })
+  }
+
+  return (opps as any[]).map((opp) => {
+    const chef = chefMap.get(opp.chef_id)
+    const myInterest = interestMap.get(opp.id)
+    return {
+      postId: opp.post_id,
+      chefName: chef?.display_name ?? chef?.business_name ?? 'Unknown Chef',
+      opportunity: {
+        id: opp.id,
+        post_id: opp.post_id,
+        chef_id: opp.chef_id,
+        role_title: opp.role_title,
+        location_city: opp.location_city ?? null,
+        location_state: opp.location_state ?? null,
+        compensation_type: opp.compensation_type,
+        compensation_low_cents: opp.compensation_low_cents ?? null,
+        compensation_high_cents: opp.compensation_high_cents ?? null,
+        duration_type: opp.duration_type,
+        status: opp.status,
+        interest_count: 0,
+        my_interest_id: myInterest?.id ?? null,
+        my_interest_status: myInterest?.status ?? null,
+        created_at: opp.created_at,
+      } satisfies OpportunityDetail,
+    }
+  })
 }

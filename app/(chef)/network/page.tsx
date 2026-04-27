@@ -55,6 +55,7 @@ import {
   Bell,
   Bookmark,
   Handshake,
+  Briefcase,
 } from '@/components/ui/icons'
 import { Suspense } from 'react'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
@@ -115,6 +116,13 @@ export default async function NetworkPage({
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Link
+            href="/network/opportunities"
+            className="p-2 rounded-xl text-stone-500 hover:bg-stone-700 transition-colors border border-stone-700"
+            title="Opportunity board"
+          >
+            <Briefcase className="h-5 w-5" />
+          </Link>
           <Link
             href="/network/notifications"
             className="p-2 rounded-xl text-stone-500 hover:bg-stone-700 transition-colors border border-stone-700"
