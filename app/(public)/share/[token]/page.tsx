@@ -57,7 +57,7 @@ export default async function SharePage({ params }: { params: { token: string } 
     new Date(eventData.settings.rsvp_deadline_at) < new Date()
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-stone-950 to-stone-900">
       <div className="max-w-2xl mx-auto px-4 py-8 sm:py-12">
         {/* Event Header */}
         <div className="text-center mb-8">

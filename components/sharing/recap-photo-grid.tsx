@@ -22,7 +22,7 @@ export function RecapPhotoGrid({ photos, maskNames }: { photos: Photo[]; maskNam
           <button
             key={photo.id}
             onClick={() => setSelectedPhoto(photo)}
-            className="relative aspect-square rounded-xl overflow-hidden bg-stone-100 group"
+            className="relative aspect-square rounded-xl overflow-hidden bg-stone-800 group"
           >
             {photo.url ? (
               <img
