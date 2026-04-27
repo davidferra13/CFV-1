@@ -150,6 +150,15 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
   const [showSuccess, setShowSuccess] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [emailSuggestion, setEmailSuggestion] = useState<string | null>(null)
+  const [isNarrow, setIsNarrow] = useState(false)
+
+  useEffect(() => {
+    const check = () => setIsNarrow(window.innerWidth < 420)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
   const handleEmailBlur = useCallback(() => {
     const email = formData.email.trim()
     if (!email) {
@@ -638,7 +647,7 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
           {/* Date & Time */}
           <div>
             <label style={labelStyle}>Event Date & Serve Time *</label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isNarrow ? '1fr 1fr' : '1fr 1fr 1fr 1fr', gap: '8px' }}>
               <select
                 style={inputStyle}
                 name="month"
