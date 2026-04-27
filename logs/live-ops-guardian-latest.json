@@ -1,56 +1,25 @@
 {
-    "runId":  "live-ops-82332-1777320902",
-    "ranAt":  "2026-04-27T20:15:31.6390520Z",
-    "target":  {
-                   "label":  "dev",
-                   "baseUrl":  "http://localhost:3100"
-               },
+    "runId":  "live-ops-55592-1777328102",
+    "ranAt":  "2026-04-27T22:15:45.2648360Z",
+    "target":  null,
     "newChangesDetected":  true,
     "periodicSweepDue":  false,
     "authSweepsEnabled":  false,
-    "changedPathCount":  4,
+    "changedPathCount":  3,
     "changedPaths":  [
                          "docs/uptime-history.json",
                          "system/.pipeline.lock",
-                         "system/persona-inbox-state.json",
                          "system/runtime-events.ndjson"
                      ],
     "healthProbes":  [
-                         {
-                             "name":  "health-ping",
-                             "path":  "/api/health/ping",
-                             "ok":  true,
-                             "statusCode":  200,
-                             "error":  null
-                         },
-                         {
-                             "name":  "health-readiness",
-                             "path":  "/api/health/readiness?strict=1",
-                             "ok":  true,
-                             "statusCode":  200,
-                             "error":  null
-                         },
-                         {
-                             "name":  "home",
-                             "path":  "/",
-                             "ok":  true,
-                             "statusCode":  200,
-                             "error":  null
-                         },
-                         {
-                             "name":  "signin",
-                             "path":  "/auth/signin",
-                             "ok":  true,
-                             "statusCode":  200,
-                             "error":  null
-                         }
+
                      ],
     "steps":  [
                   {
                       "name":  "unit-canary",
                       "status":  "failed",
                       "exitCode":  1,
-                      "durationSeconds":  21.8
+                      "durationSeconds":  24.6
                   }
               ],
     "notes":  [
