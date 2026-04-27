@@ -9,6 +9,7 @@
 import { requirePartner } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
+import { startOfMonth, subMonths } from 'date-fns'
 import {
   getPartnerLocationProposalChangedFields,
   sanitizePartnerLocationProposal,
@@ -471,4 +472,86 @@ export async function requestPartnerLocationChange(
   revalidatePath(`/partners/${user.partnerId}`)
 
   return { success: true }
+}
+
+// ─── Referral Stats ─────────────────────────────────────────────────────────
+
+export type PartnerReferralStats = {
+  totalInquiries: number
+  totalEvents: number
+  totalGuestsServed: number
+  revenueCents: number
+  thisMonthInquiries: number
+  lastMonthInquiries: number
+  thisMonthEvents: number
+  lastMonthEvents: number
+}
+
+/**
+ * Fetch referral/attribution stats for the logged-in partner.
+ * Counts inquiries and events linked to this partner via referral_partner_id.
+ * Revenue is derived from completed events only.
+ */
+export async function getPartnerReferralStats(): Promise<PartnerReferralStats> {
+  const user = await requirePartner()
+  const db = createServerClient({ admin: true })
+  const partnerId = user.partnerId
+
+  const now = new Date()
+  const thisMonthStart = startOfMonth(now).toISOString()
+  const lastMonthStart = startOfMonth(subMonths(now, 1)).toISOString()
+  const lastMonthEnd = startOfMonth(now).toISOString()
+
+  // All inquiries referred by this partner
+  const { data: allInquiries } = await db
+    .from('inquiries')
+    .select('id, created_at')
+    .eq('referral_partner_id', partnerId)
+
+  // All events referred by this partner
+  const { data: allEvents } = await db
+    .from('events')
+    .select('id, status, guest_count, quoted_price_cents, created_at')
+    .eq('referral_partner_id', partnerId)
+
+  const inquiries = allInquiries || []
+  const events = allEvents || []
+
+  // Totals
+  const totalInquiries = inquiries.length
+  const totalEvents = events.length
+  const completedEvents = events.filter((e: any) => e.status === 'completed')
+  const totalGuestsServed = completedEvents.reduce(
+    (sum: number, e: any) => sum + (e.guest_count || 0),
+    0
+  )
+  const revenueCents = completedEvents.reduce(
+    (sum: number, e: any) => sum + (e.quoted_price_cents || 0),
+    0
+  )
+
+  // This month vs last month for trend
+  const thisMonthInquiries = inquiries.filter(
+    (i: any) => i.created_at >= thisMonthStart
+  ).length
+  const lastMonthInquiries = inquiries.filter(
+    (i: any) => i.created_at >= lastMonthStart && i.created_at < lastMonthEnd
+  ).length
+  const thisMonthEvents = events.filter(
+    (e: any) => e.created_at >= thisMonthStart
+  ).length
+  const lastMonthEvents = events.filter(
+    (e: any) => e.created_at >= lastMonthStart && e.created_at < lastMonthEnd
+  ).length
+
+  return {
+    totalInquiries,
+    totalEvents,
+    totalGuestsServed,
+    revenueCents,
+    thisMonthInquiries,
+    lastMonthInquiries,
+    thisMonthEvents,
+    lastMonthEvents,
+  }
 }
