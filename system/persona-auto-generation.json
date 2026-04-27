@@ -17,7 +17,13 @@
       "type": "Chef",
       "at": "2026-04-27T21:24:18.082Z",
       "success": false
+    },
+    {
+      "category": "staffing-team",
+      "type": "Chef",
+      "at": "2026-04-27T22:09:18.251Z",
+      "success": false
     }
   ],
-  "last_check": "2026-04-27T21:24:18.083Z"
+  "last_check": "2026-04-27T22:09:18.251Z"
 }
