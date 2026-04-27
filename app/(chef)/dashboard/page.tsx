@@ -64,6 +64,7 @@ import { PrepPressureCard } from './_sections/prep-pressure-card'
 import { SaturationCards } from './_sections/saturation-cards'
 import { AlertCards } from './_sections/alerts-cards'
 import { CommunicationUrgencyBanner } from './_sections/communication-urgency-banner'
+import { RecipeUrgencyBanner } from './_sections/recipe-urgency-banner'
 import { BusinessCards } from './_sections/business-cards'
 import { IntelligenceCards } from './_sections/intelligence-cards'
 import { HeroMetrics } from './_sections/hero-metrics'
@@ -1625,6 +1626,13 @@ export default async function ChefDashboard() {
       <WidgetErrorBoundary name="Communication Urgency" compact>
         <Suspense fallback={null}>
           <CommunicationUrgencyBanner />
+        </Suspense>
+      </WidgetErrorBoundary>
+
+      {/* Recipe Urgency Banner - shows when dishes served have no recipes recorded */}
+      <WidgetErrorBoundary name="Recipe Urgency" compact>
+        <Suspense fallback={null}>
+          <RecipeUrgencyBanner />
         </Suspense>
       </WidgetErrorBoundary>
 
