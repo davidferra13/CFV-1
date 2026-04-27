@@ -1143,6 +1143,7 @@ export const navGroups: NavGroup[] = [
           { href: '/inquiries/declined', label: 'Declined' },
           { href: '/inquiries/menu-drafting', label: 'Menu Drafting' },
           { href: '/inquiries/new', label: 'New Inquiry' },
+          { href: '/inquiries/catchup', label: 'Quick Catchup' },
           { href: '/inquiries/sent-to-client', label: 'Sent to Client' },
         ],
       },
