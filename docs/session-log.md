@@ -1,25 +1,5 @@
 # Session Log
 
-## 2026-04-23 13:13 EST
-
-- Agent: Codex
-- Task: Verify chef portal priority nav restructure and compose-route guard
-- Status: completed
-- Files touched: 6 nav-priority files in the slice; repo already dirty outside the slice
-- Commits: not created because the worktree already contained extensive unrelated dirty changes
-- Build state on departure: focused nav verification passed; full typecheck and full route audit intentionally not run
-- Notes: Confirmed the primary chef defaults, action bar cap, mobile defaults, mobile customization options, and `/social/compose` guard matched the requested state. Repaired an accidental `docs/session-log.md` truncation while leaving unrelated dirty worktree changes untouched. Verified with `node --test --import tsx tests/unit/chef-nav-priority.test.ts`, `node --test --import tsx tests/unit/surface-governance.test.ts tests/unit/focus-mode-strict-nav.test.ts`, and the targeted `rg` scan for standalone `/social/compose` references.
-
-## 2026-04-23 13:33 EST
-
-- Agent: Codex
-- Task: Re-verify chef portal priority nav slice and complete closeout without disturbing dirty-tree history
-- Status: completed
-- Files touched: `docs/session-log.md`, `docs/session-digests/2026-04-23-draft.md` (closeout only); no nav source changes
-- Commits: not created because the worktree already contained extensive unrelated dirty changes
-- Build state on departure: focused nav verification passed; full typecheck and full route audit intentionally not run
-- Notes: Re-ran the required focused nav tests and standalone `/social/compose` scan, confirmed the intended primary, action bar, and mobile defaults still match the priority contract, and restored the preexisting `docs/session-log.md` history after `scripts/session-close.sh` trimmed old entries on this Windows host. Git Bash was required because plain `bash` invoked WSL without `/bin/bash`.
-
 ## 2026-04-23 13:51 EST
 
 - Agent: Codex
