@@ -6,11 +6,12 @@ import { StaffPinEntry } from '@/components/kiosk/staff-pin-entry'
 import { KioskInquiryForm } from '@/components/kiosk/kiosk-inquiry-form'
 import { KioskSuccessScreen } from '@/components/kiosk/kiosk-success-screen'
 import { KioskOrderRegister } from '@/components/kiosk/kiosk-order-register'
+import { KioskCheckin } from '@/components/kiosk/kiosk-checkin'
 import { IdleResetProvider } from '@/components/kiosk/idle-reset-provider'
 import { HeartbeatProvider } from '@/components/kiosk/heartbeat-provider'
 import type { KioskConfig, StaffPinSession } from '@/lib/devices/types'
 
-type KioskView = 'loading' | 'pin' | 'form' | 'order' | 'success'
+type KioskView = 'loading' | 'pin' | 'form' | 'order' | 'checkin' | 'success'
 
 const DEVICE_TOKEN_KEY = 'chefflow_kiosk_token'
 
@@ -21,7 +22,9 @@ export default function KioskPage() {
   const [token, setToken] = useState<string | null>(null)
 
   const getWorkView = useCallback((nextConfig: KioskConfig | null) => {
-    return nextConfig?.kiosk_flow === 'order' ? 'order' : 'form'
+    if (nextConfig?.kiosk_flow === 'order') return 'order'
+    if (nextConfig?.kiosk_flow === 'checkin') return 'checkin'
+    return 'form'
   }, [])
 
   // Check for existing device token on mount
@@ -135,7 +138,7 @@ export default function KioskPage() {
       <IdleResetProvider
         timeoutSeconds={idleTimeout}
         onReset={handleIdleReset}
-        active={view === 'form' || view === 'order'}
+        active={view === 'form' || view === 'order' || view === 'checkin'}
       >
         <div className="flex min-h-screen flex-col">
           <KioskHeader
@@ -157,6 +160,10 @@ export default function KioskPage() {
             )}
 
             {view === 'order' && <KioskOrderRegister token={token!} staffSession={staffSession} />}
+
+            {view === 'checkin' && (
+              <KioskCheckin token={token!} onCheckedIn={handleInquirySubmitted} />
+            )}
 
             {view === 'success' && (
               <KioskSuccessScreen
