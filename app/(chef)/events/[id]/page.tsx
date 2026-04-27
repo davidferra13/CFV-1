@@ -86,6 +86,7 @@ import { getMarketplaceConversionData } from '@/lib/marketplace/conversion-actio
 import { MarketplaceConvertBanner } from '@/components/events/marketplace-convert-banner'
 import { EventCollaboratorsPanel } from '@/components/events/event-collaborators-panel'
 import { getEventCollaborators } from '@/lib/collaboration/actions'
+import { getEventContacts } from '@/lib/events/contacts'
 import { getEventSettlement } from '@/lib/collaboration/settlement-actions'
 import { ContractSection } from '@/components/contracts/contract-section'
 import { QuickReceiptCapture } from '@/components/events/quick-receipt-capture'
@@ -823,6 +824,7 @@ export default async function EventDetailPage({
     menuApprovalData,
     prepBlocks,
     eventCollaborators,
+    eventContacts,
     settlement,
     packingConfirmedCount,
     hubGroupToken,
@@ -888,6 +890,7 @@ export default async function EventDetailPage({
       ? getEventPrepBlocks(params.id).catch(() => [])
       : Promise.resolve([]),
     getEventCollaborators(params.id).catch(() => []),
+    getEventContacts(params.id).catch(() => []),
     getEventSettlement(params.id).catch(() => null),
     ['confirmed', 'in_progress'].includes(event.status)
       ? getPackingConfirmationCount(params.id).catch(() => 0)
@@ -1482,6 +1485,7 @@ export default async function EventDetailPage({
         templates={templates}
         chatConversationId={eventChatConversationId as string | null}
         collaborators={eventCollaborators as any[]}
+        eventContacts={eventContacts as any[]}
         eventMenuData={eventMenuData}
         constraintRadarData={constraintRadarData}
       />

@@ -31,6 +31,8 @@ import { AllergenConflictAlert } from '@/components/events/allergen-conflict-ale
 import { DietaryKnowledgePanel } from '@/components/events/dietary-knowledge-panel'
 import { EventCollaboratorsPanel } from '@/components/collaboration/event-collaborators-panel'
 import type { EventCollaborator } from '@/lib/collaboration/types'
+import { EventContactsPanel } from '@/components/events/event-contacts-panel'
+import type { EventContact } from '@/lib/events/contacts'
 import { ChefDecisionBriefPanel } from '@/components/hub/chef-decision-brief'
 import { GarmentFlipToggle } from '@/components/events/garment-flip-toggle'
 import { ConstraintRadarPanel } from '@/components/events/constraint-radar-panel'
@@ -77,6 +79,7 @@ type EventDetailOverviewTabProps = {
   templates: any[]
   chatConversationId?: string | null
   collaborators: EventCollaborator[]
+  eventContacts: EventContact[]
   eventMenuData?: ServiceViewMenu[]
   constraintRadarData?: ConstraintRadarData | null
 }
@@ -105,6 +108,7 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
     templates,
     chatConversationId,
     collaborators,
+    eventContacts,
     eventMenuData,
     constraintRadarData,
   } = props
@@ -358,6 +362,8 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
           </Card>
 
           <EventCollaboratorsPanel eventId={event.id} collaborators={collaborators} />
+
+          <EventContactsPanel eventId={event.id} contacts={eventContacts} />
         </div>
 
         {/* Client Portal QR Code */}
