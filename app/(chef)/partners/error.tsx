@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { reportClientBoundaryError } from '@/lib/monitoring/report-client-error'
 import { useChunkErrorRecovery } from '@/lib/hooks/use-chunk-error-recovery'
 
-export default function VendorsError({
+export default function PartnersError({
   error,
   reset,
 }: {
@@ -17,8 +17,8 @@ export default function VendorsError({
   const { isChunkError, triggerRecovery } = useChunkErrorRecovery(error)
 
   useEffect(() => {
-    reportClientBoundaryError(error, { boundary: 'vendors', digest: error.digest })
-    console.error('[Vendors Error]', error)
+    reportClientBoundaryError(error, { boundary: 'partners', digest: error.digest })
+    console.error('[Partners Error]', error)
   }, [error])
 
   if (isChunkError) {
@@ -45,7 +45,7 @@ export default function VendorsError({
     <div className="flex items-center justify-center min-h-[400px] px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Could not load vendors</CardTitle>
+          <CardTitle className="text-xl">Could not load partners</CardTitle>
           <p className="text-sm text-muted-foreground mt-1">
             Something went wrong loading this page.
           </p>
