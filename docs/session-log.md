@@ -110,3 +110,14 @@
 - Commits: f1dbfe2ba (docs), e2896a0e6 (migrations WIP), b101d5307 (tests), 8f854d4e0 (source)
 - Build state on departure: typecheck clean, full build not verified (that is Codex Agent 3's job)
 - Notes: Found project in "Codex hangover" state: 753 uncommitted files from multiple parallel Codex sessions. Triaged and committed in 4 logical chunks. Identified 2 remaining ticketing bugs (toggle heuristic, missing ledger entry), 2 duplicate migration pairs, and no build verification. Wrote 3 stabilization specs for Codex: migration audit (research), ticketing wiring fix (surgical), build verification (QA). All code pushed to main. Remaining 129 dirty files are Codex temp artifacts (now gitignored) and stashed. Senior engineer recommendation: no new features until stabilization agents complete.
+
+## 2026-04-26 22:47 EDT
+
+- Agent: Codex
+- Task: Close out the parallel-agent dirty tree without publishing generated or sensitive artifacts
+- Status: completed
+- Files touched: `docs/session-log.md`; local-only `.git/info/exclude` updated for `obsidian_export/` and `system/intake/`
+- Commits: pending at log-write time
+- Build state on departure: no build or typecheck run by instruction; lightweight compliance scan passed
+- Verification commands run: four-sample dirty-tree stability monitor; `bash scripts/compliance-scan.sh` via Git Bash; `git status --short`; `git ls-files --others --exclude-standard`
+- Notes: Initial stable tree had 829 dirty entries from parallel agents. Preserved visible dirty work in stash named `parallel-agent-closeout-2026-04-26-829-dirty-entries`, now `stash@{1}` after one later stash was added. Left `obsidian_export/` and `system/intake/` on disk but locally excluded because they include large archive material and auth/session/token-like files. After the clean point, four late agent writes appeared and were preserved in `stash@{0}` named `late-agent-writes-after-closeout-2026-04-26`. Final visible working tree contained only this documentation entry before commit.
