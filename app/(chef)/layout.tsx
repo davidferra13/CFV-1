@@ -82,6 +82,10 @@ const ChefLiveAlerts = dynamic(
   () => import('@/components/calling/chef-live-alerts').then((m) => m.ChefLiveAlerts),
   { ssr: false }
 )
+const LiveSystemSync = dynamic(
+  () => import('@/components/realtime/live-system-sync').then((m) => m.LiveSystemSync),
+  { ssr: false }
+)
 // RouteProgress: regular import (not dynamic) so the bar is available from first render
 import { RouteProgress } from '@/components/ui/route-progress'
 import { getTenantDataPresence } from '@/lib/progressive-disclosure/tenant-data-presence'
@@ -205,6 +209,11 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                 <NotificationProvider userId={user.id}>
                   <ToastProvider />
                   <RouteProgress />
+                  <LiveSystemSync
+                    tenantId={user.tenantId ?? user.entityId}
+                    userId={user.id}
+                    role="chef"
+                  />
                   <TestAccountBanner email={user.email} />
                   <KeyboardShortcutsWrapper>
                     <div

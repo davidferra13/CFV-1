@@ -16,6 +16,11 @@ export async function validateRealtimeChannelAccess(
   channel: string,
   context: RealtimeAccessContext
 ): Promise<boolean> {
+  if (channel.startsWith('chef-')) {
+    const tenantId = channel.slice('chef-'.length)
+    return Boolean(context.tenantId) && tenantId === context.tenantId
+  }
+
   const colonIdx = channel.indexOf(':')
 
   if (colonIdx === -1) {
@@ -28,6 +33,12 @@ export async function validateRealtimeChannelAccess(
   if (!id) return false
 
   switch (prefix) {
+    case 'tenant':
+      return Boolean(context.tenantId) && id === context.tenantId
+
+    case 'user':
+      return Boolean(context.userId) && id === context.userId
+
     case 'notifications':
       return Boolean(context.userId) && id === context.userId
 
@@ -37,6 +48,18 @@ export async function validateRealtimeChannelAccess(
       return Boolean(context.tenantId) && id === context.tenantId
 
     case 'events': {
+      if (!context.tenantId) return false
+
+      const [event] = await db
+        .select({ id: events.id })
+        .from(events)
+        .where(and(eq(events.id, id), eq(events.tenantId, context.tenantId)))
+        .limit(1)
+
+      return Boolean(event)
+    }
+
+    case 'client-event': {
       if (!context.tenantId) return false
 
       const [event] = await db

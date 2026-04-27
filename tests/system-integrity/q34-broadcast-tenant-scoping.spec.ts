@@ -22,7 +22,7 @@
  *    (conversation-level, not global).
  *
  * 5. GENERIC BROADCAST REQUIRES CHANNEL: The low-level broadcast() function
- *    requires an explicit channel string — it cannot be called without one.
+ *    requires an explicit channel string. It cannot be called without one.
  *
  * Run: npx playwright test -c playwright.system-integrity.config.ts tests/system-integrity/q34-broadcast-tenant-scoping.spec.ts
  */
@@ -112,6 +112,23 @@ test.describe('Q34: Realtime broadcast tenant scoping', () => {
         src.includes('broadcast = (channel') ||
         src.includes('broadcast(channel:'),
       'generic broadcast() must require an explicit channel (no default or optional channel)'
+    ).toBe(true)
+  })
+
+  test('table mutation broadcasts fan out to live tenant or user channels', () => {
+    const src = readFileSync(BROADCAST, 'utf-8')
+
+    expect(src.includes('broadcastTenantMutation'), 'tenant live mutation helper must exist').toBe(
+      true
+    )
+    expect(src.includes('broadcastUserMutation'), 'user live mutation helper must exist').toBe(true)
+    expect(
+      src.includes('tenant:${tenantId}') && src.includes('user:${userId}'),
+      'live mutation helpers must publish to scoped tenant and user channels'
+    ).toBe(true)
+    expect(
+      src.includes("table === 'notifications'") && src.includes('broadcastUserMutation'),
+      'notification broadcasts must fan out to the recipient user channel'
     ).toBe(true)
   })
 })

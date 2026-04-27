@@ -20,6 +20,12 @@ import { AnalyticsIdentify } from '@/components/analytics/analytics-identify'
 import { MarketResearchBannerWrapper } from '@/components/beta-survey/market-research-banner-wrapper'
 import { PATHNAME_HEADER } from '@/lib/auth/request-auth-context'
 import { resolveClientSurfaceMode } from '@/lib/interface/surface-governance'
+import dynamic from 'next/dynamic'
+
+const LiveSystemSync = dynamic(
+  () => import('@/components/realtime/live-system-sync').then((m) => m.LiveSystemSync),
+  { ssr: false }
+)
 
 export default async function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = headers().get(PATHNAME_HEADER) ?? '/my-events'
@@ -36,6 +42,7 @@ export default async function ClientLayout({ children }: { children: React.React
     <ClientSidebarProvider>
       <NotificationProvider userId={user.id}>
         <ToastProvider />
+        <LiveSystemSync tenantId={user.tenantId} userId={user.id} role="client" />
         <TestAccountBanner email={user.email} />
         <div
           className="min-h-screen bg-stone-900 text-stone-100"

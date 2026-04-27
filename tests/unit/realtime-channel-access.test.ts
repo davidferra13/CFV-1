@@ -49,3 +49,51 @@ test('tenant-scoped aliases still validate against the tenant id', async () => {
   assert.equal(allowed, true)
   assert.equal(denied, false)
 })
+
+test('live tenant channels are scoped to the authenticated tenant id', async () => {
+  const allowed = await validateRealtimeChannelAccess('tenant:tenant-1', {
+    isAdmin: false,
+    tenantId: 'tenant-1',
+    userId: 'user-1',
+  })
+  const denied = await validateRealtimeChannelAccess('tenant:tenant-2', {
+    isAdmin: false,
+    tenantId: 'tenant-1',
+    userId: 'user-1',
+  })
+
+  assert.equal(allowed, true)
+  assert.equal(denied, false)
+})
+
+test('live user channels are scoped to the authenticated user id', async () => {
+  const allowed = await validateRealtimeChannelAccess('user:user-1', {
+    isAdmin: false,
+    tenantId: 'tenant-1',
+    userId: 'user-1',
+  })
+  const denied = await validateRealtimeChannelAccess('user:user-2', {
+    isAdmin: false,
+    tenantId: 'tenant-1',
+    userId: 'user-1',
+  })
+
+  assert.equal(allowed, true)
+  assert.equal(denied, false)
+})
+
+test('legacy chef live alert channels are tenant scoped', async () => {
+  const allowed = await validateRealtimeChannelAccess('chef-tenant-1', {
+    isAdmin: false,
+    tenantId: 'tenant-1',
+    userId: 'user-1',
+  })
+  const denied = await validateRealtimeChannelAccess('chef-tenant-2', {
+    isAdmin: false,
+    tenantId: 'tenant-1',
+    userId: 'user-1',
+  })
+
+  assert.equal(allowed, true)
+  assert.equal(denied, false)
+})
