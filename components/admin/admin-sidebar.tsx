@@ -1,76 +1,31 @@
 'use client'
 
 // Admin Portal Sidebar - standalone nav separate from the chef sidebar
-// Minimal, always-expanded, dark theme to distinguish from chef portal
+// Renders from admin-nav-config.ts (the single source of truth for admin nav).
+// Dark theme to distinguish from chef portal.
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import {
-  LayoutDashboard,
-  Radio,
-  Users,
-  UserCheck,
-  BarChart3,
-  DollarSign,
-  CalendarRange,
-  ScrollText,
-  Activity,
-  Megaphone,
-  ToggleLeft,
-  Handshake,
-  MessageSquare,
-  MessagesSquare,
-  Sparkles,
-  Shield,
-  LogOut,
-  Leaf,
-  Rocket,
-  ClipboardList,
-  ShieldAlert,
-} from '@/components/ui/icons'
+import { Shield, LogOut } from '@/components/ui/icons'
 import { signOut } from '@/lib/auth/actions'
+import {
+  adminPrimaryLinks,
+  adminNavGroups,
+  adminBottomLinks,
+} from '@/components/navigation/admin-nav-config'
+import type { AdminNavItem } from '@/components/navigation/admin-nav-config'
 
-const navItems = [
-  { href: '/admin', label: 'Overview', icon: LayoutDashboard, exact: true },
-  { href: '/admin/presence', label: 'Live Presence', icon: Radio },
-  { href: '/admin/users', label: 'Chefs', icon: Users },
-  { href: '/admin/clients', label: 'Clients', icon: UserCheck },
-  { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
-  { href: '/admin/financials', label: 'Financials', icon: DollarSign },
-  { href: '/admin/events', label: 'All Events', icon: CalendarRange },
-  { href: '/admin/audit', label: 'Audit Log', icon: ScrollText },
-  { href: '/admin/system', label: 'System Health', icon: Activity },
-  { href: '/admin/hub', label: 'Dinner Circles', icon: MessagesSquare },
-  { href: '/admin/communications', label: 'Communications', icon: Megaphone },
-  { href: '/admin/flags', label: 'Feature Flags', icon: ToggleLeft },
-  { href: '/admin/referral-partners', label: 'Referral Partners', icon: Handshake },
-  { href: '/admin/feedback', label: 'Feedback', icon: MessageSquare },
-  { href: '/admin/animations', label: 'Animations', icon: Sparkles },
-  // { href: '/admin/cannabis', label: 'Cannabis Tier', icon: Leaf }, // hidden - feature disabled
-  { href: '/admin/beta', label: 'Early Signups', icon: Rocket },
-  { href: '/admin/beta-surveys', label: 'Surveys', icon: ClipboardList },
-  { href: '/admin/silent-failures', label: 'Silent Failures', icon: ShieldAlert },
-]
-
-function NavLink({
-  href,
-  label,
-  icon: Icon,
-  exact,
-}: {
-  href: string
-  label: string
-  icon: typeof LayoutDashboard
-  exact?: boolean
-}) {
+function NavLink({ item }: { item: AdminNavItem }) {
   const pathname = usePathname()
-  const isActive = exact
-    ? pathname === href
-    : pathname === href || (pathname?.startsWith(href + '/') ?? false)
+  const isActive =
+    item.href === '/admin'
+      ? pathname === '/admin'
+      : pathname === item.href || (pathname?.startsWith(item.href + '/') ?? false)
+  const Icon = item.icon
 
   return (
     <Link
-      href={href}
+      href={item.href}
       className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
         isActive
           ? 'bg-stone-900/15 text-white'
@@ -78,7 +33,7 @@ function NavLink({
       }`}
     >
       <Icon size={16} className="shrink-0" />
-      <span>{label}</span>
+      <span>{item.label}</span>
     </Link>
   )
 }
@@ -95,14 +50,37 @@ export function AdminSidebar({ adminEmail }: { adminEmail: string }) {
         <p className="text-slate-400 text-xs truncate">{adminEmail}</p>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        {navItems.map((item) => (
-          <NavLink key={item.href} {...item} />
+      {/* Primary links */}
+      <div className="px-3 pt-4 pb-2 space-y-1">
+        {adminPrimaryLinks.map((item) => (
+          <NavLink key={item.href} item={item} />
+        ))}
+      </div>
+
+      {/* Grouped nav sections */}
+      <nav className="flex-1 px-3 py-2 space-y-4 overflow-y-auto">
+        {adminNavGroups.map((group) => (
+          <div key={group.id}>
+            <div className="px-3 pb-1 text-xs font-semibold uppercase tracking-wider text-slate-500">
+              {group.label}
+            </div>
+            <div className="space-y-0.5">
+              {group.items.map((item) => (
+                <NavLink key={item.href} item={item} />
+              ))}
+            </div>
+          </div>
         ))}
       </nav>
 
-      {/* Footer */}
+      {/* Bottom links */}
+      <div className="px-3 py-2 border-t border-slate-700 space-y-0.5">
+        {adminBottomLinks.map((item) => (
+          <NavLink key={item.href} item={item} />
+        ))}
+      </div>
+
+      {/* Sign out */}
       <div className="px-3 py-3 border-t border-slate-700">
         <button
           type="button"
