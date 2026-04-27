@@ -1,5 +1,4 @@
 import { broadcast } from './sse-server'
-import { emitRuntimeEvent } from '@/lib/runtime-transparency/events'
 
 type LiveMutationPayload = {
   entity: string
@@ -23,29 +22,11 @@ function withMutationEnvelope(payload: LiveMutationPayload) {
 
 export function broadcastTenantMutation(tenantId: string, payload: LiveMutationPayload) {
   if (!tenantId) return
-  emitRuntimeEvent({
-    type: 'state:update',
-    source: 'realtime.broadcastTenantMutation',
-    scope: {
-      tenant: tenantId,
-      workflow: `${payload.entity}:${payload.action}`,
-    },
-    payload,
-  })
   broadcast(`tenant:${tenantId}`, 'live_mutation', withMutationEnvelope(payload))
 }
 
 export function broadcastUserMutation(userId: string, payload: LiveMutationPayload) {
   if (!userId) return
-  emitRuntimeEvent({
-    type: 'state:update',
-    source: 'realtime.broadcastUserMutation',
-    scope: {
-      user: userId,
-      workflow: `${payload.entity}:${payload.action}`,
-    },
-    payload,
-  })
   broadcast(`user:${userId}`, 'live_mutation', withMutationEnvelope(payload))
 }
 

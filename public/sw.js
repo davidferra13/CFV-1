@@ -1,7 +1,7 @@
 // Build version is stamped by the local build/start scripts when a production
 // BUILD_ID exists. If it is ever not stamped, the worker falls back to a
 // fail-safe mode that refuses to cache Next.js runtime assets.
-const BUILD_VERSION = '15926abff'
+const BUILD_VERSION = '5a205fd12'
 const IS_BUILD_VERSION_STAMPED = BUILD_VERSION !== '__BUILD_VERSION__'
 const CACHE_NAME = 'chefflow-v-' + BUILD_VERSION
 const OFFLINE_URL = '/offline.html'
