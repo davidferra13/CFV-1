@@ -740,6 +740,157 @@ export async function staffShiftCheckIn(stationId: string, shiftType: 'open' | '
 // SHIFT CHECK-OUT (staff self-service)
 // ============================================
 
+// ============================================
+// NOTIFICATION TYPES
+// ============================================
+
+export type StaffNotificationType =
+  | 'task_assigned'
+  | 'schedule_changed'
+  | 'shift_reminder'
+  | 'message_from_chef'
+
+export type StaffNotification = {
+  id: string
+  type: StaffNotificationType
+  message: string
+  timestamp: string
+  read: boolean
+  actionUrl?: string
+  meta?: Record<string, unknown>
+}
+
+// ============================================
+// GET MY NOTIFICATIONS (virtual, derived from existing data)
+// ============================================
+
+export async function getMyNotifications(): Promise<StaffNotification[]> {
+  const user = await requireStaff()
+
+  const sevenDaysAgo = new Date()
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+  const since = sevenDaysAgo.toISOString()
+
+  const notifications: StaffNotification[] = []
+
+  try {
+    // 1. Recent task assignments (tasks assigned to me in last 7 days)
+    const taskRows = await pgClient`
+      SELECT
+        t.id, t.title, t.priority, t.due_date, t.due_time, t.created_at,
+        e.title AS event_name
+      FROM tasks t
+      LEFT JOIN events e ON e.id = t.event_id
+      WHERE t.chef_id = ${user.tenantId}
+        AND t.assigned_to = ${user.staffMemberId}
+        AND t.created_at >= ${since}
+      ORDER BY t.created_at DESC
+      LIMIT 50
+    `
+
+    for (const task of taskRows) {
+      const eventLabel = task.event_name ? ` for ${task.event_name}` : ''
+      notifications.push({
+        id: `task-${task.id}`,
+        type: 'task_assigned',
+        message: `New task assigned: ${task.title}${eventLabel}`,
+        timestamp: task.created_at as string,
+        read: false,
+        actionUrl: '/staff-tasks',
+        meta: { taskId: task.id, priority: task.priority },
+      })
+    }
+
+    // 2. Recent schedule changes (my event assignments created or updated in last 7 days)
+    const assignmentRows = await pgClient`
+      SELECT
+        esa.id, esa.status, esa.created_at, esa.updated_at,
+        esa.scheduled_hours, esa.role_override,
+        e.title AS event_name, e.date AS event_date
+      FROM event_staff_assignments esa
+      LEFT JOIN events e ON e.id = esa.event_id
+      WHERE esa.chef_id = ${user.tenantId}
+        AND esa.staff_member_id = ${user.staffMemberId}
+        AND (esa.created_at >= ${since} OR esa.updated_at >= ${since})
+      ORDER BY COALESCE(esa.updated_at, esa.created_at) DESC
+      LIMIT 50
+    `
+
+    for (const row of assignmentRows) {
+      const eventName = row.event_name ?? 'an event'
+      const wasUpdated = row.updated_at && row.updated_at !== row.created_at
+      const hours = row.scheduled_hours ? ` (${row.scheduled_hours}h)` : ''
+
+      if (wasUpdated) {
+        notifications.push({
+          id: `schedule-update-${row.id}`,
+          type: 'schedule_changed',
+          message: `Schedule updated for ${eventName}${hours}`,
+          timestamp: row.updated_at as string,
+          read: false,
+          actionUrl: '/staff-schedule',
+          meta: { assignmentId: row.id, status: row.status },
+        })
+      } else {
+        notifications.push({
+          id: `schedule-new-${row.id}`,
+          type: 'schedule_changed',
+          message: `You have been assigned to ${eventName}${hours}`,
+          timestamp: row.created_at as string,
+          read: false,
+          actionUrl: '/staff-schedule',
+          meta: { assignmentId: row.id, status: row.status },
+        })
+      }
+    }
+  } catch (err) {
+    console.error('[getMyNotifications] Error:', err)
+  }
+
+  // Sort all notifications by timestamp descending
+  notifications.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+
+  return notifications
+}
+
+// ============================================
+// GET MY UNREAD NOTIFICATION COUNT
+// ============================================
+
+export async function getMyUnreadNotificationCount(): Promise<number> {
+  const user = await requireStaff()
+
+  const sevenDaysAgo = new Date()
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+  const since = sevenDaysAgo.toISOString()
+
+  try {
+    // Read dismissals from localStorage are client-side only;
+    // server count is total recent notifications (client will subtract read ones)
+    const [taskCount] = await pgClient`
+      SELECT COUNT(*)::int AS count FROM tasks
+      WHERE chef_id = ${user.tenantId}
+        AND assigned_to = ${user.staffMemberId}
+        AND created_at >= ${since}
+    `
+    const [assignmentCount] = await pgClient`
+      SELECT COUNT(*)::int AS count FROM event_staff_assignments
+      WHERE chef_id = ${user.tenantId}
+        AND staff_member_id = ${user.staffMemberId}
+        AND (created_at >= ${since} OR updated_at >= ${since})
+    `
+
+    return (taskCount?.count ?? 0) + (assignmentCount?.count ?? 0)
+  } catch (err) {
+    console.error('[getMyUnreadNotificationCount] Error:', err)
+    return 0
+  }
+}
+
+// ============================================
+// SHIFT CHECK-OUT (staff self-service)
+// ============================================
+
 export async function staffShiftCheckOut(shiftLogId: string, notes?: string) {
   const user = await requireStaff()
   const db: any = createServerClient({ admin: true })

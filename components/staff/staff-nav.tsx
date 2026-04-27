@@ -6,10 +6,12 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut } from '@/lib/auth/actions'
 import { Button } from '@/components/ui/button'
+import { StaffNotificationBell } from '@/components/staff/staff-notification-bell'
 
 type Props = {
   staffName: string
   staffEmail: string
+  notificationCount: number
 }
 
 const navLinks = [
@@ -21,7 +23,7 @@ const navLinks = [
   { href: '/staff-schedule', label: 'Schedule' },
 ]
 
-export function StaffNav({ staffName, staffEmail }: Props) {
+export function StaffNav({ staffName, staffEmail, notificationCount }: Props) {
   const pathname = usePathname() ?? ''
   const [menuOpen, setMenuOpen] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
@@ -67,8 +69,9 @@ export function StaffNav({ staffName, staffEmail }: Props) {
             </div>
           </div>
 
-          {/* Right side: name + sign out */}
+          {/* Right side: bell + name + sign out */}
           <div className="hidden sm:flex items-center gap-4">
+            <StaffNotificationBell totalCount={notificationCount} />
             <div className="text-right">
               <div className="text-sm font-medium text-stone-200">{staffName}</div>
               <div className="text-xs text-stone-500">{staffEmail}</div>
@@ -78,8 +81,9 @@ export function StaffNav({ staffName, staffEmail }: Props) {
             </Button>
           </div>
 
-          {/* Mobile hamburger */}
+          {/* Mobile: bell + hamburger */}
           <div className="flex items-center gap-1 sm:hidden">
+            <StaffNotificationBell totalCount={notificationCount} />
             <button
               className="text-stone-400 hover:text-stone-200 p-2"
               onClick={() => setMenuOpen(!menuOpen)}
@@ -126,6 +130,17 @@ export function StaffNav({ staffName, staffEmail }: Props) {
                 </Link>
               )
             })}
+            <Link
+              href="/staff-notifications"
+              onClick={() => setMenuOpen(false)}
+              className={`block px-3 py-2 text-sm font-medium rounded-md ${
+                pathname === '/staff-notifications'
+                  ? 'bg-stone-700 text-stone-100'
+                  : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800'
+              }`}
+            >
+              Notifications
+            </Link>
             <div className="border-t border-stone-700 pt-2 mt-2 px-3">
               <div className="text-sm text-stone-300">{staffName}</div>
               <div className="text-xs text-stone-500 mb-2">{staffEmail}</div>

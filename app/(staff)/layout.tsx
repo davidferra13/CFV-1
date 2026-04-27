@@ -3,7 +3,7 @@
 // Staff see: Dashboard, Tasks, Station, Recipes, Schedule.
 
 import { requireStaff } from '@/lib/auth/get-user'
-import { getMyProfile } from '@/lib/staff/staff-portal-actions'
+import { getMyProfile, getMyUnreadNotificationCount } from '@/lib/staff/staff-portal-actions'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { StaffNav } from '@/components/staff/staff-nav'
@@ -31,7 +31,10 @@ export default async function StaffLayout({ children }: { children: React.ReactN
     redirect('/staff-login')
   }
 
-  const profile = await getMyProfile()
+  const [profile, notificationCount] = await Promise.all([
+    getMyProfile(),
+    getMyUnreadNotificationCount(),
+  ])
   const staffName = profile?.name ?? 'Staff Member'
 
   return (
@@ -47,7 +50,7 @@ export default async function StaffLayout({ children }: { children: React.ReactN
       >
         Skip to main content
       </a>
-      <StaffNav staffName={staffName} staffEmail={user.email} />
+      <StaffNav staffName={staffName} staffEmail={user.email} notificationCount={notificationCount} />
       <main id="main-content" className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <StaffTourWrapper>{children}</StaffTourWrapper>
       </main>
