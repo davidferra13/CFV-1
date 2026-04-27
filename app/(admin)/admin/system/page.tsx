@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Activity, AlertTriangle, CheckCircle, ExternalLink } from '@/components/ui/icons'
 import { ErrorState } from '@/components/ui/error-state'
+import { RetryButton } from '@/components/ui/retry-button'
 
 export default async function AdminSystemPage() {
   try {
@@ -65,7 +66,8 @@ export default async function AdminSystemPage() {
 
       {error && (
         <div className="bg-red-950 border border-red-800 rounded-lg px-4 py-3 text-sm text-red-700">
-          {error}
+          <p>{error}</p>
+          <RetryButton />
         </div>
       )}
 
@@ -86,11 +88,16 @@ export default async function AdminSystemPage() {
               QOL Metrics (last 30 days)
             </h2>
             {qolFailed ? (
-              <ErrorState
-                title="Could not load QoL metrics"
-                description="The QoL metrics query failed. Try refreshing."
-                size="sm"
-              />
+              <div>
+                <ErrorState
+                  title="Could not load QoL metrics"
+                  description="The QoL metrics query failed."
+                  size="sm"
+                />
+                <div className="flex justify-center">
+                  <RetryButton />
+                </div>
+              </div>
             ) : (
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                 <div className="bg-stone-800 rounded-lg px-4 py-3">

@@ -4,6 +4,7 @@ import { requireAdmin } from '@/lib/auth/admin'
 import { getPlatformClientList, type PlatformClientRow } from '@/lib/admin/platform-stats'
 import { redirect } from 'next/navigation'
 import { UserCheck, AlertCircle } from '@/components/ui/icons'
+import { RetryButton } from '@/components/ui/retry-button'
 
 function formatCents(cents: number): string {
   if (cents === 0) return '$0'
@@ -44,9 +45,12 @@ export default async function AdminClientListPage() {
       </div>
 
       {error && (
-        <div className="bg-red-950 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700 flex items-center gap-2">
-          <AlertCircle size={14} />
-          {error}
+        <div className="bg-red-950 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
+          <div className="flex items-center gap-2">
+            <AlertCircle size={14} />
+            {error}
+          </div>
+          <RetryButton />
         </div>
       )}
 

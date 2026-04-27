@@ -10,6 +10,7 @@ import {
   getPricingCoverage,
 } from '@/lib/admin/openclaw-health-actions'
 import { OpenClawHealthClient } from './health-client'
+import { RetryButton } from '@/components/ui/retry-button'
 
 export const metadata = {
   title: 'Data Engine Health | Admin',
@@ -101,7 +102,8 @@ export default async function OpenClawHealthPage() {
 
       {anyError && (
         <div className="bg-amber-950/50 border border-amber-800 rounded-lg px-4 py-3 text-sm text-amber-200">
-          Some data could not be loaded. Partial results shown.
+          <p>Some data could not be loaded. Partial results shown.</p>
+          <RetryButton />
         </div>
       )}
 

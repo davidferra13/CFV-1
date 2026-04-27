@@ -11,22 +11,17 @@ import {
   TableCell,
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
-import { ReconciliationRetry } from './reconciliation-retry'
+import { ErrorState } from '@/components/ui/error-state'
+import { RetryButton } from '@/components/ui/retry-button'
 
 export const metadata: Metadata = { title: 'Platform Reconciliation - Admin' }
 
 export default async function ReconciliationPage() {
-  let data = null
-  let fetchError: string | null = null
-
+  let data
   try {
     data = await getPlatformReconciliation()
   } catch (err) {
-    console.error('[admin-reconciliation] Data fetch failed:', err)
-    fetchError = err instanceof Error ? err.message : 'Failed to load reconciliation data'
-  }
-
-  if (fetchError || !data) {
+    console.error('[admin-reconciliation] Failed to load:', err)
     return (
       <div className="space-y-6">
         <div>
@@ -35,12 +30,16 @@ export default async function ReconciliationPage() {
             Cross-tenant GMV, transfers, platform fees, and deferred amounts
           </p>
         </div>
-        <Card className="p-8 text-center space-y-4">
-          <p className="text-red-400 font-medium">
-            {fetchError || 'Failed to load reconciliation data'}
-          </p>
-          <ReconciliationRetry />
-        </Card>
+        <div>
+          <ErrorState
+            title="Could not load reconciliation data"
+            description="The reconciliation query failed."
+            size="sm"
+          />
+          <div className="flex justify-center">
+            <RetryButton />
+          </div>
+        </div>
       </div>
     )
   }

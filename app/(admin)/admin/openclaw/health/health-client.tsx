@@ -154,7 +154,15 @@ function QuarantineTable({ items }: { items: QuarantinedPrice[] }) {
         </div>
       )}
       {error && (
-        <div className="border-b border-stone-800 px-4 py-3 text-sm text-amber-300">{error}</div>
+        <div className="border-b border-stone-800 px-4 py-3 text-sm text-amber-300 flex items-center gap-3">
+          <span>{error}</span>
+          <button
+            onClick={() => setError(null)}
+            className="px-3 py-1 bg-stone-700 hover:bg-stone-600 rounded text-xs text-stone-200 transition-colors"
+          >
+            Dismiss
+          </button>
+        </div>
       )}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">

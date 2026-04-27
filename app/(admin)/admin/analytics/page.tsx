@@ -15,6 +15,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { BarChart3 } from '@/components/ui/icons'
 import { ErrorState } from '@/components/ui/error-state'
+import { RetryButton } from '@/components/ui/retry-button'
 
 function formatCents(cents: number): string {
   return '$' + (cents / 100).toLocaleString('en-US', { maximumFractionDigits: 0 })
@@ -67,11 +68,16 @@ export default async function AdminAnalyticsPage() {
 
       {/* Summary KPIs */}
       {overview.status === 'rejected' && (
-        <ErrorState
-          title="Could not load overview"
-          description="Platform stats query failed. Try refreshing."
-          size="sm"
-        />
+        <div>
+          <ErrorState
+            title="Could not load overview"
+            description="Platform stats query failed."
+            size="sm"
+          />
+          <div className="flex justify-center">
+            <RetryButton />
+          </div>
+        </div>
       )}
       {overviewData && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -123,11 +129,16 @@ export default async function AdminAnalyticsPage() {
           Platform GMV by Month (last 12 months)
         </h2>
         {revenueData === null ? (
-          <ErrorState
-            title="Could not load revenue data"
-            description="The platform revenue query failed. Try refreshing."
-            size="sm"
-          />
+          <div>
+            <ErrorState
+              title="Could not load revenue data"
+              description="The platform revenue query failed."
+              size="sm"
+            />
+            <div className="flex justify-center">
+              <RetryButton />
+            </div>
+          </div>
         ) : revenueData.length === 0 ? (
           <p className="text-sm text-slate-400">No revenue data yet.</p>
         ) : (
@@ -156,11 +167,16 @@ export default async function AdminAnalyticsPage() {
           New Signups by Month (last 12 months)
         </h2>
         {growthData === null ? (
-          <ErrorState
-            title="Could not load growth data"
-            description="The signup growth query failed. Try refreshing."
-            size="sm"
-          />
+          <div>
+            <ErrorState
+              title="Could not load growth data"
+              description="The signup growth query failed."
+              size="sm"
+            />
+            <div className="flex justify-center">
+              <RetryButton />
+            </div>
+          </div>
         ) : growthData.length === 0 ? (
           <p className="text-sm text-slate-400">No signup data yet.</p>
         ) : (

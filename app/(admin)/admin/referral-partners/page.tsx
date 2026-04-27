@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/db/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Handshake, Globe, ExternalLink } from '@/components/ui/icons'
+import { RetryButton } from '@/components/ui/retry-button'
 
 const PARTNER_TYPE_LABELS: Record<string, string> = {
   airbnb_host: 'Airbnb Host',
@@ -72,7 +73,8 @@ export default async function AdminReferralPartnersPage() {
 
       {error && (
         <div className="bg-red-950 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
-          Failed to load referral partners.
+          <p>Failed to load referral partners.</p>
+          <RetryButton />
         </div>
       )}
 
