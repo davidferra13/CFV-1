@@ -23,7 +23,13 @@
       "type": "Chef",
       "at": "2026-04-27T22:09:18.251Z",
       "success": false
+    },
+    {
+      "category": "sourcing-supply",
+      "type": "Chef",
+      "at": "2026-04-27T22:54:18.077Z",
+      "success": false
     }
   ],
-  "last_check": "2026-04-27T22:09:18.251Z"
+  "last_check": "2026-04-27T22:54:18.077Z"
 }
