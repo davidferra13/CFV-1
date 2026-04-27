@@ -4,17 +4,14 @@
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import Link from 'next/link'
-import {
-  getWaitlistEntries,
-  contactWaitlistEntry,
-  expireWaitlistEntry,
-} from '@/lib/availability/actions'
+import { getWaitlistEntries } from '@/lib/availability/actions'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { format } from 'date-fns'
 import { dateToDateString } from '@/lib/utils/format'
 import { WaitlistAddForm } from './waitlist-add-form'
+import { MarkContactedButton, ExpireButton } from './waitlist-action-buttons'
 
 export const metadata: Metadata = { title: 'Waitlist' }
 
@@ -90,16 +87,7 @@ export default async function WaitlistPage() {
                     </div>
                     <div className="flex gap-1 flex-shrink-0">
                       {entry.status === 'waiting' && (
-                        <form
-                          action={async () => {
-                            'use server'
-                            await contactWaitlistEntry(entry.id)
-                          }}
-                        >
-                          <Button type="submit" size="sm" variant="secondary">
-                            Mark Contacted
-                          </Button>
-                        </form>
+                        <MarkContactedButton entryId={entry.id} />
                       )}
                       <Link
                         href={`/events/new?${new URLSearchParams({
@@ -113,16 +101,7 @@ export default async function WaitlistPage() {
                           Create Event
                         </Button>
                       </Link>
-                      <form
-                        action={async () => {
-                          'use server'
-                          await expireWaitlistEntry(entry.id)
-                        }}
-                      >
-                        <Button type="submit" size="sm" variant="ghost" className="text-stone-400">
-                          Expire
-                        </Button>
-                      </form>
+                      <ExpireButton entryId={entry.id} />
                     </div>
                   </div>
                 </CardContent>

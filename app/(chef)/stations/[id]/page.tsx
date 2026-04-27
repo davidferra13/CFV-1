@@ -11,12 +11,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import {
-  addMenuItemToStation,
-  removeMenuItemFromStation,
-  addComponent,
-  removeComponent,
-} from '@/lib/stations/actions'
+import { addMenuItemToStation, addComponent } from '@/lib/stations/actions'
+import { RemoveMenuItemButton, RemoveComponentButton } from './station-action-buttons'
 
 export const metadata: Metadata = { title: 'Station Detail' }
 
@@ -141,16 +137,7 @@ export default async function StationDetailPage({ params }: { params: { id: stri
                       {(mi.station_components?.length ?? 0) !== 1 ? 's' : ''}
                     </Badge>
                   </div>
-                  <form
-                    action={async () => {
-                      'use server'
-                      await removeMenuItemFromStation(mi.id)
-                    }}
-                  >
-                    <Button type="submit" variant="ghost" size="sm" className="text-stone-400">
-                      Remove
-                    </Button>
-                  </form>
+                  <RemoveMenuItemButton menuItemId={mi.id} />
                 </div>
                 {mi.description && <p className="mt-1 text-xs text-stone-500">{mi.description}</p>}
 
@@ -171,21 +158,7 @@ export default async function StationDetailPage({ params }: { params: { id: stri
                             <Badge variant="info">{comp.shelf_life_days}d shelf life</Badge>
                           )}
                         </div>
-                        <form
-                          action={async () => {
-                            'use server'
-                            await removeComponent(comp.id)
-                          }}
-                        >
-                          <Button
-                            type="submit"
-                            variant="ghost"
-                            size="sm"
-                            className="text-stone-500 text-xs"
-                          >
-                            Remove
-                          </Button>
-                        </form>
+                        <RemoveComponentButton componentId={comp.id} />
                       </div>
                     ))}
                   </div>
