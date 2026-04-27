@@ -6,7 +6,7 @@
 import NextImage from 'next/image'
 import { getPartnerPortalData } from '@/lib/partners/portal-actions'
 import { format } from 'date-fns'
-import { MapPin, CalendarDays, Users, Image, Heart } from '@/components/ui/icons'
+import { MapPin, CalendarDays, Users, Image, Heart, CheckCircle, XCircle } from '@/components/ui/icons'
 import Link from 'next/link'
 
 function StatCard({
@@ -32,7 +32,7 @@ function StatCard({
 export default async function PartnerDashboardPage() {
   const data = await getPartnerPortalData()
 
-  const { partner, locations, recentEvents, stats, originClientName, originEventSummary } = data
+  const { partner, locations, recentEvents, recentActivity, stats, originClientName, originEventSummary } = data
 
   // Group events by location for the recent list
   const locationMap = Object.fromEntries(locations.map((l) => [l.id, l]))
@@ -79,6 +79,42 @@ export default async function PartnerDashboardPage() {
                     : `This partnership began through a client referral - proof that great experiences create lasting relationships.`}
               </p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Recent Activity (change request decisions) */}
+      {recentActivity.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold text-stone-100 mb-4">Recent Activity</h2>
+          <div className="space-y-2">
+            {recentActivity.map((item) => {
+              const isApproved = item.status === 'approved'
+              const StatusIcon = isApproved ? CheckCircle : XCircle
+              const statusColor = isApproved ? 'text-emerald-400' : 'text-red-400'
+              const statusLabel = isApproved ? 'approved' : 'rejected'
+              const displayDate = item.reviewedAt
+                ? format(new Date(item.reviewedAt), 'MMM d, yyyy')
+                : format(new Date(item.createdAt), 'MMM d, yyyy')
+
+              return (
+                <div
+                  key={item.id}
+                  className="flex items-start gap-3 rounded-lg border border-stone-700 bg-stone-900 px-4 py-3"
+                >
+                  <StatusIcon size={18} className={`${statusColor} shrink-0 mt-0.5`} />
+                  <div className="min-w-0">
+                    <p className="text-sm text-stone-200">
+                      Location update for <span className="font-medium">{item.locationName}</span> was{' '}
+                      <span className={statusColor}>{statusLabel}</span> on {displayDate}
+                    </p>
+                    {item.reviewNote && (
+                      <p className="text-xs text-stone-500 mt-1">Note: {item.reviewNote}</p>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
       )}
