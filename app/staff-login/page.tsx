@@ -87,15 +87,24 @@ function StaffLoginForm() {
                 autoComplete="current-password"
               />
 
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={formData.rememberMe}
-                  onChange={(e) => setFormData({ ...formData, rememberMe: e.target.checked })}
-                  className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
-                />
-                <span className="text-sm text-stone-400">Stay signed in</span>
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={formData.rememberMe}
+                    onChange={(e) => setFormData({ ...formData, rememberMe: e.target.checked })}
+                    className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
+                  />
+                  <span className="text-sm text-stone-400">Stay signed in</span>
+                </label>
+
+                <a
+                  href="/auth/forgot-password"
+                  className="text-sm text-brand-500 hover:text-brand-400"
+                >
+                  Forgot password?
+                </a>
+              </div>
             </CardContent>
 
             <CardFooter className="flex flex-col space-y-4">
