@@ -340,6 +340,49 @@ export async function getPartnerLocationChangeRequests(
   return (data as PartnerLocationChangeRequestRecord[]) || []
 }
 
+// ─── Payouts (Read-Only for Partner) ────────────────────────────────────────
+
+export type PartnerPayoutRecord = {
+  id: string
+  amount_cents: number
+  paid_on: string
+  method: string
+  reference: string | null
+  notes: string | null
+  created_at: string
+}
+
+export type PartnerPayoutSummary = {
+  payouts: PartnerPayoutRecord[]
+  totalPaidCents: number
+}
+
+/**
+ * Fetch all payouts for the authenticated partner. Read-only; partners cannot
+ * create or modify payouts (that is a chef-side action via payout-actions.ts).
+ */
+export async function getMyPayouts(): Promise<PartnerPayoutSummary> {
+  const user = await requirePartner()
+  const db: any = createServerClient({ admin: true })
+
+  const { data, error } = await db
+    .from('partner_payouts')
+    .select('id, amount_cents, paid_on, method, reference, notes, created_at')
+    .eq('tenant_id', user.tenantId)
+    .eq('partner_id', user.partnerId)
+    .order('paid_on', { ascending: false })
+
+  if (error) {
+    console.error('[getMyPayouts] Error:', error)
+    throw new Error('Failed to fetch payout history')
+  }
+
+  const payouts: PartnerPayoutRecord[] = (data ?? []) as PartnerPayoutRecord[]
+  const totalPaidCents = payouts.reduce((sum, p) => sum + p.amount_cents, 0)
+
+  return { payouts, totalPaidCents }
+}
+
 // ─── Write ───────────────────────────────────────────────────────────────────
 
 /**
