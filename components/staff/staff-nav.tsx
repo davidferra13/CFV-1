@@ -19,6 +19,7 @@ const navLinks = [
   { href: '/staff-station', label: 'Station' },
   { href: '/staff-recipes', label: 'Recipes' },
   { href: '/staff-schedule', label: 'Schedule' },
+  { href: '/staff-profile', label: 'My Profile' },
 ]
 
 export function StaffNav({ staffName, staffEmail }: Props) {

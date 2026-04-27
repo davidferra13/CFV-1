@@ -9,6 +9,7 @@ import { createServerClient } from '@/lib/db/server'
 import { pgClient } from '@/lib/db'
 import { revalidatePath } from 'next/cache'
 import { dateToDateString } from '@/lib/utils/format'
+import { z } from 'zod'
 
 // ============================================
 // TYPES
@@ -85,6 +86,7 @@ export type StaffProfile = {
   role: string
   phone: string | null
   email: string | null
+  notes: string | null
 }
 
 // ============================================
@@ -97,7 +99,7 @@ export async function getMyProfile(): Promise<StaffProfile | null> {
 
   const { data, error } = await db
     .from('staff_members')
-    .select('id, name, role, phone, email')
+    .select('id, name, role, phone, email, notes')
     .eq('id', user.staffMemberId)
     .eq('chef_id', user.tenantId)
     .single()
@@ -771,5 +773,49 @@ export async function staffShiftCheckOut(shiftLogId: string, notes?: string) {
   }
 
   revalidatePath('/staff-station')
+  return { success: true }
+}
+
+// ============================================
+// UPDATE MY PROFILE (staff self-service)
+// ============================================
+
+const updateProfileSchema = z.object({
+  display_name: z.string().min(1, 'Name is required').max(200),
+  phone: z.string().max(50).optional().default(''),
+  notes: z.string().max(2000).optional().default(''),
+})
+
+export async function updateMyStaffProfile(
+  input: z.infer<typeof updateProfileSchema>
+): Promise<{ success: boolean; error?: string }> {
+  const user = await requireStaff()
+  const db: any = createServerClient({ admin: true })
+
+  const parsed = updateProfileSchema.safeParse(input)
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.errors[0]?.message ?? 'Invalid input' }
+  }
+
+  const { display_name, phone, notes } = parsed.data
+
+  const { error: updateError } = await db
+    .from('staff_members')
+    .update({
+      name: display_name,
+      phone: phone || null,
+      notes: notes || null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', user.staffMemberId)
+    .eq('chef_id', user.tenantId)
+
+  if (updateError) {
+    console.error('[updateMyStaffProfile] Error:', updateError)
+    return { success: false, error: 'Failed to update profile' }
+  }
+
+  revalidatePath('/staff-profile')
+  revalidatePath('/staff-dashboard')
   return { success: true }
 }
