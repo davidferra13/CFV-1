@@ -13,6 +13,21 @@ export interface SurfaceInstantContext {
   upcomingEventCount?: number
   pendingQuoteCount?: number
   openInquiryCount?: number
+  // Client-only enriched fields (from RemyClientContext)
+  upcomingEvents?: Array<{
+    occasion: string | null
+    date: string | null
+    status: string
+    guestCount: number | null
+    venueAddress: string | null
+  }>
+  pendingQuotes?: Array<{
+    totalCents: number
+    status: string
+    eventOccasion: string | null
+  }>
+  dietaryRestrictions?: string | null
+  allergies?: string | null
 }
 
 export interface SurfaceInstantAnswer {
@@ -53,6 +68,12 @@ export function trySurfaceInstantAnswer(
 
   if (THANKS_PATTERN.test(trimmed)) {
     return { text: buildThanks(surface) }
+  }
+
+  // Client-only data-driven instant answers (no LLM needed)
+  if (surface === 'client') {
+    const clientAnswer = tryClientInstantAnswer(trimmed, context)
+    if (clientAnswer) return clientAnswer
   }
 
   return null
@@ -183,4 +204,114 @@ function buildThanks(surface: RemySurface): string {
   }
 
   return 'Anytime. If you need anything about your event or quote, just ask.'
+}
+
+// ─── Client Data-Driven Instant Answers ──────────────────────────────────
+
+const CLIENT_EVENT_PATTERN =
+  /^(?:when\s+is\s+my\s+(?:next\s+)?event|(?:my\s+)?(?:next|upcoming)\s+event|what\s+events?\s+do\s+i\s+have|(?:do\s+i\s+have\s+)?(?:any\s+)?upcoming\s+events?)\s*\??$/i
+
+const CLIENT_MENU_PATTERN =
+  /^(?:what'?s?\s+(?:on\s+)?(?:the|my)\s+menu|menu|dishes|what\s+(?:are|is)\s+(?:we|the?\s+chef)\s+(?:making|cooking|serving))\s*\??$/i
+
+const CLIENT_DIETARY_PATTERN =
+  /^(?:(?:my\s+)?(?:dietary|diet|allerg(?:y|ies)|restriction|food\s+(?:allerg|restriction))(?:\s+(?:info|profile|details))?|what\s+(?:are\s+)?my\s+(?:allerg|dietary|restriction))\s*\??$/i
+
+const CLIENT_COST_PATTERN =
+  /^(?:how\s+much|(?:my\s+)?(?:total|cost|price|quote|payment|balance)|what\s+(?:do\s+i\s+owe|is\s+(?:the|my)\s+(?:total|quote|cost)))\s*\??$/i
+
+const CLIENT_CHEF_PATTERN =
+  /^(?:who\s+is\s+my\s+chef|chef\s+(?:info|name|contact|details)|my\s+chef)\s*\??$/i
+
+function tryClientInstantAnswer(
+  message: string,
+  context: SurfaceInstantContext
+): SurfaceInstantAnswer | null {
+  if (CLIENT_EVENT_PATTERN.test(message)) {
+    return { text: buildClientEventAnswer(context) }
+  }
+  if (CLIENT_DIETARY_PATTERN.test(message)) {
+    return { text: buildClientDietaryAnswer(context) }
+  }
+  if (CLIENT_COST_PATTERN.test(message)) {
+    return { text: buildClientCostAnswer(context) }
+  }
+  if (CLIENT_CHEF_PATTERN.test(message)) {
+    return { text: buildClientChefAnswer(context) }
+  }
+  // Menu pattern intentionally NOT instant-answered; menus are complex and
+  // better handled by the LLM with full context.
+  return null
+}
+
+function buildClientEventAnswer(ctx: SurfaceInstantContext): string {
+  const events = ctx.upcomingEvents
+  if (!events || events.length === 0) {
+    return 'No upcoming events on the books right now. If you want to plan something, reach out to your chef!'
+  }
+  if (events.length === 1) {
+    const e = events[0]
+    const parts = [`Your next event: **${e.occasion ?? 'Event'}**`]
+    if (e.date) parts[0] += ` on **${e.date}**`
+    if (e.venueAddress) parts.push(`Location: ${e.venueAddress}`)
+    if (e.guestCount) parts.push(`Guest count: ${e.guestCount}`)
+    parts.push(`Status: ${e.status}`)
+    return parts.join('\n')
+  }
+  const lines = events.slice(0, 5).map((e) => {
+    const label = e.occasion ?? 'Event'
+    const date = e.date ? ` - ${e.date}` : ''
+    const guests = e.guestCount ? ` (${e.guestCount} guests)` : ''
+    return `- **${label}**${date}${guests} [${e.status}]`
+  })
+  return `You have **${events.length}** upcoming event${events.length === 1 ? '' : 's'}:\n${lines.join('\n')}`
+}
+
+function buildClientDietaryAnswer(ctx: SurfaceInstantContext): string {
+  const parts: string[] = []
+  if (ctx.dietaryRestrictions) {
+    parts.push(`**Dietary restrictions:** ${ctx.dietaryRestrictions}`)
+  }
+  if (ctx.allergies) {
+    parts.push(`**Allergies:** ${ctx.allergies}`)
+  }
+  if (parts.length === 0) {
+    return "No dietary restrictions or allergies on file. If you'd like to add any, let your chef know or update your profile in the portal."
+  }
+  parts.push('\nIf anything has changed, let your chef know so they can update your profile.')
+  return parts.join('\n')
+}
+
+function buildClientCostAnswer(ctx: SurfaceInstantContext): string {
+  const quotes = ctx.pendingQuotes
+  if (!quotes || quotes.length === 0) {
+    return 'No pending quotes right now. Your chef will send one when your event details are finalized.'
+  }
+  if (quotes.length === 1) {
+    const q = quotes[0]
+    const amount = `$${(q.totalCents / 100).toFixed(2)}`
+    const event = q.eventOccasion ? ` for **${q.eventOccasion}**` : ''
+    return `You have a pending quote${event}: **${amount}** (${q.status}).`
+  }
+  const lines = quotes.slice(0, 5).map((q) => {
+    const amount = `$${(q.totalCents / 100).toFixed(2)}`
+    const event = q.eventOccasion ?? 'Event'
+    return `- **${event}**: ${amount} (${q.status})`
+  })
+  return `You have **${quotes.length}** pending quote${quotes.length === 1 ? '' : 's'}:\n${lines.join('\n')}`
+}
+
+function buildClientChefAnswer(ctx: SurfaceInstantContext): string {
+  const name = ctx.chefName ?? ctx.businessName
+  if (!name) {
+    return 'Your chef info is available in the portal. Check your event details for contact information.'
+  }
+  const parts = [`Your chef: **${name}**`]
+  if (ctx.businessName && ctx.chefName && ctx.businessName !== ctx.chefName) {
+    parts.push(`Business: ${ctx.businessName}`)
+  }
+  if (ctx.serviceArea) {
+    parts.push(`Service area: ${ctx.serviceArea}`)
+  }
+  return parts.join('\n')
 }

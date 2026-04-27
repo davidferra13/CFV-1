@@ -1170,6 +1170,7 @@ export async function executePostEventSequence(inputs: Record<string, unknown>) 
 
 // Deterministic allergen-safe substitution database (Formula > AI)
 const SUBSTITUTION_DB: Record<string, { sub: string; reason: string }[]> = {
+  // --- Nuts & Seeds ---
   'pine nuts': [
     { sub: 'sunflower seeds', reason: 'Tree nut allergy safe, similar texture' },
     { sub: 'pepitas (pumpkin seeds)', reason: 'Tree nut allergy safe, earthy flavor' },
@@ -1180,6 +1181,32 @@ const SUBSTITUTION_DB: Record<string, { sub: string; reason: string }[]> = {
     { sub: 'soy nut butter', reason: 'Peanut allergy safe (check soy allergy)' },
     { sub: 'toasted coconut flakes', reason: 'Different profile but nut-free' },
   ],
+  almonds: [
+    { sub: 'sunflower seeds', reason: 'Tree nut allergy safe, similar crunch' },
+    { sub: 'pepitas (pumpkin seeds)', reason: 'Tree nut allergy safe' },
+    { sub: 'toasted oats', reason: 'Nut-free, mild flavor' },
+  ],
+  cashews: [
+    { sub: 'sunflower seeds', reason: 'Tree nut allergy safe, similar richness' },
+    { sub: 'hemp seeds', reason: 'Nut-free, creamy when blended' },
+    { sub: 'blanched almonds', reason: 'Similar texture (check tree nut allergy)' },
+  ],
+  walnuts: [
+    { sub: 'sunflower seeds', reason: 'Tree nut allergy safe' },
+    { sub: 'pecans', reason: 'Similar flavor profile (check tree nut allergy)' },
+    { sub: 'pepitas (pumpkin seeds)', reason: 'Nut-free, earthy' },
+  ],
+  pecans: [
+    { sub: 'walnuts', reason: 'Similar flavor and texture (check tree nut allergy)' },
+    { sub: 'sunflower seeds', reason: 'Tree nut allergy safe' },
+    { sub: 'toasted coconut chips', reason: 'Nut-free, buttery flavor' },
+  ],
+  macadamia: [
+    { sub: 'cashews', reason: 'Similar buttery richness (check tree nut allergy)' },
+    { sub: 'Brazil nuts', reason: 'Similar texture (check tree nut allergy)' },
+    { sub: 'raw sunflower seeds', reason: 'Nut-free alternative' },
+  ],
+  // --- Dairy ---
   milk: [
     { sub: 'oat milk', reason: 'Dairy-free, creamy, good for baking' },
     { sub: 'coconut milk', reason: 'Dairy-free, rich, good for sauces' },
@@ -1190,24 +1217,6 @@ const SUBSTITUTION_DB: Record<string, { sub: string; reason: string }[]> = {
     { sub: 'olive oil', reason: 'Dairy-free, for savory applications' },
     { sub: 'vegan butter', reason: 'Dairy-free, 1:1 replacement' },
   ],
-  eggs: [
-    { sub: 'flax egg (1 tbsp ground flax + 3 tbsp water)', reason: 'Egg-free, good for baking' },
-    { sub: 'aquafaba (3 tbsp per egg)', reason: 'Egg-free, good for meringues and binding' },
-    { sub: 'mashed banana (1/4 cup per egg)', reason: 'Egg-free, adds sweetness' },
-  ],
-  'wheat flour': [
-    { sub: 'almond flour', reason: 'Gluten-free (check tree nut allergy)' },
-    { sub: 'rice flour', reason: 'Gluten-free, neutral flavor' },
-    { sub: 'oat flour', reason: 'Gluten-free (if certified), similar texture' },
-  ],
-  'soy sauce': [
-    { sub: 'coconut aminos', reason: 'Soy-free, similar umami flavor' },
-    { sub: 'tamari (gluten-free)', reason: 'Gluten-free soy option' },
-  ],
-  shrimp: [
-    { sub: 'hearts of palm', reason: 'Shellfish allergy safe, similar texture' },
-    { sub: 'king oyster mushroom', reason: 'Shellfish allergy safe, meaty texture' },
-  ],
   cream: [
     { sub: 'coconut cream', reason: 'Dairy-free, rich and thick' },
     { sub: 'cashew cream', reason: 'Dairy-free (check tree nut allergy)' },
@@ -1216,13 +1225,222 @@ const SUBSTITUTION_DB: Record<string, { sub: string; reason: string }[]> = {
     { sub: 'nutritional yeast', reason: 'Dairy-free, cheesy flavor' },
     { sub: 'cashew cheese', reason: 'Dairy-free (check tree nut allergy)' },
   ],
+  yogurt: [
+    { sub: 'coconut yogurt', reason: 'Dairy-free, similar tang and texture' },
+    { sub: 'soy yogurt', reason: 'Dairy-free, high protein (check soy allergy)' },
+    { sub: 'cashew yogurt', reason: 'Dairy-free, creamy (check tree nut allergy)' },
+  ],
+  'cream cheese': [
+    { sub: 'cashew cream cheese', reason: 'Dairy-free, similar spread (check tree nut allergy)' },
+    { sub: 'tofu cream cheese', reason: 'Dairy-free (check soy allergy)' },
+    { sub: 'coconut cream cheese', reason: 'Dairy-free, tangy' },
+  ],
+  'sour cream': [
+    { sub: 'coconut cream + lemon juice', reason: 'Dairy-free, similar tang' },
+    { sub: 'cashew sour cream', reason: 'Dairy-free (check tree nut allergy)' },
+    { sub: 'plain coconut yogurt', reason: 'Dairy-free, similar texture' },
+  ],
+  'ice cream': [
+    { sub: 'coconut milk ice cream', reason: 'Dairy-free, rich and creamy' },
+    { sub: 'banana nice cream (frozen blended banana)', reason: 'Dairy-free, naturally sweet' },
+    { sub: 'oat milk ice cream', reason: 'Dairy-free, nut-free' },
+  ],
+  // --- Eggs ---
+  eggs: [
+    { sub: 'flax egg (1 tbsp ground flax + 3 tbsp water)', reason: 'Egg-free, good for baking' },
+    { sub: 'aquafaba (3 tbsp per egg)', reason: 'Egg-free, good for meringues and binding' },
+    { sub: 'mashed banana (1/4 cup per egg)', reason: 'Egg-free, adds sweetness' },
+  ],
+  // --- Proteins ---
+  chicken: [
+    { sub: 'extra-firm tofu', reason: 'Plant-based, absorbs marinades well (check soy allergy)' },
+    { sub: 'seitan', reason: 'Plant-based, meaty texture (contains gluten)' },
+    { sub: 'jackfruit (young/green)', reason: 'Plant-based, shreds like pulled chicken' },
+  ],
+  beef: [
+    { sub: 'portobello mushroom', reason: 'Plant-based, meaty umami flavor' },
+    { sub: 'seitan', reason: 'Plant-based, chewy texture (contains gluten)' },
+    { sub: 'lentils', reason: 'Plant-based, good for ground beef substitute' },
+  ],
+  pork: [
+    { sub: 'jackfruit (young/green)', reason: 'Plant-based, shreds like pulled pork' },
+    { sub: 'smoked tempeh', reason: 'Plant-based, smoky (check soy allergy)' },
+    { sub: 'king oyster mushroom', reason: 'Plant-based, meaty texture' },
+  ],
+  tofu: [
+    { sub: 'chickpeas', reason: 'Soy-free, similar protein content' },
+    { sub: 'paneer', reason: 'Similar texture (contains dairy)' },
+    { sub: 'tempeh', reason: 'Firmer soy option, fermented (check soy allergy)' },
+  ],
+  tempeh: [
+    { sub: 'extra-firm tofu', reason: 'Similar soy base (check soy allergy)' },
+    { sub: 'seitan', reason: 'Soy-free, chewy (contains gluten)' },
+    { sub: 'marinated chickpeas', reason: 'Soy-free, high protein' },
+  ],
+  // --- Seafood ---
+  shrimp: [
+    { sub: 'hearts of palm', reason: 'Shellfish allergy safe, similar texture' },
+    { sub: 'king oyster mushroom', reason: 'Shellfish allergy safe, meaty texture' },
+  ],
+  salmon: [
+    {
+      sub: 'marinated carrots (smoked)',
+      reason: 'Fish-free, similar color and texture when thinly sliced',
+    },
+    {
+      sub: 'firm tofu (marinated with nori)',
+      reason: 'Fish-free, adds ocean flavor (check soy allergy)',
+    },
+    { sub: 'jackfruit (seasoned)', reason: 'Fish-free, flaky texture' },
+  ],
+  tuna: [
+    { sub: 'mashed chickpeas', reason: 'Fish-free, similar texture for salads' },
+    { sub: 'hearts of palm (shredded)', reason: 'Fish-free, flaky texture' },
+    { sub: 'watermelon (seared)', reason: 'Fish-free, sashimi-grade presentation' },
+  ],
+  crab: [
+    { sub: 'hearts of palm (shredded)', reason: 'Shellfish allergy safe, similar texture' },
+    { sub: 'artichoke hearts', reason: 'Shellfish allergy safe, similar sweetness' },
+    { sub: "lion's mane mushroom", reason: 'Shellfish allergy safe, remarkably crab-like' },
+  ],
+  lobster: [
+    { sub: 'hearts of palm', reason: 'Shellfish allergy safe, similar sweetness' },
+    {
+      sub: 'king oyster mushroom (butter-poached)',
+      reason: 'Shellfish allergy safe, tender texture',
+    },
+    { sub: "lion's mane mushroom", reason: 'Shellfish allergy safe, luxury presentation' },
+  ],
+  // --- Grains & Flour ---
+  'wheat flour': [
+    { sub: 'almond flour', reason: 'Gluten-free (check tree nut allergy)' },
+    { sub: 'rice flour', reason: 'Gluten-free, neutral flavor' },
+    { sub: 'oat flour', reason: 'Gluten-free (if certified), similar texture' },
+  ],
+  rice: [
+    { sub: 'cauliflower rice', reason: 'Grain-free, low carb' },
+    { sub: 'quinoa', reason: 'Gluten-free, higher protein' },
+    { sub: 'farro', reason: 'Nutty flavor, chewy (contains gluten)' },
+  ],
+  corn: [
+    { sub: 'rice', reason: 'Corn-free, similar versatility' },
+    { sub: 'cassava', reason: 'Corn-free, starchy substitute' },
+    { sub: 'potato', reason: 'Corn-free, similar starch content' },
+  ],
+  quinoa: [
+    { sub: 'millet', reason: 'Gluten-free, similar size and cook time' },
+    { sub: 'buckwheat', reason: 'Gluten-free, earthy flavor' },
+    { sub: 'couscous', reason: 'Similar texture (contains gluten)' },
+  ],
+  oats: [
+    { sub: 'quinoa flakes', reason: 'Gluten-free, similar texture' },
+    { sub: 'buckwheat groats', reason: 'Gluten-free, hearty' },
+    { sub: 'rice flakes', reason: 'Gluten-free, mild flavor' },
+  ],
+  barley: [
+    { sub: 'farro', reason: 'Similar chewy texture (contains gluten)' },
+    { sub: 'brown rice', reason: 'Gluten-free, nutty flavor' },
+    { sub: 'sorghum', reason: 'Gluten-free, similar grain structure' },
+  ],
+  // --- Sweeteners ---
   honey: [
     { sub: 'maple syrup', reason: 'Vegan, similar sweetness profile' },
     { sub: 'agave nectar', reason: 'Vegan, neutral flavor' },
   ],
+  sugar: [
+    { sub: 'coconut sugar', reason: 'Lower glycemic index, 1:1 replacement' },
+    {
+      sub: 'maple syrup (3/4 cup per cup sugar)',
+      reason: 'Liquid sweetener, reduce other liquids',
+    },
+    { sub: 'date paste', reason: 'Whole food sweetener, adds moisture' },
+  ],
+  'maple syrup': [
+    { sub: 'honey', reason: 'Similar viscosity and sweetness (not vegan)' },
+    { sub: 'agave nectar', reason: 'Vegan, thinner consistency' },
+    { sub: 'brown rice syrup', reason: 'Vegan, milder flavor' },
+  ],
+  agave: [
+    { sub: 'honey', reason: 'Similar sweetness (not vegan)' },
+    { sub: 'maple syrup', reason: 'Vegan, stronger flavor' },
+    { sub: 'simple syrup', reason: 'Neutral flavor, easy to make' },
+  ],
+  stevia: [
+    { sub: 'monk fruit sweetener', reason: 'Zero calorie, no bitter aftertaste' },
+    { sub: 'erythritol', reason: 'Sugar alcohol, no glycemic impact' },
+    { sub: 'allulose', reason: 'Rare sugar, similar to real sugar taste' },
+  ],
+  // --- Oils & Fats ---
+  'olive oil': [
+    { sub: 'avocado oil', reason: 'Similar smoke point, neutral flavor' },
+    { sub: 'grapeseed oil', reason: 'Neutral, high smoke point' },
+    { sub: 'melted butter', reason: 'Rich flavor (contains dairy)' },
+  ],
+  'coconut oil': [
+    { sub: 'vegan butter', reason: 'Solid at room temp, no coconut flavor' },
+    { sub: 'avocado oil', reason: 'Neutral flavor, liquid' },
+    { sub: 'cacao butter', reason: 'Solid at room temp, mild flavor' },
+  ],
+  lard: [
+    { sub: 'vegetable shortening', reason: 'Similar texture, plant-based' },
+    { sub: 'coconut oil', reason: 'Solid at room temp, plant-based' },
+    { sub: 'butter', reason: 'Similar richness (contains dairy)' },
+  ],
+  shortening: [
+    { sub: 'coconut oil (refined)', reason: 'Plant-based, solid at room temp' },
+    { sub: 'butter', reason: 'Better flavor (contains dairy)' },
+    { sub: 'lard', reason: 'Traditional, flaky pastry results (not vegetarian)' },
+  ],
+  // --- Binders & Thickeners ---
+  cornstarch: [
+    { sub: 'arrowroot powder', reason: 'Corn-free, similar thickening power' },
+    { sub: 'tapioca starch', reason: 'Corn-free, glossy finish' },
+    { sub: 'potato starch', reason: 'Corn-free, good for frying' },
+  ],
+  arrowroot: [
+    { sub: 'cornstarch', reason: 'More common, similar ratio' },
+    { sub: 'tapioca starch', reason: 'Similar clarity and texture' },
+    { sub: 'kuzu (kudzu starch)', reason: 'Premium thickener, clear finish' },
+  ],
+  'xanthan gum': [
+    { sub: 'psyllium husk powder', reason: 'Natural fiber, similar binding' },
+    { sub: 'guar gum', reason: 'Similar thickening, use half the amount' },
+    { sub: 'ground flax seed', reason: 'Natural binder, adds fiber' },
+  ],
+  'flax egg': [
+    { sub: 'chia egg (1 tbsp chia + 3 tbsp water)', reason: 'Similar gel binding' },
+    { sub: 'aquafaba (3 tbsp)', reason: 'Better for lighter batters' },
+    { sub: 'commercial egg replacer', reason: 'Reliable 1:1 ratio' },
+  ],
+  // --- Soy & Condiments ---
+  'soy sauce': [
+    { sub: 'coconut aminos', reason: 'Soy-free, similar umami flavor' },
+    { sub: 'tamari (gluten-free)', reason: 'Gluten-free soy option' },
+  ],
   gelatin: [
     { sub: 'agar agar', reason: 'Vegan, sets firmer' },
     { sub: 'pectin', reason: 'Vegan, fruit-based' },
+  ],
+  // --- Common Produce ---
+  tomatoes: [
+    { sub: 'roasted red peppers', reason: 'Nightshade-free option for sauces' },
+    { sub: 'beets (roasted, pureed)', reason: 'Nightshade-free, similar color' },
+    { sub: 'pumpkin puree', reason: 'Nightshade-free, similar body in sauces' },
+  ],
+  avocado: [
+    { sub: 'hummus', reason: 'Similar spread consistency, high protein' },
+    { sub: 'edamame puree', reason: 'Similar green color, creamy (check soy allergy)' },
+    { sub: 'ripe banana (in baking)', reason: 'Similar fat and moisture content' },
+  ],
+  banana: [
+    { sub: 'applesauce (unsweetened)', reason: 'Similar moisture for baking' },
+    { sub: 'pumpkin puree', reason: 'Similar binding, less sweet' },
+    { sub: 'mashed sweet potato', reason: 'Similar sweetness and moisture' },
+  ],
+  lemon: [
+    { sub: 'lime', reason: 'Similar acidity and brightness' },
+    { sub: 'white wine vinegar', reason: 'Similar acidity, no citrus' },
+    { sub: 'sumac', reason: 'Citrus-free, tart and fruity' },
   ],
 }
 

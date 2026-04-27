@@ -238,9 +238,25 @@ export async function POST(req: NextRequest) {
     const latency = createSurfaceLatencyTracker('client', contextScope)
     const instant = trySurfaceInstantAnswer('client', message, {
       clientName: context.clientName,
+      chefName: context.chefName,
+      businessName: context.businessName,
       upcomingEventCount: context.upcomingEvents.length,
       pendingQuoteCount: context.pendingQuotes.length,
       openInquiryCount: context.openInquiries,
+      upcomingEvents: context.upcomingEvents.map((e) => ({
+        occasion: e.occasion,
+        date: e.date,
+        status: e.status,
+        guestCount: e.guestCount,
+        venueAddress: e.venueAddress,
+      })),
+      pendingQuotes: context.pendingQuotes.map((q) => ({
+        totalCents: q.totalCents,
+        status: q.status,
+        eventOccasion: q.eventOccasion,
+      })),
+      dietaryRestrictions: context.dietaryRestrictions,
+      allergies: context.allergies,
     })
     if (instant) {
       latency.logFastPath('instant')
