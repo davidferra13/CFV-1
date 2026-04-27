@@ -776,6 +776,23 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
         },
       })
     }
+
+    // Notify event contacts (planners, assistants) about quote sent (non-blocking)
+    if (updated.event_id) {
+      try {
+        const { notifyEventContacts } = await import('@/lib/events/notify-contacts')
+        const total = ((updated.total_quoted_cents ?? 0) / 100).toFixed(2)
+        await notifyEventContacts({
+          eventId: updated.event_id,
+          tenantId: user.tenantId!,
+          subject: `Quote sent: $${total} for ${occasion || 'event'}`,
+          headline: 'Quote Sent to Client',
+          details: `A quote for $${total} has been sent to the client for "${occasion || 'the event'}".${updated.deposit_required && updated.deposit_amount_cents ? ` A deposit of $${(updated.deposit_amount_cents / 100).toFixed(2)} is required.` : ''}`,
+        })
+      } catch (contactErr) {
+        console.error('[non-blocking] Event contact notification for quote failed:', contactErr)
+      }
+    }
   }
 
   revalidatePath('/quotes')

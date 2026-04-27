@@ -1232,6 +1232,54 @@ export async function transitionEvent({
     log.events.warn('Email send failed (non-blocking)', { error: emailErr })
   }
 
+  // Notify event contacts (planners, assistants, venue managers) on key transitions (non-blocking)
+  if (['proposed', 'confirmed', 'completed', 'cancelled'].includes(toStatus)) {
+    try {
+      const { notifyEventContacts } = await import('@/lib/events/notify-contacts')
+      const occasion = event.occasion || 'Untitled event'
+      const eventDateStr = event.event_date
+        ? dateToDateString(event.event_date as Date | string)
+        : 'TBD'
+
+      const contactMessages: Record<string, { subject: string; headline: string; details: string }> =
+        {
+          proposed: {
+            subject: `Event proposed: ${occasion}`,
+            headline: 'Event Proposed',
+            details: `A proposal for "${occasion}" on ${eventDateStr} has been sent to the client. The event is now awaiting client review and acceptance.`,
+          },
+          confirmed: {
+            subject: `Event confirmed: ${occasion}`,
+            headline: 'Event Confirmed',
+            details: `"${occasion}" on ${eventDateStr} is now confirmed. All logistics are locked in and preparation is underway.`,
+          },
+          completed: {
+            subject: `Event completed: ${occasion}`,
+            headline: 'Event Completed',
+            details: `"${occasion}" on ${eventDateStr} has been marked as completed. Thank you for your involvement.`,
+          },
+          cancelled: {
+            subject: `Event cancelled: ${occasion}`,
+            headline: 'Event Cancelled',
+            details: `"${occasion}" on ${eventDateStr} has been cancelled.${metadata.reason ? ` Reason: ${metadata.reason}` : ''}`,
+          },
+        }
+
+      const msg = contactMessages[toStatus]
+      if (msg) {
+        await notifyEventContacts({
+          eventId,
+          tenantId: event.tenant_id,
+          subject: msg.subject,
+          headline: msg.headline,
+          details: msg.details,
+        })
+      }
+    } catch (contactErr) {
+      log.events.warn('Event contact notification failed (non-blocking)', { error: contactErr })
+    }
+  }
+
   // Circle posts: accepted + paid + in_progress (confirmed + completed handled by circleFirstNotify above)
 
   if (toStatus === 'cancelled') {

@@ -928,6 +928,27 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
       }
     }
 
+    // Notify event contacts (planners, assistants) about payment received (non-blocking)
+    try {
+      const { notifyEventContacts } = await import('@/lib/events/notify-contacts')
+      const { data: evtForContacts } = await dbAdmin
+        .from('events')
+        .select('occasion, event_date')
+        .eq('id', event_id)
+        .single()
+      const occasion = evtForContacts?.occasion || 'your event'
+      const amountStr = `$${(paymentIntent.amount / 100).toFixed(2)}`
+      await notifyEventContacts({
+        eventId: event_id,
+        tenantId: tenant_id,
+        subject: `Payment received: ${amountStr} for ${occasion}`,
+        headline: 'Payment Received',
+        details: `A payment of ${amountStr} has been received for "${occasion}". The event is progressing toward confirmation.`,
+      })
+    } catch (contactErr) {
+      console.error('[handlePaymentSucceeded] Event contact notification failed (non-blocking):', contactErr)
+    }
+
     // Instant-book: send dedicated chef notification email (non-blocking)
     const bookingSource = paymentIntent.metadata.booking_source
     if (bookingSource === 'instant_book') {
