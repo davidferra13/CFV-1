@@ -16,6 +16,7 @@ import { incrementAiMetric, recordAiLatency, recordAiTier } from './ai-metrics'
 import { reportAppError } from '@/lib/monitoring/sentry-reporter'
 import { resolveAiDispatch } from './dispatch/router'
 import type { AiDispatchRequest } from './dispatch/types'
+import { emitRuntimeEvent } from '@/lib/runtime-transparency/events'
 
 function extractJsonPayload(rawText: string): string {
   const jsonMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/)
@@ -85,6 +86,57 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string): 
   })
 }
 
+async function collectStreamingChatResponse(
+  ollama: Ollama,
+  payload: Record<string, unknown>,
+  timeoutMs: number,
+  label: string,
+  traceId: string | null
+): Promise<ChatResponse> {
+  return withTimeout(
+    (async () => {
+      const stream = (await ollama.chat({
+        ...payload,
+        stream: true,
+      } as any)) as AsyncIterable<ChatResponse>
+      let finalResponse: ChatResponse | null = null
+      let content = ''
+
+      for await (const part of stream) {
+        finalResponse = part
+        const token = part.message?.content ?? ''
+        if (token) {
+          content += token
+          emitRuntimeEvent({
+            type: 'model:token',
+            source: 'parseWithOllama',
+            scope: { workflow: traceId },
+            payload: {
+              traceId,
+              label,
+              token,
+            },
+          })
+        }
+      }
+
+      if (!finalResponse) {
+        throw new OllamaOfflineError('Ollama returned no stream chunks', 'empty_response')
+      }
+
+      return {
+        ...finalResponse,
+        message: {
+          ...finalResponse.message,
+          content,
+        },
+      } as ChatResponse
+    })(),
+    timeoutMs,
+    label
+  )
+}
+
 /**
  * Structured parsing using an Ollama-compatible runtime endpoint.
  * Mirrors parseWithAI signature - drop-in for structured extraction.
@@ -144,6 +196,44 @@ export async function parseWithOllama<T>(
 
   const baseUrl = options?.endpointUrl || dispatch.endpoint?.baseUrl || routedConfig.baseUrl
   const model = options?.model || dispatch.model || routedConfig.model
+  const runtimeTrace = emitRuntimeEvent({
+    type: 'model:start',
+    source: 'parseWithOllama',
+    scope: {
+      workflow: options?.dispatchHint?.taskType ?? 'structured.parse',
+    },
+    payload: {
+      taskType: options?.dispatchHint?.taskType ?? 'structured.parse',
+      model,
+      baseUrl,
+      modelTier: options?.modelTier ?? 'standard',
+      systemPrompt,
+      userContent,
+      inputLength: userContent.length,
+      images: options?.images?.length ?? 0,
+      timeoutMs: options?.timeoutMs ?? DEFAULT_OLLAMA_TIMEOUT_MS,
+    },
+  })
+  const runtimeTraceId = runtimeTrace?.id ?? null
+
+  emitRuntimeEvent({
+    type: 'model:decision',
+    source: 'parseWithOllama',
+    scope: {
+      workflow: runtimeTraceId ?? options?.dispatchHint?.taskType ?? 'structured.parse',
+    },
+    payload: {
+      traceId: runtimeTraceId,
+      taskType: options?.dispatchHint?.taskType ?? 'structured.parse',
+      executionLocation: dispatch.executionLocation,
+      privacyLevel: dispatch.privacy.level,
+      taskClass: dispatch.classification.taskClass,
+      reasons: dispatch.reasons,
+      confidenceDecision: dispatch.confidenceDecision ?? null,
+      endpoint: dispatch.endpoint ?? null,
+      model,
+    },
+  })
 
   log.ai.info('AI dispatch resolved for parseWithOllama', {
     context: {
@@ -162,6 +252,17 @@ export async function parseWithOllama<T>(
     if (cached !== undefined) {
       log.ai.info('Cache hit', { context: { model } })
       incrementAiMetric('ai.call.cache_hit')
+      emitRuntimeEvent({
+        type: 'model:end',
+        source: 'parseWithOllama',
+        scope: { workflow: runtimeTraceId ?? 'structured.parse' },
+        payload: {
+          traceId: runtimeTraceId,
+          disposition: 'cache_hit',
+          model,
+          result: cached as Record<string, unknown>,
+        },
+      })
       return cached
     }
   }
@@ -194,7 +295,13 @@ export async function parseWithOllama<T>(
     let response: ChatResponse
     try {
       response = (await withTimeout(
-        ollama.chat(chatPayload) as unknown as Promise<ChatResponse>,
+        collectStreamingChatResponse(
+          ollama,
+          chatPayload,
+          timeoutMs,
+          'chat',
+          runtimeTraceId
+        ) as unknown as Promise<ChatResponse>,
         timeoutMs,
         'chat'
       )) as ChatResponse
@@ -209,8 +316,25 @@ export async function parseWithOllama<T>(
         msg.includes('network')
       if (!isTransient) throw firstErr
       log.ai.warn('Retrying after transient failure', { error: firstErr })
+      emitRuntimeEvent({
+        type: 'retry',
+        source: 'parseWithOllama',
+        scope: { workflow: runtimeTraceId ?? 'structured.parse' },
+        payload: {
+          traceId: runtimeTraceId,
+          reason: msg,
+          model,
+          baseUrl,
+        },
+      })
       response = (await withTimeout(
-        ollama.chat(chatPayload) as unknown as Promise<ChatResponse>,
+        collectStreamingChatResponse(
+          ollama,
+          chatPayload,
+          timeoutMs,
+          'chat.retry',
+          runtimeTraceId
+        ) as unknown as Promise<ChatResponse>,
         timeoutMs,
         'chat'
       )) as ChatResponse
@@ -230,6 +354,12 @@ export async function parseWithOllama<T>(
       incrementAiMetric('ai.call.failure')
       log.ai.error('Model not found', { context: { model, baseUrl }, error: err })
       reportAppError(ollamaErr, { category: 'ai', action: 'parseWithOllama' })
+      emitRuntimeEvent({
+        type: 'error',
+        source: 'parseWithOllama',
+        scope: { workflow: runtimeTraceId ?? 'structured.parse' },
+        payload: { traceId: runtimeTraceId, model, baseUrl, error: ollamaErr },
+      })
       throw ollamaErr
     }
     if (errMsg.includes('timeout') || errMsg.includes('aborted') || errMsg.includes('AbortError')) {
@@ -238,6 +368,12 @@ export async function parseWithOllama<T>(
       incrementAiMetric('ai.call.failure')
       log.ai.error('Ollama timed out', { context: { model, baseUrl, timeoutMs }, error: err })
       reportAppError(ollamaErr, { category: 'ai', action: 'parseWithOllama' })
+      emitRuntimeEvent({
+        type: 'error',
+        source: 'parseWithOllama',
+        scope: { workflow: runtimeTraceId ?? 'structured.parse' },
+        payload: { traceId: runtimeTraceId, model, baseUrl, timeoutMs, error: ollamaErr },
+      })
       throw ollamaErr
     }
     const ollamaErr = new OllamaOfflineError(
@@ -248,6 +384,12 @@ export async function parseWithOllama<T>(
     incrementAiMetric('ai.call.failure')
     log.ai.error('Ollama unreachable', { context: { model, baseUrl }, error: err })
     reportAppError(ollamaErr, { category: 'ai', action: 'parseWithOllama' })
+    emitRuntimeEvent({
+      type: 'error',
+      source: 'parseWithOllama',
+      scope: { workflow: runtimeTraceId ?? 'structured.parse' },
+      payload: { traceId: runtimeTraceId, model, baseUrl, error: ollamaErr },
+    })
     throw ollamaErr
   }
 
@@ -256,6 +398,12 @@ export async function parseWithOllama<T>(
     incrementAiMetric('ai.call.failure')
     log.ai.error('Empty response from Ollama', { context: { model, baseUrl } })
     reportAppError(ollamaErr, { category: 'ai', action: 'parseWithOllama' })
+    emitRuntimeEvent({
+      type: 'error',
+      source: 'parseWithOllama',
+      scope: { workflow: runtimeTraceId ?? 'structured.parse' },
+      payload: { traceId: runtimeTraceId, model, baseUrl, error: ollamaErr },
+    })
     throw ollamaErr
   }
 
@@ -273,6 +421,18 @@ export async function parseWithOllama<T>(
       context: { model, rawSnippet: rawText.slice(0, 100) },
     })
     reportAppError(ollamaErr, { category: 'ai', action: 'parseWithOllama' })
+    emitRuntimeEvent({
+      type: 'error',
+      source: 'parseWithOllama',
+      scope: { workflow: runtimeTraceId ?? 'structured.parse' },
+      payload: {
+        traceId: runtimeTraceId,
+        model,
+        baseUrl,
+        rawText,
+        error: ollamaErr,
+      },
+    })
     throw ollamaErr
   }
 
@@ -283,30 +443,47 @@ export async function parseWithOllama<T>(
       context: { model, issues: firstPassIssues },
     })
     incrementAiMetric('ai.call.repair_attempted')
+    emitRuntimeEvent({
+      type: 'model:decision',
+      source: 'parseWithOllama',
+      scope: { workflow: runtimeTraceId ?? 'structured.parse' },
+      payload: {
+        traceId: runtimeTraceId,
+        decision: 'repair_pass',
+        issues: firstPassIssues,
+        previousJson: jsonStr,
+      },
+    })
 
     // Single repair pass via the same runtime endpoint
     try {
       const repairResponse = await withTimeout(
-        ollama.chat({
-          model,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            {
-              role: 'user',
-              content: [
-                'Your previous response did not satisfy the required JSON schema.',
-                `Validation errors: ${firstPassIssues}`,
-                'Return ONLY corrected JSON (no markdown, no prose).',
-                'Keep the same structure and preserve as much extracted data as possible.',
-                '--- Previous JSON ---',
-                jsonStr,
-              ].join('\n'),
-            },
-          ],
-          format: 'json',
-          options: { num_predict: options?.maxTokens ?? DEFAULT_MAX_TOKENS },
-          keep_alive: '30m',
-        } as any) as unknown as Promise<ChatResponse>,
+        collectStreamingChatResponse(
+          ollama,
+          {
+            model,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              {
+                role: 'user',
+                content: [
+                  'Your previous response did not satisfy the required JSON schema.',
+                  `Validation errors: ${firstPassIssues}`,
+                  'Return ONLY corrected JSON (no markdown, no prose).',
+                  'Keep the same structure and preserve as much extracted data as possible.',
+                  '--- Previous JSON ---',
+                  jsonStr,
+                ].join('\n'),
+              },
+            ],
+            format: 'json',
+            options: { num_predict: options?.maxTokens ?? DEFAULT_MAX_TOKENS },
+            keep_alive: '30m',
+          },
+          timeoutMs,
+          'repair',
+          runtimeTraceId
+        ) as unknown as Promise<ChatResponse>,
         timeoutMs,
         'repair'
       )
@@ -332,6 +509,19 @@ export async function parseWithOllama<T>(
         recordAiLatency(durationMs)
         if (options?.modelTier) recordAiTier(options.modelTier)
         if (options?.cache) setCachedResult(systemPrompt, userContent, model, repairedResult.data)
+        emitRuntimeEvent({
+          type: 'model:end',
+          source: 'parseWithOllama',
+          scope: { workflow: runtimeTraceId ?? 'structured.parse' },
+          payload: {
+            traceId: runtimeTraceId,
+            model,
+            baseUrl,
+            durationMs,
+            repair: true,
+            result: repairedResult.data as Record<string, unknown>,
+          },
+        })
         return repairedResult.data
       }
 
@@ -343,6 +533,18 @@ export async function parseWithOllama<T>(
       incrementAiMetric('ai.call.failure')
       log.ai.error('Repair pass failed validation', { context: { model, issues: repairIssues } })
       reportAppError(ollamaErr, { category: 'ai', action: 'parseWithOllama' })
+      emitRuntimeEvent({
+        type: 'error',
+        source: 'parseWithOllama',
+        scope: { workflow: runtimeTraceId ?? 'structured.parse' },
+        payload: {
+          traceId: runtimeTraceId,
+          model,
+          baseUrl,
+          issues: repairIssues,
+          error: ollamaErr,
+        },
+      })
       throw ollamaErr
     } catch (err) {
       if (err instanceof OllamaOfflineError) throw err
@@ -353,6 +555,12 @@ export async function parseWithOllama<T>(
       incrementAiMetric('ai.call.failure')
       log.ai.error('Repair pass crashed', { context: { model }, error: err })
       reportAppError(ollamaErr, { category: 'ai', action: 'parseWithOllama' })
+      emitRuntimeEvent({
+        type: 'error',
+        source: 'parseWithOllama',
+        scope: { workflow: runtimeTraceId ?? 'structured.parse' },
+        payload: { traceId: runtimeTraceId, model, baseUrl, error: ollamaErr },
+      })
       throw ollamaErr
     }
   }
@@ -370,5 +578,19 @@ export async function parseWithOllama<T>(
   recordAiLatency(durationMs)
   if (options?.modelTier) recordAiTier(options.modelTier)
   if (options?.cache) setCachedResult(systemPrompt, userContent, model, zodResult.data)
+  emitRuntimeEvent({
+    type: 'model:end',
+    source: 'parseWithOllama',
+    scope: { workflow: runtimeTraceId ?? 'structured.parse' },
+    payload: {
+      traceId: runtimeTraceId,
+      model,
+      baseUrl,
+      durationMs,
+      repair: false,
+      rawText,
+      result: zodResult.data as Record<string, unknown>,
+    },
+  })
   return zodResult.data
 }

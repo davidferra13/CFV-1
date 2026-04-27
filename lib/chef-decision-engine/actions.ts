@@ -1902,9 +1902,11 @@ export async function getChefDecisionForEvent(
   }
 }
 
-export const __testOnly = {
-  buildLockedMenuSignals,
-  isStoredChefDecisionPayload,
-  mergeSelectionSignals,
-  normalizeSelectionSignals,
+export async function __testOnly() {
+  return {
+    buildLockedMenuSignals,
+    isStoredChefDecisionPayload,
+    mergeSelectionSignals,
+    normalizeSelectionSignals,
+  }
 }

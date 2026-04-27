@@ -278,7 +278,8 @@ export function buildBusinessSectionMetrics({ data, now }: BuildBusinessSectionM
           ? (() => {
               try {
                 return JSON.parse(report.flags)
-              } catch {
+              } catch (err) {
+                console.error('[business-metrics] Failed to parse reconciliation flags', err)
                 return []
               }
             })()

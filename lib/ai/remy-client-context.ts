@@ -4,6 +4,7 @@
 
 import { createServerClient } from '@/lib/db/server'
 import { getClientWorkGraphSnapshot } from '@/lib/client-work-graph/actions'
+import { sanitizeForPrompt, fenceForPrompt } from '@/lib/ai/remy-input-validation'
 import type { ClientWorkGraph } from '@/lib/client-work-graph/types'
 
 export interface RemyClientContext {
@@ -169,14 +170,18 @@ export function formatClientContext(ctx: RemyClientContext): string {
   const parts: string[] = []
 
   parts.push(`\nYOUR CLIENT:
-- Name: ${ctx.clientName ?? 'Client'}
-- Chef: ${ctx.chefName ?? 'Your chef'}${ctx.businessName ? ` (${ctx.businessName})` : ''}`)
+- Name: ${fenceForPrompt('client_name', sanitizeForPrompt(ctx.clientName ?? 'Client'))}
+- Chef: ${fenceForPrompt('chef_name', sanitizeForPrompt(ctx.chefName ?? 'Your chef'))}${ctx.businessName ? ` (${fenceForPrompt('business_name', sanitizeForPrompt(ctx.businessName))})` : ''}`)
 
   if (ctx.dietaryRestrictions) {
-    parts.push(`- Dietary restrictions: ${ctx.dietaryRestrictions}`)
+    parts.push(
+      `- Dietary restrictions: ${fenceForPrompt('dietary_restrictions', sanitizeForPrompt(ctx.dietaryRestrictions))}`
+    )
   }
   if (ctx.allergies) {
-    parts.push(`- Allergies: **${ctx.allergies.toUpperCase()}**`)
+    parts.push(
+      `- Allergies: **${fenceForPrompt('allergies', sanitizeForPrompt(ctx.allergies.toUpperCase()))}**`
+    )
   }
   parts.push(
     `- Loyalty: ${ctx.loyaltyTier} tier, ${ctx.loyaltyPointsBalance.toLocaleString()} points balance`
@@ -191,7 +196,7 @@ export function formatClientContext(ctx: RemyClientContext): string {
     parts.push(`\nYOUR UPCOMING EVENTS:`)
     for (const event of ctx.upcomingEvents) {
       parts.push(
-        `- ${event.occasion ?? 'Event'} on ${event.date ?? '(date TBD)'} - ${event.guestCount ?? '?'} guests - Status: ${event.status}${event.venueAddress ? ` - Venue: ${event.venueAddress}` : ''}`
+        `- ${fenceForPrompt('occasion', sanitizeForPrompt(event.occasion ?? 'Event'))} on ${event.date ?? '(date TBD)'} - ${event.guestCount ?? '?'} guests - Status: ${event.status}${event.venueAddress ? ` - Venue: ${fenceForPrompt('venue_address', sanitizeForPrompt(event.venueAddress))}` : ''}`
       )
       if (event.pendingGuestCountChange) {
         parts.push(
@@ -206,7 +211,9 @@ export function formatClientContext(ctx: RemyClientContext): string {
   if (ctx.pastEvents.length > 0) {
     parts.push(`\nPAST EVENTS:`)
     for (const event of ctx.pastEvents) {
-      parts.push(`- ${event.occasion ?? 'Event'} on ${event.date ?? '(no date)'}`)
+      parts.push(
+        `- ${fenceForPrompt('occasion', sanitizeForPrompt(event.occasion ?? 'Event'))} on ${event.date ?? '(no date)'}`
+      )
     }
   }
 
@@ -214,7 +221,7 @@ export function formatClientContext(ctx: RemyClientContext): string {
     parts.push(`\nPENDING QUOTES:`)
     for (const quote of ctx.pendingQuotes) {
       parts.push(
-        `- ${quote.eventOccasion ?? 'Quote'}: $${(quote.totalCents / 100).toFixed(2)} (${quote.status})`
+        `- ${fenceForPrompt('event_occasion', sanitizeForPrompt(quote.eventOccasion ?? 'Quote'))}: $${(quote.totalCents / 100).toFixed(2)} (${quote.status})`
       )
     }
   }

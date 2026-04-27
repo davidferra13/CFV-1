@@ -1,11 +1,17 @@
-import { describe, it } from 'node:test'
+import { describe, it, before } from 'node:test'
 import assert from 'node:assert/strict'
 import { __testOnly } from '@/lib/chef-decision-engine/actions'
+
+let helpers: Awaited<ReturnType<typeof __testOnly>>
+
+before(async () => {
+  helpers = await __testOnly()
+})
 
 describe('chef decision engine action helpers', () => {
   it('rejects malformed cached planning payloads before they are surfaced as decisions', () => {
     assert.equal(
-      __testOnly.isStoredChefDecisionPayload({
+      helpers.isStoredChefDecisionPayload({
         generatedAt: '2026-04-22T10:00:00.000Z',
         summary: {},
         finalMenu: {},
@@ -19,7 +25,7 @@ describe('chef decision engine action helpers', () => {
     )
 
     assert.equal(
-      __testOnly.isStoredChefDecisionPayload({
+      helpers.isStoredChefDecisionPayload({
         generatedAt: '2026-04-22T10:00:00.000Z',
         summary: {},
         finalMenu: {},
@@ -35,7 +41,7 @@ describe('chef decision engine action helpers', () => {
   })
 
   it('normalizes duplicate external selection signals into a single course record', () => {
-    const normalized = __testOnly.normalizeSelectionSignals({
+    const normalized = helpers.normalizeSelectionSignals({
       courses: [
         {
           courseKey: '1:starter',
@@ -85,7 +91,7 @@ describe('chef decision engine action helpers', () => {
   })
 
   it('keeps poll provenance when menu fallback signals are merged later', () => {
-    const pollSignals = __testOnly.normalizeSelectionSignals({
+    const pollSignals = helpers.normalizeSelectionSignals({
       courses: [
         {
           courseKey: '1:starter',
@@ -104,7 +110,7 @@ describe('chef decision engine action helpers', () => {
       ],
     })
 
-    const menuSignals = __testOnly.normalizeSelectionSignals({
+    const menuSignals = helpers.normalizeSelectionSignals({
       courses: [
         {
           courseKey: '1:starter',
@@ -120,7 +126,7 @@ describe('chef decision engine action helpers', () => {
       ],
     })
 
-    const merged = __testOnly.mergeSelectionSignals(pollSignals, menuSignals)
+    const merged = helpers.mergeSelectionSignals(pollSignals, menuSignals)
     const option = merged[0]?.options[0]
 
     assert.equal(option?.source, 'poll')
@@ -128,7 +134,7 @@ describe('chef decision engine action helpers', () => {
   })
 
   it('marks only single-dish menu courses as locked execution selections', () => {
-    const signals = __testOnly.buildLockedMenuSignals('menu-1', [
+    const signals = helpers.buildLockedMenuSignals('menu-1', [
       {
         id: 'dish-starter',
         menu_id: 'menu-1',

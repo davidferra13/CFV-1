@@ -102,7 +102,8 @@ function extractNavSuggestions(content: string): NavSuggestion[] {
         label: item.label as string,
         href: item.href as string,
       }))
-  } catch {
+  } catch (err) {
+    console.error('[remy-client] Failed to parse NAV_SUGGESTIONS', err)
     return []
   }
 }

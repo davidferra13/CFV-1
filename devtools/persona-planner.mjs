@@ -311,6 +311,67 @@ async function callOllama(url, model, prompt, label = '') {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Build Plan Quality Gate                                           */
+/* ------------------------------------------------------------------ */
+
+// Out-of-scope features that Gemma hallucinates for ChefFlow
+const SCOPE_BLOCKLIST = [
+  /\bbeta\s+survey\b/i, /\bsurvey\s+invite/i,
+  /\bconfidence\s+(level|score|display)\b/i,
+  /\bmodel\s+confidence\b/i,
+  /\bLMS\b/, /\blearning\s+management\b/i,
+  /\bmarketplace\b/i,
+  /\bcrowdsourc/i,
+  /\bgamification\b/i,
+  /\bleaderboard\b/i,
+  /\bachievement\s+badge/i,
+  /\bsocial\s+media\s+(?:feed|timeline|post(?:ing)?)\b/i,
+  /\bchat\s+room\b/i,
+  /\bforum\b/i,
+  /\bvideo\s+call\b/i,
+  /\bAI\s+generat(?:e|ing|ion)\s+recipe/i,
+];
+
+function validateBuildPlan(planText) {
+  const issues = [];
+
+  // Check 1: Scope guard - reject hallucinated features
+  for (const pattern of SCOPE_BLOCKLIST) {
+    if (pattern.test(planText)) {
+      issues.push(`out-of-scope: matches ${pattern}`);
+    }
+  }
+
+  // Check 2: Referenced files must exist
+  const fileRefs = [...planText.matchAll(/`([a-zA-Z][\w/.-]+\.(?:ts|tsx|js|jsx|mjs|css|sql))`/g)];
+  let missingFiles = 0;
+  let checkedFiles = 0;
+  for (const match of fileRefs) {
+    const ref = match[1];
+    // Skip obviously generic paths
+    if (ref.includes('{') || ref.startsWith('http')) continue;
+    checkedFiles++;
+    const full = join(ROOT, ref);
+    if (!existsSync(full)) missingFiles++;
+  }
+  if (checkedFiles > 0 && missingFiles === checkedFiles) {
+    issues.push(`all ${missingFiles} referenced files are missing`);
+  } else if (checkedFiles > 1 && missingFiles > checkedFiles / 2) {
+    issues.push(`${missingFiles}/${checkedFiles} referenced files missing`);
+  }
+
+  // Check 3: Plan must have required sections
+  const requiredSections = ['## What to Build', '## Files to Modify', '## Acceptance Criteria'];
+  for (const section of requiredSections) {
+    if (!planText.includes(section)) {
+      issues.push(`missing section: ${section}`);
+    }
+  }
+
+  return { valid: issues.length === 0, issues };
+}
+
+/* ------------------------------------------------------------------ */
 /*  Main                                                              */
 /* ------------------------------------------------------------------ */
 
@@ -341,6 +402,7 @@ async function main() {
   console.log("");
 
   let taskCount = 0;
+  let rejectedCount = 0;
 
   for (const gap of gaps) {
     const files = findRelevantFiles(gap.title);
@@ -358,6 +420,19 @@ async function main() {
       continue;
     }
 
+    // Quality gate: validate before writing
+    const gate = validateBuildPlan(output);
+    if (!gate.valid) {
+      const rejectDir = join(ROOT, "system", "persona-build-plans-rejected");
+      mkdirSync(rejectDir, { recursive: true });
+      const rejectPath = join(rejectDir, `${slug}-task-${gap.number}.md`);
+      const header = `<!-- REJECTED: ${gate.issues.join('; ')} -->\n<!-- ${new Date().toISOString()} -->\n\n`;
+      writeFileSync(rejectPath, header + output, "utf-8");
+      rejectedCount++;
+      console.log(`  REJECTED gap ${gap.number}: ${gate.issues.join('; ')}`);
+      continue;
+    }
+
     const taskPath = join(outDir, `task-${gap.number}.md`);
     writeFileSync(taskPath, output, "utf-8");
     taskCount++;
@@ -366,6 +441,9 @@ async function main() {
 
   console.log("");
   console.log(`Created ${taskCount} build tasks in system/persona-build-plans/${slug}/`);
+  if (rejectedCount > 0) {
+    console.log(`Rejected ${rejectedCount} plans (quality gate). See system/persona-build-plans-rejected/`);
+  }
   process.exit(0);
 }
 

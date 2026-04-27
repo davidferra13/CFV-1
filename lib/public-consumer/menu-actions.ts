@@ -206,8 +206,12 @@ async function getChefMenuSpotlightUncached(chefId: string): Promise<ChefMenuSpo
   return result
 }
 
-export const getChefMenuSpotlight = unstable_cache(
+const _getChefMenuSpotlightCached = unstable_cache(
   getChefMenuSpotlightUncached,
   ['chef-menu-spotlight'],
   { revalidate: 600, tags: ['chef-menu-spotlight'] }
 )
+
+export async function getChefMenuSpotlight(chefId: string): Promise<ChefMenuSpotlight> {
+  return _getChefMenuSpotlightCached(chefId)
+}

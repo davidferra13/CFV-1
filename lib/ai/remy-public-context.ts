@@ -5,6 +5,7 @@
 import { createAdminClient } from '@/lib/db/admin'
 import { getServiceConfigForTenant } from '@/lib/chef-services/service-config-internal'
 import { formatServiceConfigForPrompt } from '@/lib/chef-services/service-config-actions'
+import { sanitizeForPrompt, fenceForPrompt } from '@/lib/ai/remy-input-validation'
 
 export interface RemyPublicContext {
   chefName: string | null
@@ -113,10 +114,14 @@ export async function loadRemyPublicContext(tenantId: string): Promise<RemyPubli
 export function formatPublicContext(ctx: RemyPublicContext): string {
   const parts: string[] = ['\nCHEF PROFILE:']
 
-  parts.push(`- Name: ${ctx.chefName ?? 'Chef'}`)
-  if (ctx.businessName) parts.push(`- Business: ${ctx.businessName}`)
-  if (ctx.tagline) parts.push(`- Tagline: "${ctx.tagline}"`)
-  if (ctx.bio) parts.push(`- About: ${ctx.bio}`)
+  parts.push(`- Name: ${fenceForPrompt('chef_name', sanitizeForPrompt(ctx.chefName ?? 'Chef'))}`)
+  if (ctx.businessName)
+    parts.push(
+      `- Business: ${fenceForPrompt('business_name', sanitizeForPrompt(ctx.businessName))}`
+    )
+  if (ctx.tagline)
+    parts.push(`- Tagline: "${fenceForPrompt('tagline', sanitizeForPrompt(ctx.tagline))}"`)
+  if (ctx.bio) parts.push(`- About: ${fenceForPrompt('bio', sanitizeForPrompt(ctx.bio))}`)
   if (ctx.cuisines.length > 0) parts.push(`- Cuisines: ${ctx.cuisines.join(', ')}`)
   if (ctx.serviceTypes.length > 0) parts.push(`- Services: ${ctx.serviceTypes.join(', ')}`)
   if (ctx.dietaryCapabilities.length > 0)
@@ -124,7 +129,9 @@ export function formatPublicContext(ctx: RemyPublicContext): string {
   if (ctx.serviceArea) parts.push(`- Service area: ${ctx.serviceArea}`)
 
   if (ctx.culinaryProfile) {
-    parts.push(`\nCULINARY APPROACH:\n${ctx.culinaryProfile}`)
+    parts.push(
+      `\nCULINARY APPROACH:\n${fenceForPrompt('culinary_profile', sanitizeForPrompt(ctx.culinaryProfile))}`
+    )
   }
 
   if (ctx.serviceConfigPrompt) {

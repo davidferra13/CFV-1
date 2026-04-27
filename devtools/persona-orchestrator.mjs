@@ -285,28 +285,135 @@ function scanPendingFiles(state, filePath = null) {
   return pending;
 }
 
-// --- Execution ---
+// --- File Locking ---
+
+const LOCK_FILE = join(ROOT, 'system', '.pipeline.lock');
+const LOCK_STALE_MS = 15 * 60 * 1000; // 15 min = stale lock
+
+function acquireLock() {
+  if (existsSync(LOCK_FILE)) {
+    try {
+      const data = JSON.parse(readFileSync(LOCK_FILE, 'utf-8'));
+      const age = Date.now() - (data.acquired || 0);
+      if (age < LOCK_STALE_MS) {
+        console.log(`[orchestrator] Pipeline locked by PID ${data.pid} (${Math.round(age / 1000)}s ago). Waiting...`);
+        return false;
+      }
+      console.log(`[orchestrator] Stale lock detected (${Math.round(age / 1000)}s), breaking it.`);
+    } catch {}
+  }
+  writeFileSync(LOCK_FILE, JSON.stringify({ pid: process.pid, acquired: Date.now() }), 'utf-8');
+  return true;
+}
+
+function releaseLock() {
+  try {
+    if (existsSync(LOCK_FILE)) {
+      const data = JSON.parse(readFileSync(LOCK_FILE, 'utf-8'));
+      if (data.pid === process.pid) {
+        const { unlinkSync } = require ? require('fs') : { unlinkSync: () => {} };
+        try { unlinkSync(LOCK_FILE); } catch {}
+      }
+    }
+  } catch {}
+}
+
+// Clean up lock on exit
+process.on('exit', releaseLock);
+process.on('SIGINT', () => { releaseLock(); process.exit(130); });
+process.on('SIGTERM', () => { releaseLock(); process.exit(143); });
+
+// --- Ollama Pre-flight ---
+
+function checkOllamaHealth(ollamaUrl) {
+  try {
+    const result = execSync(`node -e "fetch('${ollamaUrl}/api/tags').then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(d=>console.log('OK:'+d.models?.length+' models')).catch(e=>console.log('FAIL:'+e.message))"`, {
+      encoding: 'utf-8',
+      timeout: 10000,
+      cwd: ROOT,
+    });
+    const ok = result.trim().startsWith('OK:');
+    if (!ok) console.log(`[orchestrator] Ollama health check failed: ${result.trim()}`);
+    return ok;
+  } catch (err) {
+    console.log(`[orchestrator] Ollama unreachable: ${err.message}`);
+    return false;
+  }
+}
+
+// --- Structured Error Capture ---
+
+function captureError(err) {
+  const stderr = String(err.stderr || '').trim();
+  const stdout = String(err.stdout || '').trim();
+  const message = err.message || 'Unknown error';
+
+  // Truncate to useful portion (first 500 chars, skip token counter noise)
+  let detail = stderr || message;
+  // Filter out raw token stats lines
+  detail = detail.split('\n')
+    .filter(l => !l.match(/^\s*\d+\s+tokens?/) && !l.match(/^total\s+duration/i) && !l.match(/^load\s+duration/i))
+    .join('\n')
+    .trim();
+  if (detail.length > 500) detail = detail.slice(0, 500) + '...';
+
+  // Classify error type
+  let errorType = 'unknown';
+  if (/timeout|ETIMEDOUT/i.test(message)) errorType = 'timeout';
+  else if (/ECONNREFUSED|ENOTFOUND/i.test(message)) errorType = 'ollama_down';
+  else if (/out of memory|OOM/i.test(detail)) errorType = 'oom';
+  else if (/parse|JSON|syntax/i.test(detail)) errorType = 'parse_error';
+  else if (/not found|ENOENT/i.test(message)) errorType = 'file_not_found';
+  else if (stderr) errorType = 'process_error';
+
+  return { detail, errorType, hasStdout: stdout.length > 0, stdout: stdout.slice(0, 1000) };
+}
+
+// --- Execution with Retry ---
+
+function runWithRetry(cmd, label, maxRetries = 2) {
+  let lastError = null;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const result = execSync(cmd, {
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+        timeout: 420000,
+        cwd: ROOT,
+      });
+      if (attempt > 0) console.log(`[orchestrator] ${label} succeeded on retry ${attempt}`);
+      return result;
+    } catch (err) {
+      lastError = err;
+      const captured = captureError(err);
+
+      if (attempt < maxRetries) {
+        // Exponential backoff: 5s, 15s
+        const backoffMs = (attempt + 1) * 5000 * (attempt + 1);
+        console.log(`[orchestrator] ${label} failed (attempt ${attempt + 1}/${maxRetries + 1}, ${captured.errorType}): ${captured.detail.split('\n')[0]}`);
+
+        // Don't retry if Ollama is down or file not found
+        if (captured.errorType === 'ollama_down' || captured.errorType === 'file_not_found') {
+          console.log(`[orchestrator] ${label}: non-retryable error (${captured.errorType}), skipping retries`);
+          break;
+        }
+
+        console.log(`[orchestrator] Retrying in ${backoffMs / 1000}s...`);
+        spawnSync('node', ['-e', `setTimeout(()=>{},${backoffMs})`], { timeout: backoffMs + 1000 });
+      }
+    }
+  }
+  throw lastError;
+}
 
 function runAnalyzer(filepath, model, ollamaUrl) {
   const cmd = `node devtools/persona-analyzer.mjs "${filepath}" --model ${model} --ollama-url ${ollamaUrl}`;
-  const result = execSync(cmd, {
-    encoding: 'utf-8',
-    stdio: ['pipe', 'pipe', 'pipe'],
-    timeout: 420000,
-    cwd: ROOT,
-  });
-  return result;
+  return runWithRetry(cmd, `Analyzer(${basename(filepath)})`);
 }
 
 function runPlanner(reportPath, model, ollamaUrl) {
   const cmd = `node devtools/persona-planner.mjs "${reportPath}" --model ${model} --ollama-url ${ollamaUrl}`;
-  const result = execSync(cmd, {
-    encoding: 'utf-8',
-    stdio: ['pipe', 'pipe', 'pipe'],
-    timeout: 420000,
-    cwd: ROOT,
-  });
-  return result;
+  return runWithRetry(cmd, `Planner(${basename(reportPath)})`);
 }
 
 function parseReportPath(stdout) {
@@ -383,7 +490,28 @@ function runGenerator(count, model, ollamaUrl) {
 // --- Cycle ---
 
 function runCycle(opts) {
+  // Acquire lock to prevent concurrent runs
+  if (!acquireLock()) {
+    console.log('[orchestrator] Could not acquire lock, aborting cycle.');
+    return { processed: 0, failed: 0, tasksQueued: 0 };
+  }
+
+  // Pre-flight: check Ollama is alive
+  if (!opts.dryRun) {
+    const ollamaOk = checkOllamaHealth(opts.ollamaUrl);
+    if (!ollamaOk) {
+      console.log('[orchestrator] ABORT: Ollama is not reachable. Fix connectivity before running pipeline.');
+      releaseLock();
+      return { processed: 0, failed: 0, tasksQueued: 0 };
+    }
+  }
+
+  const cycleStartTime = Date.now();
   const state = loadState();
+
+  // Initialize metrics if missing
+  if (!state.metrics) state.metrics = { total_cycles: 0, total_analyzer_time_ms: 0, total_planner_time_ms: 0, total_synthesis_time_ms: 0, last_cycle_duration_ms: 0, retries_used: 0 };
+  state.metrics.total_cycles++;
 
   if (opts.retryFailed && state.failed.length > 0) {
     console.log(`[orchestrator] Retrying ${state.failed.length} previously failed personas...`)
@@ -418,6 +546,7 @@ function runCycle(opts) {
     console.log('[orchestrator] No pending personas found.');
     state.last_cycle = new Date().toISOString();
     saveState(state);
+    releaseLock();
     return { processed: 0, failed: 0, tasksQueued: 0 };
   }
 
@@ -426,6 +555,7 @@ function runCycle(opts) {
     for (const p of pending) {
       console.log(`  ${p.type}/${p.filename} (slug: ${p.slug})`);
     }
+    releaseLock();
     return { processed: 0, failed: 0, tasksQueued: 0 };
   }
 
@@ -462,23 +592,43 @@ function runCycle(opts) {
     }
     console.log(`[orchestrator] Validated: ${persona.filename} (score: ${validation.score})`);
 
-    // Stage 1: Analyze
+    // Stage 1: Analyze (with timing and retry)
     console.log(`[orchestrator] Analyzing: ${persona.filename}`);
+    const analyzerStart = Date.now();
     let analyzerStdout;
     try {
       analyzerStdout = runAnalyzer(persona.filepath, opts.analyzerModel, opts.ollamaUrl);
     } catch (err) {
-      const stderr = err.stderr || err.message || 'Unknown error';
-      console.log(`[orchestrator] FAILED: ${persona.filename} - ${stderr.trim()}`);
+      const captured = captureError(err);
+      console.log(`[orchestrator] FAILED: ${persona.filename} [${captured.errorType}] - ${captured.detail.split('\n')[0]}`);
+
+      // Capture partial report if analyzer produced any stdout
+      let partialReport = null;
+      if (captured.hasStdout) {
+        try {
+          const partialDir = join(ROOT, 'system', 'persona-debug');
+          mkdirSync(partialDir, { recursive: true });
+          const partialPath = join(partialDir, `partial-${persona.slug}-${new Date().toISOString().slice(0, 10)}.txt`);
+          writeFileSync(partialPath, `# Partial Analyzer Output for ${persona.filename}\n# Error: ${captured.errorType}\n# Failed: ${new Date().toISOString()}\n\n${captured.stdout}`, 'utf-8');
+          partialReport = `system/persona-debug/partial-${persona.slug}-${new Date().toISOString().slice(0, 10)}.txt`;
+          console.log(`[orchestrator] Partial output saved: ${partialReport}`);
+        } catch {}
+      }
+
       state.failed.push({
         source_file: persona.relpath,
-        error: stderr.trim(),
+        error: captured.detail,
+        error_type: captured.errorType,
+        partial_report: partialReport,
         failed_at: new Date().toISOString(),
+        retries_exhausted: true,
       });
       failedCount++;
+      state.metrics.total_analyzer_time_ms += Date.now() - analyzerStart;
       saveState(state);
       continue;
     }
+    state.metrics.total_analyzer_time_ms += Date.now() - analyzerStart;
 
     const reportPath = parseReportPath(analyzerStdout);
     if (!reportPath) {
@@ -486,6 +636,7 @@ function runCycle(opts) {
       state.failed.push({
         source_file: persona.relpath,
         error: 'Could not parse report path from analyzer stdout',
+        error_type: 'parse_error',
         failed_at: new Date().toISOString(),
       });
       failedCount++;
@@ -493,21 +644,47 @@ function runCycle(opts) {
       continue;
     }
 
-    // Stage 2: Plan
+    // Stage 2: Plan (with timing, retry, and silent failure detection)
     console.log(`[orchestrator] Planning: ${persona.filename}`);
+    const plannerStart = Date.now();
     let plannedAt = null;
     let buildTasks = [];
+    let plannerAttempts = 0;
+    const MAX_PLANNER_ATTEMPTS = 2;
 
-    try {
-      runPlanner(reportPath, opts.plannerModel, opts.ollamaUrl);
-      plannedAt = new Date().toISOString();
-      buildTasks = countTaskFiles(persona.slug);
-      plannedSuccessCount++;
-    } catch (err) {
-      const stderr = err.stderr ? err.stderr.toString().trim() : err.message || 'Unknown error';
-      console.log(`[orchestrator] PLANNER FAILED for ${persona.filename}: ${stderr}`);
-      // Analysis succeeded, so add to processed with planned_at: null
+    while (plannerAttempts < MAX_PLANNER_ATTEMPTS) {
+      plannerAttempts++;
+      try {
+        runPlanner(reportPath, opts.plannerModel, opts.ollamaUrl);
+        buildTasks = countTaskFiles(persona.slug);
+
+        // Silent failure detection: planner ran but produced zero tasks
+        if (buildTasks.length === 0 && plannerAttempts < MAX_PLANNER_ATTEMPTS) {
+          console.log(`[orchestrator] Planner produced 0 tasks for ${persona.filename} (attempt ${plannerAttempts}/${MAX_PLANNER_ATTEMPTS}), retrying...`);
+          state.metrics.retries_used++;
+          continue;
+        }
+
+        if (buildTasks.length > 0) {
+          plannedAt = new Date().toISOString();
+          plannedSuccessCount++;
+        } else {
+          console.log(`[orchestrator] WARNING: Planner produced 0 tasks for ${persona.filename} after ${plannerAttempts} attempts`);
+        }
+        break;
+      } catch (err) {
+        const captured = captureError(err);
+        console.log(`[orchestrator] PLANNER FAILED for ${persona.filename} [${captured.errorType}]: ${captured.detail.split('\n')[0]}`);
+        if (plannerAttempts < MAX_PLANNER_ATTEMPTS && captured.errorType !== 'ollama_down') {
+          console.log(`[orchestrator] Retrying planner...`);
+          state.metrics.retries_used++;
+          continue;
+        }
+        // Analysis succeeded, so add to processed with planned_at: null
+        break;
+      }
     }
+    state.metrics.total_planner_time_ms += Date.now() - plannerStart;
 
     // Analyzer moves file from Uncompleted/ to Completed/; record the final path
     const completedRelpath = toPosixPath(persona.relpath).replace('/Uncompleted/', '/Completed/');
@@ -605,9 +782,12 @@ function runCycle(opts) {
   }
 
   state.last_cycle = new Date().toISOString();
+  state.metrics.last_cycle_duration_ms = Date.now() - cycleStartTime;
   saveState(state);
+  releaseLock();
 
-  console.log(`Cycle complete: ${processedCount} analyzed, ${failedCount} failed, ${tasksQueued} build tasks queued.`);
+  const duration = Math.round(state.metrics.last_cycle_duration_ms / 1000);
+  console.log(`Cycle complete in ${duration}s: ${processedCount} analyzed, ${failedCount} failed, ${tasksQueued} build tasks queued.`);
   return { processed: processedCount, failed: failedCount, tasksQueued };
 }
 

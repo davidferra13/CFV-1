@@ -864,7 +864,8 @@ export function extractNavSuggestions(
   if (!navMatch) return []
   try {
     return JSON.parse(navMatch[1])
-  } catch {
+  } catch (err) {
+    console.error('[remy-stream] Failed to parse NAV_SUGGESTIONS', err)
     return []
   }
 }

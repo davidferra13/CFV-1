@@ -1,4 +1,5 @@
 ﻿import { loadRemyContext } from '@/lib/ai/remy-context'
+import { sanitizeForPrompt, fenceForPrompt } from '@/lib/ai/remy-input-validation'
 import {
   REMY_PERSONALITY,
   REMY_FEW_SHOT_EXAMPLES,
@@ -356,7 +357,7 @@ export function buildRemySystemPrompt(
       ? `\n- Location: ${context.chefCity}, ${context.chefState}`
       : ''
   parts.push(`\nBUSINESS CONTEXT:
-- Business: ${context.businessName ?? 'Your business'}${context.tagline ? ` - "${context.tagline}"` : ''}${locationLine}
+- Business: ${fenceForPrompt('business_name', sanitizeForPrompt(context.businessName ?? 'Your business'))}${context.tagline ? ` - "${fenceForPrompt('tagline', sanitizeForPrompt(context.tagline))}"` : ''}${locationLine}
 - Clients: ${context.clientCount} total
 - Upcoming events: ${context.upcomingEventCount}
 - Open inquiries: ${context.openInquiryCount}${context.pendingQuoteCount ? `\n- Pending quotes: ${context.pendingQuoteCount}` : ''}${context.monthRevenueCents !== undefined ? `\n- Month revenue: $${(context.monthRevenueCents / 100).toFixed(2)}` : ''}`)
@@ -383,7 +384,7 @@ ${context.upcomingEvents
         }
       }
     }
-    return `- ${e.occasion ?? 'Event'} on ${e.date ?? '(no date)'} for ${e.clientName} (${e.guestCount ?? '?'} guests, ${e.status}${loyaltySuffix})${prepSuffix}`
+    return `- ${fenceForPrompt('occasion', sanitizeForPrompt(e.occasion ?? 'Event'))} on ${e.date ?? '(no date)'} for ${fenceForPrompt('client_name', sanitizeForPrompt(e.clientName))} (${e.guestCount ?? '?'} guests, ${e.status}${loyaltySuffix})${prepSuffix}`
   })
   .join('\n')}`)
   }
@@ -393,8 +394,8 @@ ${context.upcomingEvents
       `\nRECENT CLIENTS: ${context.recentClients
         .map((c) =>
           c.tier || typeof c.pointsBalance === 'number'
-            ? `${c.name} [${c.tier ?? 'tier unknown'}${typeof c.pointsBalance === 'number' ? `, ${c.pointsBalance} pts` : ''}]`
-            : c.name
+            ? `${fenceForPrompt('client_name', sanitizeForPrompt(c.name))} [${c.tier ?? 'tier unknown'}${typeof c.pointsBalance === 'number' ? `, ${c.pointsBalance} pts` : ''}]`
+            : fenceForPrompt('client_name', sanitizeForPrompt(c.name))
         )
         .join(', ')}`
     )
@@ -431,7 +432,9 @@ The chef can see the full structured view at /daily.`)
             : e.classification === 'existing_thread'
               ? ' [CLIENT REPLY]'
               : ''
-        emailLines.push(`- From: ${e.from} - "${e.subject}"${cls}`)
+        emailLines.push(
+          `- From: ${fenceForPrompt('email_from', sanitizeForPrompt(e.from))} - "${fenceForPrompt('email_subject', sanitizeForPrompt(e.subject))}"${cls}`
+        )
       }
     }
     emailLines.push(
@@ -472,7 +475,7 @@ The chef can see the full structured view at /daily.`)
 - Expenses: $${(y.yearExpenseCents / 100).toFixed(2)}
 - Net: $${((y.yearRevenueCents - y.yearExpenseCents) / 100).toFixed(2)}
 - Events: ${y.totalEventsThisYear} total, ${y.completedEventsThisYear} completed
-- Avg revenue/event: $${(y.avgEventRevenueCents / 100).toFixed(2)}${y.topClients.length > 0 ? `\n- Top clients: ${y.topClients.map((c) => `${c.name} ($${(c.revenueCents / 100).toFixed(2)}, ${c.eventCount} events)`).join('; ')}` : ''}`)
+- Avg revenue/event: $${(y.avgEventRevenueCents / 100).toFixed(2)}${y.topClients.length > 0 ? `\n- Top clients: ${y.topClients.map((c) => `${fenceForPrompt('client_name', sanitizeForPrompt(c.name))} ($${(c.revenueCents / 100).toFixed(2)}, ${c.eventCount} events)`).join('; ')}` : ''}`)
   }
 
   // Staff roster with utilization
@@ -484,7 +487,7 @@ ${context.staffRoster
       s.activeAssignments > 0
         ? ` [${s.activeAssignments} upcoming event${s.activeAssignments !== 1 ? 's' : ''}]`
         : ' [available]'
-    return `- ${s.name} (${s.role.replace(/_/g, ' ')})${s.phone ? ` ${s.phone}` : ''}${assignmentNote}`
+    return `- ${fenceForPrompt('staff_name', sanitizeForPrompt(s.name))} (${s.role.replace(/_/g, ' ')})${s.phone ? ` ${s.phone}` : ''}${assignmentNote}`
   })
   .join('\n')}`)
   }
@@ -515,7 +518,7 @@ ${context.activeTodos.map((t) => `- ${t.title}${t.dueDate ? ` (due ${t.dueDate})
   // Scheduled calls
   if (includeOperationalContext && context.upcomingCalls && context.upcomingCalls.length > 0) {
     parts.push(`\nUPCOMING CALLS (${context.upcomingCalls.length}):
-${context.upcomingCalls.map((c) => `- ${c.clientName} at ${new Date(c.scheduledAt).toLocaleString()}${c.purpose ? ` - ${c.purpose}` : ''}`).join('\n')}`)
+${context.upcomingCalls.map((c) => `- ${fenceForPrompt('client_name', sanitizeForPrompt(c.clientName))} at ${new Date(c.scheduledAt).toLocaleString()}${c.purpose ? ` - ${c.purpose}` : ''}`).join('\n')}`)
   }
 
   // Documents
@@ -554,7 +557,7 @@ ${context.recentArtifacts.map((a) => `- ${a.type.replace(/_/g, ' ')}: ${a.title}
       parts.push(`\n[ALERT] CLIENT DIETARY & ALLERGY DATA (SAFETY-CRITICAL - always flag prominently):
 ${clientsWithAllergies
   .map((c) => {
-    const lines: string[] = [`- ${c.name}:`]
+    const lines: string[] = [`- ${fenceForPrompt('client_name', sanitizeForPrompt(c.name))}:`]
     if (c.allergies.length > 0) lines.push(`  ALLERGIES: ${c.allergies.join(', ').toUpperCase()}`)
     if (c.dietaryRestrictions.length > 0)
       lines.push(`  Dietary: ${c.dietaryRestrictions.join(', ')}`)
@@ -584,7 +587,7 @@ When asked about these clients' dietary needs, ALWAYS prominently flag allergies
     }
 
     parts.push(`\nCLIENT VIBE NOTES (personality & communication style):
-${context.clientVibeNotes.map((c) => `- ${c.name}: ${c.vibeNotes}`).join('\n')}
+${context.clientVibeNotes.map((c) => `- ${fenceForPrompt('client_name', sanitizeForPrompt(c.name))}: ${fenceForPrompt('vibe_notes', sanitizeForPrompt(c.vibeNotes))}`).join('\n')}
 Use these to personalize communication - draft emails and messages that match each client's vibe.`)
   }
 
@@ -602,9 +605,11 @@ Use these to personalize communication - draft emails and messages that match ea
 ${aars
   .map((a) => {
     const parts: string[] = []
-    if (a.wentWell) parts.push(`[OK] ${a.wentWell}`)
-    if (a.toImprove) parts.push(`[ALERT] ${a.toImprove}`)
-    if (a.lessonsLearned) parts.push(`[TIP] ${a.lessonsLearned}`)
+    if (a.wentWell) parts.push(`[OK] ${fenceForPrompt('went_well', sanitizeForPrompt(a.wentWell))}`)
+    if (a.toImprove)
+      parts.push(`[ALERT] ${fenceForPrompt('to_improve', sanitizeForPrompt(a.toImprove))}`)
+    if (a.lessonsLearned)
+      parts.push(`[TIP] ${fenceForPrompt('lessons_learned', sanitizeForPrompt(a.lessonsLearned))}`)
     return parts.join(' | ')
   })
   .join('\n')}
@@ -619,7 +624,7 @@ Reference these when relevant - help the chef avoid past mistakes and repeat suc
     context.pendingMenuApprovals.length > 0
   ) {
     parts.push(
-      `\n[CHECKLIST] PENDING MENU APPROVALS (${context.pendingMenuApprovals.length}): ${context.pendingMenuApprovals.map((m) => m.clientName).join(', ')} - waiting for client response`
+      `\n[CHECKLIST] PENDING MENU APPROVALS (${context.pendingMenuApprovals.length}): ${context.pendingMenuApprovals.map((m) => fenceForPrompt('client_name', sanitizeForPrompt(m.clientName))).join(', ')} - waiting for client response`
     )
   }
 
@@ -631,7 +636,7 @@ Reference these when relevant - help the chef avoid past mistakes and repeat suc
   ) {
     const unique = [...new Set(context.unreadInquiryMessages.map((m) => m.leadName))]
     parts.push(
-      `\n[MAIL] UNREAD INQUIRY MESSAGES (${context.unreadInquiryMessages.length}): from ${unique.join(', ')} - need a response`
+      `\n[MAIL] UNREAD INQUIRY MESSAGES (${context.unreadInquiryMessages.length}): from ${unique.map((n) => fenceForPrompt('lead_name', sanitizeForPrompt(n))).join(', ')} - need a response`
     )
   }
 
@@ -643,7 +648,7 @@ Reference these when relevant - help the chef avoid past mistakes and repeat suc
     for (const d of context.upcomingPaymentDeadlines) {
       const urgency = d.daysUntilDue <= 2 ? '[URGENT]' : ''
       nudgeLines.push(
-        `${urgency} Payment of $${(d.amountCents / 100).toFixed(2)} due in ${d.daysUntilDue} day${d.daysUntilDue !== 1 ? 's' : ''} - ${d.clientName} (${d.occasion})`
+        `${urgency} Payment of $${(d.amountCents / 100).toFixed(2)} due in ${d.daysUntilDue} day${d.daysUntilDue !== 1 ? 's' : ''} - ${fenceForPrompt('client_name', sanitizeForPrompt(d.clientName))} (${fenceForPrompt('occasion', sanitizeForPrompt(d.occasion))})`
       )
     }
   }
@@ -653,7 +658,7 @@ Reference these when relevant - help the chef avoid past mistakes and repeat suc
     for (const q of context.expiringQuotes) {
       const urgency = q.daysUntilExpiry <= 2 ? '[URGENT]' : ''
       nudgeLines.push(
-        `${urgency} Quote of $${(q.totalCents / 100).toFixed(2)} expires in ${q.daysUntilExpiry} day${q.daysUntilExpiry !== 1 ? 's' : ''} - ${q.clientName} (${q.occasion})`
+        `${urgency} Quote of $${(q.totalCents / 100).toFixed(2)} expires in ${q.daysUntilExpiry} day${q.daysUntilExpiry !== 1 ? 's' : ''} - ${fenceForPrompt('client_name', sanitizeForPrompt(q.clientName))} (${fenceForPrompt('occasion', sanitizeForPrompt(q.occasion))})`
       )
     }
   }
@@ -662,7 +667,7 @@ Reference these when relevant - help the chef avoid past mistakes and repeat suc
   if (context.staleInquiries && context.staleInquiries.length > 0) {
     for (const s of context.staleInquiries) {
       nudgeLines.push(
-        `Inquiry from ${s.leadName} - no response in ${s.daysSinceContact} days (lead score: ${s.leadScore})`
+        `Inquiry from ${fenceForPrompt('lead_name', sanitizeForPrompt(s.leadName))} - no response in ${s.daysSinceContact} days (lead score: ${s.leadScore})`
       )
     }
   }
@@ -671,7 +676,7 @@ Reference these when relevant - help the chef avoid past mistakes and repeat suc
   if (context.overduePayments && context.overduePayments.length > 0) {
     for (const p of context.overduePayments) {
       nudgeLines.push(
-        `[OVERDUE] $${(p.amountCents / 100).toFixed(2)} from ${p.clientName} - ${p.daysOverdue} day${p.daysOverdue !== 1 ? 's' : ''} past due`
+        `[OVERDUE] $${(p.amountCents / 100).toFixed(2)} from ${fenceForPrompt('client_name', sanitizeForPrompt(p.clientName))} - ${p.daysOverdue} day${p.daysOverdue !== 1 ? 's' : ''} past due`
       )
     }
   }
@@ -680,7 +685,7 @@ Reference these when relevant - help the chef avoid past mistakes and repeat suc
   if (context.clientReengagement && context.clientReengagement.length > 0) {
     for (const c of context.clientReengagement) {
       nudgeLines.push(
-        `${c.clientName} usually books every ~${c.avgIntervalDays} days - last booking was ${c.daysSinceLastBooking} days ago (${c.eventCount} events total)`
+        `${fenceForPrompt('client_name', sanitizeForPrompt(c.clientName))} usually books every ~${c.avgIntervalDays} days - last booking was ${c.daysSinceLastBooking} days ago (${c.eventCount} events total)`
       )
     }
   }

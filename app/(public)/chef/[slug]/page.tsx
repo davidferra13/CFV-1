@@ -540,11 +540,15 @@ export default async function ChefProfilePage({ params }: Props) {
           .eq('id', chef.id)
           .single()
         return { showResumeAvailableNote: data?.show_resume_available_note ?? false }
-      } catch {
+      } catch (err) {
+        console.error('[chef-profile] Failed to fetch resume availability', err)
         return { showResumeAvailableNote: false }
       }
     })(),
-    getUpcomingPublicEvents(chef.id).catch(() => []),
+    getUpcomingPublicEvents(chef.id).catch((err) => {
+      console.error('[chef-profile] Failed to fetch upcoming events', err)
+      return []
+    }),
     getPublicChefBuyerSignals(
       chef.id,
       {
@@ -555,56 +559,62 @@ export default async function ChefProfilePage({ params }: Props) {
         bookingDepositFixedCents: chef.booking_deposit_fixed_cents,
       },
       chef.service_config ?? null
-    ).catch(() => ({
-      pricing: {
-        startingPriceCents: null,
-        dinnerLowCents: null,
-        dinnerHighCents: null,
-        mealPrepLowCents: null,
-        mealPrepHighCents: null,
-        cookAndLeaveRateCents: null,
-        minimumBookingCents: null,
-        minimumSpendCents: null,
-        depositType: null,
-        depositPercent: null,
-        depositFixedCents: null,
-      },
-      service: {
-        includedItems: [],
-        staffingItems: [],
-        equipmentItems: [],
-        dietaryItems: [],
-        communicationItems: [],
-        extraItems: [],
-        travelRadiusMiles: null,
-        travelFeeCents: null,
-        minimumGuests: null,
-        guestCountDeadlineDays: null,
-        groceriesIncluded: null,
-        gratuityPolicy: null,
-        hasCancellationPolicy: null,
-        cancellationTerms: null,
-        hasReschedulePolicy: null,
-        rescheduleTerms: null,
-        customWhatsIncluded: null,
-        customCleanupNote: null,
-        customTravelNote: null,
-        customDietaryNote: null,
-        customGratuityNote: null,
-        customIntroPitch: null,
-        selfReportedInsurance: false,
-      },
-      operations: {
-        responseTime: null,
-        lastActiveAt: null,
-      },
-      verification: {
-        badges: [],
-        activeInsuranceCount: 0,
-        activeCertificationCount: 0,
-      },
-    })),
-    getPublicShowcaseMenus(chef.id).catch(() => []),
+    ).catch((err) => {
+      console.error('[chef-profile] Failed to fetch buyer signals', err)
+      return {
+        pricing: {
+          startingPriceCents: null,
+          dinnerLowCents: null,
+          dinnerHighCents: null,
+          mealPrepLowCents: null,
+          mealPrepHighCents: null,
+          cookAndLeaveRateCents: null,
+          minimumBookingCents: null,
+          minimumSpendCents: null,
+          depositType: null,
+          depositPercent: null,
+          depositFixedCents: null,
+        },
+        service: {
+          includedItems: [],
+          staffingItems: [],
+          equipmentItems: [],
+          dietaryItems: [],
+          communicationItems: [],
+          extraItems: [],
+          travelRadiusMiles: null,
+          travelFeeCents: null,
+          minimumGuests: null,
+          guestCountDeadlineDays: null,
+          groceriesIncluded: null,
+          gratuityPolicy: null,
+          hasCancellationPolicy: null,
+          cancellationTerms: null,
+          hasReschedulePolicy: null,
+          rescheduleTerms: null,
+          customWhatsIncluded: null,
+          customCleanupNote: null,
+          customTravelNote: null,
+          customDietaryNote: null,
+          customGratuityNote: null,
+          customIntroPitch: null,
+          selfReportedInsurance: false,
+        },
+        operations: {
+          responseTime: null,
+          lastActiveAt: null,
+        },
+        verification: {
+          badges: [],
+          activeInsuranceCount: 0,
+          activeCertificationCount: 0,
+        },
+      }
+    }),
+    getPublicShowcaseMenus(chef.id).catch((err) => {
+      console.error('[chef-profile] Failed to fetch showcase menus', err)
+      return []
+    }),
   ])
 
   const primaryColor = chef.portal_primary_color || '#1c1917'

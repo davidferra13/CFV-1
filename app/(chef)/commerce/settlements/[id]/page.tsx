@@ -33,7 +33,8 @@ export default async function SettlementDetailPage({
     try {
       const raw = settlement.payment_ids
       return typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
-    } catch {
+    } catch (err) {
+      console.error('[settlements] Failed to parse payment_ids', err)
       return []
     }
   })()

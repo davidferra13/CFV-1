@@ -18,6 +18,7 @@ import {
 import { useTaxonomy } from '@/components/hooks/use-taxonomy'
 import { ProductLookupPanel } from '@/components/recipes/product-lookup-panel'
 import { NutritionalCalculator } from '@/components/recipes/NutritionalCalculator'
+import { IngredientHazardBadge } from '@/components/culinary/ingredient-hazard-badge'
 import { recalculateAndSaveRecipeNutrition } from '@/lib/recipes/nutritional-calculator-actions'
 import { useProtectedForm } from '@/lib/qol/use-protected-form'
 import { FormShield } from '@/components/forms/form-shield'
@@ -1050,6 +1051,7 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
                           disabled
                           className="bg-stone-800"
                         />
+                        <IngredientHazardBadge ingredientName={ei.ingredient.name} />
                       </div>
                       <div className="w-20">
                         <Input
@@ -1159,6 +1161,7 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
                           }}
                           placeholder="New ingredient"
                         />
+                        <IngredientHazardBadge ingredientName={ing.name} />
                       </div>
                       <div className="w-20">
                         <Input

@@ -100,11 +100,15 @@ function isRelationMissingError(error: any) {
  * Also fetches each chef's showcase-visible partners and their locations.
  * Safe to call from public (no-auth) server components.
  */
-export const getDiscoverableChefs = unstable_cache(
+const _getDiscoverableChefsCached = unstable_cache(
   getDiscoverableChefsUncached,
   ['discoverable-chefs'],
   { revalidate: 300, tags: ['directory-chefs'] }
 )
+
+export async function getDiscoverableChefs(): Promise<DirectoryChef[]> {
+  return _getDiscoverableChefsCached()
+}
 
 async function getDiscoverableChefsUncached(): Promise<DirectoryChef[]> {
   const db = createServerClient({ admin: true })

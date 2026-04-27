@@ -18,6 +18,7 @@ import {
 import type { IngredientPriceHint } from '@/lib/recipes/actions'
 import { useTaxonomy } from '@/components/hooks/use-taxonomy'
 import { parseRecipeFromText } from '@/lib/ai/parse-recipe'
+import { IngredientHazardBadge } from '@/components/culinary/ingredient-hazard-badge'
 import type { ParsedRecipe, ParsedIngredient } from '@/lib/ai/parse-recipe'
 import { NutritionalCalculator } from '@/components/recipes/NutritionalCalculator'
 import { recalculateAndSaveRecipeNutrition } from '@/lib/recipes/nutritional-calculator-actions'
@@ -951,6 +952,7 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
                             />
                           )}
                         </div>
+                        <IngredientHazardBadge ingredientName={ing.name} />
                       </div>
                       <div className="w-20">
                         {index === 0 && (

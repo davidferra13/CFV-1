@@ -129,7 +129,7 @@ function countBusinessNumbers(content) {
 // ChefFlow is chef ops (events, clients, recipes, pricing, logistics). Not an LMS,
 // marketplace, warehouse system, social network, or generic CRM.
 
-const CHEFFLOW_DOMAIN_TERMS = [
+const CHEF_DOMAIN_TERMS = [
   'event', 'dinner', 'client', 'guest', 'recipe', 'menu', 'ingredient',
   'pricing', 'costing', 'quote', 'invoice', 'payment', 'booking', 'schedule',
   'staff', 'vendor', 'sourcing', 'catering', 'prep', 'cooking', 'kitchen',
@@ -138,6 +138,57 @@ const CHEFFLOW_DOMAIN_TERMS = [
   'ticket', 'rsvp', 'waitlist', 'cannabis', 'dosing', 'compliance',
   'receipt', 'expense', 'profit', 'revenue', 'retainer',
 ];
+
+const CLIENT_DOMAIN_TERMS = [
+  'booking', 'inquiry', 'event', 'dinner', 'party', 'guest', 'dietary',
+  'allergy', 'budget', 'quote', 'payment', 'deposit', 'menu', 'tasting',
+  'cancellation', 'reschedule', 'confirmation', 'feedback', 'review',
+  'portal', 'invoice', 'receipt', 'preference', 'cuisine', 'venue',
+];
+
+const GUEST_DOMAIN_TERMS = [
+  'rsvp', 'dietary', 'allergy', 'seating', 'ticket', 'dinner', 'menu',
+  'course', 'wine pairing', 'tasting', 'event', 'invitation', 'guest list',
+  'meal', 'accommodation', 'preference', 'feedback', 'restriction',
+];
+
+const VENDOR_DOMAIN_TERMS = [
+  'supplier', 'sourcing', 'ingredient', 'delivery', 'pricing', 'wholesale',
+  'order', 'invoice', 'catalog', 'produce', 'quality', 'seasonal',
+  'farm', 'fishmonger', 'butcher', 'distributor', 'specialty', 'organic',
+  'minimum order', 'lead time', 'availability', 'substitution',
+];
+
+const STAFF_DOMAIN_TERMS = [
+  'shift', 'schedule', 'prep', 'kitchen', 'station', 'sous chef', 'line cook',
+  'server', 'bartender', 'event staff', 'availability', 'pay rate', 'hours',
+  'training', 'skill', 'certification', 'food handler', 'team', 'assignment',
+];
+
+const PARTNER_DOMAIN_TERMS = [
+  'co-host', 'collaboration', 'farm dinner', 'venue', 'revenue split',
+  'shared event', 'partnership', 'circle', 'dinner series', 'broadcast',
+  'co-brand', 'joint venture', 'referral', 'commission', 'affiliate',
+];
+
+const PUBLIC_DOMAIN_TERMS = [
+  'discover', 'search', 'browse', 'chef profile', 'public page', 'inquiry',
+  'booking request', 'cuisine', 'location', 'availability', 'portfolio',
+  'testimonial', 'rating', 'food service', 'private chef', 'catering',
+];
+
+const DOMAIN_TERMS_BY_TYPE = {
+  Chef: CHEF_DOMAIN_TERMS,
+  Client: CLIENT_DOMAIN_TERMS,
+  Guest: GUEST_DOMAIN_TERMS,
+  Vendor: VENDOR_DOMAIN_TERMS,
+  Staff: STAFF_DOMAIN_TERMS,
+  Partner: PARTNER_DOMAIN_TERMS,
+  Public: PUBLIC_DOMAIN_TERMS,
+};
+
+// Merged baseline: chef terms are always relevant
+const CHEFFLOW_DOMAIN_TERMS = CHEF_DOMAIN_TERMS;
 
 const DRIFT_CATEGORIES = [
   {
@@ -190,12 +241,16 @@ const DRIFT_CATEGORIES = [
   },
 ];
 
-function detectProductDrift(content) {
+function detectProductDrift(content, personaType) {
   const lower = content.toLowerCase();
   const flags = [];
   let driftHits = 0;
   let domainHits = 0;
   const driftCategories = new Set();
+
+  // Use type-specific terms merged with chef baseline
+  const typeTerms = DOMAIN_TERMS_BY_TYPE[personaType] || [];
+  const combinedTerms = [...new Set([...CHEFFLOW_DOMAIN_TERMS, ...typeTerms])];
 
   // Extract pass/fail and "real test" section for focused analysis
   const testSection = lower.match(/(?:pass\s*[\/&]\s*fail|the\s+real\s+test)[\s\S]*$/im);
@@ -215,8 +270,8 @@ function detectProductDrift(content) {
     driftHits += catHits;
   }
 
-  // Count ChefFlow domain term hits
-  for (const term of CHEFFLOW_DOMAIN_TERMS) {
+  // Count domain term hits using type-aware combined terms
+  for (const term of combinedTerms) {
     const regex = new RegExp(`\\b${term.replace(/\s+/g, '\\s+')}s?\\b`, 'gi');
     const matches = lower.match(regex) || [];
     domainHits += matches.length;
@@ -236,7 +291,7 @@ function detectProductDrift(content) {
         testDriftHits += (testText.match(regex) || []).length;
       }
     }
-    for (const term of CHEFFLOW_DOMAIN_TERMS) {
+    for (const term of combinedTerms) {
       const regex = new RegExp(`\\b${term.replace(/\s+/g, '\\s+')}s?\\b`, 'gi');
       testDomainHits += (testText.match(regex) || []).length;
     }
@@ -414,8 +469,8 @@ export function validatePersonaContent(text, opts = {}) {
   flags.push(...scanContradictions(text));
   flags.push(...checkDuplicates(name));
 
-  // Product drift detection
-  const drift = detectProductDrift(text);
+  // Product drift detection (type-aware)
+  const drift = detectProductDrift(text, type);
   flags.push(...drift.flags);
 
   // Rejection reasons

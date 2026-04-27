@@ -23,7 +23,7 @@ function localDateOffset(d: Date, days: number): string {
 import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
 import { archetypeToOperatorType, OPERATOR_TARGETS } from '@/lib/costing/knowledge'
 import { loadEmailDigest } from '@/lib/ai/remy-email-actions'
-import { sanitizeForPrompt } from '@/lib/ai/remy-input-validation'
+import { sanitizeForPrompt, fenceForPrompt } from '@/lib/ai/remy-input-validation'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 import { getBusinessHealthSummary } from '@/lib/intelligence/business-health-summary'
 import { getEventIntelligenceContext } from '@/lib/intelligence/event-context'
@@ -1935,8 +1935,13 @@ async function loadEventEntity(
     lines.push(`Dietary: ${data.dietary_restrictions.join(', ')}`)
   if (data.allergies?.length) lines.push(`Allergies: ${data.allergies.join(', ')}`)
   if (data.special_requests)
-    lines.push(`Special requests: ${sanitizeForPrompt(data.special_requests)}`)
-  if (data.kitchen_notes) lines.push(`Kitchen notes: ${sanitizeForPrompt(data.kitchen_notes)}`)
+    lines.push(
+      `Special requests: ${fenceForPrompt('special_requests', sanitizeForPrompt(data.special_requests))}`
+    )
+  if (data.kitchen_notes)
+    lines.push(
+      `Kitchen notes: ${fenceForPrompt('kitchen_notes', sanitizeForPrompt(data.kitchen_notes))}`
+    )
 
   const readiness: string[] = []
   if (data.prep_list_ready) readiness.push('prep')
@@ -1956,7 +1961,9 @@ async function loadEventEntity(
     if (data.menu_approved_at)
       lines.push(`Approved: ${new Date(data.menu_approved_at).toLocaleDateString()}`)
     if (data.menu_revision_notes)
-      lines.push(`Client feedback: ${sanitizeForPrompt(data.menu_revision_notes)}`)
+      lines.push(
+        `Client feedback: ${fenceForPrompt('menu_revision_notes', sanitizeForPrompt(data.menu_revision_notes))}`
+      )
   }
   // Approval request history
   const approvals = approvalResult.data ?? []
@@ -1977,7 +1984,10 @@ async function loadEventEntity(
       lines.push(`Client dietary: ${(client.dietary_restrictions as string[]).join(', ')}`)
     if ((client.allergies as string[] | null)?.length)
       lines.push(`Client allergies: ${(client.allergies as string[]).join(', ')}`)
-    if (client.vibe_notes) lines.push(`Vibe: ${sanitizeForPrompt(client.vibe_notes as string)}`)
+    if (client.vibe_notes)
+      lines.push(
+        `Vibe: ${fenceForPrompt('vibe_notes', sanitizeForPrompt(client.vibe_notes as string))}`
+      )
     if (client.loyalty_tier) lines.push(`Loyalty tier: ${client.loyalty_tier}`)
     if (typeof client.loyalty_points === 'number') {
       lines.push(`Loyalty points: ${client.loyalty_points}`)
@@ -2139,13 +2149,19 @@ async function loadEventEntity(
     lines.push(`\nAFTER-ACTION REVIEW:`)
     if (aar.overall_rating) lines.push(`Rating: ${aar.overall_rating}/5`)
     if (aar.went_well) {
-      lines.push(`Went well: ${sanitizeForPrompt(aar.went_well as string)}`)
+      lines.push(
+        `Went well: ${fenceForPrompt('went_well', sanitizeForPrompt(aar.went_well as string))}`
+      )
     }
     if (aar.to_improve) {
-      lines.push(`To improve: ${sanitizeForPrompt(aar.to_improve as string)}`)
+      lines.push(
+        `To improve: ${fenceForPrompt('to_improve', sanitizeForPrompt(aar.to_improve as string))}`
+      )
     }
     if (aar.lessons_learned) {
-      lines.push(`Lessons: ${sanitizeForPrompt(aar.lessons_learned as string)}`)
+      lines.push(
+        `Lessons: ${fenceForPrompt('lessons_learned', sanitizeForPrompt(aar.lessons_learned as string))}`
+      )
     }
     if (aar.would_repeat !== null && aar.would_repeat !== undefined) {
       lines.push(`Would repeat: ${aar.would_repeat ? 'Yes' : 'No'}`)
@@ -2329,15 +2345,25 @@ async function loadClientEntity(
     lines.push(`Favorite cuisines: ${data.favorite_cuisines.join(', ')}`)
   if (data.favorite_dishes?.length)
     lines.push(`Favorite dishes: ${data.favorite_dishes.join(', ')}`)
-  if (data.vibe_notes) lines.push(`Vibe: ${sanitizeForPrompt(data.vibe_notes)}`)
+  if (data.vibe_notes)
+    lines.push(`Vibe: ${fenceForPrompt('vibe_notes', sanitizeForPrompt(data.vibe_notes))}`)
   if (data.what_they_care_about)
-    lines.push(`Cares about: ${sanitizeForPrompt(data.what_they_care_about)}`)
+    lines.push(
+      `Cares about: ${fenceForPrompt('what_they_care_about', sanitizeForPrompt(data.what_they_care_about))}`
+    )
   if (data.payment_behavior)
-    lines.push(`Payment behavior: ${sanitizeForPrompt(data.payment_behavior)}`)
-  if (data.tipping_pattern) lines.push(`Tipping: ${sanitizeForPrompt(data.tipping_pattern)}`)
+    lines.push(
+      `Payment behavior: ${fenceForPrompt('payment_behavior', sanitizeForPrompt(data.payment_behavior))}`
+    )
+  if (data.tipping_pattern)
+    lines.push(
+      `Tipping: ${fenceForPrompt('tipping_pattern', sanitizeForPrompt(data.tipping_pattern))}`
+    )
   if (data.kitchen_size) lines.push(`Kitchen: ${data.kitchen_size}`)
   if (data.kitchen_constraints)
-    lines.push(`Kitchen constraints: ${sanitizeForPrompt(data.kitchen_constraints)}`)
+    lines.push(
+      `Kitchen constraints: ${fenceForPrompt('kitchen_constraints', sanitizeForPrompt(data.kitchen_constraints))}`
+    )
   if (data.total_events_count) lines.push(`Total events: ${data.total_events_count}`)
   if (data.loyalty_tier) lines.push(`Loyalty tier: ${data.loyalty_tier}`)
   if (typeof data.loyalty_points === 'number') lines.push(`Loyalty points: ${data.loyalty_points}`)
@@ -2408,7 +2434,7 @@ async function loadClientEntity(
     for (const n of notes as Array<Record<string, unknown>>) {
       const cat = n.category ? `[${(n.category as string).replace(/_/g, ' ')}] ` : ''
       const date = n.created_at ? new Date(n.created_at as string).toLocaleDateString() : ''
-      const note = sanitizeForPrompt((n.note as string) ?? '')
+      const note = fenceForPrompt('note', sanitizeForPrompt((n.note as string) ?? ''))
       const truncated = note.length > 150 ? note.slice(0, 150) + '...' : note
       lines.push(`- ${cat}${date}: ${truncated}`)
     }
@@ -2420,7 +2446,7 @@ async function loadClientEntity(
     lines.push(`\nREVIEWS (${reviews.length}):`)
     for (const r of reviews as Array<Record<string, unknown>>) {
       const rating = r.rating ? `${r.rating}/5` : ''
-      const text = sanitizeForPrompt((r.review_text as string) ?? '')
+      const text = fenceForPrompt('review_text', sanitizeForPrompt((r.review_text as string) ?? ''))
       const truncated = text.length > 150 ? text.slice(0, 150) + '...' : text
       lines.push(`- ${rating}${rating && truncated ? ': ' : ''}${truncated}`)
     }
@@ -2603,8 +2629,9 @@ async function loadRecipeEntity(
   if (times.length) lines.push(`Time: ${times.join(', ')}`)
   if (data.dietary_tags?.length) lines.push(`Dietary: ${data.dietary_tags.join(', ')}`)
   if (data.times_cooked) lines.push(`Cooked ${data.times_cooked} times`)
-  if (data.notes) lines.push(`Notes: ${sanitizeForPrompt(data.notes)}`)
-  if (data.adaptations) lines.push(`Adaptations: ${sanitizeForPrompt(data.adaptations)}`)
+  if (data.notes) lines.push(`Notes: ${fenceForPrompt('notes', sanitizeForPrompt(data.notes))}`)
+  if (data.adaptations)
+    lines.push(`Adaptations: ${fenceForPrompt('adaptations', sanitizeForPrompt(data.adaptations))}`)
 
   const ingredients = ingredientsResult.data ?? []
   if (ingredients.length > 0) {
