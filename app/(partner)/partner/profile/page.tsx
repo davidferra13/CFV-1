@@ -1,10 +1,11 @@
 // Partner Portal - Profile Settings
 // Partners can edit their name, description, contact info, website, and booking URL.
-// The chef controls whether the profile is publicly visible - that toggle is read-only here.
+// The chef controls whether the profile is publicly visible; that toggle is read-only here.
 
 import { getPartnerPortalData, updatePartnerProfile } from '@/lib/partners/portal-actions'
 import { revalidatePath } from 'next/cache'
 import { Eye, EyeOff } from '@/components/ui/icons'
+import { PartnerProfileForm } from '@/components/partners/partner-profile-form'
 
 async function saveProfile(formData: FormData) {
   'use server'
@@ -32,7 +33,7 @@ export default async function PartnerProfilePage() {
         </p>
       </div>
 
-      {/* Showcase visibility - read-only, chef controls this */}
+      {/* Showcase visibility (read-only, chef controls this) */}
       <div
         className={`flex items-center gap-3 rounded-xl border p-4 ${
           partner.is_showcase_visible
@@ -58,99 +59,7 @@ export default async function PartnerProfilePage() {
       </div>
 
       {/* Edit form */}
-      <form action={saveProfile} className="space-y-5">
-        <div className="rounded-xl border border-stone-700 bg-stone-900 p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-stone-300 mb-1">
-              Business / Property Name
-            </label>
-            <input
-              name="name"
-              defaultValue={partner.name}
-              required
-              className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-stone-300 mb-1">
-              Description (shown publicly)
-            </label>
-            <textarea
-              name="description"
-              defaultValue={partner.description ?? ''}
-              rows={4}
-              className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400 resize-none"
-              placeholder="Tell guests what makes your space special..."
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-stone-300 mb-1">Contact Name</label>
-            <input
-              name="contact_name"
-              defaultValue={partner.contact_name ?? ''}
-              className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-stone-300 mb-1">Phone</label>
-            <input
-              name="phone"
-              type="tel"
-              defaultValue={partner.phone ?? ''}
-              className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-stone-300 mb-1">Website</label>
-            <input
-              name="website"
-              type="url"
-              defaultValue={partner.website ?? ''}
-              placeholder="https://"
-              className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-stone-300 mb-1">
-              Booking URL{' '}
-              <span className="font-normal text-stone-400">(Airbnb, VRBO, direct link)</span>
-            </label>
-            <input
-              name="booking_url"
-              type="url"
-              defaultValue={partner.booking_url ?? ''}
-              placeholder="https://"
-              className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-stone-300 mb-1">Cover Image URL</label>
-            <input
-              name="cover_image_url"
-              type="url"
-              defaultValue={partner.cover_image_url ?? ''}
-              placeholder="https://"
-              className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
-            />
-            <p className="text-xs text-stone-400 mt-1">
-              Paste a direct image URL. Your chef can also upload photos for you.
-            </p>
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          className="w-full rounded-lg bg-stone-900 text-white py-2.5 text-sm font-semibold hover:bg-stone-800 transition-colors"
-        >
-          Save Profile
-        </button>
-      </form>
+      <PartnerProfileForm partner={partner} saveAction={saveProfile} />
     </div>
   )
 }

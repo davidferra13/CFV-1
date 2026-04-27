@@ -14,17 +14,10 @@ import { format } from 'date-fns'
 import { MapPin, Users, Calendar } from '@/components/ui/icons'
 import Link from 'next/link'
 import {
-  LOCATION_BEST_FOR_LABELS,
-  LOCATION_BEST_FOR_OPTIONS,
-  LOCATION_EXPERIENCE_TAG_LABELS,
-  LOCATION_EXPERIENCE_TAG_OPTIONS,
-  LOCATION_SERVICE_TYPE_LABELS,
-  LOCATION_SERVICE_TYPE_OPTIONS,
-} from '@/lib/partners/location-experiences'
-import {
   PARTNER_LOCATION_PROPOSAL_FIELD_LABELS,
   getPartnerLocationProposalChangedFields,
 } from '@/lib/partners/location-change-requests'
+import { PartnerLocationChangeForm } from '@/components/partners/partner-location-change-form'
 
 export default async function PartnerLocationDetailPage({ params }: { params: { id: string } }) {
   const [data, events, changeRequests] = await Promise.all([
@@ -159,160 +152,12 @@ export default async function PartnerLocationDetailPage({ params }: { params: { 
           </div>
         ) : null}
 
-        <form action={submitChangeRequest} className="mt-5 space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-stone-300">Location Name</label>
-              <input
-                name="name"
-                defaultValue={proposalValues.name}
-                required
-                className="w-full rounded-lg border border-stone-600 bg-stone-950 px-3 py-2 text-sm text-stone-100"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-stone-300">Booking URL</label>
-              <input
-                name="booking_url"
-                type="url"
-                defaultValue={proposalValues.booking_url ?? ''}
-                className="w-full rounded-lg border border-stone-600 bg-stone-950 px-3 py-2 text-sm text-stone-100"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-stone-300">Description</label>
-            <textarea
-              name="description"
-              rows={4}
-              defaultValue={proposalValues.description ?? ''}
-              className="w-full rounded-lg border border-stone-600 bg-stone-950 px-3 py-2 text-sm text-stone-100"
-            />
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-4">
-            <div className="md:col-span-2">
-              <label className="mb-1 block text-sm font-medium text-stone-300">Address</label>
-              <input
-                name="address"
-                defaultValue={proposalValues.address ?? ''}
-                className="w-full rounded-lg border border-stone-600 bg-stone-950 px-3 py-2 text-sm text-stone-100"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-stone-300">City</label>
-              <input
-                name="city"
-                defaultValue={proposalValues.city ?? ''}
-                className="w-full rounded-lg border border-stone-600 bg-stone-950 px-3 py-2 text-sm text-stone-100"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-stone-300">State</label>
-              <input
-                name="state"
-                defaultValue={proposalValues.state ?? ''}
-                className="w-full rounded-lg border border-stone-600 bg-stone-950 px-3 py-2 text-sm text-stone-100"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-stone-300">ZIP</label>
-              <input
-                name="zip"
-                defaultValue={proposalValues.zip ?? ''}
-                className="w-full rounded-lg border border-stone-600 bg-stone-950 px-3 py-2 text-sm text-stone-100"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-stone-300">
-                Max Guest Count
-              </label>
-              <input
-                name="max_guest_count"
-                type="number"
-                min="1"
-                defaultValue={proposalValues.max_guest_count ?? ''}
-                className="w-full rounded-lg border border-stone-600 bg-stone-950 px-3 py-2 text-sm text-stone-100"
-              />
-            </div>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-3">
-            <div>
-              <p className="mb-2 text-sm font-medium text-stone-300">Media Tags</p>
-              <div className="space-y-2">
-                {LOCATION_EXPERIENCE_TAG_OPTIONS.map((value) => (
-                  <label key={value} className="flex items-center gap-2 text-sm text-stone-300">
-                    <input
-                      type="checkbox"
-                      name="experience_tags"
-                      value={value}
-                      defaultChecked={(proposalValues.experience_tags ?? []).includes(value)}
-                      className="h-4 w-4 rounded border-stone-600 bg-stone-950"
-                    />
-                    {LOCATION_EXPERIENCE_TAG_LABELS[value]}
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="mb-2 text-sm font-medium text-stone-300">Best For</p>
-              <div className="space-y-2">
-                {LOCATION_BEST_FOR_OPTIONS.map((value) => (
-                  <label key={value} className="flex items-center gap-2 text-sm text-stone-300">
-                    <input
-                      type="checkbox"
-                      name="best_for"
-                      value={value}
-                      defaultChecked={(proposalValues.best_for ?? []).includes(value)}
-                      className="h-4 w-4 rounded border-stone-600 bg-stone-950"
-                    />
-                    {LOCATION_BEST_FOR_LABELS[value]}
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="mb-2 text-sm font-medium text-stone-300">Service Formats</p>
-              <div className="space-y-2">
-                {LOCATION_SERVICE_TYPE_OPTIONS.map((value) => (
-                  <label key={value} className="flex items-center gap-2 text-sm text-stone-300">
-                    <input
-                      type="checkbox"
-                      name="service_types"
-                      value={value}
-                      defaultChecked={(proposalValues.service_types ?? []).includes(value)}
-                      className="h-4 w-4 rounded border-stone-600 bg-stone-950"
-                    />
-                    {LOCATION_SERVICE_TYPE_LABELS[value]}
-                  </label>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-stone-300">
-              Note for your chef
-            </label>
-            <textarea
-              name="partner_note"
-              rows={3}
-              defaultValue={pendingRequest?.partner_note ?? ''}
-              placeholder="Explain what changed and why this improves the public setting page."
-              className="w-full rounded-lg border border-stone-600 bg-stone-950 px-3 py-2 text-sm text-stone-100"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={Boolean(pendingRequest)}
-            className="rounded-lg bg-stone-100 px-4 py-2.5 text-sm font-semibold text-stone-950 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {pendingRequest ? 'Pending Review' : 'Submit For Approval'}
-          </button>
-        </form>
+        <PartnerLocationChangeForm
+          proposalValues={proposalValues}
+          pendingRequest={pendingRequest}
+          hasPendingRequest={Boolean(pendingRequest)}
+          submitAction={submitChangeRequest}
+        />
 
         {changeRequests.length > 0 && (
           <div className="mt-6 border-t border-stone-800 pt-4">
