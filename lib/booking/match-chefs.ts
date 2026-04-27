@@ -77,13 +77,12 @@ export async function matchChefsForBooking(options: {
       if (max != null && guestCount > max) continue
     }
 
-    // Score: closer is better, featured chefs get a boost
+    // Score: closer is better, reviewed/rated chefs get a boost
     let score = 100
     if (distance != null) {
       // Closer chefs score higher (distance penalty)
       score -= Math.min(distance, 100)
     }
-    if (chef.is_founder) score += 20
     if (chef.discovery.review_count > 0) score += 10
     if (chef.discovery.avg_rating != null && chef.discovery.avg_rating >= 4.5) score += 10
 

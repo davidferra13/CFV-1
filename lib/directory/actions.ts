@@ -149,12 +149,10 @@ async function getDiscoverableChefsUncached(): Promise<DirectoryChef[]> {
     return []
   }
 
-  // Filter: must be directory_approved=true OR be the founder
+  // Filter: must be directory_approved=true
   // Also exclude test/demo accounts from public listings
   const approved = (data || []).filter((c: any) => {
-    const isFounder = isFounderEmail(c.email)
-    const isApproved = c.directory_approved === true || isFounder
-    if (!isApproved) return false
+    if (c.directory_approved !== true) return false
     // Exclude test accounts (agent test, demo seeds) from public directory
     const email = (c.email || '').toLowerCase()
     if (email.endsWith('@local.chefflow')) return false

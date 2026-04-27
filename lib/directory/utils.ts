@@ -448,7 +448,6 @@ export function sortDirectoryChefs(chefs: DirectoryChef[], sortMode: DirectorySo
     if (byDistance !== 0 && (a.distance_miles != null || b.distance_miles != null)) {
       return byDistance
     }
-    if (a.is_founder !== b.is_founder) return a.is_founder ? -1 : 1
     if (a.discovery.accepting_inquiries !== b.discovery.accepting_inquiries) {
       return a.discovery.accepting_inquiries ? -1 : 1
     }
