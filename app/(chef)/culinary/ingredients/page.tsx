@@ -24,6 +24,7 @@ import { EnrichImagesButton } from '@/components/culinary/enrich-images-button'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { PricingIntelligenceBar } from '@/components/intelligence/pricing-intelligence-bar'
 import { CrossContactBadges } from '@/components/dietary/cross-contact-badges'
+import { InventoryMatchPanel } from '@/components/recipes/inventory-match-panel'
 
 export const metadata: Metadata = { title: 'Ingredients' }
 
@@ -208,6 +209,9 @@ export default async function IngredientsPage() {
           </Table>
         </Card>
       )}
+
+      {/* Inventory Match */}
+      {ingredients.length > 0 && <InventoryMatchPanel />}
 
       {/* Price Watch List */}
       <PriceWatchList />
