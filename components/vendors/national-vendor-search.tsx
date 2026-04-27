@@ -11,8 +11,9 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createVendor } from '@/lib/vendors/actions'
 import { NEUTRAL_VENDOR_SEARCH_PLACEHOLDER } from '@/lib/site/national-brand-copy'
-import { Search, MapPin, Phone, Globe, Plus, Check } from '@/components/ui/icons'
+import { Search, MapPin, Phone, Globe, Plus, Check, Map, List } from '@/components/ui/icons'
 import { toast } from 'sonner'
+import { VendorMapDynamic } from './vendor-map-dynamic'
 
 type NationalVendor = {
   id: string
@@ -24,6 +25,8 @@ type NationalVendor = {
   zip: string | null
   phone: string | null
   website: string | null
+  lat: number | null
+  lng: number | null
 }
 
 const VENDOR_TYPE_LABELS: Record<string, string> = {
@@ -130,6 +133,7 @@ export function NationalVendorSearch({ addedVendorIds }: { addedVendorIds?: Set<
   const [loading, setLoading] = useState(false)
   const [adding, setAdding] = useState<Record<string, boolean>>({})
   const [added, setAdded] = useState<Set<string>>(new Set(addedVendorIds))
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list')
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -196,6 +200,7 @@ export function NationalVendorSearch({ addedVendorIds }: { addedVendorIds?: Set<
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
+          aria-label="Filter by vendor type"
           className="text-sm bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-stone-300 focus:outline-none focus:ring-2 focus:ring-violet-500"
         >
           <option value="">All types</option>
@@ -208,6 +213,7 @@ export function NationalVendorSearch({ addedVendorIds }: { addedVendorIds?: Set<
         <select
           value={stateFilter}
           onChange={(e) => setStateFilter(e.target.value)}
+          aria-label="Filter by state"
           className="text-sm bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-stone-300 focus:outline-none focus:ring-2 focus:ring-violet-500"
         >
           <option value="">All states</option>
@@ -217,6 +223,35 @@ export function NationalVendorSearch({ addedVendorIds }: { addedVendorIds?: Set<
             </option>
           ))}
         </select>
+        {/* List / Map toggle */}
+        <div className="flex rounded-lg border border-stone-700 overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setViewMode('list')}
+            className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors ${
+              viewMode === 'list'
+                ? 'bg-stone-700 text-stone-100'
+                : 'bg-stone-900 text-stone-500 hover:text-stone-300'
+            }`}
+            aria-label="List view"
+          >
+            <List className="w-4 h-4" />
+            <span className="hidden sm:inline">List</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('map')}
+            className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors ${
+              viewMode === 'map'
+                ? 'bg-stone-700 text-stone-100'
+                : 'bg-stone-900 text-stone-500 hover:text-stone-300'
+            }`}
+            aria-label="Map view"
+          >
+            <Map className="w-4 h-4" />
+            <span className="hidden sm:inline">Map</span>
+          </button>
+        </div>
       </div>
 
       {/* Results */}
@@ -228,7 +263,13 @@ export function NationalVendorSearch({ addedVendorIds }: { addedVendorIds?: Set<
         </p>
       )}
 
-      {results.length > 0 && (
+      {/* Map view */}
+      {viewMode === 'map' && !loading && (
+        <VendorMapDynamic vendors={results} addedVendorIds={added} />
+      )}
+
+      {/* List view */}
+      {viewMode === 'list' && results.length > 0 && (
         <div className="space-y-2">
           <p className="text-xs text-stone-500">
             {results.length} results
@@ -306,7 +347,7 @@ export function NationalVendorSearch({ addedVendorIds }: { addedVendorIds?: Set<
         </div>
       )}
 
-      {!query && !stateFilter && (
+      {!query && !stateFilter && viewMode === 'list' && (
         <p className="text-sm text-stone-600">
           Search by vendor name, city, or filter by state to find specialty food suppliers near you.
         </p>
