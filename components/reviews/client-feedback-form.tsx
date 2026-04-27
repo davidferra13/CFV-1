@@ -4,7 +4,7 @@
 
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef, useEffect } from 'react'
 import { submitClientReview, recordGoogleReviewClick } from '@/lib/reviews/actions'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -20,16 +20,18 @@ function StarRating({ value, onChange }: { value: number; onChange: (v: number) 
   const [hovered, setHovered] = useState(0)
 
   return (
-    <div className="flex gap-1">
+    <div className="flex gap-1" role="radiogroup" aria-label="Rating">
       {[1, 2, 3, 4, 5].map((star) => (
         <button
           key={star}
           type="button"
+          role="radio"
+          aria-checked={value === star ? 'true' : 'false'}
           className="p-0.5 transition-transform hover:scale-110"
           onMouseEnter={() => setHovered(star)}
           onMouseLeave={() => setHovered(0)}
           onClick={() => onChange(star)}
-          aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
+          aria-label={`Rate ${star} out of 5 stars`}
         >
           <svg
             className={`w-8 h-8 ${
@@ -51,6 +53,7 @@ export function ClientFeedbackForm({ eventId, googleReviewUrl }: ClientFeedbackF
   const [isPending, startTransition] = useTransition()
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const successRef = useRef<HTMLDivElement>(null)
 
   // Form fields
   const [rating, setRating] = useState(0)
@@ -101,12 +104,18 @@ export function ClientFeedbackForm({ eventId, googleReviewUrl }: ClientFeedbackF
     recordGoogleReviewClick(eventId)
   }
 
+  useEffect(() => {
+    if (submitted && successRef.current) {
+      successRef.current.focus()
+    }
+  }, [submitted])
+
   // After submission: show thank you + Google Review CTA
   if (submitted) {
     return (
       <Card className="border-emerald-200 bg-emerald-950/50">
         <CardContent className="pt-6">
-          <div className="text-center space-y-4">
+          <div ref={successRef} tabIndex={-1} role="status" className="text-center space-y-4">
             <div className="text-4xl">
               <svg
                 className="w-12 h-12 mx-auto text-emerald-500"

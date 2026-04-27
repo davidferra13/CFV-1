@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { submitTestimonialByToken } from '@/lib/testimonials/submit-testimonial'
 
 const starLabels = ['Poor', 'Fair', 'Good', 'Great', 'Excellent']
@@ -10,14 +10,17 @@ function StarRating({ value, onChange }: { value: number; onChange: (v: number) 
 
   return (
     <div>
-      <label className="block text-sm font-medium text-stone-200 mb-2">
+      <label className="block text-sm font-medium text-stone-200 mb-2" id="review-star-label">
         Overall Rating <span className="text-red-400">*</span>
       </label>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1" role="radiogroup" aria-labelledby="review-star-label">
         {[1, 2, 3, 4, 5].map((star) => (
           <button
             key={star}
             type="button"
+            role="radio"
+            aria-checked={value === star ? 'true' : 'false'}
+            aria-label={`Rate ${star} out of 5 stars, ${starLabels[star - 1]}`}
             onMouseEnter={() => setHover(star)}
             onMouseLeave={() => setHover(0)}
             onClick={() => onChange(star)}
@@ -45,6 +48,7 @@ export function ReviewForm({ token, defaultName }: { token: string; defaultName:
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [done, setDone] = useState(false)
+  const successRef = useRef<HTMLDivElement>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -81,9 +85,15 @@ export function ReviewForm({ token, defaultName }: { token: string; defaultName:
     }
   }
 
+  useEffect(() => {
+    if (done && successRef.current) {
+      successRef.current.focus()
+    }
+  }, [done])
+
   if (done) {
     return (
-      <div className="bg-stone-900 rounded-2xl shadow-sm border border-stone-700 p-8 text-center">
+      <div ref={successRef} tabIndex={-1} role="status" className="bg-stone-900 rounded-2xl shadow-sm border border-stone-700 p-8 text-center">
         <div className="text-4xl mb-3">✓</div>
         <h2 className="text-xl font-bold text-stone-100 mb-2">Thank you!</h2>
         <p className="text-stone-400">

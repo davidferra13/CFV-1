@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef, useEffect } from 'react'
 import { submitGuestFeedback } from '@/lib/sharing/actions'
 
 type GuestFeedbackDish = {
@@ -37,12 +37,15 @@ function StarRating({
 
   return (
     <div>
-      <label className="mb-2 block text-sm font-medium text-stone-200">{label}</label>
-      <div className="flex items-center gap-1">
+      <label className="mb-2 block text-sm font-medium text-stone-200" id={`star-label-${label.replace(/\s+/g, '-').toLowerCase()}`}>{label}</label>
+      <div className="flex items-center gap-1" role="radiogroup" aria-labelledby={`star-label-${label.replace(/\s+/g, '-').toLowerCase()}`}>
         {[1, 2, 3, 4, 5].map((star) => (
           <button
             key={star}
             type="button"
+            role="radio"
+            aria-checked={value === star ? 'true' : 'false'}
+            aria-label={`Rate ${star} out of 5 stars, ${STAR_LABELS[star - 1]}`}
             onMouseEnter={() => setHover(star)}
             onMouseLeave={() => setHover(0)}
             onClick={() => onChange(star)}
@@ -77,6 +80,7 @@ export function GuestFeedbackForm({
   const [error, setError] = useState('')
   const [done, setDone] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const successRef = useRef<HTMLDivElement>(null)
 
   function updateDishFeedback(dishId: string, patch: Partial<DishFeedbackState>) {
     setDishFeedback((current) => ({
@@ -132,9 +136,15 @@ export function GuestFeedbackForm({
     })
   }
 
+  useEffect(() => {
+    if (done && successRef.current) {
+      successRef.current.focus()
+    }
+  }, [done])
+
   if (done) {
     return (
-      <div className="rounded-2xl border border-stone-700 bg-stone-900 p-8 text-center">
+      <div ref={successRef} tabIndex={-1} role="status" className="rounded-2xl border border-stone-700 bg-stone-900 p-8 text-center">
         <h2 className="mb-2 text-xl font-bold text-stone-100">Thank you!</h2>
         <p className="text-stone-400">
           Your feedback helps ChefFlow learn what worked in the real world.
@@ -199,12 +209,15 @@ export function GuestFeedbackForm({
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <span className="text-xs text-stone-500">Optional rating</span>
-                    <div className="flex gap-0.5">
+                    <span className="text-xs text-stone-500" id={`dish-rating-label-${dish.id}`}>Optional rating</span>
+                    <div className="flex gap-0.5" role="radiogroup" aria-labelledby={`dish-rating-label-${dish.id}`}>
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
                           key={star}
                           type="button"
+                          role="radio"
+                          aria-checked={(feedback?.rating ?? 0) === star ? 'true' : 'false'}
+                          aria-label={`Rate ${dish.name} ${star} out of 5 stars`}
                           onClick={() =>
                             updateDishFeedback(dish.id, {
                               rating: feedback?.rating === star ? 0 : star,
