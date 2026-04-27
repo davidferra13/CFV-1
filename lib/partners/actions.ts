@@ -1036,6 +1036,7 @@ export async function reviewPartnerLocationChangeRequest(input: {
   revalidatePath(`/partners/${request.partner_id}`)
   revalidatePath(`/partner/locations/${request.location_id}`)
   revalidatePath('/partner/locations')
+  revalidatePath('/partner/dashboard')
 
   return { success: true }
 }

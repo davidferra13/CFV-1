@@ -72,6 +72,15 @@ export type PartnerLocationChangeRequestRecord = {
   reviewed_at: string | null
 }
 
+export type PartnerRecentActivityItem = {
+  id: string
+  locationName: string
+  status: PartnerLocationChangeRequestStatus
+  reviewNote: string | null
+  reviewedAt: string | null
+  createdAt: string
+}
+
 export type PartnerPortalData = {
   partner: {
     id: string
@@ -92,6 +101,7 @@ export type PartnerPortalData = {
   locations: PartnerLocation[]
   allImages: PartnerImage[]
   recentEvents: PartnerEvent[]
+  recentActivity: PartnerRecentActivityItem[]
   stats: PartnerStats
   originClientName: string | null
   originEventSummary: string | null
@@ -260,6 +270,30 @@ export async function getPartnerPortalData(): Promise<PartnerPortalData> {
     originClientName = (client as any)?.full_name ?? null
   }
 
+  // Fetch recent change request activity (approved/rejected requests for the activity feed)
+  let recentActivity: PartnerRecentActivityItem[] = []
+  {
+    const { data: changeRequests } = await db
+      .from('partner_location_change_requests')
+      .select('id, location_id, status, review_note, reviewed_at, created_at')
+      .eq('partner_id', user.partnerId)
+      .in('status', ['approved', 'rejected'])
+      .order('reviewed_at', { ascending: false })
+      .limit(10)
+
+    if (changeRequests && changeRequests.length > 0) {
+      const locationNameMap = Object.fromEntries(locations.map((l) => [l.id, l.name]))
+      recentActivity = (changeRequests as any[]).map((cr) => ({
+        id: cr.id,
+        locationName: locationNameMap[cr.location_id] ?? 'Unknown location',
+        status: cr.status as PartnerLocationChangeRequestStatus,
+        reviewNote: cr.review_note ?? null,
+        reviewedAt: cr.reviewed_at ?? null,
+        createdAt: cr.created_at,
+      }))
+    }
+  }
+
   if (partner.origin_event_id) {
     const { data: originEvent } = await db
       .from('events')
@@ -276,6 +310,7 @@ export async function getPartnerPortalData(): Promise<PartnerPortalData> {
     locations,
     allImages,
     recentEvents,
+    recentActivity,
     stats,
     originClientName,
     originEventSummary,
