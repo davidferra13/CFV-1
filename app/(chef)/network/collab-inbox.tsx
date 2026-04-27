@@ -35,6 +35,7 @@ import {
   type TrustedCircleMember,
 } from '@/lib/network/collab-actions'
 import { createIntroductionBridge, getBridgeForHandoff } from '@/lib/network/intro-bridge-actions'
+import { HandoffBriefingPackage } from '@/components/network/handoff-briefing-package'
 import {
   NEUTRAL_LOCATION_PLACEHOLDER,
   NEUTRAL_SERVICE_AREA_PLACEHOLDER,
@@ -1012,6 +1013,14 @@ export function CollabInboxPanel({
                       </p>
                     )}
                   {renderGuestDietaryNotes(handoff)}
+
+                  {handoff.source_entity_type === 'event' && handoff.source_entity_id && (
+                    <HandoffBriefingPackage
+                      handoffId={handoff.handoff_id}
+                      eventId={handoff.source_entity_id}
+                      isRecipient={true}
+                    />
+                  )}
 
                   {handoff.private_note && (
                     <p className="text-sm text-stone-300 mt-2 whitespace-pre-wrap">

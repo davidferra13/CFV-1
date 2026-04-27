@@ -927,6 +927,7 @@ export const navGroups: NavGroup[] = [
         icon: Users,
         children: [
           { href: '/network/collabs', label: 'Collaborations' },
+          { href: '/network/emergency', label: 'Emergency Triage' },
           { href: '/network/notifications', label: 'Notifications' },
           { href: '/network/saved', label: 'Saved Chefs' },
         ],
